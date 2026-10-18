@@ -1,6 +1,6 @@
 # 0.2.0 持续专家、私密会话与记忆验收
 
-版本：1.7 · 2026-10-19 · 范围：原生 Windows 本机试点。0.1.0 的历史记录保留在 [上一版验收](04-implementation-acceptance.md)；本版机器汇总为 [implementation-evidence.json](implementation-evidence.json)。仓库与启动见 [实施清单](../technical/12-implementation-and-repositories.md)，执行规则见 [持续工作约束](../technical/13-persistent-agents-conversations-memory.md)。
+版本：1.7 · 2026-10-19 · 范围：原生 Windows 本机试点。0.1.0 的历史记录保留在 [上一版验收](04-implementation-acceptance.md)；本版机器汇总为 [0.2.0 机器汇总](versions/0.2.0/implementation-evidence.json)。仓库与启动见 [实施清单](../technical/12-implementation-and-repositories.md)，执行规则见 [持续工作约束](../technical/13-persistent-agents-conversations-memory.md)。
 
 ## 1. 本轮可用流程
 
@@ -66,3 +66,6 @@ SSO、云端定时计划、并行专业团队、完整云目录和任务检查�
 在 delivery 仓库执行 `npm run verify`，再执行 `qa:web`、`qa:persistent`、`qa:extension`；Desktop 先构建 `npm run package`，再执行 `qa:desktop`、`qa:packaged`。浏览器脚本均在 finally 关闭自身资源。`qa:lifecycle` 要求先停止现有 CopyPaste 控制器，核查后停止自身栈，再 `npm start` 恢复查看。
 
 运行 `python -X utf8 scripts/review-repositories.py` 检查候选源码，提交六仓库后使用 `npm run release` 生成集中产物与清单。文档检查在根目录执行 `python -X utf8 docs/tools/validate_docs.py`。发布清单与 [离线恢复记录](release-restore-check.json) 保存本轮实际提交、tree、来源索引及 SHA-256，历史 0.1.0 机器证据保留独立副本。
+
+
+后续 0.3.0 实现与验收见 [管理员账号生命周期增量](06-admin-identity-acceptance.md)；本页保留 0.2.0 当时范围。

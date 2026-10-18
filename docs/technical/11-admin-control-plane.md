@@ -1,5 +1,7 @@
 # Admin 控制面、权限与账务实施设计
 
+0.3.0 实际账号邀请、本人 MFA、状态/会话与权限委派增量见 [管理员身份生命周期](14-admin-identity-lifecycle.md)。本册其他规划范围继续保留，实际验收单独记录。
+
 实施状态：本分册保留长期设计约束；本轮锁定版本、实际 API/工具、各端实现与差异，以 [实际开发清单](12-implementation-and-repositories.md) 和 [运行验收](../quality/04-implementation-acceptance.md) 为准，未实现项没有删除。
 
 

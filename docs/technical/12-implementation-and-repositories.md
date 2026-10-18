@@ -1,6 +1,6 @@
 # 实际开发、独立仓库与交付
 
-版本：1.7 · 2026-10-19 · 产品代码：0.2.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
+版本：1.8 · 2026-10-19 · 产品代码：0.3.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
 ## 1. 路径与仓库
 
@@ -23,7 +23,7 @@ Web、Admin、扩展与 Desktop 可独立安装和构建，不在 build 时依�
 | --- | --- |
 | 工具 | Node 22.14.0、npm 10.9.2、TypeScript 7.0.2，精确依赖在各锁文件 |
 | 服务 | Fastify 5.12.7、pg 8.23.1、pg-boss 12.38.0、Zod 4.6.7 |
-| 数据 | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、七个有序迁移、RLS |
+| 数据 | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、八个有序迁移、RLS |
 | 界面 | React 19.3.1、Vite 8.3.4、React Router 7.18.4、Lucide 1.59.0 |
 | Desktop | Electron 44.5.1、electron-builder 26.15.3、DPAPI + AES-256-GCM、独立 Node-mode Chrome Host |
 | Agent | Codex 0.163.0-alpha.10.2、app-server stdio JSON-RPC、实际生成协议、公司 Responses provider |
@@ -40,7 +40,7 @@ Web、Admin、扩展与 Desktop 可独立安装和构建，不在 build 时依�
 
 客户：访问 → 工作邮箱验证码 → 自动注册/登录 → 创建企业及首个项目 → 创建专属专家/私密会话或选择业务模块 → 记录笔记或问答/计划/执行 → 素材/预算 → 成果与明确发布。返回用户选择已有工作区，邀请绑定邮箱和项目。开发邮件只在 platform `.data/mailbox/`；生产必须真实 SMTP，没有默认用户账号。
 
-管理员：在 platform 执行 `npm run admin:create -- admin@your-company.example super_admin`，将本机 enrolment 文件的 TOTP URI 导入认证器后删除文件。登录同时验证邮箱 OTP 与 TOTP，没有共享管理员密码。正式管理员开户/停用 UI 尚未实现，受信 CLI 是当前开户渠道。
+管理员：在 platform 执行 `npm run admin:create -- admin@your-company.example super_admin`，将本机 enrolment 文件的 TOTP URI 导入认证器后删除文件。登录同时验证邮箱 OTP 与 TOTP，没有共享管理员密码。首次超管由受信 CLI 引导；后续账号通过后台邀请、本人邮箱验证与 MFA 开通。UI 已支持姓名、停用/恢复、重发、他人 MFA 重设、本人验证器更换和会话撤销。详见 [管理员账号生命周期](14-admin-identity-lifecycle.md)。
 
 ```mermaid
 flowchart LR
@@ -76,7 +76,7 @@ OTP 10 分钟有效、5 次错误上限、单次原子消费；Web/Admin 独立 
 | 流程 | 最多 8 步数据/Agent/人工审批、持久 cursor/子任务、审批后继续 | 没有 cron 云调度、任意脚本或外部发布工作流 |
 | 本地端 | 逐目录 grant、1 小时、默认只读、create-only、签名云命令和一次 nonce 结果 | 云端手动排程已贯通，Codex 自主本地文件工具未接入；结果暂非客户端签名 |
 | 费用/VIP | 整数 HKD micros、资金来源、预留/一次结算、个人/企业权益、冻结套餐 | 人工确认付款，无在线支付收单；月费商业定价未确认 |
-| Admin | 16 页、67 权限、8 内置角色、范围/deny/限额/委派、审计 | 支持仅元数据；无客户正文委托或静默代登录 |
+| Admin | 16 页、邀请与本人 MFA、账号生命周期、67 权限、8 内置角色、范围/deny/限额/委派、审计 | 支持仅元数据；无客户正文委托或静默代登录 |
 
 实际注册 Codex 工具包括 `project_assets`、`asset_text_read`、`deliver_text`、`marketing_metrics`，及按角色开放的 `code_read`、`code_write`、`code_package`、`font_catalog`、`design_render`、`image2_generate`、`image2_edit`。设计目录中其他 tool_id 不代表本次均已注册。AI 视频/语音所需角色明确返回能力未接入。
 
@@ -98,21 +98,21 @@ Desktop 使用 Windows DPAPI CurrentUser 保护 profile key，AES-GCM 保存凭�
 
 ## 6. 实际 API 与交付产物
 
-platform 的 `contracts/implemented-routes.json` 从真实 Fastify 应用导出 133 个 method/path；实际请求字段以本轮客户端和服务端为准。它与主文档规划的 183 路径/221 操作尚未完全一致，不能把规划 OpenAPI 当本次全部已实现的客户端生成依据。主契约保留为后续建设目标。
+platform 的 `contracts/implemented-routes.json` 从真实 Fastify 应用导出 146 个 method/path；实际请求字段以本轮客户端和服务端为准。它与主文档规划的 183 路径/221 操作尚未完全一致，不能把规划 OpenAPI 当本次全部已实现的客户端生成依据。主契约保留为后续建设目标。
 
-Windows 产物在 Desktop `release/`：0.2.0 x64 Setup、Portable、win-unpacked。本次为未签名、本机 localhost origin 包；生产须配置公司 HTTPS origin 并重新打包。扩展 `dist/` 可手工加载，固定 ID 与平台/桌面公开配置一致；尚未上架商店。注册原生 Host 需要安装版稳定路径与用户明确确认。
+Windows 产物在 Desktop `release/`：0.3.0 x64 Setup、Portable、win-unpacked。本次为未签名、本机 localhost origin 包；生产须配置公司 HTTPS origin 并重新打包。扩展 `dist/` 可手工加载，固定 ID 与平台/桌面公开配置一致；尚未上架商店。注册原生 Host 需要安装版稳定路径与用户明确确认。
 
-最终提交和 SHA-256 记录在 delivery 的 `evidence/release-manifest.json` 及本 docs 质量汇总。实际检查见 [当前验收](../quality/05-persistent-work-acceptance.md)。没有自动安装到用户系统、发布商店、合并远端或部署生产。
+最终提交和 SHA-256 记录在 delivery 的 `evidence/release-manifest.json` 及本 docs 质量汇总。实际检查见 [当前验收](../quality/06-admin-identity-acceptance.md)。没有自动安装到用户系统、发布商店、合并远端或部署生产。
 
 delivery 执行 `npm run release`，要求六仓库已提交且干净、实际验证通过。集中交付目录 `dev/copypaste-delivery/release/` 包含 11 项产物：六个独立 Git bundle、Web/Admin/Chrome ZIP、Windows Setup 与 Portable。`release-manifest.json` 保存全部提交、Git tree、来源索引 SHA-256、文件大小与 SHA-256；该产物清单本身忽略入 Git，避免记录自己提交的循环。
 
 本轮已真实离线克隆全部六个 bundle，逐个验证提交、tree、来源索引和干净 checkout；三个 ZIP 实际解压校验 CRC，Chrome manifest 位于根目录，全部 11 项校验 SHA-256/大小。详见 [离线恢复核查](../quality/release-restore-check.json)。恢复命令为 `git clone <仓库.bundle> <目标目录>`；生产依赖和私有 `.env` 需按 README 重新准备，不包含于源码 bundle。
 
-| 独立仓库 | 0.2.0 已交付提交 |
+| 独立仓库 | 0.3.0 已交付提交 |
 | --- | --- |
-| platform | `9b969bc` |
-| web | `9a6682d` |
-| admin | `870b52b` |
-| extension | `1acafb5` |
-| desktop | `104c25b` |
-| delivery | `7f8e6e5` |
+| platform | `c6c85a0` |
+| web | `e4babae` |
+| admin | `77c24d3` |
+| extension | `7c39d0d` |
+| desktop | `7180ac4` |
+| delivery | `71fa970` |

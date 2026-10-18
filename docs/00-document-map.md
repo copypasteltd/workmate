@@ -28,7 +28,7 @@
 1. 用户硬约束优先：主文档在 `docs/`，实际源码和构建在 `dev/`；各端独立 Git 的中英 README、流程图、截图按最新交付要求随仓库保存；不调度本地 Docker、WSL 等虚拟化环境；浏览器调用后释放不用的标签页；所有 AI API 经过内部服务器；Agent 内核唯一使用 Codex。
 2. 需求编号 `REQ-001` 至 `REQ-102` 的定义以 [SRS](requirements/01-srs.md) 为准；原稿 U01–U10、F01–F22 及 WEB01 对标、ROLE01 角色预设、BRAND01 官网视觉、CORE01 Codex 唯一内核、ADMIN01 完整管理后台指令通过追踪矩阵保留来源关系。CORE01 收敛已有 REQ-044/075，不新增同义编号。
 3. 产品词义、任务状态与金额单位以 [术语](governance/02-glossary-and-sources.md)、[任务模块](modules/02-agents-tasks-memory.md) 和机器契约为准。
-4. `contracts/` 定义长期设计的 API 字段与枚举；0.2.0 的实际路由清单和客户端实现另见实施清单，二者尚非全部一一实现；协议变更必须同步需求、客户端影响、示例与测试，不只改一处。
+4. `contracts/` 定义长期设计的 API 字段与枚举；0.3.0 的实际路由清单和客户端实现另见实施清单，二者尚非全部一一实现；协议变更必须同步需求、客户端影响、示例与测试，不只改一处。
 5. 尚无用户决策的实施选择是「设计默认」，不是已采购或已部署事实。精确依赖版本在工程初始化时锁定，不假称采用未验证的最新版本。
 6. 示例中的账户、素材、域名和金额均为虚构；不含内部网关地址、密钥或真实客户资料。
 
@@ -65,3 +65,7 @@ PATH01 指定 `D:\dev\copypasted\自有agent\` 为唯一开发、构建与执行
 ## 10. 完整后台的权威定义
 
 ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 [后台产品分册](product/08-admin-dashboard.md) 为准，身份、权限、事务、API、迁移及工作包以 [控制面技术分册](technical/11-admin-control-plane.md) 为准。机器权限键以 [权限目录](contracts/admin-permission-catalog.json) 为准，OpenAPI 显式声明独立 AdminSession、动作权限和追踪。M1 与 M2 范围分别验收；所有产品用例仍为 not_run。
+
+## 11. 管理员账号生命周期增量
+
+0.3.0 邀请、本人邮箱/MFA、账号状态/会话控制与 AD01 的实际对应见 [身份生命周期](technical/14-admin-identity-lifecycle.md)，证据见 [0.3.0 验收](quality/06-admin-identity-acceptance.md)。0.1.0、0.2.0 验收及机器原始报告保留历史版本；新检查不批量修改 102 条综合用例的 not_run 状态。

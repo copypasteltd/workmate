@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-18T19:15:37.403696+00:00",
-  "version": "0.2.0",
+  "at": "2026-10-18T20:21:20.496065+00:00",
+  "version": "0.3.0",
   "status": "native_local_pilot_checks_passed",
   "root": "D:\\dev\\copypasted\\自有agent",
   "code_root": "D:\\dev\\copypasted\\自有agent\\dev",
@@ -76,8 +76,8 @@
       "repository": "copypaste-platform",
       "command": "npm run test",
       "exit_code": 0,
-      "tests": 37,
-      "pass": 37,
+      "tests": 51,
+      "pass": 51,
       "fail": 0,
       "cancelled": 0,
       "skipped": 0
@@ -101,7 +101,7 @@
   "client_and_lifecycle_checks": [
     {
       "evidence": "copypaste-delivery/evidence/web-admin.json",
-      "at": "2026-10-18T18:52:41.535Z",
+      "at": "2026-10-18T19:57:47.166Z",
       "status": "passed",
       "checks": [
         {
@@ -230,7 +230,7 @@
     },
     {
       "evidence": "copypaste-delivery/evidence/persistent-work.json",
-      "at": "2026-10-18T18:51:59.307Z",
+      "at": "2026-10-18T19:58:17.282Z",
       "status": "passed",
       "checks": [
         {
@@ -270,8 +270,41 @@
       "electron_closed": null
     },
     {
+      "evidence": "copypaste-delivery/evidence/admin-identities.json",
+      "at": "2026-10-18T20:19:06.077Z",
+      "status": "passed",
+      "checks": [
+        {
+          "name": "separate administrator login; least privilege role and atomic emailed invitation through UI",
+          "status": "passed"
+        },
+        {
+          "name": "recipient email OTP and real TOTP enrollment, fragment removal, independent session and denied privilege escalation",
+          "status": "passed"
+        },
+        {
+          "name": "self authenticator replacement through email and new real TOTP; old cookie invalidated while current session succeeds",
+          "status": "passed"
+        },
+        {
+          "name": "account detail shows safe session metadata; UI suspension revokes access and resumption preserves revocation",
+          "status": "passed"
+        },
+        {
+          "name": "390px account UI; explicit invitation resend invalidates the old link",
+          "status": "passed"
+        },
+        {
+          "name": "unassigned recipient can enroll into a waiting screen; assigning access invalidates the earlier session",
+          "status": "passed"
+        }
+      ],
+      "browser_closed": true,
+      "electron_closed": null
+    },
+    {
       "evidence": "copypaste-delivery/evidence/extension.json",
-      "at": "2026-10-18T18:57:50.559Z",
+      "at": "2026-10-18T20:00:38.948Z",
       "status": "passed",
       "checks": [
         {
@@ -292,7 +325,7 @@
     },
     {
       "evidence": "copypaste-delivery/evidence/desktop.json",
-      "at": "2026-10-18T18:56:46.805Z",
+      "at": "2026-10-18T19:59:58.093Z",
       "status": "passed",
       "checks": [
         {
@@ -327,7 +360,7 @@
     },
     {
       "evidence": "copypaste-delivery/evidence/packaged-windows.json",
-      "at": "2026-10-18T19:10:11.119Z",
+      "at": "2026-10-18T20:00:45.417Z",
       "status": "passed",
       "checks": [],
       "browser_closed": null,
@@ -335,7 +368,7 @@
     },
     {
       "evidence": "copypaste-delivery/evidence/native-controller.json",
-      "at": "2026-10-18T19:02:22.915Z",
+      "at": "2026-10-18T20:17:56.748Z",
       "status": "passed",
       "checks": [
         {
@@ -356,7 +389,7 @@
     },
     {
       "evidence": "copypaste-delivery/evidence/repository-review.json",
-      "at": "2026-10-18T19:12:56.388206+00:00",
+      "at": "2026-10-18T20:19:45.066503+00:00",
       "status": "passed",
       "checks": [],
       "browser_closed": null,
@@ -365,179 +398,184 @@
   ],
   "release": {
     "schema_version": "1.0",
-    "at": "2026-10-18T19:13:45.005Z",
-    "version": "0.2.0",
+    "at": "2026-10-18T20:20:29.788Z",
+    "version": "0.3.0",
     "scope": "Native Windows local pilot; source and reproducible client artifacts",
     "production_deployed": false,
     "windows_code_signed": false,
     "agent_kernel": "codex",
     "ai_provider": "company_internal_openai_compatible_only",
     "company_live_ai_qualified": false,
-    "implemented_method_path_pairs": 133,
+    "implemented_method_path_pairs": 146,
     "repositories": [
       {
         "name": "copypaste-platform",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "branch": "main",
-        "commit": "9b969bc5ea6a1c801bf286b0ede93a20e3da15e6",
-        "tracked_files": 547,
-        "source_tree": "cf98fa5bf8736a8e534a7690bb98a69a9cdf8ef7",
-        "source_tree_index_sha256": "228f3353a94bce052facee888ff1fb69265179451f3304aa307399128071fddb"
+        "commit": "c6c85a0a6e1759fccfe41a3025a3fe4cb50da491",
+        "tracked_files": 550,
+        "source_tree": "fe21a15457a46227e18d84a0b080ed44fbe78919",
+        "source_tree_index_sha256": "472dc7d8f6a0e3c07260fab1ce0062a74b908e3dd81047f4e5bca2a8ee6ec035"
       },
       {
         "name": "copypaste-web",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "branch": "main",
-        "commit": "9a6682d06d1fa313dde661a3252c8036823b9a75",
+        "commit": "e4babaeb5fc4de3cab4a910e55e76b7257a7122d",
         "tracked_files": 60,
-        "source_tree": "9dd86a328a50989f500b1bab600e93637597f671",
-        "source_tree_index_sha256": "98e0ddc936d71bf7bc467f8241c56a34230c4109f2b6b4e4bce999c0a4d5016b"
+        "source_tree": "1f44f921ce3736bed4b7fde4aa69017f5c58537e",
+        "source_tree_index_sha256": "64ed3af99681d4c8cf7c565d40c862c728cd4da178283e44af6364e6367ee0af"
       },
       {
         "name": "copypaste-admin",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "branch": "main",
-        "commit": "870b52b24aa4e9900f72b4ad9744050c1387b788",
-        "tracked_files": 55,
-        "source_tree": "72181b37c1c4696cac4cc11bdf342aca0e30c7e7",
-        "source_tree_index_sha256": "196dd6d0d7b16fd0157c569d4c2aebf2360722fe06069fcec6b53db7c0aaaa24"
+        "commit": "77c24d3728156cccc2419ca32e5bd5b0f5d422d6",
+        "tracked_files": 63,
+        "source_tree": "2150aeb71c33867560768a9fa75ce5bf7be9f353",
+        "source_tree_index_sha256": "a8f2181f21768c5fbdf7469516c86843cae0c5f0d960924fed392f1bf9536871"
       },
       {
         "name": "copypaste-extension",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "branch": "main",
-        "commit": "1acafb573abf36dc52e0440f93f17685b5a1a284",
+        "commit": "7c39d0dbdfbfbd499d96becde66860a1960be717",
         "tracked_files": 32,
-        "source_tree": "12bdf1defd68cd9697c69d65057e97fc88410610",
-        "source_tree_index_sha256": "d2d7716e3cd948a28ff9b85f1cb914768c191680b5a36132ab9a30ef54e4c775"
+        "source_tree": "fb8bca9d61e087f1fd8f92c6bd0e74af7eda576c",
+        "source_tree_index_sha256": "0453f3b6469b5a12bea4682cced32e58189ff1e84d5a4cb64554dbc2a43d39ec"
       },
       {
         "name": "copypaste-desktop",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "branch": "main",
-        "commit": "104c25b5f0a876c77a1655b66e8945d45ff49acf",
+        "commit": "7180ac40c568997fbb86f61e0feec1f480c2a223",
         "tracked_files": 67,
-        "source_tree": "d846bc1390953eea2a7e220ad3fcc1f7676d7c28",
-        "source_tree_index_sha256": "72979f65afa71b26d31fd9cc91f486ddb5d282b297f10d88eb79c7fcaeea6617"
+        "source_tree": "3900a021a646702bdd1d49c7bd664306736c5443",
+        "source_tree_index_sha256": "a87a95c4af96207bd128dd56dfe077d0d0c6cc438cae8a60c87a95d2c5fff955"
       },
       {
         "name": "copypaste-delivery",
-        "version": "0.2.0",
+        "version": "0.3.0",
         "branch": "main",
-        "commit": "7f8e6e545913cf18892e2bd0d223ccc5b5231791",
-        "tracked_files": 39,
-        "source_tree": "298dfea994bae9b30397defd9a954440546d417d",
-        "source_tree_index_sha256": "a739d189be16e47196a685ef0102883ff52053f197b1bc3af9e7a8c5e6c9043a"
+        "commit": "71fa97056ce0c18c1eb29185b04ee0dfeff88203",
+        "tracked_files": 51,
+        "source_tree": "75d8bd7c0d78c621cbf456c8908b78292b682ff3",
+        "source_tree_index_sha256": "e4d1669e5a46e7aaa264939bca4cbdef774e2a6c73ad8076dddb1d12a5ec6f8c"
       }
     ],
     "evidence": [
       {
         "file": "evidence/verification.json",
-        "at": "2026-10-18T19:05:41.455Z",
-        "sha256": "36e02d0797fc676183f4e57adddbff1986830299d6aa8f14dd4680c0b18974ce"
+        "at": "2026-10-18T20:15:49.786Z",
+        "sha256": "d188fd9dcc8857a196b48d0aefa77cd70acf4536950106ce7709b82c696dcda3"
       },
       {
         "file": "evidence/web-admin.json",
-        "at": "2026-10-18T18:52:41.535Z",
-        "sha256": "16958a8be4fadd52cceb15888af0a50eac9424391ccdd703de2bd66d641374e6"
+        "at": "2026-10-18T19:57:47.166Z",
+        "sha256": "30183f305c229515da3c68f2b0f40ef22779a204eab54f80a725e5a04db66622"
       },
       {
         "file": "evidence/extension.json",
-        "at": "2026-10-18T18:57:50.559Z",
-        "sha256": "3076bcc0293b02c2dab26c513ddb6f3e1d76aa5e8ac3aadb91a36139d1e18f45"
+        "at": "2026-10-18T20:00:38.948Z",
+        "sha256": "98cb4987ab6b85b24d307927bec8c1140889893f8782ac0262635a5e6d6d5333"
       },
       {
         "file": "evidence/desktop.json",
-        "at": "2026-10-18T18:56:46.805Z",
-        "sha256": "7899a3e8f59e7a6045c8b9de4a157ed5d6b0de5f759c95f8dc9ffa319e18147d"
+        "at": "2026-10-18T19:59:58.093Z",
+        "sha256": "3b6ccadce4fd30b6024333ffc00e26e571e384bcbc9cb41b902cc61730727810"
       },
       {
         "file": "evidence/packaged-windows.json",
-        "at": "2026-10-18T19:10:11.119Z",
-        "sha256": "60326a0fbcc541c29761baedaae1759e306845f68803c41fa82c22d07da9e4e9"
+        "at": "2026-10-18T20:00:45.417Z",
+        "sha256": "d9dbf587a78fc0d6f888db79c6b74d426c005e0762d3b4238abf1e8147b00fb2"
       },
       {
         "file": "evidence/native-controller.json",
-        "at": "2026-10-18T19:02:22.915Z",
-        "sha256": "085024831764678a274d507eea3c93293871a286906c59c7697a5f4e0e9e82df"
+        "at": "2026-10-18T20:17:56.748Z",
+        "sha256": "6f4c5615065dec87ccf789938002fea8691090e5cb8649f2bae228989c8518f8"
       },
       {
         "file": "evidence/repository-review.json",
-        "at": "2026-10-18T19:12:56.388206+00:00",
-        "sha256": "9a2111e26914e42cf0144d67e2dffcfd2d28f47f570e9916e6f850140d8b84cb"
+        "at": "2026-10-18T20:19:45.066503+00:00",
+        "sha256": "6ab2ba07ca5d4d144b0b13b1164a3a0eb6f1d19793538ea0088c6a46c170fb85"
       },
       {
         "file": "evidence/persistent-work.json",
-        "at": "2026-10-18T18:51:59.307Z",
-        "sha256": "42d43b958fce2afe0aae6745a06fbf446c82846b344b5ca7328694ea0b935fe7"
+        "at": "2026-10-18T19:58:17.282Z",
+        "sha256": "b682abbb8d7e8736460a498f6f3ec2a77dd80b7e8394f0138bb301246ee59ab2"
+      },
+      {
+        "file": "evidence/admin-identities.json",
+        "at": "2026-10-18T20:19:06.077Z",
+        "sha256": "66fde60612253805951cda7f3630718323579c7e64dfa7617c25dda2d3752298"
       }
     ],
     "artifacts": [
       {
         "kind": "git_bundle",
-        "file": "copypaste-delivery/release/copypaste-platform-0.2.0.bundle",
-        "bytes": 957594,
-        "sha256": "a0ddd40c6f5e2e4b1f0f91b646026e7030c74bf05a738e7b96cb1bc196888374"
+        "file": "copypaste-delivery/release/copypaste-platform-0.3.0.bundle",
+        "bytes": 967578,
+        "sha256": "42645461776023307f539575d11a6d1adfd252d441c1bc14ad57acd515556f79"
       },
       {
         "kind": "git_bundle",
-        "file": "copypaste-delivery/release/copypaste-web-0.2.0.bundle",
-        "bytes": 6099337,
-        "sha256": "beae65631fe31bfbc04fe9c273826a16681484be09c298e89835322c94a963ce"
+        "file": "copypaste-delivery/release/copypaste-web-0.3.0.bundle",
+        "bytes": 6667663,
+        "sha256": "e2f2921da80af164621fddd8e5df4ce1ed90faf9a94c8ab942ea2d46790c2e42"
       },
       {
         "kind": "git_bundle",
-        "file": "copypaste-delivery/release/copypaste-admin-0.2.0.bundle",
-        "bytes": 5430963,
-        "sha256": "a48c7f17220c4fcdf11b263747e24f0f9f6f835112c52ff36b4d5ad4cba5cedd"
+        "file": "copypaste-delivery/release/copypaste-admin-0.3.0.bundle",
+        "bytes": 9292823,
+        "sha256": "23bb18c4c7b4c8c50cc01a431358904e0596c364474d8f4a04605c9e2c4b05bc"
       },
       {
         "kind": "git_bundle",
-        "file": "copypaste-delivery/release/copypaste-extension-0.2.0.bundle",
-        "bytes": 343240,
-        "sha256": "6251a4164ec9a6354ca0c1f56c79dbc6b025564a3aac896e83d1274e16779957"
+        "file": "copypaste-delivery/release/copypaste-extension-0.3.0.bundle",
+        "bytes": 343668,
+        "sha256": "490fddf8e559f49d9e9ddf9c4cd3988fe9e29537172484392982edfe00964cff"
       },
       {
         "kind": "git_bundle",
-        "file": "copypaste-delivery/release/copypaste-desktop-0.2.0.bundle",
-        "bytes": 2999202,
-        "sha256": "d3002519348733bf855b122841f55d8799cae14cbe51ce227afe5304eabf0c90"
+        "file": "copypaste-delivery/release/copypaste-desktop-0.3.0.bundle",
+        "bytes": 3237083,
+        "sha256": "4f13af477f512ecfec5c39f8f80c2df6a61811a89c9ac06d0327ec989e94c11c"
       },
       {
         "kind": "git_bundle",
-        "file": "copypaste-delivery/release/copypaste-delivery-0.2.0.bundle",
-        "bytes": 626103,
-        "sha256": "960d712c229c122bc851b4452fb39c24660c3be6aa44770898a0fcb02e54de8b"
+        "file": "copypaste-delivery/release/copypaste-delivery-0.3.0.bundle",
+        "bytes": 639093,
+        "sha256": "0421267ce6951200ab34deddc69f00d661337cf895154d9a16e74c8203c8814a"
       },
       {
         "kind": "client_static_build",
-        "file": "copypaste-delivery/release/copypaste-web-0.2.0.zip",
+        "file": "copypaste-delivery/release/copypaste-web-0.3.0.zip",
         "bytes": 1791855,
-        "sha256": "ba4a9cceef4e9690a251d91f303803715073eb28f360ef95587d5c04757a9387"
+        "sha256": "4b7d0645491cba36e98b9007caedce3daaa0f6e212113974851874301c11c062"
       },
       {
         "kind": "client_static_build",
-        "file": "copypaste-delivery/release/copypaste-admin-0.2.0.zip",
-        "bytes": 1771767,
-        "sha256": "d3c24435c9619163f45477506865b493fd88538dd9c3513c514fa60c0b2ae5ae"
+        "file": "copypaste-delivery/release/copypaste-admin-0.3.0.zip",
+        "bytes": 1777037,
+        "sha256": "feec9b34432a7330dd0c33e3aec0fe8489031ba24db51b18cf6a048ccc369d12"
       },
       {
         "kind": "client_static_build",
-        "file": "copypaste-delivery/release/copypaste-extension-0.2.0.zip",
+        "file": "copypaste-delivery/release/copypaste-extension-0.3.0.zip",
         "bytes": 274109,
-        "sha256": "d536b5f1690f5ca901c9cc442392901601049097cc518457cab5d6e96455c264"
+        "sha256": "dcf7037977de88bba416c62d88e8e4b3ad40c73405242a5732a3c9461ce1cbac"
       },
       {
         "kind": "unsigned_windows_x64",
-        "file": "copypaste-delivery/release/CopyPaste-0.2.0-x64-Setup.exe",
-        "bytes": 104182563,
-        "sha256": "012584700fbfed7aa3d18bcb9b963ef6ce5758b149f16baedaadf3ce50a9af30"
+        "file": "copypaste-delivery/release/CopyPaste-0.3.0-x64-Setup.exe",
+        "bytes": 104304845,
+        "sha256": "feac0f9a0a74361310983f1cb43340dad476ccc0e6aaa9fd25ce71bbe82b455e"
       },
       {
         "kind": "unsigned_windows_x64",
-        "file": "copypaste-delivery/release/CopyPaste-0.2.0-x64-Portable.exe",
-        "bytes": 103951310,
-        "sha256": "063543091650922b2bbe01a1deb5dbd3781598a1f64572a6949e412665a345cb"
+        "file": "copypaste-delivery/release/CopyPaste-0.3.0-x64-Portable.exe",
+        "bytes": 104073588,
+        "sha256": "e2b71a3f2416ea5e454ee3393b0819799f39863f863be47293684b9b415878ca"
       }
     ],
     "pending": [
@@ -548,16 +586,16 @@
       "Full cloud directories, pause checkpoints and streaming task history",
       "Autonomous Codex local-file tools and client-signed device results",
       "Physical object/runtime-cache garbage collection after logical erasure",
-      "Complete admin principal enrollment/suspension UI and delegated customer support",
+      "Delegated customer support content access and approved impersonation workflows",
       "Production OS account/ACL/network isolation, signing and recovery/SLO verification"
     ]
   },
   "release_restore_evidence": "release-restore-check.json",
   "documentation_validation_evidence": {
     "file": "validation-report.json",
-    "checked_at": "2026-10-18T19:15:37.079512+00:00",
+    "checked_at": "2026-10-18T20:15:44.295408+00:00",
     "status": "passed",
-    "checks_passed": 12186,
+    "checks_passed": 12208,
     "scope": "documentation_contracts_and_recorded_design_evidence_only"
   },
   "scope_limits": [
@@ -568,7 +606,7 @@
     "Full cloud directories, pause checkpoints and streaming task history",
     "Autonomous Codex local-file tools and client-signed device results",
     "Physical object/runtime-cache garbage collection after logical erasure",
-    "Complete admin principal enrollment/suspension UI and delegated customer support",
+    "Delegated customer support content access and approved impersonation workflows",
     "Production OS account/ACL/network isolation, signing and recovery/SLO verification",
     "Local fixtures are not qualification of company models or live customer workflows",
     "The 102 planned integrated acceptance cases remain not_run",

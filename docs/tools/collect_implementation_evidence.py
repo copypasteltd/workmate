@@ -54,7 +54,7 @@ for item in verification['checks']:
     native.append(result)
 
 clients = []
-for filename in ['web-admin.json', 'persistent-work.json', 'extension.json', 'desktop.json',
+for filename in ['web-admin.json', 'persistent-work.json', 'admin-identities.json', 'extension.json', 'desktop.json',
                  'packaged-windows.json', 'native-controller.json', 'repository-review.json']:
     report = read(EVIDENCE / filename)
     if report.get('status') == 'failed' or report.get('errors') or any(

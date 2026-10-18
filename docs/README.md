@@ -1,16 +1,16 @@
 # CopyPaste 企业 Agent 文档
 
-版本：1.7 · 2026-10-19 · 状态：保留 v1.5 需求设计基线，当前产品 0.2.0 补齐持续专家、私密会话、范围记忆和计划审批；六个独立仓库的实现与验收按版本记录。主文档继续在本目录维护。
+版本：1.8 · 2026-10-19 · 状态：保留 v1.5 需求设计基线，当前产品 0.3.0 在持续工作基础上补齐管理员邀请、本人 MFA、账号状态和会话管理；六个独立仓库的实现与验收按版本记录。主文档继续在本目录维护。
 
 开发与构建根目录固定为 `D:\dev\copypasted\自有agent\`，所有文档统一位于该根目录的 `docs\`。后续命令直接在 D 盘工作区执行，旧入口仅作会话兼容；见 [工作区与路径规范](governance/03-workspace-and-path-policy.md)。
 
 产品服务在港企业，首批为现有客户的 marketing 团队。以统一企业平台支撑云端 Web、Chrome 扩展/原生桥接、完整 Desktop，覆盖营销素材生产、广告及网站分析、SEO/GEO 和重复流程。全部 AI 请求经过公司内部服务器，**Codex 为唯一 Agent 内核**，由 CORE01 固定；实际 Codex 版本与受控 Responses 工具回合已验证；公司内部网关尚待提供配置并真实联调。
 
-**已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/05-persistent-work-acceptance.md)。未完成外部平台授权或公司真实模型准入。
+**已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/06-admin-identity-acceptance.md)。未完成外部平台授权或公司真实模型准入。
 
 ## 建议阅读
 
-本轮开发交付先读 [实际仓库与启动](technical/12-implementation-and-repositories.md) 和 [实际验收与发布边界](quality/05-persistent-work-acceptance.md)。原设计中的后台补充先读 [Admin 产品与页面](product/08-admin-dashboard.md)、[后台技术与 AD01–AD10](technical/11-admin-control-plane.md) 和 [权限目录](contracts/admin-permission-catalog.json)。Codex 集成见 [内核与内部网关](technical/02-runtime-and-ai-gateway.md)。视觉方向见 [CopyPaste 品牌规范](product/07-brand-design-system.md) 与 [浅深主题视觉样板](design/brand-preview.html)。业务负责人读 [PRD](product/01-prd.md)、[用户旅程](product/02-user-journeys.md)、[发布路线](product/04-release-and-commercial-model.md)；研发再读 [架构](technical/01-architecture-and-stack.md)、[数据模型](technical/03-data-model-and-lifecycle.md)、[API](technical/04-api-and-event-contracts.md)，测试从 [追踪矩阵](quality/02-requirements-traceability.md) 进入。
+本轮开发交付先读 [实际仓库与启动](technical/12-implementation-and-repositories.md) 和 [实际验收与发布边界](quality/06-admin-identity-acceptance.md)。原设计中的后台补充先读 [Admin 产品与页面](product/08-admin-dashboard.md)、[后台技术与 AD01–AD10](technical/11-admin-control-plane.md) 和 [权限目录](contracts/admin-permission-catalog.json)。Codex 集成见 [内核与内部网关](technical/02-runtime-and-ai-gateway.md)。视觉方向见 [CopyPaste 品牌规范](product/07-brand-design-system.md) 与 [浅深主题视觉样板](design/brand-preview.html)。业务负责人读 [PRD](product/01-prd.md)、[用户旅程](product/02-user-journeys.md)、[发布路线](product/04-release-and-commercial-model.md)；研发再读 [架构](technical/01-architecture-and-stack.md)、[数据模型](technical/03-data-model-and-lifecycle.md)、[API](technical/04-api-and-event-contracts.md)，测试从 [追踪矩阵](quality/02-requirements-traceability.md) 进入。
 
 范围分为 102 条需求、12 个逻辑模块、24 条用户旅程及 102 个基础验收用例；原先 102 个综合验收用例仍为 not_run，未用本轮局部代码测试替代其完整条件。本轮平台、Desktop 与各客户端的实际测试单独记录。阶段为 M0 验证 → M1 Web 工作台及导入试点 → M2 协作、云端计划与正式连接器 → M3 扩展与本地 → M4 Desktop 及业务扩展。三端属于同一产品，各阶段保留完整长期范围。
 
@@ -55,7 +55,9 @@ Web 主线以自然语言委派、会话中的真实执行、右侧成果/云文
 | 技术 | [Admin 控制面与开发拆分](technical/11-admin-control-plane.md) | 独立身份、权限、账本/权益事务、内容注册表及 AD01–AD10 |
 | 技术 | [实际开发与独立仓库](technical/12-implementation-and-repositories.md) | dev 路径、六仓库、真实启动、实现范围与生产配置 |
 | 技术 | [持续专家、会话与记忆](technical/13-persistent-agents-conversations-memory.md) | 私有归属、五种记忆范围、版本冻结、只读模式和计划批准 |
-| 质量 | [0.2.0 实现验收](quality/05-persistent-work-acceptance.md) | 当前原生构建、37+3 项测试、跨端截图、生命周期与未完成范围 |
+| 技术 | [管理员账号生命周期](technical/14-admin-identity-lifecycle.md) | 邮箱邀请、本人 MFA、权限委派、停用与会话管理 |
+| 质量 | [0.3.0 实现验收](quality/06-admin-identity-acceptance.md) | 原生构建、48+3 项测试、管理员及跨端流程、交付边界 |
+| 质量 | [0.2.0 历史验收](quality/05-persistent-work-acceptance.md) | 持续专家、私密会话与记忆的历史检查 |
 | 质量 | [0.1.0 历史验收](quality/04-implementation-acceptance.md) | 上一版本记录，保留原始时间和范围 |
 | 设计 | [视觉样板](design/brand-preview.html) / [颜色与尺寸 token](design/brand-tokens.json) | 本地交互方向样板与 CSS 变量，非完整产品 |
 | 质量 | [测试与验收计划](quality/01-test-and-acceptance-plan.md) | 分层测试、故障注入及 TC-001–102 |
@@ -100,9 +102,9 @@ CORE01 固定唯一使用 Codex，收敛 REQ-044/075、G01、DEV-02 及所有角
 
 ## 本次 Admin Dashboard 补充
 
-ADMIN01 拆为 REQ-083–102、UC19–UC24 和 TC-083–102；同步 P14/A01–A16、M01/M11/M12、数据/API/权限/运维、AD01–AD10 及 G10。M1 含用户与消耗、人工费用和 VIP、内容/执行控制及细权限审计；M2 完成批量/导出和公开配置发布。管理员可在授权范围主动操作，费用与权益分别记账，所有新调用实时复核。实际后台已有 16 页、独立邮箱/TOTP 登录、范围权限、账务/VIP、内容与配置发布、批量/导出和审计；支持委托与完整管理员开户 UI 等剩余项按实施清单保留。
+ADMIN01 拆为 REQ-083–102、UC19–UC24 和 TC-083–102；同步 P14/A01–A16、M01/M11/M12、数据/API/权限/运维、AD01–AD10 及 G10。M1 含用户与消耗、人工费用和 VIP、内容/执行控制及细权限审计；M2 完成批量/导出和公开配置发布。管理员可在授权范围主动操作，费用与权益分别记账，所有新调用实时复核。实际后台已有 16 页、独立邮箱/TOTP 登录、范围权限、账务/VIP、内容与配置发布、批量/导出和审计；0.3.0 已补齐邀请、本人 MFA 与账号生命周期；客户支持委托等剩余项按实施清单保留。
 
 
 ## 当前交付证据维护
 
-0.2.0 的实际发布和离线恢复通过后，在根目录运行 `python -X utf8 docs/tools/collect_implementation_evidence.py` 汇总原始报告；[汇总工具](tools/collect_implementation_evidence.py) 核对提交、报告摘要及恢复清单，更新质量 JSON 并保留上一版证据，不改写 102 条计划用例状态。
+当前版本实际发布和离线恢复通过后，在根目录运行 `python -X utf8 docs/tools/collect_implementation_evidence.py` 汇总原始报告；[汇总工具](tools/collect_implementation_evidence.py) 核对提交、报告摘要及恢复清单，更新质量 JSON 并保留上一版证据，不改写 102 条计划用例状态。
