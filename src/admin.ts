@@ -14,6 +14,12 @@ import {
   requireRecentMfa,
   visibleTenants,
   scopePredicate,
+  adminBindingInput,
+  validateAdminDelegation,
+  keepEffectiveSuper,
+  lockAdminAccess,
+  revokeAdminSessions,
+  validateAdminDenyRemoval,
 } from "./admin-access.js";
 import { name, Problem, uuid, publicRow } from "./lib.js";
 import { key, replay, projectAccess } from "./access.js";
@@ -467,7 +473,7 @@ export function registerAdmin(
               plans: "SELECT * FROM catalog_entries WHERE kind='plan'",
               policy: "SELECT * FROM catalog_entries WHERE kind='policy'",
               access:
-                "SELECT id,email,name,status,created_at FROM admin_principals",
+                "SELECT id,email,name,status,enrollment_state,enrolled_at,version,created_at FROM admin_principals",
             };
             let source = sources[section],
               extra: any = {},
@@ -1257,17 +1263,6 @@ function registerAdminCatalog(
     },
   );
 }
-async function keepEffectiveSuper(tx: any) {
-  const r = await tx.query(
-    "SELECT 1 FROM admin_bindings b JOIN admin_principals p ON p.id=b.principal_id WHERE b.role_key='super_admin' AND b.effect='allow' AND b.scope_kind='global' AND b.expires_at IS NULL AND p.status='active' AND NOT EXISTS(SELECT 1 FROM admin_bindings d JOIN admin_roles r ON r.key=d.role_key WHERE d.principal_id=p.id AND d.effect='deny' AND d.scope_kind='global' AND (d.expires_at IS NULL OR d.expires_at>now()) AND r.permissions ?| ARRAY['admin.access.bindings.write','admin.access.bindings.revoke','admin.access.roles.write']) LIMIT 1",
-  );
-  if (!r.rowCount)
-    throw new Problem(
-      409,
-      "LAST_SUPER_ADMIN",
-      "Keep at least one active permanent global super administrator with recovery permissions",
-    );
-}
 function registerAdminAccess(
   app: FastifyInstance,
   db: Database,
@@ -1277,130 +1272,63 @@ function registerAdminAccess(
     "/v1/admin/access/bindings",
     { preHandler: requireAdmin(db) },
     async (req) => {
-      const b = z
-        .object({
-          principal_id: uuid,
-          role_key: z.string().max(80),
-          scope_kind: z.enum(["global", "tenant", "project"]),
-          scope_id: uuid.optional(),
-          effect: z.enum(["allow", "deny"]).default("allow"),
-          limits: z
-            .object({
-              max_amount_micros: z
-                .number()
-                .int()
-                .nonnegative()
-                .max(1e12)
-                .optional(),
-              max_duration_hours: z.number().int().positive().optional(),
-              max_batch: z.number().int().min(1).max(100).optional(),
-            })
-            .strict()
-            .default({}),
-          expires_at: z.string().datetime({ offset: true }).optional(),
-          reason,
-        })
+      const b = adminBindingInput
+        .extend({ principal_id: uuid, reason })
         .strict()
-        .refine((b) => (b.scope_kind === "global" ? !b.scope_id : !!b.scope_id))
         .parse(req.body);
       return db.tx(
         async (tx) => {
-          await permit(tx, req.principal, "admin.access.bindings.write");
-          await tx.query(
-            "SELECT pg_advisory_xact_lock(hashtextextended('admin-super-protection',0))",
-          );
+          await lockAdminAccess(tx);
           await requireRecentMfa(tx, req.principal);
-          const r = (
-            await tx.query("SELECT * FROM admin_roles WHERE key=$1", [
-              b.role_key,
-            ])
-          ).rows[0];
-          if (!r) throw new Problem(404, "NOT_FOUND", "Role not found");
-          const scope =
-            b.scope_kind === "tenant"
-              ? { tenant: b.scope_id }
-              : b.scope_kind === "project"
-                ? { project: b.scope_id }
-                : {};
-          for (const permission of r.permissions) {
-            const inherited = await permit(
-              tx,
-              req.principal,
-              permission,
-              scope,
-            );
-            if (
-              b.effect === "allow" &&
-              !inherited.some(
-                (source) =>
-                  [
-                    "max_amount_micros",
-                    "max_duration_hours",
-                    "max_batch",
-                  ].every(
-                    (k) =>
-                      source.limits[k] === undefined ||
-                      ((b.limits as any)[k] !== undefined &&
-                        (b.limits as any)[k] <= source.limits[k]),
-                  ) &&
-                  (!source.expires_at ||
-                    (b.expires_at &&
-                      Date.parse(b.expires_at) <=
-                        new Date(source.expires_at).getTime())),
-              )
-            )
-              throw new Problem(
-                403,
-                "DELEGATION_LIMIT",
-                "Delegated limits and expiry must fit an existing grant",
-              );
-          }
-          if (
-            b.scope_kind !== "global" &&
-            !(
-              await tx.query(
-                `SELECT 1 FROM ${b.scope_kind === "tenant" ? "tenants" : "projects"} WHERE id=$1`,
-                [b.scope_id],
-              )
-            ).rowCount
-          )
-            throw new Problem(404, "NOT_FOUND", "Scope not found");
-          if (b.expires_at && Date.parse(b.expires_at) <= Date.now())
-            throw new Problem(
-              400,
-              "EXPIRY_INVALID",
-              "Expiry must be in the future",
-            );
+          await validateAdminDelegation(tx, req.principal, b);
           if (b.principal_id === req.principal.id)
             throw new Problem(
               403,
               "SELF_BINDING_FORBIDDEN",
               "Another authorized administrator must change your own access",
             );
-          const result = (
-            await tx.query(
-              "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect,limits,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *",
-              [
+          if (
+            !(
+              await tx.query("SELECT 1 FROM admin_principals WHERE id=$1", [
                 b.principal_id,
-                b.role_key,
-                b.scope_kind,
-                b.scope_id ?? null,
-                b.effect,
-                b.limits,
-                b.expires_at ?? null,
-              ],
-            )
-          ).rows[0];
-          await keepEffectiveSuper(tx);
-          await audit(
+              ])
+            ).rowCount
+          )
+            throw new Problem(404, "NOT_FOUND", "Administrator not found");
+          return replay(
             tx,
-            req.principal,
+            req.principal.id,
             "admin.access.bindings.write",
-            result.id,
-            "succeeded",
-            { reason: b.reason },
+            key(req),
+            b,
+            async () => {
+              const result = (
+                await tx.query(
+                  "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect,limits,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *",
+                  [
+                    b.principal_id,
+                    b.role_key,
+                    b.scope_kind,
+                    b.scope_id ?? null,
+                    b.effect,
+                    b.limits,
+                    b.expires_at ?? null,
+                  ],
+                )
+              ).rows[0];
+              await keepEffectiveSuper(tx);
+              await revokeAdminSessions(tx, b.principal_id, true);
+              await audit(
+                tx,
+                req.principal,
+                "admin.access.bindings.write",
+                result.id,
+                "succeeded",
+                { reason: b.reason },
+              );
+              return result;
+            },
           );
-          return result;
         },
         undefined,
         true,
@@ -1414,39 +1342,36 @@ function registerAdminAccess(
       const id = uuid.parse((req.params as any).id);
       return db.tx(
         async (tx) => {
+          await lockAdminAccess(tx);
           await permit(tx, req.principal, "admin.access.bindings.revoke");
           await requireRecentMfa(tx, req.principal);
-          await tx.query(
-            "SELECT pg_advisory_xact_lock(hashtextextended('admin-super-protection',0))",
-          );
-          const b = (
-            await tx.query(
-              "SELECT * FROM admin_bindings WHERE id=$1 FOR UPDATE",
-              [id],
-            )
-          ).rows[0];
-          if (!b) throw new Problem(404, "NOT_FOUND", "Binding not found");
-          if (
-            b.role_key === "super_admin" &&
-            b.effect === "allow" &&
-            b.scope_kind === "global"
-          ) {
-            const n = (
-              await tx.query(
-                "SELECT count(DISTINCT b.principal_id)::int AS n FROM admin_bindings b JOIN admin_principals p ON p.id=b.principal_id WHERE b.role_key='super_admin' AND b.effect='allow' AND b.scope_kind='global' AND p.status='active' AND (b.expires_at IS NULL OR b.expires_at>now())",
-              )
-            ).rows[0].n;
-            if (n <= 1)
-              throw new Problem(
-                409,
-                "LAST_SUPER_ADMIN",
-                "Keep at least one active global super administrator",
+          return replay(
+            tx,
+            req.principal.id,
+            `admin.binding.revoke:${id}`,
+            key(req),
+            {},
+            async () => {
+              const b = (
+                await tx.query(
+                  "SELECT * FROM admin_bindings WHERE id=$1 FOR UPDATE",
+                  [id],
+                )
+              ).rows[0];
+              if (!b) throw new Problem(404, "NOT_FOUND", "Binding not found");
+              await validateAdminDenyRemoval(tx, req.principal, b);
+              await tx.query("DELETE FROM admin_bindings WHERE id=$1", [id]);
+              await keepEffectiveSuper(tx);
+              await revokeAdminSessions(tx, b.principal_id, true);
+              await audit(
+                tx,
+                req.principal,
+                "admin.access.bindings.revoke",
+                id,
               );
-          }
-          await tx.query("DELETE FROM admin_bindings WHERE id=$1", [id]);
-          await keepEffectiveSuper(tx);
-          await audit(tx, req.principal, "admin.access.bindings.revoke", id);
-          return { ok: true };
+              return { ok: true };
+            },
+          );
         },
         undefined,
         true,
@@ -1472,6 +1397,7 @@ function registerAdminAccess(
         .parse(req.body);
       return db.tx(
         async (tx) => {
+          await lockAdminAccess(tx);
           await permit(tx, req.principal, "admin.access.roles.write");
           await requireRecentMfa(tx, req.principal);
           for (const p of b.permissions) await permit(tx, req.principal, p);
@@ -1490,31 +1416,6 @@ function registerAdminAccess(
             { reason: b.reason },
           );
           return r;
-        },
-        undefined,
-        true,
-      );
-    },
-  );
-  app.post(
-    "/v1/admin/access/principals/:id/revoke-sessions",
-    { preHandler: requireAdmin(db) },
-    async (req) => {
-      const id = uuid.parse((req.params as any).id);
-      return db.tx(
-        async (tx) => {
-          await permit(tx, req.principal, "admin.access.sessions.revoke");
-          await requireRecentMfa(tx, req.principal);
-          await tx.query(
-            "UPDATE admin_principals SET auth_version=auth_version+1 WHERE id=$1",
-            [id],
-          );
-          await tx.query(
-            "UPDATE sessions SET revoked_at=now() WHERE admin_id=$1",
-            [id],
-          );
-          await audit(tx, req.principal, "admin.access.sessions.revoke", id);
-          return { ok: true };
         },
         undefined,
         true,

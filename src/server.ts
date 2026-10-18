@@ -22,6 +22,7 @@ import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
 import { registerPersistentWork } from "./persistent-work.js";
+import { registerAdminIdentities } from "./admin-identities.js";
 
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   const db = new Database(c);
@@ -177,7 +178,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   app.get("/health/live", async () => ({
     ok: true,
     service: "copypaste-platform",
-    version: "0.2.0",
+    version: "0.3.0",
   }));
   app.get("/health/ready", async () => {
     await db.app.query("SELECT 1");
@@ -228,6 +229,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerBusiness(app, db, storage, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminOperations(app, db);
+  registerAdminIdentities(app, db);
   let started = false;
   if (options.worker !== false && c.WORKER_ENABLED) {
     await worker.start();

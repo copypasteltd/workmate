@@ -1,6 +1,6 @@
 # CopyPaste Platform
 
-[English](README.en.md) · 原生企业 Agent 服务 · 0.2.0
+[English](README.en.md) · 原生企业 Agent 服务 · 0.3.0
 
 本仓库提供真实 PostgreSQL 持久化、用户与管理员身份、企业/项目权限、Codex 任务执行、营销资产、数据分析、流程、设备调度与运营控制面。它是独立 Git 仓库，不依赖相邻仓库源码。完整项目主文档位于交付根目录的 `docs/`。
 
@@ -53,6 +53,8 @@ npm run admin:create -- admin@your-company.example super_admin
 在 `.data/enrolment/<id>.json` 中读取本次生成的 TOTP enrolment URI，导入认证器后删除文件。管理员需邮箱验证码和 TOTP 双重验证；没有共享默认账号、密码或后门。CLI 是受信部署操作，不向普通用户暴露。
 
 后台支持 8 个内置角色、67 个权限键，global/tenant/project 范围、显式 deny、金额/期限/批次数限制及委派限制。敏感操作要求最近 10 分钟内 MFA；不能自授权限或撤销最后一个永久有效超级管理员。
+
+0.3.0 补齐后续管理员的邮件邀请、本人邮箱验证与真实 TOTP 开通、姓名编辑、状态 CAS、停用/恢复、重发、他人重设 MFA、本人更换验证器及会话撤销。邀请及设置仅哈希保存能力，新密钥加密存储；未投递能力完成或撤销后清除。管理员公开 API 不暴露密钥、令牌和邀请链接。新增 `008-admin-identity-lifecycle.sql`、`src/admin-identities.ts` 及 14 组真实数据库/API 测试。首次 CLI 引导继续保留，生产 SMTP 与 SSO 单独验收。
 
 ## 已实现模块
 
@@ -119,7 +121,7 @@ npm test
 npm run contracts:export
 ```
 
-`contracts/implemented-routes.json` 导出 133 个实际 Fastify method/path；七个有序数据库迁移随仓库交付。它是实际路由清单，不冒充主文档的完整规划 OpenAPI。37 项原生测试覆盖身份、隔离、费用并发/重放、权限与 VIP、内容撤销、图片版本、真实 PNG/MP4、真实 Codex 受控协议回合及初始化取消、源代码包。浏览器/扩展/Desktop 验收由独立 delivery 仓库记录。
+`contracts/implemented-routes.json` 导出 146 个实际 Fastify method/path；八个有序数据库迁移随仓库交付。它是实际路由清单，不冒充主文档的完整规划 OpenAPI。51 项原生测试覆盖身份、隔离、费用并发/重放、权限与 VIP、内容撤销、图片版本、真实 PNG/MP4、真实 Codex 受控协议回合及初始化取消、源代码包。浏览器/扩展/Desktop 验收由独立 delivery 仓库记录。
 
 | 路径                   | 内容                                           |
 | ---------------------- | ---------------------------------------------- |

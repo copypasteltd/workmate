@@ -1,6 +1,6 @@
 # CopyPaste Platform
 
-[简体中文](README.md) · Native enterprise Agent services · 0.2.0
+[简体中文](README.md) · Native enterprise Agent services · 0.3.0
 
 This independent repository implements persistent PostgreSQL services, customer/admin identity, workspace/project authorization, Codex execution, marketing assets, analytics, workflows, device commands and the admin control plane. No sibling source checkout is required. The delivery root's `docs/` contains the master requirements and design baseline.
 
@@ -53,6 +53,8 @@ npm run admin:create -- admin@your-company.example super_admin
 Import the generated TOTP URI from `.data/enrolment/<id>.json` into an authenticator, then delete that file. Admin login requires both email OTP and TOTP. There are no shared default credentials. Enrollment is a trusted deployment CLI operation.
 
 Eight built-in roles and 67 permission keys support global, tenant and project scope, explicit denies, amount/duration/batch limits and bounded delegation. Sensitive actions require MFA within the last 10 minutes. Administrators cannot grant themselves access or remove the last permanent recovery administrator.
+
+Version 0.3.0 completes subsequent admin invitations, recipient email proof and real TOTP enrollment, profile editing, status CAS, suspend/resume, resend, other-admin MFA reset, self authenticator replacement and session revocation. Capabilities are hashed; setup keys and unmailed invitation material are encrypted and cleared on completion/revocation. Public admin projections never expose keys, tokens or invitation links. See migration `008-admin-identity-lifecycle.sql`, `src/admin-identities.ts` and 14 actual PostgreSQL/API test groups. Trusted CLI bootstrap remains; production SMTP and SSO need separate qualification.
 
 ## Implemented scope
 
@@ -119,7 +121,7 @@ npm test
 npm run contracts:export
 ```
 
-`contracts/implemented-routes.json` exports 133 actual Fastify method/path pairs; seven ordered database migrations are included. This is the implementation inventory, not the full planned OpenAPI. The 37 native tests cover authentication, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, image versions, actual PNG/MP4, a real Codex controlled protocol turn and initialization cancellation, and source packaging. Separate delivery tools record browser, extension and Desktop journeys.
+`contracts/implemented-routes.json` exports 146 actual Fastify method/path pairs; eight ordered database migrations are included. This is the implementation inventory, not the full planned OpenAPI. The 51 native tests cover authentication, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, image versions, actual PNG/MP4, a real Codex controlled protocol turn and initialization cancellation, and source packaging. Separate delivery tools record browser, extension and Desktop journeys.
 
 | Directory             | Purpose                                                     |
 | --------------------- | ----------------------------------------------------------- |

@@ -74,7 +74,7 @@ export async function principal(
     throw new Problem(401, "AUTH_REQUIRED", "Admin browser session required");
   const pool = audience === "admin" ? db.control : db.app;
   const { rows } = await pool.query(
-    `SELECT s.*, p.email,p.name,p.status,p.auth_version AS current_version
+    `SELECT s.*, p.email,p.name,p.status,${audience === "admin" ? "p.enrollment_state," : ""}p.auth_version AS current_version
     FROM sessions s JOIN ${audience === "admin" ? "admin_principals" : "users"} p ON p.id=s.${audience === "admin" ? "admin_id" : "user_id"}
     WHERE s.token_hash=$1 AND s.revoked_at IS NULL AND s.expires_at>now()`,
     [hash(value)],
@@ -85,7 +85,7 @@ export async function principal(
     s.status !== "active" ||
     s.auth_version !== s.current_version ||
     (audience === "admin"
-      ? s.audience !== "admin"
+      ? s.audience !== "admin" || s.enrollment_state !== "enrolled"
       : s.audience !== (bearer ? "native" : "user"))
   )
     throw new Problem(
@@ -119,7 +119,7 @@ export function requireAdmin(db: Database) {
     req.principal = await principal(db, req, "admin");
   };
 }
-async function sendMail(
+export async function sendMail(
   db: Database,
   to: string,
   subject: string,
@@ -155,7 +155,7 @@ async function sendMail(
     mail.close();
   }
 }
-function cookie(
+export function setSessionCookie(
   db: Database,
   reply: FastifyReply,
   value: string,
@@ -280,7 +280,13 @@ export function registerAuth(app: FastifyInstance, db: Database) {
                 [c.email],
               )
             ).rows[0];
-            if (!person || person.status !== "active" || !body.totp)
+            if (
+              !person ||
+              person.status !== "active" ||
+              person.enrollment_state !== "enrolled" ||
+              !person.totp_secret ||
+              !body.totp
+            )
               return { error: true } as const;
             const verifier = totp(
               unseal(db.config.MASTER_KEY!, person.totp_secret),
@@ -344,7 +350,7 @@ export function registerAuth(app: FastifyInstance, db: Database) {
           "INVALID_CODE",
           "驗證碼無效或已過期 / Invalid or expired code",
         );
-      cookie(db, reply, result.value, audience === "admin");
+      setSessionCookie(db, reply, result.value, audience === "admin");
       return { user: result.user, csrf_token: result.csrf };
     });
     app.post(
@@ -612,4 +618,3 @@ async function issueNative(tx: Tx, user: any, client: string, family?: string) {
     token_type: "Bearer",
   };
 }
-export { sendMail };
