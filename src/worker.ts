@@ -22,6 +22,7 @@ import { advanceWorkflows, poster, renderProjectPoster } from "./business.js";
 import { pngFromSVG, motionFromSVG } from "./render.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { advanceSchedules } from "./schedules.js";
+import { expireFederationAttempts } from "./federation-session.js";
 
 export class Worker {
   private boss: PgBoss;
@@ -96,6 +97,7 @@ export class Worker {
       );
       await advanceSchedules(this.db, this.catalog);
       await advanceWorkflows(this.db, this.catalog, this.storage);
+      await expireFederationAttempts(this.db.control);
     } finally {
       this.dispatching = false;
     }

@@ -24,6 +24,7 @@ import { registerBusiness } from "./business.js";
 import { registerPersistentWork } from "./persistent-work.js";
 import { registerAdminIdentities } from "./admin-identities.js";
 import { registerSchedules } from "./schedules.js";
+import { registerFederation } from "./federation.js";
 
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   const db = new Database(c);
@@ -179,7 +180,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   app.get("/health/live", async () => ({
     ok: true,
     service: "copypaste-platform",
-    version: "0.4.0",
+    version: "0.5.0",
   }));
   app.get("/health/ready", async () => {
     await db.app.query("SELECT 1");
@@ -194,7 +195,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   app.get("/v1/public/config", async () => ({
     brand: "CopyPaste",
     locales: ["zh-HK", "en"],
-    auth: { email_code: true, enterprise_sso: false },
+    auth: { email_code: true, enterprise_sso: true },
     services: {
       text: !!(c.AI_VERIFIED && c.AI_BASE_URL && c.AI_MODEL),
       image: !!(c.AI_IMAGE_VERIFIED && c.AI_IMAGE_MODEL),
@@ -222,6 +223,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     ),
   );
   registerAuth(app, db);
+  registerFederation(app, db);
   registerWorkspaces(app, db);
   registerAssets(app, db, storage);
   registerAnalytics(app, db);

@@ -29,6 +29,9 @@ const schema = z.object({
   DEV_MAILBOX: bool.default(true),
   SMTP_URL: z.string().optional(),
   MAIL_FROM: z.string().default("CopyPaste <hello@copypaste.hk>"),
+  SSO_ALLOWED_ORIGINS: z.string().default(""),
+  SSO_ALLOW_LOCALHOST: bool.default(false),
+  SSO_CALLBACK_ORIGIN: z.string().url().optional(),
   CODEX_BIN: z.string().default("codex"),
   CODEX_VERSION: z.string().default("0.163.0-alpha.10.2"),
   AI_BASE_URL: z.string().url().optional(),
@@ -64,6 +67,37 @@ const schema = z.object({
 export type Config = z.infer<typeof schema>;
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const c = schema.parse(env);
+  for (const key of [
+    "WEB_ORIGIN",
+    "ADMIN_ORIGIN",
+    "API_ORIGIN",
+    "SSO_CALLBACK_ORIGIN",
+  ] as const) {
+    if (!c[key]) continue;
+    const u = new URL(c[key]);
+    if (u.origin !== c[key] || !["http:", "https:"].includes(u.protocol))
+      throw new Error(
+        `${key} must be an exact HTTP(S) origin without a path or credentials`,
+      );
+  }
+  for (const value of c.SSO_ALLOWED_ORIGINS.split(",")
+    .map((v) => v.trim())
+    .filter(Boolean)) {
+    const u = new URL(value);
+    if (u.protocol !== "https:" || u.origin !== value)
+      throw new Error(
+        "SSO_ALLOWED_ORIGINS must contain exact HTTPS origins without paths or credentials",
+      );
+  }
+  if (
+    c.SSO_CALLBACK_ORIGIN &&
+    ![c.WEB_ORIGIN, c.API_ORIGIN].includes(c.SSO_CALLBACK_ORIGIN)
+  )
+    throw new Error(
+      "SSO callback origin must match the public Web or API origin",
+    );
+  if (c.NODE_ENV === "production" && c.SSO_ALLOW_LOCALHOST)
+    throw new Error("Local SSO fixtures are forbidden in production");
   if (c.NODE_ENV === "production") {
     if (!c.MASTER_KEY || c.DEV_MAILBOX || !c.SMTP_URL)
       throw new Error(

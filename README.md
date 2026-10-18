@@ -1,6 +1,6 @@
 # CopyPaste Platform
 
-[English](README.en.md) · 原生企业 Agent 服务 · 0.4.0
+[English](README.en.md) · 原生企业 Agent 服务 · 0.5.0
 
 本仓库提供真实 PostgreSQL 持久化、用户与管理员身份、企业/项目权限、Codex 任务执行、营销资产、数据分析、流程、设备调度与运营控制面。它是独立 Git 仓库，不依赖相邻仓库源码。完整项目主文档位于交付根目录的 `docs/`。
 
@@ -52,7 +52,7 @@ npm run admin:create -- admin@your-company.example super_admin
 
 在 `.data/enrolment/<id>.json` 中读取本次生成的 TOTP enrolment URI，导入认证器后删除文件。管理员需邮箱验证码和 TOTP 双重验证；没有共享默认账号、密码或后门。CLI 是受信部署操作，不向普通用户暴露。
 
-后台支持 8 个内置角色、67 个权限键，global/tenant/project 范围、显式 deny、金额/期限/批次数限制及委派限制。敏感操作要求最近 10 分钟内 MFA；不能自授权限或撤销最后一个永久有效超级管理员。
+后台支持 8 个内置角色、68 个权限键，global/tenant/project 范围、显式 deny、金额/期限/批次数限制及委派限制。敏感操作要求最近 10 分钟内 MFA；不能自授权限或撤销最后一个永久有效超级管理员。
 
 0.3.0 补齐后续管理员的邮件邀请、本人邮箱验证与真实 TOTP 开通、姓名编辑、状态 CAS、停用/恢复、重发、他人重设 MFA、本人更换验证器及会话撤销。邀请及设置仅哈希保存能力，新密钥加密存储；未投递能力完成或撤销后清除。管理员公开 API 不暴露密钥、令牌和邀请链接。新增 `008-admin-identity-lifecycle.sql`、`src/admin-identities.ts` 及 14 组真实数据库/API 测试。首次 CLI 引导继续保留，生产 SMTP 与 SSO 单独验收。
 
@@ -138,7 +138,7 @@ npm test
 npm run contracts:export
 ```
 
-`contracts/implemented-routes.json` 导出 156 个实际 Fastify method/path；九个有序数据库迁移随仓库交付。它是实际路由清单，不冒充主文档的完整规划 OpenAPI。65 项原生测试覆盖身份、隔离、费用并发/重放、权限与 VIP、内容撤销、图片版本、真实 PNG/MP4、真实 Codex 受控协议回合及初始化取消、源代码包。浏览器/扩展/Desktop 验收由独立 delivery 仓库记录。
+`contracts/implemented-routes.json` 导出 167 个实际 Fastify method/path；十个有序数据库迁移随仓库交付。它是实际路由清单，不冒充主文档的完整规划 OpenAPI。84 项原生测试覆盖身份、隔离、费用并发/重放、权限与 VIP、内容撤销、图片版本、真实 PNG/MP4、真实 Codex 受控协议回合及初始化取消、源代码包。浏览器/扩展/Desktop 验收由独立 delivery 仓库记录。
 
 | 路径                   | 内容                                           |
 | ---------------------- | ---------------------------------------------- |
@@ -158,6 +158,27 @@ npm run contracts:export
 
 生产要求 HTTPS、真实 SMTP、独立数据库身份、持久 MASTER_KEY、受控出站和对象存储。开发原生数据库启动器在 production 被禁用。备份数据库、对象文件和 MASTER_KEY，并通过原生恢复演练后再上线；不要通过删除密钥来“重置”生产服务。
 
-Google/Meta 需设置服务端 OAuth client secret、精确 API version、Google Ads developer token 和回调 URI；未获真实平台授权，尚未做线上报表验收。S3 适配未接真实存储验收。SSO、事件触发、团队并行 Agent、协同编辑、完整生成视频/语音、生产 SLO、Windows 代码签名和用户代码强隔离属于未完成范围。Codex 集成关闭 shell、浏览器搜索和其他 Agent 能力；原生 OS 服务账号/ACL/网络隔离仍是生产前置工作。
+Google/Meta 需设置服务端 OAuth client secret、精确 API version、Google Ads developer token 和回调 URI；未获真实平台授权，尚未做线上报表验收。S3 适配未接真实存储验收。SAML/SCIM、强制 SSO、事件触发、团队并行 Agent、协同编辑、完整生成视频/语音、生产 SLO、Windows 代码签名和用户代码强隔离属于未完成范围。Codex 集成关闭 shell、浏览器搜索和其他 Agent 能力；原生 OS 服务账号/ACL/网络隔离仍是生产前置工作。
 
 本代码未授予额外开源许可。第三方组件、字体和素材来源见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+## 0.5.0 企业身份与统一登录
+
+OIDC 使用 code + PKCE S256、签章、state/nonce 与固定回调。先有注册账号及有效企业成员资格，再绑定企业身份；首次绑定需要独立的 CopyPaste 工作邮箱确认码，不按网域自动开户。配置改变、停用或本人解除连接会撤销关联用户的全部 CopyPaste Web/native/refresh 会话和旧执行授权。管理员登录仍独立使用邮箱与 TOTP。
+
+新增全域 `admin.tenants.sso.write`（68 项动作之一），只默认授予超级及安全管理员；修改需近期 MFA、原因、CAS 与幂等键。保存会停用并清除旧验证；检查 discovery、公钥和 PKCE 不代表已验证 client secret 或真实企业账号。`openid-client` 6.8.8（MIT）开启 ID token 非对称签章检查。
+
+```mermaid
+flowchart LR
+  Member[已有企业成员] --> IdP[签名 OIDC 与 PKCE]
+  IdP --> Proof[首次独立邮箱确认]
+  Proof --> Web[CopyPaste 会话]
+  Web --> Native[明确原生授权与 PKCE]
+  Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
+```
+
+部署配置 `SSO_ALLOWED_ORIGINS` 为所需的精确 HTTPS origin。默认回调为 `WEB_ORIGIN/v1/auth/sso/callback` 经 Web API 代理；跨域 `VITE_API_BASE` 可配 `SSO_CALLBACK_ORIGIN=API_ORIGIN`。生产拒绝 `SSO_ALLOW_LOCALHOST=true`。只有原生 fixture 验收时，用此环境开关启动开发控制器，执行 `qa:federation` 后停止并不带该开关重启。
+
+迁移 010 作废没有来源会话的历史待交换原生码。兑换重查来源会话、用户版本及联邦身份；refresh 继承绑定及配置修订。撤销旧设备会话也撤销轮换后的凭证 family。测试使用真实 PostgreSQL 与签名 code/token/JWKS。此增量不包含 SAML/SCIM、强制 SSO 策略或真实公司 IdP 准入。
+
+![实际企业身份界面](assets/screenshots/company-sign-in.png)

@@ -21,6 +21,7 @@ Application source is not granted an additional open-source license. Dependencie
 | `fastify`             | 5.12.7            | MIT                         |
 | `fflate`              | 0.8.2             | MIT                         |
 | `nodemailer`          | 10.1.3            | MIT-0                       |
+| `openid-client`       | 6.8.8             | MIT                         |
 | `otpauth`             | 9.5.2             | MIT                         |
 | `pg`                  | 8.23.1            | MIT                         |
 | `pg-boss`             | 12.38.0           | MIT                         |

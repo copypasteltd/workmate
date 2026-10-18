@@ -6,6 +6,7 @@ import path from "node:path";
 import nodemailer from "nodemailer";
 import * as OTPAuth from "otpauth";
 import { z } from "zod";
+import { validFederation } from "./federation-session.js";
 import {
   email,
   equal,
@@ -86,7 +87,8 @@ export async function principal(
     s.auth_version !== s.current_version ||
     (audience === "admin"
       ? s.audience !== "admin" || s.enrollment_state !== "enrolled"
-      : s.audience !== (bearer ? "native" : "user"))
+      : s.audience !== (bearer ? "native" : "user")) ||
+    (audience !== "admin" && !(await validFederation(pool, s)))
   )
     throw new Problem(
       401,
@@ -252,7 +254,7 @@ export function registerAuth(app: FastifyInstance, db: Database) {
       const result = await db.tx(
         async (tx) => {
           const q = await tx.query(
-            "SELECT *, expires_at>now() AS valid FROM auth_challenges WHERE id=$1 AND audience=$2 FOR UPDATE",
+            "SELECT *, expires_at>now() AS valid FROM auth_challenges WHERE id=$1 AND audience=$2 AND purpose='login' FOR UPDATE",
             [body.challenge_id, audience],
           );
           const c = q.rows[0];
@@ -359,6 +361,10 @@ export function registerAuth(app: FastifyInstance, db: Database) {
       async (req, reply) => {
         await db.tx(
           async (tx) => {
+            if (audience === "user")
+              await tx.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
+                req.principal.id,
+              ]);
             await tx.query("UPDATE sessions SET revoked_at=now() WHERE id=$1", [
               req.principal.sessionId,
             ]);
@@ -433,12 +439,19 @@ export function registerAuth(app: FastifyInstance, db: Database) {
     async (req) => {
       await db.tx(async (tx) => {
         const id = uuid.parse((req.params as any).id);
+        await tx.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
+          req.principal.id,
+        ]);
         await tx.query(
           "UPDATE sessions SET revoked_at=now() WHERE id=$1 AND user_id=$2",
           [id, req.principal.id],
         );
         await tx.query(
           "UPDATE refresh_tokens SET revoked_at=now() WHERE user_id=$2 AND family_id IN (SELECT family_id FROM refresh_tokens WHERE session_id=$1)",
+          [id, req.principal.id],
+        );
+        await tx.query(
+          "UPDATE sessions SET revoked_at=now() WHERE user_id=$2 AND id IN (SELECT session_id FROM refresh_tokens WHERE family_id IN (SELECT family_id FROM refresh_tokens WHERE session_id=$1))",
           [id, req.principal.id],
         );
       });
@@ -449,6 +462,7 @@ export function registerAuth(app: FastifyInstance, db: Database) {
 }
 function redirectAllowed(db: Database, client: string, value: string) {
   const u = new URL(value);
+  if (u.username || u.password) return false;
   if (client === "desktop")
     return (
       u.protocol === "http:" &&
@@ -480,16 +494,42 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
       if (!redirectAllowed(db, b.client_id, b.redirect_uri))
         throw new Problem(400, "INVALID_REDIRECT", "Unregistered callback URL");
       const code = token();
-      await db.app.query(
-        "INSERT INTO native_auth_codes(digest,user_id,challenge,client_id,redirect_uri,expires_at) VALUES($1,$2,$3,$4,$5,now()+interval '60 seconds')",
-        [
-          hash(code),
-          req.principal.id,
-          b.code_challenge,
-          b.client_id,
-          b.redirect_uri,
-        ],
-      );
+      await db.tx(async (tx) => {
+        const person = (
+          await tx.query(
+            "SELECT status,auth_version FROM users WHERE id=$1 FOR UPDATE",
+            [req.principal.id],
+          )
+        ).rows[0];
+        const source = (
+          await tx.query(
+            "SELECT *,expires_at>now() AS valid FROM sessions WHERE id=$1 AND user_id=$2 FOR SHARE",
+            [req.principal.sessionId, req.principal.id],
+          )
+        ).rows[0];
+        if (
+          !person ||
+          person.status !== "active" ||
+          person.auth_version !== req.principal.authVersion ||
+          !source?.valid ||
+          source.revoked_at ||
+          source.auth_version !== person.auth_version ||
+          !(await validFederation(tx, source))
+        )
+          throw new Problem(401, "SESSION_EXPIRED", "Please sign in again");
+        await tx.query(
+          "INSERT INTO native_auth_codes(digest,user_id,challenge,client_id,redirect_uri,expires_at,source_session_id,issued_auth_version) VALUES($1,$2,$3,$4,$5,now()+interval '60 seconds',$6,$7)",
+          [
+            hash(code),
+            req.principal.id,
+            b.code_challenge,
+            b.client_id,
+            b.redirect_uri,
+            source.id,
+            person.auth_version,
+          ],
+        );
+      });
       const u = new URL(b.redirect_uri);
       u.searchParams.set("code", code);
       u.searchParams.set("state", b.state);
@@ -509,6 +549,18 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
     if (!redirectAllowed(db, b.client_id, b.redirect_uri))
       throw new Problem(400, "INVALID_GRANT", "Invalid native authorization");
     const r = await db.tx(async (tx) => {
+      const owner = (
+        await tx.query(
+          "SELECT user_id FROM native_auth_codes WHERE digest=$1",
+          [hash(b.code)],
+        )
+      ).rows[0];
+      if (!owner) return null;
+      const u = (
+        await tx.query("SELECT * FROM users WHERE id=$1 FOR UPDATE", [
+          owner.user_id,
+        ])
+      ).rows[0];
       const c = (
         await tx.query(
           "SELECT *,expires_at>now() AS valid FROM native_auth_codes WHERE digest=$1 FOR UPDATE",
@@ -527,17 +579,26 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
         )
       )
         return null;
-      const u = (
-        await tx.query("SELECT * FROM users WHERE id=$1 FOR UPDATE", [
-          c.user_id,
-        ])
+      const source = (
+        await tx.query(
+          "SELECT *,expires_at>now() AS valid FROM sessions WHERE id=$1 AND user_id=$2 FOR SHARE",
+          [c.source_session_id, u.id],
+        )
       ).rows[0];
-      if (u.status !== "active") return null;
+      if (
+        u.status !== "active" ||
+        c.issued_auth_version !== u.auth_version ||
+        !source?.valid ||
+        source.revoked_at ||
+        source.auth_version !== u.auth_version ||
+        !(await validFederation(tx, source))
+      )
+        return null;
       await tx.query(
         "UPDATE native_auth_codes SET consumed_at=now() WHERE digest=$1",
         [c.digest],
       );
-      return issueNative(tx, u, b.client_id);
+      return issueNative(tx, u, b.client_id, undefined, source);
     });
     if (!r)
       throw new Problem(
@@ -556,6 +617,17 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
       .strict()
       .parse(req.body);
     const r = await db.tx(async (tx) => {
+      const owner = (
+        await tx.query("SELECT user_id FROM refresh_tokens WHERE digest=$1", [
+          hash(b.refresh_token),
+        ])
+      ).rows[0];
+      if (!owner) return null;
+      const u = (
+        await tx.query("SELECT * FROM users WHERE id=$1 FOR UPDATE", [
+          owner.user_id,
+        ])
+      ).rows[0];
       const f = (
         await tx.query(
           "SELECT *,expires_at>now() AS valid FROM refresh_tokens WHERE digest=$1 FOR UPDATE",
@@ -574,15 +646,20 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
         );
         return null;
       }
-      const u = (
-        await tx.query("SELECT * FROM users WHERE id=$1 FOR UPDATE", [
-          f.user_id,
+      const source = (
+        await tx.query("SELECT * FROM sessions WHERE id=$1 AND user_id=$2", [
+          f.session_id,
+          u.id,
         ])
       ).rows[0];
       if (
         !f.valid ||
         u.status !== "active" ||
-        f.auth_version !== u.auth_version
+        f.auth_version !== u.auth_version ||
+        !source ||
+        source.revoked_at ||
+        source.auth_version !== u.auth_version ||
+        !(await validFederation(tx, source))
       )
         return null;
       await tx.query(
@@ -592,19 +669,31 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
       await tx.query("UPDATE sessions SET revoked_at=now() WHERE id=$1", [
         f.session_id,
       ]);
-      return issueNative(tx, u, b.client_id, f.family_id);
+      return issueNative(tx, u, b.client_id, f.family_id, source);
     });
     if (!r) throw new Problem(401, "INVALID_GRANT", "Please sign in again");
     return r;
   });
 }
-async function issueNative(tx: Tx, user: any, client: string, family?: string) {
+async function issueNative(
+  tx: Tx,
+  user: any,
+  client: string,
+  family?: string,
+  source?: any,
+) {
   const access = token(),
     refresh = token();
   const s = (
     await tx.query(
-      "INSERT INTO sessions(token_hash,user_id,audience,auth_version,expires_at) VALUES($1,$2,'native',$3,now()+interval '15 minutes') RETURNING id",
-      [hash(access), user.id, user.auth_version],
+      "INSERT INTO sessions(token_hash,user_id,audience,auth_version,expires_at,federation_identity_id,federation_revision) VALUES($1,$2,'native',$3,now()+interval '15 minutes',$4,$5) RETURNING id",
+      [
+        hash(access),
+        user.id,
+        user.auth_version,
+        source?.federation_identity_id ?? null,
+        source?.federation_revision ?? null,
+      ],
     )
   ).rows[0];
   await tx.query(
