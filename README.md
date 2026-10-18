@@ -1,6 +1,6 @@
 # CopyPaste Web
 
-[English](README.en.md) · 企业云端工作台 · 0.2.0
+[English](README.en.md) · 企业云端工作台 · 0.3.0
 
 面向在港企业 marketing 团队的 Web 客户端，采用 CopyPaste 暖灰白、深墨、亮蓝与衬线标题。繁体中文/英文、浅色/深色/系统主题。客户创意继续使用客户品牌。本仓库可单独安装和构建，服务数据来自独立 platform API。
 

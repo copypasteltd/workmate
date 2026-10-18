@@ -1,6 +1,6 @@
 # CopyPaste Web
 
-[简体中文](README.md) · Enterprise cloud workspace · 0.2.0
+[简体中文](README.md) · Enterprise cloud workspace · 0.3.0
 
 A Web client for Hong Kong enterprise marketing teams, using CopyPaste's warm white, ink and blue palette, serif display typography, Traditional Chinese/English and light/dark/system themes. Customer deliverables retain the customer's brand. This repository builds independently and obtains data from the platform API.
 
