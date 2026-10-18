@@ -1,0 +1,87 @@
+# CopyPaste Web
+
+[English](README.en.md) · 企业云端工作台 · 0.1.0
+
+面向在港企业 marketing 团队的 Web 客户端，采用 CopyPaste 暖灰白、深墨、亮蓝与衬线标题。繁体中文/英文、浅色/深色/系统主题。客户创意继续使用客户品牌。本仓库可单独安装和构建，服务数据来自独立 platform API。
+
+![首页](assets/screenshots/01-landing.png)
+
+## 启动与构建
+
+Node.js 22.14+。先按 platform 仓库说明启动数据库/API，再执行：
+
+```powershell
+npm ci
+npm run dev
+```
+
+打开 `http://localhost:4317`。开发服务器将 `/v1` 与 `/health` 代理到 `127.0.0.1:4310`。所有命令原生执行，禁止 Docker、WSL 和虚拟化环境。
+
+```powershell
+npm run typecheck
+npm run build
+npm run preview
+```
+
+`dist/` 是静态部署产物。推荐在客户 Web 域名上反向代理 `/v1` 至平台，使用 HTTPS；SPA 路由回退到 `index.html`，API 请求不回退 HTML。`.env.example` 的 `VITE_API_BASE` 可在构建时设置 API origin，默认留空使用同源。跨域时精确配置平台 `WEB_ORIGIN` 与 Cookie/CORS，不用通配 Origin。`VITE_*` 会公开到浏览器，绝不能放 AI key。
+
+## 完整用户主线
+
+```mermaid
+flowchart LR
+  L[官网式入口] --> A[邮箱验证码]
+  A --> W[企业与首个项目]
+  W --> H[工作台]
+  H --> R[18 个角色]
+  R --> T[新建任务与预算]
+  T --> X[平台执行 / 事件 / 取消]
+  X --> O[成果、版本、下载]
+  H --> M[素材、品牌、广告数据]
+  H --> F[审批流程与本地设备]
+  H --> U[权益、消耗与成员设置]
+```
+
+首次用户输入工作邮箱并验证，创建企业与首个项目后进入工作台。返回用户直接选择已有工作区/项目。邀请链接绑定邮箱与项目；没有所属企业时回到初始化。验证码无效、过期、限流、会话失效、资源不可见及模型未配置均显示服务端错误，不生成占位结果。
+
+开发模式验证码只写在 platform 的 `.data/mailbox/`，需本机读取；正式环境经真实 SMTP。没有默认用户账号。Desktop/扩展授权页面同样复用邮箱身份，但通过独立 PKCE 授权，不把浏览器 Cookie 转成 bearer token。
+
+## 页面与功能
+
+| 页面      | 实际能力                                                            |
+| --------- | ------------------------------------------------------------------- |
+| 工作台    | 项目切换、角色入口、近期任务、发布的帮助/公告、服务状态             |
+| 角色      | 18 个预设及其 Skill、输入/交付说明、真实可用性                      |
+| 项目/任务 | 创建项目、提交任务预算、状态/事件/成果、取消                        |
+| 创意      | 文本/色块/固定版本 PNG 的图层 JSON、修改版本、SVG/PNG/模板 MP4 导出 |
+| 资产      | 主动文件上传、缩略图、不可变历史版本、下载、重命名、限时分享/撤销   |
+| 营销分析  | CSV 导入、精确聚合指标、数据详情、提交 HTML 做 SEO 审核             |
+| 工作流    | 数据汇总、Codex、人工审批的有界流程，发布/运行/审批                 |
+| 品牌      | 项目品牌色、语气、字体与批准文案                                    |
+| 成员      | 邀请、企业角色、项目范围、编辑/移除、最后 owner 保护                |
+| 连接器    | Google Ads / GA4 / Search Console / Meta 授权和明确账户报表同步     |
+| 设备      | 已配对设备、限时目录 grant、明确本地操作排程和结果                  |
+| 用量/设置 | 独立钱包、真实生效套餐与限额、任务消耗、个人语言/主题/名称          |
+
+![营销工作台](assets/screenshots/03-workspace.png)
+![资产与版本](assets/screenshots/03-assets.png)
+![营销分析深色主题](assets/screenshots/04-analytics-dark.png)
+
+## 产品规则
+
+后端是权限与费用的权威来源；隐藏按钮不是授权边界。钱包和 VIP 分别显示；个人/企业 VIP 按实际时间生效。没有配置公司 AI 网关时，角色明确不可执行；18 个已安装角色不等于 18 个已通过真实业务验收的角色。
+
+AI 请求全部由平台转发公司内部服务器，本端没有模型 key。浏览器不能无授权扫描本地磁盘：小文件使用明确选择器，持续目录工作需安装 Desktop 原生桥接并逐目录授权。
+
+`src/api.ts` 在 Web 使用带凭证请求和 CSRF，在 Desktop 快照中使用窄 IPC；不在 localStorage 存会话/AI key，仅保存语言与主题。React 文本渲染展示帮助/公告，不执行后台注入 HTML。
+
+## 验证与维护
+
+`npm test` 执行类型检查；真实身份与页面旅程由 delivery 的 `npm run qa:web` 执行，截图来自实际 UI 和 PostgreSQL 开发数据，不是设计稿。覆盖首次登录/初始化、13 个工作区模块、16 个 Admin 页面、浅深主题和移动视口。截图 fixture 使用虚构企业和 `.invalid` 邮箱。
+
+`src/main.tsx` 管理路由与页面，`context.tsx` 管理登录/企业/语言/主题上下文，`api.ts` 封装网络和 Desktop 桥接，`native-files.tsx` 提供原生文件面板，`ui.tsx` 与 `style.css` 提供本仓库独立 UI 基础。Desktop 使用显式快照同步，不在构建时偷偷读取相邻源码。
+
+## 本次边界
+
+公司网关、SMTP、广告 OAuth 和 S3 的真实配置与联调仍需部署环境提供。SSO、云定时计划、多人并行 Agent、协同编辑及完整 AI 视频/语音尚未实现。数据轮询不等于规划中的完整 SSE。浏览器只提供有限 HTML SEO 检查，不承诺 GEO 排名提升。
+
+界面自托管 Manrope/Fraunces 字体，图标为 Lucide，首页蓝色纸带素材通过用户指定的 sub2-image-gen 生成，品牌来自 copypaste.hk。参见 [素材与依赖说明](THIRD_PARTY_NOTICES.md)。主设计/需求文档在交付根目录 `docs/`。
