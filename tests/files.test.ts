@@ -1,0 +1,91 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  mkdtemp,
+  mkdir,
+  writeFile,
+  readFile,
+  symlink,
+  rm,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { LocalFiles, type Journal, resolveInGrant } from "../src/files.js";
+import { apiURL } from "../src/config.js";
+test("folder grants enforce expiry, explicit writes, create-only semantics and idempotency", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "cp-files-"));
+  try {
+    let j: Journal = { grants: [], completed: {} };
+    const f = new LocalFiles(
+      async () => structuredClone(j),
+      async (next) => {
+        j = structuredClone(next);
+      },
+    );
+    await writeFile(path.join(root, "brief.txt"), "品牌 brief");
+    const g = await f.grant(root);
+    const listing = (await f.execute({
+      operation: "file.list",
+      grant_id: g.id,
+      path: ".",
+      request_id: "list-id-1234567890",
+    })) as any;
+    assert.equal(listing.items[0].name, "brief.txt");
+    const command = {
+      operation: "file.read" as const,
+      grant_id: g.id,
+      path: "brief.txt",
+      request_id: "read-id-1234567890",
+    };
+    const r = (await f.execute(command)) as any;
+    assert.equal(Buffer.from(r.base64, "base64").toString(), "品牌 brief");
+    await assert.rejects(
+      f.execute({ ...command, operation: "file.write", content: "replace" }),
+    );
+    for (const p of [
+      "../outside",
+      "NUL",
+      "sub./file",
+      "COM1.txt",
+      "C:\\private",
+      "//server/share",
+      "file.txt:secret",
+      "sub/../../escape",
+    ])
+      await assert.rejects(resolveInGrant(root, p));
+    const w = await f.grant(root, true);
+    const c = {
+      operation: "file.write" as const,
+      grant_id: w.id,
+      path: "new.txt",
+      content: "deliverable",
+      request_id: "write-id-123456789",
+    };
+    assert.deepEqual(await f.execute(c), await f.execute(c));
+    await assert.rejects(f.execute({ ...c, content: "changed" }));
+    await assert.rejects(f.execute({ ...c, request_id: "write-id-987654321" }));
+    assert.equal(
+      await readFile(path.join(root, "new.txt"), "utf8"),
+      "deliverable",
+    );
+    await f.revoke(w.id);
+    await assert.rejects(f.execute({ ...c, request_id: "write-id-555555555" }));
+    j.grants[0].expires_at = new Date(Date.now() - 1).toISOString();
+    await assert.rejects(f.execute(command));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+test("API bridge cannot change origin or escape the API prefix", () => {
+  assert.equal(
+    apiURL("https://agent.example", "/v1/me"),
+    "https://agent.example/v1/me",
+  );
+  for (const p of [
+    "//evil.example/v1/me",
+    "/v1/../../private",
+    "https://evil/v1/me",
+    "/auth",
+  ])
+    assert.throws(() => apiURL("https://agent.example", p));
+});

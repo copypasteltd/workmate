@@ -1,0 +1,83 @@
+{
+  "name": "@copypaste/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "scripts": {
+    "build": "node scripts/configure-deployment.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p renderer/tsconfig.json",
+    "start": "electron .",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "package": "npm run build && electron-builder --win portable nsis",
+    "package:dir": "npm run build && electron-builder --win --dir",
+    "renderer:sync": "node scripts/sync-renderer.mjs",
+    "native:register": "electron scripts/register-native-host.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  },
+  "main": "dist/main.js",
+  "description": "CopyPaste enterprise desktop workspace",
+  "author": "CopyPaste",
+  "dependencies": {
+    "lucide-react": "1.59.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router-dom": "7.18.4"
+  },
+  "build": {
+    "appId": "hk.copypaste.agent",
+    "productName": "CopyPaste",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer-dist/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "assets/icon.ico",
+      "signExecutable": false
+    },
+    "asar": true,
+    "electronDist": "node_modules/electron/dist",
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "CopyPaste-${version}-${arch}-Setup.${ext}",
+      "createDesktopShortcut": true
+    },
+    "portable": {
+      "artifactName": "CopyPaste-${version}-${arch}-Portable.${ext}"
+    },
+    "extraResources": [
+      {
+        "from": "dist/native-host.cjs",
+        "to": "native-host.cjs"
+      },
+      {
+        "from": "assets/native-host.cmd",
+        "to": "native-host.cmd"
+      }
+    ]
+  }
+}
