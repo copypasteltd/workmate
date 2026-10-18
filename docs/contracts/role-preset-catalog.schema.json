@@ -1,0 +1,496 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.example.invalid/role-preset-catalog.schema.json",
+  "description": "Documentation design snapshot. Operational publication/readiness are separate product resources.",
+  "type": "object",
+  "properties": {
+    "catalog_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "status": {
+      "const": "design_only"
+    },
+    "origin_id": {
+      "const": "ROLE01"
+    },
+    "minimum_qualified_roles": {
+      "type": "integer",
+      "minimum": 12
+    },
+    "required_categories": {
+      "const": [
+        "engineering",
+        "design"
+      ]
+    },
+    "required_role_keys": {
+      "const": [
+        "designer"
+      ]
+    },
+    "all_ai_via_internal_gateway": {
+      "const": true
+    },
+    "runtime_profiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/runtime"
+      },
+      "minItems": 1
+    },
+    "model_profiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/model"
+      },
+      "minItems": 2
+    },
+    "skill_catalog": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/skill"
+      },
+      "minItems": 1
+    },
+    "roles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/role"
+      },
+      "minItems": 12
+    }
+  },
+  "required": [
+    "catalog_version",
+    "status",
+    "origin_id",
+    "minimum_qualified_roles",
+    "required_categories",
+    "required_role_keys",
+    "all_ai_via_internal_gateway",
+    "runtime_profiles",
+    "model_profiles",
+    "skill_catalog",
+    "roles"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "profile_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kernel": {
+          "const": "codex"
+        },
+        "pinned_runtime_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "verification_state": {
+          "const": "unverified"
+        },
+        "skill_loading": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "profile_key",
+        "kernel",
+        "pinned_runtime_version",
+        "verification_state",
+        "skill_loading"
+      ],
+      "additionalProperties": false
+    },
+    "model": {
+      "type": "object",
+      "properties": {
+        "profile_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "image",
+            "video",
+            "audio"
+          ]
+        },
+        "requested_model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "official_model_reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "internal_model_alias": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "gateway_route": {
+          "const": "company_internal"
+        },
+        "wire_protocol": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verification_state": {
+          "const": "unverified"
+        },
+        "silent_substitution_allowed": {
+          "const": false
+        }
+      },
+      "required": [
+        "profile_key",
+        "kind",
+        "requested_model",
+        "official_model_reference",
+        "internal_model_alias",
+        "gateway_route",
+        "wire_protocol",
+        "verification_state",
+        "silent_substitution_allowed"
+      ],
+      "additionalProperties": false
+    },
+    "skill": {
+      "type": "object",
+      "properties": {
+        "skill_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidate_sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "package_state": {
+          "const": "planned"
+        },
+        "package_sha256": {
+          "type": "null"
+        },
+        "ai_network_policy": {
+          "const": "internal_only"
+        },
+        "tool_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "required_model_profiles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "supported_clients": {
+          "const": [
+            "web",
+            "extension",
+            "desktop"
+          ]
+        }
+      },
+      "required": [
+        "skill_key",
+        "version",
+        "purpose",
+        "candidate_sources",
+        "package_state",
+        "package_sha256",
+        "ai_network_policy",
+        "tool_ids",
+        "required_model_profiles",
+        "supported_clients"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "skill_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "skill_key",
+        "version",
+        "required"
+      ],
+      "additionalProperties": false
+    },
+    "model_binding": {
+      "type": "object",
+      "properties": {
+        "profile_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "profile_key",
+        "required"
+      ],
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "properties": {
+        "step_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "step_key",
+        "instruction"
+      ],
+      "additionalProperties": false
+    },
+    "deliverable": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "editable_scope": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "label",
+        "format",
+        "editable_scope"
+      ],
+      "additionalProperties": false
+    },
+    "qualification": {
+      "type": "object",
+      "properties": {
+        "normal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependency_or_permission_failure": {
+          "type": "string",
+          "minLength": 1
+        },
+        "execution_status": {
+          "const": "not_run"
+        }
+      },
+      "required": [
+        "normal",
+        "revision",
+        "dependency_or_permission_failure",
+        "execution_status"
+      ],
+      "additionalProperties": false
+    },
+    "role": {
+      "type": "object",
+      "properties": {
+        "role_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "catalog_id": {
+          "type": "string",
+          "pattern": "^R[0-9]{2}$"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "enum": [
+            "engineering",
+            "design",
+            "marketing",
+            "operations"
+          ]
+        },
+        "status": {
+          "const": "design_only"
+        },
+        "runtime_profile": {
+          "type": "string",
+          "minLength": 1
+        },
+        "skill_bindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/binding"
+          },
+          "minItems": 2
+        },
+        "model_bindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/model_binding"
+          },
+          "minItems": 1
+        },
+        "tool_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 1
+        },
+        "input_contract": {
+          "type": "object",
+          "properties": {
+            "required_fields": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true,
+              "minItems": 1
+            },
+            "optional_fields": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "required_fields",
+            "optional_fields"
+          ],
+          "additionalProperties": false
+        },
+        "workflow": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/step"
+          },
+          "minItems": 2
+        },
+        "deliverables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/deliverable"
+          },
+          "minItems": 1
+        },
+        "sample_task": {
+          "type": "string",
+          "minLength": 1
+        },
+        "acceptance_checks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "minItems": 3
+        },
+        "qualification_cases": {
+          "$ref": "#/$defs/qualification"
+        },
+        "initial_stage": {
+          "enum": [
+            "M1",
+            "M2"
+          ]
+        },
+        "readiness_evidence": {
+          "type": "array",
+          "maxItems": 0
+        }
+      },
+      "required": [
+        "role_key",
+        "catalog_id",
+        "version",
+        "display_name",
+        "category",
+        "status",
+        "runtime_profile",
+        "skill_bindings",
+        "model_bindings",
+        "tool_ids",
+        "input_contract",
+        "workflow",
+        "deliverables",
+        "sample_task",
+        "acceptance_checks",
+        "qualification_cases",
+        "initial_stage",
+        "readiness_evidence"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

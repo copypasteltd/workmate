@@ -1,0 +1,358 @@
+{
+  "type": "object",
+  "properties": {
+    "protocol_version": {
+      "const": "1.0"
+    },
+    "command_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "operation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "attempt_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "device_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "grant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "auth_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fencing_token": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "file.read",
+        "file.write",
+        "directory.scan",
+        "program.run",
+        "browser.open",
+        "browser.close"
+      ]
+    },
+    "args": {
+      "type": "object"
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "nonce": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "signature": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "const": "Ed25519"
+        },
+        "key_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      },
+      "required": [
+        "algorithm",
+        "key_id",
+        "value"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "protocol_version",
+    "command_id",
+    "operation_id",
+    "tenant_id",
+    "task_id",
+    "attempt_id",
+    "device_id",
+    "grant_id",
+    "auth_version",
+    "fencing_token",
+    "action",
+    "args",
+    "input_hash",
+    "issued_at",
+    "expires_at",
+    "nonce",
+    "signature"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.example.invalid/device-command.schema.json",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "file.read"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "args": {
+            "type": "object",
+            "properties": {
+              "relative_path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024,
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\:\\x00-\\x1f]).+$",
+                "description": "Forward-slash relative path only; runtime must also validate root identity, reparse points and file handles."
+              },
+              "max_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 104857600
+              }
+            },
+            "required": [
+              "relative_path",
+              "max_bytes"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "file.write"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "args": {
+            "type": "object",
+            "properties": {
+              "relative_path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024,
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\:\\x00-\\x1f]).+$",
+                "description": "Forward-slash relative path only; runtime must also validate root identity, reparse points and file handles."
+              },
+              "source_asset_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expected_source_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "overwrite": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "relative_path",
+              "source_asset_version_id",
+              "overwrite"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "directory.scan"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "args": {
+            "type": "object",
+            "properties": {
+              "relative_path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024,
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\:\\x00-\\x1f]).+$",
+                "description": "Forward-slash relative path only; runtime must also validate root identity, reparse points and file handles."
+              },
+              "recursive": {
+                "type": "boolean"
+              },
+              "max_files": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              }
+            },
+            "required": [
+              "relative_path",
+              "recursive",
+              "max_files"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "program.run"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "args": {
+            "type": "object",
+            "properties": {
+              "executable_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "argv": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 0
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3600
+              }
+            },
+            "required": [
+              "executable_id",
+              "argv",
+              "timeout_seconds"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "browser.open"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "args": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "pattern": "^https://"
+              },
+              "context_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "url",
+              "context_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "action": {
+            "const": "browser.close"
+          }
+        },
+        "required": [
+          "action"
+        ]
+      },
+      "then": {
+        "properties": {
+          "args": {
+            "type": "object",
+            "properties": {
+              "tab_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "context_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "tab_id",
+              "context_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

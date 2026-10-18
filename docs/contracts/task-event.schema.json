@@ -1,0 +1,368 @@
+{
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "attempt_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "task.state_changed",
+        "task.progress",
+        "message.appended",
+        "artifact.ready",
+        "approval.requested",
+        "usage.updated",
+        "task.warning"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "event_id",
+    "tenant_id",
+    "task_id",
+    "attempt_id",
+    "seq",
+    "type",
+    "occurred_at",
+    "payload"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.example.invalid/task-event.schema.json",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "needs_input",
+        "queued",
+        "running",
+        "waiting_approval",
+        "waiting_device",
+        "paused",
+        "cancelling",
+        "succeeded",
+        "partially_succeeded",
+        "failed",
+        "cancelled"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "task.state_changed"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "previous": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "enum": [
+                  "draft",
+                  "needs_input",
+                  "queued",
+                  "running",
+                  "waiting_approval",
+                  "waiting_device",
+                  "paused",
+                  "cancelling",
+                  "succeeded",
+                  "partially_succeeded",
+                  "failed",
+                  "cancelled",
+                  null
+                ]
+              },
+              "status": {
+                "$ref": "#/$defs/status"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "previous",
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "task.progress"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "step_key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "completed": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "step_key",
+              "completed"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "message.appended"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "message_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "message_id",
+              "text"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "artifact.ready"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "artifact_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "asset_version_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "artifact_id",
+              "asset_version_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "approval.requested"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "approval_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "approval_id",
+              "action_hash",
+              "expires_at"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "usage.updated"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "HKD"
+                ]
+              },
+              "amount_micros": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              "cost_state": {
+                "type": "string",
+                "enum": [
+                  "estimated",
+                  "confirmed",
+                  "reconciling"
+                ]
+              }
+            },
+            "required": [
+              "currency",
+              "amount_micros",
+              "cost_state"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "task.warning"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

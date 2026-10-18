@@ -1,0 +1,317 @@
+{
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "creative_layout"
+    },
+    "project_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "brand_version_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "locale": {
+      "type": "string",
+      "enum": [
+        "zh-HK",
+        "en-HK"
+      ]
+    },
+    "canvas": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16384
+        },
+        "background": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "background"
+      ],
+      "additionalProperties": false
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "rotation_degrees": {
+                "type": "number"
+              },
+              "z_index": {
+                "type": "integer"
+              },
+              "opacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "type": {
+                "const": "text"
+              },
+              "text": {
+                "type": "string"
+              },
+              "font_asset_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "font_size": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "line_height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ]
+              },
+              "font_weight": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 900
+              },
+              "letter_spacing": {
+                "type": "number"
+              },
+              "max_lines": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "border": {
+                "type": "object",
+                "properties": {
+                  "width": {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  "color": {
+                    "type": "string",
+                    "pattern": "^#[0-9a-fA-F]{6}$"
+                  }
+                },
+                "required": [
+                  "width",
+                  "color"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "x",
+              "y",
+              "width",
+              "height",
+              "rotation_degrees",
+              "z_index",
+              "opacity",
+              "type",
+              "text",
+              "font_asset_version_id",
+              "font_size",
+              "line_height",
+              "color",
+              "align"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "rotation_degrees": {
+                "type": "number"
+              },
+              "z_index": {
+                "type": "integer"
+              },
+              "opacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "type": {
+                "const": "image"
+              },
+              "asset_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "fit": {
+                "type": "string",
+                "enum": [
+                  "contain",
+                  "cover"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "x",
+              "y",
+              "width",
+              "height",
+              "rotation_degrees",
+              "z_index",
+              "opacity",
+              "type",
+              "asset_version_id",
+              "fit"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "height": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "rotation_degrees": {
+                "type": "number"
+              },
+              "z_index": {
+                "type": "integer"
+              },
+              "opacity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "type": {
+                "const": "shape"
+              },
+              "shape": {
+                "type": "string",
+                "enum": [
+                  "rectangle",
+                  "ellipse"
+                ]
+              },
+              "fill": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              }
+            },
+            "required": [
+              "id",
+              "x",
+              "y",
+              "width",
+              "height",
+              "rotation_degrees",
+              "z_index",
+              "opacity",
+              "type",
+              "shape",
+              "fill"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "renderer_version": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "format_version",
+    "kind",
+    "project_id",
+    "task_id",
+    "brand_version_id",
+    "locale",
+    "canvas",
+    "layers",
+    "renderer_version"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.example.invalid/creative-project.schema.json"
+}

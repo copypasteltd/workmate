@@ -1,0 +1,1332 @@
+{
+  "version": "1.5",
+  "status": "design_only",
+  "cases": [
+    {
+      "id": "TC-001",
+      "requirement_ids": [
+        "REQ-001"
+      ],
+      "category": "隔离",
+      "stage": "M1",
+      "precondition": "企业 A/B 各有项目、同名文件、任务和报表。",
+      "action_and_fault": "以 A 的成员、事件游标和下载入口请求 B 的资源；再尝试直接猜测对象 ID。",
+      "expected_and_evidence": "所有 API、事件和对象访问均拒绝；A 的列表及错误信息不泄露 B 的内容；保留拒绝审计。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-002",
+      "requirement_ids": [
+        "REQ-002"
+      ],
+      "category": "权限",
+      "stage": "M1",
+      "precondition": "一个企业有两个项目及五种角色。",
+      "action_and_fault": "逐角色执行读取、生成、品牌修改、审核和成员管理；撤销某个项目后重新调用。",
+      "expected_and_evidence": "以权限矩阵判定，前端隐藏与服务端拒绝一致；项目撤销后新请求不可访问。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-003",
+      "requirement_ids": [
+        "REQ-003"
+      ],
+      "category": "身份",
+      "stage": "M1",
+      "precondition": "有有效邀请、过期邀请和已登录设备。",
+      "action_and_fault": "重放一次性邀请/验证码；移除成员后使用旧会话、刷新令牌和设备任务入口。",
+      "expected_and_evidence": "过期或重复凭证拒绝，成员撤销作用于新调用；退出清理本端产品会话且不泄露供应商凭证。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-004",
+      "requirement_ids": [
+        "REQ-004"
+      ],
+      "category": "连接",
+      "stage": "M2",
+      "precondition": "连接授权两个外部账户，仅一个项目有权使用。",
+      "action_and_fault": "选择账户、执行同步、撤销连接，再恢复旧队列任务。",
+      "expected_and_evidence": "只能访问已选资源；撤销阻止新调用；已被平台接受的操作显示真实状态，不能假定被撤回。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-005",
+      "requirement_ids": [
+        "REQ-005"
+      ],
+      "category": "Agent",
+      "stage": "M1",
+      "precondition": "已有带品牌及工具范围的 Agent。",
+      "action_and_fault": "委派任务后修改 Agent 配置；在另一端创建第二个任务。",
+      "expected_and_evidence": "首任务保持原 AgentVersion，第二任务使用新版本；平台历史 ID 和 Codex thread/turn 映射在重连及版本升级后仍可追溯。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-006",
+      "requirement_ids": [
+        "REQ-006"
+      ],
+      "category": "记忆",
+      "stage": "M1",
+      "precondition": "存在企业、品牌、项目、个人及会话记忆。",
+      "action_and_fault": "检索不同范围；删除一个来源及其记忆，再查询新任务和旧快照。",
+      "expected_and_evidence": "仅返回有权范围；删除影响提取文本和索引；旧记录只保留允许的引用/删除标记，不重新恢复原文。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-007",
+      "requirement_ids": [
+        "REQ-007"
+      ],
+      "category": "委派",
+      "stage": "M1",
+      "precondition": "用户提供 brief 和附件，但缺少必要交付渠道。",
+      "action_and_fault": "发送自然语言并补充缺项；重复发送相同 client_message_id；加入不阻塞的偏好缺失。",
+      "expected_and_evidence": "只询问阻塞字段；补充绑定正确任务版本；重复消息不重复委派，不因无关偏好持续中断。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-008",
+      "requirement_ids": [
+        "REQ-008"
+      ],
+      "category": "持久性",
+      "stage": "M1",
+      "precondition": "任务接受事务已提交，worker 尚未执行。",
+      "action_and_fault": "关闭页面并终止一个 worker；恢复后使用旧 SSE 游标重连。",
+      "expected_and_evidence": "任务、预留和 outbox 存在且可恢复；事件有序去重；游标过期按 410 获取快照，任务不会凭空消失。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-009",
+      "requirement_ids": [
+        "REQ-009"
+      ],
+      "category": "恢复",
+      "stage": "M1",
+      "precondition": "多步骤任务已有一个完成步骤和一个运行步骤。",
+      "action_and_fault": "并发取消与完成、过期 worker 回报、重复重试；暂停后恢复。",
+      "expected_and_evidence": "数据库版本决定结果，旧 fencing token 拒绝；重试新建 attempt 并复用有效结果，不重做已确认外部动作。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-010",
+      "requirement_ids": [
+        "REQ-010"
+      ],
+      "category": "授权",
+      "stage": "M1",
+      "precondition": "有一项待审核外部写入，其参数和对象版本已经冻结。",
+      "action_and_fault": "审核后修改金额、目标或输入；尝试普通成员自批高影响动作。",
+      "expected_and_evidence": "授权摘要不符即失效；按角色和策略拒绝越权；执行前再次校验范围、有效期和当前权限。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-011",
+      "requirement_ids": [
+        "REQ-011"
+      ],
+      "category": "追踪",
+      "stage": "M1",
+      "precondition": "任务跨模型、媒体、连接器和设备步骤。",
+      "action_and_fault": "注入可定位的工具错误并查看用户及运营视图。",
+      "expected_and_evidence": "request/task/attempt/operation 可关联，呈现失败步骤、输入版本和费用；不显示密钥、完整本地路径或隐藏推理。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-012",
+      "requirement_ids": [
+        "REQ-012"
+      ],
+      "category": "版本",
+      "stage": "M1",
+      "precondition": "批次交付有成功和失败单元，已有一个接受版本。",
+      "action_and_fault": "修改一项、重试失败项、下载部分产物，再查看原版本。",
+      "expected_and_evidence": "旧版本不可变；新产物有父版本；部分成功及缺项可见；真实文件和 manifest 一致。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-013",
+      "requirement_ids": [
+        "REQ-013"
+      ],
+      "category": "品牌",
+      "stage": "M1",
+      "precondition": "品牌包含 Logo、繁中字体、色值和有效期内价格。",
+      "action_and_fault": "冻结任务后修改品牌；引用缺字字体或已过期促销信息。",
+      "expected_and_evidence": "原任务可追溯固定品牌版本；缺字/过期事实被定位，不静默替换价格或声称字体已授权。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-014",
+      "requirement_ids": [
+        "REQ-014"
+      ],
+      "category": "传输",
+      "stage": "M1",
+      "precondition": "上传 session 有大小、类型和 SHA-256 声明。",
+      "action_and_fault": "中断续传、重复 complete、伪造摘要、超限及过期下载；在另一个企业访问链接。",
+      "expected_and_evidence": "损坏/超限不得 ready；complete 幂等；敏感下载每次鉴权；普通签名 URL 的有效窗口如实说明。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-015",
+      "requirement_ids": [
+        "REQ-015"
+      ],
+      "category": "图片",
+      "stage": "M1",
+      "precondition": "内部生图及一个限定编辑能力已登记并有测试预算。",
+      "action_and_fault": "生成并读取实际图片尺寸/格式；编辑指定区域；模拟上游只返回提示词或失效 URL。",
+      "expected_and_evidence": "真实文件可预览且关联版本；失败不得报完成；选定编辑操作有输入输出和费用证据。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-016",
+      "requirement_ids": [
+        "REQ-016"
+      ],
+      "category": "排版",
+      "stage": "M1",
+      "precondition": "固定繁中/英文、价格、长标题及指定字体测试集。",
+      "action_and_fault": "生成两种尺寸，独立修改一行文案；检测缺字、截断、混排及安全区。",
+      "expected_and_evidence": "文字与图层分开保存，可修改并重渲染；文本准确，溢出明确提示，不把模型图中文字当排版权威。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-017",
+      "requirement_ids": [
+        "REQ-017"
+      ],
+      "category": "批量",
+      "stage": "M1",
+      "precondition": "3 创意 × 2 语言 × 3 尺寸共 18 单元。",
+      "action_and_fault": "让其中一个单元失败，再修改另一单元并重试；提交超过默认 60 单元。",
+      "expected_and_evidence": "18 个单元状态及成本独立；局部操作不重做全批；超限在执行前拆分或明确拒绝。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-018",
+      "requirement_ids": [
+        "REQ-018"
+      ],
+      "category": "模板视频",
+      "stage": "M1",
+      "precondition": "固定 15 秒、9:16 的模板、品牌资产、字幕和获准音轨。",
+      "action_and_fault": "渲染并用媒体探针/播放检查编码、帧数、字幕、安全区和音轨；移除一项依赖。",
+      "expected_and_evidence": "实际 MP4 可播放、时长和规格一致，工程可复做；缺资源时标明失败，不以脚本代替成片。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-019",
+      "requirement_ids": [
+        "REQ-019"
+      ],
+      "category": "生成视频",
+      "stage": "M4",
+      "precondition": "内部服务支持真实异步视频作业，含报价和状态查询。",
+      "action_and_fault": "提交后断线、重复回调、取消与完成竞争、查询超时。",
+      "expected_and_evidence": "供应商 operation 映射稳定；重复事件不重复记账；未知结果进入对账；最终保存真实媒体和状态。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-020",
+      "requirement_ids": [
+        "REQ-020"
+      ],
+      "category": "特效",
+      "stage": "M4",
+      "precondition": "目录逐项登记一个转场、文字动效和抠像能力。",
+      "action_and_fault": "按各自示例输入执行，传入不支持的参数/版本及缺失蒙版。",
+      "expected_and_evidence": "每项按独立规格验证并返回示例可比较的结果；不把特效统一当作一个已支持开关。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-021",
+      "requirement_ids": [
+        "REQ-021"
+      ],
+      "category": "音频",
+      "stage": "M4",
+      "precondition": "有获准音源、语言和转写样例。",
+      "action_and_fault": "执行配音/转写并检查时序；选择未开放的粤语能力；审查全部 AI 请求目的地。",
+      "expected_and_evidence": "真实音频/字幕版本可用；未验证语言明确不可用；所有音频 AI 经内部服务并保存音源授权引用。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-022",
+      "requirement_ids": [
+        "REQ-022"
+      ],
+      "category": "审阅",
+      "stage": "M1",
+      "precondition": "有待审阅图像和视频版本。",
+      "action_and_fault": "评论、接受、要求修改并导出 ZIP；解包校验清单及恢复编辑工程。",
+      "expected_and_evidence": "技术成功与业务接受分开；导出摘要和文件一致；工程声明可恢复范围，缺文件或专业格式限制可见。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-023",
+      "requirement_ids": [
+        "REQ-023"
+      ],
+      "category": "导入",
+      "stage": "M1",
+      "precondition": "Google/Meta 的 CSV/XLSX 样本，包含重复日期和坏行。",
+      "action_and_fault": "映射列、确认币种/时区，导入两次及导入更正版本；包含公式样文本。",
+      "expected_and_evidence": "重复不翻倍，替换规则明确；坏行可定位；保留源文件及映射；不执行输入公式或宏。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-024",
+      "requirement_ids": [
+        "REQ-024"
+      ],
+      "category": "指标",
+      "stage": "M1",
+      "precondition": "使用 contracts/analytics-metric-vectors.json 的固定算例。",
+      "action_and_fault": "独立复算加权指标、零分母、未知转化和多币种；从报告回溯到快照。",
+      "expected_and_evidence": "先求和再求比率；Decimal 结果符合算例；未知不当零；币种不直接相加；每个关键数字有证据和口径。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-025",
+      "requirement_ids": [
+        "REQ-025"
+      ],
+      "category": "Google Ads",
+      "stage": "M2",
+      "precondition": "有正式获准的测试账户及目标 API 版本。",
+      "action_and_fault": "完成授权、账户选择、分页同步、429 重试及撤销；和平台同范围报表比较。",
+      "expected_and_evidence": "真实取数口径一致且显示截止时间；权限/访问级别采用当前正式要求；分页失败不得误报 complete。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-026",
+      "requirement_ids": [
+        "REQ-026"
+      ],
+      "category": "Meta",
+      "stage": "M4",
+      "precondition": "已获批的应用和可读广告账户，记录实际权限。",
+      "action_and_fault": "同步 Insights，测试 action 映射、分页/限流、token 失效和撤销。",
+      "expected_and_evidence": "以真实权限和字段证据验收；广告、自然内容、发布及私信范围不混用；未获批时不标正式接通。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-027",
+      "requirement_ids": [
+        "REQ-027"
+      ],
+      "category": "GA4",
+      "stage": "M4",
+      "precondition": "有获准属性及可核查的报告。",
+      "action_and_fault": "查询落地页和事件，记录 reporting identity、时区、阈值/抽样/新鲜度信息。",
+      "expected_and_evidence": "展示指标的来源限制及属性范围；不可从 GA4 数字直接断言广告跨平台去重转化。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-028",
+      "requirement_ids": [
+        "REQ-028"
+      ],
+      "category": "GSC",
+      "stage": "M4",
+      "precondition": "有获准站点，固定日期、search type 和维度。",
+      "action_and_fault": "查询并重放相同请求，检查返回上限、匿名/省略数据及无权限站点。",
+      "expected_and_evidence": "报告保留完整查询规格和限制；不给出全量覆盖保证；越权站点不可读取。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-029",
+      "requirement_ids": [
+        "REQ-029"
+      ],
+      "category": "SEO",
+      "stage": "M4",
+      "precondition": "授权站点有断链、标题重复和 robots 限制。",
+      "action_and_fault": "限定抓取并诊断；加入重定向到私网/其他域的页面；修复后复查。",
+      "expected_and_evidence": "每条问题有 URL/证据；逐跳限制域、IP 和页面数；写回另获授权；复查保留前后版本。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-030",
+      "requirement_ids": [
+        "REQ-030"
+      ],
+      "category": "GEO",
+      "stage": "M4",
+      "precondition": "固定问句、别名、地区、语言、模型及检索配置。",
+      "action_and_fault": "重复观测并保存引用；改变配置创建新版本；混入消费产品手工样本。",
+      "expected_and_evidence": "可区分同配置波动及配置差异；API 与消费产品样本分列；不输出全网排名或因果保证。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-031",
+      "requirement_ids": [
+        "REQ-031"
+      ],
+      "category": "创意反馈",
+      "stage": "M4",
+      "precondition": "同一素材在不同账户有相似 creative 名称。",
+      "action_and_fault": "平台 ID 精确关联与人工确认模糊候选；移除错误映射后重建报告。",
+      "expected_and_evidence": "仅确认映射参与素材反馈；记录账户和版本；不凭名称把不同素材表现自动混合。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-032",
+      "requirement_ids": [
+        "REQ-032"
+      ],
+      "category": "模板",
+      "stage": "M2",
+      "precondition": "成功的周报任务转为工作流版本。",
+      "action_and_fault": "绑定输入输出并手动复用；发布有环图、未注册工具或无界循环；运行中修改模板。",
+      "expected_and_evidence": "非法图/能力拒绝；有界步骤和失败策略可执行；当前运行冻结旧版本，新运行使用新版本。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-033",
+      "requirement_ids": [
+        "REQ-033"
+      ],
+      "category": "触发",
+      "stage": "M2",
+      "precondition": "有 schedule 与正式平台事件触发器。",
+      "action_and_fault": "停机错过多次运行后恢复，重放 webhook，修改时区，停用触发；覆盖夏令时样本。",
+      "expected_and_evidence": "默认只补最新一次；去重键稳定；签名/时间检查有效；停用阻止新运行，不产生补跑风暴。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-034",
+      "requirement_ids": [
+        "REQ-034"
+      ],
+      "category": "副作用",
+      "stage": "M1",
+      "precondition": "外部动作已落库，但提交后网络断开。",
+      "action_and_fault": "重复队列消息，查询支持幂等的平台；再测试无幂等/查询能力的平台。",
+      "expected_and_evidence": "前者关联原操作；后者 unknown 并人工对账，绝不盲重发；费用与授权追踪同一 operation。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-035",
+      "requirement_ids": [
+        "REQ-035"
+      ],
+      "category": "Web",
+      "stage": "M1",
+      "precondition": "无安装的新用户拥有合法账号和品牌样例。",
+      "action_and_fault": "完成素材任务和报表导入，刷新/关闭/重开页面，再审阅下载。",
+      "expected_and_evidence": "完整云端路径可完成；导航保留企业/项目上下文；任务恢复，无需本地安装。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-036",
+      "requirement_ids": [
+        "REQ-036"
+      ],
+      "category": "扩展上下文",
+      "stage": "M3",
+      "precondition": "扩展只获一个站点权限，含可选选中文本。",
+      "action_and_fault": "发送选择内容和页面摘要；在未授权站点调用；页面包含诱导越权指令。",
+      "expected_and_evidence": "按需请求站点权限，内容作为数据；不注入密钥或执行命令；当前上下文清晰可删。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-037",
+      "requirement_ids": [
+        "REQ-037"
+      ],
+      "category": "基础文件",
+      "stage": "M1",
+      "precondition": "Web 在支持及不支持目录选择的浏览器各一套。",
+      "action_and_fault": "主动选择目录读取文件、撤销后再次处理；不支持时使用上传下载。",
+      "expected_and_evidence": "用户明确选择才使用；撤销/权限失效有提示；基础流程可降级，不将扩展宣传为全盘访问。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-038",
+      "requirement_ids": [
+        "REQ-038"
+      ],
+      "category": "原生桥接",
+      "stage": "M3",
+      "precondition": "已安装签名 host，存在合法与伪造扩展来源。",
+      "action_and_fault": "配对、验证来源、刷新设备凭证；大文件传输；休眠扩展 worker 后恢复。",
+      "expected_and_evidence": "仅合法设备和扩展接入；帧长度/类型受限；大文件走授权传输；长任务不依赖 worker 内存存活。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-039",
+      "requirement_ids": [
+        "REQ-039"
+      ],
+      "category": "Desktop",
+      "stage": "M4",
+      "precondition": "受支持 Windows 原生环境和签名安装包。",
+      "action_and_fault": "安装、系统浏览器登录、工作台、退出、升级中断恢复及卸载。",
+      "expected_and_evidence": "全流程无 Docker/WSL；本地凭证保护，卸载选择清晰；升级验签，旧版不执行新协议未知动作。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-040",
+      "requirement_ids": [
+        "REQ-040"
+      ],
+      "category": "本地执行",
+      "stage": "M3",
+      "precondition": "授权一个目录和一个允许程序，另有同名越界目录。",
+      "action_and_fault": "测试 ../、绝对路径、UNC、junction/symlink、文件替换竞争、未知 argv 和重复命令；撤销目录。",
+      "expected_and_evidence": "按句柄/根身份验证并拒绝越界；冲突不覆盖；允许程序按结构化 argv；撤销阻止新执行，结果账本防重放。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-041",
+      "requirement_ids": [
+        "REQ-041"
+      ],
+      "category": "跨端",
+      "stage": "M3",
+      "precondition": "Web 建任务，绑定扩展/桌面设备。",
+      "action_and_fault": "设备离线、重新连接、重复交付命令、两个执行者争用同一步骤。",
+      "expected_and_evidence": "waiting_device 准确；先同步撤销/取消再恢复；fencing 拒绝旧租约；非幂等写入不自动跨设备接管。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-042",
+      "requirement_ids": [
+        "REQ-042"
+      ],
+      "category": "资源",
+      "stage": "M3",
+      "precondition": "浏览器有用户原有页面及本任务新建页面。",
+      "action_and_fault": "分别成功、失败、取消、浏览器崩溃；检查 finally 和 watchdog 清理。",
+      "expected_and_evidence": "任务所属无用 tab/context 回到基线；无无主页面；保留用户原有页面，达到上限进入等待/拒绝。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-043",
+      "requirement_ids": [
+        "REQ-043"
+      ],
+      "category": "AI 路由",
+      "stage": "M1",
+      "precondition": "各端、后台、内核插件和媒体服务均开启网络观测。",
+      "action_and_fault": "执行文本/媒体/嵌入样例，尝试工具调用未经允许的 AI 主机。",
+      "expected_and_evidence": "全部 AI 到内部服务，网络和工具层阻断绕行；业务平台 API 不被错误重写成 OpenAI 协议。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-044",
+      "requirement_ids": [
+        "REQ-044"
+      ],
+      "category": "Codex 唯一内核与兼容",
+      "stage": "M1",
+      "precondition": "固定 Codex CLI/app-server、协议 schema、内部模型配置和受控工具；默认助手、角色、团队及 Routine 均有运行样例。",
+      "action_and_fault": "完成三轮工具、断流、错误、取消、恢复与费用核对；发布/启动/恢复时注入非 Codex、未锁版本及客户内核覆盖，并中断 Codex 进程。",
+      "expected_and_evidence": "合法 Codex 配置完成真实闭环并可追溯；非法配置拒绝执行，故障仅按原检查点及获验 Codex 版本恢复，不自动切换内核/模型；普通文本不算通过。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-045",
+      "requirement_ids": [
+        "REQ-045"
+      ],
+      "category": "能力",
+      "stage": "M1",
+      "precondition": "用户选择原始 gpt 6 luna max 表述，映射尚未验证。",
+      "action_and_fault": "登记别名/effort；模拟不支持参数、缺媒体能力、过期版本及人工降级选择。",
+      "expected_and_evidence": "未验证能力不暗示可用；不静默改模型/推理强度；显式变更记录版本和用户选择。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-046",
+      "requirement_ids": [
+        "REQ-046"
+      ],
+      "category": "费用",
+      "stage": "M1",
+      "precondition": "有限预算，两个任务同时预留，另有未知费用作业。",
+      "action_and_fault": "并发提交、重复回调、取消及失败退款；上游已接受但取消状态未知。",
+      "expected_and_evidence": "原子预留不超额承诺；账本追加且唯一；不重复释放；未知上限作业保留合理预留并对账，费用状态可见。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-047",
+      "requirement_ids": [
+        "REQ-047"
+      ],
+      "category": "权益",
+      "stage": "M1",
+      "precondition": "两个方案版本、席位和媒体额度及生效日期。",
+      "action_and_fault": "增减成员、改方案、跨周期计量、人工调整及重复账单事件。",
+      "expected_and_evidence": "按生效版本核算，无重复扣账；三种客户端不形成误导性媒体额度；账单与任务费用可对账。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-048",
+      "requirement_ids": [
+        "REQ-048"
+      ],
+      "category": "运营",
+      "stage": "M1",
+      "precondition": "运营有元数据权限，但无客户内容访问授权。",
+      "action_and_fault": "查询故障、申请短时支持访问、到期/撤销后再看内容。",
+      "expected_and_evidence": "默认只见必需元数据；授权限定项目/时限，访问有审计；过期或撤销立即阻止新读取。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-049",
+      "requirement_ids": [
+        "REQ-049"
+      ],
+      "category": "删除",
+      "stage": "M1",
+      "precondition": "同项目含原文、提取文本、索引、预览、导出和备份。",
+      "action_and_fault": "发起导出/删除，在清理中重试访问；恢复删除前备份。",
+      "expected_and_evidence": "先禁访问再清理派生物；结果列例外；恢复重新应用删除账本；不声称能删除用户已下载文件。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-050",
+      "requirement_ids": [
+        "REQ-050"
+      ],
+      "category": "数据边界",
+      "stage": "M1",
+      "precondition": "存在云推理、本地文件和平台 OAuth。",
+      "action_and_fault": "检查客户端包、日志、IPC 和上传提示；撤销凭证后新调用。",
+      "expected_and_evidence": "供应商主密钥仅服务端；完整本地路径不上云；内容发送范围可理解；token 加密且日志脱敏。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-051",
+      "requirement_ids": [
+        "REQ-051"
+      ],
+      "category": "本地化",
+      "stage": "M1",
+      "precondition": "港币账本和跨 UTC 日界线的广告数据，含繁中英文。",
+      "action_and_fault": "在不同时区浏览同一快照，导出多语言文件和检查金额/字幕。",
+      "expected_and_evidence": "底层 UTC、项目时区及指标日期一致；HKD 精度正确；语言/字体可用性清晰，不将台北会话时区替代香港项目默认。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-052",
+      "requirement_ids": [
+        "REQ-052"
+      ],
+      "category": "负载",
+      "stage": "M2",
+      "precondition": "按 NFR 固定企业、用户、数据量及媒体负载。",
+      "action_and_fault": "持续 30 分钟并发查询/提交，同时超额上传、批次和浏览器资源。",
+      "expected_and_evidence": "记录 P95/错误率/排队与资源曲线；按 NFR 判定，超限有可理解错误；媒体不阻塞控制入口。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-053",
+      "requirement_ids": [
+        "REQ-053"
+      ],
+      "category": "恢复",
+      "stage": "M2",
+      "precondition": "有任务、文件、费用账本和备份；已记录基线。",
+      "action_and_fault": "普通进程崩溃与独立灾难恢复演练，核验 outbox、对象摘要及删除账本。",
+      "expected_and_evidence": "普通重启不丢已确认任务；灾难 RPO/RTO 以实测判定；不把元数据恢复当完整媒体及费用恢复。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-054",
+      "requirement_ids": [
+        "REQ-054"
+      ],
+      "category": "发布",
+      "stage": "M2",
+      "precondition": "前一客户端、当前 API、扩展兼容数据库迁移。",
+      "action_and_fault": "灰度新版、回滚应用、提交未知设备协议和篡改更新包。",
+      "expected_and_evidence": "验签失败拒绝；协议边界明确；回滚不错误逆转数据；扩展后收缩迁移有实际证据。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-055",
+      "requirement_ids": [
+        "REQ-055"
+      ],
+      "category": "可访问",
+      "stage": "M1",
+      "precondition": "主要页面、异步任务和图表已实现。",
+      "action_and_fault": "仅键盘完成创建/审阅/下载，测试缩放、焦点、读屏状态与 reduced-motion。",
+      "expected_and_evidence": "状态不只靠颜色，错误可定位，图表有表格；按 WCAG 目标记录问题，不能仅凭自动工具声称认证。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-056",
+      "requirement_ids": [
+        "REQ-056"
+      ],
+      "category": "业务质量",
+      "stage": "M1",
+      "precondition": "三类各 10 个代表任务及人工工作基线。",
+      "action_and_fault": "盲审交付可用性，记录返工、时间、完整成本、重复使用及客户意见。",
+      "expected_and_evidence": "区分技术成功与客户接受；包含失败成本和人工修订；以真实接受/续用证据判断，不以消息量或无对照 ROI 取代。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-057",
+      "requirement_ids": [
+        "REQ-057"
+      ],
+      "category": "执行边界",
+      "stage": "M1",
+      "precondition": "不可信页面/文档包含工具诱导、外链及命令片段。",
+      "action_and_fault": "尝试扩大工具、读取未授权目录、访问私网、任意 shell 和出站 AI。",
+      "expected_and_evidence": "在执行器而非提示词层拒绝；输入不升级为权限；未有原生隔离时只提供结构化受限工具。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-058",
+      "requirement_ids": [
+        "REQ-058"
+      ],
+      "category": "可用状态",
+      "stage": "M1",
+      "precondition": "有 verified/unverified/disabled 能力、过期连接及离线设备。",
+      "action_and_fault": "分别在界面和直接 API 提交任务；服务返回提示词但无所需文件。",
+      "expected_and_evidence": "双端准确拒绝/等待并说明条件；不存在虚假成功；恢复能力后可按规则新建或重试。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-059",
+      "requirement_ids": [
+        "REQ-059"
+      ],
+      "category": "云环境",
+      "stage": "M4+",
+      "precondition": "后续启用长期 workspace 的独立规格和资源配额。",
+      "action_and_fault": "停止/恢复环境、清理浏览器会话及凭证，达到持续算力上限。",
+      "expected_and_evidence": "Agent/任务历史与环境生命周期分离；恢复重新验证授权；长期费用及资源边界可见，不以进程内存保存唯一历史。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-060",
+      "requirement_ids": [
+        "REQ-060"
+      ],
+      "category": "文档约束",
+      "stage": "M1",
+      "precondition": "文档及配套工具位于 docs，原生开发环境。",
+      "action_and_fault": "执行文档校验并审查开发/测试脚本；检查浏览器资源清理记录。",
+      "expected_and_evidence": "追踪和契约无静态错误；没有 Docker/WSL 调度或未清理的任务页面；产品运行用例仍明确为未执行。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-061",
+      "requirement_ids": [
+        "REQ-061"
+      ],
+      "category": "会话",
+      "stage": "M1",
+      "precondition": "同一 Agent 有两个会话，第一个含运行任务与长期偏好。",
+      "action_and_fault": "在两会话分别讨论，搜索/置顶/归档；重放委派消息，并尝试删除运行中的会话。",
+      "expected_and_evidence": "上下文分开而授权内长期资料可复用；重放不重复任务；运行会话删除被拒绝并给出先取消或等待选项，归档不取消工作。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-062",
+      "requirement_ids": [
+        "REQ-062"
+      ],
+      "category": "专业模板",
+      "stage": "M1",
+      "precondition": "有默认助手、已发布专业模板和一个无权限项目。",
+      "action_and_fault": "不自建角色直接委派；复制专业模板到获准项目；模板更新后查看原任务及尝试越权复制。",
+      "expected_and_evidence": "默认路径可用，复制只包含允许复用的方法；角色依赖可见；历史保持原版本，越权拒绝且不复制私有记忆和凭证。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-063",
+      "requirement_ids": [
+        "REQ-063"
+      ],
+      "category": "云文件",
+      "stage": "M1",
+      "precondition": "一个项目有会话附件、工作文件、共享资料和产物；另一个企业有同名文件。",
+      "action_and_fault": "重启计算进程后浏览/搜索并引用文件；移动或删除来源；猜测他企业节点及版本。",
+      "expected_and_evidence": "云文件持续可用且四种作用域可辨；引用版本和删除标记正确；移动不隐式扩大权限，跨企业文件和索引结果不泄露。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-064",
+      "requirement_ids": [
+        "REQ-064"
+      ],
+      "category": "技能",
+      "stage": "M1",
+      "precondition": "同名技能有两个版本，分别安装但仅一个启用绑定，外部连接未授权。",
+      "action_and_fault": "查看有效能力并调用；普通停用后新建任务；旧任务运行中实施安全禁用，再尝试直接工具调用。",
+      "expected_and_evidence": "只使用固定且获准版本；安装不取得账户权限；普通停用范围明确；安全撤销即时拦截后续调用，未验证能力不能被包声明覆盖。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-065",
+      "requirement_ids": [
+        "REQ-065"
+      ],
+      "category": "项目继承",
+      "stage": "M2",
+      "precondition": "项目发布共享规则和资料，同事有个人偏好及私有连接。",
+      "action_and_fault": "查看新工作继承摘要；运行中修改项目配置；通过个人偏好要求扩大读取范围并分享成果。",
+      "expected_and_evidence": "当前运行固定原配置且权限仍实时核查；下一运行采用新版本；私有偏好不越过企业策略，凭证与完整私有会话不被共享。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-066",
+      "requirement_ids": [
+        "REQ-066"
+      ],
+      "category": "团队协作",
+      "stage": "M2",
+      "precondition": "一个协调者、分析/创意成员及有依赖的任务，设置总预算和并发上限。",
+      "action_and_fault": "让分析失败后观察创意依赖；重试失败成员；尝试无界扩组、两个成员写同一文件及重复计费回调。",
+      "expected_and_evidence": "可定位责任与缺项，父任务不误报完整成功；无界派单拒绝；冲突不静默覆盖；子费用归入同一总预留且不重复计账。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-067",
+      "requirement_ids": [
+        "REQ-067"
+      ],
+      "category": "工作模式",
+      "stage": "M1",
+      "precondition": "先计划任务已有方案版本和输入摘要，另有仅咨询会话。",
+      "action_and_fault": "批准旧版本后改变输入并尝试执行；在仅咨询中要求写文件、生成视频或建立计划，再显式切换模式。",
+      "expected_and_evidence": "过期方案确认被拒绝，关键变化需新版本；咨询工具策略拒绝写入/生成；有效明确切换有审计，不能代替账户授权。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-068",
+      "requirement_ids": [
+        "REQ-068"
+      ],
+      "category": "成果继续",
+      "stage": "M1",
+      "precondition": "已接受报告和图片版本被两名成员同时查看。",
+      "action_and_fault": "引用报告段落或图片区域修改；另一人先提交更新；存入项目并分享给只读审核员。",
+      "expected_and_evidence": "新任务保持来源版本和锚点，冲突要求解决；预览/差异与下载版本一致；审核员只见获准成果，不得到私有对话、附件或凭证。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-069",
+      "requirement_ids": [
+        "REQ-069"
+      ],
+      "category": "依赖恢复",
+      "stage": "M1",
+      "precondition": "同一任务已有可用产物，某步骤等待 Google 账户，另一步骤可继续。",
+      "action_and_fault": "就地完成授权及账户选择；重复回调；再模拟等待期间取消任务后回调迟到。",
+      "expected_and_evidence": "只解除对应依赖，复用原任务/预算/检查点；无依赖步骤继续；重复回调不重复计费或建任务，取消状态不被重新唤醒。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-070",
+      "requirement_ids": [
+        "REQ-070"
+      ],
+      "category": "方案复用",
+      "stage": "M2",
+      "precondition": "一个已验收方法组合 Agent 模板、技能和账户需求，源项目含私有资料。",
+      "action_and_fault": "生成候选方案并审阅/试运行/发布；安装到另一获准项目但不连接账户；尝试使用未发布版本。",
+      "expected_and_evidence": "只复制方法与依赖声明，缺口可见且需重新绑定；不含密钥或源客户内容；未发布/越权版本拒绝，安装不表示运行已成功。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-071",
+      "requirement_ids": [
+        "REQ-071"
+      ],
+      "category": "云端计划",
+      "stage": "M2",
+      "precondition": "已接受周报任务、项目时区和预算明确，用户有计划管理权。",
+      "action_and_fault": "用自然语言提出每周复用，核对配置后激活；关闭全部客户端，模拟重复触发并暂停未来计划。",
+      "expected_and_evidence": "确认前不激活；云端每次生成独立可追踪运行；重复触发去重；暂停阻止新运行但不默取消当前任务，不自动向未配置渠道发送消息。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-072",
+      "requirement_ids": [
+        "REQ-072"
+      ],
+      "category": "首项工作",
+      "stage": "M1",
+      "precondition": "新账号已确定企业，未配置品牌/连接器，有用户主动提供的商品资料。",
+      "action_and_fault": "点击工作示例并修改，附图发送；切换页面后从完成或待处理通知返回；未配置邮件/IM。",
+      "expected_and_evidence": "示例不自动提交，不强迫完整初始化；只补阻塞项并交付真实成果；通知定位原任务且保留上下文，没有未经配置的外发。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-073",
+      "requirement_ids": [
+        "REQ-073"
+      ],
+      "category": "角色目录",
+      "stage": "M1",
+      "precondition": "首个角色版有至少十二个已发布候选，含软件开发、设计及指定设计师。",
+      "action_and_fault": "按完整任务证据统计可用角色，再混入改名副本、禁用、未验证及仅咨询条目。",
+      "expected_and_evidence": "计入数量至少十二且同时覆盖开发与设计及指定设计师；无真实资格或无实质差异的条目排除，不能用目录数量替代可用数量。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-074",
+      "requirement_ids": [
+        "REQ-074"
+      ],
+      "category": "角色技能组合",
+      "stage": "M1",
+      "precondition": "设计师、开发和演示角色分别有固定版本技能、工具及输入输出定义。",
+      "action_and_fault": "发布并运行正常组合；替换一个包摘要，移除必需 Skill 或加入未登记工具。",
+      "expected_and_evidence": "合法组合能执行各自流程并交付实际文件；版本、摘要或依赖不符阻止发布/执行相应步骤，可选缺口准确显示。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-075",
+      "requirement_ids": [
+        "REQ-075"
+      ],
+      "category": "Codex 技能加载",
+      "stage": "M1",
+      "precondition": "所有角色绑定获准 Codex 配置、内部文本能力和精确角色包，可记录实际加载事件。",
+      "action_and_fault": "直接选角色检查 Skill 加载与版本；复制/定制模板并尝试覆盖内核，停用必需包后恢复原任务。",
+      "expected_and_evidence": "客户无需逐包配置，全部角色只能使用获准 Codex，非法覆盖被拒绝；缺必需包不退回裸提示词或其他内核，恢复沿原版本检查点且不重复费用。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-076",
+      "requirement_ids": [
+        "REQ-076"
+      ],
+      "category": "角色选择",
+      "stage": "M1",
+      "precondition": "首页、Agent 页面和能力中心连接同一模板目录，存在无权限项目。",
+      "action_and_fault": "分类搜索并预览示例，直接使用固定版本；重复点击，切到无权限项目，再补齐原任务资料。",
+      "expected_and_evidence": "示例只预填，合法项目实例化及绑定幂等；三个入口信息一致，缺项就地收集，越权项目拒绝，实例创建不显示为工作完成。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-077",
+      "requirement_ids": [
+        "REQ-077"
+      ],
+      "category": "指定设计师",
+      "stage": "M1",
+      "precondition": "模板绑定 Codex、设计 Skill 与内部 Image 2 能力，含繁英价格和商品参考。",
+      "action_and_fault": "真实生成并编辑图片，分层排版，再只改文字；模拟 Image 2 未验证、失败或供应商回提示词。",
+      "expected_and_evidence": "图片可解码且符合规格，文字可独立改、布局可恢复；所有 AI 请求走内部服务；未验证或无图片不得成功，不静默替换 Image 2。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-078",
+      "requirement_ids": [
+        "REQ-078"
+      ],
+      "category": "逐角色交付",
+      "stage": "M1",
+      "precondition": "十八个定义均有输入、步骤、实际产物和编辑范围，三端读取同一模板版本。",
+      "action_and_fault": "按角色代表任务检查源码、图像、PPTX、图表及成片；修改产物并模拟本地设备离线。",
+      "expected_and_evidence": "承诺文件真实可用且可追溯，修改固定基版本并保留旧版；三端方法一致，本地步骤等设备，云端步骤不强制安装本地组件。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-079",
+      "requirement_ids": [
+        "REQ-079"
+      ],
+      "category": "模板升级定制",
+      "stage": "M1",
+      "precondition": "企业复制一个已发布角色并引用品牌，旧任务正在执行，另有跨企业资源。",
+      "action_and_fault": "定制职责及规格、发布新版并选择采用；试图改外部 AI 地址/引入凭证/跨企业引用，再安全撤销旧技能。",
+      "expected_and_evidence": "定制和采用形成新版本，旧运行固定方法但服从即时撤销；禁止绕过内部网关及资源权限，不复制私有内容，差异和责任可查。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-080",
+      "requirement_ids": [
+        "REQ-080"
+      ],
+      "category": "角色发布资格",
+      "stage": "M1",
+      "precondition": "角色版本有正常、产物修改、依赖/权限异常三类候选运行与业务评价。",
+      "action_and_fault": "发布合格版本；另用错误模板版本、提示词占位、缺成本或仅静态 schema 结果申请发布。",
+      "expected_and_evidence": "仅匹配内核/模板/Skill/模型和输入版本的真实运行证据可通过资格，设计师必须真实出图；首发总数及专业覆盖达标，静态结果不能冒充运行验收。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-081",
+      "requirement_ids": [
+        "REQ-081"
+      ],
+      "category": "CopyPaste 品牌一致性",
+      "stage": "M1",
+      "precondition": "已固化官网基础色、真实浅深 Logo、字体层级及版本化组件；代表页面与三端均有实际实现。",
+      "action_and_fault": "分别检查登录、新工作、角色、会话/成果、素材/报告与管理页面，比较扩展和 Desktop；切换主题并导出客户作品。",
+      "expected_and_evidence": "基础色精确匹配官网取样，字体、胶囊按钮、圆角边框及阴影一致；跨端复用同一资源，客户作品与编辑工程不因平台主题变化，保存版本及对照截图。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-082",
+      "requirement_ids": [
+        "REQ-082"
+      ],
+      "category": "品牌设计验收",
+      "stage": "M1",
+      "precondition": "品牌来源记录完整，浅深组件含交互及异常状态，已准备繁中英文、长文字和客户作品样例。",
+      "action_and_fault": "在375/768/1024/1440px、100%/200%缩放检查核心页面和两主题；键盘操作、缺字体及reduced-motion场景，并故意使用淡边框或错误主题。",
+      "expected_and_evidence": "正文与必要控件对比达标，焦点可见且输入/状态不丢失，页面无非预期溢出；问题阻止相应发布；截图、对比、资源清理记录可回溯，静态样板通过不算产品验收通过。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-083",
+      "requirement_ids": [
+        "REQ-083"
+      ],
+      "category": "后台独立身份",
+      "stage": "M1",
+      "precondition": "同时具有普通用户、企业 Owner、设备凭证、后台已验证 MFA 与已撤销的管理员会话。",
+      "action_and_fault": "逐一请求后台 API；交换普通登录代码；撤销管理员后重用旧 Cookie、CSRF 和排队作业。",
+      "expected_and_evidence": "仅注册管理员的独立 MFA 会话有效，用户端和设备凭证拒绝；撤销后 API、下载和 worker 均拒绝旧权限，记录拒绝审计。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-084",
+      "requirement_ids": [
+        "REQ-084"
+      ],
+      "category": "完整用户目录",
+      "stage": "M1",
+      "precondition": "同一用户属于三个企业，另有被冻结、无 VIP、未消费与联系字段受限的用户。",
+      "action_and_fault": "搜索、组合筛选、翻页和打开详情；以客服及财务角色请求完整联系字段。",
+      "expected_and_evidence": "全局用户只出现一次且成员关系完整；未知消费不写零，字段按权限屏蔽；详情与筛选统计一致且不泄露范围外用户。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-085",
+      "requirement_ids": [
+        "REQ-085"
+      ],
+      "category": "账号状态治理",
+      "stage": "M1",
+      "precondition": "用户在两企业有会话、任务、设备和一个被撤销的连接；管理员仅被授其中一个企业范围。",
+      "action_and_fault": "冻结全局用户与单个成员关系，撤销会话、恢复账号，再重连离线设备与尝试控制另一企业。",
+      "expected_and_evidence": "全局动作需全局权限；成员冻结只影响指定关系；新调用和未来触发按策略停止，在途状态明确；恢复不重建旧会话或授权。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-086",
+      "requirement_ids": [
+        "REQ-086"
+      ],
+      "category": "消耗与成本钻取",
+      "stage": "M1",
+      "precondition": "团队任务包含协调者、成员、重试及未知费用，两个用户共享企业付费账户。",
+      "action_and_fault": "按用户、企业、项目及任务汇总后下钻账本；以无内部成本权限角色导出并改变时间范围。",
+      "expected_and_evidence": "用户按发起者归属且外部 operation 不重复计费；客户扣费、预留、未知和内部成本分开；时间口径可复算，受限成本字段不返回。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-087",
+      "requirement_ids": [
+        "REQ-087"
+      ],
+      "category": "人工费用操作",
+      "stage": "M1",
+      "precondition": "账户含实付、临时赠送、预留及信用额度；两管理员并发提交同一赠送及误发扣回。",
+      "action_and_fault": "提交充值、赠送、扣回和信用调整；重放幂等键，修改同键金额，模拟落账后响应断开与预留竞争。",
+      "expected_and_evidence": "只产生一次合法分录，异参重放冲突；余额不可直接 PATCH；额度可用性与预留一致，赠送不算实收，失败有可查询 operation。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-088",
+      "requirement_ids": [
+        "REQ-088"
+      ],
+      "category": "VIP 主动开通",
+      "stage": "M1",
+      "precondition": "同一用户已有个人及企业方案，包含未来生效、即将到期和重叠授予。",
+      "action_and_fault": "人工开通、延期、换方案、撤销并重放请求；查看开始结束时刻与个人企业切换，再检查是否自动扣款。",
+      "expected_and_evidence": "授权内操作可直接完成，主体和版本清楚；重叠按预览策略处理，延期不叠加错误时长；默认不自动续费或扣款，每次变更可追溯。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-089",
+      "requirement_ids": [
+        "REQ-089"
+      ],
+      "category": "方案及权益快照",
+      "stage": "M1",
+      "precondition": "发布方案 v1 并授予两企业，随后建立额度、功能和席位不同的 v2。",
+      "action_and_fault": "预览发布 v2、显式更换其中一企业；并发减席位和新增成员，观察原任务及费用账本。",
+      "expected_and_evidence": "原授予保持 v1，切换以新版本事件生效；超席位规则明确且不能绕过，并发受约束；VIP 不自动改余额或删除历史账本。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-090",
+      "requirement_ids": [
+        "REQ-090"
+      ],
+      "category": "全量内容控制",
+      "stage": "M1",
+      "precondition": "资源目录具备消息、Agent、品牌、记忆、云文件、成果、报告和流程；内容管理员有范围授权，客服仅可看元数据。",
+      "action_and_fault": "逐种读取正文、修改白名单字段或创建新版本；尝试覆盖旧文件、读取其他企业及下载密钥字段。",
+      "expected_and_evidence": "授权内容管理员可直接操作；客服正文拒绝，范围外拒绝；原版本保留且来源可追踪，所有响应均排除密钥与凭证。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-091",
+      "requirement_ids": [
+        "REQ-091"
+      ],
+      "category": "隔离恢复和删除",
+      "stage": "M1",
+      "precondition": "内容已被分享、检索、记忆引用、下载预览和任务模型读取，另有过期分享链接。",
+      "action_and_fault": "隔离后从所有入口读取，再恢复、撤销分享、申请删除；模拟某索引删除失败与对象保留期未满。",
+      "expected_and_evidence": "隔离立即阻断新访问和模型引用；恢复按当前权限且旧链接不复活；删除状态和例外可见；财务审计记录不经内容删除移除。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-092",
+      "requirement_ids": [
+        "REQ-092"
+      ],
+      "category": "后台任务及计划控制",
+      "stage": "M1",
+      "precondition": "运行任务含已确认和结果未知外部写入，并有周期 Routine 和等待设备步骤。",
+      "action_and_fault": "后台暂停未来触发、取消当前任务、重试失败步骤和恢复；注入旧 worker 回包与重复管理员命令。",
+      "expected_and_evidence": "触发控制与在途控制分离；未知外部操作进入对账而不盲重放；保留用户与管理员真实身份，预算及费用归属准确。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-093",
+      "requirement_ids": [
+        "REQ-093"
+      ],
+      "category": "用户端目录配置",
+      "stage": "M2",
+      "precondition": "有角色、Skill、公告、帮助、导航和功能草稿，旧发布版正被会话引用。",
+      "action_and_fault": "预览指定企业和客户端、校验发布、撤回及回滚；尝试开放未合格角色、未授权能力或旧缓存版本。",
+      "expected_and_evidence": "发布原子切换到已校验版本并传播，历史任务固定旧版；不合格能力拒绝，回滚有新事件且保留审计，不直接编辑生产文件。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-094",
+      "requirement_ids": [
+        "REQ-094"
+      ],
+      "category": "后台权限边界",
+      "stage": "M1",
+      "precondition": "八类平台角色、全局及两个企业项目范围、显式拒绝、金额与字段限额，另有过期绑定。",
+      "action_and_fault": "对列表、直接 ID、正文、下载、导出、后台作业和角色授予分别做越权；伪造菜单、is_admin 或通配符权限。",
+      "expected_and_evidence": "每次按动作和范围等上下文判定，显式拒绝优先；字段与单对象一致；越权授予和过期绑定被拒，界面隐藏不替代服务端校验。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-095",
+      "requirement_ids": [
+        "REQ-095"
+      ],
+      "category": "客服只读协助",
+      "stage": "M1",
+      "precondition": "客服仅有元数据权限，另有范围和到期受限的支持授权及被协助用户会话。",
+      "action_and_fault": "进入用户视图读取获准对象，尝试写入、付款、开 VIP、获取登录令牌及越过支持授权有效期。",
+      "expected_and_evidence": "视图持续显示真实管理员和只读提示，越权动作拒绝；不会生成用户凭证或隐身登录，到期立即限制访问且记录支持审计。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-096",
+      "requirement_ids": [
+        "REQ-096"
+      ],
+      "category": "风险审批及审计",
+      "stage": "M1",
+      "precondition": "普通赠送在操作者限额内，高额动作需独立审批；审计存储正常且有一个已审批对象版本。",
+      "action_and_fault": "分别直接执行、本人自批、改审批载荷、过期执行与撤销审批人权限；令审计写入失败后尝试敏感变更。",
+      "expected_and_evidence": "普通合法操作无需客户逐次确认；高影响操作不能自批或复用旧载荷，执行重验；审计故障阻止敏感写入，记录脱敏前后差异和真实身份。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-097",
+      "requirement_ids": [
+        "REQ-097"
+      ],
+      "category": "批量及导出",
+      "stage": "M2",
+      "precondition": "冻结选中一百个对象，处理期间部分版本或权限变化；导出包含受限列和公式样文本。",
+      "action_and_fault": "提交批量、重放及重试失败项；撤权后下载旧导出并检查过期与分片失败。",
+      "expected_and_evidence": "只处理快照内逐项仍获准对象，每项最多一次，部分结果可查；导出不含未授权列，公式不执行；下载重验与到期生效。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-098",
+      "requirement_ids": [
+        "REQ-098"
+      ],
+      "category": "后台操作体验",
+      "stage": "M1",
+      "precondition": "十六个后台页面有大列表、空数据、失败、受限列、金额表单及浅深主题和繁英文样本。",
+      "action_and_fault": "过滤分页返回、配置列、键盘开通 VIP 与赠送额度、提交错误和重复点击；在窄屏及缩放下操作。",
+      "expected_and_evidence": "CopyPaste 品牌一致，筛选与上下文保留；单位、主体与生效时段明确，未知不同于零；错误摘要可聚焦且字段可定位，重复提交不重复操作。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-099",
+      "requirement_ids": [
+        "REQ-099"
+      ],
+      "category": "平台配置硬约束",
+      "stage": "M1",
+      "precondition": "平台具备固定 Codex、内部能力及价格版本，另有未验证模型、外部 provider 和未合格 Skill 草稿。",
+      "action_and_fault": "管理员尝试发布非 Codex、外部 AI 路径、客户端密钥、静默模型替换及错误价格，再回滚合法版本。",
+      "expected_and_evidence": "全部硬约束在服务端阻止绕过；仅验证版本可发布，历史调用按原价格，回滚保留来源；后台不能用超管身份关闭内核与网关限制。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-100",
+      "requirement_ids": [
+        "REQ-100"
+      ],
+      "category": "跨端生效与撤销",
+      "stage": "M1",
+      "precondition": "Web、扩展、Desktop 和旧 worker 持有缓存权限，一个设备离线且有待下载成果。",
+      "action_and_fault": "冻结用户、撤销管理员/成员权限、开通及撤销 VIP、变更费用，再重连、下载及恢复任务。",
+      "expected_and_evidence": "所有新请求和执行以权威版本判定；离线先同步撤销，事件去重且能追踪；界面缓存更新不作为授权，站内通知不自动外发。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-101",
+      "requirement_ids": [
+        "REQ-101"
+      ],
+      "category": "收款退款对账",
+      "stage": "M1",
+      "precondition": "存在一笔真实收款、未确认记录、赠送记录、部分退款及同一支付引用的并发提交。",
+      "action_and_fault": "确认充值后两管理员分别退款，重放回调、超额退、将赠送转实收，模拟支付已退但响应丢失。",
+      "expected_and_evidence": "真实收款仅确认一次，累计退款不超原可退额；赠送无法伪造实收，退款渠道和余额退回分开；未知入对账，补偿不删历史账。",
+      "execution_status": "not_run",
+      "evidence": []
+    },
+    {
+      "id": "TC-102",
+      "requirement_ids": [
+        "REQ-102"
+      ],
+      "category": "权益执行和到期",
+      "stage": "M1",
+      "precondition": "VIP 恰好到期，定时失效服务停止；有已预留任务、未授权目录、预算不足及不支持能力。",
+      "action_and_fault": "在到期边界提交任务、启动旧队列、调用新工具与恢复已有预留；开 VIP 后重试越权及未验证能力。",
+      "expected_and_evidence": "按权威当前时间计算权益，停调度不延长资格；权益、资源、能力、预算及本地授权取交集，在途按冻结规则结算，VIP 不变成无限权限。",
+      "execution_status": "not_run",
+      "evidence": []
+    }
+  ]
+}

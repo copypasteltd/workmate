@@ -1,0 +1,357 @@
+{
+  "type": "object",
+  "properties": {
+    "protocol_version": {
+      "const": "1.0"
+    },
+    "message_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "hello",
+        "sync",
+        "sync_ack",
+        "command",
+        "result",
+        "result_ack",
+        "ping",
+        "pong"
+      ]
+    },
+    "body": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "protocol_version",
+    "message_id",
+    "type",
+    "body"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.example.invalid/device-channel.schema.json",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "hello"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "device_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "supported_versions": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "last_server_seq": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "last_result_seq": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "device_id",
+              "supported_versions",
+              "last_server_seq",
+              "last_result_seq"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "sync"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "session_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "server_seq": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "auth_version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "revoked_grant_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "minItems": 0
+              },
+              "cancel_command_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "minItems": 0
+              }
+            },
+            "required": [
+              "session_id",
+              "server_seq",
+              "auth_version",
+              "revoked_grant_ids",
+              "cancel_command_ids"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "sync_ack"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "session_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "server_seq": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "session_id",
+              "server_seq"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "command"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "server_seq": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "command": {
+                "$ref": "./device-command.schema.json"
+              }
+            },
+            "required": [
+              "server_seq",
+              "command"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "result"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "result_seq": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "result": {
+                "type": "object",
+                "properties": {
+                  "command_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "fencing_token": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "accepted",
+                      "running",
+                      "succeeded",
+                      "failed",
+                      "cancelled",
+                      "unknown"
+                    ]
+                  },
+                  "artifact_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "minItems": 0
+                  },
+                  "error_code": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "command_id",
+                  "fencing_token",
+                  "state",
+                  "artifact_ids"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "result_seq",
+              "result"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "result_ack"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "result_seq": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "result_seq"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "ping"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "session_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sent_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "session_id",
+              "sent_at"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "pong"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "session_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "sent_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "session_id",
+              "sent_at"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  ]
+}

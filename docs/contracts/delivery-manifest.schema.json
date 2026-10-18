@@ -1,0 +1,97 @@
+{
+  "type": "object",
+  "properties": {
+    "package_version": {
+      "const": "1.0"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "brand_version_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "relative_path": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*[\\\\:\\x00-\\x1f]).+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "content_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "locale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "deliverable",
+              "editing_project",
+              "source",
+              "font",
+              "license"
+            ]
+          },
+          "usage_scope": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "relative_path",
+          "sha256",
+          "asset_version_id",
+          "content_type",
+          "role",
+          "usage_scope"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "missing_specification_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 0
+    },
+    "editable_scope": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "package_version",
+    "task_id",
+    "brand_version_id",
+    "created_at",
+    "files",
+    "missing_specification_ids",
+    "editable_scope"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.example.invalid/delivery-manifest.schema.json"
+}

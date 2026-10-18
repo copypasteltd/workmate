@@ -1,0 +1,238 @@
+{
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "video_timeline"
+    },
+    "project_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "task_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "brand_version_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "locale": {
+      "type": "string",
+      "minLength": 1
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fps_num": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fps_den": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "duration_frames": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "template_version_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "tracks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "visual",
+              "audio",
+              "caption"
+            ]
+          },
+          "z_index": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "z_index"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "clips": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "track_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "text"
+            ]
+          },
+          "start_frame": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "duration_frames": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_in_frame": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "asset_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "text": {
+            "type": "string"
+          },
+          "font_asset_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "effect_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "gain_db": {
+            "type": "number",
+            "minimum": -60,
+            "maximum": 12
+          },
+          "text_style": {
+            "type": "object",
+            "properties": {
+              "font_size": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ]
+              }
+            },
+            "required": [
+              "font_size",
+              "color",
+              "align"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "track_id",
+          "kind",
+          "start_frame",
+          "duration_frames",
+          "source_in_frame",
+          "effect_ids"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "image",
+                    "video",
+                    "audio"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "asset_version_id"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "text"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "text",
+                "font_asset_version_id"
+              ]
+            }
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "renderer_version": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "format_version",
+    "kind",
+    "project_id",
+    "task_id",
+    "brand_version_id",
+    "locale",
+    "width",
+    "height",
+    "fps_num",
+    "fps_den",
+    "duration_frames",
+    "tracks",
+    "clips",
+    "renderer_version"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.example.invalid/video-project.schema.json"
+}
