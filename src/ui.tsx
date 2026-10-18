@@ -4,7 +4,11 @@ import {
   useEffect,
   useState,
   useRef,
+  useId,
+  cloneElement,
+  isValidElement,
   type ReactNode,
+  type ReactElement,
   type FormEvent,
 } from "react";
 import {
@@ -385,11 +389,24 @@ export function Field({
   children: ReactNode;
   hint?: string;
 }) {
+  const hintId = useId();
+  const control = isValidElement(children)
+    ? cloneElement(
+        children as ReactElement<{
+          "aria-label"?: string;
+          "aria-describedby"?: string;
+        }>,
+        {
+          "aria-label": label,
+          ...(hint ? { "aria-describedby": hintId } : {}),
+        },
+      )
+    : children;
   return (
     <label className="field">
       <span>{label}</span>
-      {children}
-      {hint && <small>{hint}</small>}
+      {control}
+      {hint && <small id={hintId}>{hint}</small>}
     </label>
   );
 }

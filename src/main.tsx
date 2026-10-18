@@ -1,4 +1,13 @@
 import { NativeFiles } from "./native-files";
+import {
+  Specialists,
+  Conversations,
+  ConversationDetail,
+  Memories,
+  ModeField,
+  RecentConversations,
+  TaskPlan,
+} from "./persistent-work";
 import React, { useEffect, useState, useRef, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -53,6 +62,8 @@ import {
   Trash2,
   Play,
   PanelLeftClose,
+  MessageSquare,
+  Brain,
 } from "lucide-react";
 import { api, post, patch, download, ApiError } from "./api";
 import {
@@ -570,6 +581,9 @@ function NativeAuthorize() {
 const navigation = [
   ["", LayoutGrid, "工作台", "Workspace"],
   ["roles", Sparkles, "專業角色", "Specialists"],
+  ["specialists", Users, "我的專家", "Your specialists"],
+  ["conversations", MessageSquare, "我的會話", "Your conversations"],
+  ["memories", Brain, "記憶與偏好", "Memory & preferences"],
   ["projects", FolderOpen, "專案", "Projects"],
   ["assets", Image, "素材與交付", "Assets & deliverables"],
   ["creative", Layers, "設計畫布", "Design canvas"],
@@ -582,6 +596,25 @@ function Shell() {
   const { t } = useI18n(),
     w = useWorkspace();
   const [mobile, setMobile] = useState(false);
+  const [narrow, setNarrow] = useState(
+    () => matchMedia("(max-width: 740px)").matches,
+  );
+  useEffect(() => {
+    const media = matchMedia("(max-width: 740px)");
+    const change = () => {
+      setNarrow(media.matches);
+      setMobile(false);
+    };
+    media.addEventListener("change", change);
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobile(false);
+    };
+    document.addEventListener("keydown", escape);
+    return () => {
+      media.removeEventListener("change", change);
+      document.removeEventListener("keydown", escape);
+    };
+  }, []);
   const location = useLocation();
   const published = useData("/v1/public/content");
   const navConfig = (path: string) =>
@@ -599,7 +632,11 @@ function Shell() {
       <a className="skip-link" href="#main">
         {t("跳到內容", "Skip to content")}
       </a>
-      <aside className="sidebar">
+      <aside
+        className="sidebar"
+        inert={narrow && !mobile}
+        aria-hidden={narrow && !mobile}
+      >
         <div className="sidebar-brand">
           <Logo />
           <button
@@ -738,6 +775,13 @@ function Shell() {
             <Routes>
               <Route index element={<Workbench />} />
               <Route path="roles" element={<Roles />} />
+              <Route path="specialists" element={<Specialists />} />
+              <Route path="conversations" element={<Conversations />} />
+              <Route
+                path="conversations/:id"
+                element={<ConversationDetail />}
+              />
+              <Route path="memories" element={<Memories />} />
               <Route path="projects" element={<Projects />} />
               <Route path="tasks/:id" element={<TaskDetail />} />
               <Route path="assets" element={<Assets />} />
@@ -823,6 +867,7 @@ function NewTask({
             title: String(f.get("title")),
             prompt: String(f.get("prompt")),
             role_key: String(f.get("role")),
+            mode: String(f.get("mode")),
             budget_micros: Math.round(Number(f.get("budget")) * 1e6),
           });
           sessionStorage.removeItem("cp_brief");
@@ -845,6 +890,7 @@ function NewTask({
             ))}
           </select>
         </Field>
+        <ModeField />
         <Field label={t("工作名稱", "Task name")}>
           <input
             name="title"
@@ -1059,6 +1105,7 @@ function Workbench() {
           />
         )}
       </section>
+      <RecentConversations />
       {newTask && <NewTask onClose={() => setNewTask(false)} />}
     </>
   );
@@ -1410,6 +1457,17 @@ function TaskDetail() {
             }
           />
           <ErrorNotice error={actionError} />
+          {data.conversation_id && (
+            <p className="section-block">
+              <Link
+                className="text-link"
+                to={"/app/conversations/" + data.conversation_id}
+              >
+                {t("返回私人會話", "Return to private conversation")}
+                <ArrowUpRight size={15} />
+              </Link>
+            </p>
+          )}
           <div className="task-layout">
             <section className="card task-conversation">
               <div className="conversation-label">
@@ -1456,7 +1514,7 @@ function TaskDetail() {
               {data.error_code && (
                 <div className="notice error">{data.error_code}</div>
               )}
-              {data.status === "succeeded" && (
+              {data.status === "succeeded" && data.mode !== "plan" && (
                 <div className="review-actions">
                   <button
                     className="button primary"
@@ -1495,6 +1553,14 @@ function TaskDetail() {
               <div className="card">
                 <h3>{t("工作詳情", "Task details")}</h3>
                 <dl className="detail-list">
+                  <dt>{t("工作方式", "Working mode")}</dt>
+                  <dd>
+                    {data.mode === "ask"
+                      ? t("諮詢", "Ask")
+                      : data.mode === "plan"
+                        ? t("規劃", "Plan")
+                        : t("執行", "Execute")}
+                  </dd>
                   <dt>{t("預算預留", "Reserved budget")}</dt>
                   <dd>
                     <Money value={data.budget_micros} />
@@ -1515,6 +1581,7 @@ function TaskDetail() {
               </div>
             </aside>
           </div>
+          <TaskPlan key={data.id} task={data} />
           <section className="section-block">
             <div className="section-title">
               <h2>{t("工作記錄", "Activity")}</h2>
@@ -1620,6 +1687,11 @@ function Assets() {
               </div>
               <h3>{a.name}</h3>
               <p className="muted small-text">
+                {a.private_owner
+                  ? t("私人交付 · 僅自己可見", "Private deliverable · only you")
+                  : t("專案共用", "Shared with project")}
+              </p>
+              <p className="muted small-text">
                 v{a.current_version} · {(Number(a.bytes) / 1024).toFixed(1)} KB
               </p>
               <div className="row-actions">
@@ -1639,6 +1711,30 @@ function Assets() {
                   <Clock size={15} />
                   {t("版本", "Versions")}
                 </button>
+                {a.private_owner && (
+                  <button
+                    className="text-button"
+                    onClick={() => {
+                      if (
+                        window.confirm(
+                          t(
+                            "將這一版檔案複製到專案，讓有權限的成員使用？",
+                            "Copy this file version into the project for authorized members?",
+                          ),
+                        )
+                      )
+                        void post(w.base + "/assets/" + a.id + "/publish", {
+                          name: a.name,
+                          expected_version: a.current_version,
+                        })
+                          .then(() => setRefresh((v) => v + 1))
+                          .catch(setErr);
+                    }}
+                  >
+                    <ArrowUpRight size={15} />
+                    {t("發佈到專案", "Publish to project")}
+                  </button>
+                )}
               </div>
             </article>
           ))}

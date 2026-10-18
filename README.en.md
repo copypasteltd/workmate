@@ -1,6 +1,6 @@
 # CopyPaste Web
 
-[简体中文](README.md) · Enterprise cloud workspace · 0.1.0
+[简体中文](README.md) · Enterprise cloud workspace · 0.2.0
 
 A Web client for Hong Kong enterprise marketing teams, using CopyPaste's warm white, ink and blue palette, serif display typography, Traditional Chinese/English and light/dark/system themes. Customer deliverables retain the customer's brand. This repository builds independently and obtains data from the platform API.
 
@@ -32,8 +32,9 @@ flowchart LR
   L[Landing] --> A[Email OTP]
   A --> W[Workspace and first project]
   W --> H[Workbench]
-  H --> R[18 specialist presets]
-  R --> T[Task and budget]
+  H --> R[18 presets and persistent specialists]
+  R --> C[Private conversation and scoped memory]
+  C --> T[Ask, plan or execute with a budget]
   T --> X[Platform execution, events and cancellation]
   X --> O[Versioned deliverables and downloads]
   H --> M[Assets, brand and campaign data]
@@ -66,6 +67,19 @@ Development OTPs are available only in platform `.data/mailbox/`; production use
 ![Assets](assets/screenshots/03-assets.png)
 ![Analytics in dark mode](assets/screenshots/04-analytics-dark.png)
 
+## Specialists and private work
+
+Create a specialist from an installed role, set instructions, brand and tools, then start a private conversation. Specialist edits are versioned; conversations retain their selected version until you explicitly adopt an update. Notes save without AI. Ask and plan use reading tools, while execute can create deliverables. Execution of a plan requires approval against the current context and budget.
+
+Conversations support search, pin, rename, archive/unarchive and version-checked deletion. Messages, tasks and outputs remain owner-private. Explicit publication creates a shared project copy. Workspace/brand/project/conversation/personal memories have content versions and optional expiry. Personal and conversation memory remain private. Deletion requires confirmation and completed or cancelled/settled work.
+
+The 390px mobile layout and dark theme were exercised in a real browser. A closed mobile sidebar is removed from keyboard navigation. The platform rechecks authentication, access and billing on each request.
+
+![Specialists](assets/screenshots/06-persistent-specialists.png)
+![Private conversation](assets/screenshots/07-private-conversation.png)
+![Memory preferences](assets/screenshots/08-memory-preferences.png)
+![Dark conversation](assets/screenshots/10-conversation-dark.png)
+
 ## Product and authorization rules
 
 The API is authoritative for access, billing and entitlements. Hidden controls are not authorization. VIP and wallet balances are separate; personal/workspace entitlements use actual validity timestamps. Unconfigured company AI is explicitly unavailable. Installed presets are not proof of qualified live business work.
@@ -76,7 +90,7 @@ All AI requests run through the platform and company internal gateway. This clie
 
 ## Verification and maintenance
 
-`npm test` performs type checking. The delivery repository's `npm run qa:web` exercises actual email login/onboarding, 13 workspace modules, 16 Admin pages, dark/light and mobile viewports. Screenshots use real UI/API/PostgreSQL with fictional fixture businesses and `.invalid` emails.
+`npm test` performs type checking. The delivery repository's `npm run qa:web` and `npm run qa:persistent` exercise actual email login/onboarding, 13 workspace modules, 16 Admin pages, dark/light and mobile viewports. Screenshots use real UI/API/PostgreSQL with fictional fixture businesses and `.invalid` emails.
 
 Routes/pages live in `src/main.tsx`; context handles identity/workspace/theme/locale; `api.ts` owns transport; `native-files.tsx` is the native-file panel; `ui.tsx` and `style.css` are self-contained UI foundations. Desktop imports an explicit renderer snapshot rather than requiring sibling source during builds.
 

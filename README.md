@@ -1,6 +1,6 @@
 # CopyPaste Web
 
-[English](README.en.md) · 企业云端工作台 · 0.1.0
+[English](README.en.md) · 企业云端工作台 · 0.2.0
 
 面向在港企业 marketing 团队的 Web 客户端，采用 CopyPaste 暖灰白、深墨、亮蓝与衬线标题。繁体中文/英文、浅色/深色/系统主题。客户创意继续使用客户品牌。本仓库可单独安装和构建，服务数据来自独立 platform API。
 
@@ -32,8 +32,9 @@ flowchart LR
   L[官网式入口] --> A[邮箱验证码]
   A --> W[企业与首个项目]
   W --> H[工作台]
-  H --> R[18 个角色]
-  R --> T[新建任务与预算]
+  H --> R[18 个角色 / 专属专家]
+  R --> C[私密会话 / 范围记忆]
+  C --> T[问答、计划或执行 / 预算]
   T --> X[平台执行 / 事件 / 取消]
   X --> O[成果、版本、下载]
   H --> M[素材、品牌、广告数据]
@@ -66,6 +67,19 @@ flowchart LR
 ![资产与版本](assets/screenshots/03-assets.png)
 ![营销分析深色主题](assets/screenshots/04-analytics-dark.png)
 
+## 专属专家与私密工作
+
+从预设角色创建专属专家，设置职责、品牌和工具范围，再开始私密会话。专家修改产生新版本，已有会话可明确采纳更新。笔记不调用 AI；问答和计划只使用读取工具，执行模式才生成交付物。计划转执行须明确批准，并重新验证上下文和预算。
+
+会话支持检索、置顶、改名、归档/恢复及带版本的删除。私密消息、任务、成果仅所属用户可见；发布成果会建立明确的项目共享副本。记忆支持企业、品牌、项目、会话和个人五种范围、内容版本及到期时间。个人/会话记忆保持私密；删除需要确认，有在途任务时须先完成或取消并结算。
+
+390px 移动布局和深色主题经过真实浏览器检查；移动侧栏收起后退出键盘焦点顺序。所有权限与费用由平台在请求时验证。
+
+![专属专家](assets/screenshots/06-persistent-specialists.png)
+![私密会话](assets/screenshots/07-private-conversation.png)
+![记忆偏好](assets/screenshots/08-memory-preferences.png)
+![深色私密会话](assets/screenshots/10-conversation-dark.png)
+
 ## 产品规则
 
 后端是权限与费用的权威来源；隐藏按钮不是授权边界。钱包和 VIP 分别显示；个人/企业 VIP 按实际时间生效。没有配置公司 AI 网关时，角色明确不可执行；18 个已安装角色不等于 18 个已通过真实业务验收的角色。
@@ -76,7 +90,7 @@ AI 请求全部由平台转发公司内部服务器，本端没有模型 key。�
 
 ## 验证与维护
 
-`npm test` 执行类型检查；真实身份与页面旅程由 delivery 的 `npm run qa:web` 执行，截图来自实际 UI 和 PostgreSQL 开发数据，不是设计稿。覆盖首次登录/初始化、13 个工作区模块、16 个 Admin 页面、浅深主题和移动视口。截图 fixture 使用虚构企业和 `.invalid` 邮箱。
+`npm test` 执行类型检查；真实身份与页面旅程由 delivery 的 `npm run qa:web` 与 `npm run qa:persistent` 执行，截图来自实际 UI 和 PostgreSQL 开发数据，不是设计稿。覆盖首次登录/初始化、13 个工作区模块、16 个 Admin 页面、浅深主题和移动视口。截图 fixture 使用虚构企业和 `.invalid` 邮箱。
 
 `src/main.tsx` 管理路由与页面，`context.tsx` 管理登录/企业/语言/主题上下文，`api.ts` 封装网络和 Desktop 桥接，`native-files.tsx` 提供原生文件面板，`ui.tsx` 与 `style.css` 提供本仓库独立 UI 基础。Desktop 使用显式快照同步，不在构建时偷偷读取相邻源码。
 
