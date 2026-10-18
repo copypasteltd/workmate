@@ -1,6 +1,6 @@
 # CopyPaste Web
 
-[English](README.en.md) · 企业云端工作台 · 0.4.0
+[English](README.en.md) · 企业云端工作台 · 0.5.0
 
 面向在港企业 marketing 团队的 Web 客户端，采用 CopyPaste 暖灰白、深墨、亮蓝与衬线标题。繁体中文/英文、浅色/深色/系统主题。客户创意继续使用客户品牌。本仓库可单独安装和构建，服务数据来自独立 platform API。
 
@@ -96,7 +96,7 @@ AI 请求全部由平台转发公司内部服务器，本端没有模型 key。�
 
 ## 本次边界
 
-公司网关、SMTP、广告 OAuth 和 S3 的真实配置与联调仍需部署环境提供。SSO、事件触发、多人并行 Agent、协同编辑及完整 AI 视频/语音尚未实现。数据轮询不等于规划中的完整 SSE。浏览器只提供有限 HTML SEO 检查，不承诺 GEO 排名提升。
+公司网关、SMTP、广告 OAuth 和 S3 的真实配置与联调仍需部署环境提供。SAML/SCIM、强制 SSO、事件触发、多人并行 Agent、协同编辑及完整 AI 视频/语音尚未实现。数据轮询不等于规划中的完整 SSE。浏览器只提供有限 HTML SEO 检查，不承诺 GEO 排名提升。
 
 界面自托管 Manrope/Fraunces 字体，图标为 Lucide，首页蓝色纸带素材通过用户指定的 sub2-image-gen 生成，品牌来自 copypaste.hk。参见 [素材与依赖说明](THIRD_PARTY_NOTICES.md)。主设计/需求文档在交付根目录 `docs/`。
 
@@ -107,3 +107,20 @@ AI 请求全部由平台转发公司内部服务器，本端没有模型 key。�
 支持修改、暂停、重新授权恢复和退役；暂停保留当前工作，运行历史另有取消按钮。修改只影响未来，暂停区间不补跑。结束时间排他，夏令时跳空略过、重复时刻只执行第一次。规则由平台校验，界面见 `src/schedules.tsx`；Delivery `qa:schedules` 验证真实时钟、页面关闭后的执行及移动操作。
 
 ![真实云端定时工作流](assets/screenshots/15-cloud-schedules.png)
+
+## 0.5.0 企业身份与统一登录
+
+OIDC 使用 code + PKCE S256、签章、state/nonce 与固定回调。先有注册账号及有效企业成员资格，再绑定企业身份；首次绑定需要独立的 CopyPaste 工作邮箱确认码，不按网域自动开户。配置改变、停用或本人解除连接会撤销关联用户的全部 CopyPaste Web/native/refresh 会话和旧执行授权。管理员登录仍独立使用邮箱与 TOTP。
+
+`/login` 增加企业身份入口，`/sso` 输入企业登入代号与工作邮箱，`/sso/confirm` 完成首次邮箱确认。账号设置显示本人连接并明确确认解除后登出全部装置。原生端 `/authorize` 的回调及 PKCE 参数跨企业身份流程保留，最后仍需用户点击授权。
+
+```mermaid
+flowchart LR
+  Member[已有企业成员] --> IdP[签名 OIDC 与 PKCE]
+  IdP --> Proof[首次独立邮箱确认]
+  Proof --> Web[CopyPaste 会话]
+  Web --> Native[明确原生授权与 PKCE]
+  Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
+```
+
+![实际企业身份界面](assets/screenshots/17-company-sign-in.png)

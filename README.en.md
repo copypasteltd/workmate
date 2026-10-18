@@ -1,6 +1,6 @@
 # CopyPaste Web
 
-[简体中文](README.md) · Enterprise cloud workspace · 0.4.0
+[简体中文](README.md) · Enterprise cloud workspace · 0.5.0
 
 A Web client for Hong Kong enterprise marketing teams, using CopyPaste's warm white, ink and blue palette, serif display typography, Traditional Chinese/English and light/dark/system themes. Customer deliverables retain the customer's brand. This repository builds independently and obtains data from the platform API.
 
@@ -94,7 +94,7 @@ All AI requests run through the platform and company internal gateway. This clie
 
 Routes/pages live in `src/main.tsx`; context handles identity/workspace/theme/locale; `api.ts` owns transport; `native-files.tsx` is the native-file panel; `ui.tsx` and `style.css` are self-contained UI foundations. Desktop imports an explicit renderer snapshot rather than requiring sibling source during builds.
 
-Company gateway, SMTP, advertising OAuth and S3 still require deployment configuration and live qualification. SSO, event triggers, parallel specialist teams, collaborative editing and full AI video/speech are unfinished. Polling is not full planned SSE. Submitted-HTML SEO checks do not promise GEO rankings.
+Company gateway, SMTP, advertising OAuth and S3 still require deployment configuration and live qualification. SAML/SCIM, mandatory SSO policies, event triggers, parallel specialist teams, collaborative editing and full AI video/speech are unfinished. Polling is not full planned SSE. Submitted-HTML SEO checks do not promise GEO rankings.
 
 Self-hosted Manrope/Fraunces, Lucide icons and the generated blue-fold artwork are documented in [third-party notices](THIRD_PARTY_NOTICES.md). Master requirements remain in the delivery root's `docs/`.
 
@@ -105,3 +105,20 @@ Version 0.4.0 adds daily/weekly calendars to Workflows. Select a published workf
 Users can edit, pause, reauthorize/resume or retire calendars. Pausing preserves current work; run history provides separate cancellation. Changes affect future work and paused intervals are skipped. End dates are exclusive; nonexistent DST times are skipped and repeated times run once at their first instant. Platform checks enforce these rules. See `src/schedules.tsx`; Delivery `qa:schedules` verifies actual-clock execution with the user page closed and mobile controls.
 
 ![Actual cloud workflow schedules](assets/screenshots/15-cloud-schedules.png)
+
+## 0.5.0 company identity and unified sign-in
+
+OIDC uses code + PKCE S256, signature verification, state/nonce and a fixed callback. An existing registered account and active workspace membership are required. First binding requires a separate CopyPaste work-email code; domains never auto-enroll users. Configuration changes, disablement or unlinking revoke all linked users’ CopyPaste browser/native/refresh sessions and prior execution authorization. Administrator email and TOTP remain separate.
+
+`/login` offers company identity; `/sso` accepts a company sign-in key and work email; `/sso/confirm` performs first-link email proof. Account settings list owned connections and explicitly confirm signing out everywhere on disconnect. Native `/authorize` callback and PKCE parameters survive SSO, followed by explicit user consent.
+
+```mermaid
+flowchart LR
+  Member[Existing workspace member] --> IdP[Signed OIDC and PKCE]
+  IdP --> Proof[First-link email proof]
+  Proof --> Web[CopyPaste session]
+  Web --> Native[Explicit native consent and PKCE]
+  Revoke[Disable or unlink] --> All[Revoke browser and native credentials]
+```
+
+![Actual company identity interface](assets/screenshots/17-company-sign-in.png)
