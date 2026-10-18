@@ -20,6 +20,7 @@ import { metrics } from "./analytics.js";
 import type { Principal } from "./auth.js";
 import { advanceWorkflows, poster, renderProjectPoster } from "./business.js";
 import { pngFromSVG, motionFromSVG } from "./render.js";
+import { resolveWorkContext } from "./persistent-work.js";
 
 export class Worker {
   private boss: PgBoss;
@@ -99,53 +100,75 @@ export class Worker {
   }
   async run(tenant: string, id: string) {
     const fencing = randomUUID();
+    // Worker control identity locates the owner; restricted execution still uses RLS.
+    const owner = (
+      await this.db.control.query(
+        "SELECT created_by FROM tasks WHERE id=$1 AND tenant_id=$2",
+        [id, tenant],
+      )
+    ).rows[0]?.created_by;
+    if (!owner) return;
     let task: any;
     let actor: Principal;
-    task = await this.db.tx(async (tx) => {
-      const t = (
-        await tx.query(
-          "SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2 FOR UPDATE",
-          [id, tenant],
-        )
-      ).rows[0];
-      if (!t || t.status !== "queued") return null;
-      const u = (
-        await tx.query("SELECT * FROM users WHERE id=$1", [t.created_by])
-      ).rows[0];
-      actor = {
-        id: u.id,
-        email: u.email,
-        name: u.name,
-        audience: "user",
-        sessionId: "",
-        sessionHash: "",
-        authVersion: t.actor_auth_version,
-      };
-      try {
-        await projectAccess(tx, actor, tenant, t.project_id, "write");
-        if (t.content_state !== "active")
-          throw new Error("Content is unavailable");
-        await this.catalog.ensureEnabled(tx, t.role_key);
-        if (this.catalog.digest(this.catalog.role(t.role_key)) !== t.role_hash)
-          throw new Error("Role version changed");
-      } catch {
-        await settle(tx, tenant, id, 0, t.created_by);
-        await tx.query(
-          "UPDATE tasks SET status='cancelled',error_code='AUTHORIZATION_CHANGED',version=version+1 WHERE id=$1",
-          [id],
-        );
-        await event(tx, tenant, id, "task.cancelled", {
-          reason: "AUTHORIZATION_CHANGED",
-        });
-        return null;
-      }
-      return (
-        await tx.query(
-          "UPDATE tasks SET status='running',attempt=attempt+1,fencing_token=$2,lease_until=now()+interval '45 seconds',updated_at=now(),version=version+1 WHERE id=$1 RETURNING *",
-          [id, fencing],
-        )
-      ).rows[0];
-    }, tenant);
+    task = await this.db.tx(
+      async (tx) => {
+        const t = (
+          await tx.query(
+            "SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2 FOR UPDATE",
+            [id, tenant],
+          )
+        ).rows[0];
+        if (!t || t.status !== "queued") return null;
+        const u = (
+          await tx.query("SELECT * FROM users WHERE id=$1", [t.created_by])
+        ).rows[0];
+        actor = {
+          id: u.id,
+          email: u.email,
+          name: u.name,
+          audience: "user",
+          sessionId: "",
+          sessionHash: "",
+          authVersion: t.actor_auth_version,
+        };
+        try {
+          await projectAccess(tx, actor, tenant, t.project_id, "write");
+          if (t.content_state !== "active")
+            throw new Error("Content is unavailable");
+          await this.catalog.ensureEnabled(tx, t.role_key);
+          await resolveWorkContext(
+            tx,
+            actor,
+            tenant,
+            t.project_id,
+            t.input_context,
+          );
+          if (
+            this.catalog.digest(this.catalog.role(t.role_key)) !== t.role_hash
+          )
+            throw new Error("Role version changed");
+        } catch {
+          await settle(tx, tenant, id, 0, t.created_by);
+          await tx.query(
+            "UPDATE tasks SET status='cancelled',error_code='AUTHORIZATION_CHANGED',version=version+1 WHERE id=$1",
+            [id],
+          );
+          await event(tx, tenant, id, "task.cancelled", {
+            reason: "AUTHORIZATION_CHANGED",
+          });
+          return null;
+        }
+        return (
+          await tx.query(
+            "UPDATE tasks SET status='running',attempt=attempt+1,fencing_token=$2,lease_until=now()+interval '45 seconds',updated_at=now(),version=version+1 WHERE id=$1 RETURNING *",
+            [id, fencing],
+          )
+        ).rows[0];
+      },
+      tenant,
+      false,
+      owner,
+    );
     if (!task) return;
     const controller = new AbortController();
     this.active.set(id, controller);
@@ -154,55 +177,72 @@ export class Worker {
       if (checking) return;
       checking = true;
       void this.db
-        .tx(async (tx) => {
-          const t = (
+        .tx(
+          async (tx) => {
+            const t = (
+              await tx.query(
+                "SELECT * FROM tasks WHERE id=$1 AND fencing_token=$2 AND status='running'",
+                [id, fencing],
+              )
+            ).rows[0];
+            if (!t || t.cancel_requested || t.content_state !== "active") {
+              controller.abort();
+              return;
+            }
+            try {
+              await projectAccess(tx, actor, tenant, task.project_id, "write");
+              await this.catalog.ensureEnabled(tx, task.role_key);
+              await resolveWorkContext(
+                tx,
+                actor,
+                tenant,
+                task.project_id,
+                task.input_context,
+              );
+            } catch {
+              controller.abort();
+              return;
+            }
             await tx.query(
-              "SELECT * FROM tasks WHERE id=$1 AND fencing_token=$2 AND status='running'",
+              "UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1 AND fencing_token=$2",
               [id, fencing],
-            )
-          ).rows[0];
-          if (!t || t.cancel_requested || t.content_state !== "active") {
-            controller.abort();
-            return;
-          }
-          try {
-            await projectAccess(tx, actor, tenant, task.project_id, "write");
-            await this.catalog.ensureEnabled(tx, task.role_key);
-          } catch {
-            controller.abort();
-            return;
-          }
-          await tx.query(
-            "UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1 AND fencing_token=$2",
-            [id, fencing],
-          );
-        }, tenant)
+            );
+          },
+          tenant,
+          false,
+          owner,
+        )
         .catch(() => controller.abort())
         .finally(() => {
           checking = false;
         });
     }, 3000);
     const emit = async (kind: string, body: any) =>
-      this.db.tx(async (tx) => {
-        const live = (
-          await tx.query(
-            "SELECT * FROM tasks WHERE id=$1 AND fencing_token=$2 AND status='running'",
-            [id, fencing],
-          )
-        ).rows[0];
-        if (!live) throw new Error("Fenced execution");
-        if (kind === "runtime.thread")
-          await tx.query("UPDATE tasks SET runtime_thread=$2 WHERE id=$1", [
-            id,
-            body.thread_id,
-          ]);
-        if (kind === "runtime.turn")
-          await tx.query("UPDATE tasks SET runtime_turn=$2 WHERE id=$1", [
-            id,
-            body.turn_id,
-          ]);
-        await event(tx, tenant, id, kind, body);
-      }, tenant);
+      this.db.tx(
+        async (tx) => {
+          const live = (
+            await tx.query(
+              "SELECT * FROM tasks WHERE id=$1 AND fencing_token=$2 AND status='running'",
+              [id, fencing],
+            )
+          ).rows[0];
+          if (!live) throw new Error("Fenced execution");
+          if (kind === "runtime.thread")
+            await tx.query("UPDATE tasks SET runtime_thread=$2 WHERE id=$1", [
+              id,
+              body.thread_id,
+            ]);
+          if (kind === "runtime.turn")
+            await tx.query("UPDATE tasks SET runtime_turn=$2 WHERE id=$1", [
+              id,
+              body.turn_id,
+            ]);
+          await event(tx, tenant, id, kind, body);
+        },
+        tenant,
+        false,
+        owner,
+      );
     try {
       const role = this.catalog.role(task.role_key);
       const bound = await this.catalog.boundSkills(role);
@@ -213,14 +253,35 @@ export class Worker {
           sha256: s.sha256,
         })),
       });
+      const context = await this.db.tx(
+        async (tx) => {
+          await projectAccess(tx, actor!, tenant, task.project_id, "write");
+          return resolveWorkContext(
+            tx,
+            actor!,
+            tenant,
+            task.project_id,
+            task.input_context,
+          );
+        },
+        tenant,
+        false,
+        owner,
+      );
+      const effectiveRole = {
+        ...role,
+        tool_ids: role.tool_ids.filter(
+          (id: string) => !context.role || context.role.tool_ids.includes(id),
+        ),
+      };
       const result = await this.runtime.start({
         taskId: id,
-        prompt: task.prompt,
+        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}\n\nCurrent user request:\n${task.prompt}`,
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
         skills: bound,
         signal: controller.signal,
         onEvent: emit,
-        tools: this.tools(task, actor!, fencing, role),
+        tools: this.tools(task, actor!, fencing, effectiveRole),
       });
       await this.finish(
         task,
@@ -262,45 +323,119 @@ export class Worker {
     uncertain: boolean,
     error?: string,
   ) {
-    await this.db.tx(async (tx) => {
-      const live = (
+    await this.db.tx(
+      async (tx) => {
+        const live = (
+          await tx.query(
+            "SELECT * FROM tasks WHERE id=$1 AND fencing_token=$2 FOR UPDATE",
+            [t.id, fencing],
+          )
+        ).rows[0];
+        if (!live || live.status !== "running") return;
+        if (live.cancel_requested) status = "cancelled";
+        let contextDigest = "";
+        try {
+          const u = (
+            await tx.query(
+              "SELECT email,name,auth_version FROM users WHERE id=$1",
+              [t.created_by],
+            )
+          ).rows[0];
+          const actor: Principal = {
+            id: t.created_by,
+            email: u.email,
+            name: u.name,
+            authVersion: t.actor_auth_version,
+            audience: "user",
+            sessionId: "",
+            sessionHash: "",
+          };
+          await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
+          const context = await resolveWorkContext(
+            tx,
+            actor,
+            t.tenant_id,
+            t.project_id,
+            live.input_context,
+          );
+          contextDigest = context.digest;
+        } catch {
+          status = "cancelled";
+          text = "";
+          error = "CONTEXT_REVOKED";
+        }
+        const ops = (
+          await tx.query(
+            "SELECT coalesce(sum(charge_micros) FILTER(WHERE state='succeeded'),0)::text AS charge,bool_or(state IN ('accepted','reconciling')) AS uncertain FROM tool_operations WHERE task_id=$1",
+            [t.id],
+          )
+        ).rows[0];
+        const cost =
+          tokenCharge(
+            input,
+            output,
+            this.db.config.AI_INPUT_HKD_MICROS_PER_MILLION ?? 0,
+            this.db.config.AI_OUTPUT_HKD_MICROS_PER_MILLION ?? 0,
+          ) + Number(ops.charge);
         await tx.query(
-          "SELECT * FROM tasks WHERE id=$1 AND fencing_token=$2 FOR UPDATE",
-          [t.id, fencing],
-        )
-      ).rows[0];
-      if (!live || live.status !== "running") return;
-      const ops = (
-        await tx.query(
-          "SELECT coalesce(sum(charge_micros) FILTER(WHERE state='succeeded'),0)::text AS charge,bool_or(state IN ('accepted','reconciling')) AS uncertain FROM tool_operations WHERE task_id=$1",
-          [t.id],
-        )
-      ).rows[0];
-      const cost =
-        tokenCharge(
-          input,
-          output,
-          this.db.config.AI_INPUT_HKD_MICROS_PER_MILLION ?? 0,
-          this.db.config.AI_OUTPUT_HKD_MICROS_PER_MILLION ?? 0,
-        ) + Number(ops.charge);
-      await tx.query(
-        "UPDATE tasks SET status=$2,output=$3,input_tokens=$4,output_tokens=$5,error_code=$6,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
-        [t.id, status, text, input, output, error ?? null],
-      );
-      await settle(
-        tx,
-        t.tenant_id,
-        t.id,
-        cost,
-        t.created_by,
-        uncertain || !!ops.uncertain,
-      );
-      await event(tx, t.tenant_id, t.id, "task.finished", {
-        status: uncertain || ops.uncertain ? "reconciling" : status,
-        charge_micros: cost,
-        error_code: error ?? null,
-      });
-    }, t.tenant_id);
+          "UPDATE tasks SET status=$2,output=$3,input_tokens=$4,output_tokens=$5,error_code=$6,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
+          [t.id, status, text, input, output, error ?? null],
+        );
+        await settle(
+          tx,
+          t.tenant_id,
+          t.id,
+          cost,
+          t.created_by,
+          uncertain || !!ops.uncertain,
+        );
+        await event(tx, t.tenant_id, t.id, "task.finished", {
+          status: uncertain || ops.uncertain ? "reconciling" : status,
+          charge_micros: cost,
+          error_code: error ?? null,
+        });
+        if (text && !uncertain && !ops.uncertain && live.conversation_id) {
+          await tx.query(
+            "INSERT INTO conversation_messages(tenant_id,project_id,conversation_id,client_message_id,role,intent,body,task_id) VALUES($1,$2,$3,$4,'assistant','result',$5,$4) ON CONFLICT(conversation_id,client_message_id) DO NOTHING",
+            [t.tenant_id, t.project_id, live.conversation_id, t.id, text],
+          );
+          await tx.query(
+            "UPDATE conversations SET version=version+1,updated_at=now() WHERE id=$1",
+            [live.conversation_id],
+          );
+        }
+        if (
+          status === "succeeded" &&
+          text &&
+          live.mode === "plan" &&
+          !uncertain &&
+          !ops.uncertain
+        ) {
+          await tx.query(
+            "INSERT INTO task_plans(task_id,tenant_id,project_id,input_hash,body,conversation_version) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(task_id) DO NOTHING",
+            [
+              t.id,
+              t.tenant_id,
+              t.project_id,
+              hash(
+                canonical({
+                  prompt: live.prompt,
+                  role_hash: live.role_hash,
+                  context: contextDigest,
+                }),
+              ),
+              text,
+              live.input_context.conversation_version
+                ? live.input_context.conversation_version + 1
+                : null,
+            ],
+          );
+        }
+      },
+      t.tenant_id,
+      false,
+      t.created_by,
+    );
   }
   private tools(
     t: any,
@@ -310,6 +445,15 @@ export class Worker {
   ): RuntimeContext["tools"] {
     const authorize = async (tx: any) => {
       await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
+      await this.catalog.ensureEnabled(tx, t.role_key);
+      await resolveWorkContext(
+        tx,
+        actor,
+        t.tenant_id,
+        t.project_id,
+        t.input_context,
+      );
+      await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
       if (
         !(
           await tx.query(
@@ -667,7 +811,7 @@ export class Worker {
       tools.push(this.imageTool(t, actor, fencing, authorize, false));
     if (role.tool_ids.includes("image.edit.internal"))
       tools.push(this.imageTool(t, actor, fencing, authorize, true));
-    return tools.filter(
+    const permitted = tools.filter(
       (tool) =>
         (
           ({
@@ -687,6 +831,18 @@ export class Worker {
           }) as Record<string, boolean>
         )[tool.name],
     );
+    // A model cannot regain write capabilities by ignoring the requested mode.
+    return t.mode === "ask" || t.mode === "plan"
+      ? permitted.filter((tool) =>
+          [
+            "project_assets",
+            "asset_text_read",
+            "marketing_metrics",
+            "code_read",
+            "font_catalog",
+          ].includes(tool.name),
+        )
+      : permitted;
   }
   private imageTool(
     t: any,
@@ -888,6 +1044,8 @@ export class Worker {
                 [op.id],
               ),
             t.tenant_id,
+            false,
+            actor.id,
           );
           throw new Error(
             "Image result is uncertain and needs reconciliation; do not retry creation",

@@ -1,6 +1,6 @@
 # CopyPaste Platform
 
-[English](README.en.md) · 原生企业 Agent 服务 · 0.1.0
+[English](README.en.md) · 原生企业 Agent 服务 · 0.2.0
 
 本仓库提供真实 PostgreSQL 持久化、用户与管理员身份、企业/项目权限、Codex 任务执行、营销资产、数据分析、流程、设备调度与运营控制面。它是独立 Git 仓库，不依赖相邻仓库源码。完整项目主文档位于交付根目录的 `docs/`。
 
@@ -23,7 +23,7 @@ npm run dev
 
 本机 API：`http://localhost:4310`；数据库：`127.0.0.1:55432`。`db:local` 初始化开发数据库和全部迁移；`db:migrate` 也准备隔离的 `copypaste_test` 数据库。迁移只通过 owner 身份执行，API 使用独立受限连接。
 
-`setup:local` 仅在 `.env` 不存在时生成随机数据库密码及持久 MASTER_KEY。`.env.example` 是无密钥配置参考，不能覆盖现有 `.env`。Windows 中文路径通过临时 ASCII junction 供 PostgreSQL 引导使用，数据和二进制仍位于本仓库；关闭时只移除该别名。
+`setup:local` 仅在 `.env` 不存在时生成随机数据库密码及持久 MASTER_KEY。`.env.example` 是无密钥配置参考，不能覆盖现有 `.env`。Windows 中文路径通过临时 ASCII junction 供 PostgreSQL 引导使用，数据和二进制仍位于本仓库；关闭使用原生 pg_ctl 完成 checkpoint，确认退出后只移除该别名；不强制结束数据库。
 
 ## 从访问到使用
 
@@ -76,6 +76,18 @@ npm run admin:create -- admin@your-company.example super_admin
 
 目录里其他长期规划的 tool_id 不等于本次已注册工具。AI 视频、语音和云端定时调度尚未实现；需要这些能力的角色明确不可用。人工本地文件调度已贯通，Codex 自动调度本地文件工具尚未接入。
 
+## 持续专家、私密会话与记忆
+
+0.2.0 新增项目内专属专家：基于已安装角色定制职责、品牌和工具子集；每次修改产生不可变版本。会话固定专家版本，用户可明确采纳新版。内核始终为 Codex，前端不能提交模型、provider 或可执行 Skill 覆盖。
+
+会话只对所属用户可见；普通企业管理员不因此获得他人的会话正文。任务、事件、版本和派生文件继承私有归属，API 与 PostgreSQL RLS 同时校验。共享项目任务不能读取用户其他私密任务的文件。私密文件须由本人明确发布为新的共享副本，再进行项目分享。
+
+消息支持保存笔记和委派，委派分为 ask / plan / execute。ask 和 plan 只开放读取工具，execute 才能生成交付物；每次模型任务独立预算预留与计费。消息 UUID 去重、会话版本比较和每会话单任务约束共同防止重复收费。计划批准重新校验输入摘要、专家/记忆/会话版本及预算；同一批准产生一个执行子任务。
+
+记忆分企业、品牌、项目、会话和个人五种范围，记录版本及有效期。任务冻结精确引用，执行及后续工具再次检查授权、到期和内容隔离。删除撤销可读取正文及缓存重放，并保留防重复的幂等墓碑；物理对象/运行缓存回收仍待建设。有在途或费用待对账任务的会话禁止删除。
+
+![私密内容治理的实际页面](assets/screenshots/private-content-governance.png)
+
 ## 内部 AI 网关联调
 
 服务端 `.env` 需配置 `AI_BASE_URL`、`AI_ALLOWED_HOSTS`、`AI_API_KEY`、准确的 `AI_MODEL`，并登记实际 HKD token 费率。Base URL 通常包含 `/v1`；禁止凭 URL 携带凭证、禁止生产 HTTP、禁止自动回退外部模型。
@@ -107,7 +119,7 @@ npm test
 npm run contracts:export
 ```
 
-`contracts/implemented-routes.json` 是实际 Fastify 路由清单，不冒充主文档的完整规划 OpenAPI。27 项原生测试覆盖身份、隔离、费用并发/重放、权限与 VIP、内容撤销、图片版本、真实 PNG/MP4、真实 Codex 受控协议回合及初始化取消、源代码包。浏览器/扩展/Desktop 验收由独立 delivery 仓库记录。
+`contracts/implemented-routes.json` 导出 133 个实际 Fastify method/path；七个有序数据库迁移随仓库交付。它是实际路由清单，不冒充主文档的完整规划 OpenAPI。37 项原生测试覆盖身份、隔离、费用并发/重放、权限与 VIP、内容撤销、图片版本、真实 PNG/MP4、真实 Codex 受控协议回合及初始化取消、源代码包。浏览器/扩展/Desktop 验收由独立 delivery 仓库记录。
 
 | 路径                   | 内容                                           |
 | ---------------------- | ---------------------------------------------- |

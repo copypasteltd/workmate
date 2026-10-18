@@ -134,6 +134,29 @@ export class CodexRuntimeAdapter {
     const closed = new Promise<void>((resolve) =>
       child.once("close", () => resolve()),
     );
+    let hasExited = false;
+    const exited = new Promise<void>((resolve) => {
+      const finishExit = () => {
+        hasExited = true;
+        resolve();
+      };
+      child.once("exit", finishExit);
+      child.once("error", finishExit);
+    });
+    const waitForExit = async (ms: number) => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          exited,
+          new Promise<void>((resolve) => {
+            timer = setTimeout(resolve, ms);
+          }),
+        ]);
+      } finally {
+        if (timer) clearTimeout(timer);
+      }
+      return hasExited;
+    };
     const lines = createInterface({ input: child.stdout });
     let seq = 0,
       accepted = false,
@@ -324,7 +347,7 @@ export class CodexRuntimeAdapter {
         clientInfo: {
           name: "copypaste_enterprise",
           title: "CopyPaste",
-          version: "0.1.0",
+          version: "0.2.0",
         },
         capabilities: { experimentalApi: true },
       });
@@ -403,7 +426,21 @@ export class CodexRuntimeAdapter {
         p.reject(new Error("Runtime stopped"));
       }
       child.stdin.end();
-      if (child.exitCode === null && child.signalCode === null) child.kill();
+      // EOF lets app-server close its databases normally. Windows can retain
+      // inherited pipe handles after the process exits; do not treat those as
+      // a running kernel, and explicitly close our own handles after exit.
+      if (!(await waitForExit(250))) child.kill("SIGKILL");
+      if (!(await waitForExit(10000)))
+        throw new RuntimeFailure(
+          "CODEX_CLEANUP_FAILED",
+          accepted,
+          usageKnown,
+          input,
+          output,
+        );
+      child.stdin.destroy();
+      child.stdout.destroy();
+      child.stderr.destroy();
       let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
       try {
         await Promise.race([

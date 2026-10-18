@@ -3,7 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database } from "./db.js";
 import { audit, requireUser } from "./auth.js";
-import { projectAccess } from "./access.js";
+import { projectAccess, key, replay } from "./access.js";
 import { hash, name, Problem, token, uuid } from "./lib.js";
 import { Storage, saveAsset } from "./storage.js";
 
@@ -29,6 +29,62 @@ export function registerAssets(
       };
     }, tenant);
   });
+  app.post(
+    base + "/assets/:asset/publish",
+    { preHandler: requireUser(db) },
+    async (req) => {
+      const { tenant, project, asset } = assetParams.parse(req.params);
+      const b = z
+        .object({ expected_version: z.number().int().positive(), name })
+        .strict()
+        .parse(req.body);
+      return db.tx(async (tx) => {
+        await projectAccess(tx, req.principal, tenant, project, "write");
+        return replay(
+          tx,
+          req.principal.id,
+          `asset.publish:${asset}`,
+          key(req),
+          b,
+          async () => {
+            const a = (
+              await tx.query(
+                "SELECT a.*,v.storage_key,v.mime_type FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' FOR UPDATE OF a",
+                [asset, project],
+              )
+            ).rows[0];
+            if (!a || a.private_owner !== req.principal.id)
+              throw new Problem(404, "NOT_FOUND", "Private artifact not found");
+            if (a.current_version !== b.expected_version)
+              throw new Problem(
+                409,
+                "VERSION_CONFLICT",
+                "Refresh the private artifact before publishing",
+              );
+            const result = await saveAsset(tx, storage, {
+              tenant,
+              project,
+              user: req.principal.id,
+              name: b.name,
+              mime: a.mime_type,
+              bytes: await storage.get(a.storage_key),
+              kind: "published_deliverable",
+            });
+            await audit(
+              tx,
+              req.principal,
+              "asset.publish_to_project",
+              result.id,
+              "succeeded",
+              { source_asset_id: a.id, source_version: a.current_version },
+              tenant,
+            );
+            return result;
+          },
+        );
+      }, tenant);
+    },
+  );
   for (const versioning of [false, true])
     app.post(
       base + "/assets" + (versioning ? "/:asset/versions" : ""),
@@ -182,7 +238,7 @@ export function registerAssets(
         if (
           !(
             await tx.query(
-              "SELECT 1 FROM assets WHERE id=$1 AND project_id=$2 AND state='active'",
+              "SELECT 1 FROM assets WHERE id=$1 AND project_id=$2 AND state='active' AND private_owner IS NULL",
               [asset, project],
             )
           ).rowCount
@@ -207,7 +263,7 @@ export function registerAssets(
     // A share remains bounded to its owner's current membership and active content.
     const r = (
       await db.control.query(
-        "SELECT v.*,a.name,s.tenant_id,a.id AS asset_id FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN tenants t ON t.id=s.tenant_id JOIN memberships m ON m.tenant_id=t.id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND t.status='active' AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin')",
+        "SELECT v.*,a.name,s.tenant_id,a.id AS asset_id FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN tenants t ON t.id=s.tenant_id JOIN memberships m ON m.tenant_id=t.id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND t.status='active' AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin')",
         [hash(value)],
       )
     ).rows[0];
@@ -215,7 +271,7 @@ export function registerAssets(
     const data = await storage.get(r.storage_key);
     const valid = (
       await db.control.query(
-        "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active'",
+        "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active'",
         [hash(value)],
       )
     ).rowCount;

@@ -1,6 +1,6 @@
 # CopyPaste Platform
 
-[简体中文](README.md) · Native enterprise Agent services · 0.1.0
+[简体中文](README.md) · Native enterprise Agent services · 0.2.0
 
 This independent repository implements persistent PostgreSQL services, customer/admin identity, workspace/project authorization, Codex execution, marketing assets, analytics, workflows, device commands and the admin control plane. No sibling source checkout is required. The delivery root's `docs/` contains the master requirements and design baseline.
 
@@ -23,7 +23,7 @@ npm run dev
 
 API: `http://localhost:4310`; PostgreSQL: `127.0.0.1:55432`. The launcher applies development migrations; `db:migrate` also prepares `copypaste_test`. Migrations use the owner identity, while application connections use restricted, non-owner roles with RLS.
 
-`setup:local` creates unique passwords and a durable MASTER_KEY only when `.env` is absent. `.env.example` is a secret-free reference, not a replacement for an existing installation. An ephemeral ASCII junction works around PostgreSQL bootstrap limitations on Unicode Windows paths; actual data and binaries stay in this repository.
+`setup:local` creates unique passwords and a durable MASTER_KEY only when `.env` is absent. `.env.example` is a secret-free reference, not a replacement for an existing installation. An ephemeral ASCII junction works around PostgreSQL bootstrap limitations on Unicode Windows paths; actual data and binaries stay in this repository. Shutdown uses native pg_ctl to checkpoint the cluster before removing the alias; it does not force-kill PostgreSQL.
 
 ## Customer lifecycle
 
@@ -76,6 +76,18 @@ Registered tools include `project_assets`, `asset_text_read`, `deliver_text`, `m
 
 Other planned tool identifiers in the design catalog are not all registered. AI video, speech and cloud scheduling are not implemented; roles requiring those capabilities remain unavailable. Manual signed local-file dispatch works; autonomous Codex local-file dispatch is not connected yet.
 
+## Persistent specialists, private conversations and memory
+
+Version 0.2.0 adds project specialists based on installed roles, with instructions, brand binding and a restricted tool subset. Edits create immutable versions. Conversations pin a version and can explicitly adopt an update. Kernel, provider, model and executable Skills remain server-controlled Codex configuration.
+
+Conversation ownership applies to tasks, events, versions and generated files, enforced by API checks and PostgreSQL RLS. Ordinary workspace administrators cannot read another user's conversation. Shared project tasks cannot consume unrelated private artifacts. Publication explicitly creates a shared copy without private context.
+
+Messages can be notes or delegated ask/plan/execute tasks. Ask and plan permit reading tools; execute can create artifacts. Message UUIDs, conversation versions and one active task per conversation prevent duplicate submissions. Plan approval rechecks the input digest, specialist/memory/conversation versions and budget, and creates one execution child.
+
+Memory has workspace, brand, project, conversation and personal scopes, content versions and expiry. Tasks freeze exact references and recheck authorization before subsequent tools. Deletion clears readable content and cached replay responses while retaining idempotency tombstones. Physical object/runtime-cache garbage collection remains unfinished. Conversations with active or unresolved billing work cannot be deleted.
+
+![Actual private-content governance](assets/screenshots/private-content-governance.png)
+
 ## Internal gateway qualification
 
 Configure server-only `AI_BASE_URL`, `AI_ALLOWED_HOSTS`, `AI_API_KEY`, the exact `AI_MODEL` alias and contracted HKD token rates. The base commonly includes `/v1`. URL-embedded credentials, production HTTP and fallback to external model providers are rejected.
@@ -107,7 +119,7 @@ npm test
 npm run contracts:export
 ```
 
-`contracts/implemented-routes.json` is the actual Fastify route inventory, not the full planned OpenAPI. The 27 native tests cover authentication, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, image versions, actual PNG/MP4, a real Codex controlled protocol turn and initialization cancellation, and source packaging. Separate delivery tools record browser, extension and Desktop journeys.
+`contracts/implemented-routes.json` exports 133 actual Fastify method/path pairs; seven ordered database migrations are included. This is the implementation inventory, not the full planned OpenAPI. The 37 native tests cover authentication, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, image versions, actual PNG/MP4, a real Codex controlled protocol turn and initialization cancellation, and source packaging. Separate delivery tools record browser, extension and Desktop journeys.
 
 | Directory             | Purpose                                                     |
 | --------------------- | ----------------------------------------------------------- |

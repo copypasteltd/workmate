@@ -122,8 +122,13 @@ export class Catalog {
     }
     return out;
   }
-  available(c: Config, role: any) {
+  available(
+    c: Config,
+    role: any,
+    mode: "execute" | "ask" | "plan" = "execute",
+  ) {
     if (
+      mode === "execute" &&
       role.tool_ids.some((id: string) =>
         ["video.generate.internal", "speech.generate.internal"].includes(id),
       )
@@ -137,6 +142,7 @@ export class Catalog {
     )
       return { available: false, reason: "PRICING_SETUP_REQUIRED" };
     if (
+      mode === "execute" &&
       role.model_bindings.some((b: any) =>
         JSON.stringify(b).includes("internal-image2"),
       ) &&

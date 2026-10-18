@@ -10,6 +10,8 @@ export async function tenantAccess(
   tenant: string,
   minimum: "read" | "write" | "manage" | "owner" = "read",
 ) {
+  // Private resources are protected by a second, transaction-local RLS boundary.
+  await tx.query("SELECT set_config('app.actor_id',$1,true)", [p.id]);
   const m = (
     await tx.query(
       "SELECT m.*,t.status AS tenant_status,u.status AS user_status,u.auth_version FROM memberships m JOIN tenants t ON t.id=m.tenant_id JOIN users u ON u.id=m.user_id WHERE m.tenant_id=$1 AND m.user_id=$2 AND m.status='active'",
@@ -113,6 +115,12 @@ export async function replay<T>(
     )
   ).rows[0];
   if (previous) {
+    if (previous.revoked_at)
+      throw new Problem(
+        410,
+        "REQUEST_RESULT_REMOVED",
+        "The content returned by this request was deleted; it cannot be replayed",
+      );
     if (previous.input_hash !== digest)
       throw new Problem(
         409,
@@ -127,6 +135,18 @@ export async function replay<T>(
     [actor, action, key, digest, JSON.stringify(response)],
   );
   return response;
+}
+export async function eraseReplayContent(tx: Tx, ids: string[]) {
+  if (!ids.length) return;
+  // Keep the uniqueness tombstone so retries cannot recreate paid work or
+  // retrieve an old serialized prompt after its source has been erased.
+  await tx.query(
+    "UPDATE request_replays SET response='{}',revoked_at=now() WHERE revoked_at IS NULL AND (response::text LIKE ANY($1::text[]) OR action=ANY($2::text[]))",
+    [
+      ids.map((id) => `%${id}%`),
+      ids.flatMap((id) => [`tool:${id}`, `conversation.message:${id}`]),
+    ],
+  );
 }
 export const activePlans = async (tx: Tx, tenant: string) =>
   (

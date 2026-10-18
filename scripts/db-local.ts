@@ -2,11 +2,32 @@ import EmbeddedPostgres from "embedded-postgres";
 import { readFile, readdir, access } from "node:fs/promises";
 import path from "node:path";
 import pg from "pg";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 if (process.env.NODE_ENV === "production")
   throw new Error("Local database launcher is disabled in production");
 const owner = new URL(process.env.OWNER_DATABASE_URL ?? "");
 const dir = path.resolve(".data/postgres");
-const server = new EmbeddedPostgres({
+// The pinned embedded-postgres package force-kills the Windows cluster in its
+// default stop(). Use PostgreSQL's own checkpointing shutdown, including when
+// the library invokes stop() from its exit hook.
+class NativePostgres extends EmbeddedPostgres {
+  private shutdown?: Promise<void>;
+  override stop(): Promise<void> {
+    this.shutdown ??=
+      process.platform === "win32"
+        ? promisify(execFile)(
+            path.resolve(
+              "node_modules/@embedded-postgres/windows-x64/native/bin/pg_ctl.exe",
+            ),
+            ["stop", "-D", dir, "-m", "fast", "-w", "-t", "180"],
+            { windowsHide: true, timeout: 190000 },
+          ).then(() => undefined)
+        : super.stop();
+    return this.shutdown;
+  }
+}
+const server = new NativePostgres({
   databaseDir: dir,
   user: decodeURIComponent(owner.username),
   password: decodeURIComponent(owner.password),
@@ -84,6 +105,10 @@ for (const file of (await readdir("migrations"))
   await c.query("BEGIN");
   try {
     await c.query(await readFile("migrations/" + file, "utf8"));
+    await c.query(
+      "INSERT INTO schema_migrations(version) VALUES($1) ON CONFLICT DO NOTHING",
+      [version],
+    );
     await c.query("COMMIT");
   } catch (e) {
     await c.query("ROLLBACK");

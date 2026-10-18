@@ -24,6 +24,7 @@ export class Database {
     f: (tx: Tx) => Promise<T>,
     tenant?: string,
     control = false,
+    actor?: string,
   ): Promise<T> {
     const c = await (control ? this.control : this.app).connect();
     try {
@@ -31,6 +32,9 @@ export class Database {
       await c.query("SELECT set_config('app.tenant_id',$1,true)", [
         tenant ?? "",
       ]);
+      await c.query("SELECT set_config('app.actor_id',$1,true)", [actor ?? ""]);
+      await c.query("SELECT set_config('app.task_id','',true)");
+      await c.query("SELECT set_config('app.erasing_content','false',true)");
       const result = await f(c);
       await c.query("COMMIT");
       return result;

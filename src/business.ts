@@ -103,7 +103,7 @@ export async function renderProjectPoster(
       if (images[key]) continue;
       const v = (
         await tx.query(
-          "SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' AND v.version=$3",
+          "SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' AND v.version=$3 AND (a.private_owner IS NULL OR nullif(current_setting('app.task_id',true),'') IS NOT NULL)",
           [layer.asset_id, project, layer.version],
         )
       ).rows[0];

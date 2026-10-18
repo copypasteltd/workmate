@@ -21,6 +21,7 @@ import { registerAdminOperations } from "./admin-operations.js";
 import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
+import { registerPersistentWork } from "./persistent-work.js";
 
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   const db = new Database(c);
@@ -176,7 +177,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   app.get("/health/live", async () => ({
     ok: true,
     service: "copypaste-platform",
-    version: "0.1.0",
+    version: "0.2.0",
   }));
   app.get("/health/ready", async () => {
     await db.app.query("SELECT 1");
@@ -223,6 +224,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAssets(app, db, storage);
   registerAnalytics(app, db);
   registerTasks(app, db, catalog);
+  registerPersistentWork(app, db, catalog);
   registerBusiness(app, db, storage, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminOperations(app, db);

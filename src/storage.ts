@@ -73,6 +73,26 @@ export async function saveAsset(
     metadata?: unknown;
   },
 ) {
+  const metadata = (b.metadata ?? {}) as Record<string, unknown>;
+  const running = (
+    await tx.query(
+      "SELECT nullif(current_setting('app.task_id',true),'') AS id",
+    )
+  ).rows[0].id;
+  const sourceTask = running ?? metadata.task_id;
+  let privateOwner: string | null = null;
+  if (sourceTask) {
+    const task = (
+      await tx.query(
+        "SELECT private_owner,conversation_id FROM tasks WHERE id=$1 AND tenant_id=$2 AND project_id=$3",
+        [sourceTask, b.tenant, b.project],
+      )
+    ).rows[0];
+    if (!task) throw new Problem(404, "NOT_FOUND", "Source task not found");
+    privateOwner = task.private_owner;
+    metadata.task_id = sourceTask;
+    if (task.conversation_id) metadata.conversation_id = task.conversation_id;
+  }
   let a: any;
   if (b.asset) {
     a = (
@@ -82,6 +102,12 @@ export async function saveAsset(
       )
     ).rows[0];
     if (!a) throw new Problem(404, "NOT_FOUND", "Asset not found");
+    if (privateOwner && a.private_owner !== privateOwner)
+      throw new Problem(
+        409,
+        "PRIVATE_ARTIFACT_REQUIRED",
+        "Private work must create a private artifact before explicit project publication",
+      );
     if (a.current_version !== b.expectedVersion)
       throw new Problem(
         409,
@@ -97,8 +123,8 @@ export async function saveAsset(
   } else
     a = (
       await tx.query(
-        "INSERT INTO assets(tenant_id,project_id,name,kind,created_by) VALUES($1,$2,$3,$4,$5) RETURNING *",
-        [b.tenant, b.project, b.name, b.kind ?? "file", b.user],
+        "INSERT INTO assets(tenant_id,project_id,name,kind,created_by,private_owner) VALUES($1,$2,$3,$4,$5,$6) RETURNING *",
+        [b.tenant, b.project, b.name, b.kind ?? "file", b.user, privateOwner],
       )
     ).rows[0];
   // Object writes are immutable. If the DB transaction rolls back, the unreferenced object is safe for later GC.
@@ -114,7 +140,7 @@ export async function saveAsset(
         b.mime,
         b.bytes.length,
         hash(b.bytes),
-        b.metadata ?? {},
+        metadata,
       ],
     )
   ).rows[0];

@@ -33,6 +33,12 @@ for (const name of ["copypaste", "copypaste_test"]) {
       await c.query("BEGIN");
       try {
         await c.query(await readFile("migrations/" + f, "utf8"));
+        // The runner owns version bookkeeping, including legacy migrations
+        // which did not insert their own version row.
+        await c.query(
+          "INSERT INTO schema_migrations(version) VALUES($1) ON CONFLICT DO NOTHING",
+          [v],
+        );
         await c.query("COMMIT");
         console.log(name + ": applied migration " + v);
       } catch (e) {

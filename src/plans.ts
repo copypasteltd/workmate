@@ -106,6 +106,7 @@ export async function authorizeTaskPlan(
   user: string,
   role: any,
   budget: number,
+  mode: "execute" | "ask" | "plan" = "execute",
 ) {
   await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
     `task-quota:${tenant}:${user}`,
@@ -113,7 +114,8 @@ export async function authorizeTaskPlan(
   const p = await effectivePlan(tx, tenant, user);
   const needed: ("text" | "image")[] = [
     "text",
-    ...(role.model_bindings.some((b: any) =>
+    ...(mode === "execute" &&
+    role.model_bindings.some((b: any) =>
       JSON.stringify(b).includes("internal-image2"),
     )
       ? ["image" as const]

@@ -1,11 +1,16 @@
-import { authorizeTaskPlan } from "./plans.js";
+import { enqueueTask } from "./task-service.js";
+import {
+  workMode,
+  getAgentVersion,
+  freezeWorkContext,
+} from "./persistent-work.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
 import { requireUser, audit } from "./auth.js";
 import { key, projectAccess, replay } from "./access.js";
 import { micros, name, Problem, uuid } from "./lib.js";
-import { reserve, settle } from "./billing.js";
+import { settle } from "./billing.js";
 import type { Catalog } from "./catalog.js";
 export async function event(
   tx: Tx,
@@ -45,7 +50,7 @@ export function registerTasks(
       return {
         items: (
           await tx.query(
-            "SELECT id,title,role_key,status,acceptance,charged_micros,budget_micros,created_at,updated_at,parent_id,version FROM tasks WHERE tenant_id=$1 AND project_id=$2 ORDER BY created_at DESC LIMIT 100",
+            "SELECT id,title,role_key,status,mode,conversation_id,private_owner,acceptance,charged_micros,budget_micros,created_at,updated_at,parent_id,version FROM tasks WHERE tenant_id=$1 AND project_id=$2 ORDER BY created_at DESC LIMIT 100",
             [tenant, project],
           )
         ).rows,
@@ -61,18 +66,11 @@ export function registerTasks(
         role_key: z.string().max(80),
         budget_micros: micros,
         parent_id: uuid.optional(),
+        mode: workMode.default("execute"),
+        agent_id: uuid.optional(),
       })
       .strict()
       .parse(req.body);
-    const r = catalog.role(b.role_key);
-    await catalog.boundSkills(r);
-    const ready = catalog.available(db.config, r);
-    if (!ready.available)
-      throw new Problem(
-        503,
-        ready.reason!,
-        "此服務正在準備，請聯絡工作區管理員 / This service requires workspace setup",
-      );
     return db.tx(async (tx) => {
       await projectAccess(tx, req.principal, tenant, project, "write");
       return replay(
@@ -82,64 +80,40 @@ export function registerTasks(
         key(req),
         b,
         async () => {
-          if (
-            b.parent_id &&
-            !(
-              await tx.query(
-                "SELECT 1 FROM tasks WHERE id=$1 AND project_id=$2",
-                [b.parent_id, project],
-              )
-            ).rowCount
-          )
-            throw new Problem(404, "NOT_FOUND", "Original task not found");
-          await catalog.ensureEnabled(tx, b.role_key);
-          const plan = await authorizeTaskPlan(
+          let context;
+          if (b.agent_id) {
+            const agent = await getAgentVersion(
+              tx,
+              project,
+              b.agent_id,
+              undefined,
+              true,
+            );
+            if (agent.role_key !== b.role_key)
+              throw new Problem(
+                400,
+                "ROLE_MISMATCH",
+                "Use the specialist's installed role",
+              );
+            context = await freezeWorkContext(
+              tx,
+              req.principal,
+              tenant,
+              project,
+              agent,
+            );
+          }
+          return enqueueTask(
             tx,
-            tenant,
-            req.principal.id,
-            r,
-            b.budget_micros,
-          );
-          const t = (
-            await tx.query(
-              "INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *",
-              [
-                tenant,
-                project,
-                req.principal.id,
-                b.title,
-                b.prompt,
-                b.role_key,
-                catalog.digest(r),
-                b.budget_micros,
-                key(req),
-                req.principal.authVersion,
-                b.parent_id ?? null,
-              ],
-            )
-          ).rows[0];
-          await tx.query("UPDATE tasks SET plan_snapshot=$2 WHERE id=$1", [
-            t.id,
-            plan,
-          ]);
-          await reserve(tx, tenant, t.id, b.budget_micros);
-          await event(tx, tenant, t.id, "task.queued", {
-            role_key: b.role_key,
-          });
-          await tx.query(
-            "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
-            [tenant, { task_id: t.id }],
-          );
-          await audit(
-            tx,
+            db,
+            catalog,
             req.principal,
-            "task.create",
-            t.id,
-            "succeeded",
-            {},
             tenant,
+            project,
+            b,
+            key(req),
+            { context },
           );
-          return t;
         },
       );
     }, tenant);

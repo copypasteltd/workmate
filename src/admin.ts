@@ -1,4 +1,5 @@
 import { planSchema, authorizeTaskPlan } from "./plans.js";
+import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
 import { registerAdminJobs } from "./admin-jobs.js";
 import type { FastifyInstance } from "fastify";
@@ -839,7 +840,7 @@ export function registerAdmin(
                 );
                 await catalog.ensureEnabled(tx, t.role_key);
                 const role = catalog.role(t.role_key);
-                const ready = catalog.available(db.config, role);
+                const ready = catalog.available(db.config, role, t.mode);
                 if (!ready.available)
                   throw new Problem(
                     503,
@@ -847,16 +848,33 @@ export function registerAdmin(
                     "Role service requires configuration",
                   );
                 await catalog.boundSkills(role);
+                if (
+                  t.input_context?.role_hash &&
+                  t.input_context.role_hash !== catalog.digest(role)
+                )
+                  throw new Problem(
+                    409,
+                    "ROLE_VERSION_CHANGED",
+                    "Update the specialist to the installed role version",
+                  );
+                await resolveWorkContext(
+                  tx,
+                  actor,
+                  t.tenant_id,
+                  t.project_id,
+                  t.input_context,
+                );
                 const plan = await authorizeTaskPlan(
                   tx,
                   t.tenant_id,
                   t.created_by,
                   role,
                   Number(t.budget_micros),
+                  t.mode,
                 );
                 const child = (
                   await tx.query(
-                    "INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id,status,parent_id",
+                    "INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,private_owner,conversation_id,input_context,mode) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING id,status,parent_id",
                     [
                       t.tenant_id,
                       t.project_id,
@@ -869,6 +887,10 @@ export function registerAdmin(
                       "retry:" + key(req),
                       u.auth_version,
                       id,
+                      t.private_owner,
+                      t.conversation_id,
+                      t.input_context,
+                      t.mode,
                     ],
                   )
                 ).rows[0];

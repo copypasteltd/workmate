@@ -5,8 +5,9 @@ import type { Storage } from "./storage.js";
 import { requireAdmin, audit } from "./auth.js";
 import { permit } from "./admin-access.js";
 import { Problem, uuid, name } from "./lib.js";
-import { key, replay } from "./access.js";
+import { eraseReplayContent, key, replay } from "./access.js";
 import { settle } from "./billing.js";
+import { eraseConversation } from "./persistent-work.js";
 const tables = [
   "assets",
   "tasks",
@@ -15,6 +16,9 @@ const tables = [
   "workflows",
   "workflow_runs",
   "creative_projects",
+  "agents",
+  "conversations",
+  "memories",
 ] as const;
 async function find(tx: Tx, id: string) {
   for (const table of tables) {
@@ -76,6 +80,39 @@ export function registerAdminContent(
                 Number(v.bytes) <= 2_000_000
                   ? (await storage.get(v.storage_key)).toString("utf8")
                   : null,
+            };
+          }
+          if (
+            table === "agents" ||
+            table === "memories" ||
+            table === "conversations"
+          ) {
+            const body =
+              table === "agents"
+                ? (
+                    await tx.query(
+                      "SELECT version,body FROM agent_versions WHERE agent_id=$1 ORDER BY version DESC LIMIT 200",
+                      [r.id],
+                    )
+                  ).rows
+                : table === "memories"
+                  ? (
+                      await tx.query(
+                        "SELECT version,content FROM memory_versions WHERE memory_id=$1 ORDER BY version DESC LIMIT 200",
+                        [r.id],
+                      )
+                    ).rows
+                  : (
+                      await tx.query(
+                        "SELECT role,intent,body,task_id,created_at FROM conversation_messages WHERE conversation_id=$1 ORDER BY created_at,id LIMIT 200",
+                        [r.id],
+                      )
+                    ).rows;
+            return {
+              id: r.id,
+              name: r.name,
+              mime_type: "application/json",
+              text: JSON.stringify(body, null, 2),
             };
           }
           const body =
@@ -149,6 +186,12 @@ export function registerAdminContent(
                   "Content changed; refresh first",
                 );
               if (b.action === "metadata") {
+                if (table === "agents")
+                  throw new Problem(
+                    400,
+                    "AGENT_VERSION_REQUIRED",
+                    "Specialist names and instructions change through a new specialist version",
+                  );
                 if (!b.name || table === "workflow_runs")
                   throw new Problem(
                     400,
@@ -160,6 +203,22 @@ export function registerAdminContent(
                   [id, b.name],
                 );
               } else {
+                if (b.action === "restore" && r.content_state === "deleted")
+                  throw new Problem(
+                    409,
+                    "CONTENT_DELETED",
+                    "Deleted private content cannot be restored",
+                  );
+                if (b.action === "delete" && table === "conversations") {
+                  await eraseConversation(tx, req.principal, r);
+                }
+                if (b.action === "delete" && table === "memories") {
+                  await eraseReplayContent(tx, [id]);
+                  await tx.query(
+                    "UPDATE memory_versions SET content=NULL WHERE memory_id=$1",
+                    [id],
+                  );
+                }
                 await tx.query(
                   `UPDATE ${table} SET ${state}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
                   [
