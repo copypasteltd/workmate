@@ -1759,6 +1759,9 @@ tbody tr:hover {
 .version-row .icon-button {
   margin-left: auto;
 }
+.workflow-run {
+  flex-wrap: wrap;
+}
 .version-row:last-child {
   border-bottom: 0;
 }
@@ -2930,5 +2933,118 @@ th {
   .conversation-settings-actions {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+.schedule-section .section-title {
+  align-items: start;
+  gap: 24px;
+}
+.schedule-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.schedule-section .section-title p {
+  max-width: 720px;
+  line-height: 1.65;
+}
+.schedule-card header,
+.schedule-card footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.schedule-card h3 {
+  margin-top: 24px;
+}
+.schedule-card > p {
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+.schedule-card footer {
+  margin-top: 24px;
+  justify-content: start;
+}
+.schedule-facts {
+  margin: 24px 0;
+  display: grid;
+  gap: 14px;
+  font-size: 12px;
+}
+.schedule-facts div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.schedule-facts dt {
+  color: var(--muted);
+}
+.schedule-facts dd {
+  margin: 0;
+  text-align: right;
+}
+.schedule-history {
+  margin-top: 32px;
+}
+.schedule-history-row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.schedule-history-row > div {
+  flex: 1;
+  min-width: 180px;
+}
+.schedule-history-row small,
+.schedule-time small {
+  display: block;
+  color: var(--muted);
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+.schedule-time,
+.schedule-version {
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.schedule-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.schedule-weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+}
+.schedule-weekdays label,
+.check-label {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.check-label input,
+.schedule-weekdays input {
+  width: auto;
+  margin-top: 4px;
+}
+@media (max-width: 600px) {
+  .schedule-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .schedule-section .section-title {
+    flex-wrap: wrap;
   }
 }

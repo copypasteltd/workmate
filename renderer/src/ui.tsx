@@ -23,6 +23,8 @@ import {
   Globe2,
 } from "lucide-react";
 import { api } from "./api";
+let modalBodyLocks = 0;
+let previousBodyOverflow = "";
 export type Locale = "zh-HK" | "en";
 const I18n = createContext({
   locale: "zh-HK" as Locale,
@@ -198,6 +200,10 @@ export function Modal({
   close.current = onClose;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
+    if (modalBodyLocks++ === 0) {
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") close.current();
       if (e.key === "Tab") {
@@ -227,6 +233,8 @@ export function Modal({
     );
     return () => {
       document.removeEventListener("keydown", key);
+      if (--modalBodyLocks === 0)
+        document.body.style.overflow = previousBodyOverflow;
       previous?.focus();
     };
   }, []);
@@ -295,6 +303,13 @@ export function Badge({ value }: { value: string }) {
     accepted: ["已驗收", "Accepted"],
     revoked: ["已撤銷", "Revoked"],
     paused: ["已暫停", "Paused"],
+    blocked: ["需重新確認", "Needs review"],
+    ended: ["已到期", "Ended"],
+    retired: ["已停止", "Retired"],
+    launched: ["已觸發", "Triggered"],
+    skipped_overlap: ["前次未結束，已略過", "Skipped: prior run active"],
+    skipped_missed: ["漏跑已略過", "Missed time skipped"],
+    skipped_dst: ["不存在的時刻，已略過", "Nonexistent time skipped"],
   };
   const { t } = useI18n();
   return (

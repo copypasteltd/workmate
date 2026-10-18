@@ -1,4 +1,5 @@
 import { NativeFiles } from "./native-files";
+import { Schedules } from "./schedules";
 import {
   Specialists,
   Conversations,
@@ -2559,16 +2560,29 @@ function Workflows() {
           }
         />
       )}{" "}
+      <Schedules workflows={data?.items ?? []} />
       {data?.runs?.length > 0 && (
         <section className="section-block">
           <h2>{t("執行記錄", "Workflow runs")}</h2>
           {data.runs.map((r: any) => (
-            <div className="version-row" key={r.id}>
+            <div className="version-row workflow-run" key={r.id}>
               <code>{r.id.slice(0, 8)}</code>
               <span>
                 {r.cursor} / {r.definition.steps.length}
               </span>
               <Badge value={r.state} />
+              {["running", "awaiting_approval"].includes(r.state) && (
+                <button
+                  className="button secondary small"
+                  onClick={() =>
+                    void post(w.base + "/workflow-runs/" + r.id + "/cancel")
+                      .then(() => setRefresh((v) => v + 1))
+                      .catch(setErr)
+                  }
+                >
+                  {t("取消這次執行", "Cancel this run")}
+                </button>
+              )}
               {r.state === "awaiting_approval" && (
                 <button
                   className="button secondary small"
