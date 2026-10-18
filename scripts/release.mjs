@@ -77,6 +77,7 @@ const evidenceNames = [
   "repository-review.json",
   "persistent-work.json",
   "admin-identities.json",
+  "schedules.json",
 ];
 const evidence = [];
 for (const name of evidenceNames) {
@@ -101,6 +102,7 @@ for (const name of evidenceNames) {
       "desktop.json",
       "persistent-work.json",
       "admin-identities.json",
+      "schedules.json",
     ].includes(name) &&
     (!data.checks?.length ||
       data.checks.some((c) => c.status !== "passed") ||
@@ -121,6 +123,7 @@ for (const name of evidenceNames) {
       "native-controller.json",
       "packaged-windows.json",
       "admin-identities.json",
+      "schedules.json",
     ].includes(name) &&
     data.version !== version
   )
@@ -208,7 +211,7 @@ const manifest = {
     "Company AI gateway exact model aliases, credentials and tariffs",
     "Live SMTP, advertising OAuth and S3 qualification",
     "Per-role live business acceptance",
-    "SSO, cloud schedules, parallel agents, collaborative editing and full AI video/speech",
+    "SSO, event triggers, parallel agents, collaborative editing and full AI video/speech",
     "Full cloud directories, pause checkpoints and streaming task history",
     "Autonomous Codex local-file tools and client-signed device results",
     "Physical object/runtime-cache garbage collection after logical erasure",

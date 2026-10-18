@@ -70,6 +70,9 @@ async function snapshot() {
       (SELECT count(*)::int FROM conversations) AS conversations,
       (SELECT count(*)::int FROM conversation_messages) AS messages,
       (SELECT count(*)::int FROM memories) AS memories,
+      (SELECT count(*)::int FROM workflow_schedules) AS schedules,
+      (SELECT count(*)::int FROM workflow_schedule_versions) AS schedule_versions,
+      (SELECT count(*)::int FROM workflow_schedule_occurrences) AS schedule_occurrences,
       (SELECT count(*)::int FROM admin_principals) AS admin_principals,
       (SELECT count(*)::int FROM admin_enrollments) AS admin_enrollments,
       (SELECT count(*)::int FROM sessions WHERE admin_id IS NOT NULL) AS admin_sessions,
@@ -81,11 +84,14 @@ async function snapshot() {
       "SELECT id,principal_id,purpose,issued_auth_version,delivery_state,setup_attempts,email_verified_at,setup_expires_at,expires_at,consumed_at,revoked_at FROM admin_enrollments ORDER BY id",
       "SELECT id,admin_id,auth_version,created_at,expires_at,mfa_at,revoked_at FROM sessions WHERE admin_id IS NOT NULL ORDER BY id",
       "SELECT id,principal_id,role_key,scope_kind,scope_id,effect,limits,expires_at FROM admin_bindings ORDER BY id",
+      "SELECT id,tenant_id,project_id,workflow_id,version,revision,state,next_due_at,last_error,content_state FROM workflow_schedules ORDER BY id",
+      "SELECT schedule_id,revision,encode(sha256(convert_to(body::text,'UTF8')),'hex') AS body_hash FROM workflow_schedule_versions ORDER BY schedule_id,revision",
+      "SELECT id,schedule_id,revision,scheduled_local,scheduled_at,state,run_id,missed_count,through_local FROM workflow_schedule_occurrences ORDER BY id",
     ])
       identity.push((await client.query(sql)).rows);
     return {
       ...counts,
-      admin_identity_metadata_sha256: createHash("sha256")
+      persistent_metadata_sha256: createHash("sha256")
         .update(JSON.stringify(identity))
         .digest("hex"),
     };

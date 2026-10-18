@@ -1,6 +1,6 @@
 # CopyPaste Delivery and Integration
 
-[简体中文](README.md) · Native lifecycle controller and qualification · 0.3.0
+[简体中文](README.md) · Native lifecycle controller and qualification · 0.4.0
 
 This repository is independently versioned alongside five product repositories. The working root is `D:\dev\copypasted\自有agent\`; source/dependencies/artifacts live under `dev/`, and master requirements/design/quality documents remain under `docs/`. Each repository includes bilingual READMEs, diagrams, screenshots and notices.
 
@@ -82,6 +82,7 @@ npm run verify
 npm run qa:web
 npm run qa:persistent
 npm run qa:admin-identities
+npm run qa:schedules
 npm run qa:extension
 # Build Desktop package:dir or package first
 npm run qa:desktop
@@ -93,10 +94,11 @@ Browser QA requires native Chromium. Set `CHROME_BIN` to an existing executable 
 
 | Evidence                 | Meaning                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------- |
-| `verification.json`      | Six type checks/builds, 51 platform tests, three Desktop tests and route inventory             |
+| `verification.json`      | Six type checks/builds, 65 platform tests, three Desktop tests and route inventory             |
 | `web-admin.json`         | Actual email onboarding, PNG/layer/media/data/workflows, 16 Admin pages and funding/VIP        |
 | `persistent-work.json`   | Eight browser checks for specialists/private conversations/memory, mobile/dark themes and admin governance |
 | `admin-identities.json` | Six browser groups for admin invitations, email/real MFA, replacement, least privilege, suspension/resumption and resend |
+| `schedules.json` | Five actual-clock/closed-page report, pause/resume, time-zone edit, Admin and mobile groups |
 | `extension.json`         | Real MV3/identity PKCE, upload, token privacy and logout                                       |
 | `desktop.json`           | Actual packaged client, PKCE/encryption, real folder, signed dispatch and host framing         |
 | `packaged-windows.json`  | Packaged launch/version/isPackaged and screenshot                                              |
@@ -110,7 +112,7 @@ Files are under `evidence/`. Results describe only executed checks. A controlled
 
 Stop an existing CopyPaste controller before `npm run qa:lifecycle`. It starts, stops and restarts its own native stack, checks PostgreSQL checkpointing, readiness at the current version, persistent specialist/conversation/memory metadata and unchanged preexisting listener PIDs, then stops its stack. Run `npm start` afterwards to reopen the product. It starts no browser or virtualization.
 
-Historical 0.1.0 and 0.2.0 evidence remains under `evidence/versions/`; current reports describe 0.3.0. Unfinished requirements remain tracked in repository and master documents.
+Historical 0.1.0, 0.2.0 and 0.3.0 evidence remains under `evidence/versions/`; current reports describe 0.4.0. Unfinished requirements remain tracked in repository and master documents.
 
 ## Binaries and demonstration
 
@@ -124,6 +126,12 @@ Suggested demonstration: email signup → workspace/project → specialist/priva
 
 ## Remaining release work
 
-Company AI/SMTP/advertising OAuth/S3 require actual credentials and live validation. Windows signing, native production service identities/ACL/egress, restore drills and SLOs require deployment qualification. SSO, cloud scheduling, parallel specialist teams, collaborative editing, full AI video/speech, online acquiring and strong untrusted-code isolation are unfinished. The 18 installed role/28 Skill presets still need live business acceptance and must not be advertised as qualified merely because they are installed.
+Company AI/SMTP/advertising OAuth/S3 require actual credentials and live validation. Windows signing, native production service identities/ACL/egress, restore drills and SLOs require deployment qualification. SSO, event triggers, parallel specialist teams, collaborative editing, full AI video/speech, online acquiring and strong untrusted-code isolation are unfinished. The 18 installed role/28 Skill presets still need live business acceptance and must not be advertised as qualified merely because they are installed.
 
 The long-term requirements remain intact. This delivery records working implementation and evidence rather than treating page presence as full acceptance. See each repository's bilingual instructions and [third-party notices](THIRD_PARTY_NOTICES.md).
+
+## Cloud calendar qualification
+
+`npm run qa:schedules` uses actual email sign-in, a new workspace, CSV and a published workflow. It previews/confirms a calendar through the UI, closes the user page, waits for the real clock and verifies the native Worker's persisted HKD/ROAS report. It then checks user pause/resume, weekly/Hong Kong edits, separate Admin MFA and a 390px layout: five groups in `evidence/schedules.json`. It makes no AI call and closes its browser, retires the calendar and cancels the fixture run in finally.
+
+Packaged Desktop separately checks native bearer creation, rendering and retirement. `qa:lifecycle` checks database-side calendar/history digests and persistence across native restarts. Version 0.4.0 includes 65 platform tests and three Desktop unit tests; browser and packaged journeys are reported separately.

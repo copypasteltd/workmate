@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-18T20:15:49.786Z",
+  "status": "passed",
+  "checks": [
+    {
+      "repo": "copypaste-platform",
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "output": "\n> @copypaste/platform@0.3.0 typecheck\n> tsc --noEmit\n\n"
+    },
+    {
+      "repo": "copypaste-platform",
+      "command": "npm run build",
+      "exit_code": 0,
+      "output": "\n> @copypaste/platform@0.3.0 build\n> tsc\n\n"
+    },
+    {
+      "repo": "copypaste-web",
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "output": "\n> @copypaste/web@0.3.0 typecheck\n> tsc --noEmit\n\n"
+    },
+    {
+      "repo": "copypaste-web",
+      "command": "npm run build",
+      "exit_code": 0,
+      "output": "\n> @copypaste/web@0.3.0 build\n> tsc --noEmit && vite build\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 1933 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.56 kB │ gzip:   0.34 kB\ndist/assets/index-CW_jpD-q.css   40.78 kB │ gzip:   8.90 kB\ndist/assets/index-lfHgreFp.js   392.11 kB │ gzip: 124.22 kB\n\n✓ built in 2.58s\n"
+    },
+    {
+      "repo": "copypaste-admin",
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "output": "\n> @copypaste/admin@0.3.0 typecheck\n> tsc --noEmit\n\n"
+    },
+    {
+      "repo": "copypaste-admin",
+      "command": "npm run build",
+      "exit_code": 0,
+      "output": "\n> @copypaste/admin@0.3.0 build\n> tsc --noEmit && vite build\n\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 1932 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                   0.55 kB │ gzip:   0.34 kB\ndist/assets/index-Be_Q6z3y.css   44.52 kB │ gzip:   9.47 kB\ndist/assets/index-Dmbo8J1y.js   347.36 kB │ gzip: 108.85 kB\n\n✓ built in 2.83s\n"
+    },
+    {
+      "repo": "copypaste-extension",
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "output": "\n> @copypaste/extension@0.3.0 typecheck\n> tsc --noEmit\n\n"
+    },
+    {
+      "repo": "copypaste-extension",
+      "command": "npm run build",
+      "exit_code": 0,
+      "output": "\n> @copypaste/extension@0.3.0 build\n> tsc --noEmit && node scripts/build.mjs\n\nBuilt Chrome MV3 extension. Registered ID: fffkcnmfdhahlnifgdilabheppkgnlok\n"
+    },
+    {
+      "repo": "copypaste-desktop",
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "output": "\n> @copypaste/desktop@0.3.0 typecheck\n> tsc --noEmit && tsc --noEmit -p renderer/tsconfig.json\n\n"
+    },
+    {
+      "repo": "copypaste-desktop",
+      "command": "npm run build",
+      "exit_code": 0,
+      "output": "\n> @copypaste/desktop@0.3.0 build\n> node scripts/configure-deployment.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts\n\nDeployment origins compiled; no AI credentials are embedded.\nvite v8.3.4 building client environment for production...\ntransforming...\n✓ 1933 modules transformed.\nrendering chunks...\ncomputing gzip size...\nrenderer-dist/index.html                   0.90 kB │ gzip:   0.45 kB\nrenderer-dist/assets/index-o1n1eHxs.css   40.78 kB │ gzip:   8.90 kB\nrenderer-dist/assets/index-CTyIqDHh.js   392.14 kB │ gzip: 124.21 kB\n\n✓ built in 2.72s\n"
+    },
+    {
+      "repo": "copypaste-delivery",
+      "command": "npm run typecheck",
+      "exit_code": 0,
+      "output": "\n> @copypaste/delivery@0.3.0 typecheck\n> tsc --noEmit\n\n"
+    },
+    {
+      "repo": "copypaste-delivery",
+      "command": "npm run build",
+      "exit_code": 0,
+      "output": "\n> @copypaste/delivery@0.3.0 build\n> tsc\n\n"
+    },
+    {
+      "repo": "copypaste-platform",
+      "command": "npm run test",
+      "exit_code": 0,
+      "output": "\n> @copypaste/platform@0.3.0 test\n> node --env-file=.env --import tsx --test --test-concurrency=1 tests/*.test.ts\n\nTAP version 13\n# Subtest: admin invitation atomically assigns a delegable role, is idempotent and never returns an MFA secret or capability\nok 1 - admin invitation atomically assigns a delegable role, is idempotent and never returns an MFA secret or capability\n  ---\n  duration_ms: 1656.7816\n  ...\n# Subtest: principal enrollment requires the recipient's fresh email proof; OTP failures persist and there is one setup consumer\nok 2 - principal enrollment requires the recipient's fresh email proof; OTP failures persist and there is one setup consumer\n  ---\n  duration_ms: 272.3116\n  ...\n# Subtest: real TOTP enrollment is single use, scrubs setup material and issues an admin-only session with replay protection\nok 3 - real TOTP enrollment is single use, scrubs setup material and issues an admin-only session with replay protection\n  ---\n  duration_ms: 213.3727\n  ...\n# Subtest: MFA confirmation limits survive errors; expired or replaced setups cannot enroll\nok 4 - MFA confirmation limits survive errors; expired or replaced setups cannot enroll\n  ---\n  duration_ms: 335.5388\n  ...\n# Subtest: changing delegated roles revokes sessions and restarts pending MFA setup while retaining the invitation for its recipient\nok 5 - changing delegated roles revokes sessions and restarts pending MFA setup while retaining the invitation for its recipient\n  ---\n  duration_ms: 395.2335\n  ...\n# Subtest: suspension and resumption use CAS, revoke all old sessions and never restore old invitations\nok 6 - suspension and resumption use CAS, revoke all old sessions and never restore old invitations\n  ---\n  duration_ms: 289.9601\n  ...\n# Subtest: mail failure is explicit and retrying an invite neither duplicates a principal nor exposes its emailed capability\nok 7 - mail failure is explicit and retrying an invite neither duplicates a principal nor exposes its emailed capability\n  ---\n  duration_ms: 113.5287\n  ...\n# Subtest: self MFA replacement needs current-session and email proof, preserves the old key until confirmation, then revokes it\nok 8 - self MFA replacement needs current-session and email proof, preserves the old key until confirmation, then revokes it\n  ---\n  duration_ms: 129.088\n  ...\n# Subtest: read-only, expired-MFA and bounded operators cannot invite or delegate broader grants; rejected invites roll back\nok 9 - read-only, expired-MFA and bounded operators cannot invite or delegate broader grants; rejected invites roll back\n  ---\n  duration_ms: 136.9957\n  ...\n# Subtest: another authorized administrator can reset MFA and revoke sessions with version checks without receiving the new secret\nok 10 - another authorized administrator can reset MFA and revoke sessions with version checks without receiving the new secret\n  ---\n  duration_ms: 214.392\n  ...\n# Subtest: an administrator cannot remove their own deny; another fully authorized operator can restore access\nok 11 - an administrator cannot remove their own deny; another fully authorized operator can restore access\n  ---\n  duration_ms: 161.8651\n  ...\n# Subtest: lifting another account's deny requires delegated permissions, limits and expiry rather than revocation permission alone\nok 12 - lifting another account's deny requires delegated permissions, limits and expiry rather than revocation permission alone\n  ---\n  duration_ms: 196.5565\n  ...\n# Subtest: deny removal checks intersecting global, workspace and project scope without requiring unrelated permissions\nok 13 - deny removal checks intersecting global, workspace and project scope without requiring unrelated permissions\n  ---\n  duration_ms: 471.7235\n  ...\n# Subtest: last effective super protection excludes pending invitations and serializes concurrent account suspension\nok 14 - last effective super protection excludes pending invitations and serializes concurrent account suspension\n  ---\n  duration_ms: 241.348\n  ...\n# Subtest: persistent specialists freeze versions, reject enlarged tools and require CAS editing authority\nok 15 - persistent specialists freeze versions, reject enlarged tools and require CAS editing authority\n  ---\n  duration_ms: 2490.3031\n  ...\n# Subtest: private conversation delegation deduplicates concurrent messages and reserves only one task\nok 16 - private conversation delegation deduplicates concurrent messages and reserves only one task\n  ---\n  duration_ms: 1013.8629\n  ...\n# Subtest: memory scopes and immutable versions apply to worker input; deletion stops subsequent tools\nok 17 - memory scopes and immutable versions apply to worker input; deletion stops subsequent tools\n  ---\n  duration_ms: 1287.128\n  ...\n# Subtest: private tool artifacts cannot be read or rendered by another member and publication copies only the selected file\nok 18 - private tool artifacts cannot be read or rendered by another member and publication copies only the selected file\n  ---\n  duration_ms: 1409.1454\n  ...\n# Subtest: archive preserves in-flight work; deleting active conversations fails, notes and titles use version checks\nok 19 - archive preserves in-flight work; deleting active conversations fails, notes and titles use version checks\n  ---\n  duration_ms: 376.2557\n  ...\n# Subtest: plan approval rejects changed memory and produces one explicitly approved execution\nok 20 - plan approval rejects changed memory and produces one explicitly approved execution\n  ---\n  duration_ms: 520.6534\n  ...\n# Subtest: expiry, missing brand and revoked project membership cannot be used as frozen context\nok 21 - expiry, missing brand and revoked project membership cannot be used as frozen context\n  ---\n  duration_ms: 297.4734\n  ...\n# Subtest: shared tasks cannot read private files even when their owner can; deleted content cannot replay cached responses\nok 22 - shared tasks cannot read private files even when their owner can; deleted content cannot replay cached responses\n  ---\n  duration_ms: 364.0812\n  ...\n# Subtest: a plan becomes stale when a memory is added during planning or a note arrives while it runs\nok 23 - a plan becomes stale when a memory is added during planning or a note arrives while it runs\n  ---\n  duration_ms: 476.4709\n  ...\n# Subtest: admin body access and quarantine apply to private conversations and memories; retries preserve private ownership\nok 24 - admin body access and quarantine apply to private conversations and memories; retries preserve private ownership\n  ---\n  duration_ms: 570.1725\n  ...\n# Subtest: email OTP has one atomic consumer and never authenticates the admin audience\nok 25 - email OTP has one atomic consumer and never authenticates the admin audience\n  ---\n  duration_ms: 1314.0448\n  ...\n# Subtest: five invalid OTP attempts exhaust a challenge; expired and consumed codes fail\nok 26 - five invalid OTP attempts exhaust a challenge; expired and consumed codes fail\n  ---\n  duration_ms: 534.9341\n  ...\n# Subtest: CSRF, foreign origin and revoked sessions prevent writes\nok 27 - CSRF, foreign origin and revoked sessions prevent writes\n  ---\n  duration_ms: 524.1137\n  ...\n# Subtest: tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels\nok 28 - tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels\n  ---\n  duration_ms: 354.7345\n  ...\n# Subtest: single-use invitation binds email and project, protects the last owner\nok 29 - single-use invitation binds email and project, protects the last owner\n  ---\n  duration_ms: 623.2991\n  ...\n# Subtest: PKCE requires exact verifier and callback, refresh rotation detects replay\nok 30 - PKCE requires exact verifier and callback, refresh rotation detects replay\n  ---\n  duration_ms: 552.5202\n  ...\n# Subtest: admin authentication requires MFA, separate audience and explicit content permission\nok 31 - admin authentication requires MFA, separate audience and explicit content permission\n  ---\n  duration_ms: 1065.7597\n  ...\n# Subtest: admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds\nok 32 - admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds\n  ---\n  duration_ms: 1145.7003\n  ...\n# Subtest: VIP validity uses real timestamps and financial limits/independent approval are enforced\nok 33 - VIP validity uses real timestamps and financial limits/independent approval are enforced\n  ---\n  duration_ms: 518.0683\n  ...\n# Subtest: undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts\nok 34 - undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts\n  ---\n  duration_ms: 11.4796\n  ...\n# Subtest: editable poster escapes script injection and preserves exact Traditional Chinese copy\nok 35 - editable poster escapes script injection and preserves exact Traditional Chinese copy\n  ---\n  duration_ms: 2.2909\n  ...\n# {\"request_id\":\"6c5a7694-ae1c-43f1-b4c4-a569951017e9\",\"code\":\"AI_SETUP_REQUIRED\",\"error_type\":\"Problem\"}\n# Subtest: task request cannot override kernel/provider and unavailable AI cannot fake success\nok 36 - task request cannot override kernel/provider and unavailable AI cannot fake success\n  ---\n  duration_ms: 81.8086\n  ...\n# Subtest: native logout revokes the refresh family and a browser cookie cannot become a bearer token\nok 37 - native logout revokes the refresh family and a browser cookie cannot become a bearer token\n  ---\n  duration_ms: 83.0683\n  ...\n# Subtest: confirmed payment references cannot credit a second workspace, including with a new idempotency key\nok 38 - confirmed payment references cannot credit a second workspace, including with a new idempotency key\n  ---\n  duration_ms: 209.9785\n  ...\n# Subtest: admin workspace lists redact money without billing permission and user usage honors its own scope\nok 39 - admin workspace lists redact money without billing permission and user usage honors its own scope\n  ---\n  duration_ms: 327.1691\n  ...\n# Subtest: quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version\nok 40 - quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version\n  ---\n  duration_ms: 254.9269\n  ...\n# Subtest: exports recheck source authorization at download and batch status changes revoke all sessions\nok 41 - exports recheck source authorization at download and batch status changes revoke all sessions\n  ---\n  duration_ms: 645.8873\n  ...\n# Subtest: personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet\nok 42 - personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet\n  ---\n  duration_ms: 525.1344\n  ...\n# Subtest: scoped usage never inherits broader user visibility and explicit project deny constrains aggregates\nok 43 - scoped usage never inherits broader user visibility and explicit project deny constrains aggregates\n  ---\n  duration_ms: 284.7489\n  ...\n# Subtest: admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions\nok 44 - admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions\n  ---\n  duration_ms: 220.2303\n  ...\n# Subtest: native design compositions pin authorized image versions and reject foreign project assets\nok 45 - native design compositions pin authorized image versions and reject foreign project assets\n  ---\n  duration_ms: 4771.5377\n  ...\n# Subtest: admin delegation cannot widen financial limits or outlive the source grant\nok 46 - admin delegation cannot widen financial limits or outlive the source grant\n  ---\n  duration_ms: 134.6801\n  ...\n# Subtest: the last permanent recovery administrator cannot be revoked or disabled by a deny binding\nok 47 - the last permanent recovery administrator cannot be revoked or disabled by a deny binding\n  ---\n  duration_ms: 478.8549\n  ...\n# Subtest: native design pipeline produces actual PNG and validated H.264/AAC motion output\nok 48 - native design pipeline produces actual PNG and validated H.264/AAC motion output\n  ---\n  duration_ms: 2468.9207\n  ...\n# Subtest: real Codex turn uses the isolated internal Responses provider and reports measured fixture usage\nok 49 - real Codex turn uses the isolated internal Responses provider and reports measured fixture usage\n  ---\n  duration_ms: 4977.1404\n  ...\n# Windows retained a locked temporary fixture: turn-kQMJnZ (EBUSY)\n# Subtest: cancelling an initializing real Codex process rejects the pending RPC and closes the child\nok 50 - cancelling an initializing real Codex process rejects the pending RPC and closes the child\n  ---\n  duration_ms: 170.2404\n  ...\n# Subtest: source tools reject escaped paths and blind overwrites, package actual UTF-8 sources\nok 51 - source tools reject escaped paths and blind overwrites, package actual UTF-8 sources\n  ---\n  duration_ms: 58.4908\n  ...\n1..51\n# tests 51\n# suites 0\n# pass 51\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 43845.2309\n"
+    },
+    {
+      "repo": "copypaste-desktop",
+      "command": "npm run test",
+      "exit_code": 0,
+      "output": "\n> @copypaste/desktop@0.3.0 test\n> node --import tsx --test tests/*.test.ts\n\nTAP version 13\n# Subtest: folder grants enforce expiry, explicit writes, create-only semantics and idempotency\nok 1 - folder grants enforce expiry, explicit writes, create-only semantics and idempotency\n  ---\n  duration_ms: 29.7622\n  ...\n# Subtest: API bridge cannot change origin or escape the API prefix\nok 2 - API bridge cannot change origin or escape the API prefix\n  ---\n  duration_ms: 0.4279\n  ...\n# Subtest: Windows DPAPI vault decrypts across native processes and rejects tampering\nok 3 - Windows DPAPI vault decrypts across native processes and rejects tampering\n  ---\n  duration_ms: 2289.7557\n  ...\n1..3\n# tests 3\n# suites 0\n# pass 3\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 2859.5185\n"
+    },
+    {
+      "repo": "copypaste-platform",
+      "command": "npm run contracts:export",
+      "exit_code": 0,
+      "output": "\n> @copypaste/platform@0.3.0 contracts:export\n> node --env-file=.env --import tsx scripts/export-routes.ts\n\n146 implemented method/path pairs exported.\n"
+    }
+  ]
+}

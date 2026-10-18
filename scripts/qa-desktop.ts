@@ -122,6 +122,76 @@ try {
     name: "packaged Desktop specialist, private conversation, note persistence through the native API bridge",
     status: "passed",
   });
+  const nativePost = async (url: string, body: unknown) => {
+    const response = await page.evaluate(
+      async (p) =>
+        (window as any).copyPasteBridge.request(p.url, {
+          method: "POST",
+          body: p.body,
+        }),
+      { url, body },
+    );
+    if (response.status !== 200) throw new Error(JSON.stringify(response.body));
+    return response.body;
+  };
+  const scheduleBase = `/v1/tenants/${user.tenant}/projects/${user.project}`;
+  const workflow = await nativePost(scheduleBase + "/workflows", {
+    name: "Desktop scheduled review",
+    definition: {
+      steps: [
+        { kind: "approval", message: "Review the planned campaign work" },
+      ],
+    },
+  });
+  await nativePost(scheduleBase + "/workflows/" + workflow.id + "/publish", {});
+  const preview = await nativePost(
+    scheduleBase + "/workflow-schedules/preview",
+    {
+      name: "Desktop cloud cadence",
+      workflow_id: workflow.id,
+      calendar: {
+        timezone: "Asia/Hong_Kong",
+        frequency: "weekly",
+        time: "09:00",
+        weekdays: [1],
+      },
+      starts_at: new Date(Date.now() + 86400000).toISOString(),
+    },
+  );
+  const row = await nativePost(scheduleBase + "/workflow-schedules", {
+    ...preview.input,
+    expected_workflow_version: preview.workflow_version,
+    expected_definition_hash: preview.definition_hash,
+  });
+  const scheduled = { id: row.id, version: row.version, base: scheduleBase };
+  await page.evaluate(() => {
+    location.hash = "/app/workflows";
+  });
+  await page
+    .getByRole("heading", { name: "Desktop cloud cadence", exact: true })
+    .waitFor();
+  await page
+    .getByRole("heading", { name: "Cloud schedules", exact: true })
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: path.join(repo, "assets/screenshots/05-cloud-schedules.png"),
+    fullPage: false,
+    animations: "disabled",
+  });
+  await page.evaluate(async (s) => {
+    const r = await (window as any).copyPasteBridge.request(
+      s.base + "/workflow-schedules/" + s.id + "/status",
+      {
+        method: "POST",
+        body: { expected_version: s.version, action: "retire" },
+      },
+    );
+    if (r.status !== 200) throw new Error(JSON.stringify(r.body));
+  }, scheduled);
+  checks.push({
+    name: "packaged Desktop native bearer creates, previews and retires a versioned cloud schedule; shared UI renders the real record",
+    status: "passed",
+  });
   await page.evaluate(() => {
     location.hash = "/app/devices";
   });

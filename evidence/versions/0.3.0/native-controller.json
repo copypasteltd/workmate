@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-18T20:17:56.748Z",
+  "version": "0.3.0",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "authenticated shutdown checkpoints PostgreSQL and releases all five owned ports",
+      "status": "passed"
+    },
+    {
+      "name": "clean restart reaches current API version without crash recovery and preserves persistent records",
+      "status": "passed"
+    },
+    {
+      "name": "preexisting 5173/5174 listener process identities preserved",
+      "status": "passed"
+    }
+  ],
+  "project_ports": [
+    4310,
+    4317,
+    4318,
+    4319,
+    55432
+  ],
+  "original_listeners": [
+    {
+      "LocalPort": 5173,
+      "OwningProcess": 12916
+    },
+    {
+      "LocalPort": 5174,
+      "OwningProcess": 34320
+    }
+  ],
+  "persistent_records_before": {
+    "agents": 8,
+    "conversations": 8,
+    "messages": 5,
+    "memories": 5,
+    "admin_principals": 25,
+    "admin_enrollments": 19,
+    "admin_sessions": 35,
+    "schema_version": 8,
+    "admin_identity_metadata_sha256": "092500b06efb13f8a90576a53eec1ffd97ce352b48454fce44bcb29ff33be233"
+  },
+  "persistent_records_after": {
+    "agents": 8,
+    "conversations": 8,
+    "messages": 5,
+    "memories": 5,
+    "admin_principals": 25,
+    "admin_enrollments": 19,
+    "admin_sessions": 35,
+    "schema_version": 8,
+    "admin_identity_metadata_sha256": "092500b06efb13f8a90576a53eec1ffd97ce352b48454fce44bcb29ff33be233"
+  },
+  "stack_left_running": false,
+  "virtualization_used": false
+}

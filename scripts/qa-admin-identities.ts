@@ -442,7 +442,7 @@ try {
     JSON.stringify(
       {
         at: new Date().toISOString(),
-        version: "0.3.0",
+        version: JSON.parse(await readFile("package.json", "utf8")).version,
         checks,
         errors,
         browser_closed: true,
