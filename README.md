@@ -1,6 +1,6 @@
 # CopyPaste Desktop
 
-[English](README.en.md) · Windows 企业 Agent 客户端 · 0.2.0
+[English](README.en.md) · Windows 企业 Agent 客户端 · 0.3.0
 
 独立 Electron 仓库，内置完整 Web 工作区快照与窄权限本地桥接。支持系统浏览器登录、Windows 用户级凭证保护、明确的本地目录授权、平台签名文件排程，以及 Chrome Native Messaging。实际 Agent 内核仍由公司平台的 Codex 执行，客户端不直连模型供应商。
 
@@ -26,7 +26,7 @@ npm start
 npm run package
 ```
 
-生成 `release/CopyPaste-0.2.0-x64-Setup.exe`、`release/CopyPaste-0.2.0-x64-Portable.exe` 和 `release/win-unpacked/CopyPaste.exe`。`package:dir` 只产生解包应用用于验收。安装包尚未代码签名；不会声称已有签名证书或商店发布。原生开发，禁止 Docker、WSL 和虚拟化环境。
+生成 `release/CopyPaste-0.3.0-x64-Setup.exe`、`release/CopyPaste-0.3.0-x64-Portable.exe` 和 `release/win-unpacked/CopyPaste.exe`。`package:dir` 只产生解包应用用于验收。安装包尚未代码签名；不会声称已有签名证书或商店发布。原生开发，禁止 Docker、WSL 和虚拟化环境。
 
 ## 登录与本地访问
 

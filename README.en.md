@@ -1,6 +1,6 @@
 # CopyPaste Desktop
 
-[简体中文](README.md) · Windows enterprise Agent client · 0.2.0
+[简体中文](README.md) · Windows enterprise Agent client · 0.3.0
 
 An independent Electron repository bundling the Web workspace and a narrow local bridge. It supports system-browser login, Windows user-level encrypted credentials, explicit folder grants, platform-signed local file dispatch and Chrome Native Messaging. Codex execution remains on the company platform; the client never connects directly to model providers.
 
@@ -26,7 +26,7 @@ Public `deployment.json` contains API/Web origins and the official extension ID.
 npm run package
 ```
 
-Outputs include `release/CopyPaste-0.2.0-x64-Setup.exe`, `release/CopyPaste-0.2.0-x64-Portable.exe` and `release/win-unpacked/CopyPaste.exe`. `package:dir` produces only the unpacked app for QA. Packages are unsigned and are not store-published. Docker, WSL and virtualization are prohibited.
+Outputs include `release/CopyPaste-0.3.0-x64-Setup.exe`, `release/CopyPaste-0.3.0-x64-Portable.exe` and `release/win-unpacked/CopyPaste.exe`. `package:dir` produces only the unpacked app for QA. Packages are unsigned and are not store-published. Docker, WSL and virtualization are prohibited.
 
 ## Identity and local files
 
