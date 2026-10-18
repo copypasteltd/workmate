@@ -128,3 +128,8 @@ G10 必须提交真实后台/服务端证据：普通及企业管理员不可访
 索引设计：users 按状态/注册时间/id 和允许的搜索键；成员关系 tenant_id+user_id；usage/ledger 按 billing_account_id+occurred_at+id 及 tenant/project/user 维度；audit 按 actor/target+occurred_at+id；grant 按 subject+有效区间；job_items 按 job_id+target_id 唯一。分页游标绑定过滤/排序摘要，汇总投影带 as_of/watermark，财务事实和实时授权不依赖有延迟的投影。实际索引与聚合策略以 NFR 负载实测决定。
 
 退款模式必须绑定原事件：产品消费退款返还可用额度并引用原 consume；外部现金退款引用原已确认充值/付款及尚可退的实付资金，不能将赠额或已抵扣消费再次套现。两个模式分别有累计已退约束，跨模式检查同一资金来源及未结预留，未知外部结果进入对账。VIP 暂停/恢复不自动延长原 ends_at，恢复时仍需当前方案、权限和时段有效。
+
+
+## 0.2.0 实施定位
+
+持续专家、私密会话、范围记忆、计划批准及跨端实现的实际边界见 [持续工作约束](../technical/13-persistent-agents-conversations-memory.md) 和 [本轮验收](../quality/05-persistent-work-acceptance.md)。本分册的完整长期要求继续保留，不能由页面存在或局部测试推定全部完成。

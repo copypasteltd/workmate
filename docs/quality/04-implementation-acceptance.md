@@ -1,6 +1,6 @@
 # 产品实现验收与交付记录
 
-版本：1.6 · 2026-10-18 · 范围：0.1.0 本机原生实现。已执行的具体结果随 [机器汇总](implementation-evidence.json) 记录；六仓库、启动与详细边界见 [实施清单](../technical/12-implementation-and-repositories.md)。
+版本：1.6 · 2026-10-18 · 范围：0.1.0 本机原生实现的历史留存；当前版本见 [0.2.0 验收](05-persistent-work-acceptance.md)。原始具体结果随 [历史机器汇总](versions/0.1.0/implementation-evidence.json) 记录；六仓库、启动与详细边界见 [实施清单](../technical/12-implementation-and-repositories.md)。
 
 ## 1. 完成的检查类别
 
@@ -63,4 +63,4 @@ Desktop 核查授权目录根 `.` 的列表、越界/ADS/保留设备名/junctio
 
 所有仓库保持独立 Git，提交 ID 和 Windows 二进制校验值进入最终发布清单；这项交付不自动推送远端或部署。
 
-集中产物位于 `dev/copypaste-delivery/release/`，六仓库可分别从 bundle 离线克隆。全部文件和离线恢复的实际结果见 [恢复检查](release-restore-check.json)；提交、证据哈希和发布产物也汇入本节开头的机器汇总。源码检查包含双语 README 链接/图/截图、仓库边界、本机真实密钥排除和来源哈希；这并不等同完整漏洞审计。
+集中产物位于 `dev/copypaste-delivery/release/`，六仓库可分别从 bundle 离线克隆。全部文件和离线恢复的实际结果见 [历史恢复检查](versions/0.1.0/release-restore-check.json)；提交、证据哈希和发布产物也汇入本节开头的机器汇总。源码检查包含双语 README 链接/图/截图、仓库边界、本机真实密钥排除和来源哈希；这并不等同完整漏洞审计。
