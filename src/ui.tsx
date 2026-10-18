@@ -301,6 +301,9 @@ export function Badge({ value }: { value: string }) {
     accepted: ["已驗收", "Accepted"],
     revoked: ["已撤銷", "Revoked"],
     paused: ["已暫停", "Paused"],
+    blocked: ["需重新確認", "Needs review"],
+    ended: ["已到期", "Ended"],
+    retired: ["已停止", "Retired"],
   };
   const { t } = useI18n();
   return (

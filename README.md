@@ -1,6 +1,6 @@
 # CopyPaste Admin Dashboard
 
-[English](README.en.md) · 独立运营控制台 · 0.3.0
+[English](README.en.md) · 独立运营控制台 · 0.4.0
 
 本仓库是独立 Git 管理后台，与用户 Web 使用独立身份、Cookie 和入口。它管理用户、企业、消耗、费用、VIP、内容、任务、权限和产品配置；采用 CopyPaste 同源品牌样式及繁体中文/英文、浅深主题。所有实际授权、审计和事务在 platform 执行。
 
@@ -118,3 +118,11 @@ flowchart LR
 CSV 导出最多 500 行、15 分钟有效并在下载时重查源权限。首次恢复超管由受信 CLI 引导；后续邀请开户、本人 MFA 开通、更换、停用/恢复、重发和会话撤销由 UI 完成。支持会话只提供元数据，不实现客户内容委托或代登录。在线支付、SSO 和大规模导出仍未完成。
 
 `src/main.tsx` 实现页面/运营命令，`api.ts` 处理 Cookie/CSRF，UI 为本仓库独立快照，来源记录在 `shared-source.json`。截图为真实开发数据，包含虚构 fixture 企业；主文档在交付根目录 `docs/`。素材许可见 [说明](THIRD_PARTY_NOTICES.md)。
+
+## 云端定时执行控制
+
+0.4.0 在 Execution 页增加授权范围内的计划检索和分页，仅显示元数据。暂停和恢复分别要求 `execution.pause` / `execution.resume`、近期 MFA、当前版本与原因。暂停只停止未来触发；恢复从现在开始，不补跑暂停区间。恢复保留原用户授权，已撤销时拒绝，要求项目管理员重新确认；Admin 不能借此替用户建立新授权。
+
+内容治理可隔离或删除定时计划；删除清空全部配置版本及可重放正文，保留审计。隔离父工作流会停止后续触发并取消当前流程。`src/schedules.tsx` 提供界面，范围过滤与校验由平台执行。
+
+![实际云端定时控制](assets/screenshots/11-cloud-schedules.png)

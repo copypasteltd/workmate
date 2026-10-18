@@ -1220,6 +1220,12 @@ function Section({ section }: { section: string }) {
           )}
         />
       )}{" "}
+      {section === "execution" && (
+        <AdminSchedules
+          canPause={a.has("admin.execution.pause")}
+          canResume={a.has("admin.execution.resume")}
+        />
+      )}
       {section === "access" && data?.roles && (
         <section className="section-block">
           <div className="section-title">
@@ -2368,3 +2374,4 @@ function BatchDialog({
     </Modal>
   );
 }
+import { AdminSchedules } from "./schedules";
