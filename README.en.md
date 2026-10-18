@@ -1,6 +1,6 @@
 # CopyPaste Admin Dashboard
 
-[简体中文](README.md) · Independent operations console · 0.4.0
+[简体中文](README.md) · Independent operations console · 0.5.0
 
 An independent Git repository and admin client with separate identity, cookies and entry point from customer Web. It manages customers, workspaces, consumption, funding, VIP, content, execution, access and published product configuration. It shares CopyPaste branding, Traditional Chinese/English and light/dark themes. The platform enforces all authorization, auditing and transactions.
 
@@ -42,7 +42,7 @@ Every admin login requires email OTP and TOTP. Sensitive writes require MFA in t
 | Execution   | Status, cancellation, reconciliation and eligible child-task retries                                          |
 | Catalog     | Installed role/Skill enablement and presentation, versioned help/announcements/navigation                     |
 | Connections | Connected provider scope and revocation                                                                       |
-| Access      | Eight roles, 67 permissions, bounded custom roles, scoped/expiring bindings and revocation                    |
+| Access      | Eight roles, 68 permissions, bounded custom roles, scoped/expiring bindings and revocation                    |
 | Support     | Time-limited support-session metadata; no silent impersonation                                                |
 | Audit       | Attributable operations, outcomes and timestamps                                                              |
 | Jobs        | Preview/commit user-status batches and restricted CSV exports                                                 |
@@ -115,7 +115,7 @@ Quarantine affects customer APIs, RLS reads and subsequent running-task tools. C
 
 `npm test` is type checking. Delivery `npm run qa:web` exercises all 16 pages, actual OTP/TOTP, funding/VIP submission and customer detail. Delivery `npm run qa:persistent` also checks private-body reads and quarantine/restore. Platform tests cover access denial, concurrency, financial replay, VIP, bounded delegation and recovery-admin protection.
 
-Exports are limited to 500 rows and 15 minutes, with source authorization rechecked at download. A trusted CLI bootstraps the first recovery super administrator; the UI handles subsequent invitations, MFA enrollment/replacement, suspension/resumption, resend and session revocation. Support sessions expose metadata, not customer impersonation or delegated body access. Online payments, SSO and large exports remain unfinished.
+Exports are limited to 500 rows and 15 minutes, with source authorization rechecked at download. A trusted CLI bootstraps the first recovery super administrator; the UI handles subsequent invitations, MFA enrollment/replacement, suspension/resumption, resend and session revocation. Support sessions expose metadata, not customer impersonation or delegated body access. Online payments, SAML/SCIM and large exports remain unfinished.
 
 `src/main.tsx` contains pages/commands, `api.ts` handles Cookie/CSRF, and UI foundations are a self-contained snapshot recorded in `shared-source.json`. Screenshots use real development records with fictional fixtures. Master documents are in the delivery root's `docs/`; see [notices](THIRD_PARTY_NOTICES.md).
 
@@ -126,3 +126,20 @@ Version 0.4.0 adds scoped search and pagination for calendars on Execution, disp
 Content governance can quarantine or delete calendars. Deletion scrubs configuration bodies and replay responses while retaining audit metadata. Quarantining the parent workflow stops future triggers and cancels current runs. `src/schedules.tsx` supplies the UI; platform queries enforce scope and authorization.
 
 ![Actual cloud schedule controls](assets/screenshots/11-cloud-schedules.png)
+
+## 0.5.0 company identity and unified sign-in
+
+OIDC uses code + PKCE S256, signature verification, state/nonce and a fixed callback. An existing registered account and active workspace membership are required. First binding requires a separate CopyPaste work-email code; domains never auto-enroll users. Configuration changes, disablement or unlinking revoke all linked users’ CopyPaste browser/native/refresh sessions and prior execution authorization. Administrator email and TOTP remain separate.
+
+The workspace identity action configures OIDC callback URI, email domains, client ID, write-only secret, signature and email policy. Save, check, enable and disable are separate commands. Global `admin.tenants.sso.write` excludes ordinary user operators. The UI explains metadata-only checks and the all-device sign-out impact of changes or disablement.
+
+```mermaid
+flowchart LR
+  Member[Existing workspace member] --> IdP[Signed OIDC and PKCE]
+  IdP --> Proof[First-link email proof]
+  Proof --> Web[CopyPaste session]
+  Web --> Native[Explicit native consent and PKCE]
+  Revoke[Disable or unlink] --> All[Revoke browser and native credentials]
+```
+
+![Actual company identity interface](assets/screenshots/12-company-sign-in.png)

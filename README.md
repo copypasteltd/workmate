@@ -1,6 +1,6 @@
 # CopyPaste Admin Dashboard
 
-[English](README.en.md) · 独立运营控制台 · 0.4.0
+[English](README.en.md) · 独立运营控制台 · 0.5.0
 
 本仓库是独立 Git 管理后台，与用户 Web 使用独立身份、Cookie 和入口。它管理用户、企业、消耗、费用、VIP、内容、任务、权限和产品配置；采用 CopyPaste 同源品牌样式及繁体中文/英文、浅深主题。所有实际授权、审计和事务在 platform 执行。
 
@@ -42,7 +42,7 @@ npm run build
 | Execution   | 任务状态、取消、对账、满足条件的新子任务重试                               |
 | Catalog     | 已安装角色/Skill 启停和展示、帮助/公告/导航版本发布                        |
 | Connections | 已连接服务、范围、撤销                                                     |
-| Access      | 邀请开户/真实 MFA、停用/恢复、会话、八类角色/67 权限、受限委派                  |
+| Access      | 邀请开户/真实 MFA、停用/恢复、会话、八类角色/68 权限、受限委派                  |
 | Support     | 限时支持会话元数据与撤销；不具备静默代登录                                 |
 | Audit       | 可追溯操作、结果与时间                                                     |
 | Jobs        | 有预览/提交的用户状态批量操作、受控 CSV 导出                               |
@@ -115,7 +115,7 @@ flowchart LR
 
 `npm test` 是类型检查，真实 16 页、邮箱/TOTP、费用/VIP 提交、用户详情的浏览器旅程见 delivery `npm run qa:web`；私密正文、隔离/恢复由 `npm run qa:persistent` 验证；平台测试覆盖越权、并发、金额重放、VIP、委派和最后超级管理员保护。
 
-CSV 导出最多 500 行、15 分钟有效并在下载时重查源权限。首次恢复超管由受信 CLI 引导；后续邀请开户、本人 MFA 开通、更换、停用/恢复、重发和会话撤销由 UI 完成。支持会话只提供元数据，不实现客户内容委托或代登录。在线支付、SSO 和大规模导出仍未完成。
+CSV 导出最多 500 行、15 分钟有效并在下载时重查源权限。首次恢复超管由受信 CLI 引导；后续邀请开户、本人 MFA 开通、更换、停用/恢复、重发和会话撤销由 UI 完成。支持会话只提供元数据，不实现客户内容委托或代登录。在线支付、SAML/SCIM 和大规模导出仍未完成。
 
 `src/main.tsx` 实现页面/运营命令，`api.ts` 处理 Cookie/CSRF，UI 为本仓库独立快照，来源记录在 `shared-source.json`。截图为真实开发数据，包含虚构 fixture 企业；主文档在交付根目录 `docs/`。素材许可见 [说明](THIRD_PARTY_NOTICES.md)。
 
@@ -126,3 +126,20 @@ CSV 导出最多 500 行、15 分钟有效并在下载时重查源权限。首�
 内容治理可隔离或删除定时计划；删除清空全部配置版本及可重放正文，保留审计。隔离父工作流会停止后续触发并取消当前流程。`src/schedules.tsx` 提供界面，范围过滤与校验由平台执行。
 
 ![实际云端定时控制](assets/screenshots/11-cloud-schedules.png)
+
+## 0.5.0 企业身份与统一登录
+
+OIDC 使用 code + PKCE S256、签章、state/nonce 与固定回调。先有注册账号及有效企业成员资格，再绑定企业身份；首次绑定需要独立的 CopyPaste 工作邮箱确认码，不按网域自动开户。配置改变、停用或本人解除连接会撤销关联用户的全部 CopyPaste Web/native/refresh 会话和旧执行授权。管理员登录仍独立使用邮箱与 TOTP。
+
+企业列表的身份按钮提供 OIDC 配置、回调 URI、允许邮箱网域、client ID、只写 secret、签章与邮箱政策；可保存、检查、启用与停用。新增全域 `admin.tenants.sso.write`，普通用户运营员不能修改。界面说明检查只验证中继资料及公钥，停用及修改提示关联账号全部装置登出。
+
+```mermaid
+flowchart LR
+  Member[已有企业成员] --> IdP[签名 OIDC 与 PKCE]
+  IdP --> Proof[首次独立邮箱确认]
+  Proof --> Web[CopyPaste 会话]
+  Web --> Native[明确原生授权与 PKCE]
+  Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
+```
+
+![实际企业身份界面](assets/screenshots/12-company-sign-in.png)

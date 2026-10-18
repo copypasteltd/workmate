@@ -57,6 +57,7 @@ import {
   FileText,
 } from "lucide-react";
 import { api, post, patch, download } from "./api";
+import { EnterpriseSignIn } from "./federation";
 import {
   Preferences,
   useI18n,
@@ -1078,6 +1079,20 @@ function Section({ section }: { section: string }) {
                             }}
                           />
                         )}
+                        {active === "tenants" && (
+                          <button
+                            title={t(
+                              "企業身份登入",
+                              "Company identity sign-in",
+                            )}
+                            onClick={() => {
+                              setRow(r);
+                              setDialog("sso");
+                            }}
+                          >
+                            <KeyRound size={15} />
+                          </button>
+                        )}
                         {active === "tenants" &&
                           a.has("admin.tenants.status.write") && (
                             <button
@@ -1341,7 +1356,17 @@ function Section({ section }: { section: string }) {
           }}
         />
       )}
-      {dialog && !["batch", "invite", "principal"].includes(dialog) && (
+      {dialog === "sso" && row && (
+        <EnterpriseSignIn
+          tenant={row}
+          canEdit={a.has("admin.tenants.sso.write")}
+          onClose={() => {
+            setDialog(null);
+            setRow(null);
+          }}
+        />
+      )}
+      {dialog && !["batch", "invite", "principal", "sso"].includes(dialog) && (
         <AdminDialog
           kind={dialog}
           row={row}
