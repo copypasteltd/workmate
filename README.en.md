@@ -1,6 +1,6 @@
 # CopyPaste Chrome Extension
 
-[简体中文](README.md) · Chrome MV3 side panel and native bridge · 0.3.0
+[简体中文](README.md) · Chrome MV3 side panel and native bridge · 0.4.0
 
 An independent repository for project/specialist tasks, explicitly selected files and user-triggered current-page capture. Persistent folder operations use the installed Desktop native helper. Execution and billing stay on the platform; this extension contains no AI credentials.
 
@@ -66,4 +66,4 @@ Each folder needs separate native consent, expires after one hour and is read-on
 - Delivery `npm run qa:extension`: real MV3 loading, chrome.identity login, upload, token privacy and logout; browser contexts close in finally.
 - Delivery `npm run qa:desktop`: packaged native-host framing, allowlist, folder grants and local operations. QA does not overwrite the user's existing registry registration.
 
-Static interface text supports Chinese/English; some dynamic statuses remain Traditional Chinese. Without live internal AI qualification, executable AI tasks remain unavailable. New organizations are initialized on Web. Full AI video/speech and scheduled automation remain outside this release. See [notices](THIRD_PARTY_NOTICES.md).
+Static interface text supports Chinese/English; some dynamic statuses remain Traditional Chinese. Without live internal AI qualification, executable AI tasks remain unavailable. New organizations are initialized on Web. Daily/weekly cloud schedules are managed in Web or Desktop; full AI video/speech remain outside this release. See [notices](THIRD_PARTY_NOTICES.md).

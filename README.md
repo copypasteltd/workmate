@@ -1,6 +1,6 @@
 # CopyPaste Chrome Extension
 
-[English](README.en.md) · Chrome MV3 侧栏与原生桥接 · 0.3.0
+[English](README.en.md) · Chrome MV3 侧栏与原生桥接 · 0.4.0
 
 独立 Git 仓库。扩展让用户在 Chrome 选择工作区/项目、提交角色任务、主动提供本地文件或当前网页；持续目录操作通过已安装 Desktop 的原生桥接完成。模型执行与计费始终由平台承担，扩展不保存 AI key。
 
@@ -66,4 +66,4 @@ Chrome 扩展本身不能扫描任意本地路径。先安装 Desktop 的 Window
 - delivery `npm run qa:extension`：真实 MV3、chrome.identity 登录、上传、会话隐私和退出；创建的浏览器上下文在 finally 关闭。
 - delivery `npm run qa:desktop`：实际打包 Windows native host 的长度帧、来源 allowlist、目录 grant 和本地文件流程。系统注册表安装本身由用户明确确认，不在 QA 中覆盖既有注册项。
 
-扩展界面支持中/英切换，部分动态状态保留繁体中文；完整产品翻译仍需复核。公司 AI 网关未联调时不能提交可执行 AI 任务；缺少企业时先到 Web 初始化。完整 Desktop 自主操作、AI 视频/语音及自动计划仍按主文档待建设。素材与依赖见 [说明](THIRD_PARTY_NOTICES.md)。
+扩展界面支持中/英切换，部分动态状态保留繁体中文；完整产品翻译仍需复核。公司 AI 网关未联调时不能提交可执行 AI 任务；缺少企业时先到 Web 初始化。云端每日/每周计划在 Web 或 Desktop 管理；完整 Desktop 自主操作与 AI 视频/语音仍按主文档待建设。素材与依赖见 [说明](THIRD_PARTY_NOTICES.md)。
