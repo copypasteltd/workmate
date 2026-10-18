@@ -1,6 +1,6 @@
 # CopyPaste Chrome Extension
 
-[English](README.en.md) · Chrome MV3 侧栏与原生桥接 · 0.4.0
+[English](README.en.md) · Chrome MV3 侧栏与原生桥接 · 0.5.0
 
 独立 Git 仓库。扩展让用户在 Chrome 选择工作区/项目、提交角色任务、主动提供本地文件或当前网页；持续目录操作通过已安装 Desktop 的原生桥接完成。模型执行与计费始终由平台承担，扩展不保存 AI key。
 
@@ -67,3 +67,18 @@ Chrome 扩展本身不能扫描任意本地路径。先安装 Desktop 的 Window
 - delivery `npm run qa:desktop`：实际打包 Windows native host 的长度帧、来源 allowlist、目录 grant 和本地文件流程。系统注册表安装本身由用户明确确认，不在 QA 中覆盖既有注册项。
 
 扩展界面支持中/英切换，部分动态状态保留繁体中文；完整产品翻译仍需复核。公司 AI 网关未联调时不能提交可执行 AI 任务；缺少企业时先到 Web 初始化。云端每日/每周计划在 Web 或 Desktop 管理；完整 Desktop 自主操作与 AI 视频/语音仍按主文档待建设。素材与依赖见 [说明](THIRD_PARTY_NOTICES.md)。
+
+## 0.5.0 企业身份与统一登录
+
+OIDC 使用 code + PKCE S256、签章、state/nonce 与固定回调。先有注册账号及有效企业成员资格，再绑定企业身份；首次绑定需要独立的 CopyPaste 工作邮箱确认码，不按网域自动开户。配置改变、停用或本人解除连接会撤销关联用户的全部 CopyPaste Web/native/refresh 会话和旧执行授权。管理员登录仍独立使用邮箱与 TOTP。
+
+企业身份复用系统浏览器授权页：点击登录后，在 Web 选择企业登入，完成身份验证及必要的邮箱确认，再明确授权 Chrome 回调。扩展保留独立 PKCE、短期 access token、轮换 refresh；服务端码绑定签发来源会话与用户版本。退出来源或撤销企业身份后，未交换旧码不能继续使用。本地文件及 Native Messaging 目录授权仍须明确操作。
+
+```mermaid
+flowchart LR
+  Member[已有企业成员] --> IdP[签名 OIDC 与 PKCE]
+  IdP --> Proof[首次独立邮箱确认]
+  Proof --> Web[CopyPaste 会话]
+  Web --> Native[明确原生授权与 PKCE]
+  Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
+```
