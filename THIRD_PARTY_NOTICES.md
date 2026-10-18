@@ -11,6 +11,7 @@ Application source is not granted an additional open-source license. Dependencie
 | `@fastify/cors`       | 11.3.1            | MIT                         |
 | `@fastify/multipart`  | 10.1.4            | MIT                         |
 | `@fastify/rate-limit` | 11.2.1            | MIT                         |
+| `@js-temporal/polyfill` | 0.5.1           | ISC                         |
 | `@resvg/resvg-js`     | 2.6.2             | MPL-2.0                     |
 | `@types/node`         | 26.6.5            | MIT                         |
 | `@types/nodemailer`   | 8.0.2             | MIT                         |

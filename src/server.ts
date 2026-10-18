@@ -23,6 +23,7 @@ import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
 import { registerPersistentWork } from "./persistent-work.js";
 import { registerAdminIdentities } from "./admin-identities.js";
+import { registerSchedules } from "./schedules.js";
 
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   const db = new Database(c);
@@ -178,7 +179,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   app.get("/health/live", async () => ({
     ok: true,
     service: "copypaste-platform",
-    version: "0.3.0",
+    version: "0.4.0",
   }));
   app.get("/health/ready", async () => {
     await db.app.query("SELECT 1");
@@ -227,6 +228,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTasks(app, db, catalog);
   registerPersistentWork(app, db, catalog);
   registerBusiness(app, db, storage, catalog);
+  registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminOperations(app, db);
   registerAdminIdentities(app, db);

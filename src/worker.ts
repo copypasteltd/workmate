@@ -21,6 +21,7 @@ import type { Principal } from "./auth.js";
 import { advanceWorkflows, poster, renderProjectPoster } from "./business.js";
 import { pngFromSVG, motionFromSVG } from "./render.js";
 import { resolveWorkContext } from "./persistent-work.js";
+import { advanceSchedules } from "./schedules.js";
 
 export class Worker {
   private boss: PgBoss;
@@ -93,6 +94,7 @@ export class Worker {
       await this.db.control.query(
         "UPDATE reservations r SET status='reconciling' FROM tasks t WHERE t.id=r.task_id AND t.status='reconciling' AND r.status='reserved'",
       );
+      await advanceSchedules(this.db, this.catalog);
       await advanceWorkflows(this.db, this.catalog, this.storage);
     } finally {
       this.dispatching = false;

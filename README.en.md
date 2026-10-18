@@ -1,6 +1,6 @@
 # CopyPaste Platform
 
-[简体中文](README.md) · Native enterprise Agent services · 0.3.0
+[简体中文](README.md) · Native enterprise Agent services · 0.4.0
 
 This independent repository implements persistent PostgreSQL services, customer/admin identity, workspace/project authorization, Codex execution, marketing assets, analytics, workflows, device commands and the admin control plane. No sibling source checkout is required. The delivery root's `docs/` contains the master requirements and design baseline.
 
@@ -76,7 +76,7 @@ Installed packages are not evidence of qualified live business tasks. All roles 
 
 Registered tools include `project_assets`, `asset_text_read`, `deliver_text`, `marketing_metrics`, and role-gated `code_read`, `code_write`, `code_package`, `font_catalog`, `design_render`, `image2_generate`, `image2_edit`. Code tools support hash-based edits and real ZIP manifests without executing untrusted customer code or claiming tests ran. Design tools produce editable JSON, SVG, PNG and bounded template MP4. Image generation/editing uses the internal Images endpoints only.
 
-Other planned tool identifiers in the design catalog are not all registered. AI video, speech and cloud scheduling are not implemented; roles requiring those capabilities remain unavailable. Manual signed local-file dispatch works; autonomous Codex local-file dispatch is not connected yet.
+Other planned tool identifiers in the design catalog are not all registered. AI video and speech are not implemented; roles requiring those capabilities remain unavailable. Manual signed local-file dispatch works; autonomous Codex local-file dispatch is not connected yet.
 
 ## Persistent specialists, private conversations and memory
 
@@ -121,7 +121,7 @@ npm test
 npm run contracts:export
 ```
 
-`contracts/implemented-routes.json` exports 146 actual Fastify method/path pairs; eight ordered database migrations are included. This is the implementation inventory, not the full planned OpenAPI. The 51 native tests cover authentication, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, image versions, actual PNG/MP4, a real Codex controlled protocol turn and initialization cancellation, and source packaging. Separate delivery tools record browser, extension and Desktop journeys.
+`contracts/implemented-routes.json` exports 156 actual Fastify method/path pairs; nine ordered database migrations are included. This is the implementation inventory, not the full planned OpenAPI. The 65 native tests cover authentication, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, image versions, actual PNG/MP4, a real Codex controlled protocol turn and initialization cancellation, and source packaging. Separate delivery tools record browser, extension and Desktop journeys.
 
 | Directory             | Purpose                                                     |
 | --------------------- | ----------------------------------------------------------- |
@@ -141,6 +141,23 @@ The screenshot comes from the independent Admin client; this service repository 
 
 Production requires HTTPS, SMTP, separate database identities, a durable MASTER_KEY, restricted egress and storage. The local database launcher refuses production. Back up the database, object data and encryption key, and rehearse native restoration before deployment.
 
-Google/Meta need server OAuth credentials, explicit API versions, Ads developer token and callback registration; live platform authorization/report qualification is pending. S3 has not been qualified against a live bucket. SSO, cloud schedules, parallel specialist teams, collaborative editing, full AI video/speech, production SLOs, Windows signing and strong customer-code isolation remain unfinished. Codex shell, web search and other agents are disabled; production service-account, ACL and network containment still require deployment work.
+Google/Meta need server OAuth credentials, explicit API versions, Ads developer token and callback registration; live platform authorization/report qualification is pending. S3 has not been qualified against a live bucket. SSO, event triggers, parallel specialist teams, collaborative editing, full AI video/speech, production SLOs, Windows signing and strong customer-code isolation remain unfinished. Codex shell, web search and other agents are disabled; production service-account, ACL and network containment still require deployment work.
 
 No additional open-source license is granted for this application. See [third-party notices](THIRD_PARTY_NOTICES.md).
+
+## Daily / weekly cloud workflows
+
+Version 0.4.0 persists server calendars for published workflows; closing the user page does not stop execution. Migration `009-workflow-schedules.sql`, `src/schedule-time.ts`, `src/schedules.ts` and the native Worker retain immutable versions, occurrences and run references. Explicit confirmation pins the workflow version/hash, execution identity and per-run budget. IANA time zones skip nonexistent DST wall times and select the first repeated instant once.
+
+```mermaid
+flowchart LR
+  P[Preview times, workflow hash and budget] --> U[Explicit authorization]
+  U --> V[Immutable calendar version]
+  V --> W[Worker locks due schedule]
+  W --> A[Recheck identity, project, content and role versions]
+  A --> O[Atomic unique occurrence and run]
+  O --> R[Existing budget and approval gates]
+  R --> H[Run and occurrence history]
+```
+
+One unfinished run per schedule prevents overlap, including approval gates and uncertain child charges. Missed opportunities catch up only the latest or skip late triggers; older ranges are coalesced. Paused intervals never backfill. User resumption confirms current authorization; Admin resumption retains the original identity and requires scope, recent MFA, CAS and a reason, rejecting revoked authorization. End times are exclusive; projects allow 50 non-retired schedules. This is not a hard real-time SLA. Fourteen additional database/API/calendar test groups cover concurrency and thousand-day downtime; Delivery `qa:schedules` separately waits on the real clock.

@@ -8,6 +8,8 @@ import { Problem, uuid, name } from "./lib.js";
 import { eraseReplayContent, key, replay } from "./access.js";
 import { settle } from "./billing.js";
 import { eraseConversation } from "./persistent-work.js";
+import { eraseSchedule } from "./schedules.js";
+import { cancelWorkflowRun } from "./workflow-control.js";
 const tables = [
   "assets",
   "tasks",
@@ -15,6 +17,7 @@ const tables = [
   "analytics_datasets",
   "workflows",
   "workflow_runs",
+  "workflow_schedules",
   "creative_projects",
   "agents",
   "conversations",
@@ -116,24 +119,31 @@ export function registerAdminContent(
             };
           }
           const body =
-            table === "tasks"
-              ? {
-                  title: r.title,
-                  prompt: r.prompt,
-                  output: r.output,
-                  status: r.status,
-                }
-              : table === "analytics_datasets"
-                ? { currency: r.currency, timezone: r.timezone, rows: r.rows }
-                : table === "workflows"
-                  ? r.definition
-                  : table === "workflow_runs"
-                    ? {
-                        definition: r.definition,
-                        results: r.results,
-                        state: r.state,
-                      }
-                    : r.body;
+            table === "workflow_schedules"
+              ? (
+                  await tx.query(
+                    "SELECT revision,body,created_at FROM workflow_schedule_versions WHERE schedule_id=$1 ORDER BY revision DESC LIMIT 100",
+                    [r.id],
+                  )
+                ).rows
+              : table === "tasks"
+                ? {
+                    title: r.title,
+                    prompt: r.prompt,
+                    output: r.output,
+                    status: r.status,
+                  }
+                : table === "analytics_datasets"
+                  ? { currency: r.currency, timezone: r.timezone, rows: r.rows }
+                  : table === "workflows"
+                    ? r.definition
+                    : table === "workflow_runs"
+                      ? {
+                          definition: r.definition,
+                          results: r.results,
+                          state: r.state,
+                        }
+                      : r.body;
           return {
             id: r.id,
             name: r.name ?? r.title ?? table,
@@ -219,6 +229,8 @@ export function registerAdminContent(
                     [id],
                   );
                 }
+                if (table === "workflow_schedules" && b.action === "delete")
+                  await eraseSchedule(tx, id);
                 await tx.query(
                   `UPDATE ${table} SET ${state}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
                   [
@@ -254,10 +266,36 @@ export function registerAdminContent(
                       );
                     }
                   }
-                  if (table === "workflows")
+                  if (table === "workflow_schedules" && b.action !== "delete")
                     await tx.query(
-                      "UPDATE workflow_runs SET state='cancelled' WHERE workflow_id=$1 AND state IN ('running','awaiting_approval')",
+                      "UPDATE workflow_schedules SET state='paused',next_due_at=NULL,version=version+1 WHERE id=$1",
                       [id],
+                    );
+                  if (table === "workflows") {
+                    const runs = (
+                      await tx.query(
+                        "SELECT * FROM workflow_runs WHERE workflow_id=$1 AND state IN ('running','awaiting_approval') FOR UPDATE",
+                        [id],
+                      )
+                    ).rows;
+                    for (const run of runs)
+                      await cancelWorkflowRun(
+                        tx,
+                        run,
+                        req.principal,
+                        "WORKFLOW_UNAVAILABLE",
+                      );
+                    await tx.query(
+                      "UPDATE workflow_schedules SET state='blocked',last_error='WORKFLOW_UNAVAILABLE',next_due_at=NULL,version=version+1 WHERE workflow_id=$1 AND state='active'",
+                      [id],
+                    );
+                  }
+                  if (table === "workflow_runs")
+                    await cancelWorkflowRun(
+                      tx,
+                      r,
+                      req.principal,
+                      "CONTENT_UNAVAILABLE",
                     );
                 }
               }

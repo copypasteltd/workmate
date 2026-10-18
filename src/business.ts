@@ -1,4 +1,3 @@
-import { authorizeTaskPlan } from "./plans.js";
 import { pngFromSVG, motionFromSVG } from "./render.js";
 import { signCommand, commandPublicKey } from "./device-signing.js";
 import { z } from "zod";
@@ -9,8 +8,9 @@ import { key, projectAccess, replay, tenantAccess } from "./access.js";
 import { hash, name, Problem, token, uuid, seal, unseal } from "./lib.js";
 import { Storage, saveAsset } from "./storage.js";
 import type { Catalog } from "./catalog.js";
-import { reserve } from "./billing.js";
 import { metrics } from "./analytics.js";
+import { enqueueTask } from "./task-service.js";
+import { cancelWorkflowRun } from "./workflow-control.js";
 
 const params = z.object({ tenant: uuid, project: uuid });
 const color = z.string().regex(/^#[a-f\d]{6}$/i);
@@ -142,7 +142,9 @@ const step = z.discriminatedUnion("kind", [
     message: z.string().min(3).max(2000),
   }),
 ]);
-const workflow = z.object({ steps: z.array(step).min(1).max(8) }).strict();
+export const workflow = z
+  .object({ steps: z.array(step).min(1).max(8) })
+  .strict();
 export function registerBusiness(
   app: FastifyInstance,
   db: Database,
@@ -430,6 +432,27 @@ export function registerBusiness(
             "Run is not awaiting approval",
           );
         return r;
+      }, tenant);
+    },
+  );
+  app.post(
+    base + "/workflow-runs/:id/cancel",
+    { preHandler: requireUser(db) },
+    async (req) => {
+      const { tenant, project, id } = params
+        .extend({ id: uuid })
+        .parse(req.params);
+      return db.tx(async (tx) => {
+        await projectAccess(tx, req.principal, tenant, project, "write");
+        const run = (
+          await tx.query(
+            "SELECT * FROM workflow_runs WHERE id=$1 AND project_id=$2 FOR UPDATE",
+            [id, project],
+          )
+        ).rows[0];
+        if (!run) throw new Problem(404, "NOT_FOUND", "Workflow run not found");
+        await cancelWorkflowRun(tx, run, req.principal);
+        return { ok: true };
       }, tenant);
     },
   );
@@ -1294,10 +1317,18 @@ export async function advanceWorkflows(
         try {
           await projectAccess(tx, p, r.tenant_id, r.project_id, "write");
         } catch {
-          await tx.query(
-            "UPDATE workflow_runs SET state='cancelled',error_code='AUTHORIZATION_CHANGED' WHERE id=$1",
-            [r.id],
-          );
+          await cancelWorkflowRun(tx, r, p, "AUTHORIZATION_CHANGED");
+          return;
+        }
+        if (
+          !(
+            await tx.query(
+              "SELECT 1 FROM workflows WHERE id=$1 AND content_state='active' AND state='published'",
+              [r.workflow_id],
+            )
+          ).rowCount
+        ) {
+          await cancelWorkflowRun(tx, r, p, "WORKFLOW_UNAVAILABLE");
           return;
         }
         let cursor = r.cursor,
@@ -1391,6 +1422,16 @@ export async function advanceWorkflows(
         }
         await catalog.ensureEnabled(tx, s.role_key);
         const role = catalog.role(s.role_key);
+        if (
+          r.role_hashes[s.role_key] &&
+          r.role_hashes[s.role_key] !== catalog.digest(role)
+        ) {
+          await tx.query(
+            "UPDATE workflow_runs SET state='failed',error_code='ROLE_VERSION_CHANGED' WHERE id=$1",
+            [r.id],
+          );
+          return;
+        }
         if (!catalog.available(db.config, role).available) {
           await tx.query(
             "UPDATE workflow_runs SET state='failed',error_code='AI_SETUP_REQUIRED' WHERE id=$1",
@@ -1398,43 +1439,25 @@ export async function advanceWorkflows(
           );
           return;
         }
-        const plan = await authorizeTaskPlan(
+        const t = await enqueueTask(
           tx,
+          db,
+          catalog,
+          p,
           r.tenant_id,
-          p.id,
-          role,
-          s.budget_micros,
+          r.project_id,
+          {
+            title: `Workflow step ${cursor + 1}`,
+            prompt: s.prompt,
+            role_key: s.role_key,
+            budget_micros: s.budget_micros,
+          },
+          `workflow:${r.id}:${cursor}`,
         );
-        const t = (
-          await tx.query(
-            "INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id",
-            [
-              r.tenant_id,
-              r.project_id,
-              p.id,
-              `Workflow step ${cursor + 1}`,
-              s.prompt,
-              s.role_key,
-              catalog.digest(role),
-              s.budget_micros,
-              `workflow:${r.id}:${cursor}`,
-              p.authVersion,
-            ],
-          )
-        ).rows[0];
-        await tx.query("UPDATE tasks SET plan_snapshot=$2 WHERE id=$1", [
-          t.id,
-          plan,
-        ]);
-        await reserve(tx, r.tenant_id, t.id, s.budget_micros);
         await tx.query("UPDATE workflow_runs SET active_task=$2 WHERE id=$1", [
           r.id,
           t.id,
         ]);
-        await tx.query(
-          "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
-          [r.tenant_id, { task_id: t.id }],
-        );
       }, run.tenant_id)
       .catch(async () => {
         await db.control.query(
