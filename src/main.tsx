@@ -1946,13 +1946,16 @@ function AdminDialog({
                   <option value="quarantine">
                     {t("隔離內容", "Quarantine content")}
                   </option>
-                  <option value="restore">
+                  <option
+                    value="restore"
+                    disabled={row.state === "deleted" && row.kind !== "assets"}
+                  >
                     {t("恢復內容", "Restore content")}
                   </option>
                   <option value="delete">
                     {t("移除內容", "Delete content")}
                   </option>
-                  <option value="metadata">
+                  <option value="metadata" disabled={row.kind === "agents"}>
                     {t("更新名稱", "Update name")}
                   </option>
                 </select>
@@ -1968,6 +1971,14 @@ function AdminDialog({
                   "Quarantine or deletion revokes shares. Restore does not re-enable old links.",
                 )}
               </p>
+              {["conversations", "memories"].includes(row.kind) && (
+                <p className="notice">
+                  {t(
+                    "刪除會清除會話或記憶文字，無法還原。進行中的會話須先取消工作或完成對帳。",
+                    "Deletion erases conversation or memory text permanently. Active conversation tasks must be cancelled or reconciled first.",
+                  )}
+                </p>
+              )}
             </>
           )}
           {kind === "execution" && (

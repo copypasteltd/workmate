@@ -1,6 +1,6 @@
 # CopyPaste Admin Dashboard
 
-[简体中文](README.md) · Independent operations console · 0.1.0
+[简体中文](README.md) · Independent operations console · 0.2.0
 
 An independent Git repository and admin client with separate identity, cookies and entry point from customer Web. It manages customers, workspaces, consumption, funding, VIP, content, execution, access and published product configuration. It shares CopyPaste branding, Traditional Chinese/English and light/dark themes. The platform enforces all authorization, auditing and transactions.
 
@@ -74,9 +74,17 @@ Global/tenant/project scope, explicit denies, amount/duration/batch limits and e
 
 Published role JSON can only enable/disable installed definitions and adjust presentation; Skills can only be enabled/disabled. It cannot replace executable tools, kernel or model configuration. Quarantine affects customer visibility, sharing and subsequent execution. Collection filtering happens in authorized SQL before pagination.
 
+## Private-content governance
+
+The content inventory includes specialists, private conversations and memory alongside existing resources. Metadata and body reads require separate scoped permissions; body inspection is audited. Customer workspace administration does not provide platform-admin access to another user's private work.
+
+Quarantine affects customer APIs, RLS reads and subsequent running-task tools. Conversation deletion checks active work, then clears readable messages, task content, memory versions and cached replays. Deleted conversations/memory have no restore action. Instructions change through the versioned specialist API, preserving frozen task definitions. Retried work retains private ownership/context and rechecks authorization and entitlements.
+
+![Actual private-body governance](assets/screenshots/03-private-content-governance.png)
+
 ## Verification and limits
 
-`npm test` is type checking. Delivery `npm run qa:web` exercises all 16 pages, actual OTP/TOTP, funding/VIP submission and customer detail. Platform tests cover access denial, concurrency, financial replay, VIP, bounded delegation and recovery-admin protection.
+`npm test` is type checking. Delivery `npm run qa:web` exercises all 16 pages, actual OTP/TOTP, funding/VIP submission and customer detail. Delivery `npm run qa:persistent` also checks private-body reads and quarantine/restore. Platform tests cover access denial, concurrency, financial replay, VIP, bounded delegation and recovery-admin protection.
 
 Exports are limited to 500 rows and 15 minutes, with source authorization rechecked at download. Initial admin enrollment/MFA is a trusted CLI operation; the UI supports roles, bindings and sessions but not full principal enrollment/suspension management. Support sessions expose metadata, not customer impersonation or delegated body access. Online payments, SSO and large exports remain unfinished.
 
