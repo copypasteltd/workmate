@@ -1,6 +1,6 @@
 # 0.3.0 管理员身份生命周期验收
 
-版本：1.8 · 2026-10-19 · 范围：原生 Windows 本机试点。实现规则见 [账号生命周期](../technical/14-admin-identity-lifecycle.md)，独立仓库、启动与生产边界见 [实施清单](../technical/12-implementation-and-repositories.md)。当前机器汇总为 [implementation-evidence.json](implementation-evidence.json)；[0.2.0 验收](05-persistent-work-acceptance.md)及原始报告保留历史。
+版本：1.8 · 2026-10-19 · 范围：原生 Windows 本机试点。实现规则见 [账号生命周期](../technical/14-admin-identity-lifecycle.md)，独立仓库、启动与生产边界见 [实施清单](../technical/12-implementation-and-repositories.md)。本节为历史记录，当时机器汇总为 [0.3.0 原始报告](versions/0.3.0/implementation-evidence.json)；当前见 [0.4.0 验收](07-cloud-schedule-acceptance.md)；[0.2.0 验收](05-persistent-work-acceptance.md)及原始报告保留历史。
 
 ## 本轮增量
 
