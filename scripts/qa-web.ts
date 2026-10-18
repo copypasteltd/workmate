@@ -1,38 +1,13 @@
+import { emailCode, verifyAdmin } from "./qa-auth.js";
 import { chromium, type Page, type BrowserContext } from "playwright";
-import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
+import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { randomUUID, createHmac } from "node:crypto";
+import { randomUUID } from "node:crypto";
 const root = path.resolve(".."),
-  platform = path.join(root, "copypaste-platform"),
-  mailbox = path.join(platform, ".data/mailbox");
+  platform = path.join(root, "copypaste-platform");
 const binary = process.env.CHROME_BIN ?? chromium.executablePath();
 const evidence: { name: string; status: string; detail?: string }[] = [];
 const errors: string[] = [];
-function totp(secret: string) {
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-  let bits = "";
-  for (const c of secret.toUpperCase())
-    bits += alphabet.indexOf(c).toString(2).padStart(5, "0");
-  const bytes = Buffer.from(bits.match(/.{8}/g)!.map((v) => parseInt(v, 2))),
-    counter = Buffer.alloc(8);
-  counter.writeBigUInt64BE(BigInt(Math.floor(Date.now() / 30000)));
-  const digest = createHmac("sha1", bytes).update(counter).digest(),
-    offset = digest[19] & 15;
-  return ((digest.readUInt32BE(offset) & 0x7fffffff) % 1000000)
-    .toString()
-    .padStart(6, "0");
-}
-async function code(email: string) {
-  for (let n = 0; n < 30; n++) {
-    for (const file of (await readdir(mailbox)).reverse()) {
-      const item = JSON.parse(await readFile(path.join(mailbox, file), "utf8"));
-      if (item.to === email && Date.now() - Date.parse(item.at) < 120000)
-        return item.text.match(/\b\d{6}\b/)[0];
-    }
-    await new Promise((r) => setTimeout(r, 100));
-  }
-  throw new Error("No development sign-in email");
-}
 async function screenshot(page: Page, repo: string, name: string) {
   const dir = path.join(root, repo, "assets/screenshots");
   await mkdir(dir, { recursive: true });
@@ -102,8 +77,10 @@ try {
   await screenshot(page, "copypaste-web", "02-login");
   const email = `avery-${randomUUID().slice(0, 8)}@example.invalid`;
   await page.getByLabel("Work email").fill(email);
-  await page.getByRole("button", { name: "Send sign-in code" }).click();
-  await page.locator('input[name="code"]').fill(await code(email));
+  const userCode = await emailCode(page, () =>
+    page.getByRole("button", { name: "Send sign-in code" }).click(),
+  );
+  await page.locator('input[name="code"]').fill(userCode);
   await page
     .getByRole("button", { name: /Verify.*|Sign in.*|Open workspace/ })
     .last()
@@ -293,14 +270,14 @@ try {
   admin.on("pageerror", (e) => errors.push(e.message));
   await admin.goto("http://localhost:4318");
   await admin.getByLabel("Administrator email").fill(operator.email);
-  await admin.getByRole("button", { name: "Send admin sign-in code" }).click();
-  await admin
-    .getByLabel("Email code", { exact: true })
-    .fill(await code(operator.email));
-  await admin
-    .getByLabel("Authenticator MFA code")
-    .fill(totp(operator.totp_secret));
-  await admin.getByRole("button", { name: "Verify & open dashboard" }).click();
+  const adminCode = await emailCode(
+    admin,
+    () =>
+      admin.getByRole("button", { name: "Send admin sign-in code" }).click(),
+    true,
+  );
+  await admin.locator('input[name="code"]').fill(adminCode);
+  await verifyAdmin(admin, operator.totp_secret);
   await admin.waitForURL("**/overview");
   const adminRequest = async (url: string, body: any) =>
     admin.evaluate(

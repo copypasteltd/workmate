@@ -1,6 +1,6 @@
 # CopyPaste 交付与集成
 
-[English](README.en.md) · 原生开发控制器、验收与交付入口 · 0.2.0
+[English](README.en.md) · 原生开发控制器、验收与交付入口 · 0.3.0
 
 本仓库与五个产品仓库分别使用独立 Git，不把它们合并成单一仓库。项目位于 `D:\dev\copypasted\自有agent\`；源码、依赖、产物位于 `dev/`，主需求/设计/质量文档位于 `docs/`。各仓库的 README、图与截图随仓库交付。
 
@@ -82,6 +82,7 @@ AI key 只在服务端 `.env`，所有 AI 经内部网关。没有公司 Base UR
 npm run verify
 npm run qa:web
 npm run qa:persistent
+npm run qa:admin-identities
 npm run qa:extension
 # 先在 Desktop 仓库执行 npm run package:dir 或 npm run package
 npm run qa:desktop
@@ -93,9 +94,10 @@ python -X utf8 scripts/review-repositories.py
 
 | 证据文件                          | 含义                                                                        |
 | --------------------------------- | --------------------------------------------------------------------------- |
-| `evidence/verification.json`      | 六仓库类型检查/构建、平台 37 项测试、Desktop 3 项测试、实际路由导出         |
+| `evidence/verification.json`      | 六仓库类型检查/构建、平台 51 项测试、Desktop 3 项测试、实际路由导出         |
 | `evidence/web-admin.json`         | 真实邮件登录、初始化、PNG 素材/图层与媒体、数据/流程、16 页 Admin、费用/VIP |
 | `evidence/persistent-work.json`   | 专家/私密会话/记忆、移动/深色主题、Admin 正文隔离与删除的 8 项浏览器检查 |
+| `evidence/admin-identities.json` | 管理员邀请、邮箱与真实 MFA、更换验证器、受限权限、停用/恢复与重发邀请的 6 组浏览器检查 |
 | `evidence/extension.json`         | 实际 MV3、Chrome identity PKCE、上传、token 隔离、退出                      |
 | `evidence/desktop.json`           | 实际打包应用、PKCE、加密存储、真实目录、签名云命令、Native Host 帧          |
 | `evidence/packaged-windows.json`  | 实际 Windows 包启动、isPackaged、版本和截图                                 |
@@ -109,7 +111,7 @@ python -X utf8 scripts/review-repositories.py
 
 `npm run qa:lifecycle` 要求先停止现有 CopyPaste 控制器。它自行启动、关闭、重启原生服务，核对 PostgreSQL checkpoint、当前版本就绪、专家/会话/记忆记录保留及既有服务 PID，最后停止自己的栈。之后用 `npm start` 恢复查看。此检查不启动虚拟化或浏览器。
 
-0.1.0 原始验收副本保存在 `evidence/versions/0.1.0/`；当前 evidence 对应 0.2.0。长期需求继续由各仓库及主文档跟踪。
+0.1.0 与 0.2.0 原始验收副本保存在 `evidence/versions/`；当前 evidence 对应 0.3.0。长期需求继续由各仓库及主文档跟踪。
 
 ## 二进制与演示流程
 

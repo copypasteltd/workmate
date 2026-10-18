@@ -1,5 +1,6 @@
+import { emailCode } from "./qa-auth.js";
 import { chromium } from "playwright";
-import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
+import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 const root = path.resolve(".."),
@@ -40,28 +41,13 @@ try {
     fullPage: true,
   });
   const popupEvent = context.waitForEvent("page", { timeout: 20000 });
-  const requested = Date.now();
   await panel.locator("#sign-in").click();
   const popup = await popupEvent;
   await popup.waitForLoadState();
   await popup.locator('input[name="email"]').fill(user.email);
-  await popup.locator('form button[type="submit"]').click();
-  let code = "";
-  for (let i = 0; i < 30; i++) {
-    const all = [];
-    for (const f of await readdir(path.join(platform, ".data/mailbox"))) {
-      const m = JSON.parse(
-        await readFile(path.join(platform, ".data/mailbox", f), "utf8"),
-      );
-      if (m.to === user.email && Date.parse(m.at) >= requested) all.push(m);
-    }
-    all.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-    if (all[0]) {
-      code = all[0].text.match(/\b\d{6}\b/)[0];
-      break;
-    }
-    await new Promise((r) => setTimeout(r, 100));
-  }
+  const code = await emailCode(popup, () =>
+    popup.locator('form button[type="submit"]').click(),
+  );
   await popup.locator('input[name="code"]').fill(code);
   await popup.locator('form button[type="submit"]').click();
   await popup

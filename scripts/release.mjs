@@ -76,6 +76,7 @@ const evidenceNames = [
   "native-controller.json",
   "repository-review.json",
   "persistent-work.json",
+  "admin-identities.json",
 ];
 const evidence = [];
 for (const name of evidenceNames) {
@@ -99,6 +100,7 @@ for (const name of evidenceNames) {
       "extension.json",
       "desktop.json",
       "persistent-work.json",
+      "admin-identities.json",
     ].includes(name) &&
     (!data.checks?.length ||
       data.checks.some((c) => c.status !== "passed") ||
@@ -115,7 +117,11 @@ for (const name of evidenceNames) {
   )
     throw new Error(`Incomplete evidence: ${name}`);
   if (
-    ["native-controller.json", "packaged-windows.json"].includes(name) &&
+    [
+      "native-controller.json",
+      "packaged-windows.json",
+      "admin-identities.json",
+    ].includes(name) &&
     data.version !== version
   )
     throw new Error(`Evidence version mismatch: ${name}`);
@@ -206,7 +212,7 @@ const manifest = {
     "Full cloud directories, pause checkpoints and streaming task history",
     "Autonomous Codex local-file tools and client-signed device results",
     "Physical object/runtime-cache garbage collection after logical erasure",
-    "Complete admin principal enrollment/suspension UI and delegated customer support",
+    "Delegated customer support content access and approved impersonation workflows",
     "Production OS account/ACL/network isolation, signing and recovery/SLO verification",
   ],
 };

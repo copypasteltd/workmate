@@ -1,6 +1,7 @@
+import { emailCode } from "./qa-auth.js";
 import { spawn } from "node:child_process";
 import { _electron, chromium } from "playwright";
-import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
+import { readFile, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { randomUUID } from "node:crypto";
@@ -60,21 +61,9 @@ try {
   });
   await auth.goto(url);
   await auth.getByLabel("Work email").fill(user.email);
-  const requested = Date.now();
-  await auth.getByRole("button", { name: "Send sign-in code" }).click();
-  const mailbox = path.join(platform, ".data/mailbox");
-  let code = "";
-  for (let i = 0; i < 20; i++) {
-    const all = [];
-    for (const f of await readdir(mailbox)) {
-      const m = JSON.parse(await readFile(path.join(mailbox, f), "utf8"));
-      if (m.to === user.email && Date.parse(m.at) >= requested) all.push(m);
-    }
-    all.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
-    code = all[0]?.text.match(/\b\d{6}\b/)?.[0] ?? "";
-    if (code) break;
-    await new Promise((r) => setTimeout(r, 100));
-  }
+  const code = await emailCode(auth, () =>
+    auth.getByRole("button", { name: "Send sign-in code" }).click(),
+  );
   await auth.locator('input[name="code"]').fill(code);
   await auth.locator('form button[type="submit"]').click();
   await auth

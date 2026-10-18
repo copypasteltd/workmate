@@ -1,6 +1,6 @@
 # CopyPaste Delivery and Integration
 
-[简体中文](README.md) · Native lifecycle controller and qualification · 0.2.0
+[简体中文](README.md) · Native lifecycle controller and qualification · 0.3.0
 
 This repository is independently versioned alongside five product repositories. The working root is `D:\dev\copypasted\自有agent\`; source/dependencies/artifacts live under `dev/`, and master requirements/design/quality documents remain under `docs/`. Each repository includes bilingual READMEs, diagrams, screenshots and notices.
 
@@ -81,6 +81,7 @@ AI credentials remain server-only. Without the company base URL, exact aliases, 
 npm run verify
 npm run qa:web
 npm run qa:persistent
+npm run qa:admin-identities
 npm run qa:extension
 # Build Desktop package:dir or package first
 npm run qa:desktop
@@ -92,9 +93,10 @@ Browser QA requires native Chromium. Set `CHROME_BIN` to an existing executable 
 
 | Evidence                 | Meaning                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------- |
-| `verification.json`      | Six type checks/builds, 37 platform tests, three Desktop tests and route inventory             |
+| `verification.json`      | Six type checks/builds, 51 platform tests, three Desktop tests and route inventory             |
 | `web-admin.json`         | Actual email onboarding, PNG/layer/media/data/workflows, 16 Admin pages and funding/VIP        |
 | `persistent-work.json`   | Eight browser checks for specialists/private conversations/memory, mobile/dark themes and admin governance |
+| `admin-identities.json` | Six browser groups for admin invitations, email/real MFA, replacement, least privilege, suspension/resumption and resend |
 | `extension.json`         | Real MV3/identity PKCE, upload, token privacy and logout                                       |
 | `desktop.json`           | Actual packaged client, PKCE/encryption, real folder, signed dispatch and host framing         |
 | `packaged-windows.json`  | Packaged launch/version/isPackaged and screenshot                                              |
@@ -108,7 +110,7 @@ Files are under `evidence/`. Results describe only executed checks. A controlled
 
 Stop an existing CopyPaste controller before `npm run qa:lifecycle`. It starts, stops and restarts its own native stack, checks PostgreSQL checkpointing, readiness at the current version, persistent specialist/conversation/memory metadata and unchanged preexisting listener PIDs, then stops its stack. Run `npm start` afterwards to reopen the product. It starts no browser or virtualization.
 
-Historical 0.1.0 evidence remains under `evidence/versions/0.1.0/`; current reports describe 0.2.0. Unfinished requirements remain tracked in repository and master documents.
+Historical 0.1.0 and 0.2.0 evidence remains under `evidence/versions/`; current reports describe 0.3.0. Unfinished requirements remain tracked in repository and master documents.
 
 ## Binaries and demonstration
 

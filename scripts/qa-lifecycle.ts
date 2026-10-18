@@ -4,6 +4,7 @@ import { createConnection } from "node:net";
 import { createRequire } from "node:module";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
+import { createHash } from "node:crypto";
 
 const repo = path.resolve(import.meta.dirname, "..");
 const platform = path.resolve(repo, "../copypaste-platform");
@@ -63,14 +64,31 @@ async function snapshot() {
   await client.connect();
   try {
     // Read metadata only; no customer text or credentials enter this report.
-    return (
+    const counts = (
       await client.query(`SELECT
       (SELECT count(*)::int FROM agents) AS agents,
       (SELECT count(*)::int FROM conversations) AS conversations,
       (SELECT count(*)::int FROM conversation_messages) AS messages,
       (SELECT count(*)::int FROM memories) AS memories,
+      (SELECT count(*)::int FROM admin_principals) AS admin_principals,
+      (SELECT count(*)::int FROM admin_enrollments) AS admin_enrollments,
+      (SELECT count(*)::int FROM sessions WHERE admin_id IS NOT NULL) AS admin_sessions,
       (SELECT max(version) FROM schema_migrations) AS schema_version`)
     ).rows[0];
+    const identity = [];
+    for (const sql of [
+      "SELECT id,status,enrollment_state,auth_version,version FROM admin_principals ORDER BY id",
+      "SELECT id,principal_id,purpose,issued_auth_version,delivery_state,setup_attempts,email_verified_at,setup_expires_at,expires_at,consumed_at,revoked_at FROM admin_enrollments ORDER BY id",
+      "SELECT id,admin_id,auth_version,created_at,expires_at,mfa_at,revoked_at FROM sessions WHERE admin_id IS NOT NULL ORDER BY id",
+      "SELECT id,principal_id,role_key,scope_kind,scope_id,effect,limits,expires_at FROM admin_bindings ORDER BY id",
+    ])
+      identity.push((await client.query(sql)).rows);
+    return {
+      ...counts,
+      admin_identity_metadata_sha256: createHash("sha256")
+        .update(JSON.stringify(identity))
+        .digest("hex"),
+    };
   } finally {
     await client.end();
   }
