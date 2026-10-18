@@ -1,6 +1,11 @@
 import { NativeFiles } from "./native-files";
 import { Schedules } from "./schedules";
 import {
+  CompanySignIn,
+  ConfirmCompanyIdentity,
+  LinkedCompanyIdentities,
+} from "./federation";
+import {
   Specialists,
   Conversations,
   ConversationDetail,
@@ -148,6 +153,8 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/sso" element={<CompanySignIn />} />
+      <Route path="/sso/confirm" element={<ConfirmCompanyIdentity />} />
       <Route path="/welcome" element={<Onboarding />} />
       <Route path="/invite" element={<Invite />} />
       <Route path="/authorize" element={<NativeAuthorize />} />
@@ -403,6 +410,14 @@ function Login() {
                 )}
               </button>
             </>
+          )}
+          {!window.copyPasteBridge && !challenge && (
+            <Link
+              className="button secondary"
+              to={"/sso?next=" + encodeURIComponent(destination)}
+            >
+              {t("使用企業身份登入", "Sign in with company identity")}
+            </Link>
           )}
           <p className="form-footnote">
             <ShieldCheck size={14} />
@@ -3210,6 +3225,7 @@ function SettingsPage() {
         title={t("帳戶設定", "Account settings")}
       />
       <div className="settings-grid">
+        <LinkedCompanyIdentities />
         <section className="card">
           <h2>{t("個人資料", "Profile")}</h2>
           <AsyncForm

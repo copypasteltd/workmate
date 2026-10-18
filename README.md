@@ -1,6 +1,6 @@
 # CopyPaste Desktop
 
-[English](README.en.md) · Windows 企业 Agent 客户端 · 0.4.0
+[English](README.en.md) · Windows 企业 Agent 客户端 · 0.5.0
 
 独立 Electron 仓库，内置完整 Web 工作区快照与窄权限本地桥接。支持系统浏览器登录、Windows 用户级凭证保护、明确的本地目录授权、平台签名文件排程，以及 Chrome Native Messaging。实际 Agent 内核仍由公司平台的 Codex 执行，客户端不直连模型供应商。
 
@@ -26,7 +26,7 @@ npm start
 npm run package
 ```
 
-生成 `release/CopyPaste-0.4.0-x64-Setup.exe`、`release/CopyPaste-0.4.0-x64-Portable.exe` 和 `release/win-unpacked/CopyPaste.exe`。`package:dir` 只产生解包应用用于验收。安装包尚未代码签名；不会声称已有签名证书或商店发布。原生开发，禁止 Docker、WSL 和虚拟化环境。
+生成 `release/CopyPaste-0.5.0-x64-Setup.exe`、`release/CopyPaste-0.5.0-x64-Portable.exe` 和 `release/win-unpacked/CopyPaste.exe`。`package:dir` 只产生解包应用用于验收。安装包尚未代码签名；不会声称已有签名证书或商店发布。原生开发，禁止 Docker、WSL 和虚拟化环境。
 
 ## 登录与本地访问
 
@@ -94,3 +94,20 @@ Chrome Host 使用 `resources/native-host.cmd` 启动受限 Node 模式脚本，
 0.4.0 内置同版 Web 日历界面，支持每日/每周、IANA 时区、预算预览、明确授权、版本与历史以及暂停/恢复/退役。请求经原生 bearer 桥接，权限与浏览器端一致；客户端关闭后云端仍运行。该日历不授予未经确认的本地目录权限。Delivery `qa:desktop` 在实际打包应用中创建并显示计划，再退役测试计划。
 
 ![打包客户端的云端计划](assets/screenshots/05-cloud-schedules.png)
+
+## 0.5.0 企业身份与统一登录
+
+OIDC 使用 code + PKCE S256、签章、state/nonce 与固定回调。先有注册账号及有效企业成员资格，再绑定企业身份；首次绑定需要独立的 CopyPaste 工作邮箱确认码，不按网域自动开户。配置改变、停用或本人解除连接会撤销关联用户的全部 CopyPaste Web/native/refresh 会话和旧执行授权。管理员登录仍独立使用邮箱与 TOTP。
+
+用户在系统浏览器选择企业身份，完成后点击授权，真实 loopback PKCE 回调将独立原生凭证保存至本机 DPAPI 保护的存储。工作区账号设置显示企业连接。后台停用连接后，既有原生 access/refresh 与待交换码失效，不保留本地独立登录后门。
+
+```mermaid
+flowchart LR
+  Member[已有企业成员] --> IdP[签名 OIDC 与 PKCE]
+  IdP --> Proof[首次独立邮箱确认]
+  Proof --> Web[CopyPaste 会话]
+  Web --> Native[明确原生授权与 PKCE]
+  Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
+```
+
+![实际企业身份界面](assets/screenshots/06-company-identity.png)

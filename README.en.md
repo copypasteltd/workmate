@@ -1,6 +1,6 @@
 # CopyPaste Desktop
 
-[简体中文](README.md) · Windows enterprise Agent client · 0.4.0
+[简体中文](README.md) · Windows enterprise Agent client · 0.5.0
 
 An independent Electron repository bundling the Web workspace and a narrow local bridge. It supports system-browser login, Windows user-level encrypted credentials, explicit folder grants, platform-signed local file dispatch and Chrome Native Messaging. Codex execution remains on the company platform; the client never connects directly to model providers.
 
@@ -26,7 +26,7 @@ Public `deployment.json` contains API/Web origins and the official extension ID.
 npm run package
 ```
 
-Outputs include `release/CopyPaste-0.4.0-x64-Setup.exe`, `release/CopyPaste-0.4.0-x64-Portable.exe` and `release/win-unpacked/CopyPaste.exe`. `package:dir` produces only the unpacked app for QA. Packages are unsigned and are not store-published. Docker, WSL and virtualization are prohibited.
+Outputs include `release/CopyPaste-0.5.0-x64-Setup.exe`, `release/CopyPaste-0.5.0-x64-Portable.exe` and `release/win-unpacked/CopyPaste.exe`. `package:dir` produces only the unpacked app for QA. Packages are unsigned and are not store-published. Docker, WSL and virtualization are prohibited.
 
 ## Identity and local files
 
@@ -94,3 +94,20 @@ Chrome Host launches the bundled Node-mode script through `resources/native-host
 Version 0.4.0 includes the matching calendar interface: daily/weekly frequency, IANA zones, budget preview, explicit authorization, history and pause/resume/retire. Requests use the native bearer bridge with the same platform checks. Cloud execution continues after the app closes. These calendars do not grant unconfirmed local-folder access. Delivery `qa:desktop` creates, displays and retires a calendar in the actual packaged application.
 
 ![Cloud schedule in the packaged app](assets/screenshots/05-cloud-schedules.png)
+
+## 0.5.0 company identity and unified sign-in
+
+OIDC uses code + PKCE S256, signature verification, state/nonce and a fixed callback. An existing registered account and active workspace membership are required. First binding requires a separate CopyPaste work-email code; domains never auto-enroll users. Configuration changes, disablement or unlinking revoke all linked users’ CopyPaste browser/native/refresh sessions and prior execution authorization. Administrator email and TOTP remain separate.
+
+Choose company identity in the system browser and explicitly authorize return. The real loopback PKCE callback stores independent native credentials in DPAPI-protected local storage. Account settings show connected identities. Disabling the company connection invalidates existing native access/refresh credentials and outstanding codes; there is no separate local sign-in bypass.
+
+```mermaid
+flowchart LR
+  Member[Existing workspace member] --> IdP[Signed OIDC and PKCE]
+  IdP --> Proof[First-link email proof]
+  Proof --> Web[CopyPaste session]
+  Web --> Native[Explicit native consent and PKCE]
+  Revoke[Disable or unlink] --> All[Revoke browser and native credentials]
+```
+
+![Actual company identity interface](assets/screenshots/06-company-identity.png)
