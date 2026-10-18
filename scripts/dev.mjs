@@ -84,11 +84,22 @@ async function stopChild(entry) {
     log.end();
     return;
   }
-  await new Promise((resolve) => {
-    const deadline = setTimeout(() => {
-      child.kill();
-      resolve();
-    }, 25000);
+  await new Promise((resolve, reject) => {
+    const deadline = setTimeout(
+      () => {
+        if (entry.name === "database") {
+          reject(
+            new Error(
+              "PostgreSQL is still checkpointing. Its process was preserved; inspect the database log before retrying shutdown.",
+            ),
+          );
+          return;
+        }
+        child.kill();
+        resolve();
+      },
+      entry.name === "database" ? 195000 : 30000,
+    );
     child.once("exit", () => {
       clearTimeout(deadline);
       resolve();

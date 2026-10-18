@@ -1,6 +1,6 @@
 # CopyPaste Delivery and Integration
 
-[简体中文](README.md) · Native lifecycle controller and qualification · 0.1.0
+[简体中文](README.md) · Native lifecycle controller and qualification · 0.2.0
 
 This repository is independently versioned alongside five product repositories. The working root is `D:\dev\copypasted\自有agent\`; source/dependencies/artifacts live under `dev/`, and master requirements/design/quality documents remain under `docs/`. Each repository includes bilingual READMEs, diagrams, screenshots and notices.
 
@@ -31,7 +31,7 @@ Visit `http://localhost:4317` or `http://localhost:4318`. Leave the terminal ope
 npm run stop
 ```
 
-The controller starts real native PostgreSQL, API, Web and Admin after checking ports and actual readiness. A local authenticated control port at 4319 closes only owned processes, API first and database last. Existing listeners cause startup to fail without killing them. A complete start/stop cycle was checked while preserving preexisting services on 5173/5174. Private controller tokens/logs live only in ignored `.data/`.
+The controller starts real native PostgreSQL, API, Web and Admin after checking ports and actual readiness. A local authenticated control port at 4319 closes only owned processes, API first and database last. Existing listeners cause startup to fail without killing them. Shutdown uses native pg_ctl to checkpoint. Clean restarts preserve specialist/conversation/memory records and preexisting listener PIDs on 5173/5174. Private controller tokens/logs live only in ignored `.data/`.
 
 ## Reproduce from clean source
 
@@ -80,6 +80,7 @@ AI credentials remain server-only. Without the company base URL, exact aliases, 
 ```powershell
 npm run verify
 npm run qa:web
+npm run qa:persistent
 npm run qa:extension
 # Build Desktop package:dir or package first
 npm run qa:desktop
@@ -91,8 +92,9 @@ Browser QA requires native Chromium. Set `CHROME_BIN` to an existing executable 
 
 | Evidence                 | Meaning                                                                                        |
 | ------------------------ | ---------------------------------------------------------------------------------------------- |
-| `verification.json`      | Six type checks/builds, 27 platform tests, three Desktop tests and route inventory             |
+| `verification.json`      | Six type checks/builds, 37 platform tests, three Desktop tests and route inventory             |
 | `web-admin.json`         | Actual email onboarding, PNG/layer/media/data/workflows, 16 Admin pages and funding/VIP        |
+| `persistent-work.json`   | Eight browser checks for specialists/private conversations/memory, mobile/dark themes and admin governance |
 | `extension.json`         | Real MV3/identity PKCE, upload, token privacy and logout                                       |
 | `desktop.json`           | Actual packaged client, PKCE/encryption, real folder, signed dispatch and host framing         |
 | `packaged-windows.json`  | Packaged launch/version/isPackaged and screenshot                                              |
@@ -102,13 +104,21 @@ Browser QA requires native Chromium. Set `CHROME_BIN` to an existing executable 
 
 Files are under `evidence/`. Results describe only executed checks. A controlled Responses fixture drives real Codex through a tool round but does not qualify the company's live model. The master baseline's 102 long-term cases are not blanket-marked passed. Documentation validation is separate: run `python -X utf8 docs/tools/validate_docs.py` at the project root.
 
+## Database lifecycle check
+
+Stop an existing CopyPaste controller before `npm run qa:lifecycle`. It starts, stops and restarts its own native stack, checks PostgreSQL checkpointing, readiness at the current version, persistent specialist/conversation/memory metadata and unchanged preexisting listener PIDs, then stops its stack. Run `npm start` afterwards to reopen the product. It starts no browser or virtualization.
+
+Historical 0.1.0 evidence remains under `evidence/versions/0.1.0/`; current reports describe 0.2.0. Unfinished requirements remain tracked in repository and master documents.
+
 ## Binaries and demonstration
 
 After validation and clean commits in all six repositories, run `npm run release`. It checks the evidence and creates `release/` with six independently cloneable Git bundles, Web/Admin/Chrome ZIP builds, Windows Setup/Portable and an exact-commit/SHA-256 manifest. Restore a repository with `git clone <file.bundle> <directory>`. Release artifacts and `evidence/release-manifest.json` are ignored to avoid a commit self-reference; their generator and validation reports remain in source control.
 
+Run `python -X utf8 scripts/verify-release.py` to check artifact hashes and ZIP CRC/entries, then actually restore all six bundles offline and compare commits, branches, trees, source indexes and clean checkouts. It creates and removes only its own temporary directories under `.data/release-restore/`; its report is ignored at `evidence/release-restore.json`.
+
 Desktop packaging produces unsigned Windows x64 Setup, Portable and unpacked applications configured for localhost. Load extension `dist/` manually. Production needs company origins, matching extension registration and explicit native-helper consent. No app installation, store publication, live acquiring or production deployment was performed automatically.
 
-Suggested demonstration: email signup → workspace/project → brand/assets → editable SVG/PNG/MP4 → CSV analytics → workflow approval → Admin detail/funding/VIP → extension login/upload → Desktop login/folder/signed file command. Live Agent generation requires internal gateway qualification.
+Suggested demonstration: email signup → workspace/project → specialist/private conversation/memory → brand/assets → editable SVG/PNG/MP4 → CSV analytics → workflow approval → Admin detail/funding/VIP → extension login/upload → Desktop login/folder/signed file command. Live Agent generation requires internal gateway qualification.
 
 ## Remaining release work
 

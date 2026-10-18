@@ -92,6 +92,47 @@ try {
     status: "passed",
     browser_launch: "captured to an isolated test browser",
   });
+  await page
+    .getByRole("link", { name: "Your specialists", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Create specialist", exact: true })
+    .click();
+  await page
+    .getByLabel("Specialist name", { exact: true })
+    .fill("Desktop campaign partner");
+  await page
+    .getByLabel("Working instructions")
+    .fill("Preserve HKD amounts and use verified campaign data.");
+  await page
+    .getByRole("button", { name: "Save specialist", exact: true })
+    .click();
+  await page
+    .getByRole("heading", { name: "Desktop campaign partner", exact: true })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Start conversation", exact: true })
+    .first()
+    .click();
+  await page.getByLabel("Message purpose").selectOption("note");
+  await page
+    .getByLabel("Your message", { exact: true })
+    .fill(
+      "Desktop note: prepare a bilingual campaign analysis after reviewing the source files.",
+    );
+  await page.getByRole("button", { name: "Save note", exact: true }).click();
+  await page.locator(".work-message").first().waitFor();
+  await page.reload();
+  await page.locator(".work-message").first().waitFor();
+  await page.screenshot({
+    path: path.join(repo, "assets/screenshots/04-private-conversation.png"),
+    fullPage: true,
+    animations: "disabled",
+  });
+  checks.push({
+    name: "packaged Desktop specialist, private conversation, note persistence through the native API bridge",
+    status: "passed",
+  });
   await page.evaluate(() => {
     location.hash = "/app/devices";
   });

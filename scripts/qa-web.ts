@@ -39,6 +39,7 @@ async function screenshot(page: Page, repo: string, name: string) {
   await page.screenshot({
     path: path.join(dir, name + ".png"),
     fullPage: true,
+    animations: "disabled",
   });
 }
 async function json(page: Page, url: string, method = "GET", body?: unknown) {
@@ -87,7 +88,8 @@ try {
   });
   await context.addInitScript(() => {
     localStorage.setItem("cp_locale", "en");
-    localStorage.setItem("cp_theme", "light");
+    if (!localStorage.getItem("cp_theme"))
+      localStorage.setItem("cp_theme", "light");
   });
   const page = await context.newPage();
   page.on("pageerror", (e) => errors.push(e.message));

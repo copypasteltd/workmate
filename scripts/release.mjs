@@ -75,6 +75,7 @@ const evidenceNames = [
   "packaged-windows.json",
   "native-controller.json",
   "repository-review.json",
+  "persistent-work.json",
 ];
 const evidence = [];
 for (const name of evidenceNames) {
@@ -93,7 +94,12 @@ for (const name of evidenceNames) {
   if (name === "verification.json" && data.status !== "passed")
     throw new Error("Native verification must pass");
   if (
-    ["web-admin.json", "extension.json", "desktop.json"].includes(name) &&
+    [
+      "web-admin.json",
+      "extension.json",
+      "desktop.json",
+      "persistent-work.json",
+    ].includes(name) &&
     (!data.checks?.length ||
       data.checks.some((c) => c.status !== "passed") ||
       !data.browser_closed)
@@ -108,6 +114,11 @@ for (const name of evidenceNames) {
     data.status !== "passed"
   )
     throw new Error(`Incomplete evidence: ${name}`);
+  if (
+    ["native-controller.json", "packaged-windows.json"].includes(name) &&
+    data.version !== version
+  )
+    throw new Error(`Evidence version mismatch: ${name}`);
   if (
     ["desktop.json", "packaged-windows.json"].includes(name) &&
     !data.electron_closed
@@ -192,6 +203,10 @@ const manifest = {
     "Live SMTP, advertising OAuth and S3 qualification",
     "Per-role live business acceptance",
     "SSO, cloud schedules, parallel agents, collaborative editing and full AI video/speech",
+    "Full cloud directories, pause checkpoints and streaming task history",
+    "Autonomous Codex local-file tools and client-signed device results",
+    "Physical object/runtime-cache garbage collection after logical erasure",
+    "Complete admin principal enrollment/suspension UI and delegated customer support",
     "Production OS account/ACL/network isolation, signing and recovery/SLO verification",
   ],
 };

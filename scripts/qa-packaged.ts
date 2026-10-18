@@ -1,8 +1,11 @@
 import { _electron } from "playwright";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 const repo = path.resolve("../copypaste-desktop");
+const expectedVersion = JSON.parse(
+  await readFile(path.join(repo, "package.json"), "utf8"),
+).version;
 const app = await _electron.launch({
   executablePath: path.join(repo, "release/win-unpacked/CopyPaste.exe"),
   env: {
@@ -25,6 +28,8 @@ try {
     version: app.getVersion(),
   }));
   if (!state.packaged) throw new Error("Expected packaged app");
+  if (state.version !== expectedVersion)
+    throw new Error("Packaged application does not match the source version");
   passed = true;
 } finally {
   await app.close();
