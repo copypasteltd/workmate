@@ -1,6 +1,6 @@
 # CopyPaste Chrome Extension
 
-[简体中文](README.md) · Chrome MV3 side panel and native bridge · 0.2.0
+[简体中文](README.md) · Chrome MV3 side panel and native bridge · 0.3.0
 
 An independent repository for project/specialist tasks, explicitly selected files and user-triggered current-page capture. Persistent folder operations use the installed Desktop native helper. Execution and billing stay on the platform; this extension contains no AI credentials.
 

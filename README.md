@@ -1,6 +1,6 @@
 # CopyPaste Chrome Extension
 
-[English](README.en.md) · Chrome MV3 侧栏与原生桥接 · 0.2.0
+[English](README.en.md) · Chrome MV3 侧栏与原生桥接 · 0.3.0
 
 独立 Git 仓库。扩展让用户在 Chrome 选择工作区/项目、提交角色任务、主动提供本地文件或当前网页；持续目录操作通过已安装 Desktop 的原生桥接完成。模型执行与计费始终由平台承担，扩展不保存 AI key。
 
