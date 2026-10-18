@@ -1,6 +1,6 @@
 # CopyPaste Admin Dashboard
 
-[English](README.en.md) · 独立运营控制台 · 0.2.0
+[English](README.en.md) · 独立运营控制台 · 0.3.0
 
 本仓库是独立 Git 管理后台，与用户 Web 使用独立身份、Cookie 和入口。它管理用户、企业、消耗、费用、VIP、内容、任务、权限和产品配置；采用 CopyPaste 同源品牌样式及繁体中文/英文、浅深主题。所有实际授权、审计和事务在 platform 执行。
 
@@ -42,7 +42,7 @@ npm run build
 | Execution   | 任务状态、取消、对账、满足条件的新子任务重试                               |
 | Catalog     | 已安装角色/Skill 启停和展示、帮助/公告/导航版本发布                        |
 | Connections | 已连接服务、范围、撤销                                                     |
-| Access      | 八类角色/67 权限、创建受限自定义角色、绑定/撤销范围与期限                  |
+| Access      | 邀请开户/真实 MFA、停用/恢复、会话、八类角色/67 权限、受限委派                  |
 | Support     | 限时支持会话元数据与撤销；不具备静默代登录                                 |
 | Audit       | 可追溯操作、结果与时间                                                     |
 | Jobs        | 有预览/提交的用户状态批量操作、受控 CSV 导出                               |
@@ -52,6 +52,35 @@ npm run build
 ![用户详情及消耗](assets/screenshots/02-user-detail.png)
 ![费用账本](assets/screenshots/01-billing.png)
 ![权限管理](assets/screenshots/01-access.png)
+
+## 管理员邀请与账号生命周期
+
+0.3.0 在 Access 页面提供邀请开户及可选初始角色、范围、金额/期限/批次上限。账号和初始授权原子创建，逐项检查权限及委派来源。操作者只看到投递结果，邀请链接仅寄给受邀邮箱。未分配业务权限的已开通账号显示等待授权。
+
+```mermaid
+flowchart LR
+  Bootstrap[受信 CLI 首次超管] --> Invite[后台邀请与受限初始授权]
+  Invite --> Mail[仅收件人获得链接]
+  Mail --> OTP[本人验证邮箱]
+  OTP --> MFA[本人绑定新验证器]
+  MFA --> Session[独立 Admin 会话]
+  Session --> Scope[按角色与范围使用后台]
+  Scope --> Control[停用 / 重设 / 撤销会话]
+  Control --> Fresh[旧会话失效，重新验证]
+```
+
+链接进入页面后立即移除 fragment，不保存在浏览器存储。验证码和 MFA 设置限时、限次、单消费；密钥只显示给已验证的本人。账号详情展示安全的会话元数据、角色/范围、MFA 及邮件状态。重发邀请会废弃旧链接和未完成设置；投递失败明确显示，支持重试。停用和恢复都不恢复旧会话。
+
+本人通过侧栏「验证器设置」更换 MFA，需要近期登录及新的邮箱验证；新 TOTP 确认前保留旧密钥，成功后撤销旧会话并签发当前新会话。他人重设、状态及会话操作要求独立权限、记录版本与原因；不能自己重设或停用自己，最后一位已开通、有效的永久超管受到并发保护。邀请中账号不计入此保护。权限调整会撤销旧会话；未开通身份保留收件邀请，但须重新验证邮箱和设置 MFA。
+
+解除 deny 会恢复权限，服务端同时检查委派权限、实际范围交集、限额和有效期；不能删除自己的 deny，也不能用全局授权绕过操作者在较小范围内的明确限制。绑定删除支持同键重试，避免重复撤销会话。
+
+![真实管理员账号管理](assets/screenshots/04-admin-identities.png)
+![受邀人邮箱验证](assets/screenshots/05-admin-email-enrollment.png)
+![MFA 与会话详情](assets/screenshots/08-admin-account-sessions.png)
+![移动账号详情](assets/screenshots/09-admin-account-mobile.png)
+
+`src/admin-identities.tsx` 承载实际开通、本人 MFA 和账号详情。Delivery `npm run qa:admin-identities` 验证 6 组真实浏览器流程，平台另有 14 组 PostgreSQL/API 逻辑测试；截图隐藏密钥与验证码。生产 SMTP 与企业 SSO 尚需分别接入验证。
 
 ## 敏感操作流程
 
@@ -86,6 +115,6 @@ flowchart LR
 
 `npm test` 是类型检查，真实 16 页、邮箱/TOTP、费用/VIP 提交、用户详情的浏览器旅程见 delivery `npm run qa:web`；私密正文、隔离/恢复由 `npm run qa:persistent` 验证；平台测试覆盖越权、并发、金额重放、VIP、委派和最后超级管理员保护。
 
-CSV 导出最多 500 行、15 分钟有效并在下载时重查源权限。管理员账户初始开户与 MFA enrolment 通过受信 CLI；UI 支持角色/绑定/会话管理，尚未实现完整管理员开户/停用 UI。支持会话只提供元数据，不实现客户内容委托或代登录。在线支付、SSO 和大规模导出仍未完成。
+CSV 导出最多 500 行、15 分钟有效并在下载时重查源权限。首次恢复超管由受信 CLI 引导；后续邀请开户、本人 MFA 开通、更换、停用/恢复、重发和会话撤销由 UI 完成。支持会话只提供元数据，不实现客户内容委托或代登录。在线支付、SSO 和大规模导出仍未完成。
 
 `src/main.tsx` 实现页面/运营命令，`api.ts` 处理 Cookie/CSRF，UI 为本仓库独立快照，来源记录在 `shared-source.json`。截图为真实开发数据，包含虚构 fixture 企业；主文档在交付根目录 `docs/`。素材许可见 [说明](THIRD_PARTY_NOTICES.md)。

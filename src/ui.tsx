@@ -181,6 +181,8 @@ export function Empty({
     </div>
   );
 }
+let modalLocks = 0;
+let previousBodyOverflow = "";
 export function Modal({
   title,
   children,
@@ -194,6 +196,10 @@ export function Modal({
   close.current = onClose;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
+    if (modalLocks++ === 0) {
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+    }
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape") close.current();
       if (e.key === "Tab") {
@@ -223,6 +229,8 @@ export function Modal({
     );
     return () => {
       document.removeEventListener("keydown", key);
+      if (--modalLocks === 0)
+        document.body.style.overflow = previousBodyOverflow;
       previous?.focus();
     };
   }, []);
@@ -274,6 +282,8 @@ export function PageHeader({
 }
 export function Badge({ value }: { value: string }) {
   const labels: Record<string, [string, string]> = {
+    mfa_enabled: ["MFA 已啟用", "MFA enabled"],
+    mfa_pending: ["待開通 MFA", "MFA pending"],
     active: ["有效", "Active"],
     connected: ["已連接", "Connected"],
     pending: ["待處理", "Pending"],

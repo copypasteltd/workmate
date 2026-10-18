@@ -1,6 +1,6 @@
 # CopyPaste Admin Dashboard
 
-[简体中文](README.md) · Independent operations console · 0.2.0
+[简体中文](README.md) · Independent operations console · 0.3.0
 
 An independent Git repository and admin client with separate identity, cookies and entry point from customer Web. It manages customers, workspaces, consumption, funding, VIP, content, execution, access and published product configuration. It shares CopyPaste branding, Traditional Chinese/English and light/dark themes. The platform enforces all authorization, auditing and transactions.
 
@@ -53,6 +53,35 @@ Every admin login requires email OTP and TOTP. Sensitive writes require MFA in t
 ![Financial ledger](assets/screenshots/01-billing.png)
 ![Access management](assets/screenshots/01-access.png)
 
+## Administrator identity lifecycle
+
+Version 0.3.0 adds Access-page invitations with an optional initial role, scope, amount/duration/batch limits and expiry. Account creation and initial delegation are atomic. Every delegated permission and limit must fit the inviter's current grants. Only the recipient receives the invitation link. Enrolled accounts without business permissions see an access-assignment waiting screen.
+
+```mermaid
+flowchart LR
+  Bootstrap[Trusted first-admin CLI] --> Invite[Invite and bounded initial role]
+  Invite --> Mail[Recipient-only email link]
+  Mail --> OTP[Recipient verifies email]
+  OTP --> MFA[Recipient confirms new authenticator]
+  MFA --> Session[Independent admin session]
+  Session --> Scope[Scoped dashboard access]
+  Scope --> Control[Suspend / reset / revoke]
+  Control --> Fresh[Old sessions invalidated]
+```
+
+The page removes the URL fragment immediately and keeps the invitation only in component memory. Email codes and MFA setups expire, limit attempts and have one consumer. New keys are returned only to the verified person. Account detail contains safe session metadata, roles/scopes, MFA and mail status. Resending invalidates the previous link/setup; failed delivery is shown explicitly. Resuming never revives old sessions.
+
+Sidebar authenticator settings require a recent admin sign-in and fresh email proof. The old key remains valid until the new TOTP is confirmed; success revokes old sessions and creates a current session. Account status, another administrator's MFA reset and session revocation require the matching permission, expected version and reason. Self-reset/self-suspension and removal of the last enrolled permanent recovery super administrator are rejected, including concurrent changes. Pending invitees do not count as recovery administrators. Role changes revoke sessions; pending recipients keep their invitation but must verify email and restart MFA setup.
+
+![Actual administrator inventory](assets/screenshots/04-admin-identities.png)
+![Recipient email verification](assets/screenshots/05-admin-email-enrollment.png)
+![MFA and safe session detail](assets/screenshots/08-admin-account-sessions.png)
+![Mobile account detail](assets/screenshots/09-admin-account-mobile.png)
+
+Removing a deny restores access, so the server checks delegation permissions, scope intersections, limits and expiry. Operators cannot remove their own deny or delegate broader access over an explicit restriction in a smaller scope. Binding deletion supports same-key retries without repeated session revocation.
+
+`src/admin-identities.tsx` implements enrollment, self MFA and account detail. Delivery `npm run qa:admin-identities` runs six actual browser groups, backed by 14 PostgreSQL/API test groups. Screenshots mask keys and verification codes. Production SMTP and enterprise SSO require separate live qualification.
+
 ## Sensitive operations
 
 ```mermaid
@@ -86,6 +115,6 @@ Quarantine affects customer APIs, RLS reads and subsequent running-task tools. C
 
 `npm test` is type checking. Delivery `npm run qa:web` exercises all 16 pages, actual OTP/TOTP, funding/VIP submission and customer detail. Delivery `npm run qa:persistent` also checks private-body reads and quarantine/restore. Platform tests cover access denial, concurrency, financial replay, VIP, bounded delegation and recovery-admin protection.
 
-Exports are limited to 500 rows and 15 minutes, with source authorization rechecked at download. Initial admin enrollment/MFA is a trusted CLI operation; the UI supports roles, bindings and sessions but not full principal enrollment/suspension management. Support sessions expose metadata, not customer impersonation or delegated body access. Online payments, SSO and large exports remain unfinished.
+Exports are limited to 500 rows and 15 minutes, with source authorization rechecked at download. A trusted CLI bootstraps the first recovery super administrator; the UI handles subsequent invitations, MFA enrollment/replacement, suspension/resumption, resend and session revocation. Support sessions expose metadata, not customer impersonation or delegated body access. Online payments, SSO and large exports remain unfinished.
 
 `src/main.tsx` contains pages/commands, `api.ts` handles Cookie/CSRF, and UI foundations are a self-contained snapshot recorded in `shared-source.json`. Screenshots use real development records with fictional fixtures. Master documents are in the delivery root's `docs/`; see [notices](THIRD_PARTY_NOTICES.md).

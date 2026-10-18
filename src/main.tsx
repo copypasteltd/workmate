@@ -72,6 +72,13 @@ import {
   Field,
   Empty,
 } from "./ui";
+import {
+  Enrollment,
+  AuthenticatorSettings,
+  InviteAdministrator,
+  PrincipalActions,
+  PrincipalDetail,
+} from "./admin-identities";
 import "./style.css";
 import "./admin.css";
 
@@ -100,8 +107,10 @@ function App() {
       setMe(await api("/v1/admin/me"));
       setError(null);
     } catch (e) {
-      if ((e as any).status === 401) setMe(null);
-      else setError(e as Error);
+      if ((e as any).status === 401) {
+        setMe(null);
+        setError(null);
+      } else setError(e as Error);
     } finally {
       setLoading(false);
     }
@@ -119,24 +128,43 @@ function App() {
         }}
       >
         <BrowserRouter>
-          {loading ? (
-            <Loading />
-          ) : error ? (
-            <div className="center-page">
-              <ErrorNotice error={error} />
-              <button className="button primary" onClick={() => void refresh()}>
-                Retry
-              </button>
-            </div>
-          ) : me ? (
-            <AdminShell />
-          ) : (
-            <Login />
-          )}
+          <AdminEntry loading={loading} error={error} />
         </BrowserRouter>
       </Context.Provider>
     </Preferences>
   );
+}
+function AdminEntry({
+  loading,
+  error,
+}: {
+  loading: boolean;
+  error: Error | null;
+}) {
+  const { pathname } = useLocation(),
+    a = useAdmin();
+  if (pathname === "/enroll")
+    return (
+      <Enrollment
+        me={a.me}
+        onComplete={a.refresh}
+        onLogout={async () => {
+          await post("/v1/admin/auth/logout");
+          await a.refresh();
+        }}
+      />
+    );
+  if (loading) return <Loading />;
+  if (error)
+    return (
+      <div className="center-page">
+        <ErrorNotice error={error} />
+        <button className="button primary" onClick={() => void a.refresh()}>
+          Retry
+        </button>
+      </div>
+    );
+  return a.me ? <AdminShell /> : <Login />;
 }
 function Login() {
   const { t } = useI18n(),
@@ -310,8 +338,9 @@ function AdminShell() {
   const { t } = useI18n(),
     a = useAdmin(),
     location = useLocation();
-  const [mobile, setMobile] = useState(false);
-  const start = nav.find((n) => a.has(n[4]))?.[0] ?? "overview";
+  const [mobile, setMobile] = useState(false),
+    [mfa, setMfa] = useState(false);
+  const start = nav.find((n) => a.has(n[4]))?.[0];
   useEffect(() => setMobile(false), [location.pathname]);
   return (
     <div className={"app-shell admin-shell" + (mobile ? " mobile-open" : "")}>
@@ -363,10 +392,23 @@ function AdminShell() {
             </div>
             <button
               className="icon-button"
+              aria-label="Authenticator settings"
+              title={t("驗證器設定", "Authenticator settings")}
+              onClick={() => setMfa(true)}
+            >
+              <ShieldCheck size={16} />
+            </button>
+            <button
+              className="icon-button"
               aria-label="Sign out admin"
               onClick={async () => {
-                await post("/v1/admin/auth/logout");
-                await a.refresh();
+                try {
+                  await post("/v1/admin/auth/logout");
+                } catch {
+                  /* Refresh resolves an already expired session. */
+                } finally {
+                  await a.refresh();
+                }
               }}
             >
               <LogOut size={16} />
@@ -393,27 +435,52 @@ function AdminShell() {
           </div>
         </header>
         <main id="main" className="main-content">
-          <Routes>
-            <Route path="/" element={<Navigate to={"/" + start} replace />} />
-            <Route path="/overview" element={<Overview />} />
-            <Route path="/users/:id" element={<UserDetail />} />
-            {nav
-              .filter((n) => n[0] !== "overview")
-              .map((n) => (
-                <Route
-                  key={n[0]}
-                  path={"/" + n[0]}
-                  element={<Section section={n[0]} />}
-                />
-              ))}
-            <Route path="*" element={<Navigate to={"/" + start} replace />} />
-          </Routes>
+          {!start ? (
+            <Empty
+              icon={ShieldCheck}
+              title={t(
+                "帳戶已開通，等待授權",
+                "Your account is ready; access awaits assignment",
+              )}
+              body={t(
+                "管理員已驗證你的身分。請聯絡權限管理員分配工作範圍和角色。",
+                "Your identity is verified. Ask an access administrator to assign your working scope and role.",
+              )}
+              action={
+                <button
+                  className="button secondary"
+                  onClick={() => void a.refresh()}
+                >
+                  {t("重新檢查權限", "Check access again")}
+                </button>
+              }
+            />
+          ) : (
+            <Routes>
+              <Route path="/" element={<Navigate to={"/" + start} replace />} />
+              <Route path="/overview" element={<Overview />} />
+              <Route path="/users/:id" element={<UserDetail />} />
+              {nav
+                .filter((n) => n[0] !== "overview")
+                .map((n) => (
+                  <Route
+                    key={n[0]}
+                    path={"/" + n[0]}
+                    element={<Section section={n[0]} />}
+                  />
+                ))}
+              <Route path="*" element={<Navigate to={"/" + start} replace />} />
+            </Routes>
+          )}
         </main>
         <footer className="app-footer">
           <span>COPYPASTE · THE CARE BEHIND THE WORK.</span>
           <span>PLATFORM ADMINISTRATION</span>
         </footer>
       </div>
+      {mfa && (
+        <AuthenticatorSettings access={a} onClose={() => setMfa(false)} />
+      )}
     </div>
   );
 }
@@ -623,7 +690,7 @@ const columns: Record<string, string[]> = {
   catalog: ["kind", "key", "version", "state", "created_at"],
   connections: ["name", "provider", "state", "created_at"],
   devices: ["name", "client", "state", "last_seen_at"],
-  access: ["name", "email", "status", "created_at"],
+  access: ["name", "email", "status", "enrollment_state", "created_at"],
   support: ["reason", "tenant_id", "expires_at", "body_granted"],
   audit: ["action", "actor_kind", "outcome", "target", "created_at"],
   approvals: ["action", "state", "principal_id", "created_at"],
@@ -634,6 +701,7 @@ const columns: Record<string, string[]> = {
 const headers: Record<string, [string, string]> = {
   name: ["名稱", "Name"],
   email: ["郵箱", "Email"],
+  enrollment_state: ["MFA 開通", "MFA setup"],
   status: ["狀態", "Status"],
   workspaces: ["企業", "Workspaces"],
   charged_micros: ["實際消耗", "Settled usage"],
@@ -676,6 +744,10 @@ function Value({ field, value }: { field: string; value: any }) {
   if (value === null || value === undefined)
     return <span className="muted">—</span>;
   if (field.endsWith("_micros")) return <Money value={value} />;
+  if (field === "enrollment_state")
+    return (
+      <Badge value={value === "enrolled" ? "mfa_enabled" : "mfa_pending"} />
+    );
   if (field.endsWith("_at")) return <DateText value={value} />;
   if (["status", "state", "outcome"].includes(field))
     return <Badge value={String(value)} />;
@@ -833,6 +905,15 @@ function Section({ section }: { section: string }) {
                   {t("新增草稿", "Create draft")}
                 </button>
               )}
+            {section === "access" && a.has("admin.access.principals.write") && (
+              <button
+                className="button primary"
+                onClick={() => setDialog("invite")}
+              >
+                <Plus size={16} />
+                {t("邀請管理員", "Invite administrator")}
+              </button>
+            )}
             {section === "access" && a.has("admin.access.roles.write") && (
               <button
                 className="button secondary"
@@ -988,6 +1069,15 @@ function Section({ section }: { section: string }) {
                             <ArrowUpRight size={16} />
                           </button>
                         ) : null}
+                        {active === "access" && (
+                          <PrincipalActions
+                            principal={r}
+                            onOpen={() => {
+                              setRow(r);
+                              setDialog("principal");
+                            }}
+                          />
+                        )}
                         {active === "tenants" &&
                           a.has("admin.tenants.status.write") && (
                             <button
@@ -1225,7 +1315,27 @@ function Section({ section }: { section: string }) {
       {dialog === "batch" && (
         <BatchDialog onClose={() => setDialog(null)} onDone={bump} />
       )}
-      {dialog && dialog !== "batch" && (
+      {dialog === "invite" && (
+        <InviteAdministrator
+          roles={data?.roles ?? []}
+          canBind={a.has("admin.access.bindings.write")}
+          onDone={bump}
+          onClose={() => setDialog(null)}
+        />
+      )}
+      {dialog === "principal" && row && (
+        <PrincipalDetail
+          key={row.id}
+          id={row.id}
+          access={a}
+          onDone={bump}
+          onClose={() => {
+            setDialog(null);
+            setRow(null);
+          }}
+        />
+      )}
+      {dialog && !["batch", "invite", "principal"].includes(dialog) && (
         <AdminDialog
           kind={dialog}
           row={row}
