@@ -1,6 +1,8 @@
 # 0.4.0 云端定时执行验收
 
-版本：1.9 · 2026-10-19 · 原生 Windows 本机试点。实现规则见 [云端定时](../technical/15-cloud-workflow-schedules.md)，启动与完整边界见 [仓库清单](../technical/12-implementation-and-repositories.md)。当前机器报告位于 [implementation-evidence.json](implementation-evidence.json)，[0.3.0](06-admin-identity-acceptance.md) 保留历史。
+本页保留 0.4.0 历史验收；当前增量见 [0.5.0 身份验收](08-enterprise-federation-acceptance.md)，0.4.0 原始代码证据见 [归档](versions/0.4.0/implementation-evidence.json)。
+
+版本：1.9 · 2026-10-19 · 原生 Windows 本机试点。实现规则见 [云端定时](../technical/15-cloud-workflow-schedules.md)，启动与完整边界见 [仓库清单](../technical/12-implementation-and-repositories.md)。本版本机器报告位于 [归档 implementation-evidence.json](versions/0.4.0/implementation-evidence.json)，[0.3.0](06-admin-identity-acceptance.md) 保留历史。
 
 ## 核查范围
 
@@ -19,7 +21,7 @@
 
 原生关闭/重启检查已通过：九个迁移就绪，日历/版本/触发及管理员身份元数据摘要一致，数据库完成正常 checkpoint，既有 5173/5174 服务身份保持。核查摘要不包含可读客户正文、密钥或验证码。
 
-当前增量交付结果以 delivery `evidence/verification.json`、`schedules.json`、`desktop.json`、`native-controller.json` 和离线恢复报告为准；尚未出报告的检查不视为通过。全部计划中 102 条综合用例仍为 not_run；本增量不代替公司真实模型、广告 OAuth、生产 SMTP/S3、负载与生产恢复验收。
+本版本交付结果以 delivery `evidence/versions/0.4.0/` 下的 `verification.json`、`schedules.json`、`desktop.json`、`native-controller.json` 及 docs 归档离线恢复报告为准；尚未出报告的检查不视为通过。全部计划中 102 条综合用例仍为 not_run；本增量不代替公司真实模型、广告 OAuth、生产 SMTP/S3、负载与生产恢复验收。
 
 ## 交付边界
 

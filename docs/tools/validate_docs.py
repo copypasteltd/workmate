@@ -56,6 +56,13 @@ def heading_ids(text):
     return ids
 
 def validate_files_links():
+    # Independent delivery README files are the explicit AGENTS.md exception to
+    # keeping project documentation under docs/. Other outside paths stay denied.
+    delivery_readmes = {
+        (ROOT.parent / 'dev' / f'copypaste-{repo}' / readme).resolve()
+        for repo in ['platform', 'web', 'admin', 'extension', 'desktop', 'delivery']
+        for readme in ['README.md', 'README.en.md']
+    }
     expected = [
         'README.md','00-document-map.md','requirements/01-srs.md','requirements/02-nonfunctional-and-service-levels.md',
         *[f'product/{x}' for x in ['01-prd.md','02-user-journeys.md','03-information-architecture-and-interactions.md','04-release-and-commercial-model.md','05-web-agent-workbench.md','06-role-templates-and-skill-presets.md','07-brand-design-system.md','08-admin-dashboard.md']],
@@ -90,7 +97,8 @@ def validate_files_links():
             # The report is this command's output and can legitimately be absent
             # until the final write. A write failure still prevents success.
             generated_report = destination == (ROOT/'quality/validation-report.json')
-            check(destination.is_relative_to(ROOT) and (destination.is_file() or generated_report), f'link:{p.relative_to(ROOT)} -> {target}')
+            permitted = destination.is_relative_to(ROOT) or destination in delivery_readmes
+            check(permitted and (destination.is_file() or generated_report), f'link:{p.relative_to(ROOT)} -> {target}')
             if destination.is_file() and fragment and destination.suffix == '.md':
                 check(unquote(fragment) in heading_ids(destination.read_text(encoding='utf-8')), f'anchor:{target}')
     COUNTS['local_links'] = links

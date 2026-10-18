@@ -1,16 +1,18 @@
 # CopyPaste 企业 Agent 文档
 
-版本：1.9 · 2026-10-19 · 状态：保留 v1.5 需求设计基线，当前产品 0.4.0 在持续工作与管理员身份基础上增加云端每日/每周计划、明确授权与执行历史；六个独立仓库的实现与验收按版本记录。主文档继续在本目录维护。
+版本：2.0 · 2026-10-19 · 状态：保留 v1.5 需求设计基线，当前产品 0.5.0 增加企业 OIDC 身份、独立邮箱连接证明与跨端授权撤销；六个独立仓库的实现与验收按版本记录。主文档继续在本目录维护。
 
 开发与构建根目录固定为 `D:\dev\copypasted\自有agent\`，所有文档统一位于该根目录的 `docs\`。后续命令直接在 D 盘工作区执行，旧入口仅作会话兼容；见 [工作区与路径规范](governance/03-workspace-and-path-policy.md)。
 
 产品服务在港企业，首批为现有客户的 marketing 团队。以统一企业平台支撑云端 Web、Chrome 扩展/原生桥接、完整 Desktop，覆盖营销素材生产、广告及网站分析、SEO/GEO 和重复流程。全部 AI 请求经过公司内部服务器，**Codex 为唯一 Agent 内核**，由 CORE01 固定；实际 Codex 版本与受控 Responses 工具回合已验证；公司内部网关尚待提供配置并真实联调。
 
-**已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/07-cloud-schedule-acceptance.md)。未完成外部平台授权或公司真实模型准入。
+**已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/08-enterprise-federation-acceptance.md)。未完成外部平台授权或公司真实模型准入。
 
 ## 建议阅读
 
-本轮开发交付先读 [实际仓库与启动](technical/12-implementation-and-repositories.md) 和 [实际验收与发布边界](quality/07-cloud-schedule-acceptance.md)。原设计中的后台补充先读 [Admin 产品与页面](product/08-admin-dashboard.md)、[后台技术与 AD01–AD10](technical/11-admin-control-plane.md) 和 [权限目录](contracts/admin-permission-catalog.json)。Codex 集成见 [内核与内部网关](technical/02-runtime-and-ai-gateway.md)。视觉方向见 [CopyPaste 品牌规范](product/07-brand-design-system.md) 与 [浅深主题视觉样板](design/brand-preview.html)。业务负责人读 [PRD](product/01-prd.md)、[用户旅程](product/02-user-journeys.md)、[发布路线](product/04-release-and-commercial-model.md)；研发再读 [架构](technical/01-architecture-and-stack.md)、[数据模型](technical/03-data-model-and-lifecycle.md)、[API](technical/04-api-and-event-contracts.md)，测试从 [追踪矩阵](quality/02-requirements-traceability.md) 进入。
+直接启动及接收本轮源码、安装包和独立 Git 仓库，先读 [代码交付入口](DELIVERY.md)。
+
+本轮开发交付先读 [实际仓库与启动](technical/12-implementation-and-repositories.md) 和 [实际验收与发布边界](quality/08-enterprise-federation-acceptance.md)。原设计中的后台补充先读 [Admin 产品与页面](product/08-admin-dashboard.md)、[后台技术与 AD01–AD10](technical/11-admin-control-plane.md) 和 [权限目录](contracts/admin-permission-catalog.json)。Codex 集成见 [内核与内部网关](technical/02-runtime-and-ai-gateway.md)。视觉方向见 [CopyPaste 品牌规范](product/07-brand-design-system.md) 与 [浅深主题视觉样板](design/brand-preview.html)。业务负责人读 [PRD](product/01-prd.md)、[用户旅程](product/02-user-journeys.md)、[发布路线](product/04-release-and-commercial-model.md)；研发再读 [架构](technical/01-architecture-and-stack.md)、[数据模型](technical/03-data-model-and-lifecycle.md)、[API](technical/04-api-and-event-contracts.md)，测试从 [追踪矩阵](quality/02-requirements-traceability.md) 进入。
 
 范围分为 102 条需求、12 个逻辑模块、24 条用户旅程及 102 个基础验收用例；原先 102 个综合验收用例仍为 not_run，未用本轮局部代码测试替代其完整条件。本轮平台、Desktop 与各客户端的实际测试单独记录。阶段为 M0 验证 → M1 Web 工作台及导入试点 → M2 协作、云端计划与正式连接器 → M3 扩展与本地 → M4 Desktop 及业务扩展。三端属于同一产品，各阶段保留完整长期范围。
 
@@ -57,7 +59,9 @@ Web 主线以自然语言委派、会话中的真实执行、右侧成果/云文
 | 技术 | [持续专家、会话与记忆](technical/13-persistent-agents-conversations-memory.md) | 私有归属、五种记忆范围、版本冻结、只读模式和计划批准 |
 | 技术 | [管理员账号生命周期](technical/14-admin-identity-lifecycle.md) | 邮箱邀请、本人 MFA、权限委派、停用与会话管理 |
 | 技术 | [云端定时工作流](technical/15-cloud-workflow-schedules.md) | IANA 日历、配置/授权冻结、漏跑/重叠、后台控制与删除 |
-| 质量 | [0.4.0 实现验收](quality/07-cloud-schedule-acceptance.md) | 原生构建、65+3 项测试、真实时钟与跨端流程、交付边界 |
+| 质量 | [0.5.0 身份与交付验收](quality/08-enterprise-federation-acceptance.md) | 逻辑回归、真实签名 IdP、打包客户端与交付边界 |
+| 技术 | [企业联邦与原生授权](technical/16-enterprise-federation-and-native-auth.md) | 邮箱证明、MFA 配置、SSO 撤销和浏览器到原生端 |
+| 历史 | [0.4.0 云端计划验收](quality/07-cloud-schedule-acceptance.md) | 上一版本的定时流程与证据 |
 | 质量 | [0.3.0 身份历史](quality/06-admin-identity-acceptance.md) | 邀请、本人 MFA、账号/会话控制及当时原始证据 |
 | 质量 | [0.2.0 历史验收](quality/05-persistent-work-acceptance.md) | 持续专家、私密会话与记忆的历史检查 |
 | 质量 | [0.1.0 历史验收](quality/04-implementation-acceptance.md) | 上一版本记录，保留原始时间和范围 |

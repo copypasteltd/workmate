@@ -1,6 +1,6 @@
 # 实际开发、独立仓库与交付
 
-版本：1.9 · 2026-10-19 · 产品代码：0.4.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
+版本：2.0 · 2026-10-19 · 产品代码：0.5.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
 ## 1. 路径与仓库
 
@@ -23,7 +23,7 @@ Web、Admin、扩展与 Desktop 可独立安装和构建，不在 build 时依�
 | --- | --- |
 | 工具 | Node 22.14.0、npm 10.9.2、TypeScript 7.0.2，精确依赖在各锁文件 |
 | 服务 | Fastify 5.12.7、pg 8.23.1、pg-boss 12.38.0、Zod 4.6.7 |
-| 数据 | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、九个有序迁移、RLS |
+| 数据 | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、十个有序迁移、RLS |
 | 界面 | React 19.3.1、Vite 8.3.4、React Router 7.18.4、Lucide 1.59.0 |
 | Desktop | Electron 44.5.1、electron-builder 26.15.3、DPAPI + AES-256-GCM、独立 Node-mode Chrome Host |
 | Agent | Codex 0.163.0-alpha.10.2、app-server stdio JSON-RPC、实际生成协议、公司 Responses provider |
@@ -63,7 +63,7 @@ OTP 10 分钟有效、5 次错误上限、单次原子消费；Web/Admin 独立 
 
 | 领域 | 已实现 | 当前界限 |
 | --- | --- | --- |
-| 企业/项目 | 成员、邀请、角色/项目范围、最后 owner 保护、API/RLS 双层隔离 | 不含企业 SSO 与完整组织目录同步 |
+| 企业/项目 | 成员、邀请、角色/项目范围、最后 owner 保护、API/RLS 双层隔离，OIDC 企业身份与独立邮箱连接证明 | 不含 SAML/SCIM、强制 SSO 和完整组织目录同步；公司 IdP 仍需准入 |
 | 角色/Skill | 18 角色、28 个实际 Skill 包、版本/哈希校验、启停和展示发布 | 全部仍待公司真实任务准入；数量不等于上线资格 |
 | 专家/会话/记忆 | 角色实例及不可变版本、所属用户私密会话、五种记忆范围、固定引用/到期/删除、问答/计划/执行和输入摘要审批 | 有界历史/文本记忆；不含暂停检查点、并行专业团队、协同编辑与全套 SSE |
 | 任务 | 固定内核、原子消息/任务/预算/outbox、去重、租约/fencing、取消、工具授权复核、私密产物和明确发布 | 公司真实 AI 仍待准入；每会话一次只运行一个任务 |
@@ -76,7 +76,7 @@ OTP 10 分钟有效、5 次错误上限、单次原子消费；Web/Admin 独立 
 | 流程 | 最多 8 步数据/Agent/人工审批、持久 cursor/子任务、每日/每周云端日历、冻结授权与历史、审批后继续 | 无任意 cron、事件触发、任意脚本或外部发布工作流 |
 | 本地端 | 逐目录 grant、1 小时、默认只读、create-only、签名云命令和一次 nonce 结果 | 云端手动排程已贯通，Codex 自主本地文件工具未接入；结果暂非客户端签名 |
 | 费用/VIP | 整数 HKD micros、资金来源、预留/一次结算、个人/企业权益、冻结套餐 | 人工确认付款，无在线支付收单；月费商业定价未确认 |
-| Admin | 16 页、邀请与本人 MFA、账号生命周期、67 权限、8 内置角色、范围/deny/限额/委派、审计 | 支持仅元数据；无客户正文委托或静默代登录 |
+| Admin | 16 页、邀请与本人 MFA、账号生命周期、68 权限、8 内置角色、范围/deny/限额/委派、审计 | 支持仅元数据；无客户正文委托或静默代登录 |
 
 云端计划的 IANA 日历、版本/预算确认、漏跑合并、单计划单运行、原授权恢复与删除详见 [定时工作流](15-cloud-workflow-schedules.md)。用户关闭页面后由原生 Worker 执行；不把运行未完成或费用待对账的子任务视为可重叠槽位。
 
@@ -100,21 +100,25 @@ Desktop 使用 Windows DPAPI CurrentUser 保护 profile key，AES-GCM 保存凭�
 
 ## 6. 实际 API 与交付产物
 
-platform 的 `contracts/implemented-routes.json` 从真实 Fastify 应用导出 156 个 method/path；实际请求字段以本轮客户端和服务端为准。它与主文档规划的 183 路径/221 操作尚未完全一致，不能把规划 OpenAPI 当本次全部已实现的客户端生成依据。主契约保留为后续建设目标。
+platform 的 `contracts/implemented-routes.json` 从真实 Fastify 应用导出 167 个 method/path；实际请求字段以本轮客户端和服务端为准。它与主文档规划的 183 路径/221 操作尚未完全一致，不能把规划 OpenAPI 当本次全部已实现的客户端生成依据。主契约保留为后续建设目标。
 
-Windows 产物在 Desktop `release/`：0.4.0 x64 Setup、Portable、win-unpacked。本次为未签名、本机 localhost origin 包；生产须配置公司 HTTPS origin 并重新打包。扩展 `dist/` 可手工加载，固定 ID 与平台/桌面公开配置一致；尚未上架商店。注册原生 Host 需要安装版稳定路径与用户明确确认。
+Windows 产物在 Desktop `release/`：0.5.0 x64 Setup、Portable、win-unpacked。本次为未签名、本机 localhost origin 包；生产须配置公司 HTTPS origin 并重新打包。扩展 `dist/` 可手工加载，固定 ID 与平台/桌面公开配置一致；尚未上架商店。注册原生 Host 需要安装版稳定路径与用户明确确认。
 
-最终提交和 SHA-256 记录在 delivery 的 `evidence/release-manifest.json` 及本 docs 质量汇总。实际检查见 [当前验收](../quality/07-cloud-schedule-acceptance.md)。没有自动安装到用户系统、发布商店、合并远端或部署生产。
+最终提交和 SHA-256 记录在 delivery 的 `evidence/release-manifest.json` 及本 docs 质量汇总。实际检查见 [当前验收](../quality/08-enterprise-federation-acceptance.md)。没有自动安装到用户系统、发布商店、合并远端或部署生产。
 
 delivery 执行 `npm run release`，要求六仓库已提交且干净、实际验证通过。集中交付目录 `dev/copypaste-delivery/release/` 包含 11 项产物：六个独立 Git bundle、Web/Admin/Chrome ZIP、Windows Setup 与 Portable。`release-manifest.json` 保存全部提交、Git tree、来源索引 SHA-256、文件大小与 SHA-256；该产物清单本身忽略入 Git，避免记录自己提交的循环。
 
 本轮已真实离线克隆全部六个 bundle，逐个验证提交、tree、来源索引和干净 checkout；三个 ZIP 实际解压校验 CRC，Chrome manifest 位于根目录，全部 11 项校验 SHA-256/大小。详见 [离线恢复核查](../quality/release-restore-check.json)。恢复命令为 `git clone <仓库.bundle> <目标目录>`；生产依赖和私有 `.env` 需按 README 重新准备，不包含于源码 bundle。
 
-| 独立仓库 | 0.4.0 已交付提交 |
+| 独立仓库 | 0.5.0 实际交付提交 |
 | --- | --- |
-| platform | `75aa72c` |
-| web | `f81650b` |
-| admin | `6d69b53` |
-| extension | `49417b8` |
-| desktop | `5285f43` |
-| delivery | `1a7f945` |
+| platform | `031324d` |
+| web | `6f401f0` |
+| admin | `b417c95` |
+| extension | `3a0db4d` |
+| desktop | `75bdb6a` |
+| delivery | `8043ebd` |
+
+## 7. 0.5.0 身份增量
+
+企业 OIDC、首次邮箱证明、本人连接管理、后台全域 SSO 权限、固定元数据与跨端凭证撤销已进入六仓库。Web 与打包 Desktop 统一使用系统浏览器链路。迁移 010 绑定原生码来源会话及用户版本，撤销旧设备会话覆盖轮换后的凭证 family。完整规则与配置见 [企业身份联邦](16-enterprise-federation-and-native-auth.md)。当前版本提交以实际发布 manifest 与 [当前代码证据](../quality/implementation-evidence.json) 为准；0.4.0 记录保留在 [历史验收](../quality/07-cloud-schedule-acceptance.md) 及版本归档中。

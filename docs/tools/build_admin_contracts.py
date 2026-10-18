@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PERMISSIONS = {
     'overview': ['read'],
     'users': ['read', 'contact.read', 'profile.write', 'status.write', 'sessions.revoke'],
-    'tenants': ['read', 'status.write', 'members.write'],
+    'tenants': ['read', 'status.write', 'members.write', 'sso.write'],
     'usage': ['read', 'internal_cost.read'],
     'billing': ['read', 'top_up', 'gift', 'debit', 'credit_limit.write', 'refund', 'reconcile'],
     'entitlements': ['read', 'grant', 'extend', 'revoke'],
@@ -37,18 +37,18 @@ def generate_catalog(m):
     common = ['admin.overview.read', 'admin.jobs.read']
     roles = {
         'super_admin': KEYS,
-        'user_operator': common + domain('users', 'tenants') + ['admin.usage.read', 'admin.entitlements.read', 'admin.support.read', 'admin.exports.create', 'admin.exports.download'],
+        'user_operator': common + [key for key in domain('users', 'tenants') if key != 'admin.tenants.sso.write'] + ['admin.usage.read', 'admin.entitlements.read', 'admin.support.read', 'admin.exports.create', 'admin.exports.download'],
         'finance_admin': common + domain('billing', 'entitlements', 'plans', 'usage') + ['admin.users.read', 'admin.tenants.read', 'admin.approvals.read', 'admin.exports.create', 'admin.exports.download'],
         'content_admin': common + domain('content', 'sharing', 'execution', 'connections', 'devices') + ['admin.users.read', 'admin.tenants.read', 'admin.exports.create', 'admin.exports.download'],
         'catalog_manager': common + domain('catalog') + ['admin.plans.read', 'admin.plans.draft', 'admin.execution.read'],
         'support_agent': common + domain('support') + ['admin.users.read', 'admin.tenants.read', 'admin.usage.read', 'admin.execution.read', 'admin.content.read'],
-        'security_admin': common + domain('access', 'policy', 'approvals', 'audit') + ['admin.users.read', 'admin.users.sessions.revoke', 'admin.tenants.read', 'admin.support.read', 'admin.support.revoke'],
+        'security_admin': common + domain('access', 'policy', 'approvals', 'audit') + ['admin.users.read', 'admin.users.sessions.revoke', 'admin.tenants.read', 'admin.tenants.sso.write', 'admin.support.read', 'admin.support.revoke'],
         'auditor': common + ['admin.audit.read', 'admin.approvals.read', 'admin.billing.read', 'admin.entitlements.read', 'admin.usage.read', 'admin.access.read', 'admin.policy.read', 'admin.exports.create', 'admin.exports.download'],
     }
     sensitive = {'admin.users.contact.read', 'admin.usage.internal_cost.read', 'admin.content.body.read',
                  'admin.content.download', 'admin.exports.sensitive'}
     def scope_kinds(key):
-        if key.split('.')[1] in ['access', 'policy', 'catalog', 'plans'] or key in ['admin.users.profile.write','admin.users.status.write','admin.users.sessions.revoke']:
+        if key.split('.')[1] in ['access', 'policy', 'catalog', 'plans'] or key in ['admin.users.profile.write','admin.users.status.write','admin.users.sessions.revoke','admin.tenants.sso.write']:
             return ['global']
         if key.split('.')[1] in ['billing', 'entitlements'] or key == 'admin.tenants.status.write':
             return ['global', 'tenant']
