@@ -1,6 +1,6 @@
 # CopyPaste Chrome Extension
 
-[简体中文](README.md) · Chrome MV3 side panel and native bridge · 0.1.0
+[简体中文](README.md) · Chrome MV3 side panel and native bridge · 0.2.0
 
 An independent repository for project/specialist tasks, explicitly selected files and user-triggered current-page capture. Persistent folder operations use the installed Desktop native helper. Execution and billing stay on the platform; this extension contains no AI credentials.
 
@@ -47,6 +47,10 @@ flowchart LR
 The exact callback is registered to Chrome identity. Access/refresh tokens stay in trusted-context `chrome.storage.session`, not the panel, localStorage or `storage.local`. Closing the browser ends that session. Local extension storage only retains locale. The platform handles refresh rotation and logout.
 
 Uploads require a user picker and are limited to 5 MB by the extension; the server rechecks project rights. Current-page capture requires a click and activeTab/scripting, excludes forms/editable/hidden content and does not run continuous site-wide capture.
+
+## Web and Desktop integration
+
+Version 0.2.0 uses the same platform identity, permissions and task API. The build derives the manifest version from package.json. The panel provides lightweight tasks/materials; configure persistent specialists, full private conversations and memory in Web or Desktop. Private outputs require explicit publication before project sharing.
 
 ## Native folders
 

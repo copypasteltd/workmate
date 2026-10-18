@@ -54,7 +54,7 @@ const id = createHash("sha256")
 const manifest = {
   manifest_version: 3,
   name: "CopyPaste · Enterprise Workspace",
-  version: "0.1.0",
+  version: JSON.parse(await readFile("package.json", "utf8")).version,
   description:
     "Bring projects, specialist work and explicitly selected local materials into CopyPaste.",
   key,
