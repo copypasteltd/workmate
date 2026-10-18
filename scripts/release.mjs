@@ -78,6 +78,7 @@ const evidenceNames = [
   "persistent-work.json",
   "admin-identities.json",
   "schedules.json",
+  "federation.json",
 ];
 const evidence = [];
 for (const name of evidenceNames) {
@@ -103,6 +104,7 @@ for (const name of evidenceNames) {
       "persistent-work.json",
       "admin-identities.json",
       "schedules.json",
+      "federation.json",
     ].includes(name) &&
     (!data.checks?.length ||
       data.checks.some((c) => c.status !== "passed") ||
@@ -124,15 +126,20 @@ for (const name of evidenceNames) {
       "packaged-windows.json",
       "admin-identities.json",
       "schedules.json",
+      "federation.json",
     ].includes(name) &&
     data.version !== version
   )
     throw new Error(`Evidence version mismatch: ${name}`);
   if (
-    ["desktop.json", "packaged-windows.json"].includes(name) &&
+    ["desktop.json", "packaged-windows.json", "federation.json"].includes(
+      name,
+    ) &&
     !data.electron_closed
   )
     throw new Error(`Application not closed: ${name}`);
+  if (name === "federation.json" && !data.idp_closed)
+    throw new Error("Identity fixture not closed");
   evidence.push({
     file: `evidence/${name}`,
     at: data.at,
@@ -211,7 +218,8 @@ const manifest = {
     "Company AI gateway exact model aliases, credentials and tariffs",
     "Live SMTP, advertising OAuth and S3 qualification",
     "Per-role live business acceptance",
-    "SSO, event triggers, parallel agents, collaborative editing and full AI video/speech",
+    "Live company OIDC qualification, SAML/SCIM and mandatory SSO policies",
+    "Event triggers, parallel agents, collaborative editing and full AI video/speech",
     "Full cloud directories, pause checkpoints and streaming task history",
     "Autonomous Codex local-file tools and client-signed device results",
     "Physical object/runtime-cache garbage collection after logical erasure",

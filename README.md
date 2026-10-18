@@ -1,6 +1,6 @@
 # CopyPaste 交付与集成
 
-[English](README.en.md) · 原生开发控制器、验收与交付入口 · 0.4.0
+[English](README.en.md) · 原生开发控制器、验收与交付入口 · 0.5.0
 
 本仓库与五个产品仓库分别使用独立 Git，不把它们合并成单一仓库。项目位于 `D:\dev\copypasted\自有agent\`；源码、依赖、产物位于 `dev/`，主需求/设计/质量文档位于 `docs/`。各仓库的 README、图与截图随仓库交付。
 
@@ -95,11 +95,12 @@ python -X utf8 scripts/review-repositories.py
 
 | 证据文件                          | 含义                                                                        |
 | --------------------------------- | --------------------------------------------------------------------------- |
-| `evidence/verification.json`      | 六仓库类型检查/构建、平台 65 项测试、Desktop 3 项测试、实际路由导出         |
+| `evidence/verification.json`      | 六仓库类型检查/构建、平台 84 项测试、Desktop 3 项测试、实际路由导出         |
 | `evidence/web-admin.json`         | 真实邮件登录、初始化、PNG 素材/图层与媒体、数据/流程、16 页 Admin、费用/VIP |
 | `evidence/persistent-work.json`   | 专家/私密会话/记忆、移动/深色主题、Admin 正文隔离与删除的 8 项浏览器检查 |
 | `evidence/admin-identities.json` | 管理员邀请、邮箱与真实 MFA、更换验证器、受限权限、停用/恢复与重发邀请的 6 组浏览器检查 |
 | `evidence/schedules.json` | 真实时钟、关闭用户页后生成报告、暂停/恢复、时区编辑、Admin 和移动布局的 5 组检查 |
+| `evidence/federation.json` | 签名 OIDC、首次邮箱证明、真实打包 Desktop 与后台跨端撤销的 6 组检查 |
 | `evidence/extension.json`         | 实际 MV3、Chrome identity PKCE、上传、token 隔离、退出                      |
 | `evidence/desktop.json`           | 实际打包应用、PKCE、私密会话、云端计划、目录、签名命令及 Native Host 的 7 项检查          |
 | `evidence/packaged-windows.json`  | 实际 Windows 包启动、isPackaged、版本和截图                                 |
@@ -113,7 +114,7 @@ python -X utf8 scripts/review-repositories.py
 
 `npm run qa:lifecycle` 要求先停止现有 CopyPaste 控制器。它自行启动、关闭、重启原生服务，核对 PostgreSQL checkpoint、当前版本就绪、专家/会话/记忆记录保留及既有服务 PID，最后停止自己的栈。之后用 `npm start` 恢复查看。此检查不启动虚拟化或浏览器。
 
-0.1.0、0.2.0 与 0.3.0 原始验收副本保存在 `evidence/versions/`；当前 evidence 对应 0.4.0。长期需求继续由各仓库及主文档跟踪。
+0.1.0、0.2.0、0.3.0 与 0.4.0 原始验收副本保存在 `evidence/versions/`；当前 evidence 对应 0.5.0。长期需求继续由各仓库及主文档跟踪。
 
 ## 二进制与演示流程
 
@@ -127,7 +128,7 @@ Desktop `npm run package` 输出 Windows x64 Setup、Portable 和 win-unpacked�
 
 ## 尚未完成的发布工作
 
-公司 AI/SMTP/广告 OAuth/S3 需真实凭证及联调；Windows 签名证书、生产原生服务账号/ACL/网络隔离、备份恢复/SLO 需部署核查。SSO、事件触发、并行团队 Agent、协同编辑、完整 AI 视频/语音、在线收单、客户代码强隔离不在本次已实现范围。已安装 18 个角色/28 个 Skills 仍待真实角色任务验收，不能按可用资格数量宣传。
+公司 AI/SMTP/广告 OAuth/S3 需真实凭证及联调；Windows 签名证书、生产原生服务账号/ACL/网络隔离、备份恢复/SLO 需部署核查。SAML/SCIM、强制 SSO、事件触发、并行团队 Agent、协同编辑、完整 AI 视频/语音、在线收单、客户代码强隔离不在本次已实现范围。已安装 18 个角色/28 个 Skills 仍待真实角色任务验收，不能按可用资格数量宣传。
 
 主需求和设计优先级未被删除；本仓库交付实际实现和证据，不用页面存在冒充全部产品验收。各端完整操作说明见各自中英 README；[第三方说明](THIRD_PARTY_NOTICES.md)记录工具和截图来源。
 
@@ -135,4 +136,21 @@ Desktop `npm run package` 输出 Windows x64 Setup、Portable 和 win-unpacked�
 
 `npm run qa:schedules` 通过真实邮箱登录、新企业、CSV 和已发布流程，在 UI 预览并确认每日计划；关闭用户页面后等待真实时钟，由原生 Worker 生成报告并校验 HKD/ROAS。随后验证用户暂停/恢复、每周/香港时区编辑、后台独立 MFA 控制和 390px 布局，共五组，报告为 `evidence/schedules.json`。测试不调用 AI，在 finally 关闭自建浏览器、退役计划并取消测试运行。
 
-打包 Desktop 另外检查原生 bearer 日历创建、实际显示与退役；`qa:lifecycle` 核对日历配置/历史数据库侧摘要及重启持久性。0.4.0 包含 65 项平台测试和 3 项 Desktop 单元测试；浏览器与打包旅程单独报告。
+打包 Desktop 另外检查原生 bearer 日历创建、实际显示与退役；`qa:lifecycle` 核对日历配置/历史数据库侧摘要及重启持久性。当前 0.5.0 包含 84 项平台测试和 3 项 Desktop 单元测试；浏览器与打包旅程单独报告。
+
+## 0.5.0 企业身份与统一登录
+
+OIDC 使用 code + PKCE S256、签章、state/nonce 与固定回调。先有注册账号及有效企业成员资格，再绑定企业身份；首次绑定需要独立的 CopyPaste 工作邮箱确认码，不按网域自动开户。配置改变、停用或本人解除连接会撤销关联用户的全部 CopyPaste Web/native/refresh 会话和旧执行授权。管理员登录仍独立使用邮箱与 TOTP。
+
+`npm run qa:federation` 使用原生签名 OIDC IdP，验证邮箱开户、后台配置/检查/启用、首次独立邮箱确认、真实打包 Desktop 的系统浏览器 SSO + loopback PKCE、390px 布局及后台跨端撤销。fixture、浏览器和 Electron 全在 finally 关闭；报告为 `evidence/federation.json`。它不是公司 IdP 或内部 AI 的生产准入。
+
+```mermaid
+flowchart LR
+  Member[已有企业成员] --> IdP[签名 OIDC 与 PKCE]
+  IdP --> Proof[首次独立邮箱确认]
+  Proof --> Web[CopyPaste 会话]
+  Web --> Native[明确原生授权与 PKCE]
+  Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
+```
+
+部署配置 `SSO_ALLOWED_ORIGINS` 为所需的精确 HTTPS origin。默认回调为 `WEB_ORIGIN/v1/auth/sso/callback` 经 Web API 代理；跨域 `VITE_API_BASE` 可配 `SSO_CALLBACK_ORIGIN=API_ORIGIN`。生产拒绝 `SSO_ALLOW_LOCALHOST=true`。只有原生 fixture 验收时，用此环境开关启动开发控制器，执行 `qa:federation` 后停止并不带该开关重启。

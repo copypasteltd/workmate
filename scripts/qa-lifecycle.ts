@@ -76,6 +76,9 @@ async function snapshot() {
       (SELECT count(*)::int FROM admin_principals) AS admin_principals,
       (SELECT count(*)::int FROM admin_enrollments) AS admin_enrollments,
       (SELECT count(*)::int FROM sessions WHERE admin_id IS NOT NULL) AS admin_sessions,
+      (SELECT count(*)::int FROM sso_connections) AS sso_connections,
+      (SELECT count(*)::int FROM federated_identities) AS federated_identities,
+      (SELECT count(*)::int FROM sessions WHERE federation_identity_id IS NOT NULL) AS federated_sessions,
       (SELECT max(version) FROM schema_migrations) AS schema_version`)
     ).rows[0];
     const identity = [];
@@ -87,6 +90,9 @@ async function snapshot() {
       "SELECT id,tenant_id,project_id,workflow_id,version,revision,state,next_due_at,last_error,content_state FROM workflow_schedules ORDER BY id",
       "SELECT schedule_id,revision,encode(sha256(convert_to(body::text,'UTF8')),'hex') AS body_hash FROM workflow_schedule_versions ORDER BY schedule_id,revision",
       "SELECT id,schedule_id,revision,scheduled_local,scheduled_at,state,run_id,missed_count,through_local FROM workflow_schedule_occurrences ORDER BY id",
+      "SELECT id,tenant_id,enabled,version,revision,verified_revision,last_probed_at FROM sso_connections ORDER BY id",
+      "SELECT id,connection_id,user_id,status,revision,version,linked_at,last_login_at FROM federated_identities ORDER BY id",
+      "SELECT id,user_id,auth_version,federation_identity_id,federation_revision,created_at,expires_at,revoked_at FROM sessions WHERE federation_identity_id IS NOT NULL ORDER BY id",
     ])
       identity.push((await client.query(sql)).rows);
     return {
