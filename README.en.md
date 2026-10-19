@@ -181,7 +181,7 @@ Deployment: use exact HTTPS `SSO_ALLOWED_ORIGINS`. Default callback is `WEB_ORIG
 
 - `npm run qa:cloud-files`: four Web cloud-file groups, two real Codex tasks with synthetic dependencies, persistent sources and actual ZIPs. Saves cloud-files.json and captured HTTP payloads.
 - `npm run qa:desktop-transfer`: eight source Electron groups for login, idempotent upload, actual 29 MiB transfers, overwrite protection and native cloud-tree browsing. Saves alignment-desktop.json.
-- The current platform regression passes 180/180; the complete TAP and summary are under evidence/alignment-platform.\*.
+- The current platform regression passes 185/185; the complete TAP and summary are under evidence/alignment-platform.\*.
 
 At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_samples.py` to check captured response schemas. These runs use explicitly synthetic dependencies and real Codex; they do not qualify live model quality or all 102 integrated acceptance cases.
 
@@ -189,7 +189,7 @@ At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_sam
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **180/180**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **185/185**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant, inbox and source integrity
 
@@ -197,7 +197,7 @@ qa:default-assistant and qa:notifications each validate four Web journey groups;
 
 qa:byte-integrity creates independent native Git clones of platform/Desktop/delivery and checks raw SQL digests against both existing migration ledgers, all 28 Skills, renderer provenance and raw TAP. Commit source and TAP first. Owned, verified temporary directories are removed afterward. This is checkout integrity, not disaster recovery.
 
-Current source passes 180/180 platform tests and four Desktop unit tests, with 31 captured HTTP request/response payloads. Master documents retain all 102 full acceptance cases and remaining production work.
+Current source passes 185/185 platform tests and four Desktop unit tests, with 31 captured HTTP request/response payloads. Master documents retain all 102 full acceptance cases and remaining production work.
 
 ## Initial-input verification
 
@@ -225,7 +225,7 @@ The template increment's six platform groups brought that regression to 145/145;
 
 `npm run qa:design-pdf` verifies seven journeys: real sign-in/canvas, a lost accepted reply, idempotent retry, source-version conflicts, widths/themes/languages, a designer template and native Electron saving. Independent pypdf inspection and native Poppler rendering compare the PDF to its source PNG. `evidence/design-pdf.json` records geometry, hashes and owned-resource cleanup.
 
-Set `CHROME_BIN`, `PDF_QA_PYTHON` (pypdf/Pillow) and `PDFTOPPM_BIN` for native QA tools; these are not product runtime dependencies. The full platform regression passed **180/180**. Historical installers remain unchanged and all 102 requirements retain their full acceptance conditions.
+Set `CHROME_BIN`, `PDF_QA_PYTHON` (pypdf/Pillow) and `PDFTOPPM_BIN` for native QA tools; these are not product runtime dependencies. The full platform regression passed **185/185**. Historical installers remain unchanged and all 102 requirements retain their full acceptance conditions.
 
 ![Actual PDF export](assets/screenshots/design-pdf-export.png)
 
@@ -235,7 +235,7 @@ Preview and confirm the account, currency, timezone, entity level, attribution a
 
 Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
 
-`npm run qa:marketing-analytics` exercises six Web/native Electron groups: real sign-in, mapping preview, retry after a lost accepted reply, actual CSV/JSON/SVG downloads, invalid/unknown data, both themes/languages at four widths, clearing denied selected snapshots and native saves. Set `CHROME_BIN` to native Chromium. Evidence is under evidence/marketing-analytics.json; all owned browser/context/Electron resources close in finally. The current full platform regression passes **180/180** and preserves raw TAP bytes and their hash.
+`npm run qa:marketing-analytics` exercises six Web/native Electron groups: real sign-in, mapping preview, retry after a lost accepted reply, actual CSV/JSON/SVG downloads, invalid/unknown data, both themes/languages at four widths, clearing denied selected snapshots and native saves. Set `CHROME_BIN` to native Chromium. Evidence is under evidence/marketing-analytics.json; all owned browser/context/Electron resources close in finally. The current full platform regression passes **185/185** and preserves raw TAP bytes and their hash.
 
 ```mermaid
 flowchart LR
@@ -256,7 +256,7 @@ Real Codex reads paginated frozen evidence. The server validates evidence placeh
 
 Run `npm run demo`, set `CHROME_BIN` to native Chromium, then run `npm run qa:analysis-reports`. Six actual Web/current-source Electron groups cover sign-in, uncharged preview, lost-response retry, canonical reads/real downloads, 16 width/theme/language combinations, denied-read clearing and byte-identical native saves. Results: `evidence/analysis-reports.json`. Two first-failure reports retain the tool-context and mobile-layout issues; the final report records repaired behavior separately.
 
-Current platform regression: **180/180**; strict captured HTTP payloads: **31/31**. `capture-platform-regression.py` preserves exact TAP bytes and hashes; never format TAP files. `evidence/analysis-index-backfill.json` compares the evidence index with saved metrics without recomputing history. All owned browsers, pages, contexts and Electron applications close in finally.
+Current platform regression: **185/185**; strict captured HTTP payloads: **31/31**. `capture-platform-regression.py` preserves exact TAP bytes and hashes; never format TAP files. `evidence/analysis-index-backfill.json` compares the evidence index with saved metrics without recomputing history. All owned browsers, pages, contexts and Electron applications close in finally.
 
 ```mermaid
 flowchart LR
@@ -287,10 +287,12 @@ flowchart LR
   Version --> Lifecycle[Source quarantine and erasure guards]
 ```
 
-The full platform regression passes **180/180**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
+The full platform regression passes **185/185**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
 
 With the native development stack running, set `CHROME_BIN` and run `npm run qa:file-imports`. Four groups cover a lost accepted reply, one source asset, correction history, formula errors, 16 UI combinations and real PKCE/native saves. Results and five request/response samples are under `evidence/file-imports*.json`. Initial native-bridge failure evidence is preserved separately; all four groups passed after the fix. Owned browsers and Electron close in finally.
 
 ![Actual file import and correction](assets/screenshots/file-imports.png)
 
 Independent compatibility: set `WORKBOOK_QA_PYTHON` to native Python with openpyxl, then run `npm run qa:workbook-interop`. Four groups use openpyxl 3.1.5 workbooks covering both date systems, styles, sparse/hidden rows, Unicode, formula rejection and seven-decimal input rejection. Evidence is `evidence/workbook-interop.json`. The first Unicode-reference defect and the initial overprecision fixture record are retained separately; owned temporary workbooks close and are removed in finally. Python/openpyxl are QA tools, not product runtime dependencies.
+
+With the native stack running, set `CHROME_BIN` and run `npm run qa:task-controls`. Five groups verify Web, source frameless Desktop and real MV3/PKCE queued pause/resume/cancel, then release only owned synthetic occupancy so real Codex/synthetic model output produces a file and settles once. Task/reservation identity is preserved; owned browsers, Electron and MV3 close in finally. Evidence: `evidence/task-controls.json`; full platform regression: 185/185. This validates current source; prior native previews/offline bundles retain their manifests. Running/paid-step continuation and all 102 complete acceptance cases remain unfinished.

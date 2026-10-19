@@ -182,7 +182,7 @@ flowchart LR
 
 - `npm run qa:cloud-files`：四组 Web 云目录流程、两次真实 Codex 模拟任务的持久源码与实际 ZIP；生成 evidence/cloud-files.json 和实际 HTTP 契约样本。
 - `npm run qa:desktop-transfer`：八组源码 Electron 登录、幂等上传、29 MiB 传输、覆盖保护与原生桥云目录；生成 evidence/alignment-desktop.json。
-- 平台当前全套回归 180/180，完整 TAP 与摘要在 evidence/alignment-platform.\*。
+- 平台当前全套回归 185/185，完整 TAP 与摘要在 evidence/alignment-platform.\*。
 
 根目录运行 `python -X utf8 docs/tools/validate_runtime_contract_samples.py` 核对实际响应字段。所有上述运行使用明确标识的假数据依赖，内核仍是真实 Codex，不等于真实模型质量或全部 102 项综合验收完成。
 
@@ -190,7 +190,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **180/180**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **185/185**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手、通知与源码完整性
 
@@ -198,7 +198,7 @@ flowchart LR
 
 `npm run qa:byte-integrity` 在自己创建的临时目录实际克隆 platform/Desktop/delivery，检查 SQL 原始摘要、两个现有数据库迁移账本、28 个 Skill、渲染快照和原始 TAP。它检验独立 Git 克隆的字节完整性，不代替灾难恢复演练；运行前须提交当前源码和 TAP。脚本只删除本次创建且已检查归属的目录。
 
-当前源码平台 180/180、Desktop 四组单元测试通过；实际 HTTP 请求／响应样本 31 份。全 102 条综合验收和生产发布仍按主文档维护。
+当前源码平台 185/185、Desktop 四组单元测试通过；实际 HTTP 请求／响应样本 31 份。全 102 条综合验收和生产发布仍按主文档维护。
 
 ## 运行前资料验收 / Initial input-checkpoint QA
 
@@ -226,7 +226,7 @@ Five Web checks cover the initial input checkpoint, actual private upload, expli
 
 `npm run qa:design-pdf` 的七组流程验证真实登录、画布、接受后响应丢失、幂等重试、源版本冲突、四宽度/主题/语言、设计师模板和原生 Electron 保存。PDF 由 pypdf 独立解析、Poppler 原生渲染并与同源 PNG 比较；报告 `evidence/design-pdf.json` 登记尺寸、摘要与清理结果。
 
-需要原生 Chromium、`PDF_QA_PYTHON`（含 pypdf/Pillow）及 `PDFTOPPM_BIN`。这些仅用于 QA，不是产品运行依赖。当前全套平台回归 **180/180**；本轮源码未重打历史安装包，不等同完整 102 条验收。
+需要原生 Chromium、`PDF_QA_PYTHON`（含 pypdf/Pillow）及 `PDFTOPPM_BIN`。这些仅用于 QA，不是产品运行依赖。当前全套平台回归 **185/185**；本轮源码未重打历史安装包，不等同完整 102 条验收。
 
 ![实际 PDF 导出](assets/screenshots/design-pdf-export.png)
 
@@ -236,7 +236,7 @@ Five Web checks cover the initial input checkpoint, actual private upload, expli
 
 原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
 
-`npm run qa:marketing-analytics` 验证六组 Web/原生 Electron 流程：真实登录、映射预览、成功回执丢失后重试、实际 CSV/JSON/SVG 下载、行错误/未知值、两主题/繁英/四宽度、选中快照拒绝清空与原生保存。设置 `CHROME_BIN` 为本地原生 Chromium；报告为 evidence/marketing-analytics.json。新建浏览器、上下文及 Electron 均在 finally 关闭。平台当前全套回归 **180/180**，原始 TAP 保持字节及摘要一致。
+`npm run qa:marketing-analytics` 验证六组 Web/原生 Electron 流程：真实登录、映射预览、成功回执丢失后重试、实际 CSV/JSON/SVG 下载、行错误/未知值、两主题/繁英/四宽度、选中快照拒绝清空与原生保存。设置 `CHROME_BIN` 为本地原生 Chromium；报告为 evidence/marketing-analytics.json。新建浏览器、上下文及 Electron 均在 finally 关闭。平台当前全套回归 **185/185**，原始 TAP 保持字节及摘要一致。
 
 ```mermaid
 flowchart LR
@@ -257,7 +257,7 @@ flowchart LR
 
 先运行 `npm run demo`，再设 `CHROME_BIN` 为本地原生 Chromium 并执行 `npm run qa:analysis-reports`。六组实际 Web/源码 Electron 旅程覆盖真实开户、无费用预览、丢失回执重试、规范查询/真实下载、16 个尺寸/主题/语言组合、拒绝清空及原生相同字节保存。原始报告 `evidence/analysis-reports.json`；两个首次失败报告保留上下文限制和手机布局问题，最终报告独立记录修复后结果。
 
-当前平台完整回归 **180/180**，严格实际 HTTP 样本 **31/31**。`capture-platform-regression.py` 原样保存 TAP 与摘要；不要格式化 TAP。事实索引的只读核对见 `evidence/analysis-index-backfill.json`，使用已保存指标，没有重算历史。所有自建浏览器、页面、上下文和 Electron 在 finally 关闭。
+当前平台完整回归 **185/185**，严格实际 HTTP 样本 **31/31**。`capture-platform-regression.py` 原样保存 TAP 与摘要；不要格式化 TAP。事实索引的只读核对见 `evidence/analysis-index-backfill.json`，使用已保存指标，没有重算历史。所有自建浏览器、页面、上下文和 Electron 在 finally 关闭。
 
 ```mermaid
 flowchart LR
@@ -288,10 +288,12 @@ flowchart LR
   Version --> Lifecycle[隔离或删除依赖守卫]
 ```
 
-平台完整回归 **180/180**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
+平台完整回归 **185/185**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
 
 原生开发栈启动后执行 `npm run qa:file-imports`（设置 `CHROME_BIN`）。四组覆盖接受回执丢失、唯一上传资产、更正链、公式错误、16 种界面组合及真实 PKCE/原生保存；报告及五份请求／响应样本保存在 `evidence/file-imports*.json`。原生桥首次失败报告独立保留；修复后四组通过，所有自建浏览器和 Electron 在 finally 关闭。
 
 ![实际文件导入与更正](assets/screenshots/file-imports.png)
 
 独立兼容核查：设置 `WORKBOOK_QA_PYTHON` 为含 openpyxl 的原生 Python，再执行 `npm run qa:workbook-interop`。openpyxl 3.1.5 生成的双日期系统、带样式/稀疏/隐藏行/中文的 XLSX、公式及七位金额拒绝四组通过；报告为 `evidence/workbook-interop.json`。首次中文字符引用缺陷及初始超精度 fixture 的记录单独保留；临时工作簿在 finally 清理。Python/openpyxl 仅为核查工具，不是产品运行依赖。
+
+原生开发栈启动后执行 `npm run qa:task-controls`（设置 `CHROME_BIN`）。五组验证 Web、源码无边框 Desktop、真实 MV3/PKCE 的排队暂停/恢复/取消，以及释放本次测试占位后由真实 Codex/模拟模型生成文件并结算一次。原任务和预留不重建，自建浏览器、Electron 和扩展在 finally 关闭。报告为 `evidence/task-controls.json`；当前完整平台回归 185/185。此项是源码验证，先前无边框预览与历史完整离线包保持原清单；运行中/已付费步骤恢复及完整 102 条验收仍未完成。

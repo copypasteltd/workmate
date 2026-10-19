@@ -41,72 +41,72 @@ TAP version 13
 # Subtest: admin invitation atomically assigns a delegable role, is idempotent and never returns an MFA secret or capability
 ok 1 - admin invitation atomically assigns a delegable role, is idempotent and never returns an MFA secret or capability
   ---
-  duration_ms: 9794.8979
+  duration_ms: 2767.5541
   ...
 # Subtest: principal enrollment requires the recipient's fresh email proof; OTP failures persist and there is one setup consumer
 ok 2 - principal enrollment requires the recipient's fresh email proof; OTP failures persist and there is one setup consumer
   ---
-  duration_ms: 287.7699
+  duration_ms: 243.4586
   ...
 # Subtest: real TOTP enrollment is single use, scrubs setup material and issues an admin-only session with replay protection
 ok 3 - real TOTP enrollment is single use, scrubs setup material and issues an admin-only session with replay protection
   ---
-  duration_ms: 199.6507
+  duration_ms: 80.0419
   ...
 # Subtest: MFA confirmation limits survive errors; expired or replaced setups cannot enroll
 ok 4 - MFA confirmation limits survive errors; expired or replaced setups cannot enroll
   ---
-  duration_ms: 139.6238
+  duration_ms: 76.7227
   ...
 # Subtest: changing delegated roles revokes sessions and restarts pending MFA setup while retaining the invitation for its recipient
 ok 5 - changing delegated roles revokes sessions and restarts pending MFA setup while retaining the invitation for its recipient
   ---
-  duration_ms: 255.0876
+  duration_ms: 150.2967
   ...
 # Subtest: suspension and resumption use CAS, revoke all old sessions and never restore old invitations
 ok 6 - suspension and resumption use CAS, revoke all old sessions and never restore old invitations
   ---
-  duration_ms: 284.1408
+  duration_ms: 148.8119
   ...
 # Subtest: mail failure is explicit and retrying an invite neither duplicates a principal nor exposes its emailed capability
 ok 7 - mail failure is explicit and retrying an invite neither duplicates a principal nor exposes its emailed capability
   ---
-  duration_ms: 238.1422
+  duration_ms: 47.0894
   ...
 # Subtest: self MFA replacement needs current-session and email proof, preserves the old key until confirmation, then revokes it
 ok 8 - self MFA replacement needs current-session and email proof, preserves the old key until confirmation, then revokes it
   ---
-  duration_ms: 121.9768
+  duration_ms: 102.9784
   ...
 # Subtest: read-only, expired-MFA and bounded operators cannot invite or delegate broader grants; rejected invites roll back
 ok 9 - read-only, expired-MFA and bounded operators cannot invite or delegate broader grants; rejected invites roll back
   ---
-  duration_ms: 163.259
+  duration_ms: 81.476
   ...
 # Subtest: another authorized administrator can reset MFA and revoke sessions with version checks without receiving the new secret
 ok 10 - another authorized administrator can reset MFA and revoke sessions with version checks without receiving the new secret
   ---
-  duration_ms: 280.9502
+  duration_ms: 167.5906
   ...
 # Subtest: an administrator cannot remove their own deny; another fully authorized operator can restore access
 ok 11 - an administrator cannot remove their own deny; another fully authorized operator can restore access
   ---
-  duration_ms: 80.4486
+  duration_ms: 47.4385
   ...
 # Subtest: lifting another account's deny requires delegated permissions, limits and expiry rather than revocation permission alone
 ok 12 - lifting another account's deny requires delegated permissions, limits and expiry rather than revocation permission alone
   ---
-  duration_ms: 168.9193
+  duration_ms: 96.8023
   ...
 # Subtest: deny removal checks intersecting global, workspace and project scope without requiring unrelated permissions
 ok 13 - deny removal checks intersecting global, workspace and project scope without requiring unrelated permissions
   ---
-  duration_ms: 512.2808
+  duration_ms: 163.1103
   ...
 # Subtest: last effective super protection excludes pending invitations and serializes concurrent account suspension
 ok 14 - last effective super protection excludes pending invitations and serializes concurrent account suspension
   ---
-  duration_ms: 280.0313
+  duration_ms: 384.2562
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -146,57 +146,57 @@ ok 14 - last effective super protection excludes pending invitations and seriali
 # Subtest: template directory uses persisted IDs, strict category/cursor pages, current tenant authorization and unqualified synthetic labels
 ok 15 - template directory uses persisted IDs, strict category/cursor pages, current tenant authorization and unqualified synthetic labels
   ---
-  duration_ms: 4356.969
+  duration_ms: 3249.3875
   ...
 # Subtest: preflights persist one current receipt without installing methods, reserving funds or claiming unsupported tools
 ok 16 - preflights persist one current receipt without installing methods, reserving funds or claiming unsupported tools
   ---
-  duration_ms: 506.2005
+  duration_ms: 362.2425
   ...
 # Subtest: canonical instantiation atomically pins real versions and replay creates only one authorized specialist
 ok 17 - canonical instantiation atomically pins real versions and replay creates only one authorized specialist
   ---
-  duration_ms: 233.6621
+  duration_ms: 234.889
   ...
 # Subtest: instantiation rechecks disabled or revoked project methods after an earlier ready preflight
 ok 18 - instantiation rechecks disabled or revoked project methods after an earlier ready preflight
   ---
-  duration_ms: 581.0115
+  duration_ms: 495.4268
   ...
 # Subtest: runtime and template definitions are immutable in PostgreSQL and cannot be forged by the app identity
 ok 19 - runtime and template definitions are immutable in PostgreSQL and cannot be forged by the app identity
   ---
-  duration_ms: 175.1097
+  duration_ms: 183.1496
   ...
 # Subtest: designer instances render private PDF and editable source with bounded formats and idempotent delivery
 ok 20 - designer instances render private PDF and editable source with bounded formats and idempotent delivery
   ---
-  duration_ms: 3846.1572
+  duration_ms: 1112.8224
   ...
 # Subtest: a bound capability change cancels before a model call, and an active runtime revocation blocks the next tool and final publication
 ok 21 - a bound capability change cancels before a model call, and an active runtime revocation blocks the next tool and final publication
   ---
-  duration_ms: 637.9159
+  duration_ms: 397.1556
   ...
 # Subtest: AnalysisSpec separates currencies, platforms and attribution instead of inventing cross-source totals
 ok 22 - AnalysisSpec separates currencies, platforms and attribution instead of inventing cross-source totals
   ---
-  duration_ms: 42.8679
+  duration_ms: 33.0389
   ...
 # Subtest: overlapping snapshots deduplicate identical facts and reject conflicting totals
 ok 23 - overlapping snapshots deduplicate identical facts and reject conflicting totals
   ---
-  duration_ms: 8.7993
+  duration_ms: 5.1345
   ...
 # Subtest: comparison changes are exact, align date offsets and keep no-row and previous-zero reasons
 ok 24 - comparison changes are exact, align date offsets and keep no-row and previous-zero reasons
   ---
-  duration_ms: 9.2962
+  duration_ms: 5.668
   ...
 # Subtest: narrative binds frozen evidence, rejects unknown references, invented numeric literals and malformed placeholders
 ok 25 - narrative binds frozen evidence, rejects unknown references, invented numeric literals and malformed placeholders
   ---
-  duration_ms: 6.1455
+  duration_ms: 3.4714
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -236,22 +236,22 @@ ok 25 - narrative binds frozen evidence, rejects unknown references, invented nu
 # Subtest: report creation is one task and reservation under retries; canonical snapshot/evidence have real authorized reads
 ok 26 - report creation is one task and reservation under retries; canonical snapshot/evidence have real authorized reads
   ---
-  duration_ms: 4945.1112
+  duration_ms: 3611.9565
   ...
 # Subtest: invalid model numbers fail report publication while retaining real usage settlement
 ok 27 - invalid model numbers fail report publication while retaining real usage settlement
   ---
-  duration_ms: 786.1756
+  duration_ms: 516.5885
   ...
 # Subtest: source quarantine, restore, permanent erasure and permission changes protect every report derivative
 ok 28 - source quarantine, restore, permanent erasure and permission changes protect every report derivative
   ---
-  duration_ms: 503.5875
+  duration_ms: 300.0612
   ...
 # Subtest: real pinned Codex consumes frozen report facts through the authorized tool and publishes a checked HTML asset
 ok 29 - real pinned Codex consumes frozen report facts through the authorized tool and publishes a checked HTML asset
   ---
-  duration_ms: 5397.1542
+  duration_ms: 3199.25
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -291,27 +291,27 @@ ok 29 - real pinned Codex consumes frozen report facts through the authorized to
 # Subtest: canonical file imports deduplicate concurrent requests and legacy CSV; pinned versions survive later uploads
 ok 30 - canonical file imports deduplicate concurrent requests and legacy CSV; pinned versions survive later uploads
   ---
-  duration_ms: 6187.8401
+  duration_ms: 3259.9737
   ...
 # Subtest: canonical XLSX freezes mapping and file bytes; malformed cells and formula exports never write a snapshot
 ok 31 - canonical XLSX freezes mapping and file bytes; malformed cells and formula exports never write a snapshot
   ---
-  duration_ms: 300.9338
+  duration_ms: 232.9449
   ...
 # Subtest: corrections retain immutable history and prohibit direct or transitive double counting before task creation
 ok 32 - corrections retain immutable history and prohibit direct or transitive double counting before task creation
   ---
-  duration_ms: 320.3093
+  duration_ms: 251.3152
   ...
 # Subtest: source quarantine and deletion revoke dataset, evidence and report access; independent dataset quarantine is preserved
 ok 33 - source quarantine and deletion revoke dataset, evidence and report access; independent dataset quarantine is preserved
   ---
-  duration_ms: 717.5796
+  duration_ms: 465.9176
   ...
 # Subtest: project and tenant boundaries, private files, viewers and CSRF are checked on imports and replay
 ok 34 - project and tenant boundaries, private files, viewers and CSRF are checked on imports and replay
   ---
-  duration_ms: 209.3748
+  duration_ms: 147.0561
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -351,102 +351,102 @@ ok 34 - project and tenant boundaries, private files, viewers and CSRF are check
 # Subtest: preview does not write; concurrent identical imports return one immutable project snapshot
 ok 35 - preview does not write; concurrent identical imports return one immutable project snapshot
   ---
-  duration_ms: 4820.6591
+  duration_ms: 2450.4825
   ...
 # Subtest: source downloads are byte-exact; reports and charts retain stable evidence and scope
 ok 36 - source downloads are byte-exact; reports and charts retain stable evidence and scope
   ---
-  duration_ms: 237.4138
+  duration_ms: 89.7043
   ...
 # Subtest: quarantined source cannot be reimported; deletion clears retained CSV and mappings before a new snapshot
 ok 37 - quarantined source cannot be reimported; deletion clears retained CSV and mappings before a new snapshot
   ---
-  duration_ms: 215.7108
+  duration_ms: 121.1578
   ...
 # Subtest: membership and project revocation apply to every derivative; unknown values survive source/export
 ok 38 - membership and project revocation apply to every derivative; unknown values survive source/export
   ---
-  duration_ms: 190.4949
+  duration_ms: 84.188
   ...
 # Subtest: authoritative Decimal vector: weighted-ratios
 ok 39 - authoritative Decimal vector: weighted-ratios
   ---
-  duration_ms: 12.1356
+  duration_ms: 6.9497
   ...
 # Subtest: authoritative Decimal vector: zero-denominators
 ok 40 - authoritative Decimal vector: zero-denominators
   ---
-  duration_ms: 0.5299
+  duration_ms: 0.6991
   ...
 # Subtest: authoritative Decimal vector: unknown-conversions
 ok 41 - authoritative Decimal vector: unknown-conversions
   ---
-  duration_ms: 0.2338
+  duration_ms: 0.2211
   ...
 # Subtest: authoritative Decimal vector: currency-separation
 ok 42 - authoritative Decimal vector: currency-separation
   ---
-  duration_ms: 0.3844
+  duration_ms: 0.3419
   ...
 # Subtest: decimal conversion sums retain eight fractional places; unknown rows do not become zero
 ok 43 - decimal conversion sums retain eight fractional places; unknown rows do not become zero
   ---
-  duration_ms: 41.7323
+  duration_ms: 28.4829
   ...
 # Subtest: CSV fact identity skips identical rows, rejects conflicts and retains source and mappings
 ok 44 - CSV fact identity skips identical rows, rejects conflicts and retains source and mappings
   ---
-  duration_ms: 5.6196
+  duration_ms: 3.6542
   ...
 # Subtest: official-style Google/Meta headers require explicit daily account, grain and attribution scope
 ok 45 - official-style Google/Meta headers require explicit daily account, grain and attribution scope
   ---
-  duration_ms: 8.2699
+  duration_ms: 3.9814
   ...
 # Subtest: bad CSV fields report physical lines; ambiguous and duplicate mappings cannot silently choose a metric
 ok 46 - bad CSV fields report physical lines; ambiguous and duplicate mappings cannot silently choose a metric
   ---
-  duration_ms: 12.0231
+  duration_ms: 8.8738
   ...
 # Subtest: XLSX sparse rows, multiline strings and stored decimals retain exact money and actual file identity
 ok 47 - XLSX sparse rows, multiline strings and stored decimals retain exact money and actual file identity
   ---
-  duration_ms: 63.0495
+  duration_ms: 50.9055
   ...
 # Subtest: XML numeric references preserve Unicode and attributes without recursive decoding or invalid-codepoint removal
 ok 48 - XML numeric references preserve Unicode and attributes without recursive decoding or invalid-codepoint removal
   ---
-  duration_ms: 63.4629
+  duration_ms: 38.3944
   ...
 # Subtest: shared rich strings preserve labels and worksheet choices are explicit
 ok 49 - shared rich strings preserve labels and worksheet choices are explicit
   ---
-  duration_ms: 23.0394
+  duration_ms: 18.5872
   ...
 # Subtest: 1900 and 1904 dates have explicit calendar behavior and invalid date serials are rejected
 ok 50 - 1900 and 1904 dates have explicit calendar behavior and invalid date serials are rejected
   ---
-  duration_ms: 14.4442
+  duration_ms: 13.7787
   ...
 # Subtest: header selection and hidden rows are retained; row errors refer to the original cell after multiline records
 ok 51 - header selection and hidden rows are retained; row errors refer to the original cell after multiline records
   ---
-  duration_ms: 11.4036
+  duration_ms: 9.6238
   ...
 # Subtest: formula cells never use cached results; external links, macros, DTD and bad styles fail closed
 ok 52 - formula cells never use cached results; external links, macros, DTD and bad styles fail closed
   ---
-  duration_ms: 10.4506
+  duration_ms: 10.5448
   ...
 # Subtest: ZIP integrity, traversal and expansion limits are validated before interpreting workbook XML
 ok 53 - ZIP integrity, traversal and expansion limits are validated before interpreting workbook XML
   ---
-  duration_ms: 4.5727
+  duration_ms: 3.7525
   ...
 # Subtest: CSV file and legacy text imports share a snapshot identity; plain formula-like labels stay literal
 ok 54 - CSV file and legacy text imports share a snapshot identity; plain formula-like labels stay literal
   ---
-  duration_ms: 2.9498
+  duration_ms: 3.0942
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -486,27 +486,27 @@ ok 54 - CSV file and legacy text imports share a snapshot identity; plain formul
 # Subtest: cloud tree survives app restart, pins versions, serializes moves and rejects foreign/private references
 ok 55 - cloud tree survives app restart, pins versions, serializes moves and rejects foreign/private references
   ---
-  duration_ms: 3960.5983
+  duration_ms: 3583.8529
   ...
 # Subtest: explicit promotion owns an independent object; deleting source invalidates references and clears directory metadata
 ok 56 - explicit promotion owns an independent object; deleting source invalidates references and clears directory metadata
   ---
-  duration_ms: 509.6859
+  duration_ms: 453.456
   ...
 # Subtest: folder quarantine hides descendants; conversation removal cleans its private tree; membership removal revokes every lookup
 ok 57 - folder quarantine hides descendants; conversation removal cleans its private tree; membership removal revokes every lookup
   ---
-  duration_ms: 203.9287
+  duration_ms: 229.7114
   ...
 # Subtest: private resumable attachments retain their conversation scope and are erased with its staging files
 ok 58 - private resumable attachments retain their conversation scope and are erased with its staging files
   ---
-  duration_ms: 363.2904
+  duration_ms: 331.0672
   ...
 # Subtest: Codex working sources persist across tasks with hash checks, bounded packaging and current reference authorization
 ok 59 - Codex working sources persist across tasks with hash checks, bounded packaging and current reference authorization
   ---
-  duration_ms: 555.6454
+  duration_ms: 472.9262
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -546,32 +546,32 @@ ok 59 - Codex working sources persist across tasks with hash checks, bounded pac
 # Subtest: an unconfigured project starts private conversations without a customer-created specialist and races create only one immutable default
 ok 60 - an unconfigured project starts private conversations without a customer-created specialist and races create only one immutable default
   ---
-  duration_ms: 4289.0261
+  duration_ms: 4273.8389
   ...
 # Subtest: one-action default delegation atomically binds a private conversation, message, task, method and budget, including duplicate retries
 ok 61 - one-action default delegation atomically binds a private conversation, message, task, method and budget, including duplicate retries
   ---
-  duration_ms: 743.2937
+  duration_ms: 301.8553
   ...
 # Subtest: rejected budget and forged configuration leave no orphan default, conversation, task or budget reservation
 ok 62 - rejected budget and forged configuration leave no orphan default, conversation, task or budget reservation
   ---
-  duration_ms: 163.4333
+  duration_ms: 93.4013
   ...
 # Subtest: customers cannot alter or delete the shared default, and moderation cannot be bypassed by asking for a fresh one
 ok 63 - customers cannot alter or delete the shared default, and moderation cannot be bypassed by asking for a fresh one
   ---
-  duration_ms: 245.8487
+  duration_ms: 208.8744
   ...
 # Subtest: reinstalled methods need an explicit managed default version, while previous conversations and queued work keep their old bindings
 ok 64 - reinstalled methods need an explicit managed default version, while previous conversations and queued work keep their old bindings
   ---
-  duration_ms: 493.1425
+  duration_ms: 298.7046
   ...
 # Subtest: the default assistant obeys read-only ask mode and retains no fabricated generated file
 ok 65 - the default assistant obeys read-only ask mode and retains no fabricated generated file
   ---
-  duration_ms: 198.1488
+  duration_ms: 140.7219
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -611,12 +611,12 @@ ok 65 - the default assistant obeys read-only ask mode and retains no fabricated
 # Subtest: simulated mode is loopback-only and forbidden in production
 ok 66 - simulated mode is loopback-only and forbidden in production
   ---
-  duration_ms: 4163.4614
+  duration_ms: 3371.0844
   ...
 # Subtest: real Codex executes designer and software tools against a labelled mock provider; synthetic credit and charges stay isolated
 ok 67 - real Codex executes designer and software tools against a labelled mock provider; synthetic credit and charges stay isolated
   ---
-  duration_ms: 12433.2508
+  duration_ms: 13828.8202
   ...
 # isolated execution-capacity database: applied migration 1
 # isolated execution-capacity database: applied migration 2
@@ -656,37 +656,37 @@ ok 67 - real Codex executes designer and software tools against a labelled mock 
 # Subtest: restricted admission rejects another tenant, another actor and direct policy access without exposing counts
 ok 68 - restricted admission rejects another tenant, another actor and direct policy access without exposing counts
   ---
-  duration_ms: 3705.9295
+  duration_ms: 5606.654
   ...
 # Subtest: two workers enforce the shared enterprise cap, leave one original hold queued, allow a second enterprise and settle each task once
 ok 69 - two workers enforce the shared enterprise cap, leave one original hold queued, allow a second enterprise and settle each task once
   ---
-  duration_ms: 982.8366
+  duration_ms: 1379.6431
   ...
 # Subtest: current user downgrade limits queued work even when the original business reservation allowed more active tasks
 ok 70 - current user downgrade limits queued work even when the original business reservation allowed more active tasks
   ---
-  duration_ms: 304.0201
+  duration_ms: 1246.927
   ...
 # Subtest: platform, image and per-enterprise media limits coordinate across transactions while read-only work uses the text class
 ok 71 - platform, image and per-enterprise media limits coordinate across transactions while read-only work uses the text class
   ---
-  duration_ms: 658.0344
+  duration_ms: 478.5031
   ...
 # Subtest: uncertain paid execution keeps its slot, while an unclaimed input wait occupies no execution slot
 ok 72 - uncertain paid execution keeps its slot, while an unclaimed input wait occupies no execution slot
   ---
-  duration_ms: 362.798
+  duration_ms: 833.3659
   ...
 # Subtest: fair outbox dispatch includes the other enterprise before an older flood and excludes deferred or wrong-mode tasks
 ok 73 - fair outbox dispatch includes the other enterprise before an older flood and excludes deferred or wrong-mode tasks
   ---
-  duration_ms: 163.8231
+  duration_ms: 391.5299
   ...
 # Subtest: native pg-boss starts multiple handlers and automatically resumes the original deferred task without a second reservation
 ok 74 - native pg-boss starts multiple handlers and automatically resumes the original deferred task without a second reservation
   ---
-  duration_ms: 6839.1006
+  duration_ms: 6656.5511
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -726,98 +726,98 @@ ok 74 - native pg-boss starts multiple handlers and automatically resumes the or
 # Subtest: SSO configuration has global permission, current MFA, CAS, secret redaction and a probe-before-enable gate
 ok 75 - SSO configuration has global permission, current MFA, CAS, secret redaction and a probe-before-enable gate
   ---
-  duration_ms: 6057.4964
+  duration_ms: 11548.4172
   ...
-# {"request_id":"87e2e462-1ada-414b-b9aa-6643d0793f55","code":"SSO_PROBE_FAILED","error_type":"Problem"}
+# {"request_id":"04608c93-d714-4079-b79b-08d83f583362","code":"SSO_PROBE_FAILED","error_type":"Problem"}
 # Subtest: discovery enforces origins, redirects and advertised PKCE without changing an unverified connection
 ok 76 - discovery enforces origins, redirects and advertised PKCE without changing an unverified connection
   ---
-  duration_ms: 312.5308
+  duration_ms: 413.3133
   ...
 # Subtest: first binding requires independent email proof, scoped OTP purpose and single atomic consumption
 ok 77 - first binding requires independent email proof, scoped OTP purpose and single atomic consumption
   ---
-  duration_ms: 312.2543
+  duration_ms: 1020.3152
   ...
 # Subtest: a known issuer/subject signs in again without re-linking and client_secret_basic also completes
 ok 78 - a known issuer/subject signs in again without re-linking and client_secret_basic also completes
   ---
-  duration_ms: 374.756
+  duration_ms: 1025.272
   ...
 # Subtest: wrong signature, audience, issuer, nonce, expiry or email claims never create a binding
 ok 79 - wrong signature, audience, issuer, nonce, expiry or email claims never create a binding
   ---
-  duration_ms: 434.5115
+  duration_ms: 1989.1623
   ...
 # Subtest: state and browser capability must match; callbacks exchange exactly once
 ok 80 - state and browser capability must match; callbacks exchange exactly once
   ---
-  duration_ms: 708.1773
+  duration_ms: 956.2519
   ...
 # Subtest: domain equality cannot enroll a stranger or bypass a removed membership
 ok 81 - domain equality cannot enroll a stranger or bypass a removed membership
   ---
-  duration_ms: 444.6504
+  duration_ms: 3528.0494
   ...
 # Subtest: subject-with-proof accepts no email claim only after the independent work mailbox is proved
 ok 82 - subject-with-proof accepts no email claim only after the independent work mailbox is proved
   ---
-  duration_ms: 261.6969
+  duration_ms: 2094.0355
   ...
 # Subtest: five incorrect link codes exhaust that proof; another browser cannot consume it
 ok 83 - five incorrect link codes exhaust that proof; another browser cannot consume it
   ---
-  duration_ms: 178.8134
+  duration_ms: 988.5292
   ...
 # Subtest: disabling a connection revokes linked browser/native/refresh credentials and outstanding native grants
 ok 84 - disabling a connection revokes linked browser/native/refresh credentials and outstanding native grants
   ---
-  duration_ms: 277.9359
+  duration_ms: 1482.1026
   ...
 # Subtest: configuration changes revoke old attempts and require metadata validation and fresh identity binding
 ok 85 - configuration changes revoke old attempts and require metadata validation and fresh identity binding
   ---
-  duration_ms: 153.1789
+  duration_ms: 1002.3097
   ...
 # Subtest: unlink is owner-only, checks CAS, invalidates all sessions and never exposes external subjects
 ok 86 - unlink is owner-only, checks CAS, invalidates all sessions and never exposes external subjects
   ---
-  duration_ms: 292.7596
+  duration_ms: 1023.1621
   ...
 # Subtest: email login logout and account revision changes invalidate unexchanged native authorization codes
 ok 87 - email login logout and account revision changes invalidate unexchanged native authorization codes
   ---
-  duration_ms: 98.1795
+  duration_ms: 616.94
   ...
 # Subtest: expired attempts scrub PKCE secrets and the app identity cannot read SSO control tables
 ok 88 - expired attempts scrub PKCE secrets and the app identity cannot read SSO control tables
   ---
-  duration_ms: 376.1323
+  duration_ms: 887.7543
   ...
 # Subtest: replacing an active external subject requires new proof and revokes prior browser/native sessions
 ok 89 - replacing an active external subject requires new proof and revokes prior browser/native sessions
   ---
-  duration_ms: 745.5705
+  duration_ms: 1851.8863
   ...
 # Subtest: a replacement issuer may reuse a raw subject without inheriting or colliding with the old issuer's account
 ok 90 - a replacement issuer may reuse a raw subject without inheriting or colliding with the old issuer's account
   ---
-  duration_ms: 582.0408
+  duration_ms: 2850.2735
   ...
 # Subtest: ES256 verifies a real P-256 signature and rejects a token signed by another EC key
 ok 91 - ES256 verifies a real P-256 signature and rejects a token signed by another EC key
   ---
-  duration_ms: 223.8136
+  duration_ms: 1279.672
   ...
 # Subtest: revoking a listed native session also revokes its rotated access token and refresh family
 ok 92 - revoking a listed native session also revokes its rotated access token and refresh family
   ---
-  duration_ms: 151.6518
+  duration_ms: 631.8243
   ...
 # Subtest: concurrent connection revocation and native exchange/rotation serialize without deadlock or surviving credentials
 ok 93 - concurrent connection revocation and native exchange/rotation serialize without deadlock or surviving credentials
   ---
-  duration_ms: 371.4547
+  duration_ms: 1473.046
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -857,7 +857,7 @@ ok 93 - concurrent connection revocation and native exchange/rotation serialize 
 # Subtest: a changed applied migration digest stops startup and the forward-only history remains intact
 ok 94 - a changed applied migration digest stops startup and the forward-only history remains intact
   ---
-  duration_ms: 4870.8526
+  duration_ms: 11426.1665
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -897,22 +897,22 @@ ok 94 - a changed applied migration digest stops startup and the forward-only hi
 # Subtest: worker notifications persist with exact task/conversation identity, deduplicate heartbeats and isolate recipients
 ok 95 - worker notifications persist with exact task/conversation identity, deduplicate heartbeats and isolate recipients
   ---
-  duration_ms: 3562.7087
+  duration_ms: 10698.1074
   ...
 # Subtest: unknown usage only emits reconciling rather than a false successful-completion notification
 ok 96 - unknown usage only emits reconciling rather than a false successful-completion notification
   ---
-  duration_ms: 235.482
+  duration_ms: 1692.1227
   ...
 # Subtest: notification pagination preserves PostgreSQL microseconds; deletion, quarantine and expired rows cannot retain access
 ok 97 - notification pagination preserves PostgreSQL microseconds; deletion, quarantine and expired rows cannot retain access
   ---
-  duration_ms: 274.9019
+  duration_ms: 1111.1525
   ...
 # Subtest: revoked project and tenant membership remove notifications immediately, even for their original recipient
 ok 98 - revoked project and tenant membership remove notifications immediately, even for their original recipient
   ---
-  duration_ms: 290.9395
+  duration_ms: 975.0244
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -952,62 +952,62 @@ ok 98 - revoked project and tenant membership remove notifications immediately, 
 # Subtest: deleting a running task closes its reservation before erasing runtime caches and dependent private files
 ok 99 - deleting a running task closes its reservation before erasing runtime caches and dependent private files
   ---
-  duration_ms: 4952.4855
+  duration_ms: 15088.664
   ...
 # Subtest: persistent specialists freeze versions, reject enlarged tools and require CAS editing authority
 ok 100 - persistent specialists freeze versions, reject enlarged tools and require CAS editing authority
   ---
-  duration_ms: 140.3563
+  duration_ms: 1494.6574
   ...
 # Subtest: private conversation delegation deduplicates concurrent messages and reserves only one task
 ok 101 - private conversation delegation deduplicates concurrent messages and reserves only one task
   ---
-  duration_ms: 226.7526
+  duration_ms: 1724.4881
   ...
 # Subtest: memory scopes and immutable versions apply to worker input; deletion stops subsequent tools
 ok 102 - memory scopes and immutable versions apply to worker input; deletion stops subsequent tools
   ---
-  duration_ms: 462.7917
+  duration_ms: 2076.1274
   ...
 # Subtest: private tool artifacts cannot be read or rendered by another member and publication copies only the selected file
 ok 103 - private tool artifacts cannot be read or rendered by another member and publication copies only the selected file
   ---
-  duration_ms: 315.9955
+  duration_ms: 2081.6157
   ...
 # Subtest: archive preserves in-flight work; deleting active conversations fails, notes and titles use version checks
 ok 104 - archive preserves in-flight work; deleting active conversations fails, notes and titles use version checks
   ---
-  duration_ms: 251.4443
+  duration_ms: 1293.2523
   ...
 # Subtest: plan approval rejects changed memory and produces one explicitly approved execution
 ok 105 - plan approval rejects changed memory and produces one explicitly approved execution
   ---
-  duration_ms: 929.5568
+  duration_ms: 1604.0026
   ...
 # Subtest: expiry, missing brand and revoked project membership cannot be used as frozen context
 ok 106 - expiry, missing brand and revoked project membership cannot be used as frozen context
   ---
-  duration_ms: 219.5881
+  duration_ms: 1961.8425
   ...
 # Subtest: shared tasks cannot read private files even when their owner can; deleted content cannot replay cached responses
 ok 107 - shared tasks cannot read private files even when their owner can; deleted content cannot replay cached responses
   ---
-  duration_ms: 324.127
+  duration_ms: 1775.872
   ...
 # Subtest: a plan becomes stale when a memory is added during planning or a note arrives while it runs
 ok 108 - a plan becomes stale when a memory is added during planning or a note arrives while it runs
   ---
-  duration_ms: 503.4893
+  duration_ms: 2332.8946
   ...
 # Subtest: administrative retries preserve an unresolved input checkpoint and one new explicit budget without queueing work
 ok 109 - administrative retries preserve an unresolved input checkpoint and one new explicit budget without queueing work
   ---
-  duration_ms: 285.5477
+  duration_ms: 2120.6464
   ...
 # Subtest: admin body access and quarantine apply to private conversations and memories; retries preserve private ownership
 ok 110 - admin body access and quarantine apply to private conversations and memories; retries preserve private ownership
   ---
-  duration_ms: 434.9389
+  duration_ms: 1440.3969
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -1047,224 +1047,224 @@ ok 110 - admin body access and quarantine apply to private conversations and mem
 # Subtest: Admin cleanup pages filter before counting, retain tied timestamp order and redact journal internals
 ok 111 - Admin cleanup pages filter before counting, retain tied timestamp order and redact journal internals
   ---
-  duration_ms: 3676.6655
+  duration_ms: 11694.059
   ...
 # Subtest: Admin cleanup totals and retries enforce current tenant/project grants, denies and read-only access
 ok 112 - Admin cleanup totals and retries enforce current tenant/project grants, denies and read-only access
   ---
-  duration_ms: 176.1888
+  duration_ms: 776.584
   ...
 # Subtest: Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100
 ok 113 - Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100
   ---
-  duration_ms: 700.505
+  duration_ms: 496.2026
   ...
 # Subtest: retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit
 ok 114 - retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit
   ---
-  duration_ms: 655.1778
+  duration_ms: 1119.5928
   ...
 # Subtest: terminal runtime cache cleanup waits for a live process, persists I/O failures and resumes without deleting task results
 ok 115 - terminal runtime cache cleanup waits for a live process, persists I/O failures and resumes without deleting task results
   ---
-  duration_ms: 238.2107
+  duration_ms: 407.5885
   ...
 # Subtest: SSE replays durable task-local sequences exactly, rejects stale/foreign cursors and closes on session revocation
 ok 116 - SSE replays durable task-local sequences exactly, rejects stale/foreign cursors and closes on session revocation
   ---
-  duration_ms: 1235.3719
+  duration_ms: 2255.0012
   ...
 # Subtest: queued claim recovery checks real queue state, deduplicates repair, preserves running work and releases exhausted pre-execution reservations
 ok 117 - queued claim recovery checks real queue state, deduplicates repair, preserves running work and releases exhausted pre-execution reservations
   ---
-  duration_ms: 638.5922
+  duration_ms: 2100.2234
   ...
 # Subtest: permanent asset deletion blocks admin resurrection, body/download and cross-tenant status; erases all versions while preserving a published copy
 ok 118 - permanent asset deletion blocks admin resurrection, body/download and cross-tenant status; erases all versions while preserving a published copy
   ---
-  duration_ms: 292.8043
+  duration_ms: 1207.9645
   ...
 # Subtest: erasure persists I/O failures, retries with MFA and serializes simultaneous workers
 ok 119 - erasure persists I/O failures, retries with MFA and serializes simultaneous workers
   ---
-  duration_ms: 203.1865
+  duration_ms: 471.1107
   ...
 # Subtest: orphan collection retains referenced/new objects and tombstones removed keys against later references
 ok 120 - orphan collection retains referenced/new objects and tombstones removed keys against later references
   ---
-  duration_ms: 270.0532
+  duration_ms: 571.1935
   ...
 # Subtest: runtime erasure waits for active work and refuses junctions outside the owned run tree
 ok 121 - runtime erasure waits for active work and refuses junctions outside the owned run tree
   ---
-  duration_ms: 263.2348
+  duration_ms: 17.233
   ...
 # Subtest: resumable upload persists verified parts across reconnects, rejects corruption and completes exactly once above the old 25 MiB limit
 ok 122 - resumable upload persists verified parts across reconnects, rejects corruption and completes exactly once above the old 25 MiB limit
   ---
-  duration_ms: 3115.5865
+  duration_ms: 2613.1668
   ...
 # Subtest: upload MIME, whole-file checksum, limits, expiry, per-owner privacy and project revocation are enforced
 ok 123 - upload MIME, whole-file checksum, limits, expiry, per-owner privacy and project revocation are enforced
   ---
-  duration_ms: 688.5347
+  duration_ms: 452.8917
   ...
 # Subtest: email OTP has one atomic consumer and never authenticates the admin audience
 ok 124 - email OTP has one atomic consumer and never authenticates the admin audience
   ---
-  duration_ms: 24.9369
+  duration_ms: 23.1421
   ...
 # Subtest: five invalid OTP attempts exhaust a challenge; expired and consumed codes fail
 ok 125 - five invalid OTP attempts exhaust a challenge; expired and consumed codes fail
   ---
-  duration_ms: 163.3216
+  duration_ms: 60.6957
   ...
 # Subtest: CSRF, foreign origin and revoked sessions prevent writes
 ok 126 - CSRF, foreign origin and revoked sessions prevent writes
   ---
-  duration_ms: 46.6969
+  duration_ms: 24.0795
   ...
 # Subtest: tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels
 ok 127 - tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels
   ---
-  duration_ms: 68.3929
+  duration_ms: 67.4609
   ...
 # Subtest: single-use invitation binds email and project, protects the last owner
 ok 128 - single-use invitation binds email and project, protects the last owner
   ---
-  duration_ms: 93.1775
+  duration_ms: 118.0422
   ...
 # Subtest: PKCE requires exact verifier and callback, refresh rotation detects replay
 ok 129 - PKCE requires exact verifier and callback, refresh rotation detects replay
   ---
-  duration_ms: 95.9293
+  duration_ms: 117.8883
   ...
 # Subtest: admin authentication requires MFA, separate audience and explicit content permission
 ok 130 - admin authentication requires MFA, separate audience and explicit content permission
   ---
-  duration_ms: 169.0393
+  duration_ms: 170.5829
   ...
 # Subtest: admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds
 ok 131 - admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds
   ---
-  duration_ms: 145.2628
+  duration_ms: 187.6807
   ...
 # Subtest: VIP validity uses real timestamps and financial limits/independent approval are enforced
 ok 132 - VIP validity uses real timestamps and financial limits/independent approval are enforced
   ---
-  duration_ms: 325.0899
+  duration_ms: 250.786
   ...
 # Subtest: undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts
 ok 133 - undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts
   ---
-  duration_ms: 7.6332
+  duration_ms: 13.6843
   ...
 # Subtest: editable poster escapes script injection and preserves exact Traditional Chinese copy
 ok 134 - editable poster escapes script injection and preserves exact Traditional Chinese copy
   ---
-  duration_ms: 1.1003
+  duration_ms: 2.2396
   ...
-# {"request_id":"161621f1-a52f-4f08-8f45-c97c4ca8bfba","code":"AI_SETUP_REQUIRED","error_type":"Problem"}
+# {"request_id":"aacb9296-f699-483c-adcf-cf5ca6cdce18","code":"AI_SETUP_REQUIRED","error_type":"Problem"}
 # Subtest: task request cannot override kernel/provider and unavailable AI cannot fake success
 ok 135 - task request cannot override kernel/provider and unavailable AI cannot fake success
   ---
-  duration_ms: 45.3823
+  duration_ms: 51.996
   ...
 # Subtest: native logout revokes the refresh family and a browser cookie cannot become a bearer token
 ok 136 - native logout revokes the refresh family and a browser cookie cannot become a bearer token
   ---
-  duration_ms: 125.8874
+  duration_ms: 42.0132
   ...
 # Subtest: confirmed payment references cannot credit a second workspace, including with a new idempotency key
 ok 137 - confirmed payment references cannot credit a second workspace, including with a new idempotency key
   ---
-  duration_ms: 269.5583
+  duration_ms: 90.6225
   ...
 # Subtest: admin workspace lists redact money without billing permission and user usage honors its own scope
 ok 138 - admin workspace lists redact money without billing permission and user usage honors its own scope
   ---
-  duration_ms: 384.5318
+  duration_ms: 74.0752
   ...
 # Subtest: quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version
 ok 139 - quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version
   ---
-  duration_ms: 186.4084
+  duration_ms: 152.537
   ...
 # Subtest: exports recheck source authorization at download and batch status changes revoke all sessions
 ok 140 - exports recheck source authorization at download and batch status changes revoke all sessions
   ---
-  duration_ms: 267.728
+  duration_ms: 154.7846
   ...
 # Subtest: personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet
 ok 141 - personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet
   ---
-  duration_ms: 275.4684
+  duration_ms: 226.9303
   ...
 # Subtest: scoped usage never inherits broader user visibility and explicit project deny constrains aggregates
 ok 142 - scoped usage never inherits broader user visibility and explicit project deny constrains aggregates
   ---
-  duration_ms: 249.6477
+  duration_ms: 159.3201
   ...
 # Subtest: admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions
 ok 143 - admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions
   ---
-  duration_ms: 361.7817
+  duration_ms: 156.9677
   ...
 # Subtest: native design compositions pin authorized image versions and reject foreign project assets
 ok 144 - native design compositions pin authorized image versions and reject foreign project assets
   ---
-  duration_ms: 2354.2172
+  duration_ms: 2094.2245
   ...
 # Subtest: admin delegation cannot widen financial limits or outlive the source grant
 ok 145 - admin delegation cannot widen financial limits or outlive the source grant
   ---
-  duration_ms: 219.0013
+  duration_ms: 708.3027
   ...
 # Subtest: the last permanent recovery administrator cannot be revoked or disabled by a deny binding
 ok 146 - the last permanent recovery administrator cannot be revoked or disabled by a deny binding
   ---
-  duration_ms: 235.5133
+  duration_ms: 186.6462
   ...
 # Subtest: PDF review copies have one bounded page with the canvas aspect ratio and distinct format permissions
 ok 147 - PDF review copies have one bounded page with the canvas aspect ratio and distinct format permissions
   ---
-  duration_ms: 1141.4192
+  duration_ms: 1248.7727
   ...
 # Subtest: native design pipeline produces actual PNG and validated H.264/AAC motion output
 ok 148 - native design pipeline produces actual PNG and validated H.264/AAC motion output
   ---
-  duration_ms: 1329.2506
+  duration_ms: 1004.431
   ...
-# Subtest: real Codex turn uses the isolated internal Responses provider and reports measured fixture usage
-ok 149 - real Codex turn uses the isolated internal Responses provider and reports measured fixture usage
+# Subtest: real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
+ok 149 - real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
   ---
-  duration_ms: 5040.3467
+  duration_ms: 16018.2986
   ...
-# Windows retained a locked temporary fixture: turn-vzBa9s (EBUSY)
+# Windows retained a locked temporary fixture: turn-2YNauu (EBUSY)
 # Subtest: cancelling an initializing real Codex process rejects the pending RPC and closes the child
 ok 150 - cancelling an initializing real Codex process rejects the pending RPC and closes the child
   ---
-  duration_ms: 71.4066
+  duration_ms: 81.3846
   ...
 # Subtest: calendar validates IANA zones, clocks and weekday choices and uses local dates across UTC offsets
 ok 151 - calendar validates IANA zones, clocks and weekday choices and uses local dates across UTC offsets
   ---
-  duration_ms: 15.5731
+  duration_ms: 17.5015
   ...
 # Subtest: nonexistent DST wall times are skipped at the transition and repeated times select the first instant once
 ok 152 - nonexistent DST wall times are skipped at the transition and repeated times select the first instant once
   ---
-  duration_ms: 5.4758
+  duration_ms: 6.6932
   ...
 # Subtest: half-hour DST transitions and skipped calendar days do not consume the next valid day
 ok 153 - half-hour DST transitions and skipped calendar days do not consume the next valid day
   ---
-  duration_ms: 2.9532
+  duration_ms: 3.1432
   ...
 # Subtest: weekly schedules and bounded catch-up counts handle leap years and long downtime without enumerating all dates
 ok 154 - weekly schedules and bounded catch-up counts handle leap years and long downtime without enumerating all dates
   ---
-  duration_ms: 3.3952
+  duration_ms: 3.0489
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -1304,52 +1304,52 @@ ok 154 - weekly schedules and bounded catch-up counts handle leap years and long
 # Subtest: schedule preview freezes the workflow; create is atomic/idempotent and rejects stale hashes and cross-project references
 ok 155 - schedule preview freezes the workflow; create is atomic/idempotent and rejects stale hashes and cross-project references
   ---
-  duration_ms: 2228.0889
+  duration_ms: 3570.8103
   ...
 # Subtest: concurrent schedulers and repeated ticks launch one run; the real report persists and an unfinished review prevents overlap
 ok 156 - concurrent schedulers and repeated ticks launch one run; the real report persists and an unfinished review prevents overlap
   ---
-  duration_ms: 299.1744
+  duration_ms: 412.3133
   ...
 # Subtest: downtime coalesces earlier opportunities into one range and launches only the latest; skip policy and end dates never backfill charges
 ok 157 - downtime coalesces earlier opportunities into one range and launches only the latest; skip policy and end dates never backfill charges
   ---
-  duration_ms: 196.3171
+  duration_ms: 196.7084
   ...
 # Subtest: pause/resume and edits are CAS/idempotent, preserve immutable history and require a fresh delegated run identity
 ok 158 - pause/resume and edits are CAS/idempotent, preserve immutable history and require a fresh delegated run identity
   ---
-  duration_ms: 141.8809
+  duration_ms: 199.2993
   ...
 # Subtest: account revocation blocks future schedules; restoring the account does not revive an old authorization
 ok 159 - account revocation blocks future schedules; restoring the account does not revive an old authorization
   ---
-  duration_ms: 107.3155
+  duration_ms: 148.0306
   ...
 # Subtest: cross-workspace and viewer access is denied; restricted database roles cannot read history outside their tenant
 ok 160 - cross-workspace and viewer access is denied; restricted database roles cannot read history outside their tenant
   ---
-  duration_ms: 113.7361
+  duration_ms: 181.4974
   ...
 # Subtest: admin schedule visibility honors explicit scope and pause needs MFA/CAS; content deletion scrubs version bodies and replay results
 ok 161 - admin schedule visibility honors explicit scope and pause needs MFA/CAS; content deletion scrubs version bodies and replay results
   ---
-  duration_ms: 258.6306
+  duration_ms: 343.1866
   ...
 # Subtest: cancelling a scheduled review is idempotent and frees its active slot without replaying the prior report
 ok 162 - cancelling a scheduled review is idempotent and frees its active slot without replaying the prior report
   ---
-  duration_ms: 242.1776
+  duration_ms: 346.1452
   ...
 # Subtest: uncertain child execution keeps the schedule occupied even after its workflow fails
 ok 163 - uncertain child execution keeps the schedule occupied even after its workflow fails
   ---
-  duration_ms: 162.9719
+  duration_ms: 187.6293
   ...
 # Subtest: a scheduled Codex role is pinned and a changed installed role blocks execution before charging
 ok 164 - a scheduled Codex role is pinned and a changed installed role blocks execution before charging
   ---
-  duration_ms: 136.0449
+  duration_ms: 87.128
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -1389,27 +1389,87 @@ ok 164 - a scheduled Codex role is pinned and a changed installed role blocks ex
 # Subtest: preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member
 ok 165 - preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member
   ---
-  duration_ms: 2426.7333
+  duration_ms: 3045.8638
   ...
 # Subtest: ordinary disable blocks new work without changing the exact methods of an accepted task
 ok 166 - ordinary disable blocks new work without changing the exact methods of an accepted task
   ---
-  duration_ms: 378.4324
+  duration_ms: 443.061
   ...
 # Subtest: security revocation blocks the next tool and final output in an already running task, then permanently blocks reinstall
 ok 167 - security revocation blocks the next tool and final output in an already running task, then permanently blocks reinstall
   ---
-  duration_ms: 253.2383
+  duration_ms: 179.3798
   ...
 # Subtest: uninstall and explicit reinstall create a new identity without reviving queued work or silently rebinding an old specialist version
 ok 168 - uninstall and explicit reinstall create a new identity without reviving queued work or silently rebinding an old specialist version
   ---
-  duration_ms: 337.089
+  duration_ms: 441.3248
   ...
 # Subtest: current plan capabilities are rechecked at the next tool and completion while the original reservation is settled once
 ok 169 - current plan capabilities are rechecked at the next tool and completion while the original reservation is settled once
   ---
-  duration_ms: 231.0423
+  duration_ms: 230.4072
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# Subtest: initial pause/resume preserves one task and hold, is versioned/idempotent, hides paused outbox, then settles once
+ok 170 - initial pause/resume preserves one task and hold, is versioned/idempotent, hides paused outbox, then settles once
+  ---
+  duration_ms: 2888.2307
+  ...
+# Subtest: a worker claim winning the race prevents pause; completed and uncertain tasks never requeue
+ok 171 - a worker claim winning the race prevents pause; completed and uncertain tasks never requeue
+  ---
+  duration_ms: 198.9435
+  ...
+# Subtest: cross-tenant, private and read-only controls are denied, including replay after access revocation
+ok 172 - cross-tenant, private and read-only controls are denied, including replay after access revocation
+  ---
+  duration_ms: 157.6188
+  ...
+# Subtest: scoped MFA Admin shares pause guards; resume rechecks beneficiary authorization and original reservation
+ok 173 - scoped MFA Admin shares pause guards; resume rechecks beneficiary authorization and original reservation
+  ---
+  duration_ms: 369.8807
+  ...
+# Subtest: a revoked input during pause reopens the original dependency instead of calling the model
+ok 174 - a revoked input during pause reopens the original dependency instead of calling the model
+  ---
+  duration_ms: 269.3844
   ...
 # isolated integration suite: applied migration 1
 # isolated integration suite: applied migration 2
@@ -1447,66 +1507,66 @@ ok 169 - current plan capabilities are rechecked at the next tool and completion
 # isolated integration suite: applied migration 34
 # isolated integration suite: applied migration 35
 # Subtest: input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once
-ok 170 - input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once
+ok 175 - input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once
   ---
-  duration_ms: 4002.5216
+  duration_ms: 3470.2293
   ...
 # Subtest: cancelled input waits dismiss requests and release the hold; forged, foreign and privately owned resources cannot resolve them
-ok 171 - cancelled input waits dismiss requests and release the hold; forged, foreign and privately owned resources cannot resolve them
+ok 176 - cancelled input waits dismiss requests and release the hold; forged, foreign and privately owned resources cannot resolve them
   ---
-  duration_ms: 217.4349
+  duration_ms: 272.2191
   ...
 # Subtest: shared tasks cannot select even the creator's private input or disclose its name in candidate lists
-ok 172 - shared tasks cannot select even the creator's private input or disclose its name in candidate lists
+ok 177 - shared tasks cannot select even the creator's private input or disclose its name in candidate lists
   ---
-  duration_ms: 131.938
+  duration_ms: 168.4073
   ...
 # Subtest: revocation after resolution returns an unstarted task to input wait without another reservation or model turn
-ok 173 - revocation after resolution returns an unstarted task to input wait without another reservation or model turn
+ok 178 - revocation after resolution returns an unstarted task to input wait without another reservation or model turn
   ---
-  duration_ms: 295.3134
+  duration_ms: 388.2211
   ...
 # Subtest: all independent requested inputs must be resolved; racing different selections cannot replace the accepted resource
-ok 174 - all independent requested inputs must be resolved; racing different selections cannot replace the accepted resource
+ok 179 - all independent requested inputs must be resolved; racing different selections cannot replace the accepted resource
   ---
-  duration_ms: 171.3568
+  duration_ms: 210.5047
   ...
 # Subtest: connection selection checks the declared provider and current authorization without leaking credentials or granting report accounts
-ok 175 - connection selection checks the declared provider and current authorization without leaking credentials or granting report accounts
+ok 180 - connection selection checks the declared provider and current authorization without leaking credentials or granting report accounts
   ---
-  duration_ms: 131.746
+  duration_ms: 401.4621
   ...
 # Subtest: parent inputs are inherited for new work, superseded versions need a fresh selection, and erasure removes input descriptions
-ok 176 - parent inputs are inherited for new work, superseded versions need a fresh selection, and erasure removes input descriptions
+ok 181 - parent inputs are inherited for new work, superseded versions need a fresh selection, and erasure removes input descriptions
   ---
-  duration_ms: 260.3602
+  duration_ms: 1207.3922
   ...
 # Subtest: a follow-up requests a fresh input when its inherited source was already superseded
-ok 177 - a follow-up requests a fresh input when its inherited source was already superseded
+ok 182 - a follow-up requests a fresh input when its inherited source was already superseded
   ---
-  duration_ms: 213.8235
+  duration_ms: 384.3451
   ...
 # Subtest: plans bind selected inputs; changed inputs require a new plan before approval or cancel an unstarted approved execution
-ok 178 - plans bind selected inputs; changed inputs require a new plan before approval or cancel an unstarted approved execution
+ok 183 - plans bind selected inputs; changed inputs require a new plan before approval or cancel an unstarted approved execution
   ---
-  duration_ms: 294.9328
+  duration_ms: 406.3346
   ...
 # Subtest: revocation during a paid run blocks tools and result publication and never replays the model
-ok 179 - revocation during a paid run blocks tools and result publication and never replays the model
+ok 184 - revocation during a paid run blocks tools and result publication and never replays the model
   ---
-  duration_ms: 123.1743
+  duration_ms: 168.5673
   ...
 # Subtest: source tools reject escaped paths and blind overwrites, package actual UTF-8 sources
-ok 180 - source tools reject escaped paths and blind overwrites, package actual UTF-8 sources
+ok 185 - source tools reject escaped paths and blind overwrites, package actual UTF-8 sources
   ---
-  duration_ms: 18.3995
+  duration_ms: 25.2459
   ...
-1..180
-# tests 180
+1..185
+# tests 185
 # suites 0
-# pass 180
+# pass 185
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 251586.5616
+# duration_ms 359428.7816
