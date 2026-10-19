@@ -12,8 +12,11 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('canonical_user_and_private_context', [1,2,3,35,36,39,51,55,60,100],
+     '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者与测试调用同步迁移；不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、实际 HTTP User schema 和 Web 初始化证据独立记录，完整原生/系统旅程未计通过。',
+     ['platform_regression','auth_navigation','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('canonical_authentication_and_retry_recovery', [1,2,3,35,36,39,51,55,60,100],
-     '原规范五个用户认证接口及 Web/源码 Desktop/MV3 消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执、不可复活及剩余有效期；Web 真实导航三组和平台 203 项通过。原生刷新/双面板曾完成局部实测，新增首次交换短重试有单元与服务端证据；当前扩展十二组原生重跑受启动阻塞，未计完整通过。工作区聚合、邀请/后台契约及完整身份/系统矩阵仍待完成。',
+     '原规范五个用户认证接口及 Web/源码 Desktop/MV3 消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执、不可复活及剩余有效期；该阶段 Web 真实导航三组和平台 203 项通过，最新资料契约增量另列。原生刷新/双面板曾完成局部实测，新增首次交换短重试有单元与服务端证据；当前扩展十二组原生重跑受启动阻塞，未计完整通过。原始 User 及工作区聚合由后续增量对齐；邀请/后台契约及完整身份/系统矩阵仍待完成。',
      ['platform_regression','auth_navigation','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md']),
     ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
      '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与真实并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；五个规范用户认证接口由后续独立增量记录，完整 SSO/系统矩阵及 TC 全部条件仍未完成。',
@@ -49,8 +52,8 @@ CLUSTERS = [
      '明确提交运行前文件/连接需求、同任务单预留与单次入队、私人上传、跨端选择、资源撤销和计划输入守卫；不含已付费步骤续做。',
      ['platform_regression','task_dependencies','admin_task_inputs','desktop','extension','runtime_schemas'], ['technical/22-pre-execution-input-checkpoint.md']),
     ('durable_erasure', [1,2,6,12,49,57,61,68,90,91],
-     '持久删除账本、不可逆墓碑、物理对象/缓存清理、子作业依赖、隔离与后台受控重试。',
-     ['platform_regression', 'web_admin'], ['technical/17-erasure-transfer-retention-events.md']),
+     '持久删除账本、不可逆墓碑、物理对象/缓存清理、子作业依赖、隔离与后台受控重试；逐项孤儿扫描处理其他工作者刚删除的对象，同时保留 EACCES/EBUSY 等真实 I/O 错误。',
+     ['platform_regression', 'web_admin'], ['technical/17-erasure-transfer-retention-events.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('verified_transfer', [1,2,14,37,38,39,50,52,57],
      '4 MiB 分片、实际摘要/MIME、恢复/取消/并发完成、上传额度；Web 断线重选、Desktop 29 MiB 原生实传和拒绝覆盖。',
      ['platform_regression', 'web_admin', 'desktop'], ['technical/17-erasure-transfer-retention-events.md']),

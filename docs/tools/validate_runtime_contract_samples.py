@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 

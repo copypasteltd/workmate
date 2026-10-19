@@ -142,3 +142,5 @@ Admin 清理记录的筛选、50 条默认分页、撤权显示及独立原生�
 首次模型调用前的排队暂停/同任务恢复、Admin 共用守卫，以及真实 Codex 续聊原语和增量费用边界见 [任务控制与原生续聊](technical/31-task-controls-and-native-continuation.md)。已付费步骤恢复仍未完成。
 
 Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新竞争、离线退出反馈及跨标签清理见 [跨端会话与撤销](technical/32-cross-client-sessions-and-revocation.md)。五个规范用户认证接口、实际三端接入、加密回执、未知响应恢复和多个侧栏的账号边界见 [规范认证与重试恢复](technical/33-canonical-authentication-and-retry-recovery.md)；完整企业身份及全部规范接口矩阵继续独立验收。
+
+规范用户资料、私有工作区初始化、三端消费者迁移与并发孤儿清理修复，见 [用户资料与清理竞态](technical/34-user-profile-context-and-orphan-scan-races.md)。该增量保留首次失败和历史原始回归，不替代完整原生旅程及 102 项综合验收。

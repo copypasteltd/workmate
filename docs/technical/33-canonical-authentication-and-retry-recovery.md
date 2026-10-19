@@ -67,7 +67,7 @@ Web 当前退出和撤销当前浏览器会话同时清理产品会话与 flow C
 
 Delivery 的 `npm run qa:platform` 将进程原始输出按收到的字节保存，记录完整数量与 SHA-256；`npm run qa:sessions` 运行 Web 登录、系统浏览器 PKCE、真实源码 Electron、两个 MV3 面板、已提交刷新响应丢失及换账号迟到回执等流程。仅修改本次合成账号的到期时间及受控本地状态，故障注入范围在报告中明示。MV3 业务文档不代替原生 Side Panel 出现测试。
 
-当前平台全回归 **203/203**，原始 TAP 的 SHA-256 为 `a7bb466cad4baded1746268cedd24c64d69ad87d782ea50a11f4adb921619b23`；Desktop 单元 **24/24**、扩展 **19/19**、Web 返回地址 **3/3**。实际 Web 导航专项 **3/3**：规范邮箱登录、外部返回目标拒绝、真实用户点击跨 origin GET 授权、S256 自有 loopback 回调/201 交换，以及重复退出和 Cookie 清理，见 Delivery `evidence/auth-navigation.json`。十个认证 fixture 的 schema 与原始契约摘要全部一致，其他实际业务样本保持 31/31。
+本阶段平台全回归 **203/203**，原始 TAP 的 SHA-256 为 `a7bb466cad4baded1746268cedd24c64d69ad87d782ea50a11f4adb921619b23`；Desktop 单元 **24/24**、扩展 **19/19**、Web 返回地址 **3/3**。实际 Web 导航专项 **3/3**：规范邮箱登录、外部返回目标拒绝、真实用户点击跨 origin GET 授权、S256 自有 loopback 回调/201 交换，以及重复退出和 Cookie 清理，原始回执见 Delivery `evidence/stage33-navigation/auth-navigation.json`。十个认证 fixture 的 schema 与原始契约摘要全部一致，当时其他实际业务样本为 31/31；本阶段原始平台 JSON/TAP 保存在 `evidence/stage33-platform/`，最新增量见文档 34。
 
 ![实际 Web 原生授权页面](../design/implementation/web-canonical-auth-consent.png)
 
@@ -79,4 +79,4 @@ Delivery 的 `npm run qa:platform` 将进程原始输出按收到的字节保存
 
 Windows 本机软件渲染原因和此前失败记录见文档 32；测试不改变产品默认 GPU 启动参数。全部自建页面、浏览器上下文和 Electron 在 finally 关闭。102 条综合验收、完整 SSO/系统/访问性矩阵、正式网关及角色资格、历史包重新打包与签名更新继续独立待验收。
 
-源码提交后的独立 Git 重新检出四组通过：36 份 SQL 字节及两库迁移摘要账本、28 个受信任固定摘要技能包、43 份 renderer 来源摘要，以及当前 203 项原始 TAP 与记录 SHA-256。自建临时检出已移除；此项不替代原生启动及业务验收。
+本阶段源码提交后的独立 Git 重新检出四组通过：36 份 SQL 字节及两库迁移摘要账本、28 个受信任固定摘要技能包、43 份 renderer 来源摘要，以及当时 203 项原始 TAP 与记录 SHA-256。自建临时检出已移除；此项不替代原生启动及业务验收。
