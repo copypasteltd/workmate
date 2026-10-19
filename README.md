@@ -393,3 +393,7 @@ The initial focused run passed 11/12: a cross-tenant insert was correctly reject
 最终本阶段完整平台 **268/268**、新增账务专项 **12/12**；原始 TAP SHA-256 为 `b84f9f9d594615f3ffc92d8926ed6f3d221ca221e3daeb5dda3667034be6d340`，严格规范样本仍为 **63/63**。迁移前两库只读聚合见 `evidence/billing-existing-state-before-migration.json`，历史测试债务没有清零。
 
 Final full platform regression: **268/268**, including **12/12** new billing groups. The untouched TAP digest is above; existing strict contract captures remain **63/63**. The pre-migration aggregate receipt covers both native databases and preserves historical test debt.
+
+后续首次独立检出因运行中 PostgreSQL 的临时 ASCII junction 消失而失败，原始失败回执保存在 `evidence/billing-initial-checkout-failure.json`；诊断和受控恢复记录在 `evidence/billing-runtime-alias-recovery.json`，未将内存或端口耗尽当作已证实原因。启动器随后改用稳定的用户缓存别名，真实重启、两库新连接和 API 检查见 `evidence/billing-runtime-stable-alias.json`。不停止其他项目的 PostgreSQL，也不复制数据库到缓存目录；最终检出结果继续以当前 byte-integrity.json 为准。
+
+The first subsequent checkout check failed because the running PostgreSQL executable's temporary junction had disappeared. Its original failure and bounded diagnosis are preserved in the named receipts; memory or port exhaustion was not established. The launcher now uses a stable per-user cache junction, verified by a real restart, fresh connections to both databases and the API. Other projects' PostgreSQL instances were preserved. The current byte-integrity receipt remains authoritative for the final checkout result.
