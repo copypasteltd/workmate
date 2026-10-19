@@ -4,9 +4,30 @@
 
 独立 Electron 仓库，内置完整 Web 工作区快照与窄权限本地桥接。支持系统浏览器登录、Windows 用户级凭证保护、明确的本地目录授权、平台签名文件排程，以及 Chrome Native Messaging。实际 Agent 内核仍由公司平台的 Codex 执行，客户端不直连模型供应商。
 
-![实际 Windows 打包应用](assets/screenshots/03-packaged-windows.png)
+![无边框 Windows 工作区](assets/screenshots/18-frameless-workspace.png)
 ![已登录工作区](assets/screenshots/01-workspace.png)
 ![本地文件工作流](assets/screenshots/02-local-files.png)
+
+## 无边框窗口
+
+主窗口移除原生边框、标题框和 Electron 默认菜单，Alt 不会弹出菜单栏。40px 品牌标题栏可拖动，提供双语最小化/最大化/还原/关闭按钮并随浅深主题变化；弹窗位于标题栏下方。八个边缘/角落支持缩放，最小 800×600；右下角也支持方向键（10px）和 Shift+方向键（50px）。原生文件选择/权限对话框继续使用系统 UI。
+
+标题栏在隔离的 preload 内创建，位于 Web renderer 快照之外；显式同步 renderer 不会覆盖窗口实现。主进程对窗口 IPC 同时核对自己的 webContents 和主 frame，只允许固定窗口动作和有界缩放。沙箱、context isolation 和关闭 Node integration 继续生效。
+
+```mermaid
+flowchart LR
+  Bar[品牌标题栏 / 缩放区] --> Preload[隔离 preload]
+  Preload --> Guard[主窗口 / 主 frame 校验]
+  Guard --> Native[固定窗口动作 / 有界缩放]
+  Native --> State[状态与双语图标更新]
+```
+
+![标题栏与弹窗](assets/screenshots/19-frameless-dialog.png)
+![深色窗口](assets/screenshots/20-frameless-dark.png)
+
+本次客户端预览构建位于 `release/frameless/`：`CopyPaste-0.5.0-x64-Setup.exe`、`CopyPaste-0.5.0-x64-Portable.exe`、`win-unpacked/CopyPaste.exe`。它们是本机 localhost 配置、未签名的修复预览；历史 `release/` 原始 0.5.0 包独立保留。重建可执行 `npm run build`，再执行 `npx electron-builder --win portable nsis --config.directories.output=release/frameless`。
+
+交付仓库的 `npm run qa:native-surfaces` 验证真实窗口、Alt、按钮、指针/键盘缩放下限、跨窗口 IPC 拒绝、真实 PKCE、工作区/弹窗及主题语言。设置 `COPYPASTE_DESKTOP_EXECUTABLE` 为上述解包 EXE 可验证打包版，报告 `evidence/native-surfaces.json`。完整签名更新、卸载及多显示器/DPI 系统矩阵仍有待验收。
 
 ## 运行与构建
 
@@ -131,7 +152,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **167/167**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十六份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **180/180**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与通知（当前源码）
 
@@ -172,7 +193,7 @@ The renderer snapshot includes the same initial input checkpoint as Web. Native 
 
 导入先预览并确认账户、币种、时区、实体层级、归因和转化定义；支持通用 CSV 及 Google/Meta 风格候选表头与手动映射。原始 UTF-8/BOM、SHA-256、映射和计算结果真实保存。相同项目内重复请求或成功回执丢失后的重试只返回原快照；被隔离的数据不能绕过限制重新上传。未知转化不计零，CTR/CPC/CPM/CVR/CPA/ROAS 用精确小数先加总再计算，历史结果冻结。
 
-原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、XLSX、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
+原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
 
 独立 renderer 快照包含相同流程。`qa:marketing-analytics` 使用真实 PKCE、受保护 IPC，完成 Meta 风格导入及原生 CSV 保存；本地字节与原文一致，自建 Electron/浏览器在 finally 关闭。当前源码构建、renderer 类型检查和四项原生单元测试通过。
 
@@ -190,9 +211,9 @@ flowchart LR
 
 在行销分析选择已有快照、业务问题、日期/比较区间、指标、维度和 HKD 最高预算。预览不调用模型或预留费用；明确确认后原子建立私人 Codex 任务、冻结计算/证据及单笔预留。来源、账户、币种、时区及归因独立；重复事实去重，冲突拒绝，比较零值/无数据保留原因。接受后丢失回执重试返回原报告。
 
-真实 Codex 通过分页事实工具读取固定值，服务端检查证据占位符及数字字面量后发布固定 HTML 资产，JSON 保留完整计算。自然语言语义和专业业务质量仍待验收；当前模型为明确标识的假数据。来源隔离/删除和项目撤权阻止读取及下载。完整 102 条综合验收、正式连接/XLSX、专业角色资格和生产发布仍未完成，历史安装包未更新。
+真实 Codex 通过分页事实工具读取固定值，服务端检查证据占位符及数字字面量后发布固定 HTML 资产，JSON 保留完整计算。自然语言语义和专业业务质量仍待验收；当前模型为明确标识的假数据。来源隔离/删除和项目撤权阻止读取及下载。完整 102 条综合验收、正式连接、专业角色资格和生产发布仍未完成，历史安装包未更新。
 
-独立 renderer 已同步到 **40** 个来源摘要，不依赖相邻 Web 源码构建。真实浏览器 PKCE、受保护 IPC、报告读取、原任务 HashRouter 跳转及原生 HTML 保存均经过实际 Electron 验证；保存字节与 Web 下载 SHA-256 一致，自建应用及浏览器均关闭。构建、renderer 类型检查和四项原生单元测试通过。
+独立 renderer 已同步到 **41** 个来源摘要，不依赖相邻 Web 源码构建。真实浏览器 PKCE、受保护 IPC、报告读取、原任务 HashRouter 跳转及原生 HTML 保存均经过实际 Electron 验证；保存字节与 Web 下载 SHA-256 一致，自建应用及浏览器均关闭。构建、renderer 类型检查和四项原生单元测试通过。
 
 ```mermaid
 flowchart LR
@@ -202,3 +223,27 @@ flowchart LR
 ```
 
 ![AnalysisSpec report](assets/screenshots/16-analysis-report.png)
+
+## CSV／XLSX 文件导入与更正历史（当前源码）
+
+营销输入现在先保存为项目共享文件的固定版本，再预览工作表、标题列、映射和账户口径。Google/Meta 经规范 `POST /v1/dataset-imports`，通用表格沿用兼容入口；预览不调用模型或预留费用。重复上传、接受回执丢失与重试不重复建立相同快照。原始 CSV/XLSX 下载校验实际字节及 SHA-256。
+
+XLSX 限 5,000,000 字节、50 张工作表、100 列和 10,000 数据行；多表须明确选择，标题列为 1–100。只读解析共享/内联字符串、XML 中文字符引用、精确数字及 1900/1904 日期；金额输入最多六位小数，冻结指标保留八位。拒绝公式（含缓存结果）、宏、外链、加密文件和数据区合并单元格。错误定位实际工作表单元格。预览失败仍保留已明确上传的项目原始文件，界面提前说明。
+
+更正新建不可变快照并记录完整祖先链，保留旧指标和历史报告；AnalysisSpec 在建立任务/预算前拒绝同时汇总祖先及更正版。来源隔离或删除阻止依赖数据、报告和文件读取；删除恢复流程关闭尚未领取的任务并释放未用预留，已运行或费用不明的任务保留原对账规则。私人文件须先明确发布为共享副本。
+
+```mermaid
+flowchart LR
+  File[CSV / XLSX] --> Version[固定共享文件版本]
+  Version --> Preview[表 / 标题列 / 映射 / 免费预览]
+  Preview --> Confirm[当前授权与明确确认]
+  Confirm --> Snapshot[幂等快照与冻结指标]
+  Snapshot --> Correction[新更正版 / 保留祖先]
+  Version --> Lifecycle[隔离或删除依赖守卫]
+```
+
+平台完整回归 **180/180**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
+
+独立渲染快照共 41 项来源摘要。主进程只开放规范导入的精确 POST 路径，继续校验固定 origin、企业和凭证；实际 Electron 完成 PKCE、分片上传、Meta XLSX 导入及原生字节一致下载。
+
+![源码 Desktop XLSX 导入](assets/screenshots/17-xlsx-import.png)

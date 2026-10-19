@@ -4,9 +4,30 @@
 
 An independent Electron repository bundling the Web workspace and a narrow local bridge. It supports system-browser login, Windows user-level encrypted credentials, explicit folder grants, platform-signed local file dispatch and Chrome Native Messaging. Codex execution remains on the company platform; the client never connects directly to model providers.
 
-![Packaged Windows application](assets/screenshots/03-packaged-windows.png)
+![Frameless Windows workspace](assets/screenshots/18-frameless-workspace.png)
 ![Authenticated workspace](assets/screenshots/01-workspace.png)
 ![Local files](assets/screenshots/02-local-files.png)
+
+## Frameless window
+
+The main window has no native frame/title bar or Electron default application menu, including after Alt. A 40px CopyPaste title bar provides a drag region and bilingual minimize, maximize/restore and close controls using the existing light/dark tokens. Content and modals start below it. Eight invisible edge/corner handles resize within a minimum of 800×600; the bottom-right handle also supports arrow keys (10px) and Shift+arrows (50px). System file and permission dialogs keep their native UI.
+
+The isolated preload creates this shell outside the Web renderer snapshot, so explicit renderer synchronization preserves it. Main-process IPC checks both the owning webContents and main frame, permits only fixed window actions and bounded resize, and retains sandbox/context isolation with Node integration disabled.
+
+```mermaid
+flowchart LR
+  Bar[Title bar / resize handles] --> Preload[Isolated preload]
+  Preload --> Guard[Own window / main frame]
+  Guard --> Native[Fixed actions / bounded resize]
+  Native --> State[State and accessible labels]
+```
+
+![Title bar and modal](assets/screenshots/19-frameless-dialog.png)
+![Dark window](assets/screenshots/20-frameless-dark.png)
+
+The client preview is under `release/frameless/`: `CopyPaste-0.5.0-x64-Setup.exe`, `CopyPaste-0.5.0-x64-Portable.exe` and `win-unpacked/CopyPaste.exe`. These unsigned previews use localhost origins and are separate from the original historical 0.5.0 artifacts. Rebuild with `npm run build` followed by `npx electron-builder --win portable nsis --config.directories.output=release/frameless`.
+
+Run `npm run qa:native-surfaces` in the delivery repository for real window/menu/Alt controls, pointer/keyboard minimum-size enforcement, cross-window IPC denial, browser PKCE, modal clearance and themes/languages. Set `COPYPASTE_DESKTOP_EXECUTABLE` to the unpacked preview EXE for packaged verification; results are in `evidence/native-surfaces.json`. Signed updates, uninstall and the complete display/DPI matrix remain pending.
 
 ## Run and package
 
@@ -131,7 +152,7 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **167/167**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-six captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **180/180**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and inbox (current source)
 
@@ -143,7 +164,7 @@ The simulated-data notice persists before and after sign-in. Four native tests p
 
 ## Initial input checkpoint (current source)
 
-The synchronized renderer keeps file/connection requests in the original conversation. Choose a current resource explicitly, or upload through the native bridge; resolving the request resumes the same task and budget hold. The eighth source Electron journey selects the actual 29 MiB upload, verifies no model execution while waiting and receives a result through real Codex with synthetic model data. Four native unit tests also pass. The renderer snapshot records all 34 source files.
+The synchronized renderer keeps file/connection requests in the original conversation. Choose a current resource explicitly, or upload through the native bridge; resolving the request resumes the same task and budget hold. The eighth source Electron journey selects the actual 29 MiB upload, verifies no model execution while waiting and receives a result through real Codex with synthetic model data. Four native unit tests also pass. The renderer snapshot records all 41 source files.
 
 This does not qualify paid-step continuation or replace historical installers.
 
@@ -172,7 +193,7 @@ The synchronized canvas exports single-page raster review PDFs while retaining e
 
 Preview and confirm the account, currency, timezone, entity level, attribution and conversion definitions before import. Generic CSV and candidate Google/Meta-style headers support explicit column mapping. Actual UTF-8/BOM source bytes, SHA-256, definitions and computed results are retained. Duplicate requests, including a lost accepted response, return one project snapshot. Quarantine prevents reimport bypass. Unknown conversions stay unknown; exact decimal CTR/CPC/CPM/CVR/CPA/ROAS use aggregate totals and historical results are frozen.
 
-Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, XLSX, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
+Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
 
 The independent renderer snapshot includes the same flow. `qa:marketing-analytics` uses real PKCE and protected IPC for a Meta-style import and native CSV save; local bytes match the source. Owned Electron/browser resources close in finally. Current source builds, renderer type checks and all four native unit tests pass.
 
@@ -190,9 +211,9 @@ flowchart LR
 
 Select saved snapshots, a business question, current/comparison dates, metrics, dimensions and a maximum HKD budget in Marketing insights. Preview neither calls a model nor reserves credit. Explicit confirmation atomically creates a private Codex task, frozen calculations/evidence and one reservation. Sources, accounts, currencies, timezones and attribution stay independent; identical facts deduplicate, conflicts reject, and zero/missing comparison values retain reasons. Retrying a lost accepted response returns the same report.
 
-Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors/XLSX, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
+Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
 
-The independent renderer snapshot now records **40** source digests and builds without a sibling Web checkout. Actual Electron QA covers browser PKCE, protected IPC, report reads, HashRouter navigation to the original task and native HTML saving. Saved bytes match the Web download SHA-256. Owned application/browser resources close in finally. Builds, renderer type checks and all four native unit tests pass.
+The independent renderer snapshot now records **41** source digests and builds without a sibling Web checkout. Actual Electron QA covers browser PKCE, protected IPC, report reads, HashRouter navigation to the original task and native HTML saving. Saved bytes match the Web download SHA-256. Owned application/browser resources close in finally. Builds, renderer type checks and all four native unit tests pass.
 
 ```mermaid
 flowchart LR
@@ -202,3 +223,27 @@ flowchart LR
 ```
 
 ![AnalysisSpec report](assets/screenshots/16-analysis-report.png)
+
+## File-backed CSV/XLSX and correction history (current source)
+
+Marketing inputs are uploaded as immutable shared project-file versions before reviewing the sheet, header row, mapping and account definitions. Google/Meta use canonical `POST /v1/dataset-imports`; generic tables use the compatible nested endpoint. Preview calls no model and reserves no credit. Duplicate content and retries after a lost accepted reply reuse the snapshot. Original CSV/XLSX downloads verify actual bytes and SHA-256.
+
+The bounded read-only XLSX parser accepts up to 5,000,000 bytes, 50 worksheets, 100 columns and 10,000 data rows. Multiple visible sheets require explicit selection; header rows range from 1 to 100. Shared/inline strings, XML Unicode references, exact decimals and 1900/1904 dates are supported. Money inputs allow six decimal places; frozen metric values retain eight. Formulas, including cached results, macros, external links, encrypted files and merged data cells are rejected. Errors identify actual worksheet cells. The UI explains that a failed preview still retains the explicitly uploaded original project file.
+
+Corrections create new immutable snapshots and a complete ancestor chain; prior metrics and reports retain their original values. AnalysisSpec rejects selecting an ancestor with its correction before creating a task or budget hold. Source quarantine/erasure prevents dependent data, reports and downloads. Recovery closes only unclaimed unavailable tasks and releases unused holds; started or uncertain charges keep reconciliation rules. Private files require explicit publication as a shared copy first.
+
+```mermaid
+flowchart LR
+  File[CSV / XLSX] --> Version[Immutable shared file version]
+  Version --> Preview[Sheet / header / mapping / uncharged preview]
+  Preview --> Confirm[Current authorization and explicit confirmation]
+  Confirm --> Snapshot[Idempotent snapshot / frozen metrics]
+  Snapshot --> Correction[New correction / preserved ancestors]
+  Version --> Lifecycle[Source quarantine and erasure guards]
+```
+
+The full platform regression passes **180/180**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
+
+The independent renderer snapshot records 41 source digests. The main process permits only the exact POST import route while retaining fixed-origin, tenant and credential checks. Actual Electron QA completes PKCE, upload parts, Meta XLSX import and a byte-identical native download.
+
+![Source Desktop XLSX import](assets/screenshots/17-xlsx-import.png)

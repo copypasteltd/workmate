@@ -176,10 +176,17 @@ export function MarketingAnalysis({
             {d.source_available && (
               <button
                 className="text-button"
-                onClick={() => get("source", "campaign-source.csv")}
+                onClick={() =>
+                  get(
+                    "source",
+                    d.import_spec?.file?.format === "xlsx"
+                      ? "campaign-source.xlsx"
+                      : "campaign-source.csv",
+                  )
+                }
               >
                 <Download size={16} />
-                {t("原始 CSV", "Source CSV")}
+                {t("原始檔案", "Source file")}
               </button>
             )}
           </div>
@@ -187,7 +194,7 @@ export function MarketingAnalysis({
         <p>
           {d.currency} · {d.timezone} ·{" "}
           {d.source === "csv_upload"
-            ? t("CSV 上傳", "CSV upload")
+            ? t("表格上傳", "Table upload")
             : d.source === "google_ads"
               ? "Google Ads"
               : d.source === "meta_ads"
@@ -242,6 +249,29 @@ export function MarketingAnalysis({
               "This legacy dataset has no complete retained source or definitions; its provenance is unverified.",
             )}
           </div>
+        )}
+        {d.supersedes_id && (
+          <p className="marketing-checksum">
+            {t("更正來源快照", "Corrects snapshot")}:{" "}
+            <code>{d.supersedes_id}</code> ·{" "}
+            {t(
+              "舊快照與已建立的報告保留原有內容。",
+              "Earlier snapshots and reports retain their original content.",
+            )}
+          </p>
+        )}
+        {d.source_asset_version_id && (
+          <p className="marketing-checksum">
+            {t("原始檔案版本", "Original file version")}:{" "}
+            <code>{d.source_asset_version_id}</code>
+            {d.import_spec?.file?.worksheet && (
+              <>
+                {" "}
+                · {d.import_spec.file.worksheet} · {t("標題列", "Header row")}{" "}
+                {d.import_spec.file.header_row}
+              </>
+            )}
+          </p>
         )}
         <p className="muted">
           {t("資料日期", "Data dates")}:{" "}

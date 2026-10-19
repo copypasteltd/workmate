@@ -2,6 +2,10 @@ import { useI18n } from "./ui";
 export function MarketingWarnings({ data }: { data: any }) {
   const { t } = useI18n();
   const messages: Record<string, string> = {
+    hidden_rows_included: t(
+      "隱藏工作列已一併計算，請確認匯出範圍。",
+      "Hidden worksheet rows are included; confirm the export scope.",
+    ),
     assumed_currency: t(
       "幣種預設為 HKD，請在解讀金額前確認。",
       "Currency was assumed HKD; confirm before interpreting monetary values.",

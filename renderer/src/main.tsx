@@ -2335,6 +2335,7 @@ function Analytics() {
           <MarketingImport
             key={w.base}
             base={w.base}
+            datasets={data?.items || []}
             onImported={(result) => {
               setOpen(false);
               setSelected(result.id);

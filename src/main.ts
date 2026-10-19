@@ -1,5 +1,6 @@
 import { deployment } from "./deployment.js";
 import { saveDownload } from "./download.js";
+import { attachWindowControls, windowAppearance } from "./window-controls.js";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { exclusive } from "./lock.js";
@@ -12,6 +13,7 @@ import {
   shell,
   safeStorage,
   session,
+  Menu,
 } from "electron";
 import { createServer } from "node:http";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
@@ -380,7 +382,9 @@ async function pollDevices() {
 }
 
 async function createWindow() {
+  Menu.setApplicationMenu(null);
   window = new BrowserWindow({
+    ...windowAppearance,
     width: 1440,
     height: 980,
     minWidth: 800,
@@ -396,6 +400,9 @@ async function createWindow() {
       webviewTag: false,
     },
   });
+  window.removeMenu();
+  window.setMenuBarVisibility(false);
+  attachWindowControls(window);
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith(config.web + "/") || url === "https://copypaste.hk/")
       void shell.openExternal(url);
@@ -409,7 +416,9 @@ async function createWindow() {
     (_wc, _permission, callback) => callback(false),
   );
   ipcMain.handle("api", (_e, p, o) => {
+    const campaignImport = p === "/v1/dataset-imports" && o?.method === "POST";
     if (
+      !campaignImport &&
       !/^\/v1\/(me(?:[/?]|$)|tenants\/|catalog\/|agent-templates(?:[/?]|$)|public\/|invites\/|auth\/logout$)/.test(
         p,
       )
