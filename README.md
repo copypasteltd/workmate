@@ -305,3 +305,9 @@ Email sign-in consumes the canonical challenge/session contracts and retains the
 真实导航专项 **3/3**：邮箱登录、用户点击跨 origin GET 授权至自有 loopback / S256 交换，以及重复退出。 / Actual canonical browser navigation: **3/3**, with an owned callback and no model calls.
 
 ![实际原生授权页面 / Actual native consent page](assets/screenshots/52-native-authorization.png)
+
+## 资料接口与初始化 / Profile API and bootstrap
+
+工作区刷新使用 `GET /v1/session/context` 取得本人资料、企业列表与 CSRF；`GET /v1/me` 专用于原始规范的 `User`，资料更新继续使用 `PATCH /v1/me`。退出、换账号和迟到响应守卫继续生效。Desktop renderer 通过显式快照同步同一调用逻辑。
+
+Workspace refresh uses authenticated `GET /v1/session/context`; canonical `GET /v1/me` returns only `id`, `email` and `display_name`. Profile updates still use `PATCH /v1/me`. Existing identity-change and late-response fences remain active, and Desktop receives the same client logic through its explicit renderer snapshot.
