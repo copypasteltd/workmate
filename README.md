@@ -420,7 +420,7 @@ flowchart LR
 
 迁移 040 为钱包新增持久账务账户 UUID；真实邮箱和企业联合登录更新 last_login_at，原生刷新不增加登录次数。确认扣费汇总真实 charge 账本并按原任务的企业/项目范围交集及半开入账时段过滤，保留十进制微额字符串；未知或无权字段不当作零。当前补充 management-context 仅提供获准的详情显示资料，原规范响应保持严格。
 
-专项运行 `node --env-file=.env --import tsx --test --test-concurrency=1 tests/admin-directory.test.ts`，十组隔离原生 PostgreSQL 检查通过。规范 fixture 的七个依赖与原 OpenAPI 原字节摘要逐一核对。需要正常启动本机原生 PostgreSQL；禁止 Docker/WSL。完整费用/VIP 写规范、消费钻取和全部产品验收仍独立待完成。
+专项运行 `node --env-file=.env --import tsx --test --test-concurrency=1 tests/admin-directory.test.ts`，十一组目录及导出隔离原生 PostgreSQL 检查通过。规范 fixture 的七个依赖与原 OpenAPI 原字节摘要逐一核对。需要正常启动本机原生 PostgreSQL；禁止 Docker/WSL。完整费用/VIP 写规范、消费钻取和全部产品验收仍独立待完成。
 
 ```mermaid
 flowchart LR

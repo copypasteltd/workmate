@@ -367,7 +367,7 @@ User, Admin and account cancellation share one domain guard. Attempted work or e
 
 Migration 040 persists a separate wallet account UUID. Successful email and enterprise federation sign-ins update last_login_at; native token refresh does not. Confirmed charges come from actual charge ledger entries, scoped through their tasks and a half-open settlement interval, with decimal micros strings. Missing authorization is not represented as zero. The scoped management-context supplement supplies rich detail display without changing canonical response shapes.
 
-Run `node --env-file=.env --import tsx --test --test-concurrency=1 tests/admin-directory.test.ts` against native PostgreSQL: ten isolated groups pass, comparing all seven fixture schemas and the original OpenAPI digest. No Docker/WSL. Complete financial/VIP write contracts, consumption drilldown and full product acceptance remain outstanding.
+Run `node --env-file=.env --import tsx --test --test-concurrency=1 tests/admin-directory.test.ts` against native PostgreSQL: eleven directory/export groups pass, comparing all seven fixture schemas and the original OpenAPI digest. No Docker/WSL. Complete financial/VIP write contracts, consumption drilldown and full product acceptance remain outstanding.
 
 ```mermaid
 flowchart LR
