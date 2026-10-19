@@ -292,6 +292,9 @@ export function Badge({ value }: { value: string }) {
     connected: ["已連接", "Connected"],
     pending: ["待處理", "Pending"],
     queued: ["排隊中", "Queued"],
+    cleaning: ["清理中", "Cleaning"],
+    completed: ["清理完成", "Cleanup completed"],
+    completed_with_exceptions: ["部分項目需處理", "Completed with exceptions"],
     running: ["進行中", "Running"],
     succeeded: ["已完成", "Completed"],
     failed: ["未完成", "Failed"],
@@ -330,7 +333,8 @@ export function Money({
       {new Intl.NumberFormat("en-HK", {
         style: "currency",
         currency,
-        maximumFractionDigits: 2,
+        maximumFractionDigits:
+          Number(value) !== 0 && Math.abs(Number(value)) < 10000 ? 6 : 2,
       }).format(n)}
     </span>
   );

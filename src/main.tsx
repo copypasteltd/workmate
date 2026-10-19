@@ -57,6 +57,8 @@ import {
   FileText,
 } from "lucide-react";
 import { api, post, patch, download } from "./api";
+import { AdminDeletions } from "./deletions";
+import { DataModeNotice } from "./data-mode";
 import { EnterpriseSignIn } from "./federation";
 import {
   Preferences,
@@ -121,6 +123,7 @@ function App() {
   }, []);
   return (
     <Preferences>
+      <DataModeNotice />
       <Context.Provider
         value={{
           me,
@@ -944,6 +947,12 @@ function Section({ section }: { section: string }) {
           </div>
         }
       />
+      {section === "content" && (
+        <AdminDeletions
+          canRetry={a.has("admin.content.delete")}
+          refresh={refresh}
+        />
+      )}
       <div className="filter-row">
         <div className="tabs">
           {section === "audit" ? (
@@ -2087,16 +2096,16 @@ function AdminDialog({
                   <option value="quarantine">
                     {t("隔離內容", "Quarantine content")}
                   </option>
-                  <option
-                    value="restore"
-                    disabled={row.state === "deleted" && row.kind !== "assets"}
-                  >
+                  <option value="restore" disabled={row.state === "deleted"}>
                     {t("恢復內容", "Restore content")}
                   </option>
                   <option value="delete">
                     {t("移除內容", "Delete content")}
                   </option>
-                  <option value="metadata" disabled={row.kind === "agents"}>
+                  <option
+                    value="metadata"
+                    disabled={row.kind === "agents" || row.state === "deleted"}
+                  >
                     {t("更新名稱", "Update name")}
                   </option>
                 </select>

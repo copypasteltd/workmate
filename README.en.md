@@ -143,3 +143,17 @@ flowchart LR
 ```
 
 ![Actual company identity interface](assets/screenshots/12-company-sign-in.png)
+
+
+## Lifecycle repairs in progress
+
+Content management now shows durable deletion progress, failed cleanup items and retries guarded by scope, recent MFA, reason and idempotency. Permanently deleted assets cannot be restored or renamed, and download streams recheck authorization after opening. A persistent banner identifies synthetic mode; demo gifts are distinct from payments. Tiny nonzero charges display up to six decimals.
+
+These source changes have not been repackaged; 0.5.0 archives retain their original contents. Full requirements and outstanding conditions remain in the master alignment report.
+
+![Erasure journal](assets/screenshots/18-erasure-journal.png)
+![Dark cleanup panel](assets/screenshots/19-erasure-dark.png)
+
+## Cloud directory governance (current source)
+
+Workspace nodes are included in the content resource inventory. Existing scope, body-access, version, reason and audit checks govern metadata inspection, quarantine, restoration and deletion. Quarantining a folder hides descendants from user search and model reads. Entry removal preserves independent source assets; permanent asset erasure remains a separate lifecycle action.
