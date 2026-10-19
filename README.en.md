@@ -132,7 +132,7 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **139/139**. `npm run qa:skills` in the delivery repository passed three browser groups; seventeen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and inbox (current source)
 
@@ -154,3 +154,11 @@ This does not qualify paid-step continuation or replace historical installers.
 ## Capacity waits (current source)
 
 The renderer snapshot includes shared-slot notices and usage explanations. Server-side workspace, current-user and capability limits preserve the original queued task and hold, then resume automatically. Source builds and the existing eight native journeys are checked separately; historical installers do not include this increment.
+
+## Native template selection and tenant isolation
+
+The current renderer snapshot includes the persisted template directory, preflight and instance flow. The main process validates tenant UUIDs and forwards only to the fixed product API with protected credentials. Missing, foreign and malformed tenant identities are rejected. After real PKCE sign-in, a Desktop-created specialist is visible as the same persisted record on Web, with no implicit AI task or charge.
+
+`qa:agent-templates` verifies current-source Electron with an isolated profile and closes its application and browser. All 18 professional presets still await live qualification. This screenshot does not mean historical 0.5.0 installers were rebuilt.
+
+![Current-source native template specialists](assets/screenshots/13-role-template-specialists.png)

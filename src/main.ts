@@ -102,9 +102,22 @@ async function tokens() {
 }
 async function request(
   url: string,
-  options: { method?: string; body?: unknown; idempotencyKey?: string } = {},
+  options: {
+    method?: string;
+    body?: unknown;
+    idempotencyKey?: string;
+    tenantId?: string;
+  } = {},
 ) {
   const method = options.method ?? "GET";
+  if (
+    options.tenantId !== undefined &&
+    (typeof options.tenantId !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        options.tenantId,
+      ))
+  )
+    throw new Error("Invalid tenant identity");
   if (!["GET", "POST", "PATCH", "PUT", "DELETE"].includes(method))
     throw new Error("Invalid method");
   if (
@@ -134,6 +147,7 @@ async function request(
       ...(t ? { Authorization: `Bearer ${t.access_token}` } : {}),
       "Content-Type": "application/json",
       "Idempotency-Key": options.idempotencyKey ?? randomUUID(),
+      ...(options.tenantId ? { "X-Tenant-ID": options.tenantId } : {}),
     },
     body:
       options.body === undefined
@@ -396,7 +410,7 @@ async function createWindow() {
   );
   ipcMain.handle("api", (_e, p, o) => {
     if (
-      !/^\/v1\/(me(?:[/?]|$)|tenants\/|catalog\/|public\/|invites\/|auth\/logout$)/.test(
+      !/^\/v1\/(me(?:[/?]|$)|tenants\/|catalog\/|agent-templates(?:[/?]|$)|public\/|invites\/|auth\/logout$)/.test(
         p,
       )
     )

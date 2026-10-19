@@ -1,3 +1,4 @@
+import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -99,39 +100,6 @@ import {
 import { WorkspaceProvider, useWorkspace } from "./context";
 import "./style.css";
 
-const roleEnglish: Record<string, string> = {
-  assistant: "Default assistant",
-  fullstack: "Full-stack engineer",
-  frontend: "Frontend engineer",
-  "backend-api": "Backend & API engineer",
-  "software-qa": "Quality engineer",
-  "ui-ux": "UI / UX designer",
-  designer: "Designer",
-  "brand-visual": "Brand designer",
-  "ad-creative": "Ad creative designer",
-  ecommerce: "E-commerce designer",
-  "social-content": "Social content designer",
-  "illustration-ip": "Illustrator & IP designer",
-  "typography-layout": "Typography designer",
-  presentation: "Presentation designer",
-  "landing-page": "Landing page designer",
-  "information-design": "Information designer",
-  "video-motion": "Video & motion designer",
-  "marketing-analyst": "Marketing analyst",
-  "workflow-consultant": "Workflow consultant",
-};
-const roleIcon = (key: string) =>
-  ["fullstack", "frontend", "backend-api", "software-qa"].includes(key)
-    ? Code2
-    : key === "marketing-analyst"
-      ? ChartNoAxesCombined
-      : key === "video-motion"
-        ? Clapperboard
-        : key === "typography-layout"
-          ? Type
-          : key === "workflow-consultant"
-            ? Workflow
-            : Palette;
 function Logo() {
   return (
     <Link to="/" className="logo" aria-label="CopyPaste home">
@@ -1238,140 +1206,12 @@ function Workbench() {
     </>
   );
 }
-function RoleCards({
-  limit,
-  filter = "all",
-  search = "",
-}: {
+function RoleCards(props: {
   limit?: number;
   filter?: string;
   search?: string;
 }) {
-  const { t, locale } = useI18n();
-  const { data, error, loading } = useData("/v1/catalog/roles");
-  const [selected, setSelected] = useState<any>(null),
-    [start, setStart] = useState(false);
-  const priority = [
-    "designer",
-    "ad-creative",
-    "marketing-analyst",
-    "workflow-consultant",
-  ];
-  const items = [...(data?.items ?? [])]
-    .sort((a: any, b: any) =>
-      limit
-        ? (priority.indexOf(a.role_key) < 0
-            ? 99
-            : priority.indexOf(a.role_key)) -
-          (priority.indexOf(b.role_key) < 0 ? 99 : priority.indexOf(b.role_key))
-        : 0,
-    )
-    .filter(
-      (r: any) =>
-        (filter === "all" || r.category === filter) &&
-        (r.display_name + roleEnglish[r.role_key])
-          .toLowerCase()
-          .includes(search.toLowerCase()),
-    )
-    .slice(0, limit ?? 100);
-  return (
-    <>
-      <ErrorNotice error={error} />
-      {loading ? (
-        <Loading />
-      ) : (
-        <div className="role-grid">
-          {items.map((r: any, i: number) => {
-            const Icon = roleIcon(r.role_key);
-            return (
-              <button
-                className={"role-card role-tone-" + (i % 4)}
-                key={r.role_key}
-                onClick={() => setSelected(r)}
-              >
-                <div className="role-card-top">
-                  <span className="role-icon">
-                    <Icon size={23} strokeWidth={1.5} />
-                  </span>
-                  <ArrowUpRight size={17} />
-                </div>
-                <h3>
-                  {locale === "en" ? roleEnglish[r.role_key] : r.display_name}
-                </h3>
-                <p>
-                  {locale === "en"
-                    ? r.category === "engineering"
-                      ? "From specification to working software."
-                      : r.category === "marketing"
-                        ? "Turn evidence into your next decision."
-                        : r.category === "operations"
-                          ? "A clearer, repeatable way to work."
-                          : "Considered visuals, made for your brand."
-                    : r.sample_task}
-                </p>
-                <footer>
-                  <span className="role-category">{r.category}</span>
-                  <span className={r.available ? "available-mark" : "muted"}>
-                    {r.available
-                      ? t("可使用", "Available")
-                      : t("準備中", "Preparing")}
-                  </span>
-                </footer>
-              </button>
-            );
-          })}
-        </div>
-      )}
-      {selected && (
-        <Modal
-          title={
-            locale === "en"
-              ? roleEnglish[selected.role_key]
-              : selected.display_name
-          }
-          onClose={() => {
-            setSelected(null);
-            setStart(false);
-          }}
-        >
-          <p className="muted">{selected.sample_task}</p>
-          <div className="role-detail">
-            <h3>{t("交付與品質標準", "Deliverables & quality")}</h3>
-            <ul>
-              {selected.acceptance_checks.map((s: string) => (
-                <li key={s}>
-                  <Check size={15} />
-                  {s}
-                </li>
-              ))}
-            </ul>
-            <h3>{t("專業方法", "Bound specialist methods")}</h3>
-            <div className="tags">
-              {selected.skill_bindings.map((s: any) => (
-                <span key={s.skill_key}>{s.skill_key}</span>
-              ))}
-            </div>
-          </div>
-          {!selected.available && (
-            <div className="notice">
-              <Clock size={18} />
-              {t(
-                "此專業服務正在準備。你可以先建立專案、加入素材，或使用數據分析與設計畫布。",
-                "This specialist service is being prepared. You can start a project, add materials, analyze data or use the design canvas.",
-              )}
-            </div>
-          )}
-          <button className="button primary" onClick={() => setStart(true)}>
-            {t("選用此角色", "Choose this specialist")}
-            <ArrowUpRight size={17} />
-          </button>
-          {start && (
-            <NewTask role={selected.role_key} onClose={() => setStart(false)} />
-          )}
-        </Modal>
-      )}
-    </>
-  );
+  return <RoleTemplateCards {...props} />;
 }
 function Roles() {
   const { t } = useI18n();
