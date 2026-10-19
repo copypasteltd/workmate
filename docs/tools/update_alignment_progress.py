@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('design_pdf_review', [1,2,12,14,16,22,39,43,44,51,55,60,68,74,75,76,77,78,79],
+     '实际单页 PDF 审阅稿、源工程与格式权限、旧版本拒绝/原请求重放、私人文件、Web 下载和原生 Desktop 摘要保存；独立解析/渲染，不含完整审阅包、印刷或真实设计角色资格。',
+     ['platform_regression','design_pdf'], ['technical/26-design-pdf-review-delivery.md']),
     ('persistent_role_templates', [1,2,44,51,62,73,74,75,76,78,79,81,82,99,102],
      '持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。',
      ['platform_regression','agent_templates','runtime_schemas'], ['technical/25-role-template-registry-and-runtime-binding.md']),
@@ -64,9 +67,11 @@ REMAINING = {
  8:'云执行与事件已验证局部流程；完整真实步骤/部分产物状态及全部故障仍待验收。',
  9:'仅安全恢复未领取队列；暂停、步骤检查点、原任务续做和未知外部操作闭环未完成。',
  11:'事件身份和可读状态已有修复；全业务 step/trace/工具链与规范字段仍需核对。',
- 12:'云版本引用和实际源码 ZIP 已验证；全类型预览、局部成功/修改/审阅及可恢复工程未齐。',
+ 12:'云版本引用、实际源码 ZIP 和单页 PDF 源快照已验证；全类型预览、局部成功/修改/审阅及全部可恢复工程未齐。',
  14:'需验证所有端完整 1 GiB 实传、生产对象存储及旧 multipart/扩展桥接大文件迁移。',
  15:'模拟接口下功能继续验证；真实内部 Image 2 生成/编辑和业务质量尚未验收。',
+ 16:'真实分层图文可生成 PDF 审阅稿并独立渲染；完整换行/溢出检查、字体来源/授权与所有专业排版仍待验收。',
+ 22:'PDF 实际下载、源快照、版本冲突及原生保存已有局部验证；评论/接受/修改闭环、完整 ZIP 版本清单及全部业务编辑描述未齐。',
  35:'文件/技能、默认助手、通知和首次运行前补齐已有证据；团队、自动缺口发现、步骤续做与全业务整合仍待完成。',
  37:'Web 与 Desktop 传输有新证据；兼容降级、扩展及所有撤销场景仍未完整验收。',
  38:'Desktop 新传输不等同扩展 Native Host 全量大文件验收；协议矩阵仍待完成。',
@@ -87,7 +92,7 @@ REMAINING = {
  58:'模拟模式明确展示与隔离；全部离线设备、未授权账户、异步媒体和缺口补齐仍待完成。',
  60:'本轮全部源码/文档维持 D 盘原生工具与自建浏览器清理；最终独立仓库完整交付仍待更新。',
  61:'会话私有云目录与删除边界已有局部验证；全部多任务消息补充/定位及生命周期仍待齐。',
- 62:'默认助手、共享固定配置、私人原子委派和预设专家已有验证；完整专业输入/依赖引导、规范模板版本接口仍未完成。',
+ 62:'默认助手、共享固定配置、私人原子委派和模板预检/建立已有验证；完整专业输入引导与模板发布/升级仍未完成。',
  67:'默认助手和专业任务遵守问答/计划/执行；完整规范计划版本与所有关键输入变化/恢复分支仍待验收。',
  72:'示例不自动提交、默认私人委派、站内通知和原任务定位已验证；附图及完整业务阻塞项恢复仍待完成。',
  63:'树/搜索/版本/移动/权限/持久源码已验证；Office/PDF 分页、选择器大目录检索及完整 TC 仍待齐。',
@@ -141,6 +146,7 @@ def main():
         'admin_task_inputs': DEV/'copypaste-delivery/evidence/admin-task-inputs.json',
         'admin_records': DEV/'copypaste-delivery/evidence/admin-records.json',
         'agent_templates': DEV/'copypaste-delivery/evidence/agent-templates.json',
+        'design_pdf': DEV/'copypaste-delivery/evidence/design-pdf.json',
         'checkout_integrity': DEV/'copypaste-delivery/evidence/byte-integrity.json',
         'runtime_schemas': DOCS/'quality/runtime-contract-samples.json',
         'documentation': DOCS/'quality/validation-report.json',
@@ -154,6 +160,8 @@ def main():
         assert not report.get('errors') and not report.get('failures')
         if 'browser_closed' in report:
             assert report['browser_closed'] is True
+        if 'desktop_closed' in report:
+            assert report['desktop_closed'] is True
         evidence[key] = {'path': path.relative_to(ROOT).as_posix(), 'sha256': fingerprint(path),
                          'at': report.get('at', report.get('checked_at')), 'checks': checks,
                          'scope': report.get('scope', 'Only the explicitly named subflows in this report')}

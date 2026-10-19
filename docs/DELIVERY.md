@@ -50,8 +50,10 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 
 ## 当前源码验收增量
 
-2026-10-19 当前源码平台 139/139、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。实际响应样本 17/17 通过严格 schema 检查。规范 225 个操作和实际 225 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 147/147、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。新增模板 Web/Electron 八组与 PDF 交付七组通过。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作和常规实际 229 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](technical/22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 
 新增企业/用户/能力原子执行容量、跨企业交错派发与原任务自动排队，细则及证据边界见 [容量与公平调度](technical/23-execution-capacity-and-fair-dispatch.md)。完整 NFR 规模、供应商逐请求限流及独立生成式视频队列仍待完成。
+
+实际单页 PDF 审阅稿、源版本、重复请求和 Web/Desktop 下载见 [设计 PDF 交付](technical/26-design-pdf-review-delivery.md)。模型与媒体依赖继续模拟，PDF 文件与源工程实际保存；这不增加真实服务合格角色数量。

@@ -2,7 +2,7 @@
 
 版本：2.0 · 2026-10-19 · 产品代码：0.5.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
-当前源码持续修复已扩展到 31 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录及持久模板；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md) 与 [持久模板](25-role-template-registry-and-runtime-binding.md)。
+当前源码持续修复已扩展到 31 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录、持久模板及真实 PDF 审阅稿；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md)、[持久模板](25-role-template-registry-and-runtime-binding.md) 与 [PDF 设计交付](26-design-pdf-review-delivery.md)。
 
 ## 1. 路径与仓库
 
@@ -25,11 +25,11 @@ Web、Admin、扩展与 Desktop 可独立安装和构建，不在 build 时依�
 | --- | --- |
 | 工具 | Node 22.14.0、npm 10.9.2、TypeScript 7.0.2，精确依赖在各锁文件 |
 | 服务 | Fastify 5.12.7、pg 8.23.1、pg-boss 12.38.0、Zod 4.6.7 |
-| 数据 | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、十个有序迁移、RLS |
+| 数据 | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、当前 31 个有序迁移、RLS |
 | 界面 | React 19.3.1、Vite 8.3.4、React Router 7.18.4、Lucide 1.59.0 |
 | Desktop | Electron 44.5.1、electron-builder 26.15.3、DPAPI + AES-256-GCM、独立 Node-mode Chrome Host |
 | Agent | Codex 0.163.0-alpha.10.2、app-server stdio JSON-RPC、实际生成协议、公司 Responses provider |
-| 媒体 | resvg 2.6.2、原生 FFmpeg/FFprobe 8.1、真实 PNG 与 H.264/AAC MP4 |
+| 媒体 | resvg 2.6.2、pdf-lib 1.17.1、原生 FFmpeg/FFprobe 8.1、真实 PNG、单页图片 PDF 与 H.264/AAC MP4 |
 | QA | Playwright 1.64.1、真实原生 Chromium、真实打包 Electron、Node test |
 
 不使用 Docker、WSL 或任何虚拟化。Windows 中文路径只使用临时 ASCII junction 解决 PostgreSQL bootstrap 路径限制，真实数据、二进制仍位于 D 盘。控制器 shutdown 先关闭 API，再停界面与数据库；数据库使用 pg_ctl fast 完成 checkpoint，不使用强制终止。只操作自己启动的进程；生命周期脚本验证无崩溃恢复的重启、专家/会话/记忆记录保留及用户既有 5173/5174 进程保持。浏览器 QA 在 finally 关闭自己的所有上下文、页面和实例。
@@ -127,7 +127,7 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 
 ## 8. 当前源码修复增量
 
-2026-10-19 当前源码平台 145/145、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。另有模板 Web/Electron 八组检查，见 [模板注册与运行约束](25-role-template-registry-and-runtime-binding.md)。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作与常规实际 229 个 method/path 不代表字段及全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 147/147、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。另有模板 Web/Electron 八组检查及 PDF Web/Electron 七组检查，见 [模板注册与运行约束](25-role-template-registry-and-runtime-binding.md) 和 [PDF 设计交付](26-design-pdf-review-delivery.md)。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作与常规实际 229 个 method/path 不代表字段及全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 

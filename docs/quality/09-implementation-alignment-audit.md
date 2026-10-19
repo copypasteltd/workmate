@@ -36,9 +36,9 @@
 
 实现细则见 [删除/传输/事件](../technical/17-erasure-transfer-retention-events.md)、[云文件](../technical/18-persistent-cloud-files.md)、[项目技能](../technical/19-project-skill-lifecycle.md)。
 
-2026-10-19 当前源码全套平台回归 **139/139**；Web/Admin 修复回归六组、云文件四组、技能三组、资料补齐五组、Admin 资料治理三组、容量 Web/Admin 四组、Desktop 当前源码八组及 Chrome MV3 八组通过。实际 HTTP 样本 **17/17** 通过严格 schema 验证，见 [响应样本报告](runtime-contract-samples.json)。平台、Web 与 Desktop 已构建；Web 默认助手和通知分别四组；浏览器/Electron 自建实例在 finally 中关闭。报告完整路径、摘要、检查名称及代码快照由进度文件保存。
+2026-10-19 当前源码全套平台回归 **147/147**；Web/Admin 修复回归六组、云文件四组、技能三组、资料补齐五组、Admin 资料治理三组、容量 Web/Admin 四组、Desktop 当前源码八组及 Chrome MV3 八组通过。另有模板八组与 PDF 七组 Web/Electron 验证。实际 HTTP 样本 **21/21** 通过严格 schema 验证，见 [响应样本报告](runtime-contract-samples.json)。平台、Web 与 Desktop 已构建；Web 默认助手和通知分别四组；浏览器/Electron 自建实例在 finally 中关闭。报告完整路径、摘要、检查名称及代码快照由进度文件保存。
 
-最新规范有 225 个操作，实际代码导出 225 个 method/path。进度文件独立计算路径匹配及未验证字段；该数量包括兼容路径，不能解释为已完成 225 个规范业务。文档自身检查通过也不表示真实运行完整验收通过。
+最新规范有 225 个操作，常规实际代码导出 229 个 method/path。进度文件独立计算路径匹配及未验证字段；该数量包括兼容路径，不能解释为已完成 225 个规范业务。文档自身检查通过也不表示真实运行完整验收通过。
 
 显式运行前文件/连接补齐保留原任务和一笔预算，三端可明确选择当前资源；私人上传、资源撤销、计划来源及管理员重试均设守卫，详见 [运行前资料](../technical/22-pre-execution-input-checkpoint.md)。已付费步骤继续、自动发现缺口和 capability/device 依赖仍属剩余验收条件。
 
@@ -47,3 +47,5 @@
 执行容量的七组隔离数据库测试、Web/Admin 排队旅程及真实边界见 [容量与公平调度](../technical/23-execution-capacity-and-fair-dispatch.md)。
 
 Admin 清理记录的五组浏览器流程与新增三组平台检查见 [后台记录与测试隔离](../technical/24-admin-record-pages-and-test-isolation.md)。首次失败的原始报告已保留；独立原生测试库修复后全套 139/139 通过。
+
+持久模板目录、当前项目预检、幂等创建和真实 Codex/能力版本绑定见 [模板注册与撤销](../technical/25-role-template-registry-and-runtime-binding.md)。单页 PDF、可编辑源文件、版本检查、独立解析及跨端实际保存见 [设计 PDF 交付](../technical/26-design-pdf-review-delivery.md)。仅为相应要求的已验证子流程，完整专业交付、批量导出和角色资格未关闭。

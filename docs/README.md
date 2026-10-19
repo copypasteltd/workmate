@@ -10,6 +10,8 @@
 
 运行前等待并补齐文件或连接、同一任务继续、私人附件和计划来源守卫见 [资料检查点](technical/22-pre-execution-input-checkpoint.md)。模型依赖继续使用获准假数据；不将该子流程计为完整检查点恢复或正式角色资格。
 
+原生画布和设计师工具新增单页 PDF 审阅稿，保留实际源工程和素材版本；格式权限、版本冲突、重复请求与跨端下载见 [PDF 设计交付](technical/26-design-pdf-review-delivery.md)。PDF 为图片审阅稿，不计为完整专业交付资格。
+
 **已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/08-enterprise-federation-acceptance.md)。未完成外部平台授权或公司真实模型准入。
 
 ## 建议阅读
