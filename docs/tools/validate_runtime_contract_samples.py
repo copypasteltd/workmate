@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json', 'admin-billing-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 
@@ -27,6 +27,12 @@ def main():
             raise ValueError(f'Authentication test fixture changed the original schema: {name}')
     if len(fixture['schemas']) != 10:
         raise ValueError('Expected all ten authentication schema dependencies')
+    billing = json.loads((AUTH_FIXTURE.parent / 'admin-billing-schemas.json').read_text(encoding='utf-8'))
+    if billing['source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(billing['schemas']) != {'Money', 'AdminBillingAccount', 'AdminBillingAccountList', 'AdminLedgerEntry', 'AdminLedgerEntryList'}:
+        raise ValueError('Billing fixture must retain all five original schema dependencies')
+    for name, schema in billing['schemas'].items():
+        if schema != spec['components']['schemas'][name]:
+            raise ValueError(f'Billing fixture changed the original schema: {name}')
     members = json.loads((AUTH_FIXTURE.parent / 'membership-schemas.json').read_text(encoding='utf-8'))
     if members['source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(members['schemas']) != {'Role', 'InviteCreate', 'Invite', 'InviteAccept', 'Member', 'MemberList', 'Ack'}:
         raise ValueError('Membership fixture must retain all seven original schema dependencies')

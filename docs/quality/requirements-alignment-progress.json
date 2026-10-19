@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-19T20:44:06.275054+00:00",
+  "at": "2026-10-19T21:44:59.649980+00:00",
   "scope": "All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report",
   "baseline_sha256": "496d31dd2408c58b21d208a83f532c1f0475571148b8415c735656b8f3527113",
   "user_test_data_instruction": "2026-10-19: 暂时先用假数据。Simulated validation is authorized; production qualification remains separate.",
@@ -31,11 +31,11 @@
   "repositories": [
     {
       "name": "copypaste-platform",
-      "head": "0e33ed62338b518417c31265ef58caec36c08fe9",
+      "head": "e05a0a1605b333fd97eaa549dc07341e00ef24b6",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "002fcf4fbb8a93ba9661759d740ae02a38002bc4b1755298616560ff0d2516b0",
-        "README.md": "fb764e4dc928298029e52534963bc97cffc377d9733dd6b77194b3d27ea47a82",
+        "README.en.md": "1a5f1741b41ba7aba0cf0e21fc7a869b51c759648db302d93f1c10bba9744e86",
+        "README.md": "580e531babe0c9f03169bee7b396b731e2360736c36b77ab317efcd644474895",
         "THIRD_PARTY_NOTICES.md": "5299e707ba17d7a008cf72dc0208b08dfbe9bd07176bf4dfa07cdceb83bf6d3e",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/company-sign-in.png": "633f7e7bf2ccd8606cd3ec3190b43436471e47b9d0a0a28d39039119d7e0a46a",
@@ -53,6 +53,7 @@
         "catalog/role-preset-catalog.json": "7c147d391437b073b8a685bffd7c0ede8d50e4f01dbc601145bbb553c961ca50",
         "catalog/skill-packages.json": "e9e9f80ea5e5cea50221dfebd7529df467ffd3eab8aae78e68cc2a82f62e4c6e",
         "contracts/admin-account-schemas.json": "15bd1239295eb0b2c27cdb138716c54c955b6c5220c724ff5673c86567ea5cd2",
+        "contracts/admin-billing-schemas.json": "8767c45146ef01531a1a1c2b5078a7eddb56df3148771d85b18c0deb9d38d85f",
         "contracts/admin-directory-schemas.json": "b01d13435bd8ad677ab07e5135a987071c9662cef3e79b5c3a564bafdde61b62",
         "contracts/admin-membership-schemas.json": "69a7e00fa0e94a4a3fdda4ae553626b87e8489371ba552fdfff871f3cb79e335",
         "contracts/auth-schemas.json": "3fdd104fd4e8f803ba72cbf74bebe56981553048f2b564e53240fa62c4f760d4",
@@ -508,7 +509,7 @@
         "contracts/codex/v2/WindowsSandboxSetupStartParams.json": "8610d077fff4fc5811f2e33dea82617a15ffb82f08e55e1540aef877133f5b4f",
         "contracts/codex/v2/WindowsSandboxSetupStartResponse.json": "830bf89deac3e73e36b7d9799ceed32ee25e782c30b1d25266374aa020d3bc7e",
         "contracts/codex/v2/WindowsWorldWritableWarningNotification.json": "bfa34d4890c8121a04412b8d53314a13adf98289fdd948857fd97b808dcbe79e",
-        "contracts/implemented-routes.json": "20c293b292ac0e0b4afe0ce21a686334843e5d3c3fa0ead68da1b2560cc2d770",
+        "contracts/implemented-routes.json": "11349b33d01e38c232ab1f886618e84a60cb280ce37caa05eac46b1778489e6e",
         "contracts/membership-schemas.json": "f5658754ca859096e8e4b4f2b6076ce90ec1e269461d59b2a9dc08162e75b1ff",
         "evidence/codex-protocol.json": "eb48a8e38d7a3979185c7abe6b15edec2467ab78815379db4449070e52d752e8",
         "migrations/001-foundation.sql": "4f07eeceebe0c1fb87e236c6700f6aa7d628f31c5c4eb33a90bc16de925d9fe5",
@@ -552,6 +553,9 @@
         "migrations/039-admin-account-lifecycle.sql": "6fcc732540bb833dbb4422e7988cf47eda9ececf1ac6ea302507500837e1fda9",
         "migrations/040-admin-directory-identity.sql": "b4fd2a61dd5f4b1ee7cdc649349b3b05f7bd3f6612b18bfb76fbff43aca5fd26",
         "migrations/041-billing-settlement-sources.sql": "9d3d24d9896d77280bf52daa065da1e3443c754963352da972c9f981bcd5f9fc",
+        "migrations/042-billing-account-subjects.sql": "dfaf2f1147b948c76af09a916323f4c7e4b22e6187207072fd671261152dca7a",
+        "migrations/043-billing-operation-provenance.sql": "bc7713661637bdd2dd0a56dd99a21da9a76b4ab4f4c07780f2d3c9f445dd2f6d",
+        "migrations/044-billing-subject-immutability.sql": "561a4d375950839c8477420f7a3e15cb4822c9aa489aa955e301d0f842ca48fc",
         "package-lock.json": "897180dd90d93f77c9a14344a18ea4a496e13e9ef782fdcaf8cfe8085aa62cf5",
         "package.json": "e08a07e06a2c378cdb635de6cd1a80b4e135b6b00d500a939738aaa6554a51ff",
         "scripts/admin-create.ts": "ea2444a150ff68eb7166b446b26acc198233f0efd8d57c0a84682bf832b8513d",
@@ -560,7 +564,7 @@
         "scripts/db-local.ts": "664a7f24ffa4ad51396c399e12e1839b0b8ceda4f242523ea0137b967ad49f03",
         "scripts/export-routes.ts": "2205376dac82ab308de366ed193f0218b7fdbb98c300289c59b15ccc6473462d",
         "scripts/migrate.ts": "bf12a8a8a2ce2cc386f21c6effd254f4a3ad055ad227cffb54d7ff1e70c8b708",
-        "scripts/migration-runner.ts": "470455acf2cfe8f768e3aa65f1f27be8aac7bf5815568f7c0df6e8c2384a8faa",
+        "scripts/migration-runner.ts": "495c9131a927f5f633aa11ac24d68fffdc97ed66221cba93139ff278cdb4a48a",
         "scripts/native-db-launch.mjs": "2477954d220fc1d75bcb2c6b894156efbef7ace5ea82d53c3236636f07dc1608",
         "scripts/qa-fixture.ts": "8aae8697c5473b71d645615560263070542a8cc5f937dfe779a6212a0b3cf8e9",
         "scripts/setup-local.ts": "b05b2c074ebb20eac4f36b5ea5f1eae1d3358d686b389710e4f0824ce035cb07",
@@ -594,16 +598,17 @@
         "skills/workflow-design/SKILL.md": "056674b1499788cee6690384cdc94d44e8f518211da8ad1b13782bf48bbab9a9",
         "skills/workflow-execution/SKILL.md": "a736d413e10cdd4487a6d47993271c75206d76de2c74445cdc3037294a5bee62",
         "src/access.ts": "4ccd23d806a6c0c7940944fe57c45783e3e750c8fc4cd771a7b5498be46889e2",
-        "src/admin-access.ts": "9991be60941d60f26f447ad3d16108932bfda256b17d875bcd4f8f69b94db4d3",
+        "src/admin-access.ts": "79bec3fe7fba770b23beeee7215614470ea8ce913892453734f78737e94ab24c",
         "src/admin-accounts.ts": "41dda1db86f6c02b841ffb532aaccd56c5a3844608af84de7f352833a5195129",
+        "src/admin-billing.ts": "609b1c40df4eb4969a2d6b0b39533518499b599f980a5ff4684983662abfbe5f",
         "src/admin-content.ts": "5d9a0522bd7e5b2ad2200cf653b414163d71eec57acc7b45c8cece8741785151",
-        "src/admin-directory.ts": "48dd1246f972ac9ba72af3e01d4d9349c5f1f4263c1ad5926a13dfc40e431d7a",
+        "src/admin-directory.ts": "c760c8522f02f2e7a421eee6cfe31bbffea93072589b2e5ba5ed3032abfd09da",
         "src/admin-identities.ts": "48f1be54da619ac94222aac4c3aa04b64c95250534df6f90398e0861b4a4f9d4",
         "src/admin-jobs.ts": "0a67160f6f1bce22095e30e4c6e4a0147470f5dc8d5d8205d4e21b4cb31ec68c",
         "src/admin-memberships.ts": "1029504ec09577ddd2c7c930cd673b3485b0b31746a75923bd204834e9a47b70",
         "src/admin-operation-policy.ts": "47efc7dd63e4200af83d0371b3f83929258d5eccaca79b3436c896f0b9430748",
-        "src/admin-operations.ts": "546b252c47d6c75112ded0b9fd17d4ddfb7372f911f2ff3749a885d11213b410",
-        "src/admin.ts": "c0a4c741946345d1851904f6fbdde440181646695da56bbafb635475a2f7b235",
+        "src/admin-operations.ts": "142d6a9fbee5141301ef246bf14f87eaaa936b13957bbd084c29b5ccc64b7c45",
+        "src/admin.ts": "8d27b2a4ef16d0a4de6c49f8dac48ba5243ca9488a6c831f7683f696693893a1",
         "src/agent-templates.ts": "44ca4097682aec685d08c0cdf388d9ed2827de051f3f407689bffa6494bcb896",
         "src/analysis-calculation.ts": "dc60031a48d56622527fe2764df8f06beb0988009ca71afd65d128ce3acc80f4",
         "src/analysis-reports.ts": "ad33c018bbefac7ed25527575a6bf3dcd1d1767780ad8bdd77779204b2a0739d",
@@ -616,7 +621,8 @@
         "src/assets.ts": "579489ad0c8e6ad46bf4c0015ad82834118bc24496d550395cc470706688ed20",
         "src/auth-receipts.ts": "d1b1b6bff33be9553ff8d0227192dd5eb60690379d882e0bc68415abe7b34ea0",
         "src/auth.ts": "23f5955e407acf51191397524d1ca5c910e0c69221016a52b25d125b9a8ff318",
-        "src/billing.ts": "3c45ef5400851225e011f197d79d4689b42d9aaf4f8e663942e890a5f330e7eb",
+        "src/billing-events.ts": "c8456097043e0b5eaa061fb4f6a9f5d402a226a3251aaefdb74d7f011c8e383b",
+        "src/billing.ts": "e7efd0c45e41be4d507890646ea5f4a1c4e9f731b44e63bafc69d90f93ec9e6b",
         "src/business.ts": "b231133758989ae6ba2507c9c880cd673dc2206384dc52e1ea885aafd9201baa",
         "src/catalog.ts": "259cebd55e0c54cb8d793f8cc754888256229395728aa9e97b61cb81b57d0136",
         "src/cloud-files.ts": "fbfea9a267d599fc30b3d659a50a2db254df41b7c9c1b570953978fdf152d418",
@@ -624,7 +630,7 @@
         "src/cloud-source.ts": "5c771a5aafb43baf8668f67e0f4384f964672b892b779459de054050f051b8c1",
         "src/code-workspace.ts": "98ba7e8f0d2a96af895176f0f3daa6383ab3c1bb1f8678438ff3db1244aa439d",
         "src/config.ts": "a323b1a6699d76a5aa286cbd836b575bbf36d6e750193d2df9d6892bd0d3fbf0",
-        "src/db.ts": "b52eb0271a583507f9bb6c564f7ba2fc217bb82c5efe209878cada4331b329f1",
+        "src/db.ts": "ea694b424b4b54baa13f281ea40e753117fd0ad3e2527c5b40a5ba23e517e01e",
         "src/deletions.ts": "73024049384dc26d2cc89535bbeb790c9d0c43fb206590fd4fac80910b98847f",
         "src/demo-gateway.ts": "35ead36530bbec009cd13dc5adf05fa32c104a4ba197778ff4614c1eee65d642",
         "src/demo.ts": "99c498cdea1988c7ae69e25448e3bf9aef4cec7d85a50a8d27a3a449c564439d",
@@ -647,22 +653,23 @@
         "src/runtime.ts": "ff43c7623a09c4951aa89dd41fbc9539dd1a206885cd4575e62e839eb44c3643",
         "src/schedule-time.ts": "1c23ce00cddd0be818298e14506ea1563096742bf409048d34e13e3f6d04feec",
         "src/schedules.ts": "a7341b39b89953fc3daa72dde43c088b645310d6bca52104fdc709e4db245111",
-        "src/server.ts": "9d5357a8d58ff8290d1a1128f4e5c50a08b3c1e657e36d502083407c3f8967ce",
+        "src/server.ts": "8d0a4ffc263728609a23062844b118f5832812bb1bf95fd6f44a0ad9290a121e",
         "src/skill-lifecycle.ts": "54f8cc8613ffdd42122b8a1f4f6f7d68d1505a4defda6094855f6c03d155c0e7",
         "src/storage.ts": "1ea54490f977700d21a448c19d0180e1d1d913d234d05d6b56e29d49524e6bc4",
         "src/task-control.ts": "54498572c7f42b6b55be2cc6388afef1493658232f7189d6deade61e7c749ff8",
         "src/task-dependencies.ts": "6ebd87d04c078f81b80b74d5d1783803b15d65040c99f3204991e49cd22cc9ac",
         "src/task-events.ts": "7086c9fce4036626c563f5ef8f0a78869663ae53f019acb45f2c4b1016dcde43",
         "src/task-recovery.ts": "e45f3c4e094129ffca0d08f855a7c7c858984b78e8ca9659397213fe7f4c1d3a",
-        "src/task-service.ts": "6a46c8eb2e07dd3531f9d54a05aea60066dc54c9ee44ad562340c8c3e9153c97",
-        "src/tasks.ts": "38d7b300ad3eb2062523b1f6490d0a4038121d85212ffb74c4049976a7d5c1a0",
+        "src/task-service.ts": "d99e375f328e991bbfa155e834dfbe1770ea5e924e64e5124a22b38f2e077e32",
+        "src/tasks.ts": "93e742a6f89d6e76d77f069af2891dae2307a4019f5c28ee3465d8c5f6d1174c",
         "src/uploads.ts": "1a688d5c450b6b189aa0bb3a1cf904ed32cc2bc17eeb9fd4fd4cdfbc8025d4ef",
         "src/user-authority.ts": "6afbaf0a750d3bd4a2cd1bd2b36ff3bf61f132264a8dd09794d25919a56cb266",
         "src/worker.ts": "d8dfa9d7e0c36eae0d604951dd8dd4a725c4b98ce4f1cad50cfe7d810a1e0e8c",
         "src/workflow-control.ts": "4a19b3200d42effc9a8eef5b5a76f555a7ee67f9c721d147238b36c28fac4f45",
-        "src/workspaces.ts": "b5629179aaf1467099be9b562cb622daf8f4d087597954b3f6c29a5dfef49dac",
+        "src/workspaces.ts": "31ce4034624d64d7fe0cb67f8d520f2286f1d9c8a2218eaa5c0102adfd6091ac",
         "tests/admin-accounts.test.ts": "fd93203e5819aca586db0b23989c22d9714d55d7b97d65dd626264d513c72900",
-        "tests/admin-directory.test.ts": "b0ba453e411fb092e79a42046b1c0efdb68e8ec98b4dc28588e4589fedeb214a",
+        "tests/admin-billing.test.ts": "a31a30edd5f302b33fb5a62dba726ba51252c1efde351f0cecf069cd71e51235",
+        "tests/admin-directory.test.ts": "aeaee21a2c1dd65466fc1502134b77834c6e8af5a4d2a7d85c92434c0fa20563",
         "tests/admin-identities.test.ts": "c690768980fa64f2c750aaf9c84b70e8721e4f791e590d8db6bf9f3c2d3d20af",
         "tests/admin-memberships.test.ts": "79ec8197be92495aa80f689f8fba584b9ffb7e9980b1bc835a0f38b83fdec758",
         "tests/agent-templates.test.ts": "59e215cef0980ede979c743bebae23f72c9138200c2f20a5dcca006ba1f65b0d",
@@ -682,8 +689,8 @@
         "tests/federation.test.ts": "3ea83673701d141c6f6feb3eaca2861784898e76e7ec41a2a8ac9bcf42edaea6",
         "tests/helpers/oidc-idp.ts": "96983a2a55f9576ca2ed255bef3ac51366150192c1566f0388b46c4ec1aa1836",
         "tests/membership.test.ts": "8d7725fc7b3eaba3dbb31883573cbece5ef93c4d30852ca280f9b7b534cdf375",
-        "tests/migrations.test.ts": "b9dc1a1d80c8a2aa64cb8f5d8293c8eac265ac61514e8982dd41a05ff984989e",
-        "tests/native-test-environment.ts": "311f925fa8c637885a304b22adc4151213147634c76bfe493d271048c890dacc",
+        "tests/migrations.test.ts": "144a666a980ca82699c74f3bf179dfd1ea7b9b9daa6cdeae491ea0050d144af0",
+        "tests/native-test-environment.ts": "f4d106750fbc28a6e6b14ded4aec462649c11674eb29d982f565bc475a038230",
         "tests/notifications.test.ts": "dac47a41560a6182758360a6f30f5a287f28d592ee3fa353024bf2652234e763",
         "tests/persistent-work.test.ts": "b959b6d6eb9a672c38add771349f54a1adc0ad7ae6f33fa64ab6062f4acbfa7e",
         "tests/platform.test.ts": "be9a180c12f5899ad363c857a6fe99bffc1ab1c6f0cad00370e3812f0ba2b448",
@@ -1068,11 +1075,11 @@
     },
     {
       "name": "copypaste-delivery",
-      "head": "ba3fc07d4a7d6aec9a29e65fffa06ad04336db23",
+      "head": "d7d03b670818a9a97527c5cb33b74c919f613ea3",
       "dirty": false,
       "source_hashes": {
         "README.en.md": "34b549c86d6af25a58c048119fa121f5bcd825d0b41d4771cca9efa71265470a",
-        "README.md": "4421b121707626cd70952d49ca0cbb5e280df4b5a012fa74bcb1a177f3322d77",
+        "README.md": "164042f2a09ca61a13fe2ed137a3a2826e4dd312bb5d8bd95c85983724bdb1de",
         "THIRD_PARTY_NOTICES.md": "6c64c50fb20d9a9756db020d15ed5607aec70a08208c82ba58932385eabe3f22",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/design-pdf-export.png": "dc28fb1af46f904f6ee799d0318ad368001a95ccd6696c404715e1c2e9694bdf",
@@ -1082,6 +1089,8 @@
         "evidence/admin-account-contract-samples.json": "11715fd58b0b16f6b2b42d585dca4ecd42107ef03934c42087cb01852a1faf73",
         "evidence/admin-account-ui.json": "c5a4aed461fc8bb1e8897192b7c9076c9b638ad3e61e9a4d290f3b7230f0a2c1",
         "evidence/admin-account-wire.json": "8f806a540ad4f121b69676556f1669ba234cc39eac91f223cf65d2203c7b4fb1",
+        "evidence/admin-billing-contract-samples.json": "0b111cf1a0e3cbf90187fb76b5f5b91cbdab150f44ec89a7d5e5c7729deaeef9",
+        "evidence/admin-billing-wire.json": "19135040df3a1dd60de8e8b40283a0bb1d834a159ce1df39b44f1c6a27e1b0aa",
         "evidence/admin-directory-contract-samples.json": "9ccb1f8b5ed61df5df09adc1693b9b9a53211e00bfc877e119d34ec52f29285a",
         "evidence/admin-directory-ui.json": "bef0915285108a158b314b8ecdf354b8144788146ac04439c73cb404cf2ac372",
         "evidence/admin-identities.json": "450bf2606f7debfaa80614471a930492536bc962c0037efb176bc247ded27942",
@@ -1095,7 +1104,7 @@
         "evidence/agent-templates-contract-samples.json": "2ad20cf3784cf00cb25332c4a6bb2aa13b8257d3e12a1cfff6ed442e7c6c1e86",
         "evidence/agent-templates.json": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
         "evidence/alignment-desktop.json": "ff06ef0ef7055513dfc0f627b7eec9a2f5d8e5230978bddba3682ef172969b81",
-        "evidence/alignment-platform.json": "b1ed4ae868b5120671c7aedf05ba02780c321fbda9f7cd562ad8e194702d41d3",
+        "evidence/alignment-platform.json": "a935fc8208a22dca13c494bc4a72c20ff0a8c26115fd25bf68443df7fdd5c00b",
         "evidence/alignment.json": "3554e721940576080a0f6e01a9f2a230a87a75ef3c97c1d934999f7c1091a2d0",
         "evidence/analysis-index-backfill.json": "422e7b934edccf8d785c6f6478316aeec3edd9da7b6ae381203dac7771fe73dc",
         "evidence/analysis-reports-contract-samples.json": "30cf0a67f891a9b9def12d8f98ee89b6951a58019aad99c7eee930c7c1bd0ddc",
@@ -1132,13 +1141,18 @@
         "evidence/auth-recovery-open-issue.json": "0477456f3bb51e711c65040971db88151872096efa35b963cf1bc79a49ea9bce",
         "evidence/auth-recovery-owned-browser-cleanup.json": "2611979fb7bd210664e4395568edddf4953dd00f4e5163ff7b2cadb0ad0e639c",
         "evidence/auth-recovery.json": "5c48618f1fcb2bc12343856f4a88d232daf7f2b1b7f6d054d2d7f405279ccc78",
+        "evidence/billing-accounts-before-migration.json": "4381730725fd2060d86f870787d9e5e389fa4dbb7079604b4f3dd527d226850a",
+        "evidence/billing-accounts-before-runner-repair/alignment-platform.json": "9444cb457ea70a0c5c44f6b66198d9b932f88f39a46d2b89c9caf0fb411fb2e8",
+        "evidence/billing-accounts-before-runner-repair/archive-map.json": "1b89bec9eda5f0cd4829cb376fc9659021bd6939281f881a0ef265b4dc1304aa",
+        "evidence/billing-accounts-live-migration.json": "10d361b5dc8f12b66819d2f57909780d7eb1ee76f622c22f7939d66feebe710c",
+        "evidence/billing-accounts-migration-initial.json": "ae8f2467f328175be1125bd8cd75796f8c81db20d4da0bfa379eda0d330672e8",
         "evidence/billing-existing-state-before-migration.json": "1aa148d6139547dd1dd4043ac1e530ecf53cea11dec5d831711bfae3d1fccd03",
         "evidence/billing-initial-checkout-failure.json": "c5b829d2046a8c1846659cd1b71e2e4d3040042190e48dbd4734868c42fae3b9",
         "evidence/billing-live-migration.json": "6a05e97b48093b9f71a4c03a62001e1962f83c5d5f77d166d77cad375a32afdd",
         "evidence/billing-runtime-alias-recovery.json": "37bf22b9af974237363e63af31cd10155eed912586170c58862f82476fdf60e6",
         "evidence/billing-runtime-stable-alias.json": "d58c79b193d4fd7bfbcf4f7702a76039666665a9d8b14c2e4e02027eb81c7ce6",
         "evidence/billing-sources-initial.json": "7e0811d5b5352626f0b99e73c5202e1946f682eae0875a76da91b4dfe572a9d1",
-        "evidence/byte-integrity.json": "c7bdef7029b8faf8808e2d9f0681085984665c40c4e44d5c957db5334514564e",
+        "evidence/byte-integrity.json": "94dc54e78e46809020a79cd627dc3fdcab3d627affdef0b0ee4197ca107b0807",
         "evidence/cloud-files-contract-samples.json": "25a282a0555568288577f6d5b2d80a6769619b62fa69865fa4745a67304d9505",
         "evidence/cloud-files.json": "cd28c3f8a0ef68ef97cc96de124e072ed7fd83ccd45e40d563b988a0daeeaf1a",
         "evidence/default-assistant.json": "7f9ee69caba3af61d737064ed2ec2e2ad7f95243cf5bd446aed31046057c2d74",
@@ -1185,6 +1199,9 @@
         "evidence/notifications.json": "4514cb96a9af98fff4227ac99ab6904b6845a2e32eb7517ee28f9a68df032ff3",
         "evidence/packaged-windows.json": "7d12a4dd06de1bbfff66a5c3cc56b7778718a7805cf3e5250ea764ac99a155c7",
         "evidence/persistent-work.json": "8f1d9cd6e12aace38d8558317621062a6f071bc22a6bfb96f45c7df47ef38b1e",
+        "evidence/pre-billing-accounts/alignment-platform.json": "b1ed4ae868b5120671c7aedf05ba02780c321fbda9f7cd562ad8e194702d41d3",
+        "evidence/pre-billing-accounts/archive-map.json": "fe89f43e5ea8f2956f7aae5fdc6efe96c44768349fe13e58cfc6cee1d6d1485a",
+        "evidence/pre-billing-accounts/byte-integrity.json": "c7bdef7029b8faf8808e2d9f0681085984665c40c4e44d5c957db5334514564e",
         "evidence/pre-billing-sources/alignment-platform.json": "08800e1a683376accd77a3bd4142dcbc24ccde6c97369f6dc40e3b888442fc15",
         "evidence/pre-billing-sources/archive-map.json": "e78f2442a4b7bbba0d8925c90a0f34b22f63cf6707030988a89c46c7b3805f1d",
         "evidence/pre-billing-sources/byte-integrity.json": "222e26af51abdc12710493a9ca8d733823636619e298c71680d373d95dac4be4",
@@ -1279,13 +1296,14 @@
         "evidence/workbook-interop-first-unicode-failure.json": "b2b9143f7a07af0137ba0328c534d78c2b7af653d2a114d14b45c11c783054ed",
         "evidence/workbook-interop.json": "e53a4cd6fae4d1e0a3495003063c3ca838adaa9c38ff4867b1696229f78b770c",
         "package-lock.json": "91aaa1457fa9f6aa0dd6773199c45ddc0770ffa67d5e890bc379675bb3230c51",
-        "package.json": "c88403169d59c2181eb1ffb54a57cb02d61e4f040fc347f65536466517ca88c9",
+        "package.json": "55256c05fb5266fc3492cefe32980fcb935f2ab72e336c846edb336d30147097",
         "scripts/bootstrap.mjs": "73ff72865ff6d15e4cf3e1ab1c862b14d42656e8ccf098bf58c0ccb2ed399332",
         "scripts/dev.mjs": "74484c7cfe37169743638cea120936cb85279f55d54760713214780927c00a0d",
         "scripts/native-surface-integrity.mjs": "c03e9e93f514665fb8532d8932b5b91ce0b80b380ec7950df9856d99f14a7470",
         "scripts/package-native-surfaces.mjs": "136bef196b30d2255265850e0961975dc8fc0133af768932fb3ee543b8e346d0",
         "scripts/qa-admin-account-ui.ts": "ecab5a17303eeb715a0ce404f3bded4e2b8e9043a1ad3dab55102858930994dc",
         "scripts/qa-admin-account-wire.ts": "3f42c5e346e0b25f1986ed325df84fd5f6de0e27e2fdbd9e6bd77bc94b471448",
+        "scripts/qa-admin-billing-wire.ts": "e8fea851f33c893e1bc08d353a3471222a6285ddaf707160af8937857efc6f11",
         "scripts/qa-admin-directory-ui.ts": "7f8300f1e0dbdc34040406d545d0df0b884aeaea354a448c54f0b2893d3d5892",
         "scripts/qa-admin-identities.ts": "22e3a6e4bd6101addbba8d7dfab11b64c560a3a871fa233f8eeb370b1ba825fc",
         "scripts/qa-admin-membership-wire.ts": "bc5549647ad147b931cdcd5623b26f85f0ca1e3fac161a746cccd0598c469650",
@@ -1297,6 +1315,7 @@
         "scripts/qa-auth-browser-readiness.mjs": "1adcfa04c84d896f5b7112b292dfcc6fa2509049d99230519752f66f9dcc0818",
         "scripts/qa-auth-navigation.ts": "dfff3513182d377d7e5812896e41d53c6d1e5ac68965a567d2c6e1e50676e64b",
         "scripts/qa-auth.ts": "b0f33e1dcfa0729bc7381fff384af682d9cd65eb516ae8f48b829c346b582c5b",
+        "scripts/qa-billing-account-migration.mjs": "f6fe11ee1e2e4729d4c50cc76ab33065994715b56b61e76206e62db9c9a7cf14",
         "scripts/qa-byte-integrity.ts": "22453c003ef0738802799145034c7be175e02b3b13aae931e9f3ebcf5b49e79c",
         "scripts/qa-campaign-workbook.ts": "85ec31839df634b30c9356074f9c451ddd966db6b8d9178c954fa129197f7dd1",
         "scripts/qa-cloud-files.ts": "57946f33d40d923c51ce3ed20c7f7f37e901960fb9550d994a5c96ce24479254",
@@ -1337,13 +1356,13 @@
   "evidence": {
     "platform_regression": {
       "path": "dev/copypaste-delivery/evidence/alignment-platform.json",
-      "sha256": "b1ed4ae868b5120671c7aedf05ba02780c321fbda9f7cd562ad8e194702d41d3",
-      "at": "2026-10-19T20:31:14.286Z",
+      "sha256": "a935fc8208a22dca13c494bc4a72c20ff0a8c26115fd25bf68443df7fdd5c00b",
+      "at": "2026-10-19T21:33:44.028Z",
       "checks": [],
       "scope": "Current source regression, including real native PostgreSQL, controlled adapters and real Codex with synthetic model dependencies; not all 102 acceptance cases or live role qualification",
       "counts": {
-        "tests": 268,
-        "pass": 268,
+        "tests": 277,
+        "pass": 277,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0,
@@ -1351,7 +1370,7 @@
       },
       "raw_report": {
         "path": "dev/copypaste-delivery/evidence/alignment-platform.tap",
-        "sha256": "b84f9f9d594615f3ffc92d8926ed6f3d221ca221e3daeb5dda3667034be6d340"
+        "sha256": "4fe6d46f99a2c8483700feec0aaad1537f0a1d4b7140fec7521501ff7314cd8c"
       }
     },
     "billing_migration": {
@@ -1360,6 +1379,41 @@
       "at": "2026-10-19T20:33:54.783Z",
       "checks": [],
       "scope": "Both existing native database migration ledgers and unchanged read-only wallet aggregates; not a historical row-by-row provenance reconstruction."
+    },
+    "billing_accounts_migration": {
+      "path": "dev/copypaste-delivery/evidence/billing-accounts-live-migration.json",
+      "sha256": "10d361b5dc8f12b66819d2f57909780d7eb1ee76f622c22f7939d66feebe710c",
+      "at": "2026-10-19T21:28:59.275Z",
+      "checks": [],
+      "scope": "Existing local native database migration and recorded financial identities; no external payment or full billing/VIP acceptance"
+    },
+    "admin_billing_wire": {
+      "path": "dev/copypaste-delivery/evidence/admin-billing-wire.json",
+      "sha256": "19135040df3a1dd60de8e8b40283a0bb1d834a159ce1df39b44f1c6a27e1b0aa",
+      "at": "2026-10-19T21:32:21.891Z",
+      "checks": [
+        {
+          "name": "real canonical user email session and owned administrator email/TOTP session on the restarted current API",
+          "status": "passed"
+        },
+        {
+          "name": "strict canonical personal account/list reads expose the true current-mode subject and retain Admin versus user isolation",
+          "status": "passed"
+        },
+        {
+          "name": "actual internal fixture funding and settlement produce persistent actor/operation/source identities while enterprise finance excludes personal consumption; models and external payments are not called",
+          "status": "passed"
+        },
+        {
+          "name": "signed account pagination rejects changed subject filters, unsupported workflows reject payer selection and the real browser CORS preflight admits the supported header",
+          "status": "passed"
+        },
+        {
+          "name": "the five fixture schemas retain the original OpenAPI bytes and current MFA is rechecked even for known financial accounts",
+          "status": "passed"
+        }
+      ],
+      "scope": "Current local HTTP canonical billing reads with synthetic internal financial fixtures; not a fee/payment/VIP command, browser, native or production acceptance"
     },
     "native_runtime_alias": {
       "path": "dev/copypaste-delivery/evidence/billing-runtime-stable-alias.json",
@@ -2164,11 +2218,11 @@
     },
     "checkout_integrity": {
       "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
-      "sha256": "c7bdef7029b8faf8808e2d9f0681085984665c40c4e44d5c957db5334514564e",
-      "at": "2026-10-19T20:43:01.560Z",
+      "sha256": "94dc54e78e46809020a79cd627dc3fdcab3d627affdef0b0ee4197ca107b0807",
+      "at": "2026-10-19T21:42:18.678Z",
       "checks": [
         {
-          "name": "fresh independent Git clone preserves all 41 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
+          "name": "fresh independent Git clone preserves all 44 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
           "status": "passed"
         },
         {
@@ -2184,7 +2238,7 @@
           "status": "passed"
         },
         {
-          "name": "fresh delivery clone preserves raw 268-test TAP bytes and its recorded SHA-256",
+          "name": "fresh delivery clone preserves raw 277-test TAP bytes and its recorded SHA-256",
           "status": "passed"
         }
       ],
@@ -2192,8 +2246,8 @@
     },
     "runtime_schemas": {
       "path": "docs/quality/runtime-contract-samples.json",
-      "sha256": "2c26d31526ff8bab4246de1594371cb66e527f0375974a983ac0e6ee86843b6d",
-      "at": "2026-10-19T20:29:16.814357+00:00",
+      "sha256": "364bca4dd8dc938550c321eeca6ead7e717029f81de09fbf3049997fd75f8b3c",
+      "at": "2026-10-19T21:34:46.388377+00:00",
       "checks": [
         {
           "source": "cloud-files-contract-samples.json",
@@ -2635,14 +2689,70 @@
           "schema": "AdminUserList",
           "status": "passed",
           "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 1,
+          "schema": "AdminBillingAccountList",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 2,
+          "schema": "AdminBillingAccount",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 3,
+          "schema": "AdminBillingAccountList",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 4,
+          "schema": "AdminLedgerEntryList",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 5,
+          "schema": "AdminBillingAccount",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 6,
+          "schema": "AdminLedgerEntryList",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 7,
+          "schema": "AdminBillingAccountList",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-billing-contract-samples.json",
+          "sample": 8,
+          "schema": "AdminBillingAccountList",
+          "status": "passed",
+          "errors": []
         }
       ],
       "scope": "Captured canonical User/Invite/Member/AdminOperation/AdminUserList/AdminUserDetail/AdminTenantList and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance"
     },
     "documentation": {
       "path": "docs/quality/validation-report.json",
-      "sha256": "1ad11ebf5f33c058f753fde30b4090ff6b2b6e7397a46a51262014a65b7d6dff",
-      "at": "2026-10-19T20:41:46.670437+00:00",
+      "sha256": "fa4810e280147748499eca943a328d68cbeb631b51e30f48f44146e89a2b37e3",
+      "at": "2026-10-19T21:40:37.935647+00:00",
       "checks": [],
       "scope": "documentation_contracts_and_recorded_design_evidence_only"
     }
@@ -2669,8 +2779,8 @@
   ],
   "contract_alignment": {
     "contract_operations": 225,
-    "implemented_operations": 275,
-    "unmatched_contract_method_paths": 148,
+    "implemented_operations": 279,
+    "unmatched_contract_method_paths": 145,
     "limit": "Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.",
     "operations": [
       {
@@ -3783,21 +3893,21 @@
         "method": "GET",
         "path": "/v1/admin/billing/accounts",
         "operation_id": "listAdminBillingAccounts",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "GET",
         "path": "/v1/admin/billing/accounts/{account_id}",
         "operation_id": "getAdminBillingAccount",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "GET",
         "path": "/v1/admin/billing/accounts/{account_id}/ledger",
         "operation_id": "listAdminLedgerEntries",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -5306,6 +5416,8 @@
         "dev/copypaste-platform/src/billing.ts"
       ],
       "acceptance_evidence": [
+        "admin_billing_wire",
+        "billing_accounts_migration",
         "billing_migration",
         "desktop",
         "extension",
@@ -5319,6 +5431,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有工具/任务事件；attempt、step、trace 和用户可读失败定位与契约不一致。",
       "verified_repairs": [
+        {
+          "cluster": "billing_subjects_and_events",
+          "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "billing_accounts_migration",
+            "admin_billing_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/40-billing-subjects-and-financial-event-provenance.md"
+          ]
+        },
         {
           "cluster": "billing_settlement_sources",
           "verified_subflow": "授信预留后的后续充值/赠送按真实可用批次结算，保留其他任务冻结；BigInt 累计余额、实际债务偿还和信用下限；新扣费来源与还款事实不可变、企业隔离并在数据库提交时校验来源合计；仅账务内核专项，不含完整规范付款/费用/VIP流程或历史来源补造。",
@@ -7231,9 +7356,11 @@
         "dev/copypaste-platform/src/billing.ts"
       ],
       "acceptance_evidence": [
+        "admin_billing_wire",
         "admin_task_inputs",
         "analysis_index",
         "analysis_reports",
+        "billing_accounts_migration",
         "billing_migration",
         "cloud_files",
         "default_assistant",
@@ -7254,6 +7381,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有整数账本、预留与对账；需覆盖新增并行/媒体/本地路径的竞争与未知费用。",
       "verified_repairs": [
+        {
+          "cluster": "billing_subjects_and_events",
+          "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "billing_accounts_migration",
+            "admin_billing_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/40-billing-subjects-and-financial-event-provenance.md"
+          ]
+        },
         {
           "cluster": "billing_settlement_sources",
           "verified_subflow": "授信预留后的后续充值/赠送按真实可用批次结算，保留其他任务冻结；BigInt 累计余额、实际债务偿还和信用下限；新扣费来源与还款事实不可变、企业隔离并在数据库提交时校验来源合计；仅账务内核专项，不含完整规范付款/费用/VIP流程或历史来源补造。",
@@ -10051,7 +10191,9 @@
         "dev/copypaste-platform/src/plans.ts"
       ],
       "acceptance_evidence": [
+        "admin_billing_wire",
         "admin_directory_ui",
+        "billing_accounts_migration",
         "billing_migration",
         "cloud_files",
         "native_runtime_alias",
@@ -10062,6 +10204,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有用量/账本；多维钻取、能力/任务/来源去重与未知成本展示仍不足。",
       "verified_repairs": [
+        {
+          "cluster": "billing_subjects_and_events",
+          "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "billing_accounts_migration",
+            "admin_billing_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/40-billing-subjects-and-financial-event-provenance.md"
+          ]
+        },
         {
           "cluster": "billing_settlement_sources",
           "verified_subflow": "授信预留后的后续充值/赠送按真实可用批次结算，保留其他任务冻结；BigInt 累计余额、实际债务偿还和信用下限；新扣费来源与还款事实不可变、企业隔离并在数据库提交时校验来源合计；仅账务内核专项，不含完整规范付款/费用/VIP流程或历史来源补造。",
@@ -10118,15 +10273,31 @@
         "dev/copypaste-platform/src/plans.ts"
       ],
       "acceptance_evidence": [
+        "admin_billing_wire",
+        "billing_accounts_migration",
         "billing_migration",
         "cloud_files",
         "native_runtime_alias",
         "platform_regression",
+        "runtime_schemas",
         "web_admin"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有人工财务预览/提交；限时额度、扣回、来源退款和全场景幂等需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "billing_subjects_and_events",
+          "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "billing_accounts_migration",
+            "admin_billing_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/40-billing-subjects-and-financial-event-provenance.md"
+          ]
+        },
         {
           "cluster": "billing_settlement_sources",
           "verified_subflow": "授信预留后的后续充值/赠送按真实可用批次结算，保留其他任务冻结；BigInt 累计余额、实际债务偿还和信用下限；新扣费来源与还款事实不可变、企业隔离并在数据库提交时校验来源合计；仅账务内核专项，不含完整规范付款/费用/VIP流程或历史来源补造。",
@@ -10941,13 +11112,29 @@
         "dev/copypaste-platform/src/plans.ts"
       ],
       "acceptance_evidence": [
+        "admin_billing_wire",
+        "billing_accounts_migration",
         "billing_migration",
         "native_runtime_alias",
-        "platform_regression"
+        "platform_regression",
+        "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有付款引用与退款约束；实际财务对账 UI、补偿分录及累计可退需全面验收。",
       "verified_repairs": [
+        {
+          "cluster": "billing_subjects_and_events",
+          "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "billing_accounts_migration",
+            "admin_billing_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/40-billing-subjects-and-financial-event-provenance.md"
+          ]
+        },
         {
           "cluster": "billing_settlement_sources",
           "verified_subflow": "授信预留后的后续充值/赠送按真实可用批次结算，保留其他任务冻结；BigInt 累计余额、实际债务偿还和信用下限；新扣费来源与还款事实不可变、企业隔离并在数据库提交时校验来源合计；仅账务内核专项，不含完整规范付款/费用/VIP流程或历史来源补造。",

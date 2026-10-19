@@ -152,3 +152,5 @@ Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新�
 规范后台成员变更、管理暂停、当前范围与 MFA、独立审批和不可变策略快照见 [Admin 成员控制](technical/36-admin-membership-control-and-policy-snapshots.md)。用户端严格 Member 契约保持不变；历史未记录策略的操作不补造 UUID。当前页面验收与安装包更新仍待完成。
 
 后充值任务结算、实付/赠送/授信来源、实际债务偿还、信用下限和数据库不可变金额校验见 [授信与结算来源](technical/39-billing-credit-and-settlement-provenance.md)。此增量不关闭完整规范费用/VIP 和真实收款对账验收。
+
+真实个人/企业账户、任务付款快照、不可变账务操作者/事件、规范账户和账本读取、完整财务范围拒绝规则见 [账户主体与账务事件](technical/40-billing-subjects-and-financial-event-provenance.md)。所有工作流的付款选择、费用写入与完整 VIP 交付仍依原始契约推进。

@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('billing_subjects_and_events', [11,46,86,87,101],
+     '真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。',
+     ['platform_regression','billing_accounts_migration','admin_billing_wire','runtime_schemas'], ['technical/40-billing-subjects-and-financial-event-provenance.md']),
     ('billing_settlement_sources', [11,46,86,87,101],
      '授信预留后的后续充值/赠送按真实可用批次结算，保留其他任务冻结；BigInt 累计余额、实际债务偿还和信用下限；新扣费来源与还款事实不可变、企业隔离并在数据库提交时校验来源合计；仅账务内核专项，不含完整规范付款/费用/VIP流程或历史来源补造。',
      ['platform_regression','billing_migration','native_runtime_alias'], ['technical/39-billing-credit-and-settlement-provenance.md']),
@@ -213,6 +216,8 @@ def main():
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
         'billing_migration': DEV/'copypaste-delivery/evidence/billing-live-migration.json',
+        'billing_accounts_migration': DEV/'copypaste-delivery/evidence/billing-accounts-live-migration.json',
+        'admin_billing_wire': DEV/'copypaste-delivery/evidence/admin-billing-wire.json',
         'native_runtime_alias': DEV/'copypaste-delivery/evidence/billing-runtime-stable-alias.json',
         'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
         'admin_directory_ui': DEV/'copypaste-delivery/evidence/admin-directory-ui.json',
@@ -265,6 +270,19 @@ def main():
                 assert database['migration'] == 41 and database['migration_sha256'] == expected_digest
                 assert database['checksum_matches'] is True and database['unchanged_wallet_aggregates'] is True
                 assert database['missing_source_count'] == '0' and database['debt_above_credit_limit_count'] == '0'
+        if key == 'billing_accounts_migration':
+            before = load(DEV/'copypaste-delivery/evidence/billing-accounts-before-migration.json')
+            assert {d['database'] for d in report['databases']} == {'copypaste','copypaste_test'}
+            for database in report['databases']:
+                prior = next(d for d in before['databases'] if d['database'] == database['database'])
+                assert prior['migration'] == 41 and database['migration'] == 44
+                assert database['history'] == prior['history']
+                assert database['checksums_match'] is True and database['original_enterprise_facts_unchanged'] is True
+                assert database['personal_accounts_initially_unfunded'] is True
+                assert int(database['counts']['personal_accounts']) == 2 * int(database['counts']['users'])
+        if key == 'admin_billing_wire':
+            assert len(checks) == 5 and report['model_calls'] == 0 and report['external_payments'] == 0
+            assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
         if 'browser_closed' in report:
             assert report['browser_closed'] is True
         if 'desktop_closed' in report:
