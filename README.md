@@ -149,4 +149,20 @@ Submit an explicit file prerequisite, then search and select a current version t
 
 ![会话撤销后侧栏业务页面](assets/screenshots/11-session-revoked.png)
 
-`npm test` 有 10 组会话竞争/故障测试；交付仓库 `qa:sessions` 使用真实 MV3 与 identity PKCE 验证远端撤销和过期访问退出。本次业务测试用独立 MV3 文档，不替代原生 SIDE_PANEL 出现模式专项。原侧栏预览 ZIP 保留原清单，未包含本轮修复。
+此前 `npm test` 有 10 组会话竞争/故障测试；交付仓库 `qa:sessions` 使用真实 MV3 与 identity PKCE 验证远端撤销和过期访问退出。本次业务测试用独立 MV3 文档，不替代原生 SIDE_PANEL 出现模式专项。原侧栏预览 ZIP 保留原清单，未包含本轮修复。
+
+## 规范认证与多侧栏 / Canonical authentication and multiple panels
+
+首次 S256 交换和刷新使用规范 token 接口；首次未知响应最多同标识重试一次，刷新标识随受信 session 存储持久保存。同一身份的刷新不重载工作区；新登录清理旧账号、任务、项目及文件状态后自动更新所有已打开侧栏。旧账号迟到的未授权回执不能清除后来账号。
+
+Canonical code exchange and refresh preserve request identities across unknown replies. Accepting a new sign-in updates every existing panel; ordinary rotation retains the local identity epoch. View revisions are checked before processing errors, so an old unauthorized response cannot clear a replacement account. Delivery exercises two actual MV3 documents and a different-account replacement; the native SIDE_PANEL appearance has its own separate verification.
+
+![已打开侧栏自动载入新账号 / Existing panel after account replacement](assets/screenshots/12-account-replacement.png)
+
+The historical Side Panel ZIP retains its original manifest and does not include these source changes.
+
+当前 `npm test` **19/19**，包含十五组会话竞争/持久化边界与四组首次交换重试检查。 / Current native tests: **19/19**, including fifteen session and four initial-exchange checks.
+
+最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
+
+Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.

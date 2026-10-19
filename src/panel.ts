@@ -12,6 +12,8 @@ let dependencyRevision = 0,
   dependencyFingerprint = "";
 let taskDrawRevision = 0;
 let taskVersion = 0;
+let startFlow: Promise<void> | null = null;
+class WorkspaceChanged extends Error {}
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
 function clearTask() {
   taskDrawRevision++;
@@ -29,36 +31,32 @@ function clearTask() {
 async function send(type: string, body: Record<string, unknown> = {}) {
   const revision = workspaceRevision;
   const r = await chrome.runtime.sendMessage({ type, ...body });
+  if (
+    ["API", "UPLOAD", "STATUS"].includes(type) &&
+    revision !== workspaceRevision
+  )
+    throw new WorkspaceChanged("Workspace changed");
   if (!r?.ok) {
+    if (r?.code === "AUTH_CHANGED")
+      throw new WorkspaceChanged("Sign-in state changed");
     if (r?.code === "AUTH_REQUIRED") resetSignedOut();
     throw new Error(
       r?.code === "AUTH_REQUIRED"
         ? tr("登入已失效，請重新登入。", "Your session ended. Sign in again.")
-        : r?.code === "AUTH_CHANGED"
+        : r?.code === "AUTH_UNAVAILABLE"
           ? tr(
-              "登入狀態已變更，請重新載入。",
-              "Sign-in state changed. Reload this view.",
+              "暫時無法更新登入狀態，請稍後再試。",
+              "Sign-in could not be refreshed. Try again shortly.",
             )
-          : r?.code === "AUTH_UNAVAILABLE"
-            ? tr(
-                "暫時無法更新登入狀態，請稍後再試。",
-                "Sign-in could not be refreshed. Try again shortly.",
-              )
-            : (r?.error ?? "Extension unavailable"),
+          : (r?.error ?? "Extension unavailable"),
     );
   }
-  if (["API", "UPLOAD"].includes(type) && revision !== workspaceRevision)
-    throw new Error(
-      tr(
-        "工作空間已變更，請重新載入。",
-        "Workspace changed. Reload this view.",
-      ),
-    );
   return r.data;
 }
 function resetSignedOut() {
   ++workspaceRevision;
   ++notificationRevision;
+  startFlow = null;
   clearTask();
   if (notificationTimer) clearInterval(notificationTimer);
   notificationTimer = undefined;
@@ -79,10 +77,25 @@ function resetSignedOut() {
   localFile = null;
   localGrants = [];
   $("folder-browser").hidden = true;
+  $("error").replaceChildren();
+  $("error").hidden = true;
 }
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "session" && changes.tokens && !changes.tokens.newValue)
+  if (area !== "session" || !changes.tokens) return;
+  const previous = changes.tokens.oldValue as
+      | { session_epoch?: string; access_token?: string }
+      | undefined,
+    next = changes.tokens.newValue as
+      | { session_epoch?: string; access_token?: string }
+      | undefined;
+  if (!next) resetSignedOut();
+  else if (
+    (!previous || previous.session_epoch !== next.session_epoch) &&
+    previous?.access_token !== next.access_token
+  ) {
     resetSignedOut();
+    void run(start);
+  }
 });
 const request = (
   path: string,
@@ -99,7 +112,7 @@ async function run(fn: () => Promise<void>) {
   try {
     await fn();
   } catch (e) {
-    showError(e);
+    if (!(e instanceof WorkspaceChanged)) showError(e);
   }
 }
 function option(
@@ -117,7 +130,18 @@ function option(
   );
   if (items.some((i) => i.value === value)) select.value = value;
 }
-async function start() {
+function start(): Promise<void> {
+  if (startFlow) return startFlow;
+  const current = populateWorkspace();
+  startFlow = current;
+  void current
+    .finally(() => {
+      if (startFlow === current) startFlow = null;
+    })
+    .catch(() => {});
+  return current;
+}
+async function populateWorkspace() {
   const revision = ++workspaceRevision;
   clearTask();
   if (notificationTimer) clearInterval(notificationTimer);

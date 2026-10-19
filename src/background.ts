@@ -4,6 +4,7 @@ import {
   NativeSessionError,
   type NativeTokens,
 } from "./native-session.js";
+import { exchangeNativeCode } from "./native-code.js";
 let loginFlow: Promise<{ ok: boolean }> | null = null;
 const safePath = (path: unknown) => {
   if (
@@ -23,15 +24,24 @@ const bytes = (b: ArrayBuffer) =>
     .replaceAll("/", "_")
     .replaceAll("=", "");
 const random = () => bytes(crypto.getRandomValues(new Uint8Array(32)).buffer);
-async function nativeAuth(action: "refresh" | "revoke", refreshToken: string) {
+async function nativeAuth(
+  action: "refresh" | "revoke",
+  refreshToken: string,
+  requestId?: string,
+) {
   const response = await fetch(
-    settings.apiOrigin + "/v1/auth/native/" + action,
+    settings.apiOrigin +
+      (action === "refresh" ? "/v1/auth/token" : "/v1/auth/native/revoke"),
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(requestId ? { "Idempotency-Key": requestId } : {}),
+      },
       body: JSON.stringify({
         client_id: "extension",
         refresh_token: refreshToken,
+        ...(action === "refresh" ? { grant_type: "refresh_token" } : {}),
       }),
       redirect: "error",
       signal: AbortSignal.timeout(20000),
@@ -51,7 +61,8 @@ const nativeSession = new NativeSession({
     if (tokens) await chrome.storage.session.set({ tokens });
     else await chrome.storage.session.remove("tokens");
   },
-  renew: (refreshToken) => nativeAuth("refresh", refreshToken),
+  renew: (refreshToken, requestId) =>
+    nativeAuth("refresh", refreshToken, requestId),
   revoke: async (refreshToken) => {
     await nativeAuth("revoke", refreshToken);
   },
@@ -75,6 +86,7 @@ async function performLogin() {
     client_id: "extension",
     redirect_uri: redirect,
     code_challenge: challenge,
+    code_challenge_method: "S256",
     state,
   }).toString();
   const returned = await chrome.identity.launchWebAuthFlow({
@@ -90,23 +102,17 @@ async function performLogin() {
     throw new Error("Authorization state mismatch");
   const code = callback.searchParams.get("code");
   if (!code) throw new Error("No authorization code");
-  const response = await fetch(settings.apiOrigin + "/v1/auth/native/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
+  const response = await exchangeNativeCode(
+    settings.apiOrigin + "/v1/auth/token",
+    {
       client_id: "extension",
+      grant_type: "authorization_code",
       redirect_uri: redirect,
       code,
       code_verifier: verifier,
-    }),
-    redirect: "error",
-    signal: AbortSignal.timeout(20000),
-  });
-  if (!response.ok)
-    throw new Error(
-      "Unable to authorize this extension. Check its registered ID.",
-    );
-  await nativeSession.acceptLogin(await response.json(), ticket);
+    },
+  );
+  await nativeSession.acceptLogin(response, ticket);
   return { ok: true };
 }
 async function request(
