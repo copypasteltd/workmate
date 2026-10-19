@@ -251,3 +251,12 @@ The independent renderer snapshot records 41 source digests. The main process pe
 Task details inside the frameless window now offer initial queued pause/resume through the native API bridge, preserving the original task and reservation. Delivery `qa:task-controls` verifies browser PKCE, controls and cancellation releases. This is a source change; previous `release/frameless/` previews retain their recorded commits/hashes and do not yet include these controls. Paid-step continuation remains unfinished.
 
 ![Paused task](assets/screenshots/21-task-paused.png)
+
+## Session races and local sign-out
+
+The native session controller fences late login/refresh writes, coalesces concurrent refreshes and prevents an obsolete 401 from clearing a later account. Definitive rejection clears credentials; temporary failures preserve recoverable state. Sign-out clears encrypted credentials, revokes local folder grants/cached results and revokes the server family through refresh proof, including after access expiry. Offline feedback explicitly says remote revocation is unconfirmed and can be completed from another signed-in device. Account replacement also resets previous folder/device associations.
+
+![Source frameless client sessions](assets/screenshots/22-active-sessions.png)
+![Offline sign-out feedback](assets/screenshots/23-offline-signout.png)
+
+This increment delivers source/builds. Historical frameless preview installers retain their recorded commits/hashes and do not include this session repair. `npm test` covers ten session race/persistence groups and existing native capabilities; delivery `qa:sessions` exercises actual Electron/PKCE and remote revocation.

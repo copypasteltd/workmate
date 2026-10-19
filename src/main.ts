@@ -5,6 +5,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { exclusive } from "./lock.js";
 import { LocalVault } from "./vault.js";
+import { NativeSession, NativeSessionError } from "./native-session.js";
 import {
   app,
   BrowserWindow,
@@ -37,7 +38,6 @@ import { configuration, apiURL } from "./config.js";
 const config = configuration();
 let window: BrowserWindow | null = null;
 let authFlow: Promise<void> | null = null;
-let refresh: Promise<any> | null = null;
 const nativeArgument = process.argv.find((a) =>
   /^chrome-extension:\/\/[a-p]{32}\/?$/.test(a),
 );
@@ -74,34 +74,39 @@ const files = new LocalFiles(
   (j) => save("folders", j),
   (fn) => exclusive(userDir, fn),
 );
-async function tokens() {
-  const t = await load<any>("auth", null);
-  if (!t) throw new Error("AUTH_REQUIRED");
-  if (t.expires_at > Date.now() + 30000) return t;
-  if (!refresh)
-    refresh = (async () => {
-      const r = await fetch(config.api + "/v1/auth/native/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: "desktop",
-          refresh_token: t.refresh_token,
-        }),
-        redirect: "error",
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!r.ok) {
-        await save("auth", null);
-        window?.webContents.send("auth:changed");
-        throw new Error("AUTH_REQUIRED");
-      }
-      const next = (await r.json()) as any;
-      next.expires_at = Date.now() + next.expires_in * 1000;
-      await save("auth", next);
-      return next;
-    })().finally(() => (refresh = null));
-  return refresh;
+let localAccessReset: Promise<void> = Promise.resolve();
+async function nativeAuth(action: "refresh" | "revoke", refreshToken: string) {
+  const response = await fetch(config.api + "/v1/auth/native/" + action, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ client_id: "desktop", refresh_token: refreshToken }),
+    redirect: "error",
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!response.ok)
+    throw new NativeSessionError(
+      response.status === 401 ? "AUTH_REQUIRED" : "AUTH_UNAVAILABLE",
+    );
+  return response.json();
 }
+const nativeSession = new NativeSession({
+  read: () => load("auth", null),
+  write: (value) => save("auth", value),
+  renew: (refreshToken) => nativeAuth("refresh", refreshToken),
+  revoke: async (refreshToken) => {
+    await nativeAuth("revoke", refreshToken);
+  },
+  changed: () => {
+    // Revoke all local grants before another account can use cached folder state.
+    localAccessReset = files.revokeAll().then(async () => {
+      await save("devices", {});
+      await save("command-keys", {});
+    });
+    void localAccessReset.catch(() => {});
+    window?.webContents.send("auth:changed");
+  },
+});
+const tokens = () => nativeSession.get();
 async function request(
   url: string,
   options: {
@@ -135,6 +140,16 @@ async function request(
     try {
       t = await tokens();
     } catch (e: any) {
+      if (e.message === "AUTH_CHANGED")
+        return {
+          status: 409,
+          body: {
+            error: {
+              code: "SESSION_CHANGED",
+              message: "Sign-in state changed. Reload this view.",
+            },
+          },
+        };
       if (e.message === "AUTH_REQUIRED")
         return {
           status: 401,
@@ -160,11 +175,27 @@ async function request(
     redirect: "error",
     signal: AbortSignal.timeout(40000),
   });
-  return { status: r.status, body: await r.json() };
+  const body = await r.json();
+  if (
+    r.status === 401 &&
+    t &&
+    !(await nativeSession.invalidate(t.access_token))
+  )
+    return {
+      status: 409,
+      body: {
+        error: {
+          code: "SESSION_CHANGED",
+          message: "Sign-in state changed. Reload this view.",
+        },
+      },
+    };
+  return { status: r.status, body };
 }
 async function signIn() {
   if (authFlow) return authFlow;
   authFlow = (async () => {
+    const ticket = nativeSession.beginLogin();
     const verifier = randomBytes(32).toString("base64url"),
       state = randomBytes(32).toString("base64url");
     let finish!: (v?: unknown) => void, fail!: (e: Error) => void;
@@ -232,10 +263,7 @@ async function signIn() {
         signal: AbortSignal.timeout(20000),
       });
       if (!r.ok) throw new Error("Authorization expired");
-      const t = (await r.json()) as any;
-      t.expires_at = Date.now() + t.expires_in * 1000;
-      await save("auth", t);
-      window?.webContents.send("auth:changed");
+      await nativeSession.acceptLogin(await r.json(), ticket);
       window?.show();
       window?.focus();
     } finally {
@@ -268,6 +296,7 @@ async function choose() {
 let deviceTimer: ReturnType<typeof setInterval> | null = null;
 let polling = false;
 async function deviceSync(tenant: string) {
+  await localAccessReset;
   const me = await request("/v1/me");
   if (
     me.status !== 200 ||
@@ -428,15 +457,22 @@ async function createWindow() {
   });
   ipcMain.handle("auth:signin", () => signIn());
   ipcMain.handle("auth:signout", async () => {
-    await request("/v1/auth/logout", { method: "POST" }).catch(() => {});
-    await save("auth", null);
-    for (const g of await files.grants()) await files.revoke(g.id);
-    window?.webContents.send("auth:changed");
+    const result = await nativeSession.signOut();
+    await localAccessReset;
+    return result;
   });
-  ipcMain.handle("files:choose", () => choose());
+  ipcMain.handle("files:choose", async () => {
+    await tokens();
+    await localAccessReset;
+    return choose();
+  });
   ipcMain.handle("files:grants", () => files.grants());
   ipcMain.handle("files:revoke", (_e, id) => files.revoke(id));
-  ipcMain.handle("files:execute", (_e, c) => files.execute(c));
+  ipcMain.handle("files:execute", async (_e, c) => {
+    await tokens();
+    await localAccessReset;
+    return files.execute(c);
+  });
   ipcMain.handle("device:sync", (_e, t) => deviceSync(t));
   ipcMain.handle("chrome:register", async () => {
     if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_FILE)
@@ -508,6 +544,7 @@ async function createWindow() {
       headers: { Authorization: `Bearer ${t.access_token}` },
       redirect: "error",
     });
+    if (r.status === 401) await nativeSession.invalidate(t.access_token);
     return saveDownload(r, dest.filePath);
   });
   ipcMain.handle("asset:upload", async (_e, p, body) => {
@@ -528,7 +565,18 @@ async function createWindow() {
       body: form,
       redirect: "error",
     });
-    return { status: r.status, body: await r.json() };
+    const data = await r.json();
+    if (r.status === 401 && !(await nativeSession.invalidate(t.access_token)))
+      return {
+        status: 409,
+        body: {
+          error: {
+            code: "SESSION_CHANGED",
+            message: "Sign-in state changed. Reload this view.",
+          },
+        },
+      };
+    return { status: r.status, body: data };
   });
   await window.loadFile(
     path.join(import.meta.dirname, "../renderer-dist/index.html"),

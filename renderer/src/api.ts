@@ -1,4 +1,19 @@
 export let csrfToken = "";
+let sessionRevision = 0;
+export function endClientSession(broadcast = true) {
+  ++sessionRevision;
+  csrfToken = "";
+  window.dispatchEvent(new Event("copypaste:session-ended"));
+  if (broadcast)
+    localStorage.setItem(
+      "cp_auth_event",
+      JSON.stringify({ kind: "signed_out", id: crypto.randomUUID() }),
+    );
+}
+export function changeClientSession() {
+  ++sessionRevision;
+  csrfToken = "";
+}
 export const setCsrf = (v: string) => {
   csrfToken = v;
 };
@@ -26,7 +41,7 @@ declare global {
       ) => Promise<{ status: number; body: any }>;
       enableChrome: () => Promise<{ registered: boolean }>;
       signIn: () => Promise<void>;
-      signOut: () => Promise<void>;
+      signOut: () => Promise<{ remote_revoked: boolean }>;
       chooseDirectory: () => Promise<unknown>;
       localGrants: () => Promise<any[]>;
       revokeGrant: (id: string) => Promise<void>;
@@ -48,6 +63,11 @@ export async function api<T = any>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const revision = sessionRevision;
+  const protectedRequest =
+    /^\/v1\/(me(?:[/?]|$)|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:logout|native\/authorize)$)/.test(
+      path,
+    );
   let status: number, data: any;
   if (window.copyPasteBridge) {
     let result;
@@ -103,6 +123,13 @@ export async function api<T = any>(
       );
     }
   }
+  if (protectedRequest && revision !== sessionRevision)
+    throw new ApiError(
+      "SESSION_CHANGED",
+      "登入狀態已變更，請重新載入 / Sign-in state changed. Reload this view.",
+      409,
+    );
+  if (status === 401 && protectedRequest) endClientSession(false);
   if (status < 200 || status >= 300)
     throw new ApiError(
       data?.error?.code ?? "REQUEST_FAILED",
@@ -110,7 +137,15 @@ export async function api<T = any>(
       status,
       data?.error?.details,
     );
+  if (path === "/v1/auth/verify") {
+    changeClientSession();
+    localStorage.setItem(
+      "cp_auth_event",
+      JSON.stringify({ kind: "signed_in", id: crypto.randomUUID() }),
+    );
+  }
   if (data?.csrf_token) setCsrf(data.csrf_token);
+  if (path === "/v1/auth/logout") endClientSession();
   return data as T;
 }
 export const post = (path: string, body: unknown = {}) =>
@@ -118,13 +153,18 @@ export const post = (path: string, body: unknown = {}) =>
 export const patch = (path: string, body: unknown) =>
   api(path, { method: "PATCH", body: JSON.stringify(body) });
 export async function download(path: string, filename: string) {
+  const revision = sessionRevision;
   if (window.copyPasteBridge) {
     await window.copyPasteBridge.download(path, filename);
     return;
   }
   const response = await fetch(base + path, { credentials: "include" });
+  if (revision !== sessionRevision) throw new Error("Sign-in state changed");
+  if (response.status === 401) endClientSession();
   if (!response.ok) throw new Error("Download unavailable");
-  const url = URL.createObjectURL(await response.blob());
+  const blob = await response.blob();
+  if (revision !== sessionRevision) throw new Error("Sign-in state changed");
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;

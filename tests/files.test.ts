@@ -89,3 +89,41 @@ test("API bridge cannot change origin or escape the API prefix", () => {
   ])
     assert.throws(() => apiURL("https://agent.example", p));
 });
+test("sign-out removes every folder grant and cached file result before queued work can replay", async () => {
+  const base = path.resolve(".data/test/logout-grants");
+  await mkdir(base, { recursive: true });
+  const root = await mkdtemp(path.join(base, "run-"));
+  assert.equal(path.dirname(root), base);
+  try {
+    let journal: Journal = { grants: [], completed: {} };
+    const files = new LocalFiles(
+      async () => structuredClone(journal),
+      async (value) => {
+        journal = structuredClone(value);
+      },
+    );
+    await writeFile(
+      path.join(root, "private.txt"),
+      "Account-specific local file",
+    );
+    const grant = await files.grant(root);
+    const command = {
+      operation: "file.read" as const,
+      path: "private.txt",
+      grant_id: grant.id,
+      request_id: "logout-read-123456789",
+    };
+    await files.execute(command);
+    assert.ok(Object.keys(journal.completed).length > 0);
+    await files.revokeAll();
+    assert.deepEqual(await files.grants(), []);
+    assert.deepEqual(journal.completed, {});
+    await assert.rejects(files.execute(command), /revoked/);
+    assert.equal(
+      await readFile(path.join(root, "private.txt"), "utf8"),
+      "Account-specific local file",
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

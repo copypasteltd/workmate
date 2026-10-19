@@ -10,6 +10,7 @@ import { TaskInputRequests } from "./task-dependencies";
 import { ResumableUpload } from "./resumable-upload";
 import { CloudFiles } from "./cloud-files";
 import { ProjectSkills } from "./skills";
+import { SessionsCard, SignOutButton, NativeSignInButton } from "./sessions";
 import { Notifications, UnreadNotifications } from "./notifications";
 import { Schedules } from "./schedules";
 import {
@@ -56,7 +57,6 @@ import {
   Users,
   Settings,
   Wallet,
-  LogOut,
   Menu,
   X,
   Sparkles,
@@ -307,13 +307,7 @@ function Login() {
           </p>
           {window.copyPasteBridge ? (
             <>
-              <button
-                className="button primary"
-                onClick={() => void window.copyPasteBridge!.signIn()}
-              >
-                {t("透過瀏覽器安全登入", "Sign in securely in your browser")}
-                <ArrowUpRight size={18} />
-              </button>
+              <NativeSignInButton />
               <p className="form-footnote">
                 {t(
                   "在系統瀏覽器完成驗證後，會返回此桌面工作台。",
@@ -724,18 +718,7 @@ function Shell() {
               <strong>{w.me.user.name}</strong>
               <small>{selected?.role}</small>
             </div>
-            <button
-              className="icon-button"
-              aria-label="Sign out"
-              onClick={async () => {
-                if (window.copyPasteBridge)
-                  await window.copyPasteBridge.signOut();
-                else await post("/v1/auth/logout");
-                await w.refresh();
-              }}
-            >
-              <LogOut size={16} />
-            </button>
+            <SignOutButton />
           </div>
         </div>
       </aside>
@@ -3263,9 +3246,7 @@ function Usage() {
 }
 function SettingsPage() {
   const { t } = useI18n(),
-    w = useWorkspace(),
-    [refresh, setRefresh] = useState(0);
-  const sessions = useData("/v1/me/sessions", refresh);
+    w = useWorkspace();
   return (
     <>
       <PageHeader
@@ -3291,36 +3272,7 @@ function SettingsPage() {
             </Field>
           </AsyncForm>
         </section>
-        <section className="card">
-          <h2>{t("登入中的裝置", "Active sessions")}</h2>
-          <ErrorNotice error={sessions.error} />
-          {sessions.data?.items.map((s: any) => (
-            <div className="session-row" key={s.id}>
-              <Monitor size={19} />
-              <div>
-                <strong>
-                  {s.audience === "native" ? "Native client" : "Web browser"}
-                </strong>
-                <small>
-                  <DateText value={s.created_at} />
-                </small>
-              </div>
-              <button
-                className="text-button"
-                onClick={() =>
-                  void api("/v1/me/sessions/" + s.id, {
-                    method: "DELETE",
-                  }).then(async () => {
-                    setRefresh((v) => v + 1);
-                    await w.refresh();
-                  })
-                }
-              >
-                {t("撤銷", "Revoke")}
-              </button>
-            </div>
-          ))}
-        </section>
+        <SessionsCard />
       </div>
     </>
   );

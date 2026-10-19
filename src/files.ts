@@ -137,6 +137,14 @@ export class LocalFiles {
       await this.save(j);
     });
   }
+  async revokeAll() {
+    return this.serial(async () => {
+      const j = await this.load();
+      j.grants = [];
+      j.completed = {};
+      await this.save(j);
+    });
+  }
   async execute(command: FileCommand) {
     return this.serial(async () => {
       if (!/^[\w-]{16,100}$/.test(command.request_id))

@@ -4,9 +4,10 @@ import {
   useContext,
   useEffect,
   useState,
+  useRef,
   type ReactNode,
 } from "react";
-import { api } from "./api";
+import { api, changeClientSession, endClientSession } from "./api";
 interface WorkspaceState {
   me: any;
   loading: boolean;
@@ -29,19 +30,37 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const [tenant, setTenantState] = useState(""),
     [project, setProjectState] = useState(""),
     [projects, setProjects] = useState<any[]>([]);
+  const loadRevision = useRef(0);
+  const tenantRef = useRef(tenant);
+  tenantRef.current = tenant;
+  const clear = useCallback(() => {
+    ++loadRevision.current;
+    tenantRef.current = "";
+    setMe(null);
+    setTenantState("");
+    setProjectState("");
+    setProjects([]);
+    setError(null);
+    setLoading(false);
+    localStorage.removeItem("cp_tenant");
+    localStorage.removeItem("cp_project");
+  }, []);
   const setProject = (id: string) => {
     setProjectState(id);
     localStorage.setItem("cp_project", id);
   };
   const setTenant = (id: string) => {
+    tenantRef.current = id;
     setProjects([]);
     setProjectState("");
     setTenantState(id);
     localStorage.setItem("cp_tenant", id);
   };
   const refresh = useCallback(async () => {
+    const revision = ++loadRevision.current;
     try {
       const m = await api("/v1/me");
+      if (revision !== loadRevision.current) return;
       setMe(m);
       setError(null);
       const saved = localStorage.getItem("cp_tenant");
@@ -53,19 +72,24 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
             : (m.memberships[0]?.id ?? ""),
       );
     } catch (e) {
+      if (
+        revision !== loadRevision.current ||
+        (e as any).code === "SESSION_CHANGED"
+      )
+        return;
       if ((e as any).status === 401) {
-        setMe(null);
-        setTenantState("");
-        setProjectState("");
-        setProjects([]);
+        clear();
       } else setError(e as Error);
     } finally {
-      setLoading(false);
+      if (revision === loadRevision.current) setLoading(false);
     }
-  }, []);
+  }, [clear]);
   const reloadProjects = useCallback(async () => {
     if (!tenant) return;
+    const revision = loadRevision.current;
     const d = await api(`/v1/tenants/${tenant}/projects`);
+    if (tenantRef.current !== tenant || revision !== loadRevision.current)
+      return;
     setProjects(d.items);
     const saved = localStorage.getItem("cp_project");
     setProjectState((old) =>
@@ -77,10 +101,36 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     );
   }, [tenant]);
   useEffect(() => {
+    window.addEventListener("copypaste:session-ended", clear);
     void refresh();
-    const off = window.copyPasteBridge?.onAuthChanged(() => void refresh());
-    return () => off?.();
-  }, [refresh]);
+    const changed = () => {
+      changeClientSession();
+      clear();
+      void refresh();
+    };
+    const off = window.copyPasteBridge?.onAuthChanged(changed);
+    const storage = (event: StorageEvent) => {
+      if (event.key !== "cp_auth_event" || !event.newValue) return;
+      try {
+        const value = JSON.parse(event.newValue);
+        if (value.kind === "signed_out") endClientSession(false);
+        else if (value.kind === "signed_in") changed();
+      } catch {
+        /* No credentials or identities are accepted from storage events. */
+      }
+    };
+    const visible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    window.addEventListener("storage", storage);
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      off?.();
+      window.removeEventListener("copypaste:session-ended", clear);
+      window.removeEventListener("storage", storage);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, [refresh, clear]);
   useEffect(() => {
     let live = true;
     setProjects([]);
