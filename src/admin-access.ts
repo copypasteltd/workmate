@@ -17,6 +17,12 @@ export const adminBindingInput = z
     limits: z
       .object({
         max_amount_micros: z.number().int().nonnegative().max(1e12).optional(),
+        max_daily_amount_micros: z
+          .number()
+          .int()
+          .nonnegative()
+          .max(1e12)
+          .optional(),
         max_duration_hours: z.number().int().positive().optional(),
         max_batch: z.number().int().min(1).max(100).optional(),
       })
@@ -67,7 +73,12 @@ export async function revokeAdminSessions(
 }
 function delegationFits(source: any, target: any) {
   return (
-    ["max_amount_micros", "max_duration_hours", "max_batch"].every(
+    [
+      "max_amount_micros",
+      "max_daily_amount_micros",
+      "max_duration_hours",
+      "max_batch",
+    ].every(
       (k) =>
         source.limits[k] === undefined ||
         (target.limits[k] !== undefined &&

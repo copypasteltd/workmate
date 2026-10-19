@@ -24,6 +24,7 @@ import { registerAdminOperations } from "./admin-operations.js";
 import { registerAdminMemberships } from "./admin-memberships.js";
 import { registerAdminAccounts } from "./admin-accounts.js";
 import { registerAdminBilling } from "./admin-billing.js";
+import { registerAdminFees } from "./admin-fees.js";
 import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
@@ -307,6 +308,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminMemberships(app, db);
   registerAdminAccounts(app, db);
   registerAdminBilling(app, db);
+  registerAdminFees(app, db);
   registerAdminIdentities(app, db);
   let started = false;
   if (options.worker !== false && c.WORKER_ENABLED) {

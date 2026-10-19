@@ -44,7 +44,7 @@ async function loadWallet(
 ) {
   const w = (
     await tx.query(
-      `SELECT * FROM wallets WHERE ${"account" in ref ? "id" : "tenant_id"}=$1 FOR UPDATE`,
+      `SELECT * FROM wallets WHERE ${"account" in ref ? "id" : "tenant_id"}=$1 FOR NO KEY UPDATE`,
       ["account" in ref ? ref.account : ref.tenant],
     )
   ).rows[0];

@@ -86,7 +86,7 @@ test("a populated 041 checkpoint upgrades without pending-trigger DDL failures o
     assert.equal(
       (await c.query("SELECT max(version) AS v FROM schema_migrations")).rows[0]
         .v,
-      44,
+      47,
     );
     for (const [table, old] of [
       ["wallets", wallet],
@@ -139,6 +139,9 @@ test("a populated 041 checkpoint upgrades without pending-trigger DDL failures o
       "042-billing-account-subjects.sql",
       "043-billing-operation-provenance.sql",
       "044-billing-subject-immutability.sql",
+      "045-frozen-financial-commands.sql",
+      "046-financial-preview-intent-repair.sql",
+      "047-financial-approval-requests.sql",
     ]) {
       const digest = createHash("sha256")
         .update(await readFile("migrations/" + file))

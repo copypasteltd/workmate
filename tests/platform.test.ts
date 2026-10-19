@@ -153,6 +153,58 @@ async function workspace(c: Client) {
   return r.data;
 }
 async function money(a: Client, b: unknown, k = randomUUID()) {
+  const old = b as any;
+  if (
+    ["billing.gift", "billing.debit", "billing.credit_limit.write"].includes(
+      old.action,
+    )
+  ) {
+    const w = (
+      await system.db.control.query(
+        "SELECT id,version FROM wallets WHERE tenant_id=$1",
+        [old.tenant_id],
+      )
+    ).rows[0];
+    const action =
+      old.action === "billing.credit_limit.write"
+        ? "credit_limit"
+        : old.action.split(".")[1];
+    const body = {
+      action,
+      expected_version: w.version,
+      reason: old.reason,
+      ...(action === "credit_limit"
+        ? {
+            new_limit: {
+              currency: "HKD",
+              amount_micros: String(old.amount_micros),
+            },
+          }
+        : {
+            amount: {
+              currency: "HKD",
+              amount_micros: String(old.amount_micros),
+            },
+          }),
+      ...(action === "gift" ? { expires_at: old.expires_at } : {}),
+      ...(action === "debit" ? { original_entry_id: old.source_id } : {}),
+    };
+    const pv = await call(
+      a,
+      "POST",
+      `/v1/admin/billing/accounts/${w.id}/previews`,
+      body,
+    );
+    assert.equal(pv.status, 200, JSON.stringify(pv.data));
+    return call(
+      a,
+      "POST",
+      `/v1/admin/billing/accounts/${w.id}/${action === "credit_limit" ? "credit-limit" : action}`,
+      body,
+      k,
+      { "X-Admin-Preview-ID": pv.data.preview_id },
+    );
+  }
   const p = await call(a, "POST", "/v1/admin/operations/preview", b);
   assert.equal(p.status, 200, JSON.stringify(p.data));
   return call(
@@ -1959,20 +2011,30 @@ test("VIP validity uses real timestamps and financial limits/independent approva
       await call(
         a,
         "POST",
-        "/v1/admin/operations/" + high.data.id + "/decision",
-        { decision: "approve", reason: "QA self approval" },
+        "/v1/admin/billing/operations/" + high.data.id + "/decision",
+        {
+          decision: "approve",
+          reason: "QA self approval",
+          expected_version: high.data.version,
+          payload_hash: high.data.payload_hash,
+        },
       )
     ).data.error.code,
     "SELF_APPROVAL_FORBIDDEN",
   );
-  const s = await admin("security_admin");
+  const s = await admin("super_admin");
   assert.equal(
     (
       await call(
         s,
         "POST",
-        "/v1/admin/operations/" + high.data.id + "/decision",
-        { decision: "approve", reason: "QA independent review" },
+        "/v1/admin/billing/operations/" + high.data.id + "/decision",
+        {
+          decision: "approve",
+          reason: "QA independent review",
+          expected_version: high.data.version,
+          payload_hash: high.data.payload_hash,
+        },
       )
     ).status,
     200,
@@ -1981,13 +2043,24 @@ test("VIP validity uses real timestamps and financial limits/independent approva
     "UPDATE admin_bindings SET limits=$2 WHERE principal_id=$1",
     [b.id, { max_amount_micros: 1000000 }],
   );
-  const denied = await call(b, "POST", "/v1/admin/operations/preview", {
-    action: "billing.gift",
-    tenant_id: w.tenant.id,
-    amount_micros: 2000000,
-    expires_at: new Date(Date.now() + 86400000).toISOString(),
-    reason: "QA exceeded scope",
-  });
+  const billingAccount = (
+    await system.db.control.query(
+      "SELECT id,version FROM wallets WHERE tenant_id=$1",
+      [w.tenant.id],
+    )
+  ).rows[0];
+  const denied = await call(
+    b,
+    "POST",
+    `/v1/admin/billing/accounts/${billingAccount.id}/previews`,
+    {
+      action: "gift",
+      expected_version: billingAccount.version,
+      amount: { currency: "HKD", amount_micros: "2000000" },
+      expires_at: new Date(Date.now() + 86400000).toISOString(),
+      reason: "QA exceeded scope",
+    },
+  );
   assert.equal(denied.status, 403);
 });
 test("undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts", () => {

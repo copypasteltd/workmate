@@ -251,9 +251,9 @@ export function registerAdmin(
               devices:
                 "SELECT id,tenant_id,user_id,name,client,state,last_seen_at,created_at FROM devices",
               content: contentUnion,
-              jobs: "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at FROM admin_operations",
+              jobs: "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,coalesce(payload->>'financial_command_version'='1',false) AS financial_command,payload->>'billing_account_id' AS billing_account_id FROM admin_operations",
               approvals:
-                "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at FROM admin_operations WHERE state='pending_approval'",
+                "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,coalesce(payload->>'financial_command_version'='1',false) AS financial_command,payload->>'billing_account_id' AS billing_account_id FROM admin_operations WHERE state='pending_approval'",
               audit: "SELECT * FROM audit_log",
               support: "SELECT * FROM support_sessions",
               catalog:
@@ -280,6 +280,11 @@ export function registerAdmin(
             } else if (section === "billing") {
               const scope = await readScope(tx, req.principal, perm);
               filter = `EXISTS(SELECT 1 FROM wallets w WHERE w.tenant_id=r.tenant_id AND ${scope.account(perm)})`;
+              args = scope.values;
+            } else if (["jobs", "approvals"].includes(section)) {
+              const scope = await readScope(tx, req.principal, perm);
+              const ordinary = scope.scope(perm, "r.tenant_id");
+              filter = `(CASE WHEN r.financial_command THEN EXISTS(SELECT 1 FROM wallets w WHERE w.id::text=r.billing_account_id AND w.data_mode=${scope.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${scope.account(perm)} AND ${scope.account("admin.billing.read")}) ELSE ${ordinary} END)`;
               args = scope.values;
             } else if (
               ["catalog", "plans", "policy", "access"].includes(section)

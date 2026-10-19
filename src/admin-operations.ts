@@ -12,6 +12,11 @@ import {
 import { key, replay } from "./access.js";
 import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
 import { fund, setCreditLimit, settle } from "./billing.js";
+import {
+  isFeeOperation,
+  feeOperationAuthority,
+  isGuardedLegacyFee,
+} from "./admin-fees.js";
 import { event } from "./tasks.js";
 import {
   decideMembershipOperation,
@@ -169,6 +174,12 @@ async function policy(tx: Tx) {
     );
 }
 async function validate(tx: Tx, p: Principal, b: Command) {
+  if (isGuardedLegacyFee(b.action))
+    throw new Problem(
+      409,
+      "CANONICAL_FINANCE_REQUIRED",
+      "Use the account-specific financial preview and versioned command",
+    );
   const scope = await target(tx, b);
   const hours =
     "ends_at" in b && b.ends_at
@@ -411,7 +422,14 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
             await tx.query("SELECT * FROM admin_operations WHERE id=$1", [id])
           ).rows[0];
           if (!op) throw new Problem(404, "NOT_FOUND", "Operation not found");
-          if (isAccountAction(op.action) && op.action.startsWith("users."))
+          if (isFeeOperation(op))
+            await feeOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.jobs.read",
+            );
+          else if (isAccountAction(op.action) && op.action.startsWith("users."))
             await userAccountAuthority(
               tx,
               req.principal,
@@ -498,8 +516,20 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
         .strict()
         .parse(req.body);
       return db.tx(
-        (tx) =>
-          replay(
+        async (tx) => {
+          const owned = (
+            await tx.query(
+              "SELECT action FROM admin_previews WHERE id=$1 AND principal_id=$2",
+              [b.preview_id, req.principal.id],
+            )
+          ).rows[0];
+          if (isGuardedLegacyFee(owned?.action))
+            throw new Problem(
+              409,
+              "CANONICAL_FINANCE_REQUIRED",
+              "Use the canonical account preview and financial command",
+            );
+          return replay(
             tx,
             req.principal.id,
             "admin.operation.commit",
@@ -575,7 +605,8 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
                 result,
               };
             },
-          ),
+          );
+        },
         undefined,
         true,
       );
@@ -603,6 +634,15 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               409,
               "NOT_PENDING",
               "Operation is not awaiting approval",
+            );
+          if (
+            isFeeOperation(op) ||
+            (isGuardedLegacyFee(op.action) && b.decision === "approve")
+          )
+            throw new Problem(
+              409,
+              "CANONICAL_FINANCE_REQUIRED",
+              "Use the frozen financial review with its exact version and payload hash",
             );
           if (isAccountAction(op.action))
             return decideAccountOperation(

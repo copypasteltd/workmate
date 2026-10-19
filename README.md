@@ -442,7 +442,7 @@ flowchart LR
 
 Reservations, settlement, expiry and funding use BigInt for accumulated amounts. A credit-backed hold can consume subsequently received funds at settlement while preserving other tasks' funded holds. Actual credit debt is gross remaining funding lots minus the net wallet balance. New funding first repays that debt; only the remainder becomes available credit. Reducing the credit limit must preserve both debt and existing budget commitments.
 
-Migration 041 records immutable sources for new paid/gift/credit charges and actual debt repayments from new funding. Database guards validate tenant, task, bucket and exact source totals at commit. Financial records roll back together. Historical ledger bytes remain unchanged and missing historical sources are not invented. Run the focused command above against native PostgreSQL; the current Delivery TAP is authoritative. Full canonical billing/payment/VIP APIs, real payment verification, personal payer accounts and the complete financial Admin workflow remain separate acceptance work.
+Migration 041 records immutable sources for new paid/gift/credit charges and actual debt repayments from new funding. Database guards validate tenant, task, bucket and exact source totals at commit. Financial records roll back together. Historical ledger bytes remain unchanged and missing historical sources are not invented. Run the focused command above against native PostgreSQL; the current Delivery TAP is authoritative. Personal accounts and three canonical financial commands are described below. Full payment/refund/VIP APIs, verification and the remaining financial workflow still require acceptance.
 
 ```mermaid
 flowchart LR
@@ -467,6 +467,14 @@ On Windows, the native PostgreSQL ASCII junction now lives under the stable per-
 
 账务操作者、操作、Journal 及任务预留/消费/释放/信用调整记录持久保存，来源 ID 均对应真实记录；数据库拒绝改写历史、重新归属账户或资金来源。历史未记录的操作者、策略或资金来源不补造。注册时间仅表示新增索引的时间。详情见项目主文档 `docs/technical/40-billing-subjects-and-financial-event-provenance.md`。
 
-八组账户、十一组目录及十二组结算专项联合通过；首次失败原始 TAP 与最终专项输出保存在 Delivery。完整回归以当前 `evidence/alignment-platform.json` / `.tap` 为准。本增量不代表规范收费预览/写入/审批、付款凭证核验、退款对账、消费退回原桶、不可变方案/VIP、当前客户端消费者及全部综合验收已完成。
+八组账户、十一组目录及十二组结算专项联合通过；首次失败原始 TAP 与最终专项输出保存在 Delivery。完整回归以当前 `evidence/alignment-platform.json` / `.tap` 为准。三项规范费用命令、审批及当前 Admin 表单见下节；付款凭证核验、退款对账、消费退回原桶、不可变方案/VIP、其余客户端消费者及全部综合验收仍未完成。
 
 Personal and enterprise wallets now share the same exact funding, expiry, reservation, settlement and debt engine. Personal modes are separate, task payers are immutable, and financial journal identities refer to real persisted events. Canonical account reads enforce whole-subject permissions and signed pagination. The complete fee/payment/entitlement workflows and client consumers remain required; backend integration results do not close their acceptance gates.
+
+## 规范费用命令与真实审批请求
+
+已实现账户 gift/debit/credit-limit 的纯预览、版本／来源冻结、精确金额、香港日界与模式隔离的日限、幂等提交和独立审批。047 保存真实审批请求及不可变决定，规范 `/v1/admin/approvals/{approval_id}/decisions` 使用真实请求 UUID；审批回执保留实际操作者、策略与流水。旧三项费用入口阻断，不能绕过新约束。审计失败与资金变更整体回滚。
+
+费用与迁移聚焦 16/16 组通过，最终全量结果以 Delivery 的 `evidence/alignment-platform.json/.tap` 为准；运行前后校验源码及 verifier 不变。045 首次字段读取错误由新迁移 046 修复，旧 SQL 与失败记录保留。两库当前应用 001–047；001–015 历史未登记的执行摘要不推测补写。
+
+当前三个命令不代表完整付款、退款、VIP、outbox 或审批目录验收。Admin 的真实浏览器消费者与精确金额测试已接入；完整范围参照中央 `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`。
