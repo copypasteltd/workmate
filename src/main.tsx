@@ -93,6 +93,8 @@ import {
   nativeAuthorizationUrl,
 } from "./api";
 import { authReturnPath } from "./auth-return";
+import { Members } from "./members";
+import { operationKey } from "./operation-key";
 import { useTaskEvents } from "./task-events";
 import {
   Preferences,
@@ -527,12 +529,21 @@ function Invite() {
     [q] = useSearchParams(),
     nav = useNavigate();
   if (w.loading) return <Loading />;
+  if (!q.get("token"))
+    return (
+      <div className="center-page">
+        <p>
+          {t(
+            "邀請連結不完整，請向管理員索取新邀請。",
+            "This invitation link is incomplete. Ask your administrator for a new invitation.",
+          )}
+        </p>
+      </div>
+    );
   if (!w.me)
     return (
       <Navigate
-        to={
-          "/login?next=" + encodeURIComponent("/invite?token=" + q.get("token"))
-        }
+        to={"/login?next=" + encodeURIComponent("/invite?" + q.toString())}
         replace
       />
     );
@@ -550,8 +561,14 @@ function Invite() {
         <AsyncForm
           submitLabel={t("接受邀請", "Accept invitation")}
           onSubmit={async () => {
-            await post("/v1/invites/accept", { token: q.get("token") });
+            const body = { token: q.get("token") };
+            const key = await operationKey(w.me.user.id, "invite.accept", body);
+            await post("/v1/invites/accept", body, key);
             await w.refresh();
+            const context = await api("/v1/session/context");
+            const target = q.get("workspace");
+            if (context.memberships.some((m: any) => m.id === target))
+              w.setTenant(target!);
             nav("/app");
           }}
         >
@@ -2825,170 +2842,6 @@ function Brand() {
               <textarea name="copy" rows={3} />
             </Field>
           </AsyncForm>
-        </Modal>
-      )}
-    </>
-  );
-}
-function Members() {
-  const { t } = useI18n(),
-    w = useWorkspace(),
-    [refresh, setRefresh] = useState(0),
-    [open, setOpen] = useState(false),
-    [link, setLink] = useState(""),
-    [editing, setEditing] = useState<any>(null);
-  const { data, error } = useData(`/v1/tenants/${w.tenant}/members`, refresh);
-  return (
-    <>
-      <PageHeader
-        eyebrow="THE PEOPLE BEHIND THE WORK."
-        title={t("成員與權限", "Members & access")}
-        description={t(
-          "按企業與專案授予存取權，讓每個人看到合適的內容。",
-          "Give people the access they need, at workspace and project level.",
-        )}
-        action={
-          <button className="button primary" onClick={() => setOpen(true)}>
-            <Plus size={17} />
-            {t("邀請成員", "Invite a member")}
-          </button>
-        }
-      />
-      <ErrorNotice error={error} />
-      <div className="card table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>{t("成員", "Member")}</th>
-              <th>{t("郵箱", "Email")}</th>
-              <th>{t("角色", "Role")}</th>
-              <th>{t("狀態", "Status")}</th>
-              <th>{t("管理", "Manage")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.items.map((m: any) => (
-              <tr key={m.id}>
-                <td>{m.name}</td>
-                <td>{m.email}</td>
-                <td>{m.role}</td>
-                <td>
-                  <Badge value={m.status} />
-                </td>
-                <td>
-                  <button className="text-button" onClick={() => setEditing(m)}>
-                    {t("修改權限", "Edit access")}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {editing && (
-        <Modal
-          title={t("修改成員權限", "Edit member access")}
-          onClose={() => setEditing(null)}
-        >
-          <AsyncForm
-            submitLabel={t("儲存權限", "Save access")}
-            onSubmit={async (f) => {
-              await patch(
-                `/v1/tenants/${w.tenant}/members/${editing.user_id ?? editing.id}`,
-                {
-                  role: String(f.get("role")),
-                  status: String(f.get("status")),
-                  version: editing.version,
-                  project_ids: f.getAll("projects").map(String),
-                },
-              );
-              setEditing(null);
-              setRefresh((v) => v + 1);
-            }}
-          >
-            <Field label={t("企業角色", "Workspace role")}>
-              <select name="role" defaultValue={editing.role}>
-                {["owner", "admin", "member", "approver", "viewer"].map((r) => (
-                  <option key={r}>{r}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label={t("狀態", "Status")}>
-              <select name="status" defaultValue={editing.status}>
-                {["active", "removed"].map((r) => (
-                  <option key={r}>{r}</option>
-                ))}
-              </select>
-            </Field>
-            <Field
-              label={t("授權專案（可複選）", "Authorized projects (multiple)")}
-            >
-              <select
-                multiple
-                name="projects"
-                defaultValue={editing.project_ids ?? []}
-              >
-                {w.projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </AsyncForm>
-        </Modal>
-      )}
-      {open && (
-        <Modal
-          title={t("邀請成員", "Invite a member")}
-          onClose={() => {
-            setOpen(false);
-            setLink("");
-          }}
-        >
-          <AsyncForm
-            submitLabel={t("發送邀請", "Send invitation")}
-            onSubmit={async (f) => {
-              const r = await post(`/v1/tenants/${w.tenant}/invites`, {
-                email: String(f.get("email")),
-                role: String(f.get("role")),
-                project_ids: [w.project],
-              });
-              setLink(r.invite_url);
-              setRefresh((v) => v + 1);
-            }}
-          >
-            <Field label={t("郵箱", "Email")}>
-              <input type="email" name="email" required />
-            </Field>
-            <Field label={t("企業角色", "Workspace role")}>
-              <select name="role" defaultValue="member">
-                <option value="member">Member</option>
-                <option value="approver">Approver</option>
-                <option value="viewer">Viewer</option>
-                <option value="admin">Admin</option>
-              </select>
-            </Field>
-            <p className="muted small-text">
-              {t(
-                "邀請會包含目前專案的權限，有效期 7 天。",
-                "The invite includes the current project and expires in 7 days.",
-              )}
-            </p>
-          </AsyncForm>
-          {link && (
-            <div className="notice">
-              <div>
-                {t("邀請已建立", "Invitation created")}
-                <input
-                  aria-label="Invitation link"
-                  value={link}
-                  readOnly
-                  onFocus={(e) => e.target.select()}
-                />
-              </div>
-            </div>
-          )}
         </Modal>
       )}
     </>

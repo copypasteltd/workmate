@@ -75,9 +75,13 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest =
-    /^\/v1\/(me(?:[/?]|$)|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:session|logout|native\/authorize)$)/.test(
+    /^\/v1\/(me(?:[/?]|$)|session\/context(?:[/?]|$)|members\/|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:session|logout|native\/authorize)$)/.test(
       path,
     );
+  const headers = new Headers(options.headers);
+  const pathTenant = /^\/v1\/tenants\/([a-f0-9-]{36})(?:\/|$)/i.exec(path)?.[1];
+  if (pathTenant && !headers.has("X-Tenant-ID"))
+    headers.set("X-Tenant-ID", pathTenant);
   let status: number, data: any;
   if (window.copyPasteBridge) {
     let result;
@@ -96,9 +100,8 @@ export async function api<T = any>(
     } else
       result = await window.copyPasteBridge.request(path, {
         method: options.method,
-        idempotencyKey:
-          new Headers(options.headers).get("Idempotency-Key") ?? undefined,
-        tenantId: new Headers(options.headers).get("X-Tenant-ID") ?? undefined,
+        idempotencyKey: headers.get("Idempotency-Key") ?? undefined,
+        tenantId: headers.get("X-Tenant-ID") ?? undefined,
         body:
           typeof options.body === "string"
             ? JSON.parse(options.body)
@@ -107,7 +110,6 @@ export async function api<T = any>(
     status = result.status;
     data = result.body;
   } else {
-    const headers = new Headers(options.headers);
     if (options.body && !(options.body instanceof FormData))
       headers.set("Content-Type", "application/json");
     if (!["GET", "HEAD", "OPTIONS"].includes(options.method ?? "GET")) {
