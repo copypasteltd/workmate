@@ -110,3 +110,7 @@ The explicit local picker uploads shared project files up to 5 MiB. Use the full
 
 ![Initial file request in the actual side panel](assets/screenshots/06-input-wait.png)
 ![Result from the same task](assets/screenshots/07-input-result.png)
+
+## Shared-slot waits (current source)
+
+The panel explains server capacity waits: no model call yet, the original budget remains held and the same task resumes automatically. All clients share the server queue/database; the extension does not duplicate the task or reservation. Historical ZIPs are unchanged.

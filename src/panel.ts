@@ -316,9 +316,14 @@ async function drawTask(t: any) {
           "尚未呼叫模型，原預算保持預留。補齊資料後繼續同一項工作。",
           "The model has not been called. The original budget remains reserved; providing all inputs continues this same task.",
         )
-      : t.output ||
-        t.error_code ||
-        tr("工作正在處理中。", "Work is in progress.");
+      : t.status === "queued" && t.capacity_wait_reason
+        ? tr(
+            "正在等待執行名額，系統會自動繼續原工作。尚未呼叫模型，預算仍保持預留。",
+            "Waiting for execution capacity. This same task resumes automatically; the model has not been called and the original budget remains reserved.",
+          )
+        : t.output ||
+          t.error_code ||
+          tr("工作正在處理中。", "Work is in progress.");
   $("cancel-task").hidden = ![
     "queued",
     "running",

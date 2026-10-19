@@ -110,3 +110,7 @@ Submit an explicit file prerequisite, then search and select a current version t
 
 ![等待明确选择 / Waiting for explicit selection](assets/screenshots/06-input-wait.png)
 ![同任务结果 / Same-task result](assets/screenshots/07-input-result.png)
+
+## 共用名额排队（当前源码）
+
+侧栏识别服务端容量等待，说明模型未启动、预算保持预留及原工作自动继续。此约束与 Web/Desktop 共用同一队列及数据库，不通过扩展重复创建或收费。历史 ZIP 保持原版。
