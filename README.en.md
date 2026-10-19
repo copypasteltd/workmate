@@ -196,3 +196,15 @@ flowchart LR
 New persisted templates recheck current role/method disabling, project access and plans at preflight and creation. Server-owned versions pin Codex and the internal gateway, and revocation blocks later execution. Existing Admin catalog controls still apply. Drafts, complete template version editing/publication and enterprise brand overrides remain pending; the registry alone does not constitute a complete template administration panel.
 
 Queued pause/resume now shares platform domain guards with customer controls: only the unclaimed initial checkpoint and an intact original reservation are eligible. Resume rechecks beneficiary authorization, role/Skills, entitlements and inputs. Admin scope does not replace revoked beneficiary access; reasons, versions and human audit remain required. See master `docs/technical/31-task-controls-and-native-continuation.md`.
+
+## Workspace membership management
+
+User details now open a membership form for role, active/admin-suspended/removed state, explicit projects and reason. Preview the before/after access, then execute or submit for independent review. Reviewers see frozen business parameters and the deadline. Unknown-result retries retain their operation identity; the browser receipt stores no raw reasons or credentials. The UI builds, but current page interactions and screenshots remain unverified; existing gallery images retain their historical scope.
+
+```mermaid
+flowchart LR
+  CurrentScope --> RecentMFA --> FrozenPreview --> Policy
+  Policy --> DirectApply
+  Policy --> IndependentReview --> Recheck --> DirectApply
+  DirectApply --> MembershipAndAudit
+```

@@ -196,3 +196,15 @@ flowchart LR
 用户端新增的持久模板在预检与创建时复查当前角色/技能停用、项目权限和方案。运行配置与能力版本由服务端固定为 Codex/内部网关，撤销后阻止后续执行；不向客户暴露配置覆盖入口。当前 Admin 既有角色/技能管理继续生效，但模板草稿、完整版本编辑/发布和企业品牌覆盖面板仍待完成，不能把服务端注册表当作完整后台模板管理已交付。
 
 排队任务的暂停/恢复现与用户端复用平台领域守卫：仅首次调用前、未领取且原预留有效时可操作；恢复会重新核对原受益用户、角色/技能、权益和输入来源。Admin 的范围权限不能替代用户被撤销的执行权，原因、版本、真人审计继续保留。详见主文档 `docs/technical/31-task-controls-and-native-continuation.md`。
+
+## 企业成员管理
+
+用户详情新增企业成员入口：选择角色、启用/后台暂停/移除、项目范围和原因，先预览前后差异，再执行或交由独立审批。审批人读取冻结业务参数与期限。未知响应重试复用原操作身份；原始原因和凭证不写入该浏览器回执。页面已构建；本轮页面交互和截图尚未验证，已有图库保留其历史来源。
+
+```mermaid
+flowchart LR
+  CurrentScope --> RecentMFA --> FrozenPreview --> Policy
+  Policy --> DirectApply
+  Policy --> IndependentReview --> Recheck --> DirectApply
+  DirectApply --> MembershipAndAudit
+```

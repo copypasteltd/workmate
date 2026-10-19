@@ -57,6 +57,7 @@ import {
   FileText,
 } from "lucide-react";
 import { api, post, patch, download } from "./api";
+import { AdminMembershipManager, MembershipChangeFacts } from "./memberships";
 import { AdminDeletions } from "./deletions";
 import { DataModeNotice } from "./data-mode";
 import { EnterpriseSignIn } from "./federation";
@@ -1764,7 +1765,8 @@ function UserDetail() {
     a = useAdmin();
   const [refresh, setRefresh] = useState(0),
     [edit, setEdit] = useState(false),
-    [operation, setOperation] = useState<string | null>(null);
+    [operation, setOperation] = useState<string | null>(null),
+    [membership, setMembership] = useState<string | null>(null);
   const { data, error, loading } = useData("/v1/admin/users/" + id, refresh);
   if (loading) return <Loading />;
   return (
@@ -1781,6 +1783,16 @@ function UserDetail() {
             description={data.user.email}
             action={
               <div className="row-actions">
+                {a.has("admin.tenants.members.write") && (
+                  <button
+                    className="button secondary"
+                    onClick={() =>
+                      setMembership(data.memberships[0]?.tenant_id ?? "")
+                    }
+                  >
+                    {t("管理企業成員", "Manage membership")}
+                  </button>
+                )}
                 {a.has("admin.users.status.write") && (
                   <button
                     className="button secondary"
@@ -1841,6 +1853,15 @@ function UserDetail() {
                     <Building2 size={23} />
                     <h3>{m.tenant_name}</h3>
                     <span className="badge">{m.role}</span>
+                    <Badge value={m.admin_suspended ? "suspended" : m.status} />
+                    {a.has("admin.tenants.members.write") && (
+                      <button
+                        className="text-button"
+                        onClick={() => setMembership(m.tenant_id)}
+                      >
+                        {t("管理成員權限", "Manage member access")}
+                      </button>
+                    )}
                     <dl className="detail-list">
                       <dt>{t("工作數量", "Tasks")}</dt>
                       <dd>{u?.tasks ?? 0}</dd>
@@ -1919,6 +1940,17 @@ function UserDetail() {
               onDone={() => setRefresh((v) => v + 1)}
             />
           )}
+          {membership !== null && (
+            <AdminMembershipManager
+              account={a.me.user.id}
+              user={id!}
+              initialTenant={membership}
+              onClose={() => {
+                setMembership(null);
+                setRefresh((v) => v + 1);
+              }}
+            />
+          )}
         </>
       )}
     </>
@@ -1943,6 +1975,11 @@ function AdminDialog({
     a = useAdmin();
   const body = useData(
     kind === "body" ? "/v1/admin/content/" + row?.id + "/body" : null,
+  );
+  const membershipReview = useData(
+    kind === "approval" && row?.action === "tenants.members.write"
+      ? `/v1/admin/operations/${row.id}/membership-review`
+      : null,
   );
   const titles: Record<string, [string, string]> = {
     tenant: ["變更企業狀態", "Change workspace status"],
@@ -2021,6 +2058,17 @@ function AdminDialog({
                 version: row.version,
                 reason,
               });
+            if (kind === "approval")
+              if (
+                row.action === "tenants.members.write" &&
+                !membershipReview.data
+              )
+                throw new Error(
+                  t(
+                    "請先載入完整成員變更再審批。",
+                    "Load the complete membership change before deciding.",
+                  ),
+                );
             if (kind === "approval")
               await post("/v1/admin/operations/" + row.id + "/decision", {
                 decision: String(f.get("decision")),
@@ -2159,12 +2207,39 @@ function AdminDialog({
             </Field>
           )}
           {kind === "approval" && (
-            <Field label={t("審批決定", "Decision")}>
-              <select name="decision">
-                <option value="approve">Approve</option>
-                <option value="reject">Reject</option>
-              </select>
-            </Field>
+            <>
+              {row.action === "tenants.members.write" && (
+                <>
+                  <ErrorNotice error={membershipReview.error} />
+                  {membershipReview.loading && <Loading />}
+                  {membershipReview.data && (
+                    <>
+                      <MembershipChangeFacts
+                        tenant={membershipReview.data.tenant_id}
+                        command={membershipReview.data.command}
+                        before={membershipReview.data.before}
+                      />
+                      <p>
+                        {t("審批期限", "Approval deadline")}:{" "}
+                        <DateText value={membershipReview.data.expires_at} />
+                      </p>
+                      <p>
+                        {t("策略版本", "Policy version")}:{" "}
+                        <code>
+                          {membershipReview.data.operation.policy_version_id}
+                        </code>
+                      </p>
+                    </>
+                  )}
+                </>
+              )}
+              <Field label={t("審批決定", "Decision")}>
+                <select name="decision">
+                  <option value="approve">Approve</option>
+                  <option value="reject">Reject</option>
+                </select>
+              </Field>
+            </>
           )}
           {kind === "publish" && (
             <Field label={t("發佈操作", "Publication action")}>
