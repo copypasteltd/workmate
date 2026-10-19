@@ -11,6 +11,7 @@ let workspaceRevision = 0,
 let dependencyRevision = 0,
   dependencyFingerprint = "";
 let taskDrawRevision = 0;
+let taskVersion = 0;
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
 function clearTask() {
   taskDrawRevision++;
@@ -19,6 +20,7 @@ function clearTask() {
   $("input-requests").replaceChildren();
   $("input-requests").hidden = true;
   task = "";
+  taskVersion = 0;
   if (timer) clearInterval(timer);
   timer = undefined;
   $("task-view").hidden = true;
@@ -263,6 +265,7 @@ async function tasks() {
   for (const t of d.items.slice(0, 8)) {
     const button = document.createElement("button");
     button.className = "task-row";
+    button.dataset.task = t.id;
     const title = document.createElement("strong");
     title.textContent = t.title;
     const status = document.createElement("span");
@@ -286,7 +289,7 @@ async function openTask(id: string) {
   if (revision !== workspaceRevision || endpoint !== base() || task !== id)
     return;
   if (timer) clearInterval(timer);
-  if (["queued", "running", "needs_input"].includes(t.status))
+  if (["queued", "running", "paused", "needs_input"].includes(t.status))
     timer = setInterval(() => void run(() => refreshTask(id)), 2500);
 }
 async function refreshTask(id: string) {
@@ -299,7 +302,10 @@ async function refreshTask(id: string) {
   await drawTask(t);
   if (revision !== workspaceRevision || endpoint !== base() || task !== id)
     return;
-  if (!["queued", "running", "needs_input"].includes(t.status) && timer) {
+  if (
+    !["queued", "running", "paused", "needs_input"].includes(t.status) &&
+    timer
+  ) {
     clearInterval(timer);
     timer = undefined;
     await tasks();
@@ -308,8 +314,26 @@ async function refreshTask(id: string) {
 const tr = (zh: string, en: string) => (locale === "en" ? en : zh);
 async function drawTask(t: any) {
   const drawing = ++taskDrawRevision;
+  taskVersion = t.version;
+  const recentStatus = document.querySelector(
+    `.task-row[data-task="${CSS.escape(t.id)}"] span`,
+  );
+  if (recentStatus) recentStatus.textContent = t.status;
+  const control = $<HTMLButtonElement>("control-task");
+  control.hidden = !(
+    t.attempt === 0 && ["queued", "paused"].includes(t.status)
+  );
+  control.dataset.action = t.status === "paused" ? "resume" : "pause";
+  control.textContent =
+    t.status === "paused"
+      ? tr("繼續工作", "Resume task")
+      : tr("暫停排隊", "Pause queued task");
   $("task-status").textContent =
-    t.status === "needs_input" ? tr("需要補充資料", "Needs input") : t.status;
+    t.status === "needs_input"
+      ? tr("需要補充資料", "Needs input")
+      : t.status === "paused"
+        ? tr("已暫停", "Paused")
+        : t.status;
   $("task-output").textContent =
     t.status === "needs_input"
       ? tr(
@@ -321,9 +345,14 @@ async function drawTask(t: any) {
             "正在等待執行名額，系統會自動繼續原工作。尚未呼叫模型，預算仍保持預留。",
             "Waiting for execution capacity. This same task resumes automatically; the model has not been called and the original budget remains reserved.",
           )
-        : t.output ||
-          t.error_code ||
-          tr("工作正在處理中。", "Work is in progress.");
+        : t.status === "paused"
+          ? tr(
+              "工作已暫停，尚未呼叫模型。繼續時沿用本工作和原預留預算。",
+              "This task is paused before model execution. Resuming keeps this task and its original budget reservation.",
+            )
+          : t.output ||
+            t.error_code ||
+            tr("工作正在處理中。", "Work is in progress.");
   $("cancel-task").hidden = ![
     "queued",
     "running",
@@ -672,6 +701,35 @@ $("brief-form").addEventListener("submit", (e) => {
     }
   });
 });
+$("control-task").addEventListener(
+  "click",
+  () =>
+    void run(async () => {
+      const endpoint = base(),
+        revision = workspaceRevision,
+        id = task,
+        button = $<HTMLButtonElement>("control-task"),
+        version = taskVersion,
+        action = button.dataset.action;
+      if (!id || button.disabled || !["pause", "resume"].includes(action ?? ""))
+        return;
+      button.disabled = true;
+      try {
+        await request(endpoint + "/tasks/" + id + "/controls", "POST", {
+          action,
+          expected_version: version,
+        });
+      } finally {
+        button.disabled = false;
+        if (
+          revision === workspaceRevision &&
+          endpoint === base() &&
+          task === id
+        )
+          await openTask(id);
+      }
+    }),
+);
 $("cancel-task").addEventListener(
   "click",
   () =>

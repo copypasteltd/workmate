@@ -138,3 +138,7 @@ The panel explains server capacity waits: no model call yet, the original budget
 ## Relationship to the persisted template directory
 
 Web and Desktop now provide template preflight and instance creation. The extension retains its verified default text delegation, notifications and explicitly authorized file flow; this change does not add an extension template editor. Professional presets still require live business qualification. Connecting to the same API does not qualify those roles.
+
+The panel now supports initial queued pause/resume, keeping the original task/reservation and synchronizing recent-task status. Delivery `qa:task-controls` verifies the business flow in real MV3/PKCE; running pause remains unavailable. These are source changes; the previous `release/sidepanel/` ZIP is unchanged. Native right-side SIDE_PANEL appearance retains its separately verified behavior.
+
+![Paused task](assets/screenshots/10-task-paused.png)

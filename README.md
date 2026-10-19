@@ -138,3 +138,7 @@ Submit an explicit file prerequisite, then search and select a current version t
 ## 与持久模板目录的关系
 
 当前 Web 与 Desktop 新增模板预检/实例化；扩展继续使用已验证的默认文字委派、通知和明确授权文件流程，本次未新增扩展内模板编辑器。专业模板尚待真实业务资格，不因扩展能连接同一服务就计为已验收。
+
+侧栏任务详情新增“暂停排队 / 继续工作”，只允许首次模型调用前控制原任务；保留原预留，并同步最近任务状态。Delivery `qa:task-controls` 通过真实 MV3/PKCE 验证业务操作，运行中的暂停不开放。本轮为源码变更，上一轮 `release/sidepanel/` ZIP 未更新；原生右侧 SIDE_PANEL 出现方式继续遵守既有专项验证。
+
+![任务暂停](assets/screenshots/10-task-paused.png)
