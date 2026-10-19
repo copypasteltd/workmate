@@ -260,3 +260,7 @@ The native session controller fences late login/refresh writes, coalesces concur
 ![Offline sign-out feedback](assets/screenshots/23-offline-signout.png)
 
 This increment delivers source/builds. Historical frameless preview installers retain their recorded commits/hashes and do not include this session repair. `npm test` covers ten session race/persistence groups and existing native capabilities; delivery `qa:sessions` exercises actual Electron/PKCE and remote revocation.
+
+## Membership suspension renderer source
+
+The renderer explicitly synchronizes the Web suspension notice and builds with recorded source hashes. Frameless native controls and the removed Electron application menu remain enforced. Installers/portable packages were not rebuilt for this increment, and the current complete native authentication/page matrix remains unproven.

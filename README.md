@@ -284,3 +284,7 @@ Device sync and the explicit renderer snapshot now read workspace authorization 
 显式 renderer 快照同步规范邀请、独立成员 ID、项目授权选择、分页、投递状态与移除确认；主进程传递企业头。45 份 renderer 来源摘要随仓库记录。当前源码类型检查和构建通过；历史安装包及完整原生启动/认证旅程尚未完成本轮验收。
 
 The explicit 45-file renderer snapshot includes canonical invitation/member operations, project selection, pagination, delivery status and removal confirmation. IPC forwards the tenant header. Current sources typecheck and build; historical installers and the expanded native launch/authentication journey are not accepted as this increment.
+
+## 成员暂停反馈来源同步
+
+renderer 已从明确指定的 Web 来源同步后台暂停提示并构建，来源摘要随仓库保存。原生无边框、自绘窗口控件和菜单移除规则保持有效；本轮未重新打安装器/便携包，也未完成当前原生页面认证矩阵。
