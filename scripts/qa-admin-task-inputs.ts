@@ -17,7 +17,7 @@ const contexts: BrowserContext[] = [],
 async function call(page: Page, url: string, method = "GET", body?: unknown) {
   return page.evaluate(
     async ({ url, method, body }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const r = await fetch(url, {
         method,
         headers: {
@@ -77,7 +77,7 @@ try {
     .fill("Approved campaign sources");
   await user.locator('form button[type="submit"]').click();
   await user.waitForURL("**/app");
-  const me = await call(user, "/v1/me"),
+  const me = await call(user, "/v1/session/context"),
     tenant = me.memberships[0].id,
     project = (await call(user, `/v1/tenants/${tenant}/projects`)).items[0].id,
     base = `/v1/tenants/${tenant}/projects/${project}`;

@@ -65,7 +65,7 @@ try {
   await page
     .getByRole("button", { name: "Demo credit added", exact: true })
     .waitFor();
-  const me = await read(page, "/v1/me"),
+  const me = await read(page, "/v1/session/context"),
     tenant = me.memberships[0].id,
     project = (await read(page, `/v1/tenants/${tenant}/projects`)).items[0].id,
     base = `/v1/tenants/${tenant}/projects/${project}`;

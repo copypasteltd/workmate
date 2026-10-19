@@ -80,7 +80,7 @@ try {
     const b = (window as any).copyPasteBridge;
     return {
       config: await b.request("/v1/public/config", {}),
-      private: await b.request("/v1/me", {}),
+      private: await b.request("/v1/session/context", {}),
     };
   });
   assert.equal(signedOut.config.status, 200);
@@ -108,7 +108,10 @@ try {
   await page.waitForURL("**#/app");
   await page.locator(".demo-notice").waitFor();
   const me = await page.evaluate(async () => {
-    const r = await (window as any).copyPasteBridge.request("/v1/me", {});
+    const r = await (window as any).copyPasteBridge.request(
+      "/v1/session/context",
+      {},
+    );
     return r.body;
   });
   const tenant = me.memberships[0].id,

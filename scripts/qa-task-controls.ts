@@ -58,7 +58,7 @@ async function until<T>(
 async function api(url: string, method = "GET", body?: unknown) {
   return web.evaluate(
     async ({ url, method, body }) => {
-      const me = await (await fetch("/v1/me")).json(),
+      const me = await (await fetch("/v1/session/context")).json(),
         r = await fetch(url, {
           method,
           headers: {
@@ -247,7 +247,7 @@ try {
   await web
     .getByRole("button", { name: "Demo credit added", exact: true })
     .waitFor();
-  const me = await api("/v1/me");
+  const me = await api("/v1/session/context");
   tenant = me.memberships[0].id;
   project = (await api(`/v1/tenants/${tenant}/projects`)).items[0].id;
   base = `/v1/tenants/${tenant}/projects/${project}`;

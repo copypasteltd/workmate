@@ -21,7 +21,7 @@ async function json(page: Page, url: string, method = "GET", body?: unknown) {
   return page.evaluate(
     async ({ url, method, body }) => {
       const me = await (
-        await fetch("/v1/me", { credentials: "include" })
+        await fetch("/v1/session/context", { credentials: "include" })
       ).json();
       const r = await fetch(url, {
         method,
@@ -92,12 +92,12 @@ try {
   await page.waitForURL("**/app");
   await page.getByRole("heading").first().waitFor();
   await json(page, "/v1/me", "PATCH", { name: "Avery Chan" });
-  const me = await json(page, "/v1/me");
+  const me = await json(page, "/v1/session/context");
   const tenant = me.memberships[0].id;
   const projects = await json(page, `/v1/tenants/${tenant}/projects`);
   const base = `/v1/tenants/${tenant}/projects/${projects.items[0].id}`;
   const imageAsset = await page.evaluate(async (base) => {
-    const me = await (await fetch("/v1/me")).json();
+    const me = await (await fetch("/v1/session/context")).json();
     const bytes = await (await fetch("/copypaste-folds.png")).blob();
     const form = new FormData();
     form.append("file", bytes, "Blue folds · reference.png");

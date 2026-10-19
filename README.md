@@ -327,3 +327,13 @@ npm run qa:auth-navigation
 ```
 
 `qa:byte-integrity` 当前独立检出四组通过：36 SQL、28 固定摘要方法包、43 渲染来源摘要和 203 项原始 TAP。 / Fresh checkout integrity: four groups passed, covering 36 SQL files, 28 trusted packages, 43 renderer digests and the raw 203-test TAP.
+
+## 用户资料契约与启动诊断 / Profile contract and startup diagnosis
+
+用户端 QA 的工作区/CSRF 初始化改用 `GET /v1/session/context`；规范导航专项另外通过实际 HTTP 分别检查 Cookie 与 Bearer 的 `GET /v1/me` 原始 `User`，只保存合成账号的公开资料字段作为 schema 样本。后台 `/v1/admin/me` 及用户 `PATCH /v1/me` 不变。
+
+`npm run qa:sessions` 的当前十二组流程报告改存 `evidence/auth-recovery.json`，保留原七组 `sessions.json`。显式 Electron 可执行路径同时加载当前固定 Playwright 的 ready-event bridge；退出超时只清理本次 ChildProcess 的进程树，并仍将验证记为失败。`npm run qa:electron-readiness` 是不加载产品模块的 CJS/ESM 原生诊断，不属于业务验收。两次本轮失败及清理证据保留，完整原生旅程仍未通过。
+
+Client QA bootstrap uses `GET /v1/session/context`. Real HTTP profile checks validate canonical browser and native `User` responses and export only synthetic profile fields. Admin profile and user profile mutations keep their own routes. Current twelve-flow session QA writes `auth-recovery.json`, preserving the historical seven-flow receipt. The pinned Playwright ready-event bridge is explicit; bounded shutdown can kill only its owned process tree and still fails acceptance. Minimal Electron readiness is diagnostic evidence, not product acceptance. Expanded native journeys remain unproven.
+
+本轮平台 **207/207**、Web 实际流程 **4/4**、严格实际 HTTP 样本 **33/33**；旧 203 项回归保存在 `evidence/stage33-platform/`，首次 204/205 失败保存在 `evidence/profile-platform-first-failure/`，初始化夹具失败单独保留。 / This increment passes **207/207** platform tests, **4/4** real Web journeys and **33/33** captured HTTP schemas, while preserving the original 203-test receipt and the first failed 205-test run. Expanded native journeys remain unproven.

@@ -74,7 +74,7 @@ try {
   await page
     .getByRole("button", { name: "Demo credit added", exact: true })
     .waitFor();
-  const me = await call(page, "/v1/me"),
+  const me = await call(page, "/v1/session/context"),
     tenant = me.memberships[0].id;
   const project = (await call(page, `/v1/tenants/${tenant}/projects`)).items[0]
     .id;

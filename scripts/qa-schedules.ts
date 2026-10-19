@@ -41,7 +41,7 @@ async function request(
   body?: unknown,
 ) {
   const origin = "http://localhost:4317",
-    me = await (await c.request.get(origin + "/v1/me")).json();
+    me = await (await c.request.get(origin + "/v1/session/context")).json();
   const response = await c.request.fetch(origin + url, {
     method,
     headers: { "X-CSRF-Token": me.csrf_token, "Idempotency-Key": randomUUID() },
@@ -94,7 +94,7 @@ try {
     .fill("Campaign report cadence");
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL("**/app");
-  const me = await request(c, "/v1/me"),
+  const me = await request(c, "/v1/session/context"),
     tenant = me.memberships[0].id;
   const project = (await request(c, `/v1/tenants/${tenant}/projects`)).items[0]
     .id;

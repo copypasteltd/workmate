@@ -17,7 +17,9 @@ async function request(
   return page.evaluate(
     async ({ url, method, body }) => {
       const me = await (
-        await fetch(url.startsWith("/v1/admin") ? "/v1/admin/me" : "/v1/me")
+        await fetch(
+          url.startsWith("/v1/admin") ? "/v1/admin/me" : "/v1/session/context",
+        )
       ).json();
       const response = await fetch(url, {
         method,
@@ -72,7 +74,7 @@ try {
   await page.locator('input[name="project_name"]').fill("Autumn campaign");
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL("**/app");
-  const me = await request(page, "/v1/me"),
+  const me = await request(page, "/v1/session/context"),
     tenant = me.body.memberships[0].id,
     projects = await request(page, `/v1/tenants/${tenant}/projects`),
     base = `/v1/tenants/${tenant}/projects/${projects.body.items[0].id}`;

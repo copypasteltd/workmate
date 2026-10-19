@@ -26,7 +26,7 @@ async function call(
 ) {
   return page.evaluate(
     async ({ url, method, body, tenant }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const r = await fetch(url, {
         method,
         headers: {
@@ -93,7 +93,7 @@ try {
   await page
     .getByRole("button", { name: "Demo credit added", exact: true })
     .waitFor();
-  const me = (await call(page, "/v1/me")).data,
+  const me = (await call(page, "/v1/session/context")).data,
     tenant = me.memberships[0].id,
     project = (await call(page, `/v1/tenants/${tenant}/projects`)).data.items[0]
       .id,
@@ -127,15 +127,13 @@ try {
   await modal.getByRole("button", { name: "Save entry", exact: true }).click();
   await modal.waitFor({ state: "hidden" });
   await page.getByRole("button", { name: "Upload file", exact: true }).click();
-  await page
-    .locator('input[type="file"]')
-    .setInputFiles({
-      name: "campaign-brief.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from(
-        "Campaign brief · 港島秋日企劃\nUse approved bilingual product facts.",
-      ),
-    });
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "campaign-brief.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from(
+      "Campaign brief · 港島秋日企劃\nUse approved bilingual product facts.",
+    ),
+  });
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Upload or resume", exact: true })
@@ -158,14 +156,12 @@ try {
   await modal.getByLabel("Pinned version").waitFor();
   await modal.getByRole("button", { name: "Save entry", exact: true }).click();
   await modal.waitFor({ state: "hidden" });
-  let row = page
-    .locator(".cloud-file-row")
-    .filter({
-      has: page.getByRole("button", {
-        name: "Pinned campaign brief",
-        exact: true,
-      }),
-    });
+  let row = page.locator(".cloud-file-row").filter({
+    has: page.getByRole("button", {
+      name: "Pinned campaign brief",
+      exact: true,
+    }),
+  });
   await row.getByRole("button", { name: "Edit or move", exact: true }).click();
   modal = page.getByRole("dialog");
   await modal
@@ -205,15 +201,13 @@ try {
     .getByLabel("File workspace")
     .selectOption({ label: "Private conversation: Campaign website" });
   await page.getByRole("button", { name: "Upload file", exact: true }).click();
-  await page
-    .locator('input[type="file"]')
-    .setInputFiles({
-      name: "private-launch-notes.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from(
-        "Private notes for the campaign. Publish only an approved copy.",
-      ),
-    });
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "private-launch-notes.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from(
+      "Private notes for the campaign. Publish only an approved copy.",
+    ),
+  });
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Upload or resume", exact: true })
@@ -222,14 +216,12 @@ try {
   await folders
     .getByRole("button", { name: "Attachments", exact: true })
     .click();
-  row = page
-    .locator(".cloud-file-row")
-    .filter({
-      has: page.getByRole("button", {
-        name: "private-launch-notes.txt",
-        exact: true,
-      }),
-    });
+  row = page.locator(".cloud-file-row").filter({
+    has: page.getByRole("button", {
+      name: "private-launch-notes.txt",
+      exact: true,
+    }),
+  });
   await row.getByRole("button", { name: "Publish copy", exact: true }).click();
   modal = page.getByRole("dialog");
   await modal

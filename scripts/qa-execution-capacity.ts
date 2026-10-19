@@ -26,7 +26,7 @@ let adminContext: BrowserContext | undefined;
 async function call(page: Page, url: string, method = "GET", body?: unknown) {
   return page.evaluate(
     async ({ url, method, body }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const r = await fetch(url, {
         method,
         headers: {
@@ -100,7 +100,7 @@ try {
   await page
     .getByRole("button", { name: "Demo credit added", exact: true })
     .waitFor();
-  const me = await call(page, "/v1/me"),
+  const me = await call(page, "/v1/session/context"),
     tenant = me.memberships[0].id,
     project = (await call(page, `/v1/tenants/${tenant}/projects`)).items[0].id,
     base = `/v1/tenants/${tenant}/projects/${project}`;

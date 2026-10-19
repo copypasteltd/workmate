@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-19T14:51:58.609Z",
+  "at": "2026-10-19T15:41:10.795Z",
   "scope": "Real canonical Web email sign-in and user-activated cross-origin S256 consent to an owned loopback callback; actual token exchange and sign-out. Does not replace current Electron/MV3 first-exchange acceptance.",
   "model_calls": 0,
   "browser_version": "156.0.8078.4",
@@ -14,12 +14,26 @@
       "status": "passed"
     },
     {
+      "name": "canonical browser and native current-user responses expose only User fields; workspace bootstrap loads separately with browser CSRF",
+      "status": "passed"
+    },
+    {
       "name": "canonical browser sign-out clears both product cookies and safely accepts a repeated signed-out request",
       "status": "passed"
     }
   ],
   "errors": [],
   "observed": [
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 401
+    },
     {
       "method": "POST",
       "path": "/v1/auth/challenges",
@@ -32,8 +46,53 @@
     },
     {
       "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
       "path": "/v1/auth/authorize",
       "status": 302
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/session/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/sessions",
+      "status": 200
     }
   ],
   "browser_closed": true

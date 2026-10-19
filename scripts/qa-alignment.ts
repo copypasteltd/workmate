@@ -22,7 +22,7 @@ async function request(
 ) {
   return page.evaluate(
     async ({ url, method, body }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const r = await fetch(url, {
         method,
         headers: {
@@ -99,7 +99,7 @@ try {
     name: "normal email onboarding displays synthetic mode and owner receives one-time mock credit",
     status: "passed",
   });
-  const me = await request(page, "/v1/me"),
+  const me = await request(page, "/v1/session/context"),
     tenant = me.memberships[0].id;
   const project = (await request(page, `/v1/tenants/${tenant}/projects`))
     .items[0].id;

@@ -24,7 +24,7 @@ async function call(
 ) {
   return page.evaluate(
     async ({ url, method, body, tenant }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const r = await fetch(url, {
         method,
         headers: {
@@ -83,7 +83,7 @@ try {
     .fill("Reusable campaign methods");
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL("**/app");
-  const me = await call(page, "/v1/me"),
+  const me = await call(page, "/v1/session/context"),
     tenant = me.memberships[0].id,
     project = (await call(page, `/v1/tenants/${tenant}/projects`)).items[0].id,
     base = `/v1/tenants/${tenant}/projects/${project}`;

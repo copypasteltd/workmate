@@ -10,6 +10,8 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { parseEnv } from "node:util";
 import { createRequire } from "node:module";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { emailCode } from "./qa-auth.js";
@@ -83,7 +85,7 @@ function watch(page: Page) {
 async function api(page: Page, url: string, method = "GET", body?: unknown) {
   return page.evaluate(
     async ({ url, method, body }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const r = await fetch(url, {
         method,
         headers: {
@@ -250,7 +252,7 @@ try {
   await web.locator('input[name="project_name"]').fill("Authentication checks");
   await web.locator('form button[type="submit"]').click();
   await web.waitForURL("**/app");
-  userId = (await api(web, "/v1/me")).user.id;
+  userId = (await api(web, "/v1/session/context")).user.id;
   fixtureUsers.push(userId);
   await web.goto("http://localhost:4317/app/settings", {
     waitUntil: "domcontentloaded",
@@ -258,17 +260,32 @@ try {
   await web.locator('.session-row[data-client="web"]').waitFor();
 
   app = await _electron.launch({
+    timeout: 60000,
     executablePath: path.join(
       desktop,
       "node_modules/electron/dist/electron.exe",
     ),
-    args: [desktop, "--disable-gpu"],
+    // Playwright omits its ready-event bridge when executablePath is supplied.
+    // Use the loader shipped with this exact pinned Playwright installation.
+    args: [
+      "--require",
+      path.join(
+        path.dirname(
+          createRequire(import.meta.url).resolve(
+            "playwright-core/package.json",
+          ),
+        ),
+        "lib/server/electron/loader.js",
+      ),
+      desktop,
+      "--disable-gpu",
+    ],
     env: {
       ...process.env,
       COPYPASTE_USER_DATA: path.resolve(".data/sessions-desktop-" + run),
     },
   });
-  const native = await app.firstWindow();
+  const native = await app.firstWindow({ timeout: 45000 });
   Object.assign(
     runtime,
     await app.evaluate(() => ({
@@ -495,7 +512,10 @@ try {
   });
   const firstDesktop = await native.evaluate(async () => {
     try {
-      return await (window as any).copyPasteBridge.request("/v1/me", {});
+      return await (window as any).copyPasteBridge.request(
+        "/v1/session/context",
+        {},
+      );
     } catch (e) {
       return { transport_error: e instanceof Error ? e.message : String(e) };
     }
@@ -504,7 +524,7 @@ try {
   assert.equal(
     (
       await native.evaluate(() =>
-        (window as any).copyPasteBridge.request("/v1/me", {}),
+        (window as any).copyPasteBridge.request("/v1/session/context", {}),
       )
     ).status,
     200,
@@ -575,14 +595,17 @@ try {
     });
   });
   const firstExtension = await panel.evaluate(() =>
-    chrome.runtime.sendMessage({ type: "API", path: "/v1/me" }),
+    chrome.runtime.sendMessage({ type: "API", path: "/v1/session/context" }),
   );
   assert.equal(firstExtension.ok, false);
   assert.match(firstExtension.error, /Controlled response loss/);
   assert.equal(
     (
       await panel.evaluate(() =>
-        chrome.runtime.sendMessage({ type: "API", path: "/v1/me" }),
+        chrome.runtime.sendMessage({
+          type: "API",
+          path: "/v1/session/context",
+        }),
       )
     ).ok,
     true,
@@ -731,7 +754,7 @@ try {
     await replacementWeb.locator('input[name="code"]').fill(code);
     await replacementWeb.locator('form button[type="submit"]').click();
     await replacementWeb.waitForURL("**/welcome");
-    const me = await api(replacementWeb, "/v1/me");
+    const me = await api(replacementWeb, "/v1/session/context");
     replacementUser = me.user.id;
     replacementName = me.user.name;
     fixtureUsers.push(replacementUser);
@@ -874,7 +897,7 @@ try {
   assert.equal(
     await native.evaluate(() =>
       (window as any).copyPasteBridge
-        .request("/v1/me", {})
+        .request("/v1/session/context", {})
         .then((r: { status: number }) => r.status),
     ),
     401,
@@ -948,8 +971,43 @@ try {
   };
   if (app)
     await cleanup("Desktop cleanup", async () => {
-      await app!.close();
+      const owned = app!.process();
+      let deadline: ReturnType<typeof setTimeout> | undefined;
+      let forced = false;
+      try {
+        await Promise.race([
+          app!.close(),
+          new Promise((_, reject) => {
+            deadline = setTimeout(
+              () => reject(new Error("Owned Desktop shutdown timed out")),
+              10000,
+            );
+          }),
+        ]);
+      } catch (error) {
+        if (owned.pid && owned.exitCode === null && owned.signalCode === null) {
+          // The ChildProcess handle belongs to this launch, including its Windows shell.
+          await promisify(execFile)(
+            "taskkill",
+            ["/PID", String(owned.pid), "/T", "/F"],
+            { windowsHide: true, timeout: 5000 },
+          );
+          forced = true;
+        } else throw error;
+      } finally {
+        clearTimeout(deadline);
+      }
+      await until(
+        async () => owned.exitCode !== null || owned.signalCode !== null,
+        Boolean,
+        "owned Desktop process exit",
+        5000,
+      );
       desktopClosed = true;
+      if (forced)
+        throw new Error(
+          "Owned Desktop required forced cleanup; graceful shutdown was not verified",
+        );
     });
   if (mv3)
     await cleanup("MV3 cleanup", async () => {
@@ -980,7 +1038,7 @@ try {
     process.exitCode = 1;
   await mkdir("evidence", { recursive: true });
   await writeFile(
-    "evidence/sessions.json",
+    "evidence/auth-recovery.json",
     JSON.stringify(
       {
         at: new Date().toISOString(),

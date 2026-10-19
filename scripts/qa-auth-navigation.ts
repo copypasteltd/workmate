@@ -7,7 +7,8 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import { emailCode } from "./qa-auth.js";
 const origin = "http://localhost:4310",
-  web = "http://localhost:4317";
+  web = "http://localhost:4317",
+  email = "auth-navigation-" + randomUUID() + "@example.invalid";
 const checks: { name: string; status: string }[] = [],
   errors: string[] = [];
 const observed: { method: string; path: string; status: number }[] = [];
@@ -43,7 +44,10 @@ const listener = createServer((req, res) => {
     })
     .end("Owned authentication check completed.");
 });
-const pass = (name: string) => checks.push({ name, status: "passed" });
+const pass = (name: string) => {
+  checks.push({ name, status: "passed" });
+  console.log("PASS: " + name);
+};
 try {
   assert.equal(
     (await (await fetch(origin + "/v1/public/config")).json()).data_mode,
@@ -83,6 +87,9 @@ try {
         "/v1/auth/challenges",
         "/v1/auth/sessions",
         "/v1/auth/authorize",
+        "/v1/me",
+        "/v1/session/context",
+        "/v1/me/sessions",
       ].includes(u.pathname)
     )
       observed.push({
@@ -97,9 +104,7 @@ try {
       encodeURIComponent("https://external.example.invalid/"),
     { waitUntil: "domcontentloaded" },
   );
-  await page
-    .locator('input[name="email"]')
-    .fill("auth-navigation-" + randomUUID() + "@example.invalid");
+  await page.locator('input[name="email"]').fill(email);
   const otp = await emailCode(page, () =>
     page!.locator('form button[type="submit"]').click(),
   );
@@ -176,10 +181,67 @@ try {
   pass(
     "a normal user click navigates to canonical GET consent, reaches the owned loopback with matching state and exchanges its S256 code for real 201 tokens",
   );
+  await page.goto(web + "/welcome", { waitUntil: "domcontentloaded" });
+  await page.locator('input[name="name"]').fill("Synthetic profile workspace");
+  await page
+    .locator('input[name="project_name"]')
+    .fill("Profile contract checks");
+  await page.locator('form button[type="submit"]').click();
+  await page.waitForURL("**/app");
   await page.goto(web + "/app/settings", { waitUntil: "domcontentloaded" });
-  const meResponse = await context.request.get(origin + "/v1/me");
+  await page.locator('.session-row[data-client="web"]').waitFor();
+  const profileResponse = await context.request.get(origin + "/v1/me");
+  assert.equal(profileResponse.status(), 200);
+  const profile = await profileResponse.json();
+  assert.deepEqual(Object.keys(profile).sort(), [
+    "display_name",
+    "email",
+    "id",
+  ]);
+  assert.equal(profile.email, email);
+  const nativeProfileResponse = await context.request.get(origin + "/v1/me", {
+    headers: { Authorization: "Bearer " + tokens.access_token },
+  });
+  assert.equal(nativeProfileResponse.status(), 200);
+  const nativeProfile = await nativeProfileResponse.json();
+  assert.deepEqual(nativeProfile, profile);
+  const meResponse = await context.request.get(origin + "/v1/session/context");
   assert.equal(meResponse.status(), 200);
   const me = await meResponse.json();
+  assert.equal(me.user.id, profile.id);
+  assert.ok(me.csrf_token);
+  await writeFile(
+    "evidence/auth-profile-contract-samples.json",
+    JSON.stringify(
+      {
+        at: new Date().toISOString(),
+        origin,
+        scope:
+          "Actual HTTP User responses from canonical GET /v1/me; only synthetic account profile fields, no session credentials",
+        samples: [
+          {
+            schema: "User",
+            method: "GET",
+            path: "/v1/me",
+            credential: "browser",
+            response: profile,
+          },
+          {
+            schema: "User",
+            method: "GET",
+            path: "/v1/me",
+            credential: "native",
+            response: nativeProfile,
+          },
+        ],
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  pass(
+    "canonical browser and native current-user responses expose only User fields; workspace bootstrap loads separately with browser CSRF",
+  );
   const signout = await context.request.delete(origin + "/v1/auth/session", {
     headers: { "X-CSRF-Token": me.csrf_token, "Idempotency-Key": randomUUID() },
   });
@@ -198,6 +260,19 @@ try {
     "canonical browser sign-out clears both product cookies and safely accepts a repeated signed-out request",
   );
 } catch (error) {
+  if (page && !page.isClosed()) {
+    report.failure_page_path = new URL(page.url()).pathname;
+    try {
+      await page.screenshot({
+        path: "evidence/auth-context-failure.png",
+        fullPage: true,
+        timeout: 5000,
+      });
+      report.failure_screenshot = "auth-context-failure.png";
+    } catch {
+      report.failure_screenshot = "unavailable";
+    }
+  }
   errors.push(error instanceof Error ? error.stack! : String(error));
   process.exitCode = 1;
 } finally {

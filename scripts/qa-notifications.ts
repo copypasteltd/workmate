@@ -25,7 +25,7 @@ async function call(
 ) {
   return page.evaluate(
     async ({ url, method, body, tenant }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const response = await fetch(url, {
         method,
         headers: {
@@ -91,7 +91,7 @@ try {
   await page
     .getByRole("button", { name: "Demo credit added", exact: true })
     .waitFor();
-  const me = await call(page, "/v1/me"),
+  const me = await call(page, "/v1/session/context"),
     tenant = me.memberships[0].id;
   const first = (await call(page, `/v1/tenants/${tenant}/projects`)).items[0];
   const second = await call(page, `/v1/tenants/${tenant}/projects`, "POST", {

@@ -35,7 +35,7 @@ async function request(
 ) {
   return page.evaluate(
     async ({ url, method, body, tenant }) => {
-      const me = await (await fetch("/v1/me")).json();
+      const me = await (await fetch("/v1/session/context")).json();
       const r = await fetch(url, {
         method,
         headers: {
@@ -108,7 +108,7 @@ try {
   await page.locator('input[name="project_name"]').fill("Spring review");
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL("**/app");
-  const me = await call(page, "/v1/me"),
+  const me = await call(page, "/v1/session/context"),
     tenant = me.memberships[0].id,
     project = (await call(page, `/v1/tenants/${tenant}/projects`)).items[0].id,
     base = `/v1/tenants/${tenant}/projects/${project}`;
@@ -128,14 +128,12 @@ try {
   );
   await modal.getByRole("button", { name: "Save design", exact: true }).click();
   const design = await (await createdResponse).json();
-  const card = page
-    .locator("article")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "Harbour brand review",
-        exact: true,
-      }),
-    });
+  const card = page.locator("article").filter({
+    has: page.getByRole("heading", {
+      name: "Harbour brand review",
+      exact: true,
+    }),
+  });
   await card.waitFor();
   passed(
     "real email sign-in and onboarding create a persisted bilingual layered design through the Web form",
@@ -379,11 +377,9 @@ try {
   await native.evaluate(() => {
     location.hash = "/app/creative";
   });
-  const nativeCard = native
-    .locator("article")
-    .filter({
-      has: native.getByRole("heading", { name: design.name, exact: true }),
-    });
+  const nativeCard = native.locator("article").filter({
+    has: native.getByRole("heading", { name: design.name, exact: true }),
+  });
   await nativeCard
     .getByRole("button", { name: "PDF review copy", exact: true })
     .click();

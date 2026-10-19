@@ -54,7 +54,9 @@ async function request(
 ) {
   const origin = admin ? "http://localhost:4318" : "http://localhost:4317";
   const me = await (
-    await c.request.get(origin + (admin ? "/v1/admin/me" : "/v1/me"))
+    await c.request.get(
+      origin + (admin ? "/v1/admin/me" : "/v1/session/context"),
+    )
   ).json();
   const r = await c.request.fetch(origin + url, {
     method,
@@ -122,7 +124,7 @@ try {
   await user.p.locator('input[name="project_name"]').fill("Company marketing");
   await user.p.locator('form button[type="submit"]').click();
   await user.p.waitForURL("**/app");
-  tenant = (await request(user.c, "/v1/me")).memberships[0].id;
+  tenant = (await request(user.c, "/v1/session/context")).memberships[0].id;
   checks.push({
     name: "email registration and workspace onboarding before company federation",
     status: "passed",
@@ -338,7 +340,7 @@ try {
   const webMe = await user.c.request.get("http://localhost:4317/v1/me");
   assert.equal(webMe.status(), 401);
   const nativeMe = await workspace.evaluate(() =>
-    (window as any).copyPasteBridge.request("/v1/me", {}),
+    (window as any).copyPasteBridge.request("/v1/session/context", {}),
   );
   assert.equal(nativeMe.status, 401);
   checks.push({

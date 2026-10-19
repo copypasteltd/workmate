@@ -39,7 +39,9 @@ async function request(
 ) {
   return page.evaluate(
     async ({ url, method, body, admin }) => {
-      const me = await (await fetch(admin ? "/v1/admin/me" : "/v1/me")).json();
+      const me = await (
+        await fetch(admin ? "/v1/admin/me" : "/v1/session/context")
+      ).json();
       const response = await fetch(url, {
         method,
         headers: {
@@ -123,7 +125,7 @@ try {
   await user.locator('input[name="project_name"]').fill("Visible review scope");
   await user.locator('form button[type="submit"]').click();
   await user.waitForURL("**/app");
-  const me = await call(user, "/v1/me"),
+  const me = await call(user, "/v1/session/context"),
     tenant = me.memberships[0].id,
     project = (await call(user, `/v1/tenants/${tenant}/projects`)).items[0].id,
     deniedProject = await call(user, `/v1/tenants/${tenant}/projects`, "POST", {
