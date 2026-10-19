@@ -314,8 +314,8 @@ Workspace refresh uses authenticated `GET /v1/session/context`; canonical `GET /
 
 ## 成员与邀请 / Members and invitations
 
-成员页支持角色和项目选择、分页、所有者编辑、移除确认，以及邀请投递状态、重发和撤销。邮件登录保留邀请地址并选择实际加入的企业。未知响应保留操作身份，退出后拒绝迟到的上下文响应。单元检查 5/5；早期浏览器六组通过。当前最终页面复核超时，失败单列保留，自建实例关闭；当前服务端真实 HTTP 五组通过。
+成员页支持角色和项目选择、分页、所有者编辑、移除确认，以及邀请投递状态、重发和撤销。邮件登录保留邀请地址并选择实际加入的企业。未知响应保留操作身份，退出后拒绝迟到的上下文响应。单元检查 5/5；当前服务端真实 HTTP 五组通过。最终页面复核超时，失败单列保留，自建实例关闭。早期成功报告被后续运行覆盖，不作为可复核验收证据。
 
-The member page supports project selection, paging, owner edits, removal confirmation, delivery status, resend and revocation. Invite links survive email login and select the joined workspace. Unknown replies retain their operation identity; late context/member responses cannot cross a sign-in revision. Unit checks pass 5/5. Six earlier browser journeys passed; final-source page reruns timed out and remain unaccepted, with owned browsers closed. Five current-source HTTP groups pass separately.
+The member page supports project selection, paging, owner edits, removal confirmation, delivery status, resend and revocation. Invite links survive email login and select the joined workspace. Unknown replies retain their operation identity; late context/member responses cannot cross a sign-in revision. Unit checks pass 5/5 and five current-source HTTP groups pass separately. Final-source page reruns timed out; owned browsers closed. The earlier successful receipt was overwritten and is excluded from auditable acceptance evidence.
 
 ![早期实际成员页 / Earlier verified member page](assets/screenshots/53-member-invitations.png)
