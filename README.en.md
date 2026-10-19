@@ -148,7 +148,7 @@ Four browser QA groups cover these flows, two real Codex tasks driven by synthet
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **180/180**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **185/185**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -270,7 +270,7 @@ flowchart LR
   Version --> Lifecycle[Source quarantine and erasure guards]
 ```
 
-The full platform regression passes **180/180**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
+The full platform regression passes **185/185**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
 
 Upload-allocation keys persist first and are scoped by user, tenant, project and file digest; choosing the same file resumes it. Editing any input invalidates preview and confirmation. Four widths, both themes and both languages passed all 16 combinations.
 
@@ -279,3 +279,7 @@ Upload-allocation keys persist first and are scoped by user, tenant, project and
 ![Frozen source and correction history](assets/screenshots/62-xlsx-source-and-lineage.png)
 
 ![Traditional Chinese dark mobile](assets/screenshots/63-xlsx-mobile-zh-dark.png)
+
+Task details now offer Pause queued task / Resume task before the first model call, using the current task version and refreshing conflicts. The original task and reservation are retained. Running tasks retain cancellation; paid-step continuation remains unfinished. Delivery `qa:task-controls` verifies Web, source Desktop and MV3 controls, including one settlement after resumption.
+
+![Paused task](assets/screenshots/49-task-paused.png)

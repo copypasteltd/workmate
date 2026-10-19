@@ -150,7 +150,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **180/180**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **185/185**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -271,7 +271,7 @@ flowchart LR
   Version --> Lifecycle[隔离或删除依赖守卫]
 ```
 
-平台完整回归 **180/180**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
+平台完整回归 **185/185**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
 
 上传分配键按用户、企业、项目及文件摘要先保存，重选同一文件可继续；更换输入使预览和确认失效。四宽度、两主题及繁英 16 种界面组合已验证。
 
@@ -280,3 +280,7 @@ flowchart LR
 ![冻结来源和更正历史](assets/screenshots/62-xlsx-source-and-lineage.png)
 
 ![繁中深色移动端](assets/screenshots/63-xlsx-mobile-zh-dark.png)
+
+任务详情新增“暂停排队 / 继续工作”，仅在首次模型调用前可用；使用当前任务版本，冲突后刷新，原任务和预留预算保持一致。运行中任务继续提供取消；已付费步骤恢复仍未实现。Delivery `qa:task-controls` 已实际验证 Web、源码 Desktop 与 MV3 的暂停/恢复/取消及恢复后一次结算。
+
+![任务暂停](assets/screenshots/49-task-paused.png)
