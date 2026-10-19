@@ -208,3 +208,17 @@ flowchart LR
   Policy --> IndependentReview --> Recheck --> DirectApply
   DirectApply --> MembershipAndAudit
 ```
+
+
+## 全局账户与单企业状态
+
+用户详情的「编辑账户」分开管理名称/标签、账户状态和全部会话撤销；企业状态弹窗使用同一规范预览流程。表单读取当前版本与实际能力，确认前展示差异和在途处理，结果保持可见。关闭/重开默认需要另一位管理员，审批页先加载冻结命令再允许决定。全部写入使用规范 POST / 202 AdminOperation，失联重试保留同一幂等键；旧账户 PATCH 不再使用。界面沿用现有品牌 token、繁英标签、焦点管理及模态框，后端当前鉴权是最终边界。
+
+全局冻结会撤销各端凭证；企业暂停仅影响该企业。取消已经执行的工作仍须结算或对账；关闭保留数据，不替代隐私删除。当前构建与 API/专项证据不替代完整页面、原生或发布包验收。
+
+
+当前新账户表单实际浏览器 **5/5**：资料预览/确认、冻结、关闭进入待审批记录并拒绝自批、三宽度与英文浅色／繁中深色、Escape。最终实例均已关闭，其他成员/原生未完成项保持独立。结果页直接定位已筛选的审批或操作记录。
+
+![资料变更预览](assets/screenshots/54-account-profile-preview.png)
+![冻结命令独立复核](assets/screenshots/55-account-closure-review.png)
+![繁中深色账户控制](assets/screenshots/56-account-control-dark-zh.png)

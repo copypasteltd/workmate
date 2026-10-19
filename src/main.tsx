@@ -58,6 +58,7 @@ import {
 } from "lucide-react";
 import { api, post, patch, download } from "./api";
 import { AdminMembershipManager, MembershipChangeFacts } from "./memberships";
+import { AdminAccountManager, AccountChangeFacts } from "./accounts";
 import { AdminDeletions } from "./deletions";
 import { DataModeNotice } from "./data-mode";
 import { EnterpriseSignIn } from "./federation";
@@ -785,23 +786,36 @@ function Value({ field, value }: { field: string; value: any }) {
 function Section({ section }: { section: string }) {
   const { t } = useI18n(),
     a = useAdmin(),
-    navTo = useNavigate();
+    navTo = useNavigate(),
+    location = useLocation();
   const [refresh, setRefresh] = useState(0),
     [page, setPage] = useState(1),
-    [search, setSearch] = useState(""),
-    [sub, setSub] = useState(""),
+    [search, setSearch] = useState(
+      () => new URLSearchParams(location.search).get("search") ?? "",
+    ),
+    [sub, setSub] = useState(() =>
+      section === "audit" &&
+      new URLSearchParams(location.search).get("view") === "approvals"
+        ? "approvals"
+        : "",
+    ),
     [operation, setOperation] = useState<string | null>(null),
     [row, setRow] = useState<any>(null),
     [dialog, setDialog] = useState<string | null>(null),
     [err, setErr] = useState<Error | null>(null);
   useEffect(() => {
     setPage(1);
-    setSearch("");
-    setSub("");
+    const query = new URLSearchParams(location.search);
+    setSearch(query.get("search") ?? "");
+    setSub(
+      section === "audit" && query.get("view") === "approvals"
+        ? "approvals"
+        : "",
+    );
     setRow(null);
     setOperation(null);
     setDialog(null);
-  }, [section]);
+  }, [section, location.search]);
   const active =
     section === "audit" && sub === "approvals"
       ? "approvals"
@@ -1793,7 +1807,11 @@ function UserDetail() {
                     {t("管理企業成員", "Manage membership")}
                   </button>
                 )}
-                {a.has("admin.users.status.write") && (
+                {[
+                  "admin.users.status.write",
+                  "admin.users.profile.write",
+                  "admin.users.sessions.revoke",
+                ].some((p) => a.has(p)) && (
                   <button
                     className="button secondary"
                     onClick={() => setEdit(true)}
@@ -1896,41 +1914,15 @@ function UserDetail() {
             )}
           </section>
           {edit && (
-            <Modal
-              title={t("管理用戶帳戶", "Manage user account")}
-              onClose={() => setEdit(false)}
-            >
-              <AsyncForm
-                submitLabel={t("儲存變更", "Save changes")}
-                onSubmit={async (f) => {
-                  await patch("/v1/admin/users/" + id, {
-                    name: String(f.get("name")),
-                    status: String(f.get("status")),
-                    revoke_sessions: f.get("revoke") === "on",
-                    reason: String(f.get("reason")),
-                  });
-                  setEdit(false);
-                  setRefresh((v) => v + 1);
-                }}
-              >
-                <Field label={t("名稱", "Name")}>
-                  <input name="name" defaultValue={data.user.name} required />
-                </Field>
-                <Field label={t("帳戶狀態", "Account status")}>
-                  <select name="status" defaultValue={data.user.status}>
-                    <option value="active">Active</option>
-                    <option value="suspended">Suspended</option>
-                  </select>
-                </Field>
-                <label className="checkbox">
-                  <input type="checkbox" name="revoke" />
-                  {t("撤銷所有登入會話", "Revoke all active sessions")}
-                </label>
-                <Field label={t("原因", "Reason")}>
-                  <textarea name="reason" minLength={3} rows={3} required />
-                </Field>
-              </AsyncForm>
-            </Modal>
+            <AdminAccountManager
+              account={a.me.user.id}
+              type="users"
+              target={id!}
+              onClose={() => {
+                setEdit(false);
+                setRefresh((v) => v + 1);
+              }}
+            />
           )}
           {operation && (
             <BillingModal
@@ -1981,6 +1973,29 @@ function AdminDialog({
       ? `/v1/admin/operations/${row.id}/membership-review`
       : null,
   );
+  const accountAction = [
+    "users.profile.write",
+    "users.status.write",
+    "users.sessions.revoke",
+    "tenants.status.write",
+  ].includes(row?.action);
+  const accountReview = useData(
+    kind === "approval" && accountAction
+      ? `/v1/admin/operations/${row.id}/account-review`
+      : null,
+  );
+  if (kind === "tenant")
+    return (
+      <AdminAccountManager
+        account={a.me.user.id}
+        type="tenants"
+        target={row.id}
+        onClose={() => {
+          onDone();
+          onClose();
+        }}
+      />
+    );
   const titles: Record<string, [string, string]> = {
     tenant: ["變更企業狀態", "Change workspace status"],
     content: ["管理內容狀態", "Manage content"],
@@ -2040,11 +2055,6 @@ function AdminDialog({
             const reason = String(
               f.get("reason") ?? "Admin reviewed publication",
             );
-            if (kind === "tenant")
-              await patch("/v1/admin/tenants/" + row.id, {
-                status: String(f.get("status")),
-                reason,
-              });
             if (kind === "content")
               await post("/v1/admin/content/" + row.id + "/action", {
                 action: String(f.get("action")),
@@ -2060,8 +2070,9 @@ function AdminDialog({
               });
             if (kind === "approval")
               if (
-                row.action === "tenants.members.write" &&
-                !membershipReview.data
+                (row.action === "tenants.members.write" &&
+                  !membershipReview.data) ||
+                (accountAction && !accountReview.data)
               )
                 throw new Error(
                   t(
@@ -2143,17 +2154,6 @@ function AdminDialog({
               </div>
             </div>
           )}
-          {kind === "tenant" && (
-            <Field label={t("企業狀態", "Workspace status")}>
-              <select
-                name="status"
-                defaultValue={row.status === "active" ? "suspended" : "active"}
-              >
-                <option value="active">Active</option>
-                <option value="suspended">Suspended</option>
-              </select>
-            </Field>
-          )}
           {kind === "content" && (
             <>
               <Field label={t("操作", "Action")}>
@@ -2227,6 +2227,31 @@ function AdminDialog({
                         {t("策略版本", "Policy version")}:{" "}
                         <code>
                           {membershipReview.data.operation.policy_version_id}
+                        </code>
+                      </p>
+                    </>
+                  )}
+                </>
+              )}
+              {accountAction && (
+                <>
+                  <ErrorNotice error={accountReview.error} />
+                  {accountReview.loading && <Loading />}
+                  {accountReview.data && (
+                    <>
+                      <AccountChangeFacts
+                        target={accountReview.data.target_id}
+                        command={accountReview.data.command}
+                        before={accountReview.data.before}
+                      />
+                      <p>
+                        {t("審批期限", "Approval deadline")}:{" "}
+                        <DateText value={accountReview.data.expires_at} />
+                      </p>
+                      <p>
+                        {t("策略版本", "Policy version")}:{" "}
+                        <code>
+                          {accountReview.data.operation.policy_version_id}
                         </code>
                       </p>
                     </>

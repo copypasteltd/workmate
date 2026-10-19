@@ -208,3 +208,17 @@ flowchart LR
   Policy --> IndependentReview --> Recheck --> DirectApply
   DirectApply --> MembershipAndAudit
 ```
+
+
+## Global accounts and workspace state
+
+The user detail account dialog separates name/labels, account state and all-session revocation. Workspace state uses the same canonical preview flow. Controls load the current revision/capabilities, show frozen differences and in-flight handling, and retain the result until dismissal. Closure/reopening defaults to another administrator's review; approval screens load the frozen command before deciding. Canonical POST commands return 202 AdminOperation and retain one idempotency key after an unknown result. Obsolete account PATCH calls are removed. Existing brand tokens, English/Traditional Chinese labels, focus handling and modal components remain in use; backend authorization is decisive.
+
+Global suspension revokes credentials across clients; workspace suspension affects that workspace. Accepted work still requires settlement/reconciliation, and account closure retains data rather than performing privacy erasure. Build, API and targeted evidence do not establish complete UI, native or release acceptance.
+
+
+The new account form passes **5/5** real browser groups: profile preview/confirmation, freeze, closure navigation and visible self-review refusal, three widths with English/light and Traditional Chinese/dark, and Escape dismissal. All owned browser resources closed. Other membership/native open issues remain separate. Results link directly to filtered approval or operation records.
+
+![Profile differences](assets/screenshots/54-account-profile-preview.png)
+![Frozen account review](assets/screenshots/55-account-closure-review.png)
+![Traditional Chinese dark controls](assets/screenshots/56-account-control-dark-zh.png)
