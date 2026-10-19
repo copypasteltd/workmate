@@ -151,7 +151,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **145/145**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **147/147**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -203,3 +203,13 @@ flowchart LR
 ![当前依赖已就绪](assets/screenshots/46-template-ready.png)
 
 ![移动深色详情](assets/screenshots/47-template-mobile-dark.png)
+
+## PDF 导出与原版本重试
+
+设计画布可导出实际单页 PDF 审阅稿并立即下载，也可从素材页取回。界面说明 PDF 已栅格化，文字与图层仍在工程/SVG 编辑。过期版本显示刷新入口；接受后回执丢失重试不生成重复文件。
+
+七组 Web/源码 Desktop 验收包含真实邮箱、画布、版本冲突、繁英/两主题/四宽度及独立 PDF 解析渲染。模型依赖继续模拟，未宣称印刷交付或角色正式合格。
+
+![实际 PDF 导出](assets/screenshots/49-design-pdf-export.png)
+
+![下载 PDF 后实际渲染](assets/screenshots/50-design-pdf-render.png)

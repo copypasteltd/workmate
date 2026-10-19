@@ -1,4 +1,5 @@
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
+import { DesignExports } from "./design-exports";
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -1885,10 +1886,9 @@ function Creative() {
     w = useWorkspace(),
     [refresh, setRefresh] = useState(0),
     [open, setOpen] = useState(false),
-    [error, setError] = useState<Error | null>(null),
     [editing, setEditing] = useState<any>(null),
     [image, setImage] = useState("");
-  const { data } = useData(w.base + "/creative", refresh);
+  const { data, error } = useData(w.base + "/creative", refresh);
   const assets = useData(w.base + "/assets", refresh);
   const selectedImage = assets.data?.items.find((a: any) => a.id === image);
   const [title, setTitle] = useState("Make room for possibility."),
@@ -1986,39 +1986,18 @@ function Creative() {
             <article key={p.id} className="card project-card">
               <Layers size={26} />
               <h3>{p.name}</h3>
-              <span className="muted">
+              <span className="muted design-canvas-version">
                 {p.body.width} × {p.body.height} · v{p.version}
               </span>
               <button className="text-button" onClick={() => setEditing(p)}>
                 {t("編輯分層工程", "Edit layered source")}
               </button>
-              <footer>
-                {["svg", "png", "mp4"].map((format) => (
-                  <button
-                    key={format}
-                    className="text-button"
-                    onClick={() =>
-                      void post(w.base + "/creative/" + p.id + "/render", {
-                        format,
-                        ...(format === "mp4"
-                          ? { duration: 6, effect: "fade" }
-                          : {}),
-                      })
-                        .then(() => {
-                          setRefresh((v) => v + 1);
-                        })
-                        .catch(setError)
-                    }
-                  >
-                    {format === "svg"
-                      ? t("可編輯 SVG", "Editable SVG")
-                      : format === "png"
-                        ? "PNG"
-                        : t("動態 MP4", "Motion MP4")}
-                    <ArrowUpRight size={16} />
-                  </button>
-                ))}
-              </footer>
+              <DesignExports
+                key={w.base + "/" + p.id + "/" + p.version}
+                base={w.base}
+                design={p}
+                refresh={() => setRefresh((v) => v + 1)}
+              />
             </article>
           ))}
         </div>
@@ -2039,8 +2018,8 @@ function Creative() {
       )}
       <p className="section-note">
         {t(
-          "匯出檔案會保存在「素材與交付」。",
-          "Exported files are saved in Assets & deliverables.",
+          "匯出檔案保存在「素材與交付」。PDF 為單頁圖片審閱稿；文字與圖層請在分層工程或 SVG 中編輯。",
+          "Exports are saved in Assets & deliverables. PDF is a single-page raster review copy; edit text and layers in the source project or SVG.",
         )}
       </p>
       {editing && (

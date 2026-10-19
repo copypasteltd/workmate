@@ -149,7 +149,7 @@ Four browser QA groups cover these flows, two real Codex tasks driven by synthet
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **147/147**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -202,3 +202,13 @@ Eight Web/current-source Electron checks cover real sign-in, response-loss retri
 ![Current dependencies ready](assets/screenshots/46-template-ready.png)
 
 ![Mobile dark details](assets/screenshots/47-template-mobile-dark.png)
+
+## PDF export and original-version retries
+
+The design canvas exports and downloads actual single-page PDF review copies, also available from Assets. The UI explains that PDFs are rasterized; text and layers remain editable in the project/SVG. Stale versions offer a refresh. Retrying a lost accepted reply preserves the same file identity.
+
+Seven Web/current-source Desktop groups cover email sign-in, the canvas, version conflicts, both languages/themes, four widths and independent PDF parsing/rendering. Model dependencies remain simulated; print certification and live-role qualification are pending.
+
+![Actual PDF export](assets/screenshots/49-design-pdf-export.png)
+
+![Actual downloaded PDF rendering](assets/screenshots/50-design-pdf-render.png)
