@@ -331,4 +331,14 @@ Ten server groups are preserved in `evidence/admin-directory-final.tap`. Previou
 
 UI verification uses source Vite services; production builds are checked separately. It does not accept packaged or complete native journeys. Owned browsers/contexts close and owned test administrators/sessions/users are disabled without touching user browsers. Model calls are zero. Complete financial/VIP write contracts, consumption drilldown, older membership pages and native/release acceptance remain outstanding.
 
-Final current platform regression: **256/256**; directory UI/HTTP: **7/7**; strict response captures: **63/63**. The full TAP includes eleven new directory/export groups; the targeted legacy-consumer rerun passes **7/7**. Untouched TAP SHA-256: `e0741c2315252c644229cfd51198c911c8272c66b365924f4a3e92fa396f5079`. The initial 252/255 legacy-consumer failure is preserved under stage38-initial; original contracts and security assertions were retained.
+Historical directory-stage platform regression: **256/256**; directory UI/HTTP: **7/7**; strict response captures: **63/63**. The full TAP includes eleven new directory/export groups; the targeted legacy-consumer rerun passes **7/7**. Untouched TAP SHA-256: `e0741c2315252c644229cfd51198c911c8272c66b365924f4a3e92fa396f5079`. The initial 252/255 legacy-consumer failure is preserved under stage38-initial; original contracts and security assertions were retained.
+
+## Canonical financial forms and approval increment
+
+The final full platform regression passes **291/291**, with 664 participating source files and the verifier unchanged before/after execution. Raw TAP SHA-256: `3384f423b23b9d764af55daeffbe7bcf14669791defbddfc9ba0358cd7bcb6c7`. This fee increment does not change the tested frameless Desktop or native Chrome Side Panel bytes.
+
+`npm run qa:admin-fees` verifies the three fee forms, pure previews, idempotent receipt recovery, distinct independent approval requests, actual ledger and bilingual light/dark/mobile pages using real email/TOTP sessions. Four groups and ten actual strict HTTP captures pass. Runtime/verifier sources match before and after, the owned browser closes, and user tabs are untouched. Five screenshots ship in the independent Admin repository. External payment/model calls are zero.
+
+The focused fee/migration TAP passes 16/16. Initial failures and the earlier pre-request 14/14 raw output remain preserved. Two initial browser-script locator/initialization failures and diagnostics are archived separately. Previous 277-test evidence is under `pre-admin-fees/`; an intermediate 289-test run explicitly cannot prove final source because implementation continued during its execution. The coherent 291-test result before the route inventory update is separately preserved under `admin-fees-pre-route-inventory/`. Current JSON/TAP and clone receipts govern the final result.
+
+Full payment evidence/records, cash refunds/reconciliation, original-bucket consumption refunds, immutable plans/VIP, financial outbox, complete normative approval directories and remaining native/NFR/release gates are still required. Historical stage counts are not complete current acceptance.

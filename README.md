@@ -405,4 +405,14 @@ Platform 的 042–044 和原生迁移执行器支持带既有任务、资金批
 
 `npm run qa:admin-billing-wire` 对重启后的真实 API 执行五组读取、隔离、游标、CORS 和当前 MFA 检查，捕获八份原始规范账户/账本响应。合成领域 fixture 没有调用模型或外部收款，也不代表规范费用命令已实现。`evidence/billing-accounts-before-migration.json` 和 `billing-accounts-live-migration.json` 对比两库旧资金事实；历史未登记的 001–015 校验和继续保持未知。
 
-The real HTTP billing check uses owned email/TOTP sessions and synthetic internal fixtures. It validates canonical personal/enterprise account reads and persisted financial identities, then revokes its credentials. The populated native upgrade preserves original enterprise financial fields. Earlier failed migration logs and raw TAP are retained; fee/payment/refund/VIP writes, all payer-selection consumers and full native/system acceptance remain unfinished. This increment creates no browser tabs and uses no Docker/WSL.
+The real HTTP billing check uses owned email/TOTP sessions and synthetic internal fixtures. It validates canonical personal/enterprise account reads and persisted financial identities, then revokes its credentials. The populated native upgrade preserves original enterprise financial fields. Three later canonical fee commands and their actual Admin forms are described below; full payment/refund/VIP flows, remaining payer-selection consumers and full native/system acceptance remain unfinished. Earlier failed migration logs and raw TAP are retained. This read-only increment creates no browser tabs and uses no Docker/WSL.
+
+## 规范费用表单与审批增量
+
+最终全量平台回归 **291/291**，664 份参与源码及 verifier 前后摘要一致；原始 TAP 摘要为 `3384f423b23b9d764af55daeffbe7bcf14669791defbddfc9ba0358cd7bcb6c7`。费用增量没有修改已验证的无边框 Desktop 或 Chrome 原生右侧 Side Panel 字节。
+
+`npm run qa:admin-fees` 在真实邮箱/TOTP 会话下验证规范三项费用表单、纯预览、同键回执恢复、独立请求审批、原始流水及英文浅色／繁中深色窄屏。当前 4/4 组、10 份实际 HTTP 规范响应通过；源码与 verifier 前后摘要一致，自建浏览器关闭，用户页面不触碰。五张截图位于 Admin 独立仓库。没有外部付款或模型调用。
+
+`admin-fees-focused.tap` 为费用／迁移 16/16；最初三次不全通过与拆分真实请求前的 14/14 原输出均保留。两次最初浏览器脚本定位／初始化失败与诊断在 `admin-fees-ui-initial/`、`admin-fees-ui-second/`。此前 277 项输出在 `pre-admin-fees/`；中间 289 项因运行期间继续修改源码，明确存为非最终证明。路由清单更新前的稳定 291 项结果单独保留在 `admin-fees-pre-route-inventory/`。最终全量与字节证据仍以当前 JSON/TAP 为准。
+
+完整付款凭证／记录、现金退款对账、消费退款分桶、不可变方案/VIP、金融 outbox、完整原始审批目录和全端／NFR／发布门仍保留。前述历史阶段的通过数字不等于当前全部验收完成。
