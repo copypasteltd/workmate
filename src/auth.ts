@@ -428,17 +428,25 @@ export function registerAuth(app: FastifyInstance, db: Database) {
   app.get("/v1/me/sessions", { preHandler: requireUser(db) }, async (req) => ({
     items: (
       await db.app.query(
-        "SELECT id,audience,created_at,expires_at FROM sessions WHERE user_id=$1 AND revoked_at IS NULL AND expires_at>now() ORDER BY created_at DESC",
-        [req.principal.id],
+        `SELECT s.id,s.audience,s.created_at,s.expires_at,
+          CASE WHEN s.audience='native' THEN f.client_id ELSE 'web' END AS client_id,
+          f.expires_at AS refresh_expires_at,s.id=$2::uuid AS current
+        FROM sessions s LEFT JOIN refresh_tokens f ON f.session_id=s.id
+          AND f.used_at IS NULL AND f.revoked_at IS NULL AND f.expires_at>now()
+        WHERE s.user_id=$1 AND s.revoked_at IS NULL AND s.auth_version=$3
+          AND ((s.audience='user' AND s.expires_at>now())
+            OR (s.audience='native' AND f.digest IS NOT NULL))
+        ORDER BY s.created_at DESC,s.id`,
+        [req.principal.id, req.principal.sessionId, req.principal.authVersion],
       )
     ).rows,
   }));
   app.delete(
     "/v1/me/sessions/:id",
     { preHandler: requireUser(db) },
-    async (req) => {
+    async (req, reply) => {
+      const id = uuid.parse((req.params as any).id);
       await db.tx(async (tx) => {
-        const id = uuid.parse((req.params as any).id);
         await tx.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
           req.principal.id,
         ]);
@@ -454,7 +462,10 @@ export function registerAuth(app: FastifyInstance, db: Database) {
           "UPDATE sessions SET revoked_at=now() WHERE user_id=$2 AND id IN (SELECT session_id FROM refresh_tokens WHERE family_id IN (SELECT family_id FROM refresh_tokens WHERE session_id=$1))",
           [id, req.principal.id],
         );
+        await audit(tx, req.principal, "session.revoke", id);
       });
+      if (id === req.principal.sessionId && req.principal.audience === "user")
+        reply.clearCookie("cp_session", { path: "/v1" });
       return { ok: true };
     },
   );
@@ -673,6 +684,54 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
     });
     if (!r) throw new Problem(401, "INVALID_GRANT", "Please sign in again");
     return r;
+  });
+  // Possession of a refresh credential revokes only its own client/family. This
+  // still works after the short-lived access token expires, without rotating it.
+  app.post("/v1/auth/native/revoke", async (req) => {
+    const b = z
+      .object({
+        client_id: z.enum(["desktop", "extension"]),
+        refresh_token: z.string().min(40).max(100),
+      })
+      .strict()
+      .parse(req.body);
+    await db.tx(async (tx) => {
+      const owner = (
+        await tx.query("SELECT user_id FROM refresh_tokens WHERE digest=$1", [
+          hash(b.refresh_token),
+        ])
+      ).rows[0];
+      if (!owner) return;
+      // Same lock order as refresh/logout/session revoke: user before credential.
+      await tx.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
+        owner.user_id,
+      ]);
+      const f = (
+        await tx.query(
+          "SELECT * FROM refresh_tokens WHERE digest=$1 FOR UPDATE",
+          [hash(b.refresh_token)],
+        )
+      ).rows[0];
+      if (!f || f.client_id !== b.client_id) return;
+      await tx.query(
+        "UPDATE refresh_tokens SET revoked_at=coalesce(revoked_at,now()) WHERE family_id=$1 AND user_id=$2",
+        [f.family_id, f.user_id],
+      );
+      await tx.query(
+        "UPDATE sessions SET revoked_at=coalesce(revoked_at,now()) WHERE user_id=$2 AND id IN (SELECT session_id FROM refresh_tokens WHERE family_id=$1)",
+        [f.family_id, f.user_id],
+      );
+      await audit(
+        tx,
+        { id: f.user_id, audience: "native" },
+        "session.native_revoke",
+        f.session_id,
+        "succeeded",
+        { client_id: f.client_id },
+      );
+    });
+    // Unknown, expired and already revoked credentials receive the same receipt.
+    return { ok: true };
   });
 }
 async function issueNative(
