@@ -114,3 +114,7 @@ The explicit local picker uploads shared project files up to 5 MiB. Use the full
 ## Shared-slot waits (current source)
 
 The panel explains server capacity waits: no model call yet, the original budget remains held and the same task resumes automatically. All clients share the server queue/database; the extension does not duplicate the task or reservation. Historical ZIPs are unchanged.
+
+## Relationship to the persisted template directory
+
+Web and Desktop now provide template preflight and instance creation. The extension retains its verified default text delegation, notifications and explicitly authorized file flow; this change does not add an extension template editor. Professional presets still require live business qualification. Connecting to the same API does not qualify those roles.

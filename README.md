@@ -114,3 +114,7 @@ Submit an explicit file prerequisite, then search and select a current version t
 ## 共用名额排队（当前源码）
 
 侧栏识别服务端容量等待，说明模型未启动、预算保持预留及原工作自动继续。此约束与 Web/Desktop 共用同一队列及数据库，不通过扩展重复创建或收费。历史 ZIP 保持原版。
+
+## 与持久模板目录的关系
+
+当前 Web 与 Desktop 新增模板预检/实例化；扩展继续使用已验证的默认文字委派、通知和明确授权文件流程，本次未新增扩展内模板编辑器。专业模板尚待真实业务资格，不因扩展能连接同一服务就计为已验收。
