@@ -355,3 +355,13 @@ The earlier successful `qa:membership` receipt was overwritten and is excluded f
 运行 npm run qa:admin-membership-wire，使用独立合成用户和仅指定测试企业的临时管理员，验证成员授予、暂停/恢复、规范操作恢复、独立审批及撤权；模型调用为零。结束时退出自己的会话并停用自己的临时管理员。原始回执和实际响应样本保存到 evidence；这些检查不证明页面验收。
 
 本轮最终稳定源码平台回归 **233/233**，新增 Admin 成员专项 **13/13**；当前真实后台成员 HTTP **5/5**，原规范捕获样本 **43/43**。完整原始回执位于 Delivery `evidence/`；页面验收与生产/完整原生门槛另行保留。
+
+
+## 账户控制增量复核
+
+`npm run qa:admin-account-wire` 使用当前本机原生服务、真实邮件与 TOTP 合成身份，验证六组规范资料、全局会话撤销、用户冻结、企业隔离、独立关闭及 MFA 重放守卫，捕获八个严格操作样本。`npm run qa:admin-account-ui` 单独复核新账户表单，使用自有软件渲染 Chromium 并在 finally 关闭，不操作用户浏览器。以对应 evidence JSON 的实际 checks/errors/closed 为准，不能将尝试或旧截图计为通过。
+
+本阶段全套平台回归 245/245，原始 TAP 不经格式化；上一阶段 233 项 JSON/TAP 和检出回执归档 `evidence/stage36-platform/`。模型仍为获准模拟，完整原生、其余后台规范及历史包更新仍待完成。
+
+
+本次新账户页面实测 **5/5**，完整平台 **245/245**，当前规范样本 **51/51**。页面实际修复待审批导航，截图随 Admin 中英 README；不取代原生/旧成员页面未完成项。若默认 Playwright 浏览器未安装，QA 使用环境变量 `CHROME_BIN` 指向已安装的 Chromium；本次为本机 `chromium-1243/chrome-win64/chrome.exe`。测试不下载浏览器，前次缺失路径与导航失败独立归档。

@@ -1,0 +1,291 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# Subtest: four original command schemas and strict 202 operations use actual immutable policy snapshots
+ok 1 - four original command schemas and strict 202 operations use actual immutable policy snapshots
+  ---
+  duration_ms: 4269.856
+  ...
+# Subtest: sensitive commands reject malformed bodies, missing keys and CSRF, stale MFA and revision conflicts; legacy PATCH is absent
+ok 2 - sensitive commands reject malformed bodies, missing keys and CSRF, stale MFA and revision conflicts; legacy PATCH is absent
+  ---
+  duration_ms: 128.5023
+  ...
+# Subtest: account scope is global with overlapping denies; tenant/project operators cannot freeze a user globally
+ok 3 - account scope is global with overlapping denies; tenant/project operators cannot freeze a user globally
+  ---
+  duration_ms: 150.0353
+  ...
+# Subtest: freezing invalidates all credentials and pending invitations; restore never resurrects old sessions
+ok 4 - freezing invalidates all credentials and pending invitations; restore never resurrects old sessions
+  ---
+  duration_ms: 239.8532
+  ...
+# Subtest: session revocation alone keeps active account and memberships, consumes native codes and is idempotent
+ok 5 - session revocation alone keeps active account and memberships, consumes native codes and is idempotent
+  ---
+  duration_ms: 233.7297
+  ...
+# Subtest: workspace suspension preserves access to other workspaces and cannot be bypassed with legacy PATCH
+ok 6 - workspace suspension preserves access to other workspaces and cannot be bypassed with legacy PATCH
+  ---
+  duration_ms: 162.4082
+  ...
+# Subtest: closing and reopening require a different reviewer; exact original session, target revision and current policy are rechecked
+ok 7 - closing and reopening require a different reviewer; exact original session, target revision and current policy are rechecked
+  ---
+  duration_ms: 288.1824
+  ...
+# Subtest: permanent closure requires owner transfer; concurrent profile CAS writes allow one winner
+ok 8 - permanent closure requires owner transfer; concurrent profile CAS writes allow one winner
+  ---
+  duration_ms: 254.0357
+  ...
+# Subtest: legacy bulk freeze has immutable policy provenance and cannot reopen closed accounts or bypass rechecked scopes
+ok 9 - legacy bulk freeze has immutable policy provenance and cannot reopen closed accounts or bypass rechecked scopes
+  ---
+  duration_ms: 409.9975
+  ...
+# Subtest: stop-new preserves holds; cancellation releases only pristine work and retains accepted or uncertain work for reconciliation
+not ok 10 - stop-new preserves holds; cancellation releases only pristine work and retains accepted or uncertain work for reconciliation
+  ---
+  duration_ms: 255.9466
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-accounts.test.ts:1:16378'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '1000000'
+    - 1000000
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1000000
+  actual: '1000000'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-accounts.test.ts:726:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: account review fails after target, policy, deadline or original permission changes without applying the command
+ok 11 - account review fails after target, policy, deadline or original permission changes without applying the command
+  ---
+  duration_ms: 481.1341
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# Subtest: canonical 202 operation and current read response preserve strict source schemas and real immutable policy provenance
+ok 12 - canonical 202 operation and current read response preserve strict source schemas and real immutable policy provenance
+  ---
+  duration_ms: 4322.7838
+  ...
+# Subtest: admin audience, CSRF, strict payload, origin, MFA and matching enterprise scope are enforced before mutations
+ok 13 - admin audience, CSRF, strict payload, origin, MFA and matching enterprise scope are enforced before mutations
+  ---
+  duration_ms: 174.0235
+  ...
+# Subtest: project-only grants cannot change enterprise membership; overlapping explicit project denies override global grants
+ok 14 - project-only grants cannot change enterprise membership; overlapping explicit project denies override global grants
+  ---
+  duration_ms: 84.9315
+  ...
+# Subtest: project and version validation reject stale, archived, foreign and nonexistent targets; an absent grant requires version one and active state
+ok 15 - project and version validation reject stale, archived, foreign and nonexistent targets; an absent grant requires version one and active state
+  ---
+  duration_ms: 143.8458
+  ...
+# Subtest: two concurrent admin writes sharing one revision admit exactly one change
+ok 16 - two concurrent admin writes sharing one revision admit exactly one change
+  ---
+  duration_ms: 173.3473
+  ...
+# Subtest: suspension immediately denies old credentials, preserves explicit scopes and cannot be bypassed by owner edits, removal or a new invite
+ok 17 - suspension immediately denies old credentials, preserves explicit scopes and cannot be bypassed by owner edits, removal or a new invite
+  ---
+  duration_ms: 206.2423
+  ...
+# Subtest: privileged changes persist pending without effect and require a distinct scoped approver with live MFA
+ok 18 - privileged changes persist pending without effect and require a distinct scoped approver with live MFA
+  ---
+  duration_ms: 163.4687
+  ...
+# Subtest: approval cannot outlive original authority, policy, target snapshot or approval deadline
+ok 19 - approval cannot outlive original authority, policy, target snapshot or approval deadline
+  ---
+  duration_ms: 330.7608
+  ...
+# Subtest: preview detects a first grant created after inspection; last owner remains protected across admin and owner mutation paths
+ok 20 - preview detects a first grant created after inspection; last owner remains protected across admin and owner mutation paths
+  ---
+  duration_ms: 308.1303
+  ...
+# Subtest: successful replay cannot restore a later suspension and revoked administrators cannot read or recover it
+ok 21 - successful replay cannot restore a later suspension and revoked administrators cannot read or recover it
+  ---
+  duration_ms: 281.3828
+  ...
+# Subtest: scoped review reveals frozen business changes without actor session metadata; historical policies are never fabricated
+ok 22 - scoped review reveals frozen business changes without actor session metadata; historical policies are never fabricated
+  ---
+  duration_ms: 381.5801
+  ...
+# Subtest: admin approval and a simultaneous owner removal share the same last-owner protection
+ok 23 - admin approval and a simultaneous owner removal share the same last-owner protection
+  ---
+  duration_ms: 293.3873
+  ...
+# Subtest: concurrent first grants cannot reuse the virtual absence revision to overwrite access
+ok 24 - concurrent first grants cannot reuse the virtual absence revision to overwrite access
+  ---
+  duration_ms: 175.2664
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# Subtest: initial pause/resume preserves one task and hold, is versioned/idempotent, hides paused outbox, then settles once
+ok 25 - initial pause/resume preserves one task and hold, is versioned/idempotent, hides paused outbox, then settles once
+  ---
+  duration_ms: 5143.1793
+  ...
+# Subtest: a worker claim winning the race prevents pause; completed and uncertain tasks never requeue
+ok 26 - a worker claim winning the race prevents pause; completed and uncertain tasks never requeue
+  ---
+  duration_ms: 181.2256
+  ...
+# Subtest: cross-tenant, private and read-only controls are denied, including replay after access revocation
+ok 27 - cross-tenant, private and read-only controls are denied, including replay after access revocation
+  ---
+  duration_ms: 241.096
+  ...
+# Subtest: scoped MFA Admin shares pause guards; resume rechecks beneficiary authorization and original reservation
+ok 28 - scoped MFA Admin shares pause guards; resume rechecks beneficiary authorization and original reservation
+  ---
+  duration_ms: 405.5874
+  ...
+# Subtest: a revoked input during pause reopens the original dependency instead of calling the model
+ok 29 - a revoked input during pause reopens the original dependency instead of calling the model
+  ---
+  duration_ms: 283.0429
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 28
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33028.2465

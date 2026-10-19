@@ -1,0 +1,121 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# Subtest: four original command schemas and strict 202 operations use actual immutable policy snapshots
+ok 1 - four original command schemas and strict 202 operations use actual immutable policy snapshots
+  ---
+  duration_ms: 4759.6571
+  ...
+# Subtest: sensitive commands reject malformed bodies, missing keys and CSRF, stale MFA and revision conflicts; legacy PATCH is absent
+ok 2 - sensitive commands reject malformed bodies, missing keys and CSRF, stale MFA and revision conflicts; legacy PATCH is absent
+  ---
+  duration_ms: 144.232
+  ...
+# Subtest: account scope is global with overlapping denies; tenant/project operators cannot freeze a user globally
+ok 3 - account scope is global with overlapping denies; tenant/project operators cannot freeze a user globally
+  ---
+  duration_ms: 179.4945
+  ...
+# Subtest: freezing invalidates all credentials and pending invitations; restore never resurrects old sessions
+ok 4 - freezing invalidates all credentials and pending invitations; restore never resurrects old sessions
+  ---
+  duration_ms: 338.1162
+  ...
+# Subtest: session revocation alone keeps active account and memberships, consumes native codes and is idempotent
+ok 5 - session revocation alone keeps active account and memberships, consumes native codes and is idempotent
+  ---
+  duration_ms: 130.4767
+  ...
+# Subtest: workspace suspension preserves access to other workspaces and cannot be bypassed with legacy PATCH
+ok 6 - workspace suspension preserves access to other workspaces and cannot be bypassed with legacy PATCH
+  ---
+  duration_ms: 224.8597
+  ...
+# Subtest: closing and reopening require a different reviewer; exact original session, target revision and current policy are rechecked
+ok 7 - closing and reopening require a different reviewer; exact original session, target revision and current policy are rechecked
+  ---
+  duration_ms: 442.743
+  ...
+# Subtest: permanent closure requires owner transfer; concurrent profile CAS writes allow one winner
+ok 8 - permanent closure requires owner transfer; concurrent profile CAS writes allow one winner
+  ---
+  duration_ms: 165.9741
+  ...
+# Subtest: legacy bulk freeze has immutable policy provenance and cannot reopen closed accounts or bypass rechecked scopes
+ok 9 - legacy bulk freeze has immutable policy provenance and cannot reopen closed accounts or bypass rechecked scopes
+  ---
+  duration_ms: 381.778
+  ...
+# Subtest: stop-new preserves holds; cancellation releases only pristine work and retains accepted or uncertain work for reconciliation
+not ok 10 - stop-new preserves holds; cancellation releases only pristine work and retains accepted or uncertain work for reconciliation
+  ---
+  duration_ms: 207.5886
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-accounts.test.ts:1:16378'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"id":"50eb171b-aed7-4d0c-b115-b645ee8c64c2","tenant_id":"a1d01696-8a28-4bab-9f1b-659a9e9a7087","project_id":"a54ec330-aa80-4eaf-ba2b-b30ff5ecf627","created_by":"717bd485-82f9-4283-9155-132b29f1e81d","title":"Cancellation cost boundary","prompt":"Write a campaign brief","role_key":"assistant","role_hash":"a079e7336e52fb6eb16fadcffa740702d7853455690d70f88671c2ea173d6fa8","kernel":"codex","status":"queued","acceptance":"pending","output":null,"error_code":null,"budget_micros":"1000000","charged_micros":"0","input_tokens":"0","output_tokens":"0","actor_auth_version":1,"cancel_requested":false,"attempt":0,"fencing_token":null,"lease_until":null,"runtime_thread":null,"runtime_turn":null,"parent_id":null,"idempotency_key":"9afcd4f6-ee88-4cba-8ea9-215ed6472782","version":1,"created_at":"2026-10-19T18:03:47.339Z","updated_at":"2026-10-19T18:03:47.339Z","content_state":"active","moderation_version":1,"plan_snapshot":{"body":{"name":"Starter","capabilities":["text","image","video","design","analytics","workflow","local_files"],"max_active_tasks":1,"monthly_hkd_micros":0,"max_task_budget_micros":100000000},"plan":"starter","ends_at":null,"subject":"default","version":1},"conversation_id":null,"private_owner":null,"mode":"execute","input_context":{},"data_mode":"configured_services","retention_expires_at":"2027-01-17T18:03:47.339Z","initial_attempt_id":"5a2f0dfa-fd4b-4d8e-98c3-e262e293eaa2","last_event_seq":"0","claim_retry_count":0,"next_claim_retry_at":"2026-10-19T18:04:47.339Z","execution_class":"text","capacity_wait_reason":null,"capacity_retry_at":"2026-10-19T18:03:47.339Z"}
+    
+    200 !== 202
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 202
+  actual: 200
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-accounts.test.ts:663:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: account review fails after target, policy, deadline or original permission changes without applying the command
+ok 11 - account review fails after target, policy, deadline or original permission changes without applying the command
+  ---
+  duration_ms: 567.0761
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 10
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11979.9002

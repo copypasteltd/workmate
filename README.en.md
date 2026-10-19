@@ -308,3 +308,13 @@ The session acceptance run passes all seven groups. The full platform suite pass
 Run npm run qa:admin-membership-wire for real synthetic user logins and temporary administrators scoped only to the owned test workspace. It checks grants, suspension/restoration, canonical operation recovery, independent approval and revocation, with zero model calls. It logs out its own sessions and disables its own temporary principals. Original receipts and captured response samples stay in evidence; these checks do not establish page acceptance.
 
 Final stable-source platform regression: **233/233**, including **13/13** Admin membership groups. Current real Admin membership HTTP checks: **5/5**; captured original-contract samples: **43/43**. Delivery `evidence/` retains original receipts. Current UI, production and complete native gates remain separate.
+
+
+## Account-control verification increment
+
+`npm run qa:admin-account-wire` runs six current local HTTP groups with owned synthetic email/TOTP identities: canonical profile, session revocation, user freeze, workspace isolation, independent closure and MFA checks on replay, capturing eight strict operation samples. `npm run qa:admin-account-ui` separately checks the new form using owned software-rendered Chromium, closing it in finally without touching user browsers. The actual evidence JSON checks/errors/closed determine the outcome; attempts and old screenshots are not passes.
+
+This increment's full platform regression is 245/245 with untouched raw TAP. The previous 233-test JSON/TAP and clone receipt are archived in `evidence/stage36-platform/`. Model dependencies remain authorized simulations; full native acceptance, remaining Admin contracts and updated historical packages are outstanding.
+
+
+The new account UI passes **5/5**, the full platform **245/245**, and current strict captures **51/51**. Browser checks led to a real approval-navigation fix; screenshots accompany the Admin bilingual guides. Native and older membership open issues remain. When the default Playwright executable is absent, set `CHROME_BIN` to an installed Chromium; this run used local `chromium-1243/chrome-win64/chrome.exe`. QA does not download browsers, and missing-path/navigation failures are archived separately.

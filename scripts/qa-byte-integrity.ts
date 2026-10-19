@@ -16,6 +16,7 @@ try {
   await mkdir(temp, { recursive: true });
   for (const repo of [
     "copypaste-platform",
+    "copypaste-admin",
     "copypaste-desktop",
     "copypaste-delivery",
   ]) {
@@ -88,6 +89,23 @@ try {
     );
   checks.push({
     name: `fresh independent Desktop clone matches all ${Object.keys(snapshot.files).length} renderer provenance digests`,
+    status: "passed",
+  });
+  const admin = path.join(temp, "copypaste-admin"),
+    adminFiles = (
+      await exec("git", ["ls-files", "-z"], { cwd: admin, windowsHide: true })
+    ).stdout
+      .split("\0")
+      .filter(Boolean);
+  assert.ok(adminFiles.length > 0);
+  for (const file of adminFiles)
+    assert.equal(
+      sha(await readFile(path.join(admin, file))),
+      sha(await readFile(path.join(root, "copypaste-admin", file))),
+      `Admin checkout bytes changed: ${file}`,
+    );
+  checks.push({
+    name: `fresh independent Admin clone preserves all ${adminFiles.length} tracked source, configuration, bilingual guide and screenshot files`,
     status: "passed",
   });
   const delivery = path.join(temp, "copypaste-delivery"),
