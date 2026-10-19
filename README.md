@@ -297,3 +297,9 @@ flowchart LR
 独立兼容核查：设置 `WORKBOOK_QA_PYTHON` 为含 openpyxl 的原生 Python，再执行 `npm run qa:workbook-interop`。openpyxl 3.1.5 生成的双日期系统、带样式/稀疏/隐藏行/中文的 XLSX、公式及七位金额拒绝四组通过；报告为 `evidence/workbook-interop.json`。首次中文字符引用缺陷及初始超精度 fixture 的记录单独保留；临时工作簿在 finally 清理。Python/openpyxl 仅为核查工具，不是产品运行依赖。
 
 原生开发栈启动后执行 `npm run qa:task-controls`（设置 `CHROME_BIN`）。五组验证 Web、源码无边框 Desktop、真实 MV3/PKCE 的排队暂停/恢复/取消，以及释放本次测试占位后由真实 Codex/模拟模型生成文件并结算一次。原任务和预留不重建，自建浏览器、Electron 和扩展在 finally 关闭。报告为 `evidence/task-controls.json`；当前完整平台回归 185/185。此项是源码验证，先前无边框预览与历史完整离线包保持原清单；运行中/已付费步骤恢复及完整 102 条验收仍未完成。
+
+## 跨端会话专项
+
+`npm run qa:sessions` 启动自有隔离浏览器、源码无边框 Electron 与真实 MV3，使用新建合成账号、实际邮箱验证码/PKCE，验证会话目录、Web 远端撤销、原生过期访问退出、离线提示、跨标签退出与迟到响应。模型调用为零。仅调整本次用户的凭证过期时间；离线 revoke 与后台 GET gate 为显式故障注入。所有自建页面、上下文和应用在 finally 关闭，报告写入 `evidence/sessions.json`。本专项不重新生成历史安装包，也不关闭完整身份、102 条需求或生产门槛。
+
+当前会话专项七组通过，平台完整回归 191/191，Desktop 原生单元 15/15，扩展单元 10/10。Windows 默认 GPU 路径的四次早期超时与对照报告已保留；本专项对自建 Chromium/Electron 使用 `--disable-gpu` 软件渲染，产品启动配置未变。正常计时/帧与点击对照见 `evidence/sessions-gpu-diagnostic.json`，最终模式写入会话报告；不据此声明硬件渲染兼容性通过。
