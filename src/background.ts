@@ -104,11 +104,23 @@ async function login() {
   await store(await response.json());
   return { ok: true };
 }
-async function request(path: string, method = "GET", body?: unknown) {
+async function request(
+  path: string,
+  method = "GET",
+  body?: unknown,
+  idempotencyKey?: string,
+) {
+  if (
+    idempotencyKey !== undefined &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      idempotencyKey,
+    )
+  )
+    throw new Error("Invalid request identity");
   const t = await getTokens();
   const headers: Record<string, string> = {
     Authorization: `Bearer ${t.access_token}`,
-    "Idempotency-Key": crypto.randomUUID(),
+    "Idempotency-Key": idempotencyKey ?? crypto.randomUUID(),
   };
   if (body !== undefined) headers["Content-Type"] = "application/json";
   const response = await fetch(safePath(path), {
@@ -206,7 +218,12 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (message.type === "API") {
       if (!["GET", "POST", "PATCH", "DELETE"].includes(message.method ?? "GET"))
         throw new Error("Invalid method");
-      return request(message.path, message.method, message.body);
+      return request(
+        message.path,
+        message.method,
+        message.body,
+        message.idempotencyKey,
+      );
     }
     if (message.type === "UPLOAD") return upload(message.path, message.file);
     if (message.type === "CAPTURE") return capturePage();

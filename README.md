@@ -82,3 +82,22 @@ flowchart LR
   Web --> Native[明确原生授权与 PKCE]
   Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
 ```
+
+## 默认助手与通知（当前源码）
+
+侧栏可直接选择默认文字助手，也保留专业角色。提交使用稳定请求编号；未知响应重试复用原私人会话和任务。企业或项目切换后，旧请求不得覆盖新列表/任务。模拟企业持续显示假数据提示。通知列出当前接收者最近 20 条，支持已读切换及原项目/任务跳转；完整分页和会话继续在工作台处理。
+
+Delivery `qa:extension` 七组真实 MV3 旅程已通过：PKCE、接受响应丢失后的真实重试与 Codex 文字文件、通知定位、320/420/768 宽度和两主题/语言、主动上传、凭证隐私/退出，以及接受响应延迟期间切换项目。模型为明确模拟依赖，未取得正式专业角色资格，旧发布 ZIP 未替换。
+
+```mermaid
+flowchart LR
+  Brief[默认助手 / 编辑工作] --> Stable[稳定提交身份]
+  Stable --> API[私人会话与单个任务]
+  API --> Notice[当前用户通知]
+  Notice --> Scope[选择原项目 / 原任务]
+  Switch[切换企业或项目] --> Ignore[忽略旧请求的界面更新]
+```
+
+![文字工作与模拟结果](assets/screenshots/03-default-task.png)
+![工作通知](assets/screenshots/04-notifications.png)
+![深色英文侧栏](assets/screenshots/05-dark-en.png)

@@ -82,3 +82,22 @@ flowchart LR
   Web --> Native[Explicit native consent and PKCE]
   Revoke[Disable or unlink] --> All[Revoke browser and native credentials]
 ```
+
+## Default assistant and inbox (current source)
+
+The panel offers a default text assistant alongside professional roles. Stable submission IDs preserve the original private conversation/task after an unknown response. Stale responses cannot overwrite lists/tasks after a workspace or project switch. Simulated workspaces display a persistent notice. The recipient inbox lists the latest 20 notifications, toggles read state and opens the original project/task; full pagination and conversation continuation remain in the workspace.
+
+Delivery qa:extension passes seven real MV3 groups: PKCE; retry after an accepted response is lost and real Codex text-file creation; notification navigation; 320/420/768 widths, both themes/languages; explicit upload; credential privacy/logout; project switching while an accepted response is delayed. Model dependencies are synthetic and do not qualify live roles. Historical ZIPs are unchanged.
+
+```mermaid
+flowchart LR
+  Brief[Default assistant / editable brief] --> Stable[Stable submission ID]
+  Stable --> API[Private conversation and one task]
+  API --> Notice[Recipient inbox]
+  Notice --> Scope[Original project and task]
+  Switch[Workspace or project switch] --> Ignore[Ignore stale UI responses]
+```
+
+![Text task and simulated result](assets/screenshots/03-default-task.png)
+![Work notifications](assets/screenshots/04-notifications.png)
+![Dark English panel](assets/screenshots/05-dark-en.png)
