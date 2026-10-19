@@ -364,4 +364,19 @@ The five original user authentication operations now have real Web, Desktop and 
 
 `GET /v1/me` now matches the original `User` contract exactly. Authenticated client bootstrap uses `GET /v1/session/context` for profile preferences, active workspace access and browser CSRF. A selected native Bearer never receives the CSRF of a concurrently supplied browser cookie. Both routes retain current-session validation and `no-store`. Existing preview installers remain historical.
 
-本轮完整平台回归 **207/207**，包括两组原始 User/跨身份上下文检查及两组真实文件清理竞态回归。孤儿扫描仅忽略对象已被并发删除的 ENOENT；权限和繁忙错误保留。首次 204/205 失败和修复后原始 TAP 均由 Delivery 记录。 / Current platform regression: **207/207**. Two profile/context groups and two deterministic filesystem-race groups cover the new changes; EACCES and EBUSY still propagate. The first 204/205 failure and corrected raw TAP are both preserved.
+资料阶段平台回归 **207/207**，包括两组原始 User/跨身份上下文检查及两组真实文件清理竞态回归。孤儿扫描仅忽略对象已被并发删除的 ENOENT；权限和繁忙错误保留。首次 204/205 失败和修复后原始 TAP 均由 Delivery 记录。 / Profile-stage platform regression: **207/207**. Two profile/context groups and two deterministic filesystem-race groups cover the new changes; EACCES and EBUSY still propagate. The first 204/205 failure and corrected raw TAP are both preserved.
+
+## 邀请与成员权限 / Invitations and membership
+
+邀请创建/接受返回规范 201 Invite/Member；MemberList 支持独立成员 UUID、企业头和分页。共享事务锁保护当前权限与最后所有者。成员移除同步撤销旧待用邀请；加密邮件队列支持退避、八次投递、撤销和轮换重发。十三组专项覆盖此闭环，完整后台/原生与生产邮件仍待验收。
+
+Canonical invitation create/accept return 201 Invite/Member. MemberList uses stable membership IDs, required tenant headers and pagination. Shared transaction locks protect current authority and the last owner. Removal revokes old unused invitations. Encrypted durable delivery supports bounded attempts, revocation and versioned resend. Thirteen integration groups cover this lifecycle; full Admin/native and production SMTP acceptance remain pending.
+
+```mermaid
+flowchart LR
+  Manager --> Invitation --> EncryptedQueue --> Email
+  Email --> EmailLogin --> CurrentAuthority --> Member
+  Member --> Removal --> RevokeUnusedInvites
+```
+
+最新稳定源码平台全套回归 **220/220**（包括十三组邀请/成员专项）；完整原始 TAP 与摘要保存在 Delivery。 / Latest stable-source platform regression: **220/220**, including thirteen invitation/member groups. Original TAP bytes and their digest are preserved in Delivery.

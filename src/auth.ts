@@ -132,6 +132,7 @@ export async function sendMail(
   subject: string,
   text: string,
   challengeId?: string,
+  timeoutMs?: number,
 ) {
   if (db.config.DEV_MAILBOX && db.config.NODE_ENV !== "production") {
     const mailbox = path.resolve(db.config.DATA_DIR, "mailbox");
@@ -149,7 +150,17 @@ export async function sendMail(
       "MAIL_UNAVAILABLE",
       "Email delivery is not configured",
     );
-  const mail = nodemailer.createTransport(db.config.SMTP_URL);
+  // Invitation delivery uses a bounded attempt so it cannot occupy the worker's
+  // maintenance loop indefinitely. Override URL query options as well.
+  const smtpUrl = new URL(db.config.SMTP_URL);
+  if (timeoutMs)
+    for (const option of [
+      "connectionTimeout",
+      "greetingTimeout",
+      "socketTimeout",
+    ])
+      smtpUrl.searchParams.set(option, String(timeoutMs));
+  const mail = nodemailer.createTransport(smtpUrl.href);
   try {
     await mail.sendMail({ from: db.config.MAIL_FROM, to, subject, text });
   } catch {

@@ -24,6 +24,7 @@ import { renderPoster } from "../src/business.js";
 import { ErasureService } from "../src/erasure.js";
 import { saveAsset } from "../src/storage.js";
 import { cleanUploadStaging } from "../src/uploads.js";
+import { dispatchInvitationMail } from "../src/invitation-delivery.js";
 import { RetentionService } from "../src/retention.js";
 import { recoverQueuedClaims } from "../src/task-recovery.js";
 import { PgBoss } from "pg-boss";
@@ -52,6 +53,9 @@ async function call(
       origin: c?.admin ? adminOrigin : origin,
       ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
       "idempotency-key": idempotency,
+      ...(url.match(/^\/v1\/tenants\/([a-f0-9-]{36})/)
+        ? { "x-tenant-id": url.split("/")[3] }
+        : {}),
       ...headers,
     },
     payload: body === undefined ? undefined : JSON.stringify(body),
@@ -61,6 +65,9 @@ async function call(
             origin: c?.admin ? adminOrigin : origin,
             ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
             "idempotency-key": idempotency,
+            ...(url.match(/^\/v1\/tenants\/([a-f0-9-]{36})/)
+              ? { "x-tenant-id": url.split("/")[3] }
+              : {}),
             "content-type": "application/json",
             ...headers,
           },
@@ -1618,15 +1625,24 @@ test("single-use invitation binds email and project, protects the last owner", a
     role: "viewer",
     project_ids: [w.project.id],
   });
-  assert.equal(invite.status, 200, JSON.stringify(invite.data));
-  const token = new URL(invite.data.invite_url).searchParams.get("token");
+  assert.equal(invite.status, 201, JSON.stringify(invite.data));
+  await dispatchInvitationMail(system.db, { limit: 20 });
+  const mail = JSON.parse(
+    await readFile(
+      `${system.db.config.DATA_DIR}/mailbox/${invite.data.id}.json`,
+      "utf8",
+    ),
+  );
+  const token = new URL(mail.text.match(/https?:\/\/\S+/)[0]).searchParams.get(
+    "token",
+  );
   assert.equal(
     (await call(other, "POST", "/v1/invites/accept", { token })).status,
     409,
   );
   assert.equal(
     (await call(member, "POST", "/v1/invites/accept", { token })).status,
-    200,
+    201,
   );
   assert.equal(
     (await call(member, "POST", "/v1/invites/accept", { token })).status,

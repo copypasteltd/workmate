@@ -11,6 +11,7 @@ import { isolatedTestEnvironment } from "./native-test-environment.js";
 import { loadConfig } from "../src/config.js";
 import { buildApp } from "../src/server.js";
 import { hash } from "../src/lib.js";
+import { dispatchInvitationMail } from "../src/invitation-delivery.js";
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 let s: Awaited<ReturnType<typeof buildApp>>;
 type Client =
@@ -27,6 +28,9 @@ async function call(
     url,
     headers: {
       origin: s.db.config.WEB_ORIGIN,
+      ...(url.match(/^\/v1\/tenants\/([a-f0-9-]{36})/)
+        ? { "x-tenant-id": url.split("/")[3] }
+        : {}),
       "idempotency-key": randomUUID(),
       ...(c && "cookie" in c
         ? { cookie: c.cookie, "x-csrf-token": c.csrf }
@@ -357,14 +361,27 @@ test("expired/wrong-email/replayed invitations fail and removed members cannot u
     project_name: "Marketing",
   });
   const invite = async () => {
-    const i = await ok(owner, "POST", `/v1/tenants/${w.tenant.id}/invites`, {
-      email: member.email,
-      role: "member",
-      project_ids: [w.project.id],
-    });
+    const response = await call(
+      owner,
+      "POST",
+      `/v1/tenants/${w.tenant.id}/invites`,
+      {
+        email: member.email,
+        role: "member",
+        project_ids: [w.project.id],
+      },
+    );
+    assert.equal(response.status, 201);
+    const i = response.data;
+    await dispatchInvitationMail(s.db, { limit: 20 });
+    const mail = JSON.parse(
+      await readFile(`${s.db.config.DATA_DIR}/mailbox/${i.id}.json`, "utf8"),
+    );
     return {
       id: i.id,
-      token: new URL(i.invite_url).searchParams.get("token")!,
+      token: new URL(mail.text.match(/https?:\/\/\S+/)[0]).searchParams.get(
+        "token",
+      )!,
     };
   };
   const old = await invite();
@@ -383,7 +400,11 @@ test("expired/wrong-email/replayed invitations fail and removed members cannot u
       .status,
     409,
   );
-  await ok(member, "POST", "/v1/invites/accept", { token: fresh.token });
+  assert.equal(
+    (await call(member, "POST", "/v1/invites/accept", { token: fresh.token }))
+      .status,
+    201,
+  );
   assert.equal(
     (await call(member, "POST", "/v1/invites/accept", { token: fresh.token }))
       .status,
@@ -402,9 +423,9 @@ test("expired/wrong-email/replayed invitations fail and removed members cannot u
   );
   const base = `/v1/tenants/${w.tenant.id}`;
   const memberships = await ok(owner, "GET", base + "/members");
-  const m = memberships.items.find((i: any) => i.id === member.id);
+  const m = memberships.items.find((i: any) => i.user_id === member.id);
   await ok(owner, "PATCH", base + "/members/" + member.id, {
-    version: m.version,
+    version: m.auth_version,
     role: "member",
     status: "removed",
     project_ids: [],

@@ -1,5 +1,6 @@
 import { CodeWorkspace } from "./code-workspace.js";
 import { cleanAuthReceipts } from "./auth-receipts.js";
+import { dispatchInvitationMail } from "./invitation-delivery.js";
 import {
   readCloudSource,
   writeCloudSource,
@@ -147,6 +148,7 @@ export class Worker {
         ["retention", () => this.retention.advance()],
         ["erasure", () => this.erasure.advance()],
         ["uploads", () => cleanUploadStaging(this.db)],
+        ["invitations", () => dispatchInvitationMail(this.db)],
       ] as const) {
         try {
           await operation();
