@@ -165,7 +165,7 @@ Deployment: use exact HTTPS `SSO_ALLOWED_ORIGINS`. Default callback is `WEB_ORIG
 
 - `npm run qa:cloud-files`: four Web cloud-file groups, two real Codex tasks with synthetic dependencies, persistent sources and actual ZIPs. Saves cloud-files.json and captured HTTP payloads.
 - `npm run qa:desktop-transfer`: eight source Electron groups for login, idempotent upload, actual 29 MiB transfers, overwrite protection and native cloud-tree browsing. Saves alignment-desktop.json.
-- The current platform regression passes 139/139; the complete TAP and summary are under evidence/alignment-platform.*.
+- The current platform regression passes 145/145; the complete TAP and summary are under evidence/alignment-platform.*.
 
 At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_samples.py` to check captured response schemas. These runs use explicitly synthetic dependencies and real Codex; they do not qualify live model quality or all 102 integrated acceptance cases.
 
@@ -173,7 +173,7 @@ At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_sam
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **139/139**. `npm run qa:skills` in the delivery repository passed three browser groups; seventeen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant, inbox and source integrity
 
@@ -181,7 +181,7 @@ qa:default-assistant and qa:notifications each validate four Web journey groups;
 
 qa:byte-integrity creates independent native Git clones of platform/Desktop/delivery and checks raw SQL digests against both existing migration ledgers, all 28 Skills, renderer provenance and raw TAP. Commit source and TAP first. Owned, verified temporary directories are removed afterward. This is checkout integrity, not disaster recovery.
 
-Current source passes 139/139 platform tests and four Desktop unit tests, with seventeen captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
+Current source passes 145/145 platform tests and four Desktop unit tests, with twenty-one captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
 
 ## Initial-input verification
 
@@ -198,3 +198,9 @@ Current source passes 139/139 platform tests and four Desktop unit tests, with s
 `npm run qa:admin-records` uses fresh enterprises, 58 visible and six excluded synthetic journal rows. It verifies real email/MFA, scoped totals, default 50-record pages, combined filters/URL state, read-only retry denial, four widths, two themes/languages, delayed-denial cleanup and actual grant expiry. It runs only in local synthetic mode and creates no real objects or physical deletion effects. Finally it suspends the fixture administrator, revokes its sessions and closes owned browsers. Reports and actual payloads are `evidence/admin-records*.json`.
 
 Platform integration suites now use separate native databases/data directories while keeping production execution limits. `evidence/admin-records-first-regression-failure.*` preserves the original failed run; `capture-platform-regression.py` captures current regression bytes. Migration 030 participates in checkout integrity. Historical installers are not repackaged by these source changes.
+
+## Template and native-client verification
+
+`npm run qa:agent-templates` verifies eight real Web/current-source Electron journeys: isolated sign-in/workspace, filtering, unavailable tools, cost-free preflights, edit invalidation, idempotent recovery after a lost accepted response, fresh receipts after restoring a method, widths/themes/languages, authorization-denial hiding and native PKCE/tenant validation. Model/media dependencies remain simulated; persistence is real. Owned browsers and applications close in finally.
+
+Six new platform groups bring the complete regression to 145/145. Four captured template responses bring strict HTTP schema samples to 21. Byte verification must include migration 031 and the new renderer snapshot. Historical installers/bundles retain their original version, and all 102 requirements and the minimum of 12 qualified roles remain in scope.
