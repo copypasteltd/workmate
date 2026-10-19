@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-19T16:45:19.836843+00:00",
-  "scope": "Captured canonical User/Invite/Member and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
+  "at": "2026-10-19T17:24:53.470356+00:00",
+  "scope": "Captured canonical User/Invite/Member/AdminOperation and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
   "sources": [
     {
       "file": "dev/copypaste-delivery/evidence/cloud-files-contract-samples.json",
@@ -61,6 +61,12 @@
       "at": "2026-10-19T16:43:32.655Z",
       "origin": "http://localhost:4310",
       "sha256": "86b879af75799d5e56acc4ce4362c5ca9409ef7a71c3c85fd3f819c50fae2ba3"
+    },
+    {
+      "file": "dev/copypaste-delivery/evidence/admin-membership-contract-samples.json",
+      "at": "2026-10-19T17:24:20.143Z",
+      "origin": "http://localhost:4310",
+      "sha256": "12ed75a338c64a61a2e20ea757b8fe96d64d3ea6042b2f1b4bd2ff912bd93ed1"
     }
   ],
   "authentication_fixture": {
@@ -75,6 +81,12 @@
     "schemas": 7,
     "status": "passed",
     "scope": "Exact original schema and source digest comparison; actual wire checks are in the platform regression"
+  },
+  "admin_membership_fixture": {
+    "file": "dev/copypaste-platform/contracts/admin-membership-schemas.json",
+    "schemas": 3,
+    "status": "passed",
+    "scope": "Exact original schema and source digest comparison; actual operations are covered by platform and real HTTP evidence"
   },
   "openapi_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
   "checks": [
@@ -334,6 +346,48 @@
       "source": "membership-contract-samples.json",
       "sample": 4,
       "schema": "Ack",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-contract-samples.json",
+      "sample": 1,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-contract-samples.json",
+      "sample": 2,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-contract-samples.json",
+      "sample": 3,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-contract-samples.json",
+      "sample": 4,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-contract-samples.json",
+      "sample": 5,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-contract-samples.json",
+      "sample": 6,
+      "schema": "AdminOperation",
       "status": "passed",
       "errors": []
     }

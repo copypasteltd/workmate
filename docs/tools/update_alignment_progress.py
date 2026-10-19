@@ -12,8 +12,11 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('admin_membership_control', [3,35,51,55,85,94,100],
+     '规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。',
+     ['platform_regression','admin_membership_wire','runtime_schemas'], ['technical/36-admin-membership-control-and-policy-snapshots.md']),
     ('invitations_and_membership_authority', [1,2,3,35,36,39,51,55,60],
-     '原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。',
+     '原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。',
      ['platform_regression','membership_wire','runtime_schemas'], ['technical/35-invitations-and-membership-authority.md']),
     ('canonical_user_and_private_context', [1,2,3,35,36,39,51,55,60,100],
      '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者与测试调用同步迁移；不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、实际 HTTP User schema 和 Web 初始化证据独立记录，完整原生/系统旅程未计通过。',
@@ -139,14 +142,16 @@ REMAINING = {
  80:'真实服务合格角色数仍为零；至少 12 个任务/修改/异常的实际资格证据未完成。',
  81:'新增页面延续官网 token；全部端的组件单源与全量品牌一致性仍待核查。',
  82:'局部两主题/语言/四尺寸通过；全组件状态、100/200% 缩放、键盘/对比/reduced-motion 验收待完成。',
+ 85:'规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。',
  86:'模拟数据单列且微额费用可读；正式多维消费归属和未知成本全量钻取仍待验收。',
  87:'模拟额度走可追踪 gift；正式费用全部动作/收款关联/退款与限时额度仍需完整验收。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
  92:'独立 MFA/企业范围的 Admin 排队暂停、共用领域守卫、原受益用户撤权与费用待核对拒绝已有验证；运行中检查点、全工作流/Routine 控制和未知外部动作人工核对仍待齐。',
- 94:'项目方法及清理记录已有权限子流程证据，包含企业/项目 deny、只读与到期；全动作/字段/范围/导出及异步执行完整矩阵待完成。',
+ 94:'项目方法、清理记录和规范 Admin 成员管理已有权限子流程证据，包含当前企业范围、重叠项目 deny、近期 MFA 与撤权；全动作/字段/范围/导出及异步执行完整矩阵待完成。',
  98:'清理记录已验证组合筛选/URL/分页、有界滚动、四宽度、主题/语言、请求拒绝清空和失效重试对话框；全后台筛选、列配置、异常及完整键盘/缩放仍待验证。',
  99:'可信方法版本/撤销已补强；模型/费率的受控验证发布、兼容版本与后台全闭环待完成。',
+ 100:'规范成员操作的原因/前后差异审计、不可变有效策略、冻结预览及独立审批的原权限/版本/期限重查已有证据；全部资金/内容/权限策略、批次与生产审计留存仍待完成。',
  102:'当前方案能力及领取时用户并发已复查，企业/能力槽位按数据库统一约束；全部媒体、团队、调度、席位和存储交集未齐。',
 }
 
@@ -183,6 +188,7 @@ def main():
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
         'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
+        'admin_membership_wire': DEV/'copypaste-delivery/evidence/admin-membership-wire.json',
         'auth_navigation': DEV/'copypaste-delivery/evidence/auth-navigation.json',
         'sessions': DEV/'copypaste-delivery/evidence/sessions.json',
         'task_controls': DEV/'copypaste-delivery/evidence/task-controls.json',
@@ -236,8 +242,10 @@ def main():
         evidence[key] = {'path': path.relative_to(ROOT).as_posix(), 'sha256': fingerprint(path),
                          'at': report.get('at', report.get('checked_at')), 'checks': checks,
                          'scope': report.get('scope', 'Only the explicitly named subflows in this report')}
-        if key == 'membership_wire':
+        if key in {'membership_wire', 'admin_membership_wire'}:
             assert report['owned_sessions_closed'] is True
+        if key == 'admin_membership_wire':
+            assert report['owned_admin_principals_disabled'] is True
         if key == 'platform_regression':
             assert report['counts']['tests'] == report['counts']['pass'] and report['counts']['fail'] == 0
             raw = path.parent/report['raw_report']
@@ -285,7 +293,11 @@ def main():
                 'path':'dev/copypaste-delivery/evidence/membership-current-issue.json',
                 'sha256':fingerprint(DEV/'copypaste-delivery/evidence/membership-current-issue.json'),
                 'status':'not_completed',
-                'scope':'Current source Web membership reruns timed out at browser page/locator creation; all owned instances closed. Earlier browser success bytes were overwritten and are not accepted evidence; five current HTTP checks remain separate from final UI acceptance.'}],
+                'scope':'Current source Web membership reruns timed out at browser page/locator creation; all owned instances closed. Earlier browser success bytes were overwritten and are not accepted evidence; five current HTTP checks remain separate from final UI acceptance.'}, {
+                'path':'dev/copypaste-delivery/evidence/admin-membership-ui-open-issue.json',
+                'sha256':fingerprint(DEV/'copypaste-delivery/evidence/admin-membership-ui-open-issue.json'),
+                'status':'not_completed',
+                'scope':'Admin membership forms, frozen review and Web suspension message are built but not browser-verified; current HTTP and database checks are separate. No new screenshots are claimed.'}],
             'contract_alignment':{'contract_operations':len(operations),'implemented_operations':len(actual['routes']),
                                   'unmatched_contract_method_paths':sum(not x['method_path_matches'] for x in operations),
                                   'limit':'Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.',

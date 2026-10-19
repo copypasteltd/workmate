@@ -140,3 +140,5 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 后续 [文件导入与更正链](29-file-imports-and-correction-lineage.md) 加入固定 CSV/XLSX 来源、工作表与标题列选择、规范 `POST /v1/dataset-imports`、更正祖先和来源生命周期。迁移 035 已应用且保持字节不变；最新平台 180/180、文件四组与原 CSV 六组跨端流程、严格 HTTP 样本 31/31 通过。实际清单 247 个 method/path，renderer 41 项来源摘要；历史安装包仍未替换。
 
 本次 Desktop 无边框、自绘标题栏/窗口控制及 Chrome 按钮触发的原生右侧侧栏见 [窗口及侧栏](30-native-window-and-browser-sidepanel.md)。另行构建 `release/frameless/` 安装器/便携版和扩展 `release/sidepanel/` ZIP；本机默认配置、未签名，与历史完整离线包分开记录。
+
+规范成员变更及操作查询、后台管理暂停、独立审批和数据库策略快照的当前实现见 [Admin 成员控制](36-admin-membership-control-and-policy-snapshots.md)。Web、Admin、Desktop 和 Platform 的独立源码仓库及双语 README 已更新；当前 renderer 来源 45 项。历史安装器、便携版、扩展 ZIP 与完整离线包尚未包含此增量，当前页面验收另行记录。

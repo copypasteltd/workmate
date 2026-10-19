@@ -146,3 +146,5 @@ Admin 清理记录的筛选、50 条默认分页、撤权显示及独立原生�
 Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新竞争、离线退出反馈及跨标签清理见 [跨端会话与撤销](technical/32-cross-client-sessions-and-revocation.md)。五个规范用户认证接口、实际三端接入、加密回执、未知响应恢复和多个侧栏的账号边界见 [规范认证与重试恢复](technical/33-canonical-authentication-and-retry-recovery.md)；完整企业身份及全部规范接口矩阵继续独立验收。
 
 规范用户资料、私有工作区初始化、三端消费者迁移与并发孤儿清理修复，见 [用户资料与清理竞态](technical/34-user-profile-context-and-orphan-scan-races.md)。该增量保留首次失败和历史原始回归，不替代完整原生旅程及 102 项综合验收。
+
+规范后台成员变更、管理暂停、当前范围与 MFA、独立审批和不可变策略快照见 [Admin 成员控制](technical/36-admin-membership-control-and-policy-snapshots.md)。用户端严格 Member 契约保持不变；历史未记录策略的操作不补造 UUID。当前页面验收与安装包更新仍待完成。

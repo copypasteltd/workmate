@@ -65,10 +65,12 @@ Web 的私有响应版本守卫补入 `/v1/session/context` 与 `/v1/members/`�
 
 最初浏览器夹具按 API origin 匹配创建响应，而本机经 Vite 同源代理返回，导致等待超时。已改为匹配实际方法和路径；失败 JSON 和截图保存在 `evidence/membership-first-navigation-failure/`，没有把失败删除或计为成功。修复前 207 项平台回归原始 JSON/TAP 成对保存在 `evidence/stage34-platform/`；新增耗尽租约检查前的 218 项记录另存 `evidence/stage35-initial-platform/`。
 
-最终稳定源码平台全套回归 **220/220**，原始 TAP 不经格式化，完整结果及摘要见 `evidence/alignment-platform.json`，独立 Git 检出结果见 `evidence/byte-integrity.json`。当前源码已构建，但历史 Setup、Portable、侧栏 ZIP、离线包没有随本轮重打包。当前十二组完整原生启动/认证旅程仍未通过，失败和环境诊断继续单列保存。完整后台规范成员授权、生产邮件、正式模型与角色业务资格，以及其他 TC/NFR/G01–G10 仍在待完成范围内。
+最终稳定源码平台全套回归 **220/220**，原始 TAP 不经格式化，完整结果及摘要见 `evidence/stage35-platform/alignment-platform.json`，独立 Git 检出结果见 `evidence/stage35-platform/byte-integrity.json`。当前源码已构建，但历史 Setup、Portable、侧栏 ZIP、离线包没有随本轮重打包。当前十二组完整原生启动/认证旅程仍未通过，失败和环境诊断继续单列保存。完整后台规范成员授权、生产邮件、正式模型与角色业务资格，以及其他 TC/NFR/G01–G10 仍在待完成范围内。
 
 当前最终源码浏览器复核连续失败：headless shell 的邮箱控件等待与新页面创建、完整 Chromium 的成员按钮等待，以及进程内 GPU 对照的邮箱控件等待均超时。三个 BrowserServer 尝试的正常关闭也超时，随后强制关闭本次拥有的进程，退出已确认。最后对照没有观察到业务 API 请求，不能据此确定根因或宣称产品页面通过。失败报告及具体来源见 `evidence/membership-current-issue.json`；`membership-navigation.json` 保留最后一次实际失败，不用旧成功覆盖。新增页面/上下文有界等待和拥有的 BrowserServer 关闭保护，备用 GPU 参数只用于 QA，产品 Electron 配置未改动。
 
 本轮截图记录早期浏览器运行的实际页面；当前最终 Web 角色限制和操作间距已构建，但页面重验仍待完成。平台 220/220、当前 HTTP 五组和原 schema 37/37 均为不同范围的证据。
 
 独立 Git 检出四组已通过：37 SQL 与两库迁移摘要、28 个受信任 Skill、45 份 Desktop renderer 来源摘要和 220 项原始 TAP 字节；临时检出已移除。此检查不包含页面验收，证据说明纠正和回执提交不改变这些已核对字节。
+
+后续规范后台成员变更、管理暂停与不可变策略快照见 [Admin 成员控制](36-admin-membership-control-and-policy-snapshots.md)。本页的 220 项回归及独立检出均为上一轮归档证据，当前回执和更完整的后台规范/原生验收另行记录。

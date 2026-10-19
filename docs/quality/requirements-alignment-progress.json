@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-19T16:51:35.192140+00:00",
+  "at": "2026-10-19T17:35:54.839790+00:00",
   "scope": "All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report",
   "baseline_sha256": "496d31dd2408c58b21d208a83f532c1f0475571148b8415c735656b8f3527113",
   "user_test_data_instruction": "2026-10-19: 暂时先用假数据。Simulated validation is authorized; production qualification remains separate.",
@@ -22,8 +22,8 @@
     "original_acceptance_baseline_preserved": true
   },
   "summary": {
-    "partial_verified": 65,
-    "completion_not_proven": 37
+    "partial_verified": 66,
+    "completion_not_proven": 36
   },
   "fully_accepted_requirements": 0,
   "qualified_live_roles": 0,
@@ -31,11 +31,11 @@
   "repositories": [
     {
       "name": "copypaste-platform",
-      "head": "9f249bbad68637fe8e04b468c2efdc15778b99c1",
+      "head": "33ed0d61276e5bc283d05e561d99043e7466ebc1",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "8d05df9651b515ea5ab51e8ff4ca31095765758cbc057ae8e10517c0394e5e03",
-        "README.md": "60cf8ef860d88f4e4eb1beb97e97f2c9e32ed29eb05119aeaba06b1f97cd2e96",
+        "README.en.md": "08756f0cf38b539786792b701abc0059a3f0aec64d785ec09a166fc1ff5dabfe",
+        "README.md": "d3651dec2dcfcbd09af4571c1b31e9ccccefe9da1ce4f69875225f9639dcf386",
         "THIRD_PARTY_NOTICES.md": "5299e707ba17d7a008cf72dc0208b08dfbe9bd07176bf4dfa07cdceb83bf6d3e",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/company-sign-in.png": "633f7e7bf2ccd8606cd3ec3190b43436471e47b9d0a0a28d39039119d7e0a46a",
@@ -52,6 +52,7 @@
         "catalog/openapi.json": "7ce0b4cb170cdebc07aa4ee8f8810f24dbf996d95128519da184d7b2eb62156b",
         "catalog/role-preset-catalog.json": "7c147d391437b073b8a685bffd7c0ede8d50e4f01dbc601145bbb553c961ca50",
         "catalog/skill-packages.json": "e9e9f80ea5e5cea50221dfebd7529df467ffd3eab8aae78e68cc2a82f62e4c6e",
+        "contracts/admin-membership-schemas.json": "69a7e00fa0e94a4a3fdda4ae553626b87e8489371ba552fdfff871f3cb79e335",
         "contracts/auth-schemas.json": "3fdd104fd4e8f803ba72cbf74bebe56981553048f2b564e53240fa62c4f760d4",
         "contracts/codex/ApplyPatchApprovalParams.json": "179d91081c3c84d0f79fc544a3d6d423f280c0f9d93512cdd0344c80e09b99a3",
         "contracts/codex/ApplyPatchApprovalResponse.json": "a5e145b4794ea91da6eb478626fac96bbbd4485c3399fabd1c9972d53d2d9010",
@@ -505,7 +506,7 @@
         "contracts/codex/v2/WindowsSandboxSetupStartParams.json": "8610d077fff4fc5811f2e33dea82617a15ffb82f08e55e1540aef877133f5b4f",
         "contracts/codex/v2/WindowsSandboxSetupStartResponse.json": "830bf89deac3e73e36b7d9799ceed32ee25e782c30b1d25266374aa020d3bc7e",
         "contracts/codex/v2/WindowsWorldWritableWarningNotification.json": "bfa34d4890c8121a04412b8d53314a13adf98289fdd948857fd97b808dcbe79e",
-        "contracts/implemented-routes.json": "555865fe4b46071265392b0ac126ae8b48390744df67442816359f8497ba5ad4",
+        "contracts/implemented-routes.json": "f2a081c880d34512948c91638472d4ce6a26915199a8ef3c46f0629dd5c5a26d",
         "contracts/membership-schemas.json": "f5658754ca859096e8e4b4f2b6076ce90ec1e269461d59b2a9dc08162e75b1ff",
         "evidence/codex-protocol.json": "eb48a8e38d7a3979185c7abe6b15edec2467ab78815379db4449070e52d752e8",
         "migrations/001-foundation.sql": "4f07eeceebe0c1fb87e236c6700f6aa7d628f31c5c4eb33a90bc16de925d9fe5",
@@ -545,6 +546,7 @@
         "migrations/035-file-backed-campaign-imports.sql": "a3b3c67d7406b4a8c02fc0ec27787fbe82e3fbfc115e32b0635210d877d82a4c",
         "migrations/036-auth-request-receipts.sql": "f9197686b7dfb5eaabaf8490d7b362d5a592a7f49d2168db22d22ea7cadeca8a",
         "migrations/037-membership-invitation-lifecycle.sql": "f35e8f9493a4fe1372dee98c8bcdcaeba2e8e492db3930ba1aace65f37160bc1",
+        "migrations/038-admin-membership-operations.sql": "2b809e4a415d255308bc52bb75ef9b58b968cf727653c26ae7e80f064c62cf3f",
         "package-lock.json": "897180dd90d93f77c9a14344a18ea4a496e13e9ef782fdcaf8cfe8085aa62cf5",
         "package.json": "e08a07e06a2c378cdb635de6cd1a80b4e135b6b00d500a939738aaa6554a51ff",
         "scripts/admin-create.ts": "ea2444a150ff68eb7166b446b26acc198233f0efd8d57c0a84682bf832b8513d",
@@ -591,8 +593,9 @@
         "src/admin-content.ts": "5d9a0522bd7e5b2ad2200cf653b414163d71eec57acc7b45c8cece8741785151",
         "src/admin-identities.ts": "48f1be54da619ac94222aac4c3aa04b64c95250534df6f90398e0861b4a4f9d4",
         "src/admin-jobs.ts": "0b4e002354ad3440d56966c1cb1f0c76748c01bbfb44f3c05bac4047b699f2fa",
-        "src/admin-operations.ts": "82f0ba77ef0cf92ed80713fba5a4224fa6c12d60adfeeb738b03c1f1d7a162e1",
-        "src/admin.ts": "681248a90bc7b4e839ffae6740e4f40babd24240076c49e3e5a15d5531db4f48",
+        "src/admin-memberships.ts": "8322123832f9467f6471e1bc248b5cc08ae3661ec04e5942f85d2e87bfbf8e7e",
+        "src/admin-operations.ts": "66b8380404648a2d49c47a9ca2d1cadef80e64f49e562035fd36bca54362d151",
+        "src/admin.ts": "c9fae271d0888d3f9bddac3dd6ff71620ccba28732c45394ba54d8e5ea5292f9",
         "src/agent-templates.ts": "44ca4097682aec685d08c0cdf388d9ed2827de051f3f407689bffa6494bcb896",
         "src/analysis-calculation.ts": "dc60031a48d56622527fe2764df8f06beb0988009ca71afd65d128ce3acc80f4",
         "src/analysis-reports.ts": "ad33c018bbefac7ed25527575a6bf3dcd1d1767780ad8bdd77779204b2a0739d",
@@ -624,7 +627,7 @@
         "src/federation.ts": "5c7d77a6776b84864459780c2e43832c9d41397fffe120033f79e5e6444f3ae1",
         "src/invitation-delivery.ts": "49d9189c93244182a84f8b51d8617fc9d9aa96a786e2c1888a08993f68786a0d",
         "src/lib.ts": "5d6b20c4a7b95fb1b57ab638e029df975505037f9eaef37868632aa17f0b7ac5",
-        "src/membership.ts": "f4cee11e78bc1bb3994c1da39e45c0fad7ca3a1e5317afd9c3196d8c4f5f2ca5",
+        "src/membership.ts": "cf4e0183c0393940e3a4da589e0a1e0da0d09cb7beb4391a803443d17b6ee1e2",
         "src/metric-calculator.ts": "2599be95e772dc90e28ba1970a29b0ba49e29badd489c29156599b129bec1456",
         "src/notifications.ts": "064a01205f619ae5a29671291d79de2415025dca047b536ed7aa3f121b213dd2",
         "src/oidc-provider.ts": "87616cf69946ee78fcc68c97283ff68e8e2a50b4fb0ce99ef058b78b7ccf9f8d",
@@ -636,7 +639,7 @@
         "src/runtime.ts": "ff43c7623a09c4951aa89dd41fbc9539dd1a206885cd4575e62e839eb44c3643",
         "src/schedule-time.ts": "1c23ce00cddd0be818298e14506ea1563096742bf409048d34e13e3f6d04feec",
         "src/schedules.ts": "a7341b39b89953fc3daa72dde43c088b645310d6bca52104fdc709e4db245111",
-        "src/server.ts": "62399a168352bbc115cb7c4a8a9094db80237cda6b734761c8c6c66233b2e2e4",
+        "src/server.ts": "59435e705d42fd15ad31433458284876041770d94efcffa8d9f3417d79ab4eb0",
         "src/skill-lifecycle.ts": "54f8cc8613ffdd42122b8a1f4f6f7d68d1505a4defda6094855f6c03d155c0e7",
         "src/storage.ts": "1ea54490f977700d21a448c19d0180e1d1d913d234d05d6b56e29d49524e6bc4",
         "src/task-control.ts": "854cb448bb0a9d2b6f6d5c30a03ccdbea0d8db892a1b66d89a7e3edf61453f53",
@@ -650,6 +653,7 @@
         "src/workflow-control.ts": "4a19b3200d42effc9a8eef5b5a76f555a7ee67f9c721d147238b36c28fac4f45",
         "src/workspaces.ts": "3e5976610ff69eeefee16322b865a808bc1c5319b32e1f0280fea872174e0280",
         "tests/admin-identities.test.ts": "c690768980fa64f2c750aaf9c84b70e8721e4f791e590d8db6bf9f3c2d3d20af",
+        "tests/admin-memberships.test.ts": "79ec8197be92495aa80f689f8fba584b9ffb7e9980b1bc835a0f38b83fdec758",
         "tests/agent-templates.test.ts": "59e215cef0980ede979c743bebae23f72c9138200c2f20a5dcca006ba1f65b0d",
         "tests/analysis-calculation.test.ts": "f39b36c1e11b66677384aa969e26c334437ac077761857ffedcd49684ce16bb9",
         "tests/analysis-reports.test.ts": "dc712bc2c87b46a0139830ac4e5aa691227eda5a0ed507b497632eba584b98b2",
@@ -686,11 +690,11 @@
     },
     {
       "name": "copypaste-web",
-      "head": "2d046181e88f6efa8207a812cfb7e29d9c97a28b",
+      "head": "628831a54ca08b073f8995c1ee98480a4689d755",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "9137b38a09627074bcf481580b0e52ba6893277ff7574d95c3efdd5e8f65f456",
-        "README.md": "2d4e18155e9af62d177a096167ba5d516560f943bd0af01af2f7507509988848",
+        "README.en.md": "3521c822551e8d0b586f5554bea5677320ff42bfdc9920cbb8d631375f0cdacc",
+        "README.md": "b5d35e9143fdee2f8789649d90c7cd22cbfd2c3a8c5db61def1b8c4eb1714e87",
         "THIRD_PARTY_NOTICES.md": "689023ca749202be04e59a3ac3fcb7da765a6119a81ac5e08e0c3b2c0d163420",
         "assets/screenshots/01-landing.png": "2e17774c8fc815f3baa10baa2f22856a45c757d7fa35697157c78cd9e6b38116",
         "assets/screenshots/02-login.png": "a492332482b40502450f0e8386cb40db5ec3c0b66971f5a5f0020b9f1bdf2c79",
@@ -796,7 +800,7 @@
         "src/marketing-import.tsx": "e344decbf1464181d11b17a041de8696b7b5cff15ddc3f92663eff3c0d57ea69",
         "src/marketing-reports.tsx": "34e8096558b3eed4536f57fcf14f568b8db98706bab8d98fac647e6c22bd3860",
         "src/marketing-warnings.tsx": "9986d290d9594579494cc7a4773113a2b0832d14ada2361a3daba40df9c8bd65",
-        "src/members.tsx": "580a1357689021a0cfd270268f5a1b9c2f6442fc93df97c356b8c92592533103",
+        "src/members.tsx": "52f446c465d6d5fec8661c6de96e7064b3cfe307882722d9049be895566d3f56",
         "src/native-files.tsx": "72f498cc2401e2ce43dac498964d493b1b3aba6fdf38e8e15c6fe7c1318d6b58",
         "src/notifications.tsx": "d0274b657b5410ff74eabb4fe3a08429ce3d3ff7e37483a125f25bed066a5847",
         "src/operation-key.ts": "1a8051e0db33ee8a4d59b6bf2ecfefdfde7c9d0d7445e8800e3032a4be8cf8c3",
@@ -819,11 +823,11 @@
     },
     {
       "name": "copypaste-admin",
-      "head": "9cb00adf34c551310fc34a79ba17e77d48108bbf",
+      "head": "9052ff387bcdae89821a98ac32b07ca26c99325b",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "968d92c4b1d3a978158e08cfccc2681a6d77541c092bc9546b5d2ecd0f5195b4",
-        "README.md": "6634bbe15602519739a57e5b4573ce934554c396dd015ffa2ab10806e725a9d9",
+        "README.en.md": "7c0dcba63229ce394b538d579c89e8580d2ee01d5f32af0521a549e03003bd6b",
+        "README.md": "64f2aa99c261d3587a9fd48815b49b5e5f1e0525ff2100fbb4a9c9d628d39981",
         "THIRD_PARTY_NOTICES.md": "b49d7e290707d90b160cc864e4388744d9be7ce277b361cb5a784ad29d49b641",
         "assets/screenshots/01-access.png": "c26840f8a6f934f355ca88116df70e2b2cfc65dfaa945d61224fd36c3a7c9f33",
         "assets/screenshots/01-audit.png": "2e1e24aa36d19ed2deeb13f80655256ce39310dc1146499df09db64ce2bff273",
@@ -881,7 +885,9 @@
         "src/data-mode.tsx": "e249a22d8aacfb75437cc75c06df19c26c12836c7d039eb25ace30f030a24377",
         "src/deletions.tsx": "3eb83c8467ff951980d506cce5db60c493eb5791bb61dd97906cdbcabb32631e",
         "src/federation.tsx": "58f2e327845371f4f908ea8438ca594f69280879427328c6fbfb482d19af2698",
-        "src/main.tsx": "5668ecc4559a3caa2014c44203181892bd9d755e582878a606f1d4298b23d48e",
+        "src/main.tsx": "feabbc27d8c1015039e24a950e340b95bf55b32fec90f257690c9688b3fd178f",
+        "src/memberships.tsx": "b495a0fd0ca9f1152efa644c53733c5df8dc0e852a9f05fae22b3f3bfcd2409e",
+        "src/operation-key.ts": "1a8051e0db33ee8a4d59b6bf2ecfefdfde7c9d0d7445e8800e3032a4be8cf8c3",
         "src/schedules.tsx": "5e121070d6f21128d87425b4b5c01883f9f9cd71c4f4f0ef0f1258591e985be1",
         "src/shared-source.json": "539a3fd65375c61ce002b12a022bf620c3c5e17582d4ae844a5a9346970766f5",
         "src/style.css": "857124b8e289b8922427251654db4a7ba00c3f00e856f8e7d2a7b10d583af24a",
@@ -935,11 +941,11 @@
     },
     {
       "name": "copypaste-desktop",
-      "head": "3a4d47faa176f0e1190a26b1968a2fda3607e33b",
+      "head": "40d5e5ff76bc0d5a3286e5299e31e1966fa1f736",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "47eda81b488ea1864326e660d40d8e8a4dc89b1aa8ae8aa23c52040000577e15",
-        "README.md": "159fec5d174c34f113bd73e374baf683130e0b772fcf7d99b2de87a0e5e5725f",
+        "README.en.md": "5a28e7b630c224d32bb558b318b95bb6598936fa1fb8f3a4b413aaf91cc06fa6",
+        "README.md": "60d766738fa587b3e898df1861ee9329bb976d70b5dcfb2c2c2a579e76364ac5",
         "THIRD_PARTY_NOTICES.md": "4a7398e94df711fdf079352be5c7cc18cd59c3394a0369c19a17cb39e612868d",
         "assets/brand-mark.png": "d71ca3ea2dfded42efd9d213201f6948f2ecdabe20aaf80f3013c6805ea9e4a3",
         "assets/icon-128.png": "4168c6491cd687e727e14f606ff5c059890c793756da87ce83dcbe73a9cf21c7",
@@ -975,7 +981,7 @@
         "package.json": "c838af2d5bc50c2afd3e58afb760a993abdda896637cb8261dcf6e05225b2abe",
         "public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
         "public/CopyPaste_Light.svg": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e",
-        "renderer-source.json": "ef4fe86466f7ace1c96ab81bd80eb76ba8abb817b1932c9db3f27424455728b7",
+        "renderer-source.json": "5877f3ef6670deb0c5a9f601aa2a077009077e3dbf5945fbcc443e30ad950a84",
         "renderer/index.html": "9db3d8738a20152c205fa3b7d0be30b3070f1608740cd6a8557f64feade3b82c",
         "renderer/public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
         "renderer/public/CopyPaste_Light.svg": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e",
@@ -1000,7 +1006,7 @@
         "renderer/src/marketing-import.tsx": "e344decbf1464181d11b17a041de8696b7b5cff15ddc3f92663eff3c0d57ea69",
         "renderer/src/marketing-reports.tsx": "34e8096558b3eed4536f57fcf14f568b8db98706bab8d98fac647e6c22bd3860",
         "renderer/src/marketing-warnings.tsx": "9986d290d9594579494cc7a4773113a2b0832d14ada2361a3daba40df9c8bd65",
-        "renderer/src/members.tsx": "580a1357689021a0cfd270268f5a1b9c2f6442fc93df97c356b8c92592533103",
+        "renderer/src/members.tsx": "52f446c465d6d5fec8661c6de96e7064b3cfe307882722d9049be895566d3f56",
         "renderer/src/native-files.tsx": "72f498cc2401e2ce43dac498964d493b1b3aba6fdf38e8e15c6fe7c1318d6b58",
         "renderer/src/notifications.tsx": "d0274b657b5410ff74eabb4fe3a08429ce3d3ff7e37483a125f25bed066a5847",
         "renderer/src/operation-key.ts": "1a8051e0db33ee8a4d59b6bf2ecfefdfde7c9d0d7445e8800e3032a4be8cf8c3",
@@ -1042,11 +1048,11 @@
     },
     {
       "name": "copypaste-delivery",
-      "head": "65f9e1cc6ce2219b87890fd6cf88a6300ecca24a",
+      "head": "cb70bdf67c602d89ec1415a9896f5eaa67fb834b",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "8a575acc83079cd6b99f1289f2e1079e83a09dc4c39664a53b05829422812ed6",
-        "README.md": "3ac4e618a670e6a12b5ace4292227eef95411e1d3175bc7ab4931cdf4795bf7b",
+        "README.en.md": "7b6f62c99ca8c46ccb0fff6335df695d25f602a791441bba7817c967505694dd",
+        "README.md": "46dfb736a1fcbf4c9b89dea8c087823e2f129cb1a6767b8c0478d723cdcf519c",
         "THIRD_PARTY_NOTICES.md": "6c64c50fb20d9a9756db020d15ed5607aec70a08208c82ba58932385eabe3f22",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/design-pdf-export.png": "dc28fb1af46f904f6ee799d0318ad368001a95ccd6696c404715e1c2e9694bdf",
@@ -1054,6 +1060,9 @@
         "assets/screenshots/marketing-analytics.png": "d8a74976a9b44b14831cab14cce69517fd2dc562a7968a40e4ba7ca9028ebb8c",
         "assets/screenshots/product-surfaces.png": "622acae7380b919b7d14bfdb5987fb95266fbea636552ec0616191c47b285473",
         "evidence/admin-identities.json": "450bf2606f7debfaa80614471a930492536bc962c0037efb176bc247ded27942",
+        "evidence/admin-membership-contract-samples.json": "12ed75a338c64a61a2e20ea757b8fe96d64d3ea6042b2f1b4bd2ff912bd93ed1",
+        "evidence/admin-membership-ui-open-issue.json": "66fd84e61413f6f21de7c9914bf97853c2ea97027d5451c5b1dc864e10e7acba",
+        "evidence/admin-membership-wire.json": "969d48811eadb1803acb1ae6051b768f73e108c9a22c1f6701ee87cff9c41d97",
         "evidence/admin-records-contract-samples.json": "c04cbf6cbb3567ad932189d1a91935da054dfbf2d061f3d0962a67a3569c970f",
         "evidence/admin-records-first-regression-failure.json": "93b6820409520949f77c7f5e6bd3bb85a21ef15d55e8c58a07a1a04bc86edbb2",
         "evidence/admin-records.json": "c65d6c0ef8571fb73bd7e9998086e829497f9a4fd33fa388db385b4c36f515e5",
@@ -1061,7 +1070,7 @@
         "evidence/agent-templates-contract-samples.json": "2ad20cf3784cf00cb25332c4a6bb2aa13b8257d3e12a1cfff6ed442e7c6c1e86",
         "evidence/agent-templates.json": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
         "evidence/alignment-desktop.json": "ff06ef0ef7055513dfc0f627b7eec9a2f5d8e5230978bddba3682ef172969b81",
-        "evidence/alignment-platform.json": "c181fa69bf4c9fb1176c062e77416fc7eefdbd9670e2fe919735d5ba6b29eba4",
+        "evidence/alignment-platform.json": "af2b0b3467bfcd9f93c30ba2593193d573a47448146bb97259b6980076b2212f",
         "evidence/alignment.json": "3554e721940576080a0f6e01a9f2a230a87a75ef3c97c1d934999f7c1091a2d0",
         "evidence/analysis-index-backfill.json": "422e7b934edccf8d785c6f6478316aeec3edd9da7b6ae381203dac7771fe73dc",
         "evidence/analysis-reports-contract-samples.json": "30cf0a67f891a9b9def12d8f98ee89b6951a58019aad99c7eee930c7c1bd0ddc",
@@ -1098,7 +1107,7 @@
         "evidence/auth-recovery-open-issue.json": "0477456f3bb51e711c65040971db88151872096efa35b963cf1bc79a49ea9bce",
         "evidence/auth-recovery-owned-browser-cleanup.json": "2611979fb7bd210664e4395568edddf4953dd00f4e5163ff7b2cadb0ad0e639c",
         "evidence/auth-recovery.json": "5c48618f1fcb2bc12343856f4a88d232daf7f2b1b7f6d054d2d7f405279ccc78",
-        "evidence/byte-integrity.json": "1f9750ce94e47e3137c8867f6945314b5869a5e27632fd02dffabc2267d06b32",
+        "evidence/byte-integrity.json": "1c45145055053e4080c9d8e19a0cff8d8d751b038c23892cb11ac3ea0681e4af",
         "evidence/cloud-files-contract-samples.json": "25a282a0555568288577f6d5b2d80a6769619b62fa69865fa4745a67304d9505",
         "evidence/cloud-files.json": "cd28c3f8a0ef68ef97cc96de124e072ed7fd83ccd45e40d563b988a0daeeaf1a",
         "evidence/default-assistant.json": "7f9ee69caba3af61d737064ed2ec2e2ad7f95243cf5bd446aed31046057c2d74",
@@ -1152,6 +1161,11 @@
         "evidence/stage33-platform/alignment-platform.json": "f9a8c770a18eae1bf6152602273bf0eff6d8fb66bef9d1572ad3f069a5e015dc",
         "evidence/stage34-platform/alignment-platform.json": "65e344dab19d7f26ae6f1dde5c5c9d25d0fd24a26fafcbc0f093dfc5b52361d9",
         "evidence/stage35-initial-platform/alignment-platform.json": "62e898ac1981cc95dc130c37c111709d01fe3f10fa839fb95ce95f07a076d41e",
+        "evidence/stage35-platform/alignment-platform.json": "c181fa69bf4c9fb1176c062e77416fc7eefdbd9670e2fe919735d5ba6b29eba4",
+        "evidence/stage35-platform/byte-integrity.json": "1f9750ce94e47e3137c8867f6945314b5869a5e27632fd02dffabc2267d06b32",
+        "evidence/stage36-initial/admin-membership-contract-samples.json": "5aebd6c3eeb9b1f94b7ad67de58bff5a29abeabd948c79ed0129da54fe15ad9e",
+        "evidence/stage36-initial/admin-membership-wire.json": "ae4fed91b999bf708599bd5123635326f8cab34a27a9e832f08a76e3821e4018",
+        "evidence/stage36-initial/alignment-platform.json": "2723eb65ffc7c02b47e8748bf6c1c13e5623c0096e0b317090b8c92779d05562",
         "evidence/task-controls-startup-race.json": "84cde4f16ef775261df76ab8dbd5156a3fcff8a0267703c915221259574b09d4",
         "evidence/task-controls.json": "453fe0a623371d6db9bd9836c8010d7b8764f0f081ac6dfd1240fb81a5c9c71e",
         "evidence/task-dependencies-contract-samples.json": "d32c4dfe04a467fa72b6229dd1863e3965517b3ab6eb7e295cfc7d9429b2d126",
@@ -1200,11 +1214,12 @@
         "evidence/workbook-interop-first-unicode-failure.json": "b2b9143f7a07af0137ba0328c534d78c2b7af653d2a114d14b45c11c783054ed",
         "evidence/workbook-interop.json": "e53a4cd6fae4d1e0a3495003063c3ca838adaa9c38ff4867b1696229f78b770c",
         "package-lock.json": "91aaa1457fa9f6aa0dd6773199c45ddc0770ffa67d5e890bc379675bb3230c51",
-        "package.json": "3d1297072427125ed12a58fe34941a0c6ac77d19a1de26210f067f75107ab1f6",
+        "package.json": "231c3eb4ca659377924afb75df044c96529a1c2914471e225d20b6b1af850e36",
         "scripts/bootstrap.mjs": "73ff72865ff6d15e4cf3e1ab1c862b14d42656e8ccf098bf58c0ccb2ed399332",
         "scripts/dev.mjs": "74484c7cfe37169743638cea120936cb85279f55d54760713214780927c00a0d",
         "scripts/package-native-surfaces.mjs": "0569a682ce79c1d81d12c6af108038dfcc1934d6ff66da57993692fd0f529cec",
         "scripts/qa-admin-identities.ts": "22e3a6e4bd6101addbba8d7dfab11b64c560a3a871fa233f8eeb370b1ba825fc",
+        "scripts/qa-admin-membership-wire.ts": "bc5549647ad147b931cdcd5623b26f85f0ca1e3fac161a746cccd0598c469650",
         "scripts/qa-admin-records.ts": "eb189f82954551186659c6d4249de85639b40877ad209b9de7eaa939e936e615",
         "scripts/qa-admin-task-inputs.ts": "350c1fd57de128723548049d0b0724e457be7fa3c7c0d1907dc73570836b87ff",
         "scripts/qa-agent-templates.ts": "9b81775406f399193337ec76fa608f2c3fc21ab7dc1f289ccea128945e97837e",
@@ -1252,13 +1267,13 @@
   "evidence": {
     "platform_regression": {
       "path": "dev/copypaste-delivery/evidence/alignment-platform.json",
-      "sha256": "c181fa69bf4c9fb1176c062e77416fc7eefdbd9670e2fe919735d5ba6b29eba4",
-      "at": "2026-10-19T16:37:38.210Z",
+      "sha256": "af2b0b3467bfcd9f93c30ba2593193d573a47448146bb97259b6980076b2212f",
+      "at": "2026-10-19T17:31:19.668Z",
       "checks": [],
       "scope": "Current source regression, including real native PostgreSQL, controlled adapters and real Codex with synthetic model dependencies; not all 102 acceptance cases or live role qualification",
       "counts": {
-        "tests": 220,
-        "pass": 220,
+        "tests": 233,
+        "pass": 233,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0,
@@ -1266,7 +1281,7 @@
       },
       "raw_report": {
         "path": "dev/copypaste-delivery/evidence/alignment-platform.tap",
-        "sha256": "cbc3e638a4c03ef72ce1dd253242023cc3f986279e3e8e60006151b798952ef8"
+        "sha256": "943b4aa7b743162bf7be4d75df8982d0170e9ebef680449745688365e1e85591"
       }
     },
     "membership_wire": {
@@ -1296,6 +1311,34 @@
         }
       ],
       "scope": "Real HTTP requests against current source with synthetic email identities; no browser or native UI acceptance claim"
+    },
+    "admin_membership_wire": {
+      "path": "dev/copypaste-delivery/evidence/admin-membership-wire.json",
+      "sha256": "969d48811eadb1803acb1ae6051b768f73e108c9a22c1f6701ee87cff9c41d97",
+      "at": "2026-10-19T17:24:20.143Z",
+      "checks": [
+        {
+          "name": "two real canonical user email sessions and two owned scoped legacy admin sessions with actual email and TOTP",
+          "status": "passed"
+        },
+        {
+          "name": "strict canonical 202 member grant persists a real policy ID and recovers the same operation; current GET returns its state",
+          "status": "passed"
+        },
+        {
+          "name": "suspension denies already signed-in users and blocks owner bypass; explicit admin restoration enables project access",
+          "status": "passed"
+        },
+        {
+          "name": "privileged access remains pending until a different scoped administrator reviews the frozen payload and approves",
+          "status": "passed"
+        },
+        {
+          "name": "revoked original scope prevents approval, old operation recovery and operation reads; a reviewer can cancel the stale request",
+          "status": "passed"
+        }
+      ],
+      "scope": "Current source real HTTP with synthetic identities and scoped admin fixtures; no browser or native UI acceptance claim"
     },
     "auth_navigation": {
       "path": "dev/copypaste-delivery/evidence/auth-navigation.json",
@@ -1941,11 +1984,11 @@
     },
     "checkout_integrity": {
       "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
-      "sha256": "1f9750ce94e47e3137c8867f6945314b5869a5e27632fd02dffabc2267d06b32",
-      "at": "2026-10-19T16:47:27.506Z",
+      "sha256": "1c45145055053e4080c9d8e19a0cff8d8d751b038c23892cb11ac3ea0681e4af",
+      "at": "2026-10-19T17:33:52.304Z",
       "checks": [
         {
-          "name": "fresh independent Git clone preserves all 37 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
+          "name": "fresh independent Git clone preserves all 38 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
           "status": "passed"
         },
         {
@@ -1957,7 +2000,7 @@
           "status": "passed"
         },
         {
-          "name": "fresh delivery clone preserves raw 220-test TAP bytes and its recorded SHA-256",
+          "name": "fresh delivery clone preserves raw 233-test TAP bytes and its recorded SHA-256",
           "status": "passed"
         }
       ],
@@ -1965,8 +2008,8 @@
     },
     "runtime_schemas": {
       "path": "docs/quality/runtime-contract-samples.json",
-      "sha256": "bc2c47f17230df2038fcf968426bf24d2adf51b07032c18ce77e762c24cb81a6",
-      "at": "2026-10-19T16:45:19.836843+00:00",
+      "sha256": "eb6e8cd9712e5de755ef1016126a0bfdb11f8c8d98815e53ebe2281073e4d4bd",
+      "at": "2026-10-19T17:24:53.470356+00:00",
       "checks": [
         {
           "source": "cloud-files-contract-samples.json",
@@ -2226,14 +2269,56 @@
           "schema": "Ack",
           "status": "passed",
           "errors": []
+        },
+        {
+          "source": "admin-membership-contract-samples.json",
+          "sample": 1,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-membership-contract-samples.json",
+          "sample": 2,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-membership-contract-samples.json",
+          "sample": 3,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-membership-contract-samples.json",
+          "sample": 4,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-membership-contract-samples.json",
+          "sample": 5,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-membership-contract-samples.json",
+          "sample": 6,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
         }
       ],
-      "scope": "Captured canonical User/Invite/Member and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance"
+      "scope": "Captured canonical User/Invite/Member/AdminOperation and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance"
     },
     "documentation": {
       "path": "docs/quality/validation-report.json",
-      "sha256": "08cf3920a236e00539f38dbfce7ead5f1e4ef9ca6d18d38e92b3531ba4bc9db5",
-      "at": "2026-10-19T16:34:55.395405+00:00",
+      "sha256": "1d37e4870608705a8bc2b7a457c9461e119cf08422f35ebc29628f1c547be7cb",
+      "at": "2026-10-19T17:34:40.657688+00:00",
       "checks": [],
       "scope": "documentation_contracts_and_recorded_design_evidence_only"
     }
@@ -2250,12 +2335,18 @@
       "sha256": "a913efc238f7f5de29bb35cae1fc8eba7e1d3a0a2325eff81e9a5e759e0002e7",
       "status": "not_completed",
       "scope": "Current source Web membership reruns timed out at browser page/locator creation; all owned instances closed. Earlier browser success bytes were overwritten and are not accepted evidence; five current HTTP checks remain separate from final UI acceptance."
+    },
+    {
+      "path": "dev/copypaste-delivery/evidence/admin-membership-ui-open-issue.json",
+      "sha256": "66fd84e61413f6f21de7c9914bf97853c2ea97027d5451c5b1dc864e10e7acba",
+      "status": "not_completed",
+      "scope": "Admin membership forms, frozen review and Web suspension message are built but not browser-verified; current HTTP and database checks are separate. No new screenshots are claimed."
     }
   ],
   "contract_alignment": {
     "contract_operations": 225,
-    "implemented_operations": 260,
-    "unmatched_contract_method_paths": 154,
+    "implemented_operations": 265,
+    "unmatched_contract_method_paths": 152,
     "limit": "Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.",
     "operations": [
       {
@@ -3347,7 +3438,7 @@
         "method": "POST",
         "path": "/v1/admin/tenants/{tenant_id}/memberships",
         "operation_id": "changeAdminMembership",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -3753,7 +3844,7 @@
         "method": "GET",
         "path": "/v1/admin/operations/{operation_id}",
         "operation_id": "getAdminOperation",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -3923,7 +4014,7 @@
       "verified_repairs": [
         {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -4192,7 +4283,7 @@
       "verified_repairs": [
         {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -4432,6 +4523,7 @@
         "dev/copypaste-platform/src/federation.ts"
       ],
       "acceptance_evidence": [
+        "admin_membership_wire",
         "auth_navigation",
         "membership_wire",
         "platform_regression",
@@ -4442,8 +4534,20 @@
       "original_finding": "邮箱、邀请、原生登录和 OIDC 已有局部证据；须执行完整跨端撤销用例。",
       "verified_repairs": [
         {
+          "cluster": "admin_membership_control",
+          "verified_subflow": "规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。",
+          "evidence": [
+            "platform_regression",
+            "admin_membership_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/36-admin-membership-control-and-policy-snapshots.md"
+          ]
+        },
+        {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -5680,6 +5784,7 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "admin_membership_wire",
         "admin_task_inputs",
         "analysis_index",
         "analysis_reports",
@@ -5706,8 +5811,20 @@
       "original_finding": "已有工作台；会话/成果/文件主路径、团队和能力中心仍有缺口。",
       "verified_repairs": [
         {
+          "cluster": "admin_membership_control",
+          "verified_subflow": "规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。",
+          "evidence": [
+            "platform_regression",
+            "admin_membership_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/36-admin-membership-control-and-policy-snapshots.md"
+          ]
+        },
+        {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -5918,7 +6035,7 @@
       "verified_repairs": [
         {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -6112,7 +6229,7 @@
       "verified_repairs": [
         {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -7072,6 +7189,7 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "admin_membership_wire",
         "agent_templates",
         "analysis_index",
         "analysis_reports",
@@ -7099,8 +7217,20 @@
       "original_finding": "有中英切换；动态状态翻译、日期/币种与时区覆盖不完整。",
       "verified_repairs": [
         {
+          "cluster": "admin_membership_control",
+          "verified_subflow": "规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。",
+          "evidence": [
+            "platform_regression",
+            "admin_membership_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/36-admin-membership-control-and-policy-snapshots.md"
+          ]
+        },
+        {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -7420,6 +7550,7 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "admin_membership_wire",
         "analysis_index",
         "analysis_reports",
         "auth_navigation",
@@ -7445,8 +7576,20 @@
       "original_finding": "有可访问控件基础；缺少全部核心流程的键盘/缩放/窄屏专项证明。",
       "verified_repairs": [
         {
+          "cluster": "admin_membership_control",
+          "verified_subflow": "规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。",
+          "evidence": [
+            "platform_regression",
+            "admin_membership_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/36-admin-membership-control-and-policy-snapshots.md"
+          ]
+        },
+        {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -7807,7 +7950,7 @@
       "verified_repairs": [
         {
           "cluster": "invitations_and_membership_authority",
-          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。",
+          "verified_subflow": "原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。",
           "evidence": [
             "platform_regression",
             "membership_wire",
@@ -9304,19 +9447,36 @@
       "requirement": "账号与企业控制：可按权限冻结或恢复用户、停用成员关系、限制企业和撤销会话，冻结范围及在途任务策略明确；恢复不自动恢复旧会话、已撤销授权或旧公开链接。",
       "acceptance_case": "TC-085",
       "acceptance_conditions": "全局动作需全局权限；成员冻结只影响指定关系；新调用和未来触发按策略停止，在途状态明确；恢复不重建旧会话或授权。",
-      "assessment": "completion_not_proven",
-      "finding": "已有冻结/恢复与会话撤销；企业/成员/在途工作/公开链接范围需完整验证。",
+      "assessment": "partial_verified",
+      "finding": "规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/auth.ts",
         "dev/copypaste-platform/src/access.ts",
         "dev/copypaste-platform/src/workspaces.ts",
         "dev/copypaste-platform/src/federation.ts"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        "admin_membership_wire",
+        "platform_regression",
+        "runtime_schemas"
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有冻结/恢复与会话撤销；企业/成员/在途工作/公开链接范围需完整验证。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "已有冻结/恢复与会话撤销；企业/成员/在途工作/公开链接范围需完整验证。",
+      "verified_repairs": [
+        {
+          "cluster": "admin_membership_control",
+          "verified_subflow": "规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。",
+          "evidence": [
+            "platform_regression",
+            "admin_membership_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/36-admin-membership-control-and-policy-snapshots.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -9754,7 +9914,7 @@
       "acceptance_case": "TC-094",
       "acceptance_conditions": "每次按动作和范围等上下文判定，显式拒绝优先；字段与单对象一致；越权授予和过期绑定被拒，界面隐藏不替代服务端校验。",
       "assessment": "partial_verified",
-      "finding": "项目方法及清理记录已有权限子流程证据，包含企业/项目 deny、只读与到期；全动作/字段/范围/导出及异步执行完整矩阵待完成。",
+      "finding": "项目方法、清理记录和规范 Admin 成员管理已有权限子流程证据，包含当前企业范围、重叠项目 deny、近期 MFA 与撤权；全动作/字段/范围/导出及异步执行完整矩阵待完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/auth.ts",
         "dev/copypaste-platform/src/access.ts",
@@ -9762,6 +9922,7 @@
         "dev/copypaste-platform/src/federation.ts"
       ],
       "acceptance_evidence": [
+        "admin_membership_wire",
         "admin_records",
         "platform_regression",
         "runtime_schemas",
@@ -9770,6 +9931,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有细粒度权限/deny/委派；全动作、字段、列表、下载和异步执行须逐项覆盖。",
       "verified_repairs": [
+        {
+          "cluster": "admin_membership_control",
+          "verified_subflow": "规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。",
+          "evidence": [
+            "platform_regression",
+            "admin_membership_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/36-admin-membership-control-and-policy-snapshots.md"
+          ]
+        },
         {
           "cluster": "admin_record_pages",
           "verified_subflow": "清理记录组合筛选、可见总数与分页、只读重试拒绝、慢请求失败清空、授权到期和后台默认 50 条；不含百万记录压测或全部运营筛选。",
@@ -9795,7 +9968,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "项目方法及清理记录已有权限子流程证据，包含企业/项目 deny、只读与到期；全动作/字段/范围/导出及异步执行完整矩阵待完成。",
+      "remaining_complete_acceptance_conditions": "项目方法、清理记录和规范 Admin 成员管理已有权限子流程证据，包含当前企业范围、重叠项目 deny、近期 MFA 与撤权；全动作/字段/范围/导出及异步执行完整矩阵待完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -9985,7 +10158,7 @@
       "acceptance_case": "TC-100",
       "acceptance_conditions": "所有新请求和执行以权威版本判定；离线先同步撤销，事件去重且能追踪；界面缓存更新不作为授权，站内通知不自动外发。",
       "assessment": "partial_verified",
-      "finding": "已有请求/worker 重查；缺少统一撤销事件、客户端重连同步与站内通知。",
+      "finding": "规范成员操作的原因/前后差异审计、不可变有效策略、冻结预览及独立审批的原权限/版本/期限重查已有证据；全部资金/内容/权限策略、批次与生产审计留存仍待完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/auth.ts",
         "dev/copypaste-platform/src/access.ts",
@@ -9993,6 +10166,7 @@
         "dev/copypaste-platform/src/federation.ts"
       ],
       "acceptance_evidence": [
+        "admin_membership_wire",
         "admin_records",
         "auth_navigation",
         "platform_regression",
@@ -10002,6 +10176,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有请求/worker 重查；缺少统一撤销事件、客户端重连同步与站内通知。",
       "verified_repairs": [
+        {
+          "cluster": "admin_membership_control",
+          "verified_subflow": "规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。",
+          "evidence": [
+            "platform_regression",
+            "admin_membership_wire",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/36-admin-membership-control-and-policy-snapshots.md"
+          ]
+        },
         {
           "cluster": "canonical_user_and_private_context",
           "verified_subflow": "原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者与测试调用同步迁移；不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、实际 HTTP User schema 和 Web 初始化证据独立记录，完整原生/系统旅程未计通过。",
@@ -10050,7 +10236,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "已有请求/worker 重查；缺少统一撤销事件、客户端重连同步与站内通知。",
+      "remaining_complete_acceptance_conditions": "规范成员操作的原因/前后差异审计、不可变有效策略、冻结预览及独立审批的原权限/版本/期限重查已有证据；全部资金/内容/权限策略、批次与生产审计留存仍待完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
