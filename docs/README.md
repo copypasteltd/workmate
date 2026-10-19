@@ -12,7 +12,7 @@
 
 原生画布和设计师工具新增单页 PDF 审阅稿，保留实际源工程和素材版本；格式权限、版本冲突、重复请求与跨端下载见 [PDF 设计交付](technical/26-design-pdf-review-delivery.md)。PDF 为图片审阅稿，不计为完整专业交付资格。
 
-营销数据新增字段映射预览、原文摘要、重复导入保护、未知转化处理、冻结精确指标及实际 CSV/JSON/SVG 下载。Web/源码 Desktop 的实现、验证和剩余条件见 [营销数据与证据](technical/27-marketing-import-metrics-and-evidence.md)。正式广告授权、XLSX 与完整分析报告任务继续保留为未完成项。
+营销数据新增字段映射预览、原文摘要、重复导入保护、未知转化处理、冻结精确指标及实际 CSV/JSON/SVG 下载，见 [营销数据与证据](technical/27-marketing-import-metrics-and-evidence.md)。后续已接入多来源/比较的 AnalysisSpec、真实 Codex 私人报告任务、分页事实工具、固定 HTML/JSON 资产及规范 Snapshot/Evidence 读取，见 [报告任务与冻结证据](technical/28-analysis-report-tasks-and-evidence.md)。正式广告授权、XLSX、完整语义质量与专业交付资格仍未完成。
 
 **已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/08-enterprise-federation-acceptance.md)。未完成外部平台授权或公司真实模型准入。
 

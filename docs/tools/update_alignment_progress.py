@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('analysis_report_tasks', [1,2,12,23,24,35,39,43,44,46,49,51,55,60,74,75,79,90,91],
+     'AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。',
+     ['platform_regression','analysis_reports','analysis_index','runtime_schemas'], ['technical/28-analysis-report-tasks-and-evidence.md']),
     ('marketing_import_metrics', [1,2,12,23,24,35,39,44,49,51,55,60,90],
      'CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。',
      ['platform_regression','marketing_analytics'], ['technical/27-marketing-import-metrics-and-evidence.md']),
@@ -75,8 +78,8 @@ REMAINING = {
  15:'模拟接口下功能继续验证；真实内部 Image 2 生成/编辑和业务质量尚未验收。',
  16:'真实分层图文可生成 PDF 审阅稿并独立渲染；完整换行/溢出检查、字体来源/授权与所有专业排版仍待验收。',
  22:'PDF 实际下载、源快照、版本冲突及原生保存已有局部验证；评论/接受/修改闭环、完整 ZIP 版本清单及全部业务编辑描述未齐。',
- 23:'CSV 原文、映射/口径、并发去重、行错误与跨端确认已有证据；XLSX、完整官方导出/语言数值矩阵、维度事实模型、显式替换及规范资产/导入/快照 API 未完成。',
- 24:'精确小数、四组固定算例、未知/零原因、冻结结果与 11 项引用、实际报告/图表已验证；跨来源 AnalysisSpec、报告任务/持久资产、证据查询、模型叙述数字校验及完整币种/归因流程未完成。',
+ 23:'CSV 原文、映射/口径、并发去重、行错误、跨端确认和规范快照读取已有证据；XLSX、完整官方导出/语言数值矩阵、多维事实模型、显式替换及规范资产/导入 API 未完成。',
+ 24:'精确小数、未知/零原因、多来源 AnalysisSpec/比较、原子报告任务、固定资产、分页事实工具、规范证据查询与数字引用校验已有局部证据；完整语义/统计质量、正式连接数据、全部币种/归因矩阵和专业交付仍未完成。',
  35:'文件/技能、默认助手、通知和首次运行前补齐已有证据；团队、自动缺口发现、步骤续做与全业务整合仍待完成。',
  37:'Web 与 Desktop 传输有新证据；兼容降级、扩展及所有撤销场景仍未完整验收。',
  38:'Desktop 新传输不等同扩展 Native Host 全量大文件验收；协议矩阵仍待完成。',
@@ -153,6 +156,8 @@ def main():
         'agent_templates': DEV/'copypaste-delivery/evidence/agent-templates.json',
         'design_pdf': DEV/'copypaste-delivery/evidence/design-pdf.json',
         'marketing_analytics': DEV/'copypaste-delivery/evidence/marketing-analytics.json',
+        'analysis_reports': DEV/'copypaste-delivery/evidence/analysis-reports.json',
+        'analysis_index': DEV/'copypaste-delivery/evidence/analysis-index-backfill.json',
         'checkout_integrity': DEV/'copypaste-delivery/evidence/byte-integrity.json',
         'runtime_schemas': DOCS/'quality/runtime-contract-samples.json',
         'documentation': DOCS/'quality/validation-report.json',

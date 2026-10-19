@@ -2,7 +2,7 @@
 
 版本：2.0 · 2026-10-19 · 产品代码：0.5.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
-当前源码持续修复已扩展到 33 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录、持久模板及真实 PDF 审阅稿；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md)、[持久模板](25-role-template-registry-and-runtime-binding.md) 与 [PDF 设计交付](26-design-pdf-review-delivery.md)。
+当前源码持续修复已扩展到 34 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录、持久模板、真实 PDF 审阅稿、CSV 冻结指标及 AnalysisSpec 报告任务；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md)、[持久模板](25-role-template-registry-and-runtime-binding.md)、[PDF 设计交付](26-design-pdf-review-delivery.md)、[营销导入](27-marketing-import-metrics-and-evidence.md) 与 [报告任务](28-analysis-report-tasks-and-evidence.md)。
 
 ## 1. 路径与仓库
 
@@ -25,7 +25,7 @@ Web、Admin、扩展与 Desktop 可独立安装和构建，不在 build 时依�
 | ------- | --------------------------------------------------------------------------------------------- |
 | 工具    | Node 22.14.0、npm 10.9.2、TypeScript 7.0.2，精确依赖在各锁文件                                |
 | 服务    | Fastify 5.12.7、pg 8.23.1、pg-boss 12.38.0、Zod 4.6.7                                         |
-| 数据    | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、当前 33 个有序迁移、RLS              |
+| 数据    | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、当前 34 个有序迁移、RLS              |
 | 界面    | React 19.3.1、Vite 8.3.4、React Router 7.18.4、Lucide 1.59.0                                  |
 | Desktop | Electron 44.5.1、electron-builder 26.15.3、DPAPI + AES-256-GCM、独立 Node-mode Chrome Host    |
 | Agent   | Codex 0.163.0-alpha.10.2、app-server stdio JSON-RPC、实际生成协议、公司 Responses provider    |
@@ -127,10 +127,12 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 
 ## 8. 当前源码修复增量
 
-2026-10-19 当前源码平台 159/159、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。另有模板 Web/Electron 八组检查及 PDF Web/Electron 七组检查，见 [模板注册与运行约束](25-role-template-registry-and-runtime-binding.md) 和 [PDF 设计交付](26-design-pdf-review-delivery.md)。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作与常规实际 234 个 method/path 不代表字段及全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 167/167、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。另有模板 Web/Electron 八组检查及 PDF Web/Electron 七组检查，见 [模板注册与运行约束](25-role-template-registry-and-runtime-binding.md) 和 [PDF 设计交付](26-design-pdf-review-delivery.md)。规范 225 个操作与常规实际 243 个 method/path 不代表字段及全部验收已完成。最新响应样本结果见 [严格 schema 报告](../quality/runtime-contract-samples.json)。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 
 新增企业/用户/能力原子执行容量、跨企业交错派发与原任务自动排队，细则及证据边界见 [容量与公平调度](23-execution-capacity-and-fair-dispatch.md)。完整 NFR 规模、供应商逐请求限流及独立生成式视频队列仍待完成。
 
 营销 CSV 的原文/口径、八位精确计算、并发去重、冻结报告和 Web/Desktop 实际下载见 [营销数据与证据](27-marketing-import-metrics-and-evidence.md)。新增迁移 032/033，两套原生数据库保持既有摘要记录；当前平台 159/159、营销六组跨端验证和 Desktop 四项单元通过。当前常规清单 234 个 method/path，未实现的规范接口仍记为未完成；未重打历史发布物。
+
+上段保留 CSV 增量时点记录。最新迁移 034、AnalysisSpec/比较、私人 Codex 报告、分页事实工具、固定资产与规范快照/证据读取见 [报告任务](28-analysis-report-tasks-and-evidence.md)。最新平台回归 167/167、报告 Web/Electron 六组、严格 HTTP 样本 26/26 通过；清单 243 个实际 method/path，独立 renderer 40 项来源摘要。完整验收和正式资格仍未完成。

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-19T06:03:38.089144+00:00",
+  "at": "2026-10-19T07:24:29.665322+00:00",
   "scope": "All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report",
   "baseline_sha256": "496d31dd2408c58b21d208a83f532c1f0475571148b8415c735656b8f3527113",
   "user_test_data_instruction": "2026-10-19: 暂时先用假数据。Simulated validation is authorized; production qualification remains separate.",
@@ -14,12 +14,13 @@
   "repositories": [
     {
       "name": "copypaste-platform",
-      "head": "84b2e47fff7874629dff83119e261edf922d11af",
+      "head": "05aec5c730e1091fb62c6b60624cfdf14f421536",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "82407922ae6664bfea15d4a1c3dd04c3e5324c50776937321cf76e7dec3f3bef",
-        "README.md": "e1092b09697258b108d74a53763e1173b20e68910b5e558799ef860b412fed79",
+        "README.en.md": "4389afd8642e05349bf3bb81243e0ab34f28aca20d90ce5010f7993df47ca971",
+        "README.md": "f15c4b28b3c840d460b4e6205da6bf66c8754dbe7f68018f2494087632fde0ee",
         "THIRD_PARTY_NOTICES.md": "98e75b36d7fe8b4564b2dcf97235f1e7121a0b1a5ec3434c2a7d5409c754c94b",
+        "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/company-sign-in.png": "633f7e7bf2ccd8606cd3ec3190b43436471e47b9d0a0a28d39039119d7e0a46a",
         "assets/screenshots/design-pdf-export.png": "dc28fb1af46f904f6ee799d0318ad368001a95ccd6696c404715e1c2e9694bdf",
         "assets/screenshots/marketing-analytics.png": "ec2aa0529f0663fc4f54aadd07e54b2b041d983644201396e043db8829da3e02",
@@ -485,7 +486,7 @@
         "contracts/codex/v2/WindowsSandboxSetupStartParams.json": "8610d077fff4fc5811f2e33dea82617a15ffb82f08e55e1540aef877133f5b4f",
         "contracts/codex/v2/WindowsSandboxSetupStartResponse.json": "830bf89deac3e73e36b7d9799ceed32ee25e782c30b1d25266374aa020d3bc7e",
         "contracts/codex/v2/WindowsWorldWritableWarningNotification.json": "bfa34d4890c8121a04412b8d53314a13adf98289fdd948857fd97b808dcbe79e",
-        "contracts/implemented-routes.json": "822deba6ab09b1e868222370820498b1d1e00699c6fdd500a0bebbc873e2ba89",
+        "contracts/implemented-routes.json": "5a31197d7eea796d35477282f31542d3273343b6a573311b7d9a6eacd1819d73",
         "evidence/codex-protocol.json": "eb48a8e38d7a3979185c7abe6b15edec2467ab78815379db4449070e52d752e8",
         "migrations/001-foundation.sql": "4f07eeceebe0c1fb87e236c6700f6aa7d628f31c5c4eb33a90bc16de925d9fe5",
         "migrations/002-content-and-financial-guards.sql": "5ec0fa6e2a1705f3b530cf25316014df0004c896927ff6b7c80e118c3210aa0d",
@@ -520,6 +521,7 @@
         "migrations/031-agent-template-registry.sql": "ac933eb4bd13a8d7d940031487e96cbc1f3f57baca0d8ccda220ceaf46ca6c13",
         "migrations/032-marketing-import-provenance.sql": "1bcf48ed9bdee5fa02e8e157b8c03dead48a9ba8c64c8a168b74b8ce7cb71d86",
         "migrations/033-frozen-marketing-metrics.sql": "40f22a0e1ce4f69cc4fc49736c408045e434a1c2152d22e9f8e12948569bad6b",
+        "migrations/034-analysis-reports.sql": "794dec95a21d73d27a9750a6240e4cf1c81fa8a64b863ce318ddc19f9f1abfbd",
         "package-lock.json": "a3a6b60bf596e4cf1f343131f7bccc75e6e2632d832985e202024a41fff2700c",
         "package.json": "88ff22980227c008769bbf5c37a83ee8a7f670789e349545cf50523d38745ccf",
         "scripts/admin-create.ts": "ea2444a150ff68eb7166b446b26acc198233f0efd8d57c0a84682bf832b8513d",
@@ -532,6 +534,7 @@
         "scripts/native-db-launch.mjs": "27d1f4b00ec95cff0fd67d5c359df5c41e4b3946b36b1ec43539a5197706807a",
         "scripts/qa-fixture.ts": "8aae8697c5473b71d645615560263070542a8cc5f937dfe779a6212a0b3cf8e9",
         "scripts/setup-local.ts": "b05b2c074ebb20eac4f36b5ea5f1eae1d3358d686b389710e4f0824ce035cb07",
+        "scripts/verify-analysis-index.ts": "95bcd1e0fc2b20c0b588f763c8bff01f6c03b01afbb38d5854e62e73e2ba7e41",
         "skills/ad-creative/SKILL.md": "c9f4aed8f8100ae09524464dd330d48bac1dd0e8b8c7204c9a2280cd9096b4af",
         "skills/ads-analysis/SKILL.md": "27ba8824edfb8b0408a010f53df848f8ca956ceb09245a94ff7189fc9a2ed626",
         "skills/backend-api/SKILL.md": "668d0d6108f006502d25866efc77749ff54f732d76ae47a9aaa79f239fdd7054",
@@ -568,8 +571,10 @@
         "src/admin-operations.ts": "82f0ba77ef0cf92ed80713fba5a4224fa6c12d60adfeeb738b03c1f1d7a162e1",
         "src/admin.ts": "3708dcae53d9640dea06c4c5f36bfc205e85a508bec1ef826704e904f0e6e4d4",
         "src/agent-templates.ts": "44ca4097682aec685d08c0cdf388d9ed2827de051f3f407689bffa6494bcb896",
+        "src/analysis-calculation.ts": "8fcbd83686cb8c314a6bb752f140cf1e588cf70845faba4123aa0046e03c07c4",
+        "src/analysis-reports.ts": "fafef38526e361f68e8d5bb5e70e90e865992b9343a583b2649c78e2d72d7d8d",
         "src/analytics-import.ts": "4faf7a2fd4df52f1575109069510a967e4a5b84aa14bc46bff8284c6d6c8b5cc",
-        "src/analytics.ts": "420f4b5037179fa0b090831ebf5e88d75842ea32379c74b6603236bc1a3bf729",
+        "src/analytics.ts": "d2f4bb258e14235dd6b27c5df11635009f17bc1f48b2420538d1576c86bf4b9d",
         "src/assets.ts": "579489ad0c8e6ad46bf4c0015ad82834118bc24496d550395cc470706688ed20",
         "src/auth.ts": "209c9eedc548c193d784ca55a13b9f18756cc2dd0c8006ca4bb89a1e24fa753e",
         "src/billing.ts": "d8049980f91aa8811ab483b2f704f3251aa66be4a128c30b834759dcc166b58f",
@@ -582,7 +587,7 @@
         "src/config.ts": "a323b1a6699d76a5aa286cbd836b575bbf36d6e750193d2df9d6892bd0d3fbf0",
         "src/db.ts": "b52eb0271a583507f9bb6c564f7ba2fc217bb82c5efe209878cada4331b329f1",
         "src/deletions.ts": "73024049384dc26d2cc89535bbeb790c9d0c43fb206590fd4fac80910b98847f",
-        "src/demo-gateway.ts": "a8269691cf4ebdf11f0f5cd5eaf12c8b495f27fb1afe88a698a99e821ac5ccb5",
+        "src/demo-gateway.ts": "35ead36530bbec009cd13dc5adf05fa32c104a4ba197778ff4614c1eee65d642",
         "src/demo.ts": "99c498cdea1988c7ae69e25448e3bf9aef4cec7d85a50a8d27a3a449c564439d",
         "src/device-signing.ts": "f217dd75d7c59269c25f338e5d070ba2ae32c23ac13d8f5095463fdc30d28977",
         "src/erasure.ts": "931fe3781f5073fa0b91d5feb98da9fb1d101c135da1d706f54485f9ddf5c413",
@@ -601,7 +606,7 @@
         "src/runtime.ts": "1ad9bbb7480fb7dc5110c1359293d6db39e87d7057dbe82cef8fa5a6d729e175",
         "src/schedule-time.ts": "1c23ce00cddd0be818298e14506ea1563096742bf409048d34e13e3f6d04feec",
         "src/schedules.ts": "a7341b39b89953fc3daa72dde43c088b645310d6bca52104fdc709e4db245111",
-        "src/server.ts": "7aa9802fcc54345e96ab35ad3e9786497f78d01a5b83e2f3fdb16738ba35a4d2",
+        "src/server.ts": "cb4b54a77e640cfe303df9d71b5d5286b5035fc75ed55967d5d10a20627e0343",
         "src/skill-lifecycle.ts": "54f8cc8613ffdd42122b8a1f4f6f7d68d1505a4defda6094855f6c03d155c0e7",
         "src/storage.ts": "28c093f91923b323f03d08d5bc9f6b15c49fcdcda1c23fe897b05030fe40dca1",
         "src/task-dependencies.ts": "6ebd87d04c078f81b80b74d5d1783803b15d65040c99f3204991e49cd22cc9ac",
@@ -610,11 +615,13 @@
         "src/task-service.ts": "6a46c8eb2e07dd3531f9d54a05aea60066dc54c9ee44ad562340c8c3e9153c97",
         "src/tasks.ts": "609f1d36d21be807db6d40567ac76c1ff39b13486e970dded470d91f4d6b1156",
         "src/uploads.ts": "6346c8285c3df7801a114322f501eaa173ec921e225716a9334b4f0aad45cdf9",
-        "src/worker.ts": "bd20e3737e653dd603ce6c6f63747a8d0ba8404c92af1a6f35a74797af45b022",
+        "src/worker.ts": "7a2b788af3ff3d76f9b305c7da6a35d9100f6d6f878cc227416bb0f53ca42da9",
         "src/workflow-control.ts": "4a19b3200d42effc9a8eef5b5a76f555a7ee67f9c721d147238b36c28fac4f45",
         "src/workspaces.ts": "aefde11f5d7177e74d699896ade9a3e04fd6913428b334579871a1da9d9789b8",
         "tests/admin-identities.test.ts": "c690768980fa64f2c750aaf9c84b70e8721e4f791e590d8db6bf9f3c2d3d20af",
         "tests/agent-templates.test.ts": "59e215cef0980ede979c743bebae23f72c9138200c2f20a5dcca006ba1f65b0d",
+        "tests/analysis-calculation.test.ts": "f39b36c1e11b66677384aa969e26c334437ac077761857ffedcd49684ce16bb9",
+        "tests/analysis-reports.test.ts": "dc712bc2c87b46a0139830ac4e5aa691227eda5a0ed507b497632eba584b98b2",
         "tests/analytics-import.test.ts": "42735b8e57f9108866d641e90b17dea771452b2d9fdc8b947e2b69e1a41374bd",
         "tests/analytics-metrics.test.ts": "f505a96b32949bab9b78c76fe951c9fd427008abe0203625728b4fd37ee20f64",
         "tests/cloud-files.test.ts": "ed3d9ef027e3166a0807328c65497ccf3946a5f2d165a6ad8a5fc90a29959519",
@@ -640,11 +647,11 @@
     },
     {
       "name": "copypaste-web",
-      "head": "65ffb58a1be881a10ad744a4f69cde76b8f5b3ca",
+      "head": "a4933c8e3389345c7f22ae2216753fadfd0420f8",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "6cd1093ad4b5dee5f3bf2476131fceedea0ace7aa1aaced2359ad2f3dde8b978",
-        "README.md": "b8c854c379cc4d57f6f6e817cbc4f840f0bcd3b69e4a4a2a8238310e41c6ea52",
+        "README.en.md": "2b8bbc27100d10ce91e80dedd715f897aac2c73ffc9a6afdb1fac954b86fae04",
+        "README.md": "8ac7aac5a8900014d78ade2170ef76029db16b524c4d2090e221502ab9028969",
         "THIRD_PARTY_NOTICES.md": "689023ca749202be04e59a3ac3fcb7da765a6119a81ac5e08e0c3b2c0d163420",
         "assets/screenshots/01-landing.png": "2e17774c8fc815f3baa10baa2f22856a45c757d7fa35697157c78cd9e6b38116",
         "assets/screenshots/02-login.png": "a492332482b40502450f0e8386cb40db5ec3c0b66971f5a5f0020b9f1bdf2c79",
@@ -711,6 +718,10 @@
         "assets/screenshots/54-marketing-chart-render.png": "89bcda3db502465b2d31c0f8fc286a1adacefff4273723bbbe865161378f5cab",
         "assets/screenshots/55-marketing-mobile.png": "3ca7163e6308df75412f20249641fa07670bc683c12334b1750d41487907eba0",
         "assets/screenshots/56-marketing-mobile-zh-dark.png": "fec1c75cc5c1c1ad876ae2cc4400b81953f39ab25745957961726d533fbd509a",
+        "assets/screenshots/57-analysis-report-preview.png": "6b7a5e06c3d29cfb489b6e1bdc213e0dadbd0b48d94f1372cbfb43a9bc9e1f16",
+        "assets/screenshots/58-analysis-report-ready.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
+        "assets/screenshots/59-analysis-report-html.png": "0f14464108374ab2db87cbd3e2611a61f8aa7bfb5c56a04a25fc62347fd97381",
+        "assets/screenshots/60-analysis-report-mobile-zh-dark.png": "884251cb69b3cca3f0265c6037cc8fbaafc6466edb96ab25fa42ce2539f46260",
         "index.html": "648ffc01b13a3fa31dd565475e655611229a29504fca904ff5700a508038513a",
         "output/imagegen/copypaste-folds.png": "d0ab11f304b4ea2cc6a6fa683403f71b5108e7d6ef95037979d3e5c0dcddf1b5",
         "package-lock.json": "f09b34897a7dae2eea5998bf8040926a73fda39fb438f95ebf3e8cd3bc284474",
@@ -731,9 +742,10 @@
         "src/deletions.tsx": "3d7a524ed37854402d0b49920c2fbcf96139fc5f06893b81c29b7985890c72ef",
         "src/design-exports.tsx": "44dd46a6b64245535deaebcdb7270cef7fa85540eca7eb2bfc231524f264d737",
         "src/federation.tsx": "14643e7bd04794069dfd98f093cf361dd408c8831d948078fce54855c81dd35a",
-        "src/main.tsx": "e6f644e53b20bf27523dd9fe7d664b663dc5427d3c7f1117d6337cc2b3f076b4",
+        "src/main.tsx": "cc387bb6543022645695a65fa5e48cc53761ef3bec81cc1e9c2680bf671cf577",
         "src/marketing-analysis.tsx": "d6631eb2572ce14e953ee0532b384787384a86e060ac7e6b78cd6f0ef1654a76",
         "src/marketing-import.tsx": "886ab9945c1bcb7625c60776423acab34a255ab26e828d6c92aab8c7fab19bcc",
+        "src/marketing-reports.tsx": "34e8096558b3eed4536f57fcf14f568b8db98706bab8d98fac647e6c22bd3860",
         "src/marketing-warnings.tsx": "dd874f667517b7e0ea1dfd44257b1d132d9bd6769668f263dcfd87e46db2eced",
         "src/native-files.tsx": "72f498cc2401e2ce43dac498964d493b1b3aba6fdf38e8e15c6fe7c1318d6b58",
         "src/notifications.tsx": "d0274b657b5410ff74eabb4fe3a08429ce3d3ff7e37483a125f25bed066a5847",
@@ -742,7 +754,7 @@
         "src/role-templates.tsx": "e9507ae7125ffb64b4280ddf6098e0b60919284a5bbfddef2b373c0b1576ffd8",
         "src/schedules.tsx": "7616de9edb5736de0c777b1a274bb3d777606b540fb3a55936f46f08f1eee285",
         "src/skills.tsx": "02ad80c0d0cfb4b0d214a704777844b860a91d77c5cc7d822867b07444d948aa",
-        "src/style.css": "36199e332e641a5415d23cda885c009365620bdf4e0dae78898f62ec488b0fd1",
+        "src/style.css": "ee2925187df0302acd6cd58c1291c084f4e049d519eb92763ceb83dc1eb40de5",
         "src/task-dependencies.tsx": "f6eeca88e1d30282653edc665e75ac9af1f1919e1d3723b545c47dac68c3cc64",
         "src/task-events.ts": "a691dcd1dde11e848f64ef6ae364cf35fa1fc2267005ff6aa447bb0bcfa87a3f",
         "src/ui.tsx": "9af7e91cd4bf42a9e615a9ecf24f2cfd727ba852b7a078300fbc0d77bc3372f2",
@@ -861,11 +873,11 @@
     },
     {
       "name": "copypaste-desktop",
-      "head": "745967292ac9a9e0707c54418d0fd5987cf2a796",
+      "head": "34e64e2521e98fda3a872d951c04b9563f70acb6",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "17e62b1901245f56992169579e4bdc8096f80ef3551a7d5f339621d263d92dd9",
-        "README.md": "cfbdd1171659b97b0059f062920655652ce5170e08a0fefa693661361108afeb",
+        "README.en.md": "86831a0460a413addf43e93710bbd2ad6d0f4eb1e3d6ecba4c9a704ffca96d99",
+        "README.md": "6e3c91becc71861395b20e6498f2a8928189909817ec125aaadedab33375a2f7",
         "THIRD_PARTY_NOTICES.md": "4a7398e94df711fdf079352be5c7cc18cd59c3394a0369c19a17cb39e612868d",
         "assets/brand-mark.png": "d71ca3ea2dfded42efd9d213201f6948f2ecdabe20aaf80f3013c6805ea9e4a3",
         "assets/icon-128.png": "4168c6491cd687e727e14f606ff5c059890c793756da87ce83dcbe73a9cf21c7",
@@ -888,12 +900,13 @@
         "assets/screenshots/13-role-template-specialists.png": "99378297e2af55b82e4b9a11cd0c49957581a691b878fc4e64639179258f6187",
         "assets/screenshots/14-design-pdf-export.png": "70d9ff431c76fb97b5486d614996d8e2442622051cfa3024f77a98afa4017b37",
         "assets/screenshots/15-marketing-analytics.png": "8694e830b0b57c23f800b33566c9d78187560f46c50713f75cdcebfc5397adc3",
+        "assets/screenshots/16-analysis-report.png": "cfba3fc66439f3de6181a3294b3507b0f89891f7b0cbd961473e7795a5897ee6",
         "deployment.json": "4b36dbb1a4814041ab61771b30d4bb2e425301e254439f5d84837d104abae634",
         "package-lock.json": "15c430f91273506f8cd1778ee82b68da4a0e63357d05dee88b1d46fc3dca24fd",
         "package.json": "c838af2d5bc50c2afd3e58afb760a993abdda896637cb8261dcf6e05225b2abe",
         "public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
         "public/CopyPaste_Light.svg": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e",
-        "renderer-source.json": "581233dd0912aca4cf46a7e432605631dd74240d4866022802115d1af81a52c6",
+        "renderer-source.json": "d8905dc705b105be8649c6c2a8aa8ddffcb7cde87ac2dbac74dd44e4d2ee5800",
         "renderer/index.html": "9db3d8738a20152c205fa3b7d0be30b3070f1608740cd6a8557f64feade3b82c",
         "renderer/public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
         "renderer/public/CopyPaste_Light.svg": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e",
@@ -911,9 +924,10 @@
         "renderer/src/deletions.tsx": "3d7a524ed37854402d0b49920c2fbcf96139fc5f06893b81c29b7985890c72ef",
         "renderer/src/design-exports.tsx": "44dd46a6b64245535deaebcdb7270cef7fa85540eca7eb2bfc231524f264d737",
         "renderer/src/federation.tsx": "230a55e072cf80f627061f62f5cde9c5c5c1fd3b926742d17ba3aae55ddd43f3",
-        "renderer/src/main.tsx": "df3487506159a085ad42fa1175f5649553657187750fe922699eaedd0d7bccb4",
+        "renderer/src/main.tsx": "d973f374ce45acf84b038b49c888940bbdff6ea232521f919b57c2983a07f81a",
         "renderer/src/marketing-analysis.tsx": "d6631eb2572ce14e953ee0532b384787384a86e060ac7e6b78cd6f0ef1654a76",
         "renderer/src/marketing-import.tsx": "886ab9945c1bcb7625c60776423acab34a255ab26e828d6c92aab8c7fab19bcc",
+        "renderer/src/marketing-reports.tsx": "34e8096558b3eed4536f57fcf14f568b8db98706bab8d98fac647e6c22bd3860",
         "renderer/src/marketing-warnings.tsx": "dd874f667517b7e0ea1dfd44257b1d132d9bd6769668f263dcfd87e46db2eced",
         "renderer/src/native-files.tsx": "72f498cc2401e2ce43dac498964d493b1b3aba6fdf38e8e15c6fe7c1318d6b58",
         "renderer/src/notifications.tsx": "d0274b657b5410ff74eabb4fe3a08429ce3d3ff7e37483a125f25bed066a5847",
@@ -922,7 +936,7 @@
         "renderer/src/role-templates.tsx": "e9507ae7125ffb64b4280ddf6098e0b60919284a5bbfddef2b373c0b1576ffd8",
         "renderer/src/schedules.tsx": "7616de9edb5736de0c777b1a274bb3d777606b540fb3a55936f46f08f1eee285",
         "renderer/src/skills.tsx": "02ad80c0d0cfb4b0d214a704777844b860a91d77c5cc7d822867b07444d948aa",
-        "renderer/src/style.css": "36199e332e641a5415d23cda885c009365620bdf4e0dae78898f62ec488b0fd1",
+        "renderer/src/style.css": "ee2925187df0302acd6cd58c1291c084f4e049d519eb92763ceb83dc1eb40de5",
         "renderer/src/task-dependencies.tsx": "f6eeca88e1d30282653edc665e75ac9af1f1919e1d3723b545c47dac68c3cc64",
         "renderer/src/task-events.ts": "a691dcd1dde11e848f64ef6ae364cf35fa1fc2267005ff6aa447bb0bcfa87a3f",
         "renderer/src/ui.tsx": "9af7e91cd4bf42a9e615a9ecf24f2cfd727ba852b7a078300fbc0d77bc3372f2",
@@ -949,12 +963,13 @@
     },
     {
       "name": "copypaste-delivery",
-      "head": "1a37366aafd70680b763102a8a72a9f4fec347b9",
+      "head": "7f68ef14a330d3db5505e23f80ec857b9a3c95fa",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "6511d2a34f0e09130530d33829b872a2ce99d350c97a2a719a83e3d9cfb8ee12",
-        "README.md": "c0b92d8edc6645adda9bfde3e3de40936ba986119f2a4591d0dfcb5aa9a020cb",
+        "README.en.md": "3c78bda4c3c786ef0816215052edb6a857e8d0962749fb0947d6a43473e03269",
+        "README.md": "665821917d9ea1ebfa7b5df50a9f00a5b2261d78951662cffb560c277419dccc",
         "THIRD_PARTY_NOTICES.md": "6c64c50fb20d9a9756db020d15ed5607aec70a08208c82ba58932385eabe3f22",
+        "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/design-pdf-export.png": "dc28fb1af46f904f6ee799d0318ad368001a95ccd6696c404715e1c2e9694bdf",
         "assets/screenshots/marketing-analytics.png": "ec2aa0529f0663fc4f54aadd07e54b2b041d983644201396e043db8829da3e02",
         "assets/screenshots/product-surfaces.png": "622acae7380b919b7d14bfdb5987fb95266fbea636552ec0616191c47b285473",
@@ -966,9 +981,14 @@
         "evidence/agent-templates-contract-samples.json": "2ad20cf3784cf00cb25332c4a6bb2aa13b8257d3e12a1cfff6ed442e7c6c1e86",
         "evidence/agent-templates.json": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
         "evidence/alignment-desktop.json": "ff06ef0ef7055513dfc0f627b7eec9a2f5d8e5230978bddba3682ef172969b81",
-        "evidence/alignment-platform.json": "d05a95ea8d07e0176493dae47a9bed085edde84179cabecc594337089b9f937b",
+        "evidence/alignment-platform.json": "14673ac94be3b30b5bee4f453e5d18aae4113fec146bf04c14fa4d6d4e67657e",
         "evidence/alignment.json": "3554e721940576080a0f6e01a9f2a230a87a75ef3c97c1d934999f7c1091a2d0",
-        "evidence/byte-integrity.json": "0f8acb51167bc05467b1bb2516410cc7a6729650b1ceff0fc5aff08c00c7ec54",
+        "evidence/analysis-index-backfill.json": "422e7b934edccf8d785c6f6478316aeec3edd9da7b6ae381203dac7771fe73dc",
+        "evidence/analysis-reports-contract-samples.json": "30cf0a67f891a9b9def12d8f98ee89b6951a58019aad99c7eee930c7c1bd0ddc",
+        "evidence/analysis-reports-first-journey-failure.json": "7603d79cbca797c95fcf04262ddf6d4e909533c24f403e285bb6252522eff5a0",
+        "evidence/analysis-reports-first-responsive-failure.json": "dbd5c2afd92b2e410dc5006e835e88d2c0a50774ffd4ded46a9eae0ae09951ea",
+        "evidence/analysis-reports.json": "b94dc54ab10c91ca4e5c70943cfb04970f2c5eae2d9c151125426280463b39db",
+        "evidence/byte-integrity.json": "8ed0da899ee4c8e13c316d8f3ea32084028d2bac8055e2b0626b1f624d843f1a",
         "evidence/cloud-files-contract-samples.json": "25a282a0555568288577f6d5b2d80a6769619b62fa69865fa4745a67304d9505",
         "evidence/cloud-files.json": "cd28c3f8a0ef68ef97cc96de124e072ed7fd83ccd45e40d563b988a0daeeaf1a",
         "evidence/default-assistant.json": "7f9ee69caba3af61d737064ed2ec2e2ad7f95243cf5bd446aed31046057c2d74",
@@ -1030,7 +1050,7 @@
         "evidence/versions/0.4.0/web-admin.json": "ae065a2ea8e7a8251568027ddb999a7ddd3f835a5c3fee2c3abba6221d49172e",
         "evidence/web-admin.json": "b7d9b9a0152944e22fc5f25d5cf71020505b5336e471ad0ec93e13b2f71d66e3",
         "package-lock.json": "91aaa1457fa9f6aa0dd6773199c45ddc0770ffa67d5e890bc379675bb3230c51",
-        "package.json": "c92354278185db1b65cb4a02a888755e93c02a415ba98c140286c0147f879131",
+        "package.json": "44c1ddf16719acc4b91fd5142de793fd38ee4338d7a4c36d164406cbb9306e10",
         "scripts/bootstrap.mjs": "73ff72865ff6d15e4cf3e1ab1c862b14d42656e8ccf098bf58c0ccb2ed399332",
         "scripts/dev.mjs": "74484c7cfe37169743638cea120936cb85279f55d54760713214780927c00a0d",
         "scripts/qa-admin-identities.ts": "22e3a6e4bd6101addbba8d7dfab11b64c560a3a871fa233f8eeb370b1ba825fc",
@@ -1038,6 +1058,7 @@
         "scripts/qa-admin-task-inputs.ts": "e6801e3a0174602013b3c1613824597d32970fd8d1269a1de03ca70ff95c42ac",
         "scripts/qa-agent-templates.ts": "d0f36012522d0284550f90b6f702a75c22c26a3881449301a4c84700cc4a2a0a",
         "scripts/qa-alignment.ts": "e59209ace3b71f43a3bd8810391badf34b42f95cb981c66213207a09e98e8195",
+        "scripts/qa-analysis-reports.ts": "6d03ed6030cf8f9f88cebd833cea6548b85d519a902dc8c095aa244d5429e433",
         "scripts/qa-auth.ts": "caa728e2fadaf480f4a4cbe01602be98631a2bcb3097005dc188f58b51ef467f",
         "scripts/qa-byte-integrity.ts": "2df54971992e6b4bb24647658878c6e6c507a779fd893ae6a61f16ff320d6699",
         "scripts/qa-cloud-files.ts": "5e7c55799b7836b4ed988cd7cb2075d3eac6a401ae6b9e1a27590d641afdf89e",
@@ -1067,13 +1088,13 @@
   "evidence": {
     "platform_regression": {
       "path": "dev/copypaste-delivery/evidence/alignment-platform.json",
-      "sha256": "d05a95ea8d07e0176493dae47a9bed085edde84179cabecc594337089b9f937b",
-      "at": "2026-10-19T06:01:44.951398+00:00",
+      "sha256": "14673ac94be3b30b5bee4f453e5d18aae4113fec146bf04c14fa4d6d4e67657e",
+      "at": "2026-10-19T07:12:15.012104+00:00",
       "checks": [],
       "scope": "Current source regression, including controlled adapters and real Codex with synthetic model dependencies; not all 102 acceptance cases or live role qualification",
       "counts": {
-        "tests": 159,
-        "pass": 159,
+        "tests": 167,
+        "pass": 167,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0,
@@ -1081,7 +1102,7 @@
       },
       "raw_report": {
         "path": "dev/copypaste-delivery/evidence/alignment-platform.tap",
-        "sha256": "73f2f02fa3fb5688eab1710f95b1752de492c7a563ae73fb5f1311934d7a7be9"
+        "sha256": "e452c18b271dbda8569b0338095044ae429fdc19d1ff69f62c8df238f46472c2"
       }
     },
     "web_admin": {
@@ -1496,13 +1517,52 @@
       ],
       "scope": "Only the explicitly named subflows in this report"
     },
-    "checkout_integrity": {
-      "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
-      "sha256": "0f8acb51167bc05467b1bb2516410cc7a6729650b1ceff0fc5aff08c00c7ec54",
-      "at": "2026-10-19T06:03:08.349Z",
+    "analysis_reports": {
+      "path": "dev/copypaste-delivery/evidence/analysis-reports.json",
+      "sha256": "b94dc54ab10c91ca4e5c70943cfb04970f2c5eae2d9c151125426280463b39db",
+      "at": "2026-10-19T07:15:21.299Z",
       "checks": [
         {
-          "name": "fresh independent Git clone preserves all 33 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
+          "name": "real onboarding and multi-source preview separate currencies and platforms, confirm comparison dates and create no task or model reservation",
+          "status": "passed"
+        },
+        {
+          "name": "a lost accepted response retries into one private Codex task and persisted report, then the UI polls through to a checked ready artifact",
+          "status": "passed"
+        },
+        {
+          "name": "canonical Report, Snapshot and Evidence reads and real HTML/JSON downloads retain checked references, independent scopes and unknown extraction cutoff",
+          "status": "passed"
+        },
+        {
+          "name": "saved reports work at four widths, both themes and Traditional Chinese/English without horizontal page overflow",
+          "status": "passed"
+        },
+        {
+          "name": "a denied report read clears previous prose, figures and download controls",
+          "status": "passed"
+        },
+        {
+          "name": "Electron uses real browser PKCE and authenticated IPC to read the same private report and save byte-identical HTML locally",
+          "status": "passed"
+        }
+      ],
+      "scope": "Only the explicitly named subflows in this report"
+    },
+    "analysis_index": {
+      "path": "dev/copypaste-delivery/evidence/analysis-index-backfill.json",
+      "sha256": "422e7b934edccf8d785c6f6478316aeec3edd9da7b6ae381203dac7771fe73dc",
+      "at": "2026-10-19T06:58:41.842Z",
+      "checks": [],
+      "scope": "Read-only comparison of evidence lookup records against existing frozen metric snapshots; no historical metric recomputation"
+    },
+    "checkout_integrity": {
+      "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
+      "sha256": "8ed0da899ee4c8e13c316d8f3ea32084028d2bac8055e2b0626b1f624d843f1a",
+      "at": "2026-10-19T07:21:36.849Z",
+      "checks": [
+        {
+          "name": "fresh independent Git clone preserves all 34 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
           "status": "passed"
         },
         {
@@ -1510,11 +1570,11 @@
           "status": "passed"
         },
         {
-          "name": "fresh independent Desktop clone matches all 39 renderer provenance digests",
+          "name": "fresh independent Desktop clone matches all 40 renderer provenance digests",
           "status": "passed"
         },
         {
-          "name": "fresh delivery clone preserves raw 159-test TAP bytes and its recorded SHA-256",
+          "name": "fresh delivery clone preserves raw 167-test TAP bytes and its recorded SHA-256",
           "status": "passed"
         }
       ],
@@ -1522,8 +1582,8 @@
     },
     "runtime_schemas": {
       "path": "docs/quality/runtime-contract-samples.json",
-      "sha256": "53c902a6327c5d9027d43c8ba1813ef662affccb90e5cc800c791b5b732da3a3",
-      "at": "2026-10-19T05:40:50.118318+00:00",
+      "sha256": "ead88ad43fa9870ef19822bde10037d1a168ecd46608e679e2a32c5f304bcce2",
+      "at": "2026-10-19T07:17:48.706817+00:00",
       "checks": [
         {
           "source": "cloud-files-contract-samples.json",
@@ -1671,22 +1731,57 @@
           "schema": "Agent",
           "status": "passed",
           "errors": []
+        },
+        {
+          "source": "analysis-reports-contract-samples.json",
+          "sample": 1,
+          "schema": "Report",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "analysis-reports-contract-samples.json",
+          "sample": 2,
+          "schema": "Report",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "analysis-reports-contract-samples.json",
+          "sample": 3,
+          "schema": "Evidence",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "analysis-reports-contract-samples.json",
+          "sample": 4,
+          "schema": "Snapshot",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "analysis-reports-contract-samples.json",
+          "sample": 5,
+          "schema": "Snapshot",
+          "status": "passed",
+          "errors": []
         }
       ],
-      "scope": "Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page and role template HTTP response schemas only; not full API conformance"
+      "scope": "Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template and Report/Snapshot/Evidence HTTP response schemas only; not full API conformance"
     },
     "documentation": {
       "path": "docs/quality/validation-report.json",
-      "sha256": "3c5069c0047c4912e0e326e5b23e0a12fc32f6efde6dda3fdb4e258faf8ffd86",
-      "at": "2026-10-19T05:58:00.491988+00:00",
+      "sha256": "b08a336653a3178ffd915a14f5f472ceb96c215980da617b4b01871b3f116ca8",
+      "at": "2026-10-19T07:23:10.227304+00:00",
       "checks": [],
       "scope": "documentation_contracts_and_recorded_design_evidence_only"
     }
   },
   "contract_alignment": {
     "contract_operations": 225,
-    "implemented_operations": 234,
-    "unmatched_contract_method_paths": 165,
+    "implemented_operations": 243,
+    "unmatched_contract_method_paths": 161,
     "limit": "Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.",
     "operations": [
       {
@@ -2085,28 +2180,28 @@
         "method": "GET",
         "path": "/v1/snapshots/{snapshot_id}",
         "operation_id": "getSnapshot",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/reports",
         "operation_id": "createReport",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "GET",
         "path": "/v1/reports/{report_id}",
         "operation_id": "getReport",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "GET",
         "path": "/v1/evidence/{evidence_id}",
         "operation_id": "getEvidence",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -3327,6 +3422,8 @@
       "acceptance_evidence": [
         "admin_task_inputs",
         "agent_templates",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "default_assistant",
         "design_pdf",
@@ -3344,6 +3441,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有企业 RLS；事件、对象、副本及新增模块仍需逐路径跨企业验证。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -3502,6 +3612,8 @@
       "acceptance_evidence": [
         "admin_task_inputs",
         "agent_templates",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "default_assistant",
         "design_pdf",
@@ -3519,6 +3631,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有项目动作权限；需按规范角色矩阵补齐逐动作、撤销和下载验证。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -4068,6 +4193,8 @@
         "dev/copypaste-platform/src/admin-content.ts"
       ],
       "acceptance_evidence": [
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "design_pdf",
         "desktop",
@@ -4079,6 +4206,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有不可变素材版本；部分成功、统一修改与下载包状态尚不完整。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -4437,18 +4577,34 @@
       "acceptance_case": "TC-023",
       "acceptance_conditions": "重复不翻倍，替换规则明确；坏行可定位；保留源文件及映射；不执行输入公式或宏。",
       "assessment": "partial_verified",
-      "finding": "CSV 原文、映射/口径、并发去重、行错误与跨端确认已有证据；XLSX、完整官方导出/语言数值矩阵、维度事实模型、显式替换及规范资产/导入/快照 API 未完成。",
+      "finding": "CSV 原文、映射/口径、并发去重、行错误、跨端确认和规范快照读取已有证据；XLSX、完整官方导出/语言数值矩阵、多维事实模型、显式替换及规范资产/导入 API 未完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/analytics.ts",
         "dev/copypaste-platform/src/business.ts"
       ],
       "acceptance_evidence": [
+        "analysis_index",
+        "analysis_reports",
         "marketing_analytics",
-        "platform_regression"
+        "platform_regression",
+        "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有 CSV 指标导入；官方导出映射、逐行错误、多格式和幂等计数需核查补齐。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -4461,7 +4617,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "CSV 原文、映射/口径、并发去重、行错误与跨端确认已有证据；XLSX、完整官方导出/语言数值矩阵、维度事实模型、显式替换及规范资产/导入/快照 API 未完成。",
+      "remaining_complete_acceptance_conditions": "CSV 原文、映射/口径、并发去重、行错误、跨端确认和规范快照读取已有证据；XLSX、完整官方导出/语言数值矩阵、多维事实模型、显式替换及规范资产/导入 API 未完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -4471,18 +4627,34 @@
       "acceptance_case": "TC-024",
       "acceptance_conditions": "先求和再求比率；Decimal 结果符合算例；未知不当零；币种不直接相加；每个关键数字有证据和口径。",
       "assessment": "partial_verified",
-      "finding": "精确小数、四组固定算例、未知/零原因、冻结结果与 11 项引用、实际报告/图表已验证；跨来源 AnalysisSpec、报告任务/持久资产、证据查询、模型叙述数字校验及完整币种/归因流程未完成。",
+      "finding": "精确小数、未知/零原因、多来源 AnalysisSpec/比较、原子报告任务、固定资产、分页事实工具、规范证据查询与数字引用校验已有局部证据；完整语义/统计质量、正式连接数据、全部币种/归因矩阵和专业交付仍未完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/analytics.ts",
         "dev/copypaste-platform/src/business.ts"
       ],
       "acceptance_evidence": [
+        "analysis_index",
+        "analysis_reports",
         "marketing_analytics",
-        "platform_regression"
+        "platform_regression",
+        "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有确定性指标；归因、多币种、缺失转化及报告快照引用需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -4495,7 +4667,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "精确小数、四组固定算例、未知/零原因、冻结结果与 11 项引用、实际报告/图表已验证；跨来源 AnalysisSpec、报告任务/持久资产、证据查询、模型叙述数字校验及完整币种/归因流程未完成。",
+      "remaining_complete_acceptance_conditions": "精确小数、未知/零原因、多来源 AnalysisSpec/比较、原子报告任务、固定资产、分页事实工具、规范证据查询与数字引用校验已有局部证据；完整语义/统计质量、正式连接数据、全部币种/归因矩阵和专业交付仍未完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -4720,6 +4892,8 @@
       ],
       "acceptance_evidence": [
         "admin_task_inputs",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "desktop",
         "documentation",
@@ -4736,6 +4910,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有工作台；会话/成果/文件主路径、团队和能力中心仍有缺口。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -4949,6 +5136,8 @@
       ],
       "acceptance_evidence": [
         "admin_task_inputs",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "design_pdf",
         "desktop",
@@ -4965,6 +5154,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有 Windows 安装包与登录；签名更新、卸载/保留数据策略及兼容矩阵不足。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -5146,6 +5348,8 @@
         "dev/copypaste-platform/src/billing.ts"
       ],
       "acceptance_evidence": [
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "default_assistant",
         "design_pdf",
@@ -5159,6 +5363,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有公司网关约束；所有新媒体/技能/后台分支及出站隔离需持续验证。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "design_pdf_review",
           "verified_subflow": "实际单页 PDF 审阅稿、源工程与格式权限、旧版本拒绝/原请求重放、私人文件、Web 下载和原生 Desktop 摘要保存；独立解析/渲染，不含完整审阅包、印刷或真实设计角色资格。",
@@ -5231,6 +5448,8 @@
       "acceptance_evidence": [
         "admin_task_inputs",
         "agent_templates",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "default_assistant",
         "design_pdf",
@@ -5247,6 +5466,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有真实 Codex 工具回合；会话继续、检查点、事件恢复尚不完整。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -5404,6 +5636,8 @@
       ],
       "acceptance_evidence": [
         "admin_task_inputs",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "default_assistant",
         "desktop",
@@ -5418,6 +5652,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有整数账本、预留与对账；需覆盖新增并行/媒体/本地路径的竞争与未知费用。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "execution_capacity",
           "verified_subflow": "数据库原子执行容量、当前用户/企业/能力交集、原生多 handler、企业交错派发、单预留延迟重派和未知执行保留槽位；不含完整 NFR 压测。",
@@ -5564,6 +5811,8 @@
       ],
       "acceptance_evidence": [
         "admin_records",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "desktop",
         "marketing_analytics",
@@ -5574,6 +5823,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "逻辑删除未完成物理对象/运行缓存 GC，缺完整可查询删除作业与备份删除账本。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -5680,6 +5942,8 @@
       ],
       "acceptance_evidence": [
         "agent_templates",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "design_pdf",
         "desktop",
@@ -5695,6 +5959,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "有中英切换；动态状态翻译、日期/币种与时区覆盖不完整。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -5920,6 +6197,8 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "design_pdf",
         "desktop",
@@ -5935,6 +6214,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "有可访问控件基础；缺少全部核心流程的键盘/缩放/窄屏专项证明。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -6185,18 +6477,34 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "design_pdf",
         "desktop",
         "documentation",
         "marketing_analytics",
         "platform_regression",
+        "runtime_schemas",
         "skills",
         "web_admin"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "路径、原生执行与浏览器清理已有局部证据；本轮全部操作继续受同一约束。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -6892,6 +7200,8 @@
       ],
       "acceptance_evidence": [
         "agent_templates",
+        "analysis_index",
+        "analysis_reports",
         "design_pdf",
         "platform_regression",
         "runtime_schemas",
@@ -6900,6 +7210,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "有 28 个精确 Skill 包；逐角色完整流程、产物及异常验收仍缺少证据。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "design_pdf_review",
           "verified_subflow": "实际单页 PDF 审阅稿、源工程与格式权限、旧版本拒绝/原请求重放、私人文件、Web 下载和原生 Desktop 摘要保存；独立解析/渲染，不含完整审阅包、印刷或真实设计角色资格。",
@@ -6958,6 +7281,8 @@
       ],
       "acceptance_evidence": [
         "agent_templates",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "default_assistant",
         "design_pdf",
@@ -6971,6 +7296,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有 Codex 实际加载与摘要；所有角色/恢复/团队分支需完整验证。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "design_pdf_review",
           "verified_subflow": "实际单页 PDF 审阅稿、源工程与格式权限、旧版本拒绝/原请求重放、私人文件、Web 下载和原生 Desktop 摘要保存；独立解析/渲染，不含完整审阅包、印刷或真实设计角色资格。",
@@ -7210,6 +7548,8 @@
       ],
       "acceptance_evidence": [
         "agent_templates",
+        "analysis_index",
+        "analysis_reports",
         "default_assistant",
         "design_pdf",
         "desktop",
@@ -7221,6 +7561,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有实例版本；模板企业覆盖、新版比较/采用、技能与私有内容安全复制不足。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "design_pdf_review",
           "verified_subflow": "实际单页 PDF 审阅稿、源工程与格式权限、旧版本拒绝/原请求重放、私人文件、Web 下载和原生 Desktop 摘要保存；独立解析/渲染，不含完整审阅包、印刷或真实设计角色资格。",
@@ -7684,6 +8037,8 @@
       ],
       "acceptance_evidence": [
         "admin_records",
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "desktop",
         "extension",
@@ -7696,6 +8051,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "内容注册表尚不覆盖全部资源；缺少统一正文修订、新版本及团队/方案治理。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "marketing_import_metrics",
           "verified_subflow": "CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。",
@@ -7776,6 +8144,8 @@
         "dev/copypaste-platform/src/admin-content.ts"
       ],
       "acceptance_evidence": [
+        "analysis_index",
+        "analysis_reports",
         "cloud_files",
         "desktop",
         "extension",
@@ -7787,6 +8157,19 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有逻辑隔离/删除；解除下架的语义、下载/索引/物理 GC 与删除进度不足。",
       "verified_repairs": [
+        {
+          "cluster": "analysis_report_tasks",
+          "verified_subflow": "AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。",
+          "evidence": [
+            "platform_regression",
+            "analysis_reports",
+            "analysis_index",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/28-analysis-report-tasks-and-evidence.md"
+          ]
+        },
         {
           "cluster": "durable_erasure",
           "verified_subflow": "持久删除账本、不可逆墓碑、物理对象/缓存清理、子作业依赖、隔离与后台受控重试。",

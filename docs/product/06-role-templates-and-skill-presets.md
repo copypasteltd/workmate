@@ -171,4 +171,4 @@ Codex 的 Skill 包由 `SKILL.md` 及可选脚本/资源构成，支持按需读
 
 ### 营销分析模板的当前实现边界
 
-CSV 原文、映射和冻结精确指标已接入既有 `marketing_metrics` 及分析工作流，并提供真实 Web/源码 Desktop 图表和文件下载，见 [营销数据与证据](../technical/27-marketing-import-metrics-and-evidence.md)。网页 SVG 下载尚不等于角色 `chart.render` 工具；R17 的完整来源读取、计算/图表工具、AnalysisSpec 报告和专业任务/修改/异常资格仍未完成，不能将此次局部增量计入 12 个正式合格角色。
+CSV 原文、映射和冻结精确指标已接入既有 `marketing_metrics` 及分析工作流，并提供真实 Web/源码 Desktop 图表和文件下载，见 [营销数据与证据](../technical/27-marketing-import-metrics-and-evidence.md)。后续新增受限 `marketing-analyst`、分页 `analysis_report_facts`、私人 AnalysisSpec 报告任务、数字引用校验与固定文件，见 [报告任务与证据](../technical/28-analysis-report-tasks-and-evidence.md)。网页 SVG 下载尚不等于角色 `chart.render` 工具；完整来源接入、专业语义质量、计算/图表工具及任务/修改/异常资格仍未完成，不能将此次局部增量计入 12 个正式合格角色。

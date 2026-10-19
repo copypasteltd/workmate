@@ -66,4 +66,4 @@ CreativeMapping 关联本产品 asset_version、活动、平台 account/creative
 
 ## 当前代码与未完成项（2026-10-19）
 
-CSV 映射预览、原文摘要、去重、精确指标/未知原因、冻结计算、证据及 Web/源码 Desktop 下载已有实际运行证据，见 [实现与验收边界](../technical/27-marketing-import-metrics-and-evidence.md)。这不替代本模块上文的完整要求：XLSX、多维事实、规范快照/分析任务、叙述数字校验、正式连接器、SEO/GEO 和创意反馈仍按原需求继续实施。REQ-023/024 仅记为局部验证。
+CSV 映射预览、原文摘要、去重、精确指标/未知原因、冻结计算、证据及 Web/源码 Desktop 下载已有实际运行证据，见 [导入与计算](../technical/27-marketing-import-metrics-and-evidence.md)。后续新增多来源 AnalysisSpec/比较、私人 Codex 报告任务、分页事实工具、数字引用检查、固定 HTML/JSON 资产及规范 Snapshot/Evidence 读取，见 [报告任务与证据](../technical/28-analysis-report-tasks-and-evidence.md)。XLSX、完整多维事实、自然语言语义/统计质量、正式连接器、SEO/GEO 和创意反馈仍按原需求继续实施。REQ-023/024 仅记为局部验证。
