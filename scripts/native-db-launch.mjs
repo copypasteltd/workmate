@@ -1,15 +1,31 @@
-import { mkdtemp, symlink, readlink, rmdir } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { mkdir, mkdtemp, symlink, readlink, rmdir } from "node:fs/promises";
+import { homedir } from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
 // Windows PostgreSQL's bootstrap SQL cannot encode a non-ASCII installation path.
-// This is a temporary filesystem alias, not a VM or a second copy of project files.
+// This is a filesystem alias, not a VM or a second copy of project files.
 // All data, binaries and source still reside in this repository under dev/.
 const real = process.cwd();
 let temp,
   alias = real;
 if (process.platform === "win32" && /[^\x00-\x7f]/.test(real)) {
-  temp = await mkdtemp(path.join(tmpdir(), "copypaste-pg-"));
+  // PostgreSQL starts new backends using this executable path throughout its
+  // lifetime. An OS temporary-directory cleanup can break an otherwise live
+  // cluster. Keep the owned junction in the stable per-user application cache.
+  const base = path.resolve(
+    process.env.COPYPASTE_NATIVE_ALIAS_ROOT ??
+      path.join(
+        process.env.LOCALAPPDATA ?? path.join(homedir(), "AppData", "Local"),
+        "CopyPaste",
+        "native-runtime-aliases",
+      ),
+  );
+  if (/[^\x00-\x7f]/.test(base))
+    throw new Error(
+      "COPYPASTE_NATIVE_ALIAS_ROOT must name a stable ASCII path",
+    );
+  await mkdir(base, { recursive: true });
+  temp = await mkdtemp(path.join(base, "postgres-"));
   alias = path.join(temp, "runtime");
   await symlink(real, alias, "junction");
 }

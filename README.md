@@ -453,3 +453,7 @@ flowchart LR
   Funding[New funding] --> Repay[Repay actual credit debt]
   Repay --> Remainder[Only the remainder funds a new lot]
 ```
+
+Windows 原生 PostgreSQL 的 ASCII 路径别名现在放在 `%LOCALAPPDATA%/CopyPaste/native-runtime-aliases/`，避免运行中的可执行路径依赖系统临时目录。这里只创建每次启动独立的目录和 junction；真实源码、程序和数据库始终位于本仓库。若用户缓存路径本身含非 ASCII 字符，可用 `COPYPASTE_NATIVE_ALIAS_ROOT` 指定稳定的 ASCII 路径。停止后只清理本次拥有且仍指向本仓库的别名。
+
+On Windows, the native PostgreSQL ASCII junction now lives under the stable per-user application cache instead of the OS temporary directory. Only the owned directory and junction live there; source, executable bytes and database files stay in this repository. `COPYPASTE_NATIVE_ALIAS_ROOT` can select a stable ASCII location when the user cache path contains non-ASCII characters. Shutdown removes only this launch's matching junction. The change is verified with an actual native restart and fresh connections to both existing databases.
