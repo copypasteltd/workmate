@@ -165,7 +165,7 @@ Deployment: use exact HTTPS `SSO_ALLOWED_ORIGINS`. Default callback is `WEB_ORIG
 
 - `npm run qa:cloud-files`: four Web cloud-file groups, two real Codex tasks with synthetic dependencies, persistent sources and actual ZIPs. Saves cloud-files.json and captured HTTP payloads.
 - `npm run qa:desktop-transfer`: eight source Electron groups for login, idempotent upload, actual 29 MiB transfers, overwrite protection and native cloud-tree browsing. Saves alignment-desktop.json.
-- The current platform regression passes 129/129; the complete TAP and summary are under evidence/alignment-platform.*.
+- The current platform regression passes 136/136; the complete TAP and summary are under evidence/alignment-platform.*.
 
 At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_samples.py` to check captured response schemas. These runs use explicitly synthetic dependencies and real Codex; they do not qualify live model quality or all 102 integrated acceptance cases.
 
@@ -173,7 +173,7 @@ At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_sam
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **129/129**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **136/136**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant, inbox and source integrity
 
@@ -181,10 +181,14 @@ qa:default-assistant and qa:notifications each validate four Web journey groups;
 
 qa:byte-integrity creates independent native Git clones of platform/Desktop/delivery and checks raw SQL digests against both existing migration ledgers, all 28 Skills, renderer provenance and raw TAP. Commit source and TAP first. Owned, verified temporary directories are removed afterward. This is checkout integrity, not disaster recovery.
 
-Current source passes 129/129 platform tests and four Desktop unit tests, with fifteen captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
+Current source passes 136/136 platform tests and four Desktop unit tests, with fifteen captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
 
 ## Initial-input verification
 
 `npm run qa:task-dependencies` passes five Web groups covering the original waiting conversation, one reservation, private upload, current-version selection, authorization-error recovery and real Codex with synthetic model data. `npm run qa:admin-task-inputs` passes three groups covering scoped body inspection and cancellation without a model charge. Desktop transfer QA and MV3 QA each pass eight groups, including the same initial-input flow. Every owned browser/context/application closes in `finally`.
 
 `python scripts/capture-platform-regression.py` captures exact raw TAP bytes and records their SHA-256 and test counts. Commit source and evidence before `qa:byte-integrity`. `npm run stop` waits for the controller and native database checkpoint to finish; it does not report completion merely when shutdown is acknowledged. Full requirements and paid-step continuation remain in the master audit.
+
+## Execution-capacity verification (current source)
+
+`npm run qa:execution-capacity` uses explicitly synthetic private occupancy in its fresh workspace to check waiting with no model call, one original hold, an MFA-authenticated Admin reason, themes/languages/widths and automatic real-Codex/synthetic-model delivery with one settlement. Owned occupancy and browser instances are released in `finally`. This is not an NFR benchmark. Seven platform groups independently test concurrent claims and actual pg-boss in a random native database, then remove that database and its dedicated data directory.
