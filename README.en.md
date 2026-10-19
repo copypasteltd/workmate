@@ -149,8 +149,18 @@ Four browser QA groups cover these flows, two real Codex tasks driven by synthet
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **108/108**. `npm run qa:skills` in the delivery repository passed three browser groups; ten captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **118/118**. `npm run qa:skills` in the delivery repository passed three browser groups; twelve captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
 ![Project methods — dark](assets/screenshots/26-project-methods-dark.png)
+
+## Default assistant and work notifications (current source)
+
+New work selects the text assistant by default. Edit a sample, explicitly submit and continue in a private conversation. Selecting a sample or creating an empty conversation makes no AI call. Choose professional roles for image/code specialties. An open form retains its submission identity after an unknown response, so retry does not duplicate work. The default is protected from ordinary edits/deletion; copy it for customization or explicitly adopt current methods as a project manager.
+
+The inbox supports all/unread filters, pagination, read changes and original-task navigation, switching projects first when needed. Authorization refresh failures remove stale items and the unread indicator. Assistant and inbox browser journeys each pass four groups across 375/768/1024/1440 widths, both themes and Traditional Chinese/English; this is bounded UI evidence.
+
+![Editable first brief](assets/screenshots/29-default-assistant-brief.png)
+![Private conversation with a labelled simulated result](assets/screenshots/30-default-assistant-result.png)
+![Work notifications](assets/screenshots/27-work-notifications.png)

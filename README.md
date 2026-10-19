@@ -151,8 +151,18 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **108/108**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **118/118**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十二份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
 ![Project methods — dark](assets/screenshots/26-project-methods-dark.png)
+
+## 默认助手与工作通知（当前源码）
+
+新工作默认选择文字助手，可直接编辑示例后提交，随后进入私人会话。点击示例和创建空会话均不启动 AI；图片/代码等专项需求继续选择专业角色。请求结果未知时，当前打开表单保留原提交身份，重试不会多建任务。默认配置不能被普通编辑或删除；可复制自定义，项目管理者明确采用当前方法版本。
+
+工作通知提供全部/未读、分页、标记已读及原任务跳转；跨项目通知会先切换项目。鉴权刷新失败会清空旧通知和未读提示。Web 默认助手和通知分别通过四组浏览器验证，覆盖 375/768/1024/1440、浅深主题与繁英；不等同所有页面的完整可访问性验收。
+
+![默认工作草稿](assets/screenshots/29-default-assistant-brief.png)
+![真实私人会话与模拟结果](assets/screenshots/30-default-assistant-result.png)
+![工作通知](assets/screenshots/27-work-notifications.png)

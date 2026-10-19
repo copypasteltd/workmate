@@ -4,6 +4,7 @@ import { DataModeNotice } from "./data-mode";
 import { ResumableUpload } from "./resumable-upload";
 import { CloudFiles } from "./cloud-files";
 import { ProjectSkills } from "./skills";
+import { Notifications, UnreadNotifications } from "./notifications";
 import { Schedules } from "./schedules";
 import {
   CompanySignIn,
@@ -75,6 +76,7 @@ import {
   PanelLeftClose,
   MessageSquare,
   Brain,
+  Bell,
 } from "lucide-react";
 import { api, post, patch, download, ApiError } from "./api";
 import { useTaskEvents } from "./task-events";
@@ -97,6 +99,7 @@ import { WorkspaceProvider, useWorkspace } from "./context";
 import "./style.css";
 
 const roleEnglish: Record<string, string> = {
+  assistant: "Default assistant",
   fullstack: "Full-stack engineer",
   frontend: "Frontend engineer",
   "backend-api": "Backend & API engineer",
@@ -606,6 +609,7 @@ const navigation = [
   ["roles", Sparkles, "專業角色", "Specialists"],
   ["specialists", Users, "我的專家", "Your specialists"],
   ["skills", BookOpen, "專案技能", "Project methods"],
+  ["notifications", Bell, "工作通知", "Work notifications"],
   ["conversations", MessageSquare, "我的會話", "Your conversations"],
   ["memories", Brain, "記憶與偏好", "Memory & preferences"],
   ["projects", FolderOpen, "專案", "Projects"],
@@ -718,6 +722,7 @@ function Shell() {
                     navConfig(path)?.label_en ?? en,
                   )}
                 </span>
+                {path === "notifications" && <UnreadNotifications />}
               </NavLink>
             ))}
         </nav>
@@ -802,6 +807,7 @@ function Shell() {
               <Route path="roles" element={<Roles />} />
               <Route path="specialists" element={<Specialists />} />
               <Route path="skills" element={<ProjectSkills />} />
+              <Route path="notifications" element={<Notifications />} />
               <Route path="conversations" element={<Conversations />} />
               <Route
                 path="conversations/:id"
@@ -876,7 +882,7 @@ function NewTaskListener() {
 }
 function NewTask({
   onClose,
-  role = "designer",
+  role = "assistant",
 }: {
   onClose: () => void;
   role?: string;
@@ -885,21 +891,45 @@ function NewTask({
     w = useWorkspace(),
     nav = useNavigate();
   const { data } = useData("/v1/catalog/roles");
+  const pending = useRef<{ fingerprint: string; id: string } | null>(null);
   return (
     <Modal title={t("開始一項新工作", "Start something new")} onClose={onClose}>
       <AsyncForm
         submitLabel={t("開始工作", "Start task")}
         onSubmit={async (f) => {
-          const result = await post(w.base + "/tasks", {
-            title: String(f.get("title")),
-            prompt: String(f.get("prompt")),
-            role_key: String(f.get("role")),
-            mode: String(f.get("mode")),
-            budget_micros: Math.round(Number(f.get("budget")) * 1e6),
+          const selectedRole = String(f.get("role")),
+            body = {
+              title: String(f.get("title")),
+              prompt: String(f.get("prompt")),
+              mode: String(f.get("mode")),
+              budget_micros: Math.round(Number(f.get("budget")) * 1e6),
+            };
+          const fingerprint = JSON.stringify({
+            tenant: w.tenant,
+            project: w.project,
+            role: selectedRole,
+            ...body,
           });
+          if (pending.current?.fingerprint !== fingerprint)
+            pending.current = { fingerprint, id: crypto.randomUUID() };
+          const result =
+            selectedRole === "assistant"
+              ? await post(w.base + "/delegations", {
+                  ...body,
+                  client_message_id: pending.current!.id,
+                })
+              : await api(w.base + "/tasks", {
+                  method: "POST",
+                  headers: { "Idempotency-Key": pending.current!.id },
+                  body: JSON.stringify({ ...body, role_key: selectedRole }),
+                });
           sessionStorage.removeItem("cp_brief");
           onClose();
-          nav("/app/tasks/" + result.id);
+          nav(
+            selectedRole === "assistant"
+              ? "/app/conversations/" + result.conversation.id
+              : "/app/tasks/" + result.id,
+          );
         }}
       >
         <Field label={t("專案", "Project")}>
@@ -910,6 +940,12 @@ function NewTask({
         </Field>
         <Field label={t("專業角色", "Specialist")}>
           <select name="role" defaultValue={role}>
+            <option value="assistant">
+              {t(
+                "預設助手 — 答覆、計畫與文字交付",
+                "Default assistant — answers, plans and text deliverables",
+              )}
+            </option>
             {data?.items.map((r: any) => (
               <option key={r.role_key} value={r.role_key}>
                 {locale === "en" ? roleEnglish[r.role_key] : r.display_name}
