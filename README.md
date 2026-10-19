@@ -379,4 +379,16 @@ flowchart LR
   Member --> Removal --> RevokeUnusedInvites
 ```
 
-最新稳定源码平台全套回归 **220/220**（包括十三组邀请/成员专项）；完整原始 TAP 与摘要保存在 Delivery。 / Latest stable-source platform regression: **220/220**, including thirteen invitation/member groups. Original TAP bytes and their digest are preserved in Delivery.
+上一轮稳定源码平台全套回归 **220/220**（原始回执已归档到 Delivery 的 `evidence/stage35-platform/`）（包括十三组邀请/成员专项）；完整原始 TAP 与摘要保存在 Delivery。 / Previous stable-source platform regression: **220/220** (now archived in Delivery `evidence/stage35-platform/`), including thirteen invitation/member groups. Original TAP bytes and their digest are preserved in Delivery.
+
+## Admin 成员控制
+
+规范后台成员变更返回持久 202 AdminOperation；范围/MFA、管理暂停、版本与最后 owner、加密邀请撤销和独立审批使用共用领域守卫。每项操作绑定真实不可变策略快照，历史未记录策略的记录明确拒绝规范读取。专项和真实 HTTP 回执在 Delivery；完整后台/原生与生产验收仍待完成。
+
+```mermaid
+flowchart LR
+  CurrentScope --> RecentMFA --> FrozenPreview --> Policy
+  Policy --> DirectApply
+  Policy --> IndependentReview --> Recheck --> DirectApply
+  DirectApply --> MembershipAndAudit
+```

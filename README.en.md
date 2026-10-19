@@ -338,3 +338,15 @@ Current source supports pause/resume at the initial unclaimed checkpoint, sharin
 `GET /v1/me/sessions` distinguishes Web, Desktop and Extension, marks the current session and retains devices with expired access but valid refresh credentials. It returns no credentials. `POST /v1/auth/native/revoke` uses the matching client_id and refresh proof to revoke the whole family without valid access or token rotation. Unknown/already revoked credentials receive the same receipt. Refresh/logout/revocation use the same user-first lock order; an older inventory ID still revokes its rotated family. Removing a company membership denies new calls to that company; refresh cannot restore the removed authority.
 
 `tests/auth-sessions.test.ts` exercises native isolated databases, expiry/replay, actual refresh/revocation races, ownership/CSRF, invitations and removed-member browser/native/device ingress, with no model calls. This implemented endpoint does not rewrite the canonical contract or close complete identity/production gates.
+
+## Admin membership control
+
+Canonical membership changes return durable 202 AdminOperation resources. Current scope/MFA, admin suspension, revisions, last-owner protection and invitation revocation share domain guards. Privileged changes require independent approval by default. Each new operation pins a real immutable policy snapshot; historical unrecorded policy IDs are never fabricated. Delivery retains database and real HTTP evidence. Full Admin/native and production acceptance remain pending.
+
+```mermaid
+flowchart LR
+  CurrentScope --> RecentMFA --> FrozenPreview --> Policy
+  Policy --> DirectApply
+  Policy --> IndependentReview --> Recheck --> DirectApply
+  DirectApply --> MembershipAndAudit
+```

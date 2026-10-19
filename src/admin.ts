@@ -1223,6 +1223,13 @@ function registerAdminCatalog(
                 .int()
                 .positive()
                 .max(24 * 366 * 5),
+              membership_privileged_requires_approval: z.boolean().optional(),
+              membership_approval_window_minutes: z
+                .number()
+                .int()
+                .min(1)
+                .max(10)
+                .optional(),
             })
               .strict()
               .parse(e.body);

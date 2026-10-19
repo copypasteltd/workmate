@@ -56,7 +56,7 @@ export const inviteDTO = (i: any) => ({
 });
 const memberFields =
   "m.*,ARRAY(SELECT pm.project_id FROM project_members pm WHERE pm.tenant_id=m.tenant_id AND pm.user_id=m.user_id ORDER BY pm.project_id) AS project_ids";
-async function revokeRecipientInvites(
+export async function revokeRecipientInvites(
   tx: Tx,
   tenant: string,
   user: string,
@@ -74,7 +74,7 @@ async function revokeRecipientInvites(
       [ids],
     );
 }
-async function lastOwner(
+export async function lastOwner(
   tx: Tx,
   tenant: string,
   old: any,
@@ -100,7 +100,7 @@ async function lastOwner(
       );
   }
 }
-async function projectGrants(
+export async function projectGrants(
   tx: Tx,
   tenant: string,
   user: string,
@@ -124,6 +124,14 @@ async function projectGrants(
             ? "approver"
             : "viewer",
       ],
+    );
+}
+export function assertMemberNotSuspended(m: any) {
+  if (m?.admin_suspended)
+    throw new Problem(
+      409,
+      "ADMIN_MEMBERSHIP_SUSPENDED",
+      "An administrator must restore this suspended membership",
     );
 }
 export function registerMemberships(app: FastifyInstance, db: Database) {
@@ -162,7 +170,14 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
               .slice(0, q.limit)
               .map((m) =>
                 directory
-                  ? { ...memberDTO(m), name: m.name, email: m.email }
+                  ? {
+                      ...memberDTO(m),
+                      management_state: m.admin_suspended
+                        ? "suspended"
+                        : m.status,
+                      name: m.name,
+                      email: m.email,
+                    }
                   : memberDTO(m),
               ),
             next_cursor: rows.length > q.limit ? rows[q.limit - 1].id : null,
@@ -200,6 +215,7 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
           "VERSION_CONFLICT",
           "Membership changed; refresh first",
         );
+      assertMemberNotSuspended(old);
       await lastOwner(tx, tenant, old, b.role, b.status);
       for (const id of new Set(b.project_ids))
         await projectAccess(tx, req.principal, tenant, id, "manage");
@@ -248,6 +264,7 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
         )
       ).rows[0];
       if (!old) throw new Problem(404, "NOT_FOUND", "Member not found");
+      assertMemberNotSuspended(old);
       if (["owner", "admin"].includes(old.role) && actor.role !== "owner")
         throw new Problem(
           403,
@@ -406,6 +423,7 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
               [tenant, req.principal.id],
             )
           ).rows[0];
+          assertMemberNotSuspended(old);
           if (old?.status === "active")
             throw new Problem(
               409,

@@ -8,6 +8,7 @@ import { key, replay } from "./access.js";
 import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
 import { fund, settle, wallet } from "./billing.js";
 import { event } from "./tasks.js";
+import { decideMembershipOperation } from "./admin-memberships.js";
 
 const reason = z.string().trim().min(3).max(2000);
 const date = z.string().datetime({ offset: true });
@@ -543,6 +544,14 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               409,
               "NOT_PENDING",
               "Operation is not awaiting approval",
+            );
+          if (op.action === "tenants.members.write")
+            return decideMembershipOperation(
+              tx,
+              req.principal,
+              op,
+              b.decision,
+              b.reason,
             );
           await permit(tx, req.principal, "admin.approvals.decide", {
             tenant: op.tenant_id,
