@@ -250,6 +250,31 @@ def extend(m):
     listing = m.list_schema
     filters = [('user_id', ID, False), ('tenant_id', ID, False), ('project_id', ID, False),
                ('period_from', TIME, False), ('period_to', TIME, False)]
+    cleanup_state = enum('queued', 'cleaning', 'completed', 'completed_with_exceptions', 'failed')
+    cleanup_type = enum('assets', 'tasks', 'agents', 'conversations', 'memories', 'brand_profiles',
+                        'analytics_datasets', 'workflows', 'workflow_runs', 'workflow_schedules',
+                        'creative_projects', 'workspace_nodes')
+    add('AdminCleanupFailure', {'id':ID, 'kind':enum('object','runtime'), 'attempts':INT,
+        'error_code':{'oneOf':[TEXT,{'type':'null'}]}})
+    add('AdminCleanupJob', {'id':ID, 'state':cleanup_state, 'exceptions':arr(TEXT),
+        'tenant_id':ID, 'project_id':{'oneOf':[ID,{'type':'null'}]}, 'target_type':cleanup_type,
+        'target_id':ID, 'attempts':INT, 'created_at':TIME, 'completed_at':{'oneOf':[TIME,{'type':'null'}]},
+        'progress':obj({'total':INT,'completed':INT}), 'failures':arr(ref('AdminCleanupFailure'))})
+    add('AdminCleanupPage', {'items':arr(ref('AdminCleanupJob')), 'page':{'type':'integer','minimum':1,'maximum':10000},
+        'page_size':{'type':'integer','minimum':1,'maximum':100,'default':50}, 'total':INT})
+    add('AdminCleanupRetry', {'reason':{'type':'string','minLength':3,'maxLength':2000}})
+    add('AdminCleanupResult', {'id':ID, 'state':cleanup_state, 'exceptions':arr(TEXT)})
+    cleanup = e('/deletions', 'get', 'listAdminCleanupJobs', None, 'AdminCleanupPage', [49,90,94,98,100], 'admin.content.read', query=[
+        ('page',{'type':'integer','minimum':1,'maximum':10000,'default':1},False),
+        ('page_size',{'type':'integer','minimum':1,'maximum':100,'default':50},False),
+        ('tenant_id',ID,False),('project_id',ID,False),('state',cleanup_state,False),('target_type',cleanup_type,False),
+        ('search',{'type':'string','maxLength':160,'description':'Literal case-insensitive substring of job ID or target ID.'},False)])
+    # The implemented cleanup collection uses page/offset pagination. Other
+    # proposed list contracts retain their own pending conformance work.
+    cleanup['parameters'] = [p for p in cleanup['parameters'] if p.get('name') not in ['cursor','limit']]
+    retry = e('/deletions/{deletion_id}/retry', 'post', 'retryAdminCleanupJob', 'AdminCleanupRetry', 'AdminCleanupResult', [49,90,94,96,100], 'admin.content.delete')
+    retry['responses']['200'] = retry['responses'].pop('202')
+    retry['responses']['200']['description'] = 'Retry queued durably, or original completed result; no immediate physical-cleanup claim.'
     e('/me', 'get', 'getAdminContext', None, 'AdminContext', [83,94,98], 'admin.overview.read')
     e('/overview', 'get', 'getAdminOverview', None, 'AdminOverview', [86,98], 'admin.overview.read')
     e('/users', 'get', 'listAdminUsers', None, listing('AdminUser'), [84,85,86,98], 'admin.users.read', query=filters+[('q', TEXT, False), ('state', enum('active', 'frozen', 'closed'), False), ('vip', BOOL, False)])

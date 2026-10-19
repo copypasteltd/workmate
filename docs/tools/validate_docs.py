@@ -204,7 +204,13 @@ def validate_openapi(api, registry):
             if method in ['post','patch','delete']:
                 check(('header','Idempotency-Key') in names, f'api:{operation}:idempotency')
             if operation.startswith('list'):
-                check(('query','cursor') in names and ('query','limit') in names, f'api:{operation}:cursor-pagination')
+                if operation == 'listAdminCleanupJobs':
+                    check(path == '/v1/admin/deletions' and method == 'get', f'api:{operation}:specific-admin-page')
+                    check(('query','page') in names and ('query','page_size') in names and ('query','cursor') not in names and ('query','limit') not in names, f'api:{operation}:page-pagination')
+                    page_size = next(p['schema'] for p in parameters if p['in']=='query' and p['name']=='page_size')
+                    check(page_size.get('default') == 50 and page_size.get('maximum') == 100 and page_size.get('minimum') == 1, f'api:{operation}:bounded-default-page')
+                else:
+                    check(('query','cursor') in names and ('query','limit') in names, f'api:{operation}:cursor-pagination')
             if op.get('security') not in [[],[{'DeviceBearer':[]}]]:
                 check(bool(api.get('security')), f'api:{operation}:user-auth')
             if '202' in op['responses']:
@@ -266,6 +272,11 @@ def validate_admin_contracts(api, registry):
                 check('#/components/parameters/AdminCsrfHeader' in refs and '#/components/parameters/CsrfHeader' not in refs, label+':independent-csrf')
                 if op.get('x-admin-read-only'):
                     check(op['responses']['200']['content']['application/json']['schema']['$ref'].endswith('/AdminPreview'), label+':preview-has-no-business-effect')
+                elif op['operationId'] == 'retryAdminCleanupJob':
+                    check(path == '/v1/admin/deletions/{deletion_id}/retry' and method == 'post', label+':specific-durable-cleanup-command')
+                    check(op['x-permission'] == 'admin.content.delete', label+':separate-delete-permission')
+                    check(op['responses']['200']['content']['application/json']['schema']['$ref'] == '#/components/schemas/AdminCleanupResult', label+':durable-job-result')
+                    check('#/components/parameters/IdempotencyKey' in refs, label+':idempotent-cleanup-retry')
                 else:
                     check(op['responses']['202']['content']['application/json']['schema']['$ref'].endswith('/AdminOperation'), label+':tracked-command-result')
             actions = op.get('x-action-permissions', {})

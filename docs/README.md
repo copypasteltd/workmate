@@ -129,3 +129,5 @@ ADMIN01 拆为 REQ-083–102、UC19–UC24 和 TC-083–102；同步 P14/A01–A
 项目方法安装、版本绑定与即时安全撤销见 [技能生命周期](technical/19-project-skill-lifecycle.md)。当前 102 条需求的原始条件和逐项差异见 [修复进度](quality/requirements-alignment-progress.json)，局部回归不等同完整产品验收。
 
 企业共用执行槽、当前用户方案、能力容量、同任务自动排队和跨企业交错派发见 [执行容量与公平派发](technical/23-execution-capacity-and-fair-dispatch.md)。
+
+Admin 清理记录的筛选、50 条默认分页、撤权显示及独立原生测试库见 [后台记录与测试隔离](technical/24-admin-record-pages-and-test-isolation.md)。

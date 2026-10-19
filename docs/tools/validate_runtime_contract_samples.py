@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 
 
@@ -41,7 +41,7 @@ def main():
     if not checks:
         raise ValueError('No captured responses; empty evidence cannot pass')
     report = {'at': datetime.now(timezone.utc).isoformat(),
-              'scope': 'Captured cloud workspace, project Skill, notification and pre-execution dependency list HTTP response schemas only; not full API conformance',
+              'scope': 'Captured cloud workspace, project Skill, notification, pre-execution dependency and scoped Admin cleanup page HTTP response schemas only; not full API conformance',
               'sources': sources,
               'openapi_sha256': hashlib.sha256(SPEC.read_bytes()).hexdigest(),
               'checks': checks}

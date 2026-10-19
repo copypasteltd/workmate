@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('admin_record_pages', [49,90,94,98,100],
+     '清理记录组合筛选、可见总数与分页、只读重试拒绝、慢请求失败清空、授权到期和后台默认 50 条；不含百万记录压测或全部运营筛选。',
+     ['platform_regression','admin_records','runtime_schemas'], ['technical/24-admin-record-pages-and-test-isolation.md']),
     ('execution_capacity', [1,2,8,9,35,44,46,52,57,58,61,89,102],
      '数据库原子执行容量、当前用户/企业/能力交集、原生多 handler、企业交错派发、单预留延迟重派和未知执行保留槽位；不含完整 NFR 压测。',
      ['platform_regression','execution_capacity','desktop','extension'], ['technical/23-execution-capacity-and-fair-dispatch.md']),
@@ -100,8 +103,8 @@ REMAINING = {
  87:'模拟额度走可追踪 gift；正式费用全部动作/收款关联/退款与限时额度仍需完整验收。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
- 94:'项目方法新增权限检查；全动作/字段/范围/导出及异步执行完整矩阵待完成。',
- 98:'新增表单与四宽度有局部证据；全后台筛选、列配置、异常和键盘仍待验证。',
+ 94:'项目方法及清理记录已有权限子流程证据，包含企业/项目 deny、只读与到期；全动作/字段/范围/导出及异步执行完整矩阵待完成。',
+ 98:'清理记录已验证组合筛选/URL/分页、有界滚动、四宽度、主题/语言、请求拒绝清空和失效重试对话框；全后台筛选、列配置、异常及完整键盘/缩放仍待验证。',
  99:'可信方法版本/撤销已补强；模型/费率的受控验证发布、兼容版本与后台全闭环待完成。',
  102:'当前方案能力及领取时用户并发已复查，企业/能力槽位按数据库统一约束；全部媒体、团队、调度、席位和存储交集未齐。',
 }
@@ -132,6 +135,7 @@ def main():
         'task_dependencies': DEV/'copypaste-delivery/evidence/task-dependencies.json',
         'execution_capacity': DEV/'copypaste-delivery/evidence/execution-capacity.json',
         'admin_task_inputs': DEV/'copypaste-delivery/evidence/admin-task-inputs.json',
+        'admin_records': DEV/'copypaste-delivery/evidence/admin-records.json',
         'checkout_integrity': DEV/'copypaste-delivery/evidence/byte-integrity.json',
         'runtime_schemas': DOCS/'quality/runtime-contract-samples.json',
         'documentation': DOCS/'quality/validation-report.json',

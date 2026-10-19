@@ -81,3 +81,5 @@ ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 
 明确提交的运行前资料要求见 [资料补齐检查点](technical/22-pre-execution-input-checkpoint.md)。该子流程使用同一任务与预留，包含三端选择、私人上传、撤销及计划输入守卫；已付费步骤继续和自动依赖发现仍保留完整需求。
 
 企业共用执行槽、当前用户方案、能力容量、同任务自动排队和跨企业交错派发见 [执行容量与公平派发](technical/23-execution-capacity-and-fair-dispatch.md)。
+
+后台清理记录分页、当前授权显示及测试数据库隔离见 [Admin 记录与原生测试](technical/24-admin-record-pages-and-test-isolation.md)。

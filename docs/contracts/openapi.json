@@ -11064,6 +11064,250 @@
         }
       }
     },
+    "/v1/admin/deletions": {
+      "get": {
+        "operationId": "listAdminCleanupJobs",
+        "summary": "listAdminCleanupJobs",
+        "tags": [
+          "admin"
+        ],
+        "x-requirements": [
+          "REQ-049",
+          "REQ-090",
+          "REQ-094",
+          "REQ-098",
+          "REQ-100"
+        ],
+        "x-stage": "M1",
+        "x-permission": "admin.content.read",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "cleaning",
+                "completed",
+                "completed_with_exceptions",
+                "failed"
+              ]
+            }
+          },
+          {
+            "name": "target_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "assets",
+                "tasks",
+                "agents",
+                "conversations",
+                "memories",
+                "brand_profiles",
+                "analytics_datasets",
+                "workflows",
+                "workflow_runs",
+                "workflow_schedules",
+                "creative_projects",
+                "workspace_nodes"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 160,
+              "description": "Literal case-insensitive substring of job ID or target ID."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCleanupPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-admin-policy": {
+          "mfa_required": true,
+          "scope_recheck": true,
+          "audit_required": true
+        }
+      }
+    },
+    "/v1/admin/deletions/{deletion_id}/retry": {
+      "post": {
+        "operationId": "retryAdminCleanupJob",
+        "summary": "retryAdminCleanupJob",
+        "tags": [
+          "admin"
+        ],
+        "x-requirements": [
+          "REQ-049",
+          "REQ-090",
+          "REQ-094",
+          "REQ-096",
+          "REQ-100"
+        ],
+        "x-stage": "M1",
+        "x-permission": "admin.content.delete",
+        "parameters": [
+          {
+            "name": "deletion_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "200": {
+            "description": "Retry queued durably, or original completed result; no immediate physical-cleanup claim.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCleanupResult"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCleanupRetry"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-admin-policy": {
+          "mfa_required": true,
+          "scope_recheck": true,
+          "audit_required": true
+        }
+      }
+    },
     "/v1/admin/me": {
       "get": {
         "operationId": "getAdminContext",
@@ -29397,6 +29641,247 @@
           "expires_at",
           "recheck_authorization",
           "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCleanupFailure": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "object",
+              "runtime"
+            ]
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "error_code": {
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "attempts",
+          "error_code"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCleanupJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "cleaning",
+              "completed",
+              "completed_with_exceptions",
+              "failed"
+            ]
+          },
+          "exceptions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "target_type": {
+            "type": "string",
+            "enum": [
+              "assets",
+              "tasks",
+              "agents",
+              "conversations",
+              "memories",
+              "brand_profiles",
+              "analytics_datasets",
+              "workflows",
+              "workflow_runs",
+              "workflow_schedules",
+              "creative_projects",
+              "workspace_nodes"
+            ]
+          },
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "progress": {
+            "type": "object",
+            "properties": {
+              "total": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "completed": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "total",
+              "completed"
+            ],
+            "additionalProperties": false
+          },
+          "failures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCleanupFailure"
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "exceptions",
+          "tenant_id",
+          "project_id",
+          "target_type",
+          "target_id",
+          "attempts",
+          "created_at",
+          "completed_at",
+          "progress",
+          "failures"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCleanupPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminCleanupJob"
+            },
+            "minItems": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "page_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 50
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCleanupRetry": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "AdminCleanupResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "cleaning",
+              "completed",
+              "completed_with_exceptions",
+              "failed"
+            ]
+          },
+          "exceptions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "exceptions"
         ],
         "additionalProperties": false
       },

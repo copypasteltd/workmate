@@ -50,7 +50,7 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 
 ## 当前源码验收增量
 
-2026-10-19 当前源码平台 136/136、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。实际响应样本 15/15 通过严格 schema 检查。规范 223 个操作和实际 225 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 139/139、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。实际响应样本 17/17 通过严格 schema 检查。规范 225 个操作和实际 225 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](technical/22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 
