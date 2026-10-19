@@ -173,3 +173,21 @@ Execution 列表新增可读的排队原因，区分企业共享、用户方案�
 
 ![授权范围内的排队原因](assets/screenshots/22-capacity-queue.png)
 ![深色排队管理](assets/screenshots/23-capacity-queue-dark.png)
+
+## 清理记录分页与授权刷新
+
+内容页的清理面板支持状态、类别和记录/目标 ID 搜索，URL 保留筛选及页码。默认每页 50 条，可选 25/50/100；长记录在有界区域滚动。通用后台集合、管理员身份及云端定时列表默认 50 条。轮询在前一请求结束后再安排，错误会隐藏旧记录，切换查询也不展示上一页。重试仍需独立删除权限、当前范围、最近 MFA、原因和幂等键。
+
+Delivery `npm run qa:admin-records` 的五组浏览器检查覆盖 58 条可见记录、六条按范围排除的记录、翻页/组合筛选、授权到期、慢请求拒绝清空、四宽度与两主题/语言；模型与清理目标均是明确的测试数据，登录和授权查询真实执行。
+
+```mermaid
+flowchart LR
+  URL[筛选与页码] --> Scope[当前范围和 deny]
+  Scope --> Page[有限记录与可见总数]
+  Page --> Panel[可滚动表格]
+  Error[失败或失效] --> Clear[隐藏旧记录]
+```
+
+![清理记录分页](assets/screenshots/24-cleanup-pagination.png)
+![繁中深色清理面板](assets/screenshots/25-cleanup-pagination-dark.png)
+![窄屏清理面板](assets/screenshots/26-cleanup-mobile.png)

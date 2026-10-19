@@ -173,3 +173,21 @@ Execution lists readable reasons for shared workspace slots, current user limits
 
 ![Scoped queue reason](assets/screenshots/22-capacity-queue.png)
 ![Dark execution queue](assets/screenshots/23-capacity-queue-dark.png)
+
+## Cleanup pages and current authorization
+
+The content journal filters by state, type and literal record/target ID. Its URL retains filters and paging. The default is 50 records, with explicit 25/50/100 choices and bounded keyboard-focusable scrolling. General Admin collections, administrator identities and schedules also default to 50. Polls start after the previous response finishes; errors hide old records, and switching queries never exposes the previous page. Retry still requires its separate delete permission, current scope, recent MFA, reason and idempotency key.
+
+Delivery `npm run qa:admin-records` passes five browser groups: 58 visible and six excluded records, paging/combined filters, grant expiry, delayed-denial cleanup, four widths and two themes/languages. Journal targets are explicit synthetic fixtures; email/MFA login and authorization queries are real. Full operational filters, column configuration and million-record benchmarks remain pending.
+
+```mermaid
+flowchart LR
+  URL[Filters and page] --> Scope[Current scope and deny]
+  Scope --> Page[Bounded records and visible total]
+  Page --> Panel[Scrollable table]
+  Error[Failure or expiry] --> Clear[Hide old records]
+```
+
+![Cleanup pagination](assets/screenshots/24-cleanup-pagination.png)
+![Traditional Chinese dark journal](assets/screenshots/25-cleanup-pagination-dark.png)
+![Narrow cleanup panel](assets/screenshots/26-cleanup-mobile.png)

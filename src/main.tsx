@@ -812,7 +812,7 @@ function Section({ section }: { section: string }) {
       active +
       "?page=" +
       page +
-      "&page_size=25&search=" +
+      "&page_size=50&search=" +
       encodeURIComponent(search),
     refresh,
   );
@@ -1229,7 +1229,7 @@ function Section({ section }: { section: string }) {
           </div>
           <div className="pagination">
             <span>
-              {t("每頁 25 筆", "25 per page")} · {t("目前第", "Page")} {page}
+              {t("每頁 50 筆", "50 per page")} · {t("目前第", "Page")} {page}
             </span>
             <div>
               <button
@@ -1243,7 +1243,7 @@ function Section({ section }: { section: string }) {
               <button
                 className="icon-button"
                 aria-label="Next page"
-                disabled={page * 25 >= data.total}
+                disabled={loading || page * 50 >= data.total}
                 onClick={() => setPage((v) => v + 1)}
               >
                 <ChevronRight size={17} />

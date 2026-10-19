@@ -248,6 +248,58 @@
   min-width: 35px;
   min-height: 35px;
 }
+.deletion-filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(120px, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+.deletion-journal .deletion-table {
+  max-height: 26rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.deletion-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+.deletion-table .cleanup-id {
+  display: block;
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.deletion-table details {
+  min-width: 150px;
+  overflow-wrap: anywhere;
+}
+.deletion-table summary {
+  cursor: pointer;
+  color: var(--blue);
+}
+.deletion-table:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+@media (max-width: 900px) {
+  .deletion-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .deletion-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .deletion-journal .pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
 .id-chip {
   font:
     9px Consolas,

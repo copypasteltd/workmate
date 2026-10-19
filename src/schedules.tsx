@@ -30,10 +30,10 @@ export function AdminSchedules({
     [search, setSearch] = useState(""),
     [refresh, setRefresh] = useState(0),
     [action, setAction] = useState<any>(null);
-  const { data, error } = useData(
+  const { data, error, loading } = useData(
     "/v1/admin/workflow-schedules?page=" +
       page +
-      "&page_size=25&search=" +
+      "&page_size=50&search=" +
       encodeURIComponent(search),
     refresh,
     15000,
@@ -141,7 +141,7 @@ export function AdminSchedules({
           <button
             className="icon-button"
             aria-label="Previous schedule page"
-            disabled={page === 1}
+            disabled={loading || page === 1}
             onClick={() => setPage((p) => p - 1)}
           >
             <ChevronLeft size={16} />
@@ -149,7 +149,7 @@ export function AdminSchedules({
           <button
             className="icon-button"
             aria-label="Next schedule page"
-            disabled={page * 25 >= (data?.total ?? 0)}
+            disabled={loading || page * 50 >= (data?.total ?? 0)}
             onClick={() => setPage((p) => p + 1)}
           >
             <ChevronRight size={16} />

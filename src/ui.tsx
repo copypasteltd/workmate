@@ -90,42 +90,43 @@ export function useData<T = any>(
   refresh = 0,
   interval = 0,
 ) {
-  const [data, setData] = useState<T | null>(null),
-    [error, setError] = useState<Error | null>(null),
-    [loading, setLoading] = useState(false);
+  const key = JSON.stringify([url, refresh, interval]);
+  const [snapshot, setSnapshot] = useState<{
+    key: string;
+    data: T | null;
+    error: Error | null;
+    loading: boolean;
+  }>({ key, data: null, error: null, loading: !!url });
   useEffect(() => {
     let live = true;
     const ctrl = new AbortController();
-    setData(null);
-    setError(null);
-    if (!url)
-      return () => {
-        live = false;
-      };
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    setSnapshot({ key, data: null, error: null, loading: !!url });
     const load = async () => {
       try {
-        if (live) setLoading(true);
-        const d = await api<T>(url, { signal: ctrl.signal });
-        if (live) {
-          setData(d);
-          setError(null);
-        }
+        setSnapshot((s) => ({ ...s, loading: true }));
+        const data = await api<T>(url!, { signal: ctrl.signal });
+        if (live) setSnapshot({ key, data, error: null, loading: false });
       } catch (e) {
         if (live && !(e instanceof DOMException && e.name === "AbortError"))
-          setError(e as Error);
+          setSnapshot({ key, data: null, error: e as Error, loading: false });
       } finally {
-        if (live) setLoading(false);
+        // A slow response must not overlap a later permission check. In
+        // particular, an old success cannot restore data after a new denial.
+        if (live && interval) timer = setTimeout(load, interval);
       }
     };
-    void load();
-    const timer = interval ? setInterval(load, interval) : null;
+    if (url) void load();
     return () => {
       live = false;
       ctrl.abort();
-      if (timer) clearInterval(timer);
+      if (timer) clearTimeout(timer);
     };
-  }, [url, refresh, interval]);
-  return { data, error, loading };
+  }, [url, refresh, interval, key]);
+  // Do not expose a previous scope/page even for the render before cleanup.
+  return snapshot.key === key
+    ? snapshot
+    : { key, data: null, error: null, loading: !!url };
 }
 export function ErrorNotice({ error }: { error: unknown }) {
   const { t } = useI18n();
