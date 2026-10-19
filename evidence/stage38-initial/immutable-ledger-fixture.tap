@@ -1,0 +1,101 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# Subtest: strict original directory schemas, deduplicated users, persisted billing IDs and actual login timestamp
+ok 1 - strict original directory schemas, deduplicated users, persisted billing IDs and actual login timestamp
+  ---
+  duration_ms: 3469.4797
+  ...
+# Subtest: scope projection intersects user, contact, billing and project permissions; denies constrain global grants
+ok 2 - scope projection intersects user, contact, billing and project permissions; denies constrain global grants
+  ---
+  duration_ms: 250.9312
+  ...
+# Subtest: project-only directory access exposes only assigned users and permitted project IDs
+ok 3 - project-only directory access exposes only assigned users and permitted project IDs
+  ---
+  duration_ms: 137.5012
+  ...
+# Subtest: keyset cursors keep timestamp ties, exclude later registrations and bind filters, sessions, current permissions
+ok 4 - keyset cursors keep timestamp ties, exclude later registrations and bind filters, sessions, current permissions
+  ---
+  duration_ms: 283.3435
+  ...
+# Subtest: tenant keyset uses persisted account identities and cannot cross scopes or malformed inputs
+ok 5 - tenant keyset uses persisted account identities and cannot cross scopes or malformed inputs
+  ---
+  duration_ms: 123.0614
+  ...
+# Subtest: confirmed usage comes from charge ledger by actor, project and settlement period, excluding holds and reconciliation
+not ok 6 - confirmed usage comes from charge ledger by actor, project and settlement period, excluding holds and reconciliation
+  ---
+  duration_ms: 150.4242
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-directory.test.ts:1:11518'
+  failureType: 'testCodeFailure'
+  error: 'permission denied for table ledger'
+  code: '42501'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-directory.test.ts:466:3)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: VIP filters use effective current grants, hide forbidden fields, do not grant personal rights through project access
+ok 7 - VIP filters use effective current grants, hide forbidden fields, do not grant personal rights through project access
+  ---
+  duration_ms: 238.8235
+  ...
+# Subtest: query validation is strict; stale MFA and revoked live authorization cannot read either directory
+ok 8 - query validation is strict; stale MFA and revoked live authorization cannot read either directory
+  ---
+  duration_ms: 125.0507
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 7
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8480.8797

@@ -365,3 +365,14 @@ The earlier successful `qa:membership` receipt was overwritten and is excluded f
 
 
 本次新账户页面实测 **5/5**，完整平台 **245/245**，当前规范样本 **51/51**。页面实际修复待审批导航，截图随 Admin 中英 README；不取代原生/旧成员页面未完成项。若默认 Playwright 浏览器未安装，QA 使用环境变量 `CHROME_BIN` 指向已安装的 Chromium；本次为本机 `chromium-1243/chrome-win64/chrome.exe`。测试不下载浏览器，前次缺失路径与导航失败独立归档。
+
+
+## 规范目录增量验证
+
+`npm run qa:admin-directory-ui` 在本机 API/Vite Admin 与独立 Chromium 中运行七组检查：真实邮箱/TOTP、23 个合成用户的 20/3 游标分页、严格详情与现有账户/VIP目标入口、VIP/企业/状态筛选、规范企业账务 ID、响应式中英样式，以及 MFA/匿名拒绝。`CHROME_BIN` 可指向已有浏览器，本次使用缓存 chromium-1243；不下载浏览器。仅本次合成记录的实际响应写入 `evidence/admin-directory-contract-samples.json`，检查及关闭结果写入 `evidence/admin-directory-ui.json`。
+
+十组服务端专项见 `evidence/admin-directory-final.tap`。旧 245 项平台回归及字节回执归档 `evidence/stage37-platform/`；失败夹具、拒绝项目零值投影和初次过早截图保留于 `evidence/stage38-initial/`。完整平台与独立检出以当前回执的真实计数和摘要为准，未经格式化的原始 TAP 保留。
+
+当前页面验证使用源码 Vite 服务，生产构建另行检查；它不替代安装包或完整跨端验收。全部自建浏览器和上下文关闭、自有测试管理员/会话/用户停用，不操作用户浏览器。模型调用为零。资金/VIP写规范、完整消费钻取、旧成员页面和原生/发布仍有独立缺口。
+
+本轮最终完整平台 **256/256**、七组目录实际页面/HTTP **7/7**、严格规范响应 **63/63**；新增目录/导出十一组包含在完整 TAP 中，独立旧调用专项为 **7/7**。原始 TAP SHA-256 为 `e0741c2315252c644229cfd51198c911c8272c66b365924f4a3e92fa396f5079`。首次 252/255 的旧调用回归失败及当时原文已归档 stage38-initial；没有降低原始规范或删除原安全断言。

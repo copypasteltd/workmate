@@ -318,3 +318,14 @@ This increment's full platform regression is 245/245 with untouched raw TAP. The
 
 
 The new account UI passes **5/5**, the full platform **245/245**, and current strict captures **51/51**. Browser checks led to a real approval-navigation fix; screenshots accompany the Admin bilingual guides. Native and older membership open issues remain. When the default Playwright executable is absent, set `CHROME_BIN` to an installed Chromium; this run used local `chromium-1243/chrome-win64/chrome.exe`. QA does not download browsers, and missing-path/navigation failures are archived separately.
+
+
+## Canonical directory verification increment
+
+`npm run qa:admin-directory-ui` runs seven groups against the local API/Vite Admin and owned Chromium: real email/TOTP, 23 synthetic users across 20/3 cursor pages, strict details and existing account/VIP target entry points, VIP/workspace/state filters, stable workspace billing account IDs, responsive bilingual styling, and MFA/anonymous rejection. `CHROME_BIN` selects an installed browser; this run used cached chromium-1243 without downloading. Only owned synthetic records are captured in `evidence/admin-directory-contract-samples.json`; checks and closure are recorded in `evidence/admin-directory-ui.json`.
+
+Ten server groups are preserved in `evidence/admin-directory-final.tap`. Previous 245-test platform and byte receipts are archived under `evidence/stage37-platform/`; invalid fixtures, denied-project zero projection and premature initial screenshots remain in `evidence/stage38-initial/`. Current full regression/clone receipts provide actual counts and hashes, retaining untouched TAP bytes.
+
+UI verification uses source Vite services; production builds are checked separately. It does not accept packaged or complete native journeys. Owned browsers/contexts close and owned test administrators/sessions/users are disabled without touching user browsers. Model calls are zero. Complete financial/VIP write contracts, consumption drilldown, older membership pages and native/release acceptance remain outstanding.
+
+Final current platform regression: **256/256**; directory UI/HTTP: **7/7**; strict response captures: **63/63**. The full TAP includes eleven new directory/export groups; the targeted legacy-consumer rerun passes **7/7**. Untouched TAP SHA-256: `e0741c2315252c644229cfd51198c911c8272c66b365924f4a3e92fa396f5079`. The initial 252/255 legacy-consumer failure is preserved under stage38-initial; original contracts and security assertions were retained.
