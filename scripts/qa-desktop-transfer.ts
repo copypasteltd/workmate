@@ -359,6 +359,103 @@ try {
     name: "source Desktop displays the same recipient-only inbox and follows its notification to the original private task",
     status: "passed",
   });
+  await page.evaluate(() => (location.hash = "/app"));
+  await page
+    .getByRole("button", { name: "Create campaign visuals", exact: false })
+    .click();
+  const inputForm = page.getByRole("dialog");
+  await inputForm
+    .getByLabel("Task name", { exact: true })
+    .fill("Native approved-source plan");
+  await inputForm
+    .getByLabel("What would you like to make?", { exact: true })
+    .fill(
+      "Write a clearly simulated campaign plan after I explicitly select an approved source. Deliver an editable Markdown file.",
+    );
+  await inputForm
+    .getByLabel("Inputs needed before starting?", { exact: true })
+    .selectOption("file");
+  await inputForm
+    .getByLabel("Task budget limit (HKD)", { exact: true })
+    .fill("1");
+  await inputForm
+    .getByRole("button", { name: "Start task", exact: true })
+    .click();
+  const inputs = page.getByRole("region", {
+    name: "Provide task inputs",
+    exact: true,
+  });
+  await inputs.waitFor();
+  const latest = await page.evaluate(
+    async (base) =>
+      (await (window as any).copyPasteBridge.request(base + "/tasks", {})).body
+        .items[0],
+    base,
+  );
+  assert.equal(latest.status, "needs_input");
+  const before = await page.evaluate(
+    async ({ base, id }) =>
+      (await (window as any).copyPasteBridge.request(base + "/tasks/" + id, {}))
+        .body,
+    { base, id: latest.id },
+  );
+  assert.equal(before.attempt, 0);
+  const picker = inputs.getByLabel("Choose a current file version", {
+    exact: true,
+  });
+  const sourceOption = picker.locator("option").filter({ hasText: filename });
+  await sourceOption.waitFor({ state: "attached" });
+  assert.equal(await picker.inputValue(), "");
+  await page.screenshot({
+    path: path.join(repo, "assets/screenshots/09-input-wait.png"),
+    fullPage: true,
+    animations: "disabled",
+  });
+  await picker.selectOption((await sourceOption.getAttribute("value"))!);
+  await inputs
+    .getByRole("button", { name: "Confirm this input", exact: true })
+    .click();
+  await inputs.waitFor({ state: "hidden" });
+  const inputDeadline = Date.now() + 60000;
+  let completed: any;
+  while (Date.now() < inputDeadline) {
+    completed = await page.evaluate(
+      async ({ base, id }) =>
+        (
+          await (window as any).copyPasteBridge.request(
+            base + "/tasks/" + id,
+            {},
+          )
+        ).body,
+      { base, id: latest.id },
+    );
+    if (
+      ["succeeded", "failed", "cancelled", "reconciling"].includes(
+        completed.status,
+      )
+    )
+      break;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  assert.equal(
+    completed.status,
+    "succeeded",
+    JSON.stringify({ status: completed.status, error: completed.error_code }),
+  );
+  assert.equal(completed.attempt, 1);
+  await page
+    .locator(".message-assistant")
+    .filter({ hasText: "Simulated data" })
+    .waitFor();
+  await page.screenshot({
+    path: path.join(repo, "assets/screenshots/10-input-result.png"),
+    fullPage: true,
+    animations: "disabled",
+  });
+  checks.push({
+    name: "source Desktop holds an explicit file checkpoint before any model call, chooses the actual uploaded version and resumes the same task through real Codex using synthetic model data",
+    status: "passed",
+  });
   await page.evaluate(
     async () => await (window as any).copyPasteBridge.signOut(),
   );

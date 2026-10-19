@@ -52,7 +52,7 @@ for name in NAMES:
             continue
         if any(secret in text for secret in secrets):
             issues.append(f'{name}/{filename}: matches an actual local secret (suppressed)')
-        if re.search(r'sk-[A-Za-z0-9_-]{25,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', text):
+        if re.search(r'(?<![A-Za-z0-9_-])sk-[A-Za-z0-9_-]{25,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----', text):
             issues.append(f'{name}/{filename}: credential pattern (suppressed)')
         for match in re.findall(r'(?:postgres|postgresql)://[^\s"\']+:[^\s"\']+@', text):
             if not any(placeholder in match for placeholder in ['local-only', '<', '${']):
