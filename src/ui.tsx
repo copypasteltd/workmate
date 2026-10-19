@@ -98,6 +98,7 @@ export function useData<T = any>(
     [loading, setLoading] = useState(false);
   useEffect(() => {
     let live = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
     const ctrl = new AbortController();
     setData(null);
     setError(null);
@@ -115,18 +116,20 @@ export function useData<T = any>(
           setError(null);
         }
       } catch (e) {
-        if (live && !(e instanceof DOMException && e.name === "AbortError"))
+        if (live && !(e instanceof DOMException && e.name === "AbortError")) {
+          setData(null);
           setError(e as Error);
+        }
       } finally {
         if (live) setLoading(false);
+        if (live && interval) timer = setTimeout(load, interval);
       }
     };
     void load();
-    const timer = interval ? setInterval(load, interval) : null;
     return () => {
       live = false;
       ctrl.abort();
-      if (timer) clearInterval(timer);
+      if (timer) clearTimeout(timer);
     };
   }, [url, refresh, interval]);
   return { data: loadedUrl === url ? data : null, error, loading };

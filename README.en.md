@@ -123,7 +123,6 @@ flowchart LR
 
 ![Actual company identity interface](assets/screenshots/17-company-sign-in.png)
 
-
 ## File and execution repairs in progress
 
 A persistent banner identifies synthetic data and lets a workspace Owner claim one demo gift. Uploads verify part and whole-file SHA-256, support pause/cancel and resume after a lost connection and reload. Limits are 100 MiB for ordinary files and 1 GiB for media. Assets show retention expiry; permanent deletion requires confirmation and has queryable cleanup progress. Task activity uses durable SSE with sequence-based reconnection and current authorization checks.
@@ -149,7 +148,7 @@ Four browser QA groups cover these flows, two real Codex tasks driven by synthet
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **147/147**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **159/159**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -212,3 +211,25 @@ Seven Web/current-source Desktop groups cover email sign-in, the canvas, version
 ![Actual PDF export](assets/screenshots/49-design-pdf-export.png)
 
 ![Actual downloaded PDF rendering](assets/screenshots/50-design-pdf-render.png)
+
+## Marketing CSV, exact metrics and provenance (current source)
+
+Preview and confirm the account, currency, timezone, entity level, attribution and conversion definitions before import. Generic CSV and candidate Google/Meta-style headers support explicit column mapping. Actual UTF-8/BOM source bytes, SHA-256, definitions and computed results are retained. Duplicate requests, including a lost accepted response, return one project snapshot. Quarantine prevents reimport bypass. Unknown conversions stay unknown; exact decimal CTR/CPC/CPM/CVR/CPA/ROAS use aggregate totals and historical results are frozen.
+
+Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, XLSX, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
+
+CSV errors identify physical lines and columns. A denied selected dataset clears metrics and downloads instead of falling back to another snapshot. Four widths, both themes/languages and lost-response retry were exercised. Shared polling waits for each response and clears stale data after failure.
+
+```mermaid
+flowchart LR
+  Pick[Choose CSV] --> Preview[Review mapping and scope]
+  Preview --> Confirm[Explicit confirmation]
+  Confirm --> Result[One snapshot / exact metrics and charts]
+  Result --> Download[Source and calculation report]
+```
+
+![Actual mapping confirmation](assets/screenshots/52-marketing-import-preview.png)
+
+![Actual metrics and charts](assets/screenshots/53-marketing-analysis.png)
+
+![Traditional Chinese dark mobile](assets/screenshots/56-marketing-mobile-zh-dark.png)

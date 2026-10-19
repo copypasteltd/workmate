@@ -125,7 +125,6 @@ flowchart LR
 
 ![实际企业身份界面](assets/screenshots/17-company-sign-in.png)
 
-
 ## 当前修复中的文件与执行流程
 
 演示环境有持续显示的假数据提示和企业 Owner 的一次性模拟额度。上传支持分片摘要、整文件 SHA-256、暂停、取消、断线及刷新后续传；普通文件 100 MiB，媒体 1 GiB。素材显示 90 天默认保留及到期时间，永久删除须确认并可查询实际清理结果。任务页通过持久 SSE 实时更新，重连按序号去重；私有权限与会话撤销在服务端重新检查。
@@ -151,7 +150,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **147/147**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **159/159**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -213,3 +212,25 @@ flowchart LR
 ![实际 PDF 导出](assets/screenshots/49-design-pdf-export.png)
 
 ![下载 PDF 后实际渲染](assets/screenshots/50-design-pdf-render.png)
+
+## 营销 CSV、精确指标与来源（当前源码）
+
+导入先预览并确认账户、币种、时区、实体层级、归因和转化定义；支持通用 CSV 及 Google/Meta 风格候选表头与手动映射。原始 UTF-8/BOM、SHA-256、映射和计算结果真实保存。相同项目内重复请求或成功回执丢失后的重试只返回原快照；被隔离的数据不能绕过限制重新上传。未知转化不计零，CTR/CPC/CPM/CVR/CPA/ROAS 用精确小数先加总再计算，历史结果冻结。
+
+原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、XLSX、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
+
+导入错误定位 CSV 物理行和列；切换数据集读取失败时清空指标与下载，不用其他快照冒充。四宽度、浅深主题、繁英及丢失回执重试已实际验证；公共轮询在前次请求结束后才继续，错误清空旧数据。
+
+```mermaid
+flowchart LR
+  Pick[选择 CSV] --> Preview[映射与范围预览]
+  Preview --> Confirm[明确确认]
+  Confirm --> Result[同一快照 / 精确值与图表]
+  Result --> Download[原文与计算报告]
+```
+
+![实际映射确认](assets/screenshots/52-marketing-import-preview.png)
+
+![实际营销指标与图表](assets/screenshots/53-marketing-analysis.png)
+
+![繁中深色移动端](assets/screenshots/56-marketing-mobile-zh-dark.png)
