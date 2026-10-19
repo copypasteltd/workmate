@@ -342,7 +342,7 @@ flowchart LR
 
 ![文件来源及更正链](assets/screenshots/file-imports.png)
 
-当前源码支持用户侧首次模型调用前的排队暂停/同任务恢复，Admin 与用户端复用同一检查点守卫；核对原用户权限、原预留、依赖及版本，拒绝重放运行中或不明操作。原生 Codex 适配器已验证跨进程原历史/工具续聊、增量用量、中断和回执 I/O 故障保留消耗。业务 Worker 的已付费步骤恢复仍未接通。当前完整回归 185/185；详见主文档 `docs/technical/31-task-controls-and-native-continuation.md`。
+当前源码支持用户侧首次模型调用前的排队暂停/同任务恢复，Admin 与用户端复用同一检查点守卫；核对原用户权限、原预留、依赖及版本，拒绝重放运行中或不明操作。原生 Codex 适配器已验证跨进程原历史/工具续聊、增量用量、中断和回执 I/O 故障保留消耗。业务 Worker 的已付费步骤恢复仍未接通。该阶段完整回归 185/185（当前结果以 Delivery 回执为准）；详见主文档 `docs/technical/31-task-controls-and-native-continuation.md`。
 
 ## 跨端会话撤销修复
 
@@ -457,3 +457,16 @@ flowchart LR
 Windows 原生 PostgreSQL 的 ASCII 路径别名现在放在 `%LOCALAPPDATA%/CopyPaste/native-runtime-aliases/`，避免运行中的可执行路径依赖系统临时目录。这里只创建每次启动独立的目录和 junction；真实源码、程序和数据库始终位于本仓库。若用户缓存路径本身含非 ASCII 字符，可用 `COPYPASTE_NATIVE_ALIAS_ROOT` 指定稳定的 ASCII 路径。停止后只清理本次拥有且仍指向本仓库的别名。
 
 On Windows, the native PostgreSQL ASCII junction now lives under the stable per-user application cache instead of the OS temporary directory. Only the owned directory and junction live there; source, executable bytes and database files stay in this repository. `COPYPASTE_NATIVE_ALIAS_ROOT` can select a stable ASCII location when the user cache path contains non-ASCII characters. Shutdown removes only this launch's matching junction. The change is verified with an actual native restart and fresh connections to both existing databases.
+
+
+## 个人/企业账务主体与实际事件 / Billing subjects and events
+
+迁移 042–044 为个人和企业提供真实独立账户；个人的正式与模拟模式分别开户，初始不充值、不授信。直接任务创建支持 `X-Billing-Account-ID`，校验本人/本企业、模式和项目权限，将付款人冻结于任务并纳入幂等摘要。其他工作流暂未接入付款上下文时明确拒绝选择头，不忽略后扣企业款；用户端选择 UI 仍待完成。
+
+`GET /v1/me/billing-accounts` 只返回本人当前模式账户。三处规范 Admin 账户/账本读取采用原始严格 DTO，显示实际实付/赠送批次、预留和债务。全局/企业许可及重叠项目 deny 决定企业整体账户可见性；个人财务要求全局许可并受全部重叠成员企业/项目 deny 约束。旧企业费用列表排除个人付款项。
+
+账务操作者、操作、Journal 及任务预留/消费/释放/信用调整记录持久保存，来源 ID 均对应真实记录；数据库拒绝改写历史、重新归属账户或资金来源。历史未记录的操作者、策略或资金来源不补造。注册时间仅表示新增索引的时间。详情见项目主文档 `docs/technical/40-billing-subjects-and-financial-event-provenance.md`。
+
+八组账户、十一组目录及十二组结算专项联合通过；首次失败原始 TAP 与最终专项输出保存在 Delivery。完整回归以当前 `evidence/alignment-platform.json` / `.tap` 为准。本增量不代表规范收费预览/写入/审批、付款凭证核验、退款对账、消费退回原桶、不可变方案/VIP、当前客户端消费者及全部综合验收已完成。
+
+Personal and enterprise wallets now share the same exact funding, expiry, reservation, settlement and debt engine. Personal modes are separate, task payers are immutable, and financial journal identities refer to real persisted events. Canonical account reads enforce whole-subject permissions and signed pagination. The complete fee/payment/entitlement workflows and client consumers remain required; backend integration results do not close their acceptance gates.

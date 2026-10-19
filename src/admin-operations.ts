@@ -229,7 +229,11 @@ async function execute(tx: Tx, b: Command, p: Principal, id: string) {
     );
   }
   if (b.action === "billing.credit_limit.write") {
-    return setCreditLimit(tx, b.tenant_id, b.amount_micros);
+    return setCreditLimit(tx, b.tenant_id, b.amount_micros, {
+      actor_id: p.id,
+      admin_operation_id: id,
+      reason: b.reason,
+    });
   }
   if (b.action === "billing.reconcile") {
     const t = (

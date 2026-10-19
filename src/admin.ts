@@ -3,7 +3,7 @@ import { freezeTaskSkills } from "./skill-lifecycle.js";
 import { stageInputDependencies } from "./task-dependencies.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
-import { registerAdminDirectory } from "./admin-directory.js";
+import { registerAdminDirectory, readScope } from "./admin-directory.js";
 import { registerAdminJobs } from "./admin-jobs.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -241,7 +241,7 @@ export function registerAdmin(
               throw new Problem(403, "ADMIN_FORBIDDEN", "No authorized scope");
             const sources: Record<string, string> = {
               billing:
-                "SELECT l.*,t.name AS tenant_name FROM ledger l JOIN tenants t ON t.id=l.tenant_id",
+                "SELECT l.*,t.name AS tenant_name FROM ledger l JOIN tenants t ON t.id=l.tenant_id JOIN wallets w ON w.tenant_id=l.tenant_id AND (l.billing_account_id IS NULL OR l.billing_account_id=w.id)",
               entitlements:
                 "SELECT e.*,t.name AS tenant_name,u.name AS user_name,(e.state='active' AND e.starts_at<=now() AND e.ends_at>now()) AS effective FROM entitlements e LEFT JOIN tenants t ON t.id=e.tenant_id LEFT JOIN users u ON u.id=e.user_id",
               execution:
@@ -277,6 +277,10 @@ export function registerAdmin(
               );
               args = us.values;
               source = `SELECT t.created_by AS user_id,u.name,t.tenant_id,n.name AS tenant_name,count(*)::int AS tasks,sum(charged_micros)::text AS charged_micros,sum(input_tokens)::text AS input_tokens,sum(output_tokens)::text AS output_tokens,count(*) FILTER(WHERE t.status='reconciling')::int AS reconciling FROM tasks t JOIN users u ON u.id=t.created_by JOIN tenants n ON n.id=t.tenant_id WHERE ${us.sql} GROUP BY t.created_by,u.name,t.tenant_id,n.name`;
+            } else if (section === "billing") {
+              const scope = await readScope(tx, req.principal, perm);
+              filter = `EXISTS(SELECT 1 FROM wallets w WHERE w.tenant_id=r.tenant_id AND ${scope.account(perm)})`;
+              args = scope.values;
             } else if (
               ["catalog", "plans", "policy", "access"].includes(section)
             ) {

@@ -31,7 +31,11 @@ export async function enqueueTask(
   project: string,
   b: TaskInput,
   requestKey: string,
-  options: { context?: WorkContext; conversation?: any } = {},
+  options: {
+    context?: WorkContext;
+    conversation?: any;
+    billing_account_id?: string;
+  } = {},
 ) {
   if (b.prompt.length > 60000)
     throw new Problem(
@@ -84,6 +88,26 @@ export async function enqueueTask(
         "Continue this private task from its original conversation",
       );
   }
+  if (options.billing_account_id) {
+    const payer = (
+      await tx.query(
+        "SELECT id,user_id,tenant_id,data_mode FROM wallets WHERE id=$1",
+        [options.billing_account_id],
+      )
+    ).rows[0];
+    if (
+      !payer ||
+      (payer.user_id
+        ? payer.user_id !== actor.id
+        : payer.tenant_id !== tenant) ||
+      payer.data_mode !== dataMode
+    )
+      throw new Problem(
+        404,
+        "BILLING_ACCOUNT_NOT_FOUND",
+        "An authorized billing account in this execution mode is required",
+      );
+  }
   const plan = await authorizeTaskPlan(
     tx,
     tenant,
@@ -94,8 +118,8 @@ export async function enqueueTask(
   );
   const task = (
     await tx.query(
-      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17) RETURNING *`,
       [
         tenant,
         project,
@@ -113,6 +137,7 @@ export async function enqueueTask(
         options.context ? actor.id : (parent?.private_owner ?? null),
         options.context ?? {},
         plan,
+        options.billing_account_id ?? null,
       ],
     )
   ).rows[0];

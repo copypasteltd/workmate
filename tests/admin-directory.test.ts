@@ -227,8 +227,8 @@ test("strict original directory schemas, deduplicated users, persisted billing I
   assert.equal(detail.data.usage, undefined);
   const rows = (
     await s.db.control.query(
-      "SELECT id FROM wallets WHERE tenant_id=ANY($1::uuid[])",
-      [[w.tenant.id, w2.tenant.id]],
+      "SELECT id FROM wallets WHERE tenant_id=ANY($1::uuid[]) OR (user_id=$2 AND data_mode='configured_services')",
+      [[w.tenant.id, w2.tenant.id], u.id],
     )
   ).rows
     .map((r) => r.id)

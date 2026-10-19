@@ -162,7 +162,7 @@ export function registerWorkspaces(app: FastifyInstance, db: Database) {
           entitlements: await activePlans(tx, tenant),
           ledger: (
             await tx.query(
-              "SELECT id,kind,amount_micros,reason,created_at FROM ledger WHERE tenant_id=$1 ORDER BY created_at DESC LIMIT 100",
+              "SELECT id,kind,amount_micros,reason,created_at FROM ledger WHERE tenant_id=$1 AND (billing_account_id IS NULL OR billing_account_id=(SELECT id FROM wallets WHERE tenant_id=$1)) ORDER BY created_at DESC LIMIT 100",
               [tenant],
             )
           ).rows,

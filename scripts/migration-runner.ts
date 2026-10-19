@@ -1,7 +1,17 @@
 import type pg from "pg";
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
-export async function runMigrations(c: pg.Client, label: string) {
+export async function runMigrations(
+  c: pg.Client,
+  label: string,
+  options: { throughVersion?: number } = {},
+) {
+  if (
+    options.throughVersion !== undefined &&
+    (!Number.isSafeInteger(options.throughVersion) ||
+      options.throughVersion < 1)
+  )
+    throw new Error("A migration checkpoint must be a positive integer");
   // One owner runner per database. API/queue identities cannot obtain DDL.
   await c.query(
     "SELECT pg_advisory_lock(hashtextextended('copypaste-schema-migration',0))",
@@ -39,8 +49,19 @@ export async function runMigrations(c: pg.Client, label: string) {
           );
         continue;
       }
+      if (
+        options.throughVersion !== undefined &&
+        version > options.throughVersion
+      )
+        continue;
       await c.query("BEGIN");
       try {
+        // Schema upgrades can backfill rows and then ALTER the same table.
+        // Check inherited deferred constraints at each statement boundary so
+        // pending FK events cannot make the following DDL fail on populated
+        // databases. Business transactions retain their own deferred defaults.
+        // A migration needing deferral must opt in explicitly in its own SQL.
+        await c.query("SET CONSTRAINTS ALL IMMEDIATE");
         await c.query(sql);
         await c.query(
           "INSERT INTO schema_migrations(version,source_sha256) VALUES($1,$2) ON CONFLICT(version) DO UPDATE SET source_sha256=excluded.source_sha256",

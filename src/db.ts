@@ -34,6 +34,7 @@ export class Database {
       ]);
       await c.query("SELECT set_config('app.actor_id',$1,true)", [actor ?? ""]);
       await c.query("SELECT set_config('app.task_id','',true)");
+      await c.query("SELECT set_config('app.billing_actor_id','',true)");
       await c.query("SELECT set_config('app.erasing_content','false',true)");
       const result = await f(c);
       await c.query("COMMIT");

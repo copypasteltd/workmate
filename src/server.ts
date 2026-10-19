@@ -23,6 +23,7 @@ import { registerAdmin } from "./admin.js";
 import { registerAdminOperations } from "./admin-operations.js";
 import { registerAdminMemberships } from "./admin-memberships.js";
 import { registerAdminAccounts } from "./admin-accounts.js";
+import { registerAdminBilling } from "./admin-billing.js";
 import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
@@ -103,6 +104,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       "Idempotency-Key",
       "Authorization",
       "X-Tenant-ID",
+      "X-Billing-Account-ID",
+      "X-Admin-Preview-ID",
       "Last-Event-ID",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -123,6 +126,16 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
         403,
         "ORIGIN_DENIED",
         "Unregistered application origin",
+      );
+    if (
+      req.headers["x-billing-account-id"] !== undefined &&
+      (req.method !== "POST" ||
+        req.routeOptions.url !== "/v1/tenants/:tenant/projects/:project/tasks")
+    )
+      throw new Problem(
+        400,
+        "BILLING_SELECTION_UNSUPPORTED",
+        "This operation does not support an explicit billing account",
       );
     reply
       .header("X-Content-Type-Options", "nosniff")
@@ -293,6 +306,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminOperations(app, db);
   registerAdminMemberships(app, db);
   registerAdminAccounts(app, db);
+  registerAdminBilling(app, db);
   registerAdminIdentities(app, db);
   let started = false;
   if (options.worker !== false && c.WORKER_ENABLED) {

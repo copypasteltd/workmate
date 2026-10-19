@@ -121,7 +121,7 @@ npm test
 npm run contracts:export
 ```
 
-The original 0.5.0 release exported 167 Fastify method/path pairs, ten migrations and 84 tests. Current regular source exports 248 pairs, includes 35 forward-only migrations and passes 185 native tests. Route counts do not establish full planned OpenAPI conformance. Tests cover identity, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, actual image/PDF/MP4 output, real Codex controlled protocol turns, source packages and persistent work. Separate delivery tools record browser, extension and Desktop journeys.
+The original 0.5.0 release exported 167 Fastify method/path pairs, ten migrations and 84 tests. Those source counts were a historical checkpoint. Current routes are listed in `contracts/implemented-routes.json`; migration files and the current full regression receipt in `../copypaste-delivery/evidence/alignment-platform.json` are authoritative. Route counts do not establish full planned OpenAPI conformance. Tests cover identity, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, actual image/PDF/MP4 output, real Codex controlled protocol turns, source packages and persistent work. Separate delivery tools record browser, extension and Desktop journeys.
 
 | Directory             | Purpose                                                     |
 | --------------------- | ----------------------------------------------------------- |
@@ -199,7 +199,7 @@ The current 139-test regression passes, including five cloud-file integration gr
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **185/185**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Historical platform regression: **185/185**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and in-app notifications (current source)
 
@@ -266,7 +266,7 @@ Six new platform groups and eight real Web/Electron journeys passed; 21 captured
 
 The canvas and Codex `design_render` produce actual single-page PDFs. Editable layers remain in the source project or separate editable JSON; PDFs are raster review copies. `layout.render`, `document.render` and `video.render` independently restrict formats. Visible-version checks refuse stale exports, and lost accepted replies retry with the same key and original source snapshot.
 
-The full native regression passed **185/185**. Seven delivery Web/current-source Electron groups cover downloads, native saves, independent pypdf/Poppler parsing/rendering and file hashes. Models remain simulated while file logic is real. Complete review packages, print standards and at least 12 qualified live roles remain pending.
+The historical native regression passed **185/185**. Seven delivery Web/current-source Electron groups cover downloads, native saves, independent pypdf/Poppler parsing/rendering and file hashes. Models remain simulated while file logic is real. Complete review packages, print standards and at least 12 qualified live roles remain pending.
 
 ![Actual PDF export](assets/screenshots/design-pdf-export.png)
 
@@ -276,7 +276,7 @@ Preview and confirm the account, currency, timezone, entity level, attribution a
 
 Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
 
-Migrations 032/033 add provenance and frozen metrics while preserving older migration bytes. The current native regression passes **185/185**, including four documented metric vectors, four CSV checks and four PostgreSQL integration groups. Administrative source inspection retains scoped body permission and audit; erasure clears source, facts, definitions and metrics. See the delivery root's docs/technical/27-marketing-import-metrics-and-evidence.md.
+Migrations 032/033 add provenance and frozen metrics while preserving older migration bytes. That historical checkpoint passed **185/185**, including four documented metric vectors, four CSV checks and four PostgreSQL integration groups. Administrative source inspection retains scoped body permission and audit; erasure clears source, facts, definitions and metrics. See the delivery root's docs/technical/27-marketing-import-metrics-and-evidence.md.
 
 ```mermaid
 flowchart LR
@@ -380,3 +380,14 @@ flowchart LR
 ```
 
 User export now consumes canonical user cursors. It rejects collections above the existing synchronous 500-row bound instead of silently truncating, and rechecks the full current authorization digest under MFA/access locks before sending. Added coverage checks actual redacted CSV, 501-row refusal and revoked download rights; the complete canonical asynchronous export workflow remains outstanding.
+
+
+## Personal and enterprise billing subjects
+
+Migrations 042–044 give existing enterprise wallets and separately provisioned personal wallets genuine account identities. Personal configured-service and simulated accounts are separate and initially unfunded. Tasks can freeze an explicitly authorized payer through `X-Billing-Account-ID` on direct task creation; the payer is part of idempotency. Other workflows reject this header until their payer context is implemented. User selection interfaces remain pending.
+
+`GET /v1/me/billing-accounts` exposes only the current user’s account in the active mode. The three canonical Admin account/list/ledger reads use the unchanged original strict schemas, real paid/promotional lots, reserved funds and actual debt. Whole enterprise finance needs a global or enterprise grant; project grants cannot expose the aggregate, and overlapping project denies block it. Personal finance requires a global grant and respects every overlapping membership deny. Existing enterprise billing lists exclude personally funded charges.
+
+Immutable financial actors, operations and journal rows retain actual users, administrators, system services and source references. New holds, consumption, unused releases and credit-limit changes have persistent events. Registration timestamps do not invent old creation dates. Historical unknown provenance is explicit; it is not filled with fabricated policy or actor IDs. Database guards prevent reassigning accounts, task payers, reservations, funding identities or journal provenance.
+
+Eight new account groups, eleven directory groups and twelve settlement groups passed together in an isolated native PostgreSQL database. Raw initial failures and the final focused TAP are retained in the delivery repository; the latest complete regression receipt is authoritative. These are backend integration checks, not full billing/VIP, client UI or external payment acceptance. Canonical fee writes/previews/approvals, payment evidence and confirmation, cash/refund reconciliation, product refunds, immutable plan versions and full entitlement grants remain required.

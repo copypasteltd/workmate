@@ -9,7 +9,9 @@ import { runMigrations } from "../scripts/migration-runner.js";
  * Persistent reconciliation records must not consume another run's slots.
  * This helper never resets the demonstration, historical test or customer DB.
  */
-export async function isolatedTestEnvironment() {
+export async function isolatedTestEnvironment(
+  options: { throughVersion?: number } = {},
+) {
   const ownerUrl = new URL(process.env.OWNER_DATABASE_URL!);
   assert.ok(["localhost", "127.0.0.1", "::1"].includes(ownerUrl.hostname));
   const base = path.resolve(".data/test-runs"),
@@ -74,7 +76,7 @@ export async function isolatedTestEnvironment() {
     const setup = new pg.Client({ connectionString: env.OWNER_DATABASE_URL });
     await setup.connect();
     try {
-      await runMigrations(setup, "isolated integration suite");
+      await runMigrations(setup, "isolated integration suite", options);
     } finally {
       await setup.end();
     }

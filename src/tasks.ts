@@ -73,6 +73,7 @@ export function registerTasks(
   });
   app.post(base, { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = params.parse(req.params);
+    const payer = uuid.optional().parse(req.headers["x-billing-account-id"]);
     const b = z
       .object({
         title: name,
@@ -93,7 +94,7 @@ export function registerTasks(
         req.principal.id,
         `task.create:${project}`,
         key(req),
-        b,
+        payer ? { ...b, billing_account_id: payer } : b,
         async () => {
           let context;
           if (b.agent_id) {
@@ -129,7 +130,7 @@ export function registerTasks(
             project,
             b,
             key(req),
-            { context },
+            { context, billing_account_id: payer },
           );
         },
       );

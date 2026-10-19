@@ -50,7 +50,7 @@ const mask = (email: string) => email.replace(/^(.).*(@.*)$/, "$1***$2");
 const escaped = (q: string) => `%${q.replace(/[\\%_]/g, "\\$&")}%`;
 
 /** Every predicate uses the same current binding set. Caller owns the access lock. */
-class ReadScope {
+export class ReadScope {
   values: unknown[] = [];
   constructor(readonly bs: Binding[]) {}
   arg(value: unknown) {
@@ -113,9 +113,20 @@ class ReadScope {
   personalField(key: string, user = "u") {
     return `(${this.arg(this.global(key))}::boolean AND ${this.noDeniedMembership(key, user)})`;
   }
+  account(key: string, wallet = "w") {
+    const deniedProjects = this.bs
+      .filter(
+        (b) =>
+          b.effect === "deny" &&
+          b.scope_kind === "project" &&
+          b.permissions.includes(key),
+      )
+      .map((b) => b.scope_id);
+    return `((${wallet}.tenant_id IS NOT NULL AND ${this.scope(key, `${wallet}.tenant_id`)} AND NOT EXISTS(SELECT 1 FROM projects bp WHERE bp.tenant_id=${wallet}.tenant_id AND bp.id=ANY(${this.arg(deniedProjects)}::uuid[]))) OR (${wallet}.user_id IS NOT NULL AND EXISTS(SELECT 1 FROM users bu WHERE bu.id=${wallet}.user_id AND ${this.personalField(key, "bu")})))`;
+  }
 }
 
-async function readScope(tx: Tx, p: Principal, permission: string) {
+export async function readScope(tx: Tx, p: Principal, permission: string) {
   await lockAdminAccess(tx);
   await requireSensitiveAdmin(tx, p);
   const scope = new ReadScope(await bindings(tx, p));
@@ -246,7 +257,7 @@ async function userDto(
 const cursorShape = z
   .object({
     v: z.literal(1),
-    kind: z.enum(["users", "tenants"]),
+    kind: z.enum(["users", "tenants", "billing_accounts", "billing_ledger"]),
     owner: uuid,
     auth: z.number().int(),
     session: uuid,
@@ -261,8 +272,8 @@ const cursorShape = z
 function cursorContext(
   p: Principal,
   bs: Binding[],
-  q: Query,
-  kind: "users" | "tenants",
+  q: { cursor?: string; [key: string]: unknown },
+  kind: z.infer<typeof cursorShape>["kind"],
 ) {
   const { cursor: _cursor, ...filters } = q;
   return {
@@ -289,13 +300,13 @@ function cursorContext(
     ),
   };
 }
-async function pageBounds(
+export async function pageBounds(
   tx: Tx,
   db: Database,
   p: Principal,
   s: ReadScope,
-  q: Query,
-  kind: "users" | "tenants",
+  q: { cursor?: string; [key: string]: unknown },
+  kind: z.infer<typeof cursorShape>["kind"],
 ) {
   const context = cursorContext(p, s.bs, q, kind);
   if (q.cursor) {
@@ -335,7 +346,7 @@ async function pageBounds(
   ).rows[0].at;
   return { context, asof, after: null, expires: Date.now() + 15 * 60_000 };
 }
-function pageCursor(
+export function pageCursor(
   db: Database,
   bounds: Awaited<ReturnType<typeof pageBounds>>,
   row: any,
@@ -437,7 +448,7 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
           const b = new ReadScope(s.bs);
           const accounts = (
             await tx.query(
-              `SELECT w.id FROM wallets w JOIN memberships m ON m.tenant_id=w.tenant_id WHERE m.user_id=${b.arg(id)} AND ${b.member("admin.users.read")} AND ${b.scope("admin.billing.read", "w.tenant_id")} ORDER BY w.id`,
+              `SELECT w.id FROM wallets w WHERE w.data_mode=${b.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${b.account("admin.billing.read")} AND (w.user_id=${b.arg(id)} OR EXISTS(SELECT 1 FROM memberships m WHERE m.tenant_id=w.tenant_id AND m.user_id=${b.arg(id)} AND ${b.member("admin.users.read")})) ORDER BY w.id`,
               b.values,
             )
           ).rows.map((r) => r.id);

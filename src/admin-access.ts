@@ -265,7 +265,7 @@ export async function permit(
   p: Principal,
   key: string,
   s: Scope = {},
-  value?: { amount?: number; hours?: number; batch?: number },
+  value?: { amount?: number | bigint; hours?: number; batch?: number },
 ) {
   const bs = (await bindings(tx, p)).filter(
     (b) => b.permissions.includes(key) && matches(b, s),
@@ -279,9 +279,9 @@ export async function permit(
   const allowed = bs.filter(
     (b) =>
       b.effect === "allow" &&
-      (!value?.amount ||
+      (value?.amount === undefined ||
         b.limits.max_amount_micros === undefined ||
-        value.amount <= b.limits.max_amount_micros) &&
+        BigInt(value.amount) <= BigInt(b.limits.max_amount_micros)) &&
       (!value?.hours ||
         b.limits.max_duration_hours === undefined ||
         value.hours <= b.limits.max_duration_hours) &&

@@ -1,0 +1,223 @@
+{
+  "source": "docs/contracts/openapi.json",
+  "source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "schemas": {
+    "Money": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "enum": [
+            "HKD"
+          ]
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "description": "One millionth of currency; decimal integer string."
+        }
+      },
+      "required": [
+        "currency",
+        "amount_micros"
+      ],
+      "additionalProperties": false
+    },
+    "AdminBillingAccount": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "subject": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "tenant"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "paid_balance": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "promotional_balance": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "reserved": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "credit_limit": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "debt": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "subject",
+        "version",
+        "paid_balance",
+        "promotional_balance",
+        "reserved",
+        "credit_limit",
+        "debt",
+        "as_of"
+      ],
+      "additionalProperties": false
+    },
+    "AdminBillingAccountList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AdminBillingAccount"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "AdminLedgerEntry": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "billing_account_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "reserve",
+            "consume",
+            "release",
+            "top_up",
+            "gift",
+            "gift_expiry",
+            "debit",
+            "refund",
+            "compensation",
+            "credit_limit"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "credit",
+            "debit",
+            "neutral"
+          ]
+        },
+        "amount": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "bucket": {
+          "type": "string",
+          "enum": [
+            "paid",
+            "promotional",
+            "reserved",
+            "credit_limit"
+          ]
+        },
+        "source_entry_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "payment_record_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "billing_account_id",
+        "operation_id",
+        "actor_id",
+        "kind",
+        "direction",
+        "amount",
+        "bucket",
+        "created_at",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "AdminLedgerEntryList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AdminLedgerEntry"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
