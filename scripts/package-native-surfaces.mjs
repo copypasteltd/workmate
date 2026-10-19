@@ -78,7 +78,7 @@ for (const dir of ["dist", "renderer-dist"]) {
   for (const file of await walk(path.join(desktop, dir))) {
     const relative = path.posix.join(dir, file),
       expected = digest(await readFile(path.join(desktop, relative))),
-      actual = digest(extractFile(archive, relative));
+      actual = digest(extractFile(archive, path.join(dir, file)));
     assert.equal(
       actual,
       expected,
