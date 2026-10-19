@@ -16,6 +16,7 @@ import { registerWorkspaces } from "./workspaces.js";
 import { registerAssets } from "./assets.js";
 import { Storage } from "./storage.js";
 import { registerAnalytics } from "./analytics.js";
+import { registerFileImports } from "./analytics-file-routes.js";
 import { registerAnalysisReports } from "./analysis-reports.js";
 import { registerTasks } from "./tasks.js";
 import { registerAdmin } from "./admin.js";
@@ -274,7 +275,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerUploads(app, db, storage);
   registerCloudFiles(app, db, storage);
   registerDeletions(app, db);
-  registerAnalytics(app, db);
+  registerAnalytics(app, db, storage);
+  registerFileImports(app, db, storage);
   registerAnalysisReports(app, db, catalog, storage);
   registerTasks(app, db, catalog);
   registerTaskEvents(app, db);

@@ -175,7 +175,11 @@ export function registerAdminContent(
                       import_metadata: r.import_metadata,
                       source_sha256: r.source_sha256,
                       source_filename: r.source_filename,
-                      source_available: r.raw_csv !== null,
+                      source_available:
+                        !!r.source_asset_version_id || r.raw_csv !== null,
+                      source_asset_version_id: r.source_asset_version_id,
+                      source_state: r.source_state,
+                      supersedes_id: r.supersedes_id,
                       raw_csv: r.raw_csv,
                       metric_snapshot: r.metric_snapshot,
                     }

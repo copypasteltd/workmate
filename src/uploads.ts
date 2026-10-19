@@ -145,7 +145,9 @@ function verifyType(mime: string, head: Buffer) {
                       ? t.slice(4, 8) === "ftyp"
                       : mime === "application/pdf"
                         ? t.startsWith("%PDF-")
-                        : mime === "application/zip"
+                        : mime === "application/zip" ||
+                            mime ===
+                              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                           ? h.startsWith("504b0304") || h.startsWith("504b0506")
                           : mime.startsWith("text/") ||
                               mime === "application/json"
@@ -184,7 +186,7 @@ export function registerUploads(
     // Validate supported MIME before reserving disk; the actual bytes are
     // validated again at completion. SVG/HTML remain safe attachment downloads.
     if (
-      !/^(image\/(png|jpeg|webp|gif)|video\/(mp4|quicktime|webm)|audio\/(wav|mpeg|mp4|webm)|text\/[a-z0-9.+-]+|application\/(json|pdf|zip|octet-stream))$/.test(
+      !/^(image\/(png|jpeg|webp|gif)|video\/(mp4|quicktime|webm)|audio\/(wav|mpeg|mp4|webm)|text\/[a-z0-9.+-]+|application\/(json|pdf|zip|octet-stream|vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet))$/.test(
         b.content_type,
       )
     )
@@ -463,7 +465,11 @@ export function registerUploads(
           conversation: s.conversation_id ?? undefined,
           asset: s.asset_id ?? undefined,
           expectedVersion: s.expected_version ?? undefined,
-          metadata: { upload_id: id, checksum_verified: true },
+          metadata: {
+            upload_id: id,
+            source_filename: s.filename,
+            checksum_verified: true,
+          },
         });
         await tx.query(
           "UPDATE upload_sessions SET state='completed',result=$2 WHERE id=$1",

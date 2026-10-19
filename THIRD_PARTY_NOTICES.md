@@ -4,32 +4,33 @@
 
 Application source is not granted an additional open-source license. Dependencies retain their licenses. The lock file records the full dependency graph; this table lists direct dependencies and tooling.
 
-| Package               | Installed version | Package license declaration |
-| --------------------- | ----------------- | --------------------------- |
-| `@aws-sdk/client-s3`  | 3.1152.0          | Apache-2.0                  |
-| `@fastify/cookie`     | 11.1.3            | MIT                         |
-| `@fastify/cors`       | 11.3.1            | MIT                         |
-| `@fastify/multipart`  | 10.1.4            | MIT                         |
-| `@fastify/rate-limit` | 11.2.1            | MIT                         |
-| `@js-temporal/polyfill` | 0.5.1           | ISC                         |
-| `@resvg/resvg-js`     | 2.6.2             | MPL-2.0                     |
-| `@types/node`         | 26.6.5            | MIT                         |
-| `@types/nodemailer`   | 8.0.2             | MIT                         |
-| `@types/pg`           | 8.23.1            | MIT                         |
-| `csv-parse`           | 7.0.3             | MIT                         |
-| `embedded-postgres`   | 18.4.0-beta.17    | MIT                         |
-| `fastify`             | 5.12.7            | MIT                         |
-| `fflate`              | 0.8.2             | MIT                         |
-| `nodemailer`          | 10.1.3            | MIT-0                       |
-| `openid-client`       | 6.8.8             | MIT                         |
-| `otpauth`             | 9.5.2             | MIT                         |
-| `pg`                  | 8.23.1            | MIT                         |
-| `pg-boss`             | 12.38.0           | MIT                         |
-| `pdf-lib`             | 1.17.1            | MIT                         |
-| `prettier`            | 3.6.2             | MIT                         |
-| `tsx`                 | 4.23.15           | MIT                         |
-| `typescript`          | 7.0.2             | Apache-2.0                  |
-| `zod`                 | 4.6.7             | MIT                         |
+| Package                 | Installed version | Package license declaration |
+| ----------------------- | ----------------- | --------------------------- |
+| `@aws-sdk/client-s3`    | 3.1152.0          | Apache-2.0                  |
+| `@fastify/cookie`       | 11.1.3            | MIT                         |
+| `@fastify/cors`         | 11.3.1            | MIT                         |
+| `@fastify/multipart`    | 10.1.4            | MIT                         |
+| `@fastify/rate-limit`   | 11.2.1            | MIT                         |
+| `@js-temporal/polyfill` | 0.5.1             | ISC                         |
+| `@resvg/resvg-js`       | 2.6.2             | MPL-2.0                     |
+| `@types/node`           | 26.6.5            | MIT                         |
+| `@types/nodemailer`     | 8.0.2             | MIT                         |
+| `@types/pg`             | 8.23.1            | MIT                         |
+| `csv-parse`             | 7.0.3             | MIT                         |
+| `embedded-postgres`     | 18.4.0-beta.17    | MIT                         |
+| `fastify`               | 5.12.7            | MIT                         |
+| `fast-xml-parser`       | 5.11.2            | MIT                         |
+| `fflate`                | 0.8.2             | MIT                         |
+| `nodemailer`            | 10.1.3            | MIT-0                       |
+| `openid-client`         | 6.8.8             | MIT                         |
+| `otpauth`               | 9.5.2             | MIT                         |
+| `pg`                    | 8.23.1            | MIT                         |
+| `pg-boss`               | 12.38.0           | MIT                         |
+| `pdf-lib`               | 1.17.1            | MIT                         |
+| `prettier`              | 3.6.2             | MIT                         |
+| `tsx`                   | 4.23.15           | MIT                         |
+| `typescript`            | 7.0.2             | Apache-2.0                  |
+| `zod`                   | 4.6.7             | MIT                         |
 
 ## 视觉资产 / Visual assets
 

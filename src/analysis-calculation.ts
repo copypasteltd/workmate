@@ -60,6 +60,8 @@ type Dataset = {
   source_sha256: string;
   spec_hash: string;
   metric_snapshot: any;
+  supersedes_id?: string | null;
+  correction_ancestors?: string[];
   created_at: string | Date;
 };
 export function stableAnalysisId(value: unknown) {
@@ -150,6 +152,19 @@ export function calculateAnalysis(
   spec: AnalysisSpec,
   datasets: Dataset[],
 ) {
+  if (
+    datasets.some((d) =>
+      [
+        ...(d.correction_ancestors ?? []),
+        ...(d.supersedes_id ? [d.supersedes_id] : []),
+      ].some((id) => spec.snapshot_ids.includes(id)),
+    )
+  )
+    throw new Problem(
+      409,
+      "ANALYSIS_CORRECTION_OVERLAP",
+      "Select either the original snapshot or its correction, not both",
+    );
   if (
     datasets.length !== spec.snapshot_ids.length ||
     datasets.some((d) => !spec.snapshot_ids.includes(d.id))

@@ -282,7 +282,7 @@ export class ErasureService {
       case "analytics_datasets":
         await tx.query("SELECT set_config('app.erasing_content','true',true)");
         await tx.query(
-          "UPDATE analytics_datasets SET name='[deleted]',rows='[]',raw_csv=NULL,source_filename=NULL,source_sha256=NULL,import_key=NULL,spec_hash=NULL,import_spec=NULL,import_metadata=NULL,metric_snapshot=NULL WHERE id=$1",
+          "UPDATE analytics_datasets SET name='[deleted]',rows='[]',raw_csv=NULL,source_filename=NULL,source_sha256=NULL,import_key=NULL,spec_hash=NULL,import_spec=NULL,import_metadata=NULL,metric_snapshot=NULL,source_asset_version_id=NULL,supersedes_id=NULL,correction_ancestors='{}' WHERE id=$1",
           [id],
         );
         await tx.query("SELECT set_config('app.erasing_content','false',true)");

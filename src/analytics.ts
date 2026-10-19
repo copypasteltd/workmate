@@ -4,6 +4,8 @@ import type { Database, Tx } from "./db.js";
 import { requireUser } from "./auth.js";
 import { projectAccess } from "./access.js";
 import { name, Problem, uuid, csvCell, hash, canonical } from "./lib.js";
+import { campaignSource } from "./analytics-sources.js";
+import { XLSX_MIME } from "./analytics-workbook.js";
 import {
   importOptions,
   normalizeMetricsCSV,
@@ -25,7 +27,10 @@ export const parseMetricsCSV = normalizeMetricsCSV;
 const input = importOptions
   .extend({ name, csv: z.string().min(1).max(5_000_000) })
   .strict();
-function grouped<K extends "date" | "channel">(rows: MetricRow[], field: K) {
+export function grouped<K extends "date" | "channel">(
+  rows: MetricRow[],
+  field: K,
+) {
   const groups = new Map<string, MetricRow[]>();
   for (const row of rows) {
     const group = groups.get(row[field]);
@@ -55,7 +60,9 @@ export function analyticsEvidence(d: any) {
     captured_at: d.created_at,
     date_range: d.import_spec?.date_range || null,
     source_available:
-      d.source_available ?? (d.raw_csv !== null && d.raw_csv !== undefined),
+      d.source_available ??
+      (!!d.source_asset_version_id ||
+        (d.raw_csv !== null && d.raw_csv !== undefined)),
     definition: d.import_spec || null,
     legacy_scope_unverified: !d.import_spec,
     metrics_frozen: !!d.metric_snapshot,
@@ -100,7 +107,7 @@ export async function persistDatasetEvidence(tx: Tx, d: any) {
     ],
   );
 }
-function publicDataset(d: any, details = false) {
+export function publicDataset(d: any, details = false) {
   const {
     raw_csv: _raw,
     rows,
@@ -111,7 +118,9 @@ function publicDataset(d: any, details = false) {
   return {
     ...rest,
     source_available:
-      d.source_available ?? (d.raw_csv !== null && d.raw_csv !== undefined),
+      d.source_available ??
+      (!!d.source_asset_version_id ||
+        (d.raw_csv !== null && d.raw_csv !== undefined)),
     row_count: d.row_count ?? rows.length,
     summary: analyticsEvidence(d),
     ...(details
@@ -154,7 +163,131 @@ export function analyticsChart(d: any) {
   const height = 175 + data.length * 45;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="${height}" viewBox="0 0 1000 ${height}" role="img" aria-labelledby="title desc"><title id="title">Ad spend by channel</title><desc id="desc">${escape(d.currency)}; ${data.length} of ${all.length} channels; snapshot ${d.id}</desc><rect width="100%" height="100%" fill="#fffdfb"/><g font-family="Microsoft JhengHei, Arial, sans-serif" fill="#242424"><text x="32" y="42" font-size="25" font-weight="700">Ad spend by channel</text><text x="32" y="71" font-size="13">${escape(d.currency)} · ${escape(d.timezone)} · ${data.length} of ${all.length} channels</text>${bars}<text x="32" y="${height - 42}" font-size="11">Snapshot ${d.id} · formula ${d.metric_snapshot?.summary?.calculation?.formula_version || FORMULA_VERSION}</text><text x="32" y="${height - 22}" font-size="11">Source SHA-256 ${d.source_sha256 || "unavailable for legacy data"}</text></g></svg>`;
 }
-export function registerAnalytics(app: FastifyInstance, db: Database) {
+export async function persistCampaignSnapshot(
+  tx: Tx,
+  b: {
+    tenant: string;
+    project: string;
+    user: string;
+    name: string;
+    data: ReturnType<typeof normalizeMetricsCSV>;
+    rawCsv: string | null;
+    sourceVersion?: string;
+    supersedes?: string;
+  },
+) {
+  const { data } = b;
+  if (b.supersedes) {
+    await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+      b.project + ":correction:" + b.supersedes,
+    ]);
+    const previous = (
+      await tx.query(
+        "SELECT * FROM analytics_datasets WHERE project_id=$1 AND id=$2 FOR SHARE",
+        [b.project, b.supersedes],
+      )
+    ).rows[0];
+    if (!previous)
+      throw new Problem(
+        404,
+        "NOT_FOUND",
+        "The source snapshot being corrected is unavailable",
+      );
+    const fields = [
+      "source",
+      "account_id",
+      "currency",
+      "timezone",
+      "entity_level",
+      "attribution_definition",
+      "conversion_definition",
+    ];
+    if (fields.some((k) => previous.import_spec?.[k] !== (data.spec as any)[k]))
+      throw new Problem(
+        409,
+        "IMPORT_CORRECTION_SCOPE",
+        "Corrections must preserve source, account, currency, timezone, entity level and attribution/conversion definitions",
+      );
+    const child = (
+      await tx.query(
+        "SELECT id,import_key FROM analytics_datasets WHERE project_id=$1 AND supersedes_id=$2",
+        [b.project, b.supersedes],
+      )
+    ).rows[0];
+    if (child && child.import_key !== data.import_key)
+      throw new Problem(
+        409,
+        "IMPORT_CORRECTION_EXISTS",
+        "This snapshot already has a correction. Correct the latest snapshot instead.",
+      );
+  }
+  const created = (
+    await tx.query(
+      `INSERT INTO analytics_datasets(tenant_id,project_id,name,currency,timezone,rows,source,created_by,raw_csv,source_filename,source_sha256,import_key,spec_hash,import_spec,import_metadata,metric_snapshot,source_asset_version_id,supersedes_id)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+    ON CONFLICT(tenant_id,project_id,import_key) WHERE import_key IS NOT NULL AND content_state<>'deleted' DO NOTHING RETURNING *`,
+      [
+        b.tenant,
+        b.project,
+        b.name,
+        data.currency,
+        data.timezone,
+        JSON.stringify(data.rows),
+        data.source,
+        b.user,
+        b.rawCsv,
+        data.source_filename,
+        data.source_sha256,
+        data.import_key,
+        data.spec_hash,
+        JSON.stringify(data.spec),
+        JSON.stringify({
+          input_row_count: data.input_row_count,
+          duplicate_row_count: data.duplicate_row_count,
+          warnings: data.warnings,
+          warning_codes: data.warning_codes,
+        }),
+        JSON.stringify({
+          summary: data.summary,
+          channels: grouped(data.rows, "channel"),
+          daily: grouped(data.rows, "date"),
+        }),
+        b.sourceVersion ?? null,
+        b.supersedes ?? null,
+      ],
+    )
+  ).rows[0];
+  const d =
+    created ||
+    (
+      await tx.query(
+        "SELECT * FROM analytics_datasets WHERE project_id=$1 AND import_key=$2",
+        [b.project, data.import_key],
+      )
+    ).rows[0];
+  if (!d)
+    throw new Problem(
+      409,
+      "IMPORT_UNAVAILABLE",
+      "This import is unavailable; ask a workspace administrator to review its content status",
+    );
+  if (
+    b.supersedes &&
+    (d.id === b.supersedes || d.supersedes_id !== b.supersedes)
+  )
+    throw new Problem(
+      409,
+      "IMPORT_CORRECTION_IDENTITY",
+      "A correction requires a new file or mapping and cannot rewrite an existing snapshot's history",
+    );
+  await persistDatasetEvidence(tx, d);
+  return { ...publicDataset(d), duplicate: !created };
+}
+export function registerAnalytics(
+  app: FastifyInstance,
+  db: Database,
+  storage: import("./storage.js").Storage,
+) {
   const base = "/v1/tenants/:tenant/projects/:project/analytics";
   const params = z.object({ tenant: uuid, project: uuid });
   app.get(base, { preHandler: requireUser(db) }, async (req) => {
@@ -165,7 +298,7 @@ export function registerAnalytics(app: FastifyInstance, db: Database) {
         await tx.query(
           `SELECT id,tenant_id,project_id,name,currency,timezone,source,created_by,created_at,
             source_filename,source_sha256,spec_hash,import_spec,import_metadata,content_state,moderation_version,retention_expires_at,
-            (raw_csv IS NOT NULL) AS source_available,jsonb_array_length(rows) AS row_count,
+            source_asset_version_id,supersedes_id,correction_ancestors,source_state,(raw_csv IS NOT NULL OR source_asset_version_id IS NOT NULL) AS source_available,jsonb_array_length(rows) AS row_count,
             CASE WHEN metric_snapshot IS NULL THEN rows ELSE '[]'::jsonb END AS rows,
             CASE WHEN metric_snapshot IS NULL THEN NULL ELSE jsonb_build_object('summary',metric_snapshot->'summary') END AS metric_snapshot
             FROM analytics_datasets WHERE project_id=$1 ORDER BY created_at DESC,id DESC LIMIT 100`,
@@ -216,56 +349,14 @@ export function registerAnalytics(app: FastifyInstance, db: Database) {
       await projectAccess(tx, req.principal, tenant, project, "write");
       const { name, csv, ...options } = b;
       const data = normalizeMetricsCSV(csv, options);
-      const created = (
-        await tx.query(
-          `INSERT INTO analytics_datasets(tenant_id,project_id,name,currency,timezone,rows,source,created_by,raw_csv,source_filename,source_sha256,import_key,spec_hash,import_spec,import_metadata,metric_snapshot)
-         VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
-         ON CONFLICT(tenant_id,project_id,import_key) WHERE import_key IS NOT NULL AND content_state<>'deleted' DO NOTHING RETURNING *`,
-          [
-            tenant,
-            project,
-            name,
-            data.currency,
-            data.timezone,
-            JSON.stringify(data.rows),
-            data.source,
-            req.principal.id,
-            csv,
-            data.source_filename,
-            data.source_sha256,
-            data.import_key,
-            data.spec_hash,
-            JSON.stringify(data.spec),
-            JSON.stringify({
-              input_row_count: data.input_row_count,
-              duplicate_row_count: data.duplicate_row_count,
-              warnings: data.warnings,
-              warning_codes: data.warning_codes,
-            }),
-            JSON.stringify({
-              summary: data.summary,
-              channels: grouped(data.rows, "channel"),
-              daily: grouped(data.rows, "date"),
-            }),
-          ],
-        )
-      ).rows[0];
-      const d =
-        created ||
-        (
-          await tx.query(
-            "SELECT * FROM analytics_datasets WHERE project_id=$1 AND import_key=$2",
-            [project, data.import_key],
-          )
-        ).rows[0];
-      if (!d)
-        throw new Problem(
-          409,
-          "IMPORT_UNAVAILABLE",
-          "This import is unavailable; ask a workspace administrator to review its content status",
-        );
-      await persistDatasetEvidence(tx, d);
-      return { ...publicDataset(d), duplicate: !created };
+      return persistCampaignSnapshot(tx, {
+        tenant,
+        project,
+        user: req.principal.id,
+        name,
+        data,
+        rawCsv: csv,
+      });
     }, tenant);
   });
   async function dataset(req: any) {
@@ -340,6 +431,49 @@ export function registerAnalytics(app: FastifyInstance, db: Database) {
     { preHandler: requireUser(db) },
     async (req, reply) => {
       const d = await dataset(req);
+      if (d.source_asset_version_id) {
+        const { tenant, project } = params.parse(req.params);
+        return db.tx(
+          async (tx) => {
+            await projectAccess(tx, req.principal, tenant, project);
+            // Match moderation/import lock order: source asset, then dataset.
+            const source = await campaignSource(
+              tx,
+              storage,
+              project,
+              d.source_asset_version_id,
+            );
+            const live = (
+              await tx.query(
+                "SELECT id FROM analytics_datasets WHERE id=$1 AND project_id=$2 FOR SHARE",
+                [d.id, project],
+              )
+            ).rows[0];
+            if (!live)
+              throw new Problem(
+                404,
+                "NOT_FOUND",
+                "Source snapshot unavailable",
+              );
+            return reply
+              .type(
+                d.import_spec?.file?.format === "xlsx"
+                  ? XLSX_MIME
+                  : "text/csv; charset=utf-8",
+              )
+              .header("X-Content-Type-Options", "nosniff")
+              .header(
+                "Content-Disposition",
+                `attachment; filename="campaign-source.${d.import_spec?.file?.format === "xlsx" ? "xlsx" : "csv"}"`,
+              )
+              .header("X-Content-SHA256", d.source_sha256)
+              .send(source.bytes);
+          },
+          tenant,
+          false,
+          req.principal.id,
+        );
+      }
       if (d.raw_csv === null)
         throw new Problem(
           404,

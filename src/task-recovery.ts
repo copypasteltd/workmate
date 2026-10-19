@@ -9,12 +9,30 @@ export async function recoverQueuedClaims(db: Database) {
     async (tx) => {
       const tasks = (
         await tx.query(
-          "SELECT * FROM tasks WHERE status='queued' AND data_mode=$1 AND next_claim_retry_at<=now() ORDER BY next_claim_retry_at,id FOR UPDATE SKIP LOCKED LIMIT 20",
+          "SELECT * FROM tasks WHERE status='queued' AND data_mode=$1 AND (next_claim_retry_at<=now() OR content_state<>'active' OR cancel_requested) ORDER BY (content_state<>'active' OR cancel_requested) DESC,next_claim_retry_at,id FOR UPDATE SKIP LOCKED LIMIT 20",
           [db.config.DEMO_MODE ? "simulated" : "configured_services"],
         )
       ).rows;
       let repaired = 0;
       for (const t of tasks) {
+        // A deleted queued task may have an undispatched outbox that the
+        // scheduler deliberately hides. Close it before deferring to that
+        // outbox, otherwise its reservation and erasure job wait forever.
+        // This row lock serializes with claim: an already running task is
+        // excluded and remains subject to cancellation/reconciliation.
+        if (t.content_state !== "active" || t.cancel_requested) {
+          await settle(tx, t.tenant_id, t.id, 0, t.created_by);
+          await tx.query(
+            "UPDATE tasks SET status='cancelled',error_code='CONTENT_UNAVAILABLE',version=version+1,updated_at=now() WHERE id=$1",
+            [t.id],
+          );
+          if (t.content_state === "active")
+            await event(tx, t.tenant_id, t.id, "task.finished", {
+              status: "cancelled",
+              error_code: "CONTENT_UNAVAILABLE",
+            });
+          continue;
+        }
         const outbox = (
           await tx.query(
             "SELECT * FROM outbox WHERE topic='task.run' AND payload->>'task_id'=$1 ORDER BY created_at DESC,id DESC LIMIT 1",

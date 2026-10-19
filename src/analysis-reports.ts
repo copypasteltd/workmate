@@ -104,7 +104,7 @@ export async function assertReportSources(tx: Tx, t: any) {
   try {
     source = (
       await tx.query(
-        "SELECT d.id FROM analytics_datasets d JOIN analysis_report_sources s ON s.dataset_id=d.id WHERE s.report_id=$1 AND d.content_state='active' ORDER BY d.id FOR SHARE OF d NOWAIT",
+        "SELECT d.id FROM analytics_datasets d JOIN analysis_report_sources s ON s.dataset_id=d.id WHERE s.report_id=$1 AND d.content_state='active' AND d.source_state='active' ORDER BY d.id FOR SHARE OF d NOWAIT",
         [id],
       )
     ).rows;
