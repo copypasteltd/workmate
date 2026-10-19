@@ -35,6 +35,7 @@ import { RetentionService } from "./retention.js";
 import { recoverQueuedClaims } from "./task-recovery.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
 import { authorizeExecutionPlan } from "./plans.js";
+import { claimCapacity, readyOutbox } from "./execution-capacity.js";
 import {
   checkInputDependencies,
   assertInputDependencies,
@@ -74,7 +75,7 @@ export class Worker {
     });
     await this.boss.work<{ tenant: string; task: string }>(
       "task.run",
-      { batchSize: 1 },
+      { batchSize: 1, localConcurrency: this.db.config.WORKER_CONCURRENCY },
       async (jobs) => {
         for (const j of jobs) await this.run(j.data.tenant, j.data.task);
       },
@@ -89,12 +90,10 @@ export class Worker {
       const c = await this.db.control.connect();
       try {
         await c.query("BEGIN");
-        const items = (
-          await c.query(
-            "SELECT o.* FROM outbox o WHERE dispatched_at IS NULL AND (topic<>'task.run' OR EXISTS(SELECT 1 FROM tasks t WHERE t.id::text=o.payload->>'task_id' AND t.data_mode=$1)) ORDER BY created_at FOR UPDATE OF o SKIP LOCKED LIMIT 20",
-            [this.db.config.DEMO_MODE ? "simulated" : "configured_services"],
-          )
-        ).rows;
+        const items = await readyOutbox(
+          c,
+          this.db.config.DEMO_MODE ? "simulated" : "configured_services",
+        );
         for (const o of items) {
           let jobId: string | null = null;
           if (o.topic === "task.run")
@@ -186,13 +185,14 @@ export class Worker {
           sessionHash: "",
           authVersion: t.actor_auth_version,
         };
+        let currentPlan;
         try {
           await projectAccess(tx, actor, tenant, t.project_id, "write");
           if (t.content_state !== "active")
             throw new Error("Content is unavailable");
           await this.catalog.ensureEnabled(tx, t.role_key);
           await assertTaskSkills(tx, this.catalog, t);
-          await authorizeExecutionPlan(
+          currentPlan = await authorizeExecutionPlan(
             tx,
             tenant,
             t.created_by,
@@ -222,12 +222,14 @@ export class Worker {
           return null;
         }
         if (!(await checkInputDependencies(tx, t))) return null;
-        const started = (
-          await tx.query(
-            "UPDATE tasks SET status='running',attempt=attempt+1,fencing_token=$2,lease_until=now()+interval '45 seconds',updated_at=now(),version=version+1 WHERE id=$1 RETURNING *",
-            [id, fencing],
-          )
-        ).rows[0];
+        const started = await claimCapacity(
+          tx,
+          t,
+          this.catalog.role(t.role_key),
+          currentPlan.body.max_active_tasks,
+          fencing,
+        );
+        if (!started) return null;
         await event(tx, tenant, id, "task.started", {});
         return started;
       },

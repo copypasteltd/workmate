@@ -57,6 +57,7 @@ const schema = z.object({
     .nonnegative()
     .optional(),
   WORKER_ENABLED: bool.default(true),
+  WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(10),
   DEMO_MODE: bool.default(false),
   EXTENSION_ID: z.string().optional(),
   S3_ENDPOINT: z.string().url().optional(),
