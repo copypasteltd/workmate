@@ -39,17 +39,24 @@ export function Members() {
     setOpen(false);
   }, [w.tenant]);
   const base = `/v1/tenants/${w.tenant}`;
+  const currentRole = w.me?.memberships.find(
+    (m: any) => m.id === w.tenant,
+  )?.role;
+  const canManage = ["owner", "admin"].includes(currentRole);
   const members = useData(
-    `${base}/member-directory?limit=20${cursor ? "&cursor=" + cursor : ""}`,
+    canManage
+      ? `${base}/member-directory?limit=20${cursor ? "&cursor=" + cursor : ""}`
+      : null,
     refresh,
   );
   const invites = useData(
-    `${base}/invites?limit=20${inviteCursor ? "&cursor=" + inviteCursor : ""}`,
+    canManage
+      ? `${base}/invites?limit=20${inviteCursor ? "&cursor=" + inviteCursor : ""}`
+      : null,
     refresh,
     5000,
   );
-  const owner =
-    w.me?.memberships.find((m: any) => m.id === w.tenant)?.role === "owner";
+  const owner = currentRole === "owner";
   const roles = owner
     ? ["member", "approver", "viewer", "admin", "owner"]
     : ["member", "approver", "viewer"];
@@ -59,6 +66,25 @@ export function Members() {
     setRefresh((v) => v + 1);
     await w.refresh();
   };
+  if (!canManage)
+    return (
+      <>
+        <PageHeader
+          eyebrow="THE PEOPLE BEHIND THE WORK."
+          title={t("成員與權限", "Members & access")}
+          description={t(
+            "請聯絡企業所有者或管理員調整成員與專案權限。",
+            "Contact your workspace owner or administrator to change member and project access.",
+          )}
+        />
+        <p className="notice" role="status">
+          {t(
+            "只有企業所有者與管理員可以管理成員和邀請。",
+            "Only workspace owners and administrators can manage members and invitations.",
+          )}
+        </p>
+      </>
+    );
   return (
     <>
       <PageHeader
