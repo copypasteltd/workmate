@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-19T10:17:09.991Z",
+  "at": "2026-10-19T19:56:41.889Z",
   "scope": "Separate native-surface client previews, not the complete historical offline release or production acceptance",
   "version": "0.5.0",
   "default_origins": {
@@ -11,36 +11,38 @@
   "repositories": [
     {
       "name": "copypaste-platform",
-      "head": "1db637657776819e464a61c3661daf69be3dd686"
+      "head": "121244535a3520052245f1570838694a115ca6bd"
     },
     {
       "name": "copypaste-web",
-      "head": "564b96a9f50b547b4ea7ee10682d0a8155b6d40d"
+      "head": "628831a54ca08b073f8995c1ee98480a4689d755"
     },
     {
       "name": "copypaste-desktop",
-      "head": "bc0301f0c552285a407d02109520142125a1d583"
+      "head": "3818c2148eb2f5090671fa5a1d88f204847937c0"
     },
     {
       "name": "copypaste-extension",
-      "head": "92c01babe63896fae485055fc9f4e2ca33e67d89"
+      "head": "abfcee431c33eec890186a66785d15c127d988d3"
     },
     {
       "name": "copypaste-delivery",
-      "head": "3ef6d62f5e0192023ad7cbcbc2190615a6296a9c"
+      "head": "736d33e3cf08fd82a760a3e1c745de033adefb1b"
     }
   ],
   "validation": {
     "path": "evidence/native-surfaces.json",
-    "sha256": "04e6e4b401f080d31d83901073459df27b7f80d6c643aae4f7aac0bc9f1cdde6",
-    "checks": 10
+    "sha256": "eaf74e870c4b3946cbe193d5317a9d90b7514979b05a8b183442104a8132f8ca",
+    "checks": 10,
+    "tested_artifacts_match": true,
+    "desktop_execution": "win-unpacked; Setup and Portable have byte provenance but were not installed by this check"
   },
   "desktop_archive": {
-    "sha256": "6a7a9d048a0a3ea4f6415673a0ee31cbe96bd49c17818797f0d4bae1895c87f0",
+    "sha256": "1af357ebb58782daa92bebb7d2bfd4f5d4bc64e56b081f05eda551338d386ec1",
     "embedded_build_files": [
       {
         "path": "dist/config.js",
-        "sha256": "d6fe1a5ad19bcbd72bff9f3baa8b7058ebd5d6c4cd248f2740255ad302e93c02"
+        "sha256": "81a531e5bac692c78bee6717fd390737d1a334c66178e2d308d0488e99c3e8d5"
       },
       {
         "path": "dist/deployment.js",
@@ -52,7 +54,7 @@
       },
       {
         "path": "dist/files.js",
-        "sha256": "1a5e895e66bc47316a8aab4639ac15447e3383d2d1fcc6442ed557bff63ab025"
+        "sha256": "65a01614bdb7435b9d8f3bbc1b1f923de10641ace5b3d6448a2b146ff246fc29"
       },
       {
         "path": "dist/lock.js",
@@ -60,19 +62,27 @@
       },
       {
         "path": "dist/main.js",
-        "sha256": "588cc612e9fdc8a6ea0ecb0873ae7712468793d23512e7cd923560a860af7b64"
+        "sha256": "e1aca420d56401e6b414e62e0622efc2fbc50fd36aec08bda99ba7769a361a07"
+      },
+      {
+        "path": "dist/native-code.js",
+        "sha256": "98b26a038ebb2b98f22239b4675e0466250385de86ce63d56bafdbf21814f856"
       },
       {
         "path": "dist/native-host.cjs",
-        "sha256": "a8a16e111ae35c6f56c6893e75bb598b053af80bc56e3415d79887816a0bc1ba"
+        "sha256": "1c3929348eb1facdf52d3685e09c3256e848b0d2ff4e73e95284a3e7994344f5"
       },
       {
         "path": "dist/native-host.cjs.map",
-        "sha256": "b70b1444f53c3fa5f061255d524366db8277c85be9f65067b020a860356477d3"
+        "sha256": "b6b80c69da363e96fa64c08b3746f5a4f97d8a18f50236817784eba46d5b07fd"
       },
       {
         "path": "dist/native-host.js",
         "sha256": "4d9457c420a6ef4f5288ab037038a746162ab7e2fcae367545ba87fe506ba4d4"
+      },
+      {
+        "path": "dist/native-session.js",
+        "sha256": "e8d936ae59987620def67c58342678ca44c36a335540086dbb40f0b867120cc5"
       },
       {
         "path": "dist/preload.cjs",
@@ -95,12 +105,12 @@
         "sha256": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e"
       },
       {
-        "path": "renderer-dist/assets/index-Cwo2ZG6N.js",
-        "sha256": "8567933d7aa4bb2f76c6c7f7d8541cb62bf2e2f18bf3a5847fc7a128483176a3"
+        "path": "renderer-dist/assets/index-C7cLoXmn.css",
+        "sha256": "13678f54b19c687f4b415911901b2caf268e4ff978627c433fa62431d8c988fc"
       },
       {
-        "path": "renderer-dist/assets/index-LQnNE92u.css",
-        "sha256": "3ce9a34bfb06459f2a3dcdde698cc9d83ee3b9bd9c4724557e2c95055212f840"
+        "path": "renderer-dist/assets/index-D0uQddGh.js",
+        "sha256": "46857cdc97f84c5f3f5ec9b1193cbd7af03ae1de24f7fff98406d5740e2dd71f"
       },
       {
         "path": "renderer-dist/brand-mark.png",
@@ -152,7 +162,7 @@
       },
       {
         "path": "renderer-dist/index.html",
-        "sha256": "a7d7526cf3a79cecb510ddeb22c96d08d3e81a72f1cc6ed21541036e1b5c70a2"
+        "sha256": "dcb66253a7539dba605e579cb08aea1ae67dc0fd260fe1cf8cbe3405743458b4"
       }
     ]
   },
@@ -160,20 +170,20 @@
     {
       "path": "copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Setup.exe",
       "kind": "unsigned_windows_setup",
-      "bytes": 106479995,
-      "sha256": "5ad851015b8da79d7795005c04ceeff3f8abacbaf9d170aa68c8762f70681d4b"
+      "bytes": 107185997,
+      "sha256": "cafbd5c8a1e93e629bbc21fffea5e45d3ac6ed25a2ca1d2433fd67273c30ed8a"
     },
     {
       "path": "copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Portable.exe",
       "kind": "unsigned_windows_portable",
-      "bytes": 106248741,
-      "sha256": "686fb1edd82083ae2fbf6092be41b46aa696fbf600d25395249d8c579ef6f980"
+      "bytes": 106954743,
+      "sha256": "336285a46888d1636fab56bf62d931b7ba22074d02b72822093fa61085658422"
     },
     {
       "path": "copypaste-extension/release/sidepanel/CopyPaste-0.5.0-sidepanel.zip",
       "kind": "unpacked_chrome_extension_zip",
-      "bytes": 286443,
-      "sha256": "6ffa9b46f5d648efc52d0cece52a315da332500e2c2e3c8355d1e0b106ea3647"
+      "bytes": 294678,
+      "sha256": "2b5e6f5636a01056195908a5549dba7856d567ed27dd2297a2d6528d2a903e24"
     }
   ]
 }
