@@ -191,3 +191,7 @@ flowchart LR
 ![Cleanup pagination](assets/screenshots/24-cleanup-pagination.png)
 ![Traditional Chinese dark journal](assets/screenshots/25-cleanup-pagination-dark.png)
 ![Narrow cleanup panel](assets/screenshots/26-cleanup-mobile.png)
+
+## Administrative boundary for template execution
+
+New persisted templates recheck current role/method disabling, project access and plans at preflight and creation. Server-owned versions pin Codex and the internal gateway, and revocation blocks later execution. Existing Admin catalog controls still apply. Drafts, complete template version editing/publication and enterprise brand overrides remain pending; the registry alone does not constitute a complete template administration panel.

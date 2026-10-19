@@ -191,3 +191,7 @@ flowchart LR
 ![清理记录分页](assets/screenshots/24-cleanup-pagination.png)
 ![繁中深色清理面板](assets/screenshots/25-cleanup-pagination-dark.png)
 ![窄屏清理面板](assets/screenshots/26-cleanup-mobile.png)
+
+## 模板运行约束的管理边界
+
+用户端新增的持久模板在预检与创建时复查当前角色/技能停用、项目权限和方案。运行配置与能力版本由服务端固定为 Codex/内部网关，撤销后阻止后续执行；不向客户暴露配置覆盖入口。当前 Admin 既有角色/技能管理继续生效，但模板草稿、完整版本编辑/发布和企业品牌覆盖面板仍待完成，不能把服务端注册表当作完整后台模板管理已交付。
