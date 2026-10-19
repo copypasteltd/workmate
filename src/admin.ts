@@ -1,5 +1,6 @@
 import { planSchema, authorizeTaskPlan } from "./plans.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
+import { stageInputDependencies } from "./task-dependencies.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
 import { registerAdminJobs } from "./admin-jobs.js";
@@ -784,7 +785,12 @@ export function registerAdmin(
                     [id],
                   );
                 else if (
-                  ["queued", "paused", "awaiting_approval"].includes(t.status)
+                  [
+                    "queued",
+                    "paused",
+                    "awaiting_approval",
+                    "needs_input",
+                  ].includes(t.status)
                 ) {
                   await settle(tx, t.tenant_id, id, 0, t.created_by);
                   await tx.query(
@@ -925,6 +931,13 @@ export function registerAdmin(
                   )
                 ).rows[0];
                 await freezeTaskSkills(tx, catalog, child);
+                const waiting = await stageInputDependencies(
+                  tx,
+                  child,
+                  role,
+                  undefined,
+                  id,
+                );
                 await tx.query(
                   "UPDATE tasks SET plan_snapshot=$2 WHERE id=$1",
                   [child.id, plan],
@@ -935,14 +948,21 @@ export function registerAdmin(
                   child.id,
                   Number(t.budget_micros),
                 );
-                await event(tx, t.tenant_id, child.id, "task.queued", {
-                  parent_id: id,
-                  by_admin: req.principal.id,
-                });
-                await tx.query(
-                  "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
-                  [t.tenant_id, { task_id: child.id }],
+                await event(
+                  tx,
+                  t.tenant_id,
+                  child.id,
+                  waiting ? "task.needs_input" : "task.queued",
+                  {
+                    parent_id: id,
+                    by_admin: req.principal.id,
+                  },
                 );
+                if (!waiting)
+                  await tx.query(
+                    "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
+                    [t.tenant_id, { task_id: child.id }],
+                  );
                 await audit(
                   tx,
                   req.principal,

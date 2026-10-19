@@ -1138,6 +1138,99 @@ test("a plan becomes stale when a memory is added during planning or a note arri
   }
 });
 
+test("administrative retries preserve an unresolved input checkpoint and one new explicit budget without queueing work", async () => {
+  const f = await fixture(),
+    a = await operator("super_admin", f.tenant);
+  const submitted = await ok(f.owner, "POST", f.base + "/delegations", {
+    title: "Waiting for an approved source",
+    prompt: "Write a plan after I provide the approved source.",
+    mode: "execute",
+    budget_micros: 1000000,
+    client_message_id: randomUUID(),
+    dependencies: [
+      { kind: "file", description: "Wait for the approved campaign source" },
+    ],
+  });
+  const reviewed = await ok(
+    a,
+    "GET",
+    "/v1/admin/content/" + submitted.task.id + "/body",
+  );
+  assert.equal(
+    JSON.parse(reviewed.text).dependencies[0].description,
+    "Wait for the approved campaign source",
+  );
+  const support = await operator("support_agent", f.tenant);
+  assert.equal(
+    (
+      await call(
+        support,
+        "GET",
+        "/v1/admin/content/" + submitted.task.id + "/body",
+      )
+    ).status,
+    403,
+  );
+  const cancelled = await ok(
+    f.owner,
+    "POST",
+    f.base + "/tasks/" + submitted.task.id + "/cancel",
+    {},
+  );
+  const retry = await ok(
+    a,
+    "POST",
+    "/v1/admin/execution/" + submitted.task.id + "/action",
+    {
+      action: "retry",
+      version: cancelled.version,
+      reason: "Explicit retry retaining the required input",
+    },
+  );
+  assert.equal(retry.status, "needs_input");
+  const row = await ok(f.owner, "GET", f.base + "/tasks/" + retry.id);
+  assert.equal(row.attempt, 0);
+  assert.equal(row.private_owner, f.owner.id);
+  const requests = await ok(
+    f.owner,
+    "GET",
+    f.base + "/tasks/" + retry.id + "/dependencies",
+  );
+  assert.equal(requests.items[0].state, "pending");
+  assert.equal(
+    requests.items[0].description,
+    "Wait for the approved campaign source",
+  );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT count(*)::int AS n FROM outbox WHERE payload->>'task_id'=$1",
+        [retry.id],
+      )
+    ).rows[0].n,
+    0,
+  );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT count(*)::int AS n FROM reservations WHERE task_id=$1",
+        [retry.id],
+      )
+    ).rows[0].n,
+    1,
+  );
+  assert.equal(
+    (
+      await call(
+        f.member,
+        "GET",
+        f.base + "/tasks/" + retry.id + "/dependencies",
+      )
+    ).status,
+    404,
+  );
+});
+
 test("admin body access and quarantine apply to private conversations and memories; retries preserve private ownership", async () => {
   const f = await fixture(),
     a = await operator("super_admin", f.tenant),

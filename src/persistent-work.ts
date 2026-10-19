@@ -14,6 +14,11 @@ import type { Catalog } from "./catalog.js";
 import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
 import { enqueueTask } from "./task-service.js";
 import { provisionRoleSkills, bindAgentSkills } from "./skill-lifecycle.js";
+import {
+  inputDependencies,
+  assertInputDependencies,
+  inputDependencyBinding,
+} from "./task-dependencies.js";
 
 export const workMode = z.enum(["execute", "ask", "plan"]);
 export const activeTaskStates = [
@@ -22,6 +27,7 @@ export const activeTaskStates = [
   "awaiting_approval",
   "paused",
   "reconciling",
+  "needs_input",
 ];
 const params = z.object({ tenant: uuid, project: uuid });
 const expectedVersion = z.number().int().positive();
@@ -593,6 +599,7 @@ export function registerPersistentWork(
             mode: workMode.default("execute"),
             budget_micros: micros,
             client_message_id: uuid,
+            dependencies: inputDependencies.optional(),
           })
           .strict()
           .parse(req.body);
@@ -646,6 +653,7 @@ export function registerPersistentWork(
                 role_key: "assistant",
                 budget_micros: b.budget_micros,
                 mode: b.mode,
+                dependencies: b.dependencies,
               },
               `default:${b.client_message_id}`,
               { context, conversation: c },
@@ -950,7 +958,7 @@ export function registerPersistentWork(
           ).rows,
           tasks: (
             await tx.query(
-              "SELECT id,title,status,mode,version,charged_micros,error_code FROM tasks WHERE conversation_id=$1 ORDER BY created_at",
+              "SELECT id,title,status,mode,version,charged_micros,error_code,conversation_id FROM tasks WHERE conversation_id=$1 ORDER BY created_at",
               [id],
             )
           ).rows,
@@ -1283,6 +1291,15 @@ export function registerPersistentWork(
               project,
               task.input_context,
             );
+            try {
+              await assertInputDependencies(tx, task);
+            } catch {
+              throw new Problem(
+                409,
+                "PLAN_STALE",
+                "The approved source changed or was revoked; create a new plan",
+              );
+            }
             if (
               context.stale ||
               hash(
@@ -1290,6 +1307,7 @@ export function registerPersistentWork(
                   prompt: task.prompt,
                   role_hash: task.role_hash,
                   context: context.digest,
+                  ...(await inputDependencyBinding(tx, task)),
                 }),
               ) !== plan.input_hash
             )

@@ -23,6 +23,7 @@ const activeStates = [
   "paused",
   "awaiting_approval",
   "reconciling",
+  "needs_input",
 ];
 function errorCode(e: unknown) {
   const code = (e as NodeJS.ErrnoException)?.code;

@@ -12,6 +12,7 @@ import { key, projectAccess, replay } from "./access.js";
 import { micros, name, Problem, uuid } from "./lib.js";
 import { settle } from "./billing.js";
 import type { Catalog } from "./catalog.js";
+import { inputDependencies } from "./task-dependencies.js";
 export async function event(
   tx: Tx,
   tenant: string,
@@ -78,6 +79,7 @@ export function registerTasks(
         parent_id: uuid.optional(),
         mode: workMode.default("execute"),
         agent_id: uuid.optional(),
+        dependencies: inputDependencies.optional(),
       })
       .strict()
       .parse(req.body);
@@ -187,9 +189,13 @@ export function registerTasks(
         ).rows[0];
         if (!t) throw new Problem(404, "NOT_FOUND", "Task not found");
         if (
-          !["queued", "running", "paused", "awaiting_approval"].includes(
-            t.status,
-          )
+          ![
+            "queued",
+            "running",
+            "paused",
+            "awaiting_approval",
+            "needs_input",
+          ].includes(t.status)
         )
           return t;
         if (t.status === "running")

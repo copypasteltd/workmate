@@ -1340,9 +1340,13 @@ export async function advanceWorkflows(
             ])
           ).rows[0];
           if (
-            ["queued", "running", "awaiting_approval", "paused"].includes(
-              t?.status,
-            )
+            [
+              "queued",
+              "running",
+              "awaiting_approval",
+              "paused",
+              "needs_input",
+            ].includes(t?.status)
           )
             return;
           if (t?.status !== "succeeded") {

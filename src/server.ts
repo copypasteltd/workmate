@@ -33,6 +33,7 @@ import { registerUploads } from "./uploads.js";
 import { registerTaskEvents } from "./task-events.js";
 import { registerCloudFiles } from "./cloud-files.js";
 import { registerNotifications } from "./notifications.js";
+import { registerTaskDependencies } from "./task-dependencies.js";
 import {
   seedSkillVersions,
   registerSkillLifecycle,
@@ -271,6 +272,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerPersistentWork(app, db, catalog);
   registerSkillLifecycle(app, db, catalog);
   registerNotifications(app, db);
+  registerTaskDependencies(app, db);
   registerBusiness(app, db, storage, catalog);
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);

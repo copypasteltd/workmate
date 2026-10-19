@@ -24,7 +24,9 @@ export async function cancelWorkflowRun(
       );
     else if (
       task &&
-      ["queued", "paused", "awaiting_approval"].includes(task.status)
+      ["queued", "paused", "awaiting_approval", "needs_input"].includes(
+        task.status,
+      )
     ) {
       await settle(tx, run.tenant_id, task.id, 0, task.created_by);
       await tx.query(

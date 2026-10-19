@@ -159,6 +159,12 @@ export function registerAdminContent(
                     prompt: r.prompt,
                     output: r.output,
                     status: r.status,
+                    dependencies: (
+                      await tx.query(
+                        "SELECT id,step_key,kind,description,required_scope,provider,state,resource_ids,version FROM task_dependencies WHERE task_id=$1 ORDER BY step_key",
+                        [r.id],
+                      )
+                    ).rows,
                   }
                 : table === "analytics_datasets"
                   ? { currency: r.currency, timezone: r.timezone, rows: r.rows }
@@ -292,9 +298,12 @@ export function registerAdminContent(
                         [id],
                       );
                     else if (
-                      ["queued", "paused", "awaiting_approval"].includes(
-                        r.status,
-                      )
+                      [
+                        "queued",
+                        "paused",
+                        "awaiting_approval",
+                        "needs_input",
+                      ].includes(r.status)
                     ) {
                       await settle(tx, r.tenant_id, id, 0, r.created_by);
                       await tx.query(

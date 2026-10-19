@@ -8,6 +8,10 @@ import { reserve } from "./billing.js";
 import { Problem } from "./lib.js";
 import type { WorkContext } from "./persistent-work.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
+import {
+  stageInputDependencies,
+  type InputDependency,
+} from "./task-dependencies.js";
 
 export interface TaskInput {
   title: string;
@@ -16,6 +20,7 @@ export interface TaskInput {
   budget_micros: number;
   parent_id?: string;
   mode?: "execute" | "ask" | "plan";
+  dependencies?: InputDependency[];
 }
 export async function enqueueTask(
   tx: Tx,
@@ -112,15 +117,28 @@ export async function enqueueTask(
     )
   ).rows[0];
   await freezeTaskSkills(tx, catalog, task);
+  const waiting = await stageInputDependencies(
+    tx,
+    task,
+    role,
+    b.dependencies,
+    b.parent_id,
+  );
   await reserve(tx, tenant, task.id, b.budget_micros);
   await tx.query(
-    "INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,'task.queued',$3)",
-    [tenant, task.id, { role_key: b.role_key, mode: task.mode }],
+    "INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4)",
+    [
+      tenant,
+      task.id,
+      waiting ? "task.needs_input" : "task.queued",
+      { role_key: b.role_key, mode: task.mode },
+    ],
   );
-  await tx.query(
-    "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
-    [tenant, { task_id: task.id }],
-  );
+  if (!waiting)
+    await tx.query(
+      "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
+      [tenant, { task_id: task.id }],
+    );
   await audit(
     tx,
     actor,

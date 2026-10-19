@@ -204,7 +204,7 @@ flowchart LR
 
 ## 持久云文件（当前源码）
 
-项目共享目录与私人会话目录、固定版本引用、目录搜索/移动/清理、显式副本共享已接入。编程角色在私人会话中读取、校验更新并打包云端工作源码；`asset.read` 工具可按节点与固定版本读取。023/024 为前向迁移，Admin 内容目录纳入节点。当前回归 118 项通过，包含五组云文件集成；模拟依赖不构成真实服务或角色准入。
+项目共享目录与私人会话目录、固定版本引用、目录搜索/移动/清理、显式副本共享已接入。编程角色在私人会话中读取、校验更新并打包云端工作源码；`asset.read` 工具可按节点与固定版本读取。023/024 为前向迁移，Admin 内容目录纳入节点。当前回归 129 项通过，包含五组云文件集成；模拟依赖不构成真实服务或角色准入。
 
 ```mermaid
 flowchart LR
@@ -221,7 +221,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **118/118**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十二份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **129/129**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十五份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与站内通知（当前源码）
 
@@ -229,7 +229,7 @@ flowchart LR
 
 026/027 为前向迁移。任务状态在事务提交时生成接收者通知，避免中间状态误报；当前授权、私人归属和项目范围始终重新检查。支持微秒游标、已读更新及 30 天保留，任务名称从当前任务读取。GET/PATCH /v1/notifications 及兼容企业嵌套路径可用，不发送外部通知。
 
-六组默认助手、四组通知集成用例包含在 118 项回归内。Web 各四组、Chrome 七组与源码 Desktop 七组旅程使用真实 Codex及明确假数据依赖，完整模板规范、依赖检查点恢复和正式角色资格仍未完成。详见主文档 technical/20 与 technical/21。
+六组默认助手、四组通知集成用例包含在 129 项回归内。Web 各四组、Chrome 八组与源码 Desktop 八组旅程使用真实 Codex及明确假数据依赖，完整模板规范、已付费步骤恢复和正式角色资格仍未完成。详见主文档 technical/20 与 technical/21。
 
 ```mermaid
 flowchart LR
@@ -239,3 +239,9 @@ flowchart LR
   Commit --> Inbox[当前接收者站内通知]
   Inbox --> Original[原项目与私人任务]
 ```
+
+## 运行前资料补齐 / Pre-execution inputs
+
+028 增加显式文件/连接需求。任务在首次模型调用前等待，保持一笔原预留；当前资源全部明确确认后，同任务只入队一次。当前版本、权限及连接类型在领取、工具、心跳与落库复查。取消释放未使用的预留，运行后撤销按实际用量处理。计划绑定资料；来源变化须重新规划。管理员正文权限可审阅需求说明，取消/重试仍按权限和原私人归属执行。
+
+Explicit file/connection prerequisites hold the original reservation before the first model turn. CAS confirmation queues the same task once; revoked or changed inputs are rechecked throughout execution. Plans bind the selected sources, and administrative retries preserve the input requirements and private audience. Paid-step continuation and automatic dependency discovery remain unfinished. See the master documentation, technical/22-pre-execution-input-checkpoint.md.

@@ -35,6 +35,12 @@ import { RetentionService } from "./retention.js";
 import { recoverQueuedClaims } from "./task-recovery.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
 import { authorizeExecutionPlan } from "./plans.js";
+import {
+  checkInputDependencies,
+  assertInputDependencies,
+  inputDependencyContext,
+  inputDependencyBinding,
+} from "./task-dependencies.js";
 
 export class Worker {
   private boss: PgBoss;
@@ -215,6 +221,7 @@ export class Worker {
           });
           return null;
         }
+        if (!(await checkInputDependencies(tx, t))) return null;
         const started = (
           await tx.query(
             "UPDATE tasks SET status='running',attempt=attempt+1,fencing_token=$2,lease_until=now()+interval '45 seconds',updated_at=now(),version=version+1 WHERE id=$1 RETURNING *",
@@ -252,6 +259,7 @@ export class Worker {
               await projectAccess(tx, actor, tenant, task.project_id, "write");
               await this.catalog.ensureEnabled(tx, task.role_key);
               await assertTaskSkills(tx, this.catalog, task);
+              await assertInputDependencies(tx, t);
               await authorizeExecutionPlan(
                 tx,
                 tenant,
@@ -323,13 +331,19 @@ export class Worker {
       const context = await this.db.tx(
         async (tx) => {
           await projectAccess(tx, actor!, tenant, task.project_id, "write");
-          return resolveWorkContext(
+          await assertInputDependencies(tx, task);
+          const work = await resolveWorkContext(
             tx,
             actor!,
             tenant,
             task.project_id,
             task.input_context,
           );
+          return {
+            ...work,
+            instructions:
+              work.instructions + (await inputDependencyContext(tx, task)),
+          };
         },
         tenant,
         false,
@@ -426,6 +440,7 @@ export class Worker {
           await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
           await this.catalog.ensureEnabled(tx, t.role_key);
           await assertTaskSkills(tx, this.catalog, t);
+          await assertInputDependencies(tx, live);
           await authorizeExecutionPlan(
             tx,
             t.tenant_id,
@@ -511,6 +526,7 @@ export class Worker {
                   prompt: live.prompt,
                   role_hash: live.role_hash,
                   context: contextDigest,
+                  ...(await inputDependencyBinding(tx, live)),
                 }),
               ),
               text,
@@ -536,6 +552,7 @@ export class Worker {
       await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
       await this.catalog.ensureEnabled(tx, t.role_key);
       await assertTaskSkills(tx, this.catalog, t);
+      await assertInputDependencies(tx, t);
       await authorizeExecutionPlan(
         tx,
         t.tenant_id,

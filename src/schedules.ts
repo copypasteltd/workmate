@@ -786,7 +786,7 @@ export async function advanceSchedules(
             );
           const unresolved = !!(
             await tx.query(
-              "SELECT 1 FROM workflow_runs r WHERE r.schedule_id=$1 AND (r.state IN ('running','awaiting_approval') OR EXISTS(SELECT 1 FROM tasks t WHERE t.id=r.active_task AND t.status IN ('queued','running','paused','awaiting_approval','reconciling'))) LIMIT 1",
+              "SELECT 1 FROM workflow_runs r WHERE r.schedule_id=$1 AND (r.state IN ('running','awaiting_approval') OR EXISTS(SELECT 1 FROM tasks t WHERE t.id=r.active_task AND t.status IN ('queued','running','paused','awaiting_approval','reconciling','needs_input'))) LIMIT 1",
               [row.id],
             )
           ).rowCount;
