@@ -46,7 +46,7 @@ sequenceDiagram
 
 ## 验证与证据
 
-平台 `tests/auth-sessions.test.ts` 有六组真实隔离 PostgreSQL/API 测试：三端目录/当前标识与严格无凭证字段；过期访问和整族撤销；六轮真实刷新/撤销竞争；他人 ID、CSRF、旧列表 ID 及当前 Cookie；验证码/PKCE 的过期重放和源会话退出；邀请过期/错邮箱/重放及成员移除后的全部旧入口。完整平台回归 191/191；原始 TAP 与摘要保存在交付仓库 evidence/alignment-platform.tap 和 alignment-platform.json。
+平台 `tests/auth-sessions.test.ts` 有六组真实隔离 PostgreSQL/API 测试：三端目录/当前标识与严格无凭证字段；过期访问和整族撤销；六轮真实刷新/撤销竞争；他人 ID、CSRF、旧列表 ID 及当前 Cookie；验证码/PKCE 的过期重放和源会话退出；邀请过期/错邮箱/重放及成员移除后的全部旧入口。完整平台回归 191/191；原始 TAP 与摘要保存在交付仓库 evidence/sessions-stage-platform-191.tap 和 sessions-stage-platform-191.json（保留本阶段原始字节；后续当前回归另见文档 33）。
 
 原生控制器各有十组确定性竞争/故障测试，另增加真实目录授权与缓存结果清理测试。Desktop 全部原生测试 15/15，扩展 10/10。它们验证持久化、异步先后及失败含义，不仅检查按钮或复述实现。
 

@@ -14,10 +14,19 @@ SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
            ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
+AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 
 
 def main():
     spec = json.loads(SPEC.read_text(encoding='utf-8'))
+    fixture = json.loads(AUTH_FIXTURE.read_text(encoding='utf-8'))
+    if fixture['source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest():
+        raise ValueError('Authentication test fixture must track the original OpenAPI bytes')
+    for name, schema in fixture['schemas'].items():
+        if schema != spec['components']['schemas'][name]:
+            raise ValueError(f'Authentication test fixture changed the original schema: {name}')
+    if len(fixture['schemas']) != 10:
+        raise ValueError('Expected all ten authentication schema dependencies')
     checks = []
     sources = []
     for source in SAMPLES:
@@ -43,6 +52,11 @@ def main():
     report = {'at': datetime.now(timezone.utc).isoformat(),
               'scope': 'Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance',
               'sources': sources,
+              'authentication_fixture': {
+                  'file': AUTH_FIXTURE.relative_to(ROOT.parent).as_posix(),
+                  'sha256': hashlib.sha256(AUTH_FIXTURE.read_bytes()).hexdigest(),
+                  'schemas': len(fixture['schemas']), 'status': 'passed',
+                  'scope': 'Exact original schema and source digest comparison; actual authentication wire checks are in the platform regression'},
               'openapi_sha256': hashlib.sha256(SPEC.read_bytes()).hexdigest(),
               'checks': checks}
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
