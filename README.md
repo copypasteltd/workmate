@@ -93,20 +93,20 @@ python -X utf8 scripts/review-repositories.py
 
 浏览器 QA 需要 Chromium。可通过 `CHROME_BIN` 指定现有原生可执行文件，或 `npx playwright install chromium` 安装 Playwright 自带版本；本次机器已安装。所有测试只创建并关闭自己的页面/上下文/进程，不关闭用户原有浏览器。
 
-| 证据文件                          | 含义                                                                        |
-| --------------------------------- | --------------------------------------------------------------------------- |
-| `evidence/verification.json`      | 六仓库类型检查/构建、平台 84 项测试、Desktop 3 项测试、实际路由导出         |
-| `evidence/web-admin.json`         | 真实邮件登录、初始化、PNG 素材/图层与媒体、数据/流程、16 页 Admin、费用/VIP |
-| `evidence/persistent-work.json`   | 专家/私密会话/记忆、移动/深色主题、Admin 正文隔离与删除的 8 项浏览器检查 |
-| `evidence/admin-identities.json` | 管理员邀请、邮箱与真实 MFA、更换验证器、受限权限、停用/恢复与重发邀请的 6 组浏览器检查 |
-| `evidence/schedules.json` | 真实时钟、关闭用户页后生成报告、暂停/恢复、时区编辑、Admin 和移动布局的 5 组检查 |
-| `evidence/federation.json` | 签名 OIDC、首次邮箱证明、真实打包 Desktop 与后台跨端撤销的 6 组检查 |
-| `evidence/extension.json`         | 实际 MV3、Chrome identity PKCE、上传、token 隔离、退出                      |
-| `evidence/desktop.json`           | 实际打包应用、PKCE、私密会话、云端计划、目录、签名命令及 Native Host 的 7 项检查          |
-| `evidence/packaged-windows.json`  | 实际 Windows 包启动、isPackaged、版本和截图                                 |
-| `evidence/native-controller.json` | 启动/关闭控制器与原有服务保留核查                                           |
-| `evidence/repository-review.json` | 仓库边界、双语 README/图/截图、真实本机密钥排除及来源哈希                   |
-| `evidence/release-manifest.json`  | 最终 Git 提交、构建产物 SHA-256 与范围                                      |
+| 证据文件                          | 含义                                                                                   |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| `evidence/verification.json`      | 六仓库类型检查/构建、平台 84 项测试、Desktop 3 项测试、实际路由导出                    |
+| `evidence/web-admin.json`         | 真实邮件登录、初始化、PNG 素材/图层与媒体、数据/流程、16 页 Admin、费用/VIP            |
+| `evidence/persistent-work.json`   | 专家/私密会话/记忆、移动/深色主题、Admin 正文隔离与删除的 8 项浏览器检查               |
+| `evidence/admin-identities.json`  | 管理员邀请、邮箱与真实 MFA、更换验证器、受限权限、停用/恢复与重发邀请的 6 组浏览器检查 |
+| `evidence/schedules.json`         | 真实时钟、关闭用户页后生成报告、暂停/恢复、时区编辑、Admin 和移动布局的 5 组检查       |
+| `evidence/federation.json`        | 签名 OIDC、首次邮箱证明、真实打包 Desktop 与后台跨端撤销的 6 组检查                    |
+| `evidence/extension.json`         | 实际 MV3、Chrome identity PKCE、上传、token 隔离、退出                                 |
+| `evidence/desktop.json`           | 实际打包应用、PKCE、私密会话、云端计划、目录、签名命令及 Native Host 的 7 项检查       |
+| `evidence/packaged-windows.json`  | 实际 Windows 包启动、isPackaged、版本和截图                                            |
+| `evidence/native-controller.json` | 启动/关闭控制器与原有服务保留核查                                                      |
+| `evidence/repository-review.json` | 仓库边界、双语 README/图/截图、真实本机密钥排除及来源哈希                              |
+| `evidence/release-manifest.json`  | 最终 Git 提交、构建产物 SHA-256 与范围                                                 |
 
 报告只代表实际运行过的检查。受控 Responses fixture 启动真实 Codex 并执行工具回合，但不等于公司真实模型业务准入。主文档的 102 项长期验收没有被批量标为通过。静态文档核查另外在根目录运行 `python -X utf8 docs/tools/validate_docs.py`。
 
@@ -155,7 +155,6 @@ flowchart LR
 
 部署配置 `SSO_ALLOWED_ORIGINS` 为所需的精确 HTTPS origin。默认回调为 `WEB_ORIGIN/v1/auth/sso/callback` 经 Web API 代理；跨域 `VITE_API_BASE` 可配 `SSO_CALLBACK_ORIGIN=API_ORIGIN`。生产拒绝 `SSO_ALLOW_LOCALHOST=true`。只有原生 fixture 验收时，用此环境开关启动开发控制器，执行 `qa:federation` 后停止并不带该开关重启。
 
-
 ## 明确假数据的开发环境
 
 `npm run demo` 原生启动数据库、真实 Codex Worker、模拟 AI 网关、Web 和 Admin；不会改现有平台 .env。模拟网关仅回环可用、不可在生产启用，页面和持久业务数据均有模式标记；企业 Owner 可一次性领取演示 gift。`npm run stop` 仅关闭控制器创建的进程，需等待原生数据库完成 checkpoint 后再启动。
@@ -166,7 +165,7 @@ flowchart LR
 
 - `npm run qa:cloud-files`：四组 Web 云目录流程、两次真实 Codex 模拟任务的持久源码与实际 ZIP；生成 evidence/cloud-files.json 和实际 HTTP 契约样本。
 - `npm run qa:desktop-transfer`：八组源码 Electron 登录、幂等上传、29 MiB 传输、覆盖保护与原生桥云目录；生成 evidence/alignment-desktop.json。
-- 平台当前全套回归 147/147，完整 TAP 与摘要在 evidence/alignment-platform.*。
+- 平台当前全套回归 159/159，完整 TAP 与摘要在 evidence/alignment-platform.\*。
 
 根目录运行 `python -X utf8 docs/tools/validate_runtime_contract_samples.py` 核对实际响应字段。所有上述运行使用明确标识的假数据依赖，内核仍是真实 Codex，不等于真实模型质量或全部 102 项综合验收完成。
 
@@ -174,7 +173,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **147/147**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **159/159**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手、通知与源码完整性
 
@@ -182,7 +181,7 @@ flowchart LR
 
 `npm run qa:byte-integrity` 在自己创建的临时目录实际克隆 platform/Desktop/delivery，检查 SQL 原始摘要、两个现有数据库迁移账本、28 个 Skill、渲染快照和原始 TAP。它检验独立 Git 克隆的字节完整性，不代替灾难恢复演练；运行前须提交当前源码和 TAP。脚本只删除本次创建且已检查归属的目录。
 
-当前源码平台 147/147、Desktop 四组单元测试通过；实际 HTTP 样本二十一份。全 102 条综合验收和生产发布仍按主文档维护。
+当前源码平台 159/159、Desktop 四组单元测试通过；实际 HTTP 样本二十一份。全 102 条综合验收和生产发布仍按主文档维护。
 
 ## 运行前资料验收 / Initial input-checkpoint QA
 
@@ -210,6 +209,25 @@ Five Web checks cover the initial input checkpoint, actual private upload, expli
 
 `npm run qa:design-pdf` 的七组流程验证真实登录、画布、接受后响应丢失、幂等重试、源版本冲突、四宽度/主题/语言、设计师模板和原生 Electron 保存。PDF 由 pypdf 独立解析、Poppler 原生渲染并与同源 PNG 比较；报告 `evidence/design-pdf.json` 登记尺寸、摘要与清理结果。
 
-需要原生 Chromium、`PDF_QA_PYTHON`（含 pypdf/Pillow）及 `PDFTOPPM_BIN`。这些仅用于 QA，不是产品运行依赖。当前全套平台回归 **147/147**；本轮源码未重打历史安装包，不等同完整 102 条验收。
+需要原生 Chromium、`PDF_QA_PYTHON`（含 pypdf/Pillow）及 `PDFTOPPM_BIN`。这些仅用于 QA，不是产品运行依赖。当前全套平台回归 **159/159**；本轮源码未重打历史安装包，不等同完整 102 条验收。
 
 ![实际 PDF 导出](assets/screenshots/design-pdf-export.png)
+
+## 营销 CSV、精确指标与来源（当前源码）
+
+导入先预览并确认账户、币种、时区、实体层级、归因和转化定义；支持通用 CSV 及 Google/Meta 风格候选表头与手动映射。原始 UTF-8/BOM、SHA-256、映射和计算结果真实保存。相同项目内重复请求或成功回执丢失后的重试只返回原快照；被隔离的数据不能绕过限制重新上传。未知转化不计零，CTR/CPC/CPM/CVR/CPA/ROAS 用精确小数先加总再计算，历史结果冻结。
+
+原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、XLSX、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
+
+`npm run qa:marketing-analytics` 验证六组 Web/原生 Electron 流程：真实登录、映射预览、成功回执丢失后重试、实际 CSV/JSON/SVG 下载、行错误/未知值、两主题/繁英/四宽度、选中快照拒绝清空与原生保存。设置 `CHROME_BIN` 为本地原生 Chromium；报告为 evidence/marketing-analytics.json。新建浏览器、上下文及 Electron 均在 finally 关闭。平台当前全套回归 **159/159**，原始 TAP 保持字节及摘要一致。
+
+```mermaid
+flowchart LR
+  Web[真实登录与导入表单] --> Files[下载 / 摘要 / 引用]
+  Files --> Faults[回执丢失 / 坏行 / 拒绝]
+  Faults --> Views[两主题 / 繁英 / 四宽度]
+  Views --> Native[PKCE / IPC / 原生保存]
+  Native --> Cleanup[关闭自建资源与证据记录]
+```
+
+![实际营销分析验收](assets/screenshots/marketing-analytics.png)
