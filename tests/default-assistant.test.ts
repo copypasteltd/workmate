@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -135,23 +137,14 @@ class ControlledRuntime extends CodexRuntimeAdapter {
   }
 }
 before(async () => {
-  const env = { ...process.env };
-  for (const key of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL(env[key]!);
-    u.pathname = "/copypaste_test";
-    env[key] = u.href;
-  }
+  isolated = await isolatedTestEnvironment();
+  const env = { ...isolated.env };
   s = await buildApp(
     loadConfig({
       ...env,
       NODE_ENV: "test",
       WORKER_ENABLED: "false",
       DEMO_MODE: "false",
-      DATA_DIR: ".data/test",
       AI_BASE_URL: "http://127.0.0.1:9/v1",
       AI_ALLOWED_HOSTS: "127.0.0.1",
       AI_API_KEY: "controlled-fixture",
@@ -164,7 +157,11 @@ before(async () => {
   );
 });
 after(async () => {
-  if (s) await s.app.close();
+  try {
+    if (s) await s.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 test("an unconfigured project starts private conversations without a customer-created specialist and races create only one immutable default", async () => {
   const f = await fixture();

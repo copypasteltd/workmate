@@ -27,19 +27,33 @@ const result = (r: any) => ({
   exceptions: r.exceptions,
 });
 async function detail(tx: Tx, row: any) {
-  const counts = (
-    await tx.query(
-      "SELECT count(*)::int AS total,count(*) FILTER(WHERE state='completed')::int AS completed FROM deletion_items WHERE job_id=$1",
-      [row.id],
-    )
-  ).rows[0];
-  const failures = (
-    await tx.query(
-      "SELECT id,kind,attempts,error_code FROM deletion_items WHERE job_id=$1 AND state='failed' ORDER BY id LIMIT 100",
-      [row.id],
-    )
-  ).rows;
-  return {
+  return (await details(tx, [row]))[0];
+}
+// Only IDs from the already scoped page are expanded. Never return locators,
+// private owners or lease tokens, and avoid two extra queries per listed job.
+async function details(tx: Tx, rows: any[]) {
+  if (!rows.length) return [];
+  const ids = rows.map((row) => row.id),
+    counts = (
+      await tx.query(
+        "SELECT job_id,count(*)::int AS total,count(*) FILTER(WHERE state='completed')::int AS completed FROM deletion_items WHERE job_id=ANY($1::uuid[]) GROUP BY job_id",
+        [ids],
+      )
+    ).rows,
+    failures = (
+      await tx.query(
+        "SELECT job_id,id,kind,attempts,error_code FROM (SELECT job_id,id,kind,attempts,error_code,row_number() OVER(PARTITION BY job_id ORDER BY id) AS position FROM deletion_items WHERE job_id=ANY($1::uuid[]) AND state='failed') f WHERE position<=100 ORDER BY job_id,id",
+        [ids],
+      )
+    ).rows,
+    progress = new Map(counts.map(({ job_id, ...count }) => [job_id, count])),
+    failuresByJob = new Map<string, any[]>();
+  for (const { job_id, ...failure } of failures) {
+    const list = failuresByJob.get(job_id) ?? [];
+    list.push(failure);
+    failuresByJob.set(job_id, list);
+  }
+  return rows.map((row) => ({
     ...result(row),
     tenant_id: row.tenant_id,
     project_id: row.project_id,
@@ -48,9 +62,9 @@ async function detail(tx: Tx, row: any) {
     attempts: row.attempts,
     created_at: row.created_at,
     completed_at: row.completed_at,
-    progress: counts,
-    failures,
-  };
+    progress: progress.get(row.id) ?? { total: 0, completed: 0 },
+    failures: failuresByJob.get(row.id) ?? [],
+  }));
 }
 export function registerDeletions(app: FastifyInstance, db: Database) {
   const create: RouteHandlerMethod = async (req, reply) => {
@@ -185,7 +199,7 @@ export function registerDeletions(app: FastifyInstance, db: Database) {
             [project],
           )
         ).rows;
-        return { items: await Promise.all(rows.map((r) => detail(tx, r))) };
+        return { items: await details(tx, rows) };
       }, tenant);
     },
   );
@@ -198,8 +212,35 @@ export function registerDeletions(app: FastifyInstance, db: Database) {
           tenant_id: uuid.optional(),
           project_id: uuid.optional(),
           page: z.coerce.number().int().min(1).max(10000).default(1),
-          page_size: z.coerce.number().int().min(1).max(100).default(25),
+          page_size: z.coerce.number().int().min(1).max(100).default(50),
+          state: z
+            .enum([
+              "queued",
+              "cleaning",
+              "completed",
+              "completed_with_exceptions",
+              "failed",
+            ])
+            .optional(),
+          target_type: z
+            .enum([
+              "assets",
+              "tasks",
+              "agents",
+              "conversations",
+              "memories",
+              "brand_profiles",
+              "analytics_datasets",
+              "workflows",
+              "workflow_runs",
+              "workflow_schedules",
+              "creative_projects",
+              "workspace_nodes",
+            ])
+            .optional(),
+          search: z.string().trim().max(160).default(""),
         })
+        .strict()
         .parse(req.query);
       return db.tx(
         async (tx) => {
@@ -210,15 +251,18 @@ export function registerDeletions(app: FastifyInstance, db: Database) {
             "d.tenant_id",
             "d.project_id",
           );
-          const filter = `(${scope.sql}) AND ($6::uuid IS NULL OR d.tenant_id=$6) AND ($7::uuid IS NULL OR d.project_id=$7)`;
+          const filter = `(${scope.sql}) AND ($6::uuid IS NULL OR d.tenant_id=$6) AND ($7::uuid IS NULL OR d.project_id=$7) AND ($8::text IS NULL OR d.state=$8) AND ($9::text IS NULL OR d.target_type=$9) AND ($10::text='' OR position(lower($10) in d.id::text)>0 OR position(lower($10) in d.target_id::text)>0)`;
           const args = [
             ...scope.values,
             q.tenant_id ?? null,
             q.project_id ?? null,
+            q.state ?? null,
+            q.target_type ?? null,
+            q.search,
           ];
           const rows = (
             await tx.query(
-              `SELECT d.* FROM deletion_jobs d WHERE ${filter} ORDER BY d.created_at DESC,d.id DESC LIMIT $8 OFFSET $9`,
+              `SELECT d.* FROM deletion_jobs d WHERE ${filter} ORDER BY d.created_at DESC,d.id DESC LIMIT $11 OFFSET $12`,
               [...args, q.page_size, (q.page - 1) * q.page_size],
             )
           ).rows;
@@ -229,7 +273,7 @@ export function registerDeletions(app: FastifyInstance, db: Database) {
             )
           ).rows[0].n;
           return {
-            items: await Promise.all(rows.map((r) => detail(tx, r))),
+            items: await details(tx, rows),
             page: q.page,
             page_size: q.page_size,
             total,

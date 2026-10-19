@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -143,22 +145,13 @@ class ControlledRuntime extends CodexRuntimeAdapter {
   }
 }
 before(async () => {
-  const env = { ...process.env };
-  for (const k of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL(env[k]!);
-    u.pathname = "/copypaste_test";
-    env[k] = u.href;
-  }
+  isolated = await isolatedTestEnvironment();
+  const env = { ...isolated.env };
   s = await buildApp(
     loadConfig({
       ...env,
       NODE_ENV: "test",
       WORKER_ENABLED: "false",
-      DATA_DIR: ".data/test",
       DEMO_MODE: "false",
       AI_BASE_URL: "http://127.0.0.1:9/v1",
       AI_ALLOWED_HOSTS: "127.0.0.1",
@@ -172,7 +165,11 @@ before(async () => {
   );
 });
 after(async () => {
-  if (s) await s.app.close();
+  try {
+    if (s) await s.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 
 test("preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member", async () => {

@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -161,28 +163,23 @@ async function file(
   );
 }
 before(async () => {
-  const env = { ...process.env };
-  for (const k of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL(env[k]!);
-    u.pathname = "/copypaste_test";
-    env[k] = u.href;
-  }
+  isolated = await isolatedTestEnvironment();
+  const env = { ...isolated.env };
   s = await buildApp(
     loadConfig({
       ...env,
       NODE_ENV: "test",
       WORKER_ENABLED: "false",
-      DATA_DIR: ".data/test",
     }),
     { worker: false },
   );
 });
 after(async () => {
-  await s?.app.close();
+  try {
+    await s?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 
 test("cloud tree survives app restart, pins versions, serializes moves and rejects foreign/private references", async () => {

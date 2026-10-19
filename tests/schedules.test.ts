@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -151,30 +153,20 @@ async function occurrences(id: string) {
   ).rows;
 }
 before(async () => {
+  isolated = await isolatedTestEnvironment();
   const env = {
-    ...process.env,
+    ...isolated.env,
     NODE_ENV: "test",
     WORKER_ENABLED: "false",
-    DATA_DIR: ".data/test",
   };
-  for (const k of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL((env as any)[k]);
-    u.pathname = "/copypaste_test";
-    (env as any)[k] = u.href;
-  }
   system = await buildApp(loadConfig(env), { worker: false });
-  // Prior integration fixtures are paused so a fake future clock cannot execute
-  // an unrelated run left in this dedicated test database.
-  await system.db.control.query(
-    "UPDATE workflow_schedules SET state='paused',next_due_at=NULL WHERE state='active'",
-  );
 });
 after(async () => {
-  await system?.app.close();
+  try {
+    await system?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 
 test("schedule preview freezes the workflow; create is atomic/idempotent and rejects stale hashes and cross-project references", async () => {

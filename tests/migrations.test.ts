@@ -2,10 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import pg from "pg";
 import { runMigrations } from "../scripts/migration-runner.js";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
 test("a changed applied migration digest stops startup and the forward-only history remains intact", async () => {
-  const u = new URL(process.env.OWNER_DATABASE_URL!);
-  u.pathname = "/copypaste_test";
-  const c = new pg.Client({ connectionString: u.href });
+  const isolated = await isolatedTestEnvironment();
+  const c = new pg.Client({
+    connectionString: isolated.env.OWNER_DATABASE_URL,
+  });
   await c.connect();
   try {
     await c.query("BEGIN");
@@ -18,7 +20,11 @@ test("a changed applied migration digest stops startup and the forward-only hist
       /Migration 16 changed after application; add a forward migration/,
     );
   } finally {
-    await c.query("ROLLBACK");
-    await c.end();
+    try {
+      await c.query("ROLLBACK");
+      await c.end();
+    } finally {
+      await isolated.cleanup();
+    }
   }
 });

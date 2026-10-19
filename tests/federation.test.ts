@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
@@ -213,29 +215,27 @@ async function native(c: Client, exchange = true) {
   };
 }
 before(async () => {
+  isolated = await isolatedTestEnvironment();
   idp = await startIdentityFixture();
   const env: any = {
-    ...process.env,
+    ...isolated.env,
     NODE_ENV: "test",
     WORKER_ENABLED: "false",
-    DATA_DIR: ".data/test",
     SSO_ALLOW_LOCALHOST: "true",
     SSO_ALLOWED_ORIGINS: "",
   };
-  for (const k of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL(env[k]);
-    u.pathname = "/copypaste_test";
-    env[k] = u.href;
-  }
   system = await buildApp(loadConfig(env), { worker: false });
 });
 after(async () => {
-  await system?.app.close();
-  await idp?.close();
+  try {
+    try {
+      await system?.app.close();
+    } finally {
+      await idp?.close();
+    }
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 
 test("SSO configuration has global permission, current MFA, CAS, secret redaction and a probe-before-enable gate", async () => {

@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -146,25 +148,20 @@ async function restrictUsage(target: Client, kind = "global", scope?: string) {
   ).rows[0];
 }
 before(async () => {
+  isolated = await isolatedTestEnvironment();
   const env = {
-    ...process.env,
-    DATA_DIR: ".data/test",
+    ...isolated.env,
     NODE_ENV: "test",
     WORKER_ENABLED: "false",
   };
-  for (const k of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL((env as any)[k]);
-    u.pathname = "/copypaste_test";
-    (env as any)[k] = u.href;
-  }
   system = await buildApp(loadConfig(env), { worker: false });
 });
 after(async () => {
-  await system?.app.close();
+  try {
+    await system?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 
 test("admin invitation atomically assigns a delegable role, is idempotent and never returns an MFA secret or capability", async () => {

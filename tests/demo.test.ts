@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -36,29 +38,24 @@ async function call(
   return { status: raw.statusCode, data, raw };
 }
 before(async () => {
-  const env = { ...process.env };
-  for (const k of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL(env[k]!);
-    u.pathname = "/copypaste_test";
-    env[k] = u.href;
-  }
+  isolated = await isolatedTestEnvironment();
+  const env = { ...isolated.env };
   system = await buildApp(
     loadConfig({
       ...env,
       NODE_ENV: "test",
       DEMO_MODE: "true",
       WORKER_ENABLED: "false",
-      DATA_DIR: ".data/test",
     }),
     { worker: false },
   );
 });
 after(async () => {
-  await system?.app.close();
+  try {
+    await system?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 test("simulated mode is loopback-only and forbidden in production", () => {
   assert.throws(

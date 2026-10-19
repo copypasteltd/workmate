@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -198,22 +200,13 @@ function runner(runtime: ControlledRuntime) {
   return new Worker(system.db, system.catalog, system.storage, runtime);
 }
 before(async () => {
-  const env = { ...process.env };
-  for (const key of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL(env[key]!);
-    u.pathname = "/copypaste_test";
-    env[key] = u.href;
-  }
+  isolated = await isolatedTestEnvironment();
+  const env = { ...isolated.env };
   system = await buildApp(
     loadConfig({
       ...env,
       NODE_ENV: "test",
       WORKER_ENABLED: "false",
-      DATA_DIR: ".data/test",
       AI_BASE_URL: "http://127.0.0.1:9/v1",
       AI_ALLOWED_HOSTS: "127.0.0.1",
       AI_API_KEY: "controlled-test-provider-not-a-real-key",
@@ -226,7 +219,11 @@ before(async () => {
   );
 });
 after(async () => {
-  if (system) await system.app.close();
+  try {
+    if (system) await system.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
 });
 
 test("deleting a running task closes its reservation before erasing runtime caches and dependent private files", async () => {

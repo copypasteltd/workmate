@@ -194,13 +194,13 @@ With the native database configured, set `$env:DEMO_MODE='true'` for the API pro
 
 Shared project and private conversation workspaces now support pinned file references, search, moves, erasure and explicit publication of independent copies. In private conversations, Codex source tools read, compare hashes, persist updates and package actual working files. The asset.read capability provides authorized node/version reads. Forward migrations 023/024 add the model; Admin content management includes nodes.
 
-The current 136-test regression passes, including five cloud-file integration groups. Synthetic dependencies do not qualify live providers or professional roles. Source limits are 500 files / 20 MB, with 1 MB per file. Removing an entry preserves independent source assets; permanent asset deletion is separate. See the master technical/18-persistent-cloud-files.md for detailed behavior and limits.
+The current 139-test regression passes, including five cloud-file integration groups. Synthetic dependencies do not qualify live providers or professional roles. Source limits are 500 files / 20 MB, with 1 MB per file. Removing an entry preserves independent source assets; permanent asset deletion is separate. See the master technical/18-persistent-cloud-files.md for detailed behavior and limits.
 
 ## Project Skill lifecycle (current source)
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **136/136**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **139/139**. `npm run qa:skills` in the delivery repository passed three browser groups; seventeen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and in-app notifications (current source)
 
@@ -208,7 +208,7 @@ The built-in assistant uses fixed Codex, the internal text profile and delivery-
 
 Forward migrations 026/027 add the behavior. Notifications observe final task state at transaction commit, recheck current recipient/private/project access, support microsecond cursors and read updates, and expire after 30 days. Titles come from the currently authorized task. GET/PATCH /v1/notifications and compatible tenant routes are available; no external messages are sent.
 
-Six assistant and four notification integration groups are in the 136-test regression. Web assistant/inbox journeys each pass four groups; Chrome passes eight and source Desktop eight, using real Codex with clearly synthetic dependencies. Full template APIs, paid-step checkpoint continuation and live-role qualification remain unfinished. See master technical/20 and technical/21.
+Six assistant and four notification integration groups are in the 139-test regression. Web assistant/inbox journeys each pass four groups; Chrome passes eight and source Desktop eight, using real Codex with clearly synthetic dependencies. Full template APIs, paid-step checkpoint continuation and live-role qualification remain unfinished. See master technical/20 and technical/21.
 
 ```mermaid
 flowchart LR
@@ -223,7 +223,7 @@ flowchart LR
 
 Migration 028 introduces an explicit file/connection checkpoint before the first model turn. A task keeps its original private conversation, ID and single budget reservation while `needs_input`; it has no worker outbox entry or model charge until every required input is selected. Resolution uses current project access, current file versions, a declared connection provider, CAS and idempotency. Shared tasks cannot consume even their creator’s private files. Candidate search is paginated and never exposes credentials.
 
-Resource revocation before claim returns ordinary tasks to the checkpoint. An approved plan cannot silently accept replacement sources: changed inputs invalidate approval or cancel unstarted execution. Admin retries inherit private ownership and inputs; separately authorized, audited body reads include input metadata. Ten dependency integration groups and one retry group contribute to the 136 passing tests. Three actual response samples bring strict runtime-schema checks to 15. This covers declared initial prerequisites; automatic discovery, paid-step continuation and device dependencies remain unfinished.
+Resource revocation before claim returns ordinary tasks to the checkpoint. An approved plan cannot silently accept replacement sources: changed inputs invalidate approval or cancel unstarted execution. Admin retries inherit private ownership and inputs; separately authorized, audited body reads include input metadata. Ten dependency integration groups and one retry group contribute to the 139 passing tests. Three dependency response samples and two scoped Admin cleanup pages contribute to 17 strict runtime-schema checks. This covers declared initial prerequisites; automatic discovery, paid-step continuation and device dependencies remain unfinished.
 
 ```mermaid
 flowchart LR
@@ -238,3 +238,9 @@ flowchart LR
 ## Execution capacity and fair dispatch (current source)
 
 Migration 029 atomically checks global, workspace, current-user and capability limits across native Workers. Defaults are 10 handlers, two workspace slots, two image slots and two media slots, with one media slot per workspace. Started reconciliation keeps its slot. Active-work admission is separate from actual execution capacity. A busy task retains its ID, attempt zero and single budget hold; a delayed outbox retries it automatically. Dispatch interleaves workspace queue positions. Seven isolated-database/native-queue groups pass. Full NFR load qualification and per-provider request limits remain unfinished.
+
+## Admin records and repeatable native integration tests
+
+Cleanup pages now filter state/type/literal IDs within current authorization before counting and pagination. Admin lists default to 50, capped at 100. Migration 030 adds query indexes; applied migration bytes remain immutable. Per-page progress uses batched queries. Ordinary pages exclude object locators and lease credentials; direct read-only retries return 403.
+
+Application integration suites and migration checks each create a native `copypaste_suite_<random UUID>` PostgreSQL database and an owned `.data/test-runs/<random UUID>` directory, apply all migrations and close the application before removing only that fixture. A local native PostgreSQL server and loopback `OWNER_DATABASE_URL` are required. Neither the demonstration database nor historical `copypaste_test` is reset. Reconciliation fixtures cannot consume the next run's execution slots. Delivery evidence preserves the original failure and repair verification.

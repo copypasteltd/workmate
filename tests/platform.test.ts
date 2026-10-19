@@ -1,3 +1,5 @@
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -155,22 +157,236 @@ async function money(a: Client, b: unknown, k = randomUUID()) {
   );
 }
 before(async () => {
-  const env = { ...process.env };
-  for (const key of [
-    "DATABASE_URL",
-    "CONTROL_DATABASE_URL",
-    "QUEUE_DATABASE_URL",
-  ]) {
-    const u = new URL(env[key]!);
-    u.pathname = "/copypaste_test";
-    env[key] = u.href;
-  }
-  env.DATA_DIR = ".data/test";
+  isolated = await isolatedTestEnvironment();
+  const env = { ...isolated.env };
   const c = loadConfig({ ...env, NODE_ENV: "test", WORKER_ENABLED: "false" });
   system = await buildApp(c, { worker: false });
 });
 after(async () => {
-  await system.app.close();
+  try {
+    await system.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
+});
+
+test("Admin cleanup pages filter before counting, retain tied timestamp order and redact journal internals", async () => {
+  const u = await user(),
+    w = await workspace(u),
+    a = await admin(),
+    rows: { id: string; target: string; state: string; type: string }[] = [];
+  for (let i = 0; i < 58; i++) {
+    const row = {
+      id: randomUUID(),
+      target: randomUUID(),
+      state: i % 3 ? "completed" : "failed",
+      type: i % 2 ? "workspace_nodes" : "assets",
+    };
+    rows.push(row);
+    await system.db.control.query(
+      "INSERT INTO deletion_jobs(id,tenant_id,project_id,target_type,target_id,state,private_owner,created_by,lease_token,created_at,next_attempt_at) VALUES($1,$2,$3,$4,$5,$6,$7,$7,$8,'2026-01-01','2100-01-01')",
+      [
+        row.id,
+        w.tenant.id,
+        w.project.id,
+        row.type,
+        row.target,
+        row.state,
+        u.id,
+        randomUUID(),
+      ],
+    );
+  }
+  const failed = rows.find((row) => row.state === "failed")!;
+  await system.db.control.query(
+    "INSERT INTO deletion_items(job_id,kind,locator,state,error_code,attempts) VALUES($1,'object','private-store/not-for-admin','failed','ERASURE_STORAGE_BUSY',3),($1,'object','private-store/removed','completed',NULL,1)",
+    [failed.id],
+  );
+  const url = `/v1/admin/deletions?tenant_id=${w.tenant.id}`,
+    first = await call(a, "GET", url),
+    second = await call(a, "GET", url + "&page=2");
+  assert.equal(first.status, 200);
+  assert.equal(first.data.page_size, 50);
+  assert.equal(first.data.total, 58);
+  assert.equal(first.data.items.length, 50);
+  assert.equal(second.data.items.length, 8);
+  assert.deepEqual(
+    [...first.data.items, ...second.data.items].map((row: any) => row.id),
+    rows
+      .map((row) => row.id)
+      .sort()
+      .reverse(),
+  );
+  const filtered = await call(
+      a,
+      "GET",
+      url + "&state=failed&target_type=assets&page_size=100",
+    ),
+    expected = rows.filter(
+      (row) => row.state === "failed" && row.type === "assets",
+    );
+  assert.equal(filtered.data.total, expected.length);
+  assert.deepEqual(
+    filtered.data.items.map((row: any) => row.id),
+    expected
+      .map((row) => row.id)
+      .sort()
+      .reverse(),
+  );
+  const target = await call(
+    a,
+    "GET",
+    url + "&search=" + failed.target.toUpperCase(),
+  );
+  assert.equal(target.data.total, 1);
+  assert.deepEqual(target.data.items[0].progress, { total: 2, completed: 1 });
+  assert.equal(
+    target.data.items[0].failures[0].error_code,
+    "ERASURE_STORAGE_BUSY",
+  );
+  const encoded = JSON.stringify(target.data);
+  for (const forbidden of [
+    "locator",
+    "private-store",
+    "private_owner",
+    "created_by",
+    "lease_token",
+    "lease_until",
+    "storage_key",
+  ])
+    assert.ok(!encoded.includes(forbidden), forbidden);
+  assert.equal(
+    (await call(a, "GET", url + "&search=" + failed.id)).data.total,
+    1,
+  );
+  assert.equal((await call(a, "GET", url + "&search=%25")).data.total, 0);
+  assert.equal(
+    (await call(a, "GET", url + "&page=10000")).data.items.length,
+    0,
+  );
+  for (const suffix of [
+    "&state=invalid",
+    "&target_type=users",
+    "&page_size=101",
+    "&page=10001",
+    "&search=" + "a".repeat(161),
+    "&include_private=true",
+  ])
+    assert.equal((await call(a, "GET", url + suffix)).status, 400, suffix);
+});
+
+test("Admin cleanup totals and retries enforce current tenant/project grants, denies and read-only access", async () => {
+  const u = await user(),
+    w = await workspace(u),
+    other = await workspace(u),
+    allowed = await admin("support_agent", w.tenant.id),
+    denied = await admin("auditor"),
+    superAdmin = await admin();
+  const secondProject = (
+    await call(u, "POST", `/v1/tenants/${w.tenant.id}/projects`, {
+      name: "Another cleanup scope",
+    })
+  ).data;
+  assert.ok(secondProject.id);
+  const ids = [randomUUID(), randomUUID(), randomUUID()];
+  for (const [index, tenant, project] of [
+    [0, w.tenant.id, w.project.id],
+    [1, w.tenant.id, secondProject.id],
+    [2, other.tenant.id, other.project.id],
+  ] as const) {
+    await system.db.control.query(
+      "INSERT INTO deletion_jobs(id,tenant_id,project_id,target_type,target_id,state,next_attempt_at) VALUES($1,$2,$3,'assets',$4,'failed','2100-01-01')",
+      [ids[index], tenant, project, randomUUID()],
+    );
+  }
+  const before = await call(allowed, "GET", "/v1/admin/deletions");
+  assert.equal(before.data.total, 2);
+  assert.equal(before.data.page_size, 50);
+  assert.equal(
+    (
+      await call(
+        allowed,
+        "GET",
+        `/v1/admin/deletions?tenant_id=${other.tenant.id}`,
+      )
+    ).data.total,
+    0,
+  );
+  assert.equal(
+    (await call(denied, "GET", "/v1/admin/deletions")).data.total,
+    0,
+  );
+  assert.equal((await call(u, "GET", "/v1/admin/deletions")).status, 401);
+  assert.equal(
+    (
+      await call(allowed, "POST", `/v1/admin/deletions/${ids[0]}/retry`, {
+        reason: "Read-only access cannot retry",
+      })
+    ).status,
+    403,
+  );
+  const role = "cleanup_read_" + randomUUID().replaceAll("-", "");
+  await system.db.control.query(
+    "INSERT INTO admin_roles(key,name,permissions) VALUES($1,$1,$2)",
+    [role, JSON.stringify(["admin.content.read"])],
+  );
+  await system.db.control.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,$2,'project',$3,'deny')",
+    [allowed.id, role, w.project.id],
+  );
+  const after = await call(allowed, "GET", "/v1/admin/deletions");
+  assert.equal(after.data.total, 1);
+  assert.equal(after.data.items[0].id, ids[1]);
+  assert.equal(
+    (await call(allowed, "GET", `/v1/admin/deletions?search=${ids[0]}`)).data
+      .total,
+    0,
+  );
+  await system.db.control.query(
+    "UPDATE admin_bindings SET expires_at=now()-interval '1 second' WHERE principal_id=$1 AND effect='allow'",
+    [allowed.id],
+  );
+  assert.equal(
+    (await call(allowed, "GET", "/v1/admin/deletions")).data.total,
+    0,
+  );
+  assert.equal(
+    (
+      await call(
+        superAdmin,
+        "GET",
+        `/v1/admin/deletions?tenant_id=${w.tenant.id}`,
+      )
+    ).data.total,
+    2,
+  );
+});
+
+test("Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100", async () => {
+  const a = await admin();
+  for (const url of [
+    "/v1/admin/users",
+    "/v1/admin/access/principals",
+    "/v1/admin/workflow-schedules",
+    "/v1/admin/deletions",
+    "/v1/admin/tenants",
+    "/v1/admin/content",
+  ]) {
+    const list = await call(a, "GET", url);
+    assert.equal(list.status, 200, url);
+    assert.equal(list.data.page_size, 50, url);
+    assert.ok(list.data.items.length <= 50, url);
+    assert.equal(
+      (await call(a, "GET", url + "?page_size=100")).data.page_size,
+      100,
+      url,
+    );
+    assert.equal(
+      (await call(a, "GET", url + "?page_size=101")).status,
+      400,
+      url,
+    );
+  }
 });
 
 test("retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit", async () => {

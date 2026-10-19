@@ -32,7 +32,7 @@ import { event } from "./tasks.js";
 
 const pagination = z.object({
   page: z.coerce.number().int().min(1).max(100000).default(1),
-  page_size: z.coerce.number().int().min(1).max(100).default(25),
+  page_size: z.coerce.number().int().min(1).max(100).default(50),
   search: z.string().max(160).default(""),
   tenant_id: uuid.optional(),
 });
