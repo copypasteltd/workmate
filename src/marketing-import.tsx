@@ -1,16 +1,21 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { post } from "./api";
+import { api, post } from "./api";
 import { ErrorNotice, Field, useI18n } from "./ui";
 import { MarketingWarnings } from "./marketing-warnings";
+import { useWorkspace } from "./context";
+import { uploadCampaignFile } from "./campaign-upload";
 
 export function MarketingImport({
   base,
+  datasets = [],
   onImported,
 }: {
   base: string;
+  datasets?: any[];
   onImported: (result: any) => void;
 }) {
-  const { t } = useI18n();
+  const { t } = useI18n(),
+    w = useWorkspace();
   const [form, setForm] = useState({
     name: "",
     source: "csv_upload",
@@ -22,15 +27,24 @@ export function MarketingImport({
     conversion_definition: "",
   });
   const [file, setFile] = useState<{
-      csv: string;
-      name: string;
-      headers: string[];
+      asset_version_id: string;
+      filename: string;
+      headers: string[] | null;
+      file_type: "csv" | "xlsx";
+      sheets: { name: string; hidden: boolean }[];
+      selected_sheet: string | null;
     } | null>(null),
     [mapping, setMapping] = useState<Record<string, string>>({}),
     [preview, setPreview] = useState<any>(null),
     [error, setError] = useState<unknown>(null),
     [busy, setBusy] = useState(false),
     [confirmed, setConfirmed] = useState(false);
+  const [selection, setSelection] = useState({ sheet_name: "", header_row: 1 });
+  const [headerInput, setHeaderInput] = useState("1");
+  const [supersedes, setSupersedes] = useState("");
+  const [chosenFile, setChosenFile] = useState<File | null>(null);
+  const controller = useRef<AbortController | null>(null),
+    importKey = useRef(crypto.randomUUID());
   const live = useRef(true),
     locked = useRef(false),
     readSequence = useRef(0);
@@ -38,9 +52,16 @@ export function MarketingImport({
     live.current = true;
     return () => {
       live.current = false;
+      controller.current?.abort();
       readSequence.current++;
     };
   }, []);
+  function resetPreview() {
+    setPreview(null);
+    setConfirmed(false);
+    setError(null);
+    importKey.current = crypto.randomUUID();
+  }
   function change(key: keyof typeof form, value: string) {
     setForm((f) => ({
       ...f,
@@ -49,62 +70,116 @@ export function MarketingImport({
         ? { entity_level: value === "csv_upload" ? "dataset" : "campaign" }
         : {}),
     }));
-    setPreview(null);
-    setConfirmed(false);
-    setError(null);
+    resetPreview();
+  }
+  async function inspect(
+    version: string,
+    next: { sheet_name: string; header_row: number },
+  ) {
+    const info = await post(base + "/analytics/file-inspect", {
+      asset_version_id: version,
+      sheet_name: next.sheet_name || undefined,
+      header_row: next.header_row,
+    });
+    if (live.current) {
+      setFile(info);
+      setSelection({
+        sheet_name: info.selected_sheet || next.sheet_name,
+        header_row: next.header_row,
+      });
+    }
   }
   async function choose(chosen: File | undefined) {
     const sequence = ++readSequence.current;
+    controller.current?.abort();
+    const c = new AbortController();
+    controller.current = c;
     setFile(null);
-    setPreview(null);
-    setConfirmed(false);
-    setError(null);
+    setChosenFile(chosen ?? null);
+    resetPreview();
     setMapping({});
-    if (!chosen) return;
-    if (
-      !/\.csv$/i.test(chosen.name) ||
-      chosen.size > 5_000_000 ||
-      !chosen.size
-    ) {
-      setError(
-        new Error(
-          t("請選擇 5 MB 以內的 UTF-8 CSV。", "Choose a UTF-8 CSV up to 5 MB."),
-        ),
-      );
+    setSelection({ sheet_name: "", header_row: 1 });
+    setHeaderInput("1");
+    if (!chosen) {
+      setBusy(false);
       return;
     }
     setBusy(true);
     try {
-      // Preserve a UTF-8 BOM so the stored source hash matches the uploaded bytes.
-      const csv = new TextDecoder("utf-8", {
-        fatal: true,
-        ignoreBOM: true,
-      }).decode(await chosen.arrayBuffer());
+      const uploaded = await uploadCampaignFile(
+        chosen,
+        {
+          base: w.base,
+          tenant: w.tenant,
+          project: w.project,
+          user: w.me.user.id,
+        },
+        c.signal,
+      );
       if (!live.current || sequence !== readSequence.current) return;
-      const inspected = await post(base + "/analytics/inspect", { csv });
-      if (live.current && sequence === readSequence.current) {
-        setFile({ csv, name: chosen.name, headers: inspected.headers });
-        setForm((f) => ({
-          ...f,
-          name: f.name || chosen.name.replace(/\.csv$/i, ""),
-        }));
-      }
+      setFile({
+        ...uploaded,
+        headers: null,
+        sheets: [],
+        selected_sheet: null,
+        file_type: /\.xlsx$/i.test(chosen.name) ? "xlsx" : "csv",
+      });
+      setForm((f) => ({
+        ...f,
+        name: f.name || chosen.name.replace(/\.(csv|xlsx)$/i, ""),
+      }));
+      await inspect(uploaded.asset_version_id, {
+        sheet_name: "",
+        header_row: 1,
+      });
     } catch (e) {
-      if (live.current && sequence === readSequence.current) setError(e);
+      if (
+        live.current &&
+        sequence === readSequence.current &&
+        !c.signal.aborted
+      )
+        setError(e);
     } finally {
       if (live.current && sequence === readSequence.current) setBusy(false);
     }
   }
+  async function selectTable(next: { sheet_name: string; header_row: number }) {
+    if (!file || busy) return;
+    if (
+      !Number.isInteger(next.header_row) ||
+      next.header_row < 1 ||
+      next.header_row > 100
+    )
+      return;
+    setSelection(next);
+    setHeaderInput(String(next.header_row));
+    resetPreview();
+    setMapping({});
+    setFile((f) => (f ? { ...f, headers: null } : f));
+    setBusy(true);
+    try {
+      await inspect(file.asset_version_id, next);
+    } catch (e) {
+      if (live.current) setError(e);
+    } finally {
+      if (live.current) setBusy(false);
+    }
+  }
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!file || locked.current || busy) return;
+    if (!file?.headers || locked.current || busy) return;
     locked.current = true;
     setBusy(true);
     setError(null);
     const body = {
       ...form,
-      csv: file.csv,
-      source_filename: file.name,
+      asset_version_id: file.asset_version_id,
+      sheet_name:
+        file.file_type === "xlsx"
+          ? selection.sheet_name || undefined
+          : undefined,
+      header_row: selection.header_row,
+      supersedes_id: supersedes || undefined,
       mapping,
       account_id: form.account_id || undefined,
       attribution_definition: form.attribution_definition || undefined,
@@ -112,14 +187,32 @@ export function MarketingImport({
     };
     try {
       if (!preview) {
-        const p = await post(base + "/analytics/preview", body);
+        const p = await post(base + "/analytics/file-preview", body);
         if (live.current) {
           setPreview(p);
           setConfirmed(false);
         }
       } else if (confirmed) {
-        const result = await post(base + "/analytics/import", body);
-        if (live.current) onImported(result);
+        const result = await api(
+          form.source === "csv_upload"
+            ? base + "/analytics/file-import"
+            : "/v1/dataset-imports",
+          {
+            method: "POST",
+            headers: {
+              "Idempotency-Key": importKey.current,
+              "X-Tenant-ID": w.tenant,
+            },
+            body: JSON.stringify({
+              ...body,
+              ...(form.source === "csv_upload"
+                ? {}
+                : { project_id: w.project }),
+            }),
+          },
+        );
+        if (live.current)
+          onImported({ ...result, duplicate: !!preview.existing_dataset_id });
       }
     } catch (e) {
       if (live.current) setError(e);
@@ -138,19 +231,138 @@ export function MarketingImport({
       <ErrorNotice error={error} />
       <fieldset disabled={busy} className="marketing-import-fields">
         <Field
-          label={t("CSV 檔案", "CSV file")}
+          label={t("CSV／XLSX 檔案", "CSV / XLSX file")}
           hint={t(
-            "UTF-8，最多 10,000 筆；保留原始檔案，不執行公式。",
-            "UTF-8, up to 10,000 rows; original bytes are retained and formulas are never executed.",
+            "最多 5 MB、10,000 筆；原檔會保存在項目檔案庫，預覽失敗也可獨立管理。XLSX 請先貼上為值，不接受公式、宏與外部連結。",
+            "Up to 5 MB and 10,000 rows. The original is saved to project files, including failed previews. For XLSX, paste values first; formulas, macros and external links are rejected.",
           )}
         >
           <input
             name="file"
             type="file"
-            accept=".csv,text/csv"
+            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             required
             onChange={(e) => void choose(e.target.files?.[0])}
           />
+        </Field>
+        {chosenFile && !file && (
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => void choose(chosenFile)}
+          >
+            {t("重試檔案上傳", "Retry file upload")}
+          </button>
+        )}
+        {file?.file_type === "xlsx" && (
+          <div className="marketing-field-grid">
+            <Field label={t("工作表", "Worksheet")}>
+              <select
+                name="sheet_name"
+                value={selection.sheet_name}
+                required
+                onChange={(e) =>
+                  void selectTable({
+                    ...selection,
+                    sheet_name: e.target.value,
+                    header_row: Number(headerInput),
+                  })
+                }
+              >
+                <option value="" disabled>
+                  {t("選擇工作表", "Choose a worksheet")}
+                </option>
+                {file.sheets
+                  .filter((s) => !s.hidden)
+                  .map((s) => (
+                    <option key={s.name} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+              </select>
+            </Field>
+            <Field
+              label={t("標題列", "Header row")}
+              hint={t(
+                "選擇 1 至 100 列，忽略之前的說明文字。",
+                "Choose row 1–100 to skip introductory text.",
+              )}
+            >
+              <input
+                name="header_row"
+                type="number"
+                min={1}
+                max={100}
+                required
+                value={headerInput}
+                onChange={(e) => {
+                  setHeaderInput(e.target.value);
+                  resetPreview();
+                  setFile((f) => (f ? { ...f, headers: null } : f));
+                }}
+              />
+            </Field>
+            <button
+              type="button"
+              className="button secondary"
+              disabled={
+                !/^\d+$/.test(headerInput) ||
+                Number(headerInput) < 1 ||
+                Number(headerInput) > 100
+              }
+              onClick={() =>
+                void selectTable({
+                  ...selection,
+                  header_row: Number(headerInput),
+                })
+              }
+            >
+              {t("套用標題列", "Apply header row")}
+            </button>
+            {!file.headers && (
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() =>
+                  void selectTable({
+                    ...selection,
+                    header_row: Number(headerInput),
+                  })
+                }
+              >
+                {t("重新檢查工作表", "Recheck worksheet")}
+              </button>
+            )}
+          </div>
+        )}
+        <Field
+          label={t("更正先前快照", "Correct an earlier snapshot")}
+          hint={t(
+            "選填。建立新的更正版本，保留舊快照與既有報告；來源、帳戶、幣種、時區和歸因口徑須一致。",
+            "Optional. Create a correction while preserving prior snapshots and reports. Keep the same source, account, currency, timezone and definitions.",
+          )}
+        >
+          <select
+            name="supersedes_id"
+            value={supersedes}
+            onChange={(e) => {
+              setSupersedes(e.target.value);
+              resetPreview();
+            }}
+          >
+            <option value="">
+              {t("新增獨立快照", "New independent snapshot")}
+            </option>
+            {datasets
+              .filter(
+                (d) => !datasets.some((child) => child.supersedes_id === d.id),
+              )
+              .map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name} · {d.source} · {d.currency}
+                </option>
+              ))}
+          </select>
         </Field>
         <Field label={t("報表名稱", "Report name")}>
           <input
@@ -168,7 +380,9 @@ export function MarketingImport({
               value={form.source}
               onChange={(e) => change("source", e.target.value)}
             >
-              <option value="csv_upload">{t("通用 CSV", "Generic CSV")}</option>
+              <option value="csv_upload">
+                {t("通用表格", "Generic table")}
+              </option>
               <option value="google_ads">Google Ads</option>
               <option value="meta_ads">Meta Ads</option>
             </select>
@@ -246,7 +460,7 @@ export function MarketingImport({
             onChange={(e) => change("conversion_definition", e.target.value)}
           />
         </Field>
-        {file && (
+        {file?.headers && (
           <details className="marketing-mapping">
             <summary>
               {t("確認欄位映射", "Review column mapping")} (
@@ -289,8 +503,7 @@ export function MarketingImport({
                         else next[key] = value === "__none__" ? "" : value;
                         return next;
                       });
-                      setPreview(null);
-                      setConfirmed(false);
+                      resetPreview();
                     }}
                   >
                     <option value="__auto__">
@@ -299,7 +512,7 @@ export function MarketingImport({
                     <option value="__none__">
                       {t("不提供", "Unavailable")}
                     </option>
-                    {file.headers.map((h) => (
+                    {file.headers?.map((h) => (
                       <option key={h} value={h}>
                         {h}
                       </option>
@@ -358,7 +571,7 @@ export function MarketingImport({
       <button
         className="button primary"
         type="submit"
-        disabled={busy || !file || (!!preview && !confirmed)}
+        disabled={busy || !file?.headers || (!!preview && !confirmed)}
       >
         {busy
           ? t("處理中…", "Processing…")

@@ -148,7 +148,7 @@ Four browser QA groups cover these flows, two real Codex tasks driven by synthet
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **167/167**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-six captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **180/180**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -216,7 +216,7 @@ Seven Web/current-source Desktop groups cover email sign-in, the canvas, version
 
 Preview and confirm the account, currency, timezone, entity level, attribution and conversion definitions before import. Generic CSV and candidate Google/Meta-style headers support explicit column mapping. Actual UTF-8/BOM source bytes, SHA-256, definitions and computed results are retained. Duplicate requests, including a lost accepted response, return one project snapshot. Quarantine prevents reimport bypass. Unknown conversions stay unknown; exact decimal CTR/CPC/CPM/CVR/CPA/ROAS use aggregate totals and historical results are frozen.
 
-Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, XLSX, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
+Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
 
 CSV errors identify physical lines and columns. A denied selected dataset clears metrics and downloads instead of falling back to another snapshot. Four widths, both themes/languages and lost-response retry were exercised. Shared polling waits for each response and clears stale data after failure.
 
@@ -238,7 +238,7 @@ flowchart LR
 
 Select saved snapshots, a business question, current/comparison dates, metrics, dimensions and a maximum HKD budget in Marketing insights. Preview neither calls a model nor reserves credit. Explicit confirmation atomically creates a private Codex task, frozen calculations/evidence and one reservation. Sources, accounts, currencies, timezones and attribution stay independent; identical facts deduplicate, conflicts reject, and zero/missing comparison values retain reasons. Retrying a lost accepted response returns the same report.
 
-Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors/XLSX, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
+Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
 
 The list polls actual task state and opens evidence details. Denied reads clear prose and download controls. Four widths, both themes and both languages passed; mobile select overflow and stale evidence after switching/denial were repaired. Delivery `qa:analysis-reports` verifies actual HTML/JSON downloads and retry after a lost accepted reply. Builds pass; Vite still warns about the approximately 511 kB main chunk.
 
@@ -251,3 +251,31 @@ flowchart LR
 ```
 
 ![AnalysisSpec report](assets/screenshots/58-analysis-report-ready.png)
+
+## File-backed CSV/XLSX and correction history (current source)
+
+Marketing inputs are uploaded as immutable shared project-file versions before reviewing the sheet, header row, mapping and account definitions. Google/Meta use canonical `POST /v1/dataset-imports`; generic tables use the compatible nested endpoint. Preview calls no model and reserves no credit. Duplicate content and retries after a lost accepted reply reuse the snapshot. Original CSV/XLSX downloads verify actual bytes and SHA-256.
+
+The bounded read-only XLSX parser accepts up to 5,000,000 bytes, 50 worksheets, 100 columns and 10,000 data rows. Multiple visible sheets require explicit selection; header rows range from 1 to 100. Shared/inline strings, XML Unicode references, exact decimals and 1900/1904 dates are supported. Money inputs allow six decimal places; frozen metric values retain eight. Formulas, including cached results, macros, external links, encrypted files and merged data cells are rejected. Errors identify actual worksheet cells. The UI explains that a failed preview still retains the explicitly uploaded original project file.
+
+Corrections create new immutable snapshots and a complete ancestor chain; prior metrics and reports retain their original values. AnalysisSpec rejects selecting an ancestor with its correction before creating a task or budget hold. Source quarantine/erasure prevents dependent data, reports and downloads. Recovery closes only unclaimed unavailable tasks and releases unused holds; started or uncertain charges keep reconciliation rules. Private files require explicit publication as a shared copy first.
+
+```mermaid
+flowchart LR
+  File[CSV / XLSX] --> Version[Immutable shared file version]
+  Version --> Preview[Sheet / header / mapping / uncharged preview]
+  Preview --> Confirm[Current authorization and explicit confirmation]
+  Confirm --> Snapshot[Idempotent snapshot / frozen metrics]
+  Snapshot --> Correction[New correction / preserved ancestors]
+  Version --> Lifecycle[Source quarantine and erasure guards]
+```
+
+The full platform regression passes **180/180**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
+
+Upload-allocation keys persist first and are scoped by user, tenant, project and file digest; choosing the same file resumes it. Editing any input invalidates preview and confirmation. Four widths, both themes and both languages passed all 16 combinations.
+
+![Worksheet and correction selection](assets/screenshots/61-xlsx-correction-preview.png)
+
+![Frozen source and correction history](assets/screenshots/62-xlsx-source-and-lineage.png)
+
+![Traditional Chinese dark mobile](assets/screenshots/63-xlsx-mobile-zh-dark.png)
