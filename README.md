@@ -379,3 +379,17 @@ The earlier successful `qa:membership` receipt was overwritten and is excluded f
 当前页面验证使用源码 Vite 服务，生产构建另行检查；它不替代安装包或完整跨端验收。全部自建浏览器和上下文关闭、自有测试管理员/会话/用户停用，不操作用户浏览器。模型调用为零。资金/VIP写规范、完整消费钻取、旧成员页面和原生/发布仍有独立缺口。
 
 本轮最终完整平台 **256/256**、七组目录实际页面/HTTP **7/7**、严格规范响应 **63/63**；新增目录/导出十一组包含在完整 TAP 中，独立旧调用专项为 **7/7**。原始 TAP SHA-256 为 `e0741c2315252c644229cfd51198c911c8272c66b365924f4a3e92fa396f5079`。首次 252/255 的旧调用回归失败及当时原文已归档 stage38-initial；没有降低原始规范或删除原安全断言。
+
+## 授信与来源增量 / Credit-source verification
+
+账务内核新增后充值结算、其他任务冻结保护、资金/授信混合来源、按实际债务还款、赠送到期、精确累计金额和数据库不可变来源校验。`tests/billing-sources.test.ts` 的十二组专项包含在完整平台回归中。当前完整结果与原始摘要以 `evidence/alignment-platform.json` / `.tap` 为准；此前 256 项和独立检出回执原字节保留于 `evidence/pre-billing-sources/`。
+
+首轮专项 11/12 的错误码断言观察保存在 `evidence/billing-sources-initial.json`，该初次工具输出没有独立原始 TAP。跨企业来源新增实际已被拒绝，修正测试为来源校验在调用者 RLS 下返回的 23514，未更改权限。后续完整回归使用原始输出文件，不以观察摘要替代。
+
+The financial core now verifies later funding against credit-backed holds, other tasks' allocations, mixed funding sources, actual debt repayment, gift expiry, exact accumulated amounts and immutable database source totals. Twelve focused groups are included in the full platform regression. The current JSON/TAP receipt is authoritative; the previous 256-test receipt and checkout proof retain their original bytes under `evidence/pre-billing-sources/`.
+
+The initial focused run passed 11/12: a cross-tenant insert was correctly rejected, but its expected database error code was wrong. The observation receipt explicitly states that no standalone raw TAP was captured for that first attempt. Permissions were preserved. Synthetic funding does not qualify real payments, and these core tests do not complete canonical financial/VIP routes or their Admin pages.
+
+最终本阶段完整平台 **268/268**、新增账务专项 **12/12**；原始 TAP SHA-256 为 `b84f9f9d594615f3ffc92d8926ed6f3d221ca221e3daeb5dda3667034be6d340`，严格规范样本仍为 **63/63**。迁移前两库只读聚合见 `evidence/billing-existing-state-before-migration.json`，历史测试债务没有清零。
+
+Final full platform regression: **268/268**, including **12/12** new billing groups. The untouched TAP digest is above; existing strict contract captures remain **63/63**. The pre-migration aggregate receipt covers both native databases and preserves historical test debt.
