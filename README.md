@@ -138,7 +138,7 @@ npm test
 npm run contracts:export
 ```
 
-0.5.0 原始发布包含 167 个 Fastify method/path、十个迁移和 84 项测试；当前源码清单为常规 234 个 method/path、33 个迁移和 159 项通过的原生测试。路由数量不等同完整规范 OpenAPI。测试覆盖身份、隔离、费用并发/重放、权限/VIP、内容撤销、图文/PDF/MP4、真实 Codex 受控协议、源码包及新增持久工作流程。浏览器/扩展/Desktop 证据由独立 delivery 仓库记录。
+0.5.0 原始发布包含 167 个 Fastify method/path、十个迁移和 84 项测试；当前源码清单为常规 243 个 method/path、34 个迁移和 167 项通过的原生测试。路由数量不等同完整规范 OpenAPI。测试覆盖身份、隔离、费用并发/重放、权限/VIP、内容撤销、图文/PDF/MP4、真实 Codex 受控协议、源码包及新增持久工作流程。浏览器/扩展/Desktop 证据由独立 delivery 仓库记录。
 
 | 路径                   | 内容                                           |
 | ---------------------- | ---------------------------------------------- |
@@ -220,7 +220,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **159/159**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **167/167**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十六份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与站内通知（当前源码）
 
@@ -277,7 +277,7 @@ flowchart LR
 
 画布及 Codex `design_render` 生成实际单页 PDF；文字与图层保存在源工程或独立 editable JSON，PDF 为图片审阅稿。格式由 `layout.render`、`document.render`、`video.render` 分别约束。导出检查当前可见版本；相同请求响应丢失后重试沿用幂等键，保留原产物与源快照。
 
-完整原生回归 **159/159**。delivery 的七组 Web/源码 Electron 验收包含真实下载、原生保存、pypdf/Poppler 独立解析渲染与摘要校验。模拟模型和真实文件逻辑分明；完整审阅包、印刷标准及至少 12 个真实合格角色仍未完成。
+完整原生回归 **167/167**。delivery 的七组 Web/源码 Electron 验收包含真实下载、原生保存、pypdf/Poppler 独立解析渲染与摘要校验。模拟模型和真实文件逻辑分明；完整审阅包、印刷标准及至少 12 个真实合格角色仍未完成。
 
 ![实际 PDF 导出](assets/screenshots/design-pdf-export.png)
 
@@ -287,7 +287,7 @@ flowchart LR
 
 原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、XLSX、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
 
-迁移 032/033 增加来源及冻结指标，既有迁移保持字节不变。当前原生回归 **159/159**，包括四组文档指标算例、四组 CSV 检查和四组 PostgreSQL 集成检查。后台正文读取沿用独立权限与审计；删除清空原文、事实、口径与指标。主文档见交付根目录 docs/technical/27-marketing-import-metrics-and-evidence.md。
+迁移 032/033 增加来源及冻结指标，既有迁移保持字节不变。当前原生回归 **167/167**，包括四组文档指标算例、四组 CSV 检查和四组 PostgreSQL 集成检查。后台正文读取沿用独立权限与审计；删除清空原文、事实、口径与指标。主文档见交付根目录 docs/technical/27-marketing-import-metrics-and-evidence.md。
 
 ```mermaid
 flowchart LR
@@ -299,3 +299,21 @@ flowchart LR
 ```
 
 ![实际营销分析](assets/screenshots/marketing-analytics.png)
+
+## AnalysisSpec 私人报告（当前源码）
+
+在行销分析选择已有快照、业务问题、日期/比较区间、指标、维度和 HKD 最高预算。预览不调用模型或预留费用；明确确认后原子建立私人 Codex 任务、冻结计算/证据及单笔预留。来源、账户、币种、时区及归因独立；重复事实去重，冲突拒绝，比较零值/无数据保留原因。接受后丢失回执重试返回原报告。
+
+真实 Codex 通过分页事实工具读取固定值，服务端检查证据占位符及数字字面量后发布固定 HTML 资产，JSON 保留完整计算。自然语言语义和专业业务质量仍待验收；当前模型为明确标识的假数据。来源隔离/删除和项目撤权阻止读取及下载。完整 102 条综合验收、正式连接/XLSX、专业角色资格和生产发布仍未完成，历史安装包未更新。
+
+前向迁移 034 为报告、依赖、Snapshot/Evidence、受限分析师和私有资产设置数据库守卫。新增规范 `POST /v1/reports`、`GET /v1/reports/:report`、`GET /v1/snapshots/:snapshot` 和 `GET /v1/evidence/:evidence`，要求当前身份与企业头，写入另需 CSRF/幂等。原生回归 **167/167**，实际清单 **243** 个 method/path、**34** 个迁移；路径数量不代表完整契约通过。旧冻结证据索引用 `node --env-file=.env --import tsx scripts/verify-analysis-index.ts` 只读核对，不重算历史。
+
+```mermaid
+flowchart LR
+  Confirm[Explicit scope and budget] --> Atomic[Private task / frozen facts / one reservation]
+  Atomic --> Codex[Authorized paginated facts / real Codex]
+  Codex --> Validate[References and numeric literals]
+  Validate --> Asset[Immutable HTML version / JSON export]
+```
+
+![AnalysisSpec report](assets/screenshots/analysis-reports.png)

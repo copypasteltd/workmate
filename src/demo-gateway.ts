@@ -95,8 +95,16 @@ export async function startDemoGateway(c: Config) {
       const requested = JSON.stringify(
         input.filter((i) => i.role === "user").at(-1) ?? "",
       );
+      const reportTool = find("analysis_report_facts");
       let tool: any, args: any;
-      if (find("image2_generate") && !used(find("image2_generate").name)) {
+      if (reportTool && !used(reportTool.name)) {
+        tool = reportTool;
+        args = {};
+      } else if (
+        !reportTool &&
+        find("image2_generate") &&
+        !used(find("image2_generate").name)
+      ) {
         tool = find("image2_generate");
         args = {
           prompt:
@@ -182,6 +190,42 @@ export async function startDemoGateway(c: Config) {
           mime_type: "text/markdown",
         };
       }
+      function evidenceReference(value: any, depth = 0): string | undefined {
+        if (depth > 12 || value == null) return;
+        if (typeof value === "string") {
+          try {
+            return evidenceReference(JSON.parse(value), depth + 1);
+          } catch {
+            return;
+          }
+        }
+        if (typeof value !== "object") return;
+        if (
+          typeof value.metric_id === "string" &&
+          typeof value.snapshot_id === "string" &&
+          typeof value.id === "string"
+        )
+          return value.id;
+        for (const item of Object.values(value)) {
+          const id = evidenceReference(item, depth + 1);
+          if (id) return id;
+        }
+      }
+      const evidenceId = evidenceReference(
+        current.filter((i) => i.type === "function_call_output"),
+      );
+      const reportText = JSON.stringify({
+        observations: [
+          {
+            text: `Simulated observation / 模擬觀察: {{${evidenceId}}}`,
+            evidence_ids: [evidenceId],
+          },
+        ],
+        hypotheses: [],
+        next_steps: [
+          "Review source coverage and verify attribution before changing a campaign. / 先核對資料覆蓋和歸因口徑，再調整活動。",
+        ],
+      });
       const item = tool
         ? {
             id: "fc_" + randomUUID(),
@@ -198,7 +242,9 @@ export async function startDemoGateway(c: Config) {
             content: [
               {
                 type: "output_text",
-                text: "【演示資料 / Simulated data】此回覆由本機模擬服務產生。Codex、授權、工具執行及產物保存流程已運行；內容和用量為測試資料。請在素材與交付查看產物。\n\nThis response uses deterministic test data. Codex and product workflow operations ran locally. Content and usage are synthetic.",
+                text: reportTool
+                  ? reportText
+                  : "【演示資料 / Simulated data】此回覆由本機模擬服務產生。Codex、授權、工具執行及產物保存流程已運行；內容和用量為測試資料。請在素材與交付查看產物。\n\nThis response uses deterministic test data. Codex and product workflow operations ran locally. Content and usage are synthetic.",
                 annotations: [],
               },
             ],

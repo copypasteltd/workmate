@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
-import type { Database } from "./db.js";
+import type { Database, Tx } from "./db.js";
 import { requireUser } from "./auth.js";
 import { projectAccess } from "./access.js";
 import { name, Problem, uuid, csvCell, hash, canonical } from "./lib.js";
@@ -87,6 +87,18 @@ export function analyticsEvidence(d: any) {
     };
   });
   return { ...m, provenance, evidence };
+}
+export async function persistDatasetEvidence(tx: Tx, d: any) {
+  await tx.query(
+    `INSERT INTO dataset_evidence(id,tenant_id,project_id,dataset_id,body)
+     SELECT (e->>'id')::uuid,$1,$2,$3,e FROM jsonb_array_elements($4::jsonb) e ON CONFLICT(id) DO NOTHING`,
+    [
+      d.tenant_id,
+      d.project_id,
+      d.id,
+      JSON.stringify(analyticsEvidence(d).evidence),
+    ],
+  );
 }
 function publicDataset(d: any, details = false) {
   const {
@@ -252,6 +264,7 @@ export function registerAnalytics(app: FastifyInstance, db: Database) {
           "IMPORT_UNAVAILABLE",
           "This import is unavailable; ask a workspace administrator to review its content status",
         );
+      await persistDatasetEvidence(tx, d);
       return { ...publicDataset(d), duplicate: !created };
     }, tenant);
   });

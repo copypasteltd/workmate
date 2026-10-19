@@ -23,6 +23,12 @@ import { settle, tokenCharge } from "./billing.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 import { event } from "./tasks.js";
 import { analyticsEvidence } from "./analytics.js";
+import {
+  assertReportSources,
+  reportFacts,
+  analysisReportInstructions,
+  finalizeAnalysisReport,
+} from "./analysis-reports.js";
 import type { Principal } from "./auth.js";
 import { advanceWorkflows, poster, renderProjectPoster } from "./business.js";
 import {
@@ -197,6 +203,7 @@ export class Worker {
             throw new Error("Content is unavailable");
           await this.catalog.ensureEnabled(tx, t.role_key);
           await assertTaskSkills(tx, this.catalog, t);
+          await assertReportSources(tx, t);
           currentPlan = await authorizeExecutionPlan(
             tx,
             tenant,
@@ -269,6 +276,7 @@ export class Worker {
               await this.catalog.ensureEnabled(tx, task.role_key);
               await assertTaskSkills(tx, this.catalog, task);
               await assertInputDependencies(tx, t);
+              await assertReportSources(tx, t);
               await authorizeExecutionPlan(
                 tx,
                 tenant,
@@ -313,6 +321,7 @@ export class Worker {
             )
           ).rows[0];
           if (!live) throw new Error("Fenced execution");
+          await assertReportSources(tx, live);
           if (kind === "runtime.thread")
             await tx.query("UPDATE tasks SET runtime_thread=$2 WHERE id=$1", [
               id,
@@ -329,6 +338,14 @@ export class Worker {
         false,
         owner,
       );
+    let completedUsage:
+      | {
+          inputTokens: number;
+          outputTokens: number;
+          usageKnown: boolean;
+          accepted: boolean;
+        }
+      | undefined;
     try {
       const role = this.catalog.role(task.role_key);
       const bound = await this.catalog.boundSkills(role);
@@ -343,6 +360,7 @@ export class Worker {
         async (tx) => {
           await projectAccess(tx, actor!, tenant, task.project_id, "write");
           await assertInputDependencies(tx, task);
+          await assertReportSources(tx, task);
           const work = await resolveWorkContext(
             tx,
             actor!,
@@ -370,13 +388,14 @@ export class Worker {
       };
       const result = await this.runtime.start({
         taskId: id,
-        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}\n\nCurrent user request:\n${task.prompt}`,
+        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}`,
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
         skills: bound,
         signal: controller.signal,
         onEvent: emit,
         tools: this.tools(task, actor!, fencing, effectiveRole),
       });
+      completedUsage = result;
       await this.finish(
         task,
         fencing,
@@ -397,9 +416,13 @@ export class Worker {
         fencing,
         "failed",
         "",
-        f?.inputTokens ?? 0,
-        f?.outputTokens ?? 0,
-        f ? f.accepted && !f.usageKnown : false,
+        f?.inputTokens ?? completedUsage?.inputTokens ?? 0,
+        f?.outputTokens ?? completedUsage?.outputTokens ?? 0,
+        f
+          ? f.accepted && !f.usageKnown
+          : completedUsage
+            ? completedUsage.accepted && !completedUsage.usageKnown
+            : false,
         f?.code ?? "RUNTIME_UNAVAILABLE",
       );
     } finally {
@@ -454,6 +477,7 @@ export class Worker {
           await this.catalog.ensureEnabled(tx, t.role_key);
           await assertTaskSkills(tx, this.catalog, t);
           await assertInputDependencies(tx, live);
+          await assertReportSources(tx, live);
           await authorizeExecutionPlan(
             tx,
             t.tenant_id,
@@ -489,6 +513,32 @@ export class Worker {
             this.db.config.AI_INPUT_HKD_MICROS_PER_MILLION ?? 0,
             this.db.config.AI_OUTPUT_HKD_MICROS_PER_MILLION ?? 0,
           ) + Number(ops.charge);
+        if (
+          status === "succeeded" &&
+          !uncertain &&
+          !ops.uncertain &&
+          live.input_context?.analysis_report_id
+        ) {
+          try {
+            text = await finalizeAnalysisReport(tx, this.storage, live, text);
+          } catch (e) {
+            if (
+              !(e instanceof Problem) ||
+              e.code !== "REPORT_NARRATIVE_INVALID"
+            )
+              throw e;
+            status = "failed";
+            error = e.code;
+            text = "";
+            await tx.query(
+              "UPDATE analysis_reports SET validation=$2 WHERE id=$1",
+              [
+                live.input_context.analysis_report_id,
+                JSON.stringify({ state: "failed", error_code: e.code }),
+              ],
+            );
+          }
+        }
         await tx.query(
           "UPDATE tasks SET status=$2,output=$3,input_tokens=$4,output_tokens=$5,error_code=$6,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
           [t.id, status, text, input, output, error ?? null],
@@ -568,6 +618,7 @@ export class Worker {
       await this.catalog.ensureEnabled(tx, t.role_key);
       await assertTaskSkills(tx, this.catalog, t);
       await assertInputDependencies(tx, t);
+      await assertReportSources(tx, t);
       await authorizeExecutionPlan(
         tx,
         t.tenant_id,
@@ -1010,6 +1061,28 @@ export class Worker {
       tools.push(this.imageTool(t, actor, fencing, authorize, false));
     if (role.tool_ids.includes("image.edit.internal"))
       tools.push(this.imageTool(t, actor, fencing, authorize, true));
+    if (
+      t.input_context?.analysis_report_id &&
+      role.tool_ids.includes("dataset.read")
+    )
+      tools.push({
+        name: "analysis_report_facts",
+        description:
+          "Read a bounded page of frozen report evidence, scope and exact values. Follow next_offset to inspect additional metrics and independent scopes. Numerical prose must use evidence placeholders.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            offset: { type: "integer", minimum: 0, maximum: 3300 },
+          },
+          additionalProperties: false,
+        },
+        run: txTool(
+          (tx, b) => reportFacts(tx, t, b.offset),
+          z
+            .object({ offset: z.number().int().min(0).max(3300).default(0) })
+            .strict(),
+        ),
+      });
     const permitted = tools.filter(
       (tool) =>
         (
@@ -1020,6 +1093,9 @@ export class Worker {
             cloud_file_read: role.tool_ids.includes("asset.read"),
             deliver_text: role.tool_ids.includes("asset.write"),
             marketing_metrics: role.tool_ids.includes("dataset.read"),
+            analysis_report_facts:
+              !!t.input_context?.analysis_report_id &&
+              role.tool_ids.includes("dataset.read"),
             image2_generate: role.tool_ids.includes("image.generate.internal"),
             code_read: role.tool_ids.includes("code.read"),
             code_write: role.tool_ids.includes("code.patch"),
@@ -1031,7 +1107,9 @@ export class Worker {
         )[tool.name],
     );
     // A model cannot regain write capabilities by ignoring the requested mode.
-    return t.mode === "ask" || t.mode === "plan"
+    return t.mode === "ask" ||
+      t.mode === "plan" ||
+      t.input_context?.analysis_report_id
       ? permitted.filter((tool) =>
           [
             "project_assets",
@@ -1039,6 +1117,7 @@ export class Worker {
             "cloud_files",
             "cloud_file_read",
             "marketing_metrics",
+            "analysis_report_facts",
             "code_read",
             "font_catalog",
           ].includes(tool.name),
