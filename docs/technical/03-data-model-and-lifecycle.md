@@ -137,3 +137,5 @@ ADMIN01 新增逻辑实体详见 [控制面表清单](11-admin-control-plane.md)
 EntitlementGrant 固定 plan_version_id、subject、starts_at、ends_at、source、actor 与替换关系。有效区间校验 ends_at > starts_at；重叠策略、最大席位与金额上限由领域规则处理，JSON Schema 不单独证明这些跨行条件。到期按当前权威时间计算，projection 只是缓存。在途预留固定规则和原引用，新步骤重新检查权限和可用权益。
 
 ContentControl 引用真实对象和版本，隔离、删除、分享撤销传播至访问路径及索引。AdminJob 冻结目标/版本/筛选摘要并逐项存结果，不在 worker 中重跑可变列表代替快照。审计只有追加写入与受控保留流程，普通管理员不得修改；敏感读、下载和失败操作也记录。迁移验证覆盖历史企业预算账户映射、未确认付款、旧 support.metadata 授权及旧会话失效，不能给所有企业 Admin 自动升级平台权限。
+
+当前 cloud_workspaces/workspace_nodes 的强制 RLS、预设根目录、数据库树约束、固定版本、私人上传及删除实现见 [持久云文件](18-persistent-cloud-files.md)；设计表内其他对象仍按实际实现清单分别验收。

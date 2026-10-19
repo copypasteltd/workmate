@@ -8501,6 +8501,15 @@
             "$ref": "#/components/parameters/TenantHeader"
           },
           {
+            "name": "conversation_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
             "name": "cursor",
             "in": "query",
             "required": false,
@@ -8608,6 +8617,18 @@
             "schema": {
               "type": "string",
               "minLength": 1
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "directory",
+                "file"
+              ]
             }
           },
           {
@@ -8874,6 +8895,71 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Deletion"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/workspace-nodes/{node_id}/reference": {
+      "get": {
+        "operationId": "readWorkspaceNodeReference",
+        "summary": "readWorkspaceNodeReference",
+        "tags": [
+          "project"
+        ],
+        "x-requirements": [
+          "REQ-063",
+          "REQ-068"
+        ],
+        "x-stage": "M1",
+        "x-permission": "project.read",
+        "parameters": [
+          {
+            "name": "node_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceNodeReference"
                 }
               }
             }
@@ -19862,6 +19948,10 @@
           "sha256": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
+          },
+          "conversation_id": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -23445,6 +23535,18 @@
               "verified",
               "disabled"
             ]
+          },
+          "skill_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "package_version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name_en": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [
@@ -23657,7 +23759,8 @@
           },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 180
           },
           "kind": {
             "type": "string",
@@ -23689,6 +23792,13 @@
               "required": [
                 "asset_version_id"
               ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "asset_version_id"
+                ]
+              }
             }
           }
         ]
@@ -23734,6 +23844,23 @@
           "updated_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "root_kind": {
+            "type": "string",
+            "enum": [
+              "attachments",
+              "working_files",
+              "project_materials",
+              "deliverables"
+            ]
+          },
+          "reference_state": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "unavailable",
+              "deleted"
+            ]
           }
         },
         "required": [
@@ -23759,7 +23886,10 @@
             "minLength": 1
           },
           "parent_id": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid"
           },
           "asset_version_id": {
@@ -23769,6 +23899,77 @@
         },
         "required": [
           "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "CloudFilePreviewImage": {
+        "type": "object",
+        "properties": {
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp",
+              "image/gif"
+            ]
+          },
+          "base64": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "content_type",
+          "base64"
+        ],
+        "additionalProperties": false
+      },
+      "WorkspaceNodeReference": {
+        "type": "object",
+        "properties": {
+          "node": {
+            "$ref": "#/components/schemas/WorkspaceNode"
+          },
+          "asset_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "content_type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "text": {
+            "type": "string"
+          },
+          "preview_image": {
+            "$ref": "#/components/schemas/CloudFilePreviewImage"
+          }
+        },
+        "required": [
+          "node",
+          "asset_id",
+          "asset_version_id",
+          "source_version",
+          "content_type",
+          "size_bytes",
+          "sha256"
         ],
         "additionalProperties": false
       },
@@ -24661,11 +24862,14 @@
           "kind": {
             "type": "string",
             "enum": [
+              "running",
               "needs_input",
               "waiting_approval",
               "succeeded",
               "partially_succeeded",
-              "failed"
+              "failed",
+              "cancelled",
+              "reconciling"
             ]
           },
           "read": {
@@ -24674,12 +24878,15 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "task_title": {
+            "type": "string",
+            "minLength": 1
           }
         },
         "required": [
           "id",
           "project_id",
-          "conversation_id",
           "task_id",
           "kind",
           "read",

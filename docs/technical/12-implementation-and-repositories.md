@@ -2,6 +2,8 @@
 
 版本：2.0 · 2026-10-19 · 产品代码：0.5.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
+当前源码持续修复已扩展到 27 个迁移、持久删除/上传/事件、云文件、项目技能、站内通知及默认助手；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md) 与 [默认助手](21-default-assistant-and-first-delegation.md)。
+
 ## 1. 路径与仓库
 
 唯一根目录为 `D:\dev\copypasted\自有agent\`。代码、开发脚本、依赖和构建产物全部位于 `dev/`；主文档位于 `docs/`。六个独立 Git 仓库都有 main 分支、锁文件、中英 README、Mermaid 逻辑图、实际截图与许可说明。

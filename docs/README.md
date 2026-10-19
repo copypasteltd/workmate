@@ -6,6 +6,8 @@
 
 产品服务在港企业，首批为现有客户的 marketing 团队。以统一企业平台支撑云端 Web、Chrome 扩展/原生桥接、完整 Desktop，覆盖营销素材生产、广告及网站分析、SEO/GEO 和重复流程。全部 AI 请求经过公司内部服务器，**Codex 为唯一 Agent 内核**，由 CORE01 固定；实际 Codex 版本与受控 Responses 工具回合已验证；公司内部网关尚待提供配置并真实联调。
 
+当前按用户授权使用明确标识的假数据继续全体系修复，跟踪见 [102 条差异基线与修复](quality/09-implementation-alignment-audit.md)，新实现约束见 [删除、传输、保留及事件](technical/17-erasure-transfer-retention-events.md)。0.5.0 发布物保留原始版本，尚未重新打包未发布改动。
+
 **已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/08-enterprise-federation-acceptance.md)。未完成外部平台授权或公司真实模型准入。
 
 ## 建议阅读
@@ -61,6 +63,12 @@ Web 主线以自然语言委派、会话中的真实执行、右侧成果/云文
 | 技术 | [云端定时工作流](technical/15-cloud-workflow-schedules.md) | IANA 日历、配置/授权冻结、漏跑/重叠、后台控制与删除 |
 | 质量 | [0.5.0 身份与交付验收](quality/08-enterprise-federation-acceptance.md) | 逻辑回归、真实签名 IdP、打包客户端与交付边界 |
 | 技术 | [企业联邦与原生授权](technical/16-enterprise-federation-and-native-auth.md) | 邮箱证明、MFA 配置、SSO 撤销和浏览器到原生端 |
+| 技术 | [删除、文件传输、保留及事件](technical/17-erasure-transfer-retention-events.md) | 假数据依赖、不可逆清理、分片续传、保留策略、SSE 与领取恢复 |
+| 技术 | [持久云文件](technical/18-persistent-cloud-files.md) | 四类作用域、固定引用、持久源码和独立共享 |
+| 技术 | [项目技能](technical/19-project-skill-lifecycle.md) | 精确安装、版本绑定、安全撤销与权益复查 |
+| 技术 | [站内通知](technical/20-in-app-notifications.md) | 最终状态、接收者隔离、分页与跨项目定位 |
+| 技术 | [默认助手与首次委派](technical/21-default-assistant-and-first-delegation.md) | 无需自建专家、私人会话、原子预留与明确版本采纳 |
+| 质量 | [全体系需求差异复查](quality/09-implementation-alignment-audit.md) | 不可覆盖的 102 条基线、契约漂移、修复证据与未完成条件 |
 | 历史 | [0.4.0 云端计划验收](quality/07-cloud-schedule-acceptance.md) | 上一版本的定时流程与证据 |
 | 质量 | [0.3.0 身份历史](quality/06-admin-identity-acceptance.md) | 邀请、本人 MFA、账号/会话控制及当时原始证据 |
 | 质量 | [0.2.0 历史验收](quality/05-persistent-work-acceptance.md) | 持续专家、私密会话与记忆的历史检查 |
@@ -114,3 +122,6 @@ ADMIN01 拆为 REQ-083–102、UC19–UC24 和 TC-083–102；同步 P14/A01–A
 ## 当前交付证据维护
 
 当前版本实际发布和离线恢复通过后，在根目录运行 `python -X utf8 docs/tools/collect_implementation_evidence.py` 汇总原始报告；[汇总工具](tools/collect_implementation_evidence.py) 核对提交、报告摘要及恢复清单，更新质量 JSON 并保留上一版证据，不改写 102 条计划用例状态。
+
+当前云文件与 Codex 工作源码约束见 [持久云文件](technical/18-persistent-cloud-files.md)。
+项目方法安装、版本绑定与即时安全撤销见 [技能生命周期](technical/19-project-skill-lifecycle.md)。当前 102 条需求的原始条件和逐项差异见 [修复进度](quality/requirements-alignment-progress.json)，局部回归不等同完整产品验收。

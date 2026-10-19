@@ -88,6 +88,7 @@ def define_schemas():
     add('ApprovalDecision', {'decision': enum('approve', 'reject'), 'action_hash': HASH, 'expected_version': INT})
     add('Approval', {'id': ID, 'task_id': ID, 'action_type': TEXT, 'action_hash': HASH, 'state': enum('pending', 'approved', 'rejected', 'expired', 'revoked'), 'expires_at': TIME, 'version': INT})
     add('UploadCreate', {'project_id': ID, 'filename': TEXT, 'content_type': TEXT, 'size_bytes': {'type': 'integer', 'minimum': 1, 'maximum': 1073741824}, 'sha256': HASH})
+    S['UploadCreate']['properties']['conversation_id'] = ID
     add('UploadSession', {'upload_id': ID, 'upload_url': {'type': 'string', 'format': 'uri'}, 'expires_at': TIME, 'part_size_bytes': {'type': 'integer', 'minimum': 1}})
     add('UploadComplete', {'sha256': HASH, 'size_bytes': {'type': 'integer', 'minimum': 1}})
     add('Asset', {'id': ID, 'project_id': ID, 'asset_version_id': ID, 'kind': enum('image', 'video', 'audio', 'font', 'document', 'dataset', 'project'), 'state': enum('pending_upload', 'processing', 'ready', 'rejected', 'deleted'), 'content_type': TEXT, 'size_bytes': INT, 'sha256': HASH})
@@ -363,6 +364,7 @@ def extend_web_workbench():
         S[name]['properties'].update({'template_version_id': ID, 'skill_installation_ids': arr(ID), 'role_description': TEXT})
     add('SkillVersionCreate', {'project_id': ID, 'name': TEXT, 'instructions': TEXT, 'package_asset_version_id': ID, 'input_schema': {'type': 'object'}, 'output_schema': {'type': 'object'}, 'tool_ids': arr(TEXT), 'required_connectors': arr(TEXT)}, ['project_id', 'name', 'instructions', 'input_schema', 'output_schema', 'tool_ids', 'required_connectors'])
     add('SkillVersion', {'id': ID, 'name': TEXT, 'version': INT, 'source': TEXT, 'content_hash': HASH, 'tool_ids': arr(TEXT), 'required_connectors': arr(TEXT), 'state': enum('draft', 'verified', 'disabled')})
+    S['SkillVersion']['properties'].update({'skill_key': TEXT, 'package_version': TEXT, 'name_en': TEXT})
     add('SkillVerification', {'expected_version': INT, 'validation_task_ids': arr(ID, 1)})
     add('SkillInstall', {'project_id': ID, 'skill_version_id': ID, 'enabled': BOOL})
     add('SkillInstallation', {'id': ID, 'project_id': ID, 'skill_version_id': ID, 'enabled': BOOL, 'version': INT, 'state': enum('installed', 'uninstalled', 'revoked')})
@@ -370,9 +372,14 @@ def extend_web_workbench():
     add('EffectiveCapabilities', {'agent_id': ID, 'project_id': ID, 'skill_version_ids': arr(ID), 'tool_ids': arr(TEXT), 'missing_dependencies': arr(TEXT), 'policy_version': INT})
     add('CloudWorkspace', {'id': ID, 'project_id': ID, 'conversation_id': ID, 'kind': enum('project', 'conversation'), 'version': INT}, ['id', 'project_id', 'kind', 'version'])
     add('WorkspaceNodeCreate', {'parent_id': ID, 'name': TEXT, 'kind': enum('directory', 'file'), 'asset_version_id': ID}, ['name', 'kind'])
-    S['WorkspaceNodeCreate']['allOf'] = [{'if': {'properties': {'kind': {'const': 'file'}}}, 'then': {'required': ['asset_version_id']}}]
+    S['WorkspaceNodeCreate']['properties']['name'] = {**TEXT,'maxLength':180}
+    S['WorkspaceNodeCreate']['allOf'] = [{'if': {'properties': {'kind': {'const': 'file'}}}, 'then': {'required': ['asset_version_id']}, 'else': {'not': {'required': ['asset_version_id']}}}]
     add('WorkspaceNode', {'id': ID, 'workspace_id': ID, 'project_id': ID, 'parent_id': ID, 'name': TEXT, 'kind': enum('directory', 'file'), 'asset_version_id': ID, 'version': INT, 'updated_at': TIME}, ['id', 'workspace_id', 'project_id', 'name', 'kind', 'version', 'updated_at'])
+    S['WorkspaceNode']['properties'].update({'root_kind':enum('attachments','working_files','project_materials','deliverables'), 'reference_state':enum('ready','unavailable','deleted')})
     add('WorkspaceNodeUpdate', {'expected_version': INT, 'name': TEXT, 'parent_id': ID, 'asset_version_id': ID}, ['expected_version'])
+    S['WorkspaceNodeUpdate']['properties']['parent_id'] = {'type':['string','null'],'format':'uuid'}
+    add('CloudFilePreviewImage', {'content_type':enum('image/png','image/jpeg','image/webp','image/gif'),'base64':TEXT})
+    add('WorkspaceNodeReference', {'node':ref('WorkspaceNode'),'asset_id':ID,'asset_version_id':ID,'source_version':INT,'content_type':TEXT,'size_bytes':INT,'sha256':HASH,'text':{'type':'string'},'preview_image':ref('CloudFilePreviewImage')}, ['node','asset_id','asset_version_id','source_version','content_type','size_bytes','sha256'])
     add('ArtifactPromotion', {'workspace_id': ID, 'parent_id': ID, 'base_asset_version_id': ID, 'sharing_scope': enum('project')}, ['workspace_id', 'base_asset_version_id', 'sharing_scope'])
     add('ArtifactSelection', {'kind': enum('text', 'image_region', 'video_range', 'evidence'), 'anchor': TEXT, 'base_asset_version_id': ID})
     S['MessageCreate']['properties']['artifact_selections'] = arr(ref('ArtifactSelection'))
@@ -402,8 +409,9 @@ def extend_web_workbench():
     S['WorkflowRun'].update(target)
     add('RoutineActivation', {'expected_version': INT})
     add('Routine', {'id': ID, 'project_id': ID, 'workflow_version_id': ID, 'trigger_id': ID, 'conversation_id': ID, 'state': enum('active', 'paused')}, ['id', 'project_id', 'workflow_version_id', 'trigger_id', 'state'])
-    add('Notification', {'id': ID, 'project_id': ID, 'conversation_id': ID, 'task_id': ID, 'kind': enum('needs_input', 'waiting_approval', 'succeeded', 'partially_succeeded', 'failed'), 'read': BOOL, 'created_at': TIME})
+    add('Notification', {'id': ID, 'project_id': ID, 'conversation_id': ID, 'task_id': ID, 'kind': enum('running', 'needs_input', 'waiting_approval', 'succeeded', 'partially_succeeded', 'failed', 'cancelled', 'reconciling'), 'read': BOOL, 'created_at': TIME}, ['id','project_id','task_id','kind','read','created_at'])
     add('NotificationUpdate', {'read': BOOL})
+    S['Notification']['properties']['task_title'] = TEXT
     e = endpoint
     e('/v1/conversations/{conversation_id}', 'get', 'getConversation', None, 'Conversation', [61,72])
     e('/v1/conversations/{conversation_id}', 'patch', 'updateConversation', 'ConversationUpdate', 'Conversation', [61,67], permission='task.create')
@@ -420,10 +428,11 @@ def extend_web_workbench():
     e('/v1/skill-installations/{installation_id}', 'patch', 'updateSkillInstallation', 'SkillInstallationUpdate', 'SkillInstallation', [64], permission='skill.manage')
     e('/v1/skill-installations/{installation_id}', 'delete', 'uninstallSkill', None, 'Ack', [64], permission='skill.manage')
     e('/v1/agents/{agent_id}/effective-capabilities', 'get', 'getEffectiveCapabilities', None, 'EffectiveCapabilities', [64,69])
-    e('/v1/workspaces', 'get', 'listCloudWorkspaces', None, list_schema('CloudWorkspace'), [63])
-    e('/v1/workspaces/{workspace_id}/nodes', 'get', 'listWorkspaceNodes', None, list_schema('WorkspaceNode'), [63], query=[('parent_id', ID, False), ('q', TEXT, False)])
+    e('/v1/workspaces', 'get', 'listCloudWorkspaces', None, list_schema('CloudWorkspace'), [63], query=[('conversation_id',ID,False)])
+    e('/v1/workspaces/{workspace_id}/nodes', 'get', 'listWorkspaceNodes', None, list_schema('WorkspaceNode'), [63], query=[('parent_id', ID, False), ('q', TEXT, False), ('kind', enum('directory','file'), False)])
     e('/v1/workspaces/{workspace_id}/nodes', 'post', 'createWorkspaceNode', 'WorkspaceNodeCreate', 'WorkspaceNode', [63], permission='asset.write')
     e('/v1/workspace-nodes/{node_id}', 'patch', 'updateWorkspaceNode', 'WorkspaceNodeUpdate', 'WorkspaceNode', [63,68], permission='asset.write')
+    e('/v1/workspace-nodes/{node_id}/reference', 'get', 'readWorkspaceNodeReference', None, 'WorkspaceNodeReference', [63,68])
     e('/v1/workspace-nodes/{node_id}', 'delete', 'deleteWorkspaceNode', None, 'Deletion', [49,63], permission='asset.write', status=202)
     e('/v1/artifacts/{artifact_id}/promotions', 'post', 'promoteArtifact', 'ArtifactPromotion', 'WorkspaceNode', [63,68], permission='asset.share')
     e('/v1/projects/{project_id}/configuration-versions', 'get', 'listProjectConfigVersions', None, list_schema('ProjectConfigVersion'), [65], stage='M2')

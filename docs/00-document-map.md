@@ -6,7 +6,7 @@
 
 本套文档将 CopyPaste 企业 Agent 服务从需求展开到产品、模块、接口、开发、测试与运营。覆盖云端 Web、Chrome 扩展、原生本地桥接和完整 Desktop；覆盖营销图片、视频、字体与特效、广告及网站分析、SEO/GEO、企业重复流程。
 
-「文档完成」表示方案可供评审和研发拆解；本轮实际实现另外记录在 [仓库清单](technical/12-implementation-and-repositories.md) 与 [当前验收](quality/07-cloud-schedule-acceptance.md)，不能据文档覆盖宣称全量产品通过或外部平台获批。未知信息通过设计默认值、决策状态和验证门槛管理，不用空白章节替代设计。
+「文档完成」表示方案可供评审和研发拆解；已发布 0.5.0 的实际实现记录在 [仓库清单](technical/12-implementation-and-repositories.md) 与 [版本验收](quality/08-enterprise-federation-acceptance.md)，当前持续修复见 [全体系复查](quality/09-implementation-alignment-audit.md)。不能据文档覆盖宣称全量产品通过或外部平台获批。
 
 ## 2. 阅读路径
 
@@ -28,7 +28,7 @@
 1. 用户硬约束优先：主文档在 `docs/`，实际源码和构建在 `dev/`；各端独立 Git 的中英 README、流程图、截图按最新交付要求随仓库保存；不调度本地 Docker、WSL 等虚拟化环境；浏览器调用后释放不用的标签页；所有 AI API 经过内部服务器；Agent 内核唯一使用 Codex。
 2. 需求编号 `REQ-001` 至 `REQ-102` 的定义以 [SRS](requirements/01-srs.md) 为准；原稿 U01–U10、F01–F22 及 WEB01 对标、ROLE01 角色预设、BRAND01 官网视觉、CORE01 Codex 唯一内核、ADMIN01 完整管理后台指令通过追踪矩阵保留来源关系。CORE01 收敛已有 REQ-044/075，不新增同义编号。
 3. 产品词义、任务状态与金额单位以 [术语](governance/02-glossary-and-sources.md)、[任务模块](modules/02-agents-tasks-memory.md) 和机器契约为准。
-4. `contracts/` 定义长期设计的 API 字段与枚举；0.4.0 的实际路由清单和客户端实现另见实施清单，二者尚非全部一一实现；协议变更必须同步需求、客户端影响、示例与测试，不只改一处。
+4. `contracts/` 定义长期设计的 API 字段与枚举；已发布版本的实际路由清单和客户端实现另见实施清单，二者尚非全部一一实现；当前修复单独记录，协议变更必须同步客户端影响、示例与测试。
 5. 尚无用户决策的实施选择是「设计默认」，不是已采购或已部署事实。精确依赖版本在工程初始化时锁定，不假称采用未验证的最新版本。
 6. 示例中的账户、素材、域名和金额均为虚构；不含内部网关地址、密钥或真实客户资料。
 
@@ -73,3 +73,7 @@ ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 
 ## 12. 云端日历增量
 
 0.4.0 每日/每周、时区、明确执行授权、配置版本、漏跑/重叠、后台暂停恢复与删除见 [定时技术约束](technical/15-cloud-workflow-schedules.md)，实际时钟和跨端证据见 [0.4.0 验收](quality/07-cloud-schedule-acceptance.md)。早期版本原始验收保留，不用增量测试代替全量产品准入。
+
+## 13. 全体系差异修复
+
+当前范围与原始基线见 [完整复查](quality/09-implementation-alignment-audit.md)，逐项证据和剩余条件见 [102 条进度](quality/requirements-alignment-progress.json)。新增实现约束分别见 [删除/传输/事件](technical/17-erasure-transfer-retention-events.md)、[持久云文件](technical/18-persistent-cloud-files.md)、[项目技能](technical/19-project-skill-lifecycle.md)、[站内通知](technical/20-in-app-notifications.md) 和 [默认助手](technical/21-default-assistant-and-first-delegation.md)。历史发布与未发布源码分别记录，不批量关闭综合用例。
