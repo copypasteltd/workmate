@@ -66,15 +66,13 @@ async function choose(page: Page, csv: string, name: string) {
   const inspected = page.waitForResponse(
     (r) =>
       r.request().method() === "POST" &&
-      new URL(r.url()).pathname.endsWith("/analytics/inspect"),
+      new URL(r.url()).pathname.endsWith("/analytics/file-inspect"),
   );
-  await modal
-    .locator('input[name="file"]')
-    .setInputFiles({
-      name,
-      mimeType: "text/csv",
-      buffer: Buffer.from(csv, "utf8"),
-    });
+  await modal.locator('input[name="file"]').setInputFiles({
+    name,
+    mimeType: "text/csv",
+    buffer: Buffer.from(csv, "utf8"),
+  });
   assert.equal((await inspected).status(), 200);
   await modal
     .getByRole("button", { name: "Preview & validate", exact: true })
@@ -92,7 +90,7 @@ async function preview(page: Page) {
   const response = page.waitForResponse(
     (r) =>
       r.request().method() === "POST" &&
-      new URL(r.url()).pathname.endsWith("/analytics/preview"),
+      new URL(r.url()).pathname.endsWith("/analytics/file-preview"),
   );
   await page
     .getByRole("dialog")
@@ -177,12 +175,12 @@ try {
   );
   let first = true,
     accepted: any;
-  await page.route("**" + analytics + "/import", async (route) => {
+  await page.route("**/v1/dataset-imports", async (route) => {
     if (!first) return route.continue();
     first = false;
     const r = await route.fetch();
     accepted = await r.json();
-    assert.equal(r.status(), 200);
+    assert.equal(r.status(), 202);
     await route.fulfill({
       status: 503,
       contentType: "application/json",
@@ -206,11 +204,14 @@ try {
     .click();
   await page
     .getByRole("status")
-    .getByText("Opened the existing snapshot without importing twice.", {
-      exact: true,
-    })
+    .getByText(
+      "Imported with source data and calculation definitions retained.",
+      {
+        exact: true,
+      },
+    )
     .waitFor();
-  await page.unroute("**" + analytics + "/import");
+  await page.unroute("**/v1/dataset-imports");
   const firstId = accepted.id;
   await page.locator(`[data-snapshot-id="${firstId}"]`).waitFor();
   assert.equal((await call(page, analytics)).items.length, 1);
@@ -227,7 +228,7 @@ try {
     "a lost accepted import response can be retried through the form and reopens one frozen snapshot with exact aggregate ratios",
   );
   const sourceEvent = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Source CSV", exact: true }).click();
+  await page.getByRole("button", { name: "Source file", exact: true }).click();
   const source = await sourceEvent,
     sourceFile = path.join(folder, "source.csv");
   await source.saveAs(sourceFile);
@@ -257,14 +258,12 @@ try {
   await rendered
     .locator("img")
     .evaluate((img: HTMLImageElement) => img.decode());
-  await rendered
-    .locator("img")
-    .screenshot({
-      path: path.resolve(
-        "../copypaste-web/assets/screenshots/54-marketing-chart-render.png",
-      ),
-      timeout: 30000,
-    });
+  await rendered.locator("img").screenshot({
+    path: path.resolve(
+      "../copypaste-web/assets/screenshots/54-marketing-chart-render.png",
+    ),
+    timeout: 30000,
+  });
   await rendered.close();
   inspection = {
     source_sha256: sha(await readFile(sourceFile)),
@@ -457,13 +456,11 @@ try {
   const meta =
     "Reporting starts,Reporting ends,Campaign name,Campaign ID,Account ID,Impressions,Link clicks,Amount spent (HKD),Purchases,Purchase conversion value\n2026-10-03,2026-10-03,Native launch,456,123,1000,100,80,4,320";
   const nativeModal = native.getByRole("dialog");
-  await nativeModal
-    .locator('input[name="file"]')
-    .setInputFiles({
-      name: "native-meta.csv",
-      mimeType: "text/csv",
-      buffer: Buffer.from(meta, "utf8"),
-    });
+  await nativeModal.locator('input[name="file"]').setInputFiles({
+    name: "native-meta.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from(meta, "utf8"),
+  });
   await native.waitForFunction(
     () =>
       !(
@@ -507,7 +504,9 @@ try {
       filePath: file,
     })) as any;
   }, nativeFile);
-  await native.getByRole("button", { name: "Source CSV", exact: true }).click();
+  await native
+    .getByRole("button", { name: "Source file", exact: true })
+    .click();
   for (let i = 0; i < 150; i++) {
     if ((await stat(nativeFile).catch(() => null))?.size) break;
     await native.waitForTimeout(100);
