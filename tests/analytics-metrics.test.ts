@@ -178,6 +178,13 @@ test("bad CSV fields report physical lines; ambiguous and duplicate mappings can
   bad(head + "\n2026-10-01,Google,A,100,,20,2,40,HKD");
   bad(head + "\n2026-02-30,Google,A,100,2,20,2,40,HKD");
   bad(head + "\n2026-10-01,Google,A,100,2,=1+1,2,40,HKD");
+  for (const c of ["\u0000", "\u0001", "\uD800", "\uFFFF"])
+    bad(head + `\n2026-10-01,Google,A${c},100,2,20,2,40,HKD`, "CSV_INVALID");
+  assert.equal(
+    parseMetricsCSV(head + "\n2026-10-01,Google,高端🚀,100,2,20,2,40,HKD")
+      .rows[0].campaign,
+    "高端🚀",
+  );
   bad(head + ",Clicks\n2026-10-01,Google,A,100,2,20,2,40,HKD,2", "CSV_COLUMNS");
   const ambiguous =
     head + ",Link clicks\n2026-10-01,Google,A,100,2,20,2,40,HKD,1";

@@ -243,6 +243,12 @@ test("source downloads are byte-exact; reports and charts retain stable evidence
   });
   assert.equal(bad.status, 400);
   assert.match(bad.data.error.details[0].path, /row 2.clicks/);
+  const malformed = await call(f.owner, "POST", f.base + "/import", {
+    ...input,
+    csv: input.csv + "\u0000",
+  });
+  assert.equal(malformed.status, 400);
+  assert.equal(malformed.data.error.code, "CSV_INVALID");
   assert.equal(
     (
       await call(

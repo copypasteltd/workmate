@@ -148,6 +148,16 @@ function numeric(
   return s.replaceAll(",", "");
 }
 function csvRecords(csv: string) {
+  const invalid = csv.search(
+    /[\u0000-\u0008\u000B\u000C\u000E-\u001F\uD800-\uDFFF\uFFFE\uFFFF]/u,
+  );
+  if (invalid >= 0)
+    fail(
+      csv.slice(0, invalid).split("\n").length,
+      "csv",
+      "CSV contains unsupported control characters or malformed Unicode",
+      "CSV_INVALID",
+    );
   if (Buffer.byteLength(csv, "utf8") > 5_000_000)
     throw new Problem(400, "CSV_SIZE", "CSV exceeds 5 MB");
   let records: { record: string[]; info: { lines: number } }[];
