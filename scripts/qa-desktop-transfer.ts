@@ -48,6 +48,12 @@ try {
   await web.locator('input[name="project_name"]').fill("Large file workflow");
   await web.locator('form button[type="submit"]').click();
   await web.waitForURL("**/app");
+  await web
+    .getByRole("button", { name: "Add one-time demo credit", exact: true })
+    .click();
+  await web
+    .getByRole("button", { name: "Demo credit added", exact: true })
+    .waitFor();
   app = await _electron.launch({
     executablePath: path.join(repo, "node_modules/electron/dist/electron.exe"),
     args: [repo],
@@ -70,6 +76,20 @@ try {
     localStorage.setItem("cp_theme", "light");
   });
   await page.reload();
+  const signedOut = await page.evaluate(async () => {
+    const b = (window as any).copyPasteBridge;
+    return {
+      config: await b.request("/v1/public/config", {}),
+      private: await b.request("/v1/me", {}),
+    };
+  });
+  assert.equal(signedOut.config.status, 200);
+  assert.equal(signedOut.config.body.data_mode, "simulated");
+  assert.equal(signedOut.private.status, 401);
+  await page
+    .locator(".demo-notice")
+    .getByText("Demo environment · simulated data", { exact: true })
+    .waitFor();
   await page
     .getByRole("button", { name: "Sign in securely in your browser" })
     .click({ noWaitAfter: true });
@@ -86,6 +106,7 @@ try {
     .getByRole("button", { name: /Connect.*|Allow.*|Authorize.*/ })
     .click();
   await page.waitForURL("**#/app");
+  await page.locator(".demo-notice").waitFor();
   const me = await page.evaluate(async () => {
     const r = await (window as any).copyPasteBridge.request("/v1/me", {});
     return r.body;
@@ -239,6 +260,105 @@ try {
     name: "source Desktop browses the same persistent cloud file tree through the authenticated native bridge",
     status: "passed",
   });
+  await page
+    .getByRole("link", { name: "Your conversations", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Start conversation", exact: true })
+    .first()
+    .click();
+  const modal = page.getByRole("dialog");
+  await modal
+    .getByLabel("Conversation name", { exact: true })
+    .fill("Native default brief");
+  assert.equal(await modal.locator('select[name="agent"]').inputValue(), "");
+  await modal
+    .getByRole("button", { name: "Create conversation", exact: true })
+    .click();
+  await page
+    .getByRole("heading", { name: "Native default brief", exact: true })
+    .waitFor();
+  const conversation = page.url().split("/").pop()!;
+  const submitted = await page.evaluate(
+    async ({ base, conversation }) => {
+      return (window as any).copyPasteBridge.request(
+        `${base}/conversations/${conversation}/messages`,
+        {
+          method: "POST",
+          body: {
+            client_message_id: crypto.randomUUID(),
+            expected_version: 1,
+            intent: "delegate",
+            mode: "execute",
+            body: "Write a clearly simulated campaign brief and deliver an editable Markdown file.",
+            budget_micros: 1000000,
+          },
+        },
+      );
+    },
+    { base, conversation },
+  );
+  assert.equal(submitted.status, 200, JSON.stringify(submitted.body));
+  let task: any;
+  const end = Date.now() + 60000;
+  while (Date.now() < end) {
+    task = await page.evaluate(
+      async ({ base, id }) =>
+        (
+          await (window as any).copyPasteBridge.request(
+            `${base}/tasks/${id}`,
+            {},
+          )
+        ).body,
+      { base, id: submitted.body.task.id },
+    );
+    if (
+      ["succeeded", "failed", "cancelled", "reconciling"].includes(task.status)
+    )
+      break;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  assert.equal(
+    task?.status,
+    "succeeded",
+    JSON.stringify({ status: task?.status, error: task?.error_code }),
+  );
+  checks.push({
+    name: "source Desktop creates a conversation with the built-in default assistant and real Codex runs an explicitly simulated text task through the native authenticated bridge",
+    status: "passed",
+  });
+  await page.getByRole("link", { name: /Work notifications/ }).click();
+  await page.locator(".notification-card").first().waitFor();
+  const inbox = await page.evaluate(
+    async (tenant) =>
+      (
+        await (window as any).copyPasteBridge.request(
+          `/v1/tenants/${tenant}/notifications`,
+          {},
+        )
+      ).body,
+    tenant,
+  );
+  assert.equal(inbox.items.length, 2);
+  const success = inbox.items.find((n: any) => n.kind === "succeeded");
+  assert.ok(success);
+  await page.screenshot({
+    path: path.join(repo, "assets/screenshots/08-notifications.png"),
+    fullPage: true,
+    animations: "disabled",
+  });
+  await page
+    .locator(`[data-notification="${success.id}"]`)
+    .getByRole("button", { name: "Open task", exact: true })
+    .click();
+  await page.waitForURL(`**#/app/tasks/${task.id}`);
+  await page
+    .getByRole("heading", { name: "Task details", exact: true })
+    .waitFor();
+  checks.push({
+    name: "source Desktop displays the same recipient-only inbox and follows its notification to the original private task",
+    status: "passed",
+  });
   await page.evaluate(
     async () => await (window as any).copyPasteBridge.signOut(),
   );
@@ -270,6 +390,8 @@ try {
       {
         at: new Date().toISOString(),
         artifact: "current source Electron; no published installer replacement",
+        dependency_mode: "simulated",
+        real_codex: true,
         checks,
         errors,
         browser_closed: browserClosed,
