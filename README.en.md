@@ -166,3 +166,10 @@ Delivery `qa:admin-task-inputs` passes three actual browser groups. Platform neg
 
 ![Authorized inspection of requested inputs](assets/screenshots/20-task-input-review.png)
 ![The same task-body panel in dark mode](assets/screenshots/21-task-input-review-dark.png)
+
+## Execution queue reasons (current source)
+
+Execution lists readable reasons for shared workspace slots, current user limits and platform/media/service capacity. Existing execution-read scope, cancellation/retry and audit checks apply; no other-workspace counts or credentials are exposed. Delivery `qa:execution-capacity` checks the actual page after independent MFA.
+
+![Scoped queue reason](assets/screenshots/22-capacity-queue.png)
+![Dark execution queue](assets/screenshots/23-capacity-queue-dark.png)

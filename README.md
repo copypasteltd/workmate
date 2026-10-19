@@ -166,3 +166,10 @@ Delivery `qa:admin-task-inputs` 三组真实浏览器检查通过，平台负向
 
 ![授权检查原任务资料要求](assets/screenshots/20-task-input-review.png)
 ![深色任务正文面板](assets/screenshots/21-task-input-review-dark.png)
+
+## 执行排队原因（当前源码）
+
+Execution 列表新增可读的排队原因，区分企业共享、用户方案、平台与媒体/服务容量。原有执行读取权限、企业/项目数据范围、取消/重试和审计约束继续生效；不返回其他企业计数或凭证。独立 MFA 的实际页面流程记录在 delivery `qa:execution-capacity`。
+
+![授权范围内的排队原因](assets/screenshots/22-capacity-queue.png)
+![深色排队管理](assets/screenshots/23-capacity-queue-dark.png)

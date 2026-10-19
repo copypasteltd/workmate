@@ -687,6 +687,7 @@ const columns: Record<string, string[]> = {
     "title",
     "role_key",
     "status",
+    "capacity_wait_reason",
     "charged_micros",
     "error_code",
     "created_at",
@@ -731,6 +732,7 @@ const headers: Record<string, [string, string]> = {
   title: ["工作", "Task"],
   role_key: ["角色", "Specialist"],
   error_code: ["原因", "Reason"],
+  capacity_wait_reason: ["排隊原因", "Queue reason"],
   key: ["名稱", "Key"],
   provider: ["平台", "Provider"],
   client: ["客戶端", "Client"],
@@ -745,8 +747,23 @@ const headers: Record<string, [string, string]> = {
   tenant_id: ["企業 ID", "Workspace ID"],
 };
 function Value({ field, value }: { field: string; value: any }) {
+  const { t } = useI18n();
   if (value === null || value === undefined)
     return <span className="muted">—</span>;
+  if (field === "capacity_wait_reason") {
+    const reasons: Record<string, [string, string]> = {
+      platform: ["平台執行名額", "Platform execution slots"],
+      tenant: ["企業共用名額", "Shared workspace slots"],
+      user: ["用戶方案上限", "User plan limit"],
+      capability: ["此項服務容量", "Service capacity"],
+      tenant_media: ["企業媒體名額", "Workspace media slots"],
+    };
+    return (
+      <span>
+        {t(...(reasons[value] ?? ["等待名額", "Waiting for capacity"]))}
+      </span>
+    );
+  }
   if (field.endsWith("_micros")) return <Money value={value} />;
   if (field === "enrollment_state")
     return (
