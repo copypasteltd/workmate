@@ -122,3 +122,35 @@ flowchart LR
 ```
 
 ![Actual company identity interface](assets/screenshots/17-company-sign-in.png)
+
+
+## File and execution repairs in progress
+
+A persistent banner identifies synthetic data and lets a workspace Owner claim one demo gift. Uploads verify part and whole-file SHA-256, support pause/cancel and resume after a lost connection and reload. Limits are 100 MiB for ordinary files and 1 GiB for media. Assets show retention expiry; permanent deletion requires confirmation and has queryable cleanup progress. Task activity uses durable SSE with sequence-based reconnection and current authorization checks.
+
+These are unpublished source changes. Full 1 GiB transfers, all clients and S3 remain to be qualified. The master alignment report records exact coverage and outstanding work.
+
+![Interrupted upload](assets/screenshots/19-upload-interrupted.png)
+![Resumed upload](assets/screenshots/20-upload-resumed.png)
+![Erasure progress](assets/screenshots/17-erasure-progress.png)
+![Real Codex with labelled synthetic dependencies](assets/screenshots/21-live-task-events.png)
+
+## Cloud files (current source)
+
+Shared project and private conversation workspaces support search, folders, exact asset-version references, rename/move, text and small bitmap previews, authorized downloads, confirmed publication of copies and entry removal. Conversation uploads remain private; coding roles can continue persistent working sources in later tasks.
+
+Four browser QA groups cover these flows, two real Codex tasks driven by synthetic dependencies, four viewport widths, dark theme and Traditional Chinese. Captured responses receive separate strict schema checks. Live model quality and every file-preview format remain outside this evidence.
+
+![Pinned version preview](assets/screenshots/22-cloud-pinned-preview.png)
+![Persistent working sources](assets/screenshots/23-cloud-working-files.png)
+![Dark workspace](assets/screenshots/24-cloud-files-dark.png)
+
+## Project methods (current source)
+
+Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
+
+Platform regression: **108/108**. `npm run qa:skills` in the delivery repository passed three browser groups; ten captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+
+![Project methods](assets/screenshots/25-project-methods.png)
+
+![Project methods — dark](assets/screenshots/26-project-methods-dark.png)

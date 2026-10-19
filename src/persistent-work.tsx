@@ -143,6 +143,10 @@ export function Specialists() {
                 </button>
               </div>
               <footer className="row-actions">
+                <Link className="text-button" to="/app/skills">
+                  <BookOpen size={15} />
+                  {t("技能管理", "Manage methods")}
+                </Link>
                 <button className="text-button" onClick={() => setEditing(a)}>
                   <Settings2 size={15} />
                   {t("設定", "Settings")}
@@ -650,6 +654,12 @@ export function ConversationDetail() {
             }
             action={
               <div className="row-actions">
+                <Link
+                  className="button secondary"
+                  to={"/app/files?conversation=" + id}
+                >
+                  {t("會話檔案", "Conversation files")}
+                </Link>
                 <button
                   className="icon-button"
                   aria-label={

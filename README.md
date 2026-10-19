@@ -124,3 +124,35 @@ flowchart LR
 ```
 
 ![实际企业身份界面](assets/screenshots/17-company-sign-in.png)
+
+
+## 当前修复中的文件与执行流程
+
+演示环境有持续显示的假数据提示和企业 Owner 的一次性模拟额度。上传支持分片摘要、整文件 SHA-256、暂停、取消、断线及刷新后续传；普通文件 100 MiB，媒体 1 GiB。素材显示 90 天默认保留及到期时间，永久删除须确认并可查询实际清理结果。任务页通过持久 SSE 实时更新，重连按序号去重；私有权限与会话撤销在服务端重新检查。
+
+这些是当前未重新打包的源码增量；完整 1 GiB 实传、所有端和 S3 验收仍需继续执行。实际 API/浏览器测试与待办以主文档的全体系修复记录为准。
+
+![断线后保留分片](assets/screenshots/19-upload-interrupted.png)
+![刷新后的续传完成](assets/screenshots/20-upload-resumed.png)
+![永久删除进度](assets/screenshots/17-erasure-progress.png)
+![真实 Codex 与明确模拟数据的实时任务](assets/screenshots/21-live-task-events.png)
+
+## 云端档案（当前源码）
+
+新增共享项目与私人会话文件工作区，支持搜索、文件夹、指定素材版本、编辑移动、文本/小型位图预览、授权下载、确认发布副本及目录条目移除。会话内上传自动保持私人范围，编程角色的工作源码可在后续任务继续。
+
+`npm run qa:cloud-files` 在集成仓库执行。四组浏览器验收覆盖上述流程、两次真实 Codex 模拟任务、四种屏宽、深色与繁中；接口样本另做严格 schema 检查。未执行真实公司模型质量或所有格式预览验收。
+
+![固定版本预览](assets/screenshots/22-cloud-pinned-preview.png)
+![持久工作文件](assets/screenshots/23-cloud-working-files.png)
+![深色文件工作区](assets/screenshots/24-cloud-files-dark.png)
+
+## 专案技能管理（当前源码）
+
+项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
+
+平台全套回归 **108/108**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+
+![Project methods](assets/screenshots/25-project-methods.png)
+
+![Project methods — dark](assets/screenshots/26-project-methods-dark.png)

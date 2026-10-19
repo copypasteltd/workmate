@@ -1,4 +1,9 @@
 import { NativeFiles } from "./native-files";
+import { DeleteAsset, DeletionProgress } from "./deletions";
+import { DataModeNotice } from "./data-mode";
+import { ResumableUpload } from "./resumable-upload";
+import { CloudFiles } from "./cloud-files";
+import { ProjectSkills } from "./skills";
 import { Schedules } from "./schedules";
 import {
   CompanySignIn,
@@ -72,6 +77,7 @@ import {
   Brain,
 } from "lucide-react";
 import { api, post, patch, download, ApiError } from "./api";
+import { useTaskEvents } from "./task-events";
 import {
   Preferences,
   useI18n,
@@ -135,6 +141,7 @@ function App() {
   return (
     <Preferences>
       <WorkspaceProvider>
+        <DataModeNotice />
         {window.copyPasteBridge ? (
           <HashRouter>
             <AppRoutes />
@@ -598,10 +605,12 @@ const navigation = [
   ["", LayoutGrid, "工作台", "Workspace"],
   ["roles", Sparkles, "專業角色", "Specialists"],
   ["specialists", Users, "我的專家", "Your specialists"],
+  ["skills", BookOpen, "專案技能", "Project methods"],
   ["conversations", MessageSquare, "我的會話", "Your conversations"],
   ["memories", Brain, "記憶與偏好", "Memory & preferences"],
   ["projects", FolderOpen, "專案", "Projects"],
   ["assets", Image, "素材與交付", "Assets & deliverables"],
+  ["files", FolderOpen, "雲端檔案", "Cloud files"],
   ["creative", Layers, "設計畫布", "Design canvas"],
   ["analytics", ChartNoAxesCombined, "行銷分析", "Marketing insights"],
   ["workflows", Workflow, "工作流程", "Workflows"],
@@ -792,6 +801,7 @@ function Shell() {
               <Route index element={<Workbench />} />
               <Route path="roles" element={<Roles />} />
               <Route path="specialists" element={<Specialists />} />
+              <Route path="skills" element={<ProjectSkills />} />
               <Route path="conversations" element={<Conversations />} />
               <Route
                 path="conversations/:id"
@@ -801,6 +811,7 @@ function Shell() {
               <Route path="projects" element={<Projects />} />
               <Route path="tasks/:id" element={<TaskDetail />} />
               <Route path="assets" element={<Assets />} />
+              <Route path="files" element={<CloudFiles />} />
               <Route path="creative" element={<Creative />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="connections" element={<Connections />} />
@@ -1435,8 +1446,48 @@ function TaskDetail() {
     version,
     2500,
   );
-  const events = useData(w.base + "/tasks/" + id + "/events", version, 2500);
+  const events = useTaskEvents(w.base, w.tenant, id, () =>
+    setVersion((v) => v + 1),
+  );
   const [actionError, setActionError] = useState<Error | null>(null);
+  const activityLabel = (e: any) => {
+    const state =
+      e.kind === "task.queued"
+        ? "queued"
+        : e.kind === "task.started"
+          ? "running"
+          : e.kind === "task.finished"
+            ? e.body.status
+            : e.kind === "task.state_changed"
+              ? e.body.status
+              : "";
+    const labels: Record<string, [string, string]> = {
+      queued: ["工作已排隊", "Work queued"],
+      running: ["開始處理工作", "Work started"],
+      succeeded: ["工作已完成", "Work completed"],
+      failed: ["工作未完成", "Work failed"],
+      cancelled: ["工作已取消", "Work cancelled"],
+      "artifact.ready": ["交付檔案已就緒", "Deliverable file ready"],
+      "delivery.reviewed": ["已記錄審閱結果", "Review recorded"],
+      "task.cancel_requested": ["已要求取消工作", "Cancellation requested"],
+    };
+    if (labels[state || e.kind]) return t(...labels[state || e.kind]);
+    if (e.kind === "usage.updated")
+      return e.body.cost_state === "reconciling"
+        ? t("用量待核對", "Usage needs reconciliation")
+        : t("用量已結算", "Usage settled");
+    if (e.kind === "task.warning")
+      return t("執行狀態需要留意", "Execution needs attention");
+    const step = e.body.step_key ?? e.kind;
+    if (/cleanup|closed/.test(step))
+      return t(
+        "執行已結束，正在整理記錄",
+        "Execution closed and records saved",
+      );
+    if (/initialize|thread|turn/.test(step))
+      return t("正在準備工作環境", "Preparing the workspace");
+    return t("工作進度已更新", "Work progress updated");
+  };
   async function act(fn: () => Promise<any>) {
     try {
       await fn();
@@ -1601,14 +1652,27 @@ function TaskDetail() {
           <section className="section-block">
             <div className="section-title">
               <h2>{t("工作記錄", "Activity")}</h2>
+              <span className="muted small-text" role="status">
+                {events.state === "live"
+                  ? t("即時更新", "Live updates")
+                  : events.state === "reconnecting"
+                    ? t("重新連線中…", "Reconnecting…")
+                    : events.state === "polling"
+                      ? t("自動同步", "Auto sync")
+                      : t("同步工作記錄", "Syncing activity")}
+              </span>
             </div>
+            <ErrorNotice error={events.error} />
             <div className="timeline">
               {events.data?.items
-                .filter((e: any) => e.kind !== "message.delta")
+                .filter(
+                  (e: any) =>
+                    !["message.delta", "message.appended"].includes(e.kind),
+                )
                 .map((e: any) => (
                   <div key={e.id}>
                     <span className="timeline-dot" />
-                    <strong>{e.kind.replaceAll(".", " · ")}</strong>
+                    <strong>{activityLabel(e)}</strong>
                     <DateText value={e.created_at} />
                   </div>
                 ))}
@@ -1666,6 +1730,7 @@ function Assets() {
     [refresh, setRefresh] = useState(0),
     [upload, setUpload] = useState(false),
     [versions, setVersions] = useState<any>(null),
+    [deleting, setDeleting] = useState<any>(null),
     [err, setErr] = useState<Error | null>(null);
   const { data, error, loading } = useData(w.base + "/assets", refresh);
   const history = useData(
@@ -1678,8 +1743,8 @@ function Assets() {
         eyebrow="EVERY VERSION HAS A PLACE."
         title={t("素材與交付", "Assets & deliverables")}
         description={t(
-          "保存原始素材、專業成果和每一次版本。下載前會重新確認你當前的存取權限。",
-          "Your source materials, finished work and every version, together in one place.",
+          "素材和交付預設保留 90 天，新增版本會延長保留時間。到期後進入永久清理；請及時下載需要長期保存的檔案。",
+          "Materials and deliverables are retained for 90 days; a new version renews retention. Expired files enter permanent cleanup. Download files you need to keep.",
         )}
         action={
           <button className="button primary" onClick={() => setUpload(true)}>
@@ -1710,6 +1775,16 @@ function Assets() {
               <p className="muted small-text">
                 v{a.current_version} · {(Number(a.bytes) / 1024).toFixed(1)} KB
               </p>
+              {a.retention_expires_at && (
+                <p className="muted small-text">
+                  {t("保留至：", "Retained until: ")}
+                  {new Date(a.retention_expires_at).toLocaleString(
+                    t("zh-HK", "en-HK"),
+                    { timeZone: "Asia/Hong_Kong" },
+                  )}{" "}
+                  HKT
+                </p>
+              )}
               <div className="row-actions">
                 <button
                   className="text-button"
@@ -1726,6 +1801,9 @@ function Assets() {
                 <button className="text-button" onClick={() => setVersions(a)}>
                   <Clock size={15} />
                   {t("版本", "Versions")}
+                </button>
+                <button className="text-button" onClick={() => setDeleting(a)}>
+                  {t("刪除", "Delete")}
                 </button>
                 {a.private_owner && (
                   <button
@@ -1776,23 +1854,25 @@ function Assets() {
           }
         />
       )}{" "}
+      <DeletionProgress refresh={refresh} />
+      {deleting && (
+        <DeleteAsset
+          asset={deleting}
+          onClose={() => setDeleting(null)}
+          onDone={() => setRefresh((v) => v + 1)}
+        />
+      )}
       {upload && (
         <Modal
           title={t("加入素材", "Upload material")}
           onClose={() => setUpload(false)}
         >
-          <AsyncForm
-            submitLabel={t("上傳素材", "Upload material")}
-            onSubmit={async (f) => {
-              await api(w.base + "/assets", { method: "POST", body: f });
+          <ResumableUpload
+            onDone={() => {
               setRefresh((v) => v + 1);
               setUpload(false);
             }}
-          >
-            <Field label={t("檔案（最大 25 MB）", "File (up to 25 MB)")}>
-              <input type="file" name="file" required />
-            </Field>
-          </AsyncForm>
+          />
         </Modal>
       )}
       {versions && (
@@ -1821,22 +1901,13 @@ function Assets() {
               </button>
             </div>
           ))}
-          <AsyncForm
-            submitLabel={t("加入新版本", "Add a new version")}
-            onSubmit={async (f) => {
-              f.append("expected_version", String(versions.current_version));
-              const a = await api(
-                w.base + "/assets/" + versions.id + "/versions",
-                { method: "POST", body: f },
-              );
-              setVersions(a);
+          <ResumableUpload
+            asset={versions}
+            onDone={() => {
+              setVersions(null);
               setRefresh((v) => v + 1);
             }}
-          >
-            <Field label={t("新版本檔案", "New version file")}>
-              <input type="file" name="file" required />
-            </Field>
-          </AsyncForm>
+          />
         </Modal>
       )}
     </>

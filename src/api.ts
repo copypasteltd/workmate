@@ -17,7 +17,7 @@ declare global {
     copyPasteBridge?: {
       request: (
         path: string,
-        options: { method?: string; body?: unknown },
+        options: { method?: string; body?: unknown; idempotencyKey?: string },
       ) => Promise<{ status: number; body: any }>;
       enableChrome: () => Promise<{ registered: boolean }>;
       signIn: () => Promise<void>;
@@ -61,6 +61,8 @@ export async function api<T = any>(
     } else
       result = await window.copyPasteBridge.request(path, {
         method: options.method,
+        idempotencyKey:
+          new Headers(options.headers).get("Idempotency-Key") ?? undefined,
         body:
           typeof options.body === "string"
             ? JSON.parse(options.body)

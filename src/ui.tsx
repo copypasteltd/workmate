@@ -93,6 +93,7 @@ export function useData<T = any>(
   interval = 0,
 ) {
   const [data, setData] = useState<T | null>(null),
+    [loadedUrl, setLoadedUrl] = useState<string | null>(null),
     [error, setError] = useState<Error | null>(null),
     [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -110,6 +111,7 @@ export function useData<T = any>(
         const d = await api<T>(url, { signal: ctrl.signal });
         if (live) {
           setData(d);
+          setLoadedUrl(url);
           setError(null);
         }
       } catch (e) {
@@ -127,7 +129,7 @@ export function useData<T = any>(
       if (timer) clearInterval(timer);
     };
   }, [url, refresh, interval]);
-  return { data, error, loading };
+  return { data: loadedUrl === url ? data : null, error, loading };
 }
 export function ErrorNotice({ error }: { error: unknown }) {
   const { t } = useI18n();
@@ -290,6 +292,9 @@ export function Badge({ value }: { value: string }) {
     connected: ["已連接", "Connected"],
     pending: ["待處理", "Pending"],
     queued: ["排隊中", "Queued"],
+    cleaning: ["清理中", "Cleaning"],
+    completed: ["清理完成", "Cleanup completed"],
+    completed_with_exceptions: ["部分項目需處理", "Completed with exceptions"],
     running: ["進行中", "Running"],
     succeeded: ["已完成", "Completed"],
     failed: ["未完成", "Failed"],
@@ -332,7 +337,7 @@ export function Money({
       {new Intl.NumberFormat("en-HK", {
         style: "currency",
         currency,
-        maximumFractionDigits: 2,
+        maximumFractionDigits: n !== 0 && Math.abs(n) < 0.01 ? 6 : 2,
       }).format(n)}
     </span>
   );
