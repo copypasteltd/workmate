@@ -65,6 +65,13 @@ import { api, post, patch, download } from "./api";
 import { AdminMembershipManager, MembershipChangeFacts } from "./memberships";
 import { AdminAccountManager, AccountChangeFacts } from "./accounts";
 import { AdminDeletions } from "./deletions";
+import {
+  AdminBilling,
+  CanonicalFeeModal,
+  FeeReview,
+  canonicalFeeAction,
+  feeActionFromLegacy,
+} from "./fees";
 import { DataModeNotice } from "./data-mode";
 import { EnterpriseSignIn } from "./federation";
 import {
@@ -90,6 +97,7 @@ import {
   PrincipalDetail,
 } from "./admin-identities";
 import "./style.css";
+import { parseHKD } from "./financial-money";
 import "./admin.css";
 
 const Context = createContext<{
@@ -477,7 +485,13 @@ function AdminShell() {
                   <Route
                     key={n[0]}
                     path={"/" + n[0]}
-                    element={<Section section={n[0]} />}
+                    element={
+                      n[0] === "billing" ? (
+                        <BillingPage />
+                      ) : (
+                        <Section section={n[0]} />
+                      )
+                    }
                   />
                 ))}
               <Route path="*" element={<Navigate to={"/" + start} replace />} />
@@ -1496,7 +1510,44 @@ function Section({ section }: { section: string }) {
     </>
   );
 }
-function BillingModal({
+function BillingPage() {
+  const access = useAdmin(),
+    [legacy, setLegacy] = useState<string | null>(null);
+  return (
+    <>
+      <AdminBilling access={access} onLegacy={setLegacy} />
+      {legacy && (
+        <LegacyBillingModal
+          initial={legacy}
+          onClose={() => setLegacy(null)}
+          onDone={() => void access.refresh()}
+        />
+      )}
+    </>
+  );
+}
+function BillingModal(props: {
+  initial: string;
+  user?: any;
+  entitlement?: any;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const a = useAdmin();
+  if (canonicalFeeAction(props.initial))
+    return (
+      <CanonicalFeeModal
+        operator={a.me.user.id}
+        initialAction={feeActionFromLegacy(props.initial)}
+        subject={props.user?.id}
+        has={a.has}
+        onClose={props.onClose}
+        onDone={props.onDone}
+      />
+    );
+  return <LegacyBillingModal {...props} />;
+}
+function LegacyBillingModal({
   initial,
   entitlement,
   onClose,
@@ -1656,14 +1707,7 @@ function BillingModal({
                       "entitlements.revoke",
                     ]
                   : ["entitlements.grant"]
-                : [
-                    "billing.gift",
-                    "billing.top_up",
-                    "billing.debit",
-                    "billing.refund",
-                    "billing.credit_limit.write",
-                    "billing.reconcile",
-                  ]
+                : ["billing.top_up", "billing.refund", "billing.reconcile"]
               )
                 .filter((s) =>
                   a.has(
@@ -2094,6 +2138,16 @@ function AdminDialog({
       ? `/v1/admin/operations/${row.id}/account-review`
       : null,
   );
+  if (kind === "approval" && canonicalFeeAction(row?.action))
+    return (
+      <FeeReview
+        id={row.id}
+        operator={a.me.user.id}
+        has={a.has}
+        onClose={onClose}
+        onDone={onDone}
+      />
+    );
   if (kind === "tenant")
     return (
       <AdminAccountManager
@@ -2218,10 +2272,21 @@ function AdminDialog({
               });
             if (kind === "binding") {
               const limits: any = {};
-              if (f.get("max_amount"))
-                limits.max_amount_micros = Math.round(
-                  Number(f.get("max_amount")) * 1e6,
-                );
+              for (const [field, target] of [
+                ["max_amount", "max_amount_micros"],
+                ["max_daily", "max_daily_amount_micros"],
+              ]) {
+                if (!f.get(field)) continue;
+                const n = BigInt(parseHKD(String(f.get(field)), true));
+                if (n > 1000000000000n)
+                  throw new Error(
+                    t(
+                      "授權金額上限為 HK$1,000,000",
+                      "The grant limit cannot exceed HK$1,000,000",
+                    ),
+                  );
+                limits[target] = Number(n);
+              }
               if (f.get("max_hours"))
                 limits.max_duration_hours = Number(f.get("max_hours"));
               if (f.get("max_batch"))
@@ -2506,7 +2571,23 @@ function AdminDialog({
               </Field>
               <div className="two-columns">
                 <Field label={t("單筆金額上限（HKD）", "Amount limit (HKD)")}>
-                  <input name="max_amount" type="number" min="0" />
+                  <input
+                    name="max_amount"
+                    inputMode="decimal"
+                    pattern="(0|[1-9][0-9]*)(\.[0-9]{1,6})?"
+                  />
+                </Field>
+                <Field
+                  label={t(
+                    "每日金額上限（HKD，香港日界）",
+                    "Daily amount limit (HKD, Hong Kong day)",
+                  )}
+                >
+                  <input
+                    name="max_daily"
+                    inputMode="decimal"
+                    pattern="(0|[1-9][0-9]*)(\.[0-9]{1,6})?"
+                  />
                 </Field>
                 <Field label={t("期限上限（小時）", "Duration limit (hours)")}>
                   <input name="max_hours" type="number" min="1" />

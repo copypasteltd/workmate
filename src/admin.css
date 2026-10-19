@@ -724,6 +724,83 @@ body:has(.admin-shell) .demo-notice {
   margin-block: 1rem;
   padding: 1rem;
 }
+
+.fee-toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  justify-content: space-between;
+  margin-block: 1.5rem;
+  flex-wrap: wrap;
+}
+.fee-toolbar form,
+.fee-review-search {
+  display: flex;
+  align-items: end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.fee-toolbar .field,
+.fee-review-search .field {
+  min-width: min(100%, 22rem);
+  flex: 1;
+}
+.fee-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.fee-id {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  margin-block: 0.4rem;
+}
+.fee-balances {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--warm);
+  border: 1px solid var(--line);
+  margin-block: 1.25rem;
+}
+.fee-balances dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+}
+.fee-balances dd {
+  margin: 0;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.fee-related {
+  margin-block: 2rem;
+  padding: 1.5rem;
+}
+.fee-related h2 {
+  font-size: 1.2rem;
+  margin: 0 0 1rem;
+}
+.fee-review-search {
+  margin-block-start: 1.5rem;
+}
+@media (max-width: 600px) {
+  .fee-toolbar form,
+  .fee-review-search {
+    width: 100%;
+  }
+  .fee-balances {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fee-toolbar .fee-actions > button {
+    flex: 1;
+  }
+}
 .directory-filters summary {
   cursor: pointer;
   font-weight: 600;

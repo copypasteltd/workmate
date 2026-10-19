@@ -36,7 +36,7 @@ npm run build
 | Users       | 数据库分页/检索、联系信息单独权限、用户详情、成员关系、消耗、状态/会话操作 |
 | Workspaces  | 企业状态、成员数、按账务权限显示余额                                       |
 | Usage       | 按用户/企业/项目范围汇总任务和实际 token/费用                              |
-| Billing     | 不可变账本、确认入账、赠送、来源退款/扣款、对账                            |
+| Billing     | 个人／企业账户、原始流水、规范赠额／扣回／信用上限及审批；付款／退款契约待完成                            |
 | VIP         | 个人或企业授权、开始/到期时间、暂停/恢复/延长/撤销                         |
 | Content     | 全域内容元数据、正文/下载独立权限、隔离/恢复与版本检查                     |
 | Execution   | 任务状态、取消、对账、满足条件的新子任务重试                               |
@@ -244,3 +244,26 @@ flowchart LR
 ![繁中深色移动筛选](assets/screenshots/59-directory-mobile-dark.png)
 
 截图为实际本机页面。已验证英文浅色 375/768/1440 及繁中深色 375 宽度，未据此宣称全部语言/主题/页面或费用写操作均已验收；旧成员页面的独立未完成回执仍保留。
+
+## 规范账务与独立审批（当前增量）
+
+「费用与账务」已接入真实个人／企业账户、主体筛选、游标分页、原始流水、gift/debit/credit-limit 规范表单和独立审批。金额输入和展示保留六位小数，预览不改账；同一提交使用固定幂等键。审批使用独立请求 ID、冻结摘要及版本，另一位管理员的实时费用／审批权限和原提交者会话都会复核。后台沿用 CopyPaste 现有中英双语、浅深主题及品牌色。
+
+```mermaid
+flowchart LR
+  Account[授权账户与原始流水] --> Preview[核对金额、来源和版本]
+  Preview --> Submit[同键确认]
+  Submit --> Apply[实际入账与审计]
+  Submit --> Review[另一位管理员独立审批]
+  Review --> Apply
+```
+
+`npm test` 包含精确金额与边界测试；`npm run build` 检查生产构建。Delivery 的 `npm run qa:admin-fees` 执行真实 HTTP 和浏览器验证，4/4 组、10 份规范响应通过，并关闭全部自建浏览器。截图使用合成客户和模拟资金；没有调用外部付款或模型。
+
+![账务账户](assets/screenshots/24-billing-accounts.png)
+![无业务效果预览](assets/screenshots/25-fee-preview.png)
+![真实独立审批](assets/screenshots/26-financial-independent-review.png)
+![原始流水](assets/screenshots/27-billing-ledger.png)
+![繁中深色窄屏](assets/screenshots/28-billing-mobile-dark.png)
+
+这不代表整个收费或后台体系验收完成。规范付款凭证／记录、支付退款对账、消费退款分桶、不可变方案/VIP、金融 outbox、完整规范审批目录与各用户端消费者仍须继续。现有旧入款、退款、VIP 页面保留其历史能力，不能当作上述完整契约。完整范围和限制见项目主文档 `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`。

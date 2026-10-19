@@ -446,6 +446,7 @@ export function InviteAdministrator({
                   limits: Object.fromEntries(
                     [
                       "max_amount_micros",
+                      "max_daily_amount_micros",
                       "max_duration_hours",
                       "max_batch",
                     ].flatMap((k) => (f.get(k) ? [[k, Number(f.get(k))]] : [])),
@@ -546,6 +547,20 @@ export function InviteAdministrator({
                   <input
                     aria-label="Maximum amount (micro HKD)"
                     name="max_amount_micros"
+                    type="number"
+                    min={0}
+                    step={1}
+                    max={1e12}
+                  />
+                </Field>
+                <Field
+                  label={t(
+                    "每日金額上限（微額 HKD，香港日界）",
+                    "Maximum daily amount (micro HKD, Hong Kong day)",
+                  )}
+                >
+                  <input
+                    name="max_daily_amount_micros"
                     type="number"
                     min={0}
                     step={1}

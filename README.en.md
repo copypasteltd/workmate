@@ -36,7 +36,7 @@ Every admin login requires email OTP and TOTP. Sensitive writes require MFA in t
 | Users       | Database pagination/search, contact permissions, profile, memberships, consumption, status/session operations |
 | Workspaces  | Status, member count and separately authorized financial fields                                               |
 | Usage       | User/workspace/project-scoped task, token and charge aggregates                                               |
-| Billing     | Immutable ledger, confirmed funding, gifts, source-bound refunds/debits and reconciliation                    |
+| Billing     | Personal/workspace accounts, original ledger and canonical fee previews/reviews; full payment/refund contracts pending                    |
 | VIP         | Personal/workspace grants, actual start/end times, suspend/resume/extend/revoke                               |
 | Content     | Unified metadata, separate body/download permissions, quarantine/restore and version checks                   |
 | Execution   | Status, cancellation, reconciliation and eligible child-task retries                                          |
@@ -244,3 +244,26 @@ flowchart LR
 ![Traditional Chinese dark mobile filters](assets/screenshots/59-directory-mobile-dark.png)
 
 These are actual local screenshots. English light layouts were checked at 375/768/1440 and Traditional Chinese dark at 375; this does not accept every language/theme/page or financial write operation. The separate older membership UI open receipt remains.
+
+## Canonical financial commands and independent review
+
+Billing now uses actual personal/workspace accounts, subject filters, cursor pages, original ledger entries, canonical gift/debit/credit-limit forms and independent approval requests. Inputs and reviews retain six decimal places. Previews do not change funds; retries keep the same idempotency key. A distinct request ID, frozen hash and version bind each review, with live financial/approval permissions and the original submitting session rechecked. Existing CopyPaste colors, bilingual labels and light/dark themes are retained.
+
+```mermaid
+flowchart LR
+  Account[Authorized account and original ledger] --> Preview[Amount, source and revision]
+  Preview --> Submit[Idempotent confirmation]
+  Submit --> Apply[Actual ledger and audit]
+  Submit --> Review[Independent administrator]
+  Review --> Apply
+```
+
+`npm test` checks precise amounts and invalid boundaries; `npm run build` checks production output. Delivery's `npm run qa:admin-fees` passed four actual HTTP/browser groups with ten strict response captures and closed its owned browser resources. Screenshots contain synthetic customers and simulated funds, with no external payment or model call.
+
+![Billing accounts](assets/screenshots/24-billing-accounts.png)
+![Pure preview](assets/screenshots/25-fee-preview.png)
+![Actual independent review](assets/screenshots/26-financial-independent-review.png)
+![Original ledger](assets/screenshots/27-billing-ledger.png)
+![Traditional Chinese dark/mobile](assets/screenshots/28-billing-mobile-dark.png)
+
+This does not accept the complete billing/admin product. Payment evidence/records, external refunds/reconciliation, original-bucket consumption refunds, immutable plans/VIP, financial outbox, the full canonical approval directory and remaining client consumers still require implementation and acceptance. Existing legacy funding/refund/VIP pages do not establish those contracts. Central scope: `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`.
