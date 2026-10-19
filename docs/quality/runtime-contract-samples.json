@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-19T15:42:24.571918+00:00",
-  "scope": "Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
+  "at": "2026-10-19T16:45:19.836843+00:00",
+  "scope": "Captured canonical User/Invite/Member and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
   "sources": [
     {
       "file": "dev/copypaste-delivery/evidence/cloud-files-contract-samples.json",
@@ -55,6 +55,12 @@
       "at": "2026-10-19T15:41:27.530Z",
       "origin": "http://localhost:4310",
       "sha256": "5ed7a625935c7f85a28efe366b233e03483f4e37be9f44e0c75c476af60d561e"
+    },
+    {
+      "file": "dev/copypaste-delivery/evidence/membership-contract-samples.json",
+      "at": "2026-10-19T16:43:32.655Z",
+      "origin": "http://localhost:4310",
+      "sha256": "86b879af75799d5e56acc4ce4362c5ca9409ef7a71c3c85fd3f819c50fae2ba3"
     }
   ],
   "authentication_fixture": {
@@ -63,6 +69,12 @@
     "schemas": 10,
     "status": "passed",
     "scope": "Exact original schema and source digest comparison; actual authentication wire checks are in the platform regression"
+  },
+  "membership_fixture": {
+    "file": "dev/copypaste-platform/contracts/membership-schemas.json",
+    "schemas": 7,
+    "status": "passed",
+    "scope": "Exact original schema and source digest comparison; actual wire checks are in the platform regression"
   },
   "openapi_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
   "checks": [
@@ -294,6 +306,34 @@
       "source": "auth-profile-contract-samples.json",
       "sample": 2,
       "schema": "User",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "membership-contract-samples.json",
+      "sample": 1,
+      "schema": "Invite",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "membership-contract-samples.json",
+      "sample": 2,
+      "schema": "Member",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "membership-contract-samples.json",
+      "sample": 3,
+      "schema": "MemberList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "membership-contract-samples.json",
+      "sample": 4,
+      "schema": "Ack",
       "status": "passed",
       "errors": []
     }

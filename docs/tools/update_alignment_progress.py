@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('invitations_and_membership_authority', [1,2,3,35,36,39,51,55,60],
+     '原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与规范后台成员入口仍待完成。',
+     ['platform_regression','membership_wire','runtime_schemas'], ['technical/35-invitations-and-membership-authority.md']),
     ('canonical_user_and_private_context', [1,2,3,35,36,39,51,55,60,100],
      '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者与测试调用同步迁移；不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、实际 HTTP User schema 和 Web 初始化证据独立记录，完整原生/系统旅程未计通过。',
      ['platform_regression','auth_navigation','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
@@ -81,7 +84,7 @@ CLUSTERS = [
 ]
 
 REMAINING = {
- 3:'三端登录/PKCE、五个规范用户认证接口、本人目录/整族撤销、刷新退出竞争等已有局部证据；当前新增首次交换短重试的完整原生重跑受启动阻塞。工作区聚合/邀请/后台规范契约及完整企业身份/客户端故障矩阵仍待完成，不能据此关闭 TC-003。',
+ 3:'三端登录/PKCE、五个规范用户认证接口、本人目录/整族撤销、刷新退出竞争等已有局部证据；当前新增首次交换短重试的完整原生重跑受启动阻塞。原始用户资料、邀请及成员契约已有增量证据；完整后台规范与企业身份/客户端故障矩阵仍待完成，不能据此关闭 TC-003。',
  36:'原生全局侧栏的真实 action/右侧出现、跨页保留与重启配置已验证；网页选择/站点授权和全部业务上下文的完整矩阵仍待验收。',
  89:'方案未完成工作上限和实际企业/能力执行容量已区分；席位、存储、信用、完整历史版本与正式权益全部路径仍待验收。',
  7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
@@ -179,6 +182,7 @@ def main():
     assert hashlib.sha256(restored_srs.replace('\n','\r\n').encode()).hexdigest() == baseline['requirements_sha256']
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
+        'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
         'auth_navigation': DEV/'copypaste-delivery/evidence/auth-navigation.json',
         'sessions': DEV/'copypaste-delivery/evidence/sessions.json',
         'task_controls': DEV/'copypaste-delivery/evidence/task-controls.json',
@@ -212,7 +216,7 @@ def main():
         checks = report.get('checks', [])
         assert report.get('status', 'passed') == 'passed'
         assert all(c['status'] == 'passed' for c in checks)
-        assert not report.get('errors') and not report.get('failures')
+        assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
         if 'browser_closed' in report:
             assert report['browser_closed'] is True
         if 'desktop_closed' in report:
@@ -232,6 +236,8 @@ def main():
         evidence[key] = {'path': path.relative_to(ROOT).as_posix(), 'sha256': fingerprint(path),
                          'at': report.get('at', report.get('checked_at')), 'checks': checks,
                          'scope': report.get('scope', 'Only the explicitly named subflows in this report')}
+        if key == 'membership_wire':
+            assert report['owned_sessions_closed'] is True
         if key == 'platform_regression':
             assert report['counts']['tests'] == report['counts']['pass'] and report['counts']['fail'] == 0
             raw = path.parent/report['raw_report']
@@ -275,7 +281,11 @@ def main():
                 'path':'dev/copypaste-delivery/evidence/auth-recovery-open-issue.json',
                 'sha256':fingerprint(DEV/'copypaste-delivery/evidence/auth-recovery-open-issue.json'),
                 'status':'not_completed',
-                'scope':'Expanded current-source native first-exchange journey is not proven; startup comparison and failed attempts are preserved separately, never counted as passing evidence.'}],
+                'scope':'Expanded current-source native first-exchange journey is not proven; startup comparison and failed attempts are preserved separately, never counted as passing evidence.'}, {
+                'path':'dev/copypaste-delivery/evidence/membership-current-issue.json',
+                'sha256':fingerprint(DEV/'copypaste-delivery/evidence/membership-current-issue.json'),
+                'status':'not_completed',
+                'scope':'Current source Web membership reruns timed out at browser page/locator creation; all owned instances closed. Earlier browser success bytes were overwritten and are not accepted evidence; five current HTTP checks remain separate from final UI acceptance.'}],
             'contract_alignment':{'contract_operations':len(operations),'implemented_operations':len(actual['routes']),
                                   'unmatched_contract_method_paths':sum(not x['method_path_matches'] for x in operations),
                                   'limit':'Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.',

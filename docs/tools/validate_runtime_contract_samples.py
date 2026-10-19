@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 
@@ -27,6 +27,12 @@ def main():
             raise ValueError(f'Authentication test fixture changed the original schema: {name}')
     if len(fixture['schemas']) != 10:
         raise ValueError('Expected all ten authentication schema dependencies')
+    members = json.loads((AUTH_FIXTURE.parent / 'membership-schemas.json').read_text(encoding='utf-8'))
+    if members['source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(members['schemas']) != {'Role', 'InviteCreate', 'Invite', 'InviteAccept', 'Member', 'MemberList', 'Ack'}:
+        raise ValueError('Membership fixture must retain all seven original schema dependencies')
+    for name, schema in members['schemas'].items():
+        if schema != spec['components']['schemas'][name]:
+            raise ValueError(f'Membership fixture changed the original schema: {name}')
     checks = []
     sources = []
     for source in SAMPLES:
@@ -50,13 +56,14 @@ def main():
     if not checks:
         raise ValueError('No captured responses; empty evidence cannot pass')
     report = {'at': datetime.now(timezone.utc).isoformat(),
-              'scope': 'Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance',
+              'scope': 'Captured canonical User/Invite/Member and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance',
               'sources': sources,
               'authentication_fixture': {
                   'file': AUTH_FIXTURE.relative_to(ROOT.parent).as_posix(),
                   'sha256': hashlib.sha256(AUTH_FIXTURE.read_bytes()).hexdigest(),
                   'schemas': len(fixture['schemas']), 'status': 'passed',
                   'scope': 'Exact original schema and source digest comparison; actual authentication wire checks are in the platform regression'},
+              'membership_fixture': {'file': (AUTH_FIXTURE.parent / 'membership-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(members['schemas']), 'status': 'passed', 'scope': 'Exact original schema and source digest comparison; actual wire checks are in the platform regression'},
               'openapi_sha256': hashlib.sha256(SPEC.read_bytes()).hexdigest(),
               'checks': checks}
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

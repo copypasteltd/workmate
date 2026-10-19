@@ -43,7 +43,7 @@ Web 的上下文刷新、Desktop 设备权限同步、扩展初始化及项目�
 
 Web 首轮增加会话表等待时，合成账号尚未创建企业而停留在初始化页，失败记录保留为 `auth-context-first-navigation-failure.json`；补齐真实首次用户初始化后，页面和资料验证通过。
 
-当前验证记录以 Delivery `evidence/alignment-platform.json`、配对原始 TAP、`auth-navigation.json` 及 `auth-profile-contract-samples.json` 为准。上一阶段 203 项原始回归完整保存在 `evidence/stage33-platform/`，三组导航历史记录保存在 `evidence/stage33-navigation/`。原始十个认证 schema 仍与未改写的 OpenAPI 完全对应。
+当前验证记录以 Delivery `evidence/stage34-platform/alignment-platform.json`、配对原始 TAP、`auth-navigation.json` 及 `auth-profile-contract-samples.json` 为准。上一阶段 203 项原始回归完整保存在 `evidence/stage33-platform/`，三组导航历史记录保存在 `evidence/stage33-navigation/`。原始十个认证 schema 仍与未改写的 OpenAPI 完全对应。
 
 本轮没有把原生完整旅程标为通过。未加载产品模块的隔离 Electron 检查中，CJS 在 ready 后创建窗口超时，ESM 则完成了窗口、DOM 和定时器执行。显式路径的 Playwright 启动需要其固定版本的 ready-event bridge；补上后调试连接能建立，但实际首窗口事件仍超时，不能据此断言单一硬件或源码原因。两次本轮失败及已核对 PID 的进程清理记录保留在 `auth-recovery-launch-without-loader.json`、`auth-recovery.json` 和 `auth-recovery-loader-owned-cleanup.json`。
 
@@ -52,3 +52,5 @@ Web 首轮增加会话表等待时，合成账号尚未创建企业而停留在�
 本轮修改的是规范接口与当前源码，历史 Setup、Portable、侧栏 ZIP 和完整离线包均未重构。旧预览包仍依赖当时的聚合接口，不能作为当前接口修订的兼容性证明。重新打包、签名更新、完整原生/系统矩阵、邀请和后台规范路由、正式网关与所有角色业务资格仍在原范围内待完成。
 
 独立源码提交后的重新检出四组通过，见 Delivery `evidence/byte-integrity.json`：36 份 SQL 字节与两库迁移摘要、28 个受信任 Skill 固定摘要、43 份 renderer 来源摘要，以及 207 项原始 TAP 与记录 SHA-256；自建临时检出已移除。文档结构与契约检查通过 12,608 项、失败 0 项，此数量不代表产品验收数量。
+
+后续邀请和成员契约已按 [邀请与成员权限闭环](35-invitations-and-membership-authority.md) 修复相关子流程；本篇 207 项平台证据成对归档至 Delivery `evidence/stage34-platform/`，完整后台与原生验收仍未完成。
