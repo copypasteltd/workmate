@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('canonical_fees_and_independent_approvals', [83,84,87,94,96,98],
+     '三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。',
+     ['platform_regression','admin_fees','runtime_schemas'], ['technical/41-canonical-fee-commands-and-independent-approvals.md']),
     ('billing_subjects_and_events', [11,46,86,87,101],
      '真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。',
      ['platform_regression','billing_accounts_migration','admin_billing_wire','runtime_schemas'], ['technical/40-billing-subjects-and-financial-event-provenance.md']),
@@ -156,7 +159,7 @@ REMAINING = {
  82:'局部两主题/语言/四尺寸通过；全组件状态、100/200% 缩放、键盘/对比/reduced-motion 验收待完成。',
  85:'规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。',
  86:'模拟数据单列且微额费用可读；正式多维消费归属和未知成本全量钻取仍待验收。',
- 87:'模拟额度走可追踪 gift；正式费用全部动作/收款关联/退款与限时额度仍需完整验收。',
+ 87:'赠送限时额度、扣回原入账和授信已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；完整付款/凭证核实、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
  92:'独立 MFA/企业范围的 Admin 排队暂停、共用领域守卫、原受益用户撤权与费用待核对拒绝已有验证；运行中检查点、全工作流/Routine 控制和未知外部动作人工核对仍待齐。',
@@ -218,6 +221,7 @@ def main():
         'billing_migration': DEV/'copypaste-delivery/evidence/billing-live-migration.json',
         'billing_accounts_migration': DEV/'copypaste-delivery/evidence/billing-accounts-live-migration.json',
         'admin_billing_wire': DEV/'copypaste-delivery/evidence/admin-billing-wire.json',
+        'admin_fees': DEV/'copypaste-delivery/evidence/admin-fees.json',
         'native_runtime_alias': DEV/'copypaste-delivery/evidence/billing-runtime-stable-alias.json',
         'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
         'admin_directory_ui': DEV/'copypaste-delivery/evidence/admin-directory-ui.json',
@@ -258,6 +262,14 @@ def main():
         assert report.get('status', 'passed') == 'passed'
         assert all(c['status'] == 'passed' for c in checks)
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
+        if key == 'admin_fees':
+            assert len(checks) == 4 and report['model_calls'] == 0 and report['external_payments'] == 0
+            assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
+            assert report['source_unchanged'] is True and len(report['source_files']) >= 20
+            for source, expected_digest in report['source_files'].items():
+                actual_source = (DEV/source).resolve()
+                assert actual_source.is_relative_to(DEV.resolve())
+                assert fingerprint(actual_source) == expected_digest, f'Stale fee UI evidence: {source}'
         if key == 'native_runtime_alias':
             assert report['launcher_sha256'] == fingerprint(DEV/'copypaste-platform/scripts/native-db-launch.mjs')
             assert report['real_executable_present'] is True and report['prior_temp_alias_removed'] is True
@@ -283,6 +295,18 @@ def main():
         if key == 'admin_billing_wire':
             assert len(checks) == 5 and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
+        if key == 'checkout_integrity':
+            assert len(checks) == 5 and report['owned_temporary_clones_removed'] is True
+            assert set(report['heads']) == {'copypaste-platform','copypaste-admin','copypaste-desktop','copypaste-delivery'}
+            for repository, tested_head in report['heads'].items():
+                checkout = DEV/repository
+                current_head = subprocess.check_output(['git','rev-parse','HEAD'], cwd=checkout, text=True).strip()
+                if repository == 'copypaste-delivery':
+                    subprocess.run(['git','merge-base','--is-ancestor',tested_head,current_head], cwd=checkout, check=True)
+                    changed = subprocess.check_output(['git','diff','--name-only',tested_head,current_head], cwd=checkout, text=True).splitlines()
+                    assert set(changed) <= {'evidence/byte-integrity.json'}, 'Only the clone receipt may follow its tested Delivery commit'
+                else:
+                    assert current_head == tested_head, f'Stale clone evidence: {repository}'
         if 'browser_closed' in report:
             assert report['browser_closed'] is True
         if 'desktop_closed' in report:
@@ -328,6 +352,12 @@ def main():
             assert report['owned_admin_principals_disabled'] is True
         if key == 'platform_regression':
             assert report['counts']['tests'] == report['counts']['pass'] and report['counts']['fail'] == 0
+            assert report['source_unchanged'] is True and report['source_files']
+            assert report['verifier_sha256'] == fingerprint(DEV/'copypaste-delivery/scripts/qa-platform-regression.mjs')
+            for source, expected_digest in report['source_files'].items():
+                actual_source = (DEV/'copypaste-platform'/source).resolve()
+                assert actual_source.is_relative_to((DEV/'copypaste-platform').resolve())
+                assert fingerprint(actual_source) == expected_digest, f'Stale platform regression: {source}'
             raw = path.parent/report['raw_report']
             assert fingerprint(raw) == report['sha256']
             evidence[key]['counts'] = report['counts']

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-19T21:44:59.649980+00:00",
+  "at": "2026-10-19T23:12:20.160490+00:00",
   "scope": "All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report",
   "baseline_sha256": "496d31dd2408c58b21d208a83f532c1f0475571148b8415c735656b8f3527113",
   "user_test_data_instruction": "2026-10-19: 暂时先用假数据。Simulated validation is authorized; production qualification remains separate.",
@@ -31,11 +31,11 @@
   "repositories": [
     {
       "name": "copypaste-platform",
-      "head": "e05a0a1605b333fd97eaa549dc07341e00ef24b6",
+      "head": "3521e654342011724462fa1ac71304a35d11956c",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "1a5f1741b41ba7aba0cf0e21fc7a869b51c759648db302d93f1c10bba9744e86",
-        "README.md": "580e531babe0c9f03169bee7b396b731e2360736c36b77ab317efcd644474895",
+        "README.en.md": "9654a35345f0b910fc6d6bce4aca8c396b5fdd5418b4dfa70c3e1bdc3f00afd5",
+        "README.md": "4ec6e121226fbfd3e3d4bf9bcc5e747f05ff722c22b85ea72a8beecd2908e369",
         "THIRD_PARTY_NOTICES.md": "5299e707ba17d7a008cf72dc0208b08dfbe9bd07176bf4dfa07cdceb83bf6d3e",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/company-sign-in.png": "633f7e7bf2ccd8606cd3ec3190b43436471e47b9d0a0a28d39039119d7e0a46a",
@@ -55,6 +55,7 @@
         "contracts/admin-account-schemas.json": "15bd1239295eb0b2c27cdb138716c54c955b6c5220c724ff5673c86567ea5cd2",
         "contracts/admin-billing-schemas.json": "8767c45146ef01531a1a1c2b5078a7eddb56df3148771d85b18c0deb9d38d85f",
         "contracts/admin-directory-schemas.json": "b01d13435bd8ad677ab07e5135a987071c9662cef3e79b5c3a564bafdde61b62",
+        "contracts/admin-fee-schemas.json": "712d6bdee1550092633bcd38d5cc7c20988f38bc653edbeaec6070e6cf8d3a7f",
         "contracts/admin-membership-schemas.json": "69a7e00fa0e94a4a3fdda4ae553626b87e8489371ba552fdfff871f3cb79e335",
         "contracts/auth-schemas.json": "3fdd104fd4e8f803ba72cbf74bebe56981553048f2b564e53240fa62c4f760d4",
         "contracts/codex/ApplyPatchApprovalParams.json": "179d91081c3c84d0f79fc544a3d6d423f280c0f9d93512cdd0344c80e09b99a3",
@@ -509,7 +510,7 @@
         "contracts/codex/v2/WindowsSandboxSetupStartParams.json": "8610d077fff4fc5811f2e33dea82617a15ffb82f08e55e1540aef877133f5b4f",
         "contracts/codex/v2/WindowsSandboxSetupStartResponse.json": "830bf89deac3e73e36b7d9799ceed32ee25e782c30b1d25266374aa020d3bc7e",
         "contracts/codex/v2/WindowsWorldWritableWarningNotification.json": "bfa34d4890c8121a04412b8d53314a13adf98289fdd948857fd97b808dcbe79e",
-        "contracts/implemented-routes.json": "11349b33d01e38c232ab1f886618e84a60cb280ce37caa05eac46b1778489e6e",
+        "contracts/implemented-routes.json": "c719a6ac8599fd5139e84580db94673c7078b76bf1e95c306f789180aa4c6436",
         "contracts/membership-schemas.json": "f5658754ca859096e8e4b4f2b6076ce90ec1e269461d59b2a9dc08162e75b1ff",
         "evidence/codex-protocol.json": "eb48a8e38d7a3979185c7abe6b15edec2467ab78815379db4449070e52d752e8",
         "migrations/001-foundation.sql": "4f07eeceebe0c1fb87e236c6700f6aa7d628f31c5c4eb33a90bc16de925d9fe5",
@@ -556,6 +557,9 @@
         "migrations/042-billing-account-subjects.sql": "dfaf2f1147b948c76af09a916323f4c7e4b22e6187207072fd671261152dca7a",
         "migrations/043-billing-operation-provenance.sql": "bc7713661637bdd2dd0a56dd99a21da9a76b4ab4f4c07780f2d3c9f445dd2f6d",
         "migrations/044-billing-subject-immutability.sql": "561a4d375950839c8477420f7a3e15cb4822c9aa489aa955e301d0f842ca48fc",
+        "migrations/045-frozen-financial-commands.sql": "2b139fe6b5ee14204bb5a407b8b1f9683d9aa6d69475f06f9ee6c0edf1922b50",
+        "migrations/046-financial-preview-intent-repair.sql": "90c811b5462444e54989dfb94b55d3bc34b5be67f2a55f9ab7a54e8b5a47de7d",
+        "migrations/047-financial-approval-requests.sql": "53c991c42ea0eb1cfb3ed444b0c05b63bd29ca88b287c4d9e55be3f25a51baef",
         "package-lock.json": "897180dd90d93f77c9a14344a18ea4a496e13e9ef782fdcaf8cfe8085aa62cf5",
         "package.json": "e08a07e06a2c378cdb635de6cd1a80b4e135b6b00d500a939738aaa6554a51ff",
         "scripts/admin-create.ts": "ea2444a150ff68eb7166b446b26acc198233f0efd8d57c0a84682bf832b8513d",
@@ -598,17 +602,18 @@
         "skills/workflow-design/SKILL.md": "056674b1499788cee6690384cdc94d44e8f518211da8ad1b13782bf48bbab9a9",
         "skills/workflow-execution/SKILL.md": "a736d413e10cdd4487a6d47993271c75206d76de2c74445cdc3037294a5bee62",
         "src/access.ts": "4ccd23d806a6c0c7940944fe57c45783e3e750c8fc4cd771a7b5498be46889e2",
-        "src/admin-access.ts": "79bec3fe7fba770b23beeee7215614470ea8ce913892453734f78737e94ab24c",
+        "src/admin-access.ts": "5eccb4fdf4f633fcbbd010b5708992320537a191f4cc1173443b0657f66751c2",
         "src/admin-accounts.ts": "41dda1db86f6c02b841ffb532aaccd56c5a3844608af84de7f352833a5195129",
         "src/admin-billing.ts": "609b1c40df4eb4969a2d6b0b39533518499b599f980a5ff4684983662abfbe5f",
         "src/admin-content.ts": "5d9a0522bd7e5b2ad2200cf653b414163d71eec57acc7b45c8cece8741785151",
         "src/admin-directory.ts": "c760c8522f02f2e7a421eee6cfe31bbffea93072589b2e5ba5ed3032abfd09da",
+        "src/admin-fees.ts": "5c212705ff510a3d2c37ea677653114f6569a09be1daa84d374de26b1f9c90f3",
         "src/admin-identities.ts": "48f1be54da619ac94222aac4c3aa04b64c95250534df6f90398e0861b4a4f9d4",
         "src/admin-jobs.ts": "0a67160f6f1bce22095e30e4c6e4a0147470f5dc8d5d8205d4e21b4cb31ec68c",
         "src/admin-memberships.ts": "1029504ec09577ddd2c7c930cd673b3485b0b31746a75923bd204834e9a47b70",
         "src/admin-operation-policy.ts": "47efc7dd63e4200af83d0371b3f83929258d5eccaca79b3436c896f0b9430748",
-        "src/admin-operations.ts": "142d6a9fbee5141301ef246bf14f87eaaa936b13957bbd084c29b5ccc64b7c45",
-        "src/admin.ts": "8d27b2a4ef16d0a4de6c49f8dac48ba5243ca9488a6c831f7683f696693893a1",
+        "src/admin-operations.ts": "f59fe70b1c3b998d40ad5e7be14a0ffeaf06266c74f1fc995c7571980f9f9da8",
+        "src/admin.ts": "6c3891ac23bf4728f6e1c57067d3dbd60375064609700881dede8c2972eb55f6",
         "src/agent-templates.ts": "44ca4097682aec685d08c0cdf388d9ed2827de051f3f407689bffa6494bcb896",
         "src/analysis-calculation.ts": "dc60031a48d56622527fe2764df8f06beb0988009ca71afd65d128ce3acc80f4",
         "src/analysis-reports.ts": "ad33c018bbefac7ed25527575a6bf3dcd1d1767780ad8bdd77779204b2a0739d",
@@ -622,7 +627,7 @@
         "src/auth-receipts.ts": "d1b1b6bff33be9553ff8d0227192dd5eb60690379d882e0bc68415abe7b34ea0",
         "src/auth.ts": "23f5955e407acf51191397524d1ca5c910e0c69221016a52b25d125b9a8ff318",
         "src/billing-events.ts": "c8456097043e0b5eaa061fb4f6a9f5d402a226a3251aaefdb74d7f011c8e383b",
-        "src/billing.ts": "e7efd0c45e41be4d507890646ea5f4a1c4e9f731b44e63bafc69d90f93ec9e6b",
+        "src/billing.ts": "f3581f12dce8967f9a6acbb2687ec4bb0ff2369bf5f8bb56b9eeed53a43a5349",
         "src/business.ts": "b231133758989ae6ba2507c9c880cd673dc2206384dc52e1ea885aafd9201baa",
         "src/catalog.ts": "259cebd55e0c54cb8d793f8cc754888256229395728aa9e97b61cb81b57d0136",
         "src/cloud-files.ts": "fbfea9a267d599fc30b3d659a50a2db254df41b7c9c1b570953978fdf152d418",
@@ -653,7 +658,7 @@
         "src/runtime.ts": "ff43c7623a09c4951aa89dd41fbc9539dd1a206885cd4575e62e839eb44c3643",
         "src/schedule-time.ts": "1c23ce00cddd0be818298e14506ea1563096742bf409048d34e13e3f6d04feec",
         "src/schedules.ts": "a7341b39b89953fc3daa72dde43c088b645310d6bca52104fdc709e4db245111",
-        "src/server.ts": "8d0a4ffc263728609a23062844b118f5832812bb1bf95fd6f44a0ad9290a121e",
+        "src/server.ts": "2b2f4ad3da14bfd4a735b4be23c095bda7a0cb8c956c09f1cbaa1cf526dcd80f",
         "src/skill-lifecycle.ts": "54f8cc8613ffdd42122b8a1f4f6f7d68d1505a4defda6094855f6c03d155c0e7",
         "src/storage.ts": "1ea54490f977700d21a448c19d0180e1d1d913d234d05d6b56e29d49524e6bc4",
         "src/task-control.ts": "54498572c7f42b6b55be2cc6388afef1493658232f7189d6deade61e7c749ff8",
@@ -670,6 +675,7 @@
         "tests/admin-accounts.test.ts": "fd93203e5819aca586db0b23989c22d9714d55d7b97d65dd626264d513c72900",
         "tests/admin-billing.test.ts": "a31a30edd5f302b33fb5a62dba726ba51252c1efde351f0cecf069cd71e51235",
         "tests/admin-directory.test.ts": "aeaee21a2c1dd65466fc1502134b77834c6e8af5a4d2a7d85c92434c0fa20563",
+        "tests/admin-fees.test.ts": "9029e724c9e27a9036399ce9daab1fd7dc7ffd30db753f1f916a963724c5b1a3",
         "tests/admin-identities.test.ts": "c690768980fa64f2c750aaf9c84b70e8721e4f791e590d8db6bf9f3c2d3d20af",
         "tests/admin-memberships.test.ts": "79ec8197be92495aa80f689f8fba584b9ffb7e9980b1bc835a0f38b83fdec758",
         "tests/agent-templates.test.ts": "59e215cef0980ede979c743bebae23f72c9138200c2f20a5dcca006ba1f65b0d",
@@ -689,11 +695,11 @@
         "tests/federation.test.ts": "3ea83673701d141c6f6feb3eaca2861784898e76e7ec41a2a8ac9bcf42edaea6",
         "tests/helpers/oidc-idp.ts": "96983a2a55f9576ca2ed255bef3ac51366150192c1566f0388b46c4ec1aa1836",
         "tests/membership.test.ts": "8d7725fc7b3eaba3dbb31883573cbece5ef93c4d30852ca280f9b7b534cdf375",
-        "tests/migrations.test.ts": "144a666a980ca82699c74f3bf179dfd1ea7b9b9daa6cdeae491ea0050d144af0",
+        "tests/migrations.test.ts": "053225699c02b58aca2a2ee1238e5695eac991a593c39ee6eb7eb7050f545d4a",
         "tests/native-test-environment.ts": "f4d106750fbc28a6e6b14ded4aec462649c11674eb29d982f565bc475a038230",
         "tests/notifications.test.ts": "dac47a41560a6182758360a6f30f5a287f28d592ee3fa353024bf2652234e763",
         "tests/persistent-work.test.ts": "b959b6d6eb9a672c38add771349f54a1adc0ad7ae6f33fa64ab6062f4acbfa7e",
-        "tests/platform.test.ts": "be9a180c12f5899ad363c857a6fe99bffc1ab1c6f0cad00370e3812f0ba2b448",
+        "tests/platform.test.ts": "047254cbfb3529851c673bcc9c3bc34973781ceedfd1cecec4906fd7ba025509",
         "tests/render.test.ts": "d1562c91ecf85cbb0e5a2b8199a14769918fc99fe567452b41c8de031bbfa175",
         "tests/runtime.test.ts": "f5992ae8e164e9235eceb2d3fbb9e6b32a573c278d2e7401bd5f8d936a7a1868",
         "tests/schedule-time.test.ts": "b21a14772a628b7c2cfb702033c6cb6ac08283437e49894bc72ce8888276e743",
@@ -842,11 +848,11 @@
     },
     {
       "name": "copypaste-admin",
-      "head": "01b11f62c22df60a551d398ff48543f9469879e2",
+      "head": "c6ad1c00868843323a731802590dca6b26acd730",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "b2f2ed31a0f4badeaea9b97d66d6e099adecdbcf28055f8bbd29954e487e80ff",
-        "README.md": "cae848549283c725ab2ec23e00cc5817d402fc3c032aa28fd5fa7544e38b37d3",
+        "README.en.md": "5a1c33721d3a57dbfb19b5a83cff251074b30d0147271d91988a136792b20bab",
+        "README.md": "1877ce28a8eb2961be178f97f2e532f1099fba1c16f3c80ba55370f210eccd53",
         "THIRD_PARTY_NOTICES.md": "b49d7e290707d90b160cc864e4388744d9be7ce277b361cb5a784ad29d49b641",
         "assets/screenshots/01-access.png": "c26840f8a6f934f355ca88116df70e2b2cfc65dfaa945d61224fd36c3a7c9f33",
         "assets/screenshots/01-audit.png": "2e1e24aa36d19ed2deeb13f80655256ce39310dc1146499df09db64ce2bff273",
@@ -882,9 +888,14 @@
         "assets/screenshots/21-task-input-review-dark.png": "a24216298ed430ac23499a00c7e5d516c9e39f049b66b42df68a75a7aad4617b",
         "assets/screenshots/22-capacity-queue.png": "5d5bb859bfaa433134b6107b8d5fa078476bff67034c203b2e160940b72b4a2e",
         "assets/screenshots/23-capacity-queue-dark.png": "4758052d7395a7329cb0f0b5a74c621adfd4cbe8718aa253f457717029880086",
+        "assets/screenshots/24-billing-accounts.png": "2b2238a791819c2899bfa167031a07199370cb36cc4f6374f654de8fa2acd70f",
         "assets/screenshots/24-cleanup-pagination.png": "0d7b9ef2701ad1dcc1ae34f0b101f937807578dcbe8c9139e03b4536d0dab4de",
         "assets/screenshots/25-cleanup-pagination-dark.png": "bf83bacd5f7aff15a41a9aaafaff8593894d1676814ab0c75cd72d4712bd38db",
+        "assets/screenshots/25-fee-preview.png": "93b09d93b284946a8f5255cc410e2f6221e64ee1fff1a436f856ab93987ebcaf",
         "assets/screenshots/26-cleanup-mobile.png": "9291d864203cabd181156ea8443e9695ff41ecc59cce850d148dac2ceea8a6bc",
+        "assets/screenshots/26-financial-independent-review.png": "14221a31e5b46a7bf5e6013eeb44d276933938145e058825a2d522e1c8692bfe",
+        "assets/screenshots/27-billing-ledger.png": "a21fee5194f078013251ba8c9d4e149712c7346315c86eaab1ecbdde3a7294ac",
+        "assets/screenshots/28-billing-mobile-dark.png": "a324b6a9e9fff4eeb434b3eba56914a7706a170021e95580adc7c7badde6f8bb",
         "assets/screenshots/54-account-profile-preview.png": "54645783682aad8ed3800d68b7a1f01ca31d774aa0af0a83e951d19053a35fd8",
         "assets/screenshots/55-account-closure-review.png": "36fecc5fe634222000043ff7f4613e858d2e26540d802f65589c8f5e82119360",
         "assets/screenshots/56-account-control-dark-zh.png": "d05d65f9ae4521d0530a6ea86bd46c1369307732c3305c13bb9b74a13f0dc13f",
@@ -893,7 +904,7 @@
         "assets/screenshots/59-directory-mobile-dark.png": "52e28123f1076ecffe4a2b4b8d2533217b6675f26a3eaabd782e6c76231b571a",
         "index.html": "4dfa84425f6267930eaebe31999cdebb5371d8888b14aa902535a1c970dfa402",
         "package-lock.json": "6941458778b763858939bba5f60138a937b3469185a2479aaa1b67d1cf9df4f1",
-        "package.json": "f54de87857930af81756017c84a7cc0877d7a91c778b70a67f889f57033c26af",
+        "package.json": "1378b2d4cf0087806025d6fc4e21672d4a68c427aa63b9f97dd213ae60c3f994",
         "public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
         "public/CopyPaste_Light.svg": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e",
         "public/brand-mark.png": "d71ca3ea2dfded42efd9d213201f6948f2ecdabe20aaf80f3013c6805ea9e4a3",
@@ -905,14 +916,16 @@
         "public/icon-48.png": "731a0e347bdb0573d32b942a3e4d03e43f36a81365c83728dec43338e9d68468",
         "shared-source.json": "223d5b85dabc37c34a2712ace48314e20076400ed65c79d449417f9b166887ea",
         "src/accounts.tsx": "d795e7b981685f3d19d5d4c1dea752431975421c821e28987e518ea0b780c377",
-        "src/admin-identities.tsx": "3305243d527f065368a9ed3bd5fb201cbc959f19c73dc33abd360b5701914fd4",
-        "src/admin.css": "0712c517d7d4ab236fe9769c56b017d87359a19d041ddcdb4d2b3ba445257568",
+        "src/admin-identities.tsx": "95af3bed0953d1912b1de40d34693f6b270bb92cc8b83f2c9310de8c1fa3d1ab",
+        "src/admin.css": "c3c67c7564ec7f09560bb9eefa444aba092f938d5e27f92765faefd61560ca8b",
         "src/api.ts": "ddc38dfa4c679633be9ce58fecc766632e25dd147d282d0d5a0f09cb8436a84f",
         "src/data-mode.tsx": "e249a22d8aacfb75437cc75c06df19c26c12836c7d039eb25ace30f030a24377",
         "src/deletions.tsx": "3eb83c8467ff951980d506cce5db60c493eb5791bb61dd97906cdbcabb32631e",
         "src/directory.tsx": "72646ce2067d813351904bbe454b489cea595672afb9478bec86fc30691939ce",
         "src/federation.tsx": "58f2e327845371f4f908ea8438ca594f69280879427328c6fbfb482d19af2698",
-        "src/main.tsx": "b6e54e9e67ccc52ab75e9143e2dd251c0fb39af526f2520eb9f5a7911b922965",
+        "src/fees.tsx": "e859bb7337f86a17846cb968482cc34c7cfc9edf62f8f337e4b042fefb54528f",
+        "src/financial-money.ts": "c698fe023900ef53739f73cea8d3c6d74474cd1df91bea8416b983b958a503f4",
+        "src/main.tsx": "6c8d961c931fdf9c80919225253c44ada35476c93656abd8da29b176e71e7ff6",
         "src/memberships.tsx": "b495a0fd0ca9f1152efa644c53733c5df8dc0e852a9f05fae22b3f3bfcd2409e",
         "src/operation-key.ts": "1a8051e0db33ee8a4d59b6bf2ecfefdfde7c9d0d7445e8800e3032a4be8cf8c3",
         "src/schedules.tsx": "5e121070d6f21128d87425b4b5c01883f9f9cd71c4f4f0ef0f1258591e985be1",
@@ -920,6 +933,7 @@
         "src/style.css": "857124b8e289b8922427251654db4a7ba00c3f00e856f8e7d2a7b10d583af24a",
         "src/ui.tsx": "c4de0cc1dcb7b04bcabaa48202130edfc5035da3183fa079f00bacea69be6686",
         "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+        "tests/financial-money.test.ts": "535dbf9c135c17b963a7708a1b8916e1422968278db98420dd1b6687341ee232",
         "tsconfig.json": "32b9c52912499c8a4c8286dd01c12750e46d826f6c0fa5d1dde575be692beb0d",
         "vite.config.ts": "7830a8a5c247a0f297cec6d5604ccd28950fa53d2d73908544cccfaad0a483cc"
       }
@@ -1075,11 +1089,11 @@
     },
     {
       "name": "copypaste-delivery",
-      "head": "d7d03b670818a9a97527c5cb33b74c919f613ea3",
+      "head": "2987b2d58a9d062f83e799edde88589599cdfd8c",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "34b549c86d6af25a58c048119fa121f5bcd825d0b41d4771cca9efa71265470a",
-        "README.md": "164042f2a09ca61a13fe2ed137a3a2826e4dd312bb5d8bd95c85983724bdb1de",
+        "README.en.md": "da7d84c1c4705956040b7ca0ade6456af7b4c7847a608253eb074b84b27680ef",
+        "README.md": "580f430f418943a5cfb3698b483ff3316f15054a1e6ccfbc7df3d4f9ede01dd3",
         "THIRD_PARTY_NOTICES.md": "6c64c50fb20d9a9756db020d15ed5607aec70a08208c82ba58932385eabe3f22",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/design-pdf-export.png": "dc28fb1af46f904f6ee799d0318ad368001a95ccd6696c404715e1c2e9694bdf",
@@ -1093,6 +1107,29 @@
         "evidence/admin-billing-wire.json": "19135040df3a1dd60de8e8b40283a0bb1d834a159ce1df39b44f1c6a27e1b0aa",
         "evidence/admin-directory-contract-samples.json": "9ccb1f8b5ed61df5df09adc1693b9b9a53211e00bfc877e119d34ec52f29285a",
         "evidence/admin-directory-ui.json": "bef0915285108a158b314b8ecdf354b8144788146ac04439c73cb404cf2ac372",
+        "evidence/admin-fee-contract-samples.json": "589755abd84e3d6466c98522e23fd669eab672db5409a4319cea08731e18074c",
+        "evidence/admin-fees-checkout-initial/archive-map.json": "7c98fad9bc38ef9fe3aee30d24e4dbae31733e97388d3ea45331dcdf747795ea",
+        "evidence/admin-fees-checkout-initial/byte-integrity.json": "85e4375fa5246504a1046fa4af861b5d71ad86a42787d5f5616415f6c09b6087",
+        "evidence/admin-fees-intermediate-platform/alignment-platform.json": "80f8ef9bfad68be3be1cf4dc0aa77fca11a1673be39f88fdaf327c7818f0fb3b",
+        "evidence/admin-fees-intermediate-platform/archive-map.json": "189dd96496b5d702f60d169262eb312317fa909d51c76220e87ce0fb4666b071",
+        "evidence/admin-fees-pre-route-inventory/alignment-platform.json": "bd03cfacc13e31d1997925225c38bf5d89982ca3e8cab6e12215dedd1f84486c",
+        "evidence/admin-fees-pre-route-inventory/archive-map.json": "07caa99568be1a3de01fc3e803ff75fe71b5591662577c61974c0b2041ea189d",
+        "evidence/admin-fees-ui-initial/24-billing-accounts.png": "8e0eca9318fb48fe281d6caf9a55bde172bce063c615295e5c753191055c3159",
+        "evidence/admin-fees-ui-initial/25-fee-preview.png": "96295538c35c3c7f211bce50eb52ac4b73aa6b6cad7ce7655714befec4038c8f",
+        "evidence/admin-fees-ui-initial/26-financial-independent-review.png": "da1886618620283b43a09cfbe82929c9fe11c5a1855c831d672e1d90ea87924c",
+        "evidence/admin-fees-ui-initial/admin-fee-contract-samples.json": "9b3ac450e160bc453c8260ed9627097603debd2182a1f1dddc39be70f8b62a93",
+        "evidence/admin-fees-ui-initial/admin-fees.json": "a98f247af6e34214b61a8625242aee540d635609b9ce6ab34a3508ec77e33371",
+        "evidence/admin-fees-ui-initial/archive-map.json": "445701fd956fb609666cb1be9edae0d1339da8fb1009ec6e51c0f18e07932546",
+        "evidence/admin-fees-ui-second/24-billing-accounts.png": "930f48ddd32b49563073d56346fc34449a212f588c3e553708471e6c4034af96",
+        "evidence/admin-fees-ui-second/25-fee-preview.png": "733d9901ee7ff807f99d6862dcad5a1b52767ee44006e59cd5f600531bb356cd",
+        "evidence/admin-fees-ui-second/26-financial-independent-review.png": "073769e0602433e1b36fdae5903228e60ea3368e2fb0033cdb84cbecb696c9ef",
+        "evidence/admin-fees-ui-second/27-billing-ledger.png": "1b6462d77ece9e7b59d4f75f2fbe2a4d20512d117340b33fd99b9738987a7115",
+        "evidence/admin-fees-ui-second/admin-fee-contract-samples.json": "fdb8ff94467d93de3babae609e9aed06f5071d27b008b2d3b22b87551067f279",
+        "evidence/admin-fees-ui-second/admin-fees.json": "b78d0045dcfafcee07c0c9b5afc59f6165352b9345856ef6a2be6848afa25ef7",
+        "evidence/admin-fees-ui-second/archive-map.json": "e78805f22300640afe92aaae3ea5631daa1f8d5a2e1c738669aee863f1a578a2",
+        "evidence/admin-fees-ui-second/fee-failure-0.png": "8ee334800c4d281147eeda132b49ab4412ffb072a07ce1d66abd538e62602f64",
+        "evidence/admin-fees-ui-second/fee-failure-1.png": "dfd00a01494e46ab386982af230122b7b8f3075a8533cdfe78ef04a8bae7cf16",
+        "evidence/admin-fees.json": "3ac819c1985f9a0aafa78e876786b0f0fc8bea056fa70438640d55f4eaaeff87",
         "evidence/admin-identities.json": "450bf2606f7debfaa80614471a930492536bc962c0037efb176bc247ded27942",
         "evidence/admin-membership-contract-samples.json": "12ed75a338c64a61a2e20ea757b8fe96d64d3ea6042b2f1b4bd2ff912bd93ed1",
         "evidence/admin-membership-ui-open-issue.json": "66fd84e61413f6f21de7c9914bf97853c2ea97027d5451c5b1dc864e10e7acba",
@@ -1104,7 +1141,7 @@
         "evidence/agent-templates-contract-samples.json": "2ad20cf3784cf00cb25332c4a6bb2aa13b8257d3e12a1cfff6ed442e7c6c1e86",
         "evidence/agent-templates.json": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
         "evidence/alignment-desktop.json": "ff06ef0ef7055513dfc0f627b7eec9a2f5d8e5230978bddba3682ef172969b81",
-        "evidence/alignment-platform.json": "a935fc8208a22dca13c494bc4a72c20ff0a8c26115fd25bf68443df7fdd5c00b",
+        "evidence/alignment-platform.json": "d2cb784240a775841f13826556aa22f8871c3ff4b878e0566cd63d3f6da29db0",
         "evidence/alignment.json": "3554e721940576080a0f6e01a9f2a230a87a75ef3c97c1d934999f7c1091a2d0",
         "evidence/analysis-index-backfill.json": "422e7b934edccf8d785c6f6478316aeec3edd9da7b6ae381203dac7771fe73dc",
         "evidence/analysis-reports-contract-samples.json": "30cf0a67f891a9b9def12d8f98ee89b6951a58019aad99c7eee930c7c1bd0ddc",
@@ -1152,7 +1189,7 @@
         "evidence/billing-runtime-alias-recovery.json": "37bf22b9af974237363e63af31cd10155eed912586170c58862f82476fdf60e6",
         "evidence/billing-runtime-stable-alias.json": "d58c79b193d4fd7bfbcf4f7702a76039666665a9d8b14c2e4e02027eb81c7ce6",
         "evidence/billing-sources-initial.json": "7e0811d5b5352626f0b99e73c5202e1946f682eae0875a76da91b4dfe572a9d1",
-        "evidence/byte-integrity.json": "94dc54e78e46809020a79cd627dc3fdcab3d627affdef0b0ee4197ca107b0807",
+        "evidence/byte-integrity.json": "c0b5a6beee503ff56d9ba9bc174587c456935bdcb9714a66908877ba71215b06",
         "evidence/cloud-files-contract-samples.json": "25a282a0555568288577f6d5b2d80a6769619b62fa69865fa4745a67304d9505",
         "evidence/cloud-files.json": "cd28c3f8a0ef68ef97cc96de124e072ed7fd83ccd45e40d563b988a0daeeaf1a",
         "evidence/default-assistant.json": "7f9ee69caba3af61d737064ed2ec2e2ad7f95243cf5bd446aed31046057c2d74",
@@ -1199,6 +1236,9 @@
         "evidence/notifications.json": "4514cb96a9af98fff4227ac99ab6904b6845a2e32eb7517ee28f9a68df032ff3",
         "evidence/packaged-windows.json": "7d12a4dd06de1bbfff66a5c3cc56b7778718a7805cf3e5250ea764ac99a155c7",
         "evidence/persistent-work.json": "8f1d9cd6e12aace38d8558317621062a6f071bc22a6bfb96f45c7df47ef38b1e",
+        "evidence/pre-admin-fees/alignment-platform.json": "a935fc8208a22dca13c494bc4a72c20ff0a8c26115fd25bf68443df7fdd5c00b",
+        "evidence/pre-admin-fees/archive-map.json": "f802cf8ff3ac338e66e0a1bb59d4088e18de86fe89fb5b0245ec673fe9b74824",
+        "evidence/pre-admin-fees/byte-integrity.json": "94dc54e78e46809020a79cd627dc3fdcab3d627affdef0b0ee4197ca107b0807",
         "evidence/pre-billing-accounts/alignment-platform.json": "b1ed4ae868b5120671c7aedf05ba02780c321fbda9f7cd562ad8e194702d41d3",
         "evidence/pre-billing-accounts/archive-map.json": "fe89f43e5ea8f2956f7aae5fdc6efe96c44768349fe13e58cfc6cee1d6d1485a",
         "evidence/pre-billing-accounts/byte-integrity.json": "c7bdef7029b8faf8808e2d9f0681085984665c40c4e44d5c957db5334514564e",
@@ -1296,7 +1336,7 @@
         "evidence/workbook-interop-first-unicode-failure.json": "b2b9143f7a07af0137ba0328c534d78c2b7af653d2a114d14b45c11c783054ed",
         "evidence/workbook-interop.json": "e53a4cd6fae4d1e0a3495003063c3ca838adaa9c38ff4867b1696229f78b770c",
         "package-lock.json": "91aaa1457fa9f6aa0dd6773199c45ddc0770ffa67d5e890bc379675bb3230c51",
-        "package.json": "55256c05fb5266fc3492cefe32980fcb935f2ab72e336c846edb336d30147097",
+        "package.json": "affbdc3c7043949a50a1465de040194b2342a9a258f99891fb27b74994867172",
         "scripts/bootstrap.mjs": "73ff72865ff6d15e4cf3e1ab1c862b14d42656e8ccf098bf58c0ccb2ed399332",
         "scripts/dev.mjs": "74484c7cfe37169743638cea120936cb85279f55d54760713214780927c00a0d",
         "scripts/native-surface-integrity.mjs": "c03e9e93f514665fb8532d8932b5b91ce0b80b380ec7950df9856d99f14a7470",
@@ -1305,6 +1345,7 @@
         "scripts/qa-admin-account-wire.ts": "3f42c5e346e0b25f1986ed325df84fd5f6de0e27e2fdbd9e6bd77bc94b471448",
         "scripts/qa-admin-billing-wire.ts": "e8fea851f33c893e1bc08d353a3471222a6285ddaf707160af8937857efc6f11",
         "scripts/qa-admin-directory-ui.ts": "7f8300f1e0dbdc34040406d545d0df0b884aeaea354a448c54f0b2893d3d5892",
+        "scripts/qa-admin-fees.ts": "f4981334c71aa5a0fe4b0289c0a1d365dc9514fd7d70da913d526fc48c918acf",
         "scripts/qa-admin-identities.ts": "22e3a6e4bd6101addbba8d7dfab11b64c560a3a871fa233f8eeb370b1ba825fc",
         "scripts/qa-admin-membership-wire.ts": "bc5549647ad147b931cdcd5623b26f85f0ca1e3fac161a746cccd0598c469650",
         "scripts/qa-admin-records.ts": "eb189f82954551186659c6d4249de85639b40877ad209b9de7eaa939e936e615",
@@ -1337,7 +1378,7 @@
         "scripts/qa-notifications.ts": "5ba01ee95cbf9de3b228eaa2d91a2009795980f55466da5aed95998c3ac8bdb8",
         "scripts/qa-packaged.ts": "95ec693a11dab746295be0cce85b5f783b39373522a39f547c78741bd70c5440",
         "scripts/qa-persistent-work.ts": "770d3fc635f69428032de5cc4fbae3cd37202933c17d4381b3fec71c96c12fe3",
-        "scripts/qa-platform-regression.mjs": "e405653672bea893b9bcd55d0d9063a89d647007f4f03469d50d4481f0a25402",
+        "scripts/qa-platform-regression.mjs": "94b9ec29afd6241be5a42cd6ff771f08eafb37b43d2f32d1f886c02a6956dd21",
         "scripts/qa-schedules.ts": "2f16428a5d8557cef1729812664e50177bbe513b4a53feffbbb80e6ff21a8f25",
         "scripts/qa-sessions.ts": "3617d66e33b3243643bdcfd2fa2101744d0907ab4d2c6af9bf2c7c1c2f0364e4",
         "scripts/qa-skills.ts": "257d67233dcefd19ab75f69e339ff515a7d54efad4fd645436de2b9b45ae0f3d",
@@ -1356,13 +1397,13 @@
   "evidence": {
     "platform_regression": {
       "path": "dev/copypaste-delivery/evidence/alignment-platform.json",
-      "sha256": "a935fc8208a22dca13c494bc4a72c20ff0a8c26115fd25bf68443df7fdd5c00b",
-      "at": "2026-10-19T21:33:44.028Z",
+      "sha256": "d2cb784240a775841f13826556aa22f8871c3ff4b878e0566cd63d3f6da29db0",
+      "at": "2026-10-19T23:01:39.185Z",
       "checks": [],
       "scope": "Current source regression, including real native PostgreSQL, controlled adapters and real Codex with synthetic model dependencies; not all 102 acceptance cases or live role qualification",
       "counts": {
-        "tests": 277,
-        "pass": 277,
+        "tests": 291,
+        "pass": 291,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0,
@@ -1370,7 +1411,7 @@
       },
       "raw_report": {
         "path": "dev/copypaste-delivery/evidence/alignment-platform.tap",
-        "sha256": "4fe6d46f99a2c8483700feec0aaad1537f0a1d4b7140fec7521501ff7314cd8c"
+        "sha256": "3384f423b23b9d764af55daeffbe7bcf14669791defbddfc9ba0358cd7bcb6c7"
       }
     },
     "billing_migration": {
@@ -1414,6 +1455,30 @@
         }
       ],
       "scope": "Current local HTTP canonical billing reads with synthetic internal financial fixtures; not a fee/payment/VIP command, browser, native or production acceptance"
+    },
+    "admin_fees": {
+      "path": "dev/copypaste-delivery/evidence/admin-fees.json",
+      "sha256": "3ac819c1985f9a0aafa78e876786b0f0fc8bea056fa70438640d55f4eaaeff87",
+      "at": "2026-10-19T22:45:49.772Z",
+      "checks": [
+        {
+          "name": "real email and TOTP HTTP sessions, real personal account, original immutable OpenAPI schema snapshots; no AI or payment-provider call",
+          "status": "passed"
+        },
+        {
+          "name": "actual browser gift, original-source debit and credit-limit forms retain exact decimal amounts, pure previews and single-credit receipt recovery",
+          "status": "passed"
+        },
+        {
+          "name": "a distinct real administrator approves the frozen amount/version/hash in the browser; self approval is rejected and journal attribution retains the original actor",
+          "status": "passed"
+        },
+        {
+          "name": "actual canonical ledger, English light and Traditional Chinese dark/mobile pages render without page-width overflow",
+          "status": "passed"
+        }
+      ],
+      "scope": "Three canonical financial commands only: current local HTTP and owned Chromium UI with real email/TOTP sessions and simulated financial fixtures; no external payment, complete payment/refund/VIP, native or production acceptance"
     },
     "native_runtime_alias": {
       "path": "dev/copypaste-delivery/evidence/billing-runtime-stable-alias.json",
@@ -2218,11 +2283,11 @@
     },
     "checkout_integrity": {
       "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
-      "sha256": "94dc54e78e46809020a79cd627dc3fdcab3d627affdef0b0ee4197ca107b0807",
-      "at": "2026-10-19T21:42:18.678Z",
+      "sha256": "c0b5a6beee503ff56d9ba9bc174587c456935bdcb9714a66908877ba71215b06",
+      "at": "2026-10-19T23:07:53.907Z",
       "checks": [
         {
-          "name": "fresh independent Git clone preserves all 44 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
+          "name": "fresh independent Git clone preserves all 47 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
           "status": "passed"
         },
         {
@@ -2234,11 +2299,11 @@
           "status": "passed"
         },
         {
-          "name": "fresh independent Admin clone preserves all 89 tracked source, configuration, bilingual guide and screenshot files",
+          "name": "fresh independent Admin clone preserves all 97 tracked source, configuration, bilingual guide and screenshot files",
           "status": "passed"
         },
         {
-          "name": "fresh delivery clone preserves raw 277-test TAP bytes and its recorded SHA-256",
+          "name": "fresh delivery clone preserves raw 291-test TAP bytes and its recorded SHA-256",
           "status": "passed"
         }
       ],
@@ -2246,8 +2311,8 @@
     },
     "runtime_schemas": {
       "path": "docs/quality/runtime-contract-samples.json",
-      "sha256": "364bca4dd8dc938550c321eeca6ead7e717029f81de09fbf3049997fd75f8b3c",
-      "at": "2026-10-19T21:34:46.388377+00:00",
+      "sha256": "fd6b5178efd6a35592e59c1f33e52fe633cd5ed963ecf328e1b44756dba1619c",
+      "at": "2026-10-19T22:54:40.883187+00:00",
       "checks": [
         {
           "source": "cloud-files-contract-samples.json",
@@ -2745,14 +2810,84 @@
           "schema": "AdminBillingAccountList",
           "status": "passed",
           "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 1,
+          "schema": "AdminPreview",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 2,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 3,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 4,
+          "schema": "AdminPreview",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 5,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 6,
+          "schema": "AdminPreview",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 7,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 8,
+          "schema": "AdminPreview",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 9,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 10,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
         }
       ],
-      "scope": "Captured canonical User/Invite/Member/AdminOperation/AdminUserList/AdminUserDetail/AdminTenantList and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance"
+      "scope": "Captured canonical authentication, membership, Admin directories/accounts/ledger, three fee commands and independent approval responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or payment/refund/VIP conformance"
     },
     "documentation": {
       "path": "docs/quality/validation-report.json",
-      "sha256": "fa4810e280147748499eca943a328d68cbeb631b51e30f48f44146e89a2b37e3",
-      "at": "2026-10-19T21:40:37.935647+00:00",
+      "sha256": "f2655c7093440d88be43d5433532fc2939c6febf07d6486c8c629fdb3a9d346b",
+      "at": "2026-10-19T23:08:24.981122+00:00",
       "checks": [],
       "scope": "documentation_contracts_and_recorded_design_evidence_only"
     }
@@ -2779,8 +2914,8 @@
   ],
   "contract_alignment": {
     "contract_operations": 225,
-    "implemented_operations": 279,
-    "unmatched_contract_method_paths": 145,
+    "implemented_operations": 286,
+    "unmatched_contract_method_paths": 140,
     "limit": "Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.",
     "operations": [
       {
@@ -3914,7 +4049,7 @@
         "method": "POST",
         "path": "/v1/admin/billing/accounts/{account_id}/previews",
         "operation_id": "previewAdminFee",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -3928,14 +4063,14 @@
         "method": "POST",
         "path": "/v1/admin/billing/accounts/{account_id}/gift",
         "operation_id": "createAdminFeeGift",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/admin/billing/accounts/{account_id}/debit",
         "operation_id": "createAdminFeeDebit",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -3949,7 +4084,7 @@
         "method": "POST",
         "path": "/v1/admin/billing/accounts/{account_id}/credit-limit",
         "operation_id": "createAdminFeeCreditLimit",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -4271,7 +4406,7 @@
         "method": "POST",
         "path": "/v1/admin/approvals/{approval_id}/decisions",
         "operation_id": "decideAdminApproval",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -10021,12 +10156,25 @@
         "admin_account_ui",
         "admin_account_wire",
         "admin_directory_ui",
+        "admin_fees",
         "platform_regression",
         "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有独立 MFA 与后台会话；旧异步作业、全部设备令牌与撤销需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "canonical_fees_and_independent_approvals",
+          "verified_subflow": "三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/41-canonical-fee-commands-and-independent-approvals.md"
+          ]
+        },
         {
           "cluster": "admin_canonical_directories",
           "verified_subflow": "原始 AdminUserList/AdminUserDetail/AdminTenantList 的三处规范读取及当前页面消费者；严格查询、真实登录时间和独立账务账户 ID、绑定当前权限与筛选的签名游标、微秒时间戳并列排序、企业/项目/字段交集、账本确认扣费及半开结算时段、有效 VIP 与无权字段/筛选防推断。目录与导出专项及七组实际 Admin 页面/HTTP 为局部证据；完整消耗钻取、费用/VIP 写规范、批量导出、旧成员页面、原生和发布仍待验收。",
@@ -10074,12 +10222,25 @@
         "admin_account_ui",
         "admin_account_wire",
         "admin_directory_ui",
+        "admin_fees",
         "platform_regression",
         "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有用户去重/详情；完整筛选、注册/登录及所有关联入口需核查。",
       "verified_repairs": [
+        {
+          "cluster": "canonical_fees_and_independent_approvals",
+          "verified_subflow": "三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/41-canonical-fee-commands-and-independent-approvals.md"
+          ]
+        },
         {
           "cluster": "admin_canonical_directories",
           "verified_subflow": "原始 AdminUserList/AdminUserDetail/AdminTenantList 的三处规范读取及当前页面消费者；严格查询、真实登录时间和独立账务账户 ID、绑定当前权限与筛选的签名游标、微秒时间戳并列排序、企业/项目/字段交集、账本确认扣费及半开结算时段、有效 VIP 与无权字段/筛选防推断。目录与导出专项及七组实际 Admin 页面/HTTP 为局部证据；完整消耗钻取、费用/VIP 写规范、批量导出、旧成员页面、原生和发布仍待验收。",
@@ -10264,7 +10425,7 @@
       "acceptance_case": "TC-087",
       "acceptance_conditions": "只产生一次合法分录，异参重放冲突；余额不可直接 PATCH；额度可用性与预留一致，赠送不算实收，失败有可查询 operation。",
       "assessment": "partial_verified",
-      "finding": "模拟额度走可追踪 gift；正式费用全部动作/收款关联/退款与限时额度仍需完整验收。",
+      "finding": "赠送限时额度、扣回原入账和授信已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；完整付款/凭证核实、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/admin.ts",
         "dev/copypaste-platform/src/admin-operations.ts",
@@ -10274,6 +10435,7 @@
       ],
       "acceptance_evidence": [
         "admin_billing_wire",
+        "admin_fees",
         "billing_accounts_migration",
         "billing_migration",
         "cloud_files",
@@ -10285,6 +10447,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有人工财务预览/提交；限时额度、扣回、来源退款和全场景幂等需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "canonical_fees_and_independent_approvals",
+          "verified_subflow": "三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/41-canonical-fee-commands-and-independent-approvals.md"
+          ]
+        },
         {
           "cluster": "billing_subjects_and_events",
           "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
@@ -10323,7 +10497,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "模拟额度走可追踪 gift；正式费用全部动作/收款关联/退款与限时额度仍需完整验收。",
+      "remaining_complete_acceptance_conditions": "赠送限时额度、扣回原入账和授信已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；完整付款/凭证核实、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -10694,6 +10868,7 @@
         "admin_account_ui",
         "admin_account_wire",
         "admin_directory_ui",
+        "admin_fees",
         "admin_membership_wire",
         "admin_records",
         "platform_regression",
@@ -10703,6 +10878,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有细粒度权限/deny/委派；全动作、字段、列表、下载和异步执行须逐项覆盖。",
       "verified_repairs": [
+        {
+          "cluster": "canonical_fees_and_independent_approvals",
+          "verified_subflow": "三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/41-canonical-fee-commands-and-independent-approvals.md"
+          ]
+        },
         {
           "cluster": "admin_canonical_directories",
           "verified_subflow": "原始 AdminUserList/AdminUserDetail/AdminTenantList 的三处规范读取及当前页面消费者；严格查询、真实登录时间和独立账务账户 ID、绑定当前权限与筛选的签名游标、微秒时间戳并列排序、企业/项目/字段交集、账本确认扣费及半开结算时段、有效 VIP 与无权字段/筛选防推断。目录与导出专项及七组实际 Admin 页面/HTTP 为局部证据；完整消耗钻取、费用/VIP 写规范、批量导出、旧成员页面、原生和发布仍待验收。",
@@ -10808,12 +10995,25 @@
       "acceptance_evidence": [
         "admin_account_ui",
         "admin_account_wire",
+        "admin_fees",
         "platform_regression",
         "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有审计/MFA/独立审批；新增敏感路径和任务审批不可变性需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "canonical_fees_and_independent_approvals",
+          "verified_subflow": "三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/41-canonical-fee-commands-and-independent-approvals.md"
+          ]
+        },
         {
           "cluster": "admin_account_lifecycle",
           "verified_subflow": "四个规范账户写入口、严格 202 AdminOperation、前向版本与标签/关闭标记、锁内当前 MFA/权限/显式拒绝及幂等、全局用户与单企业状态边界、全部会话/未交换代码撤销、关闭与重开独立审批、冻结策略/前态重检、批量守卫以及共享取消/待核费用预留。十二组专项、六组真实 HTTP 及五组新账户表单实测是局部证据；页面直接定位待审批/普通操作，三宽度的英文浅色及繁中深色已测。旧成员页面、完整列表/详情业务、费用写规范及原生综合验收仍待完成；本轮规范读取与页面增量另列。",
@@ -10870,6 +11070,7 @@
       ],
       "acceptance_evidence": [
         "admin_directory_ui",
+        "admin_fees",
         "admin_records",
         "cloud_files",
         "desktop",
@@ -10882,6 +11083,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有 16 页；列配置、分页筛选、异常与可访问表单的全流程仍需复核。",
       "verified_repairs": [
+        {
+          "cluster": "canonical_fees_and_independent_approvals",
+          "verified_subflow": "三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/41-canonical-fee-commands-and-independent-approvals.md"
+          ]
+        },
         {
           "cluster": "admin_canonical_directories",
           "verified_subflow": "原始 AdminUserList/AdminUserDetail/AdminTenantList 的三处规范读取及当前页面消费者；严格查询、真实登录时间和独立账务账户 ID、绑定当前权限与筛选的签名游标、微秒时间戳并列排序、企业/项目/字段交集、账本确认扣费及半开结算时段、有效 VIP 与无权字段/筛选防推断。目录与导出专项及七组实际 Admin 页面/HTTP 为局部证据；完整消耗钻取、费用/VIP 写规范、批量导出、旧成员页面、原生和发布仍待验收。",

@@ -154,3 +154,7 @@ Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新�
 后充值任务结算、实付/赠送/授信来源、实际债务偿还、信用下限和数据库不可变金额校验见 [授信与结算来源](technical/39-billing-credit-and-settlement-provenance.md)。此增量不关闭完整规范费用/VIP 和真实收款对账验收。
 
 真实个人/企业账户、任务付款快照、不可变账务操作者/事件、规范账户和账本读取、完整财务范围拒绝规则见 [账户主体与账务事件](technical/40-billing-subjects-and-financial-event-provenance.md)。所有工作流的付款选择、费用写入与完整 VIP 交付仍依原始契约推进。
+
+## 规范费用操作与实际审批增量
+
+[费用命令与独立审批](technical/41-canonical-fee-commands-and-independent-approvals.md)说明真实个人／企业账户的 gift、原来源 debit、credit-limit、无业务效果预览、独立审批请求／不可变决定及实际后台消费者。原始费用付款、退款、VIP、完整审批目录和验收范围保留，局部通过不视为整体验收。

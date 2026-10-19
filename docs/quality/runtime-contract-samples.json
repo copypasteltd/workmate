@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-19T21:34:46.388377+00:00",
-  "scope": "Captured canonical User/Invite/Member/AdminOperation/AdminUserList/AdminUserDetail/AdminTenantList and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
+  "at": "2026-10-19T22:54:40.883187+00:00",
+  "scope": "Captured canonical authentication, membership, Admin directories/accounts/ledger, three fee commands and independent approval responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or payment/refund/VIP conformance",
   "sources": [
     {
       "file": "dev/copypaste-delivery/evidence/cloud-files-contract-samples.json",
@@ -85,6 +85,12 @@
       "at": "2026-10-19T21:32:21.891Z",
       "origin": "http://localhost:4310",
       "sha256": "0b111cf1a0e3cbf90187fb76b5f5b91cbdab150f44ec89a7d5e5c7729deaeef9"
+    },
+    {
+      "file": "dev/copypaste-delivery/evidence/admin-fee-contract-samples.json",
+      "at": "2026-10-19T22:45:49.772Z",
+      "origin": "http://localhost:4310",
+      "sha256": "589755abd84e3d6466c98522e23fd669eab672db5409a4319cea08731e18074c"
     }
   ],
   "authentication_fixture": {
@@ -117,6 +123,12 @@
     "schemas": 5,
     "status": "passed",
     "scope": "Exact original schema and source digest comparison; account operations covered by isolated database and actual local HTTP"
+  },
+  "admin_fee_fixture": {
+    "file": "dev/copypaste-platform/contracts/admin-fee-schemas.json",
+    "schemas": 12,
+    "status": "passed",
+    "scope": "All twelve schema dependencies exactly match the original; current wire captures cover previews, gifts, original-source debits, credit limits and one independent approval decision, not all twelve command implementations"
   },
   "openapi_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
   "checks": [
@@ -614,6 +626,76 @@
       "source": "admin-billing-contract-samples.json",
       "sample": 8,
       "schema": "AdminBillingAccountList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 1,
+      "schema": "AdminPreview",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 2,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 3,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 4,
+      "schema": "AdminPreview",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 5,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 6,
+      "schema": "AdminPreview",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 7,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 8,
+      "schema": "AdminPreview",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 9,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-fee-contract-samples.json",
+      "sample": 10,
+      "schema": "AdminOperation",
       "status": "passed",
       "errors": []
     }
