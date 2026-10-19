@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('execution_capacity', [1,2,8,9,35,44,46,52,57,58,61,89,102],
+     '数据库原子执行容量、当前用户/企业/能力交集、原生多 handler、企业交错派发、单预留延迟重派和未知执行保留槽位；不含完整 NFR 压测。',
+     ['platform_regression','execution_capacity','desktop','extension'], ['technical/23-execution-capacity-and-fair-dispatch.md']),
     ('pre_execution_input_checkpoint', [1,2,7,9,35,39,44,46,61,67,69,72],
      '明确提交运行前文件/连接需求、同任务单预留与单次入队、私人上传、跨端选择、资源撤销和计划输入守卫；不含已付费步骤续做。',
      ['platform_regression','task_dependencies','admin_task_inputs','desktop','extension','runtime_schemas'], ['technical/22-pre-execution-input-checkpoint.md']),
@@ -45,6 +48,7 @@ CLUSTERS = [
 ]
 
 REMAINING = {
+ 89:'方案未完成工作上限和实际企业/能力执行容量已区分；席位、存储、信用、完整历史版本与正式权益全部路径仍待验收。',
  7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
  69:'已实现首次模型调用前的显式文件/连接检查点；已付费步骤恢复、自动识别、capability/device 和离线等待仍未完成。',
  1:'需对其余连接器、团队、媒体、批量/导出和所有规范接口继续进行跨企业负向验证。',
@@ -69,7 +73,7 @@ REMAINING = {
  49:'在线永久删除/保留规则/进度已修复；项目/企业整删、导出、备份轮换与删除重放未完成。',
  50:'需完成全端传输/媒体分支、正式 OAuth 和区域流向的全部证明。',
  51:'新增流程已有双语与微额费用修复；全产品动态文案、时区及指标口径待齐。',
- 52:'上传有跨用户额度守卫；公平企业/能力并发与规定负载验收仍待完成。',
+ 52:'数据库企业/用户/能力容量、多 Worker 与交错派发已有证据；供应商逐调用限流、独立媒体队列和完整 NFR 负载仍待验收。',
  53:'队列恢复不代替备份；实际备份/恢复演练、RPO/RTO 及删除账本恢复重放未完成。',
  54:'迁移摘要与前向修复已有实现；灰度、回滚、旧设备兼容及签名更新待完成。',
  55:'新增页宽度与表单流程有局部证据；所有关键路径的键盘、缩放、对比和错误定位未完整验证。',
@@ -99,7 +103,7 @@ REMAINING = {
  94:'项目方法新增权限检查；全动作/字段/范围/导出及异步执行完整矩阵待完成。',
  98:'新增表单与四宽度有局部证据；全后台筛选、列配置、异常和键盘仍待验证。',
  99:'可信方法版本/撤销已补强；模型/费率的受控验证发布、兼容版本与后台全闭环待完成。',
- 102:'当前方案能力在工具/结果阶段复查；全部媒体、团队、调度、席位、存储的真实交集执行未齐。',
+ 102:'当前方案能力及领取时用户并发已复查，企业/能力槽位按数据库统一约束；全部媒体、团队、调度、席位和存储交集未齐。',
 }
 
 
@@ -126,6 +130,7 @@ def main():
         'notifications': DEV/'copypaste-delivery/evidence/notifications.json',
         'default_assistant': DEV/'copypaste-delivery/evidence/default-assistant.json',
         'task_dependencies': DEV/'copypaste-delivery/evidence/task-dependencies.json',
+        'execution_capacity': DEV/'copypaste-delivery/evidence/execution-capacity.json',
         'admin_task_inputs': DEV/'copypaste-delivery/evidence/admin-task-inputs.json',
         'checkout_integrity': DEV/'copypaste-delivery/evidence/byte-integrity.json',
         'runtime_schemas': DOCS/'quality/runtime-contract-samples.json',

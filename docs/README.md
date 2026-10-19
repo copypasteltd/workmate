@@ -127,3 +127,5 @@ ADMIN01 拆为 REQ-083–102、UC19–UC24 和 TC-083–102；同步 P14/A01–A
 
 当前云文件与 Codex 工作源码约束见 [持久云文件](technical/18-persistent-cloud-files.md)。
 项目方法安装、版本绑定与即时安全撤销见 [技能生命周期](technical/19-project-skill-lifecycle.md)。当前 102 条需求的原始条件和逐项差异见 [修复进度](quality/requirements-alignment-progress.json)，局部回归不等同完整产品验收。
+
+企业共用执行槽、当前用户方案、能力容量、同任务自动排队和跨企业交错派发见 [执行容量与公平派发](technical/23-execution-capacity-and-fair-dispatch.md)。

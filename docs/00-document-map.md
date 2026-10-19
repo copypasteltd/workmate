@@ -79,3 +79,5 @@ ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 
 当前范围与原始基线见 [完整复查](quality/09-implementation-alignment-audit.md)，逐项证据和剩余条件见 [102 条进度](quality/requirements-alignment-progress.json)。新增实现约束分别见 [删除/传输/事件](technical/17-erasure-transfer-retention-events.md)、[持久云文件](technical/18-persistent-cloud-files.md)、[项目技能](technical/19-project-skill-lifecycle.md)、[站内通知](technical/20-in-app-notifications.md) 和 [默认助手](technical/21-default-assistant-and-first-delegation.md)。历史发布与未发布源码分别记录，不批量关闭综合用例。
 
 明确提交的运行前资料要求见 [资料补齐检查点](technical/22-pre-execution-input-checkpoint.md)。该子流程使用同一任务与预留，包含三端选择、私人上传、撤销及计划输入守卫；已付费步骤继续和自动依赖发现仍保留完整需求。
+
+企业共用执行槽、当前用户方案、能力容量、同任务自动排队和跨企业交错派发见 [执行容量与公平派发](technical/23-execution-capacity-and-fair-dispatch.md)。

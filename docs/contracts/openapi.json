@@ -19806,6 +19806,31 @@
           "project_config_version_id": {
             "type": "string",
             "format": "uuid"
+          },
+          "execution_class": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "media"
+            ]
+          },
+          "capacity_wait_reason": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "platform",
+                  "tenant",
+                  "user",
+                  "capability",
+                  "tenant_media"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [

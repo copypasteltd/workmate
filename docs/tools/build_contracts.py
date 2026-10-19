@@ -355,6 +355,7 @@ def extend_web_workbench():
         {'if': {'properties': {'intent': {'const': 'delegate'}}, 'required': ['intent']}, 'then': {'required': ['budget']}},
         {'if': {'properties': {'intent': {'const': 'supplement'}}, 'required': ['intent']}, 'then': {'required': ['task_id', 'expected_task_version']}}]
     S['Task']['properties'].update({'parent_task_id': ID, 'group_run_id': ID, 'initial_mode': mode, 'confirmed_plan_id': ID, 'project_config_version_id': ID})
+    S['Task']['properties'].update({'execution_class': enum('text','image','media'), 'capacity_wait_reason': {'oneOf': [enum('platform','tenant','user','capability','tenant_media'), {'type':'null'}]}})
     S['TaskCreate']['properties'].update({'confirmed_plan_id': ID, 'project_config_version_id': ID})
     S['MemoryCreate']['properties']['scope'] = enum('enterprise', 'project', 'brand', 'personal', 'conversation', 'agent')
     S['DeletionCreate']['properties']['target_type'] = enum('project', 'asset', 'memory', 'tenant', 'conversation', 'workspace_node', 'agent')
