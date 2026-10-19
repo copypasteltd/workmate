@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-19T18:11:53.767673+00:00",
-  "scope": "Captured canonical User/Invite/Member/AdminOperation and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
+  "at": "2026-10-19T18:58:08.248649+00:00",
+  "scope": "Captured canonical User/Invite/Member/AdminOperation/AdminUserList/AdminUserDetail/AdminTenantList and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
   "sources": [
     {
       "file": "dev/copypaste-delivery/evidence/cloud-files-contract-samples.json",
@@ -73,6 +73,12 @@
       "at": "2026-10-19T18:10:26.854Z",
       "origin": "http://localhost:4310",
       "sha256": "11715fd58b0b16f6b2b42d585dca4ecd42107ef03934c42087cb01852a1faf73"
+    },
+    {
+      "file": "dev/copypaste-delivery/evidence/admin-directory-contract-samples.json",
+      "at": "2026-10-19T18:56:56.650Z",
+      "origin": "http://localhost:4318",
+      "sha256": "9ccb1f8b5ed61df5df09adc1693b9b9a53211e00bfc877e119d34ec52f29285a"
     }
   ],
   "authentication_fixture": {
@@ -93,6 +99,12 @@
     "schemas": 3,
     "status": "passed",
     "scope": "Exact original schema and source digest comparison; actual operations are covered by platform and real HTTP evidence"
+  },
+  "admin_directory_fixture": {
+    "file": "dev/copypaste-platform/contracts/admin-directory-schemas.json",
+    "schemas": 7,
+    "status": "passed",
+    "scope": "Exact original schema and digest comparison; current list/detail wire captures and ten isolated database groups are bounded evidence"
   },
   "admin_account_fixture": {
     "file": "dev/copypaste-platform/contracts/admin-account-schemas.json",
@@ -456,6 +468,90 @@
       "source": "admin-account-contract-samples.json",
       "sample": 8,
       "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 1,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 2,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 3,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 4,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 5,
+      "schema": "AdminUserDetail",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 6,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 7,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 8,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 9,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 10,
+      "schema": "AdminTenantList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 11,
+      "schema": "AdminUserList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-directory-contract-samples.json",
+      "sample": 12,
+      "schema": "AdminUserList",
       "status": "passed",
       "errors": []
     }

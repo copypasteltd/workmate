@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-account-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 
@@ -45,6 +45,12 @@ def main():
     for name, schema in admin_accounts['schemas'].items():
         if schema != spec['components']['schemas'][name]:
             raise ValueError(f'Admin account fixture changed the original schema: {name}')
+    directories = json.loads((AUTH_FIXTURE.parent / 'admin-directory-schemas.json').read_text(encoding='utf-8'))
+    if directories['source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(directories['schemas']) != {'AdminUser','AdminUserList','AdminUserDetail','AdminTenant','AdminTenantList','Money','Role'}:
+        raise ValueError('Admin directory fixture must retain the seven original schema dependencies')
+    for name, schema in directories['schemas'].items():
+        if schema != spec['components']['schemas'][name]:
+            raise ValueError(f'Admin directory fixture changed the original schema: {name}')
     checks = []
     sources = []
     for source in SAMPLES:
@@ -68,7 +74,7 @@ def main():
     if not checks:
         raise ValueError('No captured responses; empty evidence cannot pass')
     report = {'at': datetime.now(timezone.utc).isoformat(),
-              'scope': 'Captured canonical User/Invite/Member/AdminOperation and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance',
+              'scope': 'Captured canonical User/Invite/Member/AdminOperation/AdminUserList/AdminUserDetail/AdminTenantList and cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance',
               'sources': sources,
               'authentication_fixture': {
                   'file': AUTH_FIXTURE.relative_to(ROOT.parent).as_posix(),
@@ -77,6 +83,7 @@ def main():
                   'scope': 'Exact original schema and source digest comparison; actual authentication wire checks are in the platform regression'},
               'membership_fixture': {'file': (AUTH_FIXTURE.parent / 'membership-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(members['schemas']), 'status': 'passed', 'scope': 'Exact original schema and source digest comparison; actual wire checks are in the platform regression'},
               'admin_membership_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-membership-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(admin_members['schemas']), 'status': 'passed', 'scope': 'Exact original schema and source digest comparison; actual operations are covered by platform and real HTTP evidence'},
+              'admin_directory_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-directory-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(directories['schemas']), 'status': 'passed', 'scope': 'Exact original schema and digest comparison; current list/detail wire captures and ten isolated database groups are bounded evidence'},
               'admin_account_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-account-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(admin_accounts['schemas']), 'status': 'passed', 'scope': 'Exact original schema and source digest comparison; account operations covered by isolated database and actual local HTTP'},
               'openapi_sha256': hashlib.sha256(SPEC.read_bytes()).hexdigest(),
               'checks': checks}

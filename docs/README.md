@@ -2,7 +2,7 @@
 
 版本：2.0 · 2026-10-20 · 状态：保留 v1.5 需求设计基线，当前产品 0.5.0 增加企业 OIDC 身份、独立邮箱连接证明与跨端授权撤销；六个独立仓库的实现与验收按版本记录。主文档继续在本目录维护。
 
-最新后台增量包含规范账户资料/状态/会话撤销、企业状态、真实策略快照、独立复核、全部凭证与待用邀请撤销、在途取消费用守卫，见 [账户生命周期与在途控制](technical/37-admin-account-lifecycle-and-inflight-control.md)。邀请、成员、完整原生、其余后台与全部验收仍按逐项进度记录。
+最新后台增量对齐用户列表、详情及企业列表的严格原规范，新增签名游标、字段/项目范围交集、账本确认扣费、有效 VIP 与实际页面消费者，见 [规范目录与消耗](technical/38-admin-canonical-directories-and-scoped-usage.md)。已有 [账户生命周期与在途控制](technical/37-admin-account-lifecycle-and-inflight-control.md) 继续生效。邀请、成员、完整原生、规范费用/VIP写及全部验收仍按逐项进度记录。
 
 开发与构建根目录固定为 `D:\dev\copypasted\自有agent\`，所有文档统一位于该根目录的 `docs\`。后续命令直接在 D 盘工作区执行，旧入口仅作会话兼容；见 [工作区与路径规范](governance/03-workspace-and-path-policy.md)。
 
