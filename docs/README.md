@@ -131,3 +131,5 @@ ADMIN01 拆为 REQ-083–102、UC19–UC24 和 TC-083–102；同步 P14/A01–A
 企业共用执行槽、当前用户方案、能力容量、同任务自动排队和跨企业交错派发见 [执行容量与公平派发](technical/23-execution-capacity-and-fair-dispatch.md)。
 
 Admin 清理记录的筛选、50 条默认分页、撤权显示及独立原生测试库见 [后台记录与测试隔离](technical/24-admin-record-pages-and-test-isolation.md)。
+
+持久角色目录、预检/实例化、真实 Codex/能力版本及撤销行为见 [模板注册表与运行绑定](technical/25-role-template-registry-and-runtime-binding.md)。Web 与 Desktop 已接入该流程，专业角色资格门槛保持不变。

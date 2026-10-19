@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-19T03:34:16.669040+00:00",
+  "at": "2026-10-19T04:22:20.990638+00:00",
   "scope": "All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report",
   "baseline_sha256": "496d31dd2408c58b21d208a83f532c1f0475571148b8415c735656b8f3527113",
   "user_test_data_instruction": "2026-10-19: 暂时先用假数据。Simulated validation is authorized; production qualification remains separate.",
   "summary": {
-    "partial_verified": 57,
-    "completion_not_proven": 45
+    "partial_verified": 58,
+    "completion_not_proven": 44
   },
   "fully_accepted_requirements": 0,
   "qualified_live_roles": 0,
@@ -14,15 +14,17 @@
   "repositories": [
     {
       "name": "copypaste-platform",
-      "head": "7494795e060e05e1de8c54ba74046a9e616fcc28",
+      "head": "cafe4ade2c27a9ffbf4b8c869eb192e5c11b1388",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "a57c5fb47dd228257025fc3d49b5a3bb98544f3990e7fc208104e4d90da1a53c",
-        "README.md": "5e5f8fd3ccdd552c5eea0ab95c20e5cb28ef5486414ee69b6c4d1e8e7848fd37",
+        "README.en.md": "749035751663b3e37252a1eeda7bd01733159942de272f50a81ea14c797315d5",
+        "README.md": "dd8d3e54443c3513d69ca130ccff8634427616f836eb7738ae07079c06807ce6",
         "THIRD_PARTY_NOTICES.md": "fbc510376e8988ce5259bc9c4143c80b61865996caf029ae277c6e54686c5c6e",
         "assets/screenshots/company-sign-in.png": "633f7e7bf2ccd8606cd3ec3190b43436471e47b9d0a0a28d39039119d7e0a46a",
         "assets/screenshots/platform-overview.png": "a26e41401bb785b5085fe4e21ed0022dfd7a4ce3df7dd6071a564341337f402f",
         "assets/screenshots/private-content-governance.png": "38666a997de4bd726b37feec364b66d6c38bfce8fa9e37b32f26fc2ca59ff0b9",
+        "assets/screenshots/role-template-directory.png": "bd2d07331ac8d174b1728fb1a372d70ae74f5eaae14fab6cc5ea8e1f6411b236",
+        "assets/screenshots/role-template-ready.png": "9c6e30aefc77e2d4b65b2008cd43335a3863c08a38371841924c716a072a1782",
         "catalog/admin-permission-catalog.json": "bdb46889695fcf95684254620e6ad341b6295fe373fe823600f1280f3b03f489",
         "catalog/analytics-metric-vectors.json": "b0706e703c27725189f21d93569f6b453ba271117bf5d186bd14fb7d2d644cc3",
         "catalog/default-assistant.json": "5627f9382d3a2250d275b8b7787ab76806d18de6ad7fc697bfdcf5a12b0d7609",
@@ -481,7 +483,7 @@
         "contracts/codex/v2/WindowsSandboxSetupStartParams.json": "8610d077fff4fc5811f2e33dea82617a15ffb82f08e55e1540aef877133f5b4f",
         "contracts/codex/v2/WindowsSandboxSetupStartResponse.json": "830bf89deac3e73e36b7d9799ceed32ee25e782c30b1d25266374aa020d3bc7e",
         "contracts/codex/v2/WindowsWorldWritableWarningNotification.json": "bfa34d4890c8121a04412b8d53314a13adf98289fdd948857fd97b808dcbe79e",
-        "contracts/implemented-routes.json": "e43f383a2d41be444c3dd4e1b9fb0f817f77093234ef1d635803d7dfbd344eb1",
+        "contracts/implemented-routes.json": "99577d56b4494c224529d0bfe54288a8e023c6a52e8016dfd430341b633b2075",
         "evidence/codex-protocol.json": "eb48a8e38d7a3979185c7abe6b15edec2467ab78815379db4449070e52d752e8",
         "migrations/001-foundation.sql": "4f07eeceebe0c1fb87e236c6700f6aa7d628f31c5c4eb33a90bc16de925d9fe5",
         "migrations/002-content-and-financial-guards.sql": "5ec0fa6e2a1705f3b530cf25316014df0004c896927ff6b7c80e118c3210aa0d",
@@ -513,6 +515,7 @@
         "migrations/028-task-input-dependencies.sql": "3be9d0e81f12e64723cfa0fd20d3cf976862c586856d8f43d1bfaaa35a3425b1",
         "migrations/029-execution-capacity.sql": "6583c4b5416149f7ad140e5b2b2719c827cb55585d1492bfe810547ffe05db2b",
         "migrations/030-admin-deletion-pages.sql": "c39328f7bc6c4e06a19d1771445b557b37d208fd84931a88a20f7157cbc9408a",
+        "migrations/031-agent-template-registry.sql": "ac933eb4bd13a8d7d940031487e96cbc1f3f57baca0d8ccda220ceaf46ca6c13",
         "package-lock.json": "fac55656cc0714d7c2213826e5aabbc49a3fa0b30504ff54f3059781b5a43561",
         "package.json": "822e61dbb2705966033de69513f8f6859e8a4c7cfdaa68ee42d4471f8c1b278b",
         "scripts/admin-create.ts": "ea2444a150ff68eb7166b446b26acc198233f0efd8d57c0a84682bf832b8513d",
@@ -559,13 +562,14 @@
         "src/admin-identities.ts": "48f1be54da619ac94222aac4c3aa04b64c95250534df6f90398e0861b4a4f9d4",
         "src/admin-jobs.ts": "0b4e002354ad3440d56966c1cb1f0c76748c01bbfb44f3c05bac4047b699f2fa",
         "src/admin-operations.ts": "82f0ba77ef0cf92ed80713fba5a4224fa6c12d60adfeeb738b03c1f1d7a162e1",
-        "src/admin.ts": "e9b15755b8b10031d92cebb80a6f8d6944683164020d7ae96f6f62a0fc9bcf6a",
+        "src/admin.ts": "3708dcae53d9640dea06c4c5f36bfc205e85a508bec1ef826704e904f0e6e4d4",
+        "src/agent-templates.ts": "c21c854b5e80666528c150012c682431966d3ceb260805f34d7522b43a884b10",
         "src/analytics.ts": "47e8cdd5d4d6fdb874ebb4b80350b67a34ac0295832da440829668a7ed4cc8bd",
         "src/assets.ts": "579489ad0c8e6ad46bf4c0015ad82834118bc24496d550395cc470706688ed20",
         "src/auth.ts": "209c9eedc548c193d784ca55a13b9f18756cc2dd0c8006ca4bb89a1e24fa753e",
         "src/billing.ts": "d8049980f91aa8811ab483b2f704f3251aa66be4a128c30b834759dcc166b58f",
         "src/business.ts": "f3e08095b3c921eab65798fdc67336c072e35cf3a11f3feae45c30034286e644",
-        "src/catalog.ts": "63e59791f459c75bda4c955fbcb18ddcb84948edce3d783a0160dcedffa6de90",
+        "src/catalog.ts": "259cebd55e0c54cb8d793f8cc754888256229395728aa9e97b61cb81b57d0136",
         "src/cloud-files.ts": "fbfea9a267d599fc30b3d659a50a2db254df41b7c9c1b570953978fdf152d418",
         "src/cloud-references.ts": "29bb1960bb566c3582404a612eca68fb0a23891792612a15d0855b5ed7fda4c6",
         "src/cloud-source.ts": "5c771a5aafb43baf8668f67e0f4384f964672b892b779459de054050f051b8c1",
@@ -583,26 +587,28 @@
         "src/lib.ts": "5d6b20c4a7b95fb1b57ab638e029df975505037f9eaef37868632aa17f0b7ac5",
         "src/notifications.ts": "064a01205f619ae5a29671291d79de2415025dca047b536ed7aa3f121b213dd2",
         "src/oidc-provider.ts": "87616cf69946ee78fcc68c97283ff68e8e2a50b4fb0ce99ef058b78b7ccf9f8d",
-        "src/persistent-work.ts": "52744758d44ac7ff4d8ddbb4d37105aeefe0a79305266997ce7781948375f41f",
+        "src/persistent-work.ts": "3e5d323c82bfe1b4ce057326e3a0cd623fa4dbd6b4d7d06cf8b81ead9503244b",
         "src/plans.ts": "d7b6b69c70298c344980bd2adf9baf44869a9637d8e19fee321efa4ead31bc33",
         "src/render.ts": "98b256eb55bfb7a48de678f6ce4013137c81eae3fc8839d4cd19676d60a6721c",
         "src/retention.ts": "a3c57d6f1b653511beff77dbd99ae57d5345ffdd40e3e4624fe63c0699dd3c8d",
+        "src/runtime-profiles.ts": "bc684dbdff0da32479518766f8d1dfebc1ee266645a3d603a695b4dff7849322",
         "src/runtime.ts": "1ad9bbb7480fb7dc5110c1359293d6db39e87d7057dbe82cef8fa5a6d729e175",
         "src/schedule-time.ts": "1c23ce00cddd0be818298e14506ea1563096742bf409048d34e13e3f6d04feec",
         "src/schedules.ts": "a7341b39b89953fc3daa72dde43c088b645310d6bca52104fdc709e4db245111",
-        "src/server.ts": "a88c46d51c4ee2d6495e233186d1cdc792263e866fe513beb8219e2850058dae",
+        "src/server.ts": "7aa9802fcc54345e96ab35ad3e9786497f78d01a5b83e2f3fdb16738ba35a4d2",
         "src/skill-lifecycle.ts": "54f8cc8613ffdd42122b8a1f4f6f7d68d1505a4defda6094855f6c03d155c0e7",
         "src/storage.ts": "28c093f91923b323f03d08d5bc9f6b15c49fcdcda1c23fe897b05030fe40dca1",
         "src/task-dependencies.ts": "6ebd87d04c078f81b80b74d5d1783803b15d65040c99f3204991e49cd22cc9ac",
         "src/task-events.ts": "391c362536b51160c441e67b8596f856aedc75ec74609a43a7cdf097ceb183af",
         "src/task-recovery.ts": "4ebb74dec8bd8597d72d4a933c42644c4302582ebafa3cbc26b150fc792fafe2",
         "src/task-service.ts": "6a46c8eb2e07dd3531f9d54a05aea60066dc54c9ee44ad562340c8c3e9153c97",
-        "src/tasks.ts": "7e97015e9ee18006fb141784bdae470dd0a0ee795a8dd1aaea08bc70dffd3e3f",
+        "src/tasks.ts": "609f1d36d21be807db6d40567ac76c1ff39b13486e970dded470d91f4d6b1156",
         "src/uploads.ts": "6346c8285c3df7801a114322f501eaa173ec921e225716a9334b4f0aad45cdf9",
-        "src/worker.ts": "ad00633cf5d95a2f14422a72bfcf9236c4e328e28c581f8d55096d22fb960618",
+        "src/worker.ts": "e1c51780c0e06516f0255b424f3cdd126a474f62246353b679116db7232678c2",
         "src/workflow-control.ts": "4a19b3200d42effc9a8eef5b5a76f555a7ee67f9c721d147238b36c28fac4f45",
         "src/workspaces.ts": "aefde11f5d7177e74d699896ade9a3e04fd6913428b334579871a1da9d9789b8",
         "tests/admin-identities.test.ts": "c690768980fa64f2c750aaf9c84b70e8721e4f791e590d8db6bf9f3c2d3d20af",
+        "tests/agent-templates.test.ts": "8a83ac5f24bf7d0124f2d145328701a3b1ffe79784ae004788385ebe01b2d79e",
         "tests/cloud-files.test.ts": "ed3d9ef027e3166a0807328c65497ccf3946a5f2d165a6ad8a5fc90a29959519",
         "tests/default-assistant.test.ts": "0d127d9996fd0209193b4b03ed5ebc6d9c9463167fb9513a735e85b1ea3b7f55",
         "tests/demo.test.ts": "14d5978f29298236f5aae3daf697757fe3c0014737095700d431409a5b40362f",
@@ -626,11 +632,11 @@
     },
     {
       "name": "copypaste-web",
-      "head": "b83f14aec18209e2b138c0120b66ab4b762d6c1a",
+      "head": "6ea93c9cbe6402fa1ecf52cfc171f976047e12f1",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "7256a9cc3391f40927142808c2be41caf3f89f8bd180002b1e956ca3b0c728b1",
-        "README.md": "da749b14381fbda44d5097e638f9ab59e6a6593065b433e2b5a73aeb0d8c5739",
+        "README.en.md": "96df8b029c78aed1286f2d1bcdf0f32b5f13f66081ba99461f224eab0fe2d488",
+        "README.md": "37955c3aac48920e831c036ffe67493945edee5028545e305d121f0e6aaec75a",
         "THIRD_PARTY_NOTICES.md": "689023ca749202be04e59a3ac3fcb7da765a6119a81ac5e08e0c3b2c0d163420",
         "assets/screenshots/01-landing.png": "2e17774c8fc815f3baa10baa2f22856a45c757d7fa35697157c78cd9e6b38116",
         "assets/screenshots/02-login.png": "a492332482b40502450f0e8386cb40db5ec3c0b66971f5a5f0020b9f1bdf2c79",
@@ -649,11 +655,11 @@
         "assets/screenshots/03-workspace.png": "173657199e00494cf2a6fb14f1f2275d0e9637b75013d1373f2a8dae072ed84b",
         "assets/screenshots/04-analytics-dark.png": "9cd50a10973a84f47ac445cc19648076cb98ee6b6a6a3309d5b9e1afad3d9abe",
         "assets/screenshots/05-mobile.png": "052b8b32665919dac294ff0d10862997cbf1c9cced3954b8d83b2ea558a9dad0",
-        "assets/screenshots/06-persistent-specialists.png": "88acc4eccf2ce266065515cb18f9ffaf6a85f72017ed43aac2fdd78e9437bb09",
-        "assets/screenshots/07-private-conversation.png": "bc01b94738f4b6c75aa86e2a39badb87f891a087e6d4a702ddd70399cc1ebb0e",
-        "assets/screenshots/08-memory-preferences.png": "47f8341d8fd25e66b472f76200e76f3c75dd9e65d3bb09186392b552886d1426",
-        "assets/screenshots/09-conversation-mobile.png": "4153d7fb6f84833b38ad69b797b6219bfc3f00bfdde11817c964ae145d5c5c58",
-        "assets/screenshots/10-conversation-dark.png": "112c8f261ff0ba446612e1cf3f34ef514792d4a9f5a9c6ac87a6d70547fed775",
+        "assets/screenshots/06-persistent-specialists.png": "f98eae1acb2d2d6b429409310c31215f6ba964be0ef2d47352120e312230fce2",
+        "assets/screenshots/07-private-conversation.png": "e4840d698931044cf9a3d5389cde7897d0753e106ad38d22c31dc07b829f935c",
+        "assets/screenshots/08-memory-preferences.png": "011ea059bf3e879c103c13b54e4f11b168b64c1de22431872baa332a1c2868e7",
+        "assets/screenshots/09-conversation-mobile.png": "caa3e0095de583798d5d6bf17fa563903460b900819885931e53327492252783",
+        "assets/screenshots/10-conversation-dark.png": "7781a4da6998f70611a41818d9db152072ee578a9fe806b48d4d00f3c1117ffa",
         "assets/screenshots/14-schedule-confirmation.png": "9b06deee62b57fb23dff034c021c5a8fe6e40c288d6d96c013c6ebbd8dcf67d3",
         "assets/screenshots/15-cloud-schedules.png": "8cff905c0729bfce71e2e577bd48153d9fcee7b077cace4d62a0fabf9f6c4bfe",
         "assets/screenshots/16-schedules-mobile.png": "a3aeeed8e9456ce28ad2ee3273cbbab7974c7915a7343efc50496980a689119c",
@@ -684,6 +690,11 @@
         "assets/screenshots/37-capacity-dark.png": "6746244ffbcdffc9f3cec0b85042d530d2015fd1fb9184d1bf70ac961dcd3a60",
         "assets/screenshots/38-capacity-mobile.png": "05b0976aa60aa11518fc23abba86cb289f019443710c8b40a4ca5e58e6e3094e",
         "assets/screenshots/39-capacity-result.png": "0945be60776de88efe0fea36687ad86819015b8fe8e8d172438d2d7e17457690",
+        "assets/screenshots/44-role-templates.png": "bd2d07331ac8d174b1728fb1a372d70ae74f5eaae14fab6cc5ea8e1f6411b236",
+        "assets/screenshots/45-template-missing-tools.png": "5f7e3bc1375abed87a1cefa3d5f50b526faddaf4a4049ee5315b4d4e86af0438",
+        "assets/screenshots/46-template-ready.png": "9c6e30aefc77e2d4b65b2008cd43335a3863c08a38371841924c716a072a1782",
+        "assets/screenshots/47-template-mobile-dark.png": "2d1e4340b09f22ab388f59a23ebef7b4b1db6ef301cf673944b7781effad8299",
+        "assets/screenshots/48-template-zh.png": "15ec0b31473dc7e2f9e1c36dd4dd135d465869f7f731029ffd0e2e436ecd8264",
         "index.html": "648ffc01b13a3fa31dd565475e655611229a29504fca904ff5700a508038513a",
         "output/imagegen/copypaste-folds.png": "d0ab11f304b4ea2cc6a6fa683403f71b5108e7d6ef95037979d3e5c0dcddf1b5",
         "package-lock.json": "f09b34897a7dae2eea5998bf8040926a73fda39fb438f95ebf3e8cd3bc284474",
@@ -697,20 +708,21 @@
         "public/icon-256.png": "95d1d86a8cd3e0dd1013d68615c025f4ef0c38a414ba6eb547c29211b824a7c0",
         "public/icon-32.png": "76f79b894ff4a58060dd2acbe8314fe65b43c41e7be45bda096e7f8d0b4d51bb",
         "public/icon-48.png": "731a0e347bdb0573d32b942a3e4d03e43f36a81365c83728dec43338e9d68468",
-        "src/api.ts": "ac7c07e97c05f615db268b7c78c4144d8c0c6987024a68c53f0aff70f3766d1e",
+        "src/api.ts": "10a78d813e6fed09d36bda9d64be98b23c56a1fef914626e221471f5572d322c",
         "src/cloud-files.tsx": "69fdadd4f6251fd07855420dbee9fdd8870debfa917b2f54c8bbe51e1f1a9b2a",
         "src/context.tsx": "8f88ef0028b5c61be63e319ca9fc297e4fbdb450ae37679f45eb4b3d133c3078",
         "src/data-mode.tsx": "979bf4096ed2d43edd88b962221b27e2d4ebb7593a76ae23b1218fbdef939c0f",
         "src/deletions.tsx": "3d7a524ed37854402d0b49920c2fbcf96139fc5f06893b81c29b7985890c72ef",
         "src/federation.tsx": "14643e7bd04794069dfd98f093cf361dd408c8831d948078fce54855c81dd35a",
-        "src/main.tsx": "e9266b4701b53ef746543b3bdc8bb28ed821c0e99c0cd4a5e7203933d6003644",
+        "src/main.tsx": "4d4d99bc72ca279ab595e63bc22e9d7ffa4fa41299b593a3d75027cbfed04f33",
         "src/native-files.tsx": "72f498cc2401e2ce43dac498964d493b1b3aba6fdf38e8e15c6fe7c1318d6b58",
         "src/notifications.tsx": "d0274b657b5410ff74eabb4fe3a08429ce3d3ff7e37483a125f25bed066a5847",
-        "src/persistent-work.tsx": "7bb98d00532b6070e84d773e52adf509517092d2d680ad3f218bc22fa43343cf",
+        "src/persistent-work.tsx": "ad750fa498f9321981640dc646f1b9aec7a6b24e4f1b0af2ac78a81e75095306",
         "src/resumable-upload.tsx": "2595c887a6e426c29619c1e9aadcd078016440df188b5c838d13093218219d05",
+        "src/role-templates.tsx": "e9507ae7125ffb64b4280ddf6098e0b60919284a5bbfddef2b373c0b1576ffd8",
         "src/schedules.tsx": "7616de9edb5736de0c777b1a274bb3d777606b540fb3a55936f46f08f1eee285",
         "src/skills.tsx": "02ad80c0d0cfb4b0d214a704777844b860a91d77c5cc7d822867b07444d948aa",
-        "src/style.css": "f36c311f0b102139cd80157ca995485065fa5d21964873fea95b7f90fbbe6974",
+        "src/style.css": "892769818f976c0c10248a723ba4c43f643467fc3df1c53d4047b5ace218ef24",
         "src/task-dependencies.tsx": "f6eeca88e1d30282653edc665e75ac9af1f1919e1d3723b545c47dac68c3cc64",
         "src/task-events.ts": "a691dcd1dde11e848f64ef6ae364cf35fa1fc2267005ff6aa447bb0bcfa87a3f",
         "src/ui.tsx": "f2c8b8fb7f9843edc0c872587d6274a7cd8925d408e96164239c034c88509259",
@@ -721,11 +733,11 @@
     },
     {
       "name": "copypaste-admin",
-      "head": "2fd2a9d26b728d3d513bdbee9b7cb00a1cab5978",
+      "head": "168bf25da7289716d57d868b94b7108c3c2bd2bc",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "6fe6311adcc6da48481f580868f05b8466ff4145a89822911b8865835bf20597",
-        "README.md": "ac99a30e91c9af6fd73a3ffeb6c914959e285ed1c0c5865ab3f3aceaaac88c5b",
+        "README.en.md": "893d20719cc816b40d32f84d58d65f8752766053ff10279d4311a72101ff3fda",
+        "README.md": "8754289038b551cc29798e5774d4b34f468e3707cd2f325dd7ff0ffb2145cfea",
         "THIRD_PARTY_NOTICES.md": "b49d7e290707d90b160cc864e4388744d9be7ce277b361cb5a784ad29d49b641",
         "assets/screenshots/01-access.png": "c26840f8a6f934f355ca88116df70e2b2cfc65dfaa945d61224fd36c3a7c9f33",
         "assets/screenshots/01-audit.png": "2e1e24aa36d19ed2deeb13f80655256ce39310dc1146499df09db64ce2bff273",
@@ -744,7 +756,7 @@
         "assets/screenshots/01-usage.png": "0148fa130dd04f126f47995a27ddeafec60fd376d5d189029d0fb1d17c880789",
         "assets/screenshots/01-users.png": "61fcf6b31892a3b4cbf5dde790d79b04ad8303d64cf7f57e5b4034875cbfce6e",
         "assets/screenshots/02-user-detail.png": "7cf98804172be5e40df98d46c449c2990a30e22e9754e5a0f685dfe015ff93fe",
-        "assets/screenshots/03-private-content-governance.png": "b70e0424988e8ccdb195a8ff39f5db68c2caf7963ef09d58731b1429feb2427a",
+        "assets/screenshots/03-private-content-governance.png": "a3f765ebd3e992ce736ad494889404fe374bbf42953e8703b5e1e15d3444f310",
         "assets/screenshots/04-admin-identities.png": "3548dcb39f56db4987794dd2113bfa56b4841bbc50e39a01737c286c006aba0d",
         "assets/screenshots/05-admin-email-enrollment.png": "7fe41f16867b07e1330236a290dfbafa7adab8951f02c1485a59ca18f36efc8b",
         "assets/screenshots/06-admin-mfa-enrollment.png": "07262f14c75445b35636891a32d8dbd1f3e08f2eeeb1749deeb9f5b50410408b",
@@ -795,11 +807,11 @@
     },
     {
       "name": "copypaste-extension",
-      "head": "ad1337a3c673fc1b0be99b93cdd459e01a6af1bb",
+      "head": "17c93098a2ded220a0b11589feb6c38582de9095",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "ca541731c52d0d4fc43ce206601a7b9395bf669440611cd61dc17ef2c02e15ec",
-        "README.md": "1415e6e17e85eb0f92582dfac2f34c80959cc5f65a7844f9c3ddc23ca7e0f6ed",
+        "README.en.md": "3bb611ecb7744b03f4c1612cd1dc7e4b0f263345637f14bca6c23e3660def276",
+        "README.md": "bfeaa10c7130117d527a918f73f5455aaa8ba92cd0b4ccebdf3561030fd1f100",
         "THIRD_PARTY_NOTICES.md": "febd7e067beb73dfaad3349b97ed1c93c4dcadeb0d3eec37620c5460d967c6c5",
         "assets/screenshots/01-login.png": "4f5c836b7ba47a69c3799620785d792ce9d53a39d6eecd27eb2cc800a591bb42",
         "assets/screenshots/02-workspace.png": "db1512639a8998e25f3c1c47c79e4854799ac78aa15caaacb0e004feecbdb01f",
@@ -829,11 +841,11 @@
     },
     {
       "name": "copypaste-desktop",
-      "head": "ed1a9f3114ffd9c42d9477169348409b76ba72df",
+      "head": "888b3c5ff0fb22974f2df40e3d8a35ba72acc5b6",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "a0674146d7470c8ca6a6ac96c775318bd8093af2d6344345d033297b5c8b06d0",
-        "README.md": "cf757120d82b72a3c2ecc9bb068d1c89dbf9539ef6349906227424db136a3ae6",
+        "README.en.md": "ff8ca13c045b7bc684c120512a1eda815c1842169a62b39f2a4d79cecdafe67d",
+        "README.md": "0d9c7bf2daba79ecee3fdf1e887570f29a2729a16c39ac0296cb79adb6307b5c",
         "THIRD_PARTY_NOTICES.md": "4a7398e94df711fdf079352be5c7cc18cd59c3394a0369c19a17cb39e612868d",
         "assets/brand-mark.png": "d71ca3ea2dfded42efd9d213201f6948f2ecdabe20aaf80f3013c6805ea9e4a3",
         "assets/icon-128.png": "4168c6491cd687e727e14f606ff5c059890c793756da87ce83dcbe73a9cf21c7",
@@ -853,12 +865,13 @@
         "assets/screenshots/08-notifications.png": "56a0af394f56e5c945a1c1650ae8298ca42a3d4600102f082f8e1d1c614da15c",
         "assets/screenshots/09-input-wait.png": "5e92cd6d17fccfe554709d0f0fc299c69325dd91d823cc162e5c74ab1527376b",
         "assets/screenshots/10-input-result.png": "486f2eed922db395943aeb0ddd8523a30f65c1716d3bea98ac60309cff57c604",
+        "assets/screenshots/13-role-template-specialists.png": "99378297e2af55b82e4b9a11cd0c49957581a691b878fc4e64639179258f6187",
         "deployment.json": "4b36dbb1a4814041ab61771b30d4bb2e425301e254439f5d84837d104abae634",
         "package-lock.json": "15c430f91273506f8cd1778ee82b68da4a0e63357d05dee88b1d46fc3dca24fd",
         "package.json": "c838af2d5bc50c2afd3e58afb760a993abdda896637cb8261dcf6e05225b2abe",
         "public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
         "public/CopyPaste_Light.svg": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e",
-        "renderer-source.json": "acd1a541fa1eb551246917583bb8b041a8df570e74dc5eedb8a4c82834ba6c92",
+        "renderer-source.json": "9b1e2a990c5fbf1f8068962b9a50f2b618a14271780ff4496fc246203ed099ba",
         "renderer/index.html": "9db3d8738a20152c205fa3b7d0be30b3070f1608740cd6a8557f64feade3b82c",
         "renderer/public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
         "renderer/public/CopyPaste_Light.svg": "0ae8b9599a54a6ce62c5220aae899c9f52a5178e42417030498acbbd5d67228e",
@@ -869,20 +882,21 @@
         "renderer/public/icon-256.png": "95d1d86a8cd3e0dd1013d68615c025f4ef0c38a414ba6eb547c29211b824a7c0",
         "renderer/public/icon-32.png": "76f79b894ff4a58060dd2acbe8314fe65b43c41e7be45bda096e7f8d0b4d51bb",
         "renderer/public/icon-48.png": "731a0e347bdb0573d32b942a3e4d03e43f36a81365c83728dec43338e9d68468",
-        "renderer/src/api.ts": "ac7c07e97c05f615db268b7c78c4144d8c0c6987024a68c53f0aff70f3766d1e",
+        "renderer/src/api.ts": "10a78d813e6fed09d36bda9d64be98b23c56a1fef914626e221471f5572d322c",
         "renderer/src/cloud-files.tsx": "69fdadd4f6251fd07855420dbee9fdd8870debfa917b2f54c8bbe51e1f1a9b2a",
         "renderer/src/context.tsx": "8f88ef0028b5c61be63e319ca9fc297e4fbdb450ae37679f45eb4b3d133c3078",
         "renderer/src/data-mode.tsx": "979bf4096ed2d43edd88b962221b27e2d4ebb7593a76ae23b1218fbdef939c0f",
         "renderer/src/deletions.tsx": "3d7a524ed37854402d0b49920c2fbcf96139fc5f06893b81c29b7985890c72ef",
         "renderer/src/federation.tsx": "230a55e072cf80f627061f62f5cde9c5c5c1fd3b926742d17ba3aae55ddd43f3",
-        "renderer/src/main.tsx": "b073b7195344a9d843d44759623d1f435184a8ccc96e1e4c305f7252404bd875",
+        "renderer/src/main.tsx": "6f5bbb75686f182c49a3f9b9c85bf3c618cd2a977f04454b7eb2212286db1195",
         "renderer/src/native-files.tsx": "72f498cc2401e2ce43dac498964d493b1b3aba6fdf38e8e15c6fe7c1318d6b58",
         "renderer/src/notifications.tsx": "d0274b657b5410ff74eabb4fe3a08429ce3d3ff7e37483a125f25bed066a5847",
-        "renderer/src/persistent-work.tsx": "7bb98d00532b6070e84d773e52adf509517092d2d680ad3f218bc22fa43343cf",
+        "renderer/src/persistent-work.tsx": "ad750fa498f9321981640dc646f1b9aec7a6b24e4f1b0af2ac78a81e75095306",
         "renderer/src/resumable-upload.tsx": "2595c887a6e426c29619c1e9aadcd078016440df188b5c838d13093218219d05",
+        "renderer/src/role-templates.tsx": "e9507ae7125ffb64b4280ddf6098e0b60919284a5bbfddef2b373c0b1576ffd8",
         "renderer/src/schedules.tsx": "7616de9edb5736de0c777b1a274bb3d777606b540fb3a55936f46f08f1eee285",
         "renderer/src/skills.tsx": "02ad80c0d0cfb4b0d214a704777844b860a91d77c5cc7d822867b07444d948aa",
-        "renderer/src/style.css": "f36c311f0b102139cd80157ca995485065fa5d21964873fea95b7f90fbbe6974",
+        "renderer/src/style.css": "892769818f976c0c10248a723ba4c43f643467fc3df1c53d4047b5ace218ef24",
         "renderer/src/task-dependencies.tsx": "f6eeca88e1d30282653edc665e75ac9af1f1919e1d3723b545c47dac68c3cc64",
         "renderer/src/task-events.ts": "a691dcd1dde11e848f64ef6ae364cf35fa1fc2267005ff6aa447bb0bcfa87a3f",
         "renderer/src/ui.tsx": "f2c8b8fb7f9843edc0c872587d6274a7cd8925d408e96164239c034c88509259",
@@ -897,7 +911,7 @@
         "src/download.ts": "c498df20040b2f62e22f1def8ef6839826c8682a5ed5af59a5268760579b974f",
         "src/files.ts": "825a3d5c4e0c46b7cdcf81c0e11d967d140bef53b48a347980f0a4aa26c35fd1",
         "src/lock.ts": "9da90678cf8cc504a54b0b4e75777057ad035f78f44ef55f099bdd0ad9adfecb",
-        "src/main.ts": "1b8a072f954e0c942c39f538031b175090a62a6d67bd46a39dae44c6f7e04fff",
+        "src/main.ts": "a6ad09e4da160087f0bb3a70d5e5b04d04052f272e1e8fa6761745bb3727666b",
         "src/native-host.ts": "66bf0cf2db69697a8afed114efe014c51bc65dfde215660dee2f589212f72858",
         "src/vault.ts": "524e85a306433e13dfb03233c03492dbd59fb48a92f1dccecc446a6d2e219516",
         "tests/download.test.ts": "12520bb0b68464ef8b2531112497f623c5e78b1ca1540527ca983cce1ce39f20",
@@ -909,11 +923,11 @@
     },
     {
       "name": "copypaste-delivery",
-      "head": "d47a172eecf640465f4685a61a5a3af5bea82a9e",
+      "head": "e32846d73083850a0ddaf998c1f68ff104b0e513",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "1534300299d60144ac9831600824331fc14b14f2764d455f3a9635e2fdc6bbd5",
-        "README.md": "df1498fc05977f8e39f3d8118ad773d25ce33b66858972c32e1f077e60a5f0ae",
+        "README.en.md": "d64275dfb602641f2c7b81991be44bed91b90facf4a742dc28fe6d10e193946c",
+        "README.md": "097e9dfb8194d3edc5fa11e518a867ec01b3c60efc43ce45844c134df82d2ef4",
         "THIRD_PARTY_NOTICES.md": "6c64c50fb20d9a9756db020d15ed5607aec70a08208c82ba58932385eabe3f22",
         "assets/screenshots/product-surfaces.png": "622acae7380b919b7d14bfdb5987fb95266fbea636552ec0616191c47b285473",
         "evidence/admin-identities.json": "450bf2606f7debfaa80614471a930492536bc962c0037efb176bc247ded27942",
@@ -921,10 +935,12 @@
         "evidence/admin-records-first-regression-failure.json": "93b6820409520949f77c7f5e6bd3bb85a21ef15d55e8c58a07a1a04bc86edbb2",
         "evidence/admin-records.json": "c65d6c0ef8571fb73bd7e9998086e829497f9a4fd33fa388db385b4c36f515e5",
         "evidence/admin-task-inputs.json": "6283b224a210851ad889aa16da7b2aa1ad74a90385888bab844ea4e90abe0448",
+        "evidence/agent-templates-contract-samples.json": "2ad20cf3784cf00cb25332c4a6bb2aa13b8257d3e12a1cfff6ed442e7c6c1e86",
+        "evidence/agent-templates.json": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
         "evidence/alignment-desktop.json": "ff06ef0ef7055513dfc0f627b7eec9a2f5d8e5230978bddba3682ef172969b81",
-        "evidence/alignment-platform.json": "17e551237b16033c6391a2d1b9d5156ea03482ceb7f29653e974dade31761236",
+        "evidence/alignment-platform.json": "2d19c5708a5bcf51d011e25208b61e01ede04d3ddf5ec4e2c5afcdc6105828f7",
         "evidence/alignment.json": "3554e721940576080a0f6e01a9f2a230a87a75ef3c97c1d934999f7c1091a2d0",
-        "evidence/byte-integrity.json": "e2cdcc79982d535b15bcddb388a3fda98455107d88067425a551fb750a10485c",
+        "evidence/byte-integrity.json": "d0cd747eeae5bdfe36d448d4e739f622b467268a2a569e7eca65e4958ac19e82",
         "evidence/cloud-files-contract-samples.json": "25a282a0555568288577f6d5b2d80a6769619b62fa69865fa4745a67304d9505",
         "evidence/cloud-files.json": "cd28c3f8a0ef68ef97cc96de124e072ed7fd83ccd45e40d563b988a0daeeaf1a",
         "evidence/default-assistant.json": "7f9ee69caba3af61d737064ed2ec2e2ad7f95243cf5bd446aed31046057c2d74",
@@ -936,8 +952,8 @@
         "evidence/notifications-contract-samples.json": "5afb15f582b2bb3fea14aca6c7a2311b0ebec884df4d5a4b157675616909bac5",
         "evidence/notifications.json": "4514cb96a9af98fff4227ac99ab6904b6845a2e32eb7517ee28f9a68df032ff3",
         "evidence/packaged-windows.json": "7d12a4dd06de1bbfff66a5c3cc56b7778718a7805cf3e5250ea764ac99a155c7",
-        "evidence/persistent-work.json": "50be87e181fe476fa7ab0ec35e3b5d66fe1d300d9878ddf552112e8ad007c2d6",
-        "evidence/repository-review.json": "2fe4c4e76b36cc50809eac2c6dc97c64330e3efd565e17b0e73319c826765589",
+        "evidence/persistent-work.json": "8f1d9cd6e12aace38d8558317621062a6f071bc22a6bfb96f45c7df47ef38b1e",
+        "evidence/repository-review.json": "7e152da8c90009faca9dc82d213b0882367ea52946ac5f4ba64fad5da3b01918",
         "evidence/schedules.json": "ada668aa7d6ce308f08bddb9df54cadde30f91ffe54141fbf6cb3e899aad8542",
         "evidence/skills-contract-samples.json": "d37aa73ad0085210462fa1648fefcf6e53d5e9fb2fd6f2f08883c55fc72eef4a",
         "evidence/skills.json": "51904fd6bd9b5fdd0fc17a8d6d120a798fe9e85571c215162a6174b93a7c7621",
@@ -984,12 +1000,13 @@
         "evidence/versions/0.4.0/web-admin.json": "ae065a2ea8e7a8251568027ddb999a7ddd3f835a5c3fee2c3abba6221d49172e",
         "evidence/web-admin.json": "b7d9b9a0152944e22fc5f25d5cf71020505b5336e471ad0ec93e13b2f71d66e3",
         "package-lock.json": "91aaa1457fa9f6aa0dd6773199c45ddc0770ffa67d5e890bc379675bb3230c51",
-        "package.json": "a288d4ab5829e01612adc40fce4af534d610f677944ab0388bd2165099bf91a9",
+        "package.json": "1a117c7d88def5af2f77cb87ee64b27ff64d991817048f840ba73791f256ac5d",
         "scripts/bootstrap.mjs": "73ff72865ff6d15e4cf3e1ab1c862b14d42656e8ccf098bf58c0ccb2ed399332",
         "scripts/dev.mjs": "74484c7cfe37169743638cea120936cb85279f55d54760713214780927c00a0d",
         "scripts/qa-admin-identities.ts": "22e3a6e4bd6101addbba8d7dfab11b64c560a3a871fa233f8eeb370b1ba825fc",
         "scripts/qa-admin-records.ts": "79c10794b46467ab68576cf1b13107b5a2d4b0307a2e43e7decce2750e3d6886",
         "scripts/qa-admin-task-inputs.ts": "e6801e3a0174602013b3c1613824597d32970fd8d1269a1de03ca70ff95c42ac",
+        "scripts/qa-agent-templates.ts": "d0f36012522d0284550f90b6f702a75c22c26a3881449301a4c84700cc4a2a0a",
         "scripts/qa-alignment.ts": "e59209ace3b71f43a3bd8810391badf34b42f95cb981c66213207a09e98e8195",
         "scripts/qa-auth.ts": "caa728e2fadaf480f4a4cbe01602be98631a2bcb3097005dc188f58b51ef467f",
         "scripts/qa-byte-integrity.ts": "2df54971992e6b4bb24647658878c6e6c507a779fd893ae6a61f16ff320d6699",
@@ -1018,13 +1035,13 @@
   "evidence": {
     "platform_regression": {
       "path": "dev/copypaste-delivery/evidence/alignment-platform.json",
-      "sha256": "17e551237b16033c6391a2d1b9d5156ea03482ceb7f29653e974dade31761236",
-      "at": "2026-10-19T03:28:57.807950+00:00",
+      "sha256": "2d19c5708a5bcf51d011e25208b61e01ede04d3ddf5ec4e2c5afcdc6105828f7",
+      "at": "2026-10-19T04:05:51.932512+00:00",
       "checks": [],
       "scope": "Current source regression, including controlled adapters and real Codex with synthetic model dependencies; not all 102 acceptance cases or live role qualification",
       "counts": {
-        "tests": 139,
-        "pass": 139,
+        "tests": 145,
+        "pass": 145,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0,
@@ -1032,7 +1049,7 @@
       },
       "raw_report": {
         "path": "dev/copypaste-delivery/evidence/alignment-platform.tap",
-        "sha256": "3a1e9321997d931da8f0ede67344fccd4fed74b33b3ae32d4e7628c9828749f8"
+        "sha256": "99fc2891d7ca58615fe45d171aa1aa799d142adbbe18bc64250dc0b83fb7d153"
       }
     },
     "web_admin": {
@@ -1339,13 +1356,53 @@
       ],
       "scope": "Only the explicitly named subflows in this report"
     },
-    "checkout_integrity": {
-      "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
-      "sha256": "e2cdcc79982d535b15bcddb388a3fda98455107d88067425a551fb750a10485c",
-      "at": "2026-10-19T03:33:00.318Z",
+    "agent_templates": {
+      "path": "dev/copypaste-delivery/evidence/agent-templates.json",
+      "sha256": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
+      "at": "2026-10-19T04:16:08.128Z",
       "checks": [
         {
-          "name": "fresh independent Git clone preserves all 30 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
+          "name": "real login and workspace isolation expose 18 persisted professional presets plus a default helper; categories and literal searches do not reuse stale cards or claim live qualifications",
+          "status": "passed"
+        },
+        {
+          "name": "a software preset reports its unavailable execution tools and cannot be instantiated or charged through the template flow",
+          "status": "passed"
+        },
+        {
+          "name": "preflights persist a real receipt without creating work, methods or wallet holds; editing the brief invalidates the visible check",
+          "status": "passed"
+        },
+        {
+          "name": "a lost real acceptance response reuses one idempotency key and creates one specialist with persisted template, Codex, capability and Skill versions and no AI task",
+          "status": "passed"
+        },
+        {
+          "name": "disabling a required project method blocks a further instance; restoring it and explicitly rechecking obtains a new receipt instead of replaying the obsolete failure",
+          "status": "passed"
+        },
+        {
+          "name": "template details and dependency controls fit four viewport widths, both themes and Traditional Chinese/English",
+          "status": "passed"
+        },
+        {
+          "name": "an injected later directory denial clears selectable template content and closes the detail flow",
+          "status": "passed"
+        },
+        {
+          "name": "current native Electron source completes real PKCE sign-in and the same template flow through its validated tenant header bridge; missing/foreign/malformed tenant identities cannot access it",
+          "status": "passed"
+        }
+      ],
+      "scope": "Only the explicitly named subflows in this report"
+    },
+    "checkout_integrity": {
+      "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
+      "sha256": "d0cd747eeae5bdfe36d448d4e739f622b467268a2a569e7eca65e4958ac19e82",
+      "at": "2026-10-19T04:18:36.115Z",
+      "checks": [
+        {
+          "name": "fresh independent Git clone preserves all 31 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
           "status": "passed"
         },
         {
@@ -1353,11 +1410,11 @@
           "status": "passed"
         },
         {
-          "name": "fresh independent Desktop clone matches all 34 renderer provenance digests",
+          "name": "fresh independent Desktop clone matches all 35 renderer provenance digests",
           "status": "passed"
         },
         {
-          "name": "fresh delivery clone preserves raw 139-test TAP bytes and its recorded SHA-256",
+          "name": "fresh delivery clone preserves raw 145-test TAP bytes and its recorded SHA-256",
           "status": "passed"
         }
       ],
@@ -1365,8 +1422,8 @@
     },
     "runtime_schemas": {
       "path": "docs/quality/runtime-contract-samples.json",
-      "sha256": "6abff108f34df720b940aa71a1be49a84769cc4939b79b5756abcd2030f60ba9",
-      "at": "2026-10-19T03:32:00.914621+00:00",
+      "sha256": "84e18c2c8664bcabe092bd7aa3884697d65585124a60b0c3bf452e0d5a8bc20b",
+      "at": "2026-10-19T04:16:45.050806+00:00",
       "checks": [
         {
           "source": "cloud-files-contract-samples.json",
@@ -1486,22 +1543,50 @@
           "schema": "AdminCleanupPage",
           "status": "passed",
           "errors": []
+        },
+        {
+          "source": "agent-templates-contract-samples.json",
+          "sample": 1,
+          "schema": "AgentTemplateList",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "agent-templates-contract-samples.json",
+          "sample": 2,
+          "schema": "AgentTemplate",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "agent-templates-contract-samples.json",
+          "sample": 3,
+          "schema": "RoleTemplatePreflight",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "agent-templates-contract-samples.json",
+          "sample": 4,
+          "schema": "Agent",
+          "status": "passed",
+          "errors": []
         }
       ],
-      "scope": "Captured cloud workspace, project Skill, notification, pre-execution dependency and scoped Admin cleanup page HTTP response schemas only; not full API conformance"
+      "scope": "Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page and role template HTTP response schemas only; not full API conformance"
     },
     "documentation": {
       "path": "docs/quality/validation-report.json",
-      "sha256": "32c71bc27b8b79146156b7a477c279bbda141c2c9ce55b82060c528422f103b3",
-      "at": "2026-10-19T03:34:04.540711+00:00",
+      "sha256": "c0cf3385ee6851eb402a660131a1396412d4a340ced4ddb1448a849fb3f9975c",
+      "at": "2026-10-19T04:22:19.705666+00:00",
       "checks": [],
       "scope": "documentation_contracts_and_recorded_design_evidence_only"
     }
   },
   "contract_alignment": {
     "contract_operations": 225,
-    "implemented_operations": 225,
-    "unmatched_contract_method_paths": 169,
+    "implemented_operations": 229,
+    "unmatched_contract_method_paths": 165,
     "limit": "Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.",
     "operations": [
       {
@@ -2215,7 +2300,7 @@
         "method": "GET",
         "path": "/v1/agent-templates",
         "operation_id": "listAgentTemplates",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -2229,7 +2314,7 @@
         "method": "POST",
         "path": "/v1/agent-templates/{template_id}/instances",
         "operation_id": "instantiateAgentTemplate",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -2495,14 +2580,14 @@
         "method": "GET",
         "path": "/v1/agent-templates/{template_id}",
         "operation_id": "getAgentTemplate",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/agent-templates/{template_id}/preflights",
         "operation_id": "preflightRoleTemplate",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -3141,6 +3226,7 @@
       ],
       "acceptance_evidence": [
         "admin_task_inputs",
+        "agent_templates",
         "cloud_files",
         "default_assistant",
         "desktop",
@@ -3156,6 +3242,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有企业 RLS；事件、对象、副本及新增模块仍需逐路径跨企业验证。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "execution_capacity",
           "verified_subflow": "数据库原子执行容量、当前用户/企业/能力交集、原生多 handler、企业交错派发、单预留延迟重派和未知执行保留槽位；不含完整 NFR 压测。",
@@ -3279,6 +3377,7 @@
       ],
       "acceptance_evidence": [
         "admin_task_inputs",
+        "agent_templates",
         "cloud_files",
         "default_assistant",
         "desktop",
@@ -3294,6 +3393,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有项目动作权限；需按规范角色矩阵补齐逐动作、撤销和下载验证。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "execution_capacity",
           "verified_subflow": "数据库原子执行容量、当前用户/企业/能力交集、原生多 handler、企业交错派发、单预留延迟重派和未知执行保留槽位；不含完整 NFR 压测。",
@@ -4827,6 +4938,7 @@
       ],
       "acceptance_evidence": [
         "admin_task_inputs",
+        "agent_templates",
         "cloud_files",
         "default_assistant",
         "desktop",
@@ -4841,6 +4953,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有真实 Codex 工具回合；会话继续、检查点、事件恢复尚不完整。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "execution_capacity",
           "verified_subflow": "数据库原子执行容量、当前用户/企业/能力交集、原生多 handler、企业交错派发、单预留延迟重派和未知执行保留槽位；不含完整 NFR 压测。",
@@ -5227,6 +5351,7 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "cloud_files",
         "desktop",
         "documentation",
@@ -5240,6 +5365,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "有中英切换；动态状态翻译、日期/币种与时区覆盖不完整。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "events_and_queue_recovery",
           "verified_subflow": "持久事件序号/UUID、SSE 权限复查、游标裁剪与重连；只恢复尚未领取的排队任务，未知结果不盲重放。",
@@ -5838,6 +5975,7 @@
         "dev/copypaste-platform/src/catalog.ts"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "default_assistant",
         "desktop",
         "extension",
@@ -5848,6 +5986,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有预设与定制专家；默认助手、模板复制和专业输入/依赖仍需贯通。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "project_skills",
           "verified_subflow": "项目安装、精确专家/任务绑定、启停/卸载/永久安全撤销、重装新身份与旧任务不可复活；当前方案在每次工具及落库复查。",
@@ -6276,13 +6426,27 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "cloud_files",
         "platform_regression",
+        "runtime_schemas",
         "web_admin"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "18 个目录条目已安装，但当前 0 个真实服务合格角色；需用显式模拟模式验证可选用链路。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "synthetic_dependencies",
           "verified_subflow": "按用户授权使用明确标识的模拟网关/额度，真实 Codex 与真实持久业务流程继续执行，数据模式分开。",
@@ -6315,6 +6479,7 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "platform_regression",
         "runtime_schemas",
         "skills"
@@ -6322,6 +6487,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "有 28 个精确 Skill 包；逐角色完整流程、产物及异常验收仍缺少证据。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "project_skills",
           "verified_subflow": "项目安装、精确专家/任务绑定、启停/卸载/永久安全撤销、重装新身份与旧任务不可复活；当前方案在每次工具及落库复查。",
@@ -6356,6 +6533,7 @@
         "dev/copypaste-platform/src/billing.ts"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "cloud_files",
         "default_assistant",
         "desktop",
@@ -6368,6 +6546,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有 Codex 实际加载与摘要；所有角色/恢复/团队分支需完整验证。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "synthetic_dependencies",
           "verified_subflow": "按用户授权使用明确标识的模拟网关/额度，真实 Codex 与真实持久业务流程继续执行，数据模式分开。",
@@ -6416,12 +6606,13 @@
       "acceptance_case": "TC-076",
       "acceptance_conditions": "示例只预填，合法项目实例化及绑定幂等；三个入口信息一致，缺项就地收集，越权项目拒绝，实例创建不显示为工作完成。",
       "assessment": "partial_verified",
-      "finding": "必需方法自动安装且不复活卸载/撤销；共享目录筛选、输入/依赖在原会话补齐未完成。",
+      "finding": "持久目录筛选、无费用预检和再次校验的幂等实例化已验证；专业业务输入及所有依赖在原会话补齐仍未完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/persistent-work.ts",
         "dev/copypaste-platform/src/catalog.ts"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "platform_regression",
         "runtime_schemas",
         "skills"
@@ -6429,6 +6620,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "目录共用程度和示例/缺口展示不完整；实例化幂等及原会话补齐需补齐。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "project_skills",
           "verified_subflow": "项目安装、精确专家/任务绑定、启停/卸载/永久安全撤销、重装新身份与旧任务不可复活；当前方案在每次工具及落库复查。",
@@ -6442,7 +6645,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "必需方法自动安装且不复活卸载/撤销；共享目录筛选、输入/依赖在原会话补齐未完成。",
+      "remaining_complete_acceptance_conditions": "持久目录筛选、无费用预检和再次校验的幂等实例化已验证；专业业务输入及所有依赖在原会话补齐仍未完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -6489,19 +6692,36 @@
       "requirement": "角色工作与交付约定：逐角色明确输入、步骤、工具、实际文件、编辑范围、继续修改及异常；Web、扩展、Desktop 复用同一模板版本和业务约定，本地依赖按端能力准确显示。",
       "acceptance_case": "TC-078",
       "acceptance_conditions": "承诺文件真实可用且可追溯，修改固定基版本并保留旧版；三端方法一致，本地步骤等设备，云端步骤不强制安装本地组件。",
-      "assessment": "completion_not_proven",
-      "finding": "角色实际交付不齐，视频/语音等尚不可执行；跨端规格与异常行为需完整实现。",
+      "assessment": "partial_verified",
+      "finding": "名称/职责/语言覆盖与非法内核/API/技能覆盖拒绝已有模板证据；品牌版本、企业模板包和受控发布仍未完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/assets.ts",
         "dev/copypaste-platform/src/storage.ts",
         "dev/copypaste-platform/src/render.ts",
         "dev/copypaste-platform/src/admin-content.ts"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        "agent_templates",
+        "platform_regression",
+        "runtime_schemas"
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "角色实际交付不齐，视频/语音等尚不可执行；跨端规格与异常行为需完整实现。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "角色实际交付不齐，视频/语音等尚不可执行；跨端规格与异常行为需完整实现。",
+      "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "名称/职责/语言覆盖与非法内核/API/技能覆盖拒绝已有模板证据；品牌版本、企业模板包和受控发布仍未完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -6511,12 +6731,13 @@
       "acceptance_case": "TC-079",
       "acceptance_conditions": "定制和采用形成新版本，旧运行固定方法但服从即时撤销；禁止绕过内部网关及资源权限，不复制私有内容，差异和责任可查。",
       "assessment": "partial_verified",
-      "finding": "精确绑定、重装显式采用与撤销已修复；企业模板覆盖/新版比较与安全复制仍待完成。",
+      "finding": "模板、Codex 配置、能力与技能的真实版本绑定及撤销已验证；企业模板覆盖、新版比较/显式升级和安全复制仍待完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/persistent-work.ts",
         "dev/copypaste-platform/src/catalog.ts"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "default_assistant",
         "desktop",
         "extension",
@@ -6527,6 +6748,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有实例版本；模板企业覆盖、新版比较/采用、技能与私有内容安全复制不足。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "project_skills",
           "verified_subflow": "项目安装、精确专家/任务绑定、启停/卸载/永久安全撤销、重装新身份与旧任务不可复活；当前方案在每次工具及落库复查。",
@@ -6553,7 +6786,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "精确绑定、重装显式采用与撤销已修复；企业模板覆盖/新版比较与安全复制仍待完成。",
+      "remaining_complete_acceptance_conditions": "模板、Codex 配置、能力与技能的真实版本绑定及撤销已验证；企业模板覆盖、新版比较/显式升级和安全复制仍待完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -6611,6 +6844,7 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "cloud_files",
         "desktop",
         "documentation",
@@ -6624,6 +6858,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已采用官网品牌；三端 token/组件仍有重复来源，完整一致性需复核。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "ui_and_document_alignment",
           "verified_subflow": "新增流程的两主题/繁英/四宽度检查、后台清理页、文档契约校验及独立源码构建；不代替全产品可访问性验收。",
@@ -6674,6 +6920,7 @@
         "dev/copypaste-delivery/README.md"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "cloud_files",
         "desktop",
         "documentation",
@@ -6687,6 +6934,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有静态样板与局部截图；完整两主题/语言/四尺寸/缩放/键盘/对比证据缺失。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "ui_and_document_alignment",
           "verified_subflow": "新增流程的两主题/繁英/四宽度检查、后台清理页、文档契约校验及独立源码构建；不代替全产品可访问性验收。",
@@ -7315,6 +7574,7 @@
         "dev/copypaste-platform/src/billing.ts"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "platform_regression",
         "runtime_schemas",
         "skills"
@@ -7322,6 +7582,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "模型/能力主要为环境配置；验证发布、精确别名/费率、技能及兼容版本控制不足。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "project_skills",
           "verified_subflow": "项目安装、精确专家/任务绑定、启停/卸载/永久安全撤销、重装新身份与旧任务不可复活；当前方案在每次工具及落库复查。",
@@ -7416,6 +7688,7 @@
         "dev/copypaste-platform/src/billing.ts"
       ],
       "acceptance_evidence": [
+        "agent_templates",
         "default_assistant",
         "desktop",
         "execution_capacity",
@@ -7427,6 +7700,18 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有服务端方案/预算检查；所有新增工具、调度、席位和存储需统一真实执行。",
       "verified_repairs": [
+        {
+          "cluster": "persistent_role_templates",
+          "verified_subflow": "持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。",
+          "evidence": [
+            "platform_regression",
+            "agent_templates",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/25-role-template-registry-and-runtime-binding.md"
+          ]
+        },
         {
           "cluster": "execution_capacity",
           "verified_subflow": "数据库原子执行容量、当前用户/企业/能力交集、原生多 handler、企业交错派发、单预留延迟重派和未知执行保留槽位；不含完整 NFR 压测。",

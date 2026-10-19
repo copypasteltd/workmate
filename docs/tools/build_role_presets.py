@@ -308,7 +308,7 @@ def build_schema():
 
 def generate():
     for name,value in [('role-preset-catalog.json',build_catalog()),('role-preset-catalog.schema.json',build_schema())]:
-        (OUT/name).write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+        (OUT/name).write_text(json.dumps(value,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
 
 if __name__ == '__main__':
     generate()

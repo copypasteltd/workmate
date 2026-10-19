@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('persistent_role_templates', [1,2,44,51,62,73,74,75,76,78,79,81,82,99,102],
+     '持久模板目录、项目预检、幂等实例化、真实 Codex/能力版本、提交前与执行中撤销复查，以及 Web/源码 Desktop 选择流程；不含完整专业交付资格、受控模板发布与品牌覆盖。',
+     ['platform_regression','agent_templates','runtime_schemas'], ['technical/25-role-template-registry-and-runtime-binding.md']),
     ('admin_record_pages', [49,90,94,98,100],
      '清理记录组合筛选、可见总数与分页、只读重试拒绝、慢请求失败清空、授权到期和后台默认 50 条；不含百万记录压测或全部运营筛选。',
      ['platform_regression','admin_records','runtime_schemas'], ['technical/24-admin-record-pages-and-test-isolation.md']),
@@ -93,9 +96,10 @@ REMAINING = {
  73:'18 个候选仍需≥12 个真实服务合格角色；模拟链路不计入正式数量。',
  74:'有精确包/安装/绑定；逐角色完整输入输出、流程/产物与异常验收未完成。',
  75:'实际 Codex 加载和安全撤销有局部证据；所有角色、团队、后台与恢复分支未全覆盖。',
- 76:'必需方法自动安装且不复活卸载/撤销；共享目录筛选、输入/依赖在原会话补齐未完成。',
+ 76:'持久目录筛选、无费用预检和再次校验的幂等实例化已验证；专业业务输入及所有依赖在原会话补齐仍未完成。',
  77:'模拟设计逻辑不代表真实 Image 2 资格；分层工程、限定编辑与实际业务完整验收待齐。',
- 79:'精确绑定、重装显式采用与撤销已修复；企业模板覆盖/新版比较与安全复制仍待完成。',
+ 78:'名称/职责/语言覆盖与非法内核/API/技能覆盖拒绝已有模板证据；品牌版本、企业模板包和受控发布仍未完成。',
+ 79:'模板、Codex 配置、能力与技能的真实版本绑定及撤销已验证；企业模板覆盖、新版比较/显式升级和安全复制仍待完成。',
  80:'真实服务合格角色数仍为零；至少 12 个任务/修改/异常的实际资格证据未完成。',
  81:'新增页面延续官网 token；全部端的组件单源与全量品牌一致性仍待核查。',
  82:'局部两主题/语言/四尺寸通过；全组件状态、100/200% 缩放、键盘/对比/reduced-motion 验收待完成。',
@@ -136,6 +140,7 @@ def main():
         'execution_capacity': DEV/'copypaste-delivery/evidence/execution-capacity.json',
         'admin_task_inputs': DEV/'copypaste-delivery/evidence/admin-task-inputs.json',
         'admin_records': DEV/'copypaste-delivery/evidence/admin-records.json',
+        'agent_templates': DEV/'copypaste-delivery/evidence/agent-templates.json',
         'checkout_integrity': DEV/'copypaste-delivery/evidence/byte-integrity.json',
         'runtime_schemas': DOCS/'quality/runtime-contract-samples.json',
         'documentation': DOCS/'quality/validation-report.json',

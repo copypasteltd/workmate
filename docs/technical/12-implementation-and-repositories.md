@@ -2,7 +2,7 @@
 
 版本：2.0 · 2026-10-19 · 产品代码：0.5.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
-当前源码持续修复已扩展到 27 个迁移、持久删除/上传/事件、云文件、项目技能、站内通知及默认助手；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md) 与 [默认助手](21-default-assistant-and-first-delegation.md)。
+当前源码持续修复已扩展到 31 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录及持久模板；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md) 与 [持久模板](25-role-template-registry-and-runtime-binding.md)。
 
 ## 1. 路径与仓库
 
@@ -127,7 +127,7 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 
 ## 8. 当前源码修复增量
 
-2026-10-19 当前源码平台 139/139、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。实际响应样本 17/17 通过严格 schema 检查。规范 225 个操作和实际 225 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 145/145、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。另有模板 Web/Electron 八组检查，见 [模板注册与运行约束](25-role-template-registry-and-runtime-binding.md)。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作与常规实际 229 个 method/path 不代表字段及全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 

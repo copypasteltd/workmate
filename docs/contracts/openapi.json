@@ -7637,7 +7637,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "minLength": 1
+              "format": "uuid"
             }
           },
           {
@@ -7647,7 +7647,8 @@
             "schema": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 100
+              "maximum": 100,
+              "default": 50
             }
           },
           {
@@ -10856,6 +10857,14 @@
           },
           {
             "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
           }
         ],
         "responses": {
@@ -19099,6 +19108,10 @@
           "preset_definition_hash": {
             "type": "string",
             "pattern": "^[a-f0-9]{64}$"
+          },
+          "runtime_profile_id": {
+            "type": "string",
+            "format": "uuid"
           }
         },
         "required": [
@@ -23754,6 +23767,47 @@
               "qualified",
               "revoked"
             ]
+          },
+          "template_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "runtime_profile_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "definition_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "role_key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "engineering",
+              "design",
+              "marketing",
+              "operations"
+            ]
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "availability_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -23802,7 +23856,7 @@
           },
           "template_version": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 1
           },
           "overrides": {
             "$ref": "#/components/schemas/RolePresetOverrides"
@@ -25871,11 +25925,13 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 160
           },
           "role_description": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 6000
           },
           "brand_version_id": {
             "type": "string",
@@ -25892,9 +25948,11 @@
             "type": "array",
             "items": {
               "type": "string",
-              "minLength": 1
+              "minLength": 1,
+              "maxLength": 240
             },
-            "minItems": 0
+            "minItems": 0,
+            "maxItems": 12
           }
         },
         "required": [],
@@ -26020,6 +26078,21 @@
           "expires_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "qualification_state": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "qualified",
+              "revoked"
+            ]
           }
         },
         "required": [

@@ -37,7 +37,7 @@ def uid(label):
 
 def write(path, value):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8', newline='\n')
 
 def define_schemas():
     S['TaskStatus'] = enum(*STATES)
@@ -495,12 +495,18 @@ def extend_role_presets():
     add('RolePresetOverrides', {'name':TEXT,'role_description':TEXT,'brand_version_id':ID,
                               'locale':enum('zh-HK','en-HK'),'delivery_preferences':arr(TEXT)}, [])
     S['AgentTemplate']['properties'].update({'kind':enum('default_helper','role_preset'),
-        'preset_definition':ref('RolePresetDefinition'), 'qualification_state':enum('unverified','qualified','revoked')})
+        'preset_definition':ref('RolePresetDefinition'), 'qualification_state':enum('unverified','qualified','revoked'),
+        'template_version_id':ID,'runtime_profile_id':ID,'definition_hash':HASH,'role_key':TEXT,
+        'category':enum('engineering','design','marketing','operations'),
+        'data_mode':enum('simulated','configured_services'),'available':BOOL,
+        'availability_reason':{'type':['string','null']}})
     S['AgentTemplate']['required'].append('kind')
     S['AgentTemplate']['allOf'] = [{'if':{'properties':{'kind':{'const':'role_preset'}},'required':['kind']},
                                   'then':{'required':['preset_definition','qualification_state']}}]
     S['AgentTemplateUse']['properties'].update({'template_version':INT,'overrides':ref('RolePresetOverrides')})
     S['AgentTemplateUse']['required'].append('template_version')
+    S['AgentTemplateUse']['properties']['template_version'] = {'type':'integer','minimum':1}
+    S['RolePresetOverrides']['properties'].update({'name':{**TEXT,'maxLength':160},'role_description':{**TEXT,'maxLength':6000},'delivery_preferences':{**arr({**TEXT,'maxLength':240}),'maxItems':12}})
     add('RoleTemplateDraftCreate', {'name':TEXT,'role_description':TEXT,'examples':arr(TEXT,1),
                                     'preset_definition':ref('RolePresetDefinition')})
     add('RoleTemplatePublication', {'expected_version':INT,'validation_task_ids':{**arr(ID,3),'uniqueItems':True}})
@@ -508,9 +514,10 @@ def extend_role_presets():
         'state':enum('ready','needs_configuration','unavailable'), 'missing_required_dependencies':arr(TEXT),
         'optional_unavailable_dependencies':arr(TEXT), 'resolved_skill_version_ids':arr(ID),
         'resolved_capability_version_ids':arr(ID), 'policy_version':INT,'expires_at':TIME})
+    S['RoleTemplatePreflight']['properties'].update({'data_mode':enum('simulated','configured_services'),'qualification_state':enum('unverified','qualified','revoked')})
     for name in ['Agent','AgentVersion']:
         if name in S:
-            S[name]['properties'].update({'role_key':TEXT,'preset_definition_hash':HASH})
+            S[name]['properties'].update({'role_key':TEXT,'preset_definition_hash':HASH,'runtime_profile_id':ID})
     e = endpoint
     e('/v1/agent-templates','post','createRoleTemplateDraft','RoleTemplateDraftCreate','AgentTemplate',[74,78,79],permission='template.publish')
     e('/v1/agent-templates/{template_id}','get','getAgentTemplate',None,'AgentTemplate',[73,74,76,78])
@@ -519,6 +526,12 @@ def extend_role_presets():
     PATHS['/v1/agent-templates']['get']['parameters'] += [
         {'name':'category','in':'query','schema':enum('engineering','design','marketing','operations')},
         {'name':'q','in':'query','schema':TEXT}]
+    for parameter in PATHS['/v1/agent-templates']['get']['parameters']:
+        if parameter.get('name') == 'limit':
+            parameter['schema'] = {'type':'integer','minimum':1,'maximum':100,'default':50}
+        if parameter.get('name') == 'cursor':
+            parameter['schema'] = ID
+    PATHS['/v1/agent-templates/{template_id}']['get']['parameters'].append({'name':'version','in':'query','schema':{'type':'integer','minimum':1}})
     additions = {'listAgentTemplates':[73,76,80], 'instantiateAgentTemplate':[73,74,75,76,77,78,79],
                  'updateAgent':[79], 'verifySkillVersion':[74,75,80], 'getEffectiveCapabilities':[74,75,77,78]}
     for item in PATHS.values():
