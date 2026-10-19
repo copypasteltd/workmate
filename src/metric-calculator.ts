@@ -3,6 +3,7 @@ import { Problem } from "./lib.js";
 
 export const FORMULA_VERSION = "1.0";
 const SCALE = 100000000n;
+const CONVERSION_DECIMAL = /^\d+(\.\d{1,8})?$/;
 const conversion = z
   .union([
     z
@@ -16,9 +17,9 @@ const conversion = z
       ),
     z
       .string()
-      .regex(/^\d+(\.\d{1,8})?$/)
+      .regex(CONVERSION_DECIMAL)
       .refine(
-        (v) => scaled(v) <= 1000000000n * SCALE,
+        (v) => CONVERSION_DECIMAL.test(v) && scaled(v) <= 1000000000n * SCALE,
         "Conversions exceed the limit",
       ),
   ])

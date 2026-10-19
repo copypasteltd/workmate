@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { metrics, decimalMicros, parseMetricsCSV } from "../src/analytics.js";
 import { normalizeMetricsCSV } from "../src/analytics-import.js";
+import { metricRow } from "../src/metric-calculator.js";
 import { Problem } from "../src/lib.js";
 
 const vectors = JSON.parse(
@@ -63,6 +64,11 @@ test("decimal conversion sums retain eight fractional places; unknown rows do no
   assert.equal(d.summary.exact.conversions, "0.30000001");
   assert.equal(d.summary.exact.spend, "0.30000000");
   assert.equal(d.summary.exact.roas, "3.00000000");
+  for (const conversions of ["abc", "1e2", ".5", "1.000000000"])
+    assert.equal(
+      metricRow.safeParse({ ...d.rows[0], conversions }).success,
+      false,
+    );
   const missing = parseMetricsCSV(
     head +
       "\n2026-10-01,Google,A,100,10,20,,--,HKD\n2026-10-02,Google,A,100,10,20,2,40,HKD",
@@ -176,6 +182,25 @@ test("bad CSV fields report physical lines; ambiguous and duplicate mappings can
         e.details[0].path.startsWith("row "),
     );
   bad(head + "\n2026-10-01,Google,A,100,,20,2,40,HKD");
+  assert.throws(
+    () => parseMetricsCSV(head + "\n2026-10-01,,A,100,2,20,2,40,HKD"),
+    (e: unknown) =>
+      e instanceof Problem &&
+      Array.isArray(e.details) &&
+      e.details[0].path === "row 2.channel",
+  );
+  const blankCurrency = head + "\n2026-10-01,Google,A,100,2,20,2,40,";
+  const assumed = parseMetricsCSV(blankCurrency);
+  assert.equal(assumed.currency, "HKD");
+  assert.ok(assumed.warning_codes.includes("assumed_currency"));
+  assert.ok(
+    assumed.warnings.some((warning) => warning.includes("assumed HKD")),
+  );
+  assert.ok(
+    !normalizeMetricsCSV(blankCurrency, {
+      currency: "USD",
+    }).warning_codes.includes("assumed_currency"),
+  );
   bad(head + "\n2026-02-30,Google,A,100,2,20,2,40,HKD");
   bad(head + "\n2026-10-01,Google,A,100,2,=1+1,2,40,HKD");
   for (const c of ["\u0000", "\u0001", "\uD800", "\uFFFF"])

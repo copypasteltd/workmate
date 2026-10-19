@@ -288,6 +288,7 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
   const rows: MetricRow[] = [],
     identities = new Map<string, { body: string; line: number }>();
   let duplicateRows = 0;
+  let assumedCurrency = false;
   const accounts = new Set<string>();
   for (const { record, info } of records) {
     const get = (key: Field) =>
@@ -316,7 +317,10 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
         mapping.account_id!,
         "Import one account per snapshot; split multi-account exports",
       );
-    const currency = get("currency") || options.currency || declared || "HKD";
+    const statedCurrency = get("currency");
+    if (!statedCurrency && !options.currency && !declared)
+      assumedCurrency = true;
+    const currency = statedCurrency || options.currency || declared || "HKD";
     if (
       !/^[A-Z]{3}$/.test(currency) ||
       (options.currency && currency !== options.currency) ||
@@ -365,7 +369,11 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
       date: get("date"),
       channel:
         get("channel") ||
-        (options.source === "google_ads" ? "Google Ads" : "Meta Ads"),
+        (options.source === "csv_upload"
+          ? ""
+          : options.source === "google_ads"
+            ? "Google Ads"
+            : "Meta Ads"),
       campaign: get("campaign"),
       ...(get("entity_id") ? { entity_id: get("entity_id") } : {}),
       impressions: integer("impressions"),
@@ -429,7 +437,7 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
     spec_hash = hash(canonical(spec));
   const warnings: string[] = [];
   const warning_codes: string[] = [];
-  if (!mapping.currency && !options.currency && !declared)
+  if (assumedCurrency)
     warnings.push(
       "Currency was assumed HKD; confirm before interpreting monetary values.",
     );
@@ -443,8 +451,7 @@ export function normalizeMetricsCSV(csv: string, input: ImportOptions = {}) {
     warnings.push(
       "Unavailable conversions/value remain unknown; dependent ratios are not calculated.",
     );
-  if (!mapping.currency && !options.currency && !declared)
-    warning_codes.push("assumed_currency");
+  if (assumedCurrency) warning_codes.push("assumed_currency");
   if (!options.attribution_definition || !options.conversion_definition)
     warning_codes.push("missing_definitions");
   if (duplicateRows) warning_codes.push("duplicate_rows");
