@@ -138,7 +138,7 @@ npm test
 npm run contracts:export
 ```
 
-`contracts/implemented-routes.json` 导出 167 个实际 Fastify method/path；十个有序数据库迁移随仓库交付。它是实际路由清单，不冒充主文档的完整规划 OpenAPI。84 项原生测试覆盖身份、隔离、费用并发/重放、权限与 VIP、内容撤销、图片版本、真实 PNG/MP4、真实 Codex 受控协议回合及初始化取消、源代码包。浏览器/扩展/Desktop 验收由独立 delivery 仓库记录。
+0.5.0 原始发布包含 167 个 Fastify method/path、十个迁移和 84 项测试；当前源码清单为常规 229 个 method/path、31 个迁移和 147 项通过的原生测试。路由数量不等同完整规范 OpenAPI。测试覆盖身份、隔离、费用并发/重放、权限/VIP、内容撤销、图文/PDF/MP4、真实 Codex 受控协议、源码包及新增持久工作流程。浏览器/扩展/Desktop 证据由独立 delivery 仓库记录。
 
 | 路径                   | 内容                                           |
 | ---------------------- | ---------------------------------------------- |
@@ -221,7 +221,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **145/145**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **147/147**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与站内通知（当前源码）
 
@@ -273,3 +273,11 @@ flowchart LR
 ![实际角色目录](assets/screenshots/role-template-directory.png)
 
 ![实际预检与创建](assets/screenshots/role-template-ready.png)
+
+## PDF 审阅稿交付（当前源码）
+
+画布及 Codex `design_render` 生成实际单页 PDF；文字与图层保存在源工程或独立 editable JSON，PDF 为图片审阅稿。格式由 `layout.render`、`document.render`、`video.render` 分别约束。导出检查当前可见版本；相同请求响应丢失后重试沿用幂等键，保留原产物与源快照。
+
+完整原生回归 **147/147**。delivery 的七组 Web/源码 Electron 验收包含真实下载、原生保存、pypdf/Poppler 独立解析渲染与摘要校验。模拟模型和真实文件逻辑分明；完整审阅包、印刷标准及至少 12 个真实合格角色仍未完成。
+
+![实际 PDF 导出](assets/screenshots/design-pdf-export.png)

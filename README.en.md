@@ -121,7 +121,7 @@ npm test
 npm run contracts:export
 ```
 
-The original 0.5.0 release exported 167 Fastify method/path pairs and ten database migrations; current source exports 225 pairs and includes 29 forward-only migrations. This is the implementation inventory, not the full planned OpenAPI. The original 84 native tests cover authentication, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, image versions, actual PNG/MP4, a real Codex controlled protocol turn and initialization cancellation, and source packaging. Separate delivery tools record browser, extension and Desktop journeys.
+The original 0.5.0 release exported 167 Fastify method/path pairs, ten migrations and 84 tests. Current regular source exports 229 pairs, includes 31 forward-only migrations and passes 147 native tests. Route counts do not establish full planned OpenAPI conformance. Tests cover identity, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, actual image/PDF/MP4 output, real Codex controlled protocol turns, source packages and persistent work. Separate delivery tools record browser, extension and Desktop journeys.
 
 | Directory             | Purpose                                                     |
 | --------------------- | ----------------------------------------------------------- |
@@ -200,7 +200,7 @@ The current 139-test regression passes, including five cloud-file integration gr
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **147/147**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and in-app notifications (current source)
 
@@ -262,3 +262,11 @@ Six new platform groups and eight real Web/Electron journeys passed; 21 captured
 ![Actual role directory](assets/screenshots/role-template-directory.png)
 
 ![Actual preflight and creation](assets/screenshots/role-template-ready.png)
+
+## PDF review delivery (current source)
+
+The canvas and Codex `design_render` produce actual single-page PDFs. Editable layers remain in the source project or separate editable JSON; PDFs are raster review copies. `layout.render`, `document.render` and `video.render` independently restrict formats. Visible-version checks refuse stale exports, and lost accepted replies retry with the same key and original source snapshot.
+
+The full native regression passed **147/147**. Seven delivery Web/current-source Electron groups cover downloads, native saves, independent pypdf/Poppler parsing/rendering and file hashes. Models remain simulated while file logic is real. Complete review packages, print standards and at least 12 qualified live roles remain pending.
+
+![Actual PDF export](assets/screenshots/design-pdf-export.png)

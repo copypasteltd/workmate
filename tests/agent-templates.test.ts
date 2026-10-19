@@ -480,6 +480,173 @@ test("runtime and template definitions are immutable in PostgreSQL and cannot be
     { code: "42501" },
   );
 });
+test("designer instances render private PDF and editable source with bounded formats and idempotent delivery", async () => {
+  const f = await fixture(),
+    template = (
+      await ok(f.owner, "GET", "/v1/agent-templates", undefined, f.tenant)
+    ).items.find((row: any) => row.role_key === "designer"),
+    input = { project_id: f.project, template_version: template.version };
+  const ready = await ok(
+    f.owner,
+    "POST",
+    `/v1/agent-templates/${template.id}/preflights`,
+    input,
+    f.tenant,
+  );
+  assert.equal(ready.state, "ready", JSON.stringify(ready));
+  assert.equal(ready.qualification_state, "unverified");
+  const agent = await ok(
+    f.owner,
+    "POST",
+    `/v1/agent-templates/${template.id}/instances`,
+    input,
+    f.tenant,
+  );
+  await ok(f.owner, "POST", `/v1/tenants/${f.tenant}/demo-credit`, {});
+  const conversation = await ok(f.owner, "POST", f.base + "/conversations", {
+    name: "PDF review",
+    agent_id: agent.id,
+  });
+  const document = {
+    width: 320,
+    height: 400,
+    background: "#F6F6F4",
+    layers: [
+      {
+        type: "text",
+        text: "春日新章 · Brand review",
+        x: 20,
+        y: 100,
+        font_size: 24,
+        color: "#15171A",
+        font_family: "sans",
+        weight: "bold",
+      },
+    ],
+  };
+  let delivered: any;
+  class ReviewRuntime extends CodexRuntimeAdapter {
+    override async start(ctx: RuntimeContext) {
+      const tool = ctx.tools.find((t) => t.name === "design_render");
+      assert.ok(tool);
+      assert.deepEqual((tool.inputSchema as any).properties.format.enum, [
+        "svg",
+        "png",
+        "pdf",
+      ]);
+      await assert.rejects(
+        tool.run(
+          { filename: "forbidden", document, format: "mp4" },
+          randomUUID(),
+        ),
+      );
+      assert.equal(
+        (
+          await s.db.control.query(
+            "SELECT count(*)::int AS n FROM assets WHERE project_id=$1",
+            [f.project],
+          )
+        ).rows[0].n,
+        0,
+      );
+      const key = randomUUID(),
+        args = { filename: "campaign-review", document, format: "pdf" };
+      delivered = await tool.run(args, key);
+      const replayed: any = await tool.run(args, key);
+      assert.equal(replayed.source.id, delivered.source.id);
+      assert.equal(replayed.rendered.id, delivered.rendered.id);
+      assert.equal(
+        (
+          await s.db.control.query(
+            "SELECT count(*)::int AS n FROM assets WHERE project_id=$1",
+            [f.project],
+          )
+        ).rows[0].n,
+        2,
+      );
+      await assert.rejects(
+        tool.run({ ...args, filename: "changed" }, key),
+        (e: any) => e.code === "IDEMPOTENCY_CONFLICT",
+      );
+      return {
+        text: "Simulated designer test; PDF is a raster review copy.",
+        inputTokens: 10,
+        outputTokens: 5,
+        usageKnown: true,
+        accepted: true,
+        status: "completed",
+        thread: "fixture",
+        turn: "fixture",
+      };
+    }
+  }
+  const accepted = await ok(
+    f.owner,
+    "POST",
+    f.base + `/conversations/${conversation.id}/messages`,
+    {
+      body: "Create a clearly simulated review proof.",
+      expected_version: conversation.version,
+      intent: "delegate",
+      mode: "execute",
+      budget_micros: 1000000,
+      client_message_id: randomUUID(),
+    },
+  );
+  await new Worker(
+    s.db,
+    s.catalog,
+    s.storage,
+    new ReviewRuntime(s.db.config),
+  ).run(f.tenant, accepted.task.id);
+  const task = await ok(f.owner, "GET", f.base + "/tasks/" + accepted.task.id);
+  assert.equal(task.status, "succeeded", JSON.stringify(task));
+  const outsider = await user();
+  await s.db.control.query(
+    "INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,'member')",
+    [f.tenant, outsider.id],
+  );
+  await s.db.control.query(
+    "INSERT INTO project_members(tenant_id,project_id,user_id,role) VALUES($1,$2,$3,'editor')",
+    [f.tenant, f.project, outsider.id],
+  );
+  for (const asset of [delivered.source, delivered.rendered]) {
+    assert.equal(asset.private_owner, f.owner.id);
+    assert.equal(
+      (await call(outsider, "GET", f.base + `/assets/${asset.id}/download`))
+        .status,
+      404,
+    );
+  }
+  const pdf = await s.app.inject({
+    method: "GET",
+    url: f.base + `/assets/${delivered.rendered.id}/download`,
+    headers: { cookie: f.owner.cookie },
+  });
+  assert.equal(pdf.statusCode, 200);
+  assert.equal(pdf.rawPayload.subarray(0, 5).toString(), "%PDF-");
+  const versions = (
+    await s.db.control.query(
+      "SELECT asset_id,mime_type,metadata,storage_key FROM asset_versions WHERE asset_id=ANY($1::uuid[])",
+      [[delivered.source.id, delivered.rendered.id]],
+    )
+  ).rows;
+  const source = versions.find(
+      (row: any) => row.asset_id === delivered.source.id,
+    ),
+    rendered = versions.find(
+      (row: any) => row.asset_id === delivered.rendered.id,
+    );
+  assert.deepEqual(
+    JSON.parse((await s.storage.get(source.storage_key)).toString()),
+    document,
+  );
+  assert.equal(rendered.mime_type, "application/pdf");
+  assert.equal(rendered.metadata.source_asset_id, delivered.source.id);
+  assert.equal(rendered.metadata.probe.editable_text, false);
+  assert.equal(rendered.metadata.data_mode, "simulated");
+});
+
 test("a bound capability change cancels before a model call, and an active runtime revocation blocks the next tool and final publication", async () => {
   const f = await fixture(),
     agent = await ok(

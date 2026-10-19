@@ -25,6 +25,7 @@ Application source is not granted an additional open-source license. Dependencie
 | `otpauth`             | 9.5.2             | MIT                         |
 | `pg`                  | 8.23.1            | MIT                         |
 | `pg-boss`             | 12.38.0           | MIT                         |
+| `pdf-lib`             | 1.17.1            | MIT                         |
 | `prettier`            | 3.6.2             | MIT                         |
 | `tsx`                 | 4.23.15           | MIT                         |
 | `typescript`          | 7.0.2             | Apache-2.0                  |

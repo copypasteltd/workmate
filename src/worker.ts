@@ -25,7 +25,12 @@ import { event } from "./tasks.js";
 import { metrics } from "./analytics.js";
 import type { Principal } from "./auth.js";
 import { advanceWorkflows, poster, renderProjectPoster } from "./business.js";
-import { pngFromSVG, motionFromSVG } from "./render.js";
+import {
+  pngFromSVG,
+  pdfFromSVG,
+  motionFromSVG,
+  designFormatsForTools,
+} from "./render.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { advanceSchedules } from "./schedules.js";
 import { expireFederationAttempts } from "./federation-session.js";
@@ -893,92 +898,92 @@ export class Worker {
             .strict(),
         ),
       });
-    if (
-      role.tool_ids.includes("layout.render") ||
-      role.tool_ids.includes("video.render")
-    )
+    const allowedFormats = designFormatsForTools(role.tool_ids);
+    if (allowedFormats.length) {
+      const renderInput = z
+        .object({
+          filename: z.string().min(1).max(120),
+          document: poster,
+          format: z.enum(
+            allowedFormats as [
+              (typeof allowedFormats)[number],
+              ...(typeof allowedFormats)[number][],
+            ],
+          ),
+          duration: z.number().int().min(3).max(15).optional(),
+          effect: z.enum(["fade", "zoom", "still"]).optional(),
+        })
+        .strict();
       tools.push({
         name: "design_render",
         description:
-          "Save an editable poster document and render actual SVG, PNG or a bounded H.264/AAC motion MP4 with measured output metadata.",
-        inputSchema: z.toJSONSchema(
-          z
-            .object({
-              filename: z.string(),
-              document: poster,
-              format: z.enum(["svg", "png", "mp4"]),
-              duration: z.number().int().min(3).max(15).optional(),
-              effect: z.enum(["fade", "zoom", "still"]).optional(),
-            })
-            .strict(),
-        ),
-        run: txTool(
-          async (tx, a) => {
-            if (a.format === "mp4" && !role.tool_ids.includes("video.render"))
-              throw new Error("Video render is not allowed for this role");
-            const source = await saveAsset(tx, this.storage, {
+          "Save an editable poster JSON source and render one permitted format. PDF is a single-page raster review copy; text and layers remain editable only in the source. MP4 is a bounded H.264/AAC motion creative.",
+        inputSchema: z.toJSONSchema(renderInput),
+        run: txTool(async (tx, a) => {
+          const source = await saveAsset(tx, this.storage, {
+            tenant: t.tenant_id,
+            project: t.project_id,
+            user: actor.id,
+            name: a.filename + ".editable.json",
+            mime: "application/json",
+            bytes: Buffer.from(JSON.stringify(a.document, null, 2)),
+            kind: "editable_design",
+            metadata: { task_id: t.id },
+          });
+          const svg = await renderProjectPoster(
+            tx,
+            this.storage,
+            t.project_id,
+            a.document,
+          );
+          let bytes = Buffer.from(svg),
+            mime = "image/svg+xml",
+            probe: any = null;
+          if (a.format === "png") {
+            bytes = Buffer.from(pngFromSVG(svg));
+            mime = "image/png";
+          }
+          if (a.format === "pdf") {
+            const r = await pdfFromSVG(
+              svg,
+              a.document.width,
+              a.document.height,
+            );
+            bytes = r.bytes;
+            probe = r.probe;
+            mime = "application/pdf";
+          }
+          if (a.format === "mp4") {
+            const r = await motionFromSVG(
+              svg,
+              a.document.width,
+              a.document.height,
+              {
+                duration: a.duration ?? 6,
+                effect: a.effect ?? "fade",
+                dataDir: this.db.config.DATA_DIR,
+              },
+            );
+            bytes = r.bytes;
+            probe = r.probe;
+            mime = "video/mp4";
+          }
+          return {
+            source,
+            rendered: await saveAsset(tx, this.storage, {
               tenant: t.tenant_id,
               project: t.project_id,
               user: actor.id,
-              name: a.filename + ".editable.json",
-              mime: "application/json",
-              bytes: Buffer.from(JSON.stringify(a.document, null, 2)),
-              kind: "editable_design",
-              metadata: { task_id: t.id },
-            });
-            const svg = await renderProjectPoster(
-              tx,
-              this.storage,
-              t.project_id,
-              a.document,
-            );
-            let bytes = Buffer.from(svg),
-              mime = "image/svg+xml",
-              probe: any = null;
-            if (a.format === "png") {
-              bytes = Buffer.from(pngFromSVG(svg));
-              mime = "image/png";
-            }
-            if (a.format === "mp4") {
-              const r = await motionFromSVG(
-                svg,
-                a.document.width,
-                a.document.height,
-                {
-                  duration: a.duration ?? 6,
-                  effect: a.effect ?? "fade",
-                  dataDir: this.db.config.DATA_DIR,
-                },
-              );
-              bytes = r.bytes;
-              probe = r.probe;
-              mime = "video/mp4";
-            }
-            return {
-              source,
-              rendered: await saveAsset(tx, this.storage, {
-                tenant: t.tenant_id,
-                project: t.project_id,
-                user: actor.id,
-                name: a.filename + "." + a.format,
-                mime,
-                bytes,
-                kind: "design_render",
-                metadata: { task_id: t.id, source_asset_id: source.id, probe },
-              }),
-            };
-          },
-          z
-            .object({
-              filename: z.string().min(1).max(120),
-              document: poster,
-              format: z.enum(["svg", "png", "mp4"]),
-              duration: z.number().int().min(3).max(15).optional(),
-              effect: z.enum(["fade", "zoom", "still"]).optional(),
-            })
-            .strict(),
-        ),
+              name: a.filename + "." + a.format,
+              mime,
+              bytes,
+              kind: "design_render",
+              metadata: { task_id: t.id, source_asset_id: source.id, probe },
+            }),
+          };
+        }, renderInput),
       });
+    }
     if (role.tool_ids.includes("font.inspect"))
       tools.push({
         name: "font_catalog",
@@ -1019,9 +1024,7 @@ export class Worker {
             code_read: role.tool_ids.includes("code.read"),
             code_write: role.tool_ids.includes("code.patch"),
             code_package: role.tool_ids.includes("delivery.package"),
-            design_render:
-              role.tool_ids.includes("layout.render") ||
-              role.tool_ids.includes("video.render"),
+            design_render: allowedFormats.length > 0,
             font_catalog: role.tool_ids.includes("font.inspect"),
             image2_edit: role.tool_ids.includes("image.edit.internal"),
           }) as Record<string, boolean>

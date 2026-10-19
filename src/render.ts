@@ -1,9 +1,25 @@
 import { Resvg } from "@resvg/resvg-js";
+import { PDFDocument } from "pdf-lib";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 const exec = promisify(execFile);
+export const designFormats = ["svg", "png", "pdf", "mp4"] as const;
+export type DesignFormat = (typeof designFormats)[number];
+export function designFormatsForTools(
+  toolIds: readonly string[],
+): DesignFormat[] {
+  return designFormats.filter((format) =>
+    toolIds.includes(
+      format === "pdf"
+        ? "document.render"
+        : format === "mp4"
+          ? "video.render"
+          : "layout.render",
+    ),
+  );
+}
 export function pngFromSVG(svg: string) {
   return new Resvg(svg, {
     font: { loadSystemFonts: true, defaultFontFamily: "Microsoft JhengHei" },
@@ -11,6 +27,41 @@ export function pngFromSVG(svg: string) {
   })
     .render()
     .asPng();
+}
+/** A raster review copy. Editable text and layers stay in the saved source. */
+export async function pdfFromSVG(svg: string, width: number, height: number) {
+  if (
+    ![width, height].every((n) => Number.isInteger(n) && n >= 256 && n <= 4096)
+  )
+    throw new Error(
+      "PDF canvas dimensions must be integers from 256 to 4096 pixels",
+    );
+  const pdf = await PDFDocument.create();
+  const image = await pdf.embedPng(pngFromSVG(svg));
+  if (image.width !== width || image.height !== height)
+    throw new Error("PDF image dimensions do not match the saved canvas");
+  // CSS pixels use 96 dpi; PDF page dimensions use 72 points per inch.
+  const pageWidth = width * 0.75,
+    pageHeight = height * 0.75;
+  const page = pdf.addPage([pageWidth, pageHeight]);
+  page.drawImage(image, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+  pdf.setProducer("CopyPaste native design renderer");
+  pdf.setSubject(
+    "Raster review copy; edit text and layers in the saved source project.",
+  );
+  return {
+    bytes: Buffer.from(await pdf.save()),
+    probe: {
+      pages: 1,
+      page_width_pt: pageWidth,
+      page_height_pt: pageHeight,
+      raster_width: width,
+      raster_height: height,
+      purpose: "raster_review",
+      editable_text: false,
+      print_certified: false,
+    },
+  };
 }
 export async function motionFromSVG(
   svg: string,

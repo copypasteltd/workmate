@@ -1,4 +1,9 @@
-import { pngFromSVG, motionFromSVG } from "./render.js";
+import {
+  pngFromSVG,
+  pdfFromSVG,
+  motionFromSVG,
+  designFormats,
+} from "./render.js";
 import { signCommand, commandPublicKey } from "./device-signing.js";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
@@ -234,12 +239,22 @@ export function registerBusiness(
               throw new Problem(404, "NOT_FOUND", "Creative project not found");
             const output = z
               .object({
-                format: z.enum(["svg", "png", "mp4"]).default("svg"),
+                format: z.enum(designFormats).default("svg"),
+                expected_version: z.number().int().positive().optional(),
                 duration: z.number().int().min(3).max(15).default(6),
                 effect: z.enum(["fade", "zoom", "still"]).default("fade"),
               })
               .strict()
               .parse(req.body ?? {});
+            if (
+              output.expected_version !== undefined &&
+              output.expected_version !== p.version
+            )
+              throw new Problem(
+                409,
+                "VERSION_CONFLICT",
+                "Creative project changed; refresh before exporting",
+              );
             const svg = await renderProjectPoster(tx, storage, project, p.body);
             let bytes: Buffer = Buffer.from(svg),
               mime = "image/svg+xml",
@@ -247,6 +262,16 @@ export function registerBusiness(
             if (output.format === "png") {
               bytes = Buffer.from(pngFromSVG(svg));
               mime = "image/png";
+            }
+            if (output.format === "pdf") {
+              const rendered = await pdfFromSVG(
+                svg,
+                p.body.width,
+                p.body.height,
+              );
+              bytes = rendered.bytes;
+              probe = rendered.probe;
+              mime = "application/pdf";
             }
             if (output.format === "mp4") {
               const rendered = await motionFromSVG(

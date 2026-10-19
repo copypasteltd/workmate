@@ -44,6 +44,7 @@ const implementedTools = new Set([
   "code.patch",
   "delivery.package",
   "layout.render",
+  "document.render",
   "video.render",
   "font.inspect",
   "image.generate.internal",

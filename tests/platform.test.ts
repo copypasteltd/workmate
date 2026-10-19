@@ -2459,6 +2459,65 @@ test("native design compositions pin authorized image versions and reject foreig
     { format: "png" },
   );
   assert.equal(rendered.status, 200, JSON.stringify(rendered.data));
+  const exportKey = randomUUID(),
+    pdfInput = { format: "pdf", expected_version: creative.data.version },
+    pdfPath = base + "/creative/" + creative.data.id + "/render";
+  const pdf = await call(u, "POST", pdfPath, pdfInput, exportKey);
+  assert.equal(pdf.status, 200, JSON.stringify(pdf.data));
+  assert.equal(
+    (await call(u, "POST", pdfPath, pdfInput, exportKey)).data.id,
+    pdf.data.id,
+  );
+  const pdfVersion = (
+    await system.db.control.query(
+      "SELECT mime_type,metadata FROM asset_versions WHERE asset_id=$1 AND version=1",
+      [pdf.data.id],
+    )
+  ).rows[0];
+  assert.equal(pdfVersion.mime_type, "application/pdf");
+  assert.equal(pdfVersion.metadata.version, creative.data.version);
+  assert.equal(pdfVersion.metadata.source.layers[0].asset_id, image.id);
+  assert.equal(pdfVersion.metadata.source.layers[0].version, 1);
+  assert.equal(pdfVersion.metadata.probe.purpose, "raster_review");
+  assert.equal(pdfVersion.metadata.probe.editable_text, false);
+  const downloaded = await call(
+    u,
+    "GET",
+    base + "/assets/" + pdf.data.id + "/download",
+  );
+  assert.equal(downloaded.status, 200);
+  assert.equal(downloaded.raw.headers["content-type"], "application/pdf");
+  assert.equal(downloaded.raw.rawPayload.subarray(0, 5).toString(), "%PDF-");
+  assert.equal((await call(undefined, "POST", pdfPath, pdfInput)).status, 401);
+  assert.equal(
+    (await call(await user(), "POST", pdfPath, pdfInput)).status,
+    404,
+  );
+  assert.equal(
+    (await call(u, "POST", pdfPath, { format: "pdf", expected_version: 999 }))
+      .status,
+    409,
+  );
+  assert.equal(
+    (
+      await call(u, "POST", pdfPath, {
+        ...pdfInput,
+        remote_url: "https://example.invalid/a.svg",
+      })
+    ).status,
+    400,
+  );
+  await call(u, "PUT", base + "/creative/" + creative.data.id, {
+    name: "Revised image",
+    version: creative.data.version,
+    body: { ...body, background: "#F6F6F4" },
+  });
+  assert.equal((await call(u, "POST", pdfPath, pdfInput)).status, 409);
+  // A lost reply replays the accepted source version even after a later edit.
+  assert.equal(
+    (await call(u, "POST", pdfPath, pdfInput, exportKey)).data.id,
+    pdf.data.id,
+  );
   const thumbnail = await call(
     u,
     "GET",
@@ -2480,6 +2539,14 @@ test("native design compositions pin authorized image versions and reject foreig
   );
   assert.equal(refused.status, 400);
   assert.equal(refused.data.error.code, "IMAGE_SOURCE_INVALID");
+  const refusedPDF = await call(
+    u,
+    "POST",
+    foreignBase + "/creative/" + foreign.data.id + "/render",
+    { format: "pdf" },
+  );
+  assert.equal(refusedPDF.status, 400);
+  assert.equal(refusedPDF.data.error.code, "IMAGE_SOURCE_INVALID");
 });
 
 test("admin delegation cannot widen financial limits or outlive the source grant", async () => {
