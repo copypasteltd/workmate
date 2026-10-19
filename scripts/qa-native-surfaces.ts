@@ -5,12 +5,14 @@ import {
   type Browser,
   type BrowserContext,
   type CDPSession,
+  type Page,
 } from "playwright";
 import assert from "node:assert/strict";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { emailCode } from "./qa-auth.js";
+import { captureNativeSurfaces } from "./native-surface-integrity.mjs";
 
 const run = randomUUID(),
   root = path.resolve(".."),
@@ -19,9 +21,22 @@ const run = randomUUID(),
 const checks: { name: string; status: string }[] = [],
   errors: string[] = [];
 const inspection: Record<string, any> = {};
+const artifactOptions = {
+  desktop,
+  extension,
+  executable:
+    process.env.COPYPASTE_DESKTOP_EXECUTABLE ??
+    path.join(desktop, "node_modules/electron/dist/electron.exe"),
+  packaged: Boolean(process.env.COPYPASTE_DESKTOP_EXECUTABLE),
+};
+let testedArtifacts:
+  | Awaited<ReturnType<typeof captureNativeSurfaces>>
+  | undefined;
+let artifactsUnchanged = false;
 let app: ElectronApplication | undefined,
   browser: Browser | undefined,
   context: BrowserContext | undefined;
+let desktopPage: Page | undefined;
 let desktopClosed = false,
   browserClosed = false,
   extensionClosed = false;
@@ -106,13 +121,17 @@ async function attachTarget(parent: CDPSession, targetId: string) {
 }
 
 try {
+  testedArtifacts = await captureNativeSurfaces(artifactOptions);
   await mkdir(path.resolve(".data/native-surfaces", run), { recursive: true });
   const executable =
     process.env.COPYPASTE_DESKTOP_EXECUTABLE ??
     path.join(desktop, "node_modules/electron/dist/electron.exe");
   app = await _electron.launch({
     executablePath: executable,
-    args: process.env.COPYPASTE_DESKTOP_EXECUTABLE ? [] : [desktop],
+    args: process.env.COPYPASTE_DESKTOP_EXECUTABLE
+      ? ["--disable-gpu"]
+      : ["--disable-gpu", desktop],
+    timeout: 30_000,
     env: {
       ...process.env,
       COPYPASTE_USER_DATA: path.resolve(
@@ -123,6 +142,7 @@ try {
     },
   });
   const page = await app.firstWindow({ timeout: 30_000 });
+  desktopPage = page;
   page.on("pageerror", (e) => errors.push(e.message));
   page.setDefaultTimeout(20_000);
   await page.waitForURL(/file:.*index\.html/);
@@ -336,6 +356,8 @@ try {
   browser = await chromium.launch({
     executablePath: process.env.CHROME_BIN ?? chromium.executablePath(),
     headless: true,
+    args: ["--disable-gpu"],
+    timeout: 20_000,
   });
   const authContext = await browser.newContext();
   await app.evaluate(({ shell }) => {
@@ -366,6 +388,17 @@ try {
     .click();
   await page.waitForURL("**#/app");
   await page.locator(".sidebar").waitFor();
+  await page.locator(".role-card").first().waitFor();
+  assert.equal(await page.locator(".role-card").count(), 4);
+  await page.evaluate(() => document.fonts.ready);
+  await app.evaluate(({ BrowserWindow }) => {
+    BrowserWindow.getAllWindows()[0].setBounds({
+      x: 60,
+      y: 40,
+      width: 1440,
+      height: 980,
+    });
+  });
   assert.ok((await page.locator(".sidebar").boundingBox())!.y >= 40);
   await mkdir(path.join(desktop, "assets/screenshots"), { recursive: true });
   await page.screenshot({
@@ -442,7 +475,9 @@ try {
       executablePath: process.env.CHROME_BIN ?? chromium.executablePath(),
       headless: false,
       viewport: null,
+      timeout: 20_000,
       args: [
+        "--disable-gpu",
         "--window-size=1480,980",
         "--enable-unsafe-extension-debugging",
         "--disable-extensions-except=" + path.join(extension, "dist"),
@@ -592,7 +627,9 @@ try {
       executablePath: process.env.CHROME_BIN ?? chromium.executablePath(),
       headless: false,
       viewport: null,
+      timeout: 20_000,
       args: [
+        "--disable-gpu",
         "--window-size=1480,980",
         "--enable-unsafe-extension-debugging",
         "--disable-extensions-except=" + path.join(extension, "dist"),
@@ -622,7 +659,49 @@ try {
   extensionClosed = true;
   context = undefined;
   assert.deepEqual(errors, []);
+  assert.deepEqual(
+    await captureNativeSurfaces(artifactOptions),
+    testedArtifacts,
+  );
+  artifactsUnchanged = true;
 } catch (e) {
+  if (desktopPage && !desktopPage.isClosed()) {
+    inspection.failure = await desktopPage
+      .evaluate(() => ({
+        route: location.hash,
+        alerts: [...document.querySelectorAll('[role="alert"]')].map((n) =>
+          n.textContent?.slice(0, 400),
+        ),
+        body: document.body.innerText.slice(-1600),
+      }))
+      .catch(() => ({ state: "Owned renderer unavailable" }));
+    inspection.failure.session_context = await desktopPage
+      .evaluate(async () => {
+        try {
+          const result = await (window as any).copyPasteBridge.request(
+            "/v1/session/context",
+            {},
+          );
+          return {
+            status: result.status,
+            code: result.body?.error?.code,
+            message: result.body?.error?.message,
+            memberships: result.body?.memberships?.length,
+          };
+        } catch (error) {
+          return { failure: String(error).slice(0, 300) };
+        }
+      })
+      .catch(() => ({ state: "Owned session probe unavailable" }));
+    console.log(
+      "OWNED DESKTOP FAILURE STATE: " + JSON.stringify(inspection.failure),
+    );
+    const failureImage = `evidence/native-preview-refresh-initial/${run}-failure.png`;
+    await mkdir(path.dirname(failureImage), { recursive: true });
+    await desktopPage
+      .screenshot({ path: failureImage, timeout: 5000 })
+      .catch(() => {});
+  }
   checks.push({
     name: e instanceof Error ? (e.stack ?? e.message) : String(e),
     status: "failed",
@@ -658,6 +737,10 @@ try {
     checks,
     inspection,
     errors,
+    rendering:
+      "Owned QA processes use --disable-gpu; product launch defaults are unchanged",
+    tested_artifacts: testedArtifacts,
+    artifacts_unchanged_after_run: artifactsUnchanged,
     desktop_closed: desktopClosed,
     browser_closed: browserClosed,
     extension_closed: extensionClosed,
@@ -666,6 +749,20 @@ try {
     "evidence/native-surfaces.json",
     JSON.stringify(report, null, 2) + "\n",
   );
-  console.log(JSON.stringify(report, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        checks,
+        errors,
+        desktop_closed: desktopClosed,
+        browser_closed: browserClosed,
+        extension_closed: extensionClosed,
+        artifacts_unchanged_after_run: artifactsUnchanged,
+        report: "evidence/native-surfaces.json",
+      },
+      null,
+      2,
+    ),
+  );
   if (errors.length) process.exitCode = 1;
 }

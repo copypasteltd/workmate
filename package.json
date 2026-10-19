@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "npm run typecheck",
+    "test": "npm run typecheck && npm run test:surfaces",
+    "test:surfaces": "node --test tests/native-surface-integrity.test.mjs",
     "start": "node scripts/dev.mjs",
     "demo": "node scripts/dev.mjs --demo",
     "stop": "node scripts/stop.mjs",

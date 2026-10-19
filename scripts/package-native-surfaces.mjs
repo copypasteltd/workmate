@@ -8,6 +8,10 @@ import { pathToFileURL } from "node:url";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { zipSync } from "fflate";
+import {
+  captureNativeSurfaces,
+  assertTestedSurfaces,
+} from "./native-surface-integrity.mjs";
 
 const exec = promisify(execFile),
   root = path.resolve(".."),
@@ -65,6 +69,17 @@ assert.deepEqual(report.errors, []);
 assert.ok(
   report.desktop_closed && report.browser_closed && report.extension_closed,
 );
+// A historical green report must never qualify different client binaries.
+const testedArtifacts = await captureNativeSurfaces({
+  desktop,
+  extension,
+  executable: path.join(
+    desktop,
+    "release/frameless/win-unpacked/CopyPaste.exe",
+  ),
+  packaged: true,
+});
+assertTestedSurfaces(report, testedArtifacts);
 const require = createRequire(import.meta.url),
   { extractFile } = await import(
     pathToFileURL(require.resolve("@electron/asar", { paths: [desktop] })).href
@@ -136,6 +151,9 @@ const result = {
     path: "evidence/native-surfaces.json",
     sha256: await fileDigest("evidence/native-surfaces.json"),
     checks: report.checks.length,
+    tested_artifacts_match: true,
+    desktop_execution:
+      "win-unpacked; Setup and Portable have byte provenance but were not installed by this check",
   },
   desktop_archive: {
     sha256: await fileDigest(archive),
@@ -143,6 +161,18 @@ const result = {
   },
   artifacts,
 };
+assertTestedSurfaces(
+  report,
+  await captureNativeSurfaces({
+    desktop,
+    extension,
+    executable: path.join(
+      desktop,
+      "release/frameless/win-unpacked/CopyPaste.exe",
+    ),
+    packaged: true,
+  }),
+);
 await writeFile(
   "evidence/native-surfaces-artifacts.json",
   JSON.stringify(result, null, 2) + "\n",

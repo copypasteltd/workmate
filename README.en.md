@@ -8,20 +8,23 @@ This repository is independently versioned alongside five product repositories. 
 
 ## Frameless Desktop and native side-panel previews
 
-Desktop now uses a branded title bar without the native frame or Electron default menus. The extension action opens Chrome's global Side Panel, normally on the right. **10/10** native-surface groups and **8/8** existing extension groups pass. The packaged EXE verifies real controls, Alt, pointer/keyboard resizing with an 800×600 minimum, cross-window IPC denial, PKCE, modal clearance and theme/language behavior. Browser entry is tested through `Extensions.triggerAction` and a real `SIDE_PANEL` context rather than a standalone HTML tab. Chrome controls the left/right user preference.
+Desktop uses a branded title bar without the native frame or Electron default menus. The extension action opens Chrome's global Side Panel, normally on the right. The 2026-10-20 current-source and rebuilt packaged runs each pass **10/10** checks: real controls, Alt, pointer/keyboard resizing with an 800×600 minimum, cross-window IPC denial, PKCE, modal clearance and theme/language behavior. Their records are preserved separately. Browser entry uses `Extensions.triggerAction` and a real `SIDE_PANEL` context. Chrome controls the left/right preference. The previous **8/8** extension result remains historical business evidence; the full native authentication/system matrix has separate acceptance work.
 
-Preview artifacts are in sibling Desktop `release/frameless/` (Setup, Portable, win-unpacked) and extension `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`. They use localhost origins and unsigned Desktop binaries, separately from the historical complete 0.5.0 offline release. `evidence/native-surfaces-artifacts.json` records SHA-256, source commits and byte matching between embedded ASAR code and the current build.
+Current previews are in sibling Desktop `release/frameless/` (Setup, Portable, win-unpacked) and extension `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`. They use localhost origins and unsigned Desktop binaries. Earlier preview bytes remain in `frameless-stage30/` and `sidepanel-stage30/`; their original receipt, report, screenshots and digest mapping remain in `evidence/stage30-native-surfaces/`. `evidence/native-surfaces-artifacts.json` records current hashes, source commits, binding to actually tested files and matching ASAR build bytes. QA executes win-unpacked; Setup/Portable installation and uninstall are separate acceptance work.
+
+The 2026-10-20 rerun exposed and fixed a missing Desktop session-context API permission. Three failed login-landing records, diagnostic images and the subsequent source run's ten passing checks are retained in `evidence/native-preview-refresh-initial/`. The new admission check compares complete runtime, installer, extension-dist and runtime-source hashes before/after QA and before admitting packages. Historical reports, modified or added/removed files and incomplete cleanup fail admission. All 11 `npm run test:surfaces` checks pass.
 
 ```powershell
 # Native development stack running; Desktop and extension built separately
 $env:CHROME_BIN='Your native Chromium executable'
 $env:COPYPASTE_DESKTOP_EXECUTABLE='Absolute path to sibling Desktop/release/frameless/win-unpacked/CopyPaste.exe'
 npm run qa:native-surfaces
+npm run test:surfaces
 # After committing clean source checkouts, verify binaries and create extension ZIP/manifest
 npm run package:surfaces
 ```
 
-Results are in `evidence/native-surfaces.json`; owned windows close in finally. Screenshots are Desktop 18–20 and extension 09. The first premature panel-layout check is retained separately; the final script waits for the document, fonts and actual panel dimensions before checking overflow. Signed updates, uninstall, the complete system/DPI matrix and all 102 full acceptance cases remain pending.
+Results are in `evidence/native-surfaces.json`; owned windows close in finally. QA uses software rendering without changing product launch defaults. Screenshots are Desktop 18–20 and extension 09; workspace captures wait for the role cards and fonts. The earlier panel-layout failure, current bridge failures and historical complete release are preserved separately. Signed updates, installation/uninstall, the full system/DPI matrix and all 102 full acceptance cases remain pending.
 
 ## Repositories
 

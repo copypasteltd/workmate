@@ -8,20 +8,23 @@
 
 ## 无边框 Desktop 与原生侧栏预览
 
-Desktop 当前使用无原生边框、无 Electron 默认菜单的自绘品牌标题栏；扩展按钮打开 Chrome 原生全局 Side Panel，默认位于右侧。窗口/原生侧栏 **10/10** 组以及扩展既有 **8/8** 组通过，真实打包 EXE 已验证窗口按钮、Alt、指针/键盘缩放的 800×600 下限、跨窗口 IPC 拒绝、PKCE、弹窗位置及主题语言。浏览器 action 验证使用 `Extensions.triggerAction` 和实际 `SIDE_PANEL` 上下文，不以单独 HTML 标签页替代。左右位置由 Chrome 用户偏好控制。
+Desktop 使用无原生边框、无 Electron 默认菜单的自绘品牌标题栏；扩展按钮打开 Chrome 原生全局 Side Panel，默认位于右侧。2026-10-20 当前源码版和重新打包版各 **10/10** 组通过，检查真实 EXE 的按钮、Alt、指针/键盘缩放的 800×600 下限、跨窗口 IPC 拒绝、PKCE、弹窗位置及主题语言；两次记录分开保留。浏览器 action 使用 `Extensions.triggerAction` 和实际 `SIDE_PANEL` 上下文，左右位置由 Chrome 用户偏好控制。扩展先前 **8/8** 是历史业务增量，完整原生认证及系统矩阵继续独立验收。
 
-预览产物在同级 Desktop `release/frameless/`（Setup、Portable、win-unpacked）和扩展 `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`。均使用 localhost，Desktop 未签名，独立于历史完整 0.5.0 离线包。`evidence/native-surfaces-artifacts.json` 记录 SHA-256、源码提交及打包 ASAR 与当前构建的逐文件字节一致性。
+当前预览产物在同级 Desktop `release/frameless/`（Setup、Portable、win-unpacked）和扩展 `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`。使用 localhost，Desktop 未签名。先前预览原字节保留于 `frameless-stage30/` 和 `sidepanel-stage30/`；旧清单、报告、截图和摘要映射位于 `evidence/stage30-native-surfaces/`。`evidence/native-surfaces-artifacts.json` 记录当前 SHA-256、源码提交、实际测试的文件绑定及 ASAR 与当前构建的字节一致性。此检查运行 win-unpacked，Setup/Portable 尚未通过安装/卸载验收。
+
+2026-10-20 实际复核发现并修复 Desktop 的会话上下文 API 白名单遗漏；三个登录后停留在登录页的失败记录、诊断截图与修复后源码 10 项通过回执保留在 `evidence/native-preview-refresh-initial/`。新工具会在 QA 前后计算完整客户端运行目录、安装器、扩展 dist 和运行源码摘要；打包准入再次比较，拒绝旧报告、改包、增删文件或未完成清理。`npm run test:surfaces` 的 11 项检查覆盖这些拒绝条件。
 
 ```powershell
 # 原生开发栈已启动；先分别构建 Desktop 与 extension
 $env:CHROME_BIN='你的原生 Chromium 路径'
 $env:COPYPASTE_DESKTOP_EXECUTABLE='同级 Desktop/release/frameless/win-unpacked/CopyPaste.exe 的绝对路径'
 npm run qa:native-surfaces
+npm run test:surfaces
 # 各源码仓库提交、干净后，校验二进制并生成扩展 ZIP/产物清单
 npm run package:surfaces
 ```
 
-报告为 `evidence/native-surfaces.json`，全部自建窗口在 finally 关闭。截图位于 Desktop 的 18–20 和扩展的 09。首轮原生侧栏布局检查过早执行的失败报告独立保留；最终脚本等待文档/字体及侧栏尺寸就绪后检查实际溢出。完整签名更新、卸载、系统/DPI 和全部 102 条综合验收继续保留。
+报告为 `evidence/native-surfaces.json`，自建窗口在 finally 关闭；QA 进程使用软件渲染，产品启动参数不变。截图位于 Desktop 的 18–20 和扩展的 09，工作区等待角色卡片及字体载入后采集。首轮原生侧栏布局失败、当前桥接遗漏失败和历史完整包独立保留。签名更新、安装/卸载、系统/DPI 和全部 102 条综合验收继续保留。
 
 ## 仓库清单
 
