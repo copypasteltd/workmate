@@ -1,5 +1,7 @@
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
+import { MarketingImport } from "./marketing-import";
+import { MarketingAnalysis } from "./marketing-analysis";
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -2153,16 +2155,22 @@ function Analytics() {
     w = useWorkspace(),
     [refresh, setRefresh] = useState(0),
     [open, setOpen] = useState(false),
-    [selected, setSelected] = useState<any>(null),
+    [selected, setSelected] = useState<string | null>(null),
+    [imported, setImported] = useState<string | null>(null),
     [seo, setSeo] = useState(false),
     [report, setReport] = useState<any>(null),
     [err, setErr] = useState<Error | null>(null);
   const { data, error, loading } = useData(w.base + "/analytics", refresh);
+  const selectedId = selected ?? data?.items[0]?.id;
   const detail = useData(
-    selected ? w.base + "/analytics/" + selected : null,
+    selectedId ? w.base + "/analytics/" + selectedId : null,
     refresh,
   );
-  const d = detail.data ?? data?.items[0];
+  const d = detail.data;
+  useEffect(() => {
+    setSelected(null);
+    setImported(null);
+  }, [w.base]);
   return (
     <>
       <PageHeader
@@ -2184,17 +2192,38 @@ function Analytics() {
           </div>
         }
       />
-      <ErrorNotice error={error ?? err} />
+      <ErrorNotice error={error ?? detail.error ?? err} />
+      {imported && (
+        <div className="notice success" role="status">
+          {imported === "duplicate"
+            ? t(
+                "已開啟原有快照，沒有重複匯入。",
+                "Opened the existing snapshot without importing twice.",
+              )
+            : t(
+                "資料已匯入，原始檔與計算口徑已保留。",
+                "Imported with source data and calculation definitions retained.",
+              )}
+        </div>
+      )}
       {loading ? (
         <Loading />
       ) : data?.items.length ? (
         <>
           <div className="filter-row">
             <select
-              value={selected ?? d?.id}
+              value={selectedId ?? ""}
               onChange={(e) => setSelected(e.target.value)}
               aria-label="Dataset"
             >
+              {selected && !data.items.some((r: any) => r.id === selected) && (
+                <option value={selected} disabled>
+                  {t(
+                    "此快照不可使用，請另選資料集",
+                    "Snapshot unavailable; choose another",
+                  )}
+                </option>
+              )}
               {data.items.map((r: any) => (
                 <option key={r.id} value={r.id}>
                   {r.name}
@@ -2202,53 +2231,27 @@ function Analytics() {
               ))}
             </select>
             <span className="muted">
-              {d?.currency} · {d?.timezone} · {d?.source}
+              {d?.currency} · {d?.timezone} ·{" "}
+              {d?.source === "csv_upload"
+                ? t("CSV 上傳", "CSV upload")
+                : d?.source === "google_ads"
+                  ? "Google Ads"
+                  : d?.source === "meta_ads"
+                    ? "Meta Ads"
+                    : d?.source}
             </span>
           </div>
-          <div className="metrics-grid">
-            {[
-              [
-                t("廣告花費", "Ad spend"),
-                <Money
-                  value={d?.summary.spend_micros}
-                  currency={d?.currency}
-                />,
-              ],
-              [
-                t("點擊率", "Click-through rate"),
-                d?.summary.ctr === null
-                  ? "—"
-                  : ((d?.summary.ctr ?? 0) * 100).toFixed(2) + "%",
-              ],
-              [
-                t("每次轉換成本", "Cost per conversion"),
-                d?.summary.cpa_micros === null ? (
-                  "—"
-                ) : (
-                  <Money value={d?.summary.cpa_micros} currency={d?.currency} />
-                ),
-              ],
-              [
-                t("廣告回報", "Return on ad spend"),
-                d?.summary.roas === null
-                  ? "—"
-                  : (d?.summary.roas ?? 0).toFixed(2) + "×",
-              ],
-            ].map(([label, value], i) => (
-              <div className="metric-card" key={i}>
-                <span>{label}</span>
-                <strong>{value}</strong>
-                <small>
-                  {t("依總量計算", "Calculated from aggregate totals")}
-                </small>
-              </div>
-            ))}
-          </div>
+          {d ? (
+            <MarketingAnalysis key={w.base + d.id} base={w.base} dataset={d} />
+          ) : (
+            !detail.error && <Loading />
+          )}
           <section className="card">
             <div className="section-title">
               <h2>{t("資料集", "Datasets")}</h2>
               <button
                 className="text-button"
+                disabled={!d}
                 onClick={() =>
                   void download(
                     w.base + "/analytics/" + d?.id + "/export",
@@ -2321,41 +2324,16 @@ function Analytics() {
           title={t("匯入行銷數據", "Import campaign data")}
           onClose={() => setOpen(false)}
         >
-          <AsyncForm
-            submitLabel={t("匯入並分析", "Import & analyze")}
-            onSubmit={async (f) => {
-              const file = f.get("file") as File;
-              await post(w.base + "/analytics/import", {
-                name: String(f.get("name")),
-                csv: await file.text(),
-                timezone: "Asia/Hong_Kong",
-              });
+          <MarketingImport
+            key={w.base}
+            base={w.base}
+            onImported={(result) => {
               setOpen(false);
+              setSelected(result.id);
               setRefresh((v) => v + 1);
+              setImported(result.duplicate ? "duplicate" : "created");
             }}
-          >
-            <Field label={t("報表名稱", "Report name")}>
-              <input name="name" required />
-            </Field>
-            <Field label="CSV">
-              <input type="file" name="file" accept=".csv,text/csv" required />
-            </Field>
-            <div className="notice">
-              <FileText size={18} />
-              <div>
-                {t("欄位格式", "Required columns")}
-                <code className="block-code">
-                  date,channel,campaign,impressions,clicks,spend,conversions,revenue,currency
-                </code>
-                <small>
-                  {t(
-                    "金額使用元，日期 YYYY-MM-DD。每份資料集只能包含一種幣種。",
-                    "Amounts use currency units; dates use YYYY-MM-DD. One currency per dataset.",
-                  )}
-                </small>
-              </div>
-            </div>
-          </AsyncForm>
+          />
         </Modal>
       )}
       {seo && (

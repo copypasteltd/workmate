@@ -112,7 +112,6 @@ flowchart LR
 
 ![Actual company identity interface](assets/screenshots/06-company-identity.png)
 
-
 ## Native file-channel repairs in progress
 
 The renderer inherits resumable uploads, synthetic-mode labels, deletion progress and retention expiry. IPC forwards stable Idempotency-Key values. Downloads ask for a destination first, stream to a temporary file, validate size and SHA-256, refuse existing destinations and clean up after failure, with a 1 GiB limit. JSON event IPC drains pages using a cursor.
@@ -132,7 +131,7 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **147/147**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **159/159**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and inbox (current source)
 
@@ -168,3 +167,21 @@ The current renderer snapshot includes the persisted template directory, preflig
 The synchronized canvas exports single-page raster review PDFs while retaining editable sources. Real PKCE sign-in precedes authenticated main-process requests and the existing streamed save to an explicitly selected destination. The new journey saves real PDF bytes and matches their hash to the immutable server version, then closes its owned application. Historical installers have not been rebuilt.
 
 ![Current-source native PDF export](assets/screenshots/14-design-pdf-export.png)
+
+## Marketing CSV, exact metrics and provenance (current source)
+
+Preview and confirm the account, currency, timezone, entity level, attribution and conversion definitions before import. Generic CSV and candidate Google/Meta-style headers support explicit column mapping. Actual UTF-8/BOM source bytes, SHA-256, definitions and computed results are retained. Duplicate requests, including a lost accepted response, return one project snapshot. Quarantine prevents reimport bypass. Unknown conversions stay unknown; exact decimal CTR/CPC/CPM/CVR/CPA/ROAS use aggregate totals and historical results are frozen.
+
+Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, XLSX, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
+
+The independent renderer snapshot includes the same flow. `qa:marketing-analytics` uses real PKCE and protected IPC for a Meta-style import and native CSV save; local bytes match the source. Owned Electron/browser resources close in finally. Current source builds, renderer type checks and all four native unit tests pass.
+
+```mermaid
+flowchart LR
+  UI[Desktop preview and confirmation] --> IPC[Protected main-process IPC]
+  IPC --> API[Fixed product API]
+  API --> Snapshot[Atomic snapshot and frozen metrics]
+  Snapshot --> Save[Native save / digest verification]
+```
+
+![Current-source Desktop analytics](assets/screenshots/15-marketing-analytics.png)

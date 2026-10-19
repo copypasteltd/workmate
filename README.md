@@ -112,7 +112,6 @@ flowchart LR
 
 ![实际企业身份界面](assets/screenshots/06-company-identity.png)
 
-
 ## 当前修复中的文件通道
 
 工作台同步 Web 的分片续传、模拟标识、删除进度和保留期限。原生请求桥转发稳定 Idempotency-Key，重连不会分配重复上传会话。下载先由用户选择目标，以流写临时文件并验证字节数与 SHA-256，拒绝覆盖已有文件；异常清理临时文件，上限 1 GiB。JSON IPC 的任务事件按游标逐页读取。
@@ -132,7 +131,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **147/147**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **159/159**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与通知（当前源码）
 
@@ -168,3 +167,21 @@ The renderer snapshot includes the same initial input checkpoint as Web. Native 
 同步的画布提供单页 PDF 图片审阅稿，保留源工程。真实 PKCE 登录后由主进程以受保护令牌请求产品 API，并经现有流式下载保存到明确选定的位置。新增验收实际保存 PDF，摘要与服务端不可变版本一致，结束后关闭自建应用。历史安装包未重打。
 
 ![源码客户端 PDF 导出](assets/screenshots/14-design-pdf-export.png)
+
+## 营销 CSV、精确指标与来源（当前源码）
+
+导入先预览并确认账户、币种、时区、实体层级、归因和转化定义；支持通用 CSV 及 Google/Meta 风格候选表头与手动映射。原始 UTF-8/BOM、SHA-256、映射和计算结果真实保存。相同项目内重复请求或成功回执丢失后的重试只返回原快照；被隔离的数据不能绕过限制重新上传。未知转化不计零，CTR/CPC/CPM/CVR/CPA/ROAS 用精确小数先加总再计算，历史结果冻结。
+
+原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、XLSX、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
+
+独立 renderer 快照包含相同流程。`qa:marketing-analytics` 使用真实 PKCE、受保护 IPC，完成 Meta 风格导入及原生 CSV 保存；本地字节与原文一致，自建 Electron/浏览器在 finally 关闭。当前源码构建、renderer 类型检查和四项原生单元测试通过。
+
+```mermaid
+flowchart LR
+  UI[Desktop 预览确认] --> IPC[受保护主进程 IPC]
+  IPC --> API[固定产品 API]
+  API --> Snapshot[原子快照与冻结指标]
+  Snapshot --> Save[原生保存 / 摘要校验]
+```
+
+![源码客户端营销分析](assets/screenshots/15-marketing-analytics.png)
