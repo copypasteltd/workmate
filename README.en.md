@@ -164,7 +164,7 @@ Deployment: use exact HTTPS `SSO_ALLOWED_ORIGINS`. Default callback is `WEB_ORIG
 
 - `npm run qa:cloud-files`: four Web cloud-file groups, two real Codex tasks with synthetic dependencies, persistent sources and actual ZIPs. Saves cloud-files.json and captured HTTP payloads.
 - `npm run qa:desktop-transfer`: eight source Electron groups for login, idempotent upload, actual 29 MiB transfers, overwrite protection and native cloud-tree browsing. Saves alignment-desktop.json.
-- The current platform regression passes 159/159; the complete TAP and summary are under evidence/alignment-platform.\*.
+- The current platform regression passes 167/167; the complete TAP and summary are under evidence/alignment-platform.\*.
 
 At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_samples.py` to check captured response schemas. These runs use explicitly synthetic dependencies and real Codex; they do not qualify live model quality or all 102 integrated acceptance cases.
 
@@ -172,7 +172,7 @@ At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_sam
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **159/159**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **167/167**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-six captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant, inbox and source integrity
 
@@ -180,7 +180,7 @@ qa:default-assistant and qa:notifications each validate four Web journey groups;
 
 qa:byte-integrity creates independent native Git clones of platform/Desktop/delivery and checks raw SQL digests against both existing migration ledgers, all 28 Skills, renderer provenance and raw TAP. Commit source and TAP first. Owned, verified temporary directories are removed afterward. This is checkout integrity, not disaster recovery.
 
-Current source passes 159/159 platform tests and four Desktop unit tests, with twenty-one captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
+Current source passes 167/167 platform tests and four Desktop unit tests, with twenty-six captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
 
 ## Initial-input verification
 
@@ -208,7 +208,7 @@ The template increment's six platform groups brought that regression to 145/145;
 
 `npm run qa:design-pdf` verifies seven journeys: real sign-in/canvas, a lost accepted reply, idempotent retry, source-version conflicts, widths/themes/languages, a designer template and native Electron saving. Independent pypdf inspection and native Poppler rendering compare the PDF to its source PNG. `evidence/design-pdf.json` records geometry, hashes and owned-resource cleanup.
 
-Set `CHROME_BIN`, `PDF_QA_PYTHON` (pypdf/Pillow) and `PDFTOPPM_BIN` for native QA tools; these are not product runtime dependencies. The full platform regression passed **159/159**. Historical installers remain unchanged and all 102 requirements retain their full acceptance conditions.
+Set `CHROME_BIN`, `PDF_QA_PYTHON` (pypdf/Pillow) and `PDFTOPPM_BIN` for native QA tools; these are not product runtime dependencies. The full platform regression passed **167/167**. Historical installers remain unchanged and all 102 requirements retain their full acceptance conditions.
 
 ![Actual PDF export](assets/screenshots/design-pdf-export.png)
 
@@ -218,7 +218,7 @@ Preview and confirm the account, currency, timezone, entity level, attribution a
 
 Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, XLSX, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
 
-`npm run qa:marketing-analytics` exercises six Web/native Electron groups: real sign-in, mapping preview, retry after a lost accepted reply, actual CSV/JSON/SVG downloads, invalid/unknown data, both themes/languages at four widths, clearing denied selected snapshots and native saves. Set `CHROME_BIN` to native Chromium. Evidence is under evidence/marketing-analytics.json; all owned browser/context/Electron resources close in finally. The current full platform regression passes **159/159** and preserves raw TAP bytes and their hash.
+`npm run qa:marketing-analytics` exercises six Web/native Electron groups: real sign-in, mapping preview, retry after a lost accepted reply, actual CSV/JSON/SVG downloads, invalid/unknown data, both themes/languages at four widths, clearing denied selected snapshots and native saves. Set `CHROME_BIN` to native Chromium. Evidence is under evidence/marketing-analytics.json; all owned browser/context/Electron resources close in finally. The current full platform regression passes **167/167** and preserves raw TAP bytes and their hash.
 
 ```mermaid
 flowchart LR
@@ -230,3 +230,24 @@ flowchart LR
 ```
 
 ![Actual analytics acceptance flow](assets/screenshots/marketing-analytics.png)
+
+## Private AnalysisSpec reports (current source)
+
+Select saved snapshots, a business question, current/comparison dates, metrics, dimensions and a maximum HKD budget in Marketing insights. Preview neither calls a model nor reserves credit. Explicit confirmation atomically creates a private Codex task, frozen calculations/evidence and one reservation. Sources, accounts, currencies, timezones and attribution stay independent; identical facts deduplicate, conflicts reject, and zero/missing comparison values retain reasons. Retrying a lost accepted response returns the same report.
+
+Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors/XLSX, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
+
+Run `npm run demo`, set `CHROME_BIN` to native Chromium, then run `npm run qa:analysis-reports`. Six actual Web/current-source Electron groups cover sign-in, uncharged preview, lost-response retry, canonical reads/real downloads, 16 width/theme/language combinations, denied-read clearing and byte-identical native saves. Results: `evidence/analysis-reports.json`. Two first-failure reports retain the tool-context and mobile-layout issues; the final report records repaired behavior separately.
+
+Current platform regression: **167/167**; strict captured HTTP payloads: **26/26**. `capture-platform-regression.py` preserves exact TAP bytes and hashes; never format TAP files. `evidence/analysis-index-backfill.json` compares the evidence index with saved metrics without recomputing history. All owned browsers, pages, contexts and Electron applications close in finally.
+
+```mermaid
+flowchart LR
+  Login[Real sign-in / workspace] --> Preview[Multi-source preview / no reservation]
+  Preview --> Retry[Accepted response loss / one report]
+  Retry --> Verify[Canonical reads / 16 combinations / denied clearing]
+  Verify --> Native[PKCE / native byte-identical save]
+  Native --> Close[Close owned browser and Electron]
+```
+
+![AnalysisSpec report](assets/screenshots/analysis-reports.png)
