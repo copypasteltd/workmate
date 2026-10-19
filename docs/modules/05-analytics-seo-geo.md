@@ -12,14 +12,14 @@
 
 ## 2. 指标字典
 
-| 指标 | 公式 | 口径与边界 |
-| --- | --- | --- |
-| CTR | clicks / impressions | 比率原值；界面按百分比显示 |
-| CPC | spend / clicks | 同币种、同范围计算 |
-| CPM | spend × 1000 / impressions | 无曝光不可计算 |
-| CVR | conversions / clicks | 明确采用的 conversion definition |
-| CPA | spend / conversions | 无/未知转化不可计算 |
-| ROAS | conversion_value / spend | 归因转化价值 / 广告费用，不等同净利润 |
+| 指标   | 公式                                 | 口径与边界                                   |
+| ------ | ------------------------------------ | -------------------------------------------- |
+| CTR    | clicks / impressions                 | 比率原值；界面按百分比显示                   |
+| CPC    | spend / clicks                       | 同币种、同范围计算                           |
+| CPM    | spend × 1000 / impressions           | 无曝光不可计算                               |
+| CVR    | conversions / clicks                 | 明确采用的 conversion definition             |
+| CPA    | spend / conversions                  | 无/未知转化不可计算                          |
+| ROAS   | conversion_value / spend             | 归因转化价值 / 广告费用，不等同净利润        |
 | 变化率 | (current − previous) / abs(previous) | previous=0 时显示新增/不可比较，不显示无穷大 |
 
 所有分母为零时结果为 null 并带 reason；必要输入缺失时结果 null，不当零。聚合先加可加基础指标再算比率。金额和比率采用 Decimal，计算保留至少 8 位小数，显示才四舍五入。
@@ -63,3 +63,7 @@ CreativeMapping 关联本产品 asset_version、活动、平台 account/creative
 ## 7. 故障与验收
 
 字段错误定位原行；同步不完整不能标 complete；旧数据可用但标 stale。取数限制、零分母、重复导入、比率聚合、多币种和报表快照均有固定用例。SEO/GEO 验收验证证据和方法一致性，不以真实排名上升作为软件功能通过标准。
+
+## 当前代码与未完成项（2026-10-19）
+
+CSV 映射预览、原文摘要、去重、精确指标/未知原因、冻结计算、证据及 Web/源码 Desktop 下载已有实际运行证据，见 [实现与验收边界](../technical/27-marketing-import-metrics-and-evidence.md)。这不替代本模块上文的完整要求：XLSX、多维事实、规范快照/分析任务、叙述数字校验、正式连接器、SEO/GEO 和创意反馈仍按原需求继续实施。REQ-023/024 仅记为局部验证。

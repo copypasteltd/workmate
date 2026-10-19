@@ -2,35 +2,35 @@
 
 版本：2.0 · 2026-10-19 · 产品代码：0.5.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
-当前源码持续修复已扩展到 31 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录、持久模板及真实 PDF 审阅稿；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md)、[持久模板](25-role-template-registry-and-runtime-binding.md) 与 [PDF 设计交付](26-design-pdf-review-delivery.md)。
+当前源码持续修复已扩展到 33 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录、持久模板及真实 PDF 审阅稿；这些尚未重打包，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md)、[持久模板](25-role-template-registry-and-runtime-binding.md) 与 [PDF 设计交付](26-design-pdf-review-delivery.md)。
 
 ## 1. 路径与仓库
 
 唯一根目录为 `D:\dev\copypasted\自有agent\`。代码、开发脚本、依赖和构建产物全部位于 `dev/`；主文档位于 `docs/`。六个独立 Git 仓库都有 main 分支、锁文件、中英 README、Mermaid 逻辑图、实际截图与许可说明。
 
-| dev 下仓库 | 实际职责 |
-| --- | --- |
-| `copypaste-platform` | 原生 PostgreSQL、Fastify API、身份/权限、任务/Worker、费用/VIP、Admin 控制面、Codex 和受控工具 |
-| `copypaste-web` | 官网式入口、邮箱注册登录、企业初始化、工作台、18 角色与项目/业务模块 |
-| `copypaste-admin` | 独立邮箱/TOTP 身份、16 页运营控制台、用户/消耗/费用/VIP/内容/执行/权限/审计 |
-| `copypaste-extension` | Chrome MV3 侧栏、PKCE、主动文件/网页选择、可选 Native Messaging |
-| `copypaste-desktop` | Electron Windows 客户端、完整工作区快照、目录授权、签名云命令、原生 Host |
-| `copypaste-delivery` | 原生启动/关闭、集成验收、截图、构建/版本/产物清单 |
+| dev 下仓库            | 实际职责                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| `copypaste-platform`  | 原生 PostgreSQL、Fastify API、身份/权限、任务/Worker、费用/VIP、Admin 控制面、Codex 和受控工具 |
+| `copypaste-web`       | 官网式入口、邮箱注册登录、企业初始化、工作台、18 角色与项目/业务模块                           |
+| `copypaste-admin`     | 独立邮箱/TOTP 身份、16 页运营控制台、用户/消耗/费用/VIP/内容/执行/权限/审计                    |
+| `copypaste-extension` | Chrome MV3 侧栏、PKCE、主动文件/网页选择、可选 Native Messaging                                |
+| `copypaste-desktop`   | Electron Windows 客户端、完整工作区快照、目录授权、签名云命令、原生 Host                       |
+| `copypaste-delivery`  | 原生启动/关闭、集成验收、截图、构建/版本/产物清单                                              |
 
 Web、Admin、扩展与 Desktop 可独立安装和构建，不在 build 时依赖相邻源码。Desktop 的 `renderer/` 是显式导入的 Web 快照，`renderer-source.json` 保存实际哈希；Admin 的基础 UI 来源与调整记录在 `shared-source.json`。集成控制器和跨端 QA 需要六仓库同级，启动/构建根可用 `COPYPASTE_DEV_ROOT` 指定；浏览器 QA 当前使用同级布局及默认本机端口。
 
 ## 2. 锁定技术与原生运行
 
-| 层 | 本次实际版本/实现 |
-| --- | --- |
-| 工具 | Node 22.14.0、npm 10.9.2、TypeScript 7.0.2，精确依赖在各锁文件 |
-| 服务 | Fastify 5.12.7、pg 8.23.1、pg-boss 12.38.0、Zod 4.6.7 |
-| 数据 | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、当前 31 个有序迁移、RLS |
-| 界面 | React 19.3.1、Vite 8.3.4、React Router 7.18.4、Lucide 1.59.0 |
-| Desktop | Electron 44.5.1、electron-builder 26.15.3、DPAPI + AES-256-GCM、独立 Node-mode Chrome Host |
-| Agent | Codex 0.163.0-alpha.10.2、app-server stdio JSON-RPC、实际生成协议、公司 Responses provider |
-| 媒体 | resvg 2.6.2、pdf-lib 1.17.1、原生 FFmpeg/FFprobe 8.1、真实 PNG、单页图片 PDF 与 H.264/AAC MP4 |
-| QA | Playwright 1.64.1、真实原生 Chromium、真实打包 Electron、Node test |
+| 层      | 本次实际版本/实现                                                                             |
+| ------- | --------------------------------------------------------------------------------------------- |
+| 工具    | Node 22.14.0、npm 10.9.2、TypeScript 7.0.2，精确依赖在各锁文件                                |
+| 服务    | Fastify 5.12.7、pg 8.23.1、pg-boss 12.38.0、Zod 4.6.7                                         |
+| 数据    | 原生 PostgreSQL 18.4、独立 app/control/queue/owner 身份、当前 33 个有序迁移、RLS              |
+| 界面    | React 19.3.1、Vite 8.3.4、React Router 7.18.4、Lucide 1.59.0                                  |
+| Desktop | Electron 44.5.1、electron-builder 26.15.3、DPAPI + AES-256-GCM、独立 Node-mode Chrome Host    |
+| Agent   | Codex 0.163.0-alpha.10.2、app-server stdio JSON-RPC、实际生成协议、公司 Responses provider    |
+| 媒体    | resvg 2.6.2、pdf-lib 1.17.1、原生 FFmpeg/FFprobe 8.1、真实 PNG、单页图片 PDF 与 H.264/AAC MP4 |
+| QA      | Playwright 1.64.1、真实原生 Chromium、真实打包 Electron、Node test                            |
 
 不使用 Docker、WSL 或任何虚拟化。Windows 中文路径只使用临时 ASCII junction 解决 PostgreSQL bootstrap 路径限制，真实数据、二进制仍位于 D 盘。控制器 shutdown 先关闭 API，再停界面与数据库；数据库使用 pg_ctl fast 完成 checkpoint，不使用强制终止。只操作自己启动的进程；生命周期脚本验证无崩溃恢复的重启、专家/会话/记忆记录保留及用户既有 5173/5174 进程保持。浏览器 QA 在 finally 关闭自己的所有上下文、页面和实例。
 
@@ -63,22 +63,22 @@ OTP 10 分钟有效、5 次错误上限、单次原子消费；Web/Admin 独立 
 
 ## 4. 实际业务与逻辑约束
 
-| 领域 | 已实现 | 当前界限 |
-| --- | --- | --- |
-| 企业/项目 | 成员、邀请、角色/项目范围、最后 owner 保护、API/RLS 双层隔离，OIDC 企业身份与独立邮箱连接证明 | 不含 SAML/SCIM、强制 SSO 和完整组织目录同步；公司 IdP 仍需准入 |
-| 角色/Skill | 18 角色、28 个实际 Skill 包、版本/哈希校验、启停和展示发布 | 全部仍待公司真实任务准入；数量不等于上线资格 |
-| 专家/会话/记忆 | 角色实例及不可变版本、所属用户私密会话、五种记忆范围、固定引用/到期/删除、问答/计划/执行和输入摘要审批 | 有界历史/文本记忆；不含暂停检查点、并行专业团队、协同编辑与全套 SSE |
-| 任务 | 固定内核、原子消息/任务/预算/outbox、去重、租约/fencing、取消、工具授权复核、私密产物和明确发布 | 公司真实 AI 仍待准入；每会话一次只运行一个任务 |
-| 软件产出 | 角色限制的源文件读写、CAS 哈希、路径边界、真实 ZIP/manifest | 不执行不可信客户 shell；不能声称生成代码已运行测试 |
-| 设计 | 固定 PNG 引用、文本/色块图层 JSON、版本化修改、真实 SVG/PNG/MP4 | 有界海报/模板动效，不等于完整图形编辑器/AI 视频/可变字体系统 |
-| Image 2 | 内部 generate/edit、图片素材授权、独立计费/对账、真实 PNG 校验 | 缺公司精确端点/别名/密钥，尚未真实调用公司 Image 2 |
-| 资产/品牌 | 明确上传、版本、下载、缩略图、分享/撤销、品牌记录、私密归属/项目发布副本 | 本地存储已验；S3 未接真实 bucket；删除后的物理对象/运行缓存回收待建设 |
-| 数据/SEO | CSV 实际指标、整数金额、先聚合后除、零分母 null、提交 HTML 检查 | 不自动抓任意 URL，不保证 GEO 排名；无完整跨平台归因 |
-| 连接器 | Google Ads/GA4/GSC/Meta OAuth、加密 token、固定报表端点与原始报告资产 | 缺真实授权；有界报表非完整历史分页/标准化管线 |
-| 流程 | 最多 8 步数据/Agent/人工审批、持久 cursor/子任务、每日/每周云端日历、冻结授权与历史、审批后继续 | 无任意 cron、事件触发、任意脚本或外部发布工作流 |
-| 本地端 | 逐目录 grant、1 小时、默认只读、create-only、签名云命令和一次 nonce 结果 | 云端手动排程已贯通，Codex 自主本地文件工具未接入；结果暂非客户端签名 |
-| 费用/VIP | 整数 HKD micros、资金来源、预留/一次结算、个人/企业权益、冻结套餐 | 人工确认付款，无在线支付收单；月费商业定价未确认 |
-| Admin | 16 页、邀请与本人 MFA、账号生命周期、68 权限、8 内置角色、范围/deny/限额/委派、审计 | 支持仅元数据；无客户正文委托或静默代登录 |
+| 领域           | 已实现                                                                                                 | 当前界限                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| 企业/项目      | 成员、邀请、角色/项目范围、最后 owner 保护、API/RLS 双层隔离，OIDC 企业身份与独立邮箱连接证明          | 不含 SAML/SCIM、强制 SSO 和完整组织目录同步；公司 IdP 仍需准入        |
+| 角色/Skill     | 18 角色、28 个实际 Skill 包、版本/哈希校验、启停和展示发布                                             | 全部仍待公司真实任务准入；数量不等于上线资格                          |
+| 专家/会话/记忆 | 角色实例及不可变版本、所属用户私密会话、五种记忆范围、固定引用/到期/删除、问答/计划/执行和输入摘要审批 | 有界历史/文本记忆；不含暂停检查点、并行专业团队、协同编辑与全套 SSE   |
+| 任务           | 固定内核、原子消息/任务/预算/outbox、去重、租约/fencing、取消、工具授权复核、私密产物和明确发布        | 公司真实 AI 仍待准入；每会话一次只运行一个任务                        |
+| 软件产出       | 角色限制的源文件读写、CAS 哈希、路径边界、真实 ZIP/manifest                                            | 不执行不可信客户 shell；不能声称生成代码已运行测试                    |
+| 设计           | 固定 PNG 引用、文本/色块图层 JSON、版本化修改、真实 SVG/PNG/MP4                                        | 有界海报/模板动效，不等于完整图形编辑器/AI 视频/可变字体系统          |
+| Image 2        | 内部 generate/edit、图片素材授权、独立计费/对账、真实 PNG 校验                                         | 缺公司精确端点/别名/密钥，尚未真实调用公司 Image 2                    |
+| 资产/品牌      | 明确上传、版本、下载、缩略图、分享/撤销、品牌记录、私密归属/项目发布副本                               | 本地存储已验；S3 未接真实 bucket；删除后的物理对象/运行缓存回收待建设 |
+| 数据/SEO       | CSV 实际指标、整数金额、先聚合后除、零分母 null、提交 HTML 检查                                        | 不自动抓任意 URL，不保证 GEO 排名；无完整跨平台归因                   |
+| 连接器         | Google Ads/GA4/GSC/Meta OAuth、加密 token、固定报表端点与原始报告资产                                  | 缺真实授权；有界报表非完整历史分页/标准化管线                         |
+| 流程           | 最多 8 步数据/Agent/人工审批、持久 cursor/子任务、每日/每周云端日历、冻结授权与历史、审批后继续        | 无任意 cron、事件触发、任意脚本或外部发布工作流                       |
+| 本地端         | 逐目录 grant、1 小时、默认只读、create-only、签名云命令和一次 nonce 结果                               | 云端手动排程已贯通，Codex 自主本地文件工具未接入；结果暂非客户端签名  |
+| 费用/VIP       | 整数 HKD micros、资金来源、预留/一次结算、个人/企业权益、冻结套餐                                      | 人工确认付款，无在线支付收单；月费商业定价未确认                      |
+| Admin          | 16 页、邀请与本人 MFA、账号生命周期、68 权限、8 内置角色、范围/deny/限额/委派、审计                    | 支持仅元数据；无客户正文委托或静默代登录                              |
 
 云端计划的 IANA 日历、版本/预算确认、漏跑合并、单计划单运行、原授权恢复与删除详见 [定时工作流](15-cloud-workflow-schedules.md)。用户关闭页面后由原生 Worker 执行；不把运行未完成或费用待对账的子任务视为可重叠槽位。
 
@@ -112,14 +112,14 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 
 本轮已真实离线克隆全部六个 bundle，逐个验证提交、tree、来源索引和干净 checkout；三个 ZIP 实际解压校验 CRC，Chrome manifest 位于根目录，全部 11 项校验 SHA-256/大小。详见 [离线恢复核查](../quality/release-restore-check.json)。恢复命令为 `git clone <仓库.bundle> <目标目录>`；生产依赖和私有 `.env` 需按 README 重新准备，不包含于源码 bundle。
 
-| 独立仓库 | 0.5.0 实际交付提交 |
-| --- | --- |
-| platform | `031324d` |
-| web | `6f401f0` |
-| admin | `b417c95` |
-| extension | `3a0db4d` |
-| desktop | `75bdb6a` |
-| delivery | `8043ebd` |
+| 独立仓库  | 0.5.0 实际交付提交 |
+| --------- | ------------------ |
+| platform  | `031324d`          |
+| web       | `6f401f0`          |
+| admin     | `b417c95`          |
+| extension | `3a0db4d`          |
+| desktop   | `75bdb6a`          |
+| delivery  | `8043ebd`          |
 
 ## 7. 0.5.0 身份增量
 
@@ -127,8 +127,10 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 
 ## 8. 当前源码修复增量
 
-2026-10-19 当前源码平台 147/147、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。另有模板 Web/Electron 八组检查及 PDF Web/Electron 七组检查，见 [模板注册与运行约束](25-role-template-registry-and-runtime-binding.md) 和 [PDF 设计交付](26-design-pdf-review-delivery.md)。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作与常规实际 229 个 method/path 不代表字段及全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 159/159、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。另有模板 Web/Electron 八组检查及 PDF Web/Electron 七组检查，见 [模板注册与运行约束](25-role-template-registry-and-runtime-binding.md) 和 [PDF 设计交付](26-design-pdf-review-delivery.md)。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作与常规实际 234 个 method/path 不代表字段及全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 
 新增企业/用户/能力原子执行容量、跨企业交错派发与原任务自动排队，细则及证据边界见 [容量与公平调度](23-execution-capacity-and-fair-dispatch.md)。完整 NFR 规模、供应商逐请求限流及独立生成式视频队列仍待完成。
+
+营销 CSV 的原文/口径、八位精确计算、并发去重、冻结报告和 Web/Desktop 实际下载见 [营销数据与证据](27-marketing-import-metrics-and-evidence.md)。新增迁移 032/033，两套原生数据库保持既有摘要记录；当前平台 159/159、营销六组跨端验证和 Desktop 四项单元通过。当前常规清单 234 个 method/path，未实现的规范接口仍记为未完成；未重打历史发布物。

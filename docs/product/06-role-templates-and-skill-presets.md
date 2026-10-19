@@ -18,26 +18,26 @@
 
 下表 Skill 为计划建设的产品能力标识，完整绑定与依赖在 [预设目录契约](../contracts/role-preset-catalog.json)。它们不是声称生产环境已经安装的包。各角色共同加载 `delivery-core`，统一产物版本、文件清单、费用和继续修改方式。
 
-| 编号 / 客户名称 | 核心 Skill 组合 | 模型与执行工具 | 主要交付 |
-| --- | --- | --- | --- |
-| R01 全栈开发工程师 | `fullstack-engineering`、`frontend-implementation`、`backend-api`、`qa-testing` | Codex、内部文本模型、受控原生构建/测试 | 可运行前后端代码、接口约定、启动说明与验证记录 |
-| R02 前端开发工程师 | `frontend-implementation`、`ui-system`、`qa-testing` | Codex、内部文本模型、浏览器预览；Image 2 按任务启用 | 页面源码、组件、响应式界面与交互检查记录 |
-| R03 后端与 API 工程师 | `backend-api`、`qa-testing` | Codex、内部文本模型、API/原生数据库测试工具 | API、数据迁移、权限与错误处理、接口测试记录 |
-| R04 软件测试工程师 | `qa-testing`、`frontend-implementation` | Codex、内部文本模型、API/浏览器测试 | 验收场景、可执行测试、缺陷证据与回归报告 |
-| R05 UI/UX 设计师 | `ux-research`、`ui-system`、`frontend-implementation` | Codex、内部文本模型、交互原型；Image 2 为可选配图 | 用户流程、线框、设计规范、可交互原型与交接说明 |
-| R06 设计师 | `creative-direction`、`image-art-direction`、`image2-production`、`typography-layout` | **Codex + 设计 Skill + Image 2**，真实字体/图层渲染 | 品牌约束下的主视觉、多尺寸设计、可恢复编辑工程 |
-| R07 品牌视觉设计师 | `brand-system`、`image-art-direction`、`image2-production`、`typography-layout` | Codex、Image 2、矢量/版式工具 | 视觉方向、标识提案、色彩字体规范、品牌应用与素材包 |
-| R08 广告创意设计师 | `ad-creative`、`image-art-direction`、`image2-production`、`typography-layout` | Codex、Image 2、批量布局与导出 | 创意方向、广告图文变体、渠道尺寸及测试矩阵 |
-| R09 电商商品设计师 | `ecommerce-visual`、`image-art-direction`、`image2-production`、`typography-layout` | Codex、Image 2、商品一致性检查 | 商品主图、场景图、卖点图、详情页素材与规格包 |
-| R10 社媒内容设计师 | `social-content`、`image2-production`、`typography-layout` | Codex、Image 2、轮播与版式渲染 | 系列帖文、轮播图、封面、文案和内容日历 |
-| R11 插画与 IP 设计师 | `illustration-ip`、`image-art-direction`、`image2-production` | Codex、Image 2、参考图/局部编辑工具 | 角色设定、场景插画、表情/姿态套图与连续性说明 |
-| R12 字体与版式设计师 | `typography-layout`、`image-art-direction`、`image2-production` | Codex、真实字体渲染；Image 2 用于艺术字/视觉探索 | 海报、长图、册页/包装版面、字形视觉方案及可编辑文字层 |
-| R13 演示文稿设计师 | `presentation-production`、`typography-layout`、`dataviz` | Codex、PPTX/PDF 渲染；Image 2 为可选插图 | 可编辑 PPTX、PDF、图表源数据与字体/素材清单 |
-| R14 网页与落地页设计师 | `landing-page`、`ui-system`、`frontend-implementation`、`image2-production` | Codex、Image 2、浏览器预览/前端构建 | 信息结构、页面视觉、可运行落地页、表单/埋点约定 |
-| R15 信息图与数据可视化设计师 | `dataviz`、`deterministic-metrics`、`typography-layout` | Codex、数据计算与图表渲染；Image 2 为可选装饰 | 可复算图表、信息图、交互报告及数据来源 |
-| R16 视频与动效设计师 | `video-storyboard`、`motion-composition`、`media-render` | Codex、模板/时间线渲染；Image 2、生成式视频/配音按能力启用 | 脚本分镜、字幕/片头/转场、可播放成片、可恢复时间线 |
-| R17 营销数据分析师 | `ads-analysis`、`deterministic-metrics`、`dataviz` | Codex、表格/指标计算、获准 Google/Meta 数据连接 | 广告/网站复盘、可追溯报告及下一轮创意 brief |
-| R18 企业流程自动化顾问 | `workflow-design`、`workflow-execution` | Codex、流程校验/执行、获准业务连接器 | 流程诊断、SOP、可执行流程版本及异常处理方案 |
+| 编号 / 客户名称              | 核心 Skill 组合                                                                       | 模型与执行工具                                             | 主要交付                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| R01 全栈开发工程师           | `fullstack-engineering`、`frontend-implementation`、`backend-api`、`qa-testing`       | Codex、内部文本模型、受控原生构建/测试                     | 可运行前后端代码、接口约定、启动说明与验证记录        |
+| R02 前端开发工程师           | `frontend-implementation`、`ui-system`、`qa-testing`                                  | Codex、内部文本模型、浏览器预览；Image 2 按任务启用        | 页面源码、组件、响应式界面与交互检查记录              |
+| R03 后端与 API 工程师        | `backend-api`、`qa-testing`                                                           | Codex、内部文本模型、API/原生数据库测试工具                | API、数据迁移、权限与错误处理、接口测试记录           |
+| R04 软件测试工程师           | `qa-testing`、`frontend-implementation`                                               | Codex、内部文本模型、API/浏览器测试                        | 验收场景、可执行测试、缺陷证据与回归报告              |
+| R05 UI/UX 设计师             | `ux-research`、`ui-system`、`frontend-implementation`                                 | Codex、内部文本模型、交互原型；Image 2 为可选配图          | 用户流程、线框、设计规范、可交互原型与交接说明        |
+| R06 设计师                   | `creative-direction`、`image-art-direction`、`image2-production`、`typography-layout` | **Codex + 设计 Skill + Image 2**，真实字体/图层渲染        | 品牌约束下的主视觉、多尺寸设计、可恢复编辑工程        |
+| R07 品牌视觉设计师           | `brand-system`、`image-art-direction`、`image2-production`、`typography-layout`       | Codex、Image 2、矢量/版式工具                              | 视觉方向、标识提案、色彩字体规范、品牌应用与素材包    |
+| R08 广告创意设计师           | `ad-creative`、`image-art-direction`、`image2-production`、`typography-layout`        | Codex、Image 2、批量布局与导出                             | 创意方向、广告图文变体、渠道尺寸及测试矩阵            |
+| R09 电商商品设计师           | `ecommerce-visual`、`image-art-direction`、`image2-production`、`typography-layout`   | Codex、Image 2、商品一致性检查                             | 商品主图、场景图、卖点图、详情页素材与规格包          |
+| R10 社媒内容设计师           | `social-content`、`image2-production`、`typography-layout`                            | Codex、Image 2、轮播与版式渲染                             | 系列帖文、轮播图、封面、文案和内容日历                |
+| R11 插画与 IP 设计师         | `illustration-ip`、`image-art-direction`、`image2-production`                         | Codex、Image 2、参考图/局部编辑工具                        | 角色设定、场景插画、表情/姿态套图与连续性说明         |
+| R12 字体与版式设计师         | `typography-layout`、`image-art-direction`、`image2-production`                       | Codex、真实字体渲染；Image 2 用于艺术字/视觉探索           | 海报、长图、册页/包装版面、字形视觉方案及可编辑文字层 |
+| R13 演示文稿设计师           | `presentation-production`、`typography-layout`、`dataviz`                             | Codex、PPTX/PDF 渲染；Image 2 为可选插图                   | 可编辑 PPTX、PDF、图表源数据与字体/素材清单           |
+| R14 网页与落地页设计师       | `landing-page`、`ui-system`、`frontend-implementation`、`image2-production`           | Codex、Image 2、浏览器预览/前端构建                        | 信息结构、页面视觉、可运行落地页、表单/埋点约定       |
+| R15 信息图与数据可视化设计师 | `dataviz`、`deterministic-metrics`、`typography-layout`                               | Codex、数据计算与图表渲染；Image 2 为可选装饰              | 可复算图表、信息图、交互报告及数据来源                |
+| R16 视频与动效设计师         | `video-storyboard`、`motion-composition`、`media-render`                              | Codex、模板/时间线渲染；Image 2、生成式视频/配音按能力启用 | 脚本分镜、字幕/片头/转场、可播放成片、可恢复时间线    |
+| R17 营销数据分析师           | `ads-analysis`、`deterministic-metrics`、`dataviz`                                    | Codex、表格/指标计算、获准 Google/Meta 数据连接            | 广告/网站复盘、可追溯报告及下一轮创意 brief           |
+| R18 企业流程自动化顾问       | `workflow-design`、`workflow-execution`                                               | Codex、流程校验/执行、获准业务连接器                       | 流程诊断、SOP、可执行流程版本及异常处理方案           |
 
 设计链路覆盖需求与创意方向、品牌、UI/UX、网页、平面广告、电商、社媒、插画/IP、字体排版、演示、信息图，以及视频/动效和成果交接。角色间可复用同一品牌和资产版本；R01–R04 使平台能承接软件开发和验证工作，R17/R18 延续原始分析与企业流程场景。
 
@@ -128,13 +128,13 @@ Image 2 尚未通过内部真实生成/编辑验证时，模板可以展示所�
 
 ## 5. 模板、Skill 与资源配置
 
-| 配置 | 必须包含 | 维护者 |
-| --- | --- | --- |
+| 配置         | 必须包含                                                                                            | 维护者          |
+| ------------ | --------------------------------------------------------------------------------------------------- | --------------- |
 | 角色模板版本 | 稳定 role_key、客户名称/职责、分类、示例、Skill 精确版本、模型/工具范围、输入输出、流程、验收及状态 | 产品/专业负责人 |
-| Skill 版本 | SKILL.md、可选脚本/参考/资产、包摘要、输入输出、工具/网络依赖、支持端、验证记录 | 技能维护者 |
-| 运行配置 | Codex 适配/版本、上下文组装、已装且获准技能清单、取消/恢复与追踪 | 内核维护者 |
-| 模型配置 | 用户要求、内部 alias、协议/参数、能力版本、实测状态、费用和限额 | 网关维护者 |
-| 企业覆盖配置 | 品牌/语言、资料、交付规范、工具/账户权限和预算；继承模板版本 | 企业管理员 |
+| Skill 版本   | SKILL.md、可选脚本/参考/资产、包摘要、输入输出、工具/网络依赖、支持端、验证记录                     | 技能维护者      |
+| 运行配置     | Codex 适配/版本、上下文组装、已装且获准技能清单、取消/恢复与追踪                                    | 内核维护者      |
+| 模型配置     | 用户要求、内部 alias、协议/参数、能力版本、实测状态、费用和限额                                     | 网关维护者      |
+| 企业覆盖配置 | 品牌/语言、资料、交付规范、工具/账户权限和预算；继承模板版本                                        | 企业管理员      |
 
 模板版本、SkillVersion、AgentVersion、项目配置版本分别保存。模板升级提示差异，客户可保留旧版或明确采用新版；运行中任务和历史交付不随模板修改。发布模板与安全撤销沿用既有权限规则，角色身份不会增加账户、代码库或本地目录权限。
 
@@ -154,17 +154,21 @@ Codex 的 Skill 包由 `SKILL.md` 及可选脚本/资源构成，支持按需读
 
 ## 7. 实施拆分与发布验收
 
-| 工作包 | 必须完成 | 对应需求 |
-| --- | --- | --- |
-| RP01 目录与标准 | 18 个角色定义、稳定 key、差异化职责/示例/输入输出；上线可用角色至少 12 个 | REQ-073、076 |
-| RP02 技能包 | 专业方法、脚本/资源、内部工具适配、精确版本和实际验证 | REQ-074、075 |
-| RP03 运行与媒体 | Codex 按绑定加载；内部文本和 Image 2 分离配置；设计师实际出图/编辑/排版 | REQ-075、077 |
-| RP04 选择与复用 | 角色卡/分类、使用即实例化绑定、缺项恢复、三端同一配置 | REQ-076、078 |
-| RP05 企业定制与升级 | 企业覆盖、受控复制、版本差异、运行冻结、安全撤销 | REQ-079 |
-| RP06 资格验收 | 每个角色正常、修改、异常/依赖用例及真实文件证据；数量与专业覆盖检查 | REQ-080 |
+| 工作包              | 必须完成                                                                  | 对应需求     |
+| ------------------- | ------------------------------------------------------------------------- | ------------ |
+| RP01 目录与标准     | 18 个角色定义、稳定 key、差异化职责/示例/输入输出；上线可用角色至少 12 个 | REQ-073、076 |
+| RP02 技能包         | 专业方法、脚本/资源、内部工具适配、精确版本和实际验证                     | REQ-074、075 |
+| RP03 运行与媒体     | Codex 按绑定加载；内部文本和 Image 2 分离配置；设计师实际出图/编辑/排版   | REQ-075、077 |
+| RP04 选择与复用     | 角色卡/分类、使用即实例化绑定、缺项恢复、三端同一配置                     | REQ-076、078 |
+| RP05 企业定制与升级 | 企业覆盖、受控复制、版本差异、运行冻结、安全撤销                          | REQ-079      |
+| RP06 资格验收       | 每个角色正常、修改、异常/依赖用例及真实文件证据；数量与专业覆盖检查       | REQ-080      |
 
 建议 M1 优先完成 R01–R16 中客户最常用的至少 12 个，必须含开发与设计及 R06；R17 先用导入数据，R18 按已支持流程能力推进。角色齐备不是靠未验证能力占位，Image 2 接入和设计类真实交付是发布门槛。此处的先后顺序是实施默认，未指定发布日期。
 
 每个计入可用数量的角色至少验证：一项完整真实任务、一项基于产物的修改、一项缺少必需资料/能力或越权场景。开发角色保存可运行代码及执行证据；设计角色保存实际文件、编辑范围和视觉检查；媒体角色交付所承诺的真实成片。记录内核、模板、技能、模型和输入版本、成本、失败及业务接受结果。当前所有产品验收均为 `not_run`。
 
 对应关系见 [SRS REQ-073–080](../requirements/01-srs.md)、[用户旅程 UC17/UC18](02-user-journeys.md)、[Agent 模块](../modules/02-agents-tasks-memory.md)、[内核与网关](../technical/02-runtime-and-ai-gateway.md)及[验收计划](../quality/01-test-and-acceptance-plan.md)。
+
+### 营销分析模板的当前实现边界
+
+CSV 原文、映射和冻结精确指标已接入既有 `marketing_metrics` 及分析工作流，并提供真实 Web/源码 Desktop 图表和文件下载，见 [营销数据与证据](../technical/27-marketing-import-metrics-and-evidence.md)。网页 SVG 下载尚不等于角色 `chart.render` 工具；R17 的完整来源读取、计算/图表工具、AnalysisSpec 报告和专业任务/修改/异常资格仍未完成，不能将此次局部增量计入 12 个正式合格角色。
