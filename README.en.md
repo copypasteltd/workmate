@@ -350,3 +350,5 @@ flowchart LR
   Policy --> IndependentReview --> Recheck --> DirectApply
   DirectApply --> MembershipAndAudit
 ```
+
+Final stable-source platform regression: **233/233**, including **13/13** Admin membership groups. Current real Admin membership HTTP checks: **5/5**; captured original-contract samples: **43/43**. Delivery `evidence/` retains original receipts. Current UI, production and complete native gates remain separate.
