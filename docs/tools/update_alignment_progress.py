@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('billing_settlement_sources', [11,46,86,87,101],
+     '授信预留后的后续充值/赠送按真实可用批次结算，保留其他任务冻结；BigInt 累计余额、实际债务偿还和信用下限；新扣费来源与还款事实不可变、企业隔离并在数据库提交时校验来源合计；仅账务内核专项，不含完整规范付款/费用/VIP流程或历史来源补造。',
+     ['platform_regression','billing_migration','native_runtime_alias'], ['technical/39-billing-credit-and-settlement-provenance.md']),
     ('admin_canonical_directories', [3,35,51,55,83,84,85,86,94,98,100],
      '原始 AdminUserList/AdminUserDetail/AdminTenantList 的三处规范读取及当前页面消费者；严格查询、真实登录时间和独立账务账户 ID、绑定当前权限与筛选的签名游标、微秒时间戳并列排序、企业/项目/字段交集、账本确认扣费及半开结算时段、有效 VIP 与无权字段/筛选防推断。目录与导出专项及七组实际 Admin 页面/HTTP 为局部证据；完整消耗钻取、费用/VIP 写规范、批量导出、旧成员页面、原生和发布仍待验收。',
      ['platform_regression','admin_directory_ui','runtime_schemas'], ['technical/38-admin-canonical-directories-and-scoped-usage.md']),
@@ -209,6 +212,8 @@ def main():
     assert hashlib.sha256(restored_srs.replace('\n','\r\n').encode()).hexdigest() == baseline['requirements_sha256']
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
+        'billing_migration': DEV/'copypaste-delivery/evidence/billing-live-migration.json',
+        'native_runtime_alias': DEV/'copypaste-delivery/evidence/billing-runtime-stable-alias.json',
         'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
         'admin_directory_ui': DEV/'copypaste-delivery/evidence/admin-directory-ui.json',
         'admin_account_ui': DEV/'copypaste-delivery/evidence/admin-account-ui.json',
@@ -248,6 +253,18 @@ def main():
         assert report.get('status', 'passed') == 'passed'
         assert all(c['status'] == 'passed' for c in checks)
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
+        if key == 'native_runtime_alias':
+            assert report['launcher_sha256'] == fingerprint(DEV/'copypaste-platform/scripts/native-db-launch.mjs')
+            assert report['real_executable_present'] is True and report['prior_temp_alias_removed'] is True
+            assert report['api_status'] == 200 and len(report['databases']) == 2
+            assert all(d['migration'] == 41 for d in report['databases'])
+        if key == 'billing_migration':
+            expected_digest = fingerprint(DEV/'copypaste-platform/migrations/041-billing-settlement-sources.sql')
+            assert {d['database'] for d in report['databases']} == {'copypaste','copypaste_test'}
+            for database in report['databases']:
+                assert database['migration'] == 41 and database['migration_sha256'] == expected_digest
+                assert database['checksum_matches'] is True and database['unchanged_wallet_aggregates'] is True
+                assert database['missing_source_count'] == '0' and database['debt_above_credit_limit_count'] == '0'
         if 'browser_closed' in report:
             assert report['browser_closed'] is True
         if 'desktop_closed' in report:
