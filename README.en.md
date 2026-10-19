@@ -153,3 +153,24 @@ flowchart LR
 ```
 
 Deployment: use exact HTTPS `SSO_ALLOWED_ORIGINS`. Default callback is `WEB_ORIGIN/v1/auth/sso/callback` through the Web API proxy; `SSO_CALLBACK_ORIGIN=API_ORIGIN` is supported when Web uses that cross-origin `VITE_API_BASE`. Production rejects `SSO_ALLOW_LOCALHOST=true`. For the native fixture only, start the development controller with this environment flag, run `qa:federation`, then stop and restart without it.
+
+
+## Labelled synthetic development mode
+
+`npm run demo` starts the native database, real Codex worker, loopback mock AI gateway, Web and Admin without modifying the platform .env. Production and exposed-host configurations reject synthetic mode. Pages and stored business records identify the mode; a workspace Owner can claim one demo gift. `npm run stop` closes only controller-owned processes; wait for the native database checkpoint and exit before restarting.
+
+`npm run qa:alignment` covers email onboarding, erasure, a 9 MiB upload interrupted and resumed after reload, an actual Codex run with synthetic dependencies, SSE, four viewport widths/dark theme and independent Admin MFA. Results are stored in evidence/alignment.json. All owned browser contexts and instances close in finally. Existing release/ archives remain the historical 0.5.0 delivery until rebuilt.
+
+## Additional source validation
+
+- `npm run qa:cloud-files`: four Web cloud-file groups, two real Codex tasks with synthetic dependencies, persistent sources and actual ZIPs. Saves cloud-files.json and captured HTTP payloads.
+- `npm run qa:desktop-transfer`: five source Electron groups for login, idempotent upload, actual 29 MiB transfers, overwrite protection and native cloud-tree browsing. Saves alignment-desktop.json.
+- The current platform regression passes 103/103; the complete TAP and summary are under evidence/alignment-platform.*.
+
+At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_samples.py` to check captured response schemas. These runs use explicitly synthetic dependencies and real Codex; they do not qualify live model quality or all 102 integrated acceptance cases.
+
+## Skill lifecycle verification
+
+Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
+
+Platform regression: **108/108**. `npm run qa:skills` in the delivery repository passed three browser groups; ten captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.

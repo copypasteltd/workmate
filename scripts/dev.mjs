@@ -56,6 +56,12 @@ async function launch(name, repo, args, ready) {
     });
   const child = spawn(process.execPath, args, {
     cwd: dir,
+    env: {
+      ...process.env,
+      ...(name === "api" && process.argv.includes("--demo")
+        ? { DEMO_MODE: "true" }
+        : {}),
+    },
     windowsHide: true,
     stdio: ["ignore", "pipe", "pipe", "ipc"],
   });
