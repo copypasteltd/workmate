@@ -166,7 +166,7 @@ flowchart LR
 
 - `npm run qa:cloud-files`：四组 Web 云目录流程、两次真实 Codex 模拟任务的持久源码与实际 ZIP；生成 evidence/cloud-files.json 和实际 HTTP 契约样本。
 - `npm run qa:desktop-transfer`：八组源码 Electron 登录、幂等上传、29 MiB 传输、覆盖保护与原生桥云目录；生成 evidence/alignment-desktop.json。
-- 平台当前全套回归 145/145，完整 TAP 与摘要在 evidence/alignment-platform.*。
+- 平台当前全套回归 147/147，完整 TAP 与摘要在 evidence/alignment-platform.*。
 
 根目录运行 `python -X utf8 docs/tools/validate_runtime_contract_samples.py` 核对实际响应字段。所有上述运行使用明确标识的假数据依赖，内核仍是真实 Codex，不等于真实模型质量或全部 102 项综合验收完成。
 
@@ -174,7 +174,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **145/145**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **147/147**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手、通知与源码完整性
 
@@ -182,7 +182,7 @@ flowchart LR
 
 `npm run qa:byte-integrity` 在自己创建的临时目录实际克隆 platform/Desktop/delivery，检查 SQL 原始摘要、两个现有数据库迁移账本、28 个 Skill、渲染快照和原始 TAP。它检验独立 Git 克隆的字节完整性，不代替灾难恢复演练；运行前须提交当前源码和 TAP。脚本只删除本次创建且已检查归属的目录。
 
-当前源码平台 145/145、Desktop 四组单元测试通过；实际 HTTP 样本二十一份。全 102 条综合验收和生产发布仍按主文档维护。
+当前源码平台 147/147、Desktop 四组单元测试通过；实际 HTTP 样本二十一份。全 102 条综合验收和生产发布仍按主文档维护。
 
 ## 运行前资料验收 / Initial input-checkpoint QA
 
@@ -204,4 +204,12 @@ Five Web checks cover the initial input checkpoint, actual private upload, expli
 
 `npm run qa:agent-templates` 运行八组真实 Web/源码 Electron 流程：独立邮箱与工作区、目录筛选、缺失工具、无费用预检、编辑失效、接受响应丢失后幂等重试、技能恢复后新回执、四宽度/主题/语言、权限拒绝隐藏及原生 PKCE/企业头校验。模型与媒体保持模拟，业务持久化真实，所有自建浏览器和应用在 finally 关闭。
 
-平台新增六组专项检查，完整回归 145/145；本次四份模板实际响应加入后严格 schema 样本共 21 份。迁移 031 与新的 Desktop 渲染快照均须纳入字节验证。历史安装包和离线 bundle 保留原版本，全部 102 条需求及至少 12 个角色资格门槛继续保留。
+模板增量的六组专项检查使当时完整回归达到 145/145；后续 PDF 增量后为 147/147。四份模板实际响应加入后严格 schema 样本共 21 份。迁移 031 与新的 Desktop 渲染快照均须纳入字节验证。历史安装包和离线 bundle 保留原版本，全部 102 条需求及至少 12 个角色资格门槛继续保留。
+
+## PDF 交付验收
+
+`npm run qa:design-pdf` 的七组流程验证真实登录、画布、接受后响应丢失、幂等重试、源版本冲突、四宽度/主题/语言、设计师模板和原生 Electron 保存。PDF 由 pypdf 独立解析、Poppler 原生渲染并与同源 PNG 比较；报告 `evidence/design-pdf.json` 登记尺寸、摘要与清理结果。
+
+需要原生 Chromium、`PDF_QA_PYTHON`（含 pypdf/Pillow）及 `PDFTOPPM_BIN`。这些仅用于 QA，不是产品运行依赖。当前全套平台回归 **147/147**；本轮源码未重打历史安装包，不等同完整 102 条验收。
+
+![实际 PDF 导出](assets/screenshots/design-pdf-export.png)

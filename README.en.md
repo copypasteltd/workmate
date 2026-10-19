@@ -165,7 +165,7 @@ Deployment: use exact HTTPS `SSO_ALLOWED_ORIGINS`. Default callback is `WEB_ORIG
 
 - `npm run qa:cloud-files`: four Web cloud-file groups, two real Codex tasks with synthetic dependencies, persistent sources and actual ZIPs. Saves cloud-files.json and captured HTTP payloads.
 - `npm run qa:desktop-transfer`: eight source Electron groups for login, idempotent upload, actual 29 MiB transfers, overwrite protection and native cloud-tree browsing. Saves alignment-desktop.json.
-- The current platform regression passes 145/145; the complete TAP and summary are under evidence/alignment-platform.*.
+- The current platform regression passes 147/147; the complete TAP and summary are under evidence/alignment-platform.*.
 
 At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_samples.py` to check captured response schemas. These runs use explicitly synthetic dependencies and real Codex; they do not qualify live model quality or all 102 integrated acceptance cases.
 
@@ -173,7 +173,7 @@ At the master root, run `python -X utf8 docs/tools/validate_runtime_contract_sam
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **147/147**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant, inbox and source integrity
 
@@ -181,7 +181,7 @@ qa:default-assistant and qa:notifications each validate four Web journey groups;
 
 qa:byte-integrity creates independent native Git clones of platform/Desktop/delivery and checks raw SQL digests against both existing migration ledgers, all 28 Skills, renderer provenance and raw TAP. Commit source and TAP first. Owned, verified temporary directories are removed afterward. This is checkout integrity, not disaster recovery.
 
-Current source passes 145/145 platform tests and four Desktop unit tests, with twenty-one captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
+Current source passes 147/147 platform tests and four Desktop unit tests, with twenty-one captured HTTP payloads. Master documents retain all 102 full acceptance cases and remaining production work.
 
 ## Initial-input verification
 
@@ -203,4 +203,12 @@ Platform integration suites now use separate native databases/data directories w
 
 `npm run qa:agent-templates` verifies eight real Web/current-source Electron journeys: isolated sign-in/workspace, filtering, unavailable tools, cost-free preflights, edit invalidation, idempotent recovery after a lost accepted response, fresh receipts after restoring a method, widths/themes/languages, authorization-denial hiding and native PKCE/tenant validation. Model/media dependencies remain simulated; persistence is real. Owned browsers and applications close in finally.
 
-Six new platform groups bring the complete regression to 145/145. Four captured template responses bring strict HTTP schema samples to 21. Byte verification must include migration 031 and the new renderer snapshot. Historical installers/bundles retain their original version, and all 102 requirements and the minimum of 12 qualified roles remain in scope.
+The template increment's six platform groups brought that regression to 145/145; the subsequent PDF increment brings the current total to 147/147. Four captured template responses bring strict HTTP schema samples to 21. Byte verification must include migration 031 and the new renderer snapshot. Historical installers/bundles retain their original version, and all 102 requirements and the minimum of 12 qualified roles remain in scope.
+
+## PDF delivery verification
+
+`npm run qa:design-pdf` verifies seven journeys: real sign-in/canvas, a lost accepted reply, idempotent retry, source-version conflicts, widths/themes/languages, a designer template and native Electron saving. Independent pypdf inspection and native Poppler rendering compare the PDF to its source PNG. `evidence/design-pdf.json` records geometry, hashes and owned-resource cleanup.
+
+Set `CHROME_BIN`, `PDF_QA_PYTHON` (pypdf/Pillow) and `PDFTOPPM_BIN` for native QA tools; these are not product runtime dependencies. The full platform regression passed **147/147**. Historical installers remain unchanged and all 102 requirements retain their full acceptance conditions.
+
+![Actual PDF export](assets/screenshots/design-pdf-export.png)
