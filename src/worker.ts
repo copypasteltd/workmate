@@ -1,4 +1,5 @@
 import { CodeWorkspace } from "./code-workspace.js";
+import { cleanAuthReceipts } from "./auth-receipts.js";
 import {
   readCloudSource,
   writeCloudSource,
@@ -142,6 +143,7 @@ export class Worker {
           () => advanceWorkflows(this.db, this.catalog, this.storage),
         ],
         ["federation", () => expireFederationAttempts(this.db.control)],
+        ["auth_receipts", () => cleanAuthReceipts(this.db)],
         ["retention", () => this.retention.advance()],
         ["erasure", () => this.erasure.advance()],
         ["uploads", () => cleanUploadStaging(this.db)],

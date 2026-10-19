@@ -8,6 +8,11 @@ import * as OTPAuth from "otpauth";
 import { z } from "zod";
 import { validFederation } from "./federation-session.js";
 import {
+  authRequest,
+  authRequestKey,
+  deliverAuthChallenge,
+} from "./auth-receipts.js";
+import {
   email,
   equal,
   hash,
@@ -183,38 +188,48 @@ export function totp(secret: string) {
 export function registerAuth(app: FastifyInstance, db: Database) {
   for (const audience of ["user", "admin"] as const) {
     const prefix = audience === "admin" ? "/v1/admin/auth" : "/v1/auth";
-    app.post(prefix + "/challenge", async (req) => {
+    const createChallenge = async (
+      req: FastifyRequest,
+      reply: FastifyReply,
+      canonical = false,
+    ) => {
+      if (canonical) authRequestKey(req);
       const body = z.object({ email }).strict().parse(req.body);
       const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
-      const challenge = await db.tx(
-        async (tx) => {
-          await tx.query(
-            "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
-            [`challenge:${audience}:${body.email}`],
+      const flow = canonical ? (req.cookies.cp_auth_flow ?? token()) : null;
+      const work = async (tx: Tx) => {
+        await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+          `challenge:${audience}:${body.email}`,
+        ]);
+        const recent = await tx.query(
+          "SELECT count(*)::int AS n FROM auth_challenges WHERE email=$1 AND audience=$2 AND created_at>now()-interval '1 minute'",
+          [body.email, audience],
+        );
+        if (recent.rows[0].n >= 2)
+          throw new Problem(
+            429,
+            "RATE_LIMITED",
+            "請稍後再試 / Please wait before requesting another code",
           );
-          const recent = await tx.query(
-            "SELECT count(*)::int AS n FROM auth_challenges WHERE email=$1 AND audience=$2 AND created_at>now()-interval '1 minute'",
-            [body.email, audience],
-          );
-          if (recent.rows[0].n >= 2)
-            throw new Problem(
-              429,
-              "RATE_LIMITED",
-              "請稍後再試 / Please wait before requesting another code",
-            );
-          const { rows } = await tx.query(
-            "INSERT INTO auth_challenges(email,audience,digest,expires_at) VALUES($1,$2,$3,now()+interval '10 minutes') RETURNING id",
-            [
-              body.email,
-              audience,
-              hmac(db.config.MASTER_KEY!, `${audience}:${body.email}:${code}`),
-            ],
-          );
-          return rows[0].id as string;
-        },
-        undefined,
-        audience === "admin",
-      );
+        const { rows } = await tx.query(
+          "INSERT INTO auth_challenges(email,audience,digest,expires_at,client_flow_hash) VALUES($1,$2,$3,now()+interval '10 minutes',$4) RETURNING id,expires_at",
+          [
+            body.email,
+            audience,
+            hmac(db.config.MASTER_KEY!, `${audience}:${body.email}:${code}`),
+            flow ? hash(flow) : null,
+          ],
+        );
+        return { ...rows[0], code, flow } as {
+          id: string;
+          expires_at: Date;
+          code: string;
+          flow: string | null;
+        };
+      };
+      const challenge = canonical
+        ? await authRequest(db, req, "challenge", body, work)
+        : await db.tx(work, undefined, audience === "admin");
       // Never disclose whether a platform admin exists.
       const permitted =
         audience === "user" ||
@@ -224,22 +239,50 @@ export function registerAuth(app: FastifyInstance, db: Database) {
             [body.email],
           )
         ).rowCount;
-      if (permitted)
-        await sendMail(
+      const deliver = () =>
+        sendMail(
           db,
           body.email,
           "CopyPaste · 登入驗證碼 / Sign-in code",
-          `Your CopyPaste code is ${code}. It expires in 10 minutes. 如非本人操作，請忽略本郵件。`,
-          challenge,
+          `Your CopyPaste code is ${challenge.code}. It expires in 10 minutes. 如非本人操作，請忽略本郵件。`,
+          challenge.id,
         );
+      if (canonical) {
+        reply.setCookie("cp_auth_flow", challenge.flow!, {
+          httpOnly: true,
+          secure: db.config.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/v1/auth",
+          maxAge: 600,
+        });
+        await deliverAuthChallenge(db, req, deliver);
+        reply.code(202);
+        return {
+          challenge_id: challenge.id,
+          expires_at: new Date(challenge.expires_at).toISOString(),
+        };
+      }
+      if (permitted) await deliver();
       return {
-        challenge_id: challenge,
+        challenge_id: challenge.id,
         expires_in: 600,
         delivery: db.config.DEV_MAILBOX ? "local_mailbox" : "email",
       };
-    });
-    app.post(prefix + "/verify", async (req, reply) => {
-      const body = z
+    };
+    app.post(prefix + "/challenge", (req, reply) =>
+      createChallenge(req, reply),
+    );
+    if (audience === "user")
+      app.post("/v1/auth/challenges", (req, reply) =>
+        createChallenge(req, reply, true),
+      );
+    const createSession = async (
+      req: FastifyRequest,
+      reply: FastifyReply,
+      canonical = false,
+    ) => {
+      if (canonical) authRequestKey(req);
+      const schema = z
         .object({
           challenge_id: uuid,
           code: z.string().regex(/^\d{6}$/),
@@ -249,103 +292,114 @@ export function registerAuth(app: FastifyInstance, db: Database) {
             .regex(/^\d{6}$/)
             .optional(),
         })
-        .strict()
-        .parse(req.body);
-      const result = await db.tx(
-        async (tx) => {
-          const q = await tx.query(
-            "SELECT *, expires_at>now() AS valid FROM auth_challenges WHERE id=$1 AND audience=$2 AND purpose='login' FOR UPDATE",
-            [body.challenge_id, audience],
-          );
-          const c = q.rows[0];
-          if (!c || !c.valid || c.consumed_at || c.attempts >= 5)
-            return { error: true } as const;
-          await tx.query(
-            "UPDATE auth_challenges SET attempts=attempts+1 WHERE id=$1",
-            [c.id],
-          );
-          if (
-            !equal(
-              c.digest,
-              hmac(
-                db.config.MASTER_KEY!,
-                `${audience}:${c.email}:${body.code}`,
-              ),
+        .strict();
+      const body: {
+        challenge_id: string;
+        code: string;
+        name?: string;
+        totp?: string;
+      } = (
+        canonical ? schema.pick({ challenge_id: true, code: true }) : schema
+      ).parse(req.body);
+      const work = async (tx: Tx) => {
+        const q = await tx.query(
+          "SELECT *, expires_at>now() AS valid FROM auth_challenges WHERE id=$1 AND audience=$2 AND purpose='login' FOR UPDATE",
+          [body.challenge_id, audience],
+        );
+        const c = q.rows[0];
+        if (!c || !c.valid || c.consumed_at || c.attempts >= 5)
+          return { error: true } as const;
+        if (
+          (canonical && !c.client_flow_hash) ||
+          (c.client_flow_hash &&
+            (!req.cookies.cp_auth_flow ||
+              !equal(c.client_flow_hash, hash(req.cookies.cp_auth_flow))))
+        )
+          return { error: true } as const;
+        await tx.query(
+          "UPDATE auth_challenges SET attempts=attempts+1 WHERE id=$1",
+          [c.id],
+        );
+        if (
+          !equal(
+            c.digest,
+            hmac(db.config.MASTER_KEY!, `${audience}:${c.email}:${body.code}`),
+          )
+        )
+          return { error: true } as const;
+        let person;
+        if (audience === "admin") {
+          person = (
+            await tx.query(
+              "SELECT * FROM admin_principals WHERE email=$1 FOR UPDATE",
+              [c.email],
             )
+          ).rows[0];
+          if (
+            !person ||
+            person.status !== "active" ||
+            person.enrollment_state !== "enrolled" ||
+            !person.totp_secret ||
+            !body.totp
           )
             return { error: true } as const;
-          let person;
-          if (audience === "admin") {
-            person = (
-              await tx.query(
-                "SELECT * FROM admin_principals WHERE email=$1 FOR UPDATE",
-                [c.email],
-              )
-            ).rows[0];
-            if (
-              !person ||
-              person.status !== "active" ||
-              person.enrollment_state !== "enrolled" ||
-              !person.totp_secret ||
-              !body.totp
-            )
-              return { error: true } as const;
-            const verifier = totp(
-              unseal(db.config.MASTER_KEY!, person.totp_secret),
-            );
-            const delta = verifier.validate({ token: body.totp, window: 1 });
-            const step = Math.floor(Date.now() / 30000) + (delta ?? 0);
-            if (delta === null || step <= Number(person.last_totp_step))
-              return { error: true } as const;
-            await tx.query(
-              "UPDATE admin_principals SET last_totp_step=$2 WHERE id=$1",
-              [person.id, step],
-            );
-          } else {
-            person = (
-              await tx.query(
-                "INSERT INTO users(email,name) VALUES($1,$2) ON CONFLICT(email) DO UPDATE SET email=EXCLUDED.email RETURNING *",
-                [c.email, body.name ?? c.email.split("@")[0]],
-              )
-            ).rows[0];
-            if (person.status !== "active") return { error: true } as const;
-          }
+          const verifier = totp(
+            unseal(db.config.MASTER_KEY!, person.totp_secret),
+          );
+          const delta = verifier.validate({ token: body.totp, window: 1 });
+          const step = Math.floor(Date.now() / 30000) + (delta ?? 0);
+          if (delta === null || step <= Number(person.last_totp_step))
+            return { error: true } as const;
           await tx.query(
-            "UPDATE auth_challenges SET consumed_at=now() WHERE id=$1",
-            [c.id],
+            "UPDATE admin_principals SET last_totp_step=$2 WHERE id=$1",
+            [person.id, step],
           );
-          const value = token();
-          const s = await tx.query(
-            `INSERT INTO sessions(token_hash,${audience === "admin" ? "admin_id" : "user_id"},audience,auth_version,expires_at,mfa_at) VALUES($1,$2,$3,$4,now()+$5::interval,$6) RETURNING id`,
-            [
-              hash(value),
-              person.id,
-              audience,
-              person.auth_version,
-              audience === "admin" ? "8 hours" : "7 days",
-              audience === "admin" ? new Date() : null,
-            ],
-          );
-          await audit(
-            tx,
-            { id: person.id, audience },
-            "auth.login",
-            s.rows[0].id,
-          );
-          return {
-            value,
-            user: {
-              id: person.id,
-              email: person.email,
-              name: person.name,
-              locale: person.locale,
-            },
-            csrf: csrf(db, value),
-          };
-        },
-        undefined,
-        audience === "admin",
-      );
+        } else {
+          person = (
+            await tx.query(
+              "INSERT INTO users(email,name) VALUES($1,$2) ON CONFLICT(email) DO UPDATE SET email=EXCLUDED.email RETURNING *",
+              [c.email, body.name ?? c.email.split("@")[0]],
+            )
+          ).rows[0];
+          if (person.status !== "active") return { error: true } as const;
+        }
+        await tx.query(
+          "UPDATE auth_challenges SET consumed_at=now() WHERE id=$1",
+          [c.id],
+        );
+        const value = token();
+        const s = await tx.query(
+          `INSERT INTO sessions(token_hash,${audience === "admin" ? "admin_id" : "user_id"},audience,auth_version,expires_at,mfa_at) VALUES($1,$2,$3,$4,now()+$5::interval,$6) RETURNING id,expires_at`,
+          [
+            hash(value),
+            person.id,
+            audience,
+            person.auth_version,
+            audience === "admin" ? "8 hours" : "7 days",
+            audience === "admin" ? new Date() : null,
+          ],
+        );
+        await audit(
+          tx,
+          { id: person.id, audience },
+          "auth.login",
+          s.rows[0].id,
+        );
+        return {
+          value,
+          expires_at: (s.rows[0].expires_at as Date).toISOString(),
+          user: {
+            id: person.id,
+            email: person.email,
+            name: person.name,
+            locale: person.locale,
+          },
+          csrf: csrf(db, value),
+        };
+      };
+      const result = canonical
+        ? await authRequest(db, req, "session", body, work)
+        : await db.tx(work, undefined, audience === "admin");
       if ("error" in result)
         throw new Problem(
           401,
@@ -353,42 +407,86 @@ export function registerAuth(app: FastifyInstance, db: Database) {
           "驗證碼無效或已過期 / Invalid or expired code",
         );
       setSessionCookie(db, reply, result.value, audience === "admin");
+      if (canonical) {
+        reply.code(201);
+        return {
+          user: {
+            id: result.user.id,
+            email: result.user.email,
+            display_name: result.user.name,
+          },
+          expires_at: result.expires_at,
+          csrf_token: result.csrf,
+        };
+      }
       return { user: result.user, csrf_token: result.csrf };
-    });
+    };
+    app.post(prefix + "/verify", (req, reply) => createSession(req, reply));
+    if (audience === "user")
+      app.post("/v1/auth/sessions", (req, reply) =>
+        createSession(req, reply, true),
+      );
+    const logout = async (
+      req: FastifyRequest,
+      reply: FastifyReply,
+      canonical = false,
+    ) => {
+      if (canonical) authRequestKey(req);
+      await db.tx(
+        async (tx) => {
+          if (audience === "user")
+            await tx.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
+              req.principal.id,
+            ]);
+          await tx.query("UPDATE sessions SET revoked_at=now() WHERE id=$1", [
+            req.principal.sessionId,
+          ]);
+          if (audience === "user") {
+            await tx.query(
+              "UPDATE refresh_tokens SET revoked_at=now() WHERE family_id IN (SELECT family_id FROM refresh_tokens WHERE session_id=$1)",
+              [req.principal.sessionId],
+            );
+            await tx.query(
+              "UPDATE sessions SET revoked_at=now() WHERE id IN (SELECT session_id FROM refresh_tokens WHERE family_id IN (SELECT family_id FROM refresh_tokens WHERE session_id=$1))",
+              [req.principal.sessionId],
+            );
+          }
+          await audit(
+            tx,
+            req.principal,
+            "auth.logout",
+            req.principal.sessionId,
+          );
+        },
+        undefined,
+        audience === "admin",
+      );
+      reply.clearCookie(
+        audience === "admin" ? "cp_admin_session" : "cp_session",
+        { path: audience === "admin" ? "/v1/admin" : "/v1" },
+      );
+      if (audience === "user")
+        reply.clearCookie("cp_auth_flow", { path: "/v1/auth" });
+      return { ok: true };
+    };
     app.post(
       prefix + "/logout",
       { preHandler: audience === "admin" ? requireAdmin(db) : requireUser(db) },
-      async (req, reply) => {
-        await db.tx(
-          async (tx) => {
-            if (audience === "user")
-              await tx.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [
-                req.principal.id,
-              ]);
-            await tx.query("UPDATE sessions SET revoked_at=now() WHERE id=$1", [
-              req.principal.sessionId,
-            ]);
-            if (audience === "user") {
-              await tx.query(
-                "UPDATE refresh_tokens SET revoked_at=now() WHERE family_id IN (SELECT family_id FROM refresh_tokens WHERE session_id=$1)",
-                [req.principal.sessionId],
-              );
-              await tx.query(
-                "UPDATE sessions SET revoked_at=now() WHERE id IN (SELECT session_id FROM refresh_tokens WHERE family_id IN (SELECT family_id FROM refresh_tokens WHERE session_id=$1))",
-                [req.principal.sessionId],
-              );
-            }
-          },
-          undefined,
-          audience === "admin",
-        );
-        reply.clearCookie(
-          audience === "admin" ? "cp_admin_session" : "cp_session",
-          { path: audience === "admin" ? "/v1/admin" : "/v1" },
-        );
-        return { ok: true };
-      },
+      (req, reply) => logout(req, reply),
     );
+    if (audience === "user")
+      app.delete("/v1/auth/session", async (req, reply) => {
+        authRequestKey(req);
+        try {
+          req.principal = await principal(db, req);
+        } catch (error) {
+          if (!(error instanceof Problem) || error.status !== 401) throw error;
+          reply.clearCookie("cp_session", { path: "/v1" });
+          reply.clearCookie("cp_auth_flow", { path: "/v1/auth" });
+          return { ok: true };
+        }
+        return logout(req, reply, true);
+      });
   }
   app.get("/v1/me", { preHandler: requireUser(db) }, async (req) => {
     const u = (
@@ -464,8 +562,10 @@ export function registerAuth(app: FastifyInstance, db: Database) {
         );
         await audit(tx, req.principal, "session.revoke", id);
       });
-      if (id === req.principal.sessionId && req.principal.audience === "user")
+      if (id === req.principal.sessionId && req.principal.audience === "user") {
         reply.clearCookie("cp_session", { path: "/v1" });
+        reply.clearCookie("cp_auth_flow", { path: "/v1/auth" });
+      }
       return { ok: true };
     },
   );
@@ -488,6 +588,37 @@ function redirectAllowed(db: Database, client: string, value: string) {
     value === `https://${db.config.EXTENSION_ID}.chromiumapp.org/callback`
   );
 }
+function authorizeBrowserNavigation(db: Database, req: FastifyRequest) {
+  if (req.principal.audience !== "user")
+    throw new Problem(
+      403,
+      "BROWSER_SESSION_REQUIRED",
+      "Use your signed-in browser to authorize a device",
+    );
+  const proof = req.headers["x-csrf-token"];
+  if (
+    typeof proof === "string" &&
+    req.cookies.cp_session &&
+    equal(proof, csrf(db, req.cookies.cp_session))
+  )
+    return;
+  let trustedSource = false;
+  try {
+    trustedSource =
+      new URL(String(req.headers.referer)).origin === db.config.WEB_ORIGIN;
+  } catch {}
+  if (
+    req.headers["sec-fetch-mode"] !== "navigate" ||
+    req.headers["sec-fetch-dest"] !== "document" ||
+    req.headers["sec-fetch-user"] !== "?1" ||
+    !(req.headers["sec-fetch-site"] === "same-origin" || trustedSource)
+  )
+    throw new Problem(
+      403,
+      "CONSENT_REQUIRED",
+      "Return to the device authorization page and confirm access",
+    );
+}
 function registerNativeAuth(app: FastifyInstance, db: Database) {
   const request = z
     .object({
@@ -497,69 +628,93 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
       state: z.string().min(32).max(256),
     })
     .strict();
+  const authorize = async (req: FastifyRequest, b: z.infer<typeof request>) => {
+    if (req.principal.audience !== "user")
+      throw new Problem(
+        403,
+        "BROWSER_SESSION_REQUIRED",
+        "Use your signed-in browser to authorize a device",
+      );
+    if (!redirectAllowed(db, b.client_id, b.redirect_uri))
+      throw new Problem(400, "INVALID_REDIRECT", "Unregistered callback URL");
+    const code = token();
+    await db.tx(async (tx) => {
+      const person = (
+        await tx.query(
+          "SELECT status,auth_version FROM users WHERE id=$1 FOR UPDATE",
+          [req.principal.id],
+        )
+      ).rows[0];
+      const source = (
+        await tx.query(
+          "SELECT *,expires_at>now() AS valid FROM sessions WHERE id=$1 AND user_id=$2 FOR SHARE",
+          [req.principal.sessionId, req.principal.id],
+        )
+      ).rows[0];
+      if (
+        !person ||
+        person.status !== "active" ||
+        person.auth_version !== req.principal.authVersion ||
+        !source?.valid ||
+        source.revoked_at ||
+        source.auth_version !== person.auth_version ||
+        !(await validFederation(tx, source))
+      )
+        throw new Problem(401, "SESSION_EXPIRED", "Please sign in again");
+      await tx.query(
+        "INSERT INTO native_auth_codes(digest,user_id,challenge,client_id,redirect_uri,expires_at,source_session_id,issued_auth_version) VALUES($1,$2,$3,$4,$5,now()+interval '60 seconds',$6,$7)",
+        [
+          hash(code),
+          req.principal.id,
+          b.code_challenge,
+          b.client_id,
+          b.redirect_uri,
+          source.id,
+          person.auth_version,
+        ],
+      );
+    });
+    const u = new URL(b.redirect_uri);
+    u.searchParams.set("code", code);
+    u.searchParams.set("state", b.state);
+    return u.href;
+  };
   app.post(
     "/v1/auth/native/authorize",
     { preHandler: requireUser(db) },
-    async (req) => {
-      const b = request.parse(req.body);
-      if (!redirectAllowed(db, b.client_id, b.redirect_uri))
-        throw new Problem(400, "INVALID_REDIRECT", "Unregistered callback URL");
-      const code = token();
-      await db.tx(async (tx) => {
-        const person = (
-          await tx.query(
-            "SELECT status,auth_version FROM users WHERE id=$1 FOR UPDATE",
-            [req.principal.id],
-          )
-        ).rows[0];
-        const source = (
-          await tx.query(
-            "SELECT *,expires_at>now() AS valid FROM sessions WHERE id=$1 AND user_id=$2 FOR SHARE",
-            [req.principal.sessionId, req.principal.id],
-          )
-        ).rows[0];
-        if (
-          !person ||
-          person.status !== "active" ||
-          person.auth_version !== req.principal.authVersion ||
-          !source?.valid ||
-          source.revoked_at ||
-          source.auth_version !== person.auth_version ||
-          !(await validFederation(tx, source))
-        )
-          throw new Problem(401, "SESSION_EXPIRED", "Please sign in again");
-        await tx.query(
-          "INSERT INTO native_auth_codes(digest,user_id,challenge,client_id,redirect_uri,expires_at,source_session_id,issued_auth_version) VALUES($1,$2,$3,$4,$5,now()+interval '60 seconds',$6,$7)",
-          [
-            hash(code),
-            req.principal.id,
-            b.code_challenge,
-            b.client_id,
-            b.redirect_uri,
-            source.id,
-            person.auth_version,
-          ],
-        );
-      });
-      const u = new URL(b.redirect_uri);
-      u.searchParams.set("code", code);
-      u.searchParams.set("state", b.state);
-      return { redirect: u.href };
+    async (req) => ({
+      redirect: await authorize(req, request.parse(req.body)),
+    }),
+  );
+  app.get(
+    "/v1/auth/authorize",
+    { preHandler: requireUser(db) },
+    async (req, reply) => {
+      const { code_challenge_method: _, ...b } = request
+        .extend({ code_challenge_method: z.literal("S256") })
+        .parse(req.query);
+      authorizeBrowserNavigation(db, req);
+      return reply
+        .code(302)
+        .header("Location", await authorize(req, b))
+        .send();
     },
   );
-  app.post("/v1/auth/native/token", async (req) => {
-    const b = z
-      .object({
-        client_id: z.enum(["desktop", "extension"]),
-        redirect_uri: z.string().url(),
-        code: z.string().min(40).max(100),
-        code_verifier: z.string().regex(/^[\w.~-]{43,128}$/),
-      })
-      .strict()
-      .parse(req.body);
+  const codeRequest = z
+    .object({
+      client_id: z.enum(["desktop", "extension"]),
+      redirect_uri: z.string().url(),
+      code: z.string().min(40).max(100),
+      code_verifier: z.string().regex(/^[\w.~-]{43,128}$/),
+    })
+    .strict();
+  const exchangeCode = async (
+    b: z.infer<typeof codeRequest>,
+    req?: FastifyRequest,
+  ) => {
     if (!redirectAllowed(db, b.client_id, b.redirect_uri))
       throw new Problem(400, "INVALID_GRANT", "Invalid native authorization");
-    const r = await db.tx(async (tx) => {
+    const work = async (tx: Tx) => {
       const owner = (
         await tx.query(
           "SELECT user_id FROM native_auth_codes WHERE digest=$1",
@@ -610,7 +765,10 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
         [c.digest],
       );
       return issueNative(tx, u, b.client_id, undefined, source);
-    });
+    };
+    const r = req
+      ? await authRequest(db, req, "code", b, work)
+      : await db.tx(work);
     if (!r)
       throw new Problem(
         401,
@@ -618,16 +776,21 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
         "Invalid or expired authorization",
       );
     return r;
-  });
-  app.post("/v1/auth/native/refresh", async (req) => {
-    const b = z
-      .object({
-        refresh_token: z.string().min(40).max(100),
-        client_id: z.enum(["desktop", "extension"]),
-      })
-      .strict()
-      .parse(req.body);
-    const r = await db.tx(async (tx) => {
+  };
+  app.post("/v1/auth/native/token", (req) =>
+    exchangeCode(codeRequest.parse(req.body)),
+  );
+  const refreshRequest = z
+    .object({
+      refresh_token: z.string().min(40).max(100),
+      client_id: z.enum(["desktop", "extension"]),
+    })
+    .strict();
+  const exchangeRefresh = async (
+    b: z.infer<typeof refreshRequest>,
+    req?: FastifyRequest,
+  ) => {
+    const work = async (tx: Tx) => {
       const owner = (
         await tx.query("SELECT user_id FROM refresh_tokens WHERE digest=$1", [
           hash(b.refresh_token),
@@ -681,9 +844,28 @@ function registerNativeAuth(app: FastifyInstance, db: Database) {
         f.session_id,
       ]);
       return issueNative(tx, u, b.client_id, f.family_id, source);
-    });
+    };
+    const r = req
+      ? await authRequest(db, req, "refresh", b, work)
+      : await db.tx(work);
     if (!r) throw new Problem(401, "INVALID_GRANT", "Please sign in again");
     return r;
+  };
+  app.post("/v1/auth/native/refresh", (req) =>
+    exchangeRefresh(refreshRequest.parse(req.body)),
+  );
+  const tokenRequest = z.discriminatedUnion("grant_type", [
+    codeRequest.extend({ grant_type: z.literal("authorization_code") }),
+    refreshRequest.extend({ grant_type: z.literal("refresh_token") }),
+  ]);
+  app.post("/v1/auth/token", async (req, reply) => {
+    authRequestKey(req);
+    const body = tokenRequest.parse(req.body);
+    const result =
+      body.grant_type === "authorization_code"
+        ? await exchangeCode(body, req)
+        : await exchangeRefresh(body, req);
+    return reply.code(201).send(result);
   });
   // Possession of a refresh credential revokes only its own client/family. This
   // still works after the short-lived access token expires, without rotating it.

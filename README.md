@@ -349,3 +349,11 @@ flowchart LR
 `GET /v1/me/sessions` 区分 Web、Desktop 和扩展，标明当前会话，并保留访问令牌已过期但仍可刷新的设备条目；不返回凭证。新增 `POST /v1/auth/native/revoke`，以对应 client_id 的刷新凭证撤销整族，不需要有效访问令牌、不轮换新凭证，未知/已撤销凭证返回相同回执。刷新、退出与撤销按同一用户锁顺序串行，旧列表 ID 可撤销已经轮换的家族。成员移除拒绝该企业的新调用，不能凭刷新令牌恢复已撤销的企业权限。
 
 `tests/auth-sessions.test.ts` 使用隔离原生数据库验证会话目录、过期与重放、真实刷新/撤销竞争、跨用户与 CSRF、邀请与移除后的浏览器/原生/设备入口；不依赖任何模型调用。此路由是实际实现接口，未据此改写规范契约或宣布完整身份/生产门槛通过。
+
+## 规范用户认证 / Canonical user authentication
+
+新增原 OpenAPI 的 challenges（202）、sessions（201）、当前 session DELETE、S256 authorize GET（302）和 token（201），旧接口继续兼容。迁移 036 将验证码/会话/轮换与加密幂等回执原子提交；验证码绑定 HTTP-only 浏览器 flow，授权需浏览器会话与用户导航或显式 CSRF。撤销、冻结、过期和历史轮换不可通过旧回执复活；重试返回同一令牌的剩余有效期。
+
+The five original user authentication operations now have real Web, Desktop and Extension consumers. Migration 036 stores encrypted atomic request receipts, preserving one-use codes and refresh reuse revocation while allowing the same unknown request to recover. Browser consent requires a product browser session; native Bearer credentials cannot grant another client. Cached replies never revive revoked or expired credentials. Remaining token lifetime is preserved.
+
+`tests/auth-contract.test.ts` validates actual isolated PostgreSQL/API behavior against ten exact original schema dependencies. Full current regression: **203/203**. Delivery `npm run qa:platform` captures raw TAP bytes and SHA-256. `/v1/me`, canonical invitation/admin contracts and the complete identity matrix remain separate work; route counts are not acceptance counts.
