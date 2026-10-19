@@ -3,6 +3,7 @@ import { freezeTaskSkills } from "./skill-lifecycle.js";
 import { stageInputDependencies } from "./task-dependencies.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
+import { registerAdminDirectory } from "./admin-directory.js";
 import { registerAdminJobs } from "./admin-jobs.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -189,163 +190,7 @@ export function registerAdmin(
       true,
     ),
   );
-  app.get("/v1/admin/users", { preHandler: requireAdmin(db) }, async (req) => {
-    const q = pagination.parse(req.query);
-    return db.tx(
-      async (tx) => {
-        const global = await can(tx, req.principal, "admin.users.read");
-        const scope = q.tenant_id
-          ? [q.tenant_id]
-          : await visibleTenants(tx, req.principal, "admin.users.read");
-        if (q.tenant_id)
-          await permit(tx, req.principal, "admin.users.read", {
-            tenant: q.tenant_id,
-          });
-        if (!global && !scope.length)
-          throw new Problem(403, "ADMIN_FORBIDDEN", "No readable user scope");
-        const contactSearch = await can(
-          tx,
-          req.principal,
-          "admin.users.contact.read",
-          q.tenant_id ? { tenant: q.tenant_id } : {},
-        );
-        const where = `WHERE (${contactSearch ? "u.email ILIKE $1 OR " : ""}u.name ILIKE $1) ${global && !q.tenant_id ? "" : "AND EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND m.tenant_id=ANY($2::uuid[]))"}`;
-        const args: any[] = [`%${q.search.replace(/[\\%_]/g, "\\$&")}%`];
-        if (!global || q.tenant_id) args.push(scope);
-        const count = Number(
-          (await tx.query(`SELECT count(*) AS n FROM users u ${where}`, args))
-            .rows[0].n,
-        );
-        const offset = args.length;
-        const rows = (
-          await tx.query(
-            `SELECT u.id,u.email,u.name,u.status,u.locale,u.created_at,(SELECT count(*)::int FROM memberships m WHERE m.user_id=u.id AND m.status='active' ${global && !q.tenant_id ? "" : "AND m.tenant_id=ANY($2::uuid[])"}) AS workspaces FROM users u ${where} ORDER BY u.created_at DESC LIMIT $${offset + 1} OFFSET $${offset + 2}`,
-            [...args, q.page_size, (q.page - 1) * q.page_size],
-          )
-        ).rows;
-        const contacts = await can(
-          tx,
-          req.principal,
-          "admin.users.contact.read",
-          q.tenant_id ? { tenant: q.tenant_id } : {},
-        );
-        const usageTenants = await visibleTenants(
-          tx,
-          req.principal,
-          "admin.usage.read",
-          true,
-        );
-        const usage = q.tenant_id
-          ? usageTenants.includes(q.tenant_id)
-          : usageTenants.length > 0;
-        const us = await scopePredicate(
-          tx,
-          req.principal,
-          "admin.usage.read",
-          "tenant_id",
-          "project_id",
-          1,
-        );
-        for (const r of rows)
-          r.charged_micros = usage
-            ? (
-                await tx.query(
-                  `SELECT coalesce(sum(charged_micros),0)::text AS n FROM tasks WHERE created_by=$1 AND ${us.sql}${q.tenant_id ? " AND tenant_id=$7::uuid" : ""}`,
-                  [r.id, ...us.values, ...(q.tenant_id ? [q.tenant_id] : [])],
-                )
-              ).rows[0].n
-            : undefined;
-        await audit(
-          tx,
-          req.principal,
-          "admin.users.read",
-          undefined,
-          "succeeded",
-          { page: q.page },
-        );
-        return {
-          items: rows.map((r) => ({
-            ...r,
-            email: contacts
-              ? r.email
-              : r.email.replace(/^(.).*(@.*)$/, "$1***$2"),
-            charged_micros: usage ? r.charged_micros : undefined,
-          })),
-          total: count,
-          page: q.page,
-          page_size: q.page_size,
-        };
-      },
-      undefined,
-      true,
-    );
-  });
-  app.get(
-    "/v1/admin/users/:id",
-    { preHandler: requireAdmin(db) },
-    async (req) => {
-      const id = uuid.parse((req.params as any).id);
-      return db.tx(
-        async (tx) => {
-          const global = await can(tx, req.principal, "admin.users.read");
-          const tenants = await visibleTenants(
-            tx,
-            req.principal,
-            "admin.users.read",
-          );
-          const u = (
-            await tx.query(
-              "SELECT id,email,name,status,locale,created_at FROM users WHERE id=$1",
-              [id],
-            )
-          ).rows[0];
-          if (!u) throw new Problem(404, "NOT_FOUND", "User not found");
-          const memberships = (
-            await tx.query(
-              "SELECT m.*,t.name AS tenant_name FROM memberships m JOIN tenants t ON t.id=m.tenant_id WHERE m.user_id=$1 AND ($2 OR m.tenant_id=ANY($3::uuid[]))",
-              [id, global, tenants],
-            )
-          ).rows;
-          if (!global && !memberships.length)
-            throw new Problem(404, "NOT_FOUND", "User not found");
-          if (!(await can(tx, req.principal, "admin.users.contact.read")))
-            u.email = u.email.replace(/^(.).*(@.*)$/, "$1***$2");
-          const usageScope = await scopePredicate(
-            tx,
-            req.principal,
-            "admin.usage.read",
-            "tenant_id",
-            "project_id",
-            1,
-          );
-          const usage = (
-            await tx.query(
-              `SELECT tenant_id,count(*)::int AS tasks,sum(charged_micros)::text AS charged_micros,sum(input_tokens)::text AS input_tokens,sum(output_tokens)::text AS output_tokens FROM tasks WHERE created_by=$1 AND ${usageScope.sql} GROUP BY tenant_id`,
-              [id, ...usageScope.values],
-            )
-          ).rows;
-          const entitlements = (await can(
-            tx,
-            req.principal,
-            "admin.entitlements.read",
-          ))
-            ? (
-                await tx.query(
-                  "SELECT * FROM entitlements WHERE user_id=$1 ORDER BY created_at DESC",
-                  [id],
-                )
-              ).rows
-            : [];
-          await audit(tx, req.principal, "admin.users.read", id);
-          return { user: u, memberships, usage, entitlements };
-        },
-        undefined,
-        true,
-      );
-    },
-  );
   for (const section of [
-    "tenants",
     "usage",
     "billing",
     "entitlements",
@@ -395,8 +240,6 @@ export function registerAdmin(
             if (!global && !allowed.length)
               throw new Problem(403, "ADMIN_FORBIDDEN", "No authorized scope");
             const sources: Record<string, string> = {
-              tenants:
-                "SELECT t.*,w.balance_micros,w.reserved_micros,w.credit_limit_micros,(SELECT count(*)::int FROM memberships m WHERE m.tenant_id=t.id AND m.status='active') AS members FROM tenants t JOIN wallets w ON w.tenant_id=t.id",
               billing:
                 "SELECT l.*,t.name AS tenant_name FROM ledger l JOIN tenants t ON t.id=l.tenant_id",
               entitlements:
@@ -443,7 +286,7 @@ export function registerAdmin(
                 tx,
                 req.principal,
                 perm,
-                section === "tenants" ? "r.id" : "r.tenant_id",
+                "r.tenant_id",
                 ["content", "execution", "connections"].includes(section)
                   ? "r.project_id"
                   : undefined,
@@ -456,13 +299,10 @@ export function registerAdmin(
               !["catalog", "plans", "policy", "access"].includes(section)
             ) {
               args.push(q.tenant_id);
-              filter += ` AND ${section === "tenants" ? "r.id" : "r.tenant_id"}=$${args.length}::uuid`;
+              filter += ` AND ${"r.tenant_id"}=$${args.length}::uuid`;
             }
             args.push("%" + q.search.replace(/[\\%_]/g, "\\$&") + "%");
-            const searchable =
-              section === "tenants"
-                ? "(to_jsonb(r)-'balance_micros'-'reserved_micros'-'credit_limit_micros')::text"
-                : "row_to_json(r)::text";
+            const searchable = "row_to_json(r)::text";
             filter += ` AND ${searchable} ILIKE $${args.length}`;
             const baseQuery = `FROM (${source}) r WHERE ${filter}`;
             const total = Number(
@@ -496,17 +336,6 @@ export function registerAdmin(
             await audit(tx, req.principal, perm, undefined, "succeeded", {
               tenant_id: q.tenant_id,
             });
-            for (const r of items)
-              if (
-                section === "tenants" &&
-                !(await can(tx, req.principal, "admin.billing.read", {
-                  tenant: r.id,
-                }))
-              ) {
-                delete r.balance_micros;
-                delete r.reserved_micros;
-                delete r.credit_limit_micros;
-              }
             return {
               items,
               total,
@@ -950,6 +779,7 @@ export function registerAdmin(
       );
     },
   );
+  registerAdminDirectory(app, db);
   registerAdminContent(app, db, storage);
   registerAdminJobs(app, db);
   registerAdminCatalog(app, db, catalog);

@@ -390,6 +390,10 @@ export function registerAuth(app: FastifyInstance, db: Database) {
             audience === "admin" ? new Date() : null,
           ],
         );
+        if (audience === "user")
+          await tx.query("UPDATE users SET last_login_at=now() WHERE id=$1", [
+            person.id,
+          ]);
         await audit(
           tx,
           { id: person.id, audience },

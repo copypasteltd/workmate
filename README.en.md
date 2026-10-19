@@ -359,3 +359,24 @@ Final stable-source platform regression: **233/233**, including **13/13** Admin 
 Four canonical POST commands manage global user profile/state, all-session revocation and workspace state, returning strict 202 AdminOperation responses; obsolete PATCH routes are removed. Migration 039 adds real revisions, labels and a distinct closure marker. Commands recheck current scope/denies, recent MFA, CSRF, idempotency and revision. Closure/reopening defaults to independent review tied to the original session, frozen target, deadline and immutable actual policy. Global suspension revokes sessions, refresh credentials, pending native codes and relevant unused invitations; workspace suspension preserves access elsewhere. Batch state jobs cannot reopen closed accounts through a review bypass.
 
 User, Admin and account cancellation share one domain guard. Attempted work or external charges retain their reservation for reconciliation; a non-running state does not prove zero cost. Twelve isolated native PostgreSQL groups exercise scopes, credentials, revisions, approval changes, concurrent workspace creation and cancellation accounting. Delivery receipts describe the cumulative regression. Canonical list/detail, financial/VIP flows and full acceptance remain outstanding.
+
+
+## Canonical user and workspace directory increment
+
+`GET /v1/admin/users`, `GET /v1/admin/users/{user_id}` and `GET /v1/admin/tenants` now return the original strict DTOs. Users are deduplicated by global identity. Canonical q/limit/cursor queries support user, workspace, project, state, effective VIP and confirmed-charge period filters. Contact, usage and VIP fields independently intersect current scope and explicit denies, including search and filter inference protection. Signed cursors bind the actor, session, permissions and filters, preserve timestamp microseconds and expire after 15 minutes. Lists do not invent total counts.
+
+Migration 040 persists a separate wallet account UUID. Successful email and enterprise federation sign-ins update last_login_at; native token refresh does not. Confirmed charges come from actual charge ledger entries, scoped through their tasks and a half-open settlement interval, with decimal micros strings. Missing authorization is not represented as zero. The scoped management-context supplement supplies rich detail display without changing canonical response shapes.
+
+Run `node --env-file=.env --import tsx --test --test-concurrency=1 tests/admin-directory.test.ts` against native PostgreSQL: ten isolated groups pass, comparing all seven fixture schemas and the original OpenAPI digest. No Docker/WSL. Complete financial/VIP write contracts, consumption drilldown and full product acceptance remain outstanding.
+
+```mermaid
+flowchart LR
+  Session[Current AdminSession and MFA] --> Scope[Action / field / workspace / project scope]
+  Scope --> Cursor[Signed cursor and deduplicated directory]
+  Cursor --> DTO[Strict AdminUser / AdminTenant]
+  Scope --> Ledger[Confirmed charge ledger]
+  Ledger --> DTO
+  DTO --> Audit[Read audit and dashboard]
+```
+
+User export now consumes canonical user cursors. It rejects collections above the existing synchronous 500-row bound instead of silently truncating, and rechecks the full current authorization digest under MFA/access locks before sending. Added coverage checks actual redacted CSV, 501-row refusal and revoked download rights; the complete canonical asynchronous export workflow remains outstanding.

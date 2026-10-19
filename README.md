@@ -412,3 +412,24 @@ flowchart LR
   S --> L[持久操作与审计]
   B --> L
 ```
+
+
+## 规范用户和企业目录增量
+
+`GET /v1/admin/users`、`GET /v1/admin/users/{user_id}`、`GET /v1/admin/tenants` 采用原始严格 DTO。用户以全局 ID 去重，查询接受规范 q/limit/cursor，企业、项目、用户、状态、有效 VIP 和确认扣费时段可组合筛选。完整联系方式、费用和 VIP 按独立字段许可及当前范围投影，显式 deny 约束搜索和筛选。签名游标绑定当前身份、会话、权限和筛选，保留微秒并列顺序，15 分钟过期；列表没有伪造总条数。
+
+迁移 040 为钱包新增持久账务账户 UUID；真实邮箱和企业联合登录更新 last_login_at，原生刷新不增加登录次数。确认扣费汇总真实 charge 账本并按原任务的企业/项目范围交集及半开入账时段过滤，保留十进制微额字符串；未知或无权字段不当作零。当前补充 management-context 仅提供获准的详情显示资料，原规范响应保持严格。
+
+专项运行 `node --env-file=.env --import tsx --test --test-concurrency=1 tests/admin-directory.test.ts`，十组隔离原生 PostgreSQL 检查通过。规范 fixture 的七个依赖与原 OpenAPI 原字节摘要逐一核对。需要正常启动本机原生 PostgreSQL；禁止 Docker/WSL。完整费用/VIP 写规范、消费钻取和全部产品验收仍独立待完成。
+
+```mermaid
+flowchart LR
+  Session[当前 AdminSession 与 MFA] --> Scope[动作 / 字段 / 企业 / 项目范围]
+  Scope --> Cursor[签名游标与去重目录]
+  Cursor --> User[严格 AdminUser / AdminTenant]
+  Scope --> Ledger[确认扣费账本]
+  Ledger --> User
+  User --> Audit[访问审计与页面]
+```
+
+用户导出同步迁移到规范用户游标，超过既有 500 条同步上限明确拒绝，避免静默截断；下载发送前在当前 MFA 和权限锁内复核完整授权摘要。新增检查包含真实脱敏 CSV、501 条上限拒绝和下载撤权，完整规范异步导出仍待实现。

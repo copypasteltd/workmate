@@ -1,12 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
-import { requireAdmin, audit } from "./auth.js";
+import { requireAdmin, audit, type Principal } from "./auth.js";
 import {
   permit,
   requireRecentMfa,
   requireSensitiveAdmin,
   lockAdminAccess,
+  bindings,
 } from "./admin-access.js";
 import { Problem, uuid, csvCell, hash, canonical } from "./lib.js";
 import { key, replay } from "./access.js";
@@ -17,6 +18,25 @@ import {
   userAccountAuthority,
 } from "./admin-accounts.js";
 import { lockUserAuthorities } from "./user-authority.js";
+async function exportAccessVersion(tx: Tx, p: Principal) {
+  const rows = await bindings(tx, p);
+  return hash(
+    canonical(
+      rows
+        .map((b) => ({
+          id: b.id,
+          role: b.role_key,
+          scope: b.scope_kind,
+          target: b.scope_id,
+          effect: b.effect,
+          limits: b.limits,
+          expires: b.expires_at ? new Date(b.expires_at).toISOString() : null,
+          permissions: [...b.permissions].sort(),
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id)),
+    ),
+  );
+}
 export function registerAdminJobs(app: FastifyInstance, db: Database) {
   app.post(
     "/v1/admin/exports",
@@ -30,19 +50,22 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
         .strict()
         .parse(req.body);
       await db.tx(
-        (tx) =>
-          permit(
+        async (tx) => {
+          await lockAdminAccess(tx);
+          await requireSensitiveAdmin(tx, req.principal);
+          await permit(
             tx,
             req.principal,
             "admin.exports.create",
             b.tenant_id ? { tenant: b.tenant_id } : {},
-          ),
+          );
+        },
         undefined,
         true,
       );
       const r = await app.inject({
         method: "GET",
-        url: `/v1/admin/${b.source}?page_size=1${b.tenant_id ? "&tenant_id=" + b.tenant_id : ""}`,
+        url: `/v1/admin/${b.source}?${b.source === "users" ? "limit=1" : "page_size=1"}${b.tenant_id ? "&tenant_id=" + b.tenant_id : ""}`,
         headers: { cookie: req.headers.cookie ?? "" },
       });
       if (r.statusCode !== 200)
@@ -53,6 +76,8 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
         );
       return db.tx(
         async (tx) => {
+          await lockAdminAccess(tx);
+          await requireSensitiveAdmin(tx, req.principal);
           await permit(
             tx,
             req.principal,
@@ -85,6 +110,8 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
       const id = uuid.parse((req.params as any).id);
       const e = await db.tx(
         async (tx) => {
+          await lockAdminAccess(tx);
+          await requireSensitiveAdmin(tx, req.principal);
           const e = (
             await tx.query(
               "SELECT *,expires_at>now() AS valid FROM exports WHERE id=$1 AND principal_id=$2",
@@ -99,16 +126,20 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
             "admin.exports.download",
             e.scope.tenant_id ? { tenant: e.scope.tenant_id } : {},
           );
-          return e;
+          return {
+            ...e,
+            access_version: await exportAccessVersion(tx, req.principal),
+          };
         },
         undefined,
         true,
       );
       const rows: any[] = [];
+      let cursor: string | null = null;
       for (let page = 1; page <= 5; page++) {
         const r = await app.inject({
           method: "GET",
-          url: `/v1/admin/${e.source}?page_size=100&page=${page}${e.scope.tenant_id ? "&tenant_id=" + e.scope.tenant_id : ""}`,
+          url: `/v1/admin/${e.source}?${e.source === "users" ? "limit=100" + (cursor ? "&cursor=" + encodeURIComponent(cursor) : "") : "page_size=100&page=" + page}${e.scope.tenant_id ? "&tenant_id=" + e.scope.tenant_id : ""}`,
           headers: { cookie: req.headers.cookie ?? "" },
         });
         if (r.statusCode !== 200)
@@ -117,9 +148,24 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
             "EXPORT_FORBIDDEN",
             "Source permission changed",
           );
-        const data = r.json();
+        const data: any = r.json();
+        if (e.source !== "users" && data.total > 500)
+          throw new Problem(
+            409,
+            "EXPORT_TOO_LARGE",
+            "Narrow the export scope to at most 500 records",
+          );
         rows.push(...data.items);
-        if (data.items.length < 100) break;
+        if (e.source === "users") {
+          cursor = data.next_cursor;
+          if (!cursor) break;
+          if (page === 5)
+            throw new Problem(
+              409,
+              "EXPORT_TOO_LARGE",
+              "Narrow the export scope to at most 500 records",
+            );
+        } else if (data.items.length < 100) break;
       }
       const columns = [...new Set(rows.flatMap((r) => Object.keys(r)))];
       const csv =
@@ -139,11 +185,35 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
           ),
         ].join("\r\n");
       await db.tx(
-        (tx) =>
-          audit(tx, req.principal, "admin.exports.download", id, "succeeded", {
-            rows: rows.length,
-            limit: 500,
-          }),
+        async (tx) => {
+          await lockAdminAccess(tx);
+          await requireSensitiveAdmin(tx, req.principal);
+          await permit(
+            tx,
+            req.principal,
+            "admin.exports.download",
+            e.scope.tenant_id ? { tenant: e.scope.tenant_id } : {},
+          );
+          if (
+            e.access_version !== (await exportAccessVersion(tx, req.principal))
+          )
+            throw new Problem(
+              403,
+              "EXPORT_FORBIDDEN",
+              "Authorization changed while preparing the export",
+            );
+          await audit(
+            tx,
+            req.principal,
+            "admin.exports.download",
+            id,
+            "succeeded",
+            {
+              rows: rows.length,
+              limit: 500,
+            },
+          );
+        },
         undefined,
         true,
       );

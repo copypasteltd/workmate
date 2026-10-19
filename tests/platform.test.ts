@@ -371,12 +371,39 @@ test("Admin cleanup totals and retries enforce current tenant/project grants, de
 
 test("Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100", async () => {
   const a = await admin();
+  const prefix = "Collection limit " + randomUUID();
+  await system.db.control.query(
+    "INSERT INTO users(email,name) SELECT gen_random_uuid()::text||'@example.invalid',$1||n::text FROM generate_series(1,51) n",
+    [prefix],
+  );
+  const tenants = (
+    await system.db.control.query(
+      "INSERT INTO tenants(name) SELECT $1||n::text FROM generate_series(1,51) n RETURNING id",
+      [prefix],
+    )
+  ).rows;
+  await system.db.control.query(
+    "INSERT INTO wallets(tenant_id) SELECT unnest($1::uuid[])",
+    [tenants.map((r) => r.id)],
+  );
+  for (const resource of ["users", "tenants"]) {
+    const url = "/v1/admin/" + resource + "?q=" + encodeURIComponent(prefix),
+      list = await call(a, "GET", url);
+    assert.equal(list.status, 200, JSON.stringify(list.data));
+    assert.equal(list.data.items.length, 50);
+    assert.ok(list.data.next_cursor);
+    assert.equal(list.data.page_size, undefined);
+    assert.equal(list.data.total, undefined);
+    const explicit = await call(a, "GET", url + "&limit=100");
+    assert.equal(explicit.status, 200);
+    assert.equal(explicit.data.items.length, 51);
+    assert.equal(explicit.data.next_cursor, null);
+    assert.equal((await call(a, "GET", url + "&limit=101")).status, 400);
+  }
   for (const url of [
-    "/v1/admin/users",
     "/v1/admin/access/principals",
     "/v1/admin/workflow-schedules",
     "/v1/admin/deletions",
-    "/v1/admin/tenants",
     "/v1/admin/content",
   ]) {
     const list = await call(a, "GET", url);
@@ -2115,10 +2142,10 @@ test("admin workspace lists redact money without billing permission and user usa
   const users = await call(
     a,
     "GET",
-    "/v1/admin/users?search=" + encodeURIComponent(u.email),
+    "/v1/admin/users?q=" + encodeURIComponent(u.email),
   );
   assert.equal(users.status, 200);
-  assert.equal(users.data.items[0].charged_micros, undefined);
+  assert.equal(users.data.items[0].confirmed_customer_charges, undefined);
 });
 test("quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version", async () => {
   const u = await user(),
@@ -2347,9 +2374,23 @@ test("scoped usage never inherits broader user visibility and explicit project d
     );
   const detail = await call(a, "GET", "/v1/admin/users/" + u.id);
   assert.equal(detail.status, 200, JSON.stringify(detail.data));
+  assert.equal(detail.data.user.confirmed_customer_charges.amount_micros, "0");
+  const context = await call(
+    a,
+    "GET",
+    "/v1/admin/users/" + u.id + "/management-context",
+  );
+  assert.equal(context.status, 200, JSON.stringify(context.data));
   assert.deepEqual(
-    detail.data.usage.map((r: any) => r.tenant_id),
+    context.data.memberships
+      .filter((r: any) => r.task_count !== undefined)
+      .map((r: any) => r.tenant_id),
     [one.tenant.id],
+  );
+  assert.equal(
+    context.data.memberships.find((r: any) => r.tenant_id === one.tenant.id)
+      .task_count,
+    1,
   );
   await system.db.control.query(
     "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id,effect) VALUES($1,$2,'project',$3,'deny')",

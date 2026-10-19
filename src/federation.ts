@@ -180,6 +180,9 @@ async function issue(
   a: any,
 ) {
   const value = token();
+  await tx.query("UPDATE users SET last_login_at=now() WHERE id=$1", [
+    person.id,
+  ]);
   const session = (
     await tx.query(
       `INSERT INTO sessions(token_hash,user_id,audience,auth_version,expires_at,federation_identity_id,federation_revision)
