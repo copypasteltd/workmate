@@ -793,6 +793,15 @@ export function ConversationDetail() {
               {active && (
                 <div className="notice">
                   <Badge value={active.status} />
+                  {active.status === "queued" &&
+                    active.capacity_wait_reason && (
+                      <span>
+                        {t(
+                          "等待執行名額；原預算保持預留。",
+                          "Waiting for execution capacity; the original budget remains reserved.",
+                        )}
+                      </span>
+                    )}
                   <Link className="text-link" to={"/app/tasks/" + active.id}>
                     {t("查看進度或取消工作", "View progress or cancel")}
                   </Link>

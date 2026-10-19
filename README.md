@@ -132,7 +132,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **129/129**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十五份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **136/136**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十五份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与通知（当前源码）
 
@@ -150,3 +150,7 @@ The renderer snapshot includes the same initial input checkpoint as Web. Native 
 
 ![原生资料补齐 / Native input checkpoint](assets/screenshots/09-input-wait.png)
 ![原生同任务结果 / Native result](assets/screenshots/10-input-result.png)
+
+## 容量排队（当前源码）
+
+渲染快照同步企业共用名额等待提示和用量说明。服务端统一实施企业、当前用户方案与能力执行上限，容量满时保留同一任务及预留，空位释放后自动继续。源码构建与既有八组原生流程另行验证；历史安装包不含本增量。

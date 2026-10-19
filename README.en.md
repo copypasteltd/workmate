@@ -132,7 +132,7 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **129/129**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **136/136**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and inbox (current source)
 
@@ -150,3 +150,7 @@ This does not qualify paid-step continuation or replace historical installers.
 
 ![Native task waiting for its file](assets/screenshots/09-input-wait.png)
 ![Original task after explicit selection](assets/screenshots/10-input-result.png)
+
+## Capacity waits (current source)
+
+The renderer snapshot includes shared-slot notices and usage explanations. Server-side workspace, current-user and capability limits preserve the original queued task and hold, then resume automatically. Source builds and the existing eight native journeys are checked separately; historical installers do not include this increment.
