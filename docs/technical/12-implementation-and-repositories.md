@@ -141,7 +141,9 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 
 本次 Desktop 无边框、自绘标题栏/窗口控制及 Chrome 按钮触发的原生右侧侧栏见 [窗口及侧栏](30-native-window-and-browser-sidepanel.md)。另行构建 `release/frameless/` 安装器/便携版和扩展 `release/sidepanel/` ZIP；本机默认配置、未签名，与历史完整离线包分开记录。
 
-规范成员变更及操作查询、后台管理暂停、独立审批和数据库策略快照的当前实现见 [Admin 成员控制](36-admin-membership-control-and-policy-snapshots.md)。Web、Admin、Desktop 和 Platform 的独立源码仓库及双语 README 已更新；当前 renderer 来源 45 项。历史安装器、便携版、扩展 ZIP 与完整离线包尚未包含此增量，当前页面验收另行记录。
+2026-10-20 已重新生成当前客户端预览，包含当前 45 项 renderer 来源及 Desktop 会话上下文白名单修复；当前源码与打包版真实窗口/侧栏各 10/10、Desktop 25/25、产物准入 11/11、独立检出 5/5。ASAR 内 31 份构建文件与当前 dist/renderer-dist 一致；完整运行目录、安装器、扩展及运行源码摘要绑定实际 QA。先前预览、失败原记录及旧完整离线包独立保留。安装/卸载、完整原生认证和系统矩阵仍按原验收条件执行。
+
+规范成员变更及操作查询、后台管理暂停、独立审批和数据库策略快照的当前实现见 [Admin 成员控制](36-admin-membership-control-and-policy-snapshots.md)。Web、Admin、Desktop 和 Platform 的独立源码仓库及双语 README 已更新；当前 renderer 来源 45 项。该阶段的历史安装器、便携版、扩展 ZIP 和完整离线包保留原字节；最新客户端预览状态见上段，完整离线后端发布及页面综合验收另行记录。
 
 
 2026-10-20 新增 [账户生命周期与在途控制](../technical/37-admin-account-lifecycle-and-inflight-control.md)：四个规范写入口与严格操作响应、当前权限/MFA/幂等/版本、全局用户与单企业边界、关闭及重开独立复核、原会话/策略/前态重检、批量守卫、旧 PATCH 移除及共用取消费用保护。十二组专项与当前六组真实 HTTP 是局部证据；上一阶段 233 项回执归档 stage36-platform，当前页面、完整列表/详情/费用/VIP 规范、原生及发布包仍独立待验收。

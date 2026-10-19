@@ -37,7 +37,7 @@ CLUSTERS = [
      'Web/源码无边框 Desktop/MV3 排队暂停与同任务单预留恢复、领取竞争/权限与来源复查、Admin 共用领域守卫；真实 Codex 跨进程原历史/工具续聊、增量用量、中断和回执 I/O 故障保留消耗。适配器原语未接已付费步骤恢复，不构成完整暂停/检查点验收。',
      ['platform_regression','task_controls'], ['technical/31-task-controls-and-native-continuation.md']),
     ('native_window_and_sidepanel', [36,39,51,55,60,81,82],
-     'Desktop 无原生边框/默认菜单、自绘双语主题标题栏、实际原生窗口按钮与指针/键盘有界缩放、跨窗口 IPC 拒绝、真实打包登录及弹窗；Chrome action 实际创建右侧 SIDE_PANEL、跨页保留/收起及重启配置。完整系统/DPI、签名更新与全产品可访问性仍待验收。',
+     '当前源码重新构建的 Desktop 无原生边框/默认菜单、自绘双语主题标题栏、实际窗口按钮与指针/键盘有界缩放、跨窗口 IPC 拒绝、真实打包登录及弹窗；Chrome action 实际创建右侧 SIDE_PANEL、跨页保留/收起及重启配置。验证绑定测试前后相同的客户端、安装器、扩展及源码字节，历史预览独立保留。完整原生认证旅程、系统/DPI、安装/卸载、签名更新与全产品可访问性仍待验收。',
      ['native_surfaces','native_artifacts','extension'], ['technical/30-native-window-and-browser-sidepanel.md']),
     ('file_imports_and_corrections', [1,2,12,14,23,24,35,39,43,44,46,49,51,55,60,90,91],
      '固定来源文件版本的 CSV/XLSX 导入、规范 ImportCreate/Snapshot、显式工作表/标题列、十进制/公式拒绝/单元格错误、跨旧接口去重、更正祖先链及汇总排斥、来源治理与删除/未领取预留释放、Web/原生 IPC 字节下载；不含完整官方导出矩阵或专业分析资格。',
@@ -167,7 +167,23 @@ def load(path):
 
 
 def fingerprint(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    digest = hashlib.sha256()
+    with path.open('rb') as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def verify_file_manifest(root, entries, exact_directory=False):
+    root = root.resolve()
+    paths = set()
+    for entry in entries:
+        actual = (root/entry['path']).resolve()
+        assert actual.is_relative_to(root) and actual not in paths
+        assert fingerprint(actual) == entry['sha256'], str(actual)
+        paths.add(actual)
+    if exact_directory:
+        assert paths == {p.resolve() for p in root.rglob('*') if p.is_file()}
 
 
 def main():
@@ -238,8 +254,26 @@ def main():
             assert report['desktop_closed'] is True
         if 'extension_closed' in report:
             assert report['extension_closed'] is True
+        if key == 'native_surfaces':
+            assert report['artifacts_unchanged_after_run'] is True
+            tested = report['tested_artifacts']
+            assert tested['schema_version'] == 1
+            assert tested['desktop']['executable_kind'] == 'packaged'
+            desktop_root = DEV/'copypaste-desktop'
+            extension_root = DEV/'copypaste-extension'
+            runtime_root = desktop_root/'release/frameless/win-unpacked'
+            verify_file_manifest(runtime_root, tested['desktop']['runtime_files'], True)
+            assert fingerprint(runtime_root/'CopyPaste.exe') == tested['desktop']['executable_sha256']
+            verify_file_manifest(desktop_root, tested['desktop']['source_files'])
+            verify_file_manifest(runtime_root.parent, tested['desktop']['installer_files'])
+            verify_file_manifest(extension_root, tested['extension']['source_files'])
+            verify_file_manifest(extension_root/'dist', tested['extension']['dist_files'], True)
+            verifier_root = DEV/'copypaste-delivery/scripts'
+            assert fingerprint(verifier_root/'qa-native-surfaces.ts') == tested['verifier_sha256']
+            assert fingerprint(verifier_root/'native-surface-integrity.mjs') == tested['integrity_checker_sha256']
         if key == 'native_artifacts':
             assert report['signed'] is False and report['installed_or_published'] is False
+            assert report['validation']['tested_artifacts_match'] is True
             assert len(report['artifacts']) == 3
             for artifact in report['artifacts']:
                 actual_file = (DEV/artifact['path']).resolve()
@@ -294,7 +328,7 @@ def main():
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},
             'summary':dict(Counter(r['assessment'] for r in rows)), 'fully_accepted_requirements':0,
-            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical; separate frameless Desktop and native Side Panel preview artifacts are recorded in dev/copypaste-delivery/evidence/native-surfaces-artifacts.json, using localhost origins and no signing or production publication',
+            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical. Separate frameless Desktop and native Side Panel previews were rebuilt from current sources and their actual QA is bound to exact source/runtime/installer/extension bytes; see dev/copypaste-delivery/evidence/native-surfaces-artifacts.json. Localhost origins; no signing, installation or production publication. Full native authentication/system acceptance remains outstanding.',
             'repositories':repositories,'evidence':evidence,
             'unresolved_runtime_evidence':[{
                 'path':'dev/copypaste-delivery/evidence/auth-recovery-open-issue.json',

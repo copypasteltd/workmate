@@ -2,6 +2,8 @@
 
 适用：D 盘 dev 下的 Platform、Web、源码无边框 Desktop、MV3 侧栏及 Delivery。用户允许当前模型和媒体使用假数据；本项认证、数据库、加密存储、浏览器及原生进程均实际执行。Codex 唯一内核、内部 AI 网关和原生 Windows 约束保持。
 
+2026-10-20 的[原生窗口与当前预览复核](30-native-window-and-browser-sidepanel.md)进一步修复 Desktop 本地 API 白名单遗漏：成功交换凭证后可读取会话上下文并进入工作区。当前源码及打包应用的单次真实 PKCE/界面流程均通过；先前失败原记录保留，完整十二项原生认证恢复旅程仍独立待验收。
+
 ## 接口与真实消费者
 
 以原有 [OpenAPI](../contracts/openapi.json) 为依据新增五项，未为迎合实现修改认证契约。平台保留旧路径供已有客户端迁移。

@@ -42,11 +42,33 @@ flowchart LR
 
 本次另行生成 `dev/copypaste-desktop/release/frameless/` 的 Windows x64 Setup、Portable 和 win-unpacked，以及 `dev/copypaste-extension/release/sidepanel/` 的可加载扩展 ZIP。它们采用本机 localhost 默认配置、未签名，源码 package 版本保持 0.5.0；以本次产物清单和 SHA-256 区分，不能与历史原始 0.5.0 完整离线交付包混为一谈。未安装到用户系统、未上架或部署生产。完整签名更新、卸载、显示器/DPI 系统矩阵和长期需求综合验收仍按原计划执行。
 
-执行交付仓库 `npm run package:surfaces`，在源码已提交且干净后比对 ASAR 内 29 个构建文件与当前实际构建字节，生成扩展 ZIP 和 `evidence/native-surfaces-artifacts.json`，记录三个预览包的大小、SHA-256、源码提交及对应真实打包验证报告摘要。它不会安装、注册 Host 或发布应用。
+执行交付仓库 `npm run package:surfaces`，在源码已提交且干净后逐文件比对 ASAR 与当前实际构建字节，生成扩展 ZIP 和 `evidence/native-surfaces-artifacts.json`，记录三个预览包的大小、SHA-256、源码提交及对应真实打包验证报告摘要。它不会安装、注册 Host 或发布应用。
 
 ![真实无边框工作区](../design/implementation/desktop-frameless.png)
 ![自绘标题栏与弹窗](../design/implementation/desktop-frameless-dialog.png)
+![深色自绘标题栏](../design/implementation/desktop-frameless-dark.png)
 ![实际原生侧栏内容](../design/implementation/extension-native-sidepanel.png)
+
+## 2026-10-20 当前源码与预览复核
+
+此前无边框预览及侧栏 ZIP 的原字节分别保留于各仓库的 `release/frameless-stage30/`、`release/sidepanel-stage30/`。Delivery 的 `evidence/stage30-native-surfaces/` 保留原报告、清单、截图和四项二进制摘要映射，已逐项校验未改变。当前 `release/frameless/`、`release/sidepanel/` 承载从最新源码重新生成的预览；仍使用 localhost、未签名，版本号 0.5.0 由摘要区分。
+
+真实重跑发现 Desktop 登录成功后仍停在登录页：renderer 已使用 `/v1/session/context`，主进程的旧 API 白名单却拒绝了该路径。现已将白名单提取到 `src/config.ts` 的 `rendererApiOperation`：会话上下文限 GET，企业创建入口、规范成员操作、分析证据和报告使用各自明确的路径/方法；现有用户业务范围保留。renderer 的认证凭证、Admin、跨域、规范化后越界及带歧义的编码路径继续拒绝。Desktop 类型检查、25 项测试通过；当前源码及重新打包的真实窗口/侧栏各十组通过。源码回执与对应 verifier 原字节独立归档；前三次登录页停留失败及诊断截图同样保留，不计为通过。
+
+```mermaid
+flowchart LR
+  Browser[浏览器完成 PKCE] --> Main[主进程保存会话]
+  Main --> Event[通知当前 renderer]
+  Event --> Policy[本地 API 路径和方法守卫]
+  Policy --> Context[读取会话上下文]
+  Context --> Workspace[进入云工作区]
+```
+
+当前 QA 在开始与结束时记录客户端完整运行目录、可执行文件、安装器、扩展全部 dist 文件及运行源码的 SHA-256，同时记录 verifier 与校验器本身摘要；源码范围明确排除 README、文档截图及 docs。打包准入再次比较这些实际文件，并比对 ASAR 与当前 dist/renderer-dist。旧通过回执不能验收换过的 ASAR、Host、EXE、安装器、扩展或源码；增删文件、清理未完成及运行中改包均拒绝。11 项准入测试通过。文档进度工具还独立重算这些文件摘要，使用分块读取控制内存。
+
+QA 自建进程使用 `--disable-gpu`，产品默认启动参数不变；所有自建 Electron、授权浏览器和扩展浏览器结束后关闭。最终工作区截图等待真实角色卡片及字体载入，避免用加载中页面作为交付截图。侧栏截图仍来自真正 SIDE_PANEL；右侧位置由实际布局和网页宽度佐证。
+
+打包复核实际执行 win-unpacked，并为同轮 Setup、Portable 记录字节来源；未把它等同于安装/卸载验收。原扩展业务八组是先前阶段的历史记录，本轮侧栏验证不会代替完整认证、SSO、设备、系统/DPI、签名发布或全部 TC/NFR/G01–G10。当前模型/媒体继续按用户要求使用假数据。
 
 ## 技术依据
 
