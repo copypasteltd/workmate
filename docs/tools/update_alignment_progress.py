@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('pre_execution_input_checkpoint', [1,2,7,9,35,39,44,46,61,67,69,72],
+     '明确提交运行前文件/连接需求、同任务单预留与单次入队、私人上传、跨端选择、资源撤销和计划输入守卫；不含已付费步骤续做。',
+     ['platform_regression','task_dependencies','admin_task_inputs','desktop','extension','runtime_schemas'], ['technical/22-pre-execution-input-checkpoint.md']),
     ('durable_erasure', [1,2,6,12,49,57,61,68,90,91],
      '持久删除账本、不可逆墓碑、物理对象/缓存清理、子作业依赖、隔离与后台受控重试。',
      ['platform_regression', 'web_admin'], ['technical/17-erasure-transfer-retention-events.md']),
@@ -42,6 +45,8 @@ CLUSTERS = [
 ]
 
 REMAINING = {
+ 7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
+ 69:'已实现首次模型调用前的显式文件/连接检查点；已付费步骤恢复、自动识别、capability/device 和离线等待仍未完成。',
  1:'需对其余连接器、团队、媒体、批量/导出和所有规范接口继续进行跨企业负向验证。',
  2:'其余业务动作、品牌/项目角色矩阵、解除授权后的全部下载与异步路径仍需完整验收。',
  5:'默认助手与持续专家已有局部证据；完整品牌/工具继承及全部版本/跨端用例尚未完成。',
@@ -52,7 +57,7 @@ REMAINING = {
  12:'云版本引用和实际源码 ZIP 已验证；全类型预览、局部成功/修改/审阅及可恢复工程未齐。',
  14:'需验证所有端完整 1 GiB 实传、生产对象存储及旧 multipart/扩展桥接大文件迁移。',
  15:'模拟接口下功能继续验证；真实内部 Image 2 生成/编辑和业务质量尚未验收。',
- 35:'新增文件/技能主路径已实现；默认助手与站内通知已有新增证据；团队、依赖补齐与全部整合仍待完成。',
+ 35:'文件/技能、默认助手、通知和首次运行前补齐已有证据；团队、自动缺口发现、步骤续做与全业务整合仍待完成。',
  37:'Web 与 Desktop 传输有新证据；兼容降级、扩展及所有撤销场景仍未完整验收。',
  38:'Desktop 新传输不等同扩展 Native Host 全量大文件验收；协议矩阵仍待完成。',
  39:'当前源码原生登录/传输通过；历史安装包未重发，更新/签名/卸载与系统矩阵待完成。',
@@ -120,6 +125,8 @@ def main():
         'skills': DEV/'copypaste-delivery/evidence/skills.json',
         'notifications': DEV/'copypaste-delivery/evidence/notifications.json',
         'default_assistant': DEV/'copypaste-delivery/evidence/default-assistant.json',
+        'task_dependencies': DEV/'copypaste-delivery/evidence/task-dependencies.json',
+        'admin_task_inputs': DEV/'copypaste-delivery/evidence/admin-task-inputs.json',
         'checkout_integrity': DEV/'copypaste-delivery/evidence/byte-integrity.json',
         'runtime_schemas': DOCS/'quality/runtime-contract-samples.json',
         'documentation': DOCS/'quality/validation-report.json',

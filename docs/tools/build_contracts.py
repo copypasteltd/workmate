@@ -394,6 +394,14 @@ def extend_web_workbench():
     add('ExecutionPlanDecision', {'expected_task_version': INT, 'plan_version': INT, 'input_hash': HASH, 'decision': enum('execute', 'revise', 'reject')})
     add('DependencyRequest', {'id': ID, 'task_id': ID, 'step_key': TEXT, 'kind': enum('file', 'connection', 'capability', 'device'), 'description': TEXT, 'required_scope': TEXT, 'state': enum('pending', 'resolved', 'dismissed'), 'version': INT})
     add('DependencyResolution', {'expected_version': INT, 'resource_ids': arr(ID, 1)})
+    S['DependencyResolution']['properties']['expected_version'] = {'type':'integer','minimum':1}
+    S['DependencyResolution']['properties']['resource_ids'].update({'maxItems':20,'uniqueItems':True})
+    add('PreExecutionInput', {'kind':enum('file','connection'),'description':{'type':'string','minLength':1,'maxLength':2000},'provider':enum('google_ads','ga4','search_console','meta'),'resource_ids':{'type':'array','items':ID,'minItems':1,'maxItems':20,'uniqueItems':True}}, ['kind','description'])
+    S['PreExecutionInput']['allOf'] = [{'if':{'properties':{'kind':{'const':'connection'}}},'then':{'required':['provider'],'properties':{'resource_ids':{'maxItems':1}}},'else':{'not':{'required':['provider']}}}]
+    S['TaskCreate']['properties']['dependencies'] = {'type':'array','items':ref('PreExecutionInput'),'maxItems':8,'description':'Explicit prerequisites before the first model turn; file/connection only. Does not resume paid model steps.'}
+    add('DependencyFileResource', {'id':ID,'asset_id':ID,'name':TEXT,'version':{'type':'integer','minimum':1},'content_type':TEXT})
+    add('DependencyConnectionResource', {'id':ID,'name':TEXT,'provider':enum('google_ads','ga4','search_console','meta')})
+    S['DependencyResource'] = {'oneOf':[ref('DependencyFileResource'),ref('DependencyConnectionResource')]}
     add('SolutionCreate', {'project_id': ID, 'name': TEXT, 'instructions': TEXT, 'agent_template_ids': arr(ID), 'skill_version_ids': arr(ID), 'required_assets': arr(TEXT), 'required_connectors': arr(TEXT)})
     add('SolutionVersion', {'id': ID, 'project_id': ID, 'version': INT, 'definition': ref('SolutionCreate'), 'state': enum('draft', 'published', 'disabled')})
     add('SolutionPublish', {'expected_version': INT, 'validation_task_id': ID})
@@ -445,6 +453,7 @@ def extend_web_workbench():
     e('/v1/tasks/{task_id}/plans', 'post', 'createExecutionPlan', 'ExecutionPlanCreate', 'ExecutionPlanVersion', [67], permission='task.control')
     e('/v1/execution-plans/{plan_id}/decisions', 'post', 'decideExecutionPlan', 'ExecutionPlanDecision', 'Task', [67], permission='task.control', status=202)
     e('/v1/tasks/{task_id}/dependencies', 'get', 'listTaskDependencies', None, list_schema('DependencyRequest'), [69])
+    e('/v1/task-dependencies/{dependency_id}/resources', 'get', 'listTaskDependencyResources', None, list_schema('DependencyResource'), [69], query=[('q',{'type':'string','maxLength':160},False),('cursor',ID,False),('limit',{'type':'integer','minimum':1,'maximum':100},False)])
     e('/v1/task-dependencies/{dependency_id}/resolutions', 'post', 'resolveTaskDependency', 'DependencyResolution', 'Task', [69], permission='task.control', status=202)
     e('/v1/solution-versions', 'get', 'listSolutionVersions', None, list_schema('SolutionVersion'), [70], stage='M2')
     e('/v1/solution-versions', 'post', 'createSolutionVersion', 'SolutionCreate', 'SolutionVersion', [70], stage='M2', permission='skill.manage')

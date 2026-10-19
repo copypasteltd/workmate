@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-19T01:45:58.022841+00:00",
-  "scope": "Captured cloud workspace, project Skill and notification HTTP response schemas only; not full API conformance",
+  "at": "2026-10-19T02:37:18.248926+00:00",
+  "scope": "Captured cloud workspace, project Skill, notification and pre-execution dependency list HTTP response schemas only; not full API conformance",
   "sources": [
     {
       "file": "dev/copypaste-delivery/evidence/cloud-files-contract-samples.json",
@@ -19,9 +19,15 @@
       "at": "2026-10-19T01:40:20.867Z",
       "origin": "actual authenticated local browser HTTP responses with synthetic model dependencies",
       "sha256": "5afb15f582b2bb3fea14aca6c7a2311b0ebec884df4d5a4b157675616909bac5"
+    },
+    {
+      "file": "dev/copypaste-delivery/evidence/task-dependencies-contract-samples.json",
+      "at": "2026-10-19T02:29:40.561Z",
+      "origin": "actual local HTTP responses under an authenticated browser session",
+      "sha256": "c2935dbfa0e64db9dc5ca96ff01ea575922051584200975327cc2c20c60f2c87"
     }
   ],
-  "openapi_sha256": "9490f9afb2aaa34f490b334885d0a20cc60520e205c51ee3220b723e1dea436f",
+  "openapi_sha256": "14a39824b68ae1ca741e4edc7551539dc3ab4eb91bc97ccf41ab41a4843a6466",
   "checks": [
     {
       "source": "cloud-files-contract-samples.json",
@@ -104,6 +110,27 @@
       "source": "notifications-contract-samples.json",
       "sample": 2,
       "schema": "Notification",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "task-dependencies-contract-samples.json",
+      "sample": 1,
+      "schema": "DependencyRequestList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "task-dependencies-contract-samples.json",
+      "sample": 2,
+      "schema": "DependencyResourceList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "task-dependencies-contract-samples.json",
+      "sample": 3,
+      "schema": "DependencyRequestList",
       "status": "passed",
       "errors": []
     }

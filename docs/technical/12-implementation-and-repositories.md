@@ -124,3 +124,9 @@ delivery 执行 `npm run release`，要求六仓库已提交且干净、实际�
 ## 7. 0.5.0 身份增量
 
 企业 OIDC、首次邮箱证明、本人连接管理、后台全域 SSO 权限、固定元数据与跨端凭证撤销已进入六仓库。Web 与打包 Desktop 统一使用系统浏览器链路。迁移 010 绑定原生码来源会话及用户版本，撤销旧设备会话覆盖轮换后的凭证 family。完整规则与配置见 [企业身份联邦](16-enterprise-federation-and-native-auth.md)。当前版本提交以实际发布 manifest 与 [当前代码证据](../quality/implementation-evidence.json) 为准；0.4.0 记录保留在 [历史验收](../quality/07-cloud-schedule-acceptance.md) 及版本归档中。
+
+## 8. 当前源码修复增量
+
+2026-10-19 当前源码平台 129/129、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。实际响应样本 15/15 通过严格 schema 检查。规范 223 个操作和实际 225 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+
+显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。

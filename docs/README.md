@@ -8,6 +8,8 @@
 
 当前按用户授权使用明确标识的假数据继续全体系修复，跟踪见 [102 条差异基线与修复](quality/09-implementation-alignment-audit.md)，新实现约束见 [删除、传输、保留及事件](technical/17-erasure-transfer-retention-events.md)。0.5.0 发布物保留原始版本，尚未重新打包未发布改动。
 
+运行前等待并补齐文件或连接、同一任务继续、私人附件和计划来源守卫见 [资料检查点](technical/22-pre-execution-input-checkpoint.md)。模型依赖继续使用获准假数据；不将该子流程计为完整检查点恢复或正式角色资格。
+
 **已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/08-enterprise-federation-acceptance.md)。未完成外部平台授权或公司真实模型准入。
 
 ## 建议阅读

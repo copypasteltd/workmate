@@ -47,3 +47,9 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 公司已上线 AI API，但本工作区尚无其精确端点、模型别名、凭证与费率；公司 Image 2、真实企业 IdP、Google/Meta OAuth、SMTP/S3 仍需真实配置与准入。18 个角色的真实业务任务尚未取得准入资格，不能以安装数量代替业务验收。
 
 当前设计工具可产生真实 PNG 和模板动效 MP4；完整 AI 视频/语音、并行专业 Agent、协同编辑、事件触发、SAML/SCIM、客户代码强隔离与在线支付收单尚未实现。Windows 包未签名且采用 localhost 试点 origin；生产需公司 HTTPS 配置、重新打包、代码签名、OS 服务身份/ACL/出站隔离及恢复/SLO 核查。完整已实现/未完成矩阵见 [实施清单](technical/12-implementation-and-repositories.md)。
+
+## 当前源码验收增量
+
+2026-10-19 当前源码平台 129/129、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。实际响应样本 15/15 通过严格 schema 检查。规范 223 个操作和实际 225 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+
+显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](technical/22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。

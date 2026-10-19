@@ -9878,6 +9878,107 @@
         }
       }
     },
+    "/v1/task-dependencies/{dependency_id}/resources": {
+      "get": {
+        "operationId": "listTaskDependencyResources",
+        "summary": "listTaskDependencyResources",
+        "tags": [
+          "project"
+        ],
+        "x-requirements": [
+          "REQ-069"
+        ],
+        "x-stage": "M1",
+        "x-permission": "project.read",
+        "parameters": [
+          {
+            "name": "dependency_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 160
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DependencyResourceList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "409": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "429": {
+            "$ref": "#/components/responses/ErrorResponse"
+          },
+          "503": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
     "/v1/task-dependencies/{dependency_id}/resolutions": {
       "post": {
         "operationId": "resolveTaskDependency",
@@ -19381,6 +19482,14 @@
           "project_config_version_id": {
             "type": "string",
             "format": "uuid"
+          },
+          "dependencies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PreExecutionInput"
+            },
+            "maxItems": 8,
+            "description": "Explicit prerequisites before the first model turn; file/connection only. Does not resume paid model steps."
           }
         },
         "required": [
@@ -24462,7 +24571,7 @@
         "properties": {
           "expected_version": {
             "type": "integer",
-            "minimum": 0
+            "minimum": 1
           },
           "resource_ids": {
             "type": "array",
@@ -24470,7 +24579,9 @@
               "type": "string",
               "format": "uuid"
             },
-            "minItems": 1
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true
           }
         },
         "required": [
@@ -24478,6 +24589,146 @@
           "resource_ids"
         ],
         "additionalProperties": false
+      },
+      "PreExecutionInput": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "file",
+              "connection"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "google_ads",
+              "ga4",
+              "search_console",
+              "meta"
+            ]
+          },
+          "resource_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "kind",
+          "description"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "connection"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "provider"
+              ],
+              "properties": {
+                "resource_ids": {
+                  "maxItems": 1
+                }
+              }
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "provider"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "DependencyFileResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "asset_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "content_type": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "asset_id",
+          "name",
+          "version",
+          "content_type"
+        ],
+        "additionalProperties": false
+      },
+      "DependencyConnectionResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "google_ads",
+              "ga4",
+              "search_console",
+              "meta"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider"
+        ],
+        "additionalProperties": false
+      },
+      "DependencyResource": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/DependencyFileResource"
+          },
+          {
+            "$ref": "#/components/schemas/DependencyConnectionResource"
+          }
+        ]
       },
       "SolutionCreate": {
         "type": "object",
@@ -25097,6 +25348,29 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/DependencyRequest"
+            },
+            "minItems": 0
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "DependencyResourceList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DependencyResource"
             },
             "minItems": 0
           },
