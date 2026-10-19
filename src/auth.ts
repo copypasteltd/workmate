@@ -489,25 +489,39 @@ export function registerAuth(app: FastifyInstance, db: Database) {
       });
   }
   app.get("/v1/me", { preHandler: requireUser(db) }, async (req) => {
-    const u = (
-      await db.app.query("SELECT id,email,name,locale FROM users WHERE id=$1", [
-        req.principal.id,
-      ])
-    ).rows[0];
-    const memberships = (
-      await db.app.query(
-        "SELECT t.id,t.name,t.data_mode,m.role FROM tenants t JOIN memberships m ON m.tenant_id=t.id WHERE m.user_id=$1 AND m.status='active' AND t.status='active' ORDER BY t.created_at",
-        [u.id],
-      )
-    ).rows;
     return {
-      user: u,
-      memberships,
-      csrf_token: req.cookies.cp_session
-        ? csrf(db, req.cookies.cp_session)
-        : null,
+      id: req.principal.id,
+      email: req.principal.email,
+      display_name: req.principal.name,
     };
   });
+  app.get(
+    "/v1/session/context",
+    { preHandler: requireUser(db) },
+    async (req) => {
+      const u = (
+        await db.app.query(
+          "SELECT id,email,name,locale FROM users WHERE id=$1",
+          [req.principal.id],
+        )
+      ).rows[0];
+      if (!u) throw new Problem(401, "SESSION_EXPIRED", "Session expired");
+      const memberships = (
+        await db.app.query(
+          "SELECT t.id,t.name,t.data_mode,m.role FROM tenants t JOIN memberships m ON m.tenant_id=t.id WHERE m.user_id=$1 AND m.status='active' AND t.status='active' ORDER BY t.created_at",
+          [u.id],
+        )
+      ).rows;
+      return {
+        user: u,
+        memberships,
+        csrf_token:
+          req.principal.audience === "user" && req.cookies.cp_session
+            ? csrf(db, req.cookies.cp_session)
+            : null,
+      };
+    },
+  );
   app.patch("/v1/me", { preHandler: requireUser(db) }, async (req) => {
     const b = z
       .object({

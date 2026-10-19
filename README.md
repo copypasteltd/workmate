@@ -356,4 +356,12 @@ flowchart LR
 
 The five original user authentication operations now have real Web, Desktop and Extension consumers. Migration 036 stores encrypted atomic request receipts, preserving one-use codes and refresh reuse revocation while allowing the same unknown request to recover. Browser consent requires a product browser session; native Bearer credentials cannot grant another client. Cached replies never revive revoked or expired credentials. Remaining token lifetime is preserved.
 
-`tests/auth-contract.test.ts` validates actual isolated PostgreSQL/API behavior against ten exact original schema dependencies. Full current regression: **203/203**. Delivery `npm run qa:platform` captures raw TAP bytes and SHA-256. `/v1/me`, canonical invitation/admin contracts and the complete identity matrix remain separate work; route counts are not acceptance counts.
+`tests/auth-contract.test.ts` validates actual isolated PostgreSQL/API behavior against ten exact original schema dependencies. The previous canonical-authentication increment passed **203/203**. Delivery `npm run qa:platform` captures raw TAP bytes and SHA-256. Subsequent `/v1/me` and workspace-context changes are documented below; canonical invitation/admin contracts and the complete identity matrix remain separate work; route counts are not acceptance counts.
+
+## 用户资料与工作区上下文 / User profile and workspace context
+
+`GET /v1/me` 严格返回原始规范的 `User`：`id`、`email`、`display_name`，不再夹带企业列表、偏好或 CSRF。三端初始化改用受认证的 `GET /v1/session/context`，返回现有资料、有效工作区和浏览器 CSRF；原生 Bearer 优先时 CSRF 恒为 null，即使同时携带其他账号的 Cookie。两个接口均重新验证实际会话并禁止缓存。
+
+`GET /v1/me` now matches the original `User` contract exactly. Authenticated client bootstrap uses `GET /v1/session/context` for profile preferences, active workspace access and browser CSRF. A selected native Bearer never receives the CSRF of a concurrently supplied browser cookie. Both routes retain current-session validation and `no-store`. Existing preview installers remain historical.
+
+本轮完整平台回归 **207/207**，包括两组原始 User/跨身份上下文检查及两组真实文件清理竞态回归。孤儿扫描仅忽略对象已被并发删除的 ENOENT；权限和繁忙错误保留。首次 204/205 失败和修复后原始 TAP 均由 Delivery 记录。 / Current platform regression: **207/207**. Two profile/context groups and two deterministic filesystem-race groups cover the new changes; EACCES and EBUSY still propagate. The first 204/205 failure and corrected raw TAP are both preserved.

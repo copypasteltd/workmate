@@ -229,9 +229,15 @@ export class Storage {
     const result: string[] = [];
     for (const n of remaining) {
       if (!/^[a-f\d-]{36}$/.test(n)) continue;
-      const stat = await lstat(path.join(directory, n));
-      if (!stat.isSymbolicLink() && stat.isFile() && stat.mtime < before)
-        result.push(`objects/${n}`);
+      try {
+        const stat = await lstat(path.join(directory, n));
+        if (!stat.isSymbolicLink() && stat.isFile() && stat.mtime < before)
+          result.push(`objects/${n}`);
+      } catch (error) {
+        // Another deletion worker may remove an enumerated object before stat.
+        // Permission, busy-device and other storage failures must still surface.
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      }
     }
     return result;
   }

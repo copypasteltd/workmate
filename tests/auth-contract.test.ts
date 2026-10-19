@@ -189,6 +189,95 @@ after(async () => {
   await isolated?.cleanup();
 });
 
+test("canonical current-user response matches the original User schema for browser and native credentials", async () => {
+  const account = await user();
+  await expected(
+    200,
+    "PATCH",
+    "/v1/me",
+    {
+      name: "Current profile",
+      locale: "en",
+    },
+    account.browser,
+  );
+  const issued = await native(account.browser);
+  for (const [browser, bearer] of [
+    [account.browser, undefined],
+    [undefined, issued.tokens.access_token],
+  ] as const) {
+    const r = await expected(200, "GET", "/v1/me", undefined, browser, {
+      bearer,
+    });
+    schema("User", r.data);
+    assert.deepEqual(r.data, {
+      id: account.session.user.id,
+      email: account.challenge.email,
+      display_name: "Current profile",
+    });
+    assert.equal(r.raw.headers["cache-control"], "no-store");
+  }
+  await expected(401, "GET", "/v1/me");
+});
+
+test("private workspace context binds identity and CSRF to the selected credential and does not leak another account's memberships", async () => {
+  const first = await user(),
+    second = await user();
+  const created = await expected(
+    200,
+    "POST",
+    "/v1/tenants",
+    {
+      name: "Context-only workspace",
+      project_name: "Context project",
+    },
+    first.browser,
+  );
+  const firstContext = await expected(
+    200,
+    "GET",
+    "/v1/session/context",
+    undefined,
+    first.browser,
+  );
+  assert.equal(firstContext.data.user.id, first.session.user.id);
+  assert.equal(firstContext.data.csrf_token, first.browser.csrf);
+  assert.ok(
+    firstContext.data.memberships.some(
+      (m: any) => m.id === created.data.tenant.id,
+    ),
+  );
+  const issued = await native(second.browser);
+  const mixed = await expected(
+    200,
+    "GET",
+    "/v1/session/context",
+    undefined,
+    first.browser,
+    {
+      bearer: issued.tokens.access_token,
+    },
+  );
+  assert.equal(mixed.data.user.id, second.session.user.id);
+  assert.equal(mixed.data.csrf_token, null);
+  assert.ok(
+    !mixed.data.memberships.some((m: any) => m.id === created.data.tenant.id),
+  );
+  const profile = await expected(
+    200,
+    "GET",
+    "/v1/me",
+    undefined,
+    first.browser,
+    {
+      bearer: issued.tokens.access_token,
+    },
+  );
+  schema("User", profile.data);
+  assert.equal(profile.data.id, second.session.user.id);
+  await expected(401, "GET", "/v1/session/context");
+});
+
 test("canonical challenge is strict 202/UTC, deduplicates concurrent requests and binds its HTTP-only browser flow", async () => {
   const b = fresh(),
     email = "auth-contract-" + randomUUID() + "@example.invalid",

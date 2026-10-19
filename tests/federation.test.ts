@@ -181,7 +181,7 @@ async function link(f: Setup, a: { cookie: string; url: string }) {
     code: await mailCode(ch.challenge_id),
   });
   const c = { cookie: cookie(r.raw, "cp_session") };
-  const me = (await ok(c, "GET", "/v1/me")).data;
+  const me = (await ok(c, "GET", "/v1/session/context")).data;
   return { ...c, id: me.user.id, csrf: me.csrf_token, email: me.user.email };
 }
 async function linked(f: Setup) {
@@ -407,7 +407,7 @@ test("first binding requires independent email proof, scoped OTP purpose and sin
   const issued = replies.find((r) => r.status === 200)!;
   assert.equal(
     (await ok({ cookie: cookie(issued.raw, "cp_session") }, "GET", "/v1/me"))
-      .data.user.id,
+      .data.id,
     f.owner.id,
   );
   const persisted = (
@@ -427,7 +427,7 @@ test("a known issuer/subject signs in again without re-linking and client_secret
   assert.equal(r.raw.headers.location, "http://localhost:4317/app/settings");
   assert.equal(
     (await ok({ cookie: cookie(r.raw, "cp_session") }, "GET", "/v1/me")).data
-      .user.id,
+      .id,
     f.owner.id,
   );
   assert.equal((await call(a, "GET", r.callback)).status, 302);

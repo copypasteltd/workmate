@@ -433,7 +433,7 @@ test("expired/wrong-email/replayed invitations fail and removed members cannot u
     404,
   );
   assert.ok(
-    !(await ok(member, "GET", "/v1/me")).memberships.some(
+    !(await ok(member, "GET", "/v1/session/context")).memberships.some(
       (i: any) => i.id === w.tenant.id,
     ),
   );
