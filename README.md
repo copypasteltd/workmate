@@ -151,7 +151,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **129/129**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十五份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **136/136**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十五份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -184,3 +184,10 @@ flowchart LR
 ![原会话资料补齐 / Inputs in the original conversation](assets/screenshots/32-task-input-wait.png)
 ![繁中移动界面 / Traditional Chinese on mobile](assets/screenshots/34-task-input-mobile.png)
 ![同任务执行结果 / Result from the same task](assets/screenshots/35-task-input-result.png)
+
+## 企业共用执行名额（当前源码）
+
+会话和任务页明确显示容量排队，用量页说明未完成工作上限与企业共享容量的关系。排队不调用模型，空位释放后自动继续原任务及原预算。Delivery `qa:execution-capacity` 验证实际等待、管理员可读原因、四宽度/两主题/繁英、真实 Codex 配合模拟模型生成私人文件与一次结算；占槽来源是明确标识且仅限本次企业的模拟记录，不是负载压测。
+
+![真实排队任务](assets/screenshots/36-capacity-wait.png)
+![繁中移动端排队](assets/screenshots/38-capacity-mobile.png)

@@ -149,7 +149,7 @@ Four browser QA groups cover these flows, two real Codex tasks driven by synthet
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **129/129**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **136/136**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -183,3 +183,10 @@ flowchart LR
 ![Waiting for an explicitly requested file](assets/screenshots/32-task-input-wait.png)
 ![Traditional Chinese mobile input picker](assets/screenshots/34-task-input-mobile.png)
 ![Result from the original task](assets/screenshots/35-task-input-result.png)
+
+## Shared execution slots (current source)
+
+Conversation/task pages explain capacity waits. Usage distinguishes active-work admission from shared execution slots. Queued work makes no model call; the same task and original hold resume automatically. Delivery `qa:execution-capacity` covers the actual wait, Admin queue reason, four widths/themes/languages and one real private-file result/settlement through Codex with a synthetic model. Occupancy is an explicitly synthetic fixture limited to its fresh workspace, not a load benchmark.
+
+![Original task waiting for capacity](assets/screenshots/36-capacity-wait.png)
+![Traditional Chinese mobile queue notice](assets/screenshots/38-capacity-mobile.png)

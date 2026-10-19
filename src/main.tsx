@@ -1571,13 +1571,18 @@ function TaskDetail() {
       "artifact.ready": ["交付檔案已就緒", "Deliverable file ready"],
       "delivery.reviewed": ["已記錄審閱結果", "Review recorded"],
       "task.cancel_requested": ["已要求取消工作", "Cancellation requested"],
+      "task.capacity_wait": [
+        "等待可用執行名額",
+        "Waiting for execution capacity",
+      ],
       "task.needs_input": ["等待你提供資料", "Waiting for your inputs"],
       "task.inputs_ready": [
         "資料已齊，工作已排隊",
         "Inputs ready; work queued",
       ],
     };
-    if (labels[state || e.kind]) return t(...labels[state || e.kind]);
+    const labelKey = state || e.body.step_key || e.kind;
+    if (labels[labelKey]) return t(...labels[labelKey]);
     if (e.kind === "usage.updated")
       return e.body.cost_state === "reconciling"
         ? t("用量待核對", "Usage needs reconciliation")
@@ -1675,10 +1680,15 @@ function TaskDetail() {
                         "Waiting for the inputs above. Model execution has not started.",
                       )
                     : data.status === "queued"
-                      ? t(
-                          "工作已排隊，正在等待專家接手。",
-                          "Your task is queued for your specialist.",
-                        )
+                      ? data.capacity_wait_reason
+                        ? t(
+                            "目前執行名額已滿，系統會自動繼續原工作。尚未呼叫模型，預算仍保持預留。",
+                            "Execution capacity is busy. This same task will resume automatically. The model has not been called and the budget remains reserved.",
+                          )
+                        : t(
+                            "工作已排隊，正在等待專家接手。",
+                            "Your task is queued for your specialist.",
+                          )
                       : data.status === "running"
                         ? t(
                             "正在處理。你可以離開此頁，稍後回來查看進度。",
@@ -3339,10 +3349,16 @@ function Usage() {
             )}
           </p>
           <p>
-            {t("同時工作上限", "Active task limit")}:{" "}
+            {t("未完成工作上限", "Active task limit")}:{" "}
             {plan.data?.body.max_active_tasks ?? "—"} ·{" "}
             {t("單次預算上限", "Task budget limit")}:{" "}
             <Money value={plan.data?.body.max_task_budget_micros} />
+          </p>
+          <p className="muted">
+            {t(
+              "排隊、待補資料和待核對的工作也計入上限。實際執行另受企業共用名額與服務容量限制；排隊時不會呼叫模型。",
+              "Queued work, missing inputs and reconciliation count toward this limit. Execution also depends on shared workspace slots and service capacity; queued work makes no model call.",
+            )}
           </p>
         </div>
         {plan.data?.ends_at && <DateText value={plan.data.ends_at} />}
