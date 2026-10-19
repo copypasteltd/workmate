@@ -1,6 +1,28 @@
 import type { Tx } from "./db.js";
 import { Problem } from "./lib.js";
 
+const min = (a: bigint, b: bigint) => (a < b ? a : b);
+function exactAmount(value: number, allowZero = false) {
+  if (!Number.isSafeInteger(value) || value < (allowZero ? 0 : 1))
+    throw new Problem(500, "INVALID_USAGE", "Invalid integer amount");
+  return BigInt(value);
+}
+async function balanceState(tx: Tx, tenant: string) {
+  const w = (
+    await tx.query(
+      "SELECT w.*,(coalesce((SELECT sum(remaining_micros) FROM funding_lots WHERE tenant_id=w.tenant_id),0)-w.balance_micros)::text AS debt_micros FROM wallets w WHERE tenant_id=$1",
+      [tenant],
+    )
+  ).rows[0];
+  if (BigInt(w.debt_micros) < 0n)
+    throw new Problem(
+      409,
+      "BILLING_RECONCILIATION_REQUIRED",
+      "Funding sources do not cover the recorded balance",
+    );
+  return w;
+}
+
 // All amounts are exact integer HKD micros; locks serialize every balance mutation per tenant.
 export async function wallet(tx: Tx, tenant: string) {
   const w = (
@@ -14,17 +36,18 @@ export async function wallet(tx: Tx, tenant: string) {
       "WALLET_NOT_FOUND",
       "Workspace billing account not found",
     );
+  await balanceState(tx, tenant);
   const expired = await tx.query(
     "SELECT *,remaining_micros-reserved_micros AS free FROM funding_lots WHERE tenant_id=$1 AND expires_at<=now() AND remaining_micros>reserved_micros FOR UPDATE",
     [tenant],
   );
   for (const lot of expired.rows) {
-    const amount = Number(lot.free);
+    const amount = BigInt(lot.free);
     await tx.query(
       "INSERT INTO ledger(tenant_id,kind,amount_micros,source_id,idempotency_key,reason) VALUES($1,'gift_expiry',$2,$3,$4,'Gift credit expired')",
       [
         tenant,
-        -amount,
+        (-amount).toString(),
         lot.ledger_id,
         `expire:${lot.id}:${lot.remaining_micros}`,
       ],
@@ -35,11 +58,10 @@ export async function wallet(tx: Tx, tenant: string) {
     );
     await tx.query(
       "UPDATE wallets SET balance_micros=balance_micros-$2,version=version+1 WHERE tenant_id=$1",
-      [tenant, amount],
+      [tenant, amount.toString()],
     );
   }
-  return (await tx.query("SELECT * FROM wallets WHERE tenant_id=$1", [tenant]))
-    .rows[0];
+  return balanceState(tx, tenant);
 }
 export async function reserve(
   tx: Tx,
@@ -47,12 +69,13 @@ export async function reserve(
   task: string,
   amount: number,
 ) {
+  const hold = exactAmount(amount);
   const w = await wallet(tx, tenant);
   if (
-    Number(w.balance_micros) +
-      Number(w.credit_limit_micros) -
-      Number(w.reserved_micros) <
-    amount
+    BigInt(w.balance_micros) +
+      BigInt(w.credit_limit_micros) -
+      BigInt(w.reserved_micros) <
+    hold
   )
     throw new Problem(
       402,
@@ -61,28 +84,28 @@ export async function reserve(
     );
   await tx.query(
     "INSERT INTO reservations(task_id,tenant_id,amount_micros) VALUES($1,$2,$3)",
-    [task, tenant, amount],
+    [task, tenant, hold.toString()],
   );
   const lots = (
     await tx.query(
-      "SELECT * FROM funding_lots WHERE tenant_id=$1 AND remaining_micros>reserved_micros AND (expires_at IS NULL OR expires_at>now()) ORDER BY expires_at ASC NULLS LAST,created_at FOR UPDATE",
+      "SELECT * FROM funding_lots WHERE tenant_id=$1 AND remaining_micros>reserved_micros AND (expires_at IS NULL OR expires_at>now()) ORDER BY expires_at ASC NULLS LAST,created_at,id FOR UPDATE",
       [tenant],
     )
   ).rows;
-  let remaining = amount;
+  let remaining = hold;
   for (const l of lots) {
-    const a = Math.min(
+    const a = min(
       remaining,
-      Number(l.remaining_micros) - Number(l.reserved_micros),
+      BigInt(l.remaining_micros) - BigInt(l.reserved_micros),
     );
     if (!a) continue;
     await tx.query(
       "UPDATE funding_lots SET reserved_micros=reserved_micros+$2 WHERE id=$1",
-      [l.id, a],
+      [l.id, a.toString()],
     );
     await tx.query(
       "INSERT INTO reservation_allocations(tenant_id,task_id,lot_id,amount_micros) VALUES($1,$2,$3,$4)",
-      [tenant, task, l.id, a],
+      [tenant, task, l.id, a.toString()],
     );
     remaining -= a;
     if (!remaining) break;
@@ -90,7 +113,7 @@ export async function reserve(
   // Unallocated remainder uses the explicitly granted credit limit, never a gift lot.
   await tx.query(
     "UPDATE wallets SET reserved_micros=reserved_micros+$2,version=version+1 WHERE tenant_id=$1",
-    [tenant, amount],
+    [tenant, hold.toString()],
   );
 }
 export async function settle(
@@ -109,9 +132,8 @@ export async function settle(
     )
   ).rows[0];
   if (!r || !["reserved", "reconciling"].includes(r.status)) return;
-  if (!Number.isSafeInteger(actual) || actual < 0)
-    throw new Problem(500, "INVALID_USAGE", "Invalid usage amount");
-  if (uncertain || actual > Number(r.amount_micros)) {
+  const chargeAmount = exactAmount(actual, true);
+  if (uncertain || chargeAmount > BigInt(r.amount_micros)) {
     await tx.query(
       "UPDATE reservations SET status='reconciling' WHERE task_id=$1",
       [task],
@@ -124,35 +146,83 @@ export async function settle(
   }
   const allocations = (
     await tx.query(
-      "SELECT a.*,l.expires_at FROM reservation_allocations a JOIN funding_lots l ON l.id=a.lot_id WHERE a.task_id=$1 ORDER BY l.expires_at ASC NULLS LAST,l.created_at FOR UPDATE OF l",
-      [task],
+      "SELECT a.*,l.kind,l.expires_at FROM reservation_allocations a JOIN funding_lots l ON l.id=a.lot_id WHERE a.tenant_id=$1 AND a.task_id=$2 ORDER BY l.expires_at ASC NULLS LAST,l.created_at,l.id FOR UPDATE OF l",
+      [tenant, task],
     )
   ).rows;
-  let remaining = actual;
+  const sources: Array<{ lot: string | null; kind: string; amount: bigint }> =
+    [];
+  let remaining = chargeAmount;
   for (const a of allocations) {
-    const charge = Math.min(remaining, Number(a.amount_micros));
+    const charge = min(remaining, BigInt(a.amount_micros));
     remaining -= charge;
     await tx.query(
       "UPDATE funding_lots SET remaining_micros=remaining_micros-$2,reserved_micros=reserved_micros-$3 WHERE id=$1",
-      [a.lot_id, charge, Number(a.amount_micros)],
+      [a.lot_id, charge.toString(), a.amount_micros],
     );
+    if (charge) sources.push({ lot: a.lot_id, kind: a.kind, amount: charge });
   }
+  // A credit-backed hold can predate a top-up. Consume currently free funds
+  // before drawing credit, while preserving every other task's allocations.
+  if (remaining) {
+    const free = (
+      await tx.query(
+        "SELECT * FROM funding_lots WHERE tenant_id=$1 AND remaining_micros>reserved_micros AND (expires_at IS NULL OR expires_at>now()) ORDER BY expires_at ASC NULLS LAST,created_at,id FOR UPDATE",
+        [tenant],
+      )
+    ).rows;
+    for (const lot of free) {
+      const charge = min(
+        remaining,
+        BigInt(lot.remaining_micros) - BigInt(lot.reserved_micros),
+      );
+      await tx.query(
+        "UPDATE funding_lots SET remaining_micros=remaining_micros-$2 WHERE id=$1",
+        [lot.id, charge.toString()],
+      );
+      sources.push({ lot: lot.id, kind: lot.kind, amount: charge });
+      remaining -= charge;
+      if (!remaining) break;
+    }
+  }
+  if (remaining) sources.push({ lot: null, kind: "credit", amount: remaining });
   await tx.query(
     "UPDATE wallets SET balance_micros=balance_micros-$2,reserved_micros=reserved_micros-$3,spent_micros=spent_micros+$2,version=version+1 WHERE tenant_id=$1",
-    [tenant, actual, Number(r.amount_micros)],
+    [tenant, chargeAmount.toString(), r.amount_micros],
   );
-  if (actual)
-    await tx.query(
-      "INSERT INTO ledger(tenant_id,user_id,task_id,kind,amount_micros,idempotency_key,reason) VALUES($1,$2,$3,'charge',$4,$5,'Metered task usage')",
-      [tenant, user, task, -actual, `charge:${task}`],
-    );
+  if (chargeAmount) {
+    const entry = (
+      await tx.query(
+        "INSERT INTO ledger(tenant_id,user_id,task_id,kind,amount_micros,idempotency_key,reason) VALUES($1,$2,$3,'charge',$4,$5,'Metered task usage') RETURNING id",
+        [tenant, user, task, (-chargeAmount).toString(), `charge:${task}`],
+      )
+    ).rows[0];
+    const grouped = new Map<string | null, (typeof sources)[number]>();
+    for (const source of sources) {
+      const prior = grouped.get(source.lot);
+      if (prior) prior.amount += source.amount;
+      else grouped.set(source.lot, { ...source });
+    }
+    for (const source of grouped.values())
+      await tx.query(
+        "INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,lot_id,kind,amount_micros) VALUES($1,$2,$3,$4,$5,$6)",
+        [
+          tenant,
+          task,
+          entry.id,
+          source.lot,
+          source.kind,
+          source.amount.toString(),
+        ],
+      );
+  }
   await tx.query("UPDATE reservations SET status=$2 WHERE task_id=$1", [
     task,
     actual ? "settled" : "released",
   ]);
   await tx.query("UPDATE tasks SET charged_micros=$2 WHERE id=$1", [
     task,
-    actual,
+    chargeAmount.toString(),
   ]);
   await wallet(tx, tenant); // Expire unused gift allocations after releasing their holds.
 }
@@ -170,7 +240,7 @@ export async function fund(
   idempotency: string,
 ) {
   const w = await wallet(tx, b.tenant_id);
-  const amount = b.amount_micros;
+  const amount = exactAmount(b.amount_micros);
   if (b.action === "top_up" && !b.reference)
     throw new Problem(
       400,
@@ -204,9 +274,9 @@ export async function fund(
         "This entry cannot be refunded or debited",
       );
     if (
-      Number(source.remaining_micros) - Number(source.reserved_micros) <
+      BigInt(source.remaining_micros) - BigInt(source.reserved_micros) <
         amount ||
-      Number(w.balance_micros) - Number(w.reserved_micros) < amount
+      BigInt(w.balance_micros) - BigInt(w.reserved_micros) < amount
     )
       throw new Problem(
         409,
@@ -220,14 +290,14 @@ export async function fund(
         "Confirmed refund reference is required",
       );
   }
-  const sign = source ? -1 : 1;
+  const sign = source ? -1n : 1n;
   const l = (
     await tx.query(
       "INSERT INTO ledger(tenant_id,kind,amount_micros,reference,source_id,expires_at,idempotency_key,reason) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *",
       [
         b.tenant_id,
         b.action,
-        sign * amount,
+        (sign * amount).toString(),
         b.reference ?? null,
         b.source_id ?? null,
         b.expires_at ?? null,
@@ -239,26 +309,52 @@ export async function fund(
   if (source)
     await tx.query(
       "UPDATE funding_lots SET remaining_micros=remaining_micros-$2 WHERE id=$1",
-      [source.lot_id, amount],
+      [source.lot_id, amount.toString()],
     );
   else {
-    const creditDebt = Math.min(amount, Math.max(0, -Number(w.balance_micros)));
+    // Net balance can be positive while other tasks still hold funded lots.
+    // The actual debt is gross remaining lots minus the net wallet balance.
+    const creditDebt = min(amount, BigInt(w.debt_micros));
     await tx.query(
       "INSERT INTO funding_lots(tenant_id,ledger_id,kind,remaining_micros,expires_at) VALUES($1,$2,$3,$4,$5)",
       [
         b.tenant_id,
         l.id,
         b.action === "gift" ? "gift" : "paid",
-        amount - creditDebt,
+        (amount - creditDebt).toString(),
         b.expires_at ?? null,
       ],
     );
+    if (creditDebt)
+      await tx.query(
+        "INSERT INTO billing_credit_repayments(tenant_id,funding_entry_id,amount_micros) VALUES($1,$2,$3)",
+        [b.tenant_id, l.id, creditDebt.toString()],
+      );
   }
   await tx.query(
     "UPDATE wallets SET balance_micros=balance_micros+$2,version=version+1 WHERE tenant_id=$1",
-    [b.tenant_id, sign * amount],
+    [b.tenant_id, (sign * amount).toString()],
   );
   return l;
+}
+export async function setCreditLimit(tx: Tx, tenant: string, amount: number) {
+  const limit = exactAmount(amount, true),
+    w = await wallet(tx, tenant);
+  if (
+    BigInt(w.balance_micros) + limit < BigInt(w.reserved_micros) ||
+    limit < BigInt(w.debt_micros)
+  )
+    throw new Problem(
+      409,
+      "CREDIT_RESERVED",
+      "Existing charges or holds exceed this limit",
+    );
+  return (
+    await tx.query(
+      "UPDATE wallets SET credit_limit_micros=$2,version=version+1 WHERE tenant_id=$1 RETURNING *",
+      [tenant, limit.toString()],
+    )
+  ).rows[0];
 }
 export function tokenCharge(
   input: number,

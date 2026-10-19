@@ -433,3 +433,23 @@ flowchart LR
 ```
 
 用户导出同步迁移到规范用户游标，超过既有 500 条同步上限明确拒绝，避免静默截断；下载发送前在当前 MFA 和权限锁内复核完整授权摘要。新增检查包含真实脱敏 CSV、501 条上限拒绝和下载撤权，完整规范异步导出仍待实现。
+
+## 授信与实际扣费来源 / Credit and settlement sources
+
+预留、结算、过期和资金调整使用 BigInt 计算累计金额。授信预留之后收到的有效资金可在结算时消耗，其他任务冻结的批次保持预留。实际债务等于资金批次剩余总额减钱包净余额，不能仅取负余额；新增资金先偿还实际债务，只有余额生成可用批次。信用上限不能低于实际债务或现有预算承诺。
+
+迁移 041 为新扣费保存不可变 paid/gift/credit 来源，为新入账保存实际偿还债务部分。数据库检查任务、企业、资金种类和提交时来源合计；账本及来源在同一事务回滚。历史账本不改写，迁移前的未知来源不补造。专项命令 `node --env-file=.env --import tsx --test --test-concurrency=1 tests/billing-sources.test.ts` 使用独立原生 PostgreSQL，完整结果以 Delivery 当前原始 TAP 为准。
+
+Reservations, settlement, expiry and funding use BigInt for accumulated amounts. A credit-backed hold can consume subsequently received funds at settlement while preserving other tasks' funded holds. Actual credit debt is gross remaining funding lots minus the net wallet balance. New funding first repays that debt; only the remainder becomes available credit. Reducing the credit limit must preserve both debt and existing budget commitments.
+
+Migration 041 records immutable sources for new paid/gift/credit charges and actual debt repayments from new funding. Database guards validate tenant, task, bucket and exact source totals at commit. Financial records roll back together. Historical ledger bytes remain unchanged and missing historical sources are not invented. Run the focused command above against native PostgreSQL; the current Delivery TAP is authoritative. Full canonical billing/payment/VIP APIs, real payment verification, personal payer accounts and the complete financial Admin workflow remain separate acceptance work.
+
+```mermaid
+flowchart LR
+  Hold[Original hold] --> Lots[Own allocations and currently free lots]
+  Lots --> Debt[Credit for the remaining cost]
+  Debt --> Commit[Charge and immutable sources in one transaction]
+  Commit --> Guard[Database verifies exact source total]
+  Funding[New funding] --> Repay[Repay actual credit debt]
+  Repay --> Remainder[Only the remainder funds a new lot]
+```

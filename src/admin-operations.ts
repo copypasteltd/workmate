@@ -11,7 +11,7 @@ import {
 } from "./admin-access.js";
 import { key, replay } from "./access.js";
 import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
-import { fund, settle, wallet } from "./billing.js";
+import { fund, setCreditLimit, settle } from "./billing.js";
 import { event } from "./tasks.js";
 import {
   decideMembershipOperation,
@@ -229,19 +229,7 @@ async function execute(tx: Tx, b: Command, p: Principal, id: string) {
     );
   }
   if (b.action === "billing.credit_limit.write") {
-    const w = await wallet(tx, b.tenant_id);
-    if (Number(w.balance_micros) + b.amount_micros < Number(w.reserved_micros))
-      throw new Problem(
-        409,
-        "CREDIT_RESERVED",
-        "Existing charges or holds exceed this limit",
-      );
-    return (
-      await tx.query(
-        "UPDATE wallets SET credit_limit_micros=$2,version=version+1 WHERE tenant_id=$1 RETURNING *",
-        [b.tenant_id, b.amount_micros],
-      )
-    ).rows[0];
+    return setCreditLimit(tx, b.tenant_id, b.amount_micros);
   }
   if (b.action === "billing.reconcile") {
     const t = (
