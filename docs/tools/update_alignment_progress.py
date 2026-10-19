@@ -12,11 +12,17 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('native_window_and_sidepanel', [36,39,51,55,60,81,82],
+     'Desktop 无原生边框/默认菜单、自绘双语主题标题栏、实际原生窗口按钮与指针/键盘有界缩放、跨窗口 IPC 拒绝、真实打包登录及弹窗；Chrome action 实际创建右侧 SIDE_PANEL、跨页保留/收起及重启配置。完整系统/DPI、签名更新与全产品可访问性仍待验收。',
+     ['native_surfaces','native_artifacts','extension'], ['technical/30-native-window-and-browser-sidepanel.md']),
+    ('file_imports_and_corrections', [1,2,12,14,23,24,35,39,43,44,46,49,51,55,60,90,91],
+     '固定来源文件版本的 CSV/XLSX 导入、规范 ImportCreate/Snapshot、显式工作表/标题列、十进制/公式拒绝/单元格错误、跨旧接口去重、更正祖先链及汇总排斥、来源治理与删除/未领取预留释放、Web/原生 IPC 字节下载；不含完整官方导出矩阵或专业分析资格。',
+     ['platform_regression','file_imports','workbook_interop','marketing_analytics','runtime_schemas'], ['technical/29-file-imports-and-correction-lineage.md']),
     ('analysis_report_tasks', [1,2,12,23,24,35,39,43,44,46,49,51,55,60,74,75,79,90,91],
      'AnalysisSpec 多来源独立计算与比较、原子私人 Codex 报告任务/单预留、分页冻结事实工具、规范 Snapshot/Evidence 查询、数字字面量与引用校验、固定 HTML/JSON 产物及 Web/源码 Desktop 下载、来源生命周期和撤权；不含完整语义质量、正式广告连接和专业角色资格。',
      ['platform_regression','analysis_reports','analysis_index','runtime_schemas'], ['technical/28-analysis-report-tasks-and-evidence.md']),
     ('marketing_import_metrics', [1,2,12,23,24,35,39,44,49,51,55,60,90],
-     'CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；不含 XLSX、完整来源/维度模型、规范分析任务和正式广告授权。',
+     'CSV 映射预览、单项目原子去重、原文摘要、精确小数和未知原因、冻结指标/证据、真实 JSON/SVG/CSV 下载、隔离删除与权限守卫、Web/源码 Desktop；该阶段尚未涵盖 XLSX、完整来源/维度模型、规范分析任务和正式广告授权，后续修复另列。',
      ['platform_regression','marketing_analytics'], ['technical/27-marketing-import-metrics-and-evidence.md']),
     ('design_pdf_review', [1,2,12,14,16,22,39,43,44,51,55,60,68,74,75,76,77,78,79],
      '实际单页 PDF 审阅稿、源工程与格式权限、旧版本拒绝/原请求重放、私人文件、Web 下载和原生 Desktop 摘要保存；独立解析/渲染，不含完整审阅包、印刷或真实设计角色资格。',
@@ -63,6 +69,7 @@ CLUSTERS = [
 ]
 
 REMAINING = {
+ 36:'原生全局侧栏的真实 action/右侧出现、跨页保留与重启配置已验证；网页选择/站点授权和全部业务上下文的完整矩阵仍待验收。',
  89:'方案未完成工作上限和实际企业/能力执行容量已区分；席位、存储、信用、完整历史版本与正式权益全部路径仍待验收。',
  7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
  69:'已实现首次模型调用前的显式文件/连接检查点；已付费步骤恢复、自动识别、capability/device 和离线等待仍未完成。',
@@ -78,12 +85,12 @@ REMAINING = {
  15:'模拟接口下功能继续验证；真实内部 Image 2 生成/编辑和业务质量尚未验收。',
  16:'真实分层图文可生成 PDF 审阅稿并独立渲染；完整换行/溢出检查、字体来源/授权与所有专业排版仍待验收。',
  22:'PDF 实际下载、源快照、版本冲突及原生保存已有局部验证；评论/接受/修改闭环、完整 ZIP 版本清单及全部业务编辑描述未齐。',
- 23:'CSV 原文、映射/口径、并发去重、行错误、跨端确认和规范快照读取已有证据；XLSX、完整官方导出/语言数值矩阵、多维事实模型、显式替换及规范资产/导入 API 未完成。',
+ 23:'CSV/XLSX 固定文件版本、映射/口径、并发去重、实际单元格定位、跨端确认、显式更正链与规范导入/快照已有局部证据；完整官方导出/语言数字矩阵、多维事实模型和规范资产上传 API 尚未完成。',
  24:'精确小数、未知/零原因、多来源 AnalysisSpec/比较、原子报告任务、固定资产、分页事实工具、规范证据查询与数字引用校验已有局部证据；完整语义/统计质量、正式连接数据、全部币种/归因矩阵和专业交付仍未完成。',
  35:'文件/技能、默认助手、通知和首次运行前补齐已有证据；团队、自动缺口发现、步骤续做与全业务整合仍待完成。',
  37:'Web 与 Desktop 传输有新证据；兼容降级、扩展及所有撤销场景仍未完整验收。',
  38:'Desktop 新传输不等同扩展 Native Host 全量大文件验收；协议矩阵仍待完成。',
- 39:'当前源码原生登录/传输通过；历史安装包未重发，更新/签名/卸载与系统矩阵待完成。',
+ 39:'源码原生登录/传输及本次独立无边框预览包通过局部验证；历史完整离线包保留，更新/签名/卸载与系统/DPI 矩阵待完成。',
  41:'身份与云文件接续有局部证据；任务内本地步骤、离线等待/重连续做仍待完成。',
  43:'当前新增方法/上传/云文件仍走受控工具；新增媒体/后台/所有出站路径尚需验收。',
  44:'锁定真实 Codex 的工具回合及持久源码已验证；内核会话继续、完整检查点/恢复仍待完成。',
@@ -136,10 +143,26 @@ def fingerprint(path):
 
 
 def main():
+    # Mirror the exact client build receipt into the documentation tree; source
+    # repositories retain the original evidence and all actual artifacts.
+    artifact_receipt = DEV/'copypaste-delivery/evidence/native-surfaces-artifacts.json'
+    (DOCS/'quality/native-surfaces-artifacts.json').write_bytes(artifact_receipt.read_bytes())
     baseline_path = DOCS/'quality/requirements-alignment-baseline.json'
     baseline = load(baseline_path)
     assert len(baseline['requirements']) == 102
-    assert baseline['requirements_sha256'] == fingerprint(DOCS/'requirements/01-srs.md'), 'Review changed SRS before carrying evidence forward'
+    amendment_path = DOCS/'quality/requirements-amendments.json'
+    amendment = load(amendment_path)
+    assert amendment['baseline_raw_sha256'] == baseline['requirements_sha256']
+    assert amendment['original_102_acceptance_conditions_preserved'] is True
+    current_srs = (DOCS/'requirements/01-srs.md').read_text(encoding='utf-8').replace('\r\n','\n')
+    assert hashlib.sha256(current_srs.encode()).hexdigest() == amendment['amended_lf_sha256'], 'Review changed SRS before carrying evidence forward'
+    assert {c['requirement_id'] for c in amendment['changes']} == {'REQ-036','REQ-039'}
+    restored_srs = current_srs
+    for change in amendment['changes']:
+        assert restored_srs.count(change['amended_line']) == 1
+        restored_srs = restored_srs.replace(change['amended_line'],change['original_line'],1)
+    assert hashlib.sha256(restored_srs.encode()).hexdigest() == amendment['baseline_lf_sha256']
+    assert hashlib.sha256(restored_srs.replace('\n','\r\n').encode()).hexdigest() == baseline['requirements_sha256']
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
         'web_admin': DEV/'copypaste-delivery/evidence/alignment.json',
@@ -157,6 +180,10 @@ def main():
         'design_pdf': DEV/'copypaste-delivery/evidence/design-pdf.json',
         'marketing_analytics': DEV/'copypaste-delivery/evidence/marketing-analytics.json',
         'analysis_reports': DEV/'copypaste-delivery/evidence/analysis-reports.json',
+        'file_imports': DEV/'copypaste-delivery/evidence/file-imports.json',
+        'workbook_interop': DEV/'copypaste-delivery/evidence/workbook-interop.json',
+        'native_surfaces': DEV/'copypaste-delivery/evidence/native-surfaces.json',
+        'native_artifacts': DEV/'copypaste-delivery/evidence/native-surfaces-artifacts.json',
         'analysis_index': DEV/'copypaste-delivery/evidence/analysis-index-backfill.json',
         'checkout_integrity': DEV/'copypaste-delivery/evidence/byte-integrity.json',
         'runtime_schemas': DOCS/'quality/runtime-contract-samples.json',
@@ -173,6 +200,18 @@ def main():
             assert report['browser_closed'] is True
         if 'desktop_closed' in report:
             assert report['desktop_closed'] is True
+        if 'extension_closed' in report:
+            assert report['extension_closed'] is True
+        if key == 'native_artifacts':
+            assert report['signed'] is False and report['installed_or_published'] is False
+            assert len(report['artifacts']) == 3
+            for artifact in report['artifacts']:
+                actual_file = (DEV/artifact['path']).resolve()
+                assert actual_file.is_relative_to(DEV.resolve())
+                assert actual_file.stat().st_size == artifact['bytes']
+                assert fingerprint(actual_file) == artifact['sha256']
+            native_report = DEV/'copypaste-delivery'/report['validation']['path']
+            assert fingerprint(native_report) == report['validation']['sha256']
         evidence[key] = {'path': path.relative_to(ROOT).as_posix(), 'sha256': fingerprint(path),
                          'at': report.get('at', report.get('checked_at')), 'checks': checks,
                          'scope': report.get('scope', 'Only the explicitly named subflows in this report')}
@@ -211,8 +250,9 @@ def main():
     result={'schema_version':'1.0','at':datetime.now(timezone.utc).isoformat(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
+            'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},
             'summary':dict(Counter(r['assessment'] for r in rows)), 'fully_accepted_requirements':0,
-            'qualified_live_roles':0, 'release_artifacts':'Existing 0.5.0 installers/offline bundles do not include current source repairs',
+            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical; separate frameless Desktop and native Side Panel preview artifacts are recorded in dev/copypaste-delivery/evidence/native-surfaces-artifacts.json, using localhost origins and no signing or production publication',
             'repositories':repositories,'evidence':evidence,
             'contract_alignment':{'contract_operations':len(operations),'implemented_operations':len(actual['routes']),
                                   'unmatched_contract_method_paths':sum(not x['method_path_matches'] for x in operations),

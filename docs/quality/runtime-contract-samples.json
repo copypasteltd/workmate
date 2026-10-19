@@ -1,6 +1,6 @@
 {
-  "at": "2026-10-19T07:17:48.706817+00:00",
-  "scope": "Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template and Report/Snapshot/Evidence HTTP response schemas only; not full API conformance",
+  "at": "2026-10-19T10:10:41.688000+00:00",
+  "scope": "Captured cloud workspace, project Skill, notification, pre-execution dependency, scoped Admin cleanup page, role template, Report/Snapshot/Evidence responses and file ImportCreate requests only; not full API conformance",
   "sources": [
     {
       "file": "dev/copypaste-delivery/evidence/cloud-files-contract-samples.json",
@@ -43,9 +43,15 @@
       "at": "2026-10-19T07:15:21.301Z",
       "origin": "actual local authenticated HTTP responses; simulated model dependency",
       "sha256": "30cf0a67f891a9b9def12d8f98ee89b6951a58019aad99c7eee930c7c1bd0ddc"
+    },
+    {
+      "file": "dev/copypaste-delivery/evidence/file-imports-contract-samples.json",
+      "at": "2026-10-19T10:06:35.742Z",
+      "origin": "actual authenticated local HTTP requests and responses; real uploaded XLSX and simulated AI dependency",
+      "sha256": "0b4a982a2d31a77b781ed1c2cdf1d9afad18f5f338b50cac1f08c9cc24ddf344"
     }
   ],
-  "openapi_sha256": "f9a98e67ed9fad4f1cd808159f15a2fb7f31871489c721b974c09adad76963ea",
+  "openapi_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
   "checks": [
     {
       "source": "cloud-files-contract-samples.json",
@@ -224,6 +230,41 @@
     },
     {
       "source": "analysis-reports-contract-samples.json",
+      "sample": 5,
+      "schema": "Snapshot",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "file-imports-contract-samples.json",
+      "sample": 1,
+      "schema": "ImportCreate",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "file-imports-contract-samples.json",
+      "sample": 2,
+      "schema": "Snapshot",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "file-imports-contract-samples.json",
+      "sample": 3,
+      "schema": "Snapshot",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "file-imports-contract-samples.json",
+      "sample": 4,
+      "schema": "ImportCreate",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "file-imports-contract-samples.json",
       "sample": 5,
       "schema": "Snapshot",
       "status": "passed",

@@ -12,7 +12,7 @@
 
 基础组件至少包括 Button、IconButton、Input/Composer、Card、Sidebar/Nav、RoleCard、TaskStep、StatusBadge、FileItem、ArtifactPanel、Table/Chart、Dialog/Drawer、ThemeControl；颜色、圆角、字号、间距和 motion 均从语义变量取值。扩展侧栏改变布局，不另定义品牌色。
 
-颜色使用 --cp-color-*；主要动作通过 text/bg 映射，强调色用于链接/选中/焦点。必要输入边界使用增强 control-border，不使用较淡的装饰 border 冒充可辨控件。状态色与图表色独立于品牌蓝，状态仍须有文字及图标。禁止新页面硬编码一套主色或复制竞品组件主题。
+颜色使用 --cp-color-\*；主要动作通过 text/bg 映射，强调色用于链接/选中/焦点。必要输入边界使用增强 control-border，不使用较淡的装饰 border 冒充可辨控件。状态色与图表色独立于品牌蓝，状态仍须有文字及图标。禁止新页面硬编码一套主色或复制竞品组件主题。
 
 字体以 display/body/code 三组加载，展示型衬线标题只用于适合的位置。繁中字符、价格/日期/金额、英文及混排需实际渲染检查；生产字体包记录来源/许可/摘要，不依赖本机恰好装有某字体。加载失败走登记回退，不影响关键文字可见。
 
@@ -25,6 +25,8 @@ data-theme=light/dark 决定一套完整 token，跟随系统在本端解析后�
 ## 4. 布局、性能与资源
 
 采用既有 React/TypeScript/Vite 与 Electron/Manifest V3 选型。共享组件不要求引入新的 UI 框架；如选组件库，只取可访问交互基础并完全映射本品牌 token。图标使用统一 SVG，禁止 emoji 代替功能图标。
+
+Desktop 主窗口使用 40px 品牌自绘标题栏，无原生边框和 Electron 默认菜单；Web 业务顶栏与该原生壳层分开。Chrome 使用按钮触发的原生全局 Side Panel，默认右侧并尊重浏览器位置偏好。具体布局、隔离边界与实际截图见 [窗口及侧栏实现](30-native-window-and-browser-sidepanel.md)。
 
 375/768/1024/1440px 和 200% 缩放检查导航、目标输入、会话/成果、角色卡、表格及弹层；正文换行，数据表可在独立容器横向滚动，不使全页溢出。先加载 UI 字体/文本，媒体懒加载；装饰图形静态或 respect reduced-motion，避免长期占用渲染资源。
 

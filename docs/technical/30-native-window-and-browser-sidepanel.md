@@ -1,0 +1,56 @@
+# Desktop 无边框窗口与 Chrome 原生侧栏
+
+2026-10-19 用户追加约束：Desktop 使用无边框窗口，移除 Electron 自带边框及菜单；扩展参照新版 MetaMask 的出现方式，点击扩展按钮后在浏览器右侧展开。本文是后续客户端开发和验收的强制约束，覆盖 REQ-036/039 的对应子流程。
+
+## Desktop 产品行为
+
+- 主窗口使用 `frame: false`、`thickFrame: false`，不显示 Windows 原生标题框及 Electron 默认 File/Edit/View/Help 菜单。应用菜单置空、窗口菜单移除，按 Alt 也不显示菜单栏。
+- 顶部保留 40px 的 CopyPaste 自绘标题栏，沿用现有品牌 Logo、背景、墨色、分隔线和蓝色焦点 token。浅色、深色及跟随系统由原有偏好控制；窗口按钮具有繁中/英文名称。
+- 标题栏空白区域可拖动；按钮排除拖动区域。提供最小化、最大化/还原和关闭，反映真实原生窗口状态。主窗口内容和弹窗从标题栏下方开始，弹窗打开时锁定背景滚动。
+- 保留八个不可见边缘/角落缩放区，最小尺寸 800×600；最大尺寸按当前显示器工作区限制。右下角可用方向键调整，每次 10px，Shift 为 50px。最大化/全屏时隐藏缩放区。
+- 系统文件选择、保存及权限确认继续使用原生对话框。它们与主窗口的 Electron 默认菜单是不同的 UI，不替换系统授权体验。
+
+```mermaid
+flowchart LR
+  Input[自绘标题栏 / 缩放区] --> Preload[隔离 preload 的固定动作]
+  Preload --> Guard[主进程核对 webContents 与主 frame]
+  Guard --> Action[仅当前窗口的最小化 / 最大化 / 关闭]
+  Guard --> Resize[坐标与边缘校验 / 尺寸限制]
+  Action --> State[原生窗口状态事件]
+  State --> Labels[还原图标 / 双语标签 / 缩放可见性]
+```
+
+实现为 `dev/copypaste-desktop/src/window-controls.ts`、`src/preload.cts` 和 `src/main.ts`。标题栏由 Desktop preload 构建，在 React 根节点之外；Web 页面不增加原生窗口控件，下一次显式同步 Web renderer 时也不会抹掉标题栏。维持 context isolation、sandbox、关闭 Node integration；不把窗口 IPC、任意方法或 Node 原语暴露给业务渲染器。窗口 IPC 仅允许自己的主 frame；另一个窗口及子 frame 不可控制主窗口。
+
+## 扩展产品行为
+
+用户安装/加载扩展 → 在 Chrome 扩展菜单选择 CopyPaste，或先固定图标再点击 → 当前浏览器窗口的原生侧栏出现 → 登录/项目/任务/素材流程在侧栏内使用。再次执行扩展按钮动作可收起侧栏，关闭侧栏不取消云任务。完整工作台按钮由用户主动点击后另开 Web。
+
+`side_panel.default_path` 固定为 `sidepanel.html`，保留 `sidePanel` 权限，action 不定义 `default_popup`。使用 `chrome.sidePanel.setPanelBehavior({openPanelOnActionClick:true})`，不通过网页浮层、action popup 或新标签页模拟侧栏。使用全局侧栏，同一窗口切换网页或标签页继续保留同一侧栏文档。
+
+`src/background.ts` 在每次 service worker 启动、安装/更新及浏览器启动时幂等恢复动作配置和 `TRUSTED_CONTEXTS` 存储访问级别；初始化不会自动打开侧栏。已有 PKCE、会话存储、项目权限、文件选择及 Native Messaging 规则继续执行。
+
+**左右位置由 Chrome 用户设置管理。** 默认右侧的浏览器中出现于右侧；当前 Side Panel API 的 `getLayout()` 只能读取位置，没有强制改右的 API。用户若设置左侧，应在 Chrome 设置的外观/侧边栏位置中切回右侧。产品不能声称可越过该浏览器偏好。最低 Chrome 120，`getLayout` 仅用于较新 Chrome 的 QA，不成为最低版本的产品依赖。
+
+## 运行验证与产物
+
+交付仓库提供 `npm run qa:native-surfaces`。默认测试当前源码 Electron；设 `COPYPASTE_DESKTOP_EXECUTABLE` 为本次 `release/frameless/win-unpacked/CopyPaste.exe` 时测试真实打包应用。它使用隔离 profile，真实邮箱/浏览器 PKCE，模型/媒体仍按授权使用假数据。测试分别验证无原生 frame/menu、Alt、窗口按钮、指针和键盘缩放及 800×600 下限、跨窗口 IPC 拒绝、登录后的侧栏/弹窗布局、双语主题，以及实际关闭进程。
+
+扩展验证使用原生 Chromium 的 `Extensions.triggerAction` 对**真实浏览器 tab target**执行按钮默认动作，再通过 `chrome.runtime.getContexts` 断言 `SIDE_PANEL`。同时确认右侧布局、主网页可用宽度缩小、普通标签页数量不增加、实际侧栏文档无横向溢出、跨导航/标签保留、第二次动作收起及重启后配置保留。没有直接打开 `sidepanel.html` 标签页来替代本次出现模式验收。原有 `qa:extension` 八组覆盖 PKCE、实际 Codex/模拟模型、任务、通知、资料补齐及权限竞态。
+
+证据位于 `dev/copypaste-delivery/evidence/native-surfaces.json`：真实打包客户端与原生侧栏共 10/10 组，扩展原有业务回归为 8/8 组；所有自建 Electron、授权浏览器和扩展浏览器在 finally 关闭。此验证使用浏览器调试接口执行按钮默认动作，未冒充操作系统鼠标对工具栏的人工点击。侧栏截图通过实际 SIDE_PANEL 的 CDP target 采集，仅包含侧栏内容；右侧位置另外由实际 `getLayout()` 及浏览器可用宽度记录证明。首轮提前读取未稳定侧栏布局的失败证据独立保留，最终等待文档、字体和侧栏宽度就绪后验证实际溢出。
+
+本次另行生成 `dev/copypaste-desktop/release/frameless/` 的 Windows x64 Setup、Portable 和 win-unpacked，以及 `dev/copypaste-extension/release/sidepanel/` 的可加载扩展 ZIP。它们采用本机 localhost 默认配置、未签名，源码 package 版本保持 0.5.0；以本次产物清单和 SHA-256 区分，不能与历史原始 0.5.0 完整离线交付包混为一谈。未安装到用户系统、未上架或部署生产。完整签名更新、卸载、显示器/DPI 系统矩阵和长期需求综合验收仍按原计划执行。
+
+执行交付仓库 `npm run package:surfaces`，在源码已提交且干净后比对 ASAR 内 29 个构建文件与当前实际构建字节，生成扩展 ZIP 和 `evidence/native-surfaces-artifacts.json`，记录三个预览包的大小、SHA-256、源码提交及对应真实打包验证报告摘要。它不会安装、注册 Host 或发布应用。
+
+![真实无边框工作区](../design/implementation/desktop-frameless.png)
+![自绘标题栏与弹窗](../design/implementation/desktop-frameless-dialog.png)
+![实际原生侧栏内容](../design/implementation/extension-native-sidepanel.png)
+
+## 技术依据
+
+- [Electron 自定义窗口样式](https://www.electronjs.org/docs/latest/tutorial/custom-window-styles)：frameless 主窗口。
+- [Electron 自绘标题栏](https://www.electronjs.org/docs/latest/tutorial/custom-title-bar)：拖动区和控件区域。
+- [Chrome Side Panel API](https://developer.chrome.com/docs/extensions/reference/api/sidePanel)：action 默认动作、全局侧栏、位置读取和版本边界。
+- [Chrome DevTools Extensions 协议](https://chromedevtools.github.io/devtools-protocol/tot/Extensions/)：实际扩展按钮默认动作测试。

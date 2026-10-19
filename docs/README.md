@@ -6,13 +6,13 @@
 
 产品服务在港企业，首批为现有客户的 marketing 团队。以统一企业平台支撑云端 Web、Chrome 扩展/原生桥接、完整 Desktop，覆盖营销素材生产、广告及网站分析、SEO/GEO 和重复流程。全部 AI 请求经过公司内部服务器，**Codex 为唯一 Agent 内核**，由 CORE01 固定；实际 Codex 版本与受控 Responses 工具回合已验证；公司内部网关尚待提供配置并真实联调。
 
-当前按用户授权使用明确标识的假数据继续全体系修复，跟踪见 [102 条差异基线与修复](quality/09-implementation-alignment-audit.md)，新实现约束见 [删除、传输、保留及事件](technical/17-erasure-transfer-retention-events.md)。0.5.0 发布物保留原始版本，尚未重新打包未发布改动。
+当前按用户授权使用明确标识的假数据继续全体系修复，跟踪见 [102 条差异基线与修复](quality/09-implementation-alignment-audit.md)，新实现约束见 [删除、传输、保留及事件](technical/17-erasure-transfer-retention-events.md)。0.5.0 原始离线发布物保留；本次 Desktop 无边框及扩展原生侧栏另行构建客户端预览包，见 [窗口与侧栏](technical/30-native-window-and-browser-sidepanel.md)。
 
 运行前等待并补齐文件或连接、同一任务继续、私人附件和计划来源守卫见 [资料检查点](technical/22-pre-execution-input-checkpoint.md)。模型依赖继续使用获准假数据；不将该子流程计为完整检查点恢复或正式角色资格。
 
 原生画布和设计师工具新增单页 PDF 审阅稿，保留实际源工程和素材版本；格式权限、版本冲突、重复请求与跨端下载见 [PDF 设计交付](technical/26-design-pdf-review-delivery.md)。PDF 为图片审阅稿，不计为完整专业交付资格。
 
-营销数据新增字段映射预览、原文摘要、重复导入保护、未知转化处理、冻结精确指标及实际 CSV/JSON/SVG 下载，见 [营销数据与证据](technical/27-marketing-import-metrics-and-evidence.md)。后续已接入多来源/比较的 AnalysisSpec、真实 Codex 私人报告任务、分页事实工具、固定 HTML/JSON 资产及规范 Snapshot/Evidence 读取，见 [报告任务与冻结证据](technical/28-analysis-report-tasks-and-evidence.md)。正式广告授权、XLSX、完整语义质量与专业交付资格仍未完成。
+营销数据新增字段映射预览、原文摘要、重复导入保护、未知转化处理、冻结精确指标及实际 CSV/JSON/SVG 下载，见 [营销数据与证据](technical/27-marketing-import-metrics-and-evidence.md)。后续已接入多来源/比较的 AnalysisSpec、真实 Codex 私人报告任务、分页事实工具、固定 HTML/JSON 资产及规范 Snapshot/Evidence 读取，见 [报告任务与冻结证据](technical/28-analysis-report-tasks-and-evidence.md)。CSV/XLSX 固定文件版本和显式更正见 [文件导入与更正链](technical/29-file-imports-and-correction-lineage.md)。正式广告授权、完整官方导出矩阵、语义质量与专业交付资格仍未完成。
 
 **已确认**：内部 API 已上线，支持用户表述的 gpt 6 luna max。准确模型别名、工具协议、图片/视频能力和费用限额仍需真实接口验证。本轮已实现原生平台、Web、Admin、Chrome 扩展与 Windows Desktop；实际范围和未完成项见 [实施清单](technical/12-implementation-and-repositories.md) 与 [当前代码验收](quality/08-enterprise-federation-acceptance.md)。未完成外部平台授权或公司真实模型准入。
 
@@ -136,3 +136,5 @@ ADMIN01 拆为 REQ-083–102、UC19–UC24 和 TC-083–102；同步 P14/A01–A
 Admin 清理记录的筛选、50 条默认分页、撤权显示及独立原生测试库见 [后台记录与测试隔离](technical/24-admin-record-pages-and-test-isolation.md)。
 
 持久角色目录、预检/实例化、真实 Codex/能力版本及撤销行为见 [模板注册表与运行绑定](technical/25-role-template-registry-and-runtime-binding.md)。Web 与 Desktop 已接入该流程，专业角色资格门槛保持不变。
+
+固定原文件版本的 CSV／XLSX、规范导入 API、显式更正链及来源治理见 [文件导入与更正链](technical/29-file-imports-and-correction-lineage.md)。

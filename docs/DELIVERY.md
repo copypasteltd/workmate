@@ -4,7 +4,18 @@
 
 正在执行全体系需求修复，未发布的改动见 [修复记录](quality/09-implementation-alignment-audit.md)。用户已授权暂用假数据，可在 delivery 运行 `npm run demo` 启动标识清晰的模拟环境，Codex 内核和业务逻辑仍真实执行。下列 0.5.0 安装包与归档不代表当前未发布源码。
 
-当前源码新增 [AnalysisSpec 报告与证据](technical/28-analysis-report-tasks-and-evidence.md)：多来源/比较预览、真实私人 Codex 任务与预算、分页固定事实、数字引用检查、持久 HTML/JSON 文件及 Web/源码 Desktop 下载。当前平台回归 167/167；完整综合验收和真实角色资格继续保留，不使用旧安装包演示本轮新增功能。
+当前源码新增 [AnalysisSpec 报告与证据](technical/28-analysis-report-tasks-and-evidence.md)：多来源/比较预览、真实私人 Codex 任务与预算、分页固定事实、数字引用检查、持久 HTML/JSON 文件及 Web/源码 Desktop 下载。当前平台回归 180/180；完整综合验收和真实角色资格继续保留，不使用旧安装包演示本轮新增功能。
+
+## 本次无边框与侧栏客户端预览
+
+最新 Desktop 使用品牌自绘标题栏，无原生边框及 Electron 默认菜单；扩展按钮打开 Chrome 原生全局侧栏，默认右侧并遵从浏览器用户位置偏好。真实打包 EXE 与侧栏综合验证 10/10，原有扩展业务回归 8/8；说明及实际截图见 [窗口与原生侧栏](technical/30-native-window-and-browser-sidepanel.md)。
+
+- 安装器：`dev/copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Setup.exe`。
+- 便携版：`dev/copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Portable.exe`。
+- 扩展 ZIP：`dev/copypaste-extension/release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`；解压后在 Chrome 开发者模式加载目录。
+- [产物与 SHA-256 清单](quality/native-surfaces-artifacts.json)：源码提交、29 个嵌入构建文件一致性、三个预览包及真实打包验证报告摘要。产物路径相对 `dev/`，此清单逐字节镜像交付仓库原始报告。
+
+这些是未签名、localhost 配置的客户端预览，未安装/发布，与下面历史完整离线包分开保存。启动当前后端后使用；模型和媒体继续按授权使用假数据，业务持久化及 Codex 为真实运行。CSV/XLSX 文件版本、更正链和来源生命周期见 [文件导入](technical/29-file-imports-and-correction-lineage.md)。
 
 ## 六个独立仓库
 
@@ -52,7 +63,7 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 
 ## 当前源码验收增量
 
-2026-10-19 当前源码平台 159/159、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。新增模板 Web/Electron 八组与 PDF 交付七组通过。实际响应样本 21/21 通过严格 schema 检查。规范 225 个操作和常规实际 234 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 180/180、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。新增模板 Web/Electron 八组与 PDF 交付七组通过。实际响应样本 31/31 通过严格 schema 检查。规范 225 个操作和常规实际 247 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](technical/22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 

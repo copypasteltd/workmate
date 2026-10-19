@@ -1,5 +1,7 @@
 # M06 广告、网站、SEO 与 GEO 分析
 
+当前实现增量：CSV/XLSX 固定来源版本、规范导入、实际单元格定位、更正链和依赖删除见 [文件导入与更正链](../technical/29-file-imports-and-correction-lineage.md)；AnalysisSpec 和报告任务见 [报告任务](../technical/28-analysis-report-tasks-and-evidence.md)。以下完整模块目标继续保留，不能以局部验证替代。
+
 关联：REQ-023–031。分析模块拥有数据快照、计算口径、证据与报告，平台凭证由 M07 管理。
 
 ## 1. 数据层次与导入
