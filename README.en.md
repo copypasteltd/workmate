@@ -131,7 +131,7 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **159/159**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **167/167**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-six captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and inbox (current source)
 
@@ -185,3 +185,20 @@ flowchart LR
 ```
 
 ![Current-source Desktop analytics](assets/screenshots/15-marketing-analytics.png)
+
+## Private AnalysisSpec reports (current source)
+
+Select saved snapshots, a business question, current/comparison dates, metrics, dimensions and a maximum HKD budget in Marketing insights. Preview neither calls a model nor reserves credit. Explicit confirmation atomically creates a private Codex task, frozen calculations/evidence and one reservation. Sources, accounts, currencies, timezones and attribution stay independent; identical facts deduplicate, conflicts reject, and zero/missing comparison values retain reasons. Retrying a lost accepted response returns the same report.
+
+Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors/XLSX, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
+
+The independent renderer snapshot now records **40** source digests and builds without a sibling Web checkout. Actual Electron QA covers browser PKCE, protected IPC, report reads, HashRouter navigation to the original task and native HTML saving. Saved bytes match the Web download SHA-256. Owned application/browser resources close in finally. Builds, renderer type checks and all four native unit tests pass.
+
+```mermaid
+flowchart LR
+  PKCE[Browser PKCE] --> UI[Private report / original task]
+  UI --> IPC[Protected API bridge]
+  IPC --> Save[Native explicit save / byte identity]
+```
+
+![AnalysisSpec report](assets/screenshots/16-analysis-report.png)

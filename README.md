@@ -131,7 +131,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **159/159**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **167/167**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十六份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与通知（当前源码）
 
@@ -185,3 +185,20 @@ flowchart LR
 ```
 
 ![源码客户端营销分析](assets/screenshots/15-marketing-analytics.png)
+
+## AnalysisSpec 私人报告（当前源码）
+
+在行销分析选择已有快照、业务问题、日期/比较区间、指标、维度和 HKD 最高预算。预览不调用模型或预留费用；明确确认后原子建立私人 Codex 任务、冻结计算/证据及单笔预留。来源、账户、币种、时区及归因独立；重复事实去重，冲突拒绝，比较零值/无数据保留原因。接受后丢失回执重试返回原报告。
+
+真实 Codex 通过分页事实工具读取固定值，服务端检查证据占位符及数字字面量后发布固定 HTML 资产，JSON 保留完整计算。自然语言语义和专业业务质量仍待验收；当前模型为明确标识的假数据。来源隔离/删除和项目撤权阻止读取及下载。完整 102 条综合验收、正式连接/XLSX、专业角色资格和生产发布仍未完成，历史安装包未更新。
+
+独立 renderer 已同步到 **40** 个来源摘要，不依赖相邻 Web 源码构建。真实浏览器 PKCE、受保护 IPC、报告读取、原任务 HashRouter 跳转及原生 HTML 保存均经过实际 Electron 验证；保存字节与 Web 下载 SHA-256 一致，自建应用及浏览器均关闭。构建、renderer 类型检查和四项原生单元测试通过。
+
+```mermaid
+flowchart LR
+  PKCE[Browser PKCE] --> UI[Private report / original task]
+  UI --> IPC[Protected API bridge]
+  IPC --> Save[Native explicit save / byte identity]
+```
+
+![AnalysisSpec report](assets/screenshots/16-analysis-report.png)
