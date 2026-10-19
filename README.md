@@ -284,3 +284,12 @@ flowchart LR
 任务详情新增“暂停排队 / 继续工作”，仅在首次模型调用前可用；使用当前任务版本，冲突后刷新，原任务和预留预算保持一致。运行中任务继续提供取消；已付费步骤恢复仍未实现。Delivery `qa:task-controls` 已实际验证 Web、源码 Desktop 与 MV3 的暂停/恢复/取消及恢复后一次结算。
 
 ![任务暂停](assets/screenshots/49-task-paused.png)
+
+## 装置会话与退出
+
+账户设置区分 Web、Desktop、Chrome 扩展，标记当前装置、显示有效期；包括访问令牌过期但仍可刷新的设备。撤销前有确认、执行中禁用按钮、失败可重新载入。当前 Web 会话撤销会清理 Cookie；退出通过无凭证的跨标签事件清理同一浏览器的工作区视图，迟到响应不能恢复旧数据。原生客户端接收相同页面快照。
+
+![装置会话](assets/screenshots/50-active-sessions.png)
+![小屏深色会话页](assets/screenshots/51-sessions-mobile-dark.png)
+
+交付仓库 `npm run qa:sessions` 验证真实 Web、源码 Electron 和 MV3 登录/撤销、过期凭证退出、离线退出提示及延迟响应。完整身份、全部设备/系统矩阵和生产发布仍按主文档验收。

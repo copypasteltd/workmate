@@ -283,3 +283,12 @@ Upload-allocation keys persist first and are scoped by user, tenant, project and
 Task details now offer Pause queued task / Resume task before the first model call, using the current task version and refreshing conflicts. The original task and reservation are retained. Running tasks retain cancellation; paid-step continuation remains unfinished. Delivery `qa:task-controls` verifies Web, source Desktop and MV3 controls, including one settlement after resumption.
 
 ![Paused task](assets/screenshots/49-task-paused.png)
+
+## Device sessions and sign-out
+
+Account settings distinguishes Web, Desktop and Chrome Extension, marks this device and shows validity, including refreshable devices whose access has expired. Revocation has confirmation, pending feedback and reloadable errors. Revoking the current Web session clears its cookie. Credential-free cross-tab events clear the browser workspace; late responses cannot restore the previous data. Native clients use the same renderer snapshot.
+
+![Device sessions](assets/screenshots/50-active-sessions.png)
+![Small-screen dark sessions](assets/screenshots/51-sessions-mobile-dark.png)
+
+The delivery repository's `npm run qa:sessions` covers actual Web, source Electron and MV3 login/revocation, expired-access sign-out, offline feedback and delayed responses. Complete identity, device/system matrices and production release remain governed by the master acceptance plan.
