@@ -17,7 +17,12 @@ declare global {
     copyPasteBridge?: {
       request: (
         path: string,
-        options: { method?: string; body?: unknown; idempotencyKey?: string },
+        options: {
+          method?: string;
+          body?: unknown;
+          idempotencyKey?: string;
+          tenantId?: string;
+        },
       ) => Promise<{ status: number; body: any }>;
       enableChrome: () => Promise<{ registered: boolean }>;
       signIn: () => Promise<void>;
@@ -63,6 +68,7 @@ export async function api<T = any>(
         method: options.method,
         idempotencyKey:
           new Headers(options.headers).get("Idempotency-Key") ?? undefined,
+        tenantId: new Headers(options.headers).get("X-Tenant-ID") ?? undefined,
         body:
           typeof options.body === "string"
             ? JSON.parse(options.body)

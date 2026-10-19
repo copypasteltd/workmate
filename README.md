@@ -151,7 +151,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **139/139**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十七份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **145/145**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -191,3 +191,15 @@ flowchart LR
 
 ![真实排队任务](assets/screenshots/36-capacity-wait.png)
 ![繁中移动端排队](assets/screenshots/38-capacity-mobile.png)
+
+## 从持久模板建立专家
+
+「专业角色」现在读取真实的 18 个专业模板及默认助手，提供分类、字面搜索、版本/交付详情。先检查当前项目依赖，再明确建立专家；检查不启动 AI 或预留预算。编辑表单使检查失效；响应丢失重试沿用同一幂等键。缺失工具、停用方法及尚待验收状态均可见。
+
+八组 Web/源码 Electron 检查覆盖真实登录、重试、技能恢复后重新检查、权限错误隐藏及四宽度/两主题/繁英。当前全部角色仍待真实业务资格，历史安装包未重打。Chrome 扩展没有因此增加模板编辑器。
+
+![持久模板目录](assets/screenshots/44-role-templates.png)
+
+![当前依赖已就绪](assets/screenshots/46-template-ready.png)
+
+![移动深色详情](assets/screenshots/47-template-mobile-dark.png)

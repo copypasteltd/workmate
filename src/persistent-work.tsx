@@ -105,10 +105,16 @@ export function Specialists() {
           "Save a role, brand and working brief as a specialist you can return to.",
         )}
         action={
-          <button className="button primary" onClick={() => setEditing({})}>
-            <Plus size={17} />
-            {t("建立專家", "Create specialist")}
-          </button>
+          <div className="row-actions">
+            <Link className="button primary" to="/app/roles">
+              <BookOpen size={17} />
+              {t("從模板建立", "Create from a template")}
+            </Link>
+            <button className="button quiet" onClick={() => setEditing({})}>
+              <Plus size={17} />
+              {t("建立專家", "Create specialist")}
+            </button>
+          </div>
         }
       />
       <ErrorNotice error={data.error ?? error} />
@@ -215,9 +221,9 @@ export function Specialists() {
             "Start with one of 18 role presets and add your brand and working instructions.",
           )}
           action={
-            <button className="button primary" onClick={() => setEditing({})}>
+            <Link className="button primary" to="/app/roles">
               {t("建立第一位專家", "Create your first specialist")}
-            </button>
+            </Link>
           }
         />
       )}

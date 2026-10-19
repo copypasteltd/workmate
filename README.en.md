@@ -149,7 +149,7 @@ Four browser QA groups cover these flows, two real Codex tasks driven by synthet
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **139/139**. `npm run qa:skills` in the delivery repository passed three browser groups; seventeen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -190,3 +190,15 @@ Conversation/task pages explain capacity waits. Usage distinguishes active-work 
 
 ![Original task waiting for capacity](assets/screenshots/36-capacity-wait.png)
 ![Traditional Chinese mobile queue notice](assets/screenshots/38-capacity-mobile.png)
+
+## Create specialists from persisted templates
+
+The specialist directory reads 18 professional presets and the default helper from real versioned records. Categories, literal search, versioned methods and deliverable details lead to a project preflight and an explicit create action. Checking starts no AI task and reserves no budget. Editing invalidates the check; lost responses reuse the instance idempotency key. Missing tools, disabled methods and pending qualification remain visible.
+
+Eight Web/current-source Electron checks cover real sign-in, response-loss retries, rechecking restored methods, authorization errors, four widths, both themes and Traditional Chinese/English. Live professional qualification remains pending. Historical installers have not been rebuilt; this does not add an extension template editor.
+
+![Persisted template directory](assets/screenshots/44-role-templates.png)
+
+![Current dependencies ready](assets/screenshots/46-template-ready.png)
+
+![Mobile dark details](assets/screenshots/47-template-mobile-dark.png)
