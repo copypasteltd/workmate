@@ -27,10 +27,63 @@ function clearTask() {
   $("task-output").textContent = "";
 }
 async function send(type: string, body: Record<string, unknown> = {}) {
+  const revision = workspaceRevision;
   const r = await chrome.runtime.sendMessage({ type, ...body });
-  if (!r?.ok) throw new Error(r?.error ?? "Extension unavailable");
+  if (!r?.ok) {
+    if (r?.code === "AUTH_REQUIRED") resetSignedOut();
+    throw new Error(
+      r?.code === "AUTH_REQUIRED"
+        ? tr("登入已失效，請重新登入。", "Your session ended. Sign in again.")
+        : r?.code === "AUTH_CHANGED"
+          ? tr(
+              "登入狀態已變更，請重新載入。",
+              "Sign-in state changed. Reload this view.",
+            )
+          : r?.code === "AUTH_UNAVAILABLE"
+            ? tr(
+                "暫時無法更新登入狀態，請稍後再試。",
+                "Sign-in could not be refreshed. Try again shortly.",
+              )
+            : (r?.error ?? "Extension unavailable"),
+    );
+  }
+  if (["API", "UPLOAD"].includes(type) && revision !== workspaceRevision)
+    throw new Error(
+      tr(
+        "工作空間已變更，請重新載入。",
+        "Workspace changed. Reload this view.",
+      ),
+    );
   return r.data;
 }
+function resetSignedOut() {
+  ++workspaceRevision;
+  ++notificationRevision;
+  clearTask();
+  if (notificationTimer) clearInterval(notificationTimer);
+  notificationTimer = undefined;
+  tenant = "";
+  project = "";
+  pending = null;
+  $("login").hidden = false;
+  $("workspace").hidden = true;
+  $("account-actions").hidden = true;
+  for (const id of [
+    "notification-list",
+    "task-list",
+    "task-output",
+    "user-name",
+    "local-preview",
+  ])
+    $(id).replaceChildren();
+  localFile = null;
+  localGrants = [];
+  $("folder-browser").hidden = true;
+}
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "session" && changes.tokens && !changes.tokens.newValue)
+    resetSignedOut();
+});
 const request = (
   path: string,
   method = "GET",
@@ -75,18 +128,7 @@ async function start() {
   $("workspace").hidden = true;
   $("account-actions").hidden = !status.authenticated;
   if (!status.authenticated) {
-    tenant = "";
-    project = "";
-    task = "";
-    pending = null;
-    $("notification-list").replaceChildren();
-    $("task-list").replaceChildren();
-    $("task-output").textContent = "";
-    $("task-view").hidden = true;
-    localFile = null;
-    localGrants = [];
-    $("local-preview").textContent = "";
-    $("folder-browser").hidden = true;
+    resetSignedOut();
     return;
   }
   const me = await request("/v1/me");
@@ -599,8 +641,15 @@ $("sign-out").addEventListener(
   () =>
     void run(async () => {
       if (timer) clearInterval(timer);
-      await send("LOGOUT");
+      const result = await send("LOGOUT");
       await start();
+      if (result?.remote_revoked === false)
+        showError(
+          tr(
+            "此裝置已登出，但未能確認服務端撤銷。請連線後從其他裝置的帳戶設定撤銷此會話。",
+            "This device is signed out. Remote revocation could not be confirmed. When online, revoke this session from Account settings on another signed-in device.",
+          ),
+        );
     }),
 );
 $("open-web").addEventListener(

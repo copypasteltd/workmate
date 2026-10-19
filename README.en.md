@@ -142,3 +142,11 @@ Web and Desktop now provide template preflight and instance creation. The extens
 The panel now supports initial queued pause/resume, keeping the original task/reservation and synchronizing recent-task status. Delivery `qa:task-controls` verifies the business flow in real MV3/PKCE; running pause remains unavailable. These are source changes; the previous `release/sidepanel/` ZIP is unchanged. Native right-side SIDE_PANEL appearance retains its separately verified behavior.
 
 ![Paused task](assets/screenshots/10-task-paused.png)
+
+## Session expiry and sign-out
+
+The background coalesces refreshes and fences late login/refresh writes. A definitive 401 clears the matching credential and notifies open trusted panels; obsolete account requests cannot clear a later sign-in. Expiry clears account/task/file/notification views and stops polling. Sign-out clears session storage before revoking its family through refresh proof, including with expired access. Offline feedback explicitly reports unconfirmed remote revocation.
+
+![Panel business document after revocation](assets/screenshots/11-session-revoked.png)
+
+`npm test` has ten session race/fault groups. Delivery `qa:sessions` uses real MV3 and identity PKCE for remote revocation and expired-access sign-out. Its isolated MV3 document does not replace the native SIDE_PANEL appearance test. The previous sidebar preview ZIP retains its original manifest and does not include this repair.

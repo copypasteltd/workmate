@@ -142,3 +142,11 @@ Submit an explicit file prerequisite, then search and select a current version t
 侧栏任务详情新增“暂停排队 / 继续工作”，只允许首次模型调用前控制原任务；保留原预留，并同步最近任务状态。Delivery `qa:task-controls` 通过真实 MV3/PKCE 验证业务操作，运行中的暂停不开放。本轮为源码变更，上一轮 `release/sidepanel/` ZIP 未更新；原生右侧 SIDE_PANEL 出现方式继续遵守既有专项验证。
 
 ![任务暂停](assets/screenshots/10-task-paused.png)
+
+## 会话失效与退出
+
+后台合并并发刷新，限制迟到登录/刷新回写；确定的 401 清除当前凭证并通知所有打开的受信侧栏，旧账户请求不会清除后来登录的凭证。失效后清空账号、任务、文件和通知视图，停止轮询。退出先清空 session 存储，再凭刷新凭证撤销整族；访问令牌过期也可完成。离线时显示服务端撤销未确认，不伪装已撤销。
+
+![会话撤销后侧栏业务页面](assets/screenshots/11-session-revoked.png)
+
+`npm test` 有 10 组会话竞争/故障测试；交付仓库 `qa:sessions` 使用真实 MV3 与 identity PKCE 验证远端撤销和过期访问退出。本次业务测试用独立 MV3 文档，不替代原生 SIDE_PANEL 出现模式专项。原侧栏预览 ZIP 保留原清单，未包含本轮修复。
