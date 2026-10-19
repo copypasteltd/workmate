@@ -132,12 +132,21 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **118/118**. `npm run qa:skills` in the delivery repository passed three browser groups; twelve captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **129/129**. `npm run qa:skills` in the delivery repository passed three browser groups; fifteen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and inbox (current source)
 
-The synchronized renderer supports direct text-assistant use, private conversations and notifications. Seven source Electron journey groups cover native PKCE, verified 29 MiB transfers/no overwrite, cloud files, a real Codex synthetic text deliverable and original-task navigation. Only the two public configuration/content reads work before login, allowing the demo notice to appear; private calls still fail while signed out and writes still require native credentials.
+The synchronized renderer supports direct text-assistant use, private conversations and notifications. Eight source Electron journey groups cover native PKCE, verified 29 MiB transfers/no overwrite, cloud files, a real Codex synthetic text deliverable and original-task navigation. Only the two public configuration/content reads work before login, allowing the demo notice to appear; private calls still fail while signed out and writes still require native credentials.
 
 The simulated-data notice persists before and after sign-in. Four native tests pass. Owned browser/Electron instances are closed; historical installers do not include this increment.
 
 ![Native inbox and simulated-data notice](assets/screenshots/08-notifications.png)
+
+## Initial input checkpoint (current source)
+
+The synchronized renderer keeps file/connection requests in the original conversation. Choose a current resource explicitly, or upload through the native bridge; resolving the request resumes the same task and budget hold. The eighth source Electron journey selects the actual 29 MiB upload, verifies no model execution while waiting and receives a result through real Codex with synthetic model data. Four native unit tests also pass. The renderer snapshot records all 34 source files.
+
+This does not qualify paid-step continuation or replace historical installers.
+
+![Native task waiting for its file](assets/screenshots/09-input-wait.png)
+![Original task after explicit selection](assets/screenshots/10-input-result.png)

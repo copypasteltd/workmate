@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { TaskInputRequests } from "./task-dependencies";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowRight,
@@ -659,6 +660,7 @@ export function ConversationDetail() {
         "paused",
         "awaiting_approval",
         "reconciling",
+        "needs_input",
       ].includes(task.status),
     );
   async function update(fields: unknown) {
@@ -795,6 +797,12 @@ export function ConversationDetail() {
                     {t("查看進度或取消工作", "View progress or cancel")}
                   </Link>
                 </div>
+              )}
+              {active?.status === "needs_input" && (
+                <TaskInputRequests
+                  task={{ ...active, conversation_id: c.id }}
+                  onChange={() => setRefresh((v) => v + 1)}
+                />
               )}
               {c.archived ? (
                 <div className="notice">
