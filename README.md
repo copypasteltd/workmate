@@ -293,3 +293,15 @@ flowchart LR
 ![小屏深色会话页](assets/screenshots/51-sessions-mobile-dark.png)
 
 交付仓库 `npm run qa:sessions` 验证真实 Web、源码 Electron 和 MV3 登录/撤销、过期凭证退出、离线退出提示及延迟响应。完整身份、全部设备/系统矩阵和生产发布仍按主文档验收。
+
+## 规范登录与授权 / Canonical sign-in and consent
+
+邮箱登录接入规范 challenges/sessions；相同输入的未知响应保留请求标识，重发或更换输入后新建标识。显示真实验证码到期时间，开发邮箱提示来自公开环境配置。原生授权使用真正的 S256 授权导航链接；当前退出接入规范 DELETE。登录与企业身份返回地址限制为内部产品路由。
+
+Email sign-in consumes the canonical challenge/session contracts and retains the request identity for unknown replies. Native consent uses a real S256 authorization link, and sign-out uses the canonical DELETE operation. Safe internal return paths preserve nested PKCE callbacks while rejecting external, malformed and API destinations. `npm test` checks the return-path boundary; the Delivery sessions journey exercises real browser authentication.
+
+当前 `npm test` **3/3** 返回地址边界检查及 TypeScript 检查通过。 / Current return-path checks: **3/3**, with TypeScript validation.
+
+真实导航专项 **3/3**：邮箱登录、用户点击跨 origin GET 授权至自有 loopback / S256 交换，以及重复退出。 / Actual canonical browser navigation: **3/3**, with an owned callback and no model calls.
+
+![实际原生授权页面 / Actual native consent page](assets/screenshots/52-native-authorization.png)

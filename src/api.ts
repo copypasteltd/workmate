@@ -59,13 +59,23 @@ declare global {
   }
 }
 const base = import.meta.env.VITE_API_BASE ?? "";
+export function nativeAuthorizationUrl(query: URLSearchParams) {
+  const values = new URLSearchParams();
+  for (const key of ["client_id", "redirect_uri", "code_challenge", "state"])
+    values.set(key, query.get(key) ?? "");
+  values.set(
+    "code_challenge_method",
+    query.get("code_challenge_method") ?? "S256",
+  );
+  return base + "/v1/auth/authorize?" + values;
+}
 export async function api<T = any>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest =
-    /^\/v1\/(me(?:[/?]|$)|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:logout|native\/authorize)$)/.test(
+    /^\/v1\/(me(?:[/?]|$)|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:session|logout|native\/authorize)$)/.test(
       path,
     );
   let status: number, data: any;
@@ -137,7 +147,7 @@ export async function api<T = any>(
       status,
       data?.error?.details,
     );
-  if (path === "/v1/auth/verify") {
+  if (path === "/v1/auth/verify" || path === "/v1/auth/sessions") {
     changeClientSession();
     localStorage.setItem(
       "cp_auth_event",
@@ -145,11 +155,19 @@ export async function api<T = any>(
     );
   }
   if (data?.csrf_token) setCsrf(data.csrf_token);
-  if (path === "/v1/auth/logout") endClientSession();
+  if (
+    path === "/v1/auth/logout" ||
+    (path === "/v1/auth/session" && options.method === "DELETE")
+  )
+    endClientSession();
   return data as T;
 }
-export const post = (path: string, body: unknown = {}) =>
-  api(path, { method: "POST", body: JSON.stringify(body) });
+export const post = (path: string, body: unknown = {}, requestKey?: string) =>
+  api(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+    ...(requestKey ? { headers: { "Idempotency-Key": requestKey } } : {}),
+  });
 export const patch = (path: string, body: unknown) =>
   api(path, { method: "PATCH", body: JSON.stringify(body) });
 export async function download(path: string, filename: string) {

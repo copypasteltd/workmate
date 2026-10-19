@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Globe, Monitor, Puzzle, LogOut, LoaderCircle } from "lucide-react";
-import { api, post, endClientSession } from "./api";
+import { api, endClientSession } from "./api";
 import {
   AsyncForm,
   DateText,
@@ -20,7 +20,7 @@ async function signOut() {
     const result = await window.copyPasteBridge.signOut();
     if (result?.remote_revoked === false) remoteNotice();
     endClientSession();
-  } else await post("/v1/auth/logout");
+  } else await api("/v1/auth/session", { method: "DELETE" });
 }
 export function SignedOutNotice() {
   const { t } = useI18n();
