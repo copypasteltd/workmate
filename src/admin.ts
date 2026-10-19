@@ -1187,6 +1187,12 @@ function registerAdminCatalog(
           if (e.kind === "navigation")
             z.object({
               path: z.enum([
+                "specialists",
+                "skills",
+                "conversations",
+                "memories",
+                "files",
+                "notifications",
                 "roles",
                 "projects",
                 "tasks",

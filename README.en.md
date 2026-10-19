@@ -194,10 +194,27 @@ With the native database configured, set `$env:DEMO_MODE='true'` for the API pro
 
 Shared project and private conversation workspaces now support pinned file references, search, moves, erasure and explicit publication of independent copies. In private conversations, Codex source tools read, compare hashes, persist updates and package actual working files. The asset.read capability provides authorized node/version reads. Forward migrations 023/024 add the model; Admin content management includes nodes.
 
-The current 103-test regression passes, including five cloud-file integration groups. Synthetic dependencies do not qualify live providers or professional roles. Source limits are 500 files / 20 MB, with 1 MB per file. Removing an entry preserves independent source assets; permanent asset deletion is separate. See the master technical/18-persistent-cloud-files.md for detailed behavior and limits.
+The current 118-test regression passes, including five cloud-file integration groups. Synthetic dependencies do not qualify live providers or professional roles. Source limits are 500 files / 20 MB, with 1 MB per file. Removing an entry preserves independent source assets; permanent asset deletion is separate. See the master technical/18-persistent-cloud-files.md for detailed behavior and limits.
 
 ## Project Skill lifecycle (current source)
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **108/108**. `npm run qa:skills` in the delivery repository passed three browser groups; ten captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **118/118**. `npm run qa:skills` in the delivery repository passed three browser groups; twelve captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+
+## Default assistant and in-app notifications (current source)
+
+The built-in assistant uses fixed Codex, the internal text profile and delivery-core; it is separate from the 18 professional roles. POST /delegations atomically creates a private conversation, message, task, exact method bindings and reservation. Repeating client_message_id returns the accepted result. Ordinary writes/deletion cannot alter the shared default. Owner/Admin explicitly adopt reinstalled methods through a checked new version; moderation cannot be bypassed by automatic recreation.
+
+Forward migrations 026/027 add the behavior. Notifications observe final task state at transaction commit, recheck current recipient/private/project access, support microsecond cursors and read updates, and expire after 30 days. Titles come from the currently authorized task. GET/PATCH /v1/notifications and compatible tenant routes are available; no external messages are sent.
+
+Six assistant and four notification integration groups are in the 118-test regression. Web assistant/inbox journeys each pass four groups; Chrome passes seven and source Desktop seven, using real Codex with clearly synthetic dependencies. Full template APIs, dependency checkpoint continuation and live-role qualification remain unfinished. See master technical/20 and technical/21.
+
+```mermaid
+flowchart LR
+  Submit[Explicit submission and stable ID] --> Atomic[Private conversation / message / task / budget]
+  Atomic --> Codex[Fixed Codex and controlled methods]
+  Codex --> Commit[Final state at commit]
+  Commit --> Inbox[Authorized recipient inbox]
+  Inbox --> Original[Original project and private task]
+```

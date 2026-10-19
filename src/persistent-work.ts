@@ -140,6 +140,78 @@ export async function getAgentVersion(
     );
   return row;
 }
+async function defaultDefinition(
+  tx: Tx,
+  catalog: Catalog,
+  tenant: string,
+  project: string,
+  user: string,
+) {
+  const role = catalog.role("assistant");
+  return agentDefinition(
+    tx,
+    catalog,
+    {
+      name: role.name_en,
+      role_key: "assistant",
+      instructions: role.workflow.map((s: any) => s.instruction).join("\n"),
+      brand_id: null,
+    },
+    project,
+    tenant,
+    user,
+  );
+}
+async function defaultAssistant(
+  tx: Tx,
+  catalog: Catalog,
+  tenant: string,
+  project: string,
+  user: string,
+) {
+  await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+    `default-assistant:${project}`,
+  ]);
+  let row = (
+    await tx.query(
+      "SELECT * FROM agents WHERE project_id=$1 AND builtin_default",
+      [project],
+    )
+  ).rows[0];
+  if (row) {
+    if (!row.enabled || row.content_state !== "active")
+      throw new Problem(
+        403,
+        "DEFAULT_ASSISTANT_UNAVAILABLE",
+        "The default assistant is currently unavailable for this project",
+      );
+    await catalog.ensureEnabled(tx, "assistant");
+    return getAgentVersion(tx, project, row.id, undefined, true);
+  }
+  const body = await defaultDefinition(tx, catalog, tenant, project, user);
+  try {
+    row = (
+      await tx.query(
+        "INSERT INTO agents(tenant_id,project_id,name,role_key,created_by,builtin_default) VALUES($1,$2,$3,'assistant',$4,true) RETURNING *",
+        [tenant, project, body.name, user],
+      )
+    ).rows[0];
+  } catch (e) {
+    if ((e as any).constraint === "one_default_assistant_per_project")
+      throw new Problem(
+        403,
+        "DEFAULT_ASSISTANT_UNAVAILABLE",
+        "The project default assistant was made unavailable and cannot be recreated",
+      );
+    throw e;
+  }
+  await tx.query(
+    "INSERT INTO agent_versions(tenant_id,agent_id,version,body,created_by) VALUES($1,$2,1,$3,$4)",
+    [tenant, row.id, body, user],
+  );
+  await bindAgentSkills(tx, tenant, project, row.id, 1, body.skills);
+  return { ...row, bound_version: 1, body };
+}
 export async function ownConversation(
   tx: Tx,
   p: Principal,
@@ -438,6 +510,175 @@ export function registerPersistentWork(
   catalog: Catalog,
 ) {
   const base = "/v1/tenants/:tenant/projects/:project";
+  app.post(
+    base + "/default-assistant/versions",
+    { preHandler: requireUser(db) },
+    async (req) => {
+      const { tenant, project } = params.parse(req.params),
+        b = z
+          .object({ expected_version: expectedVersion })
+          .strict()
+          .parse(req.body);
+      return db.tx(async (tx) => {
+        await projectAccess(tx, req.principal, tenant, project, "manage");
+        return replay(
+          tx,
+          req.principal.id,
+          `default-assistant.refresh:${project}`,
+          key(req),
+          b,
+          async () => {
+            const a = await defaultAssistant(
+              tx,
+              catalog,
+              tenant,
+              project,
+              req.principal.id,
+            );
+            if (a.version !== b.expected_version)
+              throw new Problem(
+                409,
+                "VERSION_CONFLICT",
+                "Refresh the default assistant before adopting current methods",
+              );
+            const body = await defaultDefinition(
+              tx,
+              catalog,
+              tenant,
+              project,
+              req.principal.id,
+            );
+            const row = (
+              await tx.query(
+                "UPDATE agents SET version=version+1,updated_at=now() WHERE id=$1 RETURNING *",
+                [a.id],
+              )
+            ).rows[0];
+            await tx.query(
+              "INSERT INTO agent_versions(tenant_id,agent_id,version,body,created_by) VALUES($1,$2,$3,$4,$5)",
+              [tenant, row.id, row.version, body, req.principal.id],
+            );
+            await bindAgentSkills(
+              tx,
+              tenant,
+              project,
+              row.id,
+              row.version,
+              body.skills,
+            );
+            await audit(
+              tx,
+              req.principal,
+              "default_assistant.version",
+              row.id,
+              "succeeded",
+              { version: row.version },
+              tenant,
+            );
+            return { ...row, body };
+          },
+        );
+      }, tenant);
+    },
+  );
+  app.post(
+    base + "/delegations",
+    { preHandler: requireUser(db) },
+    async (req) => {
+      const { tenant, project } = params.parse(req.params),
+        b = z
+          .object({
+            title: name,
+            prompt: z.string().trim().min(5).max(30000),
+            mode: workMode.default("execute"),
+            budget_micros: micros,
+            client_message_id: uuid,
+          })
+          .strict()
+          .parse(req.body);
+      return db.tx(async (tx) => {
+        await projectAccess(tx, req.principal, tenant, project, "write");
+        return replay(
+          tx,
+          req.principal.id,
+          `default-delegation:${project}`,
+          b.client_message_id,
+          b,
+          async () => {
+            const a = await defaultAssistant(
+              tx,
+              catalog,
+              tenant,
+              project,
+              req.principal.id,
+            );
+            const c = (
+              await tx.query(
+                "INSERT INTO conversations(tenant_id,project_id,created_by,name,agent_id,agent_version) VALUES($1,$2,$3,$4,$5,$6) RETURNING *",
+                [
+                  tenant,
+                  project,
+                  req.principal.id,
+                  b.title,
+                  a.id,
+                  a.bound_version,
+                ],
+              )
+            ).rows[0];
+            const context = await freezeWorkContext(
+              tx,
+              req.principal,
+              tenant,
+              project,
+              a,
+              c,
+            );
+            const task = await enqueueTask(
+              tx,
+              db,
+              catalog,
+              req.principal,
+              tenant,
+              project,
+              {
+                title: b.title,
+                prompt: b.prompt,
+                role_key: "assistant",
+                budget_micros: b.budget_micros,
+                mode: b.mode,
+              },
+              `default:${b.client_message_id}`,
+              { context, conversation: c },
+            );
+            const message = (
+              await tx.query(
+                "INSERT INTO conversation_messages(tenant_id,project_id,conversation_id,client_message_id,role,intent,body,task_id) VALUES($1,$2,$3,$4,'user','delegate',$5,$6) RETURNING *",
+                [tenant, project, c.id, b.client_message_id, b.prompt, task.id],
+              )
+            ).rows[0];
+            await tx.query(
+              "UPDATE conversations SET version=version+1,updated_at=now() WHERE id=$1",
+              [c.id],
+            );
+            await audit(
+              tx,
+              req.principal,
+              "default_assistant.delegate",
+              c.id,
+              "succeeded",
+              { task_id: task.id },
+              tenant,
+            );
+            return {
+              conversation: { ...c, version: c.version + 1 },
+              message,
+              task,
+            };
+          },
+        );
+      }, tenant);
+    },
+  );
   app.get(base + "/agents", { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = params.parse(req.params);
     return db.tx(async (tx) => {
@@ -538,6 +779,12 @@ export function registerPersistentWork(
           )
         ).rows[0];
         if (!a) throw new Problem(404, "NOT_FOUND", "Agent not found");
+        if (a.builtin_default)
+          throw new Problem(
+            403,
+            "DEFAULT_ASSISTANT_IMMUTABLE",
+            "The default assistant has fixed settings; copy it to customize a specialist",
+          );
         if (a.created_by !== req.principal.id)
           await projectAccess(tx, req.principal, tenant, project, "manage");
         if (a.version !== b.expected_version)
@@ -640,7 +887,10 @@ export function registerPersistentWork(
     { preHandler: requireUser(db) },
     async (req) => {
       const { tenant, project } = params.parse(req.params);
-      const b = z.object({ name, agent_id: uuid }).strict().parse(req.body);
+      const b = z
+        .object({ name, agent_id: uuid.optional() })
+        .strict()
+        .parse(req.body);
       return db.tx(async (tx) => {
         await projectAccess(tx, req.principal, tenant, project, "write");
         return replay(
@@ -650,13 +900,15 @@ export function registerPersistentWork(
           key(req),
           b,
           async () => {
-            const a = await getAgentVersion(
-              tx,
-              project,
-              b.agent_id,
-              undefined,
-              true,
-            );
+            const a = b.agent_id
+              ? await getAgentVersion(tx, project, b.agent_id, undefined, true)
+              : await defaultAssistant(
+                  tx,
+                  catalog,
+                  tenant,
+                  project,
+                  req.principal.id,
+                );
             await catalog.ensureEnabled(tx, a.role_key);
             const c = (
               await tx.query(

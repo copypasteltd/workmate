@@ -15,12 +15,16 @@ export class Catalog {
   roles: any[] = [];
   skills: SkillPackage[] = [];
   skillDefinitions: any[] = [];
+  defaultAssistant: any;
   admin: any;
   async load() {
     const c = JSON.parse(
       await readFile("catalog/role-preset-catalog.json", "utf8"),
     );
     this.roles = c.roles;
+    this.defaultAssistant = JSON.parse(
+      await readFile("catalog/default-assistant.json", "utf8"),
+    );
     this.skillDefinitions = c.skill_catalog;
     this.skills = JSON.parse(
       await readFile("catalog/skill-packages.json", "utf8"),
@@ -41,7 +45,10 @@ export class Catalog {
     return content;
   }
   role(key: string) {
-    const r = this.roles.find((r) => r.role_key === key);
+    const r =
+      key === "assistant"
+        ? this.defaultAssistant
+        : this.roles.find((r) => r.role_key === key);
     if (!r) throw new Problem(404, "ROLE_NOT_FOUND", "Role not found");
     return r;
   }
@@ -67,13 +74,13 @@ export class Catalog {
         "This role or one of its required Skills has been disabled",
       );
   }
-  async publicConfigured(tx: Tx, c: Config) {
+  async publicConfigured(tx: Tx, c: Config, includeDefault = false) {
     const rows = (
       await tx.query(
         "SELECT kind,key,body FROM catalog_entries WHERE state='published' AND kind IN ('role','skill')",
       )
     ).rows;
-    return this.public(c).map((r) => {
+    return this.public(c, includeDefault).map((r) => {
       const presentation = rows.find(
         (e) => e.kind === "role" && e.key === r.role_key,
       )?.body;
@@ -155,8 +162,10 @@ export class Catalog {
       return { available: false, reason: "IMAGE2_SETUP_REQUIRED" };
     return { available: true, reason: null };
   }
-  public(c: Config) {
-    return this.roles.map((r) => ({
+  public(c: Config, includeDefault = false) {
+    return (
+      includeDefault ? [this.defaultAssistant, ...this.roles] : this.roles
+    ).map((r) => ({
       ...r,
       definition_hash: this.digest(r),
       package_state: "installed",

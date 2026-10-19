@@ -6,6 +6,7 @@ export const retentionPolicy = {
   task_content_days: 90,
   report_days: 90,
   task_events_days: 30,
+  notification_days: 30,
   replay_result_days: 7,
   runtime_cache: "remove_after_terminal",
   financial_audit_minimum_days: 365,
@@ -69,6 +70,7 @@ export class RetentionService {
           [limit * 10],
         );
         counts.event_tasks = events.rowCount ?? 0;
+        counts.notifications=(await tx.query("DELETE FROM notifications WHERE id IN (SELECT id FROM notifications WHERE created_at<now()-interval '30 days' ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT $1)",[limit*10])).rowCount??0;
         // Retain uniqueness and request hashes. An old network retry must not
         // recreate a paid task after its serialized response has expired.
         counts.replays =

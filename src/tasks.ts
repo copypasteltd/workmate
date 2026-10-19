@@ -43,6 +43,16 @@ export function registerTasks(
     kernel: "codex",
     requested_model: "gpt 6 luna max",
   }));
+  app.get("/v1/catalog/default-assistant", async () =>
+    db.tx(
+      async (tx) =>
+        (await catalog.publicConfigured(tx, db.config, true)).find(
+          (r) => r.role_key === "assistant",
+        ),
+      undefined,
+      true,
+    ),
+  );
   app.get(base, { preHandler: requireUser(db) }, async (req) => {
     const { tenant, project } = params.parse(req.params);
     return db.tx(async (tx) => {

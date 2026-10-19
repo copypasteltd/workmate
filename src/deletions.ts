@@ -113,6 +113,12 @@ export function registerDeletions(app: FastifyInstance, db: Database) {
               tenant,
               row.private_owner === req.principal.id ? "read" : "manage",
             );
+          if (table === "agents" && row.builtin_default)
+            throw new Problem(
+              403,
+              "DEFAULT_ASSISTANT_IMMUTABLE",
+              "The project default assistant cannot be deleted; its private conversations can be deleted individually",
+            );
           if (table === "workspace_nodes") await eraseWorkspaceNode(tx, row.id);
           else if (table === "conversations")
             await eraseConversation(tx, req.principal, row);
