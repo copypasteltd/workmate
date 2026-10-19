@@ -11,7 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { LocalFiles, type Journal, resolveInGrant } from "../src/files.js";
-import { apiURL } from "../src/config.js";
+import { apiURL, rendererApiOperation } from "../src/config.js";
 test("folder grants enforce expiry, explicit writes, create-only semantics and idempotency", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "cp-files-"));
   try {
@@ -88,6 +88,38 @@ test("API bridge cannot change origin or escape the API prefix", () => {
     "/auth",
   ])
     assert.throws(() => apiURL("https://agent.example", p));
+});
+
+test("native workspace bridge permits canonical session/onboarding/business calls and rejects credential and path escapes", () => {
+  const id = "11111111-1111-4111-8111-111111111111";
+  for (const [route, method] of [
+    ["/v1/session/context", "GET"],
+    ["/v1/tenants", "POST"],
+    ["/v1/me/sessions", "GET"],
+    [`/v1/me/sessions/${id}`, "DELETE"],
+    [`/v1/tenants/${id}/projects`, "GET"],
+    [`/v1/members/${id}`, "DELETE"],
+    [`/v1/evidence/${id}?version=1`, "GET"],
+    ["/v1/reports", "POST"],
+    ["/v1/dataset-imports", "POST"],
+  ])
+    assert.equal(rendererApiOperation(route, method), true, route);
+  for (const [route, method] of [
+    ["/v1/session/context", "POST"],
+    ["/v1/session/context/extra", "GET"],
+    ["/v1/auth/token", "POST"],
+    ["/v1/auth/sessions", "POST"],
+    ["/v1/admin/users", "GET"],
+    ["/v1/me/../admin/users", "GET"],
+    ["/v1/me/%2e%2e/admin/users", "GET"],
+    ["/v1/me%2f..%2fadmin/users", "GET"],
+    ["//evil.invalid/v1/me", "GET"],
+    ["/v1/session/context#fragment", "GET"],
+    ["/v1/reports", "DELETE"],
+  ])
+    assert.equal(rendererApiOperation(route, method), false, route);
+  assert.equal(rendererApiOperation(null), false);
+  assert.equal(rendererApiOperation("/v1/me", {}), false);
 });
 test("sign-out removes every folder grant and cached file result before queued work can replay", async () => {
   const base = path.resolve(".data/test/logout-grants");

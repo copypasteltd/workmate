@@ -34,7 +34,7 @@ import {
   type Journal,
   type FileCommand,
 } from "./files.js";
-import { configuration, apiURL } from "./config.js";
+import { configuration, apiURL, rendererApiOperation } from "./config.js";
 
 const config = configuration();
 let window: BrowserWindow | null = null;
@@ -457,13 +457,7 @@ async function createWindow() {
     (_wc, _permission, callback) => callback(false),
   );
   ipcMain.handle("api", (_e, p, o) => {
-    const campaignImport = p === "/v1/dataset-imports" && o?.method === "POST";
-    if (
-      !campaignImport &&
-      !/^\/v1\/(me(?:[/?]|$)|tenants\/|catalog\/|agent-templates(?:[/?]|$)|public\/|invites\/|auth\/logout$)/.test(
-        p,
-      )
-    )
+    if (!rendererApiOperation(p, o?.method ?? "GET"))
       throw new Error("API operation is not exposed");
     return request(p, o);
   });

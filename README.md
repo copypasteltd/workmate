@@ -25,9 +25,11 @@ flowchart LR
 ![标题栏与弹窗](assets/screenshots/19-frameless-dialog.png)
 ![深色窗口](assets/screenshots/20-frameless-dark.png)
 
-本次客户端预览构建位于 `release/frameless/`：`CopyPaste-0.5.0-x64-Setup.exe`、`CopyPaste-0.5.0-x64-Portable.exe`、`win-unpacked/CopyPaste.exe`。它们是本机 localhost 配置、未签名的修复预览；历史 `release/` 原始 0.5.0 包独立保留。重建可执行 `npm run build`，再执行 `npx electron-builder --win portable nsis --config.directories.output=release/frameless`。
+当前源码的客户端预览构建位于 `release/frameless/`：`CopyPaste-0.5.0-x64-Setup.exe`、`CopyPaste-0.5.0-x64-Portable.exe`、`win-unpacked/CopyPaste.exe`。它们使用本机 localhost 配置，未签名；先前无边框预览原字节保留在 `release/frameless-stage30/`，历史完整 0.5.0 包继续独立保留。重建执行 `npm run build`，再执行 `node node_modules/electron-builder/cli.js --win portable nsis --config.directories.output=release/frameless --publish never`。
 
 交付仓库的 `npm run qa:native-surfaces` 验证真实窗口、Alt、按钮、指针/键盘缩放下限、跨窗口 IPC 拒绝、真实 PKCE、工作区/弹窗及主题语言。设置 `COPYPASTE_DESKTOP_EXECUTABLE` 为上述解包 EXE 可验证打包版，报告 `evidence/native-surfaces.json`。完整签名更新、卸载及多显示器/DPI 系统矩阵仍有待验收。
+
+2026-10-20 复核修复了登录成功后停留在登录页的问题：本地 API 白名单补齐只读 `/v1/session/context`，以及工作区创建、成员控制、分析证据和报告所需的既有业务入口。凭证交换仍由主进程完成，renderer 不可调用认证凭证或 Admin 接口；URL 规范化后的越界路径也会拒绝。25 项 Desktop 测试及类型检查通过。交付工具把当前测试绑定到客户端运行文件、源码、安装器及扩展字节，拒绝用历史通过报告验收新包；Setup/Portable 的安装、卸载和完整原生认证矩阵仍独立待验收。
 
 ## 运行与构建
 
