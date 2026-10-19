@@ -2,6 +2,8 @@ export interface NativeTokens {
   access_token: string;
   refresh_token: string;
   expires_at: number;
+  refresh_request_id?: string;
+  session_epoch?: string;
 }
 export class NativeSessionError extends Error {
   constructor(
@@ -13,7 +15,7 @@ export class NativeSessionError extends Error {
 interface SessionStore {
   read: () => Promise<NativeTokens | null>;
   write: (tokens: NativeTokens | null) => Promise<void>;
-  renew: (refreshToken: string) => Promise<unknown>;
+  renew: (refreshToken: string, requestId: string) => Promise<unknown>;
   revoke: (refreshToken: string) => Promise<void>;
   changed: () => void;
   now?: () => number;
@@ -51,6 +53,8 @@ export class NativeSession {
       access_token: v.access_token,
       refresh_token: v.refresh_token,
       expires_at: (this.store.now?.() ?? Date.now()) + v.expires_in * 1000,
+      refresh_request_id: crypto.randomUUID(),
+      session_epoch: crypto.randomUUID(),
     };
   }
   private async revoke(tokens: NativeTokens | null): Promise<boolean> {
@@ -93,12 +97,47 @@ export class NativeSession {
   }
   async get(): Promise<NativeTokens> {
     const revision = this.revision;
-    const tokens = await this.exclusive(() => this.store.read());
+    let tokens = await this.exclusive(() => this.store.read());
     if (revision !== this.revision)
       throw new NativeSessionError("AUTH_CHANGED");
     if (!tokens) throw new NativeSessionError("AUTH_REQUIRED");
     if (tokens.expires_at > (this.store.now?.() ?? Date.now()) + 30000)
       return tokens;
+    if (
+      !tokens.refresh_request_id ||
+      !/^[a-f0-9-]{36}$/.test(tokens.refresh_request_id)
+    ) {
+      const source = tokens.refresh_token;
+      try {
+        tokens = await this.exclusive(async () => {
+          let current = await this.store.read();
+          if (
+            revision !== this.revision ||
+            !current ||
+            current.refresh_token !== source
+          )
+            throw new NativeSessionError("AUTH_CHANGED");
+          if (
+            !current.refresh_request_id ||
+            !/^[a-f0-9-]{36}$/.test(current.refresh_request_id)
+          ) {
+            const updated = {
+              ...current,
+              refresh_request_id: crypto.randomUUID(),
+              session_epoch: current.session_epoch ?? crypto.randomUUID(),
+            };
+            await this.store.write(updated);
+            current = updated;
+          }
+          if (revision !== this.revision)
+            throw new NativeSessionError("AUTH_CHANGED");
+          return current;
+        });
+      } catch (error) {
+        if (error instanceof NativeSessionError) throw error;
+        throw new NativeSessionError("AUTH_UNAVAILABLE");
+      }
+    }
     if (
       this.flight?.revision === revision &&
       this.flight.source === tokens.refresh_token
@@ -120,7 +159,15 @@ export class NativeSession {
   ): Promise<NativeTokens> {
     let next: NativeTokens;
     try {
-      next = this.decode(await this.store.renew(previous.refresh_token));
+      next = {
+        ...this.decode(
+          await this.store.renew(
+            previous.refresh_token,
+            previous.refresh_request_id!,
+          ),
+        ),
+        session_epoch: previous.session_epoch ?? crypto.randomUUID(),
+      };
     } catch (error) {
       // Transport errors, 429 and 5xx do not prove that a session was revoked.
       if (error instanceof NativeSessionError && error.code === "AUTH_REQUIRED")

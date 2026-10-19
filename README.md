@@ -244,7 +244,7 @@ flowchart LR
 
 平台完整回归 **185/185**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
 
-独立渲染快照共 41 项来源摘要。主进程只开放规范导入的精确 POST 路径，继续校验固定 origin、企业和凭证；实际 Electron 完成 PKCE、分片上传、Meta XLSX 导入及原生字节一致下载。
+该导入阶段的独立渲染快照共 41 项来源摘要（当前认证增量为 43 项）。主进程只开放规范导入的精确 POST 路径，继续校验固定 origin、企业和凭证；实际 Electron 完成 PKCE、分片上传、Meta XLSX 导入及原生字节一致下载。
 
 ![源码 Desktop XLSX 导入](assets/screenshots/17-xlsx-import.png)
 
@@ -260,3 +260,15 @@ flowchart LR
 ![离线退出提示](assets/screenshots/23-offline-signout.png)
 
 本轮是源码与构建交付；历史无边框预览安装包保留原提交与 SHA-256，不包含本轮会话修复。`npm test` 覆盖 10 组会话竞争/持久化与原有原生能力，交付仓库 `qa:sessions` 验证真实 Electron/PKCE 和远端撤销。
+
+## 规范原生认证与重试 / Canonical native authentication and retry
+
+浏览器授权明确使用 S256，首次交换及刷新调用规范 `/v1/auth/token`。首次交换的未知响应最多以同一标识重试一次；刷新标识先随 DPAPI 保护的加密状态保存，响应丢失后可恢复原轮换。新登录改变本地身份版本，刷新保持不变；退出和新登录继续隔离迟到结果。
+
+Native sign-in and refresh consume the canonical token contract. A first code exchange retries an unknown result once under the same key; definitive rejections are not retried. Refresh request identities persist with DPAPI-protected credentials, so a committed response loss can recover one rotation without triggering reuse revocation. Real Electron fault-injection checks live in Delivery `qa:sessions`. Historical frameless preview installers retain their original manifest and do not contain these source updates.
+
+当前 `npm test` **24/24**，原生会话十五组、首次交换四组及文件/DPAPI 等原有能力均通过；渲染来源摘要 **43** 项。 / Current native tests: **24/24**; renderer provenance: **43** files.
+
+最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
+
+Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.

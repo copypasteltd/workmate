@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import { exclusive } from "./lock.js";
 import { LocalVault } from "./vault.js";
 import { NativeSession, NativeSessionError } from "./native-session.js";
+import { exchangeNativeCode } from "./native-code.js";
 import {
   app,
   BrowserWindow,
@@ -75,14 +76,29 @@ const files = new LocalFiles(
   (fn) => exclusive(userDir, fn),
 );
 let localAccessReset: Promise<void> = Promise.resolve();
-async function nativeAuth(action: "refresh" | "revoke", refreshToken: string) {
-  const response = await fetch(config.api + "/v1/auth/native/" + action, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ client_id: "desktop", refresh_token: refreshToken }),
-    redirect: "error",
-    signal: AbortSignal.timeout(20000),
-  });
+async function nativeAuth(
+  action: "refresh" | "revoke",
+  refreshToken: string,
+  requestId?: string,
+) {
+  const response = await fetch(
+    config.api +
+      (action === "refresh" ? "/v1/auth/token" : "/v1/auth/native/revoke"),
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(requestId ? { "Idempotency-Key": requestId } : {}),
+      },
+      body: JSON.stringify({
+        client_id: "desktop",
+        refresh_token: refreshToken,
+        ...(action === "refresh" ? { grant_type: "refresh_token" } : {}),
+      }),
+      redirect: "error",
+      signal: AbortSignal.timeout(20000),
+    },
+  );
   if (!response.ok)
     throw new NativeSessionError(
       response.status === 401 ? "AUTH_REQUIRED" : "AUTH_UNAVAILABLE",
@@ -92,7 +108,8 @@ async function nativeAuth(action: "refresh" | "revoke", refreshToken: string) {
 const nativeSession = new NativeSession({
   read: () => load("auth", null),
   write: (value) => save("auth", value),
-  renew: (refreshToken) => nativeAuth("refresh", refreshToken),
+  renew: (refreshToken, requestId) =>
+    nativeAuth("refresh", refreshToken, requestId),
   revoke: async (refreshToken) => {
     await nativeAuth("revoke", refreshToken);
   },
@@ -198,8 +215,8 @@ async function signIn() {
     const ticket = nativeSession.beginLogin();
     const verifier = randomBytes(32).toString("base64url"),
       state = randomBytes(32).toString("base64url");
-    let finish!: (v?: unknown) => void, fail!: (e: Error) => void;
-    const result = new Promise((resolve, reject) => {
+    let finish!: (value: string) => void, fail!: (e: Error) => void;
+    const result = new Promise<string>((resolve, reject) => {
       finish = resolve;
       fail = reject;
     });
@@ -226,7 +243,7 @@ async function signIn() {
         .end(
           "<title>CopyPaste</title><p>登入完成，可以關閉此頁。 Signed in. You can close this tab.</p>",
         );
-      finish(u.searchParams.get("code"));
+      finish(u.searchParams.get("code")!);
     });
     await new Promise<void>((resolve, reject) => {
       server.once("error", reject);
@@ -246,24 +263,19 @@ async function signIn() {
         code_challenge: createHash("sha256")
           .update(verifier)
           .digest("base64url"),
+        code_challenge_method: "S256",
         state,
       }).toString();
       await shell.openExternal(u.href);
       const code = await result;
-      const r = await fetch(config.api + "/v1/auth/native/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: "desktop",
-          redirect_uri: redirect,
-          code,
-          code_verifier: verifier,
-        }),
-        redirect: "error",
-        signal: AbortSignal.timeout(20000),
+      const response = await exchangeNativeCode(config.api + "/v1/auth/token", {
+        client_id: "desktop",
+        grant_type: "authorization_code",
+        redirect_uri: redirect,
+        code,
+        code_verifier: verifier,
       });
-      if (!r.ok) throw new Error("Authorization expired");
-      await nativeSession.acceptLogin(await r.json(), ticket);
+      await nativeSession.acceptLogin(response, ticket);
       window?.show();
       window?.focus();
     } finally {

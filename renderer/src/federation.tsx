@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { authReturnPath } from "./auth-return";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { Building2, ShieldCheck } from "lucide-react";
 import { post } from "./api";
@@ -47,7 +48,7 @@ export function CompanySignIn() {
   const { t } = useI18n(),
     [q] = useSearchParams();
   if (window.copyPasteBridge) return <Navigate to="/login" replace />;
-  const next = q.get("next") ?? "/app";
+  const next = authReturnPath(q.get("next"));
   return (
     <SignInLayout>
       <p className="eyebrow">YOUR COMPANY. YOUR WORKSPACE.</p>

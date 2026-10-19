@@ -84,7 +84,15 @@ import {
   Brain,
   Bell,
 } from "lucide-react";
-import { api, post, patch, download, ApiError } from "./api";
+import {
+  api,
+  post,
+  patch,
+  download,
+  ApiError,
+  nativeAuthorizationUrl,
+} from "./api";
+import { authReturnPath } from "./auth-return";
 import { useTaskEvents } from "./task-events";
 import {
   Preferences,
@@ -282,9 +290,13 @@ function Login() {
   const [query] = useSearchParams();
   const [challenge, setChallenge] = useState<any>(null),
     [address, setAddress] = useState("");
+  const mailConfig = useData(
+    window.copyPasteBridge ? null : "/v1/public/config",
+  );
+  const challengeAttempt = useRef<{ email: string; key: string } | null>(null);
+  const sessionAttempt = useRef<{ body: string; key: string } | null>(null);
   const next = query.get("next");
-  const destination =
-    next && next.startsWith("/") && !next.startsWith("//") ? next : "/app";
+  const destination = authReturnPath(next);
   useEffect(() => {
     if (!loading && me) nav(destination, { replace: true });
   }, [me, loading]);
@@ -320,7 +332,16 @@ function Login() {
               submitLabel={t("發送驗證碼", "Send sign-in code")}
               onSubmit={async (f) => {
                 const email = String(f.get("email")).trim();
-                const result = await post("/v1/auth/challenge", { email });
+                if (challengeAttempt.current?.email !== email)
+                  challengeAttempt.current = {
+                    email,
+                    key: crypto.randomUUID(),
+                  };
+                const result = await post(
+                  "/v1/auth/challenges",
+                  { email },
+                  challengeAttempt.current.key,
+                );
                 setAddress(email);
                 setChallenge(result);
               }}
@@ -341,7 +362,7 @@ function Login() {
               <div className="notice">
                 <Mail size={18} />
                 <span>
-                  {challenge.delivery === "local_mailbox"
+                  {mailConfig.data?.mail_mode === "local_mailbox"
                     ? t(
                         "本機開發郵箱已收到驗證碼。讀取方式見 README。",
                         "A code is ready in the local development mailbox. See the README for access.",
@@ -355,10 +376,21 @@ function Login() {
               <AsyncForm
                 submitLabel={t("驗證並繼續", "Verify & continue")}
                 onSubmit={async (f) => {
-                  await post("/v1/auth/verify", {
+                  const body = {
                     challenge_id: challenge.challenge_id,
                     code: String(f.get("code")),
-                  });
+                  };
+                  const fingerprint = JSON.stringify(body);
+                  if (sessionAttempt.current?.body !== fingerprint)
+                    sessionAttempt.current = {
+                      body: fingerprint,
+                      key: crypto.randomUUID(),
+                    };
+                  await post(
+                    "/v1/auth/sessions",
+                    body,
+                    sessionAttempt.current.key,
+                  );
                   await refresh();
                   nav(destination, { replace: true });
                 }}
@@ -376,10 +408,18 @@ function Login() {
                     autoFocus
                   />
                 </Field>
+                <p className="form-footnote">
+                  {t("驗證碼有效至 ", "Code valid until ")}
+                  <DateText value={challenge.expires_at} />
+                </p>
               </AsyncForm>
               <button
                 className="text-button"
-                onClick={() => setChallenge(null)}
+                onClick={() => {
+                  setChallenge(null);
+                  challengeAttempt.current = null;
+                  sessionAttempt.current = null;
+                }}
               >
                 {t(
                   "使用其他郵箱 / 重新發送",
@@ -548,25 +588,19 @@ function NativeAuthorize() {
           )}
         </p>
         <p className="muted">{w.me.user.email}</p>
-        <AsyncForm
-          submitLabel={t("授權並返回應用", "Authorize & return")}
-          onSubmit={async () => {
-            const r = await post("/v1/auth/native/authorize", {
-              client_id: q.get("client_id"),
-              redirect_uri: q.get("redirect_uri"),
-              code_challenge: q.get("code_challenge"),
-              state: q.get("state"),
-            });
-            window.location.assign(r.redirect);
-          }}
+        <a
+          className="button primary"
+          href={nativeAuthorizationUrl(q)}
+          referrerPolicy="origin"
         >
-          <p className="form-footnote">
-            {t(
-              "本機檔案仍需在客戶端逐一授權目錄。你可隨時撤銷裝置。",
-              "Local folders require separate permission in the client. You can revoke a device at any time.",
-            )}
-          </p>
-        </AsyncForm>
+          {t("授權並返回應用", "Authorize & return")}
+        </a>
+        <p className="form-footnote">
+          {t(
+            "本機檔案仍需在客戶端逐一授權目錄。你可隨時撤銷裝置。",
+            "Local folders require separate permission in the client. You can revoke a device at any time.",
+          )}
+        </p>
       </section>
     </div>
   );

@@ -19,11 +19,19 @@ function deferred<T>() {
   return { promise, resolve };
 }
 function fixture() {
-  let current: NativeTokens | null = { ...response("a"), expires_at: 1000 },
+  let current: NativeTokens | null = {
+      ...response("a"),
+      expires_at: 1000,
+      refresh_request_id: crypto.randomUUID(),
+      session_epoch: crypto.randomUUID(),
+    },
     calls = 0,
     changes = 0;
   const revoked: string[] = [];
-  let renew: (token: string) => Promise<unknown> = async () => response("b");
+  let renew: (
+    token: string,
+    requestId: string,
+  ) => Promise<unknown> = async () => response("b");
   let revoke: (token: string) => Promise<void> = async (token) => {
     revoked.push(token);
   };
@@ -32,9 +40,9 @@ function fixture() {
     write: async (value: NativeTokens | null) => {
       current = value;
     },
-    renew: async (token: string) => {
+    renew: async (token: string, requestId: string) => {
       ++calls;
-      return renew(token);
+      return renew(token, requestId);
     },
     revoke: (token: string) => revoke(token),
     changed: () => {
@@ -206,4 +214,93 @@ test("a rejected obsolete refresh cannot sign out a later account", async () => 
   reject(new NativeSessionError("AUTH_REQUIRED"));
   await pending;
   assert.equal(f.current()?.access_token, credential("c"));
+});
+
+test("a lost refresh response retains its private request key across controller restart", async () => {
+  const f = fixture(),
+    keys: string[] = [];
+  f.renew(async (_token, key) => {
+    keys.push(key);
+    if (keys.length === 1)
+      throw new TypeError("Controlled response loss after server commit");
+    return response("b");
+  });
+  const originalKey = f.current()!.refresh_request_id;
+  await assert.rejects(f.session.get(), /Controlled response loss/);
+  assert.equal(f.current()!.refresh_request_id, originalKey);
+  const restarted = new NativeSession(f.store);
+  assert.equal((await restarted.get()).access_token, credential("b"));
+  assert.deepEqual(keys, [originalKey, originalKey]);
+  assert.notEqual(f.current()!.refresh_request_id, originalKey);
+});
+
+test("legacy tokens must persist a new request key before attempting any refresh", async () => {
+  const f = fixture();
+  delete f.current()!.refresh_request_id;
+  const write = f.store.write;
+  f.store.write = async () => {
+    throw new Error("Controlled storage failure");
+  };
+  await assert.rejects(f.session.get(), /AUTH_UNAVAILABLE/);
+  assert.equal(f.calls(), 0);
+  assert.equal(f.current()!.refresh_request_id, undefined);
+  f.store.write = write;
+  await f.session.get();
+  assert.equal(f.calls(), 1);
+  assert.match(f.current()!.refresh_request_id!, /^[a-f0-9-]{36}$/);
+});
+
+test("sign-out during legacy request-key persistence prevents network refresh and clears storage", async () => {
+  const f = fixture(),
+    entered = deferred<void>(),
+    finish = deferred<void>();
+  delete f.current()!.refresh_request_id;
+  const write = f.store.write;
+  f.store.write = async (value) => {
+    if (value) {
+      entered.resolve();
+      await finish.promise;
+    }
+    await write(value);
+  };
+  const pending = assert.rejects(f.session.get(), /AUTH_CHANGED/);
+  await entered.promise;
+  const out = f.session.signOut();
+  finish.resolve();
+  await pending;
+  await out;
+  assert.equal(f.calls(), 0);
+  assert.equal(f.current(), null);
+});
+
+test("only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity", async () => {
+  const f = fixture(),
+    epoch = f.current()!.session_epoch;
+  assert.equal((await f.session.get()).session_epoch, epoch);
+  await f.session.acceptLogin(response("c"), f.session.beginLogin());
+  assert.notEqual(f.current()!.session_epoch, epoch);
+  assert.match(f.current()!.session_epoch!, /^[a-f0-9-]{36}$/);
+});
+
+test("concurrent legacy readers persist one private request key and start a single rotation", async () => {
+  const f = fixture();
+  delete f.current()!.refresh_request_id;
+  delete f.current()!.session_epoch;
+  const ids: string[] = [];
+  f.renew(async (_token, id) => {
+    ids.push(id);
+    return response("b");
+  });
+  const all = await Promise.all(
+    Array.from({ length: 20 }, () => f.session.get()),
+  );
+  assert.equal(ids.length, 1);
+  assert.match(ids[0], /^[a-f0-9-]{36}$/);
+  assert.ok(
+    all.every(
+      (t) =>
+        t.access_token === credential("b") &&
+        t.session_epoch === all[0].session_epoch,
+    ),
+  );
 });
