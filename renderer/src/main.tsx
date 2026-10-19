@@ -1395,6 +1395,7 @@ function TaskDetail() {
     setVersion((v) => v + 1),
   );
   const [actionError, setActionError] = useState<Error | null>(null);
+  const [actionPending, setActionPending] = useState(false);
   const activityLabel = (e: any) => {
     const state =
       e.kind === "task.queued"
@@ -1412,6 +1413,9 @@ function TaskDetail() {
       succeeded: ["工作已完成", "Work completed"],
       failed: ["工作未完成", "Work failed"],
       cancelled: ["工作已取消", "Work cancelled"],
+      paused: ["工作已暫停", "Work paused"],
+      "task.paused": ["工作已暫停", "Work paused"],
+      "task.resumed": ["工作已恢復排隊", "Work resumed in queue"],
       "artifact.ready": ["交付檔案已就緒", "Deliverable file ready"],
       "delivery.reviewed": ["已記錄審閱結果", "Review recorded"],
       "task.cancel_requested": ["已要求取消工作", "Cancellation requested"],
@@ -1444,11 +1448,17 @@ function TaskDetail() {
     return t("工作進度已更新", "Work progress updated");
   };
   async function act(fn: () => Promise<any>) {
+    if (actionPending) return;
+    setActionPending(true);
+    setActionError(null);
     try {
       await fn();
       setVersion((v) => v + 1);
     } catch (e) {
       setActionError(e as Error);
+      setVersion((v) => v + 1);
+    } finally {
+      setActionPending(false);
     }
   }
   if (loading && !data) return <Loading />;
@@ -1467,14 +1477,37 @@ function TaskDetail() {
               ["queued", "running", "paused", "needs_input"].includes(
                 data.status,
               ) ? (
-                <button
-                  className="button secondary"
-                  onClick={() =>
-                    void act(() => post(w.base + "/tasks/" + id + "/cancel"))
-                  }
-                >
-                  {t("取消工作", "Cancel task")}
-                </button>
+                <div className="row-actions">
+                  {data.attempt === 0 &&
+                    ["queued", "paused"].includes(data.status) && (
+                      <button
+                        className="button secondary"
+                        disabled={actionPending}
+                        onClick={() =>
+                          void act(() =>
+                            post(w.base + "/tasks/" + id + "/controls", {
+                              action:
+                                data.status === "paused" ? "resume" : "pause",
+                              expected_version: data.version,
+                            }),
+                          )
+                        }
+                      >
+                        {data.status === "paused"
+                          ? t("繼續工作", "Resume task")
+                          : t("暫停排隊", "Pause queued task")}
+                      </button>
+                    )}
+                  <button
+                    className="button secondary"
+                    disabled={actionPending}
+                    onClick={() =>
+                      void act(() => post(w.base + "/tasks/" + id + "/cancel"))
+                    }
+                  >
+                    {t("取消工作", "Cancel task")}
+                  </button>
+                </div>
               ) : (
                 <Badge value={data.status} />
               )
@@ -1533,20 +1566,25 @@ function TaskDetail() {
                             "工作已排隊，正在等待專家接手。",
                             "Your task is queued for your specialist.",
                           )
-                      : data.status === "running"
+                      : data.status === "paused"
                         ? t(
-                            "正在處理。你可以離開此頁，稍後回來查看進度。",
-                            "Work is in progress. You can leave and return to review it later.",
+                            "工作已暫停，尚未呼叫模型。繼續時沿用本工作和原預留預算。",
+                            "This task is paused before model execution. Resuming keeps this task and its original budget reservation.",
                           )
-                        : data.status === "reconciling"
+                        : data.status === "running"
                           ? t(
-                              "此次執行需要核對結果和費用，管理員將處理。",
-                              "This run needs a result and usage review. Your administrator can resolve it.",
+                              "正在處理。你可以離開此頁，稍後回來查看進度。",
+                              "Work is in progress. You can leave and return to review it later.",
                             )
-                          : t(
-                              "此項工作沒有可交付結果。請查看下方記錄。",
-                              "This task has no deliverable result. Review the activity below.",
-                            )}
+                          : data.status === "reconciling"
+                            ? t(
+                                "此次執行需要核對結果和費用，管理員將處理。",
+                                "This run needs a result and usage review. Your administrator can resolve it.",
+                              )
+                            : t(
+                                "此項工作沒有可交付結果。請查看下方記錄。",
+                                "This task has no deliverable result. Review the activity below.",
+                              )}
                 </p>
               )}
               {data.error_code && (
