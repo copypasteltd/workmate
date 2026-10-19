@@ -339,3 +339,11 @@ Client QA bootstrap uses `GET /v1/session/context`. Real HTTP profile checks val
 本轮平台 **207/207**、Web 实际流程 **4/4**、严格实际 HTTP 样本 **33/33**；旧 203 项回归保存在 `evidence/stage33-platform/`，首次 204/205 失败保存在 `evidence/profile-platform-first-failure/`，初始化夹具失败单独保留。 / This increment passes **207/207** platform tests, **4/4** real Web journeys and **33/33** captured HTTP schemas, while preserving the original 203-test receipt and the first failed 205-test run. Expanded native journeys remain unproven.
 
 本次提交后的独立 Git 检出四组通过：36 份不可改写 SQL 及两库摘要账本、28 个固定摘要 Skill、43 份 renderer 来源摘要、207 项原始 TAP 字节和记录 SHA-256；临时检出已移除。 / Four fresh-checkout integrity groups passed for 36 immutable SQL files and both migration ledgers, 28 exact-hash Skills, 43 renderer files and the original 207-test TAP bytes. Owned temporary checkouts were removed. This does not replace native application acceptance.
+
+## 邀请与成员验收 / Invitation and member checks
+
+`npm run qa:membership` 验证实际 Web 创建与投递、轮换重发、邮箱登录/加入、移除、撤销，以及真实退出后迟到响应拒绝：早期六组通过、模型调用 0。最终源码的页面复核超时，拥有的浏览器已关闭，失败记录在 `evidence/membership-current-issue.json`。当前 `npm run qa:membership-wire` 真实 HTTP 五组通过并退出拥有的会话。四份实际响应加入原始 schema 校验，累计 37/37。首次 Vite 代理响应匹配失败保留在 `evidence/membership-first-navigation-failure/`。
+
+An earlier `qa:membership` run passed six Web journeys with no model calls. Final-source page reruns timed out and are not accepted; all owned browsers closed. `qa:membership-wire` separately passes five current-source HTTP groups and closes both owned sessions. Four canonical HTTP response samples bring strict schema checks to 37/37. The first origin-matching fixture failure is preserved. Original 207-test evidence is archived byte-for-byte in `evidence/stage34-platform/`; the 218-test stage before exhausted-lease coverage is in `evidence/stage35-initial-platform/`. Latest platform and fresh-checkout results are separate raw evidence. Production SMTP, the complete Admin/native matrix and rebuilt release artifacts remain pending.
+
+最新平台全套 **220/220**；严格实际 HTTP 样本 **37/37**；当前 HTTP 五组通过；早期 Web 六组和当前页面复核失败分开保存。 / Latest platform **220/220**, strict captured HTTP schemas **37/37**, and five current-source HTTP groups passed; prior Web success and current page failures remain separate.
