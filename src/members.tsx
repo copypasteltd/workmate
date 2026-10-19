@@ -121,7 +121,15 @@ export function Members() {
                 <td title={m.email}>{m.email}</td>
                 <td>{m.role}</td>
                 <td>
-                  <Badge value={m.state} />
+                  <Badge value={m.management_state ?? m.state} />
+                  {m.management_state === "suspended" && (
+                    <p className="muted">
+                      {t(
+                        "請聯絡平台管理員恢復權限。",
+                        "Contact a platform administrator to restore access.",
+                      )}
+                    </p>
+                  )}
                 </td>
                 <td>
                   <div className="row-actions">

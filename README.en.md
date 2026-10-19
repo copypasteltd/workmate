@@ -292,3 +292,7 @@ Account settings distinguishes Web, Desktop and Chrome Extension, marks this dev
 ![Small-screen dark sessions](assets/screenshots/51-sessions-mobile-dark.png)
 
 The delivery repository's `npm run qa:sessions` covers actual Web, source Electron and MV3 login/revocation, expired-access sign-out, offline feedback and delayed responses. Complete identity, device/system matrices and production release remain governed by the master acceptance plan.
+
+## Admin suspension feedback
+
+Authorized member directories identify administrative suspension separately. A suspended member cannot access the workspace, and owner edits, removal/rejoin or new invitations cannot lift the hold. An authorized administrator must restore access. Strict Member.state remains active/removed; the management directory provides the additional label. This increment builds, while current page verification remains pending.

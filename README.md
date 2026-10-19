@@ -319,3 +319,7 @@ Workspace refresh uses authenticated `GET /v1/session/context`; canonical `GET /
 The member page supports project selection, paging, owner edits, removal confirmation, delivery status, resend and revocation. Invite links survive email login and select the joined workspace. Unknown replies retain their operation identity; late context/member responses cannot cross a sign-in revision. Unit checks pass 5/5 and five current-source HTTP groups pass separately. Final-source page reruns timed out; owned browsers closed. The earlier successful receipt was overwritten and is excluded from auditable acceptance evidence.
 
 ![早期实际成员页 / Earlier verified member page](assets/screenshots/53-member-invitations.png)
+
+## 后台暂停的用户端反馈
+
+获授权的成员目录将后台暂停单独显示；暂停中的成员无法访问该企业，也不能由 owner 编辑、移除后重加或接受新邀请解除。恢复由当前获授管理员执行。严格 Member.state 继续只使用 active/removed，管理提示由额外目录字段提供。本轮提示已构建，页面复核待完成。
