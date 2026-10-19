@@ -1,7 +1,9 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, mkdir, writeFile, stat } from "node:fs/promises";
+import path from "node:path";
+import { ErasureService } from "../src/erasure.js";
 import { buildApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
 import {
@@ -225,6 +227,123 @@ before(async () => {
 });
 after(async () => {
   if (system) await system.app.close();
+});
+
+test("deleting a running task closes its reservation before erasing runtime caches and dependent private files", async () => {
+  const f = await fixture(),
+    a = await operator("super_admin");
+  const sent = await ok(
+    f.owner,
+    "POST",
+    `${f.base}/conversations/${f.conversation.id}/messages`,
+    {
+      client_message_id: randomUUID(),
+      expected_version: 1,
+      intent: "delegate",
+      mode: "execute",
+      body: "Build the private erasure fixture report.",
+      budget_micros: 1_000_000,
+    },
+  );
+  let asset: any;
+  const runtime = new ControlledRuntime(async (ctx) => {
+    await mkdir(ctx.workspace, { recursive: true });
+    await writeFile(
+      path.join(ctx.workspace, "private-session.txt"),
+      "private customer prompt",
+    );
+    asset = await ctx.tools
+      .find((t) => t.name === "deliver_text")!
+      .run(
+        {
+          filename: "private.txt",
+          content: "Private output",
+          mime_type: "text/plain",
+        },
+        randomUUID(),
+      );
+    const erased = await call(
+      a,
+      "POST",
+      `/v1/admin/content/${sent.task.id}/action`,
+      { action: "delete", version: 1, reason: "Erase private running work" },
+    );
+    assert.equal(erased.status, 200, JSON.stringify(erased.data));
+    await system.db.control.query(
+      "UPDATE deletion_jobs SET next_attempt_at='2000-01-01' WHERE target_id=$1",
+      [sent.task.id],
+    );
+    await new ErasureService(system.db, system.storage).advance(1);
+    const waiting = (
+      await system.db.control.query(
+        "SELECT * FROM deletion_jobs WHERE target_id=$1",
+        [sent.task.id],
+      )
+    ).rows[0];
+    assert.equal(waiting.state, "queued");
+    assert.deepEqual(waiting.exceptions, ["WAITING_FOR_EXECUTION_TO_CLOSE"]);
+    assert.ok((await stat(ctx.workspace)).isDirectory());
+  });
+  await runner(runtime).run(f.tenant, sent.task.id);
+  const terminal = (
+    await system.db.control.query("SELECT * FROM tasks WHERE id=$1", [
+      sent.task.id,
+    ])
+  ).rows[0];
+  assert.equal(terminal.status, "cancelled");
+  assert.equal(terminal.output, "");
+  assert.equal(terminal.lease_until, null);
+  const reservation = (
+    await system.db.control.query(
+      "SELECT status FROM reservations WHERE task_id=$1",
+      [sent.task.id],
+    )
+  ).rows[0];
+  assert.equal(reservation.status, "settled");
+  const erasure = new ErasureService(system.db, system.storage);
+  for (let n = 0; n < 5; n++) {
+    await system.db.control.query(
+      "UPDATE deletion_jobs SET next_attempt_at='2000-01-01' WHERE target_id=ANY($1::uuid[])",
+      [[sent.task.id, asset.id]],
+    );
+    await erasure.advance(2);
+  }
+  const jobs = (
+    await system.db.control.query(
+      "SELECT target_type,state FROM deletion_jobs WHERE target_id=ANY($1::uuid[])",
+      [[sent.task.id, asset.id]],
+    )
+  ).rows;
+  assert.equal(jobs.length, 2);
+  assert.ok(
+    jobs.every((j) => j.state === "completed"),
+    JSON.stringify(jobs),
+  );
+  await assert.rejects(stat(runtime.calls[0].workspace), { code: "ENOENT" });
+  const key = (
+    await system.db.control.query(
+      "SELECT storage_key FROM asset_versions WHERE asset_id=$1",
+      [asset.id],
+    )
+  ).rows[0].storage_key;
+  await assert.rejects(system.storage.get(key), { code: "ENOENT" });
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT count(*)::int AS n FROM ledger WHERE task_id=$1",
+        [sent.task.id],
+      )
+    ).rows[0].n,
+    1,
+  );
+  // A visible progress endpoint must not require broad control-table privileges.
+  assert.equal((await call(f.owner, "GET", f.base + "/deletions")).status, 200);
+  const otherProgress = await ok(f.member, "GET", f.base + "/deletions");
+  assert.ok(
+    !otherProgress.items.some(
+      (j: any) => j.target_id === sent.task.id || j.target_id === asset.id,
+    ),
+  );
 });
 
 test("persistent specialists freeze versions, reject enlarged tools and require CAS editing authority", async () => {

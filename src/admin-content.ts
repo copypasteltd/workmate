@@ -10,6 +10,7 @@ import { settle } from "./billing.js";
 import { eraseConversation } from "./persistent-work.js";
 import { eraseSchedule } from "./schedules.js";
 import { cancelWorkflowRun } from "./workflow-control.js";
+import { eraseWorkspaceNode } from "./cloud-files.js";
 const tables = [
   "assets",
   "tasks",
@@ -22,13 +23,33 @@ const tables = [
   "agents",
   "conversations",
   "memories",
+  "workspace_nodes",
 ] as const;
 async function find(tx: Tx, id: string) {
   for (const table of tables) {
     const r = (
-      await tx.query(`SELECT * FROM ${table} WHERE id=$1 FOR UPDATE`, [id])
+      await tx.query(
+        `SELECT * FROM ${table} WHERE id=$1${table === "workspace_nodes" ? "" : " FOR UPDATE"}`,
+        [id],
+      )
     ).rows[0];
-    if (r) return { table, row: r };
+    if (r) {
+      if (table === "workspace_nodes") {
+        await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+          "cloudtree:" + r.project_id,
+        ]);
+        return {
+          table,
+          row: (
+            await tx.query(
+              "SELECT * FROM workspace_nodes WHERE id=$1 FOR UPDATE",
+              [id],
+            )
+          ).rows[0],
+        };
+      }
+      return { table, row: r };
+    }
   }
   throw new Problem(404, "NOT_FOUND", "Content not found");
 }
@@ -57,6 +78,12 @@ export function registerAdminContent(
             tenant: r.tenant_id,
             project: r.project_id,
           });
+          if (r[table === "assets" ? "state" : "content_state"] === "deleted")
+            throw new Problem(
+              410,
+              "CONTENT_DELETED",
+              "Deleted content is unavailable",
+            );
           await audit(
             tx,
             req.principal,
@@ -143,7 +170,15 @@ export function registerAdminContent(
                           results: r.results,
                           state: r.state,
                         }
-                      : r.body;
+                      : table === "workspace_nodes"
+                        ? {
+                            kind: r.kind,
+                            workspace_id: r.workspace_id,
+                            parent_id: r.parent_id,
+                            asset_version_id: r.asset_version_id,
+                            reference_state: r.reference_state,
+                          }
+                        : r.body;
           return {
             id: r.id,
             name: r.name ?? r.title ?? table,
@@ -195,6 +230,12 @@ export function registerAdminContent(
                   "VERSION_CONFLICT",
                   "Content changed; refresh first",
                 );
+              if (r[state] === "deleted" && b.action !== "delete")
+                throw new Problem(
+                  409,
+                  "CONTENT_DELETED",
+                  "Permanently deleted content cannot be changed or restored",
+                );
               if (b.action === "metadata") {
                 if (table === "agents")
                   throw new Problem(
@@ -213,15 +254,11 @@ export function registerAdminContent(
                   [id, b.name],
                 );
               } else {
-                if (b.action === "restore" && r.content_state === "deleted")
-                  throw new Problem(
-                    409,
-                    "CONTENT_DELETED",
-                    "Deleted private content cannot be restored",
-                  );
                 if (b.action === "delete" && table === "conversations") {
                   await eraseConversation(tx, req.principal, r);
                 }
+                if (b.action === "delete" && table === "workspace_nodes")
+                  await eraseWorkspaceNode(tx, id);
                 if (b.action === "delete" && table === "memories") {
                   await eraseReplayContent(tx, [id]);
                   await tx.query(
@@ -308,7 +345,21 @@ export function registerAdminContent(
                 { reason: b.reason, kind: table },
                 r.tenant_id,
               );
-              return { ok: true };
+              const deletion =
+                b.action === "delete"
+                  ? (
+                      await tx.query(
+                        "SELECT id,state FROM deletion_jobs WHERE target_type=$1 AND target_id=$2",
+                        [table, id],
+                      )
+                    ).rows[0]
+                  : undefined;
+              return {
+                ok: true,
+                ...(deletion
+                  ? { deletion_id: deletion.id, deletion_state: deletion.state }
+                  : {}),
+              };
             },
           ),
         undefined,

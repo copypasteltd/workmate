@@ -57,6 +57,7 @@ const schema = z.object({
     .nonnegative()
     .optional(),
   WORKER_ENABLED: bool.default(true),
+  DEMO_MODE: bool.default(false),
   EXTENSION_ID: z.string().optional(),
   S3_ENDPOINT: z.string().url().optional(),
   S3_REGION: z.string().default("auto"),
@@ -67,6 +68,14 @@ const schema = z.object({
 export type Config = z.infer<typeof schema>;
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const c = schema.parse(env);
+  if (
+    c.DEMO_MODE &&
+    (c.NODE_ENV === "production" ||
+      !["127.0.0.1", "localhost", "::1"].includes(c.HOST))
+  )
+    throw new Error(
+      "DEMO_MODE requires a loopback development/test server; it is forbidden in production",
+    );
   for (const key of [
     "WEB_ORIGIN",
     "ADMIN_ORIGIN",

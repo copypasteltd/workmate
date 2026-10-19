@@ -199,26 +199,33 @@ export function registerAssets(
         );
         return a;
       }, tenant);
-      const bytes = await storage.get(row.storage_key);
+      const bytes = await storage.stream(row.storage_key);
       // Recheck after I/O to avoid serving content after a concurrent quarantine/revocation.
-      await db.tx(async (tx) => {
-        await projectAccess(tx, req.principal, tenant, project);
-        if (
-          !(
-            await tx.query(
-              "SELECT 1 FROM assets WHERE id=$1 AND state='active'",
-              [asset],
-            )
-          ).rowCount
-        )
-          throw new Problem(404, "NOT_FOUND", "Asset not found");
-      }, tenant);
+      try {
+        await db.tx(async (tx) => {
+          await projectAccess(tx, req.principal, tenant, project);
+          if (
+            !(
+              await tx.query(
+                "SELECT 1 FROM assets WHERE id=$1 AND state='active'",
+                [asset],
+              )
+            ).rowCount
+          )
+            throw new Problem(404, "NOT_FOUND", "Asset not found");
+        }, tenant);
+      } catch (e) {
+        bytes.destroy();
+        throw e;
+      }
       return reply
         .header(
           "Content-Disposition",
           `attachment; filename*=UTF-8''${encodeURIComponent(row.name)}`,
         )
         .type(row.mime_type)
+        .header("Content-Length", row.bytes)
+        .header("X-Content-SHA256", row.sha256)
         .send(bytes);
     },
   );
@@ -268,21 +275,28 @@ export function registerAssets(
       )
     ).rows[0];
     if (!r) throw new Problem(404, "NOT_FOUND", "Share expired or unavailable");
-    const data = await storage.get(r.storage_key);
-    const valid = (
-      await db.control.query(
-        "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active'",
-        [hash(value)],
-      )
-    ).rowCount;
-    if (!valid) throw new Problem(404, "NOT_FOUND", "Share unavailable");
-    return reply
-      .header(
-        "Content-Disposition",
-        `attachment; filename*=UTF-8''${encodeURIComponent(r.name)}`,
-      )
-      .type(r.mime_type)
-      .send(data);
+    const data = await storage.stream(r.storage_key);
+    try {
+      const valid = (
+        await db.control.query(
+          "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active'",
+          [hash(value)],
+        )
+      ).rowCount;
+      if (!valid) throw new Problem(404, "NOT_FOUND", "Share unavailable");
+      return reply
+        .header(
+          "Content-Disposition",
+          `attachment; filename*=UTF-8''${encodeURIComponent(r.name)}`,
+        )
+        .type(r.mime_type)
+        .header("Content-Length", r.bytes)
+        .header("X-Content-SHA256", r.sha256)
+        .send(data);
+    } catch (e) {
+      data.destroy();
+      throw e;
+    }
   });
   app.get(
     base + "/assets/:asset/thumbnail",

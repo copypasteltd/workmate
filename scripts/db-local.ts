@@ -1,3 +1,4 @@
+import { runMigrations } from "./migration-runner.js";
 import EmbeddedPostgres from "embedded-postgres";
 import { readFile, readdir, access } from "node:fs/promises";
 import path from "node:path";
@@ -86,35 +87,7 @@ await bootstrap.end();
 const c = new pg.Client({ connectionString: owner.href });
 await c.connect();
 await c.query("GRANT CONNECT,CREATE ON DATABASE copypaste TO cp_queue");
-for (const file of (await readdir("migrations"))
-  .filter((f) => /^\d+.*\.sql$/.test(f))
-  .sort()) {
-  const version = Number(file.split("-")[0]);
-  const has = await c.query(
-    "SELECT to_regclass('public.schema_migrations') AS name",
-  );
-  if (
-    has.rows[0].name &&
-    (
-      await c.query("SELECT 1 FROM schema_migrations WHERE version=$1", [
-        version,
-      ])
-    ).rowCount
-  )
-    continue;
-  await c.query("BEGIN");
-  try {
-    await c.query(await readFile("migrations/" + file, "utf8"));
-    await c.query(
-      "INSERT INTO schema_migrations(version) VALUES($1) ON CONFLICT DO NOTHING",
-      [version],
-    );
-    await c.query("COMMIT");
-  } catch (e) {
-    await c.query("ROLLBACK");
-    throw e;
-  }
-}
+await runMigrations(c, "copypaste");
 await c.end();
 console.log(
   "Native PostgreSQL ready on 127.0.0.1:" +

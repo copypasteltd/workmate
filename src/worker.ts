@@ -1,4 +1,10 @@
 import { CodeWorkspace } from "./code-workspace.js";
+import {
+  readCloudSource,
+  writeCloudSource,
+  bundleCloudSources,
+} from "./cloud-source.js";
+import { listCloudReferences, readCloudReference } from "./cloud-references.js";
 import { PgBoss } from "pg-boss";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
@@ -23,18 +29,30 @@ import { pngFromSVG, motionFromSVG } from "./render.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { advanceSchedules } from "./schedules.js";
 import { expireFederationAttempts } from "./federation-session.js";
+import { ErasureService } from "./erasure.js";
+import { cleanUploadStaging } from "./uploads.js";
+import { RetentionService } from "./retention.js";
+import { recoverQueuedClaims } from "./task-recovery.js";
+import { assertTaskSkills } from "./skill-lifecycle.js";
+import { authorizeExecutionPlan } from "./plans.js";
 
 export class Worker {
   private boss: PgBoss;
   private timer?: ReturnType<typeof setInterval>;
   private dispatching = false;
   private active = new Map<string, AbortController>();
+  private erasure: ErasureService;
+  private retention: RetentionService;
   constructor(
     private db: Database,
     private catalog: Catalog,
     private storage: Storage,
     private runtime = new CodexRuntimeAdapter(db.config),
   ) {
+    this.erasure = new ErasureService(db, storage, (id) => this.active.has(id));
+    this.retention = new RetentionService(db, storage, (id) =>
+      this.active.has(id),
+    );
     this.boss = new PgBoss({
       connectionString: db.config.QUEUE_DATABASE_URL,
       schema: "pgboss",
@@ -62,24 +80,27 @@ export class Worker {
     if (this.dispatching) return;
     this.dispatching = true;
     try {
-      const c = await this.db.queue.connect();
+      const c = await this.db.control.connect();
       try {
         await c.query("BEGIN");
         const items = (
           await c.query(
-            "SELECT * FROM outbox WHERE dispatched_at IS NULL ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 20",
+            "SELECT o.* FROM outbox o WHERE dispatched_at IS NULL AND (topic<>'task.run' OR EXISTS(SELECT 1 FROM tasks t WHERE t.id::text=o.payload->>'task_id' AND t.data_mode=$1)) ORDER BY created_at FOR UPDATE OF o SKIP LOCKED LIMIT 20",
+            [this.db.config.DEMO_MODE ? "simulated" : "configured_services"],
           )
         ).rows;
         for (const o of items) {
+          let jobId: string | null = null;
           if (o.topic === "task.run")
-            await this.boss.send(
+            jobId = await this.boss.send(
               "task.run",
               { tenant: o.tenant_id, task: o.payload.task_id },
               { singletonKey: o.id, retryLimit: 0 },
             );
-          await c.query("UPDATE outbox SET dispatched_at=now() WHERE id=$1", [
-            o.id,
-          ]);
+          await c.query(
+            "UPDATE outbox SET dispatched_at=now(),queue_job_id=$2 WHERE id=$1",
+            [o.id, jobId],
+          );
         }
         await c.query("COMMIT");
       } catch (e) {
@@ -95,10 +116,32 @@ export class Worker {
       await this.db.control.query(
         "UPDATE reservations r SET status='reconciling' FROM tasks t WHERE t.id=r.task_id AND t.status='reconciling' AND r.status='reserved'",
       );
-      await advanceSchedules(this.db, this.catalog);
-      await advanceWorkflows(this.db, this.catalog, this.storage);
-      await expireFederationAttempts(this.db.control);
     } finally {
+      // A connector/workflow error must never starve cleanup or other due work.
+      for (const [name, operation] of [
+        ["queue_recovery", () => recoverQueuedClaims(this.db)],
+        ["schedules", () => advanceSchedules(this.db, this.catalog)],
+        [
+          "workflows",
+          () => advanceWorkflows(this.db, this.catalog, this.storage),
+        ],
+        ["federation", () => expireFederationAttempts(this.db.control)],
+        ["retention", () => this.retention.advance()],
+        ["erasure", () => this.erasure.advance()],
+        ["uploads", () => cleanUploadStaging(this.db)],
+      ] as const) {
+        try {
+          await operation();
+        } catch (e) {
+          console.error(
+            JSON.stringify({
+              component: "worker.maintenance",
+              operation: name,
+              error_code: (e as { code?: string }).code ?? "MAINTENANCE_FAILED",
+            }),
+          );
+        }
+      }
       this.dispatching = false;
     }
   }
@@ -123,6 +166,8 @@ export class Worker {
           )
         ).rows[0];
         if (!t || t.status !== "queued") return null;
+        if ((t.data_mode === "simulated") !== this.db.config.DEMO_MODE)
+          return null;
         const u = (
           await tx.query("SELECT * FROM users WHERE id=$1", [t.created_by])
         ).rows[0];
@@ -140,6 +185,14 @@ export class Worker {
           if (t.content_state !== "active")
             throw new Error("Content is unavailable");
           await this.catalog.ensureEnabled(tx, t.role_key);
+          await assertTaskSkills(tx, this.catalog, t);
+          await authorizeExecutionPlan(
+            tx,
+            tenant,
+            t.created_by,
+            this.catalog.role(t.role_key),
+            t.mode,
+          );
           await resolveWorkContext(
             tx,
             actor,
@@ -162,12 +215,14 @@ export class Worker {
           });
           return null;
         }
-        return (
+        const started = (
           await tx.query(
             "UPDATE tasks SET status='running',attempt=attempt+1,fencing_token=$2,lease_until=now()+interval '45 seconds',updated_at=now(),version=version+1 WHERE id=$1 RETURNING *",
             [id, fencing],
           )
         ).rows[0];
+        await event(tx, tenant, id, "task.started", {});
+        return started;
       },
       tenant,
       false,
@@ -196,6 +251,14 @@ export class Worker {
             try {
               await projectAccess(tx, actor, tenant, task.project_id, "write");
               await this.catalog.ensureEnabled(tx, task.role_key);
+              await assertTaskSkills(tx, this.catalog, task);
+              await authorizeExecutionPlan(
+                tx,
+                tenant,
+                task.created_by,
+                this.catalog.role(task.role_key),
+                task.mode,
+              );
               await resolveWorkContext(
                 tx,
                 actor,
@@ -337,6 +400,12 @@ export class Worker {
         ).rows[0];
         if (!live || live.status !== "running") return;
         if (live.cancel_requested) status = "cancelled";
+        const erased = live.content_state === "deleted";
+        if (live.content_state !== "active") {
+          status = "cancelled";
+          text = "";
+          error = "CONTENT_UNAVAILABLE";
+        }
         let contextDigest = "";
         try {
           const u = (
@@ -355,6 +424,15 @@ export class Worker {
             sessionHash: "",
           };
           await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
+          await this.catalog.ensureEnabled(tx, t.role_key);
+          await assertTaskSkills(tx, this.catalog, t);
+          await authorizeExecutionPlan(
+            tx,
+            t.tenant_id,
+            t.created_by,
+            this.catalog.role(t.role_key),
+            t.mode,
+          );
           const context = await resolveWorkContext(
             tx,
             actor,
@@ -393,11 +471,18 @@ export class Worker {
           t.created_by,
           uncertain || !!ops.uncertain,
         );
-        await event(tx, t.tenant_id, t.id, "task.finished", {
-          status: uncertain || ops.uncertain ? "reconciling" : status,
-          charge_micros: cost,
-          error_code: error ?? null,
-        });
+        if (!erased)
+          await event(tx, t.tenant_id, t.id, "task.finished", {
+            status: uncertain || ops.uncertain ? "reconciling" : status,
+            charge_micros: cost,
+            error_code: error ?? null,
+          });
+        if (!erased)
+          await event(tx, t.tenant_id, t.id, "usage.updated", {
+            amount_micros: String(cost),
+            cost_state:
+              uncertain || ops.uncertain ? "reconciling" : "confirmed",
+          });
         if (text && !uncertain && !ops.uncertain && live.conversation_id) {
           await tx.query(
             "INSERT INTO conversation_messages(tenant_id,project_id,conversation_id,client_message_id,role,intent,body,task_id) VALUES($1,$2,$3,$4,'assistant','result',$5,$4) ON CONFLICT(conversation_id,client_message_id) DO NOTHING",
@@ -437,7 +522,7 @@ export class Worker {
         }
       },
       t.tenant_id,
-      false,
+      true,
       t.created_by,
     );
   }
@@ -450,6 +535,14 @@ export class Worker {
     const authorize = async (tx: any) => {
       await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
       await this.catalog.ensureEnabled(tx, t.role_key);
+      await assertTaskSkills(tx, this.catalog, t);
+      await authorizeExecutionPlan(
+        tx,
+        t.tenant_id,
+        t.created_by,
+        this.catalog.role(t.role_key),
+        t.mode,
+      );
       await resolveWorkContext(
         tx,
         actor,
@@ -612,6 +705,55 @@ export class Worker {
         ),
       },
     ];
+    if (role.tool_ids.includes("asset.read"))
+      tools.push(
+        {
+          name: "cloud_files",
+          description:
+            "Browse authorized project files and this conversation's private file tree. References pin exact immutable versions. Use next_cursor to continue.",
+          inputSchema: {
+            type: "object",
+            properties: { q: { type: "string" }, cursor: { type: "string" } },
+            additionalProperties: false,
+          },
+          run: txTool(
+            (tx, a) => listCloudReferences(tx, t, a.q, a.cursor),
+            z
+              .object({
+                q: z.string().max(150).optional(),
+                cursor: uuid.optional(),
+              })
+              .strict(),
+          ),
+        },
+        {
+          name: "cloud_file_read",
+          description:
+            "Read an authorized cloud file by its workspace_node_id and exact asset_version_id. Removed or changed references cannot be used.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              workspace_node_id: { type: "string" },
+              asset_version_id: { type: "string" },
+            },
+            required: ["workspace_node_id", "asset_version_id"],
+            additionalProperties: false,
+          },
+          run: txTool(
+            (tx, a) =>
+              readCloudReference(
+                tx,
+                this.storage,
+                t,
+                a.workspace_node_id,
+                a.asset_version_id,
+              ),
+            z
+              .object({ workspace_node_id: uuid, asset_version_id: uuid })
+              .strict(),
+          ),
+        },
+      );
     const workspace = new CodeWorkspace(
       path.resolve(
         this.db.config.DATA_DIR,
@@ -633,7 +775,13 @@ export class Worker {
           additionalProperties: false,
         },
         run: txTool(
-          (_tx, a) => workspace.read(a.path),
+          async (tx, a) =>
+            t.conversation_id && t.private_owner
+              ? ((await readCloudSource(tx, this.storage, t, a.path)) ??
+                Promise.reject(
+                  new Problem(404, "NOT_FOUND", "Working source not found"),
+                ))
+              : workspace.read(a.path),
           z.object({ path: z.string().max(500) }).strict(),
         ),
       });
@@ -653,7 +801,17 @@ export class Worker {
           additionalProperties: false,
         },
         run: txTool(
-          (_tx, a) => workspace.write(a.path, a.content, a.expected_sha256),
+          (tx, a) =>
+            t.conversation_id && t.private_owner
+              ? writeCloudSource(
+                  tx,
+                  this.storage,
+                  t,
+                  a.path,
+                  a.content,
+                  a.expected_sha256,
+                )
+              : workspace.write(a.path, a.content, a.expected_sha256),
           z
             .object({
               path: z.string().max(500),
@@ -682,7 +840,10 @@ export class Worker {
         },
         run: txTool(
           async (tx, a) => {
-            const zip = await workspace.bundle();
+            const zip =
+              t.conversation_id && t.private_owner
+                ? await bundleCloudSources(tx, this.storage, t)
+                : await workspace.bundle();
             return saveAsset(tx, this.storage, {
               tenant: t.tenant_id,
               project: t.project_id,
@@ -821,6 +982,8 @@ export class Worker {
           ({
             project_assets: role.tool_ids.includes("asset.read"),
             asset_text_read: role.tool_ids.includes("asset.read"),
+            cloud_files: role.tool_ids.includes("asset.read"),
+            cloud_file_read: role.tool_ids.includes("asset.read"),
             deliver_text: role.tool_ids.includes("asset.write"),
             marketing_metrics: role.tool_ids.includes("dataset.read"),
             image2_generate: role.tool_ids.includes("image.generate.internal"),
@@ -841,6 +1004,8 @@ export class Worker {
           [
             "project_assets",
             "asset_text_read",
+            "cloud_files",
+            "cloud_file_read",
             "marketing_metrics",
             "code_read",
             "font_catalog",

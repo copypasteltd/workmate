@@ -111,6 +111,35 @@ export async function authorizeTaskPlan(
   await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
     `task-quota:${tenant}:${user}`,
   ]);
+  const p = await authorizeExecutionPlan(tx, tenant, user, role, mode);
+  if (budget > p.body.max_task_budget_micros)
+    throw new Problem(
+      403,
+      "PLAN_BUDGET_LIMIT",
+      "Task budget exceeds your current plan limit",
+    );
+  const n = (
+    await tx.query(
+      "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN ('queued','running','paused','awaiting_approval','reconciling')",
+      [tenant, user],
+    )
+  ).rows[0].n;
+  if (n >= p.body.max_active_tasks)
+    throw new Problem(
+      409,
+      "PLAN_TASK_LIMIT",
+      "Finish or reconcile existing tasks before starting another",
+    );
+  return p;
+}
+/** Current access may be revoked while previously reserved money stays frozen. */
+export async function authorizeExecutionPlan(
+  tx: Tx,
+  tenant: string,
+  user: string,
+  role: any,
+  mode: "execute" | "ask" | "plan" = "execute",
+) {
   const p = await effectivePlan(tx, tenant, user);
   const needed: ("text" | "image")[] = [
     "text",
@@ -129,24 +158,6 @@ export async function authorizeTaskPlan(
       403,
       "PLAN_CAPABILITY_REQUIRED",
       "Your current plan does not include this role capability",
-    );
-  if (budget > p.body.max_task_budget_micros)
-    throw new Problem(
-      403,
-      "PLAN_BUDGET_LIMIT",
-      "Task budget exceeds your current plan limit",
-    );
-  const n = (
-    await tx.query(
-      "SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1 AND created_by=$2 AND status IN ('queued','running','paused','awaiting_approval','reconciling')",
-      [tenant, user],
-    )
-  ).rows[0].n;
-  if (n >= p.body.max_active_tasks)
-    throw new Problem(
-      409,
-      "PLAN_TASK_LIMIT",
-      "Finish or reconcile existing tasks before starting another",
     );
   return p;
 }

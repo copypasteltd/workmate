@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-18T22:09:03.863Z",
+  "generated_at": "2026-10-19T00:56:28.784Z",
   "contract": "actual_fastify_route_inventory",
   "not_full_design_openapi": true,
   "routes": [
@@ -153,6 +153,14 @@
     },
     {
       "method": "GET",
+      "path": "/v1/admin/deletions"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/deletions/:id/retry"
+    },
+    {
+      "method": "GET",
       "path": "/v1/admin/devices"
     },
     {
@@ -284,6 +292,14 @@
       "path": "/v1/admin/workflow-schedules/:id/resume"
     },
     {
+      "method": "GET",
+      "path": "/v1/agents/:agent_id/effective-capabilities"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/artifacts/:artifact_id/promotions"
+    },
+    {
       "method": "POST",
       "path": "/v1/auth/challenge"
     },
@@ -333,6 +349,14 @@
     },
     {
       "method": "POST",
+      "path": "/v1/deletions"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/deletions/:id"
+    },
+    {
+      "method": "POST",
       "path": "/v1/invites/accept"
     },
     {
@@ -374,6 +398,30 @@
     {
       "method": "GET",
       "path": "/v1/shares/:token"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/skill-installations"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/skill-installations"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/skill-installations/:installation_id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/skill-installations/:installation_id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/skill-versions"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tasks/:task_id/events"
     },
     {
       "method": "POST",
@@ -448,6 +496,10 @@
       "path": "/v1/tenants/:tenant/projects/:project/agents"
     },
     {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/agents/:agent_id/effective-capabilities"
+    },
+    {
       "method": "PATCH",
       "path": "/v1/tenants/:tenant/projects/:project/agents/:id"
     },
@@ -480,6 +532,10 @@
       "path": "/v1/tenants/:tenant/projects/:project/assets"
     },
     {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/assets/:artifact_id/promotions"
+    },
+    {
       "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/assets/:asset/download"
     },
@@ -510,6 +566,30 @@
     {
       "method": "POST",
       "path": "/v1/tenants/:tenant/projects/:project/brand"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id/reference"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/cloud-workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/cloud-workspaces/:workspace_id/nodes"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/cloud-workspaces/:workspace_id/nodes"
     },
     {
       "method": "GET",
@@ -569,6 +649,14 @@
     },
     {
       "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/deletions"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/deletions"
+    },
+    {
+      "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/memories"
     },
     {
@@ -586,6 +674,30 @@
     {
       "method": "POST",
       "path": "/v1/tenants/:tenant/projects/:project/seo/audit"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/skill-installations"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/skill-installations"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/tenants/:tenant/projects/:project/skill-installations/:installation_id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/tenants/:tenant/projects/:project/skill-installations/:installation_id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/skill-versions"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/skill-versions/:skill_version_id"
     },
     {
       "method": "GET",
@@ -618,6 +730,30 @@
     {
       "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/events"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/events/stream"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/uploads"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/tenants/:tenant/projects/:project/uploads/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/uploads/:id/complete"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/uploads/:id/parts/:index"
     },
     {
       "method": "POST",
@@ -670,6 +806,50 @@
     {
       "method": "GET",
       "path": "/v1/tenants/:tenant/usage"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/uploads"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/uploads/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/uploads/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/uploads/:id/complete"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/uploads/:id/parts/:index"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/workspace-nodes/:node_id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/workspace-nodes/:node_id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspace-nodes/:node_id/reference"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/workspaces/:workspace_id/nodes"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/workspaces/:workspace_id/nodes"
     }
   ]
 }

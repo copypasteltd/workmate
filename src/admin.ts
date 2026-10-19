@@ -1,4 +1,5 @@
 import { planSchema, authorizeTaskPlan } from "./plans.js";
+import { freezeTaskSkills } from "./skill-lifecycle.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
 import { registerAdminJobs } from "./admin-jobs.js";
@@ -624,7 +625,7 @@ export function registerAdmin(
         async (tx) => {
           const a = (
             await tx.query(
-              "SELECT a.*,v.storage_key,v.mime_type FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1",
+              "SELECT a.*,v.storage_key,v.mime_type,v.bytes,v.sha256 FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1",
               [id],
             )
           ).rows[0];
@@ -633,6 +634,12 @@ export function registerAdmin(
             tenant: a.tenant_id,
             project: a.project_id,
           });
+          if (a.state === "deleted")
+            throw new Problem(
+              410,
+              "CONTENT_DELETED",
+              "Deleted content is unavailable",
+            );
           await audit(
             tx,
             req.principal,
@@ -647,18 +654,35 @@ export function registerAdmin(
         undefined,
         true,
       );
-      const bytes = await storage.get(a.storage_key);
-      await db.tx(
-        (tx) =>
-          permit(tx, req.principal, "admin.content.download", {
-            tenant: a.tenant_id,
-            project: a.project_id,
-          }),
-        undefined,
-        true,
-      );
+      const bytes = await storage.stream(a.storage_key);
+      try {
+        await db.tx(
+          async (tx) => {
+            await permit(tx, req.principal, "admin.content.download", {
+              tenant: a.tenant_id,
+              project: a.project_id,
+            });
+            const current = (
+              await tx.query("SELECT state FROM assets WHERE id=$1", [id])
+            ).rows[0];
+            if (!current || current.state === "deleted")
+              throw new Problem(
+                410,
+                "CONTENT_DELETED",
+                "Deleted content is unavailable",
+              );
+          },
+          undefined,
+          true,
+        );
+      } catch (e) {
+        bytes.destroy();
+        throw e;
+      }
       return reply
         .type(a.mime_type)
+        .header("Content-Length", a.bytes)
+        .header("X-Content-SHA256", a.sha256)
         .header(
           "Content-Disposition",
           `attachment; filename*=UTF-8''${encodeURIComponent(a.name)}`,
@@ -880,7 +904,7 @@ export function registerAdmin(
                 );
                 const child = (
                   await tx.query(
-                    "INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,private_owner,conversation_id,input_context,mode) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING id,status,parent_id",
+                    "INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,private_owner,conversation_id,input_context,mode) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *",
                     [
                       t.tenant_id,
                       t.project_id,
@@ -900,6 +924,7 @@ export function registerAdmin(
                     ],
                   )
                 ).rows[0];
+                await freezeTaskSkills(tx, catalog, child);
                 await tx.query(
                   "UPDATE tasks SET plan_snapshot=$2 WHERE id=$1",
                   [child.id, plan],
@@ -927,7 +952,11 @@ export function registerAdmin(
                   { parent_id: id, reason: b.reason },
                   t.tenant_id,
                 );
-                return child;
+                return {
+                  id: child.id,
+                  status: child.status,
+                  parent_id: child.parent_id,
+                };
               }
               await event(tx, t.tenant_id, id, `admin.task.${b.action}`, {
                 reason: b.reason,

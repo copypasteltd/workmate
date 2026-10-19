@@ -1,6 +1,16 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import {
+  readFile,
+  mkdir,
+  writeFile,
+  stat,
+  utimes,
+  symlink,
+  unlink,
+  readdir as readdirForTest,
+} from "node:fs/promises";
+import path from "node:path";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
 import * as OTPAuth from "otpauth";
 import { buildApp } from "../src/server.js";
@@ -9,6 +19,12 @@ import { seal, hash } from "../src/lib.js";
 import { reserve, settle, tokenCharge, wallet } from "../src/billing.js";
 import { metrics, parseMetricsCSV } from "../src/analytics.js";
 import { renderPoster } from "../src/business.js";
+import { ErasureService } from "../src/erasure.js";
+import { saveAsset } from "../src/storage.js";
+import { cleanUploadStaging } from "../src/uploads.js";
+import { RetentionService } from "../src/retention.js";
+import { recoverQueuedClaims } from "../src/task-recovery.js";
+import { PgBoss } from "pg-boss";
 let system: Awaited<ReturnType<typeof buildApp>>;
 const origin = "http://localhost:4317",
   adminOrigin = "http://localhost:4318";
@@ -25,6 +41,7 @@ async function call(
   url: string,
   body?: unknown,
   idempotency = randomUUID(),
+  headers: Record<string, string> = {},
 ) {
   const r = await system.app.inject({
     method: method as any,
@@ -33,6 +50,7 @@ async function call(
       origin: c?.admin ? adminOrigin : origin,
       ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
       "idempotency-key": idempotency,
+      ...headers,
     },
     payload: body === undefined ? undefined : JSON.stringify(body),
     ...(body !== undefined
@@ -42,6 +60,7 @@ async function call(
             ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
             "idempotency-key": idempotency,
             "content-type": "application/json",
+            ...headers,
           },
         }
       : {}),
@@ -152,6 +171,1134 @@ before(async () => {
 });
 after(async () => {
   await system.app.close();
+});
+
+test("retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit", async () => {
+  const u = await user(),
+    w = await workspace(u),
+    tenant = w.tenant.id,
+    project = w.project.id,
+    base = `/v1/tenants/${tenant}/projects/${project}`;
+  const make = () =>
+    system.db.tx(
+      (tx) =>
+        saveAsset(tx, system.storage, {
+          tenant,
+          project,
+          user: u.id,
+          name: "Retained content.txt",
+          mime: "text/plain",
+          bytes: Buffer.from("Retention fixture"),
+        }),
+      tenant,
+      true,
+    );
+  const expired = await make(),
+    fresh = await make();
+  await system.db.control.query(
+    "UPDATE assets SET retention_expires_at=now()-interval '1 second' WHERE id=ANY($1::uuid[])",
+    [[expired.id, fresh.id]],
+  );
+  await system.db.tx(
+    (tx) =>
+      saveAsset(tx, system.storage, {
+        tenant,
+        project,
+        user: u.id,
+        name: "New immutable version.txt",
+        mime: "text/plain",
+        bytes: Buffer.from("Version renews retention"),
+        asset: fresh.id,
+        expectedVersion: 1,
+      }),
+    tenant,
+    true,
+  );
+  const terminal = randomUUID(),
+    running = randomUUID();
+  for (const [id, status] of [
+    [terminal, "succeeded"],
+    [running, "running"],
+  ])
+    await system.db.control.query(
+      "INSERT INTO tasks(id,tenant_id,project_id,created_by,title,prompt,role_key,role_hash,status,budget_micros,idempotency_key,retention_expires_at) VALUES($1,$2,$3,$4,'Expiry fixture','Expired private input','fullstack','fixture',$5,10000,$6,now()-interval '1 day')",
+      [id, tenant, project, u.id, status, randomUUID()],
+    );
+  const oldEvent = (
+    await system.db.control.query(
+      "INSERT INTO task_events(tenant_id,task_id,kind,body,created_at) VALUES($1,$2,'fixture.old','{\"text\":\"old text\"}',now()-interval '31 days') RETURNING id,seq",
+      [tenant, terminal],
+    )
+  ).rows[0];
+  const recentEvent = (
+    await system.db.control.query(
+      "INSERT INTO task_events(tenant_id,task_id,kind,body,created_at) VALUES($1,$2,'fixture.recent','{}',now()-interval '29 days') RETURNING id",
+      [tenant, running],
+    )
+  ).rows[0].id;
+  const memory = (
+    await system.db.control.query(
+      "INSERT INTO memories(tenant_id,project_id,scope,name,created_by,expires_at) VALUES($1,$2,'project','Expired memory',$3,now()-interval '1 second') RETURNING id",
+      [tenant, project, u.id],
+    )
+  ).rows[0].id;
+  const dataset = (
+    await system.db.control.query(
+      "INSERT INTO analytics_datasets(tenant_id,project_id,name,rows,source,created_by,retention_expires_at) VALUES($1,$2,'Expired report','[]','fixture',$3,now()-interval '1 second') RETURNING id",
+      [tenant, project, u.id],
+    )
+  ).rows[0].id;
+  const k = randomUUID();
+  await system.db.control.query(
+    "INSERT INTO request_replays(actor_id,action,key,input_hash,response,created_at) VALUES($1,$2,$3,'expired','{\"private\":\"old request result\"}',now()-interval '8 days')",
+    [u.id, `task.create:${project}`, k],
+  );
+  const moneyId = (
+    await system.db.control.query(
+      "INSERT INTO ledger(tenant_id,user_id,kind,amount_micros,idempotency_key,reason,created_at) VALUES($1,$2,'gift',1,$3,'Retained finance fixture',now()-interval '400 days') RETURNING id",
+      [tenant, u.id, randomUUID()],
+    )
+  ).rows[0].id;
+  const service = new RetentionService(system.db, system.storage);
+  const [first, second] = await Promise.all([
+    service.expireContent(1000),
+    service.expireContent(1000),
+  ]);
+  assert.ok(first || second);
+  assert.equal(
+    (
+      await system.db.control.query("SELECT state FROM assets WHERE id=$1", [
+        expired.id,
+      ])
+    ).rows[0].state,
+    "deleted",
+  );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT state,retention_expires_at>now()+interval '89 days' AS renewed FROM assets WHERE id=$1",
+        [fresh.id],
+      )
+    ).rows[0].renewed,
+    true,
+  );
+  assert.equal(
+    (
+      await system.db.control.query("SELECT state FROM assets WHERE id=$1", [
+        fresh.id,
+      ])
+    ).rows[0].state,
+    "active",
+  );
+  for (const [table, id] of [
+    ["tasks", terminal],
+    ["memories", memory],
+    ["analytics_datasets", dataset],
+  ])
+    assert.equal(
+      (
+        await system.db.control.query(
+          `SELECT content_state FROM ${table} WHERE id=$1`,
+          [id],
+        )
+      ).rows[0].content_state,
+      "deleted",
+    );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT content_state FROM tasks WHERE id=$1",
+        [running],
+      )
+    ).rows[0].content_state,
+    "active",
+  );
+  assert.equal(
+    (
+      await system.db.control.query("SELECT 1 FROM task_events WHERE id=$1", [
+        oldEvent.id,
+      ])
+    ).rowCount,
+    0,
+  );
+  assert.equal(
+    (
+      await system.db.control.query("SELECT 1 FROM task_events WHERE id=$1", [
+        recentEvent,
+      ])
+    ).rowCount,
+    1,
+  );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT pruned_through FROM task_event_retention WHERE task_id=$1",
+        [terminal],
+      )
+    ).rows[0].pruned_through,
+    oldEvent.seq,
+  );
+  assert.equal(
+    (
+      await call(
+        u,
+        "POST",
+        base + "/tasks",
+        {
+          title: "Do not re-run",
+          prompt:
+            "An expired accepted request must never execute a second time",
+          role_key: "fullstack",
+          budget_micros: 10000,
+        },
+        k,
+      )
+    ).status,
+    410,
+  );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT response FROM request_replays WHERE actor_id=$1 AND key=$2",
+        [u.id, k],
+      )
+    ).rows[0].response.private,
+    undefined,
+  );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT amount_micros FROM ledger WHERE id=$1",
+        [moneyId],
+      )
+    ).rows[0].amount_micros,
+    "1",
+  );
+  const job = (
+    await system.db.control.query(
+      "SELECT id FROM deletion_jobs WHERE target_type='assets' AND target_id=$1",
+      [expired.id],
+    )
+  ).rows[0];
+  assert.ok(job);
+  const eraser = new ErasureService(system.db, system.storage);
+  await eraser.advance(1000);
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT state FROM deletion_jobs WHERE id=$1",
+        [job.id],
+      )
+    ).rows[0].state,
+    "completed",
+  );
+});
+
+test("terminal runtime cache cleanup waits for a live process, persists I/O failures and resumes without deleting task results", async () => {
+  const u = await user(),
+    w = await workspace(u),
+    tenant = w.tenant.id,
+    project = w.project.id,
+    id = randomUUID();
+  await system.db.control.query(
+    "INSERT INTO tasks(id,tenant_id,project_id,created_by,title,prompt,role_key,role_hash,status,output,budget_micros,idempotency_key) VALUES($1,$2,$3,$4,'Finished fixture','private input','fullstack','fixture','succeeded','Business result survives',10000,$5)",
+    [id, tenant, project, u.id, randomUUID()],
+  );
+  const dir = path.resolve(system.db.config.DATA_DIR, "runs", tenant, id);
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, "request.json"), "private runtime input");
+  await system.db.control.query(
+    "UPDATE runtime_cache_purges SET next_attempt_at=now()-interval '1 day' WHERE task_id=$1",
+    [id],
+  );
+  let active = true;
+  const service = new RetentionService(
+    system.db,
+    system.storage,
+    (candidate) => candidate === id && active,
+  );
+  await service.purgeRuntime();
+  assert.ok(await stat(dir));
+  active = false;
+  const original = system.storage.removeRuntime.bind(system.storage);
+  let failures = 1;
+  system.storage.removeRuntime = async (t, task) => {
+    if (task === id && failures--)
+      throw Object.assign(new Error("Injected busy fixture"), {
+        code: "EBUSY",
+      });
+    return original(t, task);
+  };
+  try {
+    await service.purgeRuntime();
+    assert.equal(
+      (
+        await system.db.control.query(
+          "SELECT error_code FROM runtime_cache_purges WHERE task_id=$1",
+          [id],
+        )
+      ).rows[0].error_code,
+      "RUNTIME_CACHE_BUSY",
+    );
+  } finally {
+    system.storage.removeRuntime = original;
+  }
+  await system.db.control.query(
+    "UPDATE runtime_cache_purges SET next_attempt_at=now()-interval '1 day' WHERE task_id=$1",
+    [id],
+  );
+  await Promise.all([service.purgeRuntime(), service.purgeRuntime()]);
+  await assert.rejects(stat(dir), { code: "ENOENT" });
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT state FROM runtime_cache_purges WHERE task_id=$1",
+        [id],
+      )
+    ).rows[0].state,
+    "completed",
+  );
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT output,content_state FROM tasks WHERE id=$1",
+        [id],
+      )
+    ).rows[0].output,
+    "Business result survives",
+  );
+});
+
+test(
+  "SSE replays durable task-local sequences exactly, rejects stale/foreign cursors and closes on session revocation",
+  { timeout: 30000 },
+  async () => {
+    const u = await user(),
+      other = await user(),
+      w = await workspace(u),
+      tenant = w.tenant.id,
+      project = w.project.id,
+      id = randomUUID();
+    await system.db.control.query(
+      "INSERT INTO tasks(id,tenant_id,project_id,created_by,private_owner,title,prompt,role_key,role_hash,budget_micros,idempotency_key) VALUES($1,$2,$3,$4,$4,'Event fixture','Private prompt never in progress metadata','fullstack','fixture',10000,$5)",
+      [id, tenant, project, u.id, randomUUID()],
+    );
+    await Promise.all(
+      Array.from({ length: 10 }, (_, i) =>
+        system.db.control.query(
+          "INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,'message.delta',$3)",
+          [tenant, id, { text: `fragment ${i}` }],
+        ),
+      ),
+    );
+    const stored = (
+      await system.db.control.query(
+        "SELECT * FROM task_events WHERE task_id=$1 ORDER BY seq",
+        [id],
+      )
+    ).rows;
+    assert.deepEqual(
+      stored.map((e) => Number(e.seq)),
+      Array.from({ length: 10 }, (_, i) => i + 1),
+    );
+    const address = system.app.server.listening
+      ? "http://127.0.0.1:" + (system.app.server.address() as any).port
+      : await system.app.listen({ host: "127.0.0.1", port: 0 });
+    const url = address + `/v1/tasks/${id}/events`,
+      headers = { cookie: u.cookie, "X-Tenant-ID": tenant };
+    const readEvents = async (after: number, n: number) => {
+      const abort = new AbortController(),
+        timer = setTimeout(() => abort.abort(), 5000);
+      try {
+        const r = await fetch(url, {
+          headers: { ...headers, "Last-Event-ID": String(after) },
+          signal: abort.signal,
+        });
+        assert.equal(r.status, 200);
+        assert.match(r.headers.get("content-type")!, /text\/event-stream/);
+        const reader = r.body!.getReader(),
+          events: any[] = [];
+        let text = "";
+        try {
+          while (events.length < n) {
+            const chunk = await reader.read();
+            if (chunk.done) break;
+            text += new TextDecoder().decode(chunk.value);
+            const frames = text.split("\n\n");
+            text = frames.pop()!;
+            for (const frame of frames) {
+              const data = frame
+                .split("\n")
+                .find((l) => l.startsWith("data: "));
+              if (data) events.push(JSON.parse(data.slice(6)));
+            }
+          }
+        } finally {
+          await reader.cancel();
+        }
+        return events;
+      } finally {
+        clearTimeout(timer);
+        abort.abort();
+      }
+    };
+    const first = await readEvents(0, 10);
+    assert.deepEqual(
+      first.map((e) => e.event_id),
+      stored.map((e) => e.event_id),
+    );
+    assert.ok(
+      first.every(
+        (e) =>
+          e.type === "message.appended" &&
+          e.attempt_id &&
+          e.tenant_id === tenant,
+      ),
+    );
+    const replayed = await readEvents(6, 4);
+    assert.deepEqual(
+      replayed.map((e) => e.seq),
+      [7, 8, 9, 10],
+    );
+    assert.equal(
+      (
+        await fetch(url, {
+          headers: { ...headers, "X-Tenant-ID": randomUUID() },
+        })
+      ).status,
+      404,
+    );
+    assert.equal(
+      (
+        await fetch(url, {
+          headers: { cookie: other.cookie, "X-Tenant-ID": tenant },
+        })
+      ).status,
+      404,
+    );
+    assert.equal(
+      (await fetch(url, { headers: { ...headers, "Last-Event-ID": "11" } }))
+        .status,
+      409,
+    );
+    await system.db.control.query(
+      "INSERT INTO task_event_retention(task_id,tenant_id,pruned_through) VALUES($1,$2,3)",
+      [id, tenant],
+    );
+    const expired = await fetch(url, {
+      headers: { ...headers, "Last-Event-ID": "2" },
+    });
+    assert.equal(expired.status, 410);
+    assert.equal(
+      ((await expired.json()) as any).error.code,
+      "EVENT_CURSOR_EXPIRED",
+    );
+    const live = await fetch(url, {
+        headers: { ...headers, "Last-Event-ID": "10" },
+        signal: AbortSignal.timeout(5000),
+      }),
+      reader = live.body!.getReader();
+    await system.db.control.query(
+      "UPDATE sessions SET revoked_at=now() WHERE user_id=$1",
+      [u.id],
+    );
+    let final = "";
+    try {
+      while (true) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        final += new TextDecoder().decode(chunk.value);
+      }
+    } finally {
+      await reader.cancel();
+    }
+    assert.match(final, /stream.reset/);
+    assert.match(final, /SESSION_EXPIRED/);
+    assert.doesNotMatch(final, /Private prompt/);
+  },
+);
+
+test("queued claim recovery checks real queue state, deduplicates repair, preserves running work and releases exhausted pre-execution reservations", async () => {
+  const u = await user(),
+    w = await workspace(u),
+    tenant = w.tenant.id,
+    project = w.project.id,
+    ids = [randomUUID(), randomUUID(), randomUUID(), randomUUID()];
+  const boss = new PgBoss({
+    connectionString: system.db.config.QUEUE_DATABASE_URL,
+    schema: "pgboss",
+  });
+  await boss.start();
+  await boss.createQueue("task.run", { retryLimit: 0 });
+  try {
+    await system.db.control.query(
+      "UPDATE wallets SET credit_limit_micros=1000000 WHERE tenant_id=$1",
+      [tenant],
+    );
+    for (const [index, id] of ids.entries()) {
+      await system.db.control.query(
+        "INSERT INTO tasks(id,tenant_id,project_id,created_by,title,prompt,role_key,role_hash,status,budget_micros,idempotency_key,next_claim_retry_at,claim_retry_count) VALUES($1,$2,$3,$4,'Claim recovery fixture','No model has been accepted','fullstack','fixture',$5,10000,$6,now()-interval '400 days',$7)",
+        [
+          id,
+          tenant,
+          project,
+          u.id,
+          index === 2 ? "running" : "queued",
+          randomUUID(),
+          index === 3 ? 8 : 0,
+        ],
+      );
+      const job = await boss.send(
+        "task.run",
+        { tenant, task: id },
+        { retryLimit: 0 },
+      );
+      if (index !== 1)
+        await boss.fail("task.run", job!, {
+          code: "INJECTED_PRE_CLAIM_FAILURE",
+        });
+      await system.db.control.query(
+        "INSERT INTO outbox(tenant_id,topic,payload,dispatched_at,queue_job_id) VALUES($1,'task.run',$2,now()-interval '1 minute',$3)",
+        [tenant, { task_id: id }, job],
+      );
+    }
+    await system.db.tx(
+      (tx) => reserve(tx, tenant, ids[3], 10000),
+      tenant,
+      true,
+    );
+    await Promise.all([
+      recoverQueuedClaims(system.db),
+      recoverQueuedClaims(system.db),
+    ]);
+    assert.equal(
+      (
+        await system.db.control.query(
+          "SELECT count(*)::int AS n FROM outbox WHERE payload->>'task_id'=$1 AND dispatched_at IS NULL",
+          [ids[0]],
+        )
+      ).rows[0].n,
+      1,
+    );
+    assert.equal(
+      (
+        await system.db.control.query(
+          "SELECT claim_retry_count FROM tasks WHERE id=$1",
+          [ids[0]],
+        )
+      ).rows[0].claim_retry_count,
+      1,
+    );
+    assert.equal(
+      (
+        await system.db.control.query(
+          "SELECT claim_retry_count FROM tasks WHERE id=$1",
+          [ids[1]],
+        )
+      ).rows[0].claim_retry_count,
+      0,
+    );
+    assert.equal(
+      (
+        await system.db.control.query("SELECT status FROM tasks WHERE id=$1", [
+          ids[2],
+        ])
+      ).rows[0].status,
+      "running",
+    );
+    assert.equal(
+      (
+        await system.db.control.query("SELECT status FROM tasks WHERE id=$1", [
+          ids[3],
+        ])
+      ).rows[0].status,
+      "failed",
+    );
+    assert.equal(
+      (
+        await system.db.control.query(
+          "SELECT status FROM reservations WHERE task_id=$1",
+          [ids[3]],
+        )
+      ).rows[0].status,
+      "released",
+    );
+    // All three table shapes share the renewal function. The running transition
+    // must compile without attempting to access creative-only fields.
+    await system.db.control.query(
+      "UPDATE tasks SET status='running' WHERE id=$1",
+      [ids[0]],
+    );
+    await system.db.control.query(
+      "UPDATE tasks SET status='succeeded' WHERE id=$1",
+      [ids[0]],
+    );
+    assert.equal(
+      (
+        await system.db.control.query(
+          "SELECT retention_expires_at>now()+interval '89 days' AS renewed FROM tasks WHERE id=$1",
+          [ids[0]],
+        )
+      ).rows[0].renewed,
+      true,
+    );
+    const creative = (
+      await system.db.control.query(
+        "INSERT INTO creative_projects(tenant_id,project_id,name,kind,body,created_by,retention_expires_at) VALUES($1,$2,'Renewal fixture','poster','{}',$3,now()-interval '1 day') RETURNING id",
+        [tenant, project, u.id],
+      )
+    ).rows[0].id;
+    await system.db.control.query(
+      "UPDATE creative_projects SET body='{\"changed\":true}' WHERE id=$1",
+      [creative],
+    );
+    assert.equal(
+      (
+        await system.db.control.query(
+          "SELECT retention_expires_at>now()+interval '89 days' AS renewed FROM creative_projects WHERE id=$1",
+          [creative],
+        )
+      ).rows[0].renewed,
+      true,
+    );
+  } finally {
+    await boss.stop({ graceful: true, timeout: 1000 });
+  }
+});
+
+test("permanent asset deletion blocks admin resurrection, body/download and cross-tenant status; erases all versions while preserving a published copy", async () => {
+  const u = await user(),
+    a = await admin(),
+    stranger = await user(),
+    w = await workspace(u);
+  const create = (asset?: string) =>
+    system.db.tx(
+      (tx) =>
+        saveAsset(tx, system.storage, {
+          tenant: w.tenant.id,
+          project: w.project.id,
+          user: u.id,
+          name: "erasure-sensitive.txt",
+          mime: "text/plain",
+          bytes: Buffer.from("erase private customer content"),
+          asset,
+          expectedVersion: asset ? 1 : undefined,
+        }),
+      w.tenant.id,
+    );
+  const file = await create();
+  await create(file.id);
+  const publishedCopy = await create();
+  const versions = (
+    await system.db.control.query(
+      "SELECT storage_key FROM asset_versions WHERE asset_id=$1",
+      [file.id],
+    )
+  ).rows;
+  for (const [i, action] of ["quarantine", "restore", "delete"].entries()) {
+    const r = await call(a, "POST", `/v1/admin/content/${file.id}/action`, {
+      action,
+      version: i + 1,
+      reason: "Test deletion lifecycle",
+    });
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    if (action === "delete") assert.ok(r.data.deletion_id);
+  }
+  for (const action of ["restore", "metadata", "quarantine"]) {
+    const r = await call(a, "POST", `/v1/admin/content/${file.id}/action`, {
+      action,
+      version: 4,
+      reason: "Try deleted content",
+      ...(action === "metadata" ? { name: "resurrect.txt" } : {}),
+    });
+    assert.equal(r.status, 409);
+    assert.equal(r.data.error.code, "CONTENT_DELETED");
+  }
+  assert.equal(
+    (await call(a, "GET", `/v1/admin/content/${file.id}/body`)).status,
+    410,
+  );
+  assert.equal(
+    (await call(a, "GET", `/v1/admin/content/${file.id}/download`)).status,
+    410,
+  );
+  const job = (
+    await system.db.control.query(
+      "SELECT * FROM deletion_jobs WHERE target_id=$1",
+      [file.id],
+    )
+  ).rows[0];
+  assert.equal(
+    (
+      await call(u, "GET", `/v1/deletions/${job.id}`, undefined, randomUUID(), {
+        "x-tenant-id": w.tenant.id,
+      })
+    ).status,
+    200,
+  );
+  assert.equal(
+    (
+      await call(
+        stranger,
+        "GET",
+        `/v1/deletions/${job.id}`,
+        undefined,
+        randomUUID(),
+        { "x-tenant-id": w.tenant.id },
+      )
+    ).status,
+    404,
+  );
+  await system.db.control.query(
+    "UPDATE deletion_jobs SET next_attempt_at='2000-01-01' WHERE id=$1",
+    [job.id],
+  );
+  await new ErasureService(system.db, system.storage).advance(1);
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT state FROM deletion_jobs WHERE id=$1",
+        [job.id],
+      )
+    ).rows[0].state,
+    "completed",
+  );
+  for (const v of versions)
+    await assert.rejects(system.storage.get(v.storage_key), { code: "ENOENT" });
+  const copyKey = (
+    await system.db.control.query(
+      "SELECT storage_key FROM asset_versions WHERE asset_id=$1",
+      [publishedCopy.id],
+    )
+  ).rows[0].storage_key;
+  assert.equal(
+    (await system.storage.get(copyKey)).toString(),
+    "erase private customer content",
+  );
+  // The invariant is also enforced below HTTP, including privileged SQL.
+  await assert.rejects(
+    system.db.control.query("UPDATE assets SET state='active' WHERE id=$1", [
+      file.id,
+    ]),
+    { code: "23514" },
+  );
+});
+
+test("erasure persists I/O failures, retries with MFA and serializes simultaneous workers", async () => {
+  const u = await user(),
+    a = await admin(),
+    w = await workspace(u);
+  const file = await system.db.tx(
+    (tx) =>
+      saveAsset(tx, system.storage, {
+        tenant: w.tenant.id,
+        project: w.project.id,
+        user: u.id,
+        name: "retry.txt",
+        mime: "text/plain",
+        bytes: Buffer.from("retry me"),
+      }),
+    w.tenant.id,
+  );
+  const r = await call(
+    u,
+    "POST",
+    "/v1/deletions",
+    {
+      target_type: "asset",
+      target_id: file.id,
+      project_id: w.project.id,
+      reason: "Customer erase request",
+    },
+    randomUUID(),
+    { "x-tenant-id": w.tenant.id },
+  );
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  const key = (
+    await system.db.control.query(
+      "SELECT storage_key FROM asset_versions WHERE asset_id=$1",
+      [file.id],
+    )
+  ).rows[0].storage_key;
+  const originalRemove = system.storage.remove.bind(system.storage);
+  system.storage.remove = async (k) => {
+    if (k === key)
+      throw Object.assign(
+        new Error("sensitive absolute path must never escape"),
+        { code: "EBUSY" },
+      );
+    await originalRemove(k);
+  };
+  try {
+    await system.db.control.query(
+      "UPDATE deletion_jobs SET next_attempt_at='2000-01-01' WHERE id=$1",
+      [r.data.id],
+    );
+    await new ErasureService(system.db, system.storage).advance(1);
+  } finally {
+    system.storage.remove = originalRemove;
+  }
+  const failed = (
+    await call(a, "GET", `/v1/admin/deletions?tenant_id=${w.tenant.id}`)
+  ).data.items[0];
+  assert.equal(failed.state, "queued");
+  assert.deepEqual(failed.exceptions, ["ERASURE_STORAGE_BUSY"]);
+  assert.equal(failed.failures.length, 1);
+  assert.ok(!JSON.stringify(failed).includes(key));
+  assert.equal(
+    (
+      await call(a, "POST", `/v1/admin/deletions/${r.data.id}/retry`, {
+        reason: "Storage lock released",
+      })
+    ).status,
+    200,
+  );
+  await system.db.control.query(
+    "UPDATE deletion_jobs SET next_attempt_at='2000-01-01' WHERE id=$1",
+    [r.data.id],
+  );
+  let calls = 0;
+  system.storage.remove = async (k) => {
+    if (k === key) calls++;
+    await originalRemove(k);
+  };
+  try {
+    await Promise.all([
+      new ErasureService(system.db, system.storage).advance(1),
+      new ErasureService(system.db, system.storage).advance(1),
+    ]);
+  } finally {
+    system.storage.remove = originalRemove;
+  }
+  assert.equal(calls, 1);
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT state FROM deletion_jobs WHERE id=$1",
+        [r.data.id],
+      )
+    ).rows[0].state,
+    "completed",
+  );
+  await assert.rejects(system.storage.get(key), { code: "ENOENT" });
+});
+
+test("orphan collection retains referenced/new objects and tombstones removed keys against later references", async () => {
+  const u = await user(),
+    w = await workspace(u);
+  const asset = await system.db.tx(
+    (tx) =>
+      saveAsset(tx, system.storage, {
+        tenant: w.tenant.id,
+        project: w.project.id,
+        user: u.id,
+        name: "retained.txt",
+        mime: "text/plain",
+        bytes: Buffer.from("keep"),
+      }),
+    w.tenant.id,
+  );
+  const liveKey = (
+    await system.db.control.query(
+      "SELECT storage_key FROM asset_versions WHERE asset_id=$1",
+      [asset.id],
+    )
+  ).rows[0].storage_key;
+  const orphan = await system.storage.put(
+    Buffer.from("rolled back"),
+    "text/plain",
+  );
+  const fresh = await system.storage.put(
+    Buffer.from("new upload"),
+    "text/plain",
+  );
+  const old = new Date(Date.now() - 172_800_000);
+  for (const key of [orphan, liveKey])
+    await utimes(path.resolve(system.db.config.DATA_DIR, key), old, old);
+  const erasure = new ErasureService(system.db, system.storage);
+  // Pages are bounded; process enough pages for the pre-existing isolated test data.
+  for (let n = 0; n < 100; n++) await erasure.sweepOrphans();
+  await assert.rejects(system.storage.get(orphan), { code: "ENOENT" });
+  assert.equal((await system.storage.get(liveKey)).toString(), "keep");
+  assert.equal((await system.storage.get(fresh)).toString(), "new upload");
+  await assert.rejects(
+    system.db.control.query(
+      "INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256) VALUES($1,$2,2,$3,'text/plain',1,'test')",
+      [w.tenant.id, asset.id, orphan],
+    ),
+    { code: "23514" },
+  );
+  await assert.rejects(system.storage.remove("../outside"));
+});
+
+test("runtime erasure waits for active work and refuses junctions outside the owned run tree", async () => {
+  const tenant = randomUUID(),
+    task = randomUUID();
+  const run = path.resolve(system.db.config.DATA_DIR, "runs", tenant, task);
+  const outside = path.resolve(
+    system.db.config.DATA_DIR,
+    "erasure-test-sentinel",
+    randomUUID(),
+  );
+  await mkdir(run, { recursive: true });
+  await mkdir(outside, { recursive: true });
+  await writeFile(path.join(run, "session.json"), "private prompt");
+  await writeFile(path.join(outside, "keep.txt"), "must survive");
+  await symlink(outside, path.join(run, "escape"), "junction");
+  await assert.rejects(
+    system.storage.removeRuntime(tenant, task),
+    /ERASURE_LINK_UNSAFE/,
+  );
+  assert.equal(
+    (await readFile(path.join(outside, "keep.txt"))).toString(),
+    "must survive",
+  );
+  await unlink(path.join(run, "escape"));
+  await system.storage.removeRuntime(tenant, task);
+  await assert.rejects(stat(run), { code: "ENOENT" });
+  await assert.rejects(
+    system.storage.removeRuntime(tenant, ".."),
+    /ERASURE_PATH_INVALID/,
+  );
+});
+
+test("resumable upload persists verified parts across reconnects, rejects corruption and completes exactly once above the old 25 MiB limit", async () => {
+  const u = await user(),
+    w = await workspace(u),
+    base = `/v1/tenants/${w.tenant.id}/projects/${w.project.id}`;
+  const bytes = Buffer.alloc(29 * 1024 * 1024 + 11, 65),
+    manifest = {
+      project_id: w.project.id,
+      filename: "large-campaign.txt",
+      content_type: "text/plain",
+      size_bytes: bytes.length,
+      sha256: hash(bytes),
+    },
+    requestKey = randomUUID();
+  const one = await call(u, "POST", base + "/uploads", manifest, requestKey),
+    two = await call(u, "POST", base + "/uploads", manifest, requestKey);
+  assert.equal(one.status, 201, JSON.stringify(one.data));
+  assert.equal(one.data.upload_id, two.data.upload_id);
+  const url = base + "/uploads/" + one.data.upload_id;
+  assert.equal(
+    (
+      await call(u, "POST", url + "/complete", {
+        sha256: manifest.sha256,
+        size_bytes: bytes.length,
+      })
+    ).status,
+    409,
+  );
+  const first = bytes.subarray(0, one.data.part_size_bytes),
+    part = { base64: first.toString("base64"), sha256: hash(first) };
+  assert.equal(
+    (
+      await call(u, "POST", url + "/parts/0", {
+        ...part,
+        sha256: "0".repeat(64),
+      })
+    ).status,
+    422,
+  );
+  for (
+    let index = 0, offset = 0;
+    offset < bytes.length;
+    index++, offset += one.data.part_size_bytes
+  ) {
+    const b = bytes.subarray(offset, offset + one.data.part_size_bytes),
+      p = { base64: b.toString("base64"), sha256: hash(b) };
+    const r = await call(u, "POST", url + "/parts/" + index, p);
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    if (!index) {
+      assert.equal((await call(u, "POST", url + "/parts/0", p)).status, 200);
+      const changed = Buffer.alloc(b.length, 66);
+      assert.equal(
+        (
+          await call(u, "POST", url + "/parts/0", {
+            base64: changed.toString("base64"),
+            sha256: hash(changed),
+          })
+        ).status,
+        409,
+      );
+    }
+  }
+  const resumed = await call(u, "GET", url);
+  assert.equal(resumed.data.parts.length, 8);
+  const completion = { size_bytes: bytes.length, sha256: manifest.sha256 };
+  const [a, b] = await Promise.all([
+    call(u, "POST", url + "/complete", completion),
+    call(u, "POST", url + "/complete", completion),
+  ]);
+  assert.equal(a.status, 200, JSON.stringify(a.data));
+  assert.equal(a.data.id, b.data.id);
+  assert.equal(a.data.version.sha256, manifest.sha256);
+  const downloaded = await call(
+    u,
+    "GET",
+    `${base}/assets/${a.data.id}/download`,
+  );
+  assert.equal(downloaded.status, 200);
+  assert.equal(hash(downloaded.raw.rawPayload), manifest.sha256);
+  assert.equal(downloaded.raw.headers["content-length"], String(bytes.length));
+  assert.equal(downloaded.raw.headers["x-content-sha256"], manifest.sha256);
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT count(*)::int AS n FROM asset_versions WHERE metadata->>'upload_id'=$1",
+        [one.data.upload_id],
+      )
+    ).rows[0].n,
+    1,
+  );
+  const adminUser = await admin();
+  assert.equal(
+    (
+      await call(adminUser, "POST", `/v1/admin/content/${a.data.id}/action`, {
+        action: "delete",
+        version: 1,
+        reason: "Remove staging and object",
+      })
+    ).status,
+    200,
+  );
+  await system.db.control.query(
+    "UPDATE deletion_jobs SET next_attempt_at='2000-01-01' WHERE target_id=$1",
+    [a.data.id],
+  );
+  await new ErasureService(system.db, system.storage).advance(1);
+  assert.equal(
+    (
+      await system.db.control.query(
+        "SELECT state FROM deletion_jobs WHERE target_id=$1",
+        [a.data.id],
+      )
+    ).rows[0].state,
+    "completed",
+  );
+  await assert.rejects(
+    stat(
+      path.resolve(system.db.config.DATA_DIR, "uploads", one.data.upload_id),
+    ),
+    { code: "ENOENT" },
+  );
+  assert.equal(
+    (await call(u, "POST", url + "/complete", completion)).status,
+    410,
+  );
+});
+
+test("upload MIME, whole-file checksum, limits, expiry, per-owner privacy and project revocation are enforced", async () => {
+  const u = await user(),
+    stranger = await user(),
+    w = await workspace(u),
+    base = `/v1/tenants/${w.tenant.id}/projects/${w.project.id}`,
+    bytes = Buffer.from("Not a PNG"),
+    hashValue = hash(bytes);
+  const manifest = {
+    project_id: w.project.id,
+    filename: "bad.png",
+    content_type: "image/png",
+    size_bytes: bytes.length,
+    sha256: hashValue,
+  };
+  const created = await call(u, "POST", base + "/uploads", manifest);
+  assert.equal(created.status, 201);
+  const url = base + "/uploads/" + created.data.upload_id;
+  assert.equal((await call(stranger, "GET", url)).status, 404);
+  assert.equal(
+    (
+      await call(u, "POST", url + "/parts/0", {
+        base64: bytes.toString("base64"),
+        sha256: hashValue,
+      })
+    ).status,
+    200,
+  );
+  const wrongType = await call(u, "POST", url + "/complete", {
+    sha256: hashValue,
+    size_bytes: bytes.length,
+  });
+  assert.equal(wrongType.status, 422);
+  assert.equal(wrongType.data.error.code, "UPLOAD_TYPE_MISMATCH");
+  const more = await call(u, "POST", base + "/uploads", {
+    ...manifest,
+    filename: "wrong-hash.txt",
+    content_type: "text/plain",
+    sha256: "0".repeat(64),
+  });
+  const moreUrl = base + "/uploads/" + more.data.upload_id;
+  await call(u, "POST", moreUrl + "/parts/0", {
+    base64: bytes.toString("base64"),
+    sha256: hashValue,
+  });
+  assert.equal(
+    (
+      await call(u, "POST", moreUrl + "/complete", {
+        sha256: "0".repeat(64),
+        size_bytes: bytes.length,
+      })
+    ).data.error.code,
+    "UPLOAD_CHECKSUM",
+  );
+  assert.equal(
+    (
+      await readdirForTest(
+        path.resolve(system.db.config.DATA_DIR, "uploads", more.data.upload_id),
+      )
+    ).some((n) => n.startsWith("assembled")),
+    false,
+  );
+  assert.equal(
+    (
+      await call(u, "POST", base + "/uploads", {
+        ...manifest,
+        size_bytes: 100 * 1024 * 1024 + 1,
+      })
+    ).status,
+    413,
+  );
+  const media = await call(u, "POST", base + "/uploads", {
+    ...manifest,
+    filename: "large.mp4",
+    content_type: "video/mp4",
+    size_bytes: 1024 * 1024 * 1024,
+  });
+  assert.equal(media.status, 201);
+  await system.db.control.query(
+    "UPDATE upload_sessions SET expires_at=now()-interval '1 second' WHERE id=$1",
+    [media.data.upload_id],
+  );
+  assert.equal(
+    (await call(u, "GET", base + "/uploads/" + media.data.upload_id)).status,
+    410,
+  );
+  assert.equal((await call(u, "DELETE", url)).status, 200);
+  assert.equal((await call(u, "GET", url)).status, 410);
+  await cleanUploadStaging(system.db);
+  await assert.rejects(
+    stat(
+      path.resolve(
+        system.db.config.DATA_DIR,
+        "uploads",
+        created.data.upload_id,
+      ),
+    ),
+    { code: "ENOENT" },
+  );
+  await system.db.control.query(
+    "UPDATE memberships SET status='removed' WHERE tenant_id=$1 AND user_id=$2",
+    [w.tenant.id, u.id],
+  );
+  assert.equal(
+    (
+      await call(u, "POST", moreUrl + "/complete", {
+        sha256: "0".repeat(64),
+        size_bytes: bytes.length,
+      })
+    ).status,
+    404,
+  );
 });
 
 test("email OTP has one atomic consumer and never authenticates the admin audience", async () => {

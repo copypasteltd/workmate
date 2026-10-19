@@ -7,6 +7,7 @@ import { authorizeTaskPlan } from "./plans.js";
 import { reserve } from "./billing.js";
 import { Problem } from "./lib.js";
 import type { WorkContext } from "./persistent-work.js";
+import { freezeTaskSkills } from "./skill-lifecycle.js";
 
 export interface TaskInput {
   title: string;
@@ -34,6 +35,15 @@ export async function enqueueTask(
       "The approved request and plan are too large; revise the plan before execution",
     );
   await projectAccess(tx, actor, tenant, project, "write");
+  const dataMode = (
+    await tx.query("SELECT data_mode FROM tenants WHERE id=$1", [tenant])
+  ).rows[0]?.data_mode;
+  if ((dataMode === "simulated") !== db.config.DEMO_MODE)
+    throw new Problem(
+      409,
+      "DATA_MODE_MISMATCH",
+      "Simulated workspaces and configured-service workspaces use separate execution modes. Create a workspace in the current mode.",
+    );
   const role = catalog.role(b.role_key);
   await catalog.boundSkills(role);
   await catalog.ensureEnabled(tx, b.role_key);
@@ -101,6 +111,7 @@ export async function enqueueTask(
       ],
     )
   ).rows[0];
+  await freezeTaskSkills(tx, catalog, task);
   await reserve(tx, tenant, task.id, b.budget_micros);
   await tx.query(
     "INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,'task.queued',$3)",

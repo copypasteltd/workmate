@@ -9,37 +9,41 @@ import {
 import path from "node:path";
 import { zipSync } from "fflate";
 import { hash, Problem } from "./lib.js";
+export function validateSourcePath(relative: string) {
+  if (
+    !relative ||
+    relative.length > 500 ||
+    relative.includes(":") ||
+    relative.includes("\0") ||
+    relative
+      .split(/[\\/]/)
+      .some(
+        (p) =>
+          !p ||
+          /[. ]$/.test(p) ||
+          /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i.test(p),
+      ) ||
+    path.isAbsolute(relative) ||
+    relative
+      .split(/[\\/]/)
+      .some((p) =>
+        ["..", ".git", ".codex", ".agents", "node_modules"].includes(p),
+      ) ||
+    relative
+      .split(/[\\/]/)
+      .some((p) => p.startsWith(".env") && p !== ".env.example")
+  )
+    throw new Problem(
+      400,
+      "UNSAFE_CODE_PATH",
+      "Choose a relative source path inside this task workspace",
+    );
+  return relative.replaceAll("\\", "/");
+}
 export class CodeWorkspace {
   constructor(private root: string) {}
   private async file(relative: string) {
-    if (
-      !relative ||
-      relative.length > 500 ||
-      relative.includes(":") ||
-      relative.includes("\0") ||
-      relative
-        .split(/[\\/]/)
-        .some(
-          (p) =>
-            !p ||
-            /[. ]$/.test(p) ||
-            /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i.test(p),
-        ) ||
-      path.isAbsolute(relative) ||
-      relative
-        .split(/[\\/]/)
-        .some((p) =>
-          ["..", ".git", ".codex", ".agents", "node_modules"].includes(p),
-        ) ||
-      relative
-        .split(/[\\/]/)
-        .some((p) => p.startsWith(".env") && p !== ".env.example")
-    )
-      throw new Problem(
-        400,
-        "UNSAFE_CODE_PATH",
-        "Choose a relative source path inside this task workspace",
-      );
+    relative = validateSourcePath(relative);
     await mkdir(this.root, { recursive: true });
     const root = await realpath(this.root),
       file = path.resolve(root, relative);

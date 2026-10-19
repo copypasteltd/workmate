@@ -32,9 +32,10 @@ export function registerWorkspaces(app: FastifyInstance, db: Database) {
     return db.tx((tx) =>
       replay(tx, req.principal.id, "tenant.create", key(req), b, async () => {
         const t = (
-          await tx.query("INSERT INTO tenants(name) VALUES($1) RETURNING *", [
-            b.name,
-          ])
+          await tx.query(
+            "INSERT INTO tenants(name,data_mode) VALUES($1,$2) RETURNING *",
+            [b.name, db.config.DEMO_MODE ? "simulated" : "configured_services"],
+          )
         ).rows[0];
         await tx.query("SELECT set_config('app.tenant_id',$1,true)", [t.id]);
         await tx.query(

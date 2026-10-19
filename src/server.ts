@@ -7,6 +7,7 @@ import multipart from "@fastify/multipart";
 import { ZodError } from "zod";
 import { pathToFileURL } from "node:url";
 import { loadConfig, type Config } from "./config.js";
+import { retentionPolicy } from "./retention.js";
 import { Database } from "./db.js";
 import { Catalog } from "./catalog.js";
 import { Problem } from "./lib.js";
@@ -25,8 +26,20 @@ import { registerPersistentWork } from "./persistent-work.js";
 import { registerAdminIdentities } from "./admin-identities.js";
 import { registerSchedules } from "./schedules.js";
 import { registerFederation } from "./federation.js";
+import { registerDeletions } from "./deletions.js";
+import { startDemoGateway } from "./demo-gateway.js";
+import { registerDemo } from "./demo.js";
+import { registerUploads } from "./uploads.js";
+import { registerTaskEvents } from "./task-events.js";
+import { registerCloudFiles } from "./cloud-files.js";
+import {
+  seedSkillVersions,
+  registerSkillLifecycle,
+} from "./skill-lifecycle.js";
 
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
+  const demo = c.DEMO_MODE ? await startDemoGateway(c) : undefined;
+  if (demo) c = demo.config;
   const db = new Database(c);
   const catalog = new Catalog();
   await catalog.load();
@@ -42,6 +55,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   )
     throw new Error("Application database identity must be restricted cp_app");
   await seedRoles(db, catalog);
+  await seedSkillVersions(db, catalog);
   const storage = new Storage(c);
   const worker = new Worker(db, catalog, storage);
   const app = Fastify({
@@ -75,6 +89,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       "X-CSRF-Token",
       "Idempotency-Key",
       "Authorization",
+      "X-Tenant-ID",
+      "Last-Event-ID",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   });
@@ -128,6 +144,21 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       code = error.code;
       message = error.message;
       details = error.details;
+    } else if (
+      (error as any).code === "23514" &&
+      (error as any).message === "UPLOAD_QUOTA"
+    ) {
+      status = 429;
+      code = "UPLOAD_QUOTA";
+      message = "Complete or cancel pending uploads before starting more";
+    } else if (
+      (error as any).code === "23514" &&
+      /^WORKSPACE_/.test((error as any).message ?? "")
+    ) {
+      status = 409;
+      code = (error as any).message;
+      message =
+        "The file name, folder, reference or workspace scope is invalid";
     } else if ((error as any).code === "23505") {
       status = 409;
       code = "ALREADY_EXISTS";
@@ -190,11 +221,14 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       ai_ready: !!(c.AI_VERIFIED && c.AI_BASE_URL && c.AI_MODEL),
       email_delivery: c.DEV_MAILBOX ? "local_development" : "smtp",
       storage: c.S3_BUCKET ? "s3" : "native_filesystem",
+      data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
     };
   });
   app.get("/v1/public/config", async () => ({
     brand: "CopyPaste",
+    data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
     locales: ["zh-HK", "en"],
+    retention: retentionPolicy,
     auth: { email_code: true, enterprise_sso: true },
     services: {
       text: !!(c.AI_VERIFIED && c.AI_BASE_URL && c.AI_MODEL),
@@ -225,10 +259,16 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAuth(app, db);
   registerFederation(app, db);
   registerWorkspaces(app, db);
+  registerDemo(app, db);
   registerAssets(app, db, storage);
+  registerUploads(app, db, storage);
+  registerCloudFiles(app, db, storage);
+  registerDeletions(app, db);
   registerAnalytics(app, db);
   registerTasks(app, db, catalog);
+  registerTaskEvents(app, db);
   registerPersistentWork(app, db, catalog);
+  registerSkillLifecycle(app, db, catalog);
   registerBusiness(app, db, storage, catalog);
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
@@ -242,6 +282,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   app.addHook("onClose", async () => {
     if (started) await worker.stop();
     await db.close();
+    await demo?.close();
   });
   return { app, db, catalog, worker, storage, routes };
 }

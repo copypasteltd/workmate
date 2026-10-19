@@ -13,6 +13,7 @@ import {
 import type { Catalog } from "./catalog.js";
 import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
 import { enqueueTask } from "./task-service.js";
+import { provisionRoleSkills, bindAgentSkills } from "./skill-lifecycle.js";
 
 export const workMode = z.enum(["execute", "ask", "plan"]);
 export const activeTaskStates = [
@@ -69,10 +70,19 @@ async function agentDefinition(
   catalog: Catalog,
   b: z.infer<typeof agentInput>,
   project: string,
+  tenant: string,
+  user: string,
 ) {
   const role = catalog.role(b.role_key);
   await catalog.ensureEnabled(tx, b.role_key);
-  const skills = await catalog.boundSkills(role);
+  const skills = await provisionRoleSkills(
+    tx,
+    catalog,
+    role,
+    tenant,
+    project,
+    user,
+  );
   const tools = [...new Set(b.tool_ids ?? role.tool_ids)].sort();
   if (tools.some((t) => !role.tool_ids.includes(t)))
     throw new Problem(
@@ -102,6 +112,9 @@ async function agentDefinition(
       key: s.key,
       version: s.version,
       sha256: s.sha256,
+      installation_id: s.installation_id,
+      skill_version_id: s.skill_version_id,
+      required: s.required,
     })),
   };
 }
@@ -451,7 +464,14 @@ export function registerPersistentWork(
         key(req),
         b,
         async () => {
-          const definition = await agentDefinition(tx, catalog, b, project);
+          const definition = await agentDefinition(
+            tx,
+            catalog,
+            b,
+            project,
+            tenant,
+            req.principal.id,
+          );
           if (
             (
               await tx.query(
@@ -474,6 +494,14 @@ export function registerPersistentWork(
           await tx.query(
             "INSERT INTO agent_versions(tenant_id,agent_id,version,body,created_by) VALUES($1,$2,1,$3,$4)",
             [tenant, a.id, definition, req.principal.id],
+          );
+          await bindAgentSkills(
+            tx,
+            tenant,
+            project,
+            a.id,
+            1,
+            definition.skills,
           );
           await audit(
             tx,
@@ -518,7 +546,14 @@ export function registerPersistentWork(
             "VERSION_CONFLICT",
             "Refresh the specialist before saving changes",
           );
-        const definition = await agentDefinition(tx, catalog, b, project);
+        const definition = await agentDefinition(
+          tx,
+          catalog,
+          b,
+          project,
+          tenant,
+          req.principal.id,
+        );
         if (a.role_key !== b.role_key)
           throw new Problem(
             400,
@@ -534,6 +569,14 @@ export function registerPersistentWork(
         await tx.query(
           "INSERT INTO agent_versions(tenant_id,agent_id,version,body,created_by) VALUES($1,$2,$3,$4,$5)",
           [tenant, id, updated.version, definition, req.principal.id],
+        );
+        await bindAgentSkills(
+          tx,
+          tenant,
+          project,
+          id,
+          updated.version,
+          definition.skills,
         );
         await audit(
           tx,

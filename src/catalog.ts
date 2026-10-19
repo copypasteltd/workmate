@@ -14,12 +14,14 @@ export interface SkillPackage {
 export class Catalog {
   roles: any[] = [];
   skills: SkillPackage[] = [];
+  skillDefinitions: any[] = [];
   admin: any;
   async load() {
     const c = JSON.parse(
       await readFile("catalog/role-preset-catalog.json", "utf8"),
     );
     this.roles = c.roles;
+    this.skillDefinitions = c.skill_catalog;
     this.skills = JSON.parse(
       await readFile("catalog/skill-packages.json", "utf8"),
     );
@@ -159,6 +161,7 @@ export class Catalog {
       definition_hash: this.digest(r),
       package_state: "installed",
       qualification: "pending_live_validation",
+      data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
       ...this.available(c, r),
     }));
   }

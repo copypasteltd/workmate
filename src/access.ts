@@ -119,7 +119,7 @@ export async function replay<T>(
       throw new Problem(
         410,
         "REQUEST_RESULT_REMOVED",
-        "The content returned by this request was deleted; it cannot be replayed",
+        "This saved response was removed or expired; the operation will not run again",
       );
     if (previous.input_hash !== digest)
       throw new Problem(
