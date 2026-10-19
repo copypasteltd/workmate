@@ -397,3 +397,12 @@ Final full platform regression: **268/268**, including **12/12** new billing gro
 后续首次独立检出因运行中 PostgreSQL 的临时 ASCII junction 消失而失败，原始失败回执保存在 `evidence/billing-initial-checkout-failure.json`；诊断和受控恢复记录在 `evidence/billing-runtime-alias-recovery.json`，未将内存或端口耗尽当作已证实原因。启动器随后改用稳定的用户缓存别名，真实重启、两库新连接和 API 检查见 `evidence/billing-runtime-stable-alias.json`。不停止其他项目的 PostgreSQL，也不复制数据库到缓存目录；最终检出结果继续以当前 byte-integrity.json 为准。
 
 The first subsequent checkout check failed because the running PostgreSQL executable's temporary junction had disappeared. Its original failure and bounded diagnosis are preserved in the named receipts; memory or port exhaustion was not established. The launcher now uses a stable per-user cache junction, verified by a real restart, fresh connections to both databases and the API. Other projects' PostgreSQL instances were preserved. The current byte-integrity receipt remains authoritative for the final checkout result.
+
+
+## 个人/企业资金账户增量 / Billing account increment
+
+Platform 的 042–044 和原生迁移执行器支持带既有任务、资金批次及账项的升级，保持原企业资金字段不变；个人正式/模拟账户分别建立且不自动赠送额度。迁移 55006 初次失败、修正前 276 项回归及此前 268 项回归均保留原始输出，最终当前完整结果以 `evidence/alignment-platform.json` / `.tap` 为准。
+
+`npm run qa:admin-billing-wire` 对重启后的真实 API 执行五组读取、隔离、游标、CORS 和当前 MFA 检查，捕获八份原始规范账户/账本响应。合成领域 fixture 没有调用模型或外部收款，也不代表规范费用命令已实现。`evidence/billing-accounts-before-migration.json` 和 `billing-accounts-live-migration.json` 对比两库旧资金事实；历史未登记的 001–015 校验和继续保持未知。
+
+The real HTTP billing check uses owned email/TOTP sessions and synthetic internal fixtures. It validates canonical personal/enterprise account reads and persisted financial identities, then revokes its credentials. The populated native upgrade preserves original enterprise financial fields. Earlier failed migration logs and raw TAP are retained; fee/payment/refund/VIP writes, all payer-selection consumers and full native/system acceptance remain unfinished. This increment creates no browser tabs and uses no Docker/WSL.
