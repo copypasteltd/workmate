@@ -4,7 +4,7 @@
 
 正在执行全体系需求修复，未发布的改动见 [修复记录](quality/09-implementation-alignment-audit.md)。用户已授权暂用假数据，可在 delivery 运行 `npm run demo` 启动标识清晰的模拟环境，Codex 内核和业务逻辑仍真实执行。下列 0.5.0 安装包与归档不代表当前未发布源码。
 
-当前源码新增 [AnalysisSpec 报告与证据](technical/28-analysis-report-tasks-and-evidence.md)：多来源/比较预览、真实私人 Codex 任务与预算、分页固定事实、数字引用检查、持久 HTML/JSON 文件及 Web/源码 Desktop 下载。当前平台回归 180/180；完整综合验收和真实角色资格继续保留，不使用旧安装包演示本轮新增功能。
+当前源码新增 [AnalysisSpec 报告与证据](technical/28-analysis-report-tasks-and-evidence.md)：多来源/比较预览、真实私人 Codex 任务与预算、分页固定事实、数字引用检查、持久 HTML/JSON 文件及 Web/源码 Desktop 下载。当前平台回归 185/185；完整综合验收和真实角色资格继续保留，不使用旧安装包演示本轮新增功能。
 
 ## 本次无边框与侧栏客户端预览
 
@@ -63,7 +63,7 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 
 ## 当前源码验收增量
 
-2026-10-19 当前源码平台 180/180、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。新增模板 Web/Electron 八组与 PDF 交付七组通过。实际响应样本 31/31 通过严格 schema 检查。规范 225 个操作和常规实际 247 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
+2026-10-19 当前源码平台 185/185、Desktop 原生单元 4 项通过；资料补齐 Web 5 组、Admin 3 组、源码 Desktop 与 Chrome MV3 各 8 组。新增模板 Web/Electron 八组与 PDF 交付七组通过。实际响应样本 31/31 通过严格 schema 检查。规范 225 个操作和常规实际 248 个 method/path 的数量不代表字段与全部验收已完成。上述记录独立于历史 0.5.0 包的 84 项测试和产物。
 
 显式运行前资料选择保持原任务、私人会话和单笔预算，完整边界见 [运行前资料补齐](technical/22-pre-execution-input-checkpoint.md)。所有模型/媒体测试依赖暂用获准假数据，Codex 与业务持久化仍真实执行；没有替换历史安装包、ZIP 和 bundle。停止命令会等待自己控制的原生进程及数据库 checkpoint 实际结束，再返回完成。
 
@@ -72,3 +72,6 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 实际单页 PDF 审阅稿、源版本、重复请求和 Web/Desktop 下载见 [设计 PDF 交付](technical/26-design-pdf-review-delivery.md)。模型与媒体依赖继续模拟，PDF 文件与源工程实际保存；这不增加真实服务合格角色数量。
 
 当前源码的营销导入与指标修复见 [营销数据与证据](technical/27-marketing-import-metrics-and-evidence.md)：原文摘要/映射预览、去重与未知处理、冻结精确结果、JSON/SVG/CSV 下载、后台治理及 Web/源码 Desktop。`qa:marketing-analytics` 六组通过，含真实 PKCE、原生保存、两主题/繁英/四宽度；未完成项与真实角色资格不因此关闭。主文档、源码与独立仓库 README 均已更新，0.5.0 安装包及离线 bundle 保持原历史版本。
+
+
+本轮新增 [排队控制与 Codex 续聊原语](technical/31-task-controls-and-native-continuation.md)：三端初始排队暂停/同任务恢复、Admin 共用守卫、原生线程增量用量和回执故障处理；五组跨端流程通过。业务 Worker 的已付费步骤恢复仍未实现，上一轮安装包/ZIP 保留原清单。

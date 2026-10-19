@@ -138,3 +138,5 @@ Admin 清理记录的筛选、50 条默认分页、撤权显示及独立原生�
 持久角色目录、预检/实例化、真实 Codex/能力版本及撤销行为见 [模板注册表与运行绑定](technical/25-role-template-registry-and-runtime-binding.md)。Web 与 Desktop 已接入该流程，专业角色资格门槛保持不变。
 
 固定原文件版本的 CSV／XLSX、规范导入 API、显式更正链及来源治理见 [文件导入与更正链](technical/29-file-imports-and-correction-lineage.md)。
+
+首次模型调用前的排队暂停/同任务恢复、Admin 共用守卫，以及真实 Codex 续聊原语和增量费用边界见 [任务控制与原生续聊](technical/31-task-controls-and-native-continuation.md)。已付费步骤恢复仍未完成。

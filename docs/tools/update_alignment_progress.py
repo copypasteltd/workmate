@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('initial_pause_and_native_continuation', [1,2,8,9,11,35,36,39,44,46,51,60,69,92],
+     'Web/源码无边框 Desktop/MV3 排队暂停与同任务单预留恢复、领取竞争/权限与来源复查、Admin 共用领域守卫；真实 Codex 跨进程原历史/工具续聊、增量用量、中断和回执 I/O 故障保留消耗。适配器原语未接已付费步骤恢复，不构成完整暂停/检查点验收。',
+     ['platform_regression','task_controls'], ['technical/31-task-controls-and-native-continuation.md']),
     ('native_window_and_sidepanel', [36,39,51,55,60,81,82],
      'Desktop 无原生边框/默认菜单、自绘双语主题标题栏、实际原生窗口按钮与指针/键盘有界缩放、跨窗口 IPC 拒绝、真实打包登录及弹窗；Chrome action 实际创建右侧 SIDE_PANEL、跨页保留/收起及重启配置。完整系统/DPI、签名更新与全产品可访问性仍待验收。',
      ['native_surfaces','native_artifacts','extension'], ['technical/30-native-window-and-browser-sidepanel.md']),
@@ -78,7 +81,7 @@ REMAINING = {
  5:'默认助手与持续专家已有局部证据；完整品牌/工具继承及全部版本/跨端用例尚未完成。',
  6:'在线删除及缓存已修复；全部历史引用、索引与备份恢复后的删除重放仍待完成。',
  8:'云执行与事件已验证局部流程；完整真实步骤/部分产物状态及全部故障仍待验收。',
- 9:'仅安全恢复未领取队列；暂停、步骤检查点、原任务续做和未知外部操作闭环未完成。',
+ 9:'首次模型调用前的排队暂停、原任务/原预算恢复与领取竞争已有验证；运行中安全暂停、已付费步骤检查点/同任务累计费用和未知外部动作闭环仍未完成。',
  11:'事件身份和可读状态已有修复；全业务 step/trace/工具链与规范字段仍需核对。',
  12:'云版本引用、实际源码 ZIP 和单页 PDF 源快照已验证；全类型预览、局部成功/修改/审阅及全部可恢复工程未齐。',
  14:'需验证所有端完整 1 GiB 实传、生产对象存储及旧 multipart/扩展桥接大文件迁移。',
@@ -93,7 +96,7 @@ REMAINING = {
  39:'源码原生登录/传输及本次独立无边框预览包通过局部验证；历史完整离线包保留，更新/签名/卸载与系统/DPI 矩阵待完成。',
  41:'身份与云文件接续有局部证据；任务内本地步骤、离线等待/重连续做仍待完成。',
  43:'当前新增方法/上传/云文件仍走受控工具；新增媒体/后台/所有出站路径尚需验收。',
- 44:'锁定真实 Codex 的工具回合及持久源码已验证；内核会话继续、完整检查点/恢复仍待完成。',
+ 44:'锁定真实 Codex 的跨进程原线程/工具续聊、配置回执、增量用量、中断与 I/O 故障已有原语验证；Worker 已付费步骤续做、全故障/多节点与完整恢复仍待完成。',
  46:'保留整数预留/结算和对账；新增并行/媒体/本地全路径竞争及所有未知费用仍需验收。',
  47:'模拟 gift 不代表真实收款或正式权益全量验收；席位/存储/额度执行仍待齐。',
  49:'在线永久删除/保留规则/进度已修复；项目/企业整删、导出、备份轮换与删除重放未完成。',
@@ -127,6 +130,7 @@ REMAINING = {
  87:'模拟额度走可追踪 gift；正式费用全部动作/收款关联/退款与限时额度仍需完整验收。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
+ 92:'独立 MFA/企业范围的 Admin 排队暂停、共用领域守卫、原受益用户撤权与费用待核对拒绝已有验证；运行中检查点、全工作流/Routine 控制和未知外部动作人工核对仍待齐。',
  94:'项目方法及清理记录已有权限子流程证据，包含企业/项目 deny、只读与到期；全动作/字段/范围/导出及异步执行完整矩阵待完成。',
  98:'清理记录已验证组合筛选/URL/分页、有界滚动、四宽度、主题/语言、请求拒绝清空和失效重试对话框；全后台筛选、列配置、异常及完整键盘/缩放仍待验证。',
  99:'可信方法版本/撤销已补强；模型/费率的受控验证发布、兼容版本与后台全闭环待完成。',
@@ -165,6 +169,7 @@ def main():
     assert hashlib.sha256(restored_srs.replace('\n','\r\n').encode()).hexdigest() == baseline['requirements_sha256']
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
+        'task_controls': DEV/'copypaste-delivery/evidence/task-controls.json',
         'web_admin': DEV/'copypaste-delivery/evidence/alignment.json',
         'cloud_files': DEV/'copypaste-delivery/evidence/cloud-files.json',
         'desktop': DEV/'copypaste-delivery/evidence/alignment-desktop.json',
