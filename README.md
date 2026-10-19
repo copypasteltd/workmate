@@ -87,7 +87,7 @@ flowchart LR
 
 侧栏可直接选择默认文字助手，也保留专业角色。提交使用稳定请求编号；未知响应重试复用原私人会话和任务。企业或项目切换后，旧请求不得覆盖新列表/任务。模拟企业持续显示假数据提示。通知列出当前接收者最近 20 条，支持已读切换及原项目/任务跳转；完整分页和会话继续在工作台处理。
 
-Delivery `qa:extension` 七组真实 MV3 旅程已通过：PKCE、接受响应丢失后的真实重试与 Codex 文字文件、通知定位、320/420/768 宽度和两主题/语言、主动上传、凭证隐私/退出，以及接受响应延迟期间切换项目。模型为明确模拟依赖，未取得正式专业角色资格，旧发布 ZIP 未替换。
+Delivery `qa:extension` 八组真实 MV3 旅程已通过：PKCE、接受响应丢失后的真实重试与 Codex 文字文件、通知定位、320/420/768 宽度和两主题/语言、主动上传、凭证隐私/退出、接受响应延迟期间切换项目，以及运行前补齐文件。模型为明确模拟依赖，未取得正式专业角色资格，旧发布 ZIP 未替换。
 
 ```mermaid
 flowchart LR
@@ -101,3 +101,12 @@ flowchart LR
 ![文字工作与模拟结果](assets/screenshots/03-default-task.png)
 ![工作通知](assets/screenshots/04-notifications.png)
 ![深色英文侧栏](assets/screenshots/05-dark-en.png)
+
+## 先补齐资料 / Provide inputs first
+
+可明确选择「先等我提供档案」，侧栏搜索/分页选择当前版本后继续同一任务，保持原预留。上方选取器上传到共享项目（5 MiB），不会自动选中；私人补传和新连接授权在完整工作台进行。可以在侧栏为既有连接需求选择已授权连接；不自动同步账户或报表。取消等待会释放未使用预留。
+
+Submit an explicit file prerequisite, then search and select a current version to resume the same task and budget. The existing picker uploads to the shared project (5 MiB); selection remains explicit. Private attachments and new connector authorization use the full workspace. Existing connection requests can select an authorized connection without automatically importing reports. The input form was checked at three widths in both themes.
+
+![等待明确选择 / Waiting for explicit selection](assets/screenshots/06-input-wait.png)
+![同任务结果 / Same-task result](assets/screenshots/07-input-result.png)

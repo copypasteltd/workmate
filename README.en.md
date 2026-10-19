@@ -87,7 +87,7 @@ flowchart LR
 
 The panel offers a default text assistant alongside professional roles. Stable submission IDs preserve the original private conversation/task after an unknown response. Stale responses cannot overwrite lists/tasks after a workspace or project switch. Simulated workspaces display a persistent notice. The recipient inbox lists the latest 20 notifications, toggles read state and opens the original project/task; full pagination and conversation continuation remain in the workspace.
 
-Delivery qa:extension passes seven real MV3 groups: PKCE; retry after an accepted response is lost and real Codex text-file creation; notification navigation; 320/420/768 widths, both themes/languages; explicit upload; credential privacy/logout; project switching while an accepted response is delayed. Model dependencies are synthetic and do not qualify live roles. Historical ZIPs are unchanged.
+Delivery qa:extension passes eight real MV3 groups: PKCE; retry after an accepted response is lost and real Codex text-file creation; notification navigation; 320/420/768 widths, both themes/languages; explicit upload; credential privacy/logout; project switching while an accepted response is delayed. Model dependencies are synthetic and do not qualify live roles. Historical ZIPs are unchanged.
 
 ```mermaid
 flowchart LR
@@ -101,3 +101,12 @@ flowchart LR
 ![Text task and simulated result](assets/screenshots/03-default-task.png)
 ![Work notifications](assets/screenshots/04-notifications.png)
 ![Dark English panel](assets/screenshots/05-dark-en.png)
+
+## Initial input requests (current source)
+
+The side panel can declare a required file before the first model turn, then search and select a current project version explicitly. Existing connected-account requests are also selectable; the panel never creates OAuth authorization or synchronizes a report automatically. Workspace/project changes discard stale responses. Authorization errors clear candidates and prevent confirmation. Resolving the final request resumes the same task and its single reservation.
+
+The explicit local picker uploads shared project files up to 5 MiB. Use the full workspace for private uploads and connection authorization. The eighth real MV3 journey verifies a waiting task, an actual upload, no automatic selection, the original task’s result and three widths in both themes. This covers initial prerequisites only; historical ZIPs are unchanged.
+
+![Initial file request in the actual side panel](assets/screenshots/06-input-wait.png)
+![Result from the same task](assets/screenshots/07-input-result.png)

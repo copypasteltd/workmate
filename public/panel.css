@@ -316,12 +316,12 @@ h2 {
   padding: 18px;
   margin-top: 25px;
 }
-.task-view > div {
+.task-view > div:first-child {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.task-view > div button {
+.task-view > div:first-child button {
   font-size: 22px;
   border: 0;
   background: none;
@@ -489,8 +489,57 @@ footer span {
 #demo-banner {
   margin: 15px 0;
 }
+.input-request {
+  padding: 12px 0;
+  border-top: 1px solid #b8bdc6;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.input-request strong {
+  overflow-wrap: anywhere;
+}
+.input-request .field {
+  margin: 0;
+  min-width: 0;
+}
+.input-search {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.input-search input {
+  min-width: 0;
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #e3e4e5;
+  border-radius: 9px;
+  background: white;
+  color: #15171a;
+}
+#input-requests {
+  display: grid;
+  gap: 12px;
+}
+.input-request .primary {
+  margin-top: 0;
+  justify-content: center;
+}
+.input-request [role="alert"] {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.input-request .tools {
+  flex-wrap: wrap;
+}
 
 @media (prefers-color-scheme: dark) {
+  .input-search input {
+    background: #18202e;
+    border-color: #2d3749;
+    color: #f6f6f5;
+  }
   .notification-entry {
     border-color: #2d3749;
   }

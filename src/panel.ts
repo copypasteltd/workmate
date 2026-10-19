@@ -8,8 +8,16 @@ let notificationTimer: ReturnType<typeof setInterval> | undefined;
 let pending: { fingerprint: string; id: string } | null = null;
 let workspaceRevision = 0,
   notificationRevision = 0;
+let dependencyRevision = 0,
+  dependencyFingerprint = "";
+let taskDrawRevision = 0;
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
 function clearTask() {
+  taskDrawRevision++;
+  dependencyRevision++;
+  dependencyFingerprint = "";
+  $("input-requests").replaceChildren();
+  $("input-requests").hidden = true;
   task = "";
   if (timer) clearInterval(timer);
   timer = undefined;
@@ -274,11 +282,11 @@ async function openTask(id: string) {
     return;
   $("task-view").hidden = false;
   $("task-title").textContent = t.title;
-  $("task-status").textContent = t.status;
-  $("task-output").textContent = t.output ?? t.error_code ?? "工作正在處理中。";
-  $("cancel-task").hidden = !["queued", "running", "paused"].includes(t.status);
+  await drawTask(t);
+  if (revision !== workspaceRevision || endpoint !== base() || task !== id)
+    return;
   if (timer) clearInterval(timer);
-  if (["queued", "running"].includes(t.status))
+  if (["queued", "running", "needs_input"].includes(t.status))
     timer = setInterval(() => void run(() => refreshTask(id)), 2500);
 }
 async function refreshTask(id: string) {
@@ -288,12 +296,255 @@ async function refreshTask(id: string) {
   const t = await request(endpoint + "/tasks/" + id);
   if (revision !== workspaceRevision || endpoint !== base() || task !== id)
     return;
-  $("task-status").textContent = t.status;
-  $("task-output").textContent = t.output ?? t.error_code ?? "工作正在處理中。";
-  if (!["queued", "running"].includes(t.status) && timer) {
+  await drawTask(t);
+  if (revision !== workspaceRevision || endpoint !== base() || task !== id)
+    return;
+  if (!["queued", "running", "needs_input"].includes(t.status) && timer) {
     clearInterval(timer);
     timer = undefined;
     await tasks();
+  }
+}
+const tr = (zh: string, en: string) => (locale === "en" ? en : zh);
+async function drawTask(t: any) {
+  const drawing = ++taskDrawRevision;
+  $("task-status").textContent =
+    t.status === "needs_input" ? tr("需要補充資料", "Needs input") : t.status;
+  $("task-output").textContent =
+    t.status === "needs_input"
+      ? tr(
+          "尚未呼叫模型，原預算保持預留。補齊資料後繼續同一項工作。",
+          "The model has not been called. The original budget remains reserved; providing all inputs continues this same task.",
+        )
+      : t.output ||
+        t.error_code ||
+        tr("工作正在處理中。", "Work is in progress.");
+  $("cancel-task").hidden = ![
+    "queued",
+    "running",
+    "paused",
+    "needs_input",
+  ].includes(t.status);
+  const area = $("input-requests"),
+    endpoint = base(),
+    revision = workspaceRevision;
+  if (t.status !== "needs_input") {
+    dependencyRevision++;
+    dependencyFingerprint = "";
+    area.replaceChildren();
+    area.hidden = true;
+    return;
+  }
+  let data: any;
+  try {
+    data = await request(endpoint + "/tasks/" + t.id + "/dependencies");
+  } catch (e) {
+    if (
+      drawing === taskDrawRevision &&
+      revision === workspaceRevision &&
+      task === t.id
+    ) {
+      dependencyRevision++;
+      dependencyFingerprint = "";
+      area.replaceChildren();
+      area.hidden = true;
+    }
+    throw e;
+  }
+  if (
+    drawing !== taskDrawRevision ||
+    revision !== workspaceRevision ||
+    endpoint !== base() ||
+    task !== t.id
+  )
+    return;
+  const fingerprint = JSON.stringify([
+    t.id,
+    locale,
+    data.items.map((d: any) => [d.id, d.version, d.state]),
+  ]);
+  if (fingerprint === dependencyFingerprint) return;
+  dependencyFingerprint = fingerprint;
+  const render = ++dependencyRevision;
+  area.replaceChildren();
+  area.hidden = false;
+  const live = () =>
+    render === dependencyRevision &&
+    revision === workspaceRevision &&
+    endpoint === base() &&
+    task === t.id;
+  for (const d of data.items) {
+    const row = document.createElement("section");
+    row.className = "input-request";
+    row.dataset.dependency = d.id;
+    const heading = document.createElement("strong");
+    heading.textContent = d.description;
+    row.append(heading);
+    if (d.state !== "pending") {
+      const ready = document.createElement("p");
+      ready.textContent = tr("資料已齊", "Input ready");
+      row.append(ready);
+      area.append(row);
+      continue;
+    }
+    const search = document.createElement("form"),
+      searchInput = document.createElement("input"),
+      label = document.createElement("label"),
+      select = document.createElement("select"),
+      confirm = document.createElement("button"),
+      previous = document.createElement("button"),
+      next = document.createElement("button"),
+      refresh = document.createElement("button"),
+      error = document.createElement("p");
+    search.className = "input-search";
+    searchInput.maxLength = 160;
+    searchInput.setAttribute(
+      "aria-label",
+      tr("搜尋可用資料", "Search available inputs"),
+    );
+    const searchButton = document.createElement("button");
+    searchButton.className = "secondary";
+    searchButton.type = "submit";
+    searchButton.textContent = tr("搜尋", "Search");
+    search.append(searchInput, searchButton);
+    label.className = "field";
+    const labelText = document.createElement("span");
+    labelText.textContent =
+      d.kind === "file"
+        ? tr("選擇目前檔案版本", "Choose a current file version")
+        : tr("選擇已授權連接", "Choose an authorized connection");
+    label.append(labelText, select);
+    confirm.type = previous.type = next.type = refresh.type = "button";
+    confirm.className = "primary";
+    confirm.textContent = tr("確認使用此資料", "Confirm this input");
+    confirm.disabled = true;
+    previous.textContent = tr("上一頁", "Previous page");
+    next.textContent = tr("下一頁", "Next page");
+    refresh.textContent = tr("重新載入資料", "Reload inputs");
+    const pages = document.createElement("div");
+    pages.className = "tools";
+    pages.append(previous, next, refresh);
+    error.setAttribute("role", "alert");
+    error.hidden = true;
+    let cursor = "",
+      query = "",
+      nextCursor = "",
+      history: string[] = [],
+      loading = 0,
+      busy = false;
+    const root = `/v1/tenants/${tenant}/task-dependencies/${d.id}`;
+    const load = async () => {
+      const own = ++loading;
+      select.replaceChildren();
+      select.disabled = true;
+      confirm.disabled = true;
+      previous.disabled = next.disabled = true;
+      error.hidden = true;
+      try {
+        const result = await request(
+          root +
+            "/resources?" +
+            new URLSearchParams({
+              q: query,
+              limit: "50",
+              ...(cursor ? { cursor } : {}),
+            }),
+        );
+        if (!live() || own !== loading) return;
+        option(select, [
+          {
+            value: "",
+            label: tr("請明確選擇一項資料", "Select an input explicitly"),
+          },
+          ...result.items.map((r: any) => ({
+            value: r.id,
+            label: r.name + (r.version ? ` · v${r.version}` : ""),
+          })),
+        ]);
+        select.disabled = busy;
+        nextCursor = result.next_cursor ?? "";
+        previous.disabled = !history.length;
+        next.disabled = !nextCursor;
+        if (!result.items.length) {
+          error.textContent = tr(
+            "沒有符合條件的資料。上傳後請重新載入。",
+            "No matching inputs. Reload after uploading.",
+          );
+          error.hidden = false;
+        }
+      } catch (e) {
+        if (live() && own === loading) {
+          error.textContent = e instanceof Error ? e.message : String(e);
+          error.hidden = false;
+        }
+      }
+    };
+    select.addEventListener("change", () => {
+      confirm.disabled = busy || !select.value;
+    });
+    search.addEventListener("submit", (e) => {
+      e.preventDefault();
+      query = searchInput.value;
+      cursor = "";
+      history = [];
+      void load();
+    });
+    refresh.addEventListener("click", () => {
+      cursor = "";
+      history = [];
+      void load();
+    });
+    previous.addEventListener("click", () => {
+      cursor = history.pop() ?? "";
+      void load();
+    });
+    next.addEventListener("click", () => {
+      history.push(cursor);
+      cursor = nextCursor;
+      void load();
+    });
+    confirm.addEventListener(
+      "click",
+      () =>
+        void run(async () => {
+          if (busy || !select.value) return;
+          busy = true;
+          confirm.disabled = true;
+          select.disabled = true;
+          try {
+            await request(root + "/resolutions", "POST", {
+              expected_version: d.version,
+              resource_ids: [select.value],
+            });
+            if (live()) {
+              dependencyFingerprint = "";
+              await openTask(t.id);
+              await tasks();
+            }
+          } finally {
+            busy = false;
+            if (live()) {
+              select.disabled = false;
+              confirm.disabled = !select.value;
+            }
+          }
+        }),
+    );
+    const note = document.createElement("p");
+    note.className = "hint";
+    note.textContent =
+      d.kind === "file"
+        ? tr(
+            "可透過上方檔案選取器上傳至共享專案（5 MiB）。重新載入後明確選擇版本；來源更新或撤銷後須再選。",
+            "Use the file picker above to upload to the shared project (5 MiB). Reload and explicitly choose a current version; changed or revoked sources require a fresh choice.",
+          )
+        : tr(
+            "只選取現有連接；管理授權請開啟完整工作台。不會自動同步報表。",
+            "Choose an existing connection; open the full workspace to manage authorization. This does not synchronize reports.",
+          );
+    row.append(search, label, error, pages, confirm, note);
+    area.append(row);
+    void load();
   }
 }
 $("sign-in").addEventListener(
@@ -368,6 +619,19 @@ $("brief-form").addEventListener("submit", (e) => {
           title: String(f.get("title")),
           prompt: String(f.get("prompt")),
           budget_micros: Math.round(Number(f.get("budget")) * 1e6),
+          ...(f.get("required_input") === "file"
+            ? {
+                dependencies: [
+                  {
+                    kind: "file",
+                    description: tr(
+                      "請提供已批准的工作素材，然後開始。",
+                      "Provide approved source materials before starting.",
+                    ),
+                  },
+                ],
+              }
+            : {}),
         };
       const fingerprint = JSON.stringify({
         tenant,
@@ -582,6 +846,9 @@ const translations: Record<string, string> = {
   "＋ 目前網頁": "+ Current page",
   "＋ 選取檔案": "+ Choose file",
   "預算上限（HKD）": "Budget limit (HKD)",
+  "開始前需要補齊資料嗎？": "Inputs needed before starting?",
+  "資料已齊，可開始": "Ready to start",
+  先等我提供檔案: "Wait for my file",
   開始工作: "Start task",
   取消工作: "Cancel task",
   最近的工作: "Recent tasks",
@@ -631,6 +898,7 @@ async function applyLocale() {
         ? "Default assistant — text and plans"
         : "預設助手 — 文字與計畫";
   if (tenant) await notifications();
+  if (task) await refreshTask(task);
 }
 $("locale").addEventListener(
   "click",
