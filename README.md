@@ -302,4 +302,16 @@ flowchart LR
 
 `npm run qa:sessions` 启动自有隔离浏览器、源码无边框 Electron 与真实 MV3，使用新建合成账号、实际邮箱验证码/PKCE，验证会话目录、Web 远端撤销、原生过期访问退出、离线提示、跨标签退出与迟到响应。模型调用为零。仅调整本次用户的凭证过期时间；离线 revoke 与后台 GET gate 为显式故障注入。所有自建页面、上下文和应用在 finally 关闭，报告写入 `evidence/sessions.json`。本专项不重新生成历史安装包，也不关闭完整身份、102 条需求或生产门槛。
 
-当前会话专项七组通过，平台完整回归 191/191，Desktop 原生单元 15/15，扩展单元 10/10。Windows 默认 GPU 路径的四次早期超时与对照报告已保留；本专项对自建 Chromium/Electron 使用 `--disable-gpu` 软件渲染，产品启动配置未变。正常计时/帧与点击对照见 `evidence/sessions-gpu-diagnostic.json`，最终模式写入会话报告；不据此声明硬件渲染兼容性通过。
+上一阶段会话专项七组通过，平台回归 191/191，Desktop 原生单元 15/15，扩展单元 10/10；当前认证增量和证据见下节。Windows 默认 GPU 路径的四次早期超时与对照报告已保留；本专项对自建 Chromium/Electron 使用 `--disable-gpu` 软件渲染，产品启动配置未变。正常计时/帧与点击对照见 `evidence/sessions-gpu-diagnostic.json`，最终模式写入会话报告；不据此声明硬件渲染兼容性通过。
+
+## 规范认证交付检查 / Canonical authentication verification
+
+`npm run qa:platform` 原样保存完整平台 TAP 字节及摘要，不再依靠 shell 文本重编码。`npm run qa:sessions` 使用真实 Web、源码无边框 Electron 与两个 MV3 面板，额外注入“首次交换/刷新已提交而响应丢失”以及“旧账号 401 延迟到新账号登录后”故障；只操作本次合成账号与自有本地存储，退出时撤销测试凭证并关闭全部自建实例。
+
+The platform runner records unmodified TAP bytes and SHA-256. The sessions journey exercises canonical Web/PKCE consumers, bounded first-exchange recovery, persisted same-key refresh recovery, two-panel account replacement, revocation and late-response isolation. Controlled expiry, encrypted-vault/session-storage, response-loss and delayed-message fixtures are explicit; model calls remain zero. The initial Electron evaluation harness failure is retained as `evidence/auth-recovery-harness-import-failure.json` and is not counted as passing evidence.
+
+These source checks do not rebuild historical installers/ZIPs or close all 102 acceptance cases. Existing package manifests and their original verification receipts remain unchanged.
+
+最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
+
+Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.

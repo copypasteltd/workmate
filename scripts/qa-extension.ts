@@ -53,7 +53,7 @@ try {
   await popup.locator('input[name="code"]').fill(code);
   await popup.locator('form button[type="submit"]').click();
   await popup
-    .getByRole("button", { name: /Authorize & return|授權並返回應用/ })
+    .getByRole("link", { name: /Authorize & return|授權並返回應用/ })
     .click();
   await panel
     .locator("#workspace")

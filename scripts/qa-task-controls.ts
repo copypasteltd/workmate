@@ -318,7 +318,7 @@ try {
   await auth.goto(authURL);
   await signIn(auth);
   await auth
-    .getByRole("button", { name: /Authorize & return|授權並返回應用/ })
+    .getByRole("link", { name: /Authorize & return|授權並返回應用/ })
     .click();
   await native.waitForURL("**#/app");
   const second = await newTask("Desktop");
@@ -354,7 +354,7 @@ try {
   await popup.waitForLoadState();
   await signIn(popup);
   await popup
-    .getByRole("button", { name: /Authorize & return|授權並返回應用/ })
+    .getByRole("link", { name: /Authorize & return|授權並返回應用/ })
     .click();
   await panel.locator("#workspace").waitFor({ state: "visible" });
   const third = await newTask("Extension");

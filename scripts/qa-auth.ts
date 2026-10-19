@@ -10,7 +10,7 @@ export async function emailCode(
   click: () => Promise<unknown>,
   admin = false,
 ) {
-  const endpoint = admin ? "/v1/admin/auth/challenge" : "/v1/auth/challenge";
+  const endpoint = admin ? "/v1/admin/auth/challenge" : "/v1/auth/challenges";
   for (let attempt = 0; attempt < 4; attempt++) {
     const [response] = await Promise.all([
       page.waitForResponse(
@@ -26,7 +26,7 @@ export async function emailCode(
       await new Promise((r) => setTimeout(r, 31000));
       continue;
     }
-    assert.equal(response.status(), 200, JSON.stringify(body));
+    assert.equal(response.status(), admin ? 200 : 202, body.error?.code);
     const file = path.resolve(
       "../copypaste-platform/.data/mailbox",
       body.challenge_id + ".json",

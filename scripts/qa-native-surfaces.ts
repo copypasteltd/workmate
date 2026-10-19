@@ -362,7 +362,7 @@ try {
   await auth.locator('input[name="code"]').fill(code);
   await auth.locator('form button[type="submit"]').click();
   await auth
-    .getByRole("button", { name: /Authorize & return|授權並返回應用/ })
+    .getByRole("link", { name: /Authorize & return|授權並返回應用/ })
     .click();
   await page.waitForURL("**#/app");
   await page.locator(".sidebar").waitFor();

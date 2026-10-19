@@ -288,7 +288,7 @@ try {
   await native.p
     .getByRole("link", { name: "Continue with test identity" })
     .click();
-  await native.p.getByRole("button", { name: "Authorize & return" }).click();
+  await native.p.getByRole("link", { name: "Authorize & return" }).click();
   await workspace.waitForURL("**#/app");
   await workspace
     .getByRole("link", { name: "Account settings", exact: true })

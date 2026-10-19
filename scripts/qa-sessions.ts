@@ -22,6 +22,8 @@ const root = path.resolve(".."),
 const checks: { name: string; status: string }[] = [],
   errors: string[] = [];
 const pendingRequests = new Map<string, number>();
+const runtime: Record<string, string> = {};
+const fixtureUsers: string[] = [];
 const networkFailures: { resource: string; reason: string }[] = [];
 const pass = (name: string) => {
   checks.push({ name, status: "passed" });
@@ -37,6 +39,7 @@ let browser: Browser | undefined,
   desktopClosed = false,
   extensionClosed = false;
 let releaseReads: (() => void) | undefined;
+let authorizationCaptured = false;
 async function until<T>(
   read: () => Promise<T>,
   accept: (v: T) => boolean,
@@ -100,8 +103,22 @@ async function api(page: Page, url: string, method = "GET", body?: unknown) {
 }
 async function authorize(page: Page) {
   await page.bringToFront();
+  if (!authorizationCaptured) {
+    await page
+      .getByRole("link", { name: /Authorize & return|授權並返回應用/ })
+      .waitFor();
+    await page.screenshot({
+      path: path.join(
+        root,
+        "copypaste-web/assets/screenshots/52-native-authorization.png",
+      ),
+      fullPage: true,
+      animations: "disabled",
+    });
+    authorizationCaptured = true;
+  }
   await page
-    .getByRole("button", { name: /Authorize & return|授權並返回應用/ })
+    .getByRole("link", { name: /Authorize & return|授權並返回應用/ })
     .click();
 }
 async function openDesktop(native: Page) {
@@ -149,15 +166,25 @@ async function revokeUI(page: Page, client: string) {
     .click();
   await modal.waitFor({ state: "hidden" });
 }
-async function activeNative(client: string) {
+async function activeNative(client: string, owner = userId) {
   const result = await db.query(
     `SELECT s.id FROM sessions s JOIN refresh_tokens f ON f.session_id=s.id
     WHERE s.user_id=$1 AND f.client_id=$2 AND s.revoked_at IS NULL
       AND f.revoked_at IS NULL AND f.used_at IS NULL AND f.expires_at>now() ORDER BY s.created_at DESC`,
-    [userId, client],
+    [owner, client],
   );
   assert.equal(result.rows.length, 1);
   return result.rows[0].id as string;
+}
+async function rotationCount(client: string) {
+  return Number(
+    (
+      await db.query(
+        "SELECT count(*) AS n FROM refresh_tokens WHERE user_id=$1 AND client_id=$2",
+        [userId, client],
+      )
+    ).rows[0].n,
+  );
 }
 try {
   const config = await until<any>(
@@ -185,11 +212,21 @@ try {
   await db.connect();
   browser = await chromium.launch({
     headless: true,
-    executablePath: process.env.CHROME_BIN ?? chromium.executablePath(),
+    executablePath:
+      process.env.WEB_CHROME_BIN ??
+      process.env.CHROME_BIN ??
+      chromium.executablePath(),
     // The controlled Windows diagnostic stalls the GPU path but passes normal
     // rAF/timer/click checks with software rendering. Keep product flags intact.
     args: ["--disable-gpu"],
   });
+  runtime.chromium_version = browser.version();
+  runtime.chromium_executable =
+    process.env.WEB_CHROME_BIN ??
+    process.env.CHROME_BIN ??
+    chromium.executablePath();
+  runtime.mv3_chromium_executable =
+    process.env.CHROME_BIN ?? chromium.executablePath();
   context = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
   });
@@ -214,6 +251,7 @@ try {
   await web.locator('form button[type="submit"]').click();
   await web.waitForURL("**/app");
   userId = (await api(web, "/v1/me")).user.id;
+  fixtureUsers.push(userId);
   await web.goto("http://localhost:4317/app/settings", {
     waitUntil: "domcontentloaded",
   });
@@ -231,6 +269,13 @@ try {
     },
   });
   const native = await app.firstWindow();
+  Object.assign(
+    runtime,
+    await app.evaluate(() => ({
+      electron_version: process.versions.electron!,
+      electron_chromium_version: process.versions.chrome!,
+    })),
+  );
   watch(native);
   await native.waitForURL(/file:.*index\.html/);
   await native.waitForLoadState("load");
@@ -244,7 +289,48 @@ try {
       (globalThis as any).__sessionAuthURL = value;
     };
   });
+  await app.evaluate(() => {
+    const scope = globalThis as any;
+    scope.__codeFetch = globalThis.fetch;
+    scope.__codeKeys = [];
+    globalThis.fetch = async (input, init) => {
+      if (
+        String(input).endsWith("/v1/auth/token") &&
+        JSON.parse(String(init?.body)).grant_type === "authorization_code"
+      ) {
+        scope.__codeKeys.push(
+          new Headers(init?.headers).get("Idempotency-Key"),
+        );
+        const response = await scope.__codeFetch(input, init);
+        if (scope.__codeKeys.length === 1 && response.status === 201) {
+          await response.json();
+          throw new TypeError(
+            "Controlled response loss after committed Desktop code exchange",
+          );
+        }
+        return response;
+      }
+      return scope.__codeFetch(input, init);
+    };
+  });
   await openDesktop(native);
+  assert.deepEqual(
+    await app.evaluate(() => {
+      const scope = globalThis as any;
+      globalThis.fetch = scope.__codeFetch;
+      return {
+        calls: scope.__codeKeys.length,
+        same_key: scope.__codeKeys.every(
+          (key: string) => Boolean(key) && key === scope.__codeKeys[0],
+        ),
+      };
+    }),
+    { calls: 2, same_key: true },
+  );
+  assert.equal(await rotationCount("desktop"), 1);
+  pass(
+    "real Desktop first sign-in recovers a committed code-exchange response loss with one bounded same-key retry and creates one native family",
+  );
 
   mv3 = await chromium.launchPersistentContext(
     path.resolve(".data/sessions-extension-" + run),
@@ -272,9 +358,37 @@ try {
     await readFile(path.join(extension, "extension-id.txt"), "utf8")
   ).trim();
   assert.ok(worker.url().includes(id));
+  await worker.evaluate(() => {
+    const scope = globalThis as any;
+    scope.__codeFetch = globalThis.fetch;
+    scope.__codeKeys = [];
+    globalThis.fetch = async (input, init) => {
+      if (
+        String(input).endsWith("/v1/auth/token") &&
+        JSON.parse(String(init?.body)).grant_type === "authorization_code"
+      ) {
+        scope.__codeKeys.push(
+          new Headers(init?.headers).get("Idempotency-Key"),
+        );
+        const response = await scope.__codeFetch(input, init);
+        if (scope.__codeKeys.length === 1 && response.status === 201) {
+          await response.json();
+          throw new TypeError(
+            "Controlled response loss after committed MV3 code exchange",
+          );
+        }
+        return response;
+      }
+      return scope.__codeFetch(input, init);
+    };
+  });
   const panel = await mv3.newPage();
   watch(panel);
   await panel.goto(`chrome-extension://${id}/sidepanel.html`);
+  const secondPanel = await mv3.newPage();
+  watch(secondPanel);
+  await secondPanel.goto(`chrome-extension://${id}/sidepanel.html`);
+  await secondPanel.locator("#sign-in").waitFor({ state: "visible" });
   const openExtension = async () => {
     const popupPromise = mv3!.waitForEvent("page");
     await panel.locator("#sign-in").click();
@@ -283,8 +397,26 @@ try {
     await popup.waitForLoadState("domcontentloaded");
     await authorize(popup);
     await panel.locator("#workspace").waitFor({ state: "visible" });
+    await secondPanel.locator("#workspace").waitFor({ state: "visible" });
   };
   await openExtension();
+  assert.deepEqual(
+    await worker.evaluate(() => {
+      const scope = globalThis as any;
+      globalThis.fetch = scope.__codeFetch;
+      return {
+        calls: scope.__codeKeys.length,
+        same_key: scope.__codeKeys.every(
+          (key: string) => Boolean(key) && key === scope.__codeKeys[0],
+        ),
+      };
+    }),
+    { calls: 2, same_key: true },
+  );
+  assert.equal(await rotationCount("extension"), 1);
+  pass(
+    "real MV3 identity sign-in recovers a committed code-exchange response loss under the original key without replaying the code into another family",
+  );
   await web.getByRole("button", { name: "Reload", exact: true }).click();
   await web.locator('.session-row[data-client="extension"]').waitFor();
   const inventory = await api(web, "/v1/me/sessions");
@@ -316,7 +448,170 @@ try {
     animations: "disabled",
   });
   pass(
-    "actual Web login, browser PKCE Desktop and MV3 identity PKCE share a credential-free inventory with correct client/current markers",
+    "canonical Web login, browser S256 PKCE Desktop and MV3 share a credential-free inventory; both already-open MV3 panels automatically populate on sign-in",
+  );
+
+  const desktopRotations = await rotationCount("desktop");
+  await app.evaluate(async ({ app }) => {
+    const scope = globalThis as any;
+    const path = process.getBuiltinModule("node:path"),
+      fs = process.getBuiltinModule("node:fs/promises"),
+      require = process
+        .getBuiltinModule("node:module")
+        .createRequire(path.join(app.getAppPath(), "package.json"));
+    const { LocalVault } = require("./dist/vault.js");
+    const { atomicFile } = require("./dist/files.js");
+    const vault = new LocalVault(app.getPath("userData")),
+      file = path.join(app.getPath("userData"), "auth.enc");
+    const tokens = JSON.parse(await vault.decrypt(await fs.readFile(file)));
+    scope.__recoveryOriginal = tokens;
+    scope.__recoveryFetch = globalThis.fetch;
+    scope.__recoveryKeys = [];
+    globalThis.fetch = async (input, init) => {
+      if (
+        String(input).endsWith("/v1/auth/token") &&
+        JSON.parse(String(init?.body)).grant_type === "refresh_token"
+      ) {
+        scope.__recoveryKeys.push(
+          new Headers(init?.headers).get("Idempotency-Key"),
+        );
+        const response = await scope.__recoveryFetch(input, init);
+        if (scope.__recoveryKeys.length === 1 && response.status === 201) {
+          await response.json();
+          throw new TypeError(
+            "Controlled response loss after committed Desktop rotation",
+          );
+        }
+        return response;
+      }
+      return scope.__recoveryFetch(input, init);
+    };
+    await atomicFile(
+      file,
+      await vault.encrypt(
+        JSON.stringify({ ...tokens, expires_at: Date.now() - 1 }),
+      ),
+    );
+  });
+  const firstDesktop = await native.evaluate(async () => {
+    try {
+      return await (window as any).copyPasteBridge.request("/v1/me", {});
+    } catch (e) {
+      return { transport_error: e instanceof Error ? e.message : String(e) };
+    }
+  });
+  assert.match(firstDesktop.transport_error, /Controlled response loss/);
+  assert.equal(
+    (
+      await native.evaluate(() =>
+        (window as any).copyPasteBridge.request("/v1/me", {}),
+      )
+    ).status,
+    200,
+  );
+  const desktopRecovery = await app.evaluate(async ({ app }) => {
+    const scope = globalThis as any,
+      path = process.getBuiltinModule("node:path"),
+      fs = process.getBuiltinModule("node:fs/promises"),
+      require = process
+        .getBuiltinModule("node:module")
+        .createRequire(path.join(app.getAppPath(), "package.json"));
+    globalThis.fetch = scope.__recoveryFetch;
+    const { LocalVault } = require("./dist/vault.js");
+    const tokens = JSON.parse(
+      await new LocalVault(app.getPath("userData")).decrypt(
+        await fs.readFile(path.join(app.getPath("userData"), "auth.enc")),
+      ),
+    );
+    return {
+      calls: scope.__recoveryKeys.length,
+      same_key: scope.__recoveryKeys.every(
+        (key: string) => key === scope.__recoveryOriginal.refresh_request_id,
+      ),
+      rotated: tokens.refresh_token !== scope.__recoveryOriginal.refresh_token,
+      epoch_unchanged:
+        tokens.session_epoch === scope.__recoveryOriginal.session_epoch,
+    };
+  });
+  assert.deepEqual(desktopRecovery, {
+    calls: 2,
+    same_key: true,
+    rotated: true,
+    epoch_unchanged: true,
+  });
+  assert.equal(await rotationCount("desktop"), desktopRotations + 1);
+  pass(
+    "real Electron DPAPI credentials survive a response lost after committed rotation; the next request uses the same private key and receives that single rotation",
+  );
+
+  const extensionRotations = await rotationCount("extension");
+  await worker.evaluate(async () => {
+    const scope = globalThis as any,
+      tokens = (await chrome.storage.session.get("tokens")).tokens as any;
+    scope.__recoveryOriginal = tokens;
+    scope.__recoveryFetch = globalThis.fetch;
+    scope.__recoveryKeys = [];
+    globalThis.fetch = async (input, init) => {
+      if (
+        String(input).endsWith("/v1/auth/token") &&
+        JSON.parse(String(init?.body)).grant_type === "refresh_token"
+      ) {
+        scope.__recoveryKeys.push(
+          new Headers(init?.headers).get("Idempotency-Key"),
+        );
+        const response = await scope.__recoveryFetch(input, init);
+        if (scope.__recoveryKeys.length === 1 && response.status === 201) {
+          await response.json();
+          throw new TypeError(
+            "Controlled response loss after committed MV3 rotation",
+          );
+        }
+        return response;
+      }
+      return scope.__recoveryFetch(input, init);
+    };
+    await chrome.storage.session.set({
+      tokens: { ...tokens, expires_at: Date.now() - 1 },
+    });
+  });
+  const firstExtension = await panel.evaluate(() =>
+    chrome.runtime.sendMessage({ type: "API", path: "/v1/me" }),
+  );
+  assert.equal(firstExtension.ok, false);
+  assert.match(firstExtension.error, /Controlled response loss/);
+  assert.equal(
+    (
+      await panel.evaluate(() =>
+        chrome.runtime.sendMessage({ type: "API", path: "/v1/me" }),
+      )
+    ).ok,
+    true,
+  );
+  const extensionRecovery = await worker.evaluate(async () => {
+    const scope = globalThis as any,
+      tokens = (await chrome.storage.session.get("tokens")).tokens as any;
+    globalThis.fetch = scope.__recoveryFetch;
+    return {
+      calls: scope.__recoveryKeys.length,
+      same_key: scope.__recoveryKeys.every(
+        (key: string) => key === scope.__recoveryOriginal.refresh_request_id,
+      ),
+      rotated: tokens.refresh_token !== scope.__recoveryOriginal.refresh_token,
+      epoch_unchanged:
+        tokens.session_epoch === scope.__recoveryOriginal.session_epoch,
+    };
+  });
+  assert.deepEqual(extensionRecovery, {
+    calls: 2,
+    same_key: true,
+    rotated: true,
+    epoch_unchanged: true,
+  });
+  assert.equal(await rotationCount("extension"), extensionRotations + 1);
+  assert.equal(await panel.locator("#workspace").isVisible(), true);
+  assert.equal(await secondPanel.locator("#workspace").isVisible(), true);
+  pass(
+    "real MV3 session storage recovers a lost committed refresh under the same key; rotation retains the identity epoch and both panels stay signed in",
   );
 
   await web.setViewportSize({ width: 375, height: 1000 });
@@ -365,10 +660,39 @@ try {
     "Web confirmation revokes the Desktop family; its next protected read clears native credentials and private UI while Extension stays signed in",
   );
 
+  await secondPanel.evaluate(() => {
+    const scope = globalThis as any;
+    scope.__oldReplyGate = new Promise<void>((resolve) => {
+      scope.__releaseOldReply = resolve;
+    });
+    const original = chrome.runtime.sendMessage.bind(chrome.runtime);
+    (chrome.runtime as any).sendMessage = async (message: any) => {
+      const response = await original(message);
+      if (
+        !scope.__oldReplyEntered &&
+        message.type === "API" &&
+        response?.code === "AUTH_REQUIRED"
+      ) {
+        scope.__oldReplyEntered = true;
+        await scope.__oldReplyGate;
+        scope.__oldReplyDelivered = true;
+      }
+      return response;
+    };
+  });
   await revokeUI(web, "extension");
-  if (await panel.locator("#workspace").isVisible())
-    await panel.locator("#refresh-notifications").click();
+  if (await secondPanel.locator("#workspace").isVisible())
+    await secondPanel.locator("#refresh-notifications").click();
+  await until(
+    () =>
+      secondPanel.evaluate(() =>
+        Boolean((globalThis as any).__oldReplyEntered),
+      ),
+    Boolean,
+    "old MV3 unauthorized reply gate",
+  );
   await panel.locator("#sign-in").waitFor({ state: "visible" });
+  await secondPanel.locator("#sign-in").waitFor({ state: "visible" });
   assert.equal(await panel.locator("#workspace").isVisible(), false);
   assert.equal(await panel.locator("#task-list").textContent(), "");
   assert.equal(await panel.locator("#user-name").textContent(), "");
@@ -383,11 +707,80 @@ try {
     fullPage: true,
   });
   pass(
-    "Web revocation clears actual MV3 session storage and the panel's account/task/file cache on the next request",
+    "Web revocation clears actual MV3 session storage and both open panels' account/task/file caches on the next request",
   );
 
+  const replacementContext = await browser.newContext();
+  const replacementWeb = await replacementContext.newPage();
+  watch(replacementWeb);
+  await replacementContext.addInitScript(() =>
+    localStorage.setItem("cp_locale", "en"),
+  );
+  let replacementUser = "",
+    replacementName = "";
+  try {
+    await replacementWeb.goto("http://localhost:4317/login", {
+      waitUntil: "domcontentloaded",
+    });
+    await replacementWeb
+      .locator('input[name="email"]')
+      .fill(`sessions-replacement-${run}@example.invalid`);
+    const code = await emailCode(replacementWeb, () =>
+      replacementWeb.locator('form button[type="submit"]').click(),
+    );
+    await replacementWeb.locator('input[name="code"]').fill(code);
+    await replacementWeb.locator('form button[type="submit"]').click();
+    await replacementWeb.waitForURL("**/welcome");
+    const me = await api(replacementWeb, "/v1/me");
+    replacementUser = me.user.id;
+    replacementName = me.user.name;
+    fixtureUsers.push(replacementUser);
+    await replacementWeb
+      .locator('input[name="name"]')
+      .fill("Replacement panel account");
+    await replacementWeb
+      .locator('input[name="project_name"]')
+      .fill("Isolated account boundary");
+    await replacementWeb.locator('form button[type="submit"]').click();
+    await replacementWeb.waitForURL("**/app");
+    await mv3.clearCookies();
+    await mv3.addCookies(await replacementContext.cookies());
+  } catch (error) {
+    await replacementContext.close();
+    throw error;
+  }
   await openExtension();
-  const expiring = await activeNative("extension");
+  assert.equal(
+    await panel.locator("#user-name").textContent(),
+    replacementName,
+  );
+  assert.equal(
+    await secondPanel.locator("#user-name").textContent(),
+    replacementName,
+  );
+  await secondPanel.evaluate(() => (globalThis as any).__releaseOldReply());
+  await until(
+    () =>
+      secondPanel.evaluate(() =>
+        Boolean((globalThis as any).__oldReplyDelivered),
+      ),
+    Boolean,
+    "delivery of old account unauthorized reply",
+  );
+  assert.equal(await secondPanel.locator("#workspace").isVisible(), true);
+  assert.equal(
+    await secondPanel.locator("#user-name").textContent(),
+    replacementName,
+  );
+  assert.equal(await secondPanel.locator("#error").isVisible(), false);
+  await secondPanel.screenshot({
+    path: path.join(extension, "assets/screenshots/12-account-replacement.png"),
+    fullPage: true,
+  });
+  pass(
+    "a different account automatically populates both existing panels; releasing the previous account's delayed unauthorized reply cannot clear or contaminate the new workspace",
+  );
+  const expiring = await activeNative("extension", replacementUser);
   await worker.evaluate(() => {
     const scope = globalThis as any;
     scope.__sessionFetch = globalThis.fetch;
@@ -402,18 +795,19 @@ try {
   });
   await db.query(
     "UPDATE sessions SET expires_at=now()-interval '1 second' WHERE id=$1 AND user_id=$2",
-    [expiring, userId],
+    [expiring, replacementUser],
   );
   assert.ok(
-    (await api(web, "/v1/me/sessions")).items.some(
+    (await api(replacementWeb, "/v1/me/sessions")).items.some(
       (i: any) => i.id === expiring,
     ),
   );
+  await replacementContext.close();
   const before = Number(
     (
       await db.query(
         "SELECT count(*) AS n FROM refresh_tokens WHERE user_id=$1",
-        [userId],
+        [replacementUser],
       )
     ).rows[0].n,
   );
@@ -424,7 +818,7 @@ try {
       (
         await db.query(
           "SELECT revoked_at FROM sessions WHERE id=$1 AND user_id=$2",
-          [expiring, userId],
+          [expiring, replacementUser],
         )
       ).rows[0].revoked_at,
     Boolean,
@@ -435,7 +829,7 @@ try {
       (
         await db.query(
           "SELECT count(*) AS n FROM refresh_tokens WHERE user_id=$1",
-          [userId],
+          [replacementUser],
         )
       ).rows[0].n,
     ),
@@ -569,15 +963,15 @@ try {
       browserClosed = true;
     });
   if (db) {
-    if (userId)
+    if (fixtureUsers.length)
       await cleanup("Owned fixture credential cleanup", async () => {
         await db.query(
-          "UPDATE refresh_tokens SET revoked_at=coalesce(revoked_at,now()) WHERE user_id=$1",
-          [userId],
+          "UPDATE refresh_tokens SET revoked_at=coalesce(revoked_at,now()) WHERE user_id=ANY($1::uuid[])",
+          [fixtureUsers],
         );
         await db.query(
-          "UPDATE sessions SET revoked_at=coalesce(revoked_at,now()) WHERE user_id=$1",
-          [userId],
+          "UPDATE sessions SET revoked_at=coalesce(revoked_at,now()) WHERE user_id=ANY($1::uuid[])",
+          [fixtureUsers],
         );
       });
     await cleanup("Database cleanup", () => db.end());
@@ -594,10 +988,11 @@ try {
         rendering_mode:
           "software (--disable-gpu for owned Chromium and source Electron); product launch flags unchanged; controlled diagnostic retained in sessions-gpu-diagnostic.json",
         model_calls: 0,
+        runtime,
         pending_requests: [...pendingRequests.keys()],
         network_failures: networkFailures,
         scope:
-          "Real browser/Electron/MV3 session lifecycle; MV3 business document is not a native Side Panel appearance test; controlled offline fetch and GET gate fault fixtures are explicit",
+          "Real canonical browser/Electron/MV3 authentication and session lifecycle, lost committed refresh response recovery and two-panel different-account replacement; MV3 business documents are not native Side Panel appearance tests; only owned access-expiry/vault/storage, response-loss, offline fetch and delayed reply/GET gate fault fixtures",
         checks,
         errors,
         browser_closed: browserClosed,
