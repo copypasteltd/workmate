@@ -349,3 +349,9 @@ The earlier successful `qa:membership` receipt was overwritten and is excluded f
 最新平台全套 **220/220**；严格实际 HTTP 样本 **37/37**；当前 HTTP 五组通过；当前页面复核失败独立保存，早期成功字节缺失不作通过证明。 / Latest platform **220/220**, strict captured HTTP schemas **37/37**, and five current-source HTTP groups passed; current page failures are retained and the overwritten earlier success is not accepted.
 
 本轮独立检出四组通过：37 份不可改写 SQL 和两库摘要账本、28 个固定摘要 Skill、45 份 renderer 来源摘要、220 项原始 TAP 字节及记录摘要；临时检出已移除。检出基于实现提交，后续提交仅纠正证据说明和保存回执。 / Four fresh-checkout groups pass for 37 immutable SQL files and both migration ledgers, 28 trusted Skills, 45 renderer digests and raw 220-test TAP bytes. Owned temporary clones were removed. Subsequent commits only clarify evidence metadata and save the receipt.
+
+## Admin 成员真实 HTTP 验证
+
+运行 npm run qa:admin-membership-wire，使用独立合成用户和仅指定测试企业的临时管理员，验证成员授予、暂停/恢复、规范操作恢复、独立审批及撤权；模型调用为零。结束时退出自己的会话并停用自己的临时管理员。原始回执和实际响应样本保存到 evidence；这些检查不证明页面验收。
+
+本轮最终稳定源码平台回归 **233/233**，新增 Admin 成员专项 **13/13**；当前真实后台成员 HTTP **5/5**，原规范捕获样本 **43/43**。完整原始回执位于 Delivery `evidence/`；页面验收与生产/完整原生门槛另行保留。
