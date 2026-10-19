@@ -222,3 +222,25 @@ flowchart LR
 ![资料变更预览](assets/screenshots/54-account-profile-preview.png)
 ![冻结命令独立复核](assets/screenshots/55-account-closure-review.png)
 ![繁中深色账户控制](assets/screenshots/56-account-control-dark-zh.png)
+
+
+## 规范目录与范围消耗
+
+用户列表、用户详情和企业列表已同步使用原始严格 AdminUserList/AdminUserDetail/AdminTenantList。筛选支持用户/企业/项目、状态、有效 VIP、确认扣费时段和每页笔数，重设或刷新会重置游标；前后翻页使用实际签名游标。仅显示本页数量，未授权的联系方式、金额和权益使用横线或明确权限提示，不伪造零值或无 VIP。
+
+详情从独立的获准上下文显示企业名称、任务数和个人权益历史，账户、成员、费用及 VIP 入口继续绑定规范用户 ID。费用表单的企业选择完整读取所有获准游标页。页面类型检查和生产构建通过；实际 API 与 Vite 页面七组增量检查覆盖 23 用户的 20/3 分页、过滤、详情和现有管理入口、近期 MFA 及未登录拒绝。测试只用合成数据，自建 Chromium 完成后关闭。
+
+```mermaid
+flowchart LR
+  Filters[搜索及高级筛选] --> First[重置游标]
+  First --> Page[当前授权目录页]
+  Page --> Next[保存签名游标 / 前后页]
+  Page --> Detail[严格用户详情]
+  Detail --> Actions[账户 / 成员 / 费用 / VIP]
+```
+
+![用户目录和高级筛选](assets/screenshots/57-users-directory.png)
+![规范详情与企业消费](assets/screenshots/58-user-detail-scopes.png)
+![繁中深色移动筛选](assets/screenshots/59-directory-mobile-dark.png)
+
+截图为实际本机页面。已验证英文浅色 375/768/1440 及繁中深色 375 宽度，未据此宣称全部语言/主题/页面或费用写操作均已验收；旧成员页面的独立未完成回执仍保留。

@@ -719,3 +719,36 @@ body:has(.admin-shell) .demo-notice {
     min-width: 0;
   }
 }
+
+.directory-filters {
+  margin-block: 1rem;
+  padding: 1rem;
+}
+.directory-filters summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.directory-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-block: 1rem;
+}
+.directory-filter-grid input,
+.directory-filter-grid select {
+  min-width: 0;
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .directory-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .directory-filter-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

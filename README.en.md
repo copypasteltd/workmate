@@ -222,3 +222,25 @@ The new account form passes **5/5** real browser groups: profile preview/confirm
 ![Profile differences](assets/screenshots/54-account-profile-preview.png)
 ![Frozen account review](assets/screenshots/55-account-closure-review.png)
 ![Traditional Chinese dark controls](assets/screenshots/56-account-control-dark-zh.png)
+
+
+## Canonical directory and scoped charges
+
+User lists, details and workspace lists consume the original strict AdminUserList/AdminUserDetail/AdminTenantList. Filters include user/workspace/project, state, effective VIP, confirmed-charge interval and page size. Reset/refresh starts a new cursor sequence; previous/next use actual signed cursors. Counts describe the current page. Unauthorized contact, charge and entitlement fields display a dash or an explicit permission message instead of fabricated zero/no-VIP claims.
+
+A separately authorized context supplies workspace names, task counts and personal grant history. Account, membership, billing and VIP controls retain canonical user IDs. Billing target selection reads every authorized workspace cursor page. Typechecking and production build pass. Seven actual API/Vite UI groups cover 23 users across 20/3 pages, filters, detail and existing management entry points, recent MFA and anonymous rejection. Owned Chromium closes after synthetic-data verification.
+
+```mermaid
+flowchart LR
+  Filters[Search and advanced filters] --> First[Reset cursor]
+  First --> Page[Current authorized page]
+  Page --> Next[Saved signed cursor / previous and next]
+  Page --> Detail[Strict user detail]
+  Detail --> Actions[Account / membership / billing / VIP]
+```
+
+![Directory and filters](assets/screenshots/57-users-directory.png)
+![Strict detail and scoped workspace charges](assets/screenshots/58-user-detail-scopes.png)
+![Traditional Chinese dark mobile filters](assets/screenshots/59-directory-mobile-dark.png)
+
+These are actual local screenshots. English light layouts were checked at 375/768/1440 and Traditional Chinese dark at 375; this does not accept every language/theme/page or financial write operation. The separate older membership UI open receipt remains.

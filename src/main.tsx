@@ -1,3 +1,8 @@
+import {
+  AdminDirectoryFilters,
+  useAdminTenantOptions,
+  type DirectoryFilters,
+} from "./directory";
 import React, {
   createContext,
   useContext,
@@ -650,21 +655,16 @@ function Overview() {
 }
 const columns: Record<string, string[]> = {
   users: [
-    "name",
-    "email",
-    "status",
-    "workspaces",
-    "charged_micros",
-    "created_at",
+    "display_name",
+    "masked_contact",
+    "state",
+    "tenant_ids",
+    "confirmed_customer_charges",
+    "vip_summary",
+    "registered_at",
+    "last_login_at",
   ],
-  tenants: [
-    "name",
-    "status",
-    "members",
-    "balance_micros",
-    "reserved_micros",
-    "created_at",
-  ],
+  tenants: ["name", "state", "version", "billing_account_id"],
   usage: [
     "name",
     "tenant_name",
@@ -706,6 +706,14 @@ const columns: Record<string, string[]> = {
   policy: ["key", "version", "state", "created_at"],
 };
 const headers: Record<string, [string, string]> = {
+  display_name: ["名稱", "Name"],
+  masked_contact: ["聯絡資料", "Contact"],
+  tenant_ids: ["企業", "Workspaces"],
+  confirmed_customer_charges: ["確認扣費", "Confirmed charges"],
+  vip_summary: ["有效 VIP", "Effective VIP"],
+  registered_at: ["註冊時間", "Registered"],
+  last_login_at: ["最近登入", "Last login"],
+  billing_account_id: ["帳務帳戶", "Billing account"],
   name: ["名稱", "Name"],
   email: ["郵箱", "Email"],
   enrollment_state: ["MFA 開通", "MFA setup"],
@@ -766,6 +774,21 @@ function Value({ field, value }: { field: string; value: any }) {
       </span>
     );
   }
+  if (field === "confirmed_customer_charges")
+    return value ? (
+      <Money value={value.amount_micros} currency={value.currency} />
+    ) : (
+      <span>—</span>
+    );
+  if (field === "tenant_ids") return <span>{value?.length ?? 0}</span>;
+  if (field === "vip_summary" && value === "none")
+    return <span>{t("無有效 VIP", "No effective VIP")}</span>;
+  if (field === "state" && ["frozen", "closed"].includes(value))
+    return (
+      <span className={"badge badge-" + value}>
+        {value === "frozen" ? t("已凍結", "Frozen") : t("已關閉", "Closed")}
+      </span>
+    );
   if (field.endsWith("_micros")) return <Money value={value} />;
   if (field === "enrollment_state")
     return (
@@ -788,6 +811,8 @@ function Section({ section }: { section: string }) {
     a = useAdmin(),
     navTo = useNavigate(),
     location = useLocation();
+  const [cursors, setCursors] = useState<(string | null)[]>([null]);
+  const [filters, setFilters] = useState<DirectoryFilters>({});
   const [refresh, setRefresh] = useState(0),
     [page, setPage] = useState(1),
     [search, setSearch] = useState(
@@ -805,6 +830,8 @@ function Section({ section }: { section: string }) {
     [err, setErr] = useState<Error | null>(null);
   useEffect(() => {
     setPage(1);
+    setCursors([null]);
+    setFilters({});
     const query = new URLSearchParams(location.search);
     setSearch(query.get("search") ?? "");
     setSub(
@@ -822,17 +849,29 @@ function Section({ section }: { section: string }) {
       : section === "connections" && sub === "devices"
         ? "devices"
         : section;
+  const directory = active === "users" || active === "tenants";
+  const directoryQuery = new URLSearchParams({ limit: "50", ...filters });
+  if (search.trim()) directoryQuery.set("q", search.trim());
+  if (cursors[page - 1]) directoryQuery.set("cursor", cursors[page - 1]!);
   const { data, error, loading } = useData(
     "/v1/admin/" +
       active +
-      "?page=" +
-      page +
-      "&page_size=50&search=" +
-      encodeURIComponent(search),
+      (directory
+        ? "?" + directoryQuery.toString()
+        : "?page=" +
+          page +
+          "&page_size=50&search=" +
+          encodeURIComponent(search)),
     refresh,
   );
   const entry = nav.find((n) => n[0] === section)!;
-  const bump = () => setRefresh((v) => v + 1);
+  const bump = () => {
+    if (directory) {
+      setPage(1);
+      setCursors([null]);
+    }
+    setRefresh((v) => v + 1);
+  };
   const action = async (fn: () => Promise<any>) => {
     try {
       await fn();
@@ -848,8 +887,8 @@ function Section({ section }: { section: string }) {
       "Every registered account, its workspace membership, status and measured usage.",
     ],
     tenants: [
-      "管理企業狀態，查看成員與可用額度。",
-      "Workspace status, members and available credit.",
+      "管理企業狀態與帳務帳戶，依權限進入詳細操作。",
+      "Workspace status and billing accounts, with authorized management actions.",
     ],
     usage: [
       "按實際發起者歸屬統計，避免重複計算團隊消耗。",
@@ -1025,7 +1064,11 @@ function Section({ section }: { section: string }) {
             </>
           ) : (
             <span className="list-total">
-              {data?.total ?? "—"} {t("筆記錄", "records")}
+              {directory
+                ? data
+                  ? `${data.items.length} ${t("筆本頁記錄", "records on this page")}`
+                  : t("載入中", "Loading")
+                : `${data?.total ?? "—"} ${t("筆記錄", "records")}`}
             </span>
           )}
         </div>
@@ -1039,6 +1082,7 @@ function Section({ section }: { section: string }) {
               onChange={(e) => {
                 setSearch(e.target.value);
                 setPage(1);
+                setCursors([null]);
               }}
             />
           </label>
@@ -1071,6 +1115,18 @@ function Section({ section }: { section: string }) {
             )}
         </div>
       </div>
+      {active === "users" && (
+        <AdminDirectoryFilters
+          key={section}
+          canUsage={a.has("admin.usage.read")}
+          canVip={a.has("admin.entitlements.read")}
+          onApply={(value) => {
+            setFilters(value);
+            setPage(1);
+            setCursors([null]);
+          }}
+        />
+      )}
       <ErrorNotice error={error ?? err} />
       {loading && !data ? (
         <Loading />
@@ -1091,13 +1147,20 @@ function Section({ section }: { section: string }) {
                   <tr key={r.id ?? i}>
                     {columns[active].map((f, j) => (
                       <td key={f}>
-                        {active === "users" && f === "name" ? (
+                        {active === "users" && f === "display_name" ? (
                           <Link className="table-link" to={"/users/" + r.id}>
-                            {r.name}
+                            {r.display_name}
                             <ArrowUpRight size={13} />
                           </Link>
                         ) : (
-                          <Value field={f} value={r[f]} />
+                          <Value
+                            field={f}
+                            value={
+                              f === "masked_contact"
+                                ? (r.contact ?? r.masked_contact)
+                                : r[f]
+                            }
+                          />
                         )}
                       </td>
                     ))}
@@ -1143,7 +1206,7 @@ function Section({ section }: { section: string }) {
                                 setDialog("tenant");
                               }}
                             >
-                              {r.status === "active" ? (
+                              {r.state === "active" ? (
                                 <Pause size={15} />
                               ) : (
                                 <Play size={15} />
@@ -1244,13 +1307,16 @@ function Section({ section }: { section: string }) {
           </div>
           <div className="pagination">
             <span>
-              {t("每頁 50 筆", "50 per page")} · {t("目前第", "Page")} {page}
+              {directory
+                ? `${directoryQuery.get("limit")} ${t("筆 / 頁", "per page")}`
+                : t("每頁 50 筆", "50 per page")}{" "}
+              · {t("目前第", "Page")} {page}
             </span>
             <div>
               <button
                 className="icon-button"
                 aria-label="Previous page"
-                disabled={page === 1}
+                disabled={loading || page === 1}
                 onClick={() => setPage((v) => v - 1)}
               >
                 <ChevronLeft size={17} />
@@ -1258,8 +1324,15 @@ function Section({ section }: { section: string }) {
               <button
                 className="icon-button"
                 aria-label="Next page"
-                disabled={loading || page * 50 >= data.total}
-                onClick={() => setPage((v) => v + 1)}
+                disabled={
+                  loading ||
+                  (directory ? !data.next_cursor : page * 50 >= data.total)
+                }
+                onClick={() => {
+                  if (directory)
+                    setCursors((v) => [...v.slice(0, page), data.next_cursor]);
+                  setPage((v) => v + 1);
+                }}
               >
                 <ChevronRight size={17} />
               </button>
@@ -1442,14 +1515,13 @@ function BillingModal({
     [result, setResult] = useState<any>(null),
     [action, setAction] = useState(initial),
     [scope, setScope] = useState("tenant");
-  const tenants = useData(
-    a.has("admin.tenants.read") ? "/v1/admin/tenants?page_size=100" : null,
-  );
+  const tenants = useAdminTenantOptions(a.has("admin.tenants.read") && !user);
   const title = action.startsWith("entitlements")
     ? t("管理 VIP 與權益", "Manage VIP & entitlements")
     : t("費用操作", "Billing operation");
   return (
     <Modal title={title} onClose={onClose}>
+      <ErrorNotice error={tenants.error} />
       {result ? (
         <div className="operation-result">
           <ShieldCheck size={34} />
@@ -1782,6 +1854,10 @@ function UserDetail() {
     [operation, setOperation] = useState<string | null>(null),
     [membership, setMembership] = useState<string | null>(null);
   const { data, error, loading } = useData("/v1/admin/users/" + id, refresh);
+  const context = useData(
+    "/v1/admin/users/" + id + "/management-context",
+    refresh,
+  );
   if (loading) return <Loading />;
   return (
     <>
@@ -1793,8 +1869,8 @@ function UserDetail() {
       {data && (
         <>
           <PageHeader
-            title={data.user.name}
-            description={data.user.email}
+            title={data.user.display_name}
+            description={data.user.contact ?? data.user.masked_contact}
             action={
               <div className="row-actions">
                 {a.has("admin.tenants.members.write") && (
@@ -1839,19 +1915,37 @@ function UserDetail() {
               </div>
             }
           />
+          <ErrorNotice error={context.error} />
           <div className="user-profile-card card">
             <div className="user-profile-avatar">
-              {data.user.name[0]?.toUpperCase()}
+              {data.user.display_name[0]?.toUpperCase()}
             </div>
             <div>
-              <h2>{data.user.name}</h2>
-              <p className="muted">{data.user.email}</p>
-              <Badge value={data.user.status} />
+              <h2>{data.user.display_name}</h2>
+              <p className="muted">
+                {data.user.contact ?? data.user.masked_contact}
+              </p>
+              <Value field="state" value={data.user.state} />
             </div>
             <dl>
               <dt>{t("加入時間", "Joined")}</dt>
               <dd>
-                <DateText value={data.user.created_at} />
+                <DateText value={data.user.registered_at} />
+              </dd>
+              <dt>{t("最近登入", "Last login")}</dt>
+              <dd>
+                {data.user.last_login_at ? (
+                  <DateText value={data.user.last_login_at} />
+                ) : (
+                  "—"
+                )}
+              </dd>
+              <dt>{t("確認扣費", "Confirmed charges")}</dt>
+              <dd>
+                <Value
+                  field="confirmed_customer_charges"
+                  value={data.user.confirmed_customer_charges}
+                />
               </dd>
               <dt>{t("用戶識別", "User ID")}</dt>
               <dd>
@@ -1863,15 +1957,15 @@ function UserDetail() {
             <h2>{t("企業歸屬與消耗", "Workspace membership & usage")}</h2>
             <div className="project-grid">
               {data.memberships.map((m: any) => {
-                const u = data.usage.find(
+                const u = context.data?.memberships.find(
                   (r: any) => r.tenant_id === m.tenant_id,
                 );
                 return (
                   <article className="card" key={m.tenant_id}>
                     <Building2 size={23} />
-                    <h3>{m.tenant_name}</h3>
+                    <h3>{u?.name ?? m.tenant_id}</h3>
                     <span className="badge">{m.role}</span>
-                    <Badge value={m.admin_suspended ? "suspended" : m.status} />
+                    <Badge value={m.state} />
                     {a.has("admin.tenants.members.write") && (
                       <button
                         className="text-button"
@@ -1882,10 +1976,13 @@ function UserDetail() {
                     )}
                     <dl className="detail-list">
                       <dt>{t("工作數量", "Tasks")}</dt>
-                      <dd>{u?.tasks ?? 0}</dd>
+                      <dd>{u?.task_count ?? "—"}</dd>
                       <dt>{t("實際消耗", "Measured usage")}</dt>
                       <dd>
-                        <Money value={u?.charged_micros} />
+                        <Value
+                          field="confirmed_customer_charges"
+                          value={u?.confirmed_customer_charges}
+                        />
                       </dd>
                     </dl>
                   </article>
@@ -1895,8 +1992,8 @@ function UserDetail() {
           </section>
           <section className="section-block">
             <h2>{t("個人權益", "Personal entitlements")}</h2>
-            {data.entitlements.length ? (
-              data.entitlements.map((e: any) => (
+            {context.data?.personal_entitlements?.length ? (
+              context.data.personal_entitlements.map((e: any) => (
                 <div className="version-row" key={e.id}>
                   <Crown size={18} />
                   <strong>{e.plan}</strong>
@@ -1907,8 +2004,12 @@ function UserDetail() {
             ) : (
               <p className="muted">
                 {t(
-                  "尚未開通個人權益。企業方案由企業帳務獨立管理。",
-                  "No personal entitlements. Workspace plans and billing are managed independently.",
+                  context.data?.personal_entitlements === null
+                    ? "你沒有查看個人權益的權限。"
+                    : "尚未顯示個人權益。企業方案由企業帳務獨立管理。",
+                  context.data?.personal_entitlements === null
+                    ? "You do not have permission to read personal entitlements."
+                    : "No personal entitlements displayed. Workspace plans and billing are managed independently.",
                 )}
               </p>
             )}
@@ -1927,7 +2028,16 @@ function UserDetail() {
           {operation && (
             <BillingModal
               initial={operation}
-              user={data}
+              user={{
+                ...data,
+                memberships: data.memberships.map((m: any) => ({
+                  ...m,
+                  tenant_name:
+                    context.data?.memberships.find(
+                      (v: any) => v.tenant_id === m.tenant_id,
+                    )?.name ?? m.tenant_id,
+                })),
+              }}
               onClose={() => setOperation(null)}
               onDone={() => setRefresh((v) => v + 1)}
             />
