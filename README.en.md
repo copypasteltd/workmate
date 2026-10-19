@@ -144,7 +144,6 @@ flowchart LR
 
 ![Actual company identity interface](assets/screenshots/12-company-sign-in.png)
 
-
 ## Lifecycle repairs in progress
 
 Content management now shows durable deletion progress, failed cleanup items and retries guarded by scope, recent MFA, reason and idempotency. Permanently deleted assets cannot be restored or renamed, and download streams recheck authorization after opening. A persistent banner identifies synthetic mode; demo gifts are distinct from payments. Tiny nonzero charges display up to six decimals.
@@ -195,3 +194,5 @@ flowchart LR
 ## Administrative boundary for template execution
 
 New persisted templates recheck current role/method disabling, project access and plans at preflight and creation. Server-owned versions pin Codex and the internal gateway, and revocation blocks later execution. Existing Admin catalog controls still apply. Drafts, complete template version editing/publication and enterprise brand overrides remain pending; the registry alone does not constitute a complete template administration panel.
+
+Queued pause/resume now shares platform domain guards with customer controls: only the unclaimed initial checkpoint and an intact original reservation are eligible. Resume rechecks beneficiary authorization, role/Skills, entitlements and inputs. Admin scope does not replace revoked beneficiary access; reasons, versions and human audit remain required. See master `docs/technical/31-task-controls-and-native-continuation.md`.
