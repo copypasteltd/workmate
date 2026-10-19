@@ -309,7 +309,7 @@ let deviceTimer: ReturnType<typeof setInterval> | null = null;
 let polling = false;
 async function deviceSync(tenant: string) {
   await localAccessReset;
-  const me = await request("/v1/me");
+  const me = await request("/v1/session/context");
   if (
     me.status !== 200 ||
     !me.body.memberships.some((m: any) => m.id === tenant)

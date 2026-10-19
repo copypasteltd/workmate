@@ -59,7 +59,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     const revision = ++loadRevision.current;
     try {
-      const m = await api("/v1/me");
+      const m = await api("/v1/session/context");
       if (revision !== loadRevision.current) return;
       setMe(m);
       setError(null);
