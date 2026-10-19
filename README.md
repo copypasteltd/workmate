@@ -150,7 +150,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **159/159**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **167/167**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十六份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -234,3 +234,21 @@ flowchart LR
 ![实际营销指标与图表](assets/screenshots/53-marketing-analysis.png)
 
 ![繁中深色移动端](assets/screenshots/56-marketing-mobile-zh-dark.png)
+
+## AnalysisSpec 私人报告（当前源码）
+
+在行销分析选择已有快照、业务问题、日期/比较区间、指标、维度和 HKD 最高预算。预览不调用模型或预留费用；明确确认后原子建立私人 Codex 任务、冻结计算/证据及单笔预留。来源、账户、币种、时区及归因独立；重复事实去重，冲突拒绝，比较零值/无数据保留原因。接受后丢失回执重试返回原报告。
+
+真实 Codex 通过分页事实工具读取固定值，服务端检查证据占位符及数字字面量后发布固定 HTML 资产，JSON 保留完整计算。自然语言语义和专业业务质量仍待验收；当前模型为明确标识的假数据。来源隔离/删除和项目撤权阻止读取及下载。完整 102 条综合验收、正式连接/XLSX、专业角色资格和生产发布仍未完成，历史安装包未更新。
+
+列表轮询真实任务状态，证据可展开查看；读取拒绝会清空报告与下载。四宽度、浅深主题及繁英实际检查通过，已修复手机选择框撑宽和切换/拒绝后的旧证据展示。实际 HTML/JSON 下载及成功回执丢失后的重试由 delivery `qa:analysis-reports` 验证。构建通过，约 511 kB 主块仍有 Vite 体积提示。
+
+```mermaid
+flowchart LR
+  Scope[Select snapshots and dates] --> Preview[Uncharged calculation preview]
+  Preview --> Confirm[Explicit confirmation]
+  Confirm --> Task[One persisted report task]
+  Task --> Inspect[Evidence / HTML and JSON download]
+```
+
+![AnalysisSpec report](assets/screenshots/58-analysis-report-ready.png)

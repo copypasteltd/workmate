@@ -2,6 +2,7 @@ import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
 import { MarketingImport } from "./marketing-import";
 import { MarketingAnalysis } from "./marketing-analysis";
+import { MarketingReports } from "./marketing-reports";
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -2319,6 +2320,13 @@ function Analytics() {
           }
         />
       )}{" "}
+      <MarketingReports
+        key={w.base}
+        base={w.base}
+        tenant={w.tenant}
+        project={w.project}
+        datasets={data?.items || []}
+      />
       {open && (
         <Modal
           title={t("匯入行銷數據", "Import campaign data")}
