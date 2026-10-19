@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('admin_account_lifecycle', [3,35,51,55,83,84,85,94,96,100],
+     '四个规范账户写入口、严格 202 AdminOperation、前向版本与标签/关闭标记、锁内当前 MFA/权限/显式拒绝及幂等、全局用户与单企业状态边界、全部会话/未交换代码撤销、关闭与重开独立审批、冻结策略/前态重检、批量守卫以及共享取消/待核费用预留。十二组专项、六组真实 HTTP 及五组新账户表单实测是局部证据；页面直接定位待审批/普通操作，三宽度的英文浅色及繁中深色已测。旧成员页面、列表/详情/费用规范及原生综合验收仍待完成。',
+     ['platform_regression','admin_account_wire','admin_account_ui','runtime_schemas'], ['technical/37-admin-account-lifecycle-and-inflight-control.md']),
     ('admin_membership_control', [3,35,51,55,85,94,100],
      '规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。',
      ['platform_regression','admin_membership_wire','runtime_schemas'], ['technical/36-admin-membership-control-and-policy-snapshots.md']),
@@ -188,6 +191,8 @@ def main():
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
         'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
+        'admin_account_ui': DEV/'copypaste-delivery/evidence/admin-account-ui.json',
+        'admin_account_wire': DEV/'copypaste-delivery/evidence/admin-account-wire.json',
         'admin_membership_wire': DEV/'copypaste-delivery/evidence/admin-membership-wire.json',
         'auth_navigation': DEV/'copypaste-delivery/evidence/auth-navigation.json',
         'sessions': DEV/'copypaste-delivery/evidence/sessions.json',
@@ -242,9 +247,11 @@ def main():
         evidence[key] = {'path': path.relative_to(ROOT).as_posix(), 'sha256': fingerprint(path),
                          'at': report.get('at', report.get('checked_at')), 'checks': checks,
                          'scope': report.get('scope', 'Only the explicitly named subflows in this report')}
-        if key in {'membership_wire', 'admin_membership_wire'}:
+        if key == 'admin_account_ui':
+            assert report['closed'] is True and report['user_browser_tabs_touched'] is False
+        if key in {'membership_wire', 'admin_membership_wire', 'admin_account_wire'}:
             assert report['owned_sessions_closed'] is True
-        if key == 'admin_membership_wire':
+        if key in {'admin_membership_wire','admin_account_wire'}:
             assert report['owned_admin_principals_disabled'] is True
         if key == 'platform_regression':
             assert report['counts']['tests'] == report['counts']['pass'] and report['counts']['fail'] == 0
