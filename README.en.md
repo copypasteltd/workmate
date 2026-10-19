@@ -23,9 +23,9 @@ flowchart LR
 
 ![Actual native side-panel content](assets/screenshots/09-native-sidepanel.png)
 
-The image captures the real SIDE_PANEL document through CDP, showing its content only. Delivery `qa:native-surfaces` invokes `Extensions.triggerAction` on the actual browser tab and verifies right alignment, SIDE_PANEL identity, reduced webpage width, no new normal tab, navigation persistence and toggle close. It does not substitute a standalone side-panel HTML tab. The existing eight `qa:extension` groups cover authentication and business journeys. Owned browsers close in finally.
+The image captures the real SIDE_PANEL document through CDP, showing its content only. Delivery `qa:native-surfaces` invokes `Extensions.triggerAction` on the actual browser tab and verifies right alignment, SIDE_PANEL identity, reduced webpage width, no new normal tab, navigation persistence and toggle close. The 2026-10-20 rerun binds the current extension's entire dist tree and source bytes to that actual QA report. The previous eight `qa:extension` groups remain historical authentication/business evidence; the full authentication matrix has separate acceptance requirements. Owned browsers close in finally.
 
-The loadable preview ZIP is `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`; extract it and load the directory from `chrome://extensions`. This preview uses localhost origins; production configuration and store publication require a separate release.
+The current loadable ZIP is `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`; extract it and load the directory from `chrome://extensions`. Earlier preview bytes are preserved in `release/sidepanel-stage30/`. Delivery records the new archive's SHA-256. This preview uses localhost origins; production configuration and store publication require a separate release.
 
 ## Build and load
 

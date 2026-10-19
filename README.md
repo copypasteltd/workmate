@@ -23,9 +23,9 @@ flowchart LR
 
 ![实际原生侧栏内容](assets/screenshots/09-native-sidepanel.png)
 
-该图来自真正 SIDE_PANEL 文档的 CDP 截图，仅含侧栏内容。交付仓库 `qa:native-surfaces` 通过 `Extensions.triggerAction` 执行真实浏览器按钮默认动作，断言右侧布局、SIDE_PANEL、网页宽度缩小、不增加普通标签页、切页保留和再次收起；它不以单独打开侧栏 HTML 代替验证。原有 `qa:extension` 八组继续验证登录和业务流程。测试在 finally 关闭自己的浏览器。
+该图来自真正 SIDE_PANEL 文档的 CDP 截图，仅含侧栏内容。交付仓库 `qa:native-surfaces` 通过 `Extensions.triggerAction` 执行真实浏览器按钮默认动作，断言右侧布局、SIDE_PANEL、网页宽度缩小、不增加普通标签页、切页保留和再次收起。2026-10-20 对当前构建重新执行该验证，并将扩展全部 dist 文件和源码字节绑定到实际测试报告。原有 `qa:extension` 八组是先前登录和业务流程的增量记录；完整认证矩阵继续独立验收。测试在 finally 关闭自己的浏览器。
 
-本次可加载 ZIP 位于 `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`，解压后在 `chrome://extensions` 加载目录。预览使用 localhost origin；商店发布和生产配置仍需正式交付。
+当前可加载 ZIP 位于 `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`，解压后在 `chrome://extensions` 加载目录。先前预览原字节保留在 `release/sidepanel-stage30/`。交付清单记录新包 SHA-256；预览使用 localhost origin，商店发布和生产配置仍需正式交付。
 
 ## 构建与加载
 
