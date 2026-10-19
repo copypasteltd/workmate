@@ -157,3 +157,12 @@ These source changes have not been repackaged; 0.5.0 archives retain their origi
 ## Cloud directory governance (current source)
 
 Workspace nodes are included in the content resource inventory. Existing scope, body-access, version, reason and audit checks govern metadata inspection, quarantine, restoration and deletion. Quarantining a folder hides descendants from user search and model reads. Entry removal preserves independent source assets; permanent asset erasure remains a separate lifecycle action.
+
+## Waiting-task input governance (current source)
+
+Authorized task-body inspection now includes requested input descriptions, provider, scope, state, selected IDs and version. Body reads retain their separate permission, data scope and audit; support-role metadata access does not expose private requests or credentials. Execution cancellation can release the original hold of an unstarted waiting task without a model charge. Retry preserves private ownership and requirements, then rechecks current resources.
+
+Delivery `qa:admin-task-inputs` passes three actual browser groups. Platform negative tests also reject support-role body access. Screenshots use synthetic task data; browser instances close after verification.
+
+![Authorized inspection of requested inputs](assets/screenshots/20-task-input-review.png)
+![The same task-body panel in dark mode](assets/screenshots/21-task-input-review-dark.png)
