@@ -27,8 +27,11 @@ import { name, Problem, uuid, publicRow } from "./lib.js";
 import { key, replay, projectAccess } from "./access.js";
 import type { Storage } from "./storage.js";
 import { saveAsset } from "./storage.js";
-import { settle, reserve } from "./billing.js";
-import { controlUnclaimedTask } from "./task-control.js";
+import { reserve } from "./billing.js";
+import {
+  controlUnclaimedTask,
+  requestTaskCancellation,
+} from "./task-control.js";
 import { event } from "./tasks.js";
 
 const pagination = z.object({
@@ -341,67 +344,6 @@ export function registerAdmin(
       );
     },
   );
-  app.patch(
-    "/v1/admin/users/:id",
-    { preHandler: requireAdmin(db) },
-    async (req) => {
-      const id = uuid.parse((req.params as any).id);
-      const b = z
-        .object({
-          name: name.optional(),
-          status: z.enum(["active", "suspended"]).optional(),
-          revoke_sessions: z.boolean().optional(),
-          reason,
-        })
-        .strict()
-        .parse(req.body);
-      return db.tx(
-        async (tx) => {
-          if (b.name)
-            await permit(tx, req.principal, "admin.users.profile.write");
-          if (b.status)
-            await permit(tx, req.principal, "admin.users.status.write");
-          if (b.revoke_sessions)
-            await permit(tx, req.principal, "admin.users.sessions.revoke");
-          const u = (
-            await tx.query("SELECT id FROM users WHERE id=$1 FOR UPDATE", [id])
-          ).rows[0];
-          if (!u) throw new Problem(404, "NOT_FOUND", "User not found");
-          await tx.query(
-            "UPDATE users SET name=coalesce($2,name),status=coalesce($3,status),auth_version=auth_version+$4 WHERE id=$1",
-            [
-              id,
-              b.name ?? null,
-              b.status ?? null,
-              b.status || b.revoke_sessions ? 1 : 0,
-            ],
-          );
-          if (b.status || b.revoke_sessions) {
-            await tx.query(
-              "UPDATE sessions SET revoked_at=now() WHERE user_id=$1",
-              [id],
-            );
-            await tx.query(
-              "UPDATE refresh_tokens SET revoked_at=now() WHERE user_id=$1",
-              [id],
-            );
-          }
-          await audit(
-            tx,
-            req.principal,
-            "admin.users.update",
-            id,
-            "succeeded",
-            { ...b },
-            undefined,
-          );
-          return { ok: true };
-        },
-        undefined,
-        true,
-      );
-    },
-  );
   for (const section of [
     "tenants",
     "usage",
@@ -579,45 +521,6 @@ export function registerAdmin(
       },
     );
   }
-  app.patch(
-    "/v1/admin/tenants/:id",
-    { preHandler: requireAdmin(db) },
-    async (req) => {
-      const id = uuid.parse((req.params as any).id);
-      const b = z
-        .object({ status: z.enum(["active", "suspended"]), reason })
-        .strict()
-        .parse(req.body);
-      return db.tx(
-        async (tx) => {
-          await permit(tx, req.principal, "admin.tenants.status.write", {
-            tenant: id,
-          });
-          if (
-            !(
-              await tx.query(
-                "UPDATE tenants SET status=$2 WHERE id=$1 RETURNING id",
-                [id, b.status],
-              )
-            ).rowCount
-          )
-            throw new Problem(404, "NOT_FOUND", "Workspace not found");
-          await audit(
-            tx,
-            req.principal,
-            "admin.tenants.status.write",
-            id,
-            "succeeded",
-            b,
-            id,
-          );
-          return { ok: true };
-        },
-        undefined,
-        true,
-      );
-    },
-  );
   app.get(
     "/v1/admin/content/:id/download",
     { preHandler: requireAdmin(db) },
@@ -779,27 +682,7 @@ export function registerAdmin(
                   "VERSION_CONFLICT",
                   "Task changed; refresh first",
                 );
-              if (b.action === "cancel") {
-                if (t.status === "running")
-                  await tx.query(
-                    "UPDATE tasks SET cancel_requested=true,version=version+1 WHERE id=$1",
-                    [id],
-                  );
-                else if (
-                  [
-                    "queued",
-                    "paused",
-                    "awaiting_approval",
-                    "needs_input",
-                  ].includes(t.status)
-                ) {
-                  await settle(tx, t.tenant_id, id, 0, t.created_by);
-                  await tx.query(
-                    "UPDATE tasks SET status='cancelled',version=version+1 WHERE id=$1",
-                    [id],
-                  );
-                }
-              }
+              if (b.action === "cancel") await requestTaskCancellation(tx, t);
               if (b.action === "pause" || b.action === "resume")
                 await controlUnclaimedTask(tx, db, catalog, t, b.action);
               if (b.action === "retry") {
@@ -1224,6 +1107,13 @@ function registerAdminCatalog(
                 .positive()
                 .max(24 * 366 * 5),
               membership_privileged_requires_approval: z.boolean().optional(),
+              account_close_requires_approval: z.boolean().optional(),
+              account_approval_window_minutes: z
+                .number()
+                .int()
+                .min(1)
+                .max(10)
+                .optional(),
               membership_approval_window_minutes: z
                 .number()
                 .int()

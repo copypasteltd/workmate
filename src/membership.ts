@@ -28,6 +28,8 @@ function tenantHeader(req: FastifyRequest, path?: string) {
     );
   return tenant;
 }
+import { lockUserAuthorities, currentUserAuthority } from "./user-authority.js";
+
 export const lockMemberships = async (tx: Tx, tenant: string) => {
   await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
     `members:${tenant}`,
@@ -88,11 +90,11 @@ export async function lastOwner(
   ) {
     const n = (
       await tx.query(
-        "SELECT count(*)::int AS n FROM memberships WHERE tenant_id=$1 AND role='owner' AND status='active'",
-        [tenant],
+        "SELECT count(*)::int AS n FROM memberships m JOIN users u ON u.id=m.user_id WHERE m.tenant_id=$1 AND m.role='owner' AND m.status='active' AND u.status='active' AND m.user_id<>$2",
+        [tenant, old.user_id],
       )
     ).rows[0].n;
-    if (n <= 1)
+    if (n === 0)
       throw new Problem(
         409,
         "LAST_OWNER",
@@ -166,20 +168,18 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
             )
           ).rows;
           return {
-            items: rows
-              .slice(0, q.limit)
-              .map((m) =>
-                directory
-                  ? {
-                      ...memberDTO(m),
-                      management_state: m.admin_suspended
-                        ? "suspended"
-                        : m.status,
-                      name: m.name,
-                      email: m.email,
-                    }
-                  : memberDTO(m),
-              ),
+            items: rows.slice(0, q.limit).map((m) =>
+              directory
+                ? {
+                    ...memberDTO(m),
+                    management_state: m.admin_suspended
+                      ? "suspended"
+                      : m.status,
+                    name: m.name,
+                    email: m.email,
+                  }
+                : memberDTO(m),
+            ),
             next_cursor: rows.length > q.limit ? rows[q.limit - 1].id : null,
           };
         }, tenant);
@@ -200,6 +200,7 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
       .strict()
       .parse(req.body);
     return db.tx(async (tx) => {
+      await lockUserAuthorities(tx, [req.principal.id, user]);
       await lockMemberships(tx, tenant);
       // Check authority after waiting for the same lock used by removal/acceptance.
       await tenantAccess(tx, req.principal, tenant, "owner");
@@ -255,6 +256,16 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
       id = uuid.parse((req.params as any).member),
       k = requestKey(req);
     return db.tx(async (tx) => {
+      const target = (
+        await tx.query(
+          "SELECT user_id FROM memberships WHERE tenant_id=$1 AND id=$2",
+          [tenant, id],
+        )
+      ).rows[0];
+      await lockUserAuthorities(tx, [
+        req.principal.id,
+        ...(target ? [target.user_id] : []),
+      ]);
       await lockMemberships(tx, tenant);
       const actor = await tenantAccess(tx, req.principal, tenant, "manage");
       const old = (
@@ -310,8 +321,29 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
       .strict()
       .parse(req.body);
     return db.tx(async (tx) => {
+      const recipient = (
+        await tx.query("SELECT id FROM users WHERE email=$1", [b.email])
+      ).rows[0];
+      await lockUserAuthorities(tx, [
+        req.principal.id,
+        ...(recipient ? [recipient.id] : []),
+      ]);
       await lockMemberships(tx, tenant);
       const m = await tenantAccess(tx, req.principal, tenant, "manage");
+      if (
+        recipient &&
+        !(
+          await tx.query(
+            "SELECT 1 FROM users WHERE id=$1 AND status='active'",
+            [recipient.id],
+          )
+        ).rowCount
+      )
+        throw new Problem(
+          409,
+          "USER_INACTIVE",
+          "Restore the account before inviting it",
+        );
       if (["owner", "admin"].includes(b.role) && m.role !== "owner")
         throw new Problem(
           403,
@@ -378,14 +410,17 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
         .parse(req.body),
       k = requestKey(req);
     const locator = (
-      await db.control.query("SELECT tenant_id FROM invites WHERE digest=$1", [
-        hash(b.token),
-      ])
+      await db.control.query(
+        "SELECT tenant_id,created_by FROM invites WHERE digest=$1",
+        [hash(b.token)],
+      )
     ).rows[0];
     if (!locator)
       throw new Problem(404, "INVITE_NOT_FOUND", "Invitation not found");
     return db.tx(async (tx) => {
       const tenant = locator.tenant_id;
+      await lockUserAuthorities(tx, [req.principal.id, locator.created_by]);
+      await currentUserAuthority(tx, req.principal);
       await lockMemberships(tx, tenant);
       const i = (
         await tx.query(
@@ -534,8 +569,33 @@ export function registerMemberships(app: FastifyInstance, db: Database) {
           .strict()
           .parse(req.body);
         return db.tx(async (tx) => {
+          const recipient = (
+            await tx.query(
+              "SELECT u.id FROM invites i JOIN users u ON u.email=i.email WHERE i.tenant_id=$1 AND i.id=$2",
+              [tenant, id],
+            )
+          ).rows[0];
+          await lockUserAuthorities(tx, [
+            req.principal.id,
+            ...(recipient ? [recipient.id] : []),
+          ]);
           await lockMemberships(tx, tenant);
           const m = await tenantAccess(tx, req.principal, tenant, "manage");
+          if (
+            action === "resend" &&
+            recipient &&
+            !(
+              await tx.query(
+                "SELECT 1 FROM users WHERE id=$1 AND status='active'",
+                [recipient.id],
+              )
+            ).rowCount
+          )
+            throw new Problem(
+              409,
+              "USER_INACTIVE",
+              "Restore the account before resending an invitation",
+            );
           const i = (
             await tx.query(
               "SELECT * FROM invites WHERE tenant_id=$1 AND id=$2 FOR UPDATE",

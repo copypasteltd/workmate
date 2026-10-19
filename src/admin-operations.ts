@@ -3,12 +3,26 @@ import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { Database, Tx } from "./db.js";
 import { requireAdmin, audit, type Principal } from "./auth.js";
-import { permit, requireRecentMfa } from "./admin-access.js";
+import {
+  permit,
+  requireRecentMfa,
+  lockAdminAccess,
+  requireSensitiveAdmin,
+} from "./admin-access.js";
 import { key, replay } from "./access.js";
 import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
 import { fund, settle, wallet } from "./billing.js";
 import { event } from "./tasks.js";
-import { decideMembershipOperation } from "./admin-memberships.js";
+import {
+  decideMembershipOperation,
+  adminOperationDTO,
+  membershipAdminAuthority,
+} from "./admin-memberships.js";
+import {
+  decideAccountOperation,
+  isAccountAction,
+  userAccountAuthority,
+} from "./admin-accounts.js";
 
 const reason = z.string().trim().min(3).max(2000);
 const date = z.string().datetime({ offset: true });
@@ -392,6 +406,59 @@ async function execute(tx: Tx, b: Command, p: Principal, id: string) {
   return result;
 }
 export function registerAdminOperations(app: FastifyInstance, db: Database) {
+  app.get(
+    "/v1/admin/operations/:operation",
+    { preHandler: requireAdmin(db) },
+    async (req, reply) => {
+      reply.header("Cache-Control", "no-store");
+      const id = uuid.parse((req.params as any).operation);
+      return db.tx(
+        async (tx) => {
+          await lockAdminAccess(tx);
+          const op = (
+            await tx.query("SELECT * FROM admin_operations WHERE id=$1", [id])
+          ).rows[0];
+          if (!op) throw new Problem(404, "NOT_FOUND", "Operation not found");
+          if (isAccountAction(op.action) && op.action.startsWith("users."))
+            await userAccountAuthority(
+              tx,
+              req.principal,
+              op.payload.target_id,
+              "admin.jobs.read",
+            );
+          else if (op.action === "users.status")
+            for (const target of op.target_ids)
+              await userAccountAuthority(
+                tx,
+                req.principal,
+                target,
+                "admin.jobs.read",
+              );
+          else
+            await membershipAdminAuthority(
+              tx,
+              req.principal,
+              op.tenant_id,
+              "admin.jobs.read",
+            );
+          await requireSensitiveAdmin(tx, req.principal);
+          await audit(
+            tx,
+            req.principal,
+            "admin.jobs.read",
+            id,
+            "succeeded",
+            {},
+            op.tenant_id,
+          );
+          return adminOperationDTO(op);
+        },
+        undefined,
+        true,
+      );
+    },
+  );
+
   app.post(
     "/v1/admin/operations/preview",
     { preHandler: requireAdmin(db) },
@@ -544,6 +611,14 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               409,
               "NOT_PENDING",
               "Operation is not awaiting approval",
+            );
+          if (isAccountAction(op.action))
+            return decideAccountOperation(
+              tx,
+              req.principal,
+              op,
+              b.decision,
+              b.reason,
             );
           if (op.action === "tenants.members.write")
             return decideMembershipOperation(

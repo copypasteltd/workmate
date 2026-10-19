@@ -14,6 +14,7 @@ import {
 } from "./access.js";
 import { name, Problem, uuid } from "./lib.js";
 import { wallet } from "./billing.js";
+import { lockUserAuthorities, currentUserAuthority } from "./user-authority.js";
 
 export function registerWorkspaces(app: FastifyInstance, db: Database) {
   registerMemberships(app, db);
@@ -31,38 +32,50 @@ export function registerWorkspaces(app: FastifyInstance, db: Database) {
 
   app.post("/v1/tenants", { preHandler: requireUser(db) }, async (req) => {
     const b = z.object({ name, project_name: name }).strict().parse(req.body);
-    return db.tx((tx) =>
-      replay(tx, req.principal.id, "tenant.create", key(req), b, async () => {
-        const t = (
+    return db.tx(async (tx) => {
+      await lockUserAuthorities(tx, [req.principal.id]);
+      await currentUserAuthority(tx, req.principal);
+      return replay(
+        tx,
+        req.principal.id,
+        "tenant.create",
+        key(req),
+        b,
+        async () => {
+          const t = (
+            await tx.query(
+              "INSERT INTO tenants(name,data_mode) VALUES($1,$2) RETURNING *",
+              [
+                b.name,
+                db.config.DEMO_MODE ? "simulated" : "configured_services",
+              ],
+            )
+          ).rows[0];
+          await tx.query("SELECT set_config('app.tenant_id',$1,true)", [t.id]);
           await tx.query(
-            "INSERT INTO tenants(name,data_mode) VALUES($1,$2) RETURNING *",
-            [b.name, db.config.DEMO_MODE ? "simulated" : "configured_services"],
-          )
-        ).rows[0];
-        await tx.query("SELECT set_config('app.tenant_id',$1,true)", [t.id]);
-        await tx.query(
-          "INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,'owner')",
-          [t.id, req.principal.id],
-        );
-        await tx.query("INSERT INTO wallets(tenant_id) VALUES($1)", [t.id]);
-        const p = (
-          await tx.query(
-            "INSERT INTO projects(tenant_id,name) VALUES($1,$2) RETURNING *",
-            [t.id, b.project_name],
-          )
-        ).rows[0];
-        await audit(
-          tx,
-          req.principal,
-          "tenant.create",
-          t.id,
-          "succeeded",
-          {},
-          t.id,
-        );
-        return { tenant: t, project: p };
-      }),
-    );
+            "INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,'owner')",
+            [t.id, req.principal.id],
+          );
+          await tx.query("INSERT INTO wallets(tenant_id) VALUES($1)", [t.id]);
+          const p = (
+            await tx.query(
+              "INSERT INTO projects(tenant_id,name) VALUES($1,$2) RETURNING *",
+              [t.id, b.project_name],
+            )
+          ).rows[0];
+          await audit(
+            tx,
+            req.principal,
+            "tenant.create",
+            t.id,
+            "succeeded",
+            {},
+            t.id,
+          );
+          return { tenant: t, project: p };
+        },
+      );
+    });
   });
   app.get(
     "/v1/tenants/:tenant/projects",

@@ -1,10 +1,22 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import type { Database } from "./db.js";
+import type { Database, Tx } from "./db.js";
 import { requireAdmin, audit } from "./auth.js";
-import { permit, requireRecentMfa } from "./admin-access.js";
+import {
+  permit,
+  requireRecentMfa,
+  requireSensitiveAdmin,
+  lockAdminAccess,
+} from "./admin-access.js";
 import { Problem, uuid, csvCell, hash, canonical } from "./lib.js";
 import { key, replay } from "./access.js";
+import {
+  accountPolicy,
+  changeAccountStatus,
+  lockAccountTarget,
+  userAccountAuthority,
+} from "./admin-accounts.js";
+import { lockUserAuthorities } from "./user-authority.js";
 export function registerAdminJobs(app: FastifyInstance, db: Database) {
   app.post(
     "/v1/admin/exports",
@@ -152,10 +164,10 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
       reason: z.string().min(3).max(2000),
     })
     .strict();
-  const snapshot = async (tx: any, ids: string[]) =>
+  const snapshot = async (tx: Tx, ids: string[]) =>
     (
       await tx.query(
-        "SELECT id,status,auth_version FROM users WHERE id=ANY($1::uuid[]) ORDER BY id",
+        "SELECT id,status,auth_version,version,admin_closed_at FROM users WHERE id=ANY($1::uuid[]) ORDER BY id",
         [ids],
       )
     ).rows;
@@ -167,6 +179,7 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
       command.ids = [...new Set(command.ids)].sort();
       return db.tx(
         async (tx) => {
+          await lockAdminAccess(tx);
           await permit(
             tx,
             req.principal,
@@ -174,10 +187,30 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
             {},
             { batch: command.ids.length },
           );
-          await permit(tx, req.principal, "admin.users.status.write");
-          await requireRecentMfa(tx, req.principal);
+          await lockUserAuthorities(tx, command.ids);
+          for (const id of command.ids) {
+            await lockAccountTarget(tx, "users.status.write", id);
+            await userAccountAuthority(
+              tx,
+              req.principal,
+              id,
+              "admin.users.status.write",
+            );
+          }
+          await requireSensitiveAdmin(tx, req.principal);
           const targets = await snapshot(tx, command.ids),
-            payload = { command, target_hash: hash(canonical(targets)) };
+            policy = await accountPolicy(tx, "users.status.batch");
+          if (targets.some((t) => t.admin_closed_at))
+            throw new Problem(
+              409,
+              "ACCOUNT_CLOSED",
+              "Use the reviewed account status flow to reopen a closed account",
+            );
+          const payload = {
+            command,
+            target_hash: hash(canonical(targets)),
+            policy_version_id: policy.id,
+          };
           const r = (
             await tx.query(
               "INSERT INTO admin_previews(principal_id,action,payload,payload_hash,expires_at) VALUES($1,'users.status',$2,$3,now()+interval '5 minutes') RETURNING id,payload_hash,expires_at",
@@ -213,8 +246,40 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
       .strict()
       .parse(req.body);
     return db.tx(
-      (tx) =>
-        replay(
+      async (tx) => {
+        await lockAdminAccess(tx);
+        await requireSensitiveAdmin(tx, req.principal);
+        const source = (
+          await tx.query(
+            "SELECT * FROM admin_previews WHERE id=$1 AND principal_id=$2 AND action='users.status'",
+            [input.preview_id, req.principal.id],
+          )
+        ).rows[0];
+        if (!source || source.payload_hash !== input.payload_hash)
+          throw new Problem(
+            409,
+            "PREVIEW_EXPIRED",
+            "Refresh the batch preview",
+          );
+        const b = batchSchema.parse(source.payload.command);
+        await permit(
+          tx,
+          req.principal,
+          "admin.jobs.create",
+          {},
+          { batch: b.ids.length },
+        );
+        await lockUserAuthorities(tx, b.ids);
+        for (const id of b.ids) {
+          await lockAccountTarget(tx, "users.status.write", id);
+          await userAccountAuthority(
+            tx,
+            req.principal,
+            id,
+            "admin.users.status.write",
+          );
+        }
+        return replay(
           tx,
           req.principal.id,
           "admin.jobs.create",
@@ -223,75 +288,74 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
           async () => {
             const preview = (
               await tx.query(
-                "SELECT *,expires_at>now() AS valid FROM admin_previews WHERE id=$1 AND principal_id=$2 AND action='users.status' FOR UPDATE",
-                [input.preview_id, req.principal.id],
+                "SELECT *,expires_at>now() AS valid FROM admin_previews WHERE id=$1 FOR UPDATE",
+                [source.id],
               )
             ).rows[0];
-            if (
-              !preview ||
-              !preview.valid ||
-              preview.consumed_at ||
-              preview.payload_hash !== input.payload_hash
-            )
+            if (!preview.valid || preview.consumed_at)
               throw new Problem(
                 409,
                 "PREVIEW_EXPIRED",
                 "Refresh the batch preview",
               );
-            const b = batchSchema.parse(preview.payload.command);
             await tx.query(
-              "SELECT id FROM users WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE",
+              "SELECT id FROM users WHERE id=ANY($1::uuid[]) ORDER BY id FOR NO KEY UPDATE",
               [b.ids],
             );
-            if (
-              hash(canonical(await snapshot(tx, b.ids))) !==
-              preview.payload.target_hash
-            )
+            const targets = await snapshot(tx, b.ids),
+              policy = await accountPolicy(tx, "users.status.batch");
+            if (hash(canonical(targets)) !== preview.payload.target_hash)
               throw new Problem(
                 409,
                 "TARGET_CHANGED",
                 "A user changed; preview the batch again",
               );
-            await tx.query(
-              "UPDATE admin_previews SET consumed_at=now() WHERE id=$1",
-              [preview.id],
-            );
-            await permit(
-              tx,
-              req.principal,
-              "admin.jobs.create",
-              {},
-              { batch: b.ids.length },
-            );
-            await permit(tx, req.principal, "admin.users.status.write");
-            await requireRecentMfa(tx, req.principal);
-            const results = [];
-            for (const id of [...new Set(b.ids)].sort()) {
-              const r = await tx.query(
-                "UPDATE users SET status=$2,auth_version=auth_version+1 WHERE id=$1 RETURNING id",
-                [id, b.status],
+            if (preview.payload.policy_version_id !== policy.id)
+              throw new Problem(
+                409,
+                "POLICY_CHANGED",
+                "Policy changed; preview the batch again",
               );
-              if (r.rowCount) {
-                await tx.query(
-                  "UPDATE sessions SET revoked_at=now() WHERE user_id=$1",
-                  [id],
+            if (targets.some((t) => t.admin_closed_at))
+              throw new Problem(
+                409,
+                "ACCOUNT_CLOSED",
+                "Use the reviewed account status flow to reopen a closed account",
+              );
+            const results = [];
+            for (const id of b.ids) {
+              const old = targets.find((t) => t.id === id);
+              if (old) {
+                await changeAccountStatus(
+                  tx,
+                  "users",
+                  id,
+                  b.status === "active" ? "active" : "frozen",
+                  "stop_new",
                 );
-                await tx.query(
-                  "UPDATE refresh_tokens SET revoked_at=now() WHERE user_id=$1",
-                  [id],
+                await audit(
+                  tx,
+                  req.principal,
+                  "admin.users.status.write",
+                  id,
+                  "succeeded",
+                  {
+                    reason: b.reason,
+                    before: old,
+                    state: b.status,
+                    inflight_policy: "stop_new",
+                    batch_preview_id: source.id,
+                  },
                 );
               }
-              results.push({
-                id,
-                state: r.rowCount ? "succeeded" : "not_found",
-              });
+              results.push({ id, state: old ? "succeeded" : "not_found" });
             }
             const state = results.every((r) => r.state === "succeeded")
               ? "succeeded"
               : "partially_succeeded";
             const job = (
               await tx.query(
-                "INSERT INTO admin_operations(principal_id,action,payload_hash,payload,idempotency_key,state,result) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING id,state,result",
+                "INSERT INTO admin_operations(principal_id,action,payload_hash,payload,idempotency_key,state,result,policy_version_id,target_ids,result_ids) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id,state,result",
                 [
                   req.principal.id,
                   b.action,
@@ -300,20 +364,34 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
                   key(req),
                   state,
                   { items: results },
+                  policy.id,
+                  b.ids,
+                  results
+                    .filter((r) => r.state === "succeeded")
+                    .map((r) => r.id),
                 ],
               )
             ).rows[0];
+            await tx.query(
+              "UPDATE admin_previews SET consumed_at=now() WHERE id=$1",
+              [source.id],
+            );
             await audit(
               tx,
               req.principal,
               "admin.jobs.create",
               job.id,
               "succeeded",
-              { reason: b.reason, count: results.length },
+              {
+                reason: b.reason,
+                count: results.length,
+                policy_version_id: policy.id,
+              },
             );
             return job;
           },
-        ),
+        );
+      },
       undefined,
       true,
     );

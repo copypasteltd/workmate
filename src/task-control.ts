@@ -9,6 +9,52 @@ import { authorizeExecutionPlan } from "./plans.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { assertReportSources } from "./analysis-reports.js";
 import { checkInputDependencies } from "./task-dependencies.js";
+import { settle } from "./billing.js";
+
+/** Caller holds the task row lock. Cancellation is a request, never proof that
+ * an accepted external operation was free or that its reservation can be freed. */
+export async function requestTaskCancellation(tx: Tx, task: any) {
+  if (
+    ![
+      "queued",
+      "running",
+      "paused",
+      "awaiting_approval",
+      "needs_input",
+      "reconciling",
+    ].includes(task.status) ||
+    task.cancel_requested
+  )
+    return task;
+  if (task.status !== "running" && task.status !== "reconciling") {
+    const touched =
+      task.attempt > 0 ||
+      task.runtime_thread ||
+      (
+        await tx.query(
+          "SELECT 1 FROM tool_operations WHERE task_id=$1 LIMIT 1",
+          [task.id],
+        )
+      ).rowCount;
+    await settle(tx, task.tenant_id, task.id, 0, task.created_by, !!touched);
+    if (touched) {
+      await tx.query(
+        "UPDATE tasks SET status='reconciling',error_code='CANCELLATION_REQUIRES_RECONCILIATION' WHERE id=$1",
+        [task.id],
+      );
+    } else {
+      await tx.query("UPDATE tasks SET status='cancelled' WHERE id=$1", [
+        task.id,
+      ]);
+    }
+  }
+  await tx.query(
+    "UPDATE tasks SET cancel_requested=true,version=version+1,updated_at=now() WHERE id=$1",
+    [task.id],
+  );
+  await event(tx, task.tenant_id, task.id, "task.cancel_requested", {});
+  return (await tx.query("SELECT * FROM tasks WHERE id=$1", [task.id])).rows[0];
+}
 
 /** Caller holds the task row lock and has authorized the human/admin action.
  * Only the initial, unclaimed checkpoint is resumable here. Never requeue a

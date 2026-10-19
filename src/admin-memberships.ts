@@ -6,8 +6,13 @@ import {
   bindings,
   lockAdminAccess,
   permit,
-  requireRecentMfa,
+  requireSensitiveAdmin as recentAdmin,
 } from "./admin-access.js";
+import { lockUserAuthorities } from "./user-authority.js";
+import {
+  currentAdminControl,
+  pinAdminPolicy,
+} from "./admin-operation-policy.js";
 import { replay } from "./access.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 import {
@@ -36,16 +41,6 @@ const stateOf = (m: any) =>
   m?.admin_suspended ? "suspended" : (m?.status ?? null);
 const commandHash = (tenant: string, b: Change) =>
   hash(canonical({ tenant_id: tenant, ...b }));
-
-async function recentAdmin(tx: Tx, p: Principal) {
-  // Hold the exact session and principal until commit: logout/revocation cannot
-  // interleave between this check and the membership write.
-  await tx.query(
-    "SELECT s.id FROM sessions s JOIN admin_principals p ON p.id=s.admin_id WHERE s.id=$1 AND p.id=$2 FOR SHARE OF s,p",
-    [p.sessionId, p.id],
-  );
-  await requireRecentMfa(tx, p);
-}
 
 /** A project grant cannot authorize a change to an enterprise identity. A project
  * deny overlapping that enterprise blocks this indivisible identity operation. */
@@ -79,14 +74,7 @@ export async function membershipAdminAuthority(
 }
 
 async function currentPolicy(tx: Tx) {
-  await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
-    "catalog:policy:admin-control",
-  ]);
-  const entry = (
-    await tx.query(
-      "SELECT id,version,body FROM catalog_entries WHERE kind='policy' AND key='admin-control' AND state='published'",
-    )
-  ).rows[0];
+  const entry = await currentAdminControl(tx);
   const rules = z
     .object({
       membership_privileged_requires_approval: z.boolean().default(true),
@@ -109,19 +97,8 @@ async function currentPolicy(tx: Tx) {
     scope: "enterprise_with_overlapping_project_denies",
     version: 1,
   };
-  const digest = hash(canonical(body));
-  // ON CONFLICT never updates an existing immutable snapshot.
-  await tx.query(
-    "INSERT INTO admin_operation_policy_versions(payload_hash,body) VALUES($1,$2) ON CONFLICT(payload_hash) DO NOTHING",
-    [digest, body],
-  );
   return {
-    id: (
-      await tx.query(
-        "SELECT id FROM admin_operation_policy_versions WHERE payload_hash=$1",
-        [digest],
-      )
-    ).rows[0].id as string,
+    id: await pinAdminPolicy(tx, body),
     ...rules,
   };
 }
@@ -350,8 +327,9 @@ export async function decideMembershipOperation(
     };
     await membershipAdminAuthority(tx, p, op.tenant_id);
     await recentAdmin(tx, p);
-    await lockMemberships(tx, op.tenant_id);
     const b = adminMembershipChange.parse(op.payload.command);
+    await lockUserAuthorities(tx, [b.user_id]);
+    await lockMemberships(tx, op.tenant_id);
     if (commandHash(op.tenant_id, b) !== op.payload_hash)
       throw new Problem(
         409,
@@ -476,6 +454,7 @@ export function registerAdminMemberships(app: FastifyInstance, db: Database) {
           await lockAdminAccess(tx);
           await membershipAdminAuthority(tx, req.principal, tenant);
           await recentAdmin(tx, req.principal);
+          await lockUserAuthorities(tx, [b.user_id]);
           await lockMemberships(tx, tenant);
           const checked = await inspect(tx, tenant, b),
             policy = await currentPolicy(tx);
@@ -525,6 +504,7 @@ export function registerAdminMemberships(app: FastifyInstance, db: Database) {
           await lockAdminAccess(tx);
           await membershipAdminAuthority(tx, req.principal, tenant);
           await recentAdmin(tx, req.principal);
+          await lockUserAuthorities(tx, [b.user_id]);
           await lockMemberships(tx, tenant);
           const saved = await replay(
             tx,
@@ -623,38 +603,6 @@ export function registerAdminMemberships(app: FastifyInstance, db: Database) {
       );
     },
   );
-  app.get("/v1/admin/operations/:operation", auth, async (req, reply) => {
-    reply.header("Cache-Control", "no-store");
-    const id = uuid.parse((req.params as any).operation);
-    return db.tx(
-      async (tx) => {
-        await lockAdminAccess(tx);
-        const op = (
-          await tx.query("SELECT * FROM admin_operations WHERE id=$1", [id])
-        ).rows[0];
-        if (!op) throw new Problem(404, "NOT_FOUND", "Operation not found");
-        await membershipAdminAuthority(
-          tx,
-          req.principal,
-          op.tenant_id,
-          "admin.jobs.read",
-        );
-        await recentAdmin(tx, req.principal);
-        await audit(
-          tx,
-          req.principal,
-          "admin.jobs.read",
-          op.id,
-          "succeeded",
-          {},
-          op.tenant_id,
-        );
-        return adminOperationDTO(op);
-      },
-      undefined,
-      true,
-    );
-  });
   app.get(
     "/v1/admin/operations/:operation/membership-review",
     auth,

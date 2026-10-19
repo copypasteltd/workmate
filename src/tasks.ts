@@ -10,10 +10,12 @@ import type { Database, Tx } from "./db.js";
 import { requireUser, audit } from "./auth.js";
 import { key, projectAccess, replay } from "./access.js";
 import { micros, name, Problem, uuid } from "./lib.js";
-import { settle } from "./billing.js";
 import type { Catalog } from "./catalog.js";
 import { inputDependencies } from "./task-dependencies.js";
-import { controlUnclaimedTask } from "./task-control.js";
+import {
+  controlUnclaimedTask,
+  requestTaskCancellation,
+} from "./task-control.js";
 export async function event(
   tx: Tx,
   tenant: string,
@@ -262,31 +264,7 @@ export function registerTasks(
           )
         ).rows[0];
         if (!t) throw new Problem(404, "NOT_FOUND", "Task not found");
-        if (
-          ![
-            "queued",
-            "running",
-            "paused",
-            "awaiting_approval",
-            "needs_input",
-          ].includes(t.status)
-        )
-          return t;
-        if (t.status === "running")
-          await tx.query(
-            "UPDATE tasks SET cancel_requested=true,version=version+1 WHERE id=$1",
-            [task],
-          );
-        else {
-          await settle(tx, tenant, task, 0, t.created_by);
-          await tx.query(
-            "UPDATE tasks SET status='cancelled',cancel_requested=true,version=version+1,updated_at=now() WHERE id=$1",
-            [task],
-          );
-        }
-        await event(tx, tenant, task, "task.cancel_requested", {});
-        return (await tx.query("SELECT * FROM tasks WHERE id=$1", [task]))
-          .rows[0];
+        return requestTaskCancellation(tx, t);
       }, tenant);
     },
   );

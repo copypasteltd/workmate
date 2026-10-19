@@ -352,6 +352,14 @@ export async function requireRecentMfa(tx: Tx, p: Principal) {
       "Please sign in again to confirm a sensitive action",
     );
 }
+/** Retain the exact live admin session through a sensitive transaction. */
+export async function requireSensitiveAdmin(tx: Tx, p: Principal) {
+  await tx.query(
+    "SELECT s.id FROM sessions s JOIN admin_principals p ON p.id=s.admin_id WHERE s.id=$1 AND p.id=$2 FOR SHARE OF s,p",
+    [p.sessionId, p.id],
+  );
+  await requireRecentMfa(tx, p);
+}
 export async function visibleTenants(
   tx: Tx,
   p: Principal,

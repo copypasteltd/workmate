@@ -352,3 +352,10 @@ flowchart LR
 ```
 
 Final stable-source platform regression: **233/233**, including **13/13** Admin membership groups. Current real Admin membership HTTP checks: **5/5**; captured original-contract samples: **43/43**. Delivery `evidence/` retains original receipts. Current UI, production and complete native gates remain separate.
+
+
+## Account lifecycle and cancellation charges (current source)
+
+Four canonical POST commands manage global user profile/state, all-session revocation and workspace state, returning strict 202 AdminOperation responses; obsolete PATCH routes are removed. Migration 039 adds real revisions, labels and a distinct closure marker. Commands recheck current scope/denies, recent MFA, CSRF, idempotency and revision. Closure/reopening defaults to independent review tied to the original session, frozen target, deadline and immutable actual policy. Global suspension revokes sessions, refresh credentials, pending native codes and relevant unused invitations; workspace suspension preserves access elsewhere. Batch state jobs cannot reopen closed accounts through a review bypass.
+
+User, Admin and account cancellation share one domain guard. Attempted work or external charges retain their reservation for reconciliation; a non-running state does not prove zero cost. Twelve isolated native PostgreSQL groups exercise scopes, credentials, revisions, approval changes, concurrent workspace creation and cancellation accounting. Delivery receipts describe the cumulative regression. Canonical list/detail, financial/VIP flows and full acceptance remain outstanding.
