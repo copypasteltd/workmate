@@ -132,4 +132,12 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **108/108**. `npm run qa:skills` in the delivery repository passed three browser groups; ten captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **118/118**. `npm run qa:skills` in the delivery repository passed three browser groups; twelve captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+
+## Default assistant and inbox (current source)
+
+The synchronized renderer supports direct text-assistant use, private conversations and notifications. Seven source Electron journey groups cover native PKCE, verified 29 MiB transfers/no overwrite, cloud files, a real Codex synthetic text deliverable and original-task navigation. Only the two public configuration/content reads work before login, allowing the demo notice to appear; private calls still fail while signed out and writes still require native credentials.
+
+The simulated-data notice persists before and after sign-in. Four native tests pass. Owned browser/Electron instances are closed; historical installers do not include this increment.
+
+![Native inbox and simulated-data notice](assets/screenshots/08-notifications.png)

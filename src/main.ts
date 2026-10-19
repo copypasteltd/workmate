@@ -113,20 +113,25 @@ async function request(
   )
     throw new Error("Invalid idempotency key");
   let t;
-  try {
-    t = await tokens();
-  } catch (e: any) {
-    if (e.message === "AUTH_REQUIRED")
-      return {
-        status: 401,
-        body: { error: { code: "AUTH_REQUIRED", message: "Please sign in" } },
-      };
-    throw e;
+  const publicRead =
+    method === "GET" &&
+    ["/v1/public/config", "/v1/public/content"].includes(url.split("?")[0]);
+  if (!publicRead) {
+    try {
+      t = await tokens();
+    } catch (e: any) {
+      if (e.message === "AUTH_REQUIRED")
+        return {
+          status: 401,
+          body: { error: { code: "AUTH_REQUIRED", message: "Please sign in" } },
+        };
+      throw e;
+    }
   }
   const r = await fetch(apiURL(config.api, url), {
     method,
     headers: {
-      Authorization: `Bearer ${t.access_token}`,
+      ...(t ? { Authorization: `Bearer ${t.access_token}` } : {}),
       "Content-Type": "application/json",
       "Idempotency-Key": options.idempotencyKey ?? randomUUID(),
     },

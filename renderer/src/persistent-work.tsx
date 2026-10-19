@@ -76,6 +76,9 @@ export function Specialists() {
     [editing, setEditing] = useState<any>(null),
     [history, setHistory] = useState<any>(null),
     [error, setError] = useState<Error | null>(null);
+  const manage = ["owner", "admin"].includes(
+    w.me?.memberships.find((m: any) => m.id === w.tenant)?.role,
+  );
   const data = useData(w.base + "/agents", refresh),
     versions = useData(
       history ? w.base + "/agents/" + history.id + "/versions" : null,
@@ -124,7 +127,14 @@ export function Specialists() {
                 </span>
               </div>
               <h2>{a.name}</h2>
-              <p className="muted small-text">{a.role_key}</p>
+              <p className="muted small-text">
+                {a.builtin_default
+                  ? t(
+                      "預設助手 · 共享方法，私人會話",
+                      "Default assistant · shared methods, private conversations",
+                    )
+                  : a.role_key}
+              </p>
               <p className="specialist-brief">
                 {a.body.instructions ||
                   t(
@@ -147,10 +157,29 @@ export function Specialists() {
                   <BookOpen size={15} />
                   {t("技能管理", "Manage methods")}
                 </Link>
-                <button className="text-button" onClick={() => setEditing(a)}>
-                  <Settings2 size={15} />
-                  {t("設定", "Settings")}
-                </button>
+                {!a.builtin_default && (
+                  <button className="text-button" onClick={() => setEditing(a)}>
+                    <Settings2 size={15} />
+                    {t("設定", "Settings")}
+                  </button>
+                )}
+                {a.builtin_default && manage && (
+                  <button
+                    className="text-button"
+                    onClick={async () => {
+                      try {
+                        await post(w.base + "/default-assistant/versions", {
+                          expected_version: a.version,
+                        });
+                        setRefresh((v) => v + 1);
+                      } catch (e) {
+                        setError(e as Error);
+                      }
+                    }}
+                  >
+                    {t("採用目前技能版本", "Adopt current methods")}
+                  </button>
+                )}
                 <button
                   className="text-button"
                   onClick={() =>
@@ -245,10 +274,14 @@ function SpecialistEditor({
   const w = useWorkspace(),
     { t } = useI18n();
   const roles = useData("/v1/catalog/roles"),
+    helper = useData("/v1/catalog/default-assistant"),
     brands = useData(w.base + "/brand");
   const [role, setRole] = useState(initial.role_key ?? "marketing-analyst"),
     [tools, setTools] = useState<string[] | undefined>(initial.body?.tool_ids);
-  const selected = roles.data?.items.find((r: any) => r.role_key === role);
+  const selected =
+    role === "assistant"
+      ? helper.data
+      : roles.data?.items.find((r: any) => r.role_key === role);
   return (
     <Modal
       title={
@@ -296,6 +329,9 @@ function SpecialistEditor({
               setTools(undefined);
             }}
           >
+            <option value="assistant">
+              {t("預設助手", "Default assistant")}
+            </option>
             {roles.data?.items.map((r: any) => (
               <option key={r.role_key} value={r.role_key}>
                 {r.display_name} · {r.role_key}
@@ -394,13 +430,13 @@ function NewConversation({
       <ErrorNotice error={agents.error} />
       {agents.loading ? (
         <Loading />
-      ) : enabled.length ? (
+      ) : !agents.error ? (
         <AsyncForm
           submitLabel={t("建立會話", "Create conversation")}
           onSubmit={async (f) => {
             const c = await post(w.base + "/conversations", {
               name: String(f.get("name")),
-              agent_id: String(f.get("agent")),
+              ...(f.get("agent") ? { agent_id: String(f.get("agent")) } : {}),
             });
             onSaved(c.id);
           }}
@@ -415,11 +451,16 @@ function NewConversation({
           </Field>
           <Field label={t("我的專家", "Your specialist")}>
             <select name="agent">
-              {enabled.map((a: any) => (
-                <option key={a.id} value={a.id}>
-                  {a.name} · v{a.version}
-                </option>
-              ))}
+              <option value="">
+                {t("預設助手 — 直接開始", "Default assistant — start directly")}
+              </option>
+              {enabled
+                .filter((a: any) => !a.builtin_default)
+                .map((a: any) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} · v{a.version}
+                  </option>
+                ))}
             </select>
           </Field>
           <p className="muted small-text">
@@ -431,11 +472,8 @@ function NewConversation({
         </AsyncForm>
       ) : (
         <Empty
-          title={t("先建立一位專家", "Create a specialist first")}
-          body={t(
-            "選擇角色並保存工作要求，即可開始持續會話。",
-            "Choose a role and save its working instructions to begin.",
-          )}
+          title={t("暫時無法載入專家", "Unable to load specialists")}
+          body={t("請重新整理後再試。", "Refresh the page and try again.")}
           action={
             <Link className="button primary" to="/app/specialists">
               {t("我的專家", "Your specialists")}
@@ -539,8 +577,8 @@ export function Conversations() {
                 : t("工作可以接著聊。", "Keep the conversation going.")
           }
           body={t(
-            "選一位專家，保存背景和要求，再決定何時交付工作。",
-            "Choose a specialist, save the background, and delegate when you are ready.",
+            "直接用預設助手開始，或選一位專家。保存背景，再決定何時交付工作。",
+            "Start directly with the default assistant or choose a specialist. Save the background and delegate when ready.",
           )}
           action={
             <button className="button secondary" onClick={() => setOpen(true)}>
@@ -582,12 +620,12 @@ export function RecentConversations() {
           ))}
         </div>
       ) : (
-        <Link className="conversation-invitation" to="/app/specialists">
+        <Link className="conversation-invitation" to="/app/conversations">
           <MessageSquare size={22} />
           <span>
             {t(
-              "建立你的專家，讓合作延續。",
-              "Make a specialist yours. Keep the work moving.",
+              "向預設助手交辦，讓合作延續。",
+              "Start with the default assistant. Keep the work moving.",
             )}
           </span>
           <ArrowRight size={17} />
