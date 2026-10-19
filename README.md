@@ -166,3 +166,9 @@ The historical Side Panel ZIP retains its original manifest and does not include
 最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
 
 Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.
+
+## 用户资料契约 / User profile contract
+
+侧栏初始化与项目刷新改用受认证的 `GET /v1/session/context` 读取本人资料和工作区；规范 `GET /v1/me` 仅返回 `User`。原生凭证仍只在受信任后台保存，多面板换账号守卫继续生效。本次源码和 dist 构建不改写历史侧栏 ZIP。
+
+Panel bootstrap and project refresh now use authenticated `GET /v1/session/context` for profile and workspace access. Canonical `GET /v1/me` returns only `User`. Credentials remain in the trusted background; multiple-panel identity fences remain active. Historical preview ZIPs are preserved.

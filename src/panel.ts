@@ -155,7 +155,7 @@ async function populateWorkspace() {
     resetSignedOut();
     return;
   }
-  const me = await request("/v1/me");
+  const me = await request("/v1/session/context");
   if (revision !== workspaceRevision) return;
   $("user-name").textContent = me.user.name;
   option(
@@ -204,7 +204,7 @@ async function projects() {
     d.items.map((p: any) => ({ value: p.id, label: p.name })),
   );
   project = $<HTMLSelectElement>("project").value;
-  const me = await request("/v1/me");
+  const me = await request("/v1/session/context");
   if (revision !== workspaceRevision || scope !== tenant) return;
   $("demo-banner").hidden =
     me.memberships.find((m: any) => m.id === tenant)?.data_mode !== "simulated";
