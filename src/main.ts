@@ -1,4 +1,5 @@
 import { deployment } from "./deployment.js";
+import { saveDownload } from "./download.js";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { exclusive } from "./lock.js";
@@ -101,11 +102,16 @@ async function tokens() {
 }
 async function request(
   url: string,
-  options: { method?: string; body?: unknown } = {},
+  options: { method?: string; body?: unknown; idempotencyKey?: string } = {},
 ) {
   const method = options.method ?? "GET";
   if (!["GET", "POST", "PATCH", "PUT", "DELETE"].includes(method))
     throw new Error("Invalid method");
+  if (
+    options.idempotencyKey &&
+    !/^[\w:-]{16,128}$/.test(options.idempotencyKey)
+  )
+    throw new Error("Invalid idempotency key");
   let t;
   try {
     t = await tokens();
@@ -122,7 +128,7 @@ async function request(
     headers: {
       Authorization: `Bearer ${t.access_token}`,
       "Content-Type": "application/json",
-      "Idempotency-Key": randomUUID(),
+      "Idempotency-Key": options.idempotencyKey ?? randomUUID(),
     },
     body:
       options.body === undefined
@@ -462,23 +468,19 @@ async function createWindow() {
     return shell.openExternal(u.href);
   });
   ipcMain.handle("asset:download", async (_e, p, name) => {
+    // Validate the server path before any native selection, then stream to the
+    // selected destination without retaining a large media file in JS memory.
+    const url = apiURL(config.api, p);
+    const dest = await dialog.showSaveDialog({
+      defaultPath: path.basename(String(name)),
+    });
+    if (dest.canceled || !dest.filePath) return { saved: false };
     const t = await tokens();
-    const r = await fetch(apiURL(config.api, p), {
+    const r = await fetch(url, {
       headers: { Authorization: `Bearer ${t.access_token}` },
       redirect: "error",
     });
-    if (!r.ok) throw new Error("Download unavailable");
-    if (Number(r.headers.get("content-length")) > 25_000_000)
-      throw new Error("File exceeds download limit");
-    const bytes = Buffer.from(await r.arrayBuffer());
-    if (bytes.length > 25_000_000)
-      throw new Error("File exceeds download limit");
-    const dest = await dialog.showSaveDialog({
-      defaultPath: path.basename(name),
-    });
-    if (!dest.canceled && dest.filePath)
-      await writeFile(dest.filePath, bytes, { flag: "wx" });
-    return { saved: !dest.canceled };
+    return saveDownload(r, dest.filePath);
   });
   ipcMain.handle("asset:upload", async (_e, p, body) => {
     if (typeof body?.base64 !== "string" || body.base64.length > 34_000_000)

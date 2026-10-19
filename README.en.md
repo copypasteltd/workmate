@@ -111,3 +111,25 @@ flowchart LR
 ```
 
 ![Actual company identity interface](assets/screenshots/06-company-identity.png)
+
+
+## Native file-channel repairs in progress
+
+The renderer inherits resumable uploads, synthetic-mode labels, deletion progress and retention expiry. IPC forwards stable Idempotency-Key values. Downloads ask for a destination first, stream to a temporary file, validate size and SHA-256, refuse existing destinations and clean up after failure, with a 1 GiB limit. JSON event IPC drains pages using a cursor.
+
+Native source validation is recorded below. Windows installers have not been rebuilt for these changes; packaged regression remains pending. Existing 0.5.0 installers retain their original behavior.
+
+## Current source validation
+
+Native source QA passes system-browser PKCE, stable upload idempotency, an actual 29 MiB part upload, streamed download with matching digest, existing-file protection and browsing the shared cloud tree over the native bridge. Owned browser and Electron instances close after the run.
+
+![Verified native transfer](assets/screenshots/06-verified-transfer.png)
+![Desktop cloud workspace](assets/screenshots/07-cloud-files.png)
+
+This evidence covers current source execution. Historical 0.5.0 installers have not been rebuilt and do not contain these changes.
+
+## Project methods (current source snapshot)
+
+Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
+
+Platform regression: **108/108**. `npm run qa:skills` in the delivery repository passed three browser groups; ten captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
