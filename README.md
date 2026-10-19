@@ -315,3 +315,15 @@ These source checks do not rebuild historical installers/ZIPs or close all 102 a
 最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
 
 Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.
+
+浏览器检查使用锁定 Playwright 对应的引擎；可在本仓库中设置以下原生 Windows 路径。Headless Shell 用于 Web 检查，完整 Chromium 供 MV3 使用。 / Use the locked Playwright engines: Headless Shell for Web and full Chromium for MV3.
+
+```powershell
+$env:PLAYWRIGHT_BROWSERS_PATH='D:\dev\copypasted\自有agent\dev\copypaste-delivery\.data\browsers'
+node node_modules/playwright/cli.js install chromium --no-progress --no-remove
+$env:CHROME_BIN='D:\dev\copypasted\自有agent\dev\copypaste-delivery\.data\browsers\chromium-1248\chrome-win64\chrome.exe'
+$env:WEB_CHROME_BIN='D:\dev\copypasted\自有agent\dev\copypaste-delivery\.data\browsers\chromium_headless_shell-1248\chrome-headless-shell-win64\chrome-headless-shell.exe'
+npm run qa:auth-navigation
+```
+
+`qa:byte-integrity` 当前独立检出四组通过：36 SQL、28 固定摘要方法包、43 渲染来源摘要和 203 项原始 TAP。 / Fresh checkout integrity: four groups passed, covering 36 SQL files, 28 trusted packages, 43 renderer digests and the raw 203-test TAP.
