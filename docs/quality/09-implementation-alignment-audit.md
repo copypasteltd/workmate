@@ -40,9 +40,9 @@ REQ-036/039 按本次用户原话追加约束，逐行变更与原文摘要见 [
 
 实现细则见 [删除/传输/事件](../technical/17-erasure-transfer-retention-events.md)、[云文件](../technical/18-persistent-cloud-files.md)、[项目技能](../technical/19-project-skill-lifecycle.md)。
 
-2026-10-19 当前源码全套平台回归 **185/185**；Web/Admin 修复回归六组、云文件四组、技能三组、资料补齐五组、Admin 资料治理三组、容量 Web/Admin 四组、Desktop 当前源码八组及 Chrome MV3 八组通过。另有模板八组、PDF 七组、AnalysisSpec 六组、CSV 六组及文件导入四组 Web/Electron 验证。最新实际 HTTP 请求／响应样本 **31/31** 的严格 schema 结果见 [样本报告](runtime-contract-samples.json)。平台、Web 与 Desktop 已构建；Web 默认助手和通知分别四组；浏览器/Electron 自建实例在 finally 中关闭。报告完整路径、摘要、检查名称及代码快照由进度文件保存。
+2026-10-19 当前源码全套平台回归 **191/191**；跨端会话七组、原生 Desktop 单元十五项与扩展单元十项通过。此前 Web/Admin 修复回归六组、云文件四组、技能三组、资料补齐五组、Admin 资料治理三组、容量 Web/Admin 四组、Desktop 源码八组及 Chrome MV3 八组通过。另有模板八组、PDF 七组、AnalysisSpec 六组、CSV 六组及文件导入四组 Web/Electron 验证。最新实际 HTTP 请求／响应样本 **31/31** 的严格 schema 结果见 [样本报告](runtime-contract-samples.json)。平台、Web、Desktop 和扩展已构建；Web 默认助手和通知分别四组；浏览器/Electron 自建实例在 finally 中关闭。报告完整路径、摘要、检查名称及代码快照由进度文件保存。
 
-最新规范有 225 个操作，常规实际代码导出 248 个 method/path、35 个前向迁移；160 个规范 method/path 尚未匹配。进度文件独立计算路径匹配及未验证字段；该数量包括兼容路径，不能解释为已完成 225 个规范业务。文档自身检查通过也不表示真实运行完整验收通过。
+最新规范有 225 个操作，常规实际代码导出 249 个 method/path、35 个前向迁移；160 个规范 method/path 尚未匹配。进度文件独立计算路径匹配及未验证字段；该数量包括兼容路径，不能解释为已完成 225 个规范业务。文档自身检查通过也不表示真实运行完整验收通过。
 
 AnalysisSpec 增量将多来源/比较、私人真实 Codex 任务、分页冻结事实、数字引用检查与固定 HTML/JSON 文件连通，详见 [报告任务与证据](../technical/28-analysis-report-tasks-and-evidence.md)。该阶段新增八组平台检查和六组 Web/源码 Electron 旅程，实际 HTTP 样本当时增至 26/26；已有 11 个冻结快照的 121 项证据索引只读比对通过，未重算历史。首次工具上下文和手机选择框问题的失败报告保留，修复后重新验证。自然语言语义、统计意义、正式连接器及 R17 全业务资格仍未完成。
 
@@ -62,3 +62,5 @@ Admin 清理记录的五组浏览器流程与新增三组平台检查见 [后台
 
 
 本轮新增 [排队控制与 Codex 续聊原语](../technical/31-task-controls-and-native-continuation.md)：三端初始排队暂停/同任务恢复、Admin 共用守卫、原生线程增量用量和回执故障处理；五组跨端流程通过。业务 Worker 的已付费步骤恢复仍未实现，上一轮安装包/ZIP 保留原清单。
+
+本轮新增 [跨端会话与撤销](../technical/32-cross-client-sessions-and-revocation.md)：三端真实登录和 PKCE、本人设备目录、原生过期访问撤销、刷新/退出竞争、离线反馈、撤权后的本地目录/缓存及跨标签清理。七组真实 Web/源码无边框 Electron/MV3 流程通过；此次 Windows GPU 路径阻塞的失败和软件渲染对照保留。它们不等同规范认证路由、完整 SSO/系统矩阵或全部 102 条验收完成。

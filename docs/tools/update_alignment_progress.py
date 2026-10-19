@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
+     '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与真实并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；规范认证路由、完整 SSO/系统矩阵及 TC 全部条件仍未完成。',
+     ['platform_regression','sessions'], ['technical/32-cross-client-sessions-and-revocation.md']),
     ('initial_pause_and_native_continuation', [1,2,8,9,11,35,36,39,44,46,51,60,69,92],
      'Web/源码无边框 Desktop/MV3 排队暂停与同任务单预留恢复、领取竞争/权限与来源复查、Admin 共用领域守卫；真实 Codex 跨进程原历史/工具续聊、增量用量、中断和回执 I/O 故障保留消耗。适配器原语未接已付费步骤恢复，不构成完整暂停/检查点验收。',
      ['platform_regression','task_controls'], ['technical/31-task-controls-and-native-continuation.md']),
@@ -72,6 +75,7 @@ CLUSTERS = [
 ]
 
 REMAINING = {
+ 3:'三端真实登录/PKCE、本人目录/整族撤销、刷新退出竞争、离线提示、邀请过期/重放和成员撤销旧入口已验证；规范认证路由及完整企业身份/客户端故障矩阵仍待完成，不能据此关闭 TC-003。',
  36:'原生全局侧栏的真实 action/右侧出现、跨页保留与重启配置已验证；网页选择/站点授权和全部业务上下文的完整矩阵仍待验收。',
  89:'方案未完成工作上限和实际企业/能力执行容量已区分；席位、存储、信用、完整历史版本与正式权益全部路径仍待验收。',
  7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
@@ -169,6 +173,7 @@ def main():
     assert hashlib.sha256(restored_srs.replace('\n','\r\n').encode()).hexdigest() == baseline['requirements_sha256']
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
+        'sessions': DEV/'copypaste-delivery/evidence/sessions.json',
         'task_controls': DEV/'copypaste-delivery/evidence/task-controls.json',
         'web_admin': DEV/'copypaste-delivery/evidence/alignment.json',
         'cloud_files': DEV/'copypaste-delivery/evidence/cloud-files.json',

@@ -140,3 +140,5 @@ Admin 清理记录的筛选、50 条默认分页、撤权显示及独立原生�
 固定原文件版本的 CSV／XLSX、规范导入 API、显式更正链及来源治理见 [文件导入与更正链](technical/29-file-imports-and-correction-lineage.md)。
 
 首次模型调用前的排队暂停/同任务恢复、Admin 共用守卫，以及真实 Codex 续聊原语和增量费用边界见 [任务控制与原生续聊](technical/31-task-controls-and-native-continuation.md)。已付费步骤恢复仍未完成。
+
+Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新竞争、离线退出反馈及跨标签清理见 [跨端会话与撤销](technical/32-cross-client-sessions-and-revocation.md)。规范认证路由和完整企业身份矩阵仍待验收。
