@@ -13,7 +13,7 @@ import { key, projectAccess, replay, tenantAccess } from "./access.js";
 import { hash, name, Problem, token, uuid, seal, unseal } from "./lib.js";
 import { Storage, saveAsset } from "./storage.js";
 import type { Catalog } from "./catalog.js";
-import { metrics } from "./analytics.js";
+import { analyticsEvidence } from "./analytics.js";
 import { enqueueTask } from "./task-service.js";
 import { cancelWorkflowRun } from "./workflow-control.js";
 
@@ -1429,7 +1429,8 @@ export async function advanceWorkflows(
                 {
                   currency: d.currency,
                   timezone: d.timezone,
-                  metrics: metrics(d.rows),
+                  snapshot_id: d.id,
+                  metrics: analyticsEvidence(d),
                 },
                 null,
                 2,

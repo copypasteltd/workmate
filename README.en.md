@@ -121,7 +121,7 @@ npm test
 npm run contracts:export
 ```
 
-The original 0.5.0 release exported 167 Fastify method/path pairs, ten migrations and 84 tests. Current regular source exports 229 pairs, includes 31 forward-only migrations and passes 147 native tests. Route counts do not establish full planned OpenAPI conformance. Tests cover identity, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, actual image/PDF/MP4 output, real Codex controlled protocol turns, source packages and persistent work. Separate delivery tools record browser, extension and Desktop journeys.
+The original 0.5.0 release exported 167 Fastify method/path pairs, ten migrations and 84 tests. Current regular source exports 234 pairs, includes 33 forward-only migrations and passes 159 native tests. Route counts do not establish full planned OpenAPI conformance. Tests cover identity, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, actual image/PDF/MP4 output, real Codex controlled protocol turns, source packages and persistent work. Separate delivery tools record browser, extension and Desktop journeys.
 
 | Directory             | Purpose                                                     |
 | --------------------- | ----------------------------------------------------------- |
@@ -183,7 +183,6 @@ Migration 010 invalidates legacy native codes without a source session. Exchange
 
 ![Actual company identity interface](assets/screenshots/company-sign-in.png)
 
-
 ## Implementation repairs in progress
 
 Current source adds a labelled synthetic dependency mode, irreversible erasure journals and physical/runtime cleanup, 90/30 day online retention, seven day replay-result cleanup, resumable 4 MiB parts, streamed downloads, durable SSE and recovery of tasks that failed before execution was claimed. Applied migrations are forward-only with recorded digest validation. The master design and remaining gaps are in docs/technical/17-erasure-transfer-retention-events.md. Existing 0.5.0 archives do not include unpublished source changes.
@@ -200,7 +199,7 @@ The current 139-test regression passes, including five cloud-file integration gr
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **147/147**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **159/159**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and in-app notifications (current source)
 
@@ -267,6 +266,25 @@ Six new platform groups and eight real Web/Electron journeys passed; 21 captured
 
 The canvas and Codex `design_render` produce actual single-page PDFs. Editable layers remain in the source project or separate editable JSON; PDFs are raster review copies. `layout.render`, `document.render` and `video.render` independently restrict formats. Visible-version checks refuse stale exports, and lost accepted replies retry with the same key and original source snapshot.
 
-The full native regression passed **147/147**. Seven delivery Web/current-source Electron groups cover downloads, native saves, independent pypdf/Poppler parsing/rendering and file hashes. Models remain simulated while file logic is real. Complete review packages, print standards and at least 12 qualified live roles remain pending.
+The full native regression passed **159/159**. Seven delivery Web/current-source Electron groups cover downloads, native saves, independent pypdf/Poppler parsing/rendering and file hashes. Models remain simulated while file logic is real. Complete review packages, print standards and at least 12 qualified live roles remain pending.
 
 ![Actual PDF export](assets/screenshots/design-pdf-export.png)
+
+## Marketing CSV, exact metrics and provenance (current source)
+
+Preview and confirm the account, currency, timezone, entity level, attribution and conversion definitions before import. Generic CSV and candidate Google/Meta-style headers support explicit column mapping. Actual UTF-8/BOM source bytes, SHA-256, definitions and computed results are retained. Duplicate requests, including a lost accepted response, return one project snapshot. Quarantine prevents reimport bypass. Unknown conversions stay unknown; exact decimal CTR/CPC/CPM/CVR/CPA/ROAS use aggregate totals and historical results are frozen.
+
+Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, XLSX, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
+
+Migrations 032/033 add provenance and frozen metrics while preserving older migration bytes. The current native regression passes **159/159**, including four documented metric vectors, four CSV checks and four PostgreSQL integration groups. Administrative source inspection retains scoped body permission and audit; erasure clears source, facts, definitions and metrics. See the delivery root's docs/technical/27-marketing-import-metrics-and-evidence.md.
+
+```mermaid
+flowchart LR
+  CSV[Source and explicit mapping] --> Validate[Authorization and row validation]
+  Validate --> Identity[Atomic project deduplication]
+  Identity --> Snapshot[Immutable source and frozen metrics]
+  Snapshot --> Evidence[Exact values and evidence]
+  Evidence --> Files[Authorized CSV / JSON / SVG]
+```
+
+![Actual marketing analytics](assets/screenshots/marketing-analytics.png)

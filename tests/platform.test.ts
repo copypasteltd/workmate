@@ -2114,6 +2114,18 @@ test("quarantining a dataset removes it at the API and restricted PostgreSQL lay
     csv: "date,channel,impressions,clicks,spend,conversions,revenue,currency\n2026-10-01,Google,100,8,10.00,2,30.00,HKD",
   });
   assert.equal(d.status, 200, JSON.stringify(d.data));
+  const inspected = await call(a, "GET", `/v1/admin/content/${d.data.id}/body`);
+  assert.equal(inspected.status, 200, JSON.stringify(inspected.data));
+  const sourceBody = JSON.parse(inspected.data.text);
+  assert.ok(
+    sourceBody.raw_csv.includes("2026-10-01,Google,100,8,10.00,2,30.00,HKD"),
+  );
+  assert.equal(sourceBody.source_sha256, d.data.source_sha256);
+  assert.equal(sourceBody.metric_snapshot.summary.exact.roas, "3.00000000");
+  assert.equal(
+    (await call(u, "GET", `/v1/admin/content/${d.data.id}/body`)).status,
+    401,
+  );
   assert.equal(
     (
       await call(a, "POST", `/v1/admin/content/${d.data.id}/action`, {

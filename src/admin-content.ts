@@ -167,7 +167,18 @@ export function registerAdminContent(
                     ).rows,
                   }
                 : table === "analytics_datasets"
-                  ? { currency: r.currency, timezone: r.timezone, rows: r.rows }
+                  ? {
+                      currency: r.currency,
+                      timezone: r.timezone,
+                      rows: r.rows,
+                      import_spec: r.import_spec,
+                      import_metadata: r.import_metadata,
+                      source_sha256: r.source_sha256,
+                      source_filename: r.source_filename,
+                      source_available: r.raw_csv !== null,
+                      raw_csv: r.raw_csv,
+                      metric_snapshot: r.metric_snapshot,
+                    }
                   : table === "workflows"
                     ? r.definition
                     : table === "workflow_runs"

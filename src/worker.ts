@@ -22,7 +22,7 @@ import { projectAccess, replay } from "./access.js";
 import { settle, tokenCharge } from "./billing.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 import { event } from "./tasks.js";
-import { metrics } from "./analytics.js";
+import { analyticsEvidence } from "./analytics.js";
 import type { Principal } from "./auth.js";
 import { advanceWorkflows, poster, renderProjectPoster } from "./business.js";
 import {
@@ -732,7 +732,7 @@ export class Worker {
             return {
               currency: d.currency,
               timezone: d.timezone,
-              ...metrics(d.rows),
+              ...analyticsEvidence(d),
             };
           },
           z.object({ dataset_id: uuid }).strict(),
