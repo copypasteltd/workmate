@@ -7,6 +7,26 @@ An independent repository for project/specialist tasks, explicitly selected file
 ![Sign-in](assets/screenshots/01-login.png)
 ![Authenticated side panel](assets/screenshots/02-workspace.png)
 
+## Open in the browser side panel
+
+The entry follows the current MetaMask pattern: select CopyPaste from Chrome's extension menu or pin and click its icon to open the native global Side Panel, normally on the right. Clicking again closes it. It stays across page/tab navigation, and closing it does not cancel cloud tasks. Installation and browser startup do not open it automatically.
+
+The manifest uses `side_panel.default_path` without `action.default_popup`. Every worker start, install/update and browser startup restores `openPanelOnActionClick: true` and trusted storage access. The extension uses Chrome's panel rather than an overlay, popup or extra tab. Chrome controls the left/right preference; users with a left-side preference can change it in Chrome's appearance/side-panel settings. Chrome 120 remains supported; newer `getLayout()` is used only by QA.
+
+```mermaid
+flowchart LR
+  Icon[Extension icon] --> Action[Native Chrome action]
+  Action --> Panel[Global Side Panel / normally right]
+  Panel --> Work[Sign-in / project / task / files]
+  Action --> Close[Click again to close]
+```
+
+![Actual native side-panel content](assets/screenshots/09-native-sidepanel.png)
+
+The image captures the real SIDE_PANEL document through CDP, showing its content only. Delivery `qa:native-surfaces` invokes `Extensions.triggerAction` on the actual browser tab and verifies right alignment, SIDE_PANEL identity, reduced webpage width, no new normal tab, navigation persistence and toggle close. It does not substitute a standalone side-panel HTML tab. The existing eight `qa:extension` groups cover authentication and business journeys. Owned browsers close in finally.
+
+The loadable preview ZIP is `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`; extract it and load the directory from `chrome://extensions`. This preview uses localhost origins; production configuration and store publication require a separate release.
+
 ## Build and load
 
 Requires Node.js 22.14+ and Chrome 120+. Native Chromium was used for qualification. Start platform and Web first:

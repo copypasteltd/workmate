@@ -187,12 +187,22 @@ async function host(message: unknown) {
     message as object,
   );
 }
-chrome.runtime.onInstalled.addListener(() => {
-  void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
-  void chrome.storage.session.setAccessLevel({
-    accessLevel: "TRUSTED_CONTEXTS",
+// Reapply on every service-worker start as well as install/browser startup.
+// The action opens Chrome's global native panel; it never opens a popup or tab.
+async function configureBrowserSurface() {
+  await Promise.all([
+    chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }),
+    chrome.storage.session.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" }),
+  ]);
+}
+const restoreBrowserSurface = () => {
+  void configureBrowserSurface().catch(() => {
+    console.error("CopyPaste browser surface initialization failed");
   });
-});
+};
+restoreBrowserSurface();
+chrome.runtime.onInstalled.addListener(restoreBrowserSurface);
+chrome.runtime.onStartup.addListener(restoreBrowserSurface);
 chrome.runtime.onMessage.addListener((message, sender, respond) => {
   if (
     sender.id !== chrome.runtime.id ||

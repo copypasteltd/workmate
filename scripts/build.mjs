@@ -64,7 +64,7 @@ const manifest = {
   host_permissions: [api.origin + "/*"],
   background: { service_worker: "background.js" },
   side_panel: { default_path: "sidepanel.html" },
-  action: { default_title: "Open CopyPaste workspace" },
+  action: { default_title: "Open CopyPaste side panel · 開啟工作側欄" },
   icons: { 16: "icon-16.png", 48: "icon-48.png", 128: "icon-128.png" },
   content_security_policy: {
     extension_pages: "script-src 'self'; object-src 'none'; base-uri 'none'",

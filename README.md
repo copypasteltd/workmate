@@ -7,6 +7,26 @@
 ![扩展登录](assets/screenshots/01-login.png)
 ![真实登录后的侧栏](assets/screenshots/02-workspace.png)
 
+## 点击后在浏览器侧栏出现
+
+出现方式参照新版 MetaMask：在 Chrome 扩展菜单选择 CopyPaste，或固定图标后点击，打开当前窗口的原生 Side Panel，默认位于右侧。再次点击收起；切换网页/标签页保留同一全局侧栏，关闭侧栏不取消云任务。初始化及浏览器重启不会自动弹出界面。
+
+manifest 使用 `side_panel.default_path`，action 不设置 `default_popup`；service worker 每次启动、安装/更新和浏览器启动都恢复 `openPanelOnActionClick: true` 与受信存储访问级别。不会用新标签、悬浮层或 popup 代替侧栏。右/左位置由 Chrome 用户偏好管理，扩展无法强制覆盖；设为左侧的用户可在 Chrome 外观/侧边栏设置切回右侧。产品仍兼容 Chrome 120；较新 Chrome 的 `getLayout()` 仅用于 QA 读取布局。
+
+```mermaid
+flowchart LR
+  Click[扩展图标] --> Action[Chrome 原生 action]
+  Action --> Panel[全局 Side Panel / 默认右侧]
+  Panel --> Work[登录 / 项目 / 任务 / 素材]
+  Action --> Close[再次点击收起]
+```
+
+![实际原生侧栏内容](assets/screenshots/09-native-sidepanel.png)
+
+该图来自真正 SIDE_PANEL 文档的 CDP 截图，仅含侧栏内容。交付仓库 `qa:native-surfaces` 通过 `Extensions.triggerAction` 执行真实浏览器按钮默认动作，断言右侧布局、SIDE_PANEL、网页宽度缩小、不增加普通标签页、切页保留和再次收起；它不以单独打开侧栏 HTML 代替验证。原有 `qa:extension` 八组继续验证登录和业务流程。测试在 finally 关闭自己的浏览器。
+
+本次可加载 ZIP 位于 `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`，解压后在 `chrome://extensions` 加载目录。预览使用 localhost origin；商店发布和生产配置仍需正式交付。
+
 ## 构建与加载
 
 Node.js 22.14+、Chrome 120+，本次实际验收使用原生 Chromium。先运行 platform 和 Web：
