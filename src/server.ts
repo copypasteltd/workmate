@@ -34,6 +34,11 @@ import { registerTaskEvents } from "./task-events.js";
 import { registerCloudFiles } from "./cloud-files.js";
 import { registerNotifications } from "./notifications.js";
 import { registerTaskDependencies } from "./task-dependencies.js";
+import { seedRuntimeProfile } from "./runtime-profiles.js";
+import {
+  seedAgentTemplates,
+  registerAgentTemplates,
+} from "./agent-templates.js";
 import {
   seedSkillVersions,
   registerSkillLifecycle,
@@ -58,6 +63,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     throw new Error("Application database identity must be restricted cp_app");
   await seedRoles(db, catalog);
   await seedSkillVersions(db, catalog);
+  await seedRuntimeProfile(db, catalog);
+  await seedAgentTemplates(db, catalog);
   const storage = new Storage(c);
   const worker = new Worker(db, catalog, storage);
   const app = Fastify({
@@ -270,6 +277,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTasks(app, db, catalog);
   registerTaskEvents(app, db);
   registerPersistentWork(app, db, catalog);
+  registerAgentTemplates(app, db, catalog);
   registerSkillLifecycle(app, db, catalog);
   registerNotifications(app, db);
   registerTaskDependencies(app, db);

@@ -200,7 +200,7 @@ The current 139-test regression passes, including five cloud-file integration gr
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **139/139**. `npm run qa:skills` in the delivery repository passed three browser groups; seventeen captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and in-app notifications (current source)
 
@@ -244,3 +244,21 @@ Migration 029 atomically checks global, workspace, current-user and capability l
 Cleanup pages now filter state/type/literal IDs within current authorization before counting and pagination. Admin lists default to 50, capped at 100. Migration 030 adds query indexes; applied migration bytes remain immutable. Per-page progress uses batched queries. Ordinary pages exclude object locators and lease credentials; direct read-only retries return 403.
 
 Application integration suites and migration checks each create a native `copypaste_suite_<random UUID>` PostgreSQL database and an owned `.data/test-runs/<random UUID>` directory, apply all migrations and close the application before removing only that fixture. A local native PostgreSQL server and loopback `OWNER_DATABASE_URL` are required. Neither the demonstration database nor historical `copypaste_test` is reset. Reconciliation fixtures cannot consume the next run's execution slots. Delivery evidence preserves the original failure and repair verification.
+
+## Persisted role templates and Codex versions
+
+Migration 031 adds real template, Codex-profile and internal-capability identities. The canonical template directory, detail, preflight and instance APIs enforce current project access, plan, methods and implemented tools. A five-minute preflight receipt creates no task, installation or wallet hold. Instance creation rechecks dependencies and atomically pins versions; kernel, gateway and Skill identity overrides are rejected. Stale bindings fail before a new budget reservation and are checked again at claim, tools and publication. Legacy records retain their original history; complete publication and upgrade flows remain pending.
+
+```mermaid
+flowchart LR
+  Template[Reviewed template version] --> Check[Current project preflight]
+  Check --> Create[Recheck and create idempotently]
+  Create --> Pins[Template / Skill / Codex / capability versions]
+  Pins --> Guard[Submit / claim / tool / publication guards]
+```
+
+Six new platform groups and eight real Web/Electron journeys passed; 21 captured HTTP responses passed strict schemas. All 18 professional presets still require live business qualification. The minimum of 12 qualified roles remains unchanged. Unsupported tools are explicit dependencies.
+
+![Actual role directory](assets/screenshots/role-template-directory.png)
+
+![Actual preflight and creation](assets/screenshots/role-template-ready.png)

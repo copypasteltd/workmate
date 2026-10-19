@@ -221,7 +221,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **139/139**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十七份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **145/145**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与站内通知（当前源码）
 
@@ -255,3 +255,21 @@ Explicit file/connection prerequisites hold the original reservation before the 
 清理记录 API 增加当前范围内的状态/类别/字面 ID 筛选、过滤后计数和稳定排序的分页；后台列表默认 50 条、最大 100。迁移 030 仅新增查询索引，旧迁移保持字节不变。每页清理进度批量读取，普通列表不包含对象路径或租约凭据；只读管理员直接重试返回 403。
 
 应用集成测试及迁移测试分别创建 `copypaste_suite_<随机 UUID>` 原生 PostgreSQL 库和 `.data/test-runs/<随机 UUID>`，应用全部迁移，关闭应用后仅清理自建库/目录。要求本地原生 PostgreSQL 及 loopback `OWNER_DATABASE_URL`；不重置演示库或历史 `copypaste_test`。独立隔离保证待对账任务不会污染下一次测试的执行容量。首次发现的失败报告与后续修复结果均保存在 delivery/evidence。
+
+## 持久角色模板与 Codex 版本
+
+新增迁移 031、真实模板/运行/能力版本注册表，以及 `/v1/agent-templates` 的目录、详情、预检和实例化。预检只保存五分钟回执；创建时按当前项目权限、方案、方法、工具和能力重新检查，再原子安装及绑定。禁止覆盖内核、网关或技能身份。配置失效在新委派预留费用前拒绝；领取、工具及发布再次检查。历史无绑定版本保持原始记录，完整升级/发布仍待完成。
+
+```mermaid
+flowchart LR
+  Template[审核目录版本] --> Check[当前项目依赖预检]
+  Check --> Create[重新检查并幂等建立]
+  Create --> Pinned[模板/Skill/Codex/能力固定版本]
+  Pinned --> Guard[提交、领取、工具与发布复查]
+```
+
+六组新增平台检查及八组 Web/Electron 流程通过，21 份实际 HTTP 样本通过严格 schema。18 个专业模板仍未完成真实业务资格；至少 12 个合格角色的要求保留。未实现工具显示缺项，不能把全部目录条目标为可执行。
+
+![实际角色目录](assets/screenshots/role-template-directory.png)
+
+![实际预检与创建](assets/screenshots/role-template-ready.png)

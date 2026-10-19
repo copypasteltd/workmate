@@ -205,6 +205,8 @@ export class Worker {
             tenant,
             t.project_id,
             t.input_context,
+            this.db.config.CODEX_VERSION,
+            [...this.catalog.capabilityVersions.values()].map((v) => v.id),
           );
           if (
             this.catalog.digest(this.catalog.role(t.role_key)) !== t.role_hash
@@ -275,6 +277,8 @@ export class Worker {
                 tenant,
                 task.project_id,
                 task.input_context,
+                this.db.config.CODEX_VERSION,
+                [...this.catalog.capabilityVersions.values()].map((v) => v.id),
               );
             } catch {
               controller.abort();
@@ -340,6 +344,8 @@ export class Worker {
             tenant,
             task.project_id,
             task.input_context,
+            this.db.config.CODEX_VERSION,
+            [...this.catalog.capabilityVersions.values()].map((v) => v.id),
           );
           return {
             ...work,
@@ -456,6 +462,8 @@ export class Worker {
             t.tenant_id,
             t.project_id,
             live.input_context,
+            this.db.config.CODEX_VERSION,
+            [...this.catalog.capabilityVersions.values()].map((v) => v.id),
           );
           contextDigest = context.digest;
         } catch {
@@ -568,6 +576,8 @@ export class Worker {
         t.tenant_id,
         t.project_id,
         t.input_context,
+        this.db.config.CODEX_VERSION,
+        [...this.catalog.capabilityVersions.values()].map((v) => v.id),
       );
       await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
       if (

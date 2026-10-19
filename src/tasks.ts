@@ -113,6 +113,8 @@ export function registerTasks(
               tenant,
               project,
               agent,
+              undefined,
+              catalog,
             );
           }
           return enqueueTask(

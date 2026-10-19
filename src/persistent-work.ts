@@ -15,6 +15,10 @@ import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
 import { enqueueTask } from "./task-service.js";
 import { provisionRoleSkills, bindAgentSkills } from "./skill-lifecycle.js";
 import {
+  activeRuntimeProfile,
+  assertAgentRuntime,
+} from "./runtime-profiles.js";
+import {
   inputDependencies,
   assertInputDependencies,
   inputDependencyBinding,
@@ -31,7 +35,7 @@ export const activeTaskStates = [
 ];
 const params = z.object({ tenant: uuid, project: uuid });
 const expectedVersion = z.number().int().positive();
-const agentInput = z
+export const agentInput = z
   .object({
     name,
     role_key: z.string().min(1).max(80),
@@ -71,7 +75,7 @@ async function applicableMemories(
   ).rows as { id: string; version: number }[];
 }
 
-async function agentDefinition(
+export async function agentDefinition(
   tx: Tx,
   catalog: Catalog,
   b: z.infer<typeof agentInput>,
@@ -80,6 +84,7 @@ async function agentDefinition(
   user: string,
 ) {
   const role = catalog.role(b.role_key);
+  const runtime = await activeRuntimeProfile(tx, catalog);
   await catalog.ensureEnabled(tx, b.role_key);
   const skills = await provisionRoleSkills(
     tx,
@@ -108,6 +113,14 @@ async function agentDefinition(
   }
   return {
     kernel: "codex",
+    runtime_profile_id: runtime.id,
+    runtime_version: runtime.pinned_version,
+    capability_version_ids: role.model_bindings
+      .map(
+        (binding: any) =>
+          catalog.capabilityVersions.get(binding.profile_key)?.id,
+      )
+      .filter(Boolean),
     name: b.name,
     role_key: role.role_key,
     role_hash: catalog.digest(role),
@@ -124,6 +137,64 @@ async function agentDefinition(
     })),
   };
 }
+export async function createSpecialist(
+  tx: Tx,
+  catalog: Catalog,
+  actor: Principal,
+  tenant: string,
+  project: string,
+  input: z.infer<typeof agentInput>,
+  template?: { id: string; version: number; definition_hash: string },
+) {
+  await projectAccess(tx, actor, tenant, project, "write");
+  const definition = {
+    ...(await agentDefinition(tx, catalog, input, project, tenant, actor.id)),
+    ...(template
+      ? {
+          template_version_id: template.id,
+          template_version: template.version,
+          preset_definition_hash: template.definition_hash,
+        }
+      : {}),
+  };
+  if (
+    (
+      await tx.query(
+        "SELECT count(*)::int AS n FROM agents WHERE project_id=$1",
+        [project],
+      )
+    ).rows[0].n >= 200
+  )
+    throw new Problem(
+      409,
+      "AGENT_LIMIT",
+      "This project has reached its specialist limit",
+    );
+  const row = (
+    await tx.query(
+      "INSERT INTO agents(tenant_id,project_id,name,role_key,created_by) VALUES($1,$2,$3,$4,$5) RETURNING *",
+      [tenant, project, input.name, input.role_key, actor.id],
+    )
+  ).rows[0];
+  await tx.query(
+    "INSERT INTO agent_versions(tenant_id,agent_id,version,body,created_by) VALUES($1,$2,1,$3,$4)",
+    [tenant, row.id, definition, actor.id],
+  );
+  await bindAgentSkills(tx, tenant, project, row.id, 1, definition.skills);
+  await audit(
+    tx,
+    actor,
+    "agent.create",
+    row.id,
+    "succeeded",
+    {
+      role_key: row.role_key,
+      ...(template ? { template_version_id: template.id } : {}),
+    },
+    tenant,
+  );
+  return getAgentVersion(tx, project, row.id, undefined, true);
+}
 export async function getAgentVersion(
   tx: Tx,
   project: string,
@@ -133,7 +204,7 @@ export async function getAgentVersion(
 ) {
   const row = (
     await tx.query(
-      "SELECT a.*,v.version AS bound_version,v.body FROM agents a JOIN agent_versions v ON v.agent_id=a.id AND v.version=coalesce($3,a.version) WHERE a.id=$1 AND a.project_id=$2 AND a.content_state='active'",
+      "SELECT a.*,v.id AS agent_version_id,v.template_version_id,v.runtime_profile_id,v.version AS bound_version,v.body FROM agents a JOIN agent_versions v ON v.agent_id=a.id AND v.version=coalesce($3,a.version) WHERE a.id=$1 AND a.project_id=$2 AND a.content_state='active'",
       [id, project, version ?? null],
     )
   ).rows[0];
@@ -242,6 +313,7 @@ export async function freezeWorkContext(
   project: string,
   agent: any,
   conversation?: any,
+  catalog?: Catalog,
 ): Promise<WorkContext> {
   const memories = await applicableMemories(
     tx,
@@ -285,7 +357,17 @@ export async function freezeWorkContext(
       : {}),
   };
   // Verify every reference and the complete prompt bound before accepting a paid task.
-  await resolveWorkContext(tx, p, tenant, project, context);
+  await resolveWorkContext(
+    tx,
+    p,
+    tenant,
+    project,
+    context,
+    catalog?.runtimeProfile.pinned_version,
+    catalog
+      ? [...catalog.capabilityVersions.values()].map((v) => v.id)
+      : undefined,
+  );
   return context;
 }
 export async function resolveWorkContext(
@@ -294,6 +376,8 @@ export async function resolveWorkContext(
   tenant: string,
   project: string,
   context: Partial<WorkContext>,
+  expectedRuntimeVersion?: string,
+  currentCapabilityVersions?: string[],
 ) {
   if (!context.agent_id)
     return {
@@ -307,6 +391,12 @@ export async function resolveWorkContext(
     project,
     context.agent_id,
     context.agent_version,
+  );
+  await assertAgentRuntime(
+    tx,
+    agent,
+    expectedRuntimeVersion,
+    currentCapabilityVersions,
   );
   if (
     agent.body.kernel !== "codex" ||
@@ -639,6 +729,7 @@ export function registerPersistentWork(
               project,
               a,
               c,
+              catalog,
             );
             const task = await enqueueTask(
               tx,
@@ -713,55 +804,14 @@ export function registerPersistentWork(
         key(req),
         b,
         async () => {
-          const definition = await agentDefinition(
+          return createSpecialist(
             tx,
             catalog,
-            b,
-            project,
-            tenant,
-            req.principal.id,
-          );
-          if (
-            (
-              await tx.query(
-                "SELECT count(*)::int AS n FROM agents WHERE project_id=$1",
-                [project],
-              )
-            ).rows[0].n >= 200
-          )
-            throw new Problem(
-              409,
-              "AGENT_LIMIT",
-              "This project has reached its specialist limit",
-            );
-          const a = (
-            await tx.query(
-              "INSERT INTO agents(tenant_id,project_id,name,role_key,created_by) VALUES($1,$2,$3,$4,$5) RETURNING *",
-              [tenant, project, b.name, b.role_key, req.principal.id],
-            )
-          ).rows[0];
-          await tx.query(
-            "INSERT INTO agent_versions(tenant_id,agent_id,version,body,created_by) VALUES($1,$2,1,$3,$4)",
-            [tenant, a.id, definition, req.principal.id],
-          );
-          await bindAgentSkills(
-            tx,
-            tenant,
-            project,
-            a.id,
-            1,
-            definition.skills,
-          );
-          await audit(
-            tx,
             req.principal,
-            "agent.create",
-            a.id,
-            "succeeded",
-            { role_key: a.role_key },
             tenant,
+            project,
+            b,
           );
-          return { ...a, body: definition };
         },
       );
     }, tenant);
@@ -1142,6 +1192,7 @@ export function registerPersistentWork(
                 project,
                 a,
                 c,
+                catalog,
               );
               task = await enqueueTask(
                 tx,
@@ -1290,6 +1341,8 @@ export function registerPersistentWork(
               tenant,
               project,
               task.input_context,
+              db.config.CODEX_VERSION,
+              [...catalog.capabilityVersions.values()].map((v) => v.id),
             );
             try {
               await assertInputDependencies(tx, task);

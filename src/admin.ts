@@ -899,6 +899,8 @@ export function registerAdmin(
                   t.tenant_id,
                   t.project_id,
                   t.input_context,
+                  db.config.CODEX_VERSION,
+                  [...catalog.capabilityVersions.values()].map((v) => v.id),
                 );
                 const plan = await authorizeTaskPlan(
                   tx,

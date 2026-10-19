@@ -17,6 +17,8 @@ export class Catalog {
   skillDefinitions: any[] = [];
   defaultAssistant: any;
   admin: any;
+  runtimeProfile: any;
+  capabilityVersions = new Map<string, any>();
   async load() {
     const c = JSON.parse(
       await readFile("catalog/role-preset-catalog.json", "utf8"),
