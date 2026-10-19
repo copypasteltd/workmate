@@ -138,7 +138,7 @@ npm test
 npm run contracts:export
 ```
 
-0.5.0 原始发布包含 167 个 Fastify method/path、十个迁移和 84 项测试；当前源码清单为常规 247 个 method/path、35 个迁移和 180 项通过的原生测试。路由数量不等同完整规范 OpenAPI。测试覆盖身份、隔离、费用并发/重放、权限/VIP、内容撤销、图文/PDF/MP4、真实 Codex 受控协议、源码包及新增持久工作流程。浏览器/扩展/Desktop 证据由独立 delivery 仓库记录。
+0.5.0 原始发布包含 167 个 Fastify method/path、十个迁移和 84 项测试；当前源码清单为常规 248 个 method/path、35 个迁移和 185 项通过的原生测试。路由数量不等同完整规范 OpenAPI。测试覆盖身份、隔离、费用并发/重放、权限/VIP、内容撤销、图文/PDF/MP4、真实 Codex 受控协议、源码包及新增持久工作流程。浏览器/扩展/Desktop 证据由独立 delivery 仓库记录。
 
 | 路径                   | 内容                                           |
 | ---------------------- | ---------------------------------------------- |
@@ -220,7 +220,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **180/180**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **185/185**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与站内通知（当前源码）
 
@@ -277,7 +277,7 @@ flowchart LR
 
 画布及 Codex `design_render` 生成实际单页 PDF；文字与图层保存在源工程或独立 editable JSON，PDF 为图片审阅稿。格式由 `layout.render`、`document.render`、`video.render` 分别约束。导出检查当前可见版本；相同请求响应丢失后重试沿用幂等键，保留原产物与源快照。
 
-完整原生回归 **180/180**。delivery 的七组 Web/源码 Electron 验收包含真实下载、原生保存、pypdf/Poppler 独立解析渲染与摘要校验。模拟模型和真实文件逻辑分明；完整审阅包、印刷标准及至少 12 个真实合格角色仍未完成。
+完整原生回归 **185/185**。delivery 的七组 Web/源码 Electron 验收包含真实下载、原生保存、pypdf/Poppler 独立解析渲染与摘要校验。模拟模型和真实文件逻辑分明；完整审阅包、印刷标准及至少 12 个真实合格角色仍未完成。
 
 ![实际 PDF 导出](assets/screenshots/design-pdf-export.png)
 
@@ -287,7 +287,7 @@ flowchart LR
 
 原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
 
-迁移 032/033 增加来源及冻结指标，既有迁移保持字节不变。当前原生回归 **180/180**，包括四组文档指标算例、四组 CSV 检查和四组 PostgreSQL 集成检查。后台正文读取沿用独立权限与审计；删除清空原文、事实、口径与指标。主文档见交付根目录 docs/technical/27-marketing-import-metrics-and-evidence.md。
+迁移 032/033 增加来源及冻结指标，既有迁移保持字节不变。当前原生回归 **185/185**，包括四组文档指标算例、四组 CSV 检查和四组 PostgreSQL 集成检查。后台正文读取沿用独立权限与审计；删除清空原文、事实、口径与指标。主文档见交付根目录 docs/technical/27-marketing-import-metrics-and-evidence.md。
 
 ```mermaid
 flowchart LR
@@ -306,7 +306,7 @@ flowchart LR
 
 真实 Codex 通过分页事实工具读取固定值，服务端检查证据占位符及数字字面量后发布固定 HTML 资产，JSON 保留完整计算。自然语言语义和专业业务质量仍待验收；当前模型为明确标识的假数据。来源隔离/删除和项目撤权阻止读取及下载。完整 102 条综合验收、正式连接、专业角色资格和生产发布仍未完成，历史安装包未更新。
 
-前向迁移 034 为报告、依赖、Snapshot/Evidence、受限分析师和私有资产设置数据库守卫。新增规范 `POST /v1/reports`、`GET /v1/reports/:report`、`GET /v1/snapshots/:snapshot` 和 `GET /v1/evidence/:evidence`，要求当前身份与企业头，写入另需 CSRF/幂等。原生回归 **180/180**，实际清单 **247** 个 method/path、**35** 个迁移；路径数量不代表完整契约通过。旧冻结证据索引用 `node --env-file=.env --import tsx scripts/verify-analysis-index.ts` 只读核对，不重算历史。
+前向迁移 034 为报告、依赖、Snapshot/Evidence、受限分析师和私有资产设置数据库守卫。新增规范 `POST /v1/reports`、`GET /v1/reports/:report`、`GET /v1/snapshots/:snapshot` 和 `GET /v1/evidence/:evidence`，要求当前身份与企业头，写入另需 CSRF/幂等。原生回归 **185/185**，实际清单 **247** 个 method/path、**35** 个迁移；路径数量不代表完整契约通过。旧冻结证据索引用 `node --env-file=.env --import tsx scripts/verify-analysis-index.ts` 只读核对，不重算历史。
 
 ```mermaid
 flowchart LR
@@ -336,8 +336,10 @@ flowchart LR
   Version --> Lifecycle[隔离或删除依赖守卫]
 ```
 
-平台完整回归 **180/180**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
+平台完整回归 **185/185**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
 
 迁移 035 绑定来源版本与更正链；247 个实际 method/path、35 个前向迁移。新增八组工作簿解析与五组隔离原生数据库检查。
 
 ![文件来源及更正链](assets/screenshots/file-imports.png)
+
+当前源码支持用户侧首次模型调用前的排队暂停/同任务恢复，Admin 与用户端复用同一检查点守卫；核对原用户权限、原预留、依赖及版本，拒绝重放运行中或不明操作。原生 Codex 适配器已验证跨进程原历史/工具续聊、增量用量、中断和回执 I/O 故障保留消耗。业务 Worker 的已付费步骤恢复仍未接通。当前完整回归 185/185；详见主文档 `docs/technical/31-task-controls-and-native-continuation.md`。

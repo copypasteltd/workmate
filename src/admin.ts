@@ -28,6 +28,7 @@ import { key, replay, projectAccess } from "./access.js";
 import type { Storage } from "./storage.js";
 import { saveAsset } from "./storage.js";
 import { settle, reserve } from "./billing.js";
+import { controlUnclaimedTask } from "./task-control.js";
 import { event } from "./tasks.js";
 
 const pagination = z.object({
@@ -799,30 +800,8 @@ export function registerAdmin(
                   );
                 }
               }
-              if (b.action === "pause") {
-                if (t.status !== "queued")
-                  throw new Problem(
-                    409,
-                    "CANNOT_PAUSE",
-                    "Only a queued task can be paused safely",
-                  );
-                await tx.query(
-                  "UPDATE tasks SET status='paused',version=version+1 WHERE id=$1",
-                  [id],
-                );
-              }
-              if (b.action === "resume") {
-                if (t.status !== "paused")
-                  throw new Problem(409, "CANNOT_RESUME", "Task is not paused");
-                await tx.query(
-                  "UPDATE tasks SET status='queued',version=version+1 WHERE id=$1",
-                  [id],
-                );
-                await tx.query(
-                  "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
-                  [t.tenant_id, { task_id: id }],
-                );
-              }
+              if (b.action === "pause" || b.action === "resume")
+                await controlUnclaimedTask(tx, db, catalog, t, b.action);
               if (b.action === "retry") {
                 if (!["failed", "cancelled"].includes(t.status))
                   throw new Problem(

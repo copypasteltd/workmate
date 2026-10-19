@@ -55,6 +55,9 @@ export function canonicalEvent(e: any) {
       status: "cancelled",
       reason: "AUTHORIZATION_CHANGED",
     };
+  } else if (e.kind === "task.paused" || e.kind === "task.resumed") {
+    type = "task.state_changed";
+    payload = { previous: b.previous, status: b.status };
   } else if (
     e.kind === "message.delta" &&
     typeof b.text === "string" &&

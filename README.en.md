@@ -121,7 +121,7 @@ npm test
 npm run contracts:export
 ```
 
-The original 0.5.0 release exported 167 Fastify method/path pairs, ten migrations and 84 tests. Current regular source exports 247 pairs, includes 35 forward-only migrations and passes 180 native tests. Route counts do not establish full planned OpenAPI conformance. Tests cover identity, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, actual image/PDF/MP4 output, real Codex controlled protocol turns, source packages and persistent work. Separate delivery tools record browser, extension and Desktop journeys.
+The original 0.5.0 release exported 167 Fastify method/path pairs, ten migrations and 84 tests. Current regular source exports 248 pairs, includes 35 forward-only migrations and passes 185 native tests. Route counts do not establish full planned OpenAPI conformance. Tests cover identity, isolation, concurrent/idempotent billing, permissions/VIP, content revocation, actual image/PDF/MP4 output, real Codex controlled protocol turns, source packages and persistent work. Separate delivery tools record browser, extension and Desktop journeys.
 
 | Directory             | Purpose                                                     |
 | --------------------- | ----------------------------------------------------------- |
@@ -199,7 +199,7 @@ The current 139-test regression passes, including five cloud-file integration gr
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **180/180**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **185/185**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and in-app notifications (current source)
 
@@ -266,7 +266,7 @@ Six new platform groups and eight real Web/Electron journeys passed; 21 captured
 
 The canvas and Codex `design_render` produce actual single-page PDFs. Editable layers remain in the source project or separate editable JSON; PDFs are raster review copies. `layout.render`, `document.render` and `video.render` independently restrict formats. Visible-version checks refuse stale exports, and lost accepted replies retry with the same key and original source snapshot.
 
-The full native regression passed **180/180**. Seven delivery Web/current-source Electron groups cover downloads, native saves, independent pypdf/Poppler parsing/rendering and file hashes. Models remain simulated while file logic is real. Complete review packages, print standards and at least 12 qualified live roles remain pending.
+The full native regression passed **185/185**. Seven delivery Web/current-source Electron groups cover downloads, native saves, independent pypdf/Poppler parsing/rendering and file hashes. Models remain simulated while file logic is real. Complete review packages, print standards and at least 12 qualified live roles remain pending.
 
 ![Actual PDF export](assets/screenshots/design-pdf-export.png)
 
@@ -276,7 +276,7 @@ Preview and confirm the account, currency, timezone, entity level, attribution a
 
 Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
 
-Migrations 032/033 add provenance and frozen metrics while preserving older migration bytes. The current native regression passes **180/180**, including four documented metric vectors, four CSV checks and four PostgreSQL integration groups. Administrative source inspection retains scoped body permission and audit; erasure clears source, facts, definitions and metrics. See the delivery root's docs/technical/27-marketing-import-metrics-and-evidence.md.
+Migrations 032/033 add provenance and frozen metrics while preserving older migration bytes. The current native regression passes **185/185**, including four documented metric vectors, four CSV checks and four PostgreSQL integration groups. Administrative source inspection retains scoped body permission and audit; erasure clears source, facts, definitions and metrics. See the delivery root's docs/technical/27-marketing-import-metrics-and-evidence.md.
 
 ```mermaid
 flowchart LR
@@ -295,7 +295,7 @@ Select saved snapshots, a business question, current/comparison dates, metrics, 
 
 Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
 
-Forward migration 034 adds database guards for reports, source dependencies, Snapshot/Evidence, restricted specialists and private artifacts. Canonical `POST /v1/reports`, `GET /v1/reports/:report`, `GET /v1/snapshots/:snapshot` and `GET /v1/evidence/:evidence` require current identity and tenant headers; writes also require CSRF/idempotency. Native regression: **180/180**, **247** actual method/path pairs, **35** migrations. Route counts are not full contract acceptance. `node --env-file=.env --import tsx scripts/verify-analysis-index.ts` compares the lookup index to existing frozen metrics without recalculation.
+Forward migration 034 adds database guards for reports, source dependencies, Snapshot/Evidence, restricted specialists and private artifacts. Canonical `POST /v1/reports`, `GET /v1/reports/:report`, `GET /v1/snapshots/:snapshot` and `GET /v1/evidence/:evidence` require current identity and tenant headers; writes also require CSRF/idempotency. Native regression: **185/185**, **247** actual method/path pairs, **35** migrations. Route counts are not full contract acceptance. `node --env-file=.env --import tsx scripts/verify-analysis-index.ts` compares the lookup index to existing frozen metrics without recalculation.
 
 ```mermaid
 flowchart LR
@@ -325,8 +325,10 @@ flowchart LR
   Version --> Lifecycle[Source quarantine and erasure guards]
 ```
 
-The full platform regression passes **180/180**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
+The full platform regression passes **185/185**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
 
 Migration 035 binds source versions and correction ancestry. The actual route inventory has 247 method/path pairs and 35 forward-only migrations. Eight workbook parser groups and five isolated native-database groups cover this increment.
 
 ![Source and correction lineage](assets/screenshots/file-imports.png)
+
+Current source supports pause/resume at the initial unclaimed checkpoint, sharing domain guards with Admin. It retains the original task/reservation and rechecks beneficiary access, inputs and versions; running or uncertain operations cannot replay. Real Codex continuation tests preserve thread history/tools across processes, charge incremental usage, and retain measured spend on interruption or receipt I/O failure. Paid-step continuation is not connected to the business Worker. Full regression: 185/185. See master `docs/technical/31-task-controls-and-native-continuation.md`.

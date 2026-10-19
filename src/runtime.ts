@@ -1,10 +1,11 @@
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createInterface } from "node:readline";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type { Config } from "./config.js";
-import { Problem } from "./lib.js";
+import { canonical, hash, Problem } from "./lib.js";
 const exec = promisify(execFile);
 export interface RuntimeContext {
   taskId: string;
@@ -74,6 +75,57 @@ export class CodexRuntimeAdapter {
     await mkdir(ctx.workspace, { recursive: true });
     const home = path.join(ctx.workspace, ".codex");
     await mkdir(home, { recursive: true });
+    // This is a server-owned continuation receipt, not user-supplied history.
+    // An accepted/unknown turn invalidates it before any further provider work.
+    const receiptPath = path.join(home, "copypaste-continuation.json");
+    const fingerprint = hash(
+      canonical({
+        version: this.c.CODEX_VERSION,
+        provider: "copypaste_internal",
+        model: this.c.AI_MODEL,
+        endpoint: this.c.AI_BASE_URL,
+        inputRate: this.c.AI_INPUT_HKD_MICROS_PER_MILLION,
+        outputRate: this.c.AI_OUTPUT_HKD_MICROS_PER_MILLION,
+        effort: this.c.AI_REASONING_EFFORT,
+        task: ctx.taskId,
+        skills: ctx.skills,
+        tools: ctx.tools.map(({ name, description, inputSchema }) => ({
+          name,
+          description,
+          inputSchema,
+        })),
+      }),
+    );
+    let receipt: any;
+    try {
+      receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+      if (!receipt || typeof receipt !== "object" || Array.isArray(receipt))
+        throw new RuntimeFailure("CODEX_CHECKPOINT_INVALID", false, true);
+    } catch (e: any) {
+      if (e.code !== "ENOENT")
+        throw new RuntimeFailure("CODEX_CHECKPOINT_INVALID", false, true);
+    }
+    if (
+      ctx.thread &&
+      (!receipt ||
+        receipt.state !== "ready" ||
+        receipt.thread !== ctx.thread ||
+        receipt.fingerprint !== fingerprint ||
+        !Number.isSafeInteger(receipt.inputTokens) ||
+        receipt.inputTokens < 0 ||
+        !Number.isSafeInteger(receipt.outputTokens) ||
+        receipt.outputTokens < 0)
+    )
+      throw new RuntimeFailure("CODEX_CHECKPOINT_UNAVAILABLE", false, true);
+    if (!ctx.thread && receipt)
+      throw new RuntimeFailure("CODEX_CONTINUATION_REQUIRED", false, true);
+    const baselineInput = receipt?.inputTokens ?? 0,
+      baselineOutput = receipt?.outputTokens ?? 0;
+    const saveReceipt = async (data: unknown) => {
+      const temporary = receiptPath + "." + randomUUID() + ".tmp";
+      await writeFile(temporary, JSON.stringify(data), { mode: 0o600 });
+      await rename(temporary, receiptPath);
+    };
     const skills = [];
     for (const s of ctx.skills) {
       const file = path.join(
@@ -166,6 +218,10 @@ export class CodexRuntimeAdapter {
       input = 0,
       output = 0,
       usageKnown = false;
+    let threadInput = baselineInput,
+      threadOutput = baselineOutput;
+    let completedResult: RuntimeResult | undefined;
+    let invalidUsage = false;
     const pending = new Map<
       number,
       {
@@ -278,11 +334,35 @@ export class CodexRuntimeAdapter {
       }
       if (m.method === "thread/tokenUsage/updated") {
         const u = m.params?.tokenUsage?.total;
-        if (u) {
-          input = Number(u.inputTokens);
-          output = Number(u.outputTokens);
+        // Resume may emit the previous turn's usage. It is not new spend.
+        if (
+          u &&
+          turn &&
+          m.params?.threadId === thread &&
+          m.params?.turnId === turn
+        ) {
+          const nextInput = Number(u.inputTokens),
+            nextOutput = Number(u.outputTokens);
+          if (
+            !Number.isSafeInteger(nextInput) ||
+            !Number.isSafeInteger(nextOutput) ||
+            nextInput < threadInput ||
+            nextOutput < threadOutput
+          ) {
+            invalidUsage = true;
+            usageKnown = false;
+            return;
+          }
+          threadInput = nextInput;
+          threadOutput = nextOutput;
+          input = threadInput - baselineInput;
+          output = threadOutput - baselineOutput;
           usageKnown =
-            Number.isSafeInteger(input) && Number.isSafeInteger(output);
+            !invalidUsage &&
+            Number.isSafeInteger(input) &&
+            input >= 0 &&
+            Number.isSafeInteger(output) &&
+            output >= 0;
         }
       }
       if (m.method === "turn/completed")
@@ -360,21 +440,34 @@ export class CodexRuntimeAdapter {
         cwd: ctx.workspace,
         approvalPolicy: "never",
         sandbox: "read-only",
-        allowProviderModelFallback: false,
         developerInstructions:
           "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. Deliver editable sources and report unresolved requirements.",
-        dynamicTools: ctx.tools.map((t) => ({
-          name: t.name,
-          description: t.description,
-          inputSchema: t.inputSchema,
-        })),
       };
       const result = await send(
         ctx.thread ? "thread/resume" : "thread/start",
-        ctx.thread ? { ...common, threadId: ctx.thread } : common,
+        ctx.thread
+          ? { ...common, threadId: ctx.thread, excludeTurns: true }
+          : {
+              ...common,
+              allowProviderModelFallback: false,
+              dynamicTools: ctx.tools.map(
+                ({ name, description, inputSchema }) => ({
+                  name,
+                  description,
+                  inputSchema,
+                }),
+              ),
+            },
       );
       thread = result.thread.id;
+      if (
+        (ctx.thread && thread !== ctx.thread) ||
+        result.model !== this.c.AI_MODEL ||
+        result.modelProvider !== "copypaste_internal"
+      )
+        throw new RuntimeFailure("CODEX_PROFILE_MISMATCH", false, true);
       await ctx.onEvent("runtime.thread", { thread_id: thread });
+      await saveReceipt({ state: "in_flight", thread, fingerprint });
       accepted = true; // A lost turn/start response is uncertain and must not release the reservation.
       const t = await send("turn/start", {
         threadId: thread,
@@ -388,6 +481,9 @@ export class CodexRuntimeAdapter {
       const status = await done;
       await ctx.onEvent("runtime.phase", { phase: "finished", status });
       await chain;
+      // Earlier model responses in this turn may have usage, while the latest
+      // accepted response is still unknown. Partial totals do not settle a turn.
+      if (accepted && status !== "completed") usageKnown = false;
       if (["timeout", "process_exit", "process_error"].includes(status))
         throw new RuntimeFailure(
           "CODEX_CONNECTION_LOST",
@@ -396,7 +492,7 @@ export class CodexRuntimeAdapter {
           input,
           output,
         );
-      return {
+      completedResult = {
         text,
         inputTokens: input,
         outputTokens: output,
@@ -406,12 +502,16 @@ export class CodexRuntimeAdapter {
         turn,
         status,
       };
+      return completedResult;
     } catch (e) {
-      if (e instanceof RuntimeFailure) throw e;
+      if (e instanceof RuntimeFailure) {
+        if (e.accepted) e.usageKnown = false;
+        throw e;
+      }
       throw new RuntimeFailure(
         "CODEX_RUNTIME_FAILED",
         accepted,
-        usageKnown,
+        accepted ? false : usageKnown,
         input,
         output,
       );
@@ -465,6 +565,30 @@ export class CodexRuntimeAdapter {
         if (cleanupTimer) clearTimeout(cleanupTimer);
       }
       await ctx.onEvent("runtime.phase", { phase: "closed" }).catch(() => {});
+      if (
+        completedResult?.status === "completed" &&
+        completedResult.usageKnown
+      ) {
+        try {
+          await saveReceipt({
+            state: "ready",
+            thread,
+            fingerprint,
+            inputTokens: threadInput,
+            outputTokens: threadOutput,
+          });
+        } catch {
+          // Receipt I/O failure must retain measured spend, never appear to
+          // the worker as an unaccepted/zero-cost initialization failure.
+          throw new RuntimeFailure(
+            "CODEX_CHECKPOINT_WRITE_FAILED",
+            accepted,
+            usageKnown,
+            input,
+            output,
+          );
+        }
+      }
     }
   }
 }

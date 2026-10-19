@@ -1,11 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtemp, mkdir, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { loadConfig } from "../src/config.js";
-import { CodexRuntimeAdapter, RuntimeFailure } from "../src/runtime.js";
+import {
+  CodexRuntimeAdapter,
+  RuntimeFailure,
+  type RuntimeContext,
+} from "../src/runtime.js";
 
 async function fixtureWorkspace() {
   const parent = path.resolve(".data/test/runtime");
@@ -41,10 +45,11 @@ async function cleanupFixture(
 }
 
 test(
-  "real Codex turn uses the isolated internal Responses provider and reports measured fixture usage",
-  { timeout: 80000 },
+  "real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage",
+  { timeout: 120000 },
   async (t) => {
     const calls: { url: string; authorized: boolean; body: any }[] = [];
+    const interrupt = new AbortController();
     const secret = randomBytes(32).toString("hex");
     const server = createServer(async (req, res) => {
       const chunks: Buffer[] = [];
@@ -92,12 +97,19 @@ test(
             JSON.stringify({ type, ...data }) +
             "\n\n",
         );
-      if (calls.length === 1) {
+      if (calls.length === 6) {
+        event("response.created", { response });
+        // Real native turn/interrupt, with a provider response still in flight.
+        // No synthetic terminal usage is supplied for this accepted request.
+        interrupt.abort();
+        return;
+      }
+      if (calls.length % 2 === 1) {
         const fn = {
-          id: "fc_fixture",
+          id: "fc_fixture_" + calls.length,
           type: "function_call",
           name: "fixture_lookup",
-          call_id: "call_fixture",
+          call_id: "call_fixture_" + calls.length,
           arguments: JSON.stringify({ dataset_id: "fixture" }),
         };
         event("response.created", { response });
@@ -189,7 +201,7 @@ test(
     const events: any[] = [];
     let toolCalls = 0;
     try {
-      const result = await new CodexRuntimeAdapter(c).start({
+      const context: RuntimeContext = {
         taskId: "protocol-fixture",
         prompt: "Return the protocol fixture.",
         workspace: root,
@@ -221,7 +233,8 @@ test(
             },
           },
         ],
-      });
+      };
+      const result = await new CodexRuntimeAdapter(c).start(context);
       assert.equal(result.status, "completed");
       assert.match(result.text, /Protocol fixture delivered/);
       assert.equal(result.usageKnown, true);
@@ -234,6 +247,163 @@ test(
       assert.equal(calls[0].body.model, "copypaste-contract-fixture");
       assert.match(JSON.stringify(calls[0].body), /fixture_lookup/);
       assert.match(JSON.stringify(calls[1].body), /fixture_value/);
+      const checkpointPath = path.join(
+        root,
+        ".codex",
+        "copypaste-continuation.json",
+      );
+      const checkpoint = JSON.parse(await readFile(checkpointPath, "utf8"));
+      assert.equal(checkpoint.state, "ready");
+      assert.equal(checkpoint.thread, result.thread);
+      assert.equal(checkpoint.inputTokens, 34);
+      assert.equal(checkpoint.outputTokens, 10);
+      const resume = {
+        ...context,
+        thread: result.thread,
+        prompt:
+          "Continue the prior discussion. Obtain the fixture once more using its registered tool.",
+      };
+      for (const invalid of [
+        { ...resume, thread: "019b0000-0000-7000-8000-000000000001" },
+        { ...resume, tools: [] },
+        { ...resume, skills: [] },
+      ])
+        await assert.rejects(new CodexRuntimeAdapter(c).start(invalid), {
+          code: "CODEX_CHECKPOINT_UNAVAILABLE",
+        });
+      await assert.rejects(new CodexRuntimeAdapter(c).start(context), {
+        code: "CODEX_CONTINUATION_REQUIRED",
+      });
+      await assert.rejects(
+        new CodexRuntimeAdapter({ ...c, AI_MODEL: "unapproved-model" }).start(
+          resume,
+        ),
+        { code: "CODEX_CHECKPOINT_UNAVAILABLE" },
+      );
+      assert.equal(
+        calls.length,
+        2,
+        "Invalid continuation must not call the provider",
+      );
+      // New adapter/process, same CODEX_HOME. No dynamicTools on thread/resume.
+      const next = await new CodexRuntimeAdapter(c).start(resume);
+      assert.equal(next.thread, result.thread);
+      assert.notEqual(next.turn, result.turn);
+      assert.equal(next.status, "completed");
+      assert.equal(next.usageKnown, true);
+      assert.equal(
+        next.inputTokens,
+        34,
+        "Historical usage must not be charged again",
+      );
+      assert.equal(next.outputTokens, 10);
+      assert.equal(toolCalls, 2, "Persisted dynamic tool remains executable");
+      assert.equal(calls.length, 4);
+      assert.match(JSON.stringify(calls[2].body), /Protocol fixture delivered/);
+      assert.match(JSON.stringify(calls[2].body), /fixture_lookup/);
+      const latest = JSON.parse(await readFile(checkpointPath, "utf8"));
+      assert.equal(latest.inputTokens, 68);
+      assert.equal(latest.outputTokens, 20);
+      const interrupted = await new CodexRuntimeAdapter(c).start({
+        ...resume,
+        signal: AbortSignal.any([
+          interrupt.signal,
+          t.signal,
+          AbortSignal.timeout(20000),
+        ]),
+      });
+      assert.equal(interrupted.status, "interrupted");
+      assert.equal(interrupted.accepted, true);
+      assert.equal(interrupted.usageKnown, false);
+      assert.equal(
+        interrupted.inputTokens,
+        17,
+        "Earlier measured response remains available for reconciliation",
+      );
+      assert.equal(interrupted.outputTokens, 5);
+      assert.equal(
+        JSON.parse(await readFile(checkpointPath, "utf8")).state,
+        "in_flight",
+      );
+      await assert.rejects(new CodexRuntimeAdapter(c).start(resume), {
+        code: "CODEX_CHECKPOINT_UNAVAILABLE",
+      });
+      assert.equal(
+        calls.length,
+        6,
+        "Unknown accepted work cannot resume automatically",
+      );
+      await writeFile(checkpointPath, "null");
+      await assert.rejects(new CodexRuntimeAdapter(c).start(resume), {
+        code: "CODEX_CHECKPOINT_INVALID",
+      });
+      const ioRoot = path.join(root, "receipt-io-probe");
+      await assert.rejects(
+        new CodexRuntimeAdapter(c).start({
+          ...context,
+          taskId: "receipt-io-probe",
+          workspace: ioRoot,
+          onEvent: async (kind, body) => {
+            if (kind === "runtime.phase" && body.phase === "closed") {
+              const receipt = path.join(
+                ioRoot,
+                ".codex",
+                "copypaste-continuation.json",
+              );
+              await rm(receipt);
+              await mkdir(receipt);
+            }
+          },
+        }),
+        (e: unknown) =>
+          e instanceof RuntimeFailure &&
+          e.code === "CODEX_CHECKPOINT_WRITE_FAILED" &&
+          e.accepted &&
+          e.usageKnown &&
+          e.inputTokens === 34 &&
+          e.outputTokens === 10,
+      );
+      assert.equal(
+        calls.length,
+        8,
+        "The receipt fault occurs after actual paid responses, preserving measured usage",
+      );
+      const counterRoot = path.join(root, "counter-regression-probe"),
+        counterContext = {
+          ...context,
+          taskId: "counter-regression-probe",
+          workspace: counterRoot,
+        },
+        initial = await new CodexRuntimeAdapter(c).start(counterContext),
+        counterPath = path.join(
+          counterRoot,
+          ".codex",
+          "copypaste-continuation.json",
+        ),
+        baseline = JSON.parse(await readFile(counterPath, "utf8"));
+      // A persisted baseline contradicting actual native counters must not
+      // produce negative charges or a usable continuation receipt.
+      await writeFile(
+        counterPath,
+        JSON.stringify({
+          ...baseline,
+          inputTokens: 99999,
+          outputTokens: 99999,
+        }),
+      );
+      const regressed = await new CodexRuntimeAdapter(c).start({
+        ...counterContext,
+        thread: initial.thread,
+      });
+      assert.equal(regressed.status, "completed");
+      assert.equal(regressed.usageKnown, false);
+      assert.equal(regressed.inputTokens, 0);
+      assert.equal(regressed.outputTokens, 0);
+      assert.equal(
+        JSON.parse(await readFile(counterPath, "utf8")).state,
+        "in_flight",
+      );
+      assert.equal(calls.length, 12);
     } catch (e: any) {
       throw new Error(
         `${e.code ?? e.message}; observed stages: ${events.map((e) => e.kind).join(",")}; fixture HTTP calls: ${calls.length}`,

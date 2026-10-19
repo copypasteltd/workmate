@@ -13,6 +13,7 @@ import { micros, name, Problem, uuid } from "./lib.js";
 import { settle } from "./billing.js";
 import type { Catalog } from "./catalog.js";
 import { inputDependencies } from "./task-dependencies.js";
+import { controlUnclaimedTask } from "./task-control.js";
 export async function event(
   tx: Tx,
   tenant: string,
@@ -174,6 +175,77 @@ export function registerTasks(
           ).rows,
         };
       }, tenant);
+    },
+  );
+  app.post(
+    base + "/:task/controls",
+    { preHandler: requireUser(db) },
+    async (req, reply) => {
+      const { tenant, project, task } = taskParams.parse(req.params);
+      const b = z
+        .object({
+          action: z.enum(["pause", "resume"]),
+          expected_version: z.number().int().positive(),
+          reason: z.string().trim().min(1).max(2000).optional(),
+        })
+        .strict()
+        .parse(req.body);
+      const result = await db.tx(async (tx) => {
+        await projectAccess(tx, req.principal, tenant, project, "write");
+        // Revalidate visibility even when replaying a completed request.
+        if (
+          !(
+            await tx.query(
+              "SELECT 1 FROM tasks WHERE id=$1 AND project_id=$2",
+              [task, project],
+            )
+          ).rowCount
+        )
+          throw new Problem(404, "NOT_FOUND", "Task not found");
+        return replay(
+          tx,
+          req.principal.id,
+          "task.control",
+          key(req),
+          { task, ...b },
+          async () => {
+            const t = (
+              await tx.query(
+                "SELECT * FROM tasks WHERE id=$1 AND project_id=$2 FOR UPDATE",
+                [task, project],
+              )
+            ).rows[0];
+            if (!t) throw new Problem(404, "NOT_FOUND", "Task not found");
+            if (t.version !== b.expected_version)
+              throw new Problem(
+                409,
+                "VERSION_CONFLICT",
+                "Task changed; refresh first",
+              );
+            const value = await controlUnclaimedTask(
+              tx,
+              db,
+              catalog,
+              t,
+              b.action,
+            );
+            await audit(
+              tx,
+              req.principal,
+              `task.${b.action}`,
+              task,
+              "succeeded",
+              {
+                checkpoint: "before_first_model_turn",
+                ...(b.reason ? { reason: b.reason } : {}),
+              },
+              tenant,
+            );
+            return value;
+          },
+        );
+      }, tenant);
+      return reply.code(202).send(result);
     },
   );
   app.post(
