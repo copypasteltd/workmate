@@ -132,7 +132,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **145/145**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **147/147**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，二十一份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ## 默认助手与通知（当前源码）
 
@@ -162,3 +162,9 @@ The renderer snapshot includes the same initial input checkpoint as Web. Native 
 `qa:agent-templates` 验证当前源码 Electron，独立 profile，结束后关闭应用及浏览器。18 个专业角色仍待真实资格；此截图不代表历史 0.5.0 安装包已更新。
 
 ![当前源码原生模板专家](assets/screenshots/13-role-template-specialists.png)
+
+## 原生 PDF 导出与保存（当前源码）
+
+同步的画布提供单页 PDF 图片审阅稿，保留源工程。真实 PKCE 登录后由主进程以受保护令牌请求产品 API，并经现有流式下载保存到明确选定的位置。新增验收实际保存 PDF，摘要与服务端不可变版本一致，结束后关闭自建应用。历史安装包未重打。
+
+![源码客户端 PDF 导出](assets/screenshots/14-design-pdf-export.png)

@@ -132,7 +132,7 @@ This evidence covers current source execution. Historical 0.5.0 installers have 
 
 Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
 
-Platform regression: **145/145**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+Platform regression: **147/147**. `npm run qa:skills` in the delivery repository passed three browser groups; twenty-one captured HTTP payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
 
 ## Default assistant and inbox (current source)
 
@@ -162,3 +162,9 @@ The current renderer snapshot includes the persisted template directory, preflig
 `qa:agent-templates` verifies current-source Electron with an isolated profile and closes its application and browser. All 18 professional presets still await live qualification. This screenshot does not mean historical 0.5.0 installers were rebuilt.
 
 ![Current-source native template specialists](assets/screenshots/13-role-template-specialists.png)
+
+## Native PDF export and save (current source)
+
+The synchronized canvas exports single-page raster review PDFs while retaining editable sources. Real PKCE sign-in precedes authenticated main-process requests and the existing streamed save to an explicitly selected destination. The new journey saves real PDF bytes and matches their hash to the immutable server version, then closes its owned application. Historical installers have not been rebuilt.
+
+![Current-source native PDF export](assets/screenshots/14-design-pdf-export.png)
