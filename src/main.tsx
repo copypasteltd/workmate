@@ -1,6 +1,7 @@
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
+import { TaskInputRequests } from "./task-dependencies";
 import { ResumableUpload } from "./resumable-upload";
 import { CloudFiles } from "./cloud-files";
 import { ProjectSkills } from "./skills";
@@ -892,17 +893,42 @@ function NewTask({
     nav = useNavigate();
   const { data } = useData("/v1/catalog/roles");
   const pending = useRef<{ fingerprint: string; id: string } | null>(null);
+  const [selectedRole, setSelectedRole] = useState(role);
+  const [requiredInput, setRequiredInput] = useState("");
   return (
     <Modal title={t("開始一項新工作", "Start something new")} onClose={onClose}>
       <AsyncForm
         submitLabel={t("開始工作", "Start task")}
         onSubmit={async (f) => {
           const selectedRole = String(f.get("role")),
+            requiredInput = String(f.get("required_input") ?? ""),
             body = {
               title: String(f.get("title")),
               prompt: String(f.get("prompt")),
               mode: String(f.get("mode")),
               budget_micros: Math.round(Number(f.get("budget")) * 1e6),
+              ...(requiredInput
+                ? {
+                    dependencies: [
+                      requiredInput === "file"
+                        ? {
+                            kind: "file",
+                            description: t(
+                              "請提供已批准的工作素材，然後開始。",
+                              "Provide approved source materials before starting.",
+                            ),
+                          }
+                        : {
+                            kind: "connection",
+                            provider: requiredInput,
+                            description: t(
+                              "請選取此工作的獲准連接。",
+                              "Select the authorized connection for this work.",
+                            ),
+                          },
+                    ],
+                  }
+                : {}),
             };
           const fingerprint = JSON.stringify({
             tenant: w.tenant,
@@ -939,7 +965,14 @@ function NewTask({
           />
         </Field>
         <Field label={t("專業角色", "Specialist")}>
-          <select name="role" defaultValue={role}>
+          <select
+            name="role"
+            value={selectedRole}
+            onChange={(e) => {
+              setSelectedRole(e.target.value);
+              setRequiredInput("");
+            }}
+          >
             <option value="assistant">
               {t(
                 "預設助手 — 答覆、計畫與文字交付",
@@ -980,10 +1013,42 @@ function NewTask({
           />
         </Field>
         <Field
+          label={t("開始前需要補齊資料嗎？", "Inputs needed before starting?")}
+          hint={t(
+            "選擇後先保存同一項工作並預留預算，補齊資料前不呼叫模型。",
+            "Save the task and reserve its budget; the model waits until you provide these inputs.",
+          )}
+        >
+          <select
+            name="required_input"
+            value={requiredInput}
+            onChange={(e) => setRequiredInput(e.target.value)}
+          >
+            <option value="">{t("資料已齊，可開始", "Ready to start")}</option>
+            <option value="file">
+              {t("先等我提供檔案", "Wait for my file")}
+            </option>
+            {data?.items
+              .find((r: any) => r.role_key === selectedRole)
+              ?.tool_ids.includes("connector.read") &&
+              [
+                ["google_ads", "Google Ads"],
+                ["ga4", "Google Analytics"],
+                ["search_console", "Search Console"],
+                ["meta", "Meta"],
+              ].map(([key, label]) => (
+                <option value={key} key={key}>
+                  {t("先選取連接：", "Choose connection first: ")}
+                  {label}
+                </option>
+              ))}
+          </select>
+        </Field>
+        <Field
           label={t("本次工作預算上限（HKD）", "Task budget limit (HKD)")}
           hint={t(
-            "工作開始時預留額度，依實際用量結算。",
-            "Credit is reserved when the task starts and settled against measured usage.",
+            "提交工作時預留額度，依實際用量結算；等待資料期間保持預留。",
+            "Credit is reserved on submission and settled against measured usage; it remains reserved while waiting for inputs.",
           )}
         >
           <input
@@ -1506,6 +1571,11 @@ function TaskDetail() {
       "artifact.ready": ["交付檔案已就緒", "Deliverable file ready"],
       "delivery.reviewed": ["已記錄審閱結果", "Review recorded"],
       "task.cancel_requested": ["已要求取消工作", "Cancellation requested"],
+      "task.needs_input": ["等待你提供資料", "Waiting for your inputs"],
+      "task.inputs_ready": [
+        "資料已齊，工作已排隊",
+        "Inputs ready; work queued",
+      ],
     };
     if (labels[state || e.kind]) return t(...labels[state || e.kind]);
     if (e.kind === "usage.updated")
@@ -1545,7 +1615,9 @@ function TaskDetail() {
             title={data.title}
             description={roleEnglish[data.role_key]}
             action={
-              ["queued", "running", "paused"].includes(data.status) ? (
+              ["queued", "running", "paused", "needs_input"].includes(
+                data.status,
+              ) ? (
                 <button
                   className="button secondary"
                   onClick={() =>
@@ -1560,6 +1632,10 @@ function TaskDetail() {
             }
           />
           <ErrorNotice error={actionError} />
+          <TaskInputRequests
+            task={data}
+            onChange={() => setVersion((v) => v + 1)}
+          />
           {data.conversation_id && (
             <p className="section-block">
               <Link
@@ -1593,25 +1669,30 @@ function TaskDetail() {
                 <div className="preserve-text agent-output">{data.output}</div>
               ) : (
                 <p className="muted">
-                  {data.status === "queued"
+                  {data.status === "needs_input"
                     ? t(
-                        "工作已排隊，正在等待專家接手。",
-                        "Your task is queued for your specialist.",
+                        "正在等待你提供上述資料。尚未開始模型執行。",
+                        "Waiting for the inputs above. Model execution has not started.",
                       )
-                    : data.status === "running"
+                    : data.status === "queued"
                       ? t(
-                          "正在處理。你可以離開此頁，稍後回來查看進度。",
-                          "Work is in progress. You can leave and return to review it later.",
+                          "工作已排隊，正在等待專家接手。",
+                          "Your task is queued for your specialist.",
                         )
-                      : data.status === "reconciling"
+                      : data.status === "running"
                         ? t(
-                            "此次執行需要核對結果和費用，管理員將處理。",
-                            "This run needs a result and usage review. Your administrator can resolve it.",
+                            "正在處理。你可以離開此頁，稍後回來查看進度。",
+                            "Work is in progress. You can leave and return to review it later.",
                           )
-                        : t(
-                            "此項工作沒有可交付結果。請查看下方記錄。",
-                            "This task has no deliverable result. Review the activity below.",
-                          )}
+                        : data.status === "reconciling"
+                          ? t(
+                              "此次執行需要核對結果和費用，管理員將處理。",
+                              "This run needs a result and usage review. Your administrator can resolve it.",
+                            )
+                          : t(
+                              "此項工作沒有可交付結果。請查看下方記錄。",
+                              "This task has no deliverable result. Review the activity below.",
+                            )}
                 </p>
               )}
               {data.error_code && (

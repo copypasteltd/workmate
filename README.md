@@ -151,7 +151,7 @@ flowchart LR
 
 项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
 
-平台全套回归 **118/118**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十二份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
+平台全套回归 **129/129**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，十五份实际 HTTP 响应通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
 
 ![Project methods](assets/screenshots/25-project-methods.png)
 
@@ -166,3 +166,21 @@ flowchart LR
 ![默认工作草稿](assets/screenshots/29-default-assistant-brief.png)
 ![真实私人会话与模拟结果](assets/screenshots/30-default-assistant-result.png)
 ![工作通知](assets/screenshots/27-work-notifications.png)
+
+## 资料补齐 / Task inputs
+
+新工作可选择先等文件或获准连接。在原私人会话内补传、搜索并明确选择当前版本后，继续同一任务；补传附件保留私人归属。等待期间不调用模型，原预算保持预留；权限错误清空候选并禁用确认。Delivery 的 `npm run qa:task-dependencies` 五组通过，覆盖真实私人上传、执行与结算、通知、四种宽度和两主题/语言。
+
+Choose explicit prerequisites when submitting work. Upload privately within the original conversation, search current versions and confirm an input to continue the same task and budget. The model waits until all inputs are ready. Five browser checks passed with real Codex and a synthetic model; this covers the initial checkpoint, with paid-step continuation and automatic discovery still pending.
+
+```mermaid
+flowchart LR
+  Brief[Submit with an input request] --> Wait[Same task / reserved budget]
+  Wait --> Choose[Private upload / explicit version selection]
+  Choose --> Resume[Same task enters the queue once]
+  Resume --> Result[Codex / actual file / settlement]
+```
+
+![原会话资料补齐 / Inputs in the original conversation](assets/screenshots/32-task-input-wait.png)
+![繁中移动界面 / Traditional Chinese on mobile](assets/screenshots/34-task-input-mobile.png)
+![同任务执行结果 / Result from the same task](assets/screenshots/35-task-input-result.png)
