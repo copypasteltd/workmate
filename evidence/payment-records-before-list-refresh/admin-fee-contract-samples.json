@@ -1,0 +1,351 @@
+{
+  "at": "2026-10-20T01:42:01.712Z",
+  "origin": "http://localhost:4310",
+  "scope": "Actual local canonical fee previews, writes, lost-receipt replay and independent approval HTTP responses from the current Admin forms",
+  "samples": [
+    {
+      "name": "ui-gift-preview",
+      "operation": "previewAdminFee",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "34c652fd-483d-472d-9bea-fbd9229df172",
+        "payload_hash": "12f8396ac2f53ec6271a693ab425696c2a10b29c13c0c521570059d99fcd66fa",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "decision": "recent_mfa",
+        "missing_permission_keys": [],
+        "impact_summary": "Grant HKD 15123456 micros until 2027-12-31T10:00:00.000Z; no payment received.",
+        "expires_at": "2026-10-20T01:46:40.932Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "666e9dfc-bef2-4311-87b3-d212760663f3",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "ui-gift-15.123456-operation",
+      "operation": "createAdminFeeGift",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "b588cb5c-f1cd-4eb7-90fb-dabe41e2c383",
+        "action": "billing.gift",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "actor_id": "8c48a5ac-99d9-4e93-8e77-2789b413be18",
+        "state": "succeeded",
+        "payload_hash": "12f8396ac2f53ec6271a693ab425696c2a10b29c13c0c521570059d99fcd66fa",
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:41.862Z",
+        "result_ids": [
+          "a03196a8-f503-4da6-b1f5-53d69a3d0fc0"
+        ]
+      }
+    },
+    {
+      "name": "lost-receipt-replay-without-preview-header",
+      "operation": "createAdminFeeGift",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "b588cb5c-f1cd-4eb7-90fb-dabe41e2c383",
+        "action": "billing.gift",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "actor_id": "8c48a5ac-99d9-4e93-8e77-2789b413be18",
+        "state": "succeeded",
+        "payload_hash": "12f8396ac2f53ec6271a693ab425696c2a10b29c13c0c521570059d99fcd66fa",
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:41.862Z",
+        "result_ids": [
+          "a03196a8-f503-4da6-b1f5-53d69a3d0fc0"
+        ]
+      }
+    },
+    {
+      "name": "ui-debit-preview",
+      "operation": "previewAdminFee",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "28895f09-dd49-4060-9bab-ecc6f8fd858e",
+        "payload_hash": "89a2f061147ab760d5ce5fbb05999b9aa9f25ce517fa7c2ff2a6f7229a04b3c3",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "decision": "recent_mfa",
+        "missing_permission_keys": [],
+        "impact_summary": "Debit HKD 123456 micros from original funding entry a03196a8-f503-4da6-b1f5-53d69a3d0fc0; no cash refund.",
+        "expires_at": "2026-10-20T01:46:43.128Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "666e9dfc-bef2-4311-87b3-d212760663f3",
+            "version": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "ui-debit-0.123456-operation",
+      "operation": "createAdminFeeDebit",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "d791ec6b-b9bd-4d0c-84e9-01b605a0f3b3",
+        "action": "billing.debit",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "actor_id": "8c48a5ac-99d9-4e93-8e77-2789b413be18",
+        "state": "succeeded",
+        "payload_hash": "89a2f061147ab760d5ce5fbb05999b9aa9f25ce517fa7c2ff2a6f7229a04b3c3",
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:43.574Z",
+        "result_ids": [
+          "fdcf7bc4-d284-4df9-a502-17793de60943"
+        ]
+      }
+    },
+    {
+      "name": "ui-credit_limit-preview",
+      "operation": "previewAdminFee",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "7d9bf307-824f-4191-8740-aa7de1c256cc",
+        "payload_hash": "64738c642244e06dc9057bc67af13115f8d7aec8ec03fe62ef000308856bc4a5",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "decision": "recent_mfa",
+        "missing_permission_keys": [],
+        "impact_summary": "Set credit limit to HKD 25000000 micros; no payment or VIP change.",
+        "expires_at": "2026-10-20T01:46:44.614Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "666e9dfc-bef2-4311-87b3-d212760663f3",
+            "version": 3
+          }
+        ]
+      }
+    },
+    {
+      "name": "ui-credit_limit-25-operation",
+      "operation": "createAdminFeeCreditLimit",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "869f7001-ae29-4b35-8230-8aba3747553f",
+        "action": "billing.credit_limit.write",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "actor_id": "8c48a5ac-99d9-4e93-8e77-2789b413be18",
+        "state": "succeeded",
+        "payload_hash": "64738c642244e06dc9057bc67af13115f8d7aec8ec03fe62ef000308856bc4a5",
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:44.908Z",
+        "result_ids": [
+          "762eb6ec-7b92-4b07-a0ce-83b07daa6149"
+        ]
+      }
+    },
+    {
+      "name": "ui-gift-preview",
+      "operation": "previewAdminFee",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "d5b42415-7b76-4ec2-8f5e-9e05b499ee21",
+        "payload_hash": "c3439225adbbadb1d5663915a2e392a5ec94cc9821a2d8c379a7d50b926ac4ba",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "decision": "independent_approval",
+        "missing_permission_keys": [],
+        "impact_summary": "Grant HKD 10000000000 micros until 2027-12-31T10:00:00.000Z; no payment received.",
+        "expires_at": "2026-10-20T01:46:46.213Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "666e9dfc-bef2-4311-87b3-d212760663f3",
+            "version": 4
+          }
+        ]
+      }
+    },
+    {
+      "name": "ui-gift-10000-operation",
+      "operation": "createAdminFeeGift",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "62019fa7-f8d1-48d7-b575-78e3b2357591",
+        "action": "billing.gift",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "actor_id": "8c48a5ac-99d9-4e93-8e77-2789b413be18",
+        "state": "pending_approval",
+        "payload_hash": "c3439225adbbadb1d5663915a2e392a5ec94cc9821a2d8c379a7d50b926ac4ba",
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "version": 1,
+        "created_at": "2026-10-20T01:41:46.483Z",
+        "result_ids": []
+      }
+    },
+    {
+      "name": "ui-independent-financial-decision",
+      "operation": "decideAdminApproval",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "62019fa7-f8d1-48d7-b575-78e3b2357591",
+        "action": "billing.gift",
+        "target_ids": [
+          "666e9dfc-bef2-4311-87b3-d212760663f3"
+        ],
+        "actor_id": "8c48a5ac-99d9-4e93-8e77-2789b413be18",
+        "state": "succeeded",
+        "payload_hash": "c3439225adbbadb1d5663915a2e392a5ec94cc9821a2d8c379a7d50b926ac4ba",
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:46.483Z",
+        "result_ids": [
+          "1fe099af-10a8-4704-92ae-24ee529e0211"
+        ]
+      }
+    },
+    {
+      "name": "ui-payment-record",
+      "operation": "createAdminPaymentRecord",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "d5b488c2-3153-43da-8e79-c096e0b6d4dd",
+        "action": "billing.reconcile",
+        "target_ids": [
+          "52fd101f-00d1-4ae1-b01d-356c9b8197e6"
+        ],
+        "actor_id": "8c48a5ac-99d9-4e93-8e77-2789b413be18",
+        "state": "succeeded",
+        "payload_hash": "e5ae4aec0ea89da692215d7b13f814d07c9706d71a9babe9d7a835087717045b",
+        "policy_version_id": "8f14feae-9d8c-4c10-8ada-2fe3996ac6be",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:52.024Z",
+        "result_ids": [
+          "934a61de-1695-4b9c-9a09-d4b365a3cf65"
+        ]
+      }
+    },
+    {
+      "name": "ui-payment-confirm",
+      "operation": "confirmAdminPayment",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "39b6c404-97b2-445f-8d96-226445d942a6",
+        "action": "billing.reconcile",
+        "target_ids": [
+          "52fd101f-00d1-4ae1-b01d-356c9b8197e6"
+        ],
+        "actor_id": "f15fdd4d-62e1-4350-b049-0efbef272ff5",
+        "state": "succeeded",
+        "payload_hash": "f17827a35df1a6dd289a92f78349d7094e2da5f500a3dbbd12a7c2c56eb2a091",
+        "policy_version_id": "8f14feae-9d8c-4c10-8ada-2fe3996ac6be",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:54.760Z",
+        "result_ids": [
+          "934a61de-1695-4b9c-9a09-d4b365a3cf65"
+        ]
+      }
+    },
+    {
+      "name": "ui-payment-post-preview",
+      "operation": "previewAdminFee",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "60dfbbc6-df2c-4704-b0f5-b5ce433d211e",
+        "payload_hash": "ad5ac9762ee43add42b9fc0ef86878305e1120fb20557d440666b31e8bbb826a",
+        "target_ids": [
+          "52fd101f-00d1-4ae1-b01d-356c9b8197e6"
+        ],
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "decision": "recent_mfa",
+        "missing_permission_keys": [],
+        "impact_summary": "Post HKD 20654321 micros from independently verified payment 934a61de-1695-4b9c-9a09-d4b365a3cf65; no VIP change.",
+        "expires_at": "2026-10-20T01:46:56.355Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "52fd101f-00d1-4ae1-b01d-356c9b8197e6",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "ui-payment-post",
+      "operation": "createAdminFeeTopUp",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "d8d89fbd-53d5-4466-8d93-bea97e5ce8eb",
+        "action": "billing.top_up",
+        "target_ids": [
+          "52fd101f-00d1-4ae1-b01d-356c9b8197e6"
+        ],
+        "actor_id": "f15fdd4d-62e1-4350-b049-0efbef272ff5",
+        "state": "succeeded",
+        "payload_hash": "ad5ac9762ee43add42b9fc0ef86878305e1120fb20557d440666b31e8bbb826a",
+        "policy_version_id": "b11bb981-51a9-478c-b31f-efb9271c151b",
+        "version": 2,
+        "created_at": "2026-10-20T01:41:56.617Z",
+        "result_ids": [
+          "411b6ce8-aecf-41bd-8e00-854fc7819e12"
+        ]
+      }
+    },
+    {
+      "name": "ui-payment-list",
+      "operation": "listAdminPaymentRecords",
+      "schema": "AdminPaymentRecordList",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "934a61de-1695-4b9c-9a09-d4b365a3cf65",
+            "billing_account_id": "52fd101f-00d1-4ae1-b01d-356c9b8197e6",
+            "external_reference": "controlled-bank-dd1667ed-da96-4e5e-9183-72f0dd416f9f",
+            "amount": {
+              "currency": "HKD",
+              "amount_micros": "20654321"
+            },
+            "state": "confirmed",
+            "version": 3,
+            "received_at": "2026-10-18T17:41:00.000Z"
+          }
+        ],
+        "next_cursor": null
+      }
+    }
+  ]
+}

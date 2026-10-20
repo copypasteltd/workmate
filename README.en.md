@@ -343,7 +343,7 @@ The focused fee/migration TAP passes 16/16. Initial failures and the earlier pre
 
 Full payment evidence/records, cash refunds/reconciliation, original-bucket consumption refunds, immutable plans/VIP, financial outbox, complete normative approval directories and remaining native/NFR/release gates are still required. Historical stage counts are not complete current acceptance.
 
-## Current membership UI and native authentication recovery (2026-10-20)
+## Stage 42 snapshot: membership UI and native authentication recovery (2026-10-20)
 
 | Command | Current receipt | Result | Source/runtime files |
 | --- | --- | --- | --- |
@@ -363,4 +363,12 @@ Existing pending Platform/Admin commands now share distinct persisted requests, 
 
 Prior passing source snapshots/screenshots are retained in `evidence/stage42-before-unified-approvals/`; every initial failing TAP remains intact. Complete payments, refunds, VIP, financial notifications and full acceptance remain outstanding. The bound Desktop/extension preview bytes were not rebuilt for this backend change.
 
-This run passes platform 303/303 (669 unchanged source files), approval/upgrade focus 53/53, Web membership 6/6, Admin membership 6/6, fees 4/4, accounts 5/5 and Web/source Electron/MV3 authentication 12/12. Original-schema captures pass 91/91. Overlapping checks are not added twice to platform totals. Full acceptance of all 102 requirements remains tracked in docs.
+Stage 43 passed platform 303/303 (669 unchanged source files), approval/upgrade focus 53/53, Web membership 6/6, Admin membership 6/6, fees 4/4, accounts 5/5 and Web/source Electron/MV3 authentication 12/12. Original-schema captures pass 91/91. Overlapping checks are not added twice to platform totals. Full acceptance of all 102 requirements remains tracked in docs.
+
+## Payment evidence and exact posting repair (2026-10-20)
+
+`qa:admin-fees` covers four normative fee commands plus payment registration and independent evidence verification: five browser groups, fifteen original-schema responses and thirty-nine unchanged runtime/verifier source files. Owned browsers close after execution. Twenty-one isolated financial groups cover exact large amounts, independent verification, historical receipt deduplication, concurrent single posting, actual debt repayment, current authority/revocation and atomic audit rollback. The full regression result remains in `evidence/alignment-platform.json/.tap`.
+
+Stage 43 original bytes are archived under `evidence/stage43-before-payment-records/`. New `payment-records-*` files retain actual failures, successes, native migration logs and copy manifests. Original 050/049 trigger failures and initial verifier mistakes are not counted as passes; appended 051/052 repair them. Simulated receipts do not establish payment-provider, complete refund/VIP or full product acceptance. Existing native appearance previews retain their original artifact manifests.
+
+This stage finishes with platform **310/310** and 676 unchanged participating files. Raw TAP SHA-256: `5b499c16a50ec57427ed7ff7cf4681ba2e0cef0330e97159dde7e9d25e291119`. Separate scoped checks pass Web membership 6/6 (164 files), Admin membership 6/6 (190), fees 5/5 (39), accounts 5/5 and source cross-client authentication 12/12 (769). Original-schema samples pass **96/96**. Manifests preserve 180 original-byte archive copies, including the first 306/310 failure. These bounded checks do not close all 102 requirements or release gates.

@@ -128,6 +128,15 @@ const contexts: BrowserContext[] = [],
   screenshots: string[] = [];
 const admins: { c: Client; id: string }[] = [];
 const sourcePaths = [
+  "copypaste-platform/src/admin-payments.ts",
+  "copypaste-platform/src/payment-records.ts",
+  "copypaste-platform/migrations/049-payment-evidence-and-posting.sql",
+  "copypaste-platform/migrations/050-frozen-payment-record-commands.sql",
+  "copypaste-platform/migrations/051-payment-preview-table-specific-fields.sql",
+  "copypaste-platform/migrations/052-payment-historical-reference-guard.sql",
+  "copypaste-platform/contracts/admin-payment-schemas.json",
+  "copypaste-platform/contracts/admin-fee-schemas.json",
+  "copypaste-admin/src/payments.tsx",
   "copypaste-platform/src/admin-approvals.ts",
   "copypaste-platform/src/admin-approval-storage.ts",
   "copypaste-platform/src/admin-accounts.ts",
@@ -351,6 +360,14 @@ try {
     createHash("sha256").update(normative).digest("hex"),
     fixture.source_sha256,
   );
+  const paymentFixture = JSON.parse(
+    await readFile(
+      path.join(platform, "contracts/admin-payment-schemas.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(paymentFixture.source_sha256, fixture.source_sha256);
+  Object.assign(fixture.schemas, paymentFixture.schemas);
   for (const [name, schema] of Object.entries(fixture.schemas))
     assert.deepEqual(schema, spec.components.schemas[name]);
   const { Ajv2020 } = requirePlatform("ajv/dist/2020.js"),
@@ -575,8 +592,330 @@ try {
   pass(
     "a distinct real administrator approves the frozen amount/version/hash in the browser; self approval is rejected and journal attribution retains the original actor",
   );
-  stage = "responsive account and ledger UI";
+  stage = "actual payment evidence, independent verification and posting UI";
   await d.getByRole("button", { name: "Close", exact: true }).click();
+  const ws = await call(u, "POST", "/v1/tenants", {
+    name: "Controlled payment UI workspace",
+    project_name: "Controlled receipt evidence",
+  });
+  assert.equal(ws.status, 200, JSON.stringify(ws.data));
+  const tenant = ws.data.tenant.id,
+    project = ws.data.project.id;
+  const billing = (
+    await db.query("SELECT * FROM wallets WHERE tenant_id=$1", [tenant])
+  ).rows[0];
+  const data = new FormData();
+  data.append(
+    "file",
+    new Blob(
+      [
+        "Controlled QA bank evidence; no actual money received. " +
+          randomUUID(),
+      ],
+      { type: "text/plain" },
+    ),
+    "controlled-receipt.txt",
+  );
+  const upload = await fetch(
+    `${origin}/v1/tenants/${tenant}/projects/${project}/assets`,
+    {
+      method: "POST",
+      headers: {
+        Origin: "http://localhost:4317",
+        Cookie: [...u.cookies].map(([k, v]) => `${k}=${v}`).join("; "),
+        "X-CSRF-Token": u.csrf,
+        "X-Tenant-ID": tenant,
+        "Idempotency-Key": randomUUID(),
+      },
+      body: data,
+      signal: AbortSignal.timeout(15000),
+    },
+  );
+  const asset = await upload.json();
+  assert.equal(upload.status, 200, JSON.stringify(asset));
+  const versions = await call(
+    u,
+    "GET",
+    `/v1/tenants/${tenant}/projects/${project}/assets/${asset.id}/versions`,
+  );
+  assert.equal(versions.status, 200, JSON.stringify(versions.data));
+  const evidence = versions.data.items[0].id,
+    externalReference = "controlled-bank-" + randomUUID();
+  await page
+    .getByRole("button", { name: "Record payment", exact: true })
+    .click();
+  let paymentDialog = page.getByRole("dialog", {
+    name: "Record a received payment",
+    exact: true,
+  });
+  await paymentDialog
+    .getByLabel("Billing account ID", { exact: true })
+    .fill(billing.id);
+  await paymentDialog
+    .getByLabel("External payment reference", { exact: true })
+    .fill(externalReference);
+  await paymentDialog
+    .getByLabel("Received amount (HKD)", { exact: true })
+    .fill("20.654321");
+  await paymentDialog
+    .getByLabel("Received at", { exact: true })
+    .fill(new Date(Date.now() - 86400000).toISOString().slice(0, 16));
+  await paymentDialog
+    .getByLabel("Evidence asset version ID", { exact: true })
+    .fill(evidence);
+  await paymentDialog
+    .getByLabel("Record reason", { exact: true })
+    .fill("Controlled browser receipt; no actual money received");
+  await paymentDialog
+    .getByRole("button", { name: "Review record details", exact: true })
+    .click();
+  const [recordResponse] = await Promise.all([
+    page.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname === "/v1/admin/billing/payments" &&
+        r.request().method() === "POST",
+    ),
+    paymentDialog
+      .getByRole("button", { name: "Confirm evidence record", exact: true })
+      .click(),
+  ]);
+  const recordOperation = await recordResponse.json();
+  check("AdminPaymentRecordCreate", recordResponse.request().postDataJSON());
+  sample(
+    "ui-payment-record",
+    "createAdminPaymentRecord",
+    "AdminOperation",
+    { status: recordResponse.status(), data: recordOperation },
+    202,
+  );
+  const payment = recordOperation.result_ids[0];
+  paymentDialog = page.getByRole("dialog", {
+    name: "Review payment and posting",
+    exact: true,
+  });
+  await paymentDialog
+    .getByText(
+      "Ask another administrator with reconciliation access to verify this payment.",
+      { exact: true },
+    )
+    .waitFor();
+  await capture(page, "40-payment-evidence-record.png");
+  const self = await call(
+    admins[0].c,
+    "POST",
+    `/v1/admin/billing/payments/${payment}/confirmations`,
+    {
+      expected_version: 1,
+      verified_reference: externalReference,
+      reason: "Self verification must be refused",
+    },
+  );
+  assert.equal(self.status, 403);
+  assert.equal(self.data.error.code, "PAYMENT_SELF_VERIFICATION");
+  await paymentDialog
+    .getByRole("button", { name: "Close", exact: true })
+    .click();
+  await reviewer.goto("http://localhost:4318/billing", {
+    waitUntil: "domcontentloaded",
+  });
+  await reviewer.getByLabel("Payment record ID", { exact: true }).fill(payment);
+  await reviewer
+    .getByRole("button", { name: "Open payment", exact: true })
+    .click();
+  paymentDialog = reviewer.getByRole("dialog", {
+    name: "Review payment and posting",
+    exact: true,
+  });
+  await paymentDialog
+    .getByLabel("Independently verified reference", { exact: true })
+    .fill(externalReference);
+  await paymentDialog
+    .getByLabel("Verification reason", { exact: true })
+    .fill("Independently checked controlled browser payment evidence");
+  await paymentDialog.getByRole("checkbox").check();
+  const [confirmationResponse] = await Promise.all([
+    reviewer.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname ===
+          `/v1/admin/billing/payments/${payment}/confirmations` &&
+        r.request().method() === "POST",
+    ),
+    paymentDialog
+      .getByRole("button", {
+        name: "Save independent verification",
+        exact: true,
+      })
+      .click(),
+  ]);
+  check("AdminPaymentConfirm", confirmationResponse.request().postDataJSON());
+  sample(
+    "ui-payment-confirm",
+    "confirmAdminPayment",
+    "AdminOperation",
+    {
+      status: confirmationResponse.status(),
+      data: await confirmationResponse.json(),
+    },
+    202,
+  );
+  await paymentDialog
+    .getByRole("button", { name: "Preview and post credit", exact: true })
+    .waitFor();
+  assert.equal(
+    (
+      await db.query("SELECT balance_micros FROM wallets WHERE id=$1", [
+        billing.id,
+      ])
+    ).rows[0].balance_micros,
+    "0",
+  );
+  await capture(reviewer, "41-payment-independently-verified.png");
+  await paymentDialog
+    .getByRole("button", { name: "Preview and post credit", exact: true })
+    .click();
+  const topUp = reviewer.getByRole("dialog", {
+    name: "Post verified payment",
+    exact: true,
+  });
+  await topUp.getByLabel("Amount (HKD)", { exact: true }).fill("20.654321");
+  assert.equal(
+    await topUp
+      .getByLabel("Verified payment record ID", { exact: true })
+      .inputValue(),
+    payment,
+  );
+  await topUp
+    .getByLabel("Reason", { exact: true })
+    .fill("Post the exact independently verified controlled payment");
+  const [topPreview] = await Promise.all([
+    reviewer.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname === `${accountRoot}/${billing.id}/previews` &&
+        r.request().method() === "POST",
+    ),
+    topUp.getByRole("button", { name: "Preview change", exact: true }).click(),
+  ]);
+  check("AdminFeeTopUp", topPreview.request().postDataJSON());
+  sample("ui-payment-post-preview", "previewAdminFee", "AdminPreview", {
+    status: topPreview.status(),
+    data: await topPreview.json(),
+  });
+  const [topResponse] = await Promise.all([
+    reviewer.waitForResponse(
+      (r) =>
+        new URL(r.url()).pathname === `${accountRoot}/${billing.id}/top-up` &&
+        r.request().method() === "POST",
+    ),
+    topUp.getByRole("button", { name: "Confirm change", exact: true }).click(),
+  ]);
+  const topOperation = await topResponse.json();
+  sample(
+    "ui-payment-post",
+    "createAdminFeeTopUp",
+    "AdminOperation",
+    { status: topResponse.status(), data: topOperation },
+    202,
+  );
+  assert.equal(topOperation.state, "succeeded");
+  const repeatedTopUp = await call(
+    admins[1].c,
+    "POST",
+    `${accountRoot}/${billing.id}/top-up`,
+    topResponse.request().postDataJSON(),
+    { key: topResponse.request().headers()["idempotency-key"] },
+  );
+  assert.deepEqual(repeatedTopUp.data, topOperation);
+  assert.equal(
+    (
+      await db.query("SELECT balance_micros FROM wallets WHERE id=$1", [
+        billing.id,
+      ])
+    ).rows[0].balance_micros,
+    "20654321",
+  );
+  assert.equal(
+    (
+      await db.query(
+        "SELECT count(*)::int AS n FROM payment_postings WHERE payment_record_id=$1",
+        [payment],
+      )
+    ).rows[0].n,
+    1,
+  );
+  const paymentLedger = await call(
+    admins[1].c,
+    "GET",
+    `${accountRoot}/${billing.id}/ledger?limit=10`,
+  );
+  assert.equal(
+    paymentLedger.data.items.find(
+      (j: any) => j.operation_id === topOperation.id,
+    ).payment_record_id,
+    payment,
+  );
+  const payments = await call(
+    admins[1].c,
+    "GET",
+    "/v1/admin/billing/payments?limit=10",
+  );
+  sample(
+    "ui-payment-list",
+    "listAdminPaymentRecords",
+    "AdminPaymentRecordList",
+    payments,
+  );
+  assert.equal(
+    payments.data.items.find((p: any) => p.id === payment).version,
+    3,
+  );
+  await topUp.getByRole("button", { name: "Done", exact: true }).click();
+  await reviewer
+    .getByRole("region", { name: "Payment records", exact: true })
+    .getByRole("row")
+    .filter({ has: reviewer.locator("code").filter({ hasText: payment }) })
+    .getByText("Posted", { exact: true })
+    .waitFor();
+  await reviewer.getByLabel("Payment record ID", { exact: true }).fill(payment);
+  await reviewer
+    .getByRole("button", { name: "Open payment", exact: true })
+    .click();
+  await reviewer
+    .getByRole("dialog")
+    .getByText(paymentLedger.data.items[0].id, { exact: true })
+    .waitFor();
+  await capture(reviewer, "42-payment-posted-ledger.png");
+  await reviewer
+    .getByRole("dialog")
+    .getByRole("button", { name: "Close", exact: true })
+    .click();
+  await reviewer.evaluate(() => {
+    localStorage.setItem("cp_locale", "zh-HK");
+    localStorage.setItem("cp_theme", "dark");
+  });
+  await reviewer.setViewportSize({ width: 390, height: 844 });
+  await reviewer.reload({ waitUntil: "domcontentloaded" });
+  await reviewer.getByLabel("付款記錄 ID", { exact: true }).fill(payment);
+  await reviewer.getByRole("button", { name: "開啟付款", exact: true }).click();
+  const mobilePayment = reviewer.getByRole("dialog", {
+    name: "核對付款與入帳",
+    exact: true,
+  });
+  await mobilePayment
+    .getByText(paymentLedger.data.items[0].id, { exact: true })
+    .waitFor();
+  assert.ok(
+    await reviewer.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  );
+  await capture(reviewer, "payment-mobile-dark.png");
+  await mobilePayment
+    .getByRole("button", { name: "Close", exact: true })
+    .click();
+  pass(
+    "actual uploaded evidence and two real browser administrators record and independently verify payment without changing balances; a separate exact top-up posts once, retains source provenance and recovers the committed receipt",
+  );
+  stage = "responsive account and ledger UI";
   const ownRow = page
     .getByRole("row")
     .filter({ has: page.locator("code").filter({ hasText: account.id }) });
@@ -721,7 +1060,7 @@ try {
         at,
         status: errors.length ? "failed" : "passed",
         scope:
-          "Three canonical financial commands only: current local HTTP and owned Chromium UI with real email/TOTP sessions and simulated financial fixtures; no external payment, complete payment/refund/VIP, native or production acceptance",
+          "Four canonical financial commands and manual payment evidence: current local HTTP and owned Chromium UI with real email/TOTP sessions and simulated financial fixtures; no external payment, complete payment/refund/VIP, native or production acceptance",
         checks,
         errors,
         screenshots,
