@@ -4,7 +4,7 @@ import { operationKey, completeOperation } from "./operation-key";
 import { AccountChangeFacts } from "./accounts";
 import { MembershipChangeFacts } from "./memberships";
 import { PlanPublicationFacts } from "./plans";
-import { VipChangeFacts, vipPermission } from "./vip";
+import { VipChangeFacts, VipCreditFacts, vipPermission } from "./vip";
 import { FeeReview, canonicalFeeAction } from "./fees";
 import {
   AsyncForm,
@@ -51,14 +51,16 @@ export function ApprovalReview({
     approval = data?.approval,
     command = data?.command;
   const permission = operation
-    ? operation.action.startsWith("entitlements.")
-      ? vipPermission(operation.action)
-      : "admin." +
-        (["entitlements.suspend", "entitlements.resume"].includes(
-          operation.action,
-        )
-          ? "entitlements.extend"
-          : operation.action)
+    ? operation.action === "entitlements.grant_with_credit"
+      ? "admin.entitlements.grant"
+      : operation.action.startsWith("entitlements.")
+        ? vipPermission(operation.action)
+        : "admin." +
+          (["entitlements.suspend", "entitlements.resume"].includes(
+            operation.action,
+          )
+            ? "entitlements.extend"
+            : operation.action)
     : "";
   const pending =
     approval?.state === "pending" && operation?.state === "pending_approval";
@@ -108,6 +110,8 @@ export function ApprovalReview({
           </dl>
           {operation.action === "plans.publish" ? (
             <PlanPublicationFacts before={data.before} />
+          ) : operation.action === "entitlements.grant_with_credit" ? (
+            <VipCreditFacts command={command} before={data.before} />
           ) : operation.action.startsWith("entitlements.") ? (
             <VipChangeFacts command={command} before={data.before} />
           ) : operation.action === "tenants.members.write" ? (
@@ -147,7 +151,10 @@ export function ApprovalReview({
                   "Another administrator must review this operation.",
                 )}
               </p>
-            ) : has("admin.approvals.decide") && has(permission) ? (
+            ) : has("admin.approvals.decide") &&
+              has(permission) &&
+              (operation.action !== "entitlements.grant_with_credit" ||
+                has("admin.billing.gift")) ? (
               <AsyncForm
                 submitLabel={t("確認審批決定", "Confirm review decision")}
                 onSubmit={async (f) => {

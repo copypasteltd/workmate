@@ -4,6 +4,7 @@ import { Plus, RefreshCw, ShieldCheck } from "lucide-react";
 import { api, ApiError } from "./api";
 import { operationKey, completeOperation } from "./operation-key";
 import { PlanFacts, type PlanVersion } from "./plans";
+import { formatHKD, parseHKD } from "./financial-money";
 import {
   AsyncForm,
   Badge,
@@ -218,6 +219,46 @@ export function VipChangeFacts({
   );
 }
 
+export function VipCreditFacts({
+  command,
+  before,
+}: {
+  command: any;
+  before: any;
+}) {
+  const { t } = useI18n();
+  return (
+    <section className="form-stack">
+      <VipChangeFacts command={command.vip} before={before.vip} />
+      <h3>{t("獨立贈送額度", "Explicit promotional credit")}</h3>
+      <dl className="key-value">
+        <dt>{t("費用賬戶", "Billing account")}</dt>
+        <dd>
+          <code>{command.billing_account_id}</code>
+        </dd>
+        <dt>{t("當前賬戶版本", "Current account version")}</dt>
+        <dd>{command.gift.expected_version}</dd>
+        <dt>{t("當前淨餘額", "Current net balance")}</dt>
+        <dd>{formatHKD(before.gift.balance_micros)}</dd>
+        <dt>{t("贈送金額", "Credit amount")}</dt>
+        <dd>{formatHKD(command.gift.amount.amount_micros)}</dd>
+        <dt>{t("額度到期時間", "Credit expires")}</dt>
+        <dd>
+          <DateText value={command.gift.expires_at} />
+        </dd>
+        <dt>{t("贈額原因", "Credit reason")}</dt>
+        <dd>{command.gift.reason}</dd>
+      </dl>
+      <p className="notice">
+        {t(
+          "一次確認同時提交 VIP 與明確贈額；任一步失敗，兩項都不生效。額度有獨立來源和到期日。",
+          "One confirmation commits VIP and the explicit credit together. If either fails, neither takes effect. Credit retains its own reference and expiry.",
+        )}
+      </p>
+    </section>
+  );
+}
+
 export function AdminVip({ access }: { access: Access }) {
   const { t } = useI18n(),
     [revision, setRevision] = useState(0),
@@ -309,7 +350,12 @@ export function AdminVip({ access }: { access: Access }) {
         />
       )}
       {!!list.data?.items.length && (
-        <div className="card table-scroll" role="region" aria-label={t("VIP 授予目錄", "VIP grant directory")} tabIndex={0}>
+        <div
+          className="card table-scroll"
+          role="region"
+          aria-label={t("VIP 授予目錄", "VIP grant directory")}
+          tabIndex={0}
+        >
           <table>
             <thead>
               <tr>
@@ -456,7 +502,9 @@ function VipDetail({
   const { t } = useI18n(),
     name = useActionName(),
     [revision, setRevision] = useState(0),
-    [action, setAction] = useState<{ action: Action; grant: Grant } | null>(null),
+    [action, setAction] = useState<{ action: Action; grant: Grant } | null>(
+      null,
+    ),
     history = useData(`${root}/${id}/history`, revision);
   const g = history.data?.grant as Grant | undefined;
   if (action)
@@ -552,6 +600,7 @@ export function VipCommandModal({
     [kind, setKind] = useState<"user" | "tenant">(subject?.kind ?? "user"),
     [source, setSource] = useState("manual"),
     [planId, setPlanId] = useState(""),
+    [includeGift, setIncludeGift] = useState(false),
     [options, setOptions] = useState<PlanVersion[]>([]),
     [cursor, setCursor] = useState<string | null>(null),
     [next, setNext] = useState<string | null>(null),
@@ -574,7 +623,15 @@ export function VipCommandModal({
     0,
     3000,
   );
-  const outcome = live.data ?? result;
+  const combined = useData(
+    result?.action === "entitlements.grant_with_credit" &&
+      access.has("admin.jobs.read")
+      ? `/v1/admin/vip-credit-combinations/${result.id}`
+      : null,
+    0,
+    result?.state === "pending_approval" ? 3000 : 0,
+  );
+  const outcome = combined.data?.operation ?? live.data ?? result;
   useEffect(() => {
     if (plans.data) {
       setOptions((old) => [
@@ -633,24 +690,78 @@ export function VipCommandModal({
           b.payment_record_id = String(f.get("payment_record_id")).trim();
       } else if (initial === "extend")
         b.ends_at = new Date(String(f.get("ends_at"))).toISOString();
+      let command = b;
+      if (initial === "grant" && includeGift) {
+        const accounts = await api(
+          `/v1/admin/billing/accounts?subject_id=${b.subject.id}&limit=100`,
+        );
+        const account = accounts.items.find(
+          (a: any) => a.subject.kind === kind && a.subject.id === b.subject.id,
+        );
+        if (!account)
+          throw new Error(
+            t(
+              "找不到此歸屬的費用賬戶。",
+              "No billing account is available for this subject.",
+            ),
+          );
+        let amount: string;
+        try {
+          amount = parseHKD(String(f.get("gift_amount")));
+        } catch (e) {
+          setErrors({ gift_amount: (e as Error).message });
+          throw e;
+        }
+        command = {
+          billing_account_id: account.id,
+          vip: b,
+          gift: {
+            action: "gift",
+            expected_version: account.version,
+            reason: String(f.get("gift_reason")),
+            amount: { currency: "HKD", amount_micros: amount },
+            expires_at: new Date(
+              String(f.get("gift_expires_at")),
+            ).toISOString(),
+          },
+        };
+      }
       const path =
-        initial === "grant"
-          ? "/v1/admin/entitlement-previews"
-          : `${root}/${grant!.id}/${actions[initial]}/previews`;
+        initial === "grant" && includeGift
+          ? "/v1/admin/vip-credit-previews"
+          : initial === "grant"
+            ? "/v1/admin/entitlement-previews"
+            : `${root}/${grant!.id}/${actions[initial]}/previews`;
       const preview = await api(path, {
           method: "POST",
-          body: JSON.stringify(b),
+          body: JSON.stringify(command),
         }),
         facts = await api(
-          "/v1/admin/entitlement-previews/" + preview.preview_id,
+          (initial === "grant" && includeGift
+            ? "/v1/admin/vip-credit-previews/"
+            : "/v1/admin/entitlement-previews/") + preview.preview_id,
         );
-      setPrepared({ preview, facts, command: b });
+      setPrepared({
+        preview,
+        facts,
+        command,
+        combined: initial === "grant" && includeGift,
+      });
     } catch (e) {
       setError(e as Error);
       if (e instanceof ApiError && e.details) {
         const fields: Record<string, string> = {};
-        for (const d of e.details)
-          fields[d.path.split(".").at(-1)!] = d.message;
+        for (const d of e.details) {
+          const mapped: Record<string, string> = {
+            "gift.amount.amount_micros": "gift_amount",
+            "gift.amount": "gift_amount",
+            "gift.expires_at": "gift_expires_at",
+            "gift.reason": "gift_reason",
+            "vip.subject.id": "subject_id",
+            "subject.id": "subject_id",
+          };
+          fields[mapped[d.path] ?? d.path.split(".").at(-1)!] = d.message;
+        }
         setErrors(fields);
       }
     } finally {
@@ -674,9 +785,61 @@ export function VipCommandModal({
                 )}
           </p>
           <code>{outcome.id}</code>
-          <ErrorNotice error={live.error} />
-          {outcome.state === "pending_approval" && access.has("admin.approvals.read") && <Link to={"/audit?view=approvals&search=" + outcome.id} onClick={onClose}>{t("前往審批中心", "Open approval center")}</Link>}
-          <Link to="/entitlements" onClick={onClose}>{t("查看授予結果", "View grant result")}</Link>
+          <ErrorNotice error={combined.error ?? live.error} />
+          {combined.data && (
+            <section className="form-stack">
+              <p>
+                {outcome.state === "succeeded"
+                  ? t(
+                      "VIP 與贈額已一併完成。",
+                      "VIP and promotional credit both completed.",
+                    )
+                  : outcome.state === "pending_approval"
+                    ? t(
+                        "兩項均未生效，等待獨立審批。",
+                        "Both effects are awaiting independent review.",
+                      )
+                    : t(
+                        "此組合未生效。",
+                        "This combination has not taken effect.",
+                      )}
+              </p>
+              {combined.data.children.map((c: any) => (
+                <div key={c.operation.id}>
+                  <strong>
+                    {c.operation.action === "billing.gift"
+                      ? t("贈額", "Credit")
+                      : "VIP"}
+                  </strong>{" "}
+                  <Badge value={c.operation.state} />
+                  <code>{c.operation.id}</code>
+                </div>
+              ))}
+              {combined.data.result?.credit_reference && (
+                <p>
+                  {t("額度參考", "Credit reference")}:{" "}
+                  <code>{combined.data.result.credit_reference}</code>
+                </p>
+              )}
+              {access.has("admin.billing.read") && (
+                <Link to="/billing" onClick={onClose}>
+                  {t("查看費用及贈額記錄", "View billing and credit history")}
+                </Link>
+              )}
+            </section>
+          )}
+          {outcome.state === "pending_approval" &&
+            access.has("admin.approvals.read") && (
+              <Link
+                to={"/audit?view=approvals&search=" + outcome.id}
+                onClick={onClose}
+              >
+                {t("前往審批中心", "Open approval center")}
+              </Link>
+            )}
+          <Link to="/entitlements" onClick={onClose}>
+            {t("查看授予結果", "View grant result")}
+          </Link>
           <button className="button primary" onClick={onClose}>
             {t("完成", "Done")}
           </button>
@@ -707,10 +870,17 @@ export function VipCommandModal({
           </div>
           {prepared && (
             <section className="form-stack">
-              <VipChangeFacts
-                command={prepared.command}
-                before={prepared.facts.before}
-              />
+              {prepared.combined ? (
+                <VipCreditFacts
+                  command={prepared.command}
+                  before={prepared.facts.before}
+                />
+              ) : (
+                <VipChangeFacts
+                  command={prepared.command}
+                  before={prepared.facts.before}
+                />
+              )}
               <p>
                 {t("預覽截止", "Preview expires")}{" "}
                 <DateText value={prepared.preview.expires_at} />
@@ -730,9 +900,12 @@ export function VipCommandModal({
                 submitLabel={t("確認提交", "Confirm submission")}
                 onSubmit={async () => {
                   const b = prepared.command,
-                    action = `admin.vip.${initial}:${grant?.id ?? b.subject.id}`,
-                    path =
-                      initial === "grant"
+                    action = prepared.combined
+                      ? `admin.vip-credit:${b.vip.subject.id}`
+                      : `admin.vip.${initial}:${grant?.id ?? b.subject.id}`,
+                    path = prepared.combined
+                      ? "/v1/admin/vip-credit-combinations"
+                      : initial === "grant"
                         ? root
                         : `${root}/${grant!.id}/${actions[initial]}`;
                   const op = await api(path, {
@@ -755,8 +928,12 @@ export function VipCommandModal({
                 <label className="admin-plan-confirm">
                   <input type="checkbox" required />
                   {t(
-                    "我已核對歸屬、固定方案、日期、來源及重疊影響。",
-                    "I reviewed the subject, fixed plan, dates, source and overlap effects.",
+                    prepared.combined
+                      ? "我已核對 VIP 和獨立贈額的歸屬、金額、到期日及完整影響。"
+                      : "我已核對歸屬、固定方案、日期、來源及重疊影響。",
+                    prepared.combined
+                      ? "I reviewed the VIP and explicit credit, including subject, amount, expiry and all effects."
+                      : "I reviewed the subject, fixed plan, dates, source and overlap effects.",
                   )}
                 </label>
               </AsyncForm>
@@ -936,6 +1113,72 @@ export function VipCommandModal({
                 {inline("ends_at")}
               </>
             )}
+            {initial === "grant" &&
+              access.has("admin.billing.gift") &&
+              access.has("admin.billing.read") && (
+                <fieldset className="form-stack">
+                  <legend>{t("配套贈額", "Promotional credit")}</legend>
+                  <label className="admin-plan-confirm">
+                    <input
+                      type="checkbox"
+                      checked={includeGift}
+                      onChange={(e) => setIncludeGift(e.target.checked)}
+                    />
+                    {t(
+                      "與 VIP 一併贈送明確額度",
+                      "Include explicit credit with this VIP grant",
+                    )}
+                  </label>
+                  {includeGift && (
+                    <>
+                      <Field
+                        label={t("贈送金額（HKD）", "Credit amount (HKD)")}
+                      >
+                        <input
+                          name="gift_amount"
+                          inputMode="decimal"
+                          required
+                          {...props("gift_amount")}
+                        />
+                      </Field>
+                      {inline("gift_amount")}
+                      <Field
+                        label={t(
+                          "額度到期時間（本機時區）",
+                          "Credit expires (local time)",
+                        )}
+                      >
+                        <input
+                          name="gift_expires_at"
+                          type="datetime-local"
+                          required
+                          defaultValue={localDate(
+                            new Date(Date.now() + 30 * 86400000),
+                          )}
+                          {...props("gift_expires_at")}
+                        />
+                      </Field>
+                      {inline("gift_expires_at")}
+                      <Field label={t("贈額原因", "Credit reason")}>
+                        <textarea
+                          name="gift_reason"
+                          minLength={3}
+                          maxLength={1000}
+                          required
+                          {...props("gift_reason")}
+                        />
+                      </Field>
+                      {inline("gift_reason")}
+                      <p className="notice">
+                        {t(
+                          "預覽會核對同一歸屬的費用賬戶、精確金額及獨立到期日。VIP 本身不產生自動贈額。",
+                          "The preview checks the same subject’s account, exact amount and separate expiry. VIP itself does not create automatic credit.",
+                        )}
+                      </p>
+                    </>
+                  )}
+                </fieldset>
+              )}
             <Field label={t("操作原因", "Reason")}>
               <textarea
                 name="reason"

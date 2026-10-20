@@ -6,6 +6,23 @@ An independent Git repository and admin client with separate identity, cookies a
 
 ![Operations overview](assets/screenshots/01-overview.png)
 
+## Atomic VIP and explicit credit (stage 49)
+
+The existing VIP form can include a deliberate HKD gift with its own exact amount, expiry and reason. One frozen preview and one confirmation create a parent operation. The server commits canonical VIP and financial child operations in one database transaction, or rolls both back. If either risk policy requires review, the whole request waits for another administrator with both domains' permissions; pending requests create no entitlement or credit.
+
+```mermaid
+flowchart LR
+  Form[VIP and explicit gift] --> Preview[Freeze both versions and policies]
+  Preview --> Review[Confirm or independent review]
+  Review --> Tx[One transaction]
+  Tx --> Result[Two successful children and one credit reference]
+```
+
+![Actual combined completion](assets/screenshots/78-vip-credit-both-completed.png)
+
+The current full platform run passes 394/394 with 703 unchanged source files; the 19 focused groups are included. Nine actual Admin/user browser groups and 12 unedited captures are bounded evidence. The 125 original-schema responses and one strict supplemental request are checked separately. Additive migration 060 preserves complete old-row digests for all 119 original public tables in each native database, applied 001–059 bytes and historical null checksums. Initial fixture errors and two verifier mistakes remain archived. All original REQ/TC/NFR/G01–G10, professional role quality, real external services and production/installation acceptance remain in scope. Master details are in `docs/technical/49-atomic-vip-and-explicit-credit.md` and current Delivery receipts.
+
+
 ## Plans and access
 
 `/plans` provides structured allowance forms, complete read-only definitions, new versions within a family, frozen publication comparisons, confirmation and shared independent review. CopyPaste branding, Traditional Chinese/English and light/dark themes remain consistent. HKD input preserves large integers; validation retains input, shows field errors and focuses a linked error summary. Saved versions cannot be edited in place.
