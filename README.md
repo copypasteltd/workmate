@@ -324,3 +324,11 @@ flowchart LR
 ![实际暂停后回到免费方案和配额](assets/screenshots/27-vip-suspended-rights.png)
 
 回执由相邻 Delivery 仓库的 `qa:native-surfaces`、`qa:native-vip` 生成；`evidence/native-vip.json` 保存 790 份源码及原生运行时／安装器／扩展字节绑定。独立 renderer 当前有 46 项摘要，新仓库克隆可自行构建。
+
+## 企业席位与存储执行（阶段 48）
+
+独立 renderer 已同步企业容量组件，当前来源清单为 47 项。用量页和成员页通过既有限定 IPC 读取席位、保留字节、上传预留及上限；登录/退出、工作区切换和读取失败遵守共用状态清理。预览 Setup、Portable 和实际运行目录已重新构建；无边框、自绘窗口按钮、无默认菜单规则继续生效。
+
+当前原生外观十组、打包 Desktop/真实 Side Panel 联调六组及源码认证十二组分别记录；不将重叠检查算作完整安装、系统、SSO或生产验收。
+
+![实际新桌面预览](assets/screenshots/26-vip-effective-rights.png)

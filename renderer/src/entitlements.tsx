@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { api } from "./api";
 import { DateText, ErrorNotice, Loading, Money, useI18n } from "./ui";
+import { ResourceUsage } from "./resource-usage";
 
 /** A tenant change unmounts this panel. Requests also carry the API session
  * revision, so a late response cannot repopulate a signed-out user's rights. */
@@ -132,6 +133,7 @@ export function Entitlements({ tenant }: { tenant: string }) {
           <DateText value={data.plan_details.ends_at} />
         )}
       </section>
+      <ResourceUsage key={tenant} tenant={tenant} revision={revision} />
       <section className="section-block">
         <div className="section-title">
           <h2>{t("目前可用權益", "Current entitlements")}</h2>

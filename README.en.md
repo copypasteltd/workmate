@@ -300,3 +300,11 @@ Manual and scheduled refresh update the plan and rights together. A mismatch bet
 ![Actual suspension restores the free plan and limits](assets/screenshots/27-vip-suspended-rights.png)
 
 The adjacent Delivery repository generates `qa:native-surfaces` and `qa:native-vip` receipts. `evidence/native-vip.json` binds 790 source files and the runtime, installers and extension bytes. The independent renderer snapshot contains 46 recorded file digests and builds from its own clone.
+
+## Enterprise seat and storage enforcement (stage 48)
+
+The independent renderer now includes workspace capacity with 47 source entries. Usage and Members read seats, retained bytes, upload reservations and limits through the existing restricted IPC bridge. Session/scope changes and failed reads clear stale data. Setup, Portable and the actual preview runtime were rebuilt. The window remains frameless with custom controls and no native Electron menu.
+
+Ten native appearance checks, six packaged Desktop/actual Side Panel integration checks and twelve source authentication checks have separate receipts. Overlapping checks do not establish complete installation, system, SSO or production acceptance.
+
+![Actual rebuilt desktop preview](assets/screenshots/26-vip-effective-rights.png)
