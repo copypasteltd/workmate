@@ -483,3 +483,26 @@ flowchart LR
 2026-10-20 方案版本增量後的當前源碼復核：Web 成員 6/6（172 份來源）、Admin 成員 6/6（200 份），Web／源碼 Electron／MV3 認證 12/12（779 份）；測試前後摘要一致，自建瀏覽器／Electron／擴展均關閉，測試憑證清理。新增不可變方案定義與固定歷史授權綁定不改寫原生預覽包。完整 VIP／配額、安裝包認證及系統驗收仍按主文檔繼續追蹤。
 
 獨立 Git 檢出同時比較全部已追蹤的 canonical schema 夾具原字節，防止換行轉換造成來源回執漂移。完整平台最終回歸 340/340（688 份來源前後一致）；原始 TAP 與摘要保持在當前 evidence。
+
+## 规范 VIP 与当前原生预览交付
+
+当前平台全量回归 **354/354**，694 份源码前后一致；`alignment-platform.tap` 原始字节保留。Admin VIP 六组／九份原规范响应、原生 VIP 六组／五份原规范响应、原生表面十组及源码跨端认证十二组分别记录，重叠子流程不累计为全产品通过。全部 122 份运行态响应按原 OpenAPI 严格校验。原需求 102 条、同号综合用例、NFR 和 G01–G10 仍完整保留。
+
+```mermaid
+flowchart LR
+  Grant[真实管理员 MFA 和冻结 VIP 命令] --> API[规范 API 与数据库原子事实]
+  API --> Browser[Web 方案和权益共同刷新]
+  API --> Desktop[实际打包无边框 Desktop]
+  API --> Extension[实际右侧原生 SIDE_PANEL]
+  Evidence[原始失败和成功回执] --> Hash[源码与运行时字节绑定]
+  Hash --> Preview[独立安装器和扩展 ZIP 回执]
+```
+
+新增可运行入口：`npm run qa:admin-vip`、`npm run qa:native-vip`。`qa:native-surfaces` 须将 `COPYPASTE_DESKTOP_EXECUTABLE` 指向实际 `release/frameless/win-unpacked/CopyPaste.exe`；MV3 验收使用支持扩展加载的 Chromium。脚本只清理自己创建的浏览器、窗口、会话与测试管理员，保留用户原有标签页；不使用 Docker／WSL。
+
+`evidence/vip-migrations.json` 保留 057 的真实限制：测试库有 056→057 完整旧行比较，主库首次启动已先迁移，只有后续基线，缺少主库迁移前行证明；15 条历史空摘要仍为空。001–057 已应用的字节不可改写。`upgrade:vip-local` 是已执行升级的受控工具，不能对现有前态快照重复执行或补造前态。
+
+本轮原始候选 SQL/TAP、页面结果丢失／窄屏溢出、旧方案标题、错误免费功能假设、原生文档与缩放时序失败均有独立 archive-map 和摘要。只有新回执实际通过才进入当前进度；这些证据不关闭席位／储存、VIP 加赠额原子组合、完整安装／系统／SSO或真实模型角色资格。
+
+![实际打包无边框 Desktop](../copypaste-desktop/assets/screenshots/26-vip-effective-rights.png)
+![实际原生右侧栏权益](../copypaste-extension/assets/screenshots/15-vip-effective-rights.png)

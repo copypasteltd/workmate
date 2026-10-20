@@ -1,0 +1,1056 @@
+
+> @copypaste/platform@0.5.0 test
+> node --env-file=.env --import tsx --test --test-concurrency=1 tests/*.test.ts
+
+TAP version 13
+# Subtest: admin invitation atomically assigns a delegable role, is idempotent and never returns an MFA secret or capability
+ok 1 - admin invitation atomically assigns a delegable role, is idempotent and never returns an MFA secret or capability
+  ---
+  duration_ms: 1481.5087
+  ...
+# Subtest: principal enrollment requires the recipient's fresh email proof; OTP failures persist and there is one setup consumer
+ok 2 - principal enrollment requires the recipient's fresh email proof; OTP failures persist and there is one setup consumer
+  ---
+  duration_ms: 309.987
+  ...
+# Subtest: real TOTP enrollment is single use, scrubs setup material and issues an admin-only session with replay protection
+ok 3 - real TOTP enrollment is single use, scrubs setup material and issues an admin-only session with replay protection
+  ---
+  duration_ms: 174.0033
+  ...
+# Subtest: MFA confirmation limits survive errors; expired or replaced setups cannot enroll
+ok 4 - MFA confirmation limits survive errors; expired or replaced setups cannot enroll
+  ---
+  duration_ms: 106.94
+  ...
+# Subtest: changing delegated roles revokes sessions and restarts pending MFA setup while retaining the invitation for its recipient
+ok 5 - changing delegated roles revokes sessions and restarts pending MFA setup while retaining the invitation for its recipient
+  ---
+  duration_ms: 209.2245
+  ...
+# Subtest: suspension and resumption use CAS, revoke all old sessions and never restore old invitations
+ok 6 - suspension and resumption use CAS, revoke all old sessions and never restore old invitations
+  ---
+  duration_ms: 209.2609
+  ...
+# Subtest: mail failure is explicit and retrying an invite neither duplicates a principal nor exposes its emailed capability
+ok 7 - mail failure is explicit and retrying an invite neither duplicates a principal nor exposes its emailed capability
+  ---
+  duration_ms: 149.701
+  ...
+# Subtest: self MFA replacement needs current-session and email proof, preserves the old key until confirmation, then revokes it
+ok 8 - self MFA replacement needs current-session and email proof, preserves the old key until confirmation, then revokes it
+  ---
+  duration_ms: 99.8568
+  ...
+# Subtest: read-only, expired-MFA and bounded operators cannot invite or delegate broader grants; rejected invites roll back
+ok 9 - read-only, expired-MFA and bounded operators cannot invite or delegate broader grants; rejected invites roll back
+  ---
+  duration_ms: 108.3457
+  ...
+# Subtest: another authorized administrator can reset MFA and revoke sessions with version checks without receiving the new secret
+ok 10 - another authorized administrator can reset MFA and revoke sessions with version checks without receiving the new secret
+  ---
+  duration_ms: 210.1687
+  ...
+# Subtest: an administrator cannot remove their own deny; another fully authorized operator can restore access
+ok 11 - an administrator cannot remove their own deny; another fully authorized operator can restore access
+  ---
+  duration_ms: 81.7868
+  ...
+# Subtest: lifting another account's deny requires delegated permissions, limits and expiry rather than revocation permission alone
+ok 12 - lifting another account's deny requires delegated permissions, limits and expiry rather than revocation permission alone
+  ---
+  duration_ms: 202.6113
+  ...
+# Subtest: deny removal checks intersecting global, workspace and project scope without requiring unrelated permissions
+ok 13 - deny removal checks intersecting global, workspace and project scope without requiring unrelated permissions
+  ---
+  duration_ms: 375.112
+  ...
+# Subtest: last effective super protection excludes pending invitations and serializes concurrent account suspension
+ok 14 - last effective super protection excludes pending invitations and serializes concurrent account suspension
+  ---
+  duration_ms: 281.9554
+  ...
+# Subtest: cloud tree survives app restart, pins versions, serializes moves and rejects foreign/private references
+ok 15 - cloud tree survives app restart, pins versions, serializes moves and rejects foreign/private references
+  ---
+  duration_ms: 2594.6924
+  ...
+# Subtest: explicit promotion owns an independent object; deleting source invalidates references and clears directory metadata
+ok 16 - explicit promotion owns an independent object; deleting source invalidates references and clears directory metadata
+  ---
+  duration_ms: 1662.8403
+  ...
+# Subtest: folder quarantine hides descendants; conversation removal cleans its private tree; membership removal revokes every lookup
+ok 17 - folder quarantine hides descendants; conversation removal cleans its private tree; membership removal revokes every lookup
+  ---
+  duration_ms: 510.0963
+  ...
+# Subtest: private resumable attachments retain their conversation scope and are erased with its staging files
+ok 18 - private resumable attachments retain their conversation scope and are erased with its staging files
+  ---
+  duration_ms: 783.3161
+  ...
+# Subtest: Codex working sources persist across tasks with hash checks, bounded packaging and current reference authorization
+ok 19 - Codex working sources persist across tasks with hash checks, bounded packaging and current reference authorization
+  ---
+  duration_ms: 499.2335
+  ...
+# Subtest: an unconfigured project starts private conversations without a customer-created specialist and races create only one immutable default
+ok 20 - an unconfigured project starts private conversations without a customer-created specialist and races create only one immutable default
+  ---
+  duration_ms: 1252.2506
+  ...
+# Subtest: one-action default delegation atomically binds a private conversation, message, task, method and budget, including duplicate retries
+ok 21 - one-action default delegation atomically binds a private conversation, message, task, method and budget, including duplicate retries
+  ---
+  duration_ms: 375.159
+  ...
+# Subtest: rejected budget and forged configuration leave no orphan default, conversation, task or budget reservation
+ok 22 - rejected budget and forged configuration leave no orphan default, conversation, task or budget reservation
+  ---
+  duration_ms: 122.6744
+  ...
+# Subtest: customers cannot alter or delete the shared default, and moderation cannot be bypassed by asking for a fresh one
+ok 23 - customers cannot alter or delete the shared default, and moderation cannot be bypassed by asking for a fresh one
+  ---
+  duration_ms: 140.5488
+  ...
+# Subtest: reinstalled methods need an explicit managed default version, while previous conversations and queued work keep their old bindings
+ok 24 - reinstalled methods need an explicit managed default version, while previous conversations and queued work keep their old bindings
+  ---
+  duration_ms: 479.6644
+  ...
+# Subtest: the default assistant obeys read-only ask mode and retains no fabricated generated file
+ok 25 - the default assistant obeys read-only ask mode and retains no fabricated generated file
+  ---
+  duration_ms: 117.7274
+  ...
+# Subtest: simulated mode is loopback-only and forbidden in production
+ok 26 - simulated mode is loopback-only and forbidden in production
+  ---
+  duration_ms: 975.0986
+  ...
+# Subtest: real Codex executes designer and software tools against a labelled mock provider; synthetic credit and charges stay isolated
+ok 27 - real Codex executes designer and software tools against a labelled mock provider; synthetic credit and charges stay isolated
+  ---
+  duration_ms: 11327.5349
+  ...
+# isolated execution-capacity database: applied migration 1
+# isolated execution-capacity database: applied migration 2
+# isolated execution-capacity database: applied migration 3
+# isolated execution-capacity database: applied migration 4
+# isolated execution-capacity database: applied migration 5
+# isolated execution-capacity database: applied migration 6
+# isolated execution-capacity database: applied migration 7
+# isolated execution-capacity database: applied migration 8
+# isolated execution-capacity database: applied migration 9
+# isolated execution-capacity database: applied migration 10
+# isolated execution-capacity database: applied migration 11
+# isolated execution-capacity database: applied migration 12
+# isolated execution-capacity database: applied migration 13
+# isolated execution-capacity database: applied migration 14
+# isolated execution-capacity database: applied migration 15
+# isolated execution-capacity database: applied migration 16
+# isolated execution-capacity database: applied migration 17
+# isolated execution-capacity database: applied migration 18
+# isolated execution-capacity database: applied migration 19
+# isolated execution-capacity database: applied migration 20
+# isolated execution-capacity database: applied migration 21
+# isolated execution-capacity database: applied migration 22
+# isolated execution-capacity database: applied migration 23
+# isolated execution-capacity database: applied migration 24
+# isolated execution-capacity database: applied migration 25
+# isolated execution-capacity database: applied migration 26
+# isolated execution-capacity database: applied migration 27
+# isolated execution-capacity database: applied migration 28
+# isolated execution-capacity database: applied migration 29
+# isolated execution-capacity database: applied migration 30
+# Subtest: restricted admission rejects another tenant, another actor and direct policy access without exposing counts
+ok 28 - restricted admission rejects another tenant, another actor and direct policy access without exposing counts
+  ---
+  duration_ms: 2891.3403
+  ...
+# Subtest: two workers enforce the shared enterprise cap, leave one original hold queued, allow a second enterprise and settle each task once
+ok 29 - two workers enforce the shared enterprise cap, leave one original hold queued, allow a second enterprise and settle each task once
+  ---
+  duration_ms: 923.987
+  ...
+# Subtest: current user downgrade limits queued work even when the original business reservation allowed more active tasks
+ok 30 - current user downgrade limits queued work even when the original business reservation allowed more active tasks
+  ---
+  duration_ms: 337
+  ...
+# Subtest: platform, image and per-enterprise media limits coordinate across transactions while read-only work uses the text class
+ok 31 - platform, image and per-enterprise media limits coordinate across transactions while read-only work uses the text class
+  ---
+  duration_ms: 352.483
+  ...
+# Subtest: uncertain paid execution keeps its slot, while an unclaimed input wait occupies no execution slot
+ok 32 - uncertain paid execution keeps its slot, while an unclaimed input wait occupies no execution slot
+  ---
+  duration_ms: 157.6036
+  ...
+# Subtest: fair outbox dispatch includes the other enterprise before an older flood and excludes deferred or wrong-mode tasks
+ok 33 - fair outbox dispatch includes the other enterprise before an older flood and excludes deferred or wrong-mode tasks
+  ---
+  duration_ms: 113.0548
+  ...
+# Subtest: native pg-boss starts multiple handlers and automatically resumes the original deferred task without a second reservation
+ok 34 - native pg-boss starts multiple handlers and automatically resumes the original deferred task without a second reservation
+  ---
+  duration_ms: 6859.4511
+  ...
+# Subtest: SSO configuration has global permission, current MFA, CAS, secret redaction and a probe-before-enable gate
+ok 35 - SSO configuration has global permission, current MFA, CAS, secret redaction and a probe-before-enable gate
+  ---
+  duration_ms: 1671.6347
+  ...
+# {"request_id":"52ad5e5f-2e03-49ca-8f6b-675714359ed1","code":"SSO_PROBE_FAILED","error_type":"Problem"}
+# Subtest: discovery enforces origins, redirects and advertised PKCE without changing an unverified connection
+ok 36 - discovery enforces origins, redirects and advertised PKCE without changing an unverified connection
+  ---
+  duration_ms: 82.5374
+  ...
+# Subtest: first binding requires independent email proof, scoped OTP purpose and single atomic consumption
+ok 37 - first binding requires independent email proof, scoped OTP purpose and single atomic consumption
+  ---
+  duration_ms: 282.9353
+  ...
+# Subtest: a known issuer/subject signs in again without re-linking and client_secret_basic also completes
+ok 38 - a known issuer/subject signs in again without re-linking and client_secret_basic also completes
+  ---
+  duration_ms: 273.7959
+  ...
+# Subtest: wrong signature, audience, issuer, nonce, expiry or email claims never create a binding
+ok 39 - wrong signature, audience, issuer, nonce, expiry or email claims never create a binding
+  ---
+  duration_ms: 346.8929
+  ...
+# Subtest: state and browser capability must match; callbacks exchange exactly once
+ok 40 - state and browser capability must match; callbacks exchange exactly once
+  ---
+  duration_ms: 219.4568
+  ...
+# Subtest: domain equality cannot enroll a stranger or bypass a removed membership
+ok 41 - domain equality cannot enroll a stranger or bypass a removed membership
+  ---
+  duration_ms: 140.8446
+  ...
+# Subtest: subject-with-proof accepts no email claim only after the independent work mailbox is proved
+ok 42 - subject-with-proof accepts no email claim only after the independent work mailbox is proved
+  ---
+  duration_ms: 148.7701
+  ...
+# Subtest: five incorrect link codes exhaust that proof; another browser cannot consume it
+ok 43 - five incorrect link codes exhaust that proof; another browser cannot consume it
+  ---
+  duration_ms: 211.3312
+  ...
+# Subtest: disabling a connection revokes linked browser/native/refresh credentials and outstanding native grants
+ok 44 - disabling a connection revokes linked browser/native/refresh credentials and outstanding native grants
+  ---
+  duration_ms: 401.2175
+  ...
+# Subtest: configuration changes revoke old attempts and require metadata validation and fresh identity binding
+ok 45 - configuration changes revoke old attempts and require metadata validation and fresh identity binding
+  ---
+  duration_ms: 115.0127
+  ...
+# Subtest: unlink is owner-only, checks CAS, invalidates all sessions and never exposes external subjects
+ok 46 - unlink is owner-only, checks CAS, invalidates all sessions and never exposes external subjects
+  ---
+  duration_ms: 281.2532
+  ...
+# Subtest: email login logout and account revision changes invalidate unexchanged native authorization codes
+ok 47 - email login logout and account revision changes invalidate unexchanged native authorization codes
+  ---
+  duration_ms: 42.5306
+  ...
+# Subtest: expired attempts scrub PKCE secrets and the app identity cannot read SSO control tables
+ok 48 - expired attempts scrub PKCE secrets and the app identity cannot read SSO control tables
+  ---
+  duration_ms: 170.6042
+  ...
+# Subtest: replacing an active external subject requires new proof and revokes prior browser/native sessions
+ok 49 - replacing an active external subject requires new proof and revokes prior browser/native sessions
+  ---
+  duration_ms: 344.4549
+  ...
+# Subtest: a replacement issuer may reuse a raw subject without inheriting or colliding with the old issuer's account
+ok 50 - a replacement issuer may reuse a raw subject without inheriting or colliding with the old issuer's account
+  ---
+  duration_ms: 514.4688
+  ...
+# Subtest: ES256 verifies a real P-256 signature and rejects a token signed by another EC key
+ok 51 - ES256 verifies a real P-256 signature and rejects a token signed by another EC key
+  ---
+  duration_ms: 276.7418
+  ...
+# Subtest: revoking a listed native session also revokes its rotated access token and refresh family
+ok 52 - revoking a listed native session also revokes its rotated access token and refresh family
+  ---
+  duration_ms: 53.6539
+  ...
+# Subtest: concurrent connection revocation and native exchange/rotation serialize without deadlock or surviving credentials
+ok 53 - concurrent connection revocation and native exchange/rotation serialize without deadlock or surviving credentials
+  ---
+  duration_ms: 174.4666
+  ...
+# Subtest: a changed applied migration digest stops startup and the forward-only history remains intact
+ok 54 - a changed applied migration digest stops startup and the forward-only history remains intact
+  ---
+  duration_ms: 122.2646
+  ...
+# Subtest: worker notifications persist with exact task/conversation identity, deduplicate heartbeats and isolate recipients
+ok 55 - worker notifications persist with exact task/conversation identity, deduplicate heartbeats and isolate recipients
+  ---
+  duration_ms: 1583.4778
+  ...
+# Subtest: unknown usage only emits reconciling rather than a false successful-completion notification
+ok 56 - unknown usage only emits reconciling rather than a false successful-completion notification
+  ---
+  duration_ms: 196.8842
+  ...
+# Subtest: notification pagination preserves PostgreSQL microseconds; deletion, quarantine and expired rows cannot retain access
+ok 57 - notification pagination preserves PostgreSQL microseconds; deletion, quarantine and expired rows cannot retain access
+  ---
+  duration_ms: 579.8116
+  ...
+# Subtest: revoked project and tenant membership remove notifications immediately, even for their original recipient
+not ok 58 - revoked project and tenant membership remove notifications immediately, even for their original recipient
+  ---
+  duration_ms: 262.2067
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\notifications.test.ts:2:1454'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\notifications.test.ts:395:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: deleting a running task closes its reservation before erasing runtime caches and dependent private files
+not ok 59 - deleting a running task closes its reservation before erasing runtime caches and dependent private files
+  ---
+  duration_ms: 1412.4266
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:5493'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'queued'
+    - 'cancelled'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'cancelled'
+  actual: 'queued'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:293:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: persistent specialists freeze versions, reject enlarged tools and require CAS editing authority
+ok 60 - persistent specialists freeze versions, reject enlarged tools and require CAS editing authority
+  ---
+  duration_ms: 132.0708
+  ...
+# Subtest: private conversation delegation deduplicates concurrent messages and reserves only one task
+ok 61 - private conversation delegation deduplicates concurrent messages and reserves only one task
+  ---
+  duration_ms: 227.3804
+  ...
+# Subtest: memory scopes and immutable versions apply to worker input; deletion stops subsequent tools
+not ok 62 - memory scopes and immutable versions apply to worker input; deletion stops subsequent tools
+  ---
+  duration_ms: 314.0937
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:11903'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:597:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: private tool artifacts cannot be read or rendered by another member and publication copies only the selected file
+not ok 63 - private tool artifacts cannot be read or rendered by another member and publication copies only the selected file
+  ---
+  duration_ms: 125.815
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:14181'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'private_owner')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:643:22)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: archive preserves in-flight work; deleting active conversations fails, notes and titles use version checks
+not ok 64 - archive preserves in-flight work; deleting active conversations fails, notes and titles use version checks
+  ---
+  duration_ms: 150.282
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:16267'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'queued'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'queued'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:762:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: plan approval rejects changed memory and produces one explicitly approved execution
+not ok 65 - plan approval rejects changed memory and produces one explicitly approved execution
+  ---
+  duration_ms: 150.3639
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:17698'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"NOT_FOUND","message":"No completed plan is available","request_id":"421f1eaf-3fbc-45a7-8cd9-8d22db67f18e"}}
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:57:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:820:16)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: expiry, missing brand and revoked project membership cannot be used as frozen context
+ok 66 - expiry, missing brand and revoked project membership cannot be used as frozen context
+  ---
+  duration_ms: 200.8092
+  ...
+# Subtest: shared tasks cannot read private files even when their owner can; deleted content cannot replay cached responses
+not ok 67 - shared tasks cannot read private files even when their owner can; deleted content cannot replay cached responses
+  ---
+  duration_ms: 115.7647
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:21996'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"22545d0e-913f-4b9c-888c-b4fa41b3df4e"}}
+    
+    409 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:57:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:1028:18)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: a plan becomes stale when a memory is added during planning or a note arrives while it runs
+not ok 68 - a plan becomes stale when a memory is added during planning or a note arrives while it runs
+  ---
+  duration_ms: 132.074
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:23868'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"NOT_FOUND","message":"No completed plan is available","request_id":"3ac7a423-285c-4027-9e22-03e057d6a367"}}
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:57:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:1120:14)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: administrative retries preserve an unresolved input checkpoint and one new explicit budget without queueing work
+ok 69 - administrative retries preserve an unresolved input checkpoint and one new explicit budget without queueing work
+  ---
+  duration_ms: 189.3557
+  ...
+# Subtest: admin body access and quarantine apply to private conversations and memories; retries preserve private ownership
+not ok 70 - admin body access and quarantine apply to private conversations and memories; retries preserve private ownership
+  ---
+  duration_ms: 181.7771
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\persistent-work.test.ts:1:27017'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"RETRY_NOT_SAFE","message":"Only a settled failed or cancelled task can start a new attempt","request_id":"014fe803-7eb5-4b41-97ad-90228ebb3075"}}
+    
+    409 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:57:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\persistent-work.test.ts:1284:19)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: Admin cleanup pages filter before counting, retain tied timestamp order and redact journal internals
+ok 71 - Admin cleanup pages filter before counting, retain tied timestamp order and redact journal internals
+  ---
+  duration_ms: 1093.0697
+  ...
+# Subtest: Admin cleanup totals and retries enforce current tenant/project grants, denies and read-only access
+ok 72 - Admin cleanup totals and retries enforce current tenant/project grants, denies and read-only access
+  ---
+  duration_ms: 245.2378
+  ...
+# Subtest: Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100
+ok 73 - Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100
+  ---
+  duration_ms: 877.4464
+  ...
+# Subtest: retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit
+ok 74 - retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit
+  ---
+  duration_ms: 535.2108
+  ...
+# Subtest: terminal runtime cache cleanup waits for a live process, persists I/O failures and resumes without deleting task results
+ok 75 - terminal runtime cache cleanup waits for a live process, persists I/O failures and resumes without deleting task results
+  ---
+  duration_ms: 132.5427
+  ...
+# Subtest: SSE replays durable task-local sequences exactly, rejects stale/foreign cursors and closes on session revocation
+ok 76 - SSE replays durable task-local sequences exactly, rejects stale/foreign cursors and closes on session revocation
+  ---
+  duration_ms: 1025.0265
+  ...
+# Subtest: queued claim recovery checks real queue state, deduplicates repair, preserves running work and releases exhausted pre-execution reservations
+ok 77 - queued claim recovery checks real queue state, deduplicates repair, preserves running work and releases exhausted pre-execution reservations
+  ---
+  duration_ms: 294.4432
+  ...
+# Subtest: permanent asset deletion blocks admin resurrection, body/download and cross-tenant status; erases all versions while preserving a published copy
+ok 78 - permanent asset deletion blocks admin resurrection, body/download and cross-tenant status; erases all versions while preserving a published copy
+  ---
+  duration_ms: 226.21
+  ...
+# Subtest: erasure persists I/O failures, retries with MFA and serializes simultaneous workers
+ok 79 - erasure persists I/O failures, retries with MFA and serializes simultaneous workers
+  ---
+  duration_ms: 249.4333
+  ...
+# Subtest: orphan collection retains referenced/new objects and tombstones removed keys against later references
+ok 80 - orphan collection retains referenced/new objects and tombstones removed keys against later references
+  ---
+  duration_ms: 956.4629
+  ...
+# Subtest: runtime erasure waits for active work and refuses junctions outside the owned run tree
+ok 81 - runtime erasure waits for active work and refuses junctions outside the owned run tree
+  ---
+  duration_ms: 10.7303
+  ...
+# Subtest: resumable upload persists verified parts across reconnects, rejects corruption and completes exactly once above the old 25 MiB limit
+ok 82 - resumable upload persists verified parts across reconnects, rejects corruption and completes exactly once above the old 25 MiB limit
+  ---
+  duration_ms: 1753.239
+  ...
+# Subtest: upload MIME, whole-file checksum, limits, expiry, per-owner privacy and project revocation are enforced
+ok 83 - upload MIME, whole-file checksum, limits, expiry, per-owner privacy and project revocation are enforced
+  ---
+  duration_ms: 350.2459
+  ...
+# Subtest: email OTP has one atomic consumer and never authenticates the admin audience
+ok 84 - email OTP has one atomic consumer and never authenticates the admin audience
+  ---
+  duration_ms: 10.9913
+  ...
+# Subtest: five invalid OTP attempts exhaust a challenge; expired and consumed codes fail
+ok 85 - five invalid OTP attempts exhaust a challenge; expired and consumed codes fail
+  ---
+  duration_ms: 29.7542
+  ...
+# Subtest: CSRF, foreign origin and revoked sessions prevent writes
+ok 86 - CSRF, foreign origin and revoked sessions prevent writes
+  ---
+  duration_ms: 24.7155
+  ...
+# Subtest: tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels
+ok 87 - tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels
+  ---
+  duration_ms: 63.1883
+  ...
+# Subtest: single-use invitation binds email and project, protects the last owner
+ok 88 - single-use invitation binds email and project, protects the last owner
+  ---
+  duration_ms: 104.8814
+  ...
+# Subtest: PKCE requires exact verifier and callback, refresh rotation detects replay
+ok 89 - PKCE requires exact verifier and callback, refresh rotation detects replay
+  ---
+  duration_ms: 57.9505
+  ...
+# Subtest: admin authentication requires MFA, separate audience and explicit content permission
+ok 90 - admin authentication requires MFA, separate audience and explicit content permission
+  ---
+  duration_ms: 216.2345
+  ...
+# Subtest: admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds
+ok 91 - admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds
+  ---
+  duration_ms: 157.7683
+  ...
+# Subtest: VIP validity uses real timestamps and financial limits/independent approval are enforced
+ok 92 - VIP validity uses real timestamps and financial limits/independent approval are enforced
+  ---
+  duration_ms: 263.5998
+  ...
+# Subtest: undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts
+ok 93 - undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts
+  ---
+  duration_ms: 4.5254
+  ...
+# Subtest: editable poster escapes script injection and preserves exact Traditional Chinese copy
+ok 94 - editable poster escapes script injection and preserves exact Traditional Chinese copy
+  ---
+  duration_ms: 1.2236
+  ...
+# {"request_id":"a4ecd887-3fe9-4c07-b88d-30a3f26dac21","code":"AI_SETUP_REQUIRED","error_type":"Problem"}
+# Subtest: task request cannot override kernel/provider and unavailable AI cannot fake success
+ok 95 - task request cannot override kernel/provider and unavailable AI cannot fake success
+  ---
+  duration_ms: 32.5134
+  ...
+# Subtest: native logout revokes the refresh family and a browser cookie cannot become a bearer token
+ok 96 - native logout revokes the refresh family and a browser cookie cannot become a bearer token
+  ---
+  duration_ms: 74.3918
+  ...
+# Subtest: confirmed payment references cannot credit a second workspace, including with a new idempotency key
+ok 97 - confirmed payment references cannot credit a second workspace, including with a new idempotency key
+  ---
+  duration_ms: 110.8497
+  ...
+# Subtest: admin workspace lists redact money without billing permission and user usage honors its own scope
+ok 98 - admin workspace lists redact money without billing permission and user usage honors its own scope
+  ---
+  duration_ms: 168.3998
+  ...
+# Subtest: quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version
+ok 99 - quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version
+  ---
+  duration_ms: 90.8366
+  ...
+# Subtest: exports recheck source authorization at download and batch status changes revoke all sessions
+ok 100 - exports recheck source authorization at download and batch status changes revoke all sessions
+  ---
+  duration_ms: 614.2009
+  ...
+# Subtest: personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet
+ok 101 - personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet
+  ---
+  duration_ms: 224.7318
+  ...
+# Subtest: scoped usage never inherits broader user visibility and explicit project deny constrains aggregates
+ok 102 - scoped usage never inherits broader user visibility and explicit project deny constrains aggregates
+  ---
+  duration_ms: 97.9482
+  ...
+# Subtest: admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions
+ok 103 - admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions
+  ---
+  duration_ms: 193.2016
+  ...
+# Subtest: native design compositions pin authorized image versions and reject foreign project assets
+ok 104 - native design compositions pin authorized image versions and reject foreign project assets
+  ---
+  duration_ms: 1267.0627
+  ...
+# Subtest: admin delegation cannot widen financial limits or outlive the source grant
+ok 105 - admin delegation cannot widen financial limits or outlive the source grant
+  ---
+  duration_ms: 331.8378
+  ...
+# Subtest: the last permanent recovery administrator cannot be revoked or disabled by a deny binding
+ok 106 - the last permanent recovery administrator cannot be revoked or disabled by a deny binding
+  ---
+  duration_ms: 588.8825
+  ...
+# Subtest: native design pipeline produces actual PNG and validated H.264/AAC motion output
+ok 107 - native design pipeline produces actual PNG and validated H.264/AAC motion output
+  ---
+  duration_ms: 1108.3037
+  ...
+# Subtest: real Codex turn uses the isolated internal Responses provider and reports measured fixture usage
+ok 108 - real Codex turn uses the isolated internal Responses provider and reports measured fixture usage
+  ---
+  duration_ms: 4218.7218
+  ...
+# Windows retained a locked temporary fixture: turn-YtaWh4 (EBUSY)
+# Subtest: cancelling an initializing real Codex process rejects the pending RPC and closes the child
+ok 109 - cancelling an initializing real Codex process rejects the pending RPC and closes the child
+  ---
+  duration_ms: 73.7996
+  ...
+# Subtest: calendar validates IANA zones, clocks and weekday choices and uses local dates across UTC offsets
+ok 110 - calendar validates IANA zones, clocks and weekday choices and uses local dates across UTC offsets
+  ---
+  duration_ms: 15.4393
+  ...
+# Subtest: nonexistent DST wall times are skipped at the transition and repeated times select the first instant once
+ok 111 - nonexistent DST wall times are skipped at the transition and repeated times select the first instant once
+  ---
+  duration_ms: 4.7296
+  ...
+# Subtest: half-hour DST transitions and skipped calendar days do not consume the next valid day
+ok 112 - half-hour DST transitions and skipped calendar days do not consume the next valid day
+  ---
+  duration_ms: 2.3128
+  ...
+# Subtest: weekly schedules and bounded catch-up counts handle leap years and long downtime without enumerating all dates
+ok 113 - weekly schedules and bounded catch-up counts handle leap years and long downtime without enumerating all dates
+  ---
+  duration_ms: 2.4504
+  ...
+# Subtest: schedule preview freezes the workflow; create is atomic/idempotent and rejects stale hashes and cross-project references
+ok 114 - schedule preview freezes the workflow; create is atomic/idempotent and rejects stale hashes and cross-project references
+  ---
+  duration_ms: 1398.3505
+  ...
+# Subtest: concurrent schedulers and repeated ticks launch one run; the real report persists and an unfinished review prevents overlap
+ok 115 - concurrent schedulers and repeated ticks launch one run; the real report persists and an unfinished review prevents overlap
+  ---
+  duration_ms: 439.1233
+  ...
+# Subtest: downtime coalesces earlier opportunities into one range and launches only the latest; skip policy and end dates never backfill charges
+ok 116 - downtime coalesces earlier opportunities into one range and launches only the latest; skip policy and end dates never backfill charges
+  ---
+  duration_ms: 153.6435
+  ...
+# Subtest: pause/resume and edits are CAS/idempotent, preserve immutable history and require a fresh delegated run identity
+ok 117 - pause/resume and edits are CAS/idempotent, preserve immutable history and require a fresh delegated run identity
+  ---
+  duration_ms: 104.9253
+  ...
+# Subtest: account revocation blocks future schedules; restoring the account does not revive an old authorization
+ok 118 - account revocation blocks future schedules; restoring the account does not revive an old authorization
+  ---
+  duration_ms: 96.0147
+  ...
+# Subtest: cross-workspace and viewer access is denied; restricted database roles cannot read history outside their tenant
+ok 119 - cross-workspace and viewer access is denied; restricted database roles cannot read history outside their tenant
+  ---
+  duration_ms: 68.8331
+  ...
+# Subtest: admin schedule visibility honors explicit scope and pause needs MFA/CAS; content deletion scrubs version bodies and replay results
+ok 120 - admin schedule visibility honors explicit scope and pause needs MFA/CAS; content deletion scrubs version bodies and replay results
+  ---
+  duration_ms: 193.1625
+  ...
+# Subtest: cancelling a scheduled review is idempotent and frees its active slot without replaying the prior report
+ok 121 - cancelling a scheduled review is idempotent and frees its active slot without replaying the prior report
+  ---
+  duration_ms: 162.6006
+  ...
+# Subtest: uncertain child execution keeps the schedule occupied even after its workflow fails
+ok 122 - uncertain child execution keeps the schedule occupied even after its workflow fails
+  ---
+  duration_ms: 105.6063
+  ...
+# Subtest: a scheduled Codex role is pinned and a changed installed role blocks execution before charging
+ok 123 - a scheduled Codex role is pinned and a changed installed role blocks execution before charging
+  ---
+  duration_ms: 73.6765
+  ...
+# Subtest: preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member
+ok 124 - preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member
+  ---
+  duration_ms: 1585.3
+  ...
+# Subtest: ordinary disable blocks new work without changing the exact methods of an accepted task
+not ok 125 - ordinary disable blocks new work without changing the exact methods of an accepted task
+  ---
+  duration_ms: 169.6108
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\skill-lifecycle.test.ts:1:5504'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\skill-lifecycle.test.ts:291:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: security revocation blocks the next tool and final output in an already running task, then permanently blocks reinstall
+not ok 126 - security revocation blocks the next tool and final output in an already running task, then permanently blocks reinstall
+  ---
+  duration_ms: 132.482
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\skill-lifecycle.test.ts:1:6985'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'queued'
+    - 'cancelled'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'cancelled'
+  actual: 'queued'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\skill-lifecycle.test.ts:360:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: uninstall and explicit reinstall create a new identity without reviving queued work or silently rebinding an old specialist version
+ok 127 - uninstall and explicit reinstall create a new identity without reviving queued work or silently rebinding an old specialist version
+  ---
+  duration_ms: 229.8321
+  ...
+# Subtest: current plan capabilities are rechecked at the next tool and completion while the original reservation is settled once
+not ok 128 - current plan capabilities are rechecked at the next tool and completion while the original reservation is settled once
+  ---
+  duration_ms: 85.8966
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\skill-lifecycle.test.ts:1:9800'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\skill-lifecycle.test.ts:488:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once
+not ok 129 - input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once
+  ---
+  duration_ms: 1325.0484
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:4714'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'queued'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'queued'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:337:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: cancelled input waits dismiss requests and release the hold; forged, foreign and privately owned resources cannot resolve them
+ok 130 - cancelled input waits dismiss requests and release the hold; forged, foreign and privately owned resources cannot resolve them
+  ---
+  duration_ms: 210.4203
+  ...
+# Subtest: shared tasks cannot select even the creator's private input or disclose its name in candidate lists
+ok 131 - shared tasks cannot select even the creator's private input or disclose its name in candidate lists
+  ---
+  duration_ms: 92.7164
+  ...
+# Subtest: revocation after resolution returns an unstarted task to input wait without another reservation or model turn
+not ok 132 - revocation after resolution returns an unstarted task to input wait without another reservation or model turn
+  ---
+  duration_ms: 188.031
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:10135'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:543:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: all independent requested inputs must be resolved; racing different selections cannot replace the accepted resource
+ok 133 - all independent requested inputs must be resolved; racing different selections cannot replace the accepted resource
+  ---
+  duration_ms: 109.0525
+  ...
+# Subtest: connection selection checks the declared provider and current authorization without leaking credentials or granting report accounts
+ok 134 - connection selection checks the declared provider and current authorization without leaking credentials or granting report accounts
+  ---
+  duration_ms: 122.5658
+  ...
+# Subtest: parent inputs are inherited for new work, superseded versions need a fresh selection, and erasure removes input descriptions
+not ok 135 - parent inputs are inherited for new work, superseded versions need a fresh selection, and erasure removes input descriptions
+  ---
+  duration_ms: 104.5645
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:14313'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"5d60b22f-8855-49e4-8090-c6c45ca686cd"}}
+    
+    409 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:46:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:694:17)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: a follow-up requests a fresh input when its inherited source was already superseded
+not ok 136 - a follow-up requests a fresh input when its inherited source was already superseded
+  ---
+  duration_ms: 75.8739
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:15964'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"63b66a45-b262-417c-9f94-f4cd76c9b428"}}
+    
+    409 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:46:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:783:17)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: plans bind selected inputs; changed inputs require a new plan before approval or cancel an unstarted approved execution
+not ok 137 - plans bind selected inputs; changed inputs require a new plan before approval or cancel an unstarted approved execution
+  ---
+  duration_ms: 97.9505
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:17259'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"NOT_FOUND","message":"No completed plan is available","request_id":"6cc56389-d400-48eb-ae04-f258e5b9c1d5"}}
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:46:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:843:14)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: revocation during a paid run blocks tools and result publication and never replays the model
+not ok 138 - revocation during a paid run blocks tools and result publication and never replays the model
+  ---
+  duration_ms: 74.739
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:19474'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:946:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: source tools reject escaped paths and blind overwrites, package actual UTF-8 sources
+ok 139 - source tools reject escaped paths and blind overwrites, package actual UTF-8 sources
+  ---
+  duration_ms: 25.4726
+  ...
+1..139
+# tests 139
+# suites 0
+# pass 121
+# fail 18
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 111596.7575

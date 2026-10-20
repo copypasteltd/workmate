@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-20T04:25:40.383Z",
+  "at": "2026-10-20T06:09:22.816Z",
   "origin": "http://localhost:4310",
   "scope": "Actual local HTTP payloads from current Admin plan forms and shared independent approval; original schemas unchanged",
   "samples": [
@@ -10,6 +10,58 @@
       "status": 200,
       "response": {
         "items": [
+          {
+            "id": "8d028b18-5325-4538-a162-c2a186104d71",
+            "plan_id": "ded51454-9ca1-4780-a339-3bd9afc35454",
+            "version": 2,
+            "name": "Campaign team 757d5863 revised",
+            "allowances": {
+              "seat_limit": 12,
+              "feature_ids": [
+                "text",
+                "image",
+                "design",
+                "analytics"
+              ],
+              "credit_policy": "separate_idempotent_grant",
+              "storage_bytes": 1073741824,
+              "included_credit": {
+                "currency": "HKD",
+                "amount_micros": "9007199254740993"
+              },
+              "allowed_role_ids": [
+                "assistant"
+              ],
+              "task_concurrency": 3
+            },
+            "state": "draft"
+          },
+          {
+            "id": "36c4e6ac-1ed8-419f-9326-5a079e74b61a",
+            "plan_id": "ded51454-9ca1-4780-a339-3bd9afc35454",
+            "version": 1,
+            "name": "Campaign team 757d5863",
+            "allowances": {
+              "seat_limit": 12,
+              "feature_ids": [
+                "text",
+                "image",
+                "design",
+                "analytics"
+              ],
+              "credit_policy": "separate_idempotent_grant",
+              "storage_bytes": 1073741824,
+              "included_credit": {
+                "currency": "HKD",
+                "amount_micros": "9007199254740993"
+              },
+              "allowed_role_ids": [
+                "assistant"
+              ],
+              "task_concurrency": 3
+            },
+            "state": "published"
+          },
           {
             "id": "df415c3d-f494-4a72-9d78-868c1eba60da",
             "plan_id": "99958490-67b1-4c14-b24b-947103c83648",
@@ -265,19 +317,19 @@
       "schema": "AdminOperation",
       "status": 202,
       "response": {
-        "id": "514d7932-46a2-453a-99f8-4645eff39539",
+        "id": "67587366-baa2-43e5-8f4f-5ba1818f03c6",
         "action": "plans.draft",
         "target_ids": [
-          "ded51454-9ca1-4780-a339-3bd9afc35454"
+          "43c052a2-7aaa-44c0-b877-9ac96f76bf29"
         ],
-        "actor_id": "694fa623-856b-448a-ac28-45ebddb21dff",
+        "actor_id": "8ed6f75d-fa96-42ab-9a5b-a1c87006e2d6",
         "state": "succeeded",
-        "payload_hash": "1ef3f0d3897456d0d1257d3a9e7fb837b3e739c4da22ede6affbc4e00881d181",
+        "payload_hash": "b972e12675e27fe92bedc0fce9cc3a340d584cc77e0ff8df116ce531b76a15ab",
         "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
         "version": 2,
-        "created_at": "2026-10-20T04:25:32.129Z",
+        "created_at": "2026-10-20T06:08:58.604Z",
         "result_ids": [
-          "36c4e6ac-1ed8-419f-9326-5a079e74b61a"
+          "806b9479-97dc-4daf-b289-ae37b1374652"
         ]
       }
     },
@@ -287,20 +339,20 @@
       "schema": "AdminPreview",
       "status": 200,
       "response": {
-        "preview_id": "ca2c0629-68d9-4599-9897-59e4172d0527",
-        "payload_hash": "1418e0e3b5e43ba8ddac24c030539731ea6a24a5c600d41a6383a1e2f3c24562",
+        "preview_id": "885dd76c-2064-44c0-959f-a5c44463b121",
+        "payload_hash": "687bd37ba06f469e9f2b6e7da9577c56c2867e1382ebb296e82df3c9c7d91ab9",
         "target_ids": [
-          "36c4e6ac-1ed8-419f-9326-5a079e74b61a"
+          "806b9479-97dc-4daf-b289-ae37b1374652"
         ],
         "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
         "decision": "independent_approval",
         "missing_permission_keys": [],
         "impact_summary": "Publish this immutable version for future grants. Existing grants keep their bound definitions. Publication does not credit a wallet or charge a payment.",
-        "expires_at": "2026-10-20T04:30:32.976Z",
+        "expires_at": "2026-10-20T06:14:00.875Z",
         "creates_business_effect": false,
         "expected_target_versions": [
           {
-            "id": "36c4e6ac-1ed8-419f-9326-5a079e74b61a",
+            "id": "806b9479-97dc-4daf-b289-ae37b1374652",
             "version": 1
           }
         ]
@@ -312,17 +364,17 @@
       "schema": "AdminOperation",
       "status": 202,
       "response": {
-        "id": "12299bc3-04a5-4384-ac95-5f6f714de5f9",
+        "id": "1525ebbe-6292-4eaf-b849-0a2e8568794e",
         "action": "plans.publish",
         "target_ids": [
-          "36c4e6ac-1ed8-419f-9326-5a079e74b61a"
+          "806b9479-97dc-4daf-b289-ae37b1374652"
         ],
-        "actor_id": "694fa623-856b-448a-ac28-45ebddb21dff",
+        "actor_id": "8ed6f75d-fa96-42ab-9a5b-a1c87006e2d6",
         "state": "pending_approval",
-        "payload_hash": "1418e0e3b5e43ba8ddac24c030539731ea6a24a5c600d41a6383a1e2f3c24562",
+        "payload_hash": "687bd37ba06f469e9f2b6e7da9577c56c2867e1382ebb296e82df3c9c7d91ab9",
         "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
         "version": 1,
-        "created_at": "2026-10-20T04:25:33.675Z",
+        "created_at": "2026-10-20T06:09:02.310Z",
         "result_ids": []
       }
     },
@@ -332,17 +384,17 @@
       "schema": "AdminOperation",
       "status": 202,
       "response": {
-        "id": "12299bc3-04a5-4384-ac95-5f6f714de5f9",
+        "id": "1525ebbe-6292-4eaf-b849-0a2e8568794e",
         "state": "pending_approval",
         "action": "plans.publish",
         "version": 1,
-        "actor_id": "694fa623-856b-448a-ac28-45ebddb21dff",
-        "created_at": "2026-10-20T04:25:33.675Z",
+        "actor_id": "8ed6f75d-fa96-42ab-9a5b-a1c87006e2d6",
+        "created_at": "2026-10-20T06:09:02.310Z",
         "result_ids": [],
         "target_ids": [
-          "36c4e6ac-1ed8-419f-9326-5a079e74b61a"
+          "806b9479-97dc-4daf-b289-ae37b1374652"
         ],
-        "payload_hash": "1418e0e3b5e43ba8ddac24c030539731ea6a24a5c600d41a6383a1e2f3c24562",
+        "payload_hash": "687bd37ba06f469e9f2b6e7da9577c56c2867e1382ebb296e82df3c9c7d91ab9",
         "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9"
       }
     },
@@ -352,20 +404,20 @@
       "schema": "AdminOperation",
       "status": 202,
       "response": {
-        "id": "12299bc3-04a5-4384-ac95-5f6f714de5f9",
+        "id": "1525ebbe-6292-4eaf-b849-0a2e8568794e",
         "action": "plans.publish",
         "target_ids": [
-          "36c4e6ac-1ed8-419f-9326-5a079e74b61a"
+          "806b9479-97dc-4daf-b289-ae37b1374652"
         ],
-        "actor_id": "694fa623-856b-448a-ac28-45ebddb21dff",
+        "actor_id": "8ed6f75d-fa96-42ab-9a5b-a1c87006e2d6",
         "state": "succeeded",
-        "payload_hash": "1418e0e3b5e43ba8ddac24c030539731ea6a24a5c600d41a6383a1e2f3c24562",
+        "payload_hash": "687bd37ba06f469e9f2b6e7da9577c56c2867e1382ebb296e82df3c9c7d91ab9",
         "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
         "version": 2,
-        "created_at": "2026-10-20T04:25:33.675Z",
+        "created_at": "2026-10-20T06:09:02.310Z",
         "result_ids": [
-          "36c4e6ac-1ed8-419f-9326-5a079e74b61a",
-          "8655250d-f1ab-4115-b40e-ca80d6e4617b"
+          "806b9479-97dc-4daf-b289-ae37b1374652",
+          "1f53635c-b595-4189-80c0-4ba131022db9"
         ]
       }
     },
@@ -375,10 +427,10 @@
       "schema": "AdminPlanVersion",
       "status": 200,
       "response": {
-        "id": "36c4e6ac-1ed8-419f-9326-5a079e74b61a",
-        "plan_id": "ded51454-9ca1-4780-a339-3bd9afc35454",
+        "id": "806b9479-97dc-4daf-b289-ae37b1374652",
+        "plan_id": "43c052a2-7aaa-44c0-b877-9ac96f76bf29",
         "version": 1,
-        "name": "Campaign team 757d5863",
+        "name": "Campaign team 90cda643",
         "allowances": {
           "seat_limit": 12,
           "feature_ids": [
@@ -407,19 +459,19 @@
       "schema": "AdminOperation",
       "status": 202,
       "response": {
-        "id": "a8a94449-be4a-46d1-91b8-c5245c06122b",
+        "id": "a234b126-eda5-45fe-b1ec-deb50577acbb",
         "action": "plans.draft",
         "target_ids": [
-          "ded51454-9ca1-4780-a339-3bd9afc35454"
+          "43c052a2-7aaa-44c0-b877-9ac96f76bf29"
         ],
-        "actor_id": "694fa623-856b-448a-ac28-45ebddb21dff",
+        "actor_id": "8ed6f75d-fa96-42ab-9a5b-a1c87006e2d6",
         "state": "succeeded",
-        "payload_hash": "8d572df4d26c82cf6ecaf650c327c5574f9a175e8d2c9480317abcf51c14a2c4",
+        "payload_hash": "b40b122af7d4dadaff38d3f4ed3f67c25f1368855c92be9e86655ee6d799f8c7",
         "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
         "version": 2,
-        "created_at": "2026-10-20T04:25:37.293Z",
+        "created_at": "2026-10-20T06:09:08.666Z",
         "result_ids": [
-          "8d028b18-5325-4538-a162-c2a186104d71"
+          "881e63c6-621c-46d5-8ab4-63434115a4ce"
         ]
       }
     }

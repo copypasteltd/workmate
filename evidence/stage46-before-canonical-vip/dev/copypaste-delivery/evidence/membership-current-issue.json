@@ -1,0 +1,79 @@
+{
+  "at": "2026-10-19T16:46:12.228501+00:00",
+  "status": "not_completed",
+  "scope": "Final-source Web membership UI reruns are not accepted; backend regression and actual current-source HTTP checks are separate. No root cause is established for browser timeouts.",
+  "source_commits": {
+    "copypaste-platform": "9f249bbad68637fe8e04b468c2efdc15778b99c1",
+    "copypaste-web": "9664508c378324891dba7a134c582818aad8419c",
+    "copypaste-desktop": "3a4d47faa176f0e1190a26b1968a2fda3607e33b"
+  },
+  "attempts": [
+    {
+      "path": "evidence/membership-final-source-first-failure/membership-navigation.json",
+      "sha256": "7d01f536c0838e74aa61e140f3eb3c727657dc0ca68fe9619286b25d469e8731",
+      "at": "2026-10-19T16:31:02.265Z",
+      "checks": 0,
+      "errors": [
+        "locator.fill: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"email\"]')\u001b[22m\n\n    at login (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:19:45)\n    at <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:70:9)"
+      ],
+      "browser_closed": true
+    },
+    {
+      "path": "evidence/membership-final-source-page-timeout/membership-navigation.json",
+      "sha256": "5c2a13aeaf0666bb8ffc1aa96bc4f98e1e7fcbc90374ececf7df0fd27b87f020",
+      "at": "2026-10-19T16:35:34.894Z",
+      "checks": 0,
+      "errors": [
+        "Error: Owner browser page timed out\n    at Timeout.<anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:34:41)\n    at listOnTimeout (node:internal/timers:594:17)\n    at process.processTimers (node:internal/timers:529:7)",
+        "Owned browser shutdown timed out"
+      ],
+      "browser_closed": true
+    },
+    {
+      "path": "evidence/membership-final-source-full-chromium-timeout/membership-navigation.json",
+      "sha256": "89a83195334ff54ab8780b108057ed449fdf0e568cd395f1182c0bb7240e3349",
+      "at": "2026-10-19T16:39:30.063Z",
+      "checks": 0,
+      "errors": [
+        "locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Invite a member', exact: true })\u001b[22m\n\n    at <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:126:6)",
+        "Owned browser shutdown timed out"
+      ],
+      "browser_closed": true
+    },
+    {
+      "path": "evidence/membership-navigation.json",
+      "sha256": "e33089ca09b2573721e266c1b69ca9aa7e87dcf04d37c2ada7169953766a3b5e",
+      "at": "2026-10-19T16:42:06.176Z",
+      "checks": 0,
+      "errors": [
+        "locator.fill: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"email\"]')\u001b[22m\n\n    at login (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:47:45)\n    at <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:107:9)",
+        "Owned browser shutdown timed out"
+      ],
+      "browser_closed": true
+    }
+  ],
+  "current_wire": {
+    "path": "evidence/membership-wire.json",
+    "sha256": "e9c5a133fd346e291a3049c2e6aaa778ad73287f188484809a1caec713d57709",
+    "checks": 5,
+    "status": "passed"
+  },
+  "cleanup": "Every final attempt reports the owned browser process closed. BrowserServer graceful shutdown timed out in three attempts and its owned process was forcibly closed. User browsers were preserved.",
+  "remaining": "Repeat the final member UI journey, including viewer controls and latest screenshots, in a working native browser; keep expanded Electron/MV3 first-exchange acceptance separate.",
+  "archiving_race_capture": {
+    "path": "evidence/membership-before-final-source/membership-navigation.json",
+    "sha256": "7d01f536c0838e74aa61e140f3eb3c727657dc0ca68fe9619286b25d469e8731",
+    "at": "2026-10-19T16:31:02.265Z",
+    "checks": 0,
+    "errors": [
+      "locator.fill: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"email\"]')\u001b[22m\n\n    at login (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:19:45)\n    at <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-membership.ts:70:9)"
+    ],
+    "browser_closed": true
+  },
+  "prior_tool_output": {
+    "groups": 6,
+    "raw_success_receipt_preserved": false,
+    "accepted_as_evidence": false,
+    "scope": "The earlier successful console result predates final fixes. Its JSON was overwritten by a failed rerun before the intended archival copy; the copied failure remains unchanged and is not accepted as success."
+  }
+}

@@ -409,3 +409,26 @@ After the refund increment, current-source Web membership passes 6/6 (169 source
 Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
 
 Independent Git checkout verification also compares every tracked canonical schema fixture byte-for-byte, preventing line-ending conversion from invalidating source receipts. The final full platform regression passes 340/340 with 688 unchanged source files; current evidence retains the raw TAP and its digest.
+
+## Canonical VIP and current native preview delivery
+
+The full current platform run passes **354/354** with 694 unchanged source files and preserved raw `alignment-platform.tap` bytes. Admin VIP has six groups/nine original-schema responses; native VIP has six groups/five responses; native surfaces have ten groups; source-runtime cross-client authentication has twelve. Overlapping subflows are not added up as full-product acceptance. All 122 captured runtime responses pass strict original OpenAPI schemas. All 102 requirements, full acceptance cases, NFR and G01–G10 remain in scope.
+
+```mermaid
+flowchart LR
+  Grant[Real Admin MFA and frozen VIP command] --> API[Canonical API and atomic database facts]
+  API --> Browser[Coherent Web plan and rights refresh]
+  API --> Desktop[Actual packaged frameless Desktop]
+  API --> Extension[Actual native right SIDE_PANEL]
+  Evidence[Original failure and success receipts] --> Hash[Source and runtime byte binding]
+  Hash --> Preview[Separate installer and extension ZIP receipts]
+```
+
+New runnable entries: `npm run qa:admin-vip` and `npm run qa:native-vip`. For `qa:native-surfaces`, set `COPYPASTE_DESKTOP_EXECUTABLE` to the actual `release/frameless/win-unpacked/CopyPaste.exe`; MV3 verification requires extension-capable Chromium. Scripts close only their owned windows, browsers, sessions and fixture administrators, preserving existing user tabs. Docker and WSL are not used.
+
+`evidence/vip-migrations.json` retains the real limitation of 057: the test database has a complete 056→057 old-row comparison, while initial primary startup migrated before the snapshot, leaving only a later baseline. The primary pre-upgrade row proof is missing. Fifteen legacy null checksums remain null. Applied 001–057 bytes are immutable. The already-executed controlled `upgrade:vip-local` tool refuses to repeat or invent an earlier snapshot.
+
+Archive manifests preserve original SQL/TAP candidates, result-modal and narrow-layout failures, the stale plan heading, the incorrect free-feature assumption, and native document/resize timing failures. Only actual new passes qualify as current evidence. Seat/storage enforcement, atomic VIP-plus-gift operations, full installer/system/SSO acceptance and live model role qualification remain open.
+
+![Actual packaged frameless Desktop](../copypaste-desktop/assets/screenshots/26-vip-effective-rights.png)
+![Actual native right panel rights](../copypaste-extension/assets/screenshots/15-vip-effective-rights.png)

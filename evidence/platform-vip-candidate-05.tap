@@ -1,0 +1,377 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# Subtest: Admin cleanup pages filter before counting, retain tied timestamp order and redact journal internals
+ok 1 - Admin cleanup pages filter before counting, retain tied timestamp order and redact journal internals
+  ---
+  duration_ms: 11556.1639
+  ...
+# Subtest: Admin cleanup totals and retries enforce current tenant/project grants, denies and read-only access
+ok 2 - Admin cleanup totals and retries enforce current tenant/project grants, denies and read-only access
+  ---
+  duration_ms: 620.3323
+  ...
+# Subtest: Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100
+ok 3 - Admin collection defaults consistently use 50 rows and cap explicit page sizes at 100
+  ---
+  duration_ms: 3421.9691
+  ...
+# Subtest: retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit
+ok 4 - retention expires online content through the durable journal, prunes old events/results without replaying effects, and preserves money/audit
+  ---
+  duration_ms: 1310.4847
+  ...
+# Subtest: terminal runtime cache cleanup waits for a live process, persists I/O failures and resumes without deleting task results
+ok 5 - terminal runtime cache cleanup waits for a live process, persists I/O failures and resumes without deleting task results
+  ---
+  duration_ms: 235.7452
+  ...
+# Subtest: SSE replays durable task-local sequences exactly, rejects stale/foreign cursors and closes on session revocation
+ok 6 - SSE replays durable task-local sequences exactly, rejects stale/foreign cursors and closes on session revocation
+  ---
+  duration_ms: 1310.6446
+  ...
+# Subtest: queued claim recovery checks real queue state, deduplicates repair, preserves running work and releases exhausted pre-execution reservations
+ok 7 - queued claim recovery checks real queue state, deduplicates repair, preserves running work and releases exhausted pre-execution reservations
+  ---
+  duration_ms: 1777.0154
+  ...
+# Subtest: permanent asset deletion blocks admin resurrection, body/download and cross-tenant status; erases all versions while preserving a published copy
+ok 8 - permanent asset deletion blocks admin resurrection, body/download and cross-tenant status; erases all versions while preserving a published copy
+  ---
+  duration_ms: 907.8305
+  ...
+# Subtest: erasure persists I/O failures, retries with MFA and serializes simultaneous workers
+ok 9 - erasure persists I/O failures, retries with MFA and serializes simultaneous workers
+  ---
+  duration_ms: 482.7605
+  ...
+# Subtest: orphan collection retains referenced/new objects and tombstones removed keys against later references
+ok 10 - orphan collection retains referenced/new objects and tombstones removed keys against later references
+  ---
+  duration_ms: 682.9297
+  ...
+# Subtest: runtime erasure waits for active work and refuses junctions outside the owned run tree
+ok 11 - runtime erasure waits for active work and refuses junctions outside the owned run tree
+  ---
+  duration_ms: 137.1375
+  ...
+# Subtest: resumable upload persists verified parts across reconnects, rejects corruption and completes exactly once above the old 25 MiB limit
+ok 12 - resumable upload persists verified parts across reconnects, rejects corruption and completes exactly once above the old 25 MiB limit
+  ---
+  duration_ms: 5319.1501
+  ...
+# Subtest: upload MIME, whole-file checksum, limits, expiry, per-owner privacy and project revocation are enforced
+ok 13 - upload MIME, whole-file checksum, limits, expiry, per-owner privacy and project revocation are enforced
+  ---
+  duration_ms: 2782.4895
+  ...
+# Subtest: email OTP has one atomic consumer and never authenticates the admin audience
+ok 14 - email OTP has one atomic consumer and never authenticates the admin audience
+  ---
+  duration_ms: 101.0434
+  ...
+# Subtest: five invalid OTP attempts exhaust a challenge; expired and consumed codes fail
+ok 15 - five invalid OTP attempts exhaust a challenge; expired and consumed codes fail
+  ---
+  duration_ms: 1032.2954
+  ...
+# Subtest: CSRF, foreign origin and revoked sessions prevent writes
+ok 16 - CSRF, foreign origin and revoked sessions prevent writes
+  ---
+  duration_ms: 98.8101
+  ...
+# Subtest: tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels
+ok 17 - tenant bootstrap is idempotent and project access is isolated at API and PostgreSQL levels
+  ---
+  duration_ms: 183.572
+  ...
+# Subtest: single-use invitation binds email and project, protects the last owner
+ok 18 - single-use invitation binds email and project, protects the last owner
+  ---
+  duration_ms: 412.4438
+  ...
+# Subtest: PKCE requires exact verifier and callback, refresh rotation detects replay
+ok 19 - PKCE requires exact verifier and callback, refresh rotation detects replay
+  ---
+  duration_ms: 195.6511
+  ...
+# Subtest: admin authentication requires MFA, separate audience and explicit content permission
+ok 20 - admin authentication requires MFA, separate audience and explicit content permission
+  ---
+  duration_ms: 878.3504
+  ...
+# Subtest: admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds
+ok 21 - admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds
+  ---
+  duration_ms: 889.7328
+  ...
+# Subtest: VIP validity uses real timestamps and financial limits/independent approval are enforced
+ok 22 - VIP validity uses real timestamps and financial limits/independent approval are enforced
+  ---
+  duration_ms: 5826.841
+  ...
+# Subtest: undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts
+ok 23 - undefined ratios are null and totals divide after aggregation; CSV protects currency and exact amounts
+  ---
+  duration_ms: 14.7154
+  ...
+# Subtest: editable poster escapes script injection and preserves exact Traditional Chinese copy
+ok 24 - editable poster escapes script injection and preserves exact Traditional Chinese copy
+  ---
+  duration_ms: 4.0586
+  ...
+# {"request_id":"d50c19c6-efb2-4f91-b9d0-4506457c08db","code":"AI_SETUP_REQUIRED","error_type":"Problem"}
+# Subtest: task request cannot override kernel/provider and unavailable AI cannot fake success
+ok 25 - task request cannot override kernel/provider and unavailable AI cannot fake success
+  ---
+  duration_ms: 93.3601
+  ...
+# Subtest: native logout revokes the refresh family and a browser cookie cannot become a bearer token
+ok 26 - native logout revokes the refresh family and a browser cookie cannot become a bearer token
+  ---
+  duration_ms: 130.1575
+  ...
+# Subtest: confirmed payment references cannot credit a second workspace, including with a new idempotency key
+ok 27 - confirmed payment references cannot credit a second workspace, including with a new idempotency key
+  ---
+  duration_ms: 688.6436
+  ...
+# Subtest: admin workspace lists redact money without billing permission and user usage honors its own scope
+ok 28 - admin workspace lists redact money without billing permission and user usage honors its own scope
+  ---
+  duration_ms: 269.8064
+  ...
+# Subtest: quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version
+ok 29 - quarantining a dataset removes it at the API and restricted PostgreSQL layer; restore requires its new version
+  ---
+  duration_ms: 263.4282
+  ...
+# Subtest: exports recheck source authorization at download and batch status changes revoke all sessions
+ok 30 - exports recheck source authorization at download and batch status changes revoke all sessions
+  ---
+  duration_ms: 1730.7713
+  ...
+# Subtest: personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet
+ok 31 - personal VIP freezes its policy, enforces concurrent quotas, expires without crediting the wallet
+  ---
+  duration_ms: 10312.3006
+  ...
+# Subtest: scoped usage never inherits broader user visibility and explicit project deny constrains aggregates
+ok 32 - scoped usage never inherits broader user visibility and explicit project deny constrains aggregates
+  ---
+  duration_ms: 393.8129
+  ...
+# Subtest: admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions
+ok 33 - admin publishes client content and role presentation without accepting executable overrides; metadata mutations reject stale versions
+  ---
+  duration_ms: 295.9043
+  ...
+# Subtest: native design compositions pin authorized image versions and reject foreign project assets
+ok 34 - native design compositions pin authorized image versions and reject foreign project assets
+  ---
+  duration_ms: 6657.7274
+  ...
+# Subtest: admin delegation cannot widen financial limits or outlive the source grant
+ok 35 - admin delegation cannot widen financial limits or outlive the source grant
+  ---
+  duration_ms: 2158.5384
+  ...
+# Subtest: the last permanent recovery administrator cannot be revoked or disabled by a deny binding
+ok 36 - the last permanent recovery administrator cannot be revoked or disabled by a deny binding
+  ---
+  duration_ms: 2032.3565
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# Subtest: VIP contract fixture is byte-source-bound to the unchanged original OpenAPI
+ok 37 - VIP contract fixture is byte-source-bound to the unchanged original OpenAPI
+  ---
+  duration_ms: 14497.1645
+  ...
+# Subtest: current Admin MFA, exact scopes, original strict requests and the closed legacy write path
+ok 38 - current Admin MFA, exact scopes, original strict requests and the closed legacy write path
+  ---
+  duration_ms: 2441.5527
+  ...
+# Subtest: preview has no entitlement or money effect; commit is durable, atomic and idempotent
+ok 39 - preview has no entitlement or money effect; commit is durable, atomic and idempotent
+  ---
+  duration_ms: 1227.0656
+  ...
+# Subtest: personal and enterprise features merge, quotas take max, resources remain independent
+ok 40 - personal and enterprise features merge, quotas take max, resources remain independent
+  ---
+  duration_ms: 2080.31
+  ...
+# Subtest: extension, suspension, resumption and revocation retain origin with consecutive immutable revisions
+ok 41 - extension, suspension, resumption and revocation retain origin with consecutive immutable revisions
+  ---
+  duration_ms: 2253.6993
+  ...
+# Subtest: same-plan renewal requires the exact UUID and source; new publication cannot rebind a grant
+ok 42 - same-plan renewal requires the exact UUID and source; new publication cannot rebind a grant
+  ---
+  duration_ms: 2512.9124
+  ...
+# Subtest: replacement needs independent review and stays scheduled until its real boundary; old grants never revive
+ok 43 - replacement needs independent review and stays scheduled until its real boundary; old grants never revive
+  ---
+  duration_ms: 8445.1184
+  ...
+# Subtest: expiry is authoritative without workers; notification outbox is bounded, mode-scoped and idempotent
+ok 44 - expiry is authoritative without workers; notification outbox is bounded, mode-scoped and idempotent
+  ---
+  duration_ms: 2172.9542
+  ...
+# Subtest: concurrent subject versions cannot overwrite each other and stale previews create no partial grants
+ok 45 - concurrent subject versions cannot overwrite each other and stale previews create no partial grants
+  ---
+  duration_ms: 1015.7273
+  ...
+# Subtest: approval rechecks original session and current permissions; cancelled requests have no grant effect
+ok 46 - approval rechecks original session and current permissions; cancelled requests have no grant effect
+  ---
+  duration_ms: 1202.2537
+  ...
+# Subtest: legacy replacement preserves unknown historical facts and cannot cut another billing mode
+ok 47 - legacy replacement preserves unknown historical facts and cannot cut another billing mode
+  ---
+  duration_ms: 1013.6614
+  ...
+# isolated VIP database diagnostic controlled VIP audit failure PL/pgSQL function vip_audit_fault() line 1 at RAISE
+# {"request_id":"5e69df22-7f7a-41e2-bf0a-d509efc4f4c4","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: audit failure rolls back subject revision, grant, operation, revision and outbox; original preview can retry
+ok 48 - audit failure rolls back subject revision, grant, operation, revision and outbox; original preview can retry
+  ---
+  duration_ms: 1275.9962
+  ...
+# Subtest: current head, frozen command, duration limits and revoked permissions are rechecked
+ok 49 - current head, frozen command, duration limits and revoked permissions are rechecked
+  ---
+  duration_ms: 2610.5676
+  ...
+# Subtest: verified payment must match subject and mode, is linked once and never posts money by granting VIP
+ok 50 - verified payment must match subject and mode, is linked once and never posts money by granting VIP
+  ---
+  duration_ms: 2015.7076
+  ...
+1..50
+# tests 50
+# suites 0
+# pass 50
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 131513.2524

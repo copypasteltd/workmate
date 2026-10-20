@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-19T15:35:30.029Z",
+  "scope": "Real canonical Web email sign-in and user-activated cross-origin S256 consent to an owned loopback callback; actual token exchange and sign-out. Does not replace current Electron/MV3 first-exchange acceptance.",
+  "model_calls": 0,
+  "browser_version": "156.0.8078.4",
+  "executable": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\.data\\browsers\\chromium_headless_shell-1248\\chrome-headless-shell-win64\\chrome-headless-shell.exe",
+  "checks": [
+    {
+      "name": "real canonical 202/201 email login stays inside the product when given an external return target",
+      "status": "passed"
+    },
+    {
+      "name": "a normal user click navigates to canonical GET consent, reaches the owned loopback with matching state and exchanges its S256 code for real 201 tokens",
+      "status": "passed"
+    }
+  ],
+  "errors": [
+    "locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.session-row[data-client=\"web\"]') to be visible\u001b[22m\n\n    at <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-auth-navigation.ts:179:57)"
+  ],
+  "observed": [
+    {
+      "method": "POST",
+      "path": "/v1/auth/challenges",
+      "status": 202
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/sessions",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/authorize",
+      "status": 302
+    }
+  ],
+  "browser_closed": true
+}

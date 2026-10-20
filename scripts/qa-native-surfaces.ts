@@ -282,6 +282,13 @@ try {
     "keyboard resize",
   );
   inspection.desktop.keyboard_resize = { original, resized };
+  // Native setBounds can finish before Chromium lays out the new client area.
+  // Hit the actual resized corner only after those dimensions agree.
+  await until(
+    () => page.evaluate(() => ({ width: innerWidth, height: innerHeight })),
+    (v) => v.width === resized.width && v.height === resized.height,
+    "renderer layout after native keyboard resize",
+  );
   const corner = (await resize.boundingBox())!;
   await page.mouse.move(corner.x + 5, corner.y + 5);
   await page.mouse.down();
@@ -294,6 +301,11 @@ try {
       ),
     (v) => v.width === resized.width + 20 && v.height === resized.height + 15,
     "pointer corner resize",
+  );
+  await until(
+    () => page.evaluate(() => ({ width: innerWidth, height: innerHeight })),
+    (v) => v.width === pointerResize.width && v.height === pointerResize.height,
+    "renderer layout after native pointer resize",
   );
   const smaller = (await resize.boundingBox())!;
   await page.mouse.move(smaller.x + 5, smaller.y + 5);
@@ -513,7 +525,9 @@ try {
       worker.evaluate(() =>
         chrome.runtime.getContexts({ contextTypes: ["SIDE_PANEL"] }),
       ),
-    (items) => items.length === 1,
+    (items) =>
+      items.length === 1 &&
+      items[0].documentUrl === `chrome-extension://${id}/sidepanel.html`,
     "native SIDE_PANEL creation",
   );
   assert.equal(
@@ -541,10 +555,13 @@ try {
   pass(
     "browser extension action creates a real right-aligned SIDE_PANEL, shrinks the active page, and opens no popup or extra tab",
   );
-  const panelTarget = (
-    await cdp.send("Target.getTargets", { filter: [{}] })
-  ).targetInfos.find(
-    (t) => t.type === "page" && t.url === native[0].documentUrl,
+  const panelTarget = await until(
+    async () =>
+      (await cdp.send("Target.getTargets", { filter: [{}] })).targetInfos.find(
+        (t) => t.type === "page" && t.url === native[0].documentUrl,
+      ),
+    Boolean,
+    "native SIDE_PANEL document target",
   );
   assert.ok(panelTarget);
   const panel = await attachTarget(cdp, panelTarget.targetId);

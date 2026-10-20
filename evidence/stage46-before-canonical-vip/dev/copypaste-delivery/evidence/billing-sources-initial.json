@@ -1,0 +1,13 @@
+{
+  "observed_at": "2026-10-20",
+  "command": "node --env-file=.env --import tsx --test --test-concurrency=1 tests/billing-sources.test.ts",
+  "repository": "copypaste-platform",
+  "status": "failed",
+  "counts": {"tests":12,"pass":11,"fail":1,"cancelled":0,"skipped":0,"todo":0},
+  "failed_case": "source and credit repayment records retain tenant isolation and immutable repayment provenance",
+  "observed_error": "Assertion expected PostgreSQL 42501 but received 23514",
+  "finding": "The BEFORE INSERT source guard queries under the caller's tenant RLS and cannot see the other tenant's charge. It rejects with the same 23514 used for an invalid or nonexistent charge before INSERT's RLS check. No cross-tenant source was created.",
+  "repair": "Correct the test's expected error while retaining the zero-row reads and rejection assertion. Product permissions and RLS are unchanged.",
+  "raw_report": null,
+  "scope": "Observation from tool output; no standalone raw TAP file was captured for this initial focused run. Final full regression is recorded separately."
+}
