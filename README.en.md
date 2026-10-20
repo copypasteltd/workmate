@@ -275,3 +275,5 @@ Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups. Actual 
 ![Current offline sign-out feedback](assets/screenshots/25-offline-signout-current.png)
 
 This run uses source Electron with current dist/renderer-dist; it does not accept twelve flows in Setup/Portable packages. Native frames/default menus remain removed. The independent 10/10 native-preview evidence governs window/side-panel appearance. Complete installation/uninstall, system/DPI, signing/updates and enterprise identity acceptance remain outstanding.
+
+After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.

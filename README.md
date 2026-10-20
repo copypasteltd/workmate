@@ -299,3 +299,5 @@ Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12。D
 ![当前离线退出提示](assets/screenshots/25-offline-signout-current.png)
 
 本次使用 source Electron 和当前 dist／renderer-dist，不把十二组记为 Setup／Portable 安装包认证。原生边框及默认菜单继续移除；窗口／右侧栏外观使用单独 10/10 原生预览证据。完整安装卸载、系统／DPI、签名／更新和企业身份矩阵仍待验收。
+
+2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。
