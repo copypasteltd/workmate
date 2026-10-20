@@ -1,0 +1,119 @@
+{
+  "at": "2026-10-19T09:47:33.536Z",
+  "dependency_mode": "simulated",
+  "qualification_state": "unverified",
+  "checks": [
+    {
+      "name": "real Electron window has no native non-client frame or application menu, including Alt; custom title bar reserves 40px and keeps sandbox isolation",
+      "status": "passed"
+    },
+    {
+      "name": "custom minimize, maximize and restore buttons change actual native window state and accessible labels",
+      "status": "passed"
+    },
+    {
+      "name": "frameless resize works with keyboard; another renderer cannot close or resize the application through window IPC",
+      "status": "passed"
+    },
+    {
+      "name": "real browser PKCE opens the workspace; fixed sidebar and modal remain below the custom title bar",
+      "status": "passed"
+    },
+    {
+      "name": "custom title bar follows existing CopyPaste light/dark tokens and Chinese/English window-control labels",
+      "status": "passed"
+    },
+    {
+      "name": "custom close button exits the owned Electron application",
+      "status": "passed"
+    },
+    {
+      "name": "browser extension action creates a real right-aligned SIDE_PANEL, shrinks the active page, and opens no popup or extra tab",
+      "status": "passed"
+    },
+    {
+      "name": "native panel renders without horizontal overflow and keeps the same global document across navigation and tab switching",
+      "status": "passed"
+    },
+    {
+      "name": "clicking the configured browser action again closes the native side panel",
+      "status": "passed"
+    },
+    {
+      "name": "browser restart preserves the native side-panel entry without opening it automatically",
+      "status": "passed"
+    }
+  ],
+  "inspection": {
+    "desktop": {
+      "executable_kind": "source",
+      "shell": {
+        "no_application_menu": true,
+        "menu_bar_visible": false,
+        "auto_hide_menu": true,
+        "bounds": {
+          "x": 60,
+          "y": 40,
+          "width": 1200,
+          "height": 820
+        },
+        "content_bounds": {
+          "x": 60,
+          "y": 40,
+          "width": 1200,
+          "height": 820
+        },
+        "preferences": {
+          "contextIsolation": true,
+          "nodeIntegration": false,
+          "sandbox": true
+        }
+      },
+      "geometry": {
+        "bar_height": 40,
+        "root_y": 40,
+        "drag": "drag",
+        "controls": [
+          "no-drag",
+          "no-drag",
+          "no-drag"
+        ],
+        "node_exposed": false,
+        "window_ipc_exposed": false
+      },
+      "keyboard_resize": {
+        "original": {
+          "x": 60,
+          "y": 40,
+          "width": 1200,
+          "height": 820
+        },
+        "resized": {
+          "x": 60,
+          "y": 40,
+          "width": 1210,
+          "height": 830
+        }
+      }
+    },
+    "extension": {
+      "browser": "153.0.8010.12",
+      "action_trigger": "CDP Extensions.triggerAction on actual browser tab; no direct sidepanel.html tab or sidePanel.open substitute",
+      "side": "right",
+      "main_width_before": 1464,
+      "main_width_after": 1078,
+      "native_context_type": "SIDE_PANEL",
+      "normal_tab_count": 1,
+      "panel": {
+        "width": 360,
+        "scroll": 360,
+        "login": true,
+        "title": "CopyPaste · 工作側欄"
+      }
+    }
+  },
+  "errors": [],
+  "desktop_closed": true,
+  "browser_closed": true,
+  "extension_closed": true
+}

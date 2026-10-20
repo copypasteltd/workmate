@@ -1,0 +1,127 @@
+{
+  "at": "2026-10-20T11:34:30.103Z",
+  "origin": "http://localhost:4310",
+  "scope": "Actual local HTTP from supplemental combined Admin forms and original shared approval; original embedded DTOs remain unchanged",
+  "samples": [
+    {
+      "name": "combined-preview",
+      "operation": "supplemental:previewVipCredit",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "e77d6d2e-f56e-4f96-8af4-b2fb71a31a81",
+        "payload_hash": "aa83dba32ea169741ec8ba9b1bff586da8354dad87b73077f08732b7a7ba24e8",
+        "target_ids": [
+          "1d511dd3-00c4-4f58-bc68-a3927279d56f",
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+          "bba28e1c-75a2-4ed5-880c-44e0989d4aa3"
+        ],
+        "policy_version_id": "f4b84f89-f100-4305-a229-ba80ab9ec04c",
+        "decision": "recent_mfa",
+        "missing_permission_keys": [],
+        "impact_summary": "Grant this fixed VIP interval and explicit expiring HKD credit atomically. Independent credit reference; no charge or renewal.",
+        "expires_at": "2026-10-20T11:39:19.563Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "1d511dd3-00c4-4f58-bc68-a3927279d56f",
+            "version": 1
+          },
+          {
+            "id": "bba28e1c-75a2-4ed5-880c-44e0989d4aa3",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "actual-composite-command",
+      "operation": "supplemental:previewVipCredit",
+      "schema": "VipCreditCommand",
+      "status": 200,
+      "request": {
+        "billing_account_id": "bba28e1c-75a2-4ed5-880c-44e0989d4aa3",
+        "vip": {
+          "reason": "Synthetic VIP and gift atomic acceptance",
+          "subject": {
+            "kind": "user",
+            "id": "1d511dd3-00c4-4f58-bc68-a3927279d56f"
+          },
+          "plan_version_id": "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+          "starts_at": "2026-10-20T11:34:00.000Z",
+          "ends_at": "2026-10-21T11:34:00.000Z",
+          "overlap_policy": "reject",
+          "source": "manual",
+          "auto_renew": false,
+          "expected_subject_version": 1
+        },
+        "gift": {
+          "action": "gift",
+          "expected_version": 1,
+          "reason": "Explicit synthetic welcome credit",
+          "amount": {
+            "currency": "HKD",
+            "amount_micros": "12500001"
+          },
+          "expires_at": "2026-11-19T11:34:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "combined-success",
+      "operation": "supplemental:commitVipCredit",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "4d8f6b8e-55a9-4b57-8bf2-8986ca06fd98",
+        "action": "entitlements.grant_with_credit",
+        "target_ids": [
+          "1d511dd3-00c4-4f58-bc68-a3927279d56f",
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+          "bba28e1c-75a2-4ed5-880c-44e0989d4aa3"
+        ],
+        "actor_id": "a60acaf1-d329-499a-ad92-a19f77b623f2",
+        "state": "succeeded",
+        "payload_hash": "db085d0177539f9d32b5a40f02c47ab003772314fdf576c5ff46db232ab77e5f",
+        "policy_version_id": "f4b84f89-f100-4305-a229-ba80ab9ec04c",
+        "version": 2,
+        "created_at": "2026-10-20T11:34:21.191Z",
+        "result_ids": [
+          "451c2614-b51b-437d-a9ce-90884d0483ed",
+          "96948340-9388-45ce-a095-8a8a4f37a046",
+          "40b6dd72-fd03-49db-b275-02a9d395a0e1",
+          "db9868eb-951e-47b6-8a0a-2a8f963306e0",
+          "de0f441f-3fa4-489a-a683-9618d3aa5e7d"
+        ]
+      }
+    },
+    {
+      "name": "combined-independent-decision",
+      "operation": "decideAdminApproval",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "50b2913f-f335-47f7-bc00-3bc0d1f30ed9",
+        "action": "entitlements.grant_with_credit",
+        "target_ids": [
+          "0a6eeb53-5e3b-492e-b10b-6815ef742a2b",
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+          "ac6469aa-9818-450d-b3ee-8da315d0737d"
+        ],
+        "actor_id": "a60acaf1-d329-499a-ad92-a19f77b623f2",
+        "state": "succeeded",
+        "payload_hash": "67835326afd9258f83edf5c05f90a82db413c37776c9872941f410cb6487e384",
+        "policy_version_id": "f4b84f89-f100-4305-a229-ba80ab9ec04c",
+        "version": 2,
+        "created_at": "2026-10-20T11:34:23.503Z",
+        "result_ids": [
+          "a4b46d76-8fae-450f-a2d7-7edf00473eef",
+          "672a1d70-a6fb-4850-b53f-31f2ad4b65f8",
+          "2c4b39c1-9216-4ea2-b0b0-25708eb339b0",
+          "a4b701fe-f722-4769-a36e-23423a6539f4",
+          "7eea9035-7f70-4198-8d9b-1c98192aca11"
+        ]
+      }
+    }
+  ]
+}

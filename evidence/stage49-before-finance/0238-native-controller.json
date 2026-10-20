@@ -1,0 +1,72 @@
+{
+  "at": "2026-10-18T22:16:58.584Z",
+  "version": "0.5.0",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "authenticated shutdown checkpoints PostgreSQL and releases all five owned ports",
+      "status": "passed"
+    },
+    {
+      "name": "clean restart reaches current API version without crash recovery and preserves persistent records",
+      "status": "passed"
+    },
+    {
+      "name": "preexisting 5173/5174 listener process identities preserved",
+      "status": "passed"
+    }
+  ],
+  "project_ports": [
+    4310,
+    4317,
+    4318,
+    4319,
+    55432
+  ],
+  "original_listeners": [
+    {
+      "LocalPort": 5173,
+      "OwningProcess": 12916
+    },
+    {
+      "LocalPort": 5174,
+      "OwningProcess": 34320
+    }
+  ],
+  "persistent_records_before": {
+    "agents": 13,
+    "conversations": 13,
+    "messages": 8,
+    "memories": 7,
+    "schedules": 7,
+    "schedule_versions": 16,
+    "schedule_occurrences": 5,
+    "admin_principals": 48,
+    "admin_enrollments": 35,
+    "admin_sessions": 65,
+    "sso_connections": 4,
+    "federated_identities": 4,
+    "federated_sessions": 10,
+    "schema_version": 10,
+    "persistent_metadata_sha256": "535347d0b02a9f6b56808ec960fa5409d1755094630fa0321995ef8c5044a816"
+  },
+  "persistent_records_after": {
+    "agents": 13,
+    "conversations": 13,
+    "messages": 8,
+    "memories": 7,
+    "schedules": 7,
+    "schedule_versions": 16,
+    "schedule_occurrences": 5,
+    "admin_principals": 48,
+    "admin_enrollments": 35,
+    "admin_sessions": 65,
+    "sso_connections": 4,
+    "federated_identities": 4,
+    "federated_sessions": 10,
+    "schema_version": 10,
+    "persistent_metadata_sha256": "535347d0b02a9f6b56808ec960fa5409d1755094630fa0321995ef8c5044a816"
+  },
+  "stack_left_running": false,
+  "virtualization_used": false
+}

@@ -1,0 +1,74 @@
+{
+  "at": "2026-10-20T11:35:49.316Z",
+  "scope": "Synthetic-account live HTTP response shapes only",
+  "origin": "http://localhost:4317",
+  "samples": [
+    {
+      "name": "invitation-create",
+      "operation": "POST /v1/tenants/{tenant_id}/invites",
+      "schema": "Invite",
+      "status": 201,
+      "response": {
+        "id": "27f6a81d-c3ab-4c99-b8db-0ac9e954dae9",
+        "email": "membership-recipient-5a86e850-3ee8-45da-b320-aa8000e01660@example.invalid",
+        "role": "viewer",
+        "expires_at": "2026-10-27T11:35:38.593Z",
+        "state": "pending"
+      }
+    },
+    {
+      "name": "invitation-accept",
+      "operation": "POST /v1/invites/accept",
+      "schema": "Member",
+      "status": 201,
+      "response": {
+        "id": "a0792bbf-a834-4c4e-bfac-6c04bd83277a",
+        "user_id": "4e10fe90-df67-45c1-9ed8-4e7796757dff",
+        "role": "viewer",
+        "project_ids": [
+          "ec791241-f24c-4a99-97cb-be334d285b87"
+        ],
+        "state": "active",
+        "auth_version": 1
+      }
+    },
+    {
+      "name": "members-list",
+      "operation": "GET /v1/tenants/{tenant_id}/members",
+      "schema": "MemberList",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "88f091ef-347b-4b02-9f11-32e25201b41b",
+            "user_id": "5fd5e7f0-53d1-434b-84da-7167a9a05dba",
+            "role": "owner",
+            "project_ids": [],
+            "state": "active",
+            "auth_version": 1
+          },
+          {
+            "id": "a0792bbf-a834-4c4e-bfac-6c04bd83277a",
+            "user_id": "4e10fe90-df67-45c1-9ed8-4e7796757dff",
+            "role": "viewer",
+            "project_ids": [
+              "ec791241-f24c-4a99-97cb-be334d285b87"
+            ],
+            "state": "active",
+            "auth_version": 1
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "member-remove",
+      "operation": "DELETE /v1/members/{member_id}",
+      "schema": "Ack",
+      "status": 200,
+      "response": {
+        "ok": true
+      }
+    }
+  ]
+}

@@ -6,6 +6,26 @@
 
 ![四个客户端实际页面](assets/screenshots/product-surfaces.png)
 
+## 事务费用通知与三端账户（阶段 50）
+
+新增候选、停栈升级和三端费用专项脚本。第四次候选 38/38；平台全量 410/410，707 份来源一致；实际 Web、打包无边框 Desktop 和原生 SIDE_PANEL 费用 8/8，808 份来源及运行字节一致，另存四份补充严格响应和八张未编辑截图。十项既有后台/成员/原生/会话上下文执行均通过。失败尝试和阶段 49 原始证据逐字节归档，旧包与当前重建预览分开保存。
+
+当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+
+```mermaid
+flowchart LR
+  Source[规范费用事实] --> Tx[同事务通知意图]
+  Tx --> Worker[当前合法接收人]
+  Worker --> Access[读取时复查权限]
+  Access --> Clients[Web / 无边框 Desktop / 原生侧栏]
+```
+
+![实际 Web](assets/screenshots/financial-web.png)
+
+![实际打包 Desktop](assets/screenshots/financial-desktop.png)
+
+![实际原生 Side Panel](assets/screenshots/financial-extension.png)
+
 ## VIP 与明确赠额的组合开通（阶段 49）
 
 现有 VIP 表单可明确勾选配套赠额，分别填写精确 HKD 金额、独立到期日及原因。一次冻结预览及一次确认生成父操作；服务端在同一事务内提交规范 VIP 与赠额两个子操作。任何一步失败均回滚，任一风险策略触发时整体等待另一位同时具备双方权限的管理员审批，待审期间不产生权益或额度。

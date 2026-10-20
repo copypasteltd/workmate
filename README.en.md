@@ -6,6 +6,26 @@ This repository is independently versioned alongside five product repositories. 
 
 ![Actual product surfaces](assets/screenshots/product-surfaces.png)
 
+## Durable financial notifications and three-client accounts (stage 50)
+
+New scripts cover candidate tests, a stopped-stack upgrade and actual three-client finance workflows. Candidate four passes 38/38; the full platform regression passes 410/410 with 707 unchanged source files. Web, packaged frameless Desktop and the native SIDE_PANEL pass 8/8 financial checks, with 808 unchanged source/runtime files, four separate strict supplemental responses and eight unedited captures. All ten existing Admin/member/native/session context runs pass. Failed attempts and original stage 49 evidence are archived byte-for-byte; old binaries and current rebuilt previews remain separate.
+
+Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+
+```mermaid
+flowchart LR
+  Source[Canonical financial fact] --> Tx[Same-transaction outbox]
+  Tx --> Worker[Current eligible recipient]
+  Worker --> Access[Recheck current authority]
+  Access --> Clients[Web / frameless Desktop / native Side Panel]
+```
+
+![Actual Web](assets/screenshots/financial-web.png)
+
+![Actual packaged Desktop](assets/screenshots/financial-desktop.png)
+
+![Actual native Side Panel](assets/screenshots/financial-extension.png)
+
 ## Atomic VIP and explicit credit (stage 49)
 
 The existing VIP form can include a deliberate HKD gift with its own exact amount, expiry and reason. One frozen preview and one confirmation create a parent operation. The server commits canonical VIP and financial child operations in one database transaction, or rolls both back. If either risk policy requires review, the whole request waits for another administrator with both domains' permissions; pending requests create no entitlement or credit.

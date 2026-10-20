@@ -1,0 +1,250 @@
+{
+  "at": "2026-10-20T11:34:51.310Z",
+  "origin": "http://localhost:4310",
+  "scope": "Actual local HTTP from canonical VIP Admin forms, user reads and shared independent approval; original schemas unchanged",
+  "samples": [
+    {
+      "name": "vip-create-preview",
+      "operation": "previewAdminVipGrant",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "3b784459-4ecd-427b-b2d3-14c7fdbd7c78",
+        "payload_hash": "3258e9aaebeadfc669ab41038c96e3d8a00671dfb1f2b2a5f9c1458a8b64594e",
+        "target_ids": [
+          "089164c3-74c5-462b-a8f1-57b840291a26",
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf"
+        ],
+        "policy_version_id": "d50f5afe-9818-44ab-9684-010852d0105c",
+        "decision": "independent_approval",
+        "missing_permission_keys": [],
+        "impact_summary": "Apply only the reviewed subject, fixed plan and effective interval. Preserve original provenance. No automatic credit, renewal or payment.",
+        "expires_at": "2026-10-20T11:39:43.086Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "089164c3-74c5-462b-a8f1-57b840291a26",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "vip-pending-independent-review",
+      "operation": "createAdminVipGrant",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "929d2b15-24d1-4523-8c75-2a98480bd357",
+        "action": "entitlements.grant",
+        "target_ids": [
+          "089164c3-74c5-462b-a8f1-57b840291a26"
+        ],
+        "actor_id": "96082b76-7c60-49f7-a938-535660f7fc21",
+        "state": "pending_approval",
+        "payload_hash": "3258e9aaebeadfc669ab41038c96e3d8a00671dfb1f2b2a5f9c1458a8b64594e",
+        "policy_version_id": "d50f5afe-9818-44ab-9684-010852d0105c",
+        "version": 1,
+        "created_at": "2026-10-20T11:34:43.524Z",
+        "result_ids": []
+      }
+    },
+    {
+      "name": "vip-approved-operation",
+      "operation": "decideAdminApproval",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "929d2b15-24d1-4523-8c75-2a98480bd357",
+        "action": "entitlements.grant",
+        "target_ids": [
+          "089164c3-74c5-462b-a8f1-57b840291a26"
+        ],
+        "actor_id": "96082b76-7c60-49f7-a938-535660f7fc21",
+        "state": "succeeded",
+        "payload_hash": "3258e9aaebeadfc669ab41038c96e3d8a00671dfb1f2b2a5f9c1458a8b64594e",
+        "policy_version_id": "d50f5afe-9818-44ab-9684-010852d0105c",
+        "version": 2,
+        "created_at": "2026-10-20T11:34:43.524Z",
+        "result_ids": [
+          "9bd937f1-4735-422a-a6e4-028917ea0158",
+          "182976df-723f-4f97-9b7e-306aa73e7ded"
+        ]
+      }
+    },
+    {
+      "name": "active-vip-original-dto",
+      "operation": "supplemental:getAdminVipGrant",
+      "schema": "AdminVipGrant",
+      "status": 200,
+      "response": {
+        "id": "9bd937f1-4735-422a-a6e4-028917ea0158",
+        "subject": {
+          "kind": "user",
+          "id": "089164c3-74c5-462b-a8f1-57b840291a26"
+        },
+        "plan_version_id": "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+        "starts_at": "2026-10-20T11:34:00.000Z",
+        "ends_at": "2026-12-04T11:34:00.000Z",
+        "state": "active",
+        "source": "manual",
+        "auto_renew": false,
+        "actor_id": "96082b76-7c60-49f7-a938-535660f7fc21",
+        "version": 1,
+        "operation_id": "929d2b15-24d1-4523-8c75-2a98480bd357"
+      }
+    },
+    {
+      "name": "vip-directory-original-dto",
+      "operation": "listAdminVipGrants",
+      "schema": "AdminVipGrantList",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "9bd937f1-4735-422a-a6e4-028917ea0158",
+            "subject": {
+              "kind": "user",
+              "id": "089164c3-74c5-462b-a8f1-57b840291a26"
+            },
+            "plan_version_id": "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+            "starts_at": "2026-10-20T11:34:00.000Z",
+            "ends_at": "2026-12-04T11:34:00.000Z",
+            "state": "active",
+            "source": "manual",
+            "auto_renew": false,
+            "actor_id": "96082b76-7c60-49f7-a938-535660f7fc21",
+            "version": 1,
+            "operation_id": "929d2b15-24d1-4523-8c75-2a98480bd357"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "user-effective-rights",
+      "operation": "getEffectiveEntitlements",
+      "schema": "EffectiveEntitlements",
+      "status": 200,
+      "response": {
+        "subject": {
+          "kind": "user",
+          "id": "089164c3-74c5-462b-a8f1-57b840291a26"
+        },
+        "as_of": "2026-10-20T11:34:45.311Z",
+        "entitlement_version": 2,
+        "auth_version": 1,
+        "feature_ids": [
+          "analytics",
+          "design",
+          "image",
+          "local_files",
+          "text",
+          "video",
+          "workflow"
+        ],
+        "plan_version_ids": [
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf"
+        ],
+        "expires_at": "2026-12-04T11:34:00.000Z",
+        "restriction_codes": [],
+        "requires_resource_authorization": true,
+        "requires_budget_check": true
+      }
+    },
+    {
+      "name": "user-current-plans",
+      "operation": "listPlans",
+      "schema": "PlanList",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "0eafc06d-0629-4555-a243-8468b9566de2",
+            "name": "Synthetic enterprise capacity",
+            "version": 1,
+            "seats": 3,
+            "included_credit": {
+              "currency": "HKD",
+              "amount_micros": "0"
+            },
+            "capability_ids": [
+              "text",
+              "local_files"
+            ]
+          },
+          {
+            "id": "0f49e53b-421f-4785-9883-94068abfc655",
+            "name": "Starter",
+            "version": 1,
+            "seats": 2147483647,
+            "included_credit": {
+              "currency": "HKD",
+              "amount_micros": "0"
+            },
+            "capability_ids": [
+              "text",
+              "image",
+              "video",
+              "design",
+              "analytics",
+              "workflow",
+              "local_files"
+            ]
+          }
+        ],
+        "next_cursor": "0f49e53b-421f-4785-9883-94068abfc655"
+      }
+    },
+    {
+      "name": "vip-suspended-operation",
+      "operation": "suspendAdminVipGrant",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "5062c978-a110-402c-b0f6-4bd0d8435e8e",
+        "action": "entitlements.suspend",
+        "target_ids": [
+          "089164c3-74c5-462b-a8f1-57b840291a26",
+          "9bd937f1-4735-422a-a6e4-028917ea0158"
+        ],
+        "actor_id": "96082b76-7c60-49f7-a938-535660f7fc21",
+        "state": "succeeded",
+        "payload_hash": "e7dff046b81439c381bb377609d8e82537ea67b4d4d4f3d76fe42f8a2523b4d1",
+        "policy_version_id": "d50f5afe-9818-44ab-9684-010852d0105c",
+        "version": 2,
+        "created_at": "2026-10-20T11:34:48.845Z",
+        "result_ids": [
+          "9bd937f1-4735-422a-a6e4-028917ea0158",
+          "8560350a-e179-45d3-8f53-c17916e4cc75"
+        ]
+      }
+    },
+    {
+      "name": "mobile-future-vip-preview",
+      "operation": "previewAdminVipGrant",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "e9e59915-de94-4d42-908b-e0cb8255db97",
+        "payload_hash": "d33b70f3170651d61f8f3c825e978ca51b2d6a5e1e6d97d61d0b6a28ce18ab82",
+        "target_ids": [
+          "089164c3-74c5-462b-a8f1-57b840291a26",
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf"
+        ],
+        "policy_version_id": "d50f5afe-9818-44ab-9684-010852d0105c",
+        "decision": "independent_approval",
+        "missing_permission_keys": [],
+        "impact_summary": "Apply only the reviewed subject, fixed plan and effective interval. Preserve original provenance. No automatic credit, renewal or payment.",
+        "expires_at": "2026-10-20T11:39:50.372Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "089164c3-74c5-462b-a8f1-57b840291a26",
+            "version": 3
+          }
+        ]
+      }
+    }
+  ]
+}
