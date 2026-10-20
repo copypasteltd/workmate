@@ -130,7 +130,7 @@ def history():
     ui = load(EVIDENCE / 'admin-vip-credit.json')
     assert ui['status'] == 'passed' and ui['errors'] == [] and len(ui['checks']) == 9
     assert all(c['status'] == 'passed' for c in ui['checks'])
-    assert ui['source_unchanged'] and len(ui['source_files']) == 805
+    assert ui['source_unchanged'] and len(ui['source_files']) == 814
     assert ui['browser_closed'] and not ui['user_browser_tabs_touched']
     assert ui['owned_sessions_closed'] and ui['owned_admin_principals_disabled']
     assert ui['model_calls'] == ui['external_payments'] == 0

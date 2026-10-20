@@ -1,5 +1,8 @@
 # 前端品牌规范与设计系统集成
 
+<!-- stage51-support -->
+阶段 51 的 [支持授权与只读视图](51-controlled-read-only-support.md) 延续现有 CopyPaste 蓝色、纸面/墨色、Logo 和字体 token；实际浅深、繁中/英文与 375/768/1024/1440px 截图在专册。Desktop 自绘标题栏、窗口按钮和 Chrome 原生 Side Panel 规则继续适用，不能据这组页面检查宣称全部无障碍或品牌验收完成。
+
 版本：1.5 · 2026-10-18 · 对应 REQ-081/082。产品视觉以 [品牌规范](../product/07-brand-design-system.md) 为准，以下是后续应用开发约定。
 
 ## 1. 资源与权威来源

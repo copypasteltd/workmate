@@ -365,10 +365,10 @@ def validate_refs(documents):
     contexts = dict(documents)
     for path, document in documents.items():
         if not (isinstance(document, dict) and isinstance(document.get('schemas'), dict)
-                and document.get('normative_source') == 'docs/contracts/openapi.json'):
+                and document.get('normative_source', document.get('source')) == 'docs/contracts/openapi.json'):
             continue
         normative = CONTRACTS / 'openapi.json'
-        check(document.get('normative_source_sha256') == hashlib.sha256(normative.read_bytes()).hexdigest(),
+        check(document.get('normative_source_sha256', document.get('source_sha256')) == hashlib.sha256(normative.read_bytes()).hexdigest(),
               f'fixture:{path.name}:original-source-digest')
         check('components' not in document, f'fixture:{path.name}:unambiguous-namespace')
         original = documents[normative.resolve()]['components']['schemas']

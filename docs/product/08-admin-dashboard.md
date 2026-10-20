@@ -1,5 +1,8 @@
 # Admin Dashboard 产品与交互规格
 
+<!-- stage51-support -->
+A13 当前已实现 [限时只读支持](../technical/51-controlled-read-only-support.md)：客户在账户设置选择明确项目和期限并可撤销；管理员从真实用户目录选择对象，以自己的 MFA 会话进入有身份横幅的只读视图。客户授权不增加正文、资金或 VIP 权限，不切换到用户登录。撤销/到期/权限变化会拒绝读取并清空页面，详细时序和局部验收见专册，完整 REQ-095/TC-095 保留。
+
 费用控制现已接入 [事务通知与三端账户视图](../technical/50-durable-financial-notifications.md)：真实入账、赠额、授信及退款来源与通知意图同事务提交，独立核实和入账仍是不同事实。个人账户及企业 Owner/Admin 根据当前权限接收，用户端已读操作不能改变资金；待审、拒绝和重复请求不产生第二次入账或通知。后台内部原因、银行参考和证据链接不进入用户通知。既有后台费用、组合开通、成员和容量实际页面已在本轮源码复查；完整后台范围继续按下文要求验收。
 
 当前代码已有 [方案定义与历史绑定](../technical/46-immutable-plans-and-legacy-grant-bindings.md)、[规范 VIP 生命周期](../technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)，并新增 [企业容量守卫与后台面板](../technical/48-enterprise-seat-and-storage-enforcement.md)。企业列表的容量入口要求企业及权益整体读取权限，显示真实席位、保留文件、上传预留、上限和超额；权限撤销清空旧值。所有准入在服务端和数据库执行。本节长期要求不缩减，完整商业、生产及综合验收继续逐项记录。

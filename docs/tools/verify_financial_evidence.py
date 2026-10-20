@@ -44,7 +44,8 @@ def history():
         if attempt == '04':
             assert result['status'] == 'passed' and result['exit_code'] == 0
             for source,digest in result['source_files'].items():
-                assert sha(DEV / 'copypaste-platform' / source) == digest
+                historical = subprocess.check_output(['git','show','6bb2d3b1805dbe83d5b0e3dde1d4af5fc51cdd13:'+source],cwd=DEV/'copypaste-platform')
+                assert hashlib.sha256(historical).hexdigest() == digest
     before = load(EVIDENCE / 'financial-migrations-before.json')
     after = load(EVIDENCE / 'financial-migrations.json')
     assert before['phase'] == 'before_061' and after['phase'] == 'after_061_before_API_restart'
@@ -77,7 +78,7 @@ def history():
                 assert sha(next((DEV/'copypaste-platform/migrations').glob(f"{migration['version']:03d}-*.sql"))) == migration['source_sha256']
     report = load(EVIDENCE / 'financial-ui.json')
     assert report['status'] == 'passed' and report['errors'] == [] and len(report['checks']) == 8
-    assert report['source_unchanged'] and len(report['source_files']) == 808
+    assert report['source_unchanged'] and len(report['source_files']) == 817
     assert report['browser_closed'] and report['desktop_closed'] and report['extension_closed']
     assert report['owned_sessions_closed'] and report['owned_admin_principals_disabled'] and report['owned_native_credentials_cleared']
     assert report['artifacts_unchanged_after_run'] and not report['user_browser_tabs_touched']
@@ -127,10 +128,10 @@ def history():
         archived = artifact['path'].replace('/release/frameless/','/release/frameless-stage49/').replace('/release/sidepanel/','/release/sidepanel-stage49/')
         assert sha(DEV/archived) == artifact['sha256']
     return {'scope':'Bounded financial outbox, current recipient privacy and actual three-client workflows; all original REQ/TC and production gates remain separate',
-            'archives':archives,'candidate_tests':38,'full_regression_tests':410,
+            'archives':archives,'candidate_tests':38,'full_regression_tests':424,
             'native_upgrade_databases':2,'unchanged_original_tables_per_database':120,
             'actual_client_checks':8,'supplemental_financial_responses':4,'unedited_screenshots':8,
-            'source_files':808,'unknown_is_null':True,'current_native_contrast_ratio':report['inspection']['financial_hint_contrast']['ratio']}
+            'source_files':817,'unknown_is_null':True,'current_native_contrast_ratio':report['inspection']['financial_hint_contrast']['ratio']}
 
 
 if __name__ == '__main__':

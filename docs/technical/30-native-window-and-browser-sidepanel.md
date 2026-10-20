@@ -1,5 +1,8 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage51-support -->
+阶段 51 已同步用户支持授权 renderer 和受限桥接，并重建当前无边框 Desktop；旧阶段 50 安装器/便携包和侧栏 ZIP 保留在各仓库 release 的 stage50 路径。当前预览 10 项实际窗口/原生侧栏检查、6 项原生权益及 8 项三端费用流程通过，精确字节见 [当前包清单](../quality/native-surfaces-artifacts.json)。这不代表安装/卸载、签名或全部系统/DPI 验收完成。下面的阶段 48 内容为当时记录。
+
 阶段 48 已重新同步企业容量 renderer，并重建实际 Desktop 安装器/便携包与侧栏 ZIP。当前原生外观十组、打包权益六组及源码认证十二组通过；字节清单见 [当前预览摘要](../quality/native-surfaces-artifacts.json)，新增服务端行为见 [企业容量](48-enterprise-seat-and-storage-enforcement.md)。以下保留窗口和侧栏的强制产品规则及历史验证边界。
 
 2026-10-19 用户追加约束：Desktop 使用无边框窗口，移除 Electron 自带边框及菜单；扩展参照新版 MetaMask 的出现方式，点击扩展按钮后在浏览器右侧展开。本文是后续客户端开发和验收的强制约束，覆盖 REQ-036/039 的对应子流程。

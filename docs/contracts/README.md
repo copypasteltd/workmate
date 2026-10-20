@@ -92,3 +92,9 @@ CORE01 将全部运行配置的 kernel 固定为 codex；目录 schema 使用 co
 [build_admin_contracts.py](../tools/build_admin_contracts.py) 由主生成器顺序调用，输出后台接口、严格请求、权限目录及虚构样例。/v1/admin/* 统一采用独立 AdminSession 和 AdminCsrfHeader；普通用户身份只可使用 /v1/effective-entitlements 等企业范围接口，不能获得后台权限。旧 admin/health 同步切换独立认证，明确迁移而不保留普通用户凭证通道。
 
 动作权限、scope、字段、状态和风险策略共同判定；x-action-permissions 为基础权限之外的必需动作权限。资金请求按充值/赠送/扣回/退款/信用上限分型，VIP 固定主体与时间；JSON Schema 拒绝额外字段、负数、通配符等结构错误。日期顺序、历史余额、累计退款、MFA 有效性、角色委派上限、全内容隔离与撤权传播由真实服务验证，静态通过不等于后台运行通过。
+
+## 9. 受控支持的原规范与补充视图
+
+[支持 schema 快照](admin-support-schemas.json) 从原 OpenAPI 按原字节提取八个命名类型及递归依赖，平台副本逐字节相同。原 OpenAPI SHA-256 保持 `51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4`。原用户授权创建/撤销、Admin 支持会话列表/创建/撤销沿用严格规范 DTO；授权列表及只读 view 为明确补充路径。
+
+实际页面保留三个原规范端点响应和从补充 view 提取的一份原会话 DTO，单独严格验证，不计为四个规范操作，也不增加既有 125 份样本的数字。支持上下文头仅可访问绑定自己的只读 GET；费用、VIP、下载、凭证和其他读取/修改都拒绝。细则与原始回执见 [支持专册](../technical/51-controlled-read-only-support.md)。

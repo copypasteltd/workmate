@@ -1,5 +1,8 @@
 # 文档体系与使用规则
 
+<!-- stage51-support -->
+当前阶段 51 的 [限时只读支持](technical/51-controlled-read-only-support.md) 补充用户授权、后台 A13、真实管理员范围、事务与撤销/到期界面，并保留全部原验收；[逐项进度](quality/requirements-alignment-progress.json) 记录当前来源及有界证据。Desktop 无边框、无默认菜单和 Chrome 原生右侧 Side Panel 的规则以 [客户端专册](technical/30-native-window-and-browser-sidepanel.md) 为准。
+
 版本：1.9 · 2026-10-19 · 状态：方案基线与本轮实现记录并存；实际代码范围以实施清单和运行证据为准。
 
 ## 1. 交付范围

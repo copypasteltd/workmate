@@ -1,5 +1,8 @@
 # Admin 控制面、权限与账务实施设计
 
+<!-- stage51-support -->
+当前支持控制面实现见 [限时只读支持](51-controlled-read-only-support.md)：规范支持会话和客户授权、冻结项目范围、真实管理员会话与当前版本、独立正文门槛、受限只读上下文、原子 AdminOperation/审计/幂等，以及 062 前向迁移。旧无目标支持入口不再创建宽泛授权；全部 Admin 权限和完整 TC 继续按原规范验收。
+
 费用事实与 outbox 的原子捕获、按当前权限读取的费用通知及三端消费者实现见 [持久费用通知](50-durable-financial-notifications.md)。原规范和全部综合验收范围保持；当前验证边界见该实现册及逐项进度。
 
 当前方案控制面实现见 [不可变版本与历史绑定](46-immutable-plans-and-legacy-grant-bindings.md)。新增 056 与原始草稿/发佈命令，复用共享审批；完整规范权益与配额仍保留后续验证。
