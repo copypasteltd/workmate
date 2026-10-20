@@ -203,7 +203,6 @@ export function registerAdmin(
     "access",
     "support",
     "catalog",
-    "plans",
     "policy",
   ] as const) {
     app.get(
@@ -825,6 +824,12 @@ function registerAdminCatalog(
                 ? "admin.policy.draft"
                 : "admin.catalog.draft",
           );
+          if (b.kind === "plan")
+            throw new Problem(
+              409,
+              "CANONICAL_PLAN_REQUIRED",
+              "Use the immutable plan draft and publication APIs",
+            );
           await tx.query(
             "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
             [`catalog:${b.kind}:${b.key}`],
@@ -873,6 +878,12 @@ function registerAdminCatalog(
                 : "admin.catalog.publish",
           );
           await requireRecentMfa(tx, req.principal);
+          if (e.kind === "plan")
+            throw new Problem(
+              409,
+              "CANONICAL_PLAN_REQUIRED",
+              "Use the immutable plan draft and publication APIs",
+            );
           if (e.kind === "role") {
             catalog.role(e.key);
             z.object({
@@ -941,6 +952,13 @@ function registerAdminCatalog(
                 .positive()
                 .max(24 * 366 * 5),
               membership_privileged_requires_approval: z.boolean().optional(),
+              plan_publication_requires_approval: z.boolean().optional(),
+              plan_approval_window_minutes: z
+                .number()
+                .int()
+                .min(1)
+                .max(10)
+                .optional(),
               account_close_requires_approval: z.boolean().optional(),
               account_approval_window_minutes: z
                 .number()

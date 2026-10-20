@@ -4,6 +4,20 @@
 
 This independent repository implements persistent PostgreSQL services, customer/admin identity, workspace/project authorization, Codex execution, marketing assets, analytics, workflows, device commands and the admin control plane. No sibling source checkout is required. The delivery root's `docs/` contains the master requirements and design baseline.
 
+## Immutable plan definitions and legacy grant bindings
+
+Commercial families have immutable drafts/versions, frozen publication comparisons and independent review. Original AdminPlanDraft / AdminVersionReason commands return strict 202 AdminOperation receipts. The server checks global permission, overlapping denies, recent MFA, the original live session, policy/head versions, concurrency, idempotency and atomic audit rollback. Legacy catalog writes cannot bypass the registry. Issued grant bodies remain fixed; missing old bodies are explicitly labelled as evaluated at binding time, without inventing original grant facts.
+
+```mermaid
+flowchart LR
+  Draft[Immutable draft] --> Preview[Frozen comparison]
+  Preview --> Review[Current access and independent review]
+  Review --> Publish[Publication fact and family head]
+  Publish --> Bound[Existing grants retain fixed definitions]
+```
+
+Forward migration 056 retains all original 001–055 bytes. The focused plan/migration/Skill suite passes 24 tests; see the current delivery receipt for the complete platform regression. Publishing does not credit money, charge a payment or activate VIP. Complete canonical grants, customer plan endpoints, seat/storage quota enforcement and entitlement events remain unfinished. The master design is `docs/technical/46-immutable-plans-and-legacy-grant-bindings.md` in the delivery root.
+
 ## Prerequisites and local start
 
 Validated on Windows x64 with Node.js 22.14+, npm, Git, native Codex `0.163.0-alpha.10.2`, FFmpeg and FFprobe. Dependencies are pinned. Use native processes; Docker, WSL and virtualization are prohibited. Other operating systems have not been qualified.
@@ -452,3 +466,5 @@ flowchart LR
 ```
 
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
+
+Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.

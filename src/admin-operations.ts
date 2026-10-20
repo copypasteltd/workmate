@@ -5,6 +5,7 @@ import {
   pinAdminPolicy,
 } from "./admin-operation-policy.js";
 import { planDefinition } from "./plans.js";
+import { isPlanOperation, planOperationAuthority } from "./admin-plans.js";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { Database, Tx } from "./db.js";
@@ -446,7 +447,20 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               "admin.billing.read",
             );
           }
-          if (isFeeOperation(op) || isPaymentOperation(op))
+          if (isPlanOperation(op)) {
+            await planOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.jobs.read",
+            );
+            await planOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.plans.read",
+            );
+          } else if (isFeeOperation(op) || isPaymentOperation(op))
             await feeOperationAuthority(
               tx,
               req.principal,

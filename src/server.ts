@@ -1,4 +1,6 @@
 import { registerAdminApprovals } from "./admin-approvals.js";
+import { seedCommercialPlans } from "./commercial-plans.js";
+import { registerAdminPlans } from "./admin-plans.js";
 import { commandPublicKey } from "./device-signing.js";
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
@@ -71,6 +73,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   )
     throw new Error("Application database identity must be restricted cp_app");
   await seedRoles(db, catalog);
+  await seedCommercialPlans(db, catalog);
   await seedSkillVersions(db, catalog);
   await seedRuntimeProfile(db, catalog);
   await seedAgentTemplates(db, catalog);
@@ -307,6 +310,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerBusiness(app, db, storage, catalog);
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
+  registerAdminPlans(app, db, catalog);
   registerAdminOperations(app, db);
   registerAdminMemberships(app, db);
   registerAdminAccounts(app, db);
@@ -314,7 +318,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminFees(app, db);
   registerAdminPayments(app, db);
   registerAdminRefunds(app, db);
-  registerAdminApprovals(app, db);
+  registerAdminApprovals(app, db, catalog);
   registerAdminIdentities(app, db);
   let started = false;
   if (options.worker !== false && c.WORKER_ENABLED) {

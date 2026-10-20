@@ -1,6 +1,12 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
+import type { Catalog } from "./catalog.js";
+import {
+  isPlanOperation,
+  planOperationAuthority,
+  decidePlanOperation,
+} from "./admin-plans.js";
 import { audit, requireAdmin, type Principal } from "./auth.js";
 import { lockAdminAccess, requireSensitiveAdmin } from "./admin-access.js";
 import {
@@ -50,7 +56,9 @@ const businessPermission = (op: any) =>
     : op.action);
 
 async function authority(tx: Tx, p: Principal, op: any, permission: string) {
-  if (isFeeOperation(op)) await feeOperationAuthority(tx, p, op, permission);
+  if (isPlanOperation(op)) await planOperationAuthority(tx, p, op, permission);
+  else if (isFeeOperation(op))
+    await feeOperationAuthority(tx, p, op, permission);
   else if (op.action.startsWith("users.") && op.payload.target_id)
     await userAccountAuthority(tx, p, op.payload.target_id, permission);
   else if (!op.tenant_id && op.payload?.command?.user_id)
@@ -60,7 +68,16 @@ async function authority(tx: Tx, p: Principal, op: any, permission: string) {
 }
 function visibility(s: ReadScope, db: Database) {
   const permission = "admin.approvals.read";
-  return `(CASE WHEN o.payload->>'financial_command_version'='1' THEN w.data_mode=${s.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${s.account(permission)} AND ${s.account("admin.billing.read")} ELSE ${s.account(permission, "target_scope")} END)`;
+  const globalPlan =
+    s.global(permission) &&
+    s.global("admin.plans.read") &&
+    !s.bs.some(
+      (b) =>
+        b.effect === "deny" &&
+        (b.permissions.includes(permission) ||
+          b.permissions.includes("admin.plans.read")),
+    );
+  return `(CASE WHEN o.payload->>'commercial_plan_command_version'='1' THEN ${s.arg(globalPlan)}::boolean WHEN o.payload->>'financial_command_version'='1' THEN w.data_mode=${s.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${s.account(permission)} AND ${s.account("admin.billing.read")} ELSE ${s.account(permission, "target_scope")} END)`;
 }
 const from = `FROM admin_approval_requests a JOIN admin_operations o ON o.id=a.operation_id LEFT JOIN wallets w ON w.id::text=o.payload->>'billing_account_id' CROSS JOIN LATERAL (SELECT o.tenant_id,CASE WHEN o.action LIKE 'users.%' THEN (o.payload->>'target_id')::uuid WHEN o.tenant_id IS NULL THEN (o.payload->'command'->>'user_id')::uuid ELSE NULL::uuid END AS user_id) target_scope`;
 async function find(
@@ -84,7 +101,11 @@ async function find(
   ).rows[0];
   return { r, op };
 }
-export function registerAdminApprovals(app: FastifyInstance, db: Database) {
+export function registerAdminApprovals(
+  app: FastifyInstance,
+  db: Database,
+  catalog: Catalog,
+) {
   const auth = { preHandler: requireAdmin(db) };
   app.get("/v1/admin/approvals", auth, async (req, reply) => {
     reply.header("Cache-Control", "no-store");
@@ -150,6 +171,8 @@ export function registerAdminApprovals(app: FastifyInstance, db: Database) {
         await authority(tx, req.principal, op, "admin.approvals.read");
         if (isFeeOperation(op))
           await authority(tx, req.principal, op, "admin.billing.read");
+        if (isPlanOperation(op))
+          await authority(tx, req.principal, op, "admin.plans.read");
         await audit(tx, req.principal, "admin.approvals.read", r.id);
         return approvalDTO(r);
       },
@@ -167,8 +190,9 @@ export function registerAdminApprovals(app: FastifyInstance, db: Database) {
           uuid.parse((req.params as any).approval),
         );
         await authority(tx, req.principal, op, "admin.approvals.read");
-        const read =
-          isFeeOperation(op) || op.action.startsWith("billing.")
+        const read = isPlanOperation(op)
+          ? "admin.plans.read"
+          : isFeeOperation(op) || op.action.startsWith("billing.")
             ? "admin.billing.read"
             : op.action.startsWith("entitlements.")
               ? "admin.entitlements.read"
@@ -253,7 +277,9 @@ export function registerAdminApprovals(app: FastifyInstance, db: Database) {
                   "OPERATION_EXPIRED",
                   "Approval expired; create a fresh preview",
                 );
-              if (isFeeOperation(op))
+              if (isPlanOperation(op))
+                await decidePlanOperation(tx, catalog, req.principal, op, b);
+              else if (isFeeOperation(op))
                 await decideFeeOperation(tx, db, req.principal, op, b);
               else if (isAccountAction(op.action))
                 await decideAccountOperation(

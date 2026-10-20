@@ -451,7 +451,7 @@ test("uninstall and explicit reinstall create a new identity without reviving qu
   );
   assert.equal(accepted.task.status, "queued");
 });
-test("current plan capabilities are rechecked at the next tool and completion while the original reservation is settled once", async () => {
+test("an explicit immutable replacement plan is rechecked at the next tool and completion while the original reservation is settled once", async () => {
   const f = await fixture();
   const grant = (
     await s.db.control.query(
@@ -461,9 +461,19 @@ test("current plan capabilities are rechecked at the next tool and completion wh
   ).rows[0];
   const t = await task(f);
   const runtime = new ControlledRuntime(async (ctx) => {
-    await s.db.control.query(
-      "UPDATE entitlements SET plan_body=jsonb_set(plan_body,'{capabilities}','[]') WHERE id=$1",
-      [grant.id],
+    await s.db.tx(
+      async (tx) => {
+        await tx.query(
+          "UPDATE entitlements SET state='revoked',version=version+1 WHERE id=$1",
+          [grant.id],
+        );
+        await tx.query(
+          "INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body) VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Explicit replacement fixture',$2)",
+          [f.tenant, { ...defaults.business, capabilities: [] }],
+        );
+      },
+      undefined,
+      true,
     );
     await assert.rejects(
       ctx.tools

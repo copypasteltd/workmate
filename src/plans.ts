@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Tx } from "./db.js";
 import { Problem } from "./lib.js";
+import { publishedLegacyDefinition } from "./commercial-plans.js";
 const all = [
   "text",
   "image",
@@ -36,7 +37,7 @@ export const defaults: Record<string, any> = {
 };
 export const planSchema = z
   .object({
-    name: z.string().min(1).max(160),
+    name: z.string().min(1),
     capabilities: z
       .array(
         z.enum([
@@ -51,7 +52,7 @@ export const planSchema = z
       )
       .max(7),
     monthly_hkd_micros: z.number().int().nonnegative().max(1e12),
-    max_active_tasks: z.number().int().min(1).max(100).default(1),
+    max_active_tasks: z.number().int().min(1).max(2_147_483_647).default(1),
     max_task_budget_micros: z
       .number()
       .int()
@@ -62,22 +63,13 @@ export const planSchema = z
   })
   .strict();
 export async function planDefinition(tx: Tx, key: string) {
-  const row = (
-    await tx.query(
-      "SELECT version,body FROM catalog_entries WHERE kind='plan' AND key=$1 AND state='published'",
-      [key],
-    )
-  ).rows[0];
-  return {
-    plan: key,
-    version: row?.version ?? 1,
-    body: planSchema.parse(row?.body ?? defaults[key] ?? defaults.starter),
-  };
+  return publishedLegacyDefinition(tx, key);
 }
 export async function effectivePlan(tx: Tx, tenant: string, user: string) {
+  await tx.query("SELECT set_config('app.actor_id',$1,true)", [user]);
   const grants = (
     await tx.query(
-      "SELECT * FROM entitlements WHERE (tenant_id=$1 OR user_id=$2) AND state='active' AND starts_at<=now() AND ends_at>now() ORDER BY CASE plan WHEN 'business' THEN 3 WHEN 'pro' THEN 2 ELSE 1 END DESC,ends_at DESC",
+      "SELECT e.*,b.runtime_body AS bound_body,b.plan_version_id AS bound_plan_version_id,b.provenance AS binding_provenance FROM entitlements e LEFT JOIN legacy_entitlement_plan_bindings b ON b.entitlement_id=e.id WHERE (e.tenant_id=$1 OR e.user_id=$2) AND e.state='active' AND e.starts_at<=now() AND e.ends_at>now() ORDER BY CASE e.plan WHEN 'business' THEN 3 WHEN 'pro' THEN 2 ELSE 1 END DESC,e.ends_at DESC,e.id DESC",
       [tenant, user],
     )
   ).rows;
@@ -88,9 +80,13 @@ export async function effectivePlan(tx: Tx, tenant: string, user: string) {
       subject: "default",
       ends_at: null,
     };
-  const body = Object.keys(g.plan_body ?? {}).length
-    ? planSchema.parse(g.plan_body)
-    : (await planDefinition(tx, g.plan)).body;
+  if (!g.bound_body)
+    throw new Problem(
+      409,
+      "PLAN_RECONCILIATION_REQUIRED",
+      "This historical grant has no bound valid plan definition",
+    );
+  const body = planSchema.parse(g.bound_body);
   return {
     plan: g.plan,
     version: g.plan_version,
@@ -98,6 +94,8 @@ export async function effectivePlan(tx: Tx, tenant: string, user: string) {
     subject: g.tenant_id ? "tenant" : "user",
     ends_at: g.ends_at,
     grant_id: g.id,
+    plan_version_id: g.bound_plan_version_id,
+    binding_provenance: g.binding_provenance,
   };
 }
 export async function authorizeTaskPlan(
