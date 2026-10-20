@@ -12,8 +12,11 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('manual_payment_evidence_and_posting', [87,94,96,98,100,101],
+     '原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。',
+     ['platform_regression','admin_fees','runtime_schemas'], ['technical/44-manual-payment-evidence-and-exact-posting.md']),
     ('shared_admin_approvals', [83,84,85,87,94,96,98,100],
-     '现有费用、成员、账户与旧后台待审批操作共用真实请求；原始严格游标列表和四字段/202决定、当前整体范围/模式/重叠拒绝、本人自批防护与双业务权限/MFA、原会话/策略/前态复查、事务审计回滚及并发幂等。SQL 048 保留原费用身份，登记已冻结成员/账户，缺失事实的旧操作取消并记录；后台实际过期无伪造人工决定。十一组共享专项和旧047带数据升级，以及当前六组成员/四组费用页面为局部证据。完整支付/凭证/退款/VIP、通知/outbox、全业务权限/导出/原生及全部综合验收继续保留。',
+     '现有费用、成员、账户与旧后台待审批操作共用真实请求；原始严格游标列表和四字段/202决定、当前整体范围/模式/重叠拒绝、本人自批防护与双业务权限/MFA、原会话/策略/前态复查、事务审计回滚及并发幂等。SQL 048 保留原费用身份，登记已冻结成员/账户，缺失事实的旧操作取消并记录；后台实际过期无伪造人工决定。十一组共享专项和旧047带数据升级，以及当前六组成员/五组费用页面为局部证据。完整支付/凭证/退款/VIP、通知/outbox、全业务权限/导出/原生及全部综合验收继续保留。',
      ['platform_regression','admin_membership_ui','admin_fees','runtime_schemas'], ['technical/43-shared-admin-approval-requests.md']),
     ('canonical_fees_and_independent_approvals', [83,84,87,94,96,98],
      '三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、完整业务审批与财务通知/outbox、原生和综合验收仍未完成。',
@@ -40,7 +43,7 @@ CLUSTERS = [
      '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者同步迁移，不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、HTTP User schema、Web 初始化及当前十二组 Web/源码 Electron/MV3 认证和会话恢复独立记录；安装包、完整身份/系统及原生成员旅程仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('canonical_authentication_and_retry_recovery', [1,2,3,35,36,39,51,55,60,100],
-     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 762 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
+     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
      '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；当前规范认证/上下文上的十二组真实源码原生会话检查另列，含 1440px 浅色/375px 深色与双面板换账号。完整 SSO、安装/系统矩阵和 TC 全部条件仍未完成。',
@@ -162,7 +165,7 @@ REMAINING = {
  82:'局部两主题/语言/四尺寸通过；全组件状态、100/200% 缩放、键盘/对比/reduced-motion 验收待完成。',
  85:'规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。',
  86:'模拟数据单列且微额费用可读；正式多维消费归属和未知成本全量钻取仍待验收。',
- 87:'赠送限时额度、扣回原入账和授信已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；完整付款/凭证核实、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。',
+ 87:'赠送限时额度、扣回原入账、授信及已核实付款充值已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；人工凭据登记/另一人核实与原付款唯一入账已作局部验证。正式支付机构及未知结果对账、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
  92:'独立 MFA/企业范围的 Admin 排队暂停、共用领域守卫、原受益用户撤权与费用待核对拒绝已有验证；运行中检查点、全工作流/Routine 控制和未知外部动作人工核对仍待齐。',
@@ -170,6 +173,7 @@ REMAINING = {
  98:'清理记录已验证组合筛选/URL/分页、有界滚动、四宽度、主题/语言、请求拒绝清空和失效重试对话框；全后台筛选、列配置、异常及完整键盘/缩放仍待验证。',
  99:'可信方法版本/撤销已补强；模型/费率的受控验证发布、兼容版本与后台全闭环待完成。',
  100:'规范成员操作的原因/前后差异审计、不可变有效策略、冻结预览及独立审批的原权限/版本/期限重查已有证据；全部资金/内容/权限策略、批次与生产审计留存仍待完成。',
+ 101:'人工实收凭据登记、另一位管理员核实、原付款精确充值、同笔唯一入账、历史外部编号防重、赠额不伪装实收及事实只追加已有数据库和实际页面证据。原交易累计可退额度、消费原资金桶返还、退款申请与到账确认、未知退款对账、正式支付机构和完整退款页面仍待实现及验收。',
  102:'当前方案能力及领取时用户并发已复查，企业/能力槽位按数据库统一约束；全部媒体、团队、调度、席位和存储交集未齐。',
 }
 
@@ -241,6 +245,59 @@ def approval_repair_history():
             'focused_runs':runs, 'archives':archives,
             'native_migration_log':{'path':live.relative_to(ROOT).as_posix(), 'sha256':fingerprint(live)},
             'migration_048_sha256':fingerprint(DEV/'copypaste-platform/migrations/048-unified-admin-approvals.sql')}
+
+
+def payment_record_repair_history():
+    evidence = DEV/'copypaste-delivery/evidence'
+    runs = []
+    for name, expected in [
+        ('payment-records-focused-initial.tap',(18,17,1)),
+        ('payment-records-focused-second.tap',(19,18,1)),
+        ('payment-records-focused-third.tap',(19,19,0)),
+        ('payment-records-focused-final.tap',(20,2,18)),
+        ('payment-records-focused-fifth.tap',(20,14,6)),
+        ('payment-records-focused-sixth.tap',(21,21,0)),
+        ('payment-records-updated-journeys.tap',(4,4,0)),
+    ]:
+        path = evidence/name
+        raw = path.read_text(encoding='utf-8')
+        counts = {k:int(re.search(r'^# '+k+r' (\d+)$',raw,re.M)[1]) for k in ['tests','pass','fail','cancelled','skipped','todo']}
+        assert tuple(counts[k] for k in ['tests','pass','fail']) == expected
+        assert all(counts[k] == 0 for k in ['cancelled','skipped','todo'])
+        runs.append({'path':path.relative_to(ROOT).as_posix(),'sha256':fingerprint(path),'counts':counts,'status':'failed_original_retained' if counts['fail'] else 'passed'})
+    archives = []
+    for name in ['stage43-before-payment-records','payment-records-trigger-failure','payment-records-upload-qa-failure','payment-records-before-list-refresh','payment-records-before-scope-description','payment-records-before-detail-layout','payment-records-full-regression-failure']:
+        manifest = evidence/name/'archive-map.json'
+        entries = load(manifest)['files']
+        assert entries
+        for entry in entries:
+            path = (ROOT/entry['archived']).resolve()
+            assert path.is_relative_to(evidence.resolve())
+            assert fingerprint(path) == entry['sha256'], f'Changed payment history: {path}'
+        archives.append({'path':manifest.relative_to(ROOT).as_posix(),'sha256':fingerprint(manifest),'verified_files':len(entries)})
+    failed = load(evidence/'payment-records-full-regression-failure/alignment-platform.json')
+    assert failed['status'] == 'failed' and failed['counts'] == {'tests':310,'pass':306,'fail':4,'cancelled':0,'skipped':0,'todo':0}
+    assert fingerprint(evidence/'payment-records-full-regression-failure/alignment-platform.tap') == failed['sha256']
+    migrations = []
+    for version, suffix in [(49,'live'),(50,'immutable'),(51,'preview-repair'),(52,'reference-repair')]:
+        path = evidence/f'payment-records-{suffix}-migration.log'
+        raw = path.read_text(encoding='utf-8')
+        assert f'copypaste: applied migration {version}' in raw and f'copypaste_test: applied migration {version}' in raw
+        migrations.append({'path':path.relative_to(ROOT).as_posix(),'sha256':fingerprint(path),'migration':version})
+    screenshots = []
+    for name in ['current-ui-screenshot-provenance.json','payment-screenshot-provenance.json']:
+        path = DOCS/'quality'/name
+        entries = load(path)['files']
+        for entry in entries:
+            if 'source' in entry:
+                assert fingerprint(ROOT/entry['source']) == entry['sha256']
+                assert fingerprint(ROOT/entry['documentation']) == entry['sha256']
+            else:
+                assert fingerprint(ROOT/entry['original']) == entry['original_sha256']
+                assert fingerprint(ROOT/entry['viewport']) == entry['viewport_sha256']
+                assert fingerprint(DEV/'copypaste-admin/assets/screenshots'/Path(entry['viewport']).name) == entry['viewport_sha256']
+        screenshots.append({'path':path.relative_to(ROOT).as_posix(),'sha256':fingerprint(path),'verified_images':len(entries)})
+    return {'scope':'Bounded manual evidence and exact posting repair; original failures retained, full refunds/VIP/payment-provider acceptance not established','runs':runs,'archives':archives,'native_migrations':migrations,'screenshots':screenshots}
 
 
 def main():
@@ -315,9 +372,9 @@ def main():
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
         if key in {'membership_ui', 'admin_membership_ui', 'native_auth_recovery'}:
             expected_checks, expected_sources = {
-                'membership_ui': (6, 158),
-                'admin_membership_ui': (6, 183),
-                'native_auth_recovery': (12, 762),
+                'membership_ui': (6, 164),
+                'admin_membership_ui': (6, 190),
+                'native_auth_recovery': (12, 769),
             }[key]
             assert len(checks) == expected_checks and report['model_calls'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
@@ -335,9 +392,9 @@ def main():
                 assert actual_source.is_relative_to(DEV.resolve())
                 assert fingerprint(actual_source) == expected_digest, f'Stale {key} evidence: {source}'
         if key == 'admin_fees':
-            assert len(checks) == 4 and report['model_calls'] == 0 and report['external_payments'] == 0
+            assert len(checks) == 5 and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
-            assert report['source_unchanged'] is True and len(report['source_files']) == 30
+            assert report['source_unchanged'] is True and len(report['source_files']) == 39
             for source, expected_digest in report['source_files'].items():
                 actual_source = (DEV/source).resolve()
                 assert actual_source.is_relative_to(DEV.resolve())
@@ -480,6 +537,7 @@ def main():
         })
     result={'schema_version':'1.0','at':datetime.now(timezone.utc).isoformat(),
             'shared_approval_verification':approval_repair_history(),
+             'payment_record_verification':payment_record_repair_history(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},

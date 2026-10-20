@@ -39,6 +39,12 @@ def main():
     for name, schema in fees['schemas'].items():
         if schema != spec['components']['schemas'][name]:
             raise ValueError(f'Fee fixture changed the original schema: {name}')
+    payments = json.loads((AUTH_FIXTURE.parent / 'admin-payment-schemas.json').read_text(encoding='utf-8'))
+    if payments['source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(payments['schemas']) != {'AdminPaymentRecord','AdminPaymentRecordCreate','AdminPaymentConfirm','AdminPaymentRecordList','AdminOperation','AdminPositiveMoney','Money'}:
+        raise ValueError('Payment fixture must retain seven original schema dependencies')
+    for name, schema in payments['schemas'].items():
+        if schema != spec['components']['schemas'][name]:
+            raise ValueError(f'Payment fixture changed the original schema: {name}')
     approvals = json.loads((AUTH_FIXTURE.parent / 'admin-approval-schemas.json').read_text(encoding='utf-8'))
     if approvals['source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(approvals['schemas']) != {'AdminApproval', 'AdminApprovalList', 'AdminApprovalDecision', 'AdminOperation'}:
         raise ValueError('Shared approval fixture must retain all four original schemas')
@@ -92,7 +98,7 @@ def main():
     if not checks:
         raise ValueError('No captured responses; empty evidence cannot pass')
     report = {'at': datetime.now(timezone.utc).isoformat(),
-              'scope': 'Captured canonical authentication, membership, Admin directories/accounts/ledger, three fee commands and independent approval responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or payment/refund/VIP conformance',
+              'scope': 'Captured canonical authentication, membership, Admin directories/accounts/ledger, four fee commands, manual payment records/confirmations and independent approval responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or payment/refund/VIP conformance',
               'sources': sources,
               'authentication_fixture': {
                   'file': AUTH_FIXTURE.relative_to(ROOT.parent).as_posix(),
@@ -103,7 +109,8 @@ def main():
               'admin_membership_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-membership-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(admin_members['schemas']), 'status': 'passed', 'scope': 'Exact original schema and source digest comparison; actual operations are covered by platform and real HTTP evidence'},
               'admin_directory_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-directory-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(directories['schemas']), 'status': 'passed', 'scope': 'Exact original schema and digest comparison; current list/detail wire captures and ten isolated database groups are bounded evidence'},
               'admin_account_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-account-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(admin_accounts['schemas']), 'status': 'passed', 'scope': 'Exact original schema and source digest comparison; account operations covered by isolated database and actual local HTTP'},
-              'admin_fee_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-fee-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(fees['schemas']), 'status': 'passed', 'scope': 'All twelve schema dependencies exactly match the original; current wire captures cover previews, gifts, original-source debits, credit limits and one independent approval decision, not all twelve command implementations'},
+              'admin_fee_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-fee-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(fees['schemas']), 'status': 'passed', 'scope': 'All twelve schema dependencies exactly match the original; current wire captures cover previews, verified-payment top-ups, gifts, original-source debits, credit limits and independent approval decisions, not complete refunds, VIP or payment-provider conformance'},
+              'admin_payment_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-payment-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(payments['schemas']), 'status': 'passed', 'scope': 'Exact original schemas and digest; actual manual evidence, confirmation, list and posting captures are bounded evidence'},
               'admin_approval_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-approval-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(approvals['schemas']), 'status': 'passed', 'scope': 'All four original schemas and source digest are unchanged; shared list and member-decision captures are bounded evidence'},
               'openapi_sha256': hashlib.sha256(SPEC.read_bytes()).hexdigest(),
               'checks': checks}
