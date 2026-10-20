@@ -1,5 +1,24 @@
 # CopyPaste Web
 
+## Explicit adoption (stage 54)
+
+Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.
+
+Current backend regression: **484/484**, including all 462 prior named tests; focused **93/93** overlaps that total. Actual built Web: **12/12**; new packaged frameless Desktop and real native Chrome Side Panel: **11/11**. AI/media use the authorized simulated dependencies; identity, PostgreSQL, permissions and version transactions execute normally. All 102 original requirements remain tracked. Earlier sections below retain their historical source and artifact scope.
+
+![Actual version review](assets/screenshots/adoption-06-specialist-comparison-en.png)
+
+![390px Traditional Chinese dark review](assets/screenshots/adoption-06-narrow-dark-zh.png)
+
+```mermaid
+flowchart LR
+  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
+  Compare --> Consent[Explicit user consent]
+  Consent --> Save[Atomic version and receipt]
+  Save --> Future[Future tasks]
+  Existing[Already accepted tasks] --> Original[Original versions and prices]
+```
+
 ## Controlled support update / 受控客服协助
 
 Account settings now provides explicit support grants: choose projects, reason and deadline, then inspect, copy the ID or revoke. Read-only assistance retains the administrator identity; an empty project selection covers metadata only.

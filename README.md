@@ -1,5 +1,24 @@
 # CopyPaste Web
 
+## 明确采用版本（阶段 54）
+
+默认助手更新、专家设置与会话采用先比较明确模型、推理强度、单价及 Skill 版本，再由用户确认。五分钟比较绑定实际登录会话与配置状态，过期或变化拒绝确认；重试使用持久幂等键。已接收任务继续原模型和原费率。
+
+当前平台完整回归 **484/484**，保留原 462 项测试；专项 **93/93** 与全量重叠，不相加。实际构建版 Web **12/12**，新版无边框打包 Desktop 与真实 Chrome 原生侧栏 **11/11**。AI/媒体使用已授权假数据，身份、PostgreSQL、权限与版本事务实际执行。原始 102 项综合验收继续跟踪；以下旧章节保留其时源码与产物范围。
+
+![Actual version review](assets/screenshots/adoption-06-specialist-comparison-en.png)
+
+![390px Traditional Chinese dark review](assets/screenshots/adoption-06-narrow-dark-zh.png)
+
+```mermaid
+flowchart LR
+  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
+  Compare --> Consent[Explicit user consent]
+  Consent --> Save[Atomic version and receipt]
+  Save --> Future[Future tasks]
+  Existing[Already accepted tasks] --> Original[Original versions and prices]
+```
+
 ## 限时只读客服协助 / Controlled support
 
 账户设置新增客服授权：明确选项目、原因和期限，查看、复制 ID 或撤销。只读协助保留管理员身份；空项目仅限元资料。
