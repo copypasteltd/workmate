@@ -1,0 +1,140 @@
+{
+  "at": "2026-10-20T01:52:22.684Z",
+  "origin": "http://localhost:4318",
+  "scope": "Four actual strict AdminOperation responses from synthetic customer Admin UI",
+  "samples": [
+    {
+      "name": "member-suspend",
+      "operation": "changeAdminMembership",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "7d2a6c05-a517-4703-8fb0-90f41ff2b655",
+        "action": "tenants.members.write",
+        "target_ids": [
+          "faf9571e-5276-447d-9da9-cf3d5bac53a0",
+          "2439fc8a-2447-4176-a207-ee5471080e13"
+        ],
+        "actor_id": "6adfe74c-e433-4503-9c9d-4f8ee843491a",
+        "state": "succeeded",
+        "payload_hash": "f41365e0670b33c4e8c4f6f3fef365c2a3a969f88adbbfc8f48050b81db0311b",
+        "policy_version_id": "7ac213aa-fd46-4252-9493-61db2072b9a8",
+        "version": 2,
+        "created_at": "2026-10-20T01:52:10.859Z",
+        "result_ids": [
+          "335c8fbd-8c54-4b74-bd76-733ae365a2d8"
+        ]
+      }
+    },
+    {
+      "name": "member-restore",
+      "operation": "changeAdminMembership",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "e9a1f0ec-0947-4d33-bf61-46d09afa2a48",
+        "action": "tenants.members.write",
+        "target_ids": [
+          "faf9571e-5276-447d-9da9-cf3d5bac53a0",
+          "2439fc8a-2447-4176-a207-ee5471080e13"
+        ],
+        "actor_id": "6adfe74c-e433-4503-9c9d-4f8ee843491a",
+        "state": "succeeded",
+        "payload_hash": "dafd1cf45ba9b876e323f195da7a2482ff59d7b2451546e0aaf0e787796c720b",
+        "policy_version_id": "7ac213aa-fd46-4252-9493-61db2072b9a8",
+        "version": 2,
+        "created_at": "2026-10-20T01:52:14.811Z",
+        "result_ids": [
+          "335c8fbd-8c54-4b74-bd76-733ae365a2d8"
+        ]
+      }
+    },
+    {
+      "name": "member-elevation-pending",
+      "operation": "changeAdminMembership",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "f35497d4-ea8c-425e-be6e-ad2e061f6f35",
+        "action": "tenants.members.write",
+        "target_ids": [
+          "faf9571e-5276-447d-9da9-cf3d5bac53a0",
+          "2439fc8a-2447-4176-a207-ee5471080e13"
+        ],
+        "actor_id": "6adfe74c-e433-4503-9c9d-4f8ee843491a",
+        "state": "pending_approval",
+        "payload_hash": "f7cf900bb39d625199a8fd81b6f3cf6b293188aac5cbdde74aecce347f09e389",
+        "policy_version_id": "7ac213aa-fd46-4252-9493-61db2072b9a8",
+        "version": 1,
+        "created_at": "2026-10-20T01:52:16.839Z",
+        "result_ids": []
+      }
+    },
+    {
+      "name": "member-canonical-approval",
+      "operation": "decideAdminApproval",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "f35497d4-ea8c-425e-be6e-ad2e061f6f35",
+        "action": "tenants.members.write",
+        "target_ids": [
+          "faf9571e-5276-447d-9da9-cf3d5bac53a0",
+          "2439fc8a-2447-4176-a207-ee5471080e13"
+        ],
+        "actor_id": "6adfe74c-e433-4503-9c9d-4f8ee843491a",
+        "state": "succeeded",
+        "payload_hash": "f7cf900bb39d625199a8fd81b6f3cf6b293188aac5cbdde74aecce347f09e389",
+        "policy_version_id": "7ac213aa-fd46-4252-9493-61db2072b9a8",
+        "version": 2,
+        "created_at": "2026-10-20T01:52:16.839Z",
+        "result_ids": [
+          "335c8fbd-8c54-4b74-bd76-733ae365a2d8"
+        ]
+      }
+    },
+    {
+      "name": "canonical-member-approval-directory",
+      "operation": "listAdminApprovals",
+      "schema": "AdminApprovalList",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "1a1803b1-38cd-404a-a395-1127ca2a024a",
+            "operation_id": "f35497d4-ea8c-425e-be6e-ad2e061f6f35",
+            "requester_id": "6adfe74c-e433-4503-9c9d-4f8ee843491a",
+            "payload_hash": "f7cf900bb39d625199a8fd81b6f3cf6b293188aac5cbdde74aecce347f09e389",
+            "state": "approved",
+            "expires_at": "2026-10-20T01:57:16.860Z",
+            "version": 2
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "member-elevation-approved-read",
+      "operation": "getAdminOperation",
+      "schema": "AdminOperation",
+      "status": 200,
+      "response": {
+        "id": "f35497d4-ea8c-425e-be6e-ad2e061f6f35",
+        "action": "tenants.members.write",
+        "target_ids": [
+          "faf9571e-5276-447d-9da9-cf3d5bac53a0",
+          "2439fc8a-2447-4176-a207-ee5471080e13"
+        ],
+        "actor_id": "6adfe74c-e433-4503-9c9d-4f8ee843491a",
+        "state": "succeeded",
+        "payload_hash": "f7cf900bb39d625199a8fd81b6f3cf6b293188aac5cbdde74aecce347f09e389",
+        "policy_version_id": "7ac213aa-fd46-4252-9493-61db2072b9a8",
+        "version": 2,
+        "created_at": "2026-10-20T01:52:16.839Z",
+        "result_ids": [
+          "335c8fbd-8c54-4b74-bd76-733ae365a2d8"
+        ]
+      }
+    }
+  ]
+}

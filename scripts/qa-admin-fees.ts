@@ -24,6 +24,7 @@ const clients: Client[] = [],
   users: string[] = [],
   checks: any[] = [],
   samples: any[] = [],
+  refundSamples: any[] = [],
   errors: string[] = [];
 let db: any,
   closed = true;
@@ -128,6 +129,14 @@ const contexts: BrowserContext[] = [],
   screenshots: string[] = [];
 const admins: { c: Client; id: string }[] = [];
 const sourcePaths = [
+  "copypaste-platform/src/admin-refunds.ts",
+  "copypaste-platform/src/billing-refunds.ts",
+  "copypaste-platform/src/billing-events.ts",
+  "copypaste-platform/contracts/admin-refund-schemas.json",
+  "copypaste-platform/migrations/053-credit-repayment-refund-lineage.sql",
+  "copypaste-platform/migrations/054-source-bound-refund-facts.sql",
+  "copypaste-platform/migrations/055-independent-cash-refund-outcomes.sql",
+  "copypaste-admin/src/refunds.tsx",
   "copypaste-platform/src/admin-payments.ts",
   "copypaste-platform/src/payment-records.ts",
   "copypaste-platform/migrations/049-payment-evidence-and-posting.sql",
@@ -202,6 +211,10 @@ function sample(
 async function capture(page: Page, name: string) {
   await page.evaluate(async () => {
     await document.fonts.ready;
+    window.scrollTo(0, 0);
+    document
+      .querySelectorAll(".modal-backdrop")
+      .forEach((e) => (e.scrollTop = 0));
   });
   const folder = path.resolve("../copypaste-admin/assets/screenshots");
   await mkdir(folder, { recursive: true });
@@ -339,6 +352,382 @@ async function perform(
     preview,
   };
 }
+
+async function refundFlow(page: Page, reviewer: Page, fixture: any) {
+  const { account, billing, tenant, project, user, evidence, paymentEntry } =
+    fixture;
+  const { Database } = await import(
+      pathToFileURL(path.join(platform, "src/db.ts")).href
+    ),
+    { loadConfig } = await import(
+      pathToFileURL(path.join(platform, "src/config.ts")).href
+    ),
+    { reserve, settle } = await import(
+      pathToFileURL(path.join(platform, "src/billing.ts")).href
+    ),
+    config = parseEnv(await readFile(path.join(platform, ".env"), "utf8")),
+    financial = new Database(loadConfig({ ...config, DEMO_MODE: "true" }));
+  let consumption: any;
+  try {
+    consumption = await financial.tx(
+      async (tx: any) => {
+        const task = (
+          await tx.query(
+            "INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,billing_account_id) VALUES($1,$2,$3,'Controlled refund fixture','Not executed','assistant','fixture',3123456,$4,$5) RETURNING id",
+            [tenant, project, user.id, randomUUID(), account.id],
+          )
+        ).rows[0];
+        await reserve(tx, tenant, task.id, 3123456);
+        await settle(tx, tenant, task.id, 3123456, user.id);
+        return (
+          await tx.query(
+            "SELECT * FROM billing_journal WHERE task_id=$1 AND kind='consume'",
+            [task.id],
+          )
+        ).rows[0];
+      },
+      tenant,
+      false,
+      user.id,
+    );
+  } finally {
+    await financial.close();
+  }
+
+  const submitRefund = async (
+    payer: string,
+    source: string,
+    destination: string,
+    amount: string,
+  ) => {
+    await page
+      .getByRole("button", { name: "Refund or compensate", exact: true })
+      .first()
+      .click();
+    const d = page.getByRole("dialog", {
+      name: "Refund or compensate",
+      exact: true,
+    });
+    await d.getByLabel("Billing account", { exact: true }).fill(payer);
+    await d
+      .getByLabel("Refund destination", { exact: true })
+      .selectOption(destination);
+    await d.getByLabel("Amount (HKD)", { exact: true }).fill(amount);
+    await d
+      .getByLabel("Original transaction entry ID", { exact: true })
+      .fill(source);
+    await d
+      .getByLabel("Reason", { exact: true })
+      .fill("Controlled original-source browser refund; no money transfer");
+    const before = (
+      await db.query("SELECT * FROM wallets WHERE id=$1", [payer])
+    ).rows[0];
+    const [p] = await Promise.all([
+      page.waitForResponse(
+        (r) =>
+          new URL(r.url()).pathname === `${accountRoot}/${payer}/previews` &&
+          r.request().method() === "POST",
+      ),
+      d.getByRole("button", { name: "Preview change", exact: true }).click(),
+    ]);
+    check("AdminFeeRefund", p.request().postDataJSON());
+    sample(
+      `ui-refund-${destination}-preview`,
+      "previewAdminFee",
+      "AdminPreview",
+      { status: p.status(), data: await p.json() },
+    );
+    assert.deepEqual(
+      (await db.query("SELECT * FROM wallets WHERE id=$1", [payer])).rows[0],
+      before,
+    );
+    await d
+      .getByRole("button", { name: "Confirm change", exact: true })
+      .waitFor();
+    await capture(
+      page,
+      destination === "paid_balance"
+        ? "43-consumption-compensation-preview.png"
+        : "44-cash-refund-reservation-preview.png",
+    );
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (r) =>
+          new URL(r.url()).pathname === `${accountRoot}/${payer}/refund` &&
+          r.request().method() === "POST",
+      ),
+      d.getByRole("button", { name: "Confirm change", exact: true }).click(),
+    ]);
+    const operation = await response.json();
+    sample(
+      `ui-refund-${destination}-commit`,
+      "createAdminFeeRefund",
+      "AdminOperation",
+      { status: response.status(), data: operation },
+      202,
+    );
+    await d.getByTestId("fee-operation-id").waitFor();
+    if (destination === "payment_method")
+      await d
+        .getByRole("heading", { name: "Refund amount reserved", exact: true })
+        .waitFor();
+    await d.getByRole("button", { name: "Done", exact: true }).click();
+    const record = (
+      await db.query("SELECT * FROM billing_refunds WHERE operation_id=$1", [
+        operation.id,
+      ])
+    ).rows[0];
+    assert.ok(record);
+    return {
+      record,
+      operation,
+      body: response.request().postDataJSON(),
+      key: response.request().headers()["idempotency-key"],
+    };
+  };
+  const openRefund = async (p: Page, id: string) => {
+    await p.getByLabel("Refund record ID", { exact: true }).fill(id);
+    await p
+      .getByRole("button", { name: "Open refund record", exact: true })
+      .click();
+    const d = p.getByRole("dialog", {
+      name: "Review refund and actual payout",
+      exact: true,
+    });
+    await d.getByText(id, { exact: true }).waitFor();
+    return d;
+  };
+  const extensionSample = (
+    name: string,
+    schema: string,
+    data: any,
+    request?: any,
+  ) => {
+    check(schema, data);
+    refundSamples.push({
+      name,
+      schema,
+      response: data,
+      ...(request ? { request } : {}),
+    });
+  };
+  const readRefund = async (c: Client, id: string) => {
+    const r = await call(c, "GET", `/v1/admin/billing/refunds/${id}`);
+    assert.equal(r.status, 200, JSON.stringify(r.data));
+    extensionSample("actual-refund-detail", "AdminRefundDetail", r.data);
+    return r.data;
+  };
+  stage = "original consumption compensation UI";
+  const compensation = await submitRefund(
+    account.id,
+    consumption.id,
+    "paid_balance",
+    "3.123456",
+  );
+  assert.equal(compensation.operation.state, "succeeded");
+  const restored = await readRefund(admins[0].c, compensation.record.id);
+  assert.equal(restored.refund.state, "compensated");
+  assert.ok(
+    restored.source_parts.every((p: any) => p.restored_kind === "gift"),
+  );
+  let d = await openRefund(page, compensation.record.id);
+  await d
+    .getByRole("heading", { name: "Compensation sources", exact: true })
+    .waitFor();
+  await capture(page, "45-consumption-original-sources.png");
+  await d.getByRole("button", { name: "Close", exact: true }).click();
+  pass(
+    "actual canonical consumption refund preview/write restores the original promotional funding and expiry, with a visible immutable source breakdown",
+  );
+
+  stage = "cash hold and independent refund evidence UI";
+  const cash = await submitRefund(
+    billing.id,
+    paymentEntry,
+    "payment_method",
+    "8.123456",
+  );
+  assert.equal(cash.operation.state, "reconciling");
+  assert.equal(
+    (
+      await db.query("SELECT balance_micros FROM wallets WHERE id=$1", [
+        billing.id,
+      ])
+    ).rows[0].balance_micros,
+    "20654321",
+  );
+  d = await openRefund(page, cash.record.id);
+  await d
+    .getByText(
+      "Ask another administrator with both refund and reconciliation permissions to verify the actual payout.",
+      { exact: true },
+    )
+    .waitFor();
+  const own = await call(
+    admins[0].c,
+    "POST",
+    `/v1/admin/billing/refunds/${cash.record.id}/outcomes`,
+    {
+      expected_version: 1,
+      outcome: "unknown",
+      observed_amount: null,
+      evidence_asset_version_id: null,
+      external_reference: null,
+      occurred_at: null,
+      reason: "Controlled self-observation rejection",
+    },
+  );
+  assert.equal(own.status, 403);
+  await d.getByRole("button", { name: "Close", exact: true }).click();
+  d = await openRefund(reviewer, cash.record.id);
+  const observe = async (outcome: string, amount?: string) => {
+    await d.getByLabel("Payout outcome", { exact: true }).selectOption(outcome);
+    if (amount !== undefined)
+      await d
+        .getByLabel("This actual amount (HKD)", { exact: true })
+        .fill(amount);
+    if (outcome !== "unknown") {
+      await d
+        .getByLabel("External refund reference", { exact: true })
+        .fill("controlled-no-external-transfer-" + randomUUID());
+      await d
+        .getByLabel("Refund evidence version ID", { exact: true })
+        .fill(evidence);
+      await d
+        .getByLabel("Actual occurrence time", { exact: true })
+        .fill(new Date(Date.now() - 86400000).toISOString().slice(0, 16));
+    }
+    await d
+      .getByLabel("Review reason", { exact: true })
+      .fill(
+        "Independent synthetic payout review; no external funds transferred",
+      );
+    await d
+      .getByRole("button", { name: "Review payout outcome", exact: true })
+      .click();
+    await d.getByRole("checkbox").check();
+    const [r] = await Promise.all([
+      reviewer.waitForResponse(
+        (r) =>
+          new URL(r.url()).pathname ===
+            `/v1/admin/billing/refunds/${cash.record.id}/outcomes` &&
+          r.request().method() === "POST",
+      ),
+      d
+        .getByRole("button", {
+          name: "Save independent payout review",
+          exact: true,
+        })
+        .click(),
+    ]);
+    const body = r.request().postDataJSON(),
+      operation = await r.json();
+    assert.equal(r.status(), 202, JSON.stringify(operation));
+    check("AdminRefundOutcome", body);
+    check("AdminOperation", operation);
+    refundSamples.push({
+      name: `ui-observation-${outcome}`,
+      schema: "AdminOperation",
+      request_schema: "AdminRefundOutcome",
+      request: body,
+      response: operation,
+    });
+    await d.getByText(operation.id, { exact: true }).last().waitFor();
+    return { operation, body, key: r.request().headers()["idempotency-key"] };
+  };
+  await observe("unknown");
+  let record = await readRefund(admins[1].c, cash.record.id);
+  assert.equal(record.refund.state, "reconciling_unknown");
+  assert.equal(record.refund.held.amount_micros, "8123456");
+  const partial = await observe("paid", "2.000001");
+  record = await readRefund(admins[1].c, cash.record.id);
+  assert.equal(record.refund.state, "partially_paid");
+  assert.equal(record.refund.confirmed_paid.amount_micros, "2000001");
+  assert.equal(record.refund.held.amount_micros, "6123455");
+  const again = await call(
+    admins[1].c,
+    "POST",
+    `/v1/admin/billing/refunds/${cash.record.id}/outcomes`,
+    partial.body,
+    { key: partial.key },
+  );
+  assert.equal(again.data.id, partial.operation.id);
+  await capture(reviewer, "46-independent-partial-refund.png");
+  await observe("paid", "9");
+  record = await readRefund(admins[1].c, cash.record.id);
+  assert.equal(record.refund.state, "reconciling_mismatch");
+  assert.equal(record.refund.held.amount_micros, "6123455");
+  await capture(reviewer, "47-refund-mismatch-reconciliation.png");
+  await observe("not_paid", "0");
+  record = await readRefund(admins[1].c, cash.record.id);
+  assert.equal(record.refund.state, "partially_paid_closed");
+  assert.equal(record.refund.held.amount_micros, "0");
+  assert.equal(record.refund.confirmed_paid.amount_micros, "2000001");
+  const current = (
+    await db.query(
+      "SELECT balance_micros,reserved_micros FROM wallets WHERE id=$1",
+      [billing.id],
+    )
+  ).rows[0];
+  assert.deepEqual(current, {
+    balance_micros: "18654320",
+    reserved_micros: "0",
+  });
+  assert.equal(
+    (
+      await db.query("SELECT state FROM admin_operations WHERE id=$1", [
+        cash.operation.id,
+      ])
+    ).rows[0].state,
+    "partially_succeeded",
+  );
+  await d
+    .getByText("Partial payout; remainder released", { exact: true })
+    .waitFor();
+  await capture(reviewer, "48-partial-refund-closed.png");
+  await d.getByRole("button", { name: "Close", exact: true }).click();
+  pass(
+    "actual cash refund UI holds original paid funds, rejects requester self-review, preserves unknown/mismatch observations, verifies a partial payout exactly once and releases only the confirmed unpaid remainder",
+  );
+
+  stage = "refund mobile dark persistence and directory UI";
+  await reviewer.evaluate(() => {
+    localStorage.setItem("cp_locale", "zh-HK");
+    localStorage.setItem("cp_theme", "dark");
+  });
+  await reviewer.setViewportSize({ width: 390, height: 844 });
+  await reviewer.reload({ waitUntil: "domcontentloaded" });
+  await reviewer
+    .getByLabel("退款記錄 ID", { exact: true })
+    .fill(cash.record.id);
+  await reviewer
+    .getByRole("button", { name: "開啟退款記錄", exact: true })
+    .click();
+  d = reviewer.getByRole("dialog", { name: "核對退款與實際付款", exact: true });
+  await d.getByText("部分已付款，其餘已解除預留", { exact: true }).waitFor();
+  assert.ok(
+    await reviewer.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth + 1,
+    ),
+  );
+  await capture(reviewer, "49-refund-mobile-dark.png");
+  await d.getByRole("button", { name: "Close", exact: true }).click();
+  const directory = await call(
+    admins[1].c,
+    "GET",
+    `/v1/admin/billing/refunds?billing_account_id=${billing.id}&limit=10`,
+  );
+  extensionSample("actual-refund-directory", "AdminRefundList", directory.data);
+  assert.ok(
+    directory.data.items.some(
+      (r: any) =>
+        r.id === cash.record.id && r.state === "partially_paid_closed",
+    ),
+  );
+  pass(
+    "actual refund directory and persisted closed partial payout render in Traditional Chinese dark mode at 390px without page-width overflow",
+  );
+}
 try {
   const config = await (await fetch(origin + "/v1/public/config")).json();
   assert.equal(config.data_mode, "simulated");
@@ -370,6 +759,14 @@ try {
   Object.assign(fixture.schemas, paymentFixture.schemas);
   for (const [name, schema] of Object.entries(fixture.schemas))
     assert.deepEqual(schema, spec.components.schemas[name]);
+  const refundFixture = JSON.parse(
+    await readFile(
+      path.join(platform, "contracts/admin-refund-schemas.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(refundFixture.normative_source_sha256, fixture.source_sha256);
+  Object.assign(fixture.schemas, refundFixture.schemas);
   const { Ajv2020 } = requirePlatform("ajv/dist/2020.js"),
     ajv = new Ajv2020({ allErrors: true });
   requirePlatform("ajv-formats")(ajv);
@@ -888,6 +1285,15 @@ try {
     .getByRole("dialog")
     .getByRole("button", { name: "Close", exact: true })
     .click();
+  await refundFlow(page, reviewer, {
+    account,
+    billing,
+    tenant,
+    project,
+    user,
+    evidence,
+    paymentEntry: paymentLedger.data.items[0].id,
+  });
   await reviewer.evaluate(() => {
     localStorage.setItem("cp_locale", "zh-HK");
     localStorage.setItem("cp_theme", "dark");
@@ -946,7 +1352,11 @@ try {
     .waitFor();
   await page.getByLabel("用戶 / 企業 ID", { exact: true }).fill(user.id);
   await page.getByRole("button", { name: "套用篩選", exact: true }).click();
-  await page.locator("code").filter({ hasText: account.id }).waitFor();
+  await page
+    .getByRole("row")
+    .filter({ has: page.locator("code").filter({ hasText: account.id }) })
+    .filter({ has: page.getByRole("button", { name: "流水", exact: true }) })
+    .waitFor();
   assert.ok(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth + 1,
@@ -1060,7 +1470,7 @@ try {
         at,
         status: errors.length ? "failed" : "passed",
         scope:
-          "Four canonical financial commands and manual payment evidence: current local HTTP and owned Chromium UI with real email/TOTP sessions and simulated financial fixtures; no external payment, complete payment/refund/VIP, native or production acceptance",
+          "Five canonical financial commands, source-bound compensation and manual payment/refund evidence: current local HTTP and owned Chromium UI with real email/TOTP sessions and simulated financial fixtures; no external payment, complete payment/VIP, native or production acceptance",
         checks,
         errors,
         screenshots,
@@ -1085,6 +1495,20 @@ try {
         scope:
           "Actual local canonical fee previews, writes, lost-receipt replay and independent approval HTTP responses from the current Admin forms",
         samples,
+      },
+      null,
+      2,
+    ) + "\n",
+  );
+  await writeFile(
+    "evidence/refund-contract-samples.json",
+    JSON.stringify(
+      {
+        at,
+        origin,
+        scope:
+          "Supplementary immutable refund detail/directory and independently recorded manual cash outcomes; original OpenAPI unchanged",
+        samples: refundSamples,
       },
       null,
       2,

@@ -372,3 +372,22 @@ Stage 43 passed platform 303/303 (669 unchanged source files), approval/upgrade 
 Stage 43 original bytes are archived under `evidence/stage43-before-payment-records/`. New `payment-records-*` files retain actual failures, successes, native migration logs and copy manifests. Original 050/049 trigger failures and initial verifier mistakes are not counted as passes; appended 051/052 repair them. Simulated receipts do not establish payment-provider, complete refund/VIP or full product acceptance. Existing native appearance previews retain their original artifact manifests.
 
 This stage finishes with platform **310/310** and 676 unchanged participating files. Raw TAP SHA-256: `5b499c16a50ec57427ed7ff7cf4681ba2e0cef0330e97159dde7e9d25e291119`. Separate scoped checks pass Web membership 6/6 (164 files), Admin membership 6/6 (190), fees 5/5 (39), accounts 5/5 and source cross-client authentication 12/12 (769). Original-schema samples pass **96/96**. Manifests preserve 180 original-byte archive copies, including the first 306/310 failure. These bounded checks do not close all 102 requirements or release gates.
+
+## Original-source refunds and cash evidence (2026-10-20, later increment)
+
+Consumption compensation restores original promotional/paid funding or the actual credit repayment source, preserves gift expiry and cancels only the original unpaid obligation. Cash refunds reserve unspent verified original payments. A different administrator records each actual payout, remaining non-payment or unknown/mismatched result; a partial payout never becomes a false full success. Missing legacy repayment provenance requires reconciliation.
+
+Current Platform regression passes 324/324 with 683 unchanged source files. Actual financial/refund UI passes 8/8 with 47 unchanged sources; 100/100 original response schemas and 14/14 supplemental refund checks pass separately. The 50 focused cases overlap the full run. SQL 053–055 are applied to both native databases; 001–052 remain unchanged. Synthetic model/media/payment fixtures do not qualify live providers. Legacy credit reconciliation, full payment/VIP/outbox, system and complete acceptance remain outstanding. Earlier counts describe their historical stages.
+
+```mermaid
+flowchart LR
+  Intent[Original transaction and preview] --> Review[Current authority and required independent approval]
+  Review --> Sources[Restore original consumption sources]
+  Review --> Hold[Reserve refundable original payment]
+  Hold --> Other[Another administrator verifies actual outcome]
+  Other --> Paid[Debit verified payout only]
+  Other --> Unpaid[Release confirmed unpaid remainder]
+  Other --> Unknown[Keep unknown or mismatch reconciling]
+```
+
+After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
