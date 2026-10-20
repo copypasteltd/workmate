@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'membership-ui-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-membership-ui-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json', 'admin-billing-contract-samples.json', 'admin-fee-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'membership-ui-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-membership-ui-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json', 'admin-billing-contract-samples.json', 'admin-fee-contract-samples.json', 'admin-plan-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 
@@ -75,6 +75,12 @@ def main():
     for name, schema in directories['schemas'].items():
         if schema != spec['components']['schemas'][name]:
             raise ValueError(f'Admin directory fixture changed the original schema: {name}')
+    plans = json.loads((AUTH_FIXTURE.parent / 'admin-plan-schemas.json').read_text(encoding='utf-8'))
+    if plans['normative_source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(plans['schemas']) != {'AdminOperation','AdminPlanDraft','AdminPlanVersion','AdminPlanVersionList','AdminPreview','AdminVersionReason','Money','Plan','PlanList'}:
+        raise ValueError('Plan fixture must retain all nine original schema dependencies')
+    for name, schema in plans['schemas'].items():
+        if schema != spec['components']['schemas'][name]:
+            raise ValueError(f'Plan fixture changed the original schema: {name}')
     checks = []
     sources = []
     for source in SAMPLES:
@@ -112,6 +118,7 @@ def main():
               'admin_fee_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-fee-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(fees['schemas']), 'status': 'passed', 'scope': 'All twelve schema dependencies exactly match the original; current wire captures cover previews, verified-payment top-ups, gifts, original-source debits, credit limits and independent approval decisions, not complete refunds, VIP or payment-provider conformance'},
               'admin_payment_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-payment-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(payments['schemas']), 'status': 'passed', 'scope': 'Exact original schemas and digest; actual manual evidence, confirmation, list and posting captures are bounded evidence'},
               'admin_approval_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-approval-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(approvals['schemas']), 'status': 'passed', 'scope': 'All four original schemas and source digest are unchanged; shared list and member-decision captures are bounded evidence'},
+              'admin_plan_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-plan-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(plans['schemas']), 'status': 'passed', 'scope': 'Nine exact original schemas and dependencies; current Admin draft, publication, directory and preview captures are bounded evidence, not complete grants or customer PlanList conformance'},
               'openapi_sha256': hashlib.sha256(SPEC.read_bytes()).hexdigest(),
               'checks': checks}
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

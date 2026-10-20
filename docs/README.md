@@ -1,5 +1,9 @@
 # CopyPaste 企业 Agent 文档
 
+当前方案增量最终验证：Platform 340/340（688 份来源）、Admin 方案 6/6、原规范响应 108/108；完整方案/VIP/配额和全部综合验收继续按逐项进度跟踪。
+
+新增不可变方案家族/版本、发佈前冻结比较、独立审批与历史授权固定绑定，见 [方案版本与授权绑定](technical/46-immutable-plans-and-legacy-grant-bindings.md)。方案发佈不自动开通 VIP 或入账；完整权益、席位及储存配额执行继续保留。
+
 版本：2.0 · 2026-10-20 · 状态：保留 v1.5 需求设计基线，当前产品 0.5.0 增加企业 OIDC 身份、独立邮箱连接证明与跨端授权撤销；六个独立仓库的实现与验收按版本记录。主文档继续在本目录维护。
 
 最新后台增量对齐用户列表、详情及企业列表的严格原规范，新增签名游标、字段/项目范围交集、账本确认扣费、有效 VIP 与实际页面消费者，见 [规范目录与消耗](technical/38-admin-canonical-directories-and-scoped-usage.md)。已有 [账户生命周期与在途控制](technical/37-admin-account-lifecycle-and-inflight-control.md) 继续生效。邀请、成员、完整原生、规范费用/VIP写及全部验收仍按逐项进度记录。
