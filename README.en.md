@@ -153,7 +153,7 @@ The background coalesces refreshes and fences late login/refresh writes. A defin
 
 ## Current MV3 session recovery (2026-10-20)
 
-Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups: actual identity S256 login, same-key recovery of committed exchange/refresh responses, real session-storage revocation, automatic sign-in/account replacement in two existing business pages, stale previous-account 401 isolation and expired-access sign-out. All 758 source/runtime files match; owned instances and credentials are cleared. Old failures remain unchanged and model calls are zero.
+Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups: actual identity S256 login, same-key recovery of committed exchange/refresh responses, real session-storage revocation, automatic sign-in/account replacement in two existing business pages, stale previous-account 401 isolation and expired-access sign-out. All 762 source/runtime files match; owned instances and credentials are cleared. Old failures remain unchanged and model calls are zero.
 
 ![Private views cleared after revocation](assets/screenshots/13-session-revoked-current.png)
 ![Existing page replaces its account](assets/screenshots/14-account-replacement-current.png)

@@ -175,7 +175,7 @@ Panel bootstrap and project refresh now use authenticated `GET /v1/session/conte
 
 ## 当前 MV3 会话恢复复核（2026-10-20）
 
-Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12：真实 identity S256 登录，首次交换和刷新回执丢失的同键恢复，实际 session storage 撤销，两份已打开业务页自动登录／换账号、旧账号迟到 401 隔离及过期访问仍可退出。758 份源码／运行文件一致，凭证和自建三端实例均清理；旧失败诊断保持原字节，模型调用 0。
+Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12：真实 identity S256 登录，首次交换和刷新回执丢失的同键恢复，实际 session storage 撤销，两份已打开业务页自动登录／换账号、旧账号迟到 401 隔离及过期访问仍可退出。762 份源码／运行文件一致，凭证和自建三端实例均清理；旧失败诊断保持原字节，模型调用 0。
 
 ![撤销后清除私有界面](assets/screenshots/13-session-revoked-current.png)
 ![已有页面自动换账号](assets/screenshots/14-account-replacement-current.png)
