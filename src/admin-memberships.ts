@@ -1,3 +1,4 @@
+import { createApprovalRequest } from "./admin-approval-storage.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -565,6 +566,7 @@ export function registerAdminMemberships(app: FastifyInstance, db: Database) {
                   ],
                 )
               ).rows[0];
+              if (approval) await createApprovalRequest(tx, op);
               if (approval)
                 await audit(
                   tx,

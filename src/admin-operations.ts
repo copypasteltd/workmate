@@ -1,3 +1,8 @@
+import { createApprovalRequest } from "./admin-approval-storage.js";
+import {
+  currentAdminControl,
+  pinAdminPolicy,
+} from "./admin-operation-policy.js";
 import { planDefinition } from "./plans.js";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
@@ -5,7 +10,6 @@ import type { Database, Tx } from "./db.js";
 import { requireAdmin, audit, type Principal } from "./auth.js";
 import {
   permit,
-  requireRecentMfa,
   lockAdminAccess,
   requireSensitiveAdmin,
 } from "./admin-access.js";
@@ -19,15 +23,10 @@ import {
 } from "./admin-fees.js";
 import { event } from "./tasks.js";
 import {
-  decideMembershipOperation,
   adminOperationDTO,
   membershipAdminAuthority,
 } from "./admin-memberships.js";
-import {
-  decideAccountOperation,
-  isAccountAction,
-  userAccountAuthority,
-} from "./admin-accounts.js";
+import { isAccountAction, userAccountAuthority } from "./admin-accounts.js";
 
 const reason = z.string().trim().min(3).max(2000);
 const date = z.string().datetime({ offset: true });
@@ -152,12 +151,8 @@ async function target(tx: Tx, b: Command) {
   return { tenant, version };
 }
 async function policy(tx: Tx) {
-  const r = (
-    await tx.query(
-      "SELECT body FROM catalog_entries WHERE kind='policy' AND key='admin-control' AND state='published'",
-    )
-  ).rows[0];
-  return z
+  const entry = await currentAdminControl(tx);
+  const rules = z
     .object({
       approval_threshold_micros: micros,
       max_vip_hours: z
@@ -165,15 +160,26 @@ async function policy(tx: Tx) {
         .int()
         .positive()
         .max(24 * 366 * 5),
+      approval_window_minutes: z.number().int().min(1).max(60).default(5),
     })
     .parse(
-      r?.body ?? {
+      entry?.body ?? {
         approval_threshold_micros: 10_000_000_000,
         max_vip_hours: 24 * 366,
       },
     );
+  return {
+    ...rules,
+    id: await pinAdminPolicy(tx, {
+      kind: "legacy_admin_operation",
+      source_id: entry?.id ?? null,
+      source_version: entry?.version ?? null,
+      rules,
+    }),
+  };
 }
 async function validate(tx: Tx, p: Principal, b: Command) {
+  await lockAdminAccess(tx);
   if (isGuardedLegacyFee(b.action))
     throw new Problem(
       409,
@@ -213,9 +219,11 @@ async function validate(tx: Tx, p: Principal, b: Command) {
       hours,
     },
   );
-  await requireRecentMfa(tx, p);
+  await requireSensitiveAdmin(tx, p);
   return {
     ...scope,
+    policy_id: rules.id,
+    approval_minutes: rules.approval_window_minutes,
     approval:
       ("amount_micros" in b &&
         b.amount_micros >= rules.approval_threshold_micros) ||
@@ -481,6 +489,7 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
             command: b,
             target_version: s.version,
             approval: s.approval,
+            policy_version_id: s.policy_id,
           };
           const preview = (
             await tx.query(
@@ -557,7 +566,8 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               const s = await validate(tx, req.principal, command);
               if (
                 s.version !== preview.payload.target_version ||
-                s.approval !== preview.payload.approval
+                s.approval !== preview.payload.approval ||
+                s.policy_id !== preview.payload.policy_version_id
               )
                 throw new Problem(
                   409,
@@ -566,18 +576,42 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
                 );
               const op = (
                 await tx.query(
-                  "INSERT INTO admin_operations(principal_id,action,tenant_id,payload_hash,payload,idempotency_key,state) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *",
+                  "INSERT INTO admin_operations(principal_id,action,tenant_id,payload_hash,payload,idempotency_key,state,policy_version_id,target_ids) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *",
                   [
                     req.principal.id,
                     command.action,
                     s.tenant ?? null,
                     preview.payload_hash,
-                    { command, target_version: s.version },
+                    {
+                      command,
+                      target_version: s.version,
+                      approval: s.approval,
+                      actor_session_id: req.principal.sessionId,
+                      actor_auth_version: req.principal.authVersion,
+                      expires_at: new Date(
+                        Date.now() + s.approval_minutes * 60000,
+                      ).toISOString(),
+                      approval_command_version: 1,
+                    },
                     key(req),
                     s.approval ? "pending_approval" : "running",
+                    s.policy_id,
+                    [
+                      ...new Set(
+                        [
+                          "tenant_id",
+                          "user_id",
+                          "entitlement_id",
+                          "task_id",
+                        ].flatMap((k) =>
+                          (command as any)[k] ? [(command as any)[k]] : [],
+                        ),
+                      ),
+                    ],
                   ],
                 )
               ).rows[0];
+              if (s.approval) await createApprovalRequest(tx, op);
               let result = null;
               if (!s.approval) {
                 result = await execute(tx, command, req.principal, op.id);
@@ -615,131 +649,86 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
   app.post(
     "/v1/admin/operations/:id/decision",
     { preHandler: requireAdmin(db) },
-    async (req) => {
-      const id = uuid.parse((req.params as any).id);
-      const b = z
-        .object({ decision: z.enum(["approve", "reject"]), reason })
-        .strict()
-        .parse(req.body);
-      return db.tx(
-        async (tx) => {
-          const op = (
-            await tx.query(
-              "SELECT * FROM admin_operations WHERE id=$1 FOR UPDATE",
-              [id],
-            )
-          ).rows[0];
-          if (!op || op.state !== "pending_approval")
-            throw new Problem(
-              409,
-              "NOT_PENDING",
-              "Operation is not awaiting approval",
-            );
-          if (
-            isFeeOperation(op) ||
-            (isGuardedLegacyFee(op.action) && b.decision === "approve")
-          )
-            throw new Problem(
-              409,
-              "CANONICAL_FINANCE_REQUIRED",
-              "Use the frozen financial review with its exact version and payload hash",
-            );
-          if (isAccountAction(op.action))
-            return decideAccountOperation(
-              tx,
-              req.principal,
-              op,
-              b.decision,
-              b.reason,
-            );
-          if (op.action === "tenants.members.write")
-            return decideMembershipOperation(
-              tx,
-              req.principal,
-              op,
-              b.decision,
-              b.reason,
-            );
-          await permit(tx, req.principal, "admin.approvals.decide", {
-            tenant: op.tenant_id,
-          });
-          await requireRecentMfa(tx, req.principal);
-          if (op.principal_id === req.principal.id)
-            throw new Problem(
-              403,
-              "SELF_APPROVAL_FORBIDDEN",
-              "A different administrator must review this operation",
-            );
-          if (b.decision === "reject") {
-            await tx.query(
-              "UPDATE admin_operations SET state='cancelled',approved_by=$2 WHERE id=$1",
-              [id, req.principal.id],
-            );
-            await audit(
-              tx,
-              req.principal,
-              "admin.approval.reject",
-              id,
-              "succeeded",
-              { reason: b.reason },
-              op.tenant_id,
-            );
-            return { id, state: "cancelled" };
-          }
-          const original = (
-            await tx.query(
-              "SELECT p.*,s.id AS session_id,s.mfa_at FROM admin_principals p JOIN sessions s ON s.admin_id=p.id WHERE p.id=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND s.auth_version=p.auth_version ORDER BY s.created_at DESC LIMIT 1",
-              [op.principal_id],
-            )
-          ).rows[0];
-          if (!original)
-            throw new Problem(
-              409,
-              "ORIGINAL_AUTH_CHANGED",
-              "Original administrator must sign in again",
-            );
-          const p: Principal = {
-            id: original.id,
-            email: original.email,
-            name: original.name,
-            audience: "admin",
-            authVersion: original.auth_version,
-            sessionId: original.session_id,
-            sessionHash: "",
-            mfaAt: original.mfa_at,
-          };
-          const command = operationSchema.parse(
-            op.payload.command ?? op.payload,
-          );
-          const checked = await validate(tx, p, command);
-          if (
-            op.payload.target_version &&
-            checked.version !== op.payload.target_version
-          )
-            throw new Problem(
-              409,
-              "TARGET_CHANGED",
-              "The target changed while awaiting approval; create a new preview",
-            );
-          const result = await execute(tx, command, p, id);
-          await tx.query(
-            "UPDATE admin_operations SET state='succeeded',approved_by=$2,result=$3 WHERE id=$1",
-            [id, req.principal.id, result],
-          );
-          await audit(
-            tx,
-            req.principal,
-            "admin.approval.approve",
-            id,
-            "succeeded",
-            { reason: b.reason, payload_hash: op.payload_hash },
-            op.tenant_id,
-          );
-          return { id, state: "succeeded", result };
-        },
-        undefined,
-        true,
+    async () => {
+      throw new Problem(
+        409,
+        "CANONICAL_APPROVAL_REQUIRED",
+        "Use the approval request with its reviewed version and payload hash",
       );
     },
+  );
+}
+
+export async function decideLegacyOperation(
+  tx: Tx,
+  reviewer: Principal,
+  op: any,
+  b: { decision: "approve" | "reject"; reason: string },
+) {
+  if (op.payload?.approval_command_version !== 1)
+    throw new Problem(
+      409,
+      "APPROVAL_SNAPSHOT_UNRECORDED",
+      "Submit a fresh operation preview",
+    );
+  if (b.decision === "approve") {
+    const actor: Principal = {
+      id: op.principal_id,
+      audience: "admin",
+      sessionId: op.payload.actor_session_id,
+      authVersion: op.payload.actor_auth_version,
+      sessionHash: "",
+      email: "",
+      name: "",
+    };
+    const command = operationSchema.parse(op.payload.command),
+      checked = await validate(tx, actor, command);
+    if (checked.policy_id !== op.policy_version_id)
+      throw new Problem(
+        409,
+        "POLICY_CHANGED",
+        "Create a fresh preview after policy changes",
+      );
+    if (checked.version !== op.payload.target_version)
+      throw new Problem(
+        409,
+        "TARGET_CHANGED",
+        "Target changed while awaiting review",
+      );
+    if (
+      hash(
+        canonical({
+          command,
+          target_version: checked.version,
+          approval: true,
+          policy_version_id: checked.policy_id,
+        }),
+      ) !== op.payload_hash
+    )
+      throw new Problem(
+        409,
+        "PAYLOAD_CHANGED",
+        "Frozen operation does not match its original preview",
+      );
+    // The reviewer must also retain the actual business permission and limits.
+    await validate(tx, reviewer, command);
+    const result = await execute(tx, command, actor, op.id);
+    await tx.query(
+      "UPDATE admin_operations SET state='succeeded',approved_by=$2,result=$3,version=version+1 WHERE id=$1",
+      [op.id, reviewer.id, result],
+    );
+  } else
+    await tx.query(
+      "UPDATE admin_operations SET state='cancelled',approved_by=$2,version=version+1 WHERE id=$1",
+      [op.id, reviewer.id],
+    );
+  await audit(
+    tx,
+    reviewer,
+    `admin.approval.${b.decision}`,
+    op.id,
+    "succeeded",
+    { reason: b.reason, payload_hash: op.payload_hash },
+    op.tenant_id ?? undefined,
   );
 }

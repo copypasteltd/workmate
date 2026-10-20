@@ -478,3 +478,20 @@ Personal and enterprise wallets now share the same exact funding, expiry, reserv
 费用与迁移聚焦 16/16 组通过，最终全量结果以 Delivery 的 `evidence/alignment-platform.json/.tap` 为准；运行前后校验源码及 verifier 不变。045 首次字段读取错误由新迁移 046 修复，旧 SQL 与失败记录保留。两库当前应用 001–047；001–015 历史未登记的执行摘要不推测补写。
 
 当前三个命令不代表完整付款、退款、VIP、outbox 或审批目录验收。Admin 的真实浏览器消费者与精确金额测试已接入；完整范围参照中央 `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`。
+
+## 统一审批请求（2026-10-20）
+
+现有费用、企业成员、账户和旧后台待审批操作共用独立请求。规范目录使用范围受限的签名游标，决定必须携带真实请求版本、摘要、原因及幂等键，返回 202 AdminOperation。业务权限与审批权限、当前 MFA、准确原会话、冻结策略和前态均在事务内复查；业务、决定、审计与回执一起提交，后台实际登记过期。SQL 048 保留原费用请求与决定，缺失原事实的旧操作取消并留下迁移记录。
+
+```mermaid
+flowchart LR
+  Command[冻结业务操作] --> Request[独立审批请求]
+  Request --> Review[有权的另一位管理员审阅]
+  Review --> Checks[当前权限 MFA 原会话 版本 摘要]
+  Checks --> Commit[业务 决定 审计 回执原子提交]
+  Request --> Expiry[后台过期与系统审计]
+```
+
+原 OpenAPI 与 SQL 001–047 保持原字节。旧 operation decision 入口拒绝隐式补版本；完整付款、凭证、退款、VIP、通知及综合后台验收继续跟踪，未据此标记整项通过。
+
+本轮全量平台回归 **303/303**，669 份参与源码前后摘要一致；原始 TAP SHA-256 为 `1615f06e75496988f37cb30872ee35ba7f981c23c7e8d98b3f8e409f16df612f`。53/53 审批及升级专项单独保留，未加总为额外平台测试。

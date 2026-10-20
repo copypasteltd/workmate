@@ -257,7 +257,13 @@ async function userDto(
 const cursorShape = z
   .object({
     v: z.literal(1),
-    kind: z.enum(["users", "tenants", "billing_accounts", "billing_ledger"]),
+    kind: z.enum([
+      "users",
+      "tenants",
+      "billing_accounts",
+      "billing_ledger",
+      "approvals",
+    ]),
     owner: uuid,
     auth: z.number().int(),
     session: uuid,

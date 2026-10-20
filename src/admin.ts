@@ -199,7 +199,6 @@ export function registerAdmin(
     "devices",
     "content",
     "jobs",
-    "approvals",
     "audit",
     "access",
     "support",
@@ -217,13 +216,11 @@ export function registerAdmin(
             const perm =
               section === "jobs"
                 ? "admin.jobs.read"
-                : section === "approvals"
-                  ? "admin.approvals.read"
-                  : section === "audit"
-                    ? "admin.audit.read"
-                    : section === "execution"
-                      ? "admin.execution.read"
-                      : `admin.${section}.read`;
+                : section === "audit"
+                  ? "admin.audit.read"
+                  : section === "execution"
+                    ? "admin.execution.read"
+                    : `admin.${section}.read`;
             const global = await can(tx, req.principal, perm);
             const allowed = q.tenant_id
               ? [q.tenant_id]
@@ -252,8 +249,6 @@ export function registerAdmin(
                 "SELECT id,tenant_id,user_id,name,client,state,last_seen_at,created_at FROM devices",
               content: contentUnion,
               jobs: "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,coalesce(payload->>'financial_command_version'='1',false) AS financial_command,payload->>'billing_account_id' AS billing_account_id FROM admin_operations",
-              approvals:
-                "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,coalesce(payload->>'financial_command_version'='1',false) AS financial_command,payload->>'billing_account_id' AS billing_account_id FROM admin_operations WHERE state='pending_approval'",
               audit: "SELECT * FROM audit_log",
               support: "SELECT * FROM support_sessions",
               catalog:

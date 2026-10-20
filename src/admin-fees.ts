@@ -1,3 +1,4 @@
+import { approvalDTO } from "./admin-approval-storage.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -391,30 +392,6 @@ const actor = (op: any): Principal => ({
   name: "",
   email: "",
 });
-const decision = z
-  .object({
-    expected_version: z.number().int().min(1),
-    reason,
-    decision: z.enum(["approve", "reject"]),
-    payload_hash: z.string().regex(/^[a-f0-9]{64}$/),
-  })
-  .strict();
-
-function approvalDTO(r: any) {
-  return {
-    id: r.id,
-    operation_id: r.operation_id,
-    requester_id: r.requester_id,
-    payload_hash: r.payload_hash,
-    state:
-      r.state === "pending" && r.expires_at.getTime() <= Date.now()
-        ? "expired"
-        : r.state,
-    expires_at: r.expires_at.toISOString(),
-    version: r.version,
-  };
-}
-
 export function registerAdminFees(app: FastifyInstance, db: Database) {
   const auth = { preHandler: requireAdmin(db) },
     root = "/v1/admin/billing/accounts/:account";
@@ -595,7 +572,7 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
                 await apply(tx, req.principal, w, b, checked, op);
               else {
                 await tx.query(
-                  "INSERT INTO admin_fee_approval_requests(operation_id,requester_id,payload_hash,policy_version_id,expires_at) VALUES($1,$2,$3,$4,$5)",
+                  "INSERT INTO admin_approval_requests(operation_id,requester_id,payload_hash,policy_version_id,expires_at) VALUES($1,$2,$3,$4,$5)",
                   [
                     op.id,
                     op.principal_id,
@@ -665,7 +642,7 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
           await feeOperationAuthority(tx, req.principal, op, "admin.jobs.read");
           const approvalRequest = (
             await tx.query(
-              "SELECT * FROM admin_fee_approval_requests WHERE operation_id=$1",
+              "SELECT * FROM admin_approval_requests WHERE operation_id=$1",
               [op.id],
             )
           ).rows[0];
@@ -685,182 +662,79 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
       );
     },
   );
-  for (const decisionPath of [
-    "/v1/admin/approvals/:approval_id/decisions",
-    "/v1/admin/billing/operations/:operation/decision",
-  ])
-    app.post(decisionPath, auth, async (req) => {
-      const params = req.params as any,
-        selected = uuid.parse(params.approval_id ?? params.operation),
-        b = decision.parse(req.body);
-      return db.tx(
-        async (tx) => {
-          await lockAdminAccess(tx);
-          const request = (
-            await tx.query(
-              `SELECT * FROM admin_fee_approval_requests WHERE ${params.approval_id ? "id" : "operation_id"}=$1 FOR UPDATE`,
-              [selected],
-            )
-          ).rows[0];
-          if (!request)
-            throw new Problem(
-              404,
-              "NOT_FOUND",
-              "Financial approval request not found",
-            );
-          const id = request.operation_id;
-          const op = (
-            await tx.query(
-              "SELECT * FROM admin_operations WHERE id=$1 FOR UPDATE",
-              [id],
-            )
-          ).rows[0];
-          if (!isFeeOperation(op))
-            throw new Problem(
-              404,
-              "NOT_FOUND",
-              "Financial operation not found",
-            );
-          const c = frozenCommand(op),
-            w = await account(tx, db, op.payload.billing_account_id);
-          await authority(tx, req.principal, w, "admin.approvals.decide");
-          await authority(
-            tx,
-            req.principal,
-            w,
-            definitions[c.action].permission,
-            value(c),
-          );
-          if (req.principal.id === op.principal_id)
-            throw new Problem(
-              403,
-              "SELF_APPROVAL_FORBIDDEN",
-              "A different authorized administrator must review this operation",
-            );
-          const saved = await replay(
-            tx,
-            req.principal.id,
-            `fee.decision:${request.id}`,
-            key(req.headers),
-            b,
-            async () => {
-              if (
-                op.state !== "pending_approval" ||
-                request.state !== "pending"
-              )
-                throw new Problem(
-                  409,
-                  "NOT_PENDING",
-                  "Operation is not awaiting review",
-                );
-              if (
-                request.version !== b.expected_version ||
-                op.payload_hash !== b.payload_hash
-              )
-                throw new Problem(
-                  409,
-                  "VERSION_CONFLICT",
-                  "Operation changed; reload its frozen review",
-                );
-              if (b.decision === "approve") {
-                if (
-                  !(
-                    await tx.query("SELECT now()<$1::timestamptz AS valid", [
-                      op.payload.expires_at,
-                    ])
-                  ).rows[0].valid
-                )
-                  throw new Problem(
-                    409,
-                    "OPERATION_EXPIRED",
-                    "Financial approval expired; submit a fresh preview",
-                  );
-                const original = actor(op),
-                  allowed = await authority(
-                    tx,
-                    original,
-                    w,
-                    definitions[c.action].permission,
-                    value(c),
-                  ),
-                  rules = await policy(tx);
-                if (rules.id !== op.policy_version_id)
-                  throw new Problem(
-                    409,
-                    "POLICY_CHANGED",
-                    "Policy changed; submit a fresh preview",
-                  );
-                if (payloadHash(w.id, c) !== op.payload_hash)
-                  throw new Problem(
-                    409,
-                    "PAYLOAD_CHANGED",
-                    "Frozen financial command changed",
-                  );
-                const checked = await inspect(tx, w, c);
-                if (canonical(checked.before) !== canonical(op.payload.before))
-                  throw new Problem(
-                    409,
-                    "TARGET_CHANGED",
-                    "Financial sources changed while awaiting review",
-                  );
-                await daily(
-                  tx,
-                  original,
-                  allowed,
-                  c,
-                  checked.risk,
-                  w.data_mode,
-                );
-                await apply(tx, original, w, c, checked, op);
-                await tx.query(
-                  "UPDATE admin_operations SET approved_by=$2 WHERE id=$1",
-                  [id, req.principal.id],
-                );
-              } else
-                await tx.query(
-                  "UPDATE admin_operations SET state='cancelled',approved_by=$2,version=version+1 WHERE id=$1",
-                  [id, req.principal.id],
-                );
-              await tx.query(
-                "INSERT INTO admin_fee_approval_decisions(approval_id,reviewer_id,expected_version,payload_hash,decision,reason) VALUES($1,$2,$3,$4,$5,$6)",
-                [
-                  request.id,
-                  req.principal.id,
-                  request.version,
-                  b.payload_hash,
-                  b.decision,
-                  b.reason,
-                ],
-              );
-              await tx.query(
-                "UPDATE admin_fee_approval_requests SET state=$2,version=version+1 WHERE id=$1",
-                [
-                  request.id,
-                  b.decision === "approve" ? "approved" : "rejected",
-                ],
-              );
-              await audit(
-                tx,
-                req.principal,
-                `admin.approval.${b.decision}`,
-                id,
-                "succeeded",
-                { reason: b.reason, payload_hash: b.payload_hash },
-                w.tenant_id ?? undefined,
-              );
-              return { id };
-            },
-          );
-          return adminOperationDTO(
-            (
-              await tx.query("SELECT * FROM admin_operations WHERE id=$1", [
-                saved.id,
-              ])
-            ).rows[0],
-          );
-        },
-        undefined,
-        true,
+}
+
+export async function decideFeeOperation(
+  tx: Tx,
+  db: Database,
+  reviewer: Principal,
+  op: any,
+  b: { decision: "approve" | "reject"; reason: string },
+) {
+  const id = op.id,
+    c = frozenCommand(op),
+    w = await account(tx, db, op.payload.billing_account_id);
+  await authority(tx, reviewer, w, "admin.approvals.decide");
+  await authority(tx, reviewer, w, definitions[c.action].permission, value(c));
+  if (b.decision === "approve") {
+    if (
+      !(
+        await tx.query("SELECT now()<$1::timestamptz AS valid", [
+          op.payload.expires_at,
+        ])
+      ).rows[0].valid
+    )
+      throw new Problem(
+        409,
+        "OPERATION_EXPIRED",
+        "Financial approval expired; submit a fresh preview",
       );
-    });
+    const original = actor(op),
+      allowed = await authority(
+        tx,
+        original,
+        w,
+        definitions[c.action].permission,
+        value(c),
+      ),
+      rules = await policy(tx);
+    if (rules.id !== op.policy_version_id)
+      throw new Problem(
+        409,
+        "POLICY_CHANGED",
+        "Policy changed; submit a fresh preview",
+      );
+    if (payloadHash(w.id, c) !== op.payload_hash)
+      throw new Problem(
+        409,
+        "PAYLOAD_CHANGED",
+        "Frozen financial command changed",
+      );
+    const checked = await inspect(tx, w, c);
+    if (canonical(checked.before) !== canonical(op.payload.before))
+      throw new Problem(
+        409,
+        "TARGET_CHANGED",
+        "Financial sources changed while awaiting review",
+      );
+    await daily(tx, original, allowed, c, checked.risk, w.data_mode);
+    await apply(tx, original, w, c, checked, op);
+    await tx.query("UPDATE admin_operations SET approved_by=$2 WHERE id=$1", [
+      id,
+      reviewer.id,
+    ]);
+  } else
+    await tx.query(
+      "UPDATE admin_operations SET state='cancelled',approved_by=$2,version=version+1 WHERE id=$1",
+      [id, reviewer.id],
+    );
+  await audit(
+    tx,
+    reviewer,
+    `admin.approval.${b.decision}`,
+    id,
+    "succeeded",
+    { reason: b.reason, payload_hash: op.payload_hash },
+    w.tenant_id ?? undefined,
+  );
 }

@@ -292,7 +292,7 @@ async function decide(
 ) {
   const request = (
     await s.db.control.query(
-      "SELECT id,version FROM admin_fee_approval_requests WHERE operation_id=$1",
+      "SELECT id,version FROM admin_approval_requests WHERE operation_id=$1",
       [op.id],
     )
   ).rows[0];
@@ -311,7 +311,7 @@ async function decide(
     body,
     { key },
   );
-  if (r.status === 200) schema("AdminOperation", r.data);
+  if (r.status === 202) schema("AdminOperation", r.data);
   return r;
 }
 
@@ -642,14 +642,14 @@ test("independent fee approval requires the exact version/hash, two actual autho
   assert.notEqual(review.data.approval.id, pending.data.id);
   await assert.rejects(
     s.db.control.query(
-      "UPDATE admin_fee_approval_requests SET expires_at=now()+interval '1 year' WHERE id=$1",
+      "UPDATE admin_approval_requests SET expires_at=now()+interval '1 year' WHERE id=$1",
       [review.data.approval.id],
     ),
     /immutable/,
   );
   const key = randomUUID(),
     applied = await decide(reviewer, pending.data, "approve", {}, key);
-  assert.equal(applied.status, 200, JSON.stringify(applied.data));
+  assert.equal(applied.status, 202, JSON.stringify(applied.data));
   assert.equal(applied.data.state, "succeeded");
   assert.deepEqual(
     (await decide(reviewer, pending.data, "approve", {}, key)).data,
@@ -664,7 +664,7 @@ test("independent fee approval requires the exact version/hash, two actual autho
   assert.equal(op.approved_by, reviewer.id);
   const recorded = (
     await s.db.control.query(
-      "SELECT * FROM admin_fee_approval_decisions WHERE approval_id=$1",
+      "SELECT * FROM admin_approval_decisions WHERE approval_id=$1",
       [review.data.approval.id],
     )
   ).rows[0];
@@ -674,7 +674,7 @@ test("independent fee approval requires the exact version/hash, two actual autho
   assert.equal(
     (
       await s.db.control.query(
-        "SELECT state,version FROM admin_fee_approval_requests WHERE id=$1",
+        "SELECT state,version FROM admin_approval_requests WHERE id=$1",
         [review.data.approval.id],
       )
     ).rows[0].state,
@@ -731,7 +731,7 @@ test("approval fails closed after original session revocation, authority/target 
       change === "target" ? "1" : "0",
     );
     const rejected = await decide(reviewer, pending.data, "reject");
-    assert.equal(rejected.status, 200, JSON.stringify(rejected.data));
+    assert.equal(rejected.status, 202, JSON.stringify(rejected.data));
     assert.equal(rejected.data.state, "cancelled");
   }
 });
@@ -749,7 +749,7 @@ test("credit limits accept zero and exact integers beyond JS precision while pre
   });
   const large = await submit(a, w.id, await limit("9007199254740993"));
   assert.equal(large.data.state, "pending_approval");
-  assert.equal((await decide(reviewer, large.data)).status, 200);
+  assert.equal((await decide(reviewer, large.data)).status, 202);
   assert.equal((await current(w.id)).credit_limit_micros, "9007199254740993");
   assert.equal((await submit(a, w.id, await limit("0"))).status, 202);
   assert.equal((await current(w.id)).credit_limit_micros, "0");
@@ -850,9 +850,9 @@ test("financial intent is immutable at the database boundary and legacy paths ca
         },
       )
     ).data.error.code,
-    "CANONICAL_FINANCE_REQUIRED",
+    "CANONICAL_APPROVAL_REQUIRED",
   );
-  assert.equal((await decide(reviewer, r.data, "reject")).status, 200);
+  assert.equal((await decide(reviewer, r.data, "reject")).status, 202);
 });
 
 test("scope denies cover personal/enterprise financial writes and operation reads; MFA is live", async () => {
@@ -1008,7 +1008,7 @@ test("expired frozen review requests cannot be approved or rewritten; their actu
   ).rows[0];
   const request = (
     await s.db.control.query(
-      "INSERT INTO admin_fee_approval_requests(operation_id,requester_id,payload_hash,policy_version_id,expires_at) VALUES($1,$2,$3,$4,$5) RETURNING *",
+      "INSERT INTO admin_approval_requests(operation_id,requester_id,payload_hash,policy_version_id,expires_at) VALUES($1,$2,$3,$4,$5) RETURNING *",
       [
         expired.id,
         a.id,
@@ -1024,7 +1024,8 @@ test("expired frozen review requests cannot be approved or rewritten; their actu
     `/v1/admin/billing/operations/${expired.id}/review`,
   );
   schema("AdminApproval", review.data.approval);
-  assert.equal(review.data.approval.state, "expired");
+  assert.equal(review.data.approval.state, "pending");
+  assert.ok(Date.parse(review.data.approval.expires_at) < Date.now());
   assert.equal(
     (await decide(reviewer, expired)).data.error.code,
     "OPERATION_EXPIRED",
@@ -1041,16 +1042,15 @@ test("expired frozen review requests cannot be approved or rewritten; their actu
   try {
     await assert.rejects(
       owner.query(
-        "UPDATE admin_fee_approval_decisions SET reason='Altered history' WHERE approval_id=$1",
+        "UPDATE admin_approval_decisions SET reason='Altered history' WHERE approval_id=$1",
         [request.id],
       ),
       /immutable/,
     );
     await assert.rejects(
-      owner.query(
-        "DELETE FROM admin_fee_approval_decisions WHERE approval_id=$1",
-        [request.id],
-      ),
+      owner.query("DELETE FROM admin_approval_decisions WHERE approval_id=$1", [
+        request.id,
+      ]),
       /immutable/,
     );
   } finally {
@@ -1068,7 +1068,7 @@ test("new gifts cannot overflow the account and daily credit increases cannot be
     await gift(w.id, "9223372036854775807"),
   );
   assert.equal(largest.data.state, "pending_approval");
-  assert.equal((await decide(reviewer, largest.data)).status, 200);
+  assert.equal((await decide(reviewer, largest.data)).status, 202);
   assert.equal(
     (await preview(a, w.id, await gift(w.id, "1"))).data.error.code,
     "AMOUNT_RANGE",

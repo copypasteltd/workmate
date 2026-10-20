@@ -399,3 +399,20 @@ Account gift/debit/credit-limit commands now bind pure previews, exact amounts, 
 Sixteen focused fee/migration groups pass. The final full-source result is Delivery's `evidence/alignment-platform.json/.tap`, with before/after source and verifier hashes. The initial 045 preview-field error is repaired by new migration 046, retaining old SQL and failure evidence. Both native databases apply 001–047; historical unknown execution digests for 001–015 remain unknown.
 
 These three commands do not accept full payments, refunds, VIP, financial outbox or the complete approval directory. Actual Admin browser consumers and exact-money tests are included. Central scope: `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`.
+
+## Shared approval requests (2026-10-20)
+
+Existing fee, membership, account and legacy pending operations now use distinct persisted approval requests. The normative directory uses scoped signed cursors; decisions require the actual request revision, hash, reason and idempotency key and return 202 AdminOperation. The transaction checks current business and approval authority, recent MFA, the exact original session, policy and target snapshot. Business changes, decisions, audit and receipts commit together; maintenance persists expiry. Migration 048 preserves original financial request/decision identities and records cancellation of old commands whose original authority was never captured.
+
+```mermaid
+flowchart LR
+  Command[Frozen business operation] --> Request[Distinct approval request]
+  Request --> Review[Different authorized reviewer]
+  Review --> Checks[Current authority MFA original session revision hash]
+  Checks --> Commit[Atomic business decision audit receipt]
+  Request --> Expiry[Persisted expiry and system audit]
+```
+
+The original OpenAPI and migrations 001–047 retain their bytes. The old operation decision endpoint refuses to invent a reviewed version. Complete payments, evidence, refunds, VIP, notifications and full Admin acceptance remain tracked.
+
+The full platform regression passes **303/303** with all 669 source hashes unchanged. Raw TAP SHA-256: `1615f06e75496988f37cb30872ee35ba7f981c23c7e8d98b3f8e409f16df612f`. The separate 53/53 approval/upgrade run is retained and is not added again to the platform total.

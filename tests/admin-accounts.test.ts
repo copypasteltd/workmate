@@ -510,7 +510,7 @@ test("closing and reopening require a different reviewer; exact original session
   assert.equal(r.data.state, "pending_approval");
   assert.equal((await current(u)).status, "active");
   const decision = (c: Client, id: string) =>
-    call(c, "POST", `/v1/admin/operations/${id}/decision`, {
+    approval(c, id, {
       decision: "approve",
       reason: "Independent customer control review",
     });
@@ -526,7 +526,7 @@ test("closing and reopening require a different reviewer; exact original session
     200,
   );
   const approved = await decision(reviewer, r.data.id);
-  assert.equal(approved.status, 200, JSON.stringify(approved.data));
+  assert.equal(approved.status, 202, JSON.stringify(approved.data));
   schema("AdminOperation", approved.data);
   assert.ok((await current(u)).admin_closed_at);
   const reopen = await call(a, "POST", path, statusChange("active", 2));
@@ -537,16 +537,14 @@ test("closing and reopening require a different reviewer; exact original session
   );
   assert.equal((await decision(reviewer, reopen.data.id)).status, 403);
   assert.ok((await current(u)).admin_closed_at);
-  const rejected = await call(
-    reviewer,
-    "POST",
-    `/v1/admin/operations/${reopen.data.id}/decision`,
-    { decision: "reject", reason: "Original operator session was revoked" },
-  );
+  const rejected = await approval(reviewer, reopen.data.id, {
+    decision: "reject",
+    reason: "Original operator session was revoked",
+  });
   assert.equal(rejected.data.state, "cancelled");
   const fresh = await admin(undefined, "super_admin"),
     another = await call(fresh, "POST", path, statusChange("active", 2));
-  assert.equal((await decision(reviewer, another.data.id)).status, 200);
+  assert.equal((await decision(reviewer, another.data.id)).status, 202);
   assert.equal((await current(u)).admin_closed_at, null);
 });
 
@@ -616,14 +614,12 @@ test("legacy bulk freeze has immutable policy provenance and cannot reopen close
   assert.equal(close.data.state, "pending_approval");
   assert.equal(
     (
-      await call(
-        reviewer,
-        "POST",
-        `/v1/admin/operations/${close.data.id}/decision`,
-        { decision: "approve", reason: "Approved account closure" },
-      )
+      await approval(reviewer, close.data.id, {
+        decision: "approve",
+        reason: "Approved account closure",
+      })
     ).status,
-    200,
+    202,
   );
   assert.equal(
     (
@@ -780,12 +776,10 @@ test("account review fails after target, policy, deadline or original permission
         ],
       );
     }
-    const decided = await call(
-      reviewer,
-      "POST",
-      `/v1/admin/operations/${pending.data.id}/decision`,
-      { decision: "approve", reason: "Check changed authority boundary" },
-    );
+    const decided = await approval(reviewer, pending.data.id, {
+      decision: "approve",
+      reason: "Check changed authority boundary",
+    });
     assert.equal(
       decided.status,
       kind === "authority" ? 403 : 409,
@@ -843,3 +837,29 @@ test("an authenticated workspace creation queued behind an account freeze rechec
     gate.release();
   }
 });
+
+async function approval(
+  c: Client,
+  operation: string,
+  body: any,
+  options: any = {},
+) {
+  const request = (
+    await s.db.control.query(
+      "SELECT * FROM admin_approval_requests WHERE operation_id=$1",
+      [operation],
+    )
+  ).rows[0];
+  assert.ok(request, "The operation must have a real independent request");
+  return call(
+    c,
+    "POST",
+    `/v1/admin/approvals/${request.id}/decisions`,
+    {
+      expected_version: request.version,
+      payload_hash: request.payload_hash,
+      ...body,
+    },
+    options,
+  );
+}

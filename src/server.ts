@@ -1,3 +1,4 @@
+import { registerAdminApprovals } from "./admin-approvals.js";
 import { commandPublicKey } from "./device-signing.js";
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
@@ -309,6 +310,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminAccounts(app, db);
   registerAdminBilling(app, db);
   registerAdminFees(app, db);
+  registerAdminApprovals(app, db);
   registerAdminIdentities(app, db);
   let started = false;
   if (options.worker !== false && c.WORKER_ENABLED) {

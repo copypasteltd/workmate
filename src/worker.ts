@@ -1,3 +1,4 @@
+import { expireAdminApprovals } from "./admin-approval-storage.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import { cleanAuthReceipts } from "./auth-receipts.js";
 import { dispatchInvitationMail } from "./invitation-delivery.js";
@@ -149,6 +150,7 @@ export class Worker {
         ["erasure", () => this.erasure.advance()],
         ["uploads", () => cleanUploadStaging(this.db)],
         ["invitations", () => dispatchInvitationMail(this.db)],
+        ["admin_approvals", () => expireAdminApprovals(this.db)],
       ] as const) {
         try {
           await operation();

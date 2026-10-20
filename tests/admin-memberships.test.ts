@@ -454,25 +454,25 @@ test("privileged changes persist pending without effect and require a distinct s
   schema("AdminOperation", pending.data);
   assert.equal(pending.data.state, "pending_approval");
   assert.equal(await member(w.tenant.id, r.id), undefined);
-  const path = `/v1/admin/operations/${pending.data.id}/decision`;
+  const operationId = pending.data.id;
   assert.equal(
     (
-      await call(a, "POST", path, {
+      await approval(a, operationId, {
         decision: "approve",
         reason: "Self review is prohibited",
       })
     ).data.error.code,
     "SELF_APPROVAL_FORBIDDEN",
   );
-  const approved = await call(reviewer, "POST", path, {
+  const approved = await approval(reviewer, operationId, {
     decision: "approve",
     reason: "Reviewed customer ownership request",
   });
-  assert.equal(approved.status, 200, JSON.stringify(approved.data));
+  assert.equal(approved.status, 202, JSON.stringify(approved.data));
   schema("AdminOperation", approved.data);
   assert.equal(approved.data.state, "succeeded");
   assert.equal((await member(w.tenant.id, r.id)).role, "owner");
-  const repeat = await call(reviewer, "POST", path, {
+  const repeat = await approval(reviewer, operationId, {
     decision: "approve",
     reason: "Retry approved request",
   });
@@ -516,12 +516,10 @@ test("approval cannot outlive original authority, policy, target snapshot or app
           },
         ],
       );
-    const decided = await call(
-      reviewer,
-      "POST",
-      `/v1/admin/operations/${pending.data.id}/decision`,
-      { decision: "approve", reason: "Review after a relevant change" },
-    );
+    const decided = await approval(reviewer, pending.data.id, {
+      decision: "approve",
+      reason: "Review after a relevant change",
+    });
     assert.equal(
       decided.status,
       kind === "revoke" ? 403 : 409,
@@ -530,12 +528,10 @@ test("approval cannot outlive original authority, policy, target snapshot or app
     assert.equal((await member(w.tenant.id, r.id))?.role === "admin", false);
     assert.equal(
       (
-        await call(
-          reviewer,
-          "POST",
-          `/v1/admin/operations/${pending.data.id}/decision`,
-          { decision: "reject", reason: "Stale request cancelled safely" },
-        )
+        await approval(reviewer, pending.data.id, {
+          decision: "reject",
+          reason: "Stale request cancelled safely",
+        })
       ).data.state,
       "cancelled",
     );
@@ -673,14 +669,12 @@ test("admin approval and a simultaneous owner removal share the same last-owner 
   );
   assert.equal(
     (
-      await call(
-        reviewer,
-        "POST",
-        `/v1/admin/operations/${grant.data.id}/decision`,
-        { decision: "approve", reason: "Independent second owner approval" },
-      )
+      await approval(reviewer, grant.data.id, {
+        decision: "approve",
+        reason: "Independent second owner approval",
+      })
     ).status,
-    200,
+    202,
   );
   const hold = await call(
     a,
@@ -691,7 +685,7 @@ test("admin approval and a simultaneous owner removal share the same last-owner 
   assert.equal(hold.data.state, "pending_approval");
   const secondMember = await member(w.tenant.id, second.id);
   const results = await Promise.all([
-    call(reviewer, "POST", `/v1/admin/operations/${hold.data.id}/decision`, {
+    approval(reviewer, hold.data.id, {
       decision: "approve",
       reason: "Independent suspension review",
     }),
@@ -730,3 +724,29 @@ test("concurrent first grants cannot reuse the virtual absence revision to overw
     "VERSION_CONFLICT",
   );
 });
+
+async function approval(
+  c: Client,
+  operation: string,
+  body: any,
+  options: any = {},
+) {
+  const request = (
+    await s.db.control.query(
+      "SELECT * FROM admin_approval_requests WHERE operation_id=$1",
+      [operation],
+    )
+  ).rows[0];
+  assert.ok(request, "The operation must have a real independent request");
+  return call(
+    c,
+    "POST",
+    `/v1/admin/approvals/${request.id}/decisions`,
+    {
+      expected_version: request.version,
+      payload_hash: request.payload_hash,
+      ...body,
+    },
+    options,
+  );
+}
