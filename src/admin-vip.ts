@@ -682,6 +682,42 @@ export async function decideVipOperation(
   await execute(tx, actor, op, checked);
 }
 
+// Composite commands reuse the canonical projection and its database guards.
+// These helpers neither open transactions nor create independent approvals.
+export async function inspectCombinedVip(
+  tx: Tx,
+  db: Database,
+  actor: Principal,
+  command: VipCreate,
+) {
+  await vipAuthority(tx, actor, command.subject, "admin.entitlements.read");
+  await vipAuthority(tx, actor, command.subject, "admin.entitlements.grant");
+  const checked = await inspect(
+    tx,
+    db,
+    actor,
+    "entitlements.grant",
+    command.subject.id,
+    command,
+  );
+  await vipAuthority(
+    tx,
+    actor,
+    command.subject,
+    "admin.entitlements.grant",
+    checked.hours,
+  );
+  return checked;
+}
+export async function applyCombinedVip(
+  tx: Tx,
+  actor: Principal,
+  operation: any,
+  checked: Awaited<ReturnType<typeof inspectCombinedVip>>,
+) {
+  await execute(tx, actor, operation, checked);
+}
+
 export function registerAdminVip(app: FastifyInstance, db: Database) {
   const auth = { preHandler: requireAdmin(db) },
     mode = vipMode(db.config.DEMO_MODE);

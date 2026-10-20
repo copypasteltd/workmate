@@ -4,6 +4,23 @@
 
 This independent repository implements persistent PostgreSQL services, customer/admin identity, workspace/project authorization, Codex execution, marketing assets, analytics, workflows, device commands and the admin control plane. No sibling source checkout is required. The delivery root's `docs/` contains the master requirements and design baseline.
 
+## Atomic VIP and explicit credit (stage 49)
+
+The existing VIP form can include a deliberate HKD gift with its own exact amount, expiry and reason. One frozen preview and one confirmation create a parent operation. The server commits canonical VIP and financial child operations in one database transaction, or rolls both back. If either risk policy requires review, the whole request waits for another administrator with both domains' permissions; pending requests create no entitlement or credit.
+
+```mermaid
+flowchart LR
+  Form[VIP and explicit gift] --> Preview[Freeze both versions and policies]
+  Preview --> Review[Confirm or independent review]
+  Review --> Tx[One transaction]
+  Tx --> Result[Two successful children and one credit reference]
+```
+
+![Actual combined completion](assets/screenshots/vip-credit-completed.png)
+
+The current full platform run passes 394/394 with 703 unchanged source files; the 19 focused groups are included. Nine actual Admin/user browser groups and 12 unedited captures are bounded evidence. The 125 original-schema responses and one strict supplemental request are checked separately. Additive migration 060 preserves complete old-row digests for all 119 original public tables in each native database, applied 001–059 bytes and historical null checksums. Initial fixture errors and two verifier mistakes remain archived. All original REQ/TC/NFR/G01–G10, professional role quality, real external services and production/installation acceptance remain in scope. Master details are in `docs/technical/49-atomic-vip-and-explicit-credit.md` and current Delivery receipts.
+
+
 ## Immutable plan definitions and legacy grant bindings
 
 Commercial families have immutable drafts/versions, frozen publication comparisons and independent review. Original AdminPlanDraft / AdminVersionReason commands return strict 202 AdminOperation receipts. The server checks global permission, overlapping denies, recent MFA, the original live session, policy/head versions, concurrency, idempotency and atomic audit rollback. Legacy catalog writes cannot bypass the registry. Issued grant bodies remain fixed; missing old bodies are explicitly labelled as evaluated at binding time, without inventing original grant facts.

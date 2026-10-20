@@ -51,7 +51,7 @@ export const feeTopUp = z
     payment_record_id: uuid.transform((v) => v.toLowerCase()),
   })
   .strict();
-const feeGift = z
+export const feeGift = z
   .object({
     ...base,
     action: z.literal("gift"),
@@ -474,6 +474,35 @@ const actor = (op: any): Principal => ({
   name: "",
   email: "",
 });
+export async function inspectCombinedGift(
+  tx: Tx,
+  actor: Principal,
+  wallet: any,
+  command: z.infer<typeof feeGift>,
+) {
+  await financialAuthority(tx, actor, wallet, "admin.billing.read");
+  const allowed = await financialAuthority(
+    tx,
+    actor,
+    wallet,
+    "admin.billing.gift",
+    value(command),
+  );
+  const checked = await inspect(tx, wallet, command),
+    rules = await policy(tx);
+  await daily(tx, actor, allowed, command, checked.risk, wallet.data_mode);
+  return { checked, rules, approval: approval(rules, checked) };
+}
+export async function applyCombinedGift(
+  tx: Tx,
+  actor: Principal,
+  wallet: any,
+  command: z.infer<typeof feeGift>,
+  checked: Awaited<ReturnType<typeof inspectCombinedGift>>["checked"],
+  operation: any,
+) {
+  return apply(tx, actor, wallet, command, checked, operation);
+}
 export function registerAdminFees(app: FastifyInstance, db: Database) {
   const auth = { preHandler: requireAdmin(db) },
     root = "/v1/admin/billing/accounts/:account";

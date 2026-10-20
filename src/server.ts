@@ -2,6 +2,7 @@ import { registerAdminApprovals } from "./admin-approvals.js";
 import { seedCommercialPlans } from "./commercial-plans.js";
 import { registerAdminPlans } from "./admin-plans.js";
 import { registerAdminVip } from "./admin-vip.js";
+import { registerAdminVipCredit } from "./admin-vip-credit.js";
 import { registerUserEntitlements } from "./user-entitlements.js";
 import { commandPublicKey } from "./device-signing.js";
 import Fastify from "fastify";
@@ -343,6 +344,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdmin(app, db, catalog, storage);
   registerAdminPlans(app, db, catalog);
   registerAdminVip(app, db);
+  registerAdminVipCredit(app, db);
   registerAdminOperations(app, db);
   registerAdminMemberships(app, db);
   registerAdminAccounts(app, db);

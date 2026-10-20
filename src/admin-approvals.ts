@@ -37,6 +37,11 @@ import {
   decideVipOperation,
 } from "./admin-vip.js";
 import { vipPermission } from "./vip.js";
+import {
+  isVipCreditOperation,
+  vipCreditOperationAuthority,
+  decideVipCreditOperation,
+} from "./admin-vip-credit.js";
 import { approvalDTO } from "./admin-approval-storage.js";
 import { key, replay } from "./access.js";
 import { Problem, uuid } from "./lib.js";
@@ -56,15 +61,20 @@ export const approvalDecision = z
   })
   .strict();
 const businessPermission = (op: any) =>
-  isVipOperation(op)
-    ? vipPermission(op.action)
-    : "admin." +
-      (["entitlements.suspend", "entitlements.resume"].includes(op.action)
-        ? "entitlements.extend"
-        : op.action);
+  isVipCreditOperation(op)
+    ? "combination.write"
+    : isVipOperation(op)
+      ? vipPermission(op.action)
+      : "admin." +
+        (["entitlements.suspend", "entitlements.resume"].includes(op.action)
+          ? "entitlements.extend"
+          : op.action);
 
 async function authority(tx: Tx, p: Principal, op: any, permission: string) {
-  if (isPlanOperation(op)) await planOperationAuthority(tx, p, op, permission);
+  if (isVipCreditOperation(op))
+    await vipCreditOperationAuthority(tx, p, op, permission);
+  else if (isPlanOperation(op))
+    await planOperationAuthority(tx, p, op, permission);
   else if (isVipOperation(op))
     await vipOperationAuthority(tx, p, op, permission);
   else if (isFeeOperation(op))
@@ -87,9 +97,9 @@ function visibility(s: ReadScope, db: Database) {
         (b.permissions.includes(permission) ||
           b.permissions.includes("admin.plans.read")),
     );
-  return `(CASE WHEN o.payload->>'commercial_plan_command_version'='1' THEN ${s.arg(globalPlan)}::boolean WHEN o.payload->>'vip_command_version'='1' THEN o.payload->>'data_mode'=${s.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${s.account(permission, "target_scope")} AND ${s.account("admin.entitlements.read", "target_scope")} WHEN o.payload->>'financial_command_version'='1' THEN w.data_mode=${s.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${s.account(permission)} AND ${s.account("admin.billing.read")} ELSE ${s.account(permission, "target_scope")} END)`;
+  return `(CASE WHEN o.payload->>'commercial_plan_command_version'='1' THEN ${s.arg(globalPlan)}::boolean WHEN o.payload->>'vip_credit_command_version'='1' THEN o.payload->>'data_mode'=${s.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${s.account(permission, "target_scope")} AND ${s.account("admin.entitlements.read", "target_scope")} AND ${s.account("admin.billing.read", "target_scope")} WHEN o.payload->>'vip_command_version'='1' THEN o.payload->>'data_mode'=${s.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${s.account(permission, "target_scope")} AND ${s.account("admin.entitlements.read", "target_scope")} WHEN o.payload->>'financial_command_version'='1' THEN w.data_mode=${s.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${s.account(permission)} AND ${s.account("admin.billing.read")} ELSE ${s.account(permission, "target_scope")} END)`;
 }
-const from = `FROM admin_approval_requests a JOIN admin_operations o ON o.id=a.operation_id LEFT JOIN wallets w ON w.id::text=o.payload->>'billing_account_id' CROSS JOIN LATERAL (SELECT o.tenant_id,CASE WHEN o.payload->>'vip_command_version'='1' AND o.payload->>'subject_kind'='user' THEN (o.payload->>'subject_id')::uuid WHEN o.action LIKE 'users.%' THEN (o.payload->>'target_id')::uuid WHEN o.tenant_id IS NULL THEN (o.payload->'command'->>'user_id')::uuid ELSE NULL::uuid END AS user_id) target_scope`;
+const from = `FROM admin_approval_requests a JOIN admin_operations o ON o.id=a.operation_id LEFT JOIN wallets w ON w.id::text=o.payload->>'billing_account_id' CROSS JOIN LATERAL (SELECT o.tenant_id,CASE WHEN (o.payload->>'vip_command_version'='1' OR o.payload->>'vip_credit_command_version'='1') AND o.payload->>'subject_kind'='user' THEN (o.payload->>'subject_id')::uuid WHEN o.action LIKE 'users.%' THEN (o.payload->>'target_id')::uuid WHEN o.tenant_id IS NULL THEN (o.payload->'command'->>'user_id')::uuid ELSE NULL::uuid END AS user_id) target_scope`;
 async function find(
   tx: Tx,
   selected: string,
@@ -289,7 +299,9 @@ export function registerAdminApprovals(
                   "OPERATION_EXPIRED",
                   "Approval expired; create a fresh preview",
                 );
-              if (isPlanOperation(op))
+              if (isVipCreditOperation(op))
+                await decideVipCreditOperation(tx, db, req.principal, op, b);
+              else if (isPlanOperation(op))
                 await decidePlanOperation(tx, catalog, req.principal, op, b);
               else if (isVipOperation(op))
                 await decideVipOperation(tx, db, req.principal, op, b);

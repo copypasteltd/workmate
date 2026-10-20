@@ -7,6 +7,10 @@ import {
 import { planDefinition } from "./plans.js";
 import { isPlanOperation, planOperationAuthority } from "./admin-plans.js";
 import { isVipOperation, vipOperationAuthority } from "./admin-vip.js";
+import {
+  isVipCreditOperation,
+  vipCreditOperationAuthority,
+} from "./admin-vip-credit.js";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { Database, Tx } from "./db.js";
@@ -454,7 +458,14 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               "admin.billing.read",
             );
           }
-          if (isPlanOperation(op)) {
+          if (isVipCreditOperation(op)) {
+            await vipCreditOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.jobs.read",
+            );
+          } else if (isPlanOperation(op)) {
             await planOperationAuthority(
               tx,
               req.principal,
