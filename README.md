@@ -296,3 +296,21 @@ flowchart LR
 该增量不代表完整付款、退款、VIP 和全部后台权限矩阵验收；规范及完整剩余条件继续保留。
 
 当前复核：成员 6/6、费用 4/4、账户 5/5；列表和决定的实际响应按原始 schema 验证。新组件的工作区与 Git LF 字节统一后重新复核，初始回执另行归档。
+
+## 付款凭据与独立核实（2026-10-20）
+
+费用页新增真实付款目录、签名游标、登记复核、独立核实和原付款充值。页面区分已收到、已核实与已入账；本人无法核实自己的凭据，核实不会增加余额。原付款 ID 自动带入充值预览，金额保持精确 HKD 字符串，幂等恢复不重复入账。自身提交完成后重新读取付款目录。
+
+```mermaid
+flowchart LR
+  Form[登记并核对凭据] --> Other[另一管理员独立核实]
+  Other --> Preview[准确实收与账户预览]
+  Preview --> Post[必要审批后入账]
+  Post --> Refresh[真实流水与目录刷新]
+```
+
+![付款登记](assets/screenshots/admin-payment-evidence-record.png)
+![独立核实后仍未入账](assets/screenshots/admin-payment-independently-verified.png)
+![真实入账流水](assets/screenshots/admin-payment-posted-ledger.png)
+
+截图从完整原始实测截图裁取实际视口，原始截图仍在本仓库与交付证据中。两位真实邮件/TOTP 管理员与实际上传凭据的 5/5 浏览器组通过；AI/银行付款均未调用，凭据明确为模拟。完整退款、VIP及后台综合验收继续跟踪。

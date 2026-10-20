@@ -1,3 +1,4 @@
+import { PaymentsPanel } from "./payments";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -54,16 +55,22 @@ type Access = {
   me: { user: { id: string } };
   has: (permission: string) => boolean;
 };
-type FeeAction = "gift" | "debit" | "credit_limit";
+type FeeAction = "top_up" | "gift" | "debit" | "credit_limit";
 const root = "/v1/admin/billing/accounts";
-const actions: FeeAction[] = ["gift", "debit", "credit_limit"];
+const actions: FeeAction[] = ["top_up", "gift", "debit", "credit_limit"];
 const permission = (a: FeeAction) =>
   a === "credit_limit"
     ? "admin.billing.credit_limit.write"
     : `admin.billing.${a}`;
-const path = (a: FeeAction) => (a === "credit_limit" ? "credit-limit" : a);
+const path = (a: FeeAction) =>
+  a === "credit_limit" ? "credit-limit" : a === "top_up" ? "top-up" : a;
 export const canonicalFeeAction = (a: string) =>
-  ["billing.gift", "billing.debit", "billing.credit_limit.write"].includes(a);
+  [
+    "billing.top_up",
+    "billing.gift",
+    "billing.debit",
+    "billing.credit_limit.write",
+  ].includes(a);
 const actionOf = (a: string): FeeAction =>
   a === "billing.credit_limit.write"
     ? "credit_limit"
@@ -72,11 +79,13 @@ const actionOf = (a: string): FeeAction =>
 function useFeeName() {
   const { t } = useI18n();
   return (a: FeeAction) =>
-    a === "gift"
-      ? t("贈送額度", "Gift credit")
-      : a === "debit"
-        ? t("扣回原始額度", "Debit original credit")
-        : t("變更信用上限", "Change credit limit");
+    a === "top_up"
+      ? t("核實付款入帳", "Post verified payment")
+      : a === "gift"
+        ? t("贈送額度", "Gift credit")
+        : a === "debit"
+          ? t("扣回原始額度", "Debit original credit")
+          : t("變更信用上限", "Change credit limit");
 }
 function Amount({ value }: { value: Money }) {
   return <span className="number">{formatHKD(value.amount_micros)}</span>;
@@ -128,9 +137,11 @@ export function AdminBilling({
     [cursors, setCursors] = useState<(string | null)[]>([null]),
     [page, setPage] = useState(0),
     [revision, setRevision] = useState(0);
-  const [edit, setEdit] = useState<{ id?: string; action: FeeAction } | null>(
-      null,
-    ),
+  const [edit, setEdit] = useState<{
+      id?: string;
+      action: FeeAction;
+      payment?: string;
+    } | null>(null),
     [ledger, setLedger] = useState<string | null>(null),
     [review, setReview] = useState<string | null>(null);
   const query = new URLSearchParams({ limit: "25" });
@@ -324,17 +335,14 @@ export function AdminBilling({
           </>
         )
       )}
+      <PaymentsPanel
+        access={access}
+        refreshVersion={revision}
+        onTopUp={(id, payment) => setEdit({ id, payment, action: "top_up" })}
+      />
       <section className="panel fee-related">
         <h2>{t("相關操作", "Related actions")}</h2>
         <div className="fee-actions">
-          {access.has("admin.billing.top_up") && (
-            <button
-              className="text-button"
-              onClick={() => onLegacy("billing.top_up")}
-            >
-              {t("登記已確認入款", "Record confirmed funding")}
-            </button>
-          )}
           {access.has("admin.billing.refund") && (
             <button
               className="text-button"
@@ -370,6 +378,7 @@ export function AdminBilling({
           operator={access.me.user.id}
           initialAction={edit.action}
           initialAccount={edit.id}
+          initialPayment={edit.payment}
           has={access.has}
           onClose={() => setEdit(null)}
           onDone={bump}
@@ -472,6 +481,7 @@ export function CanonicalFeeModal({
   operator,
   initialAction,
   initialAccount,
+  initialPayment,
   subject,
   has,
   onClose,
@@ -480,6 +490,7 @@ export function CanonicalFeeModal({
   operator: string;
   initialAction: FeeAction;
   initialAccount?: string;
+  initialPayment?: string;
   subject?: string;
   has: (key: string) => boolean;
   onClose: () => void;
@@ -687,6 +698,9 @@ export function CanonicalFeeModal({
                           ).toISOString(),
                         }
                       : {}),
+                    ...(action === "top_up"
+                      ? { payment_record_id: String(f.get("payment")) }
+                      : {}),
                     ...(action === "debit"
                       ? { original_entry_id: String(f.get("source")) }
                       : {}),
@@ -731,6 +745,22 @@ export function CanonicalFeeModal({
                     required
                   />
                 </Field>
+                {action === "top_up" && (
+                  <Field
+                    label={t("已核實付款記錄 ID", "Verified payment record ID")}
+                    hint={t(
+                      "必須使用此帳戶中尚未入帳的已核實付款，金額與實收完全一致。",
+                      "Use an unposted verified payment in this account, with the exact received amount.",
+                    )}
+                  >
+                    <input
+                      name="payment"
+                      defaultValue={initialPayment}
+                      required
+                      pattern="[a-fA-F0-9-]{36}"
+                    />
+                  </Field>
+                )}
                 {action === "gift" && (
                   <Field
                     label={t("贈送額度到期時間", "Promotional credit expiry")}
@@ -802,6 +832,14 @@ export function FeeCommandFacts({ id, command }: { id: string; command: any }) {
       </dd>
       <dt>{t("帳戶版本", "Account revision")}</dt>
       <dd>v{command.expected_version}</dd>
+      {command.payment_record_id && (
+        <>
+          <dt>{t("已核實付款記錄", "Verified payment record")}</dt>
+          <dd>
+            <code>{command.payment_record_id}</code>
+          </dd>
+        </>
+      )}
       {command.original_entry_id && (
         <>
           <dt>{t("原始入帳流水", "Original funding entry")}</dt>

@@ -296,3 +296,21 @@ flowchart LR
 This increment does not constitute complete payments, refunds, VIP or full Admin authority-matrix acceptance; all original conditions remain tracked.
 
 Current checks pass: membership 6/6, fees 4/4 and accounts 5/5, with real list/decision payloads validated against the original schemas. The new component was rerun after matching working-tree bytes to Git LF bytes; earlier receipts remain archived.
+
+## Payment evidence and independent verification (2026-10-20)
+
+Billing now provides the normative payment directory, signed pagination, evidence registration, independent verification and exact-source top-ups. Received, verified and posted are distinct facts. Requesters cannot verify their own receipts, and verification alone does not credit a wallet. The payment ID carries into the account preview; exact HKD strings and persistent idempotency prevent double credit. The directory reloads after the operator posts credit.
+
+```mermaid
+flowchart LR
+  Record[Review and record evidence] --> Other[Independent verifier]
+  Other --> Preview[Exact receipt and account preview]
+  Preview --> Post[Authority and necessary review]
+  Post --> Refresh[Actual ledger and directory reload]
+```
+
+![Evidence registration](assets/screenshots/admin-payment-evidence-record.png)
+![Verified without crediting the wallet](assets/screenshots/admin-payment-independently-verified.png)
+![Actual posted source](assets/screenshots/admin-payment-posted-ledger.png)
+
+These are viewport crops of retained original browser screenshots. All five groups pass with actual uploaded evidence and two real email/TOTP administrators. The explicit simulated receipts involve no bank or AI call. Complete refunds, VIP and full Admin acceptance remain tracked.
