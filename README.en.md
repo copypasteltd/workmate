@@ -22,6 +22,7 @@ flowchart LR
 
 The current full platform run passes 394/394 with 703 unchanged source files; the 19 focused groups are included. Nine actual Admin/user browser groups and 12 unedited captures are bounded evidence. The 125 original-schema responses and one strict supplemental request are checked separately. Additive migration 060 preserves complete old-row digests for all 119 original public tables in each native database, applied 001–059 bytes and historical null checksums. Initial fixture errors and two verifier mistakes remain archived. All original REQ/TC/NFR/G01–G10, professional role quality, real external services and production/installation acceptance remain in scope. Master details are in `docs/technical/49-atomic-vip-and-explicit-credit.md` and current Delivery receipts.
 
+All five independent-clone checks pass. The missing-capture commit and subsequent Windows long-path failures remain archived; new archives use short flat paths. After rerunning native appearance QA without changing client bytes, use `node scripts/refresh-native-surface-validation.mjs`. It verifies the complete runtime, three packages and 31 embedded ASAR files before preserving the old manifest and refreshing only its receipt binding, retaining original build time and commits. All README images ship inside this repository.
 
 ## Current immutable plan increment
 
@@ -43,7 +44,7 @@ Desktop uses a branded title bar without the native frame or Electron default me
 
 Current previews are in sibling Desktop `release/frameless/` (Setup, Portable, win-unpacked) and extension `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`. They use localhost origins and unsigned Desktop binaries. Earlier preview bytes remain in `frameless-stage30/` and `sidepanel-stage30/`; their original receipt, report, screenshots and digest mapping remain in `evidence/stage30-native-surfaces/`. `evidence/native-surfaces-artifacts.json` records current hashes, source commits, binding to actually tested files and matching ASAR build bytes. QA executes win-unpacked; Setup/Portable installation and uninstall are separate acceptance work.
 
-The 2026-10-20 rerun exposed and fixed a missing Desktop session-context API permission. Three failed login-landing records, diagnostic images and the subsequent source run's ten passing checks are retained in `evidence/native-preview-refresh-initial/`. The new admission check compares complete runtime, installer, extension-dist and runtime-source hashes before/after QA and before admitting packages. Historical reports, modified or added/removed files and incomplete cleanup fail admission. All 11 `npm run test:surfaces` checks pass.
+The 2026-10-20 rerun exposed and fixed a missing Desktop session-context API permission. Three failed login-landing records, diagnostic images and the subsequent source run's ten passing checks are retained in `evidence/native-preview-refresh-initial/`. The new admission check compares complete runtime, installer, extension-dist and runtime-source hashes before/after QA and before admitting packages. Historical reports, modified or added/removed files and incomplete cleanup fail admission. All 12 `npm run test:surfaces` checks pass.
 
 ```powershell
 # Native development stack running; Desktop and extension built separately
@@ -447,8 +448,8 @@ New runnable entries: `npm run qa:admin-vip` and `npm run qa:native-vip`. For `q
 
 Archive manifests preserve original SQL/TAP candidates, result-modal and narrow-layout failures, the stale plan heading, the incorrect free-feature assumption, and native document/resize timing failures. Only actual new passes qualify as current evidence. Seat/storage enforcement, atomic VIP-plus-gift operations, full installer/system/SSO acceptance and live model role qualification remain open.
 
-![Actual packaged frameless Desktop](../copypaste-desktop/assets/screenshots/26-vip-effective-rights.png)
-![Actual native right panel rights](../copypaste-extension/assets/screenshots/15-vip-effective-rights.png)
+![Actual packaged frameless Desktop](assets/screenshots/desktop-vip-effective.png)
+![Actual native right panel rights](assets/screenshots/extension-vip-effective.png)
 
 ## Enterprise seat and storage enforcement (stage 48)
 

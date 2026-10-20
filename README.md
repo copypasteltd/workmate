@@ -22,6 +22,7 @@ flowchart LR
 
 平台当前全量为 394/394（703 份来源前后一致）；新增 19 组专项已包含其中。实际 Admin 与用户读取有 9 组浏览器检查、12 张原始截图；125 份原规范响应与 1 份补充严格组合请求分别校验。060 为前向追加；两套原生数据库每库 119 张原公共表的完整行摘要前后一致，001–059 和历史空校验值保持原样。失败夹具与两次验证脚本错误均保留原回执。原始全部 REQ/TC/NFR/G01–G10、专业角色质量、真实外部服务和生产/安装验收继续跟踪。完整事实以主文档 `docs/technical/49-atomic-vip-and-explicit-credit.md` 与 Delivery 当前回执为准。
 
+独立克隆检查全部五组通过；首次漏提交截图和其后的 Windows 长路径失败均保留原始证据，新增归档改为短路径平铺。仅重跑原生外观验证而未改变客户端时，可运行 `node scripts/refresh-native-surface-validation.mjs`：它先核对完整运行目录、三个包和 31 项 ASAR 内嵌文件，归档旧清单后更新回执引用，保留原构建时间与来源提交。README 图片全部随本仓库保存。
 
 ## 当前方案版本增量
 
@@ -43,7 +44,7 @@ Desktop 使用无原生边框、无 Electron 默认菜单的自绘品牌标题�
 
 当前预览产物在同级 Desktop `release/frameless/`（Setup、Portable、win-unpacked）和扩展 `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`。使用 localhost，Desktop 未签名。先前预览原字节保留于 `frameless-stage30/` 和 `sidepanel-stage30/`；旧清单、报告、截图和摘要映射位于 `evidence/stage30-native-surfaces/`。`evidence/native-surfaces-artifacts.json` 记录当前 SHA-256、源码提交、实际测试的文件绑定及 ASAR 与当前构建的字节一致性。此检查运行 win-unpacked，Setup/Portable 尚未通过安装/卸载验收。
 
-2026-10-20 实际复核发现并修复 Desktop 的会话上下文 API 白名单遗漏；三个登录后停留在登录页的失败记录、诊断截图与修复后源码 10 项通过回执保留在 `evidence/native-preview-refresh-initial/`。新工具会在 QA 前后计算完整客户端运行目录、安装器、扩展 dist 和运行源码摘要；打包准入再次比较，拒绝旧报告、改包、增删文件或未完成清理。`npm run test:surfaces` 的 11 项检查覆盖这些拒绝条件。
+2026-10-20 实际复核发现并修复 Desktop 的会话上下文 API 白名单遗漏；三个登录后停留在登录页的失败记录、诊断截图与修复后源码 10 项通过回执保留在 `evidence/native-preview-refresh-initial/`。新工具会在 QA 前后计算完整客户端运行目录、安装器、扩展 dist 和运行源码摘要；打包准入再次比较，拒绝旧报告、改包、增删文件或未完成清理。`npm run test:surfaces` 的 12 项检查覆盖这些拒绝条件。
 
 ```powershell
 # 原生开发栈已启动；先分别构建 Desktop 与 extension
@@ -521,8 +522,8 @@ flowchart LR
 
 本轮原始候选 SQL/TAP、页面结果丢失／窄屏溢出、旧方案标题、错误免费功能假设、原生文档与缩放时序失败均有独立 archive-map 和摘要。只有新回执实际通过才进入当前进度；这些证据不关闭席位／储存、VIP 加赠额原子组合、完整安装／系统／SSO或真实模型角色资格。
 
-![实际打包无边框 Desktop](../copypaste-desktop/assets/screenshots/26-vip-effective-rights.png)
-![实际原生右侧栏权益](../copypaste-extension/assets/screenshots/15-vip-effective-rights.png)
+![实际打包无边框 Desktop](assets/screenshots/desktop-vip-effective.png)
+![实际原生右侧栏权益](assets/screenshots/extension-vip-effective.png)
 
 ## 企业席位与存储执行（阶段 48）
 
