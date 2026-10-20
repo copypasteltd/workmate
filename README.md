@@ -314,3 +314,28 @@ flowchart LR
 ![真实入账流水](assets/screenshots/admin-payment-posted-ledger.png)
 
 截图从完整原始实测截图裁取实际视口，原始截图仍在本仓库与交付证据中。两位真实邮件/TOTP 管理员与实际上传凭据的 5/5 浏览器组通过；AI/银行付款均未调用，凭据明确为模拟。完整退款、VIP及后台综合验收继续跟踪。
+
+## 原交易退款与资金核实（2026-10-20，后续增量）
+
+消费补偿严格返还原赠额、付费和实际偿还来源，保留赠额到期时间；未偿授信只注销对应消费债务。现金退款绑定已核实原付款，先冻结未用金额，再由另一管理员逐次核实实付、剩余未付或未知/差额；部分付款不会误报全部成功。历史缺失偿还来源要求对账，不补造历史。
+
+当前平台全量 324/324、683 份参与源码前后一致；费用及退款实际页面 8/8、47 份来源一致；原规范实际响应 100/100，补充退款合同 14/14 单独校验。50 项专项与全量重叠。SQL 053–055 已实际应用于两个原生数据库；001–052 不改写。AI、媒体和外部支付仍按明确模拟范围验收；历史授信人工对账、正式支付/VIP/outbox、完整系统及全部综合验收继续保留。较早章节的数字记录各阶段历史。
+
+```mermaid
+flowchart LR
+  Intent[原交易与退款预览] --> Review[当前权限与必要独立审批]
+  Review --> Sources[消费按原来源补偿]
+  Review --> Hold[原付款可退资金冻结]
+  Hold --> Other[另一管理员核实实际结果]
+  Other --> Paid[实付部分扣款]
+  Other --> Unpaid[剩余未付解除预留]
+  Other --> Unknown[未知或差额保持待对账]
+```
+
+![原消费补偿来源](assets/screenshots/admin-refund-original-sources.png)
+![独立核实部分退款](assets/screenshots/admin-refund-partial-payment.png)
+![差额待对账](assets/screenshots/admin-refund-mismatch.png)
+![部分付款关闭](assets/screenshots/admin-refund-partial-closed.png)
+![繁中深色手机详情](assets/screenshots/admin-refund-mobile-dark.png)
+
+2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。

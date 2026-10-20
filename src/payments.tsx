@@ -35,6 +35,8 @@ type Detail = {
   posted_entry_id: string | null;
   posted_at: string | null;
   data_mode: string;
+  refunded_amount: { currency: "HKD"; amount_micros: string };
+  refund_pending: boolean;
 };
 type Access = { me: { user: { id: string } }; has: (key: string) => boolean };
 const root = "/v1/admin/billing/payments";
@@ -386,6 +388,19 @@ function ReviewPayment({
             <dd>
               <code>{p.billing_account_id}</code>
             </dd>
+            <dt>{t("已核實退款金額", "Verified refunded amount")}</dt>
+            <dd>{formatHKD(d.refunded_amount.amount_micros)}</dd>
+            {d.refund_pending && (
+              <>
+                <dt>{t("退款進度", "Refund progress")}</dt>
+                <dd>
+                  {t(
+                    "仍有退款預留等待付款核實",
+                    "A refund hold is awaiting payout verification",
+                  )}
+                </dd>
+              </>
+            )}
             <dt>{t("收到時間", "Received at")}</dt>
             <dd>
               <DateText value={p.received_at} />

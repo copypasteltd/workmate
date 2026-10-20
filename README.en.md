@@ -314,3 +314,28 @@ flowchart LR
 ![Actual posted source](assets/screenshots/admin-payment-posted-ledger.png)
 
 These are viewport crops of retained original browser screenshots. All five groups pass with actual uploaded evidence and two real email/TOTP administrators. The explicit simulated receipts involve no bank or AI call. Complete refunds, VIP and full Admin acceptance remain tracked.
+
+## Original-source refunds and cash evidence (2026-10-20, later increment)
+
+Consumption compensation restores original promotional/paid funding or the actual credit repayment source, preserves gift expiry and cancels only the original unpaid obligation. Cash refunds reserve unspent verified original payments. A different administrator records each actual payout, remaining non-payment or unknown/mismatched result; a partial payout never becomes a false full success. Missing legacy repayment provenance requires reconciliation.
+
+Current Platform regression passes 324/324 with 683 unchanged source files. Actual financial/refund UI passes 8/8 with 47 unchanged sources; 100/100 original response schemas and 14/14 supplemental refund checks pass separately. The 50 focused cases overlap the full run. SQL 053–055 are applied to both native databases; 001–052 remain unchanged. Synthetic model/media/payment fixtures do not qualify live providers. Legacy credit reconciliation, full payment/VIP/outbox, system and complete acceptance remain outstanding. Earlier counts describe their historical stages.
+
+```mermaid
+flowchart LR
+  Intent[Original transaction and preview] --> Review[Current authority and required independent approval]
+  Review --> Sources[Restore original consumption sources]
+  Review --> Hold[Reserve refundable original payment]
+  Hold --> Other[Another administrator verifies actual outcome]
+  Other --> Paid[Debit verified payout only]
+  Other --> Unpaid[Release confirmed unpaid remainder]
+  Other --> Unknown[Keep unknown or mismatch reconciling]
+```
+
+![Original compensation sources](assets/screenshots/admin-refund-original-sources.png)
+![Independently verified partial payout](assets/screenshots/admin-refund-partial-payment.png)
+![Amount mismatch](assets/screenshots/admin-refund-mismatch.png)
+![Partial payout closed](assets/screenshots/admin-refund-partial-closed.png)
+![Traditional Chinese dark mobile detail](assets/screenshots/admin-refund-mobile-dark.png)
+
+After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.

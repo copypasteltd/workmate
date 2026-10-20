@@ -1,4 +1,5 @@
 import { PaymentsPanel } from "./payments";
+import { RefundsPanel } from "./refunds";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -55,9 +56,15 @@ type Access = {
   me: { user: { id: string } };
   has: (permission: string) => boolean;
 };
-type FeeAction = "top_up" | "gift" | "debit" | "credit_limit";
+type FeeAction = "top_up" | "gift" | "debit" | "credit_limit" | "refund";
 const root = "/v1/admin/billing/accounts";
-const actions: FeeAction[] = ["top_up", "gift", "debit", "credit_limit"];
+const actions: FeeAction[] = [
+  "top_up",
+  "gift",
+  "debit",
+  "credit_limit",
+  "refund",
+];
 const permission = (a: FeeAction) =>
   a === "credit_limit"
     ? "admin.billing.credit_limit.write"
@@ -70,6 +77,7 @@ export const canonicalFeeAction = (a: string) =>
     "billing.gift",
     "billing.debit",
     "billing.credit_limit.write",
+    "billing.refund",
   ].includes(a);
 const actionOf = (a: string): FeeAction =>
   a === "billing.credit_limit.write"
@@ -85,7 +93,9 @@ function useFeeName() {
         ? t("贈送額度", "Gift credit")
         : a === "debit"
           ? t("扣回原始額度", "Debit original credit")
-          : t("變更信用上限", "Change credit limit");
+          : a === "refund"
+            ? t("退款與消費補償", "Refund or compensate")
+            : t("變更信用上限", "Change credit limit");
 }
 function Amount({ value }: { value: Money }) {
   return <span className="number">{formatHKD(value.amount_micros)}</span>;
@@ -126,7 +136,6 @@ function AccountFacts({ account }: { account: Account }) {
 }
 export function AdminBilling({
   access,
-  onLegacy,
 }: {
   access: Access;
   onLegacy: (action: string) => void;
@@ -340,17 +349,14 @@ export function AdminBilling({
         refreshVersion={revision}
         onTopUp={(id, payment) => setEdit({ id, payment, action: "top_up" })}
       />
+      <RefundsPanel
+        access={access}
+        refreshVersion={revision}
+        onChanged={bump}
+      />
       <section className="panel fee-related">
         <h2>{t("相關操作", "Related actions")}</h2>
         <div className="fee-actions">
-          {access.has("admin.billing.refund") && (
-            <button
-              className="text-button"
-              onClick={() => onLegacy("billing.refund")}
-            >
-              {t("核對退款", "Review a refund")}
-            </button>
-          )}
           <Link className="text-link" to="/entitlements">
             {t("VIP 權益", "VIP entitlements")}
           </Link>
@@ -501,6 +507,7 @@ export function CanonicalFeeModal({
   const [selected, setSelected] = useState(initialAccount ?? ""),
     [accountInput, setAccountInput] = useState(initialAccount ?? ""),
     [action, setAction] = useState(initialAction),
+    [destination, setDestination] = useState("paid_balance"),
     [revision, setRevision] = useState(0),
     [snapshot, setSnapshot] = useState<{ command: any; preview: any } | null>(
       null,
@@ -517,14 +524,14 @@ export function CanonicalFeeModal({
       revision,
     );
   const ledger = useData<List<Entry>>(
-    selected && action === "debit"
+    selected && (action === "debit" || action === "refund")
       ? `${root}/${selected}/ledger?limit=100`
       : null,
     revision,
   );
   useEffect(() => {
     setSnapshot(null);
-  }, [selected, action]);
+  }, [selected, action, destination]);
   return (
     <Modal title={name(action)} onClose={onClose}>
       <ErrorNotice error={accounts.error ?? account.error ?? ledger.error} />
@@ -534,7 +541,9 @@ export function CanonicalFeeModal({
           <h2>
             {result.state === "pending_approval"
               ? t("已提交獨立審批", "Submitted for independent review")
-              : t("操作已完成", "Operation completed")}
+              : result.state === "reconciling"
+                ? t("退款金額已預留", "Refund amount reserved")
+                : t("操作已完成", "Operation completed")}
           </h2>
           <p>
             {result.state === "pending_approval"
@@ -542,10 +551,15 @@ export function CanonicalFeeModal({
                   "另一位同時具備費用操作與審批權限的管理員需核對此項操作。",
                   "A different administrator with both financial and approval permissions must review this operation.",
                 )
-              : t(
-                  "帳戶已更新，原始流水及審計記錄已保留。",
-                  "The account is updated and the original ledger and audit records are retained.",
-                )}
+              : result.state === "reconciling"
+                ? t(
+                    "請另一位管理員在退款記錄中核實實際付款結果。預留金額仍等待外部付款核實。",
+                    "Ask another administrator to verify the actual payout in Refund records. The reserved amount is awaiting external payment verification.",
+                  )
+                : t(
+                    "帳戶已更新，原始流水及審計記錄已保留。",
+                    "The account is updated and the original ledger and audit records are retained.",
+                  )}
           </p>
           <code className="fee-id" data-testid="fee-operation-id">
             {result.id}
@@ -569,6 +583,19 @@ export function CanonicalFeeModal({
             )}
           </div>
           <FeeCommandFacts id={selected} command={snapshot.command} />
+          {snapshot.command.action === "refund" && (
+            <p className="notice">
+              {snapshot.command.destination === "payment_method"
+                ? t(
+                    "此操作只會預留原付款中可退的金額。另一位管理員核實實際付款後才會扣除餘額。",
+                    "This reserves the refundable portion of the original payment. The balance is debited after another administrator verifies an actual payout.",
+                  )
+                : t(
+                    "補償退回原有贈額、付費來源或授信債務；原贈額到期時間繼續適用。已到期部分會保留補償與到期記錄。",
+                    "Compensation restores original promotional or paid funding, or cancels its credit debt. Original gift expiry still applies; expired amounts retain both compensation and expiry entries.",
+                  )}
+            </p>
+          )}
           <dl className="preview-details">
             <dt>{t("策略版本", "Policy version")}</dt>
             <dd>
@@ -701,9 +728,10 @@ export function CanonicalFeeModal({
                     ...(action === "top_up"
                       ? { payment_record_id: String(f.get("payment")) }
                       : {}),
-                    ...(action === "debit"
+                    ...(action === "debit" || action === "refund"
                       ? { original_entry_id: String(f.get("source")) }
                       : {}),
+                    ...(action === "refund" ? { destination } : {}),
                   };
                   const preview = await api(`${root}/${selected}/previews`, {
                     method: "POST",
@@ -726,6 +754,27 @@ export function CanonicalFeeModal({
                       ))}
                   </select>
                 </Field>
+                {action === "refund" && (
+                  <Field label={t("退款方式", "Refund destination")}>
+                    <select
+                      value={destination}
+                      onChange={(e) => setDestination(e.target.value)}
+                    >
+                      <option value="paid_balance">
+                        {t(
+                          "消費補償：按原資金來源退回",
+                          "Consumption compensation: restore original sources",
+                        )}
+                      </option>
+                      <option value="payment_method">
+                        {t(
+                          "原付款途徑：預留並核實外部付款",
+                          "Original payment method: reserve and verify payout",
+                        )}
+                      </option>
+                    </select>
+                  </Field>
+                )}
                 <Field
                   label={
                     action === "credit_limit"
@@ -768,27 +817,54 @@ export function CanonicalFeeModal({
                     <input name="expiry" type="datetime-local" required />
                   </Field>
                 )}
-                {action === "debit" && (
+                {(action === "debit" || action === "refund") && (
                   <Field
-                    label={t("原始入帳流水 ID", "Original funding entry ID")}
-                    hint={t(
-                      "只可扣回同一帳戶中尚未使用、未被預留及未過期的原始額度。",
-                      "Only unspent, unreserved and unexpired original funding in this account can be debited.",
-                    )}
+                    label={
+                      action === "refund"
+                        ? t("原始交易流水 ID", "Original transaction entry ID")
+                        : t("原始入帳流水 ID", "Original funding entry ID")
+                    }
+                    hint={
+                      action === "refund"
+                        ? destination === "payment_method"
+                          ? t(
+                              "選用此帳戶已核實且已入帳的原付款流水，只可退未使用及未預留的付費金額。",
+                              "Choose this account’s posted verified payment entry. Only unspent, unreserved paid funds can be refunded.",
+                            )
+                          : t(
+                              "選用此帳戶的原始消費流水。累計補償不可超過原消費，資金種類及贈額到期時間會保留。",
+                              "Choose this account’s original consumption entry. Cumulative compensation cannot exceed it; funding types and gift expiry are preserved.",
+                            )
+                        : t(
+                            "只可扣回同一帳戶中尚未使用、未被預留及未過期的原始額度。",
+                            "Only unspent, unreserved and unexpired original funding in this account can be debited.",
+                          )
+                    }
                   >
                     <input
                       name="source"
-                      aria-label={t(
-                        "原始入帳流水 ID",
-                        "Original funding entry ID",
-                      )}
+                      aria-label={
+                        action === "refund"
+                          ? t(
+                              "原始交易流水 ID",
+                              "Original transaction entry ID",
+                            )
+                          : t("原始入帳流水 ID", "Original funding entry ID")
+                      }
                       list="fee-sources"
                       pattern="[a-fA-F0-9-]{36}"
                       required
                     />
                     <datalist id="fee-sources">
                       {ledger.data?.items
-                        .filter((j) => ["gift", "top_up"].includes(j.kind))
+                        .filter((j) =>
+                          (action === "refund"
+                            ? destination === "payment_method"
+                              ? ["top_up"]
+                              : ["consume"]
+                            : ["gift", "top_up"]
+                          ).includes(j.kind),
+                        )
                         .map((j) => (
                           <option key={j.id} value={j.id}>
                             {j.kind} · {formatHKD(j.amount.amount_micros)}
@@ -842,9 +918,25 @@ export function FeeCommandFacts({ id, command }: { id: string; command: any }) {
       )}
       {command.original_entry_id && (
         <>
-          <dt>{t("原始入帳流水", "Original funding entry")}</dt>
+          <dt>{t("原始交易流水", "Original transaction entry")}</dt>
           <dd>
             <code>{command.original_entry_id}</code>
+          </dd>
+        </>
+      )}
+      {command.destination && (
+        <>
+          <dt>{t("退款方式", "Refund destination")}</dt>
+          <dd>
+            {command.destination === "payment_method"
+              ? t(
+                  "原付款途徑，等待實際付款核實",
+                  "Original payment method; actual payout verification required",
+                )
+              : t(
+                  "按原資金來源作消費補償",
+                  "Compensation to original funding sources",
+                )}
           </dd>
         </>
       )}
