@@ -12,6 +12,7 @@ import { CloudFiles } from "./cloud-files";
 import { ProjectSkills } from "./skills";
 import { SessionsCard, SignOutButton, NativeSignInButton } from "./sessions";
 import { Notifications, UnreadNotifications } from "./notifications";
+import { Entitlements } from "./entitlements";
 import { Schedules } from "./schedules";
 import {
   CompanySignIn,
@@ -3001,8 +3002,7 @@ function Usage() {
   const { t } = useI18n(),
     w = useWorkspace();
   const usage = useData(`/v1/tenants/${w.tenant}/usage`),
-    billing = useData(`/v1/tenants/${w.tenant}/billing`),
-    plan = useData(`/v1/tenants/${w.tenant}/plan`);
+    billing = useData(`/v1/tenants/${w.tenant}/billing`);
   return (
     <>
       <PageHeader
@@ -3052,31 +3052,7 @@ function Usage() {
           <small>{t("含獲批信用額度", "Includes approved credit limit")}</small>
         </div>
       </div>
-      <section className="card plan-card">
-        <div>
-          <span className="eyebrow">YOUR EFFECTIVE PLAN</span>
-          <h2>{plan.data?.body.name ?? "Starter"}</h2>
-          <p className="muted">
-            {t(
-              "企業與個人權益會按目前有效期限合併判定。VIP 不會增加帳戶餘額。",
-              "Active personal and workspace grants determine your plan. VIP does not add wallet credit.",
-            )}
-          </p>
-          <p>
-            {t("未完成工作上限", "Active task limit")}:{" "}
-            {plan.data?.body.max_active_tasks ?? "—"} ·{" "}
-            {t("單次預算上限", "Task budget limit")}:{" "}
-            <Money value={plan.data?.body.max_task_budget_micros} />
-          </p>
-          <p className="muted">
-            {t(
-              "排隊、待補資料和待核對的工作也計入上限。實際執行另受企業共用名額與服務容量限制；排隊時不會呼叫模型。",
-              "Queued work, missing inputs and reconciliation count toward this limit. Execution also depends on shared workspace slots and service capacity; queued work makes no model call.",
-            )}
-          </p>
-        </div>
-        {plan.data?.ends_at && <DateText value={plan.data.ends_at} />}
-      </section>
+      <Entitlements key={w.tenant} tenant={w.tenant} />
       {billing.error ? (
         <div className="notice">
           {t(

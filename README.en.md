@@ -314,3 +314,23 @@ The 2026-10-20 payment increment rerun retains Web membership 6/6 (164 source fi
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
 
 Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+## Effective access and entitlement notifications (stage 47)
+
+Usage consumes the original EffectiveEntitlements response: active personal/current-workspace features, server confirmation time, entitlement revision and the next activation/expiry boundary. Local consent, project authorization and budget remain independent checks. Supplementary notifications retain the actual change, grant revision and read state, with explicit pagination. Without active VIP the current free plan applies; VIP does not add wallet credit.
+
+```mermaid
+flowchart LR
+  Session[Current session and workspace] --> Server[Server-time access]
+  Server --> Access[Features and quotas]
+  Server --> Notice[Own change notifications]
+  Access --> Recheck[Resource budget and local consent at use]
+  Session --> Fence[Discard late replies after workspace change or logout]
+```
+
+The page refreshes within fifteen seconds and at the next boundary. Failures clear old rights; late responses cannot restore a signed-out account. Actual Admin grant/independent approval and suspension are checked against customer canonical reads. English light desktop and 375px Traditional Chinese dark screenshots come from real browser pages. Full native installer journeys and system acceptance remain independently tracked.
+
+![Effective customer access](assets/screenshots/67-effective-entitlements.png)
+![Mobile dark entitlements and notifications](assets/screenshots/68-entitlements-mobile-dark.png)
+
+The native screenshot review exposed a stale plan heading after a rights update. Plan name, task/budget limits and effective rights now refresh together and render only when the subject revision and pinned plan IDs agree. Boundary refresh uses the server confirmation time rather than the device clock.
