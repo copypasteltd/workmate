@@ -53,7 +53,7 @@ flowchart LR
 
 ## 2026-10-20 当前源码与预览复核
 
-此前无边框预览及侧栏 ZIP 的原字节分别保留于各仓库的 `release/frameless-stage30/`、`release/sidepanel-stage30/`。Delivery 的 `evidence/stage30-native-surfaces/` 保留原报告、清单、截图和四项二进制摘要映射，已逐项校验未改变。当前 `release/frameless/`、`release/sidepanel/` 承载从最新源码重新生成的预览；仍使用 localhost、未签名，版本号 0.5.0 由摘要区分。
+此前无边框预览及侧栏 ZIP 的原字节分别保留于各仓库的 `release/frameless-stage30/`、`release/sidepanel-stage30/`。Delivery 的 `evidence/stage30-native-surfaces/` 保留原报告、清单、截图和四项二进制摘要映射，已逐项校验未改变。阶段 49 的包及对应报告另保留于 `release/frameless-stage49/`、`release/sidepanel-stage49/` 和 `evidence/stage49-before-finance/`。当前 `release/frameless/`、`release/sidepanel/` 随 [费用通知页面](50-durable-financial-notifications.md) 的新源码重建，并重新执行真实打包窗口/侧栏及三端费用流程；仍使用 localhost、未签名，版本号 0.5.0 由摘要区分。
 
 真实重跑发现 Desktop 登录成功后仍停在登录页：renderer 已使用 `/v1/session/context`，主进程的旧 API 白名单却拒绝了该路径。现已将白名单提取到 `src/config.ts` 的 `rendererApiOperation`：会话上下文限 GET，企业创建入口、规范成员操作、分析证据和报告使用各自明确的路径/方法；现有用户业务范围保留。renderer 的认证凭证、Admin、跨域、规范化后越界及带歧义的编码路径继续拒绝。Desktop 类型检查、25 项测试通过；当前源码及重新打包的真实窗口/侧栏各十组通过。源码回执与对应 verifier 原字节独立归档；前三次登录页停留失败及诊断截图同样保留，不计为通过。
 

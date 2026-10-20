@@ -8,17 +8,21 @@ import re
 import subprocess
 from verify_resource_evidence import history as resource_repair_history
 from verify_vip_credit_evidence import history as vip_credit_repair_history
+from verify_financial_evidence import history as financial_repair_history
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('durable_financial_delivery', [47,83,84,87,88,89,94,96,98,100,102],
+     '规范账目、收款登记/核实、退款要求/结果在来源事务写持久金融outbox，失败整体回滚；独立批次重试、唯一收件、当前个人/企业Owner/Admin及会话/成员/执行模式复查，普通成员不读企业资金。未知金额保留null、原要求与实付分开，BigInt六位HKD；Web、独立无边框Desktop、真正右侧Side Panel有余额、通知及跨端已读/未读、失败/撤权/退出清空。16组专项纳入当前410项全量，八组三端实际工作流、四份补充严格响应和八张原截图为局部证据。061两库各120张原公共表完全一致，001–060及历史空校验值不改，不补造历史通知。全部通知渠道、旧授权治理、生产/安装、角色交付与102项综合验收继续保留。',
+     ['platform_regression','financial_ui','financial_migrations'], ['technical/50-durable-financial-notifications.md']),
     ('atomic_vip_and_explicit_credit', [47,83,84,87,88,89,94,96,98,100,101,102],
-     '原规范 VIP 与显式赠额组成单一父命令，锁内复用原规范投影/账本并整体提交，独立不可变子操作与真实资金参考保留；双方当前权限/整体范围/重叠拒绝/MFA、金额/时长/香港日限、双版本和原策略/前态/会话复查，任一高风险则一份独立审批，待审无业务效果。事务末端约束拒绝半成功/脱离子项，审计或关联失败整体回滚。19组专项包含在394项当前全量，9组实际后台和用户读取、12份原截图及3份原规范响应/1份补充严格命令为局部证据。060两库各119张原公共表前后完全一致，旧001–059和真实空校验值不改；两个脚本验证错误及首次专项夹具错误原字节保留。完整商业通知/金融outbox、旧授权治理、角色专业交付和生产/安装/全部102项综合验收仍保留。',
+     '原规范 VIP 与显式赠额组成单一父命令，锁内复用原规范投影/账本并整体提交，独立不可变子操作与真实资金参考保留；双方当前权限/整体范围/重叠拒绝/MFA、金额/时长/香港日限、双版本和原策略/前态/会话复查，任一高风险则一份独立审批，待审无业务效果。事务末端约束拒绝半成功/脱离子项，审计或关联失败整体回滚。19组专项包含在410项当前全量，9组实际后台和用户读取、12份原截图及3份原规范响应/1份补充严格命令为局部证据。060两库各119张原公共表前后完全一致，旧001–059和真实空校验值不改；两个脚本验证错误及首次专项夹具错误原字节保留。后续费用金融outbox已另列；完整通知渠道、旧授权治理、角色专业交付和生产/安装/全部102项综合验收仍保留。',
      ['platform_regression','admin_vip_credit','vip_credit_migrations','runtime_schemas'], ['technical/49-atomic-vip-and-explicit-credit.md']),
     ('enterprise_seats_and_storage_admission', [47,83,84,88,89,94,96,98,100,102],
-     '企业有效固定方案决定共用容量，个人VIP不扩容；锁内所有启用成员与全部保留版本、独立副本、私人内容和有效上传承诺统计。邀请/恢复/Admin审批和对象写入前、数据库写入/提交共用守卫；并发幂等、长事务真实时钟、降级不删旧数据、既有预留不重复计费、实际清理后释放。当前Web/Admin八组页面、三端读取和394项当前全量为局部证据；058/059两库各23类旧行前后完全一致，首次374项中1项私人删除冲突及定位歧义原回执保留，前向修复不改已应用SQL。完整商业/生产/安装/角色与102项综合验收继续保留。',
+     '企业有效固定方案决定共用容量，个人VIP不扩容；锁内所有启用成员与全部保留版本、独立副本、私人内容和有效上传承诺统计。邀请/恢复/Admin审批和对象写入前、数据库写入/提交共用守卫；并发幂等、长事务真实时钟、降级不删旧数据、既有预留不重复计费、实际清理后释放。当前Web/Admin八组页面、三端读取和410项当前全量为局部证据；058/059两库各23类旧行前后完全一致，首次374项中1项私人删除冲突及定位歧义原回执保留，前向修复不改已应用SQL。完整商业/生产/安装/角色与102项综合验收继续保留。',
      ['platform_regression','resource_ui','resource_migrations','resource_erasure_migrations','native_vip'], ['technical/48-enterprise-seat-and-storage-enforcement.md']),
     ('canonical_vip_lifecycle_and_live_entitlements', [47,83,84,88,89,94,96,98,100,102],
      '原始 VIP 授予/修订命令、签名游标与实际 Admin 冻结表单；个人/企业及模式主体版本、固定方案和原操作者来源、显式重叠/预约替换、真实同版本续期、暂停/恢复/撤销/实时到期，当前 MFA/整体范围/重叠拒绝、付费财务读取、独立审批及原会话/策略/前态复查，并发幂等和审计事务回滚。用户原始 PlanList/EffectiveEntitlements、合并功能和最大配额、独立资源/预算、持久个人通知/outbox与真实页面为局部证据。057 已实际应用，两库 001–056 原文件不变；测试库有完整前后行比较，主库首次自动启动先执行 057，缺少主库升级前行快照，失败与限制保留。席位/存储的后续局部执行另列；VIP加显式赠额的后续有界组合另列；旧授权规范迁移、完整安装/SSO/系统和全部综合验收继续保留。',
@@ -60,7 +64,7 @@ CLUSTERS = [
      '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者同步迁移，不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、HTTP User schema、Web 初始化及当前十二组 Web/源码 Electron/MV3 认证和会话恢复独立记录；安装包、完整身份/系统及原生成员旅程仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('canonical_authentication_and_retry_recovery', [1,2,3,35,36,39,51,55,60,100],
-     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 795 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
+     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 803 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
      '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；当前规范认证/上下文上的十二组真实源码原生会话检查另列，含 1440px 浅色/375px 深色与双面板换账号。完整 SSO、安装/系统矩阵和 TC 全部条件仍未完成。',
@@ -190,8 +194,8 @@ REMAINING = {
  94:'项目方法、清理记录和规范 Admin 成员管理已有权限子流程证据，包含当前企业范围、重叠项目 deny、近期 MFA 与撤权；全动作/字段/范围/导出及异步执行完整矩阵待完成。',
  98:'清理记录已验证组合筛选/URL/分页、有界滚动、四宽度、主题/语言、请求拒绝清空和失效重试对话框；全后台筛选、列配置、异常及完整键盘/缩放仍待验证。',
  99:'可信方法版本/撤销已补强；模型/费率的受控验证发布、兼容版本与后台全闭环待完成。',
- 100:'规范成员操作的原因/前后差异审计、不可变有效策略、冻结预览及独立审批的原权限/版本/期限重查已有证据；全部资金/内容/权限策略、批次与生产审计留存仍待完成。',
- 101:'人工付款及原交易累计退款、原结算/还款资金桶补偿、过期赠额不复活、现金申请与独立实际分次付款、剩余未付/未知/差额对账、不可变事实及实际后台页面已有局部证据。历史授信来源人工对账、正式支付机构/回调、完整财务通知/用户费用消费者和全部退款矩阵仍待实现及验收。',
+ 100:'规范成员原因/前后差异审计、不可变有效策略、冻结预览及独立审批重查已有证据；费用原来源与通知意图同事务、当前接收权限、并发投递及三端读取已局部验证。全部资金/内容/权限策略、批次、其他通知渠道与生产审计留存仍待完成。',
+ 101:'人工付款及原交易累计退款、原结算/还款资金桶补偿、过期赠额不复活、现金申请与独立实际分次付款、剩余未付/未知/差额对账、不可变事实及实际后台页面已有局部证据；费用事务通知与三端消费者另有局部验证。历史授信来源人工对账、正式支付机构/回调、完整通知渠道及全部退款矩阵仍待实现及验收。',
  102:'当前方案能力及领取时用户并发已复查，企业/能力槽位按数据库统一约束；全部媒体、团队、调度、席位和存储交集未齐。',
 }
 
@@ -478,6 +482,8 @@ def main():
     assert hashlib.sha256(restored_srs.replace('\n','\r\n').encode()).hexdigest() == baseline['requirements_sha256']
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
+        'financial_ui': DEV/'copypaste-delivery/evidence/financial-ui.json',
+        'financial_migrations': DEV/'copypaste-delivery/evidence/financial-migrations.json',
         'admin_vip_credit': DEV/'copypaste-delivery/evidence/admin-vip-credit.json',
         'vip_credit_migrations': DEV/'copypaste-delivery/evidence/vip-credit-migrations.json',
         'resource_ui': DEV/'copypaste-delivery/evidence/resource-ui.json',
@@ -537,11 +543,18 @@ def main():
         assert report.get('status', 'passed') == 'passed'
         assert all(c['status'] == 'passed' for c in checks)
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
+        if key == 'financial_ui':
+            assert len(checks) == 8 and len(report['source_files']) == 808 and report['source_unchanged']
+            assert report['owned_native_credentials_cleared'] and report['owned_sessions_closed'] and report['owned_admin_principals_disabled']
+            assert report['artifacts_unchanged_after_run'] and not report['user_browser_tabs_touched']
+            assert report['model_calls'] == report['external_payments'] == 0
+            for source, digest in report['source_files'].items():
+                assert fingerprint(DEV/source) == digest, f'Stale financial workflow: {source}'
         if key in {'membership_ui', 'admin_membership_ui', 'native_auth_recovery'}:
             expected_checks, expected_sources = {
-                'membership_ui': (6, 184),
-                'admin_membership_ui': (6, 214),
-                'native_auth_recovery': (12, 795),
+                'membership_ui': (6, 188),
+                'admin_membership_ui': (6, 218),
+                'native_auth_recovery': (12, 803),
             }[key]
             assert len(checks) == expected_checks and report['model_calls'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
@@ -560,7 +573,7 @@ def main():
                 assert fingerprint(actual_source) == expected_digest, f'Stale {key} evidence: {source}'
         if key == 'resource_ui':
             assert len(checks) == 8 and len(report['screenshots']) == 8
-            assert report['source_unchanged'] is True and len(report['source_files']) == 797
+            assert report['source_unchanged'] is True and len(report['source_files']) == 805
             assert report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
@@ -578,7 +591,7 @@ def main():
                 assert actual_source.is_relative_to(DEV.resolve())
                 assert fingerprint(actual_source) == expected_digest, f'Stale fee UI evidence: {source}'
         if key == 'admin_plans':
-            assert len(checks) == 6 and len(report['source_files']) == 648
+            assert len(checks) == 6 and len(report['source_files']) == 651
             assert report['source_unchanged'] is True and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
@@ -589,7 +602,7 @@ def main():
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
             assert report['source_unchanged'] is True
-            assert len(report['source_files']) == (800 if key == 'native_vip' else 797)
+            assert len(report['source_files']) == (808 if key == 'native_vip' else 805)
             for source, expected_digest in report['source_files'].items():
                 actual = (DEV/source).resolve()
                 assert actual.is_relative_to(DEV.resolve())
@@ -747,7 +760,7 @@ def main():
         if key in {'admin_membership_wire','admin_account_wire'}:
             assert report['owned_admin_principals_disabled'] is True
         if key == 'platform_regression':
-            assert report['counts']['tests'] == 394 and len(report['source_files']) == 703
+            assert report['counts']['tests'] == 410 and len(report['source_files']) == 707
             assert report['counts']['tests'] == report['counts']['pass'] and report['counts']['fail'] == 0
             assert report['source_unchanged'] is True and report['source_files']
             assert report['verifier_sha256'] == fingerprint(DEV/'copypaste-delivery/scripts/qa-platform-regression.mjs')
@@ -811,11 +824,12 @@ def main():
              'vip_verification':vip_repair_history(),
              'resource_verification':resource_repair_history(),
              'vip_credit_verification':vip_credit_repair_history(),
+             'financial_verification':financial_repair_history(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},
             'summary':dict(Counter(r['assessment'] for r in rows)), 'fully_accepted_requirements':0,
-            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical. Rebuilt frameless Desktop and native Side Panel previews have ten byte-bound appearance checks and six actual packaged Desktop/native Side Panel VIP/authentication subflows, including coherent live plan/rights refresh, own notification reads and sign-out. See dev/copypaste-delivery/evidence/native-surfaces-artifacts.json. Twelve current-source Web/Electron/MV3 session subflows remain a separate report. Setup/Portable have byte provenance and were not installed by these checks. Localhost origins; no signing or production publication. Full packaged authentication, SSO, installation and system acceptance remain outstanding.',
+            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical. Rebuilt frameless Desktop and native Side Panel previews have ten byte-bound appearance checks, six actual native VIP/authentication subflows and eight actual three-client financial workflows with exact balances, read state, unknown refunds and current authorization. See dev/copypaste-delivery/evidence/native-surfaces-artifacts.json. Stage 49 binaries and exact evidence remain archived separately. Twelve current-source Web/Electron/MV3 session subflows remain a separate report. Setup/Portable have byte provenance and were not installed by these checks. Localhost origins; no signing or production publication. Full packaged authentication, SSO, installation and system acceptance remain outstanding.',
             'repositories':repositories,'evidence':evidence,
             'unresolved_runtime_evidence':[],
             'resolved_runtime_evidence':resolved_runtime_evidence,

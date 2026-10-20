@@ -1,8 +1,8 @@
 # CopyPaste 0.5.0 代码交付入口
 
-当前企业容量增量最终验证：Platform 375/375（699 份来源）、Web/Admin 容量 8/8、Admin VIP/方案各 6/6、费用 8/8、原生权益 6/6、原生外观 10/10、源码认证 12/12，原规范响应 122/122。企业席位、保留资产与上传预留已实际约束；VIP 加赠额组合、完整商业和全部综合验收继续跟踪。
+当前费用通知增量最终验证：Platform 410/410（707 份来源）、真实三端费用 8/8（808 份来源）、4 份补充严格响应和 8 张未编辑截图；原规范响应另为 125/125，退款补充检查 14/14。已有后台、成员、无边框窗口、原生侧栏、权益及会话恢复十项上下文执行均通过。061 两库升级各 120 张原公共表完整行摘要一致；完整商业及全部综合验收继续跟踪。
 
-本轮重建下列无边框 Desktop／右侧原生 Side Panel，新增企业容量读取，见 [企业容量与事务约束](technical/48-enterprise-seat-and-storage-enforcement.md)。058/059 均完成原生两库、23 类旧行前后比较；首次全量的私人附件删除冲突与原失败记录保留，通过前向迁移修复。057 主库当时缺少升级前行证明的历史限制继续保留。后文 354、340、324 及更早数字均为各阶段历史记录。
+本轮随最新源码重建下列无边框 Desktop／原生 Side Panel，新增 [事务费用通知与三端账户](technical/50-durable-financial-notifications.md)。真实费用事实与 outbox 同事务提交，已读不影响资金；当前权限和未知退款明确区分。此前企业容量、058/059 原生升级及 057 主库缺少升级前行证明的历史限制仍按各自报告保留。旧客户端包存入阶段 49 归档，不覆盖历史字节。后文 375、354、340、324 及更早数字均为各阶段历史记录。
 
 新增方案定义子流程：不可变草稿、新版本、冻结发佈比较、独立审批和历史授权固定绑定，见 [方案版本与升级](technical/46-immutable-plans-and-legacy-grant-bindings.md)。原生数据库前向升级 056；完整 VIP/配额/用户端规范接口仍逐项保留。下方 324 项退款回执属于前阶段记录。
 
@@ -16,7 +16,7 @@
 
 ## 本次无边框与侧栏客户端预览
 
-最新 Desktop 使用品牌自绘标题栏，无原生边框及 Electron 默认菜单；扩展按钮打开 Chrome 原生全局侧栏，默认右侧并遵从浏览器用户位置偏好。真实打包 EXE 与侧栏外观验证 10/10，实际原生权限／登录联调 6/6；原有扩展业务 8/8 是历史回归。说明及实际截图见 [窗口与原生侧栏](technical/30-native-window-and-browser-sidepanel.md)。
+最新 Desktop 使用品牌自绘标题栏，无原生边框及 Electron 默认菜单；扩展按钮打开 Chrome 原生全局侧栏，默认右侧并遵从浏览器用户位置偏好。真实打包 EXE 与侧栏外观验证 10/10，实际原生权限／登录联调 6/6，新增三端费用 8/8；原有扩展业务 8/8 是历史回归。说明及实际截图见 [窗口与原生侧栏](technical/30-native-window-and-browser-sidepanel.md) 和 [费用视图](technical/50-durable-financial-notifications.md)。
 
 - 安装器：`dev/copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Setup.exe`。
 - 便携版：`dev/copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Portable.exe`。

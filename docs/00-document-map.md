@@ -86,3 +86,6 @@ ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 
 
 - [后台统一审批请求、原始契约与向前升级](technical/43-shared-admin-approval-requests.md)。
 - [规范 VIP 生命周期、个人／企业有效权益及三端同步](technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)。
+- [企业席位、存储与实际容量约束](technical/48-enterprise-seat-and-storage-enforcement.md)。
+- [VIP 与显式赠额的同事务组合开通](technical/49-atomic-vip-and-explicit-credit.md)。
+- [事务费用通知及 Web／无边框 Desktop／原生 Side Panel 账户视图](technical/50-durable-financial-notifications.md)。

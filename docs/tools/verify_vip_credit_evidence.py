@@ -46,14 +46,22 @@ def history():
     assert long_path['owned_temporary_clones_removed'] is True
     assert long_path['checks'][-1]['status'] == 'failed'
     assert 'Filename too long' in long_path['checks'][-1]['detail']
-    native = load(EVIDENCE / 'native-surfaces-artifacts.json')
+    # Phase 49 kept the phase 48 installer bytes. Phase 50 now rebuilds actual
+    # clients, so bind that historical claim to its exact archived receipt.
+    phase49 = load(EVIDENCE / 'stage49-before-finance/archive-map.json')
+    def phase49_file(source):
+        item = next(e for e in phase49['files'] if e['source'] == source)
+        file = ROOT / item['archived']
+        assert sha(file) == item['sha256']
+        return file
+    native = load(phase49_file('dev/copypaste-delivery/evidence/native-surfaces-artifacts.json'))
     prior_native = load(EVIDENCE / 'vip-credit-native-binding/artifacts-before.json')
     assert native['artifacts'] == prior_native['artifacts']
     assert native['desktop_archive'] == prior_native['desktop_archive']
     assert native['repositories'] == prior_native['repositories'] and native['at'] == prior_native['at']
     assert native['native_artifacts_rebuilt'] is False
     assert native['validation_refresh_verifier_sha256'] == sha(DEV / 'copypaste-delivery/scripts/refresh-native-surface-validation.mjs')
-    assert sha(DEV / 'copypaste-delivery' / native['validation']['path']) == native['validation']['sha256']
+    assert sha(phase49_file('dev/copypaste-delivery/' + native['validation']['path'])) == native['validation']['sha256']
     assert len(native['validation_history']) == 1
     assert native['validation_history'][0]['sha256'] == prior_native['validation']['sha256']
     assert sha(DEV / 'copypaste-delivery' / native['validation_history'][0]['path']) == prior_native['validation']['sha256']
@@ -122,7 +130,7 @@ def history():
     ui = load(EVIDENCE / 'admin-vip-credit.json')
     assert ui['status'] == 'passed' and ui['errors'] == [] and len(ui['checks']) == 9
     assert all(c['status'] == 'passed' for c in ui['checks'])
-    assert ui['source_unchanged'] and len(ui['source_files']) == 797
+    assert ui['source_unchanged'] and len(ui['source_files']) == 805
     assert ui['browser_closed'] and not ui['user_browser_tabs_touched']
     assert ui['owned_sessions_closed'] and ui['owned_admin_principals_disabled']
     assert ui['model_calls'] == ui['external_payments'] == 0
