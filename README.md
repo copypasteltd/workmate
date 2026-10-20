@@ -384,3 +384,12 @@ Delivery `npm run qa:admin-vip` 使用真实邮箱／TOTP 管理员和真实用�
 ![繁中深色移动预览](assets/screenshots/68-vip-mobile-frozen-preview.png)
 
 完整席位／存储控制、VIP 与赠额原子组合、全部后台权限／导出和综合验收继续按主文档追踪。模型和外部支付为明确模拟，登录、权限和账务记录真实执行。
+
+## 企业席位与存储执行（阶段 48）
+
+企业列表新增容量面板，显示启用席位、保留文件、有效上传预留、上限与超额状态。操作要求当前 `admin.tenants.read` 和 `admin.entitlements.read` 同时覆盖整个企业；项目范围 allow 不足，重叠 deny 拒绝读取。读取审计、失败/撤权清空、繁中/英文、浅深主题和窄屏状态均沿用共用控制。
+
+容量为服务端实际统计，私人文件只计入企业合计，不显示其明细。增加/恢复成员及审批执行会重新校验现行容量；单纯修改已启用成员角色不重复占席位。
+
+![实际后台容量](assets/screenshots/71-admin-workspace-capacity.png)
+![实际权限撤销](assets/screenshots/74-admin-capacity-permission-revoked.png)

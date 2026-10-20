@@ -63,9 +63,11 @@ import {
   AlertTriangle,
   Clock,
   FileText,
+  Gauge,
 } from "lucide-react";
 import { api, post, patch, download } from "./api";
 import { AdminMembershipManager, MembershipChangeFacts } from "./memberships";
+import { AdminResources } from "./resources";
 import { AdminAccountManager, AccountChangeFacts } from "./accounts";
 import { AdminDeletions } from "./deletions";
 import {
@@ -1232,6 +1234,18 @@ function Section({ section }: { section: string }) {
                             }}
                           />
                         )}
+                        {active === "tenants" &&
+                          a.has("admin.entitlements.read") && (
+                            <button
+                              title={t("企業容量", "Workspace capacity")}
+                              onClick={() => {
+                                setRow(r);
+                                setDialog("resources");
+                              }}
+                            >
+                              <Gauge size={15} />
+                            </button>
+                          )}
                         {active === "tenants" && (
                           <button
                             title={t(
@@ -2188,6 +2202,8 @@ function AdminDialog({
         }}
       />
     );
+  if (kind === "resources")
+    return <AdminResources key={row.id} tenant={row.id} onClose={onClose} />;
   const titles: Record<string, [string, string]> = {
     tenant: ["變更企業狀態", "Change workspace status"],
     content: ["管理內容狀態", "Manage content"],

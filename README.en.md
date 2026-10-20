@@ -384,3 +384,12 @@ Delivery `npm run qa:admin-vip` passes six actual browser groups and nine origin
 ![Mobile dark frozen preview](assets/screenshots/68-vip-mobile-frozen-preview.png)
 
 Complete seat/storage controls, atomic VIP plus credit, the entire Admin permission/export matrix and original integrated acceptance conditions remain tracked in the main docs. Model/payment dependencies are explicitly synthetic; authentication, authorization and accounting records execute for real.
+
+## Enterprise seat and storage enforcement (stage 48)
+
+The tenant directory now opens a capacity panel with active seats, retained file bytes, valid upload reservations, limits and over-limit status. Both current `admin.tenants.read` and `admin.entitlements.read` must cover the whole workspace. Project-only allows are insufficient, and overlapping denies reject the aggregate. Reads are audited; failed or revoked reads clear old totals. English/Traditional Chinese, both themes and narrow layouts use existing controls.
+
+Private files contribute only to aggregate usage. Member creation/restoration and independent approval execution recheck current capacity; changing an already-active member role does not allocate another seat.
+
+![Actual admin capacity](assets/screenshots/71-admin-workspace-capacity.png)
+![Revoked capacity permission](assets/screenshots/74-admin-capacity-permission-revoked.png)
