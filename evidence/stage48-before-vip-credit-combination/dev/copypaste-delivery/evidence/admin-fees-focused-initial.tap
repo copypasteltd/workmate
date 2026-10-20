@@ -1,0 +1,260 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# Subtest: fee schema snapshot is byte-derived from the unchanged original OpenAPI
+ok 1 - fee schema snapshot is byte-derived from the unchanged original OpenAPI
+  ---
+  duration_ms: 10056.669
+  ...
+# Subtest: financial preview has no ledger, expiry or account effects and freezes the real policy
+ok 2 - financial preview has no ledger, expiry or account effects and freezes the real policy
+  ---
+  duration_ms: 575.1774
+  ...
+# {"request_id":"35b9a58e-fd2a-4275-a7f4-1971cf0bdef2","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: personal and enterprise gifts retain actual administrator, policy and journal identity; replay never double-credits
+not ok 3 - personal and enterprise gifts retain actual administrator, policy and journal identity; replay never double-credits
+  ---
+  duration_ms: 200.9892
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:9195'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"35b9a58e-fd2a-4275-a7f4-1971cf0bdef2"}}
+    
+    500 !== 202
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 202
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:397:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"a3b41c9a-0b97-4256-95ad-1331d4fcf512","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: debits bind an original funding bucket and cannot consume another source, expired credit or held funds
+not ok 4 - debits bind an original funding bucket and cannot consume another source, expired credit or held funds
+  ---
+  duration_ms: 135.5661
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:10925'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading '0')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    debit (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:460:41)
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:467:41)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"60847c86-c231-4e2d-8daa-172dae0a764a","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: daily limits use exact amounts and replay; delegated caps cannot be widened
+not ok 5 - daily limits use exact amounts and replay; delegated caps cannot be widened
+  ---
+  duration_ms: 184.0606
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:12453'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    500 !== 202
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 202
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:519:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"b1d44c85-e799-453a-ba6e-c6f3383f627b","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: independent fee approval requires the exact version/hash, two actual authorized actors and both permissions
+not ok 6 - independent fee approval requires the exact version/hash, two actual authorized actors and both permissions
+  ---
+  duration_ms: 470.0437
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:13778'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'pending_approval'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'pending_approval'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:561:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"9eea8ee9-f90e-421f-91f8-51786ab7d18e","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: approval fails closed after original session revocation, authority/target or policy changes; rejection remains possible
+not ok 7 - approval fails closed after original session revocation, authority/target or policy changes; rejection remains possible
+  ---
+  duration_ms: 208.2595
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:15503'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'pending_approval'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'pending_approval'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:621:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"939b505c-f76d-4bfb-8569-f139bfd568c6","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: credit limits accept zero and exact integers beyond JS precision while preserving debt and holds
+not ok 8 - credit limits accept zero and exact integers beyond JS precision while preserving debt and holds
+  ---
+  duration_ms: 170.9631
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:16939'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + undefined
+    - 'pending_approval'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'pending_approval'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:671:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"b7dee4be-69e7-48a1-b11b-54ebae077713","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: financial intent is immutable at the database boundary and legacy paths cannot bypass canonical controls
+not ok 9 - financial intent is immutable at the database boundary and legacy paths cannot bypass canonical controls
+  ---
+  duration_ms: 199.1095
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:18394'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected rejection.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'rejects'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:730:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"98c1ad0a-495b-456c-98f2-3a5cb612a7e4","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: scope denies cover personal/enterprise financial writes and operation reads; MFA is live
+not ok 10 - scope denies cover personal/enterprise financial writes and operation reads; MFA is live
+  ---
+  duration_ms: 274.4222
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:19737'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    400 !== 403
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 403
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:802:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"6ed420a2-7e89-47a6-9e6a-e0c0c9cabb47","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42703"}
+# Subtest: concurrent task reservation and financial write serialize without a foreign-key lock upgrade deadlock
+not ok 11 - concurrent task reservation and financial write serialize without a foreign-key lock upgrade deadlock
+  ---
+  duration_ms: 260.9452
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:20762'
+  failureType: 'testCodeFailure'
+  error: '{"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"6ed420a2-7e89-47a6-9e6a-e0c0c9cabb47"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:837:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 2
+# fail 9
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 41583.9767

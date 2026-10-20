@@ -1,0 +1,129 @@
+{
+  "at": "2026-10-20T03:06:03.651Z",
+  "status": "passed",
+  "scope": "Actual native database migration metadata and RLS table checks, with original startup/migration logs; read-only verification, not complete financial or production acceptance",
+  "databases": [
+    {
+      "database": "copypaste",
+      "migrations": [
+        {
+          "version": 53,
+          "source_sha256": "c2c4b5be925adf7a10a06d4df1b31efeab117e327ffa580d1402bda9a725ca97"
+        },
+        {
+          "version": 54,
+          "source_sha256": "df262502e8c637cb74c856803a402669d8a5bdd1b15740e009e1ff9ecd285755"
+        },
+        {
+          "version": 55,
+          "source_sha256": "276ace6dd3471227257efb6edc8c11d7b7dd7f83fe1c8366c290a0e3f3a1570e"
+        }
+      ],
+      "tables": [
+        {
+          "relname": "billing_credit_legacy_sources",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_credit_opening_balances",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_credit_refund_cancellations",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_credit_repayment_parts",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refund_closures",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refund_events",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refund_source_parts",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refunds",
+          "relrowsecurity": true
+        }
+      ],
+      "checksums_match": true,
+      "read_only": true
+    },
+    {
+      "database": "copypaste_test",
+      "migrations": [
+        {
+          "version": 53,
+          "source_sha256": "c2c4b5be925adf7a10a06d4df1b31efeab117e327ffa580d1402bda9a725ca97"
+        },
+        {
+          "version": 54,
+          "source_sha256": "df262502e8c637cb74c856803a402669d8a5bdd1b15740e009e1ff9ecd285755"
+        },
+        {
+          "version": 55,
+          "source_sha256": "276ace6dd3471227257efb6edc8c11d7b7dd7f83fe1c8366c290a0e3f3a1570e"
+        }
+      ],
+      "tables": [
+        {
+          "relname": "billing_credit_legacy_sources",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_credit_opening_balances",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_credit_refund_cancellations",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_credit_repayment_parts",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refund_closures",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refund_events",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refund_source_parts",
+          "relrowsecurity": true
+        },
+        {
+          "relname": "billing_refunds",
+          "relrowsecurity": true
+        }
+      ],
+      "checksums_match": true,
+      "read_only": true
+    }
+  ],
+  "logs": [
+    {
+      "path": "evidence/refunds-primary-native-database-start.log",
+      "sha256": "e653a04ebd2cf8bfb160d5eca49c42c4ca5be1356dad7c913359e4cc69830639"
+    },
+    {
+      "path": "evidence/refunds-live-migrations-053-055.log",
+      "sha256": "791219558018a4d6256cb639e3a289d668baba1dbeb2da506b0623f8b708eff4"
+    }
+  ],
+  "source_files": {
+    "copypaste-platform/migrations/053-credit-repayment-refund-lineage.sql": "c2c4b5be925adf7a10a06d4df1b31efeab117e327ffa580d1402bda9a725ca97",
+    "copypaste-platform/migrations/054-source-bound-refund-facts.sql": "df262502e8c637cb74c856803a402669d8a5bdd1b15740e009e1ff9ecd285755",
+    "copypaste-platform/migrations/055-independent-cash-refund-outcomes.sql": "276ace6dd3471227257efb6edc8c11d7b7dd7f83fe1c8366c290a0e3f3a1570e"
+  },
+  "verifier_sha256": "6c835f107ec20c72da3dc09cf9267cd4c9cf1587b11cc18738be88faeb536592"
+}

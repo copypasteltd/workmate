@@ -1,0 +1,66 @@
+{
+  "at": "2026-10-20T11:17:34.950Z",
+  "origin": "http://localhost:4310",
+  "scope": "Actual local HTTP from supplemental combined Admin forms and original shared approval; original embedded DTOs remain unchanged",
+  "samples": [
+    {
+      "name": "combined-preview",
+      "operation": "supplemental:previewVipCredit",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "ea0c1e2c-a811-4757-a7bf-527d84ec587c",
+        "payload_hash": "2bbbef24b572c055468646e839c0dee9a94a52053d1ef8bb0ec94c6fd82191a7",
+        "target_ids": [
+          "53c75bda-8831-4834-9faa-82f4d4f1cff9",
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+          "deee6191-04bc-43c6-bd53-e8fa8fbd8cdf"
+        ],
+        "policy_version_id": "f4b84f89-f100-4305-a229-ba80ab9ec04c",
+        "decision": "recent_mfa",
+        "missing_permission_keys": [],
+        "impact_summary": "Grant this fixed VIP interval and explicit expiring HKD credit atomically. Independent credit reference; no charge or renewal.",
+        "expires_at": "2026-10-20T11:22:10.811Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "53c75bda-8831-4834-9faa-82f4d4f1cff9",
+            "version": 1
+          },
+          {
+            "id": "deee6191-04bc-43c6-bd53-e8fa8fbd8cdf",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "combined-success",
+      "operation": "supplemental:commitVipCredit",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "ba81b1a9-9655-4102-8c43-760f9d5e849b",
+        "action": "entitlements.grant_with_credit",
+        "target_ids": [
+          "53c75bda-8831-4834-9faa-82f4d4f1cff9",
+          "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+          "deee6191-04bc-43c6-bd53-e8fa8fbd8cdf"
+        ],
+        "actor_id": "f2ad0c63-bbc3-4155-945e-fc1e0ff3a656",
+        "state": "succeeded",
+        "payload_hash": "087d8293cccd56fbcc62386aa2bb4355d58913e71dcebcbc23672c39f65e19e2",
+        "policy_version_id": "f4b84f89-f100-4305-a229-ba80ab9ec04c",
+        "version": 2,
+        "created_at": "2026-10-20T11:17:12.041Z",
+        "result_ids": [
+          "a73d2914-84b1-4c6b-8e45-09e440b36fdb",
+          "0ad7431a-ae89-409d-aec9-3a8fea501c45",
+          "3ed5953b-40ac-4cbb-b76e-1ec1cfacec04",
+          "b9d9d6dc-47fe-4e92-8da3-e57fa7a651bb",
+          "bf593caa-444a-4a23-a8cd-f05108e7e9de"
+        ]
+      }
+    }
+  ]
+}

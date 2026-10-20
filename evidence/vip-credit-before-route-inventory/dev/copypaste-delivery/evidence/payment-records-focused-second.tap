@@ -1,0 +1,167 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# Subtest: concurrent payment postings use one source exactly once and permission revocation prevents receipt replay
+not ok 1 - concurrent payment postings use one source exactly once and permission revocation prevents receipt replay
+  ---
+  duration_ms: 7769.7029
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\admin-fees.test.ts:1:5939'
+  failureType: 'testCodeFailure'
+  error: 'column "revoked_at" of relation "admin_bindings" does not exist'
+  code: '42703'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\admin-fees.test.ts:286:3)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: recording and independent receipt verification never change balances; exact confirmed payment posts once
+ok 2 - recording and independent receipt verification never change balances; exact confirmed payment posts once
+  ---
+  duration_ms: 602.629
+  ...
+# Subtest: payment registration and confirmation have persistent idempotency, per-account scope and no legacy top-up bypass
+ok 3 - payment registration and confirmation have persistent idempotency, per-account scope and no legacy top-up bypass
+  ---
+  duration_ms: 716.6778
+  ...
+# Subtest: quarantined, erased, wrong-subject and future payment evidence cannot become product credit
+ok 4 - quarantined, erased, wrong-subject and future payment evidence cannot become product credit
+  ---
+  duration_ms: 720.5506
+  ...
+# {"request_id":"9911e3d8-211a-4f56-b970-42e17799c07c","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: payment audit failure rolls back registration, and committed payment facts cannot be edited or deleted
+ok 5 - payment audit failure rolls back registration, and committed payment facts cannot be edited or deleted
+  ---
+  duration_ms: 463.7694
+  ...
+# Subtest: fee schema snapshot is byte-derived from the unchanged original OpenAPI
+ok 6 - fee schema snapshot is byte-derived from the unchanged original OpenAPI
+  ---
+  duration_ms: 24.5115
+  ...
+# Subtest: financial preview has no ledger, expiry or account effects and freezes the real policy
+ok 7 - financial preview has no ledger, expiry or account effects and freezes the real policy
+  ---
+  duration_ms: 249.0111
+  ...
+# Subtest: personal and enterprise gifts retain actual administrator, policy and journal identity; replay never double-credits
+ok 8 - personal and enterprise gifts retain actual administrator, policy and journal identity; replay never double-credits
+  ---
+  duration_ms: 742.4368
+  ...
+# Subtest: debits bind an original funding bucket and cannot consume another source, expired credit or held funds
+ok 9 - debits bind an original funding bucket and cannot consume another source, expired credit or held funds
+  ---
+  duration_ms: 1145.3047
+  ...
+# Subtest: daily limits use exact amounts and replay; delegated caps cannot be widened
+ok 10 - daily limits use exact amounts and replay; delegated caps cannot be widened
+  ---
+  duration_ms: 857.4702
+  ...
+# Subtest: independent fee approval requires the exact version/hash, two actual authorized actors and both permissions
+ok 11 - independent fee approval requires the exact version/hash, two actual authorized actors and both permissions
+  ---
+  duration_ms: 737.4608
+  ...
+# Subtest: approval fails closed after original session revocation, authority/target or policy changes; rejection remains possible
+ok 12 - approval fails closed after original session revocation, authority/target or policy changes; rejection remains possible
+  ---
+  duration_ms: 1497.4957
+  ...
+# Subtest: credit limits accept zero and exact integers beyond JS precision while preserving debt and holds
+ok 13 - credit limits accept zero and exact integers beyond JS precision while preserving debt and holds
+  ---
+  duration_ms: 546.0523
+  ...
+# Subtest: financial intent is immutable at the database boundary and legacy paths cannot bypass canonical controls
+ok 14 - financial intent is immutable at the database boundary and legacy paths cannot bypass canonical controls
+  ---
+  duration_ms: 872.0631
+  ...
+# Subtest: scope denies cover personal/enterprise financial writes and operation reads; MFA is live
+ok 15 - scope denies cover personal/enterprise financial writes and operation reads; MFA is live
+  ---
+  duration_ms: 674.7327
+  ...
+# Subtest: concurrent task reservation and financial write serialize without a foreign-key lock upgrade deadlock
+ok 16 - concurrent task reservation and financial write serialize without a foreign-key lock upgrade deadlock
+  ---
+  duration_ms: 431.4641
+  ...
+# {"request_id":"b7506f6d-a7e5-4da5-91e2-c326064d55c2","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: audit failure rolls back the complete fee change and leaves its preview available for a safe retry
+ok 17 - audit failure rolls back the complete fee change and leaves its preview available for a safe retry
+  ---
+  duration_ms: 352.23
+  ...
+# Subtest: expired frozen review requests cannot be approved or rewritten; their actual rejection is immutable
+ok 18 - expired frozen review requests cannot be approved or rewritten; their actual rejection is immutable
+  ---
+  duration_ms: 629.8762
+  ...
+# Subtest: new gifts cannot overflow the account and daily credit increases cannot be reset by reducing the limit
+ok 19 - new gifts cannot overflow the account and daily credit increases cannot be reset by reducing the limit
+  ---
+  duration_ms: 1050.5408
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 18
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 26887.6067

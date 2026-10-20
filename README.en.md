@@ -6,6 +6,23 @@ This repository is independently versioned alongside five product repositories. 
 
 ![Actual product surfaces](assets/screenshots/product-surfaces.png)
 
+## Atomic VIP and explicit credit (stage 49)
+
+The existing VIP form can include a deliberate HKD gift with its own exact amount, expiry and reason. One frozen preview and one confirmation create a parent operation. The server commits canonical VIP and financial child operations in one database transaction, or rolls both back. If either risk policy requires review, the whole request waits for another administrator with both domains' permissions; pending requests create no entitlement or credit.
+
+```mermaid
+flowchart LR
+  Form[VIP and explicit gift] --> Preview[Freeze both versions and policies]
+  Preview --> Review[Confirm or independent review]
+  Review --> Tx[One transaction]
+  Tx --> Result[Two successful children and one credit reference]
+```
+
+![Actual combined completion](assets/screenshots/vip-credit-completed.png)
+
+The current full platform run passes 394/394 with 703 unchanged source files; the 19 focused groups are included. Nine actual Admin/user browser groups and 12 unedited captures are bounded evidence. The 125 original-schema responses and one strict supplemental request are checked separately. Additive migration 060 preserves complete old-row digests for all 119 original public tables in each native database, applied 001–059 bytes and historical null checksums. Initial fixture errors and two verifier mistakes remain archived. All original REQ/TC/NFR/G01–G10, professional role quality, real external services and production/installation acceptance remain in scope. Master details are in `docs/technical/49-atomic-vip-and-explicit-credit.md` and current Delivery receipts.
+
+
 ## Current immutable plan increment
 
 The Admin definition form, frozen comparison and independent publication review use real APIs. Legacy grants retain fixed execution definitions. Both native databases advance to 056 with old-row and migration-digest comparisons. `npm run qa:admin-plans` passes six groups covering real email/TOTP sessions, structured forms, exact money, retained validation/focus, durable receipts, independent review, immutable versions and Traditional Chinese dark mobile views. Owned Chromium processes close, sessions are revoked and test administrators disabled. No model or payment call is made. Screenshots ship in the independent Admin repository.
@@ -412,7 +429,7 @@ Independent Git checkout verification also compares every tracked canonical sche
 
 ## Canonical VIP and current native preview delivery
 
-The full current platform run passes **354/354** with 694 unchanged source files and preserved raw `alignment-platform.tap` bytes. Admin VIP has six groups/nine original-schema responses; native VIP has six groups/five responses; native surfaces have ten groups; source-runtime cross-client authentication has twelve. Overlapping subflows are not added up as full-product acceptance. All 122 captured runtime responses pass strict original OpenAPI schemas. All 102 requirements, full acceptance cases, NFR and G01–G10 remain in scope.
+The original stage 47 platform run passed **354/354** with 694 unchanged source files and preserved raw `alignment-platform.tap` bytes. Admin VIP has six groups/nine original-schema responses; native VIP has six groups/five responses; native surfaces have ten groups; source-runtime cross-client authentication has twelve. Overlapping subflows are not added up as full-product acceptance. All 122 captured runtime responses pass strict original OpenAPI schemas. All 102 requirements, full acceptance cases, NFR and G01–G10 remain in scope.
 
 ```mermaid
 flowchart LR
