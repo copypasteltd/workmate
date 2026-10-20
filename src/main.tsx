@@ -1,3 +1,4 @@
+import "./support.css";
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
 import { MarketingImport } from "./marketing-import";
@@ -14,6 +15,7 @@ import { SessionsCard, SignOutButton, NativeSignInButton } from "./sessions";
 import { Notifications, UnreadNotifications } from "./notifications";
 import { Entitlements } from "./entitlements";
 import { FinancialInbox } from "./financial-notifications";
+import { SupportAccess } from "./support-access";
 import { Schedules } from "./schedules";
 import {
   CompanySignIn,
@@ -3138,6 +3140,7 @@ function SettingsPage() {
           </AsyncForm>
         </section>
         <SessionsCard />
+        <SupportAccess key={w.tenant} />
       </div>
     </>
   );

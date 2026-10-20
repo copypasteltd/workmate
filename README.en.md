@@ -1,5 +1,22 @@
 # CopyPaste Web
 
+## Controlled support update / 受控客服协助
+
+Account settings now provides explicit support grants: choose projects, reason and deadline, then inspect, copy the ID or revoke. Read-only assistance retains the administrator identity; an empty project selection covers metadata only.
+
+![Customer support grants](assets/screenshots/51-support-grant-en-1440.png)
+
+Stage 51 current regression: 424/424 with 711 source files; controlled-support browser workflows: 8/8 with 816 source files and 9 unedited captures. The 14 support tests, original contract checks, migration preservation and separate native checks are bounded evidence, not completion of all 102 acceptance cases. Current binaries are rebuilt; stage 50 binaries remain unchanged in their archive.
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+
 [简体中文](README.md) · Enterprise cloud workspace · 0.5.0
 
 A Web client for Hong Kong enterprise marketing teams, using CopyPaste's warm white, ink and blue palette, serif display typography, Traditional Chinese/English and light/dark/system themes. Customer deliverables retain the customer's brand. This repository builds independently and obtains data from the platform API.
@@ -14,7 +31,7 @@ The platform and Admin now provide atomic VIP plus explicit credit. Web reads ef
 
 Usage now includes personal paid/promotional/reserved balances, credit limit and used credit, with exact six-decimal HKD formatting. The financial inbox supports account/work events, unread filtering, pagination and read-state changes. Payment evidence/confirmation is distinct from posting; an unknown refund stays unknown. Failed reads, workspace changes, revoked access and sign-out clear stale financial content. Polling and current-session guards reject late responses.
 
-Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+Stage 50 historical platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
 
 ```mermaid
 flowchart LR

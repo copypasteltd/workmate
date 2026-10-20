@@ -1,5 +1,22 @@
 # CopyPaste Web
 
+## 限时只读客服协助 / Controlled support
+
+账户设置新增客服授权：明确选项目、原因和期限，查看、复制 ID 或撤销。只读协助保留管理员身份；空项目仅限元资料。
+
+![Customer support grants](assets/screenshots/51-support-grant-en-1440.png)
+
+阶段 51 当前平台回归 424/424（711 份来源），受控支持页面 8/8（816 份来源、9 张未编辑截图）。14 组支持专项、原规范检查、迁移保留及独立原生检查是有界证据，完整 102 项验收继续跟踪；当前包已重建，阶段 50 包原字节另存。
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+
 [English](README.en.md) · 企业云端工作台 · 0.5.0
 
 面向在港企业 marketing 团队的 Web 客户端，采用 CopyPaste 暖灰白、深墨、亮蓝与衬线标题。繁体中文/英文、浅色/深色/系统主题。客户创意继续使用客户品牌。本仓库可单独安装和构建，服务数据来自独立 platform API。
@@ -14,7 +31,7 @@
 
 用量页增加个人实付、赠送、预留、授信上限和已用授信，精确显示六位 HKD 小数；费用通知支持账户/工作事件、未读、分页和已读切换。收款登记/核实不等于入账，未知退款不能显示成零或成功。读取失败、切换企业、撤权及退出清除旧费用内容；15 秒刷新和当前会话守卫拒绝迟到响应。
 
-当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+阶段 50 当时平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
 
 ```mermaid
 flowchart LR
