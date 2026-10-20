@@ -1,5 +1,7 @@
 # 规范 VIP 授权与实时有效权益
 
+后续阶段 49 已补齐 [VIP 加显式赠额的同事务组合开通](49-atomic-vip-and-explicit-credit.md)。本页数字和边界保留为对应阶段的历史记录；最终当前来源及回执以 [逐项进度](../quality/requirements-alignment-progress.json) 为准。
+
 后续阶段 48 已补充 [企业席位与逻辑存储执行](48-enterprise-seat-and-storage-enforcement.md) 及当前三端/后台容量展示。本章的 354 项、694 份来源和席位/存储未完成描述属于阶段 47 当时记录；原始回执单独归档，不作为最新源码结果。057 主库缺少迁移前行快照的历史限制继续保留。
 
 2026-10-20，代码已实现，正在完成各端交付复核。承接[不可变方案与历史绑定](46-immutable-plans-and-legacy-grant-bindings.md)，对应 REQ-047/048/083/084/088/089/094/096/098/100/102。当前平台回归 354/354、694 份参与源码与 verifier 前后摘要一致，是本轮有界证据；102 个原始 REQ/TC、NFR 和 G01–G10 保持完整范围。

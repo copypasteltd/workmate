@@ -1,5 +1,7 @@
 # 企业席位与存储的实际约束
 
+后续阶段 49 已补齐 [VIP 加显式赠额的同事务组合开通](49-atomic-vip-and-explicit-credit.md)。本页数字和边界保留为对应阶段的历史记录；最终当前来源及回执以 [逐项进度](../quality/requirements-alignment-progress.json) 为准。
+
 2026-10-20。承接 [固定方案版本](46-immutable-plans-and-legacy-grant-bindings.md) 与 [VIP 生命周期](47-canonical-vip-lifecycle-and-effective-entitlements.md)，补齐 REQ-047/089/102 中企业席位和云文件容量的运行约束；后台查看沿用 REQ-083/084/088/094/096/098/100 的权限及审计。原始 102 条 REQ/TC、NFR、G01–G10 和 OpenAPI 保持原范围。
 
 ## 业务规则

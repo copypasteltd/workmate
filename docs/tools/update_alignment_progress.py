@@ -7,17 +7,21 @@ import json
 import re
 import subprocess
 from verify_resource_evidence import history as resource_repair_history
+from verify_vip_credit_evidence import history as vip_credit_repair_history
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('atomic_vip_and_explicit_credit', [47,83,84,87,88,89,94,96,98,100,101,102],
+     '原规范 VIP 与显式赠额组成单一父命令，锁内复用原规范投影/账本并整体提交，独立不可变子操作与真实资金参考保留；双方当前权限/整体范围/重叠拒绝/MFA、金额/时长/香港日限、双版本和原策略/前态/会话复查，任一高风险则一份独立审批，待审无业务效果。事务末端约束拒绝半成功/脱离子项，审计或关联失败整体回滚。19组专项包含在394项当前全量，9组实际后台和用户读取、12份原截图及3份原规范响应/1份补充严格命令为局部证据。060两库各119张原公共表前后完全一致，旧001–059和真实空校验值不改；两个脚本验证错误及首次专项夹具错误原字节保留。完整商业通知/金融outbox、旧授权治理、角色专业交付和生产/安装/全部102项综合验收仍保留。',
+     ['platform_regression','admin_vip_credit','vip_credit_migrations','runtime_schemas'], ['technical/49-atomic-vip-and-explicit-credit.md']),
     ('enterprise_seats_and_storage_admission', [47,83,84,88,89,94,96,98,100,102],
-     '企业有效固定方案决定共用容量，个人VIP不扩容；锁内所有启用成员与全部保留版本、独立副本、私人内容和有效上传承诺统计。邀请/恢复/Admin审批和对象写入前、数据库写入/提交共用守卫；并发幂等、长事务真实时钟、降级不删旧数据、既有预留不重复计费、实际清理后释放。当前Web/Admin八组页面、三端读取和375项全量为局部证据；058/059两库各23类旧行前后完全一致，首次374项中1项私人删除冲突及定位歧义原回执保留，前向修复不改已应用SQL。完整商业/生产/安装/角色与102项综合验收继续保留。',
+     '企业有效固定方案决定共用容量，个人VIP不扩容；锁内所有启用成员与全部保留版本、独立副本、私人内容和有效上传承诺统计。邀请/恢复/Admin审批和对象写入前、数据库写入/提交共用守卫；并发幂等、长事务真实时钟、降级不删旧数据、既有预留不重复计费、实际清理后释放。当前Web/Admin八组页面、三端读取和394项当前全量为局部证据；058/059两库各23类旧行前后完全一致，首次374项中1项私人删除冲突及定位歧义原回执保留，前向修复不改已应用SQL。完整商业/生产/安装/角色与102项综合验收继续保留。',
      ['platform_regression','resource_ui','resource_migrations','resource_erasure_migrations','native_vip'], ['technical/48-enterprise-seat-and-storage-enforcement.md']),
     ('canonical_vip_lifecycle_and_live_entitlements', [47,83,84,88,89,94,96,98,100,102],
-     '原始 VIP 授予/修订命令、签名游标与实际 Admin 冻结表单；个人/企业及模式主体版本、固定方案和原操作者来源、显式重叠/预约替换、真实同版本续期、暂停/恢复/撤销/实时到期，当前 MFA/整体范围/重叠拒绝、付费财务读取、独立审批及原会话/策略/前态复查，并发幂等和审计事务回滚。用户原始 PlanList/EffectiveEntitlements、合并功能和最大配额、独立资源/预算、持久个人通知/outbox与真实页面为局部证据。057 已实际应用，两库 001–056 原文件不变；测试库有完整前后行比较，主库首次自动启动先执行 057，缺少主库升级前行快照，失败与限制保留。席位/存储的后续局部执行另列；VIP加赠额原子操作、旧授权规范迁移、完整安装/SSO/系统和全部综合验收继续保留。',
+     '原始 VIP 授予/修订命令、签名游标与实际 Admin 冻结表单；个人/企业及模式主体版本、固定方案和原操作者来源、显式重叠/预约替换、真实同版本续期、暂停/恢复/撤销/实时到期，当前 MFA/整体范围/重叠拒绝、付费财务读取、独立审批及原会话/策略/前态复查，并发幂等和审计事务回滚。用户原始 PlanList/EffectiveEntitlements、合并功能和最大配额、独立资源/预算、持久个人通知/outbox与真实页面为局部证据。057 已实际应用，两库 001–056 原文件不变；测试库有完整前后行比较，主库首次自动启动先执行 057，缺少主库升级前行快照，失败与限制保留。席位/存储的后续局部执行另列；VIP加显式赠额的后续有界组合另列；旧授权规范迁移、完整安装/SSO/系统和全部综合验收继续保留。',
      ['platform_regression','admin_vip','native_vip','vip_migrations','runtime_schemas'], ['technical/47-canonical-vip-lifecycle-and-effective-entitlements.md']),
     ('immutable_plan_definitions_and_legacy_bindings', [47,88,89,94,96,98,100,102],
      '原始 AdminPlanDraft/版本列表/202 发佈命令与实际结构化 Admin 页面：不可变家族版本、冻结比较、全域当前权限与重叠 deny、近期 MFA、独立审批及原会话/策略/前态复查、并发版本/发佈幂等和审计回滚。056 保留真实旧行，原快照与现在计算的空快照绑定分开标源，自定义快照不补造原 UUID，新发佈不重绑旧授权。24 项聚焦及当前完整回归、六组页面为局部证据；规范 VIP、个人企业合并及用户读取的后续有界修复另列，席位/存储的后续局部执行另列，生产及全部综合验收继续保留。',
@@ -56,7 +60,7 @@ CLUSTERS = [
      '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者同步迁移，不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、HTTP User schema、Web 初始化及当前十二组 Web/源码 Electron/MV3 认证和会话恢复独立记录；安装包、完整身份/系统及原生成员旅程仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('canonical_authentication_and_retry_recovery', [1,2,3,35,36,39,51,55,60,100],
-     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
+     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 795 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
      '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；当前规范认证/上下文上的十二组真实源码原生会话检查另列，含 1440px 浅色/375px 深色与双面板换账号。完整 SSO、安装/系统矩阵和 TC 全部条件仍未完成。',
@@ -123,7 +127,7 @@ CLUSTERS = [
 REMAINING = {
  3:'三端登录/PKCE、五个规范用户认证接口、本人目录/整族撤销、刷新退出竞争和当前十二组源码原生回执恢复已有局部证据；当前 Web 邀请及 Admin 成员页面各六组通过。完整后台规范、企业身份/安装包/系统及全部客户端故障矩阵仍待完成，不能据此关闭 TC-003。',
  36:'原生全局侧栏的真实 action/右侧出现、跨页保留与重启配置已验证；网页选择/站点授权和全部业务上下文的完整矩阵仍待验收。',
- 88:'固定方案、来源及规范VIP生命周期、实时个人/企业合并已有局部证据；本轮增加独立企业席位/存储执行及后台容量权限。旧授予规范迁移、VIP加赠额原子组合、全状态和生产矩阵仍待验收。',
+ 88:'固定方案、来源及规范VIP生命周期、实时个人/企业合并已有局部证据；本轮增加独立企业席位/存储执行及后台容量权限。VIP加显式赠额的有界组合已验证；旧授予规范迁移、完整全状态和生产矩阵仍待验收。',
  89:'功能集合、同类配额最大值、实际服务器时刻和资源/预算交集已有局部证据；企业席位、保留版本和上传预留现有实际准入/释放守卫。物理磁盘运维、媒体/团队/调度及全部业务配额和综合验收仍待齐。',
  7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
  69:'已实现首次模型调用前的显式文件/连接检查点；已付费步骤恢复、自动识别、capability/device 和离线等待仍未完成。',
@@ -179,7 +183,7 @@ REMAINING = {
  82:'局部两主题/语言/四尺寸通过；全组件状态、100/200% 缩放、键盘/对比/reduced-motion 验收待完成。',
  85:'规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。',
  86:'模拟数据单列且微额费用可读；正式多维消费归属和未知成本全量钻取仍待验收。',
- 87:'赠送/原额扣回/授信/核实付款、消费原来源补偿及现金承诺/独立分次核实已有规范命令、实际页面、日限、独立审批和回执证据；未知/差额保留预留。方案及 VIP 的有界增量另列；历史授信来源人工对账、正式支付机构、VIP 加赠额原子组合、金融 outbox 和全部费用验收仍待完成。',
+ 87:'赠送/原额扣回/授信/核实付款、消费原来源补偿及现金承诺/独立分次核实已有规范命令、实际页面、日限、独立审批和回执证据；未知/差额保留预留。方案及 VIP 的有界增量另列；历史授信来源人工对账、正式支付机构、完整金融 outbox 和全部费用验收仍待完成。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
  92:'独立 MFA/企业范围的 Admin 排队暂停、共用领域守卫、原受益用户撤权与费用待核对拒绝已有验证；运行中检查点、全工作流/Routine 控制和未知外部动作人工核对仍待齐。',
@@ -474,6 +478,8 @@ def main():
     assert hashlib.sha256(restored_srs.replace('\n','\r\n').encode()).hexdigest() == baseline['requirements_sha256']
     files = {
         'platform_regression': DEV/'copypaste-delivery/evidence/alignment-platform.json',
+        'admin_vip_credit': DEV/'copypaste-delivery/evidence/admin-vip-credit.json',
+        'vip_credit_migrations': DEV/'copypaste-delivery/evidence/vip-credit-migrations.json',
         'resource_ui': DEV/'copypaste-delivery/evidence/resource-ui.json',
         'resource_migrations': DEV/'copypaste-delivery/evidence/resource-migrations.json',
         'resource_erasure_migrations': DEV/'copypaste-delivery/evidence/resource-erasure-migrations.json',
@@ -533,9 +539,9 @@ def main():
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
         if key in {'membership_ui', 'admin_membership_ui', 'native_auth_recovery'}:
             expected_checks, expected_sources = {
-                'membership_ui': (6, 182),
-                'admin_membership_ui': (6, 212),
-                'native_auth_recovery': (12, 792),
+                'membership_ui': (6, 184),
+                'admin_membership_ui': (6, 214),
+                'native_auth_recovery': (12, 795),
             }[key]
             assert len(checks) == expected_checks and report['model_calls'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
@@ -554,7 +560,7 @@ def main():
                 assert fingerprint(actual_source) == expected_digest, f'Stale {key} evidence: {source}'
         if key == 'resource_ui':
             assert len(checks) == 8 and len(report['screenshots']) == 8
-            assert report['source_unchanged'] is True and len(report['source_files']) == 794
+            assert report['source_unchanged'] is True and len(report['source_files']) == 797
             assert report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
@@ -572,18 +578,18 @@ def main():
                 assert actual_source.is_relative_to(DEV.resolve())
                 assert fingerprint(actual_source) == expected_digest, f'Stale fee UI evidence: {source}'
         if key == 'admin_plans':
-            assert len(checks) == 6 and len(report['source_files']) == 645
+            assert len(checks) == 6 and len(report['source_files']) == 648
             assert report['source_unchanged'] is True and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
             for source, expected_digest in report['source_files'].items():
                 assert fingerprint(DEV/source) == expected_digest, f'Stale plan UI evidence: {source}'
-        if key in {'admin_vip','native_vip'}:
-            assert len(checks) == 6 and report['model_calls'] == 0 and report['external_payments'] == 0
+        if key in {'admin_vip','native_vip','admin_vip_credit'}:
+            assert len(checks) == (9 if key == 'admin_vip_credit' else 6) and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
             assert report['source_unchanged'] is True
-            assert len(report['source_files']) == (794 if key == 'admin_vip' else 797)
+            assert len(report['source_files']) == (800 if key == 'native_vip' else 797)
             for source, expected_digest in report['source_files'].items():
                 actual = (DEV/source).resolve()
                 assert actual.is_relative_to(DEV.resolve())
@@ -741,7 +747,7 @@ def main():
         if key in {'admin_membership_wire','admin_account_wire'}:
             assert report['owned_admin_principals_disabled'] is True
         if key == 'platform_regression':
-            assert report['counts']['tests'] == 375 and len(report['source_files']) == 699
+            assert report['counts']['tests'] == 394 and len(report['source_files']) == 703
             assert report['counts']['tests'] == report['counts']['pass'] and report['counts']['fail'] == 0
             assert report['source_unchanged'] is True and report['source_files']
             assert report['verifier_sha256'] == fingerprint(DEV/'copypaste-delivery/scripts/qa-platform-regression.mjs')
@@ -804,6 +810,7 @@ def main():
              'plan_verification':plan_repair_history(),
              'vip_verification':vip_repair_history(),
              'resource_verification':resource_repair_history(),
+             'vip_credit_verification':vip_credit_repair_history(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},

@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'membership-ui-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-membership-ui-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json', 'admin-billing-contract-samples.json', 'admin-fee-contract-samples.json', 'admin-plan-contract-samples.json', 'admin-vip-contract-samples.json', 'native-vip-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'membership-ui-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-membership-ui-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json', 'admin-billing-contract-samples.json', 'admin-fee-contract-samples.json', 'admin-plan-contract-samples.json', 'admin-vip-contract-samples.json', 'native-vip-contract-samples.json', 'admin-vip-credit-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 
@@ -96,6 +96,9 @@ def main():
         sources.append({'file': source.relative_to(ROOT.parent).as_posix(), 'at': captured['at'],
                         'origin': captured['origin'], 'sha256': hashlib.sha256(source.read_bytes()).hexdigest()})
         for index, item in enumerate(captured['samples']):
+            if source.name == 'admin-vip-credit-contract-samples.json' and item['schema'] == 'VipCreditCommand':
+                assert 'request' in item and 'response' not in item
+                continue  # Supplemental request is checked by verify_vip_credit_evidence.py.
             name = item['schema']
             if name not in spec['components']['schemas']:
                 raise ValueError(f'Unknown schema: {name}')

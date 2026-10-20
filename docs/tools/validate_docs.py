@@ -358,6 +358,29 @@ def validate_admin_contracts(api, registry):
 
 def validate_refs(documents):
     total = 0
+    # Component fixtures retain exact original definitions (including their
+    # original references). Like the runtime fixture consumer, resolve those
+    # definitions within an explicit components.schemas namespace. A fixture
+    # is data containing definitions, rather than a standalone JSON Schema.
+    contexts = dict(documents)
+    for path, document in documents.items():
+        if not (isinstance(document, dict) and isinstance(document.get('schemas'), dict)
+                and document.get('normative_source') == 'docs/contracts/openapi.json'):
+            continue
+        normative = CONTRACTS / 'openapi.json'
+        check(document.get('normative_source_sha256') == hashlib.sha256(normative.read_bytes()).hexdigest(),
+              f'fixture:{path.name}:original-source-digest')
+        check('components' not in document, f'fixture:{path.name}:unambiguous-namespace')
+        original = documents[normative.resolve()]['components']['schemas']
+        for name, definition in document['schemas'].items():
+            if name in original:
+                check(definition == original[name], f'fixture:{path.name}:{name}:exact-original')
+            try:
+                Draft202012Validator.check_schema(definition)
+                check(True, f'fixture:{path.name}:{name}:schema-valid')
+            except Exception as error:
+                check(False, f'fixture:{path.name}:{name}:schema-invalid:{error}')
+        contexts[path] = {**document, 'components': {'schemas': document['schemas']}}
     for path,document in documents.items():
         for node in walk(document):
             if not isinstance(node.get('$ref'), str):
@@ -370,7 +393,7 @@ def validate_refs(documents):
             target = (path.parent/unquote(raw)).resolve() if raw else path
             try:
                 check(target.is_relative_to(ROOT),'ref:within-docs')
-                target_doc = documents[target] if target in documents else read_json(target)
+                target_doc = contexts[target] if target in contexts else read_json(target)
                 pointer(target_doc,fragment)
                 check(True,f'ref:{path.name}:{node["$ref"]}')
             except Exception as error:
