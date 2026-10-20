@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "recorded_at": "2026-10-19",
+  "source": "Explicit human instruction in the current project conversation",
+  "instruction": "要求 desktop版本要做成无边框的。不要任何electron 的自带边框菜单。然后extension要对标新版的metamask的出现模式，点击后出现在浏览器右侧的侧边拦目。",
+  "baseline_raw_sha256": "19a07487f357732f87ef03e446e3b07fbabb2236d8c9401c77d31d70a13ddc7e",
+  "baseline_lf_sha256": "d57c0c32d94f7ea9d6b215b169b42dc0f1494510069297c235860b4e3002675a",
+  "amended_lf_sha256": "cee41ffaab51ac04693ae8c88081c2134b0d47fd812bb13b3e2754d655aa80dc",
+  "baseline_newline": "CRLF",
+  "canonical_newline": "LF",
+  "original_102_acceptance_conditions_preserved": true,
+  "implementation_document": "technical/30-native-window-and-browser-sidepanel.md",
+  "changes": [
+    {
+      "requirement_id": "REQ-036",
+      "original_line": "| REQ-036 | P1 | 扩展网页协作：用户可发送当前选择或页面上下文，权限按站点请求；内容脚本不获取模型密钥或原生执行权。 |",
+      "amended_line": "| REQ-036 | P1 | 扩展网页协作：点击扩展图标打开浏览器原生侧栏，默认右侧、全局保留，参照新版 MetaMask 的出现方式；不以 popup 或新标签代替。用户可发送当前选择或页面上下文，权限按站点请求；内容脚本不获取模型密钥或原生执行权。 |"
+    },
+    {
+      "requirement_id": "REQ-039",
+      "original_line": "| REQ-039 | P1 | Desktop：原生安装、登录、工作台、退出、更新与卸载；不要求用户安装 Docker/WSL；系统支持范围有发布矩阵。 |",
+      "amended_line": "| REQ-039 | P1 | Desktop：主窗口无边框、无 Electron 默认边框及菜单，使用品牌自绘标题栏及窗口控制；支持原生安装、登录、工作台、退出、更新与卸载；不要求用户安装 Docker/WSL；系统支持范围有发布矩阵。 |"
+    }
+  ]
+}

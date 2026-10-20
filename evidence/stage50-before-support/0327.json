@@ -1,0 +1,529 @@
+{
+  "at": "2026-10-20T13:37:40.239Z",
+  "origin": "http://localhost:4310",
+  "scope": "Supplementary immutable refund detail/directory and independently recorded manual cash outcomes; original OpenAPI unchanged",
+  "samples": [
+    {
+      "name": "actual-refund-detail",
+      "schema": "AdminRefundDetail",
+      "response": {
+        "refund": {
+          "id": "e0f84aac-9f7a-4a66-8728-12d043aac44d",
+          "billing_account_id": "0f230db7-f180-4a5f-970a-7250d82eee59",
+          "operation_id": "4668f663-a1ea-4b58-b83b-32b49df0dbef",
+          "original_entry_id": "0cc2a2f7-d7a7-4db3-942b-25e346b39b48",
+          "destination": "paid_balance",
+          "amount": {
+            "currency": "HKD",
+            "amount_micros": "3123456"
+          },
+          "confirmed_paid": {
+            "currency": "HKD",
+            "amount_micros": "0"
+          },
+          "held": {
+            "currency": "HKD",
+            "amount_micros": "0"
+          },
+          "state": "compensated",
+          "version": 1,
+          "created_by": "ff761aef-a042-4c0f-a8a0-bd625f7097d1",
+          "created_at": "2026-10-20T13:37:27.611Z",
+          "data_mode": "simulated",
+          "payment_record_id": null
+        },
+        "source_parts": [
+          {
+            "id": "bc4ee6d1-563a-4018-95cc-fe13fa438621",
+            "source_id": "9b5f6052-3f6d-4fe7-9f65-cf1909ba24e7",
+            "repayment_part_id": null,
+            "cancellation_id": null,
+            "restored_lot_id": "4f9b9d3e-6e3c-4360-a246-9a89bd561ae6",
+            "amount_micros": "3123456",
+            "journal_id": "fc372c70-9e55-4146-9f50-46cf0f2e8301",
+            "expiry_journal_id": null,
+            "restored_kind": "gift",
+            "expires_at": "2027-12-31T10:00:00.000Z"
+          }
+        ],
+        "events": [],
+        "verification_method": "manual_evidence_review",
+        "bank_api_verified": false
+      }
+    },
+    {
+      "name": "ui-observation-unknown",
+      "schema": "AdminOperation",
+      "request_schema": "AdminRefundOutcome",
+      "request": {
+        "expected_version": 1,
+        "reason": "Independent synthetic payout review; no external funds transferred",
+        "outcome": "unknown",
+        "observed_amount": null,
+        "external_reference": null,
+        "evidence_asset_version_id": null,
+        "occurred_at": null
+      },
+      "response": {
+        "id": "715b95a3-a163-4feb-a5c7-3e9fc29946a5",
+        "action": "billing.reconcile",
+        "target_ids": [
+          "fc2ec721-f137-4f7b-8216-3390cdc2a7a9"
+        ],
+        "actor_id": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+        "state": "succeeded",
+        "payload_hash": "39784b7d1452b32028433802078edc26410442c898e8a21ce1e1132638001bf9",
+        "policy_version_id": "2019b215-6c5b-408e-bf29-c973763030d4",
+        "version": 2,
+        "created_at": "2026-10-20T13:37:31.078Z",
+        "result_ids": [
+          "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "18e409fb-4c53-453e-8e01-45e25742b005"
+        ]
+      }
+    },
+    {
+      "name": "actual-refund-detail",
+      "schema": "AdminRefundDetail",
+      "response": {
+        "refund": {
+          "id": "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "billing_account_id": "fc2ec721-f137-4f7b-8216-3390cdc2a7a9",
+          "operation_id": "0dbb1d0b-ed22-4428-8047-fd9cd982309b",
+          "original_entry_id": "4dac4a74-7604-4daa-ada5-3369126a8f5a",
+          "destination": "payment_method",
+          "amount": {
+            "currency": "HKD",
+            "amount_micros": "8123456"
+          },
+          "confirmed_paid": {
+            "currency": "HKD",
+            "amount_micros": "0"
+          },
+          "held": {
+            "currency": "HKD",
+            "amount_micros": "8123456"
+          },
+          "state": "reconciling_unknown",
+          "version": 2,
+          "created_by": "ff761aef-a042-4c0f-a8a0-bd625f7097d1",
+          "created_at": "2026-10-20T13:37:30.100Z",
+          "data_mode": "simulated",
+          "payment_record_id": "3f9049ff-a514-492c-bd68-5453a0e4ac98"
+        },
+        "source_parts": [],
+        "events": [
+          {
+            "id": "18e409fb-4c53-453e-8e01-45e25742b005",
+            "expected_version": 1,
+            "outcome": "unknown",
+            "observed_amount_micros": null,
+            "external_reference": null,
+            "evidence_asset_version_id": null,
+            "evidence_sha256": null,
+            "occurred_at": null,
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "715b95a3-a163-4feb-a5c7-3e9fc29946a5",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:31.091Z",
+            "journal_id": null,
+            "release_journal_id": null
+          }
+        ],
+        "verification_method": "manual_evidence_review",
+        "bank_api_verified": false
+      }
+    },
+    {
+      "name": "ui-observation-paid",
+      "schema": "AdminOperation",
+      "request_schema": "AdminRefundOutcome",
+      "request": {
+        "expected_version": 2,
+        "reason": "Independent synthetic payout review; no external funds transferred",
+        "outcome": "paid",
+        "observed_amount": {
+          "currency": "HKD",
+          "amount_micros": "2000001"
+        },
+        "external_reference": "controlled-no-external-transfer-e3fbfb98-85e7-4891-9b36-7a1be6d0a724",
+        "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+        "occurred_at": "2026-10-19T05:37:00.000Z"
+      },
+      "response": {
+        "id": "f0b62873-e223-41ec-8601-8091ad948628",
+        "action": "billing.reconcile",
+        "target_ids": [
+          "fc2ec721-f137-4f7b-8216-3390cdc2a7a9"
+        ],
+        "actor_id": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+        "state": "succeeded",
+        "payload_hash": "287b70bf4edef4a4e08c97e93a26d5ac75dfc727a2afc222dbe2d53e654957b2",
+        "policy_version_id": "2019b215-6c5b-408e-bf29-c973763030d4",
+        "version": 2,
+        "created_at": "2026-10-20T13:37:31.785Z",
+        "result_ids": [
+          "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "218bc331-502c-4c30-b9c3-f0492d71f77c",
+          "602d50be-f960-4dc3-8389-57ebecd71449",
+          "9e6f56e3-c2b8-48c0-92cf-a256dbd47206"
+        ]
+      }
+    },
+    {
+      "name": "actual-refund-detail",
+      "schema": "AdminRefundDetail",
+      "response": {
+        "refund": {
+          "id": "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "billing_account_id": "fc2ec721-f137-4f7b-8216-3390cdc2a7a9",
+          "operation_id": "0dbb1d0b-ed22-4428-8047-fd9cd982309b",
+          "original_entry_id": "4dac4a74-7604-4daa-ada5-3369126a8f5a",
+          "destination": "payment_method",
+          "amount": {
+            "currency": "HKD",
+            "amount_micros": "8123456"
+          },
+          "confirmed_paid": {
+            "currency": "HKD",
+            "amount_micros": "2000001"
+          },
+          "held": {
+            "currency": "HKD",
+            "amount_micros": "6123455"
+          },
+          "state": "partially_paid",
+          "version": 3,
+          "created_by": "ff761aef-a042-4c0f-a8a0-bd625f7097d1",
+          "created_at": "2026-10-20T13:37:30.100Z",
+          "data_mode": "simulated",
+          "payment_record_id": "3f9049ff-a514-492c-bd68-5453a0e4ac98"
+        },
+        "source_parts": [],
+        "events": [
+          {
+            "id": "18e409fb-4c53-453e-8e01-45e25742b005",
+            "expected_version": 1,
+            "outcome": "unknown",
+            "observed_amount_micros": null,
+            "external_reference": null,
+            "evidence_asset_version_id": null,
+            "evidence_sha256": null,
+            "occurred_at": null,
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "715b95a3-a163-4feb-a5c7-3e9fc29946a5",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:31.091Z",
+            "journal_id": null,
+            "release_journal_id": null
+          },
+          {
+            "id": "218bc331-502c-4c30-b9c3-f0492d71f77c",
+            "expected_version": 2,
+            "outcome": "paid",
+            "observed_amount_micros": "2000001",
+            "external_reference": "controlled-no-external-transfer-e3fbfb98-85e7-4891-9b36-7a1be6d0a724",
+            "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+            "evidence_sha256": "f06c44171c4508abedd38e5d7f24b332e0d7fa66d6c6016c8b543eb6b6ecdf7c",
+            "occurred_at": "2026-10-19T05:37:00.000Z",
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "f0b62873-e223-41ec-8601-8091ad948628",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:31.799Z",
+            "journal_id": "9e6f56e3-c2b8-48c0-92cf-a256dbd47206",
+            "release_journal_id": "602d50be-f960-4dc3-8389-57ebecd71449"
+          }
+        ],
+        "verification_method": "manual_evidence_review",
+        "bank_api_verified": false
+      }
+    },
+    {
+      "name": "ui-observation-paid",
+      "schema": "AdminOperation",
+      "request_schema": "AdminRefundOutcome",
+      "request": {
+        "expected_version": 3,
+        "reason": "Independent synthetic payout review; no external funds transferred",
+        "outcome": "paid",
+        "observed_amount": {
+          "currency": "HKD",
+          "amount_micros": "9000000"
+        },
+        "external_reference": "controlled-no-external-transfer-62be9229-42b5-433b-98ae-a182ba16888a",
+        "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+        "occurred_at": "2026-10-19T05:37:00.000Z"
+      },
+      "response": {
+        "id": "202cd1ef-f0cf-4f27-b9c8-0c8b59a931df",
+        "action": "billing.reconcile",
+        "target_ids": [
+          "fc2ec721-f137-4f7b-8216-3390cdc2a7a9"
+        ],
+        "actor_id": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+        "state": "succeeded",
+        "payload_hash": "5106c1582da3336b2944179d2f889cf1ea3c0679b4919588b9828e10cb8457d7",
+        "policy_version_id": "2019b215-6c5b-408e-bf29-c973763030d4",
+        "version": 2,
+        "created_at": "2026-10-20T13:37:33.582Z",
+        "result_ids": [
+          "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "7bd1473d-94ec-4f4e-ab9a-07bcc0a69eba"
+        ]
+      }
+    },
+    {
+      "name": "actual-refund-detail",
+      "schema": "AdminRefundDetail",
+      "response": {
+        "refund": {
+          "id": "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "billing_account_id": "fc2ec721-f137-4f7b-8216-3390cdc2a7a9",
+          "operation_id": "0dbb1d0b-ed22-4428-8047-fd9cd982309b",
+          "original_entry_id": "4dac4a74-7604-4daa-ada5-3369126a8f5a",
+          "destination": "payment_method",
+          "amount": {
+            "currency": "HKD",
+            "amount_micros": "8123456"
+          },
+          "confirmed_paid": {
+            "currency": "HKD",
+            "amount_micros": "2000001"
+          },
+          "held": {
+            "currency": "HKD",
+            "amount_micros": "6123455"
+          },
+          "state": "reconciling_mismatch",
+          "version": 4,
+          "created_by": "ff761aef-a042-4c0f-a8a0-bd625f7097d1",
+          "created_at": "2026-10-20T13:37:30.100Z",
+          "data_mode": "simulated",
+          "payment_record_id": "3f9049ff-a514-492c-bd68-5453a0e4ac98"
+        },
+        "source_parts": [],
+        "events": [
+          {
+            "id": "18e409fb-4c53-453e-8e01-45e25742b005",
+            "expected_version": 1,
+            "outcome": "unknown",
+            "observed_amount_micros": null,
+            "external_reference": null,
+            "evidence_asset_version_id": null,
+            "evidence_sha256": null,
+            "occurred_at": null,
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "715b95a3-a163-4feb-a5c7-3e9fc29946a5",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:31.091Z",
+            "journal_id": null,
+            "release_journal_id": null
+          },
+          {
+            "id": "218bc331-502c-4c30-b9c3-f0492d71f77c",
+            "expected_version": 2,
+            "outcome": "paid",
+            "observed_amount_micros": "2000001",
+            "external_reference": "controlled-no-external-transfer-e3fbfb98-85e7-4891-9b36-7a1be6d0a724",
+            "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+            "evidence_sha256": "f06c44171c4508abedd38e5d7f24b332e0d7fa66d6c6016c8b543eb6b6ecdf7c",
+            "occurred_at": "2026-10-19T05:37:00.000Z",
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "f0b62873-e223-41ec-8601-8091ad948628",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:31.799Z",
+            "journal_id": "9e6f56e3-c2b8-48c0-92cf-a256dbd47206",
+            "release_journal_id": "602d50be-f960-4dc3-8389-57ebecd71449"
+          },
+          {
+            "id": "7bd1473d-94ec-4f4e-ab9a-07bcc0a69eba",
+            "expected_version": 3,
+            "outcome": "mismatch",
+            "observed_amount_micros": "9000000",
+            "external_reference": "controlled-no-external-transfer-62be9229-42b5-433b-98ae-a182ba16888a",
+            "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+            "evidence_sha256": "f06c44171c4508abedd38e5d7f24b332e0d7fa66d6c6016c8b543eb6b6ecdf7c",
+            "occurred_at": "2026-10-19T05:37:00.000Z",
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "202cd1ef-f0cf-4f27-b9c8-0c8b59a931df",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:33.599Z",
+            "journal_id": null,
+            "release_journal_id": null
+          }
+        ],
+        "verification_method": "manual_evidence_review",
+        "bank_api_verified": false
+      }
+    },
+    {
+      "name": "ui-observation-not_paid",
+      "schema": "AdminOperation",
+      "request_schema": "AdminRefundOutcome",
+      "request": {
+        "expected_version": 4,
+        "reason": "Independent synthetic payout review; no external funds transferred",
+        "outcome": "not_paid",
+        "observed_amount": {
+          "currency": "HKD",
+          "amount_micros": "0"
+        },
+        "external_reference": "controlled-no-external-transfer-4ce46733-719c-456b-83c8-ef111f5f2ed0",
+        "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+        "occurred_at": "2026-10-19T05:37:00.000Z"
+      },
+      "response": {
+        "id": "826471c7-dc99-45c2-883a-6c3028341ba5",
+        "action": "billing.reconcile",
+        "target_ids": [
+          "fc2ec721-f137-4f7b-8216-3390cdc2a7a9"
+        ],
+        "actor_id": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+        "state": "succeeded",
+        "payload_hash": "68c421d016fb54ad268a305f94e5f32f30e48888eaf68efe11d221ed0418177b",
+        "policy_version_id": "2019b215-6c5b-408e-bf29-c973763030d4",
+        "version": 2,
+        "created_at": "2026-10-20T13:37:35.143Z",
+        "result_ids": [
+          "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "775865e5-d71a-41ea-a494-0080610a4655",
+          "2c06b9f0-51f7-48a3-b4ce-76fccf98e178"
+        ]
+      }
+    },
+    {
+      "name": "actual-refund-detail",
+      "schema": "AdminRefundDetail",
+      "response": {
+        "refund": {
+          "id": "04f2d328-aedf-488a-9b52-f40a2253211e",
+          "billing_account_id": "fc2ec721-f137-4f7b-8216-3390cdc2a7a9",
+          "operation_id": "0dbb1d0b-ed22-4428-8047-fd9cd982309b",
+          "original_entry_id": "4dac4a74-7604-4daa-ada5-3369126a8f5a",
+          "destination": "payment_method",
+          "amount": {
+            "currency": "HKD",
+            "amount_micros": "8123456"
+          },
+          "confirmed_paid": {
+            "currency": "HKD",
+            "amount_micros": "2000001"
+          },
+          "held": {
+            "currency": "HKD",
+            "amount_micros": "0"
+          },
+          "state": "partially_paid_closed",
+          "version": 5,
+          "created_by": "ff761aef-a042-4c0f-a8a0-bd625f7097d1",
+          "created_at": "2026-10-20T13:37:30.100Z",
+          "data_mode": "simulated",
+          "payment_record_id": "3f9049ff-a514-492c-bd68-5453a0e4ac98"
+        },
+        "source_parts": [],
+        "events": [
+          {
+            "id": "18e409fb-4c53-453e-8e01-45e25742b005",
+            "expected_version": 1,
+            "outcome": "unknown",
+            "observed_amount_micros": null,
+            "external_reference": null,
+            "evidence_asset_version_id": null,
+            "evidence_sha256": null,
+            "occurred_at": null,
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "715b95a3-a163-4feb-a5c7-3e9fc29946a5",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:31.091Z",
+            "journal_id": null,
+            "release_journal_id": null
+          },
+          {
+            "id": "218bc331-502c-4c30-b9c3-f0492d71f77c",
+            "expected_version": 2,
+            "outcome": "paid",
+            "observed_amount_micros": "2000001",
+            "external_reference": "controlled-no-external-transfer-e3fbfb98-85e7-4891-9b36-7a1be6d0a724",
+            "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+            "evidence_sha256": "f06c44171c4508abedd38e5d7f24b332e0d7fa66d6c6016c8b543eb6b6ecdf7c",
+            "occurred_at": "2026-10-19T05:37:00.000Z",
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "f0b62873-e223-41ec-8601-8091ad948628",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:31.799Z",
+            "journal_id": "9e6f56e3-c2b8-48c0-92cf-a256dbd47206",
+            "release_journal_id": "602d50be-f960-4dc3-8389-57ebecd71449"
+          },
+          {
+            "id": "7bd1473d-94ec-4f4e-ab9a-07bcc0a69eba",
+            "expected_version": 3,
+            "outcome": "mismatch",
+            "observed_amount_micros": "9000000",
+            "external_reference": "controlled-no-external-transfer-62be9229-42b5-433b-98ae-a182ba16888a",
+            "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+            "evidence_sha256": "f06c44171c4508abedd38e5d7f24b332e0d7fa66d6c6016c8b543eb6b6ecdf7c",
+            "occurred_at": "2026-10-19T05:37:00.000Z",
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "202cd1ef-f0cf-4f27-b9c8-0c8b59a931df",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:33.599Z",
+            "journal_id": null,
+            "release_journal_id": null
+          },
+          {
+            "id": "775865e5-d71a-41ea-a494-0080610a4655",
+            "expected_version": 4,
+            "outcome": "not_paid",
+            "observed_amount_micros": "0",
+            "external_reference": "controlled-no-external-transfer-4ce46733-719c-456b-83c8-ef111f5f2ed0",
+            "evidence_asset_version_id": "c4bcb4cc-f64c-439c-b2fd-2f120e8d0029",
+            "evidence_sha256": "f06c44171c4508abedd38e5d7f24b332e0d7fa66d6c6016c8b543eb6b6ecdf7c",
+            "occurred_at": "2026-10-19T05:37:00.000Z",
+            "verified_by": "122c3628-bb81-44cf-93d5-af5972b74bfa",
+            "operation_id": "826471c7-dc99-45c2-883a-6c3028341ba5",
+            "reason": "Independent synthetic payout review; no external funds transferred",
+            "created_at": "2026-10-20T13:37:35.174Z",
+            "journal_id": "2c06b9f0-51f7-48a3-b4ce-76fccf98e178",
+            "release_journal_id": "2c06b9f0-51f7-48a3-b4ce-76fccf98e178"
+          }
+        ],
+        "verification_method": "manual_evidence_review",
+        "bank_api_verified": false
+      }
+    },
+    {
+      "name": "actual-refund-directory",
+      "schema": "AdminRefundList",
+      "response": {
+        "items": [
+          {
+            "id": "04f2d328-aedf-488a-9b52-f40a2253211e",
+            "billing_account_id": "fc2ec721-f137-4f7b-8216-3390cdc2a7a9",
+            "operation_id": "0dbb1d0b-ed22-4428-8047-fd9cd982309b",
+            "original_entry_id": "4dac4a74-7604-4daa-ada5-3369126a8f5a",
+            "destination": "payment_method",
+            "amount": {
+              "currency": "HKD",
+              "amount_micros": "8123456"
+            },
+            "confirmed_paid": {
+              "currency": "HKD",
+              "amount_micros": "2000001"
+            },
+            "held": {
+              "currency": "HKD",
+              "amount_micros": "0"
+            },
+            "state": "partially_paid_closed",
+            "version": 5,
+            "created_by": "ff761aef-a042-4c0f-a8a0-bd625f7097d1",
+            "created_at": "2026-10-20T13:37:30.100Z",
+            "data_mode": "simulated",
+            "payment_record_id": "3f9049ff-a514-492c-bd68-5453a0e4ac98"
+          }
+        ],
+        "next_cursor": null
+      }
+    }
+  ]
+}

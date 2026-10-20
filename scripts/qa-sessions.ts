@@ -1089,7 +1089,21 @@ try {
       let forced = false;
       try {
         await Promise.race([
-          app!.close(),
+          (async () => {
+            // Exercise the product's actual close control. Closing the
+            // automation context can itself stall after offline/response-loss
+            // fixtures; it is not the customer's window-close action.
+            const main = app!.windows().find((page) => !page.isClosed());
+            assert.ok(main, "Owned Desktop main window is still available");
+            const closed = app!.waitForEvent("close", { timeout: 10000 });
+            await main
+              .locator('#copypaste-titlebar button[data-window-action="close"]')
+              .click({ noWaitAfter: true, timeout: 5000 })
+              .catch((error) => {
+                if (!/closed/i.test(String(error))) throw error;
+              });
+            await closed;
+          })(),
           new Promise((_, reject) => {
             deadline = setTimeout(
               () => reject(new Error("Owned Desktop shutdown timed out")),

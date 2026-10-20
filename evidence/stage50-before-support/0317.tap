@@ -1,0 +1,154 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# Subtest: tenant resource totals retain fixed UUIDs and compatibility ceilings are explicitly labelled
+ok 1 - tenant resource totals retain fixed UUIDs and compatibility ceilings are explicitly labelled
+  ---
+  duration_ms: 13524.3442
+  ...
+# Subtest: two valid invitations race for one remaining seat; rejection retains the invitation and retry can succeed after a removal
+ok 2 - two valid invitations race for one remaining seat; rejection retains the invitation and retry can succeed after a removal
+  ---
+  duration_ms: 899.3284
+  ...
+# Subtest: personal VIP cannot enlarge tenant seats, and a global user freeze does not release an active seat
+ok 3 - personal VIP cannot enlarge tenant seats, and a global user freeze does not release an active seat
+  ---
+  duration_ms: 761.0072
+  ...
+# Subtest: an existing active seat can change role at capacity, while removed and administrator-suspended seats need current capacity
+ok 4 - an existing active seat can change role at capacity, while removed and administrator-suspended seats need current capacity
+  ---
+  duration_ms: 547.3094
+  ...
+# Subtest: a new publication does not widen an existing grant, and explicit downgrade preserves existing seats
+ok 5 - a new publication does not widen an existing grant, and explicit downgrade preserves existing seats
+  ---
+  duration_ms: 1358.8508
+  ...
+# Subtest: concurrent upload reservations count across users and exact-key retries do not double reserve storage
+ok 6 - concurrent upload reservations count across users and exact-key retries do not double reserve storage
+  ---
+  duration_ms: 429.2473
+  ...
+# Subtest: a full storage reservation converts atomically to one version without double charging and completion can be replayed
+not ok 7 - a full storage reservation converts atomically to one version without double charging and completion can be replayed
+  ---
+  duration_ms: 358.5143
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\resource-quotas.test.ts:1:12747'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"message":"Route PUT:/v1/tenants/27722b8d-8b93-4c66-91e7-c635a5fc30fb/projects/a611d9a5-3f0f-4b0a-b7ce-0837d65e46e7/uploads/f7c2f0de-f149-4356-88b0-75e027f4f836/parts/0 not found","error":"Not Found","statusCode":404}
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    finish (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\resource-quotas.test.ts:323:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\resource-quotas.test.ts:527:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: cancellation and clock expiry release reservations without a worker; an expired commitment cannot be revived
+ok 8 - cancellation and clock expiry release reservations without a worker; an expired commitment cannot be revived
+  ---
+  duration_ms: 360.8395
+  ...
+# Subtest: all retained versions and independent copies are charged; rejected growth performs no object write
+ok 9 - all retained versions and independent copies are charged; rejected growth performs no object write
+  ---
+  duration_ms: 829.2193
+  ...
+# Subtest: a quota downgrade preserves bytes and existing reservations can finish without additional capacity
+not ok 10 - a quota downgrade preserves bytes and existing reservations can finish without additional capacity
+  ---
+  duration_ms: 596.3969
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\resource-quotas.test.ts:1:15325'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"message":"Route PUT:/v1/tenants/2270313a-dbe4-4bd1-a1c3-bc790d7944b7/projects/ca5449d0-6155-480e-a5d3-090b8f97878f/uploads/8b8378a2-aa9d-45df-b5ae-faec8696e7ac/parts/0 not found","error":"Not Found","statusCode":404}
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    finish (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\resource-quotas.test.ts:323:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\resource-quotas.test.ts:617:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 8
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 49403.9158

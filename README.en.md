@@ -1,5 +1,27 @@
 # CopyPaste Delivery and Integration
 
+## Controlled support update / 受控客服协助
+
+Delivery verification adds controlled-support suites, complete old-row comparison for the native 061→062 upgrade, actual Web/Admin grant/revocation/expiry journeys and unedited screenshots. Full regression and native frameless/Side Panel verification stay separate. All original requirements, complete acceptance conditions and production gates remain tracked.
+
+![Controlled read-only support](assets/screenshots/support-view.png)
+
+Stage 51 current regression: 424/424 with 711 source files; controlled-support browser workflows: 8/8 with 816 source files and 9 unedited captures. The 14 support tests, original contract checks, migration preservation and separate native checks are bounded evidence, not completion of all 102 acceptance cases. Current binaries are rebuilt; stage 50 binaries remain unchanged in their archive.
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+```powershell
+npm run qa:support-ui
+npm run qa:platform
+```
+
+
 [简体中文](README.md) · Native lifecycle controller and qualification · 0.5.0
 
 This repository is independently versioned alongside five product repositories. The working root is `D:\dev\copypasted\自有agent\`; source/dependencies/artifacts live under `dev/`, and master requirements/design/quality documents remain under `docs/`. Each repository includes bilingual READMEs, diagrams, screenshots and notices.
@@ -10,7 +32,7 @@ This repository is independently versioned alongside five product repositories. 
 
 New scripts cover candidate tests, a stopped-stack upgrade and actual three-client finance workflows. Candidate four passes 38/38; the full platform regression passes 410/410 with 707 unchanged source files. Web, packaged frameless Desktop and the native SIDE_PANEL pass 8/8 financial checks, with 808 unchanged source/runtime files, four separate strict supplemental responses and eight unedited captures. All ten existing Admin/member/native/session context runs pass. Failed attempts and original stage 49 evidence are archived byte-for-byte; old binaries and current rebuilt previews remain separate.
 
-Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+Stage 50 historical platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
 
 ```mermaid
 flowchart LR

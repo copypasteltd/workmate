@@ -1,5 +1,27 @@
 # CopyPaste 交付与集成
 
+## 限时只读客服协助 / Controlled support
+
+交付核查新增限时支持专项、两库 061→062 的完整旧行比较、真实 Web/Admin 授权/撤销/到期流程和原始截图；全量回归与原生窗口/右侧栏继续独立验收。所有原始需求、完整验收和生产门槛保留。
+
+![Controlled read-only support](assets/screenshots/support-view.png)
+
+阶段 51 当前平台回归 424/424（711 份来源），受控支持页面 8/8（816 份来源、9 张未编辑截图）。14 组支持专项、原规范检查、迁移保留及独立原生检查是有界证据，完整 102 项验收继续跟踪；当前包已重建，阶段 50 包原字节另存。
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+```powershell
+npm run qa:support-ui
+npm run qa:platform
+```
+
+
 [English](README.en.md) · 原生开发控制器、验收与交付入口 · 0.5.0
 
 本仓库与五个产品仓库分别使用独立 Git，不把它们合并成单一仓库。项目位于 `D:\dev\copypasted\自有agent\`；源码、依赖、产物位于 `dev/`，主需求/设计/质量文档位于 `docs/`。各仓库的 README、图与截图随仓库交付。
@@ -10,7 +32,7 @@
 
 新增候选、停栈升级和三端费用专项脚本。第四次候选 38/38；平台全量 410/410，707 份来源一致；实际 Web、打包无边框 Desktop 和原生 SIDE_PANEL 费用 8/8，808 份来源及运行字节一致，另存四份补充严格响应和八张未编辑截图。十项既有后台/成员/原生/会话上下文执行均通过。失败尝试和阶段 49 原始证据逐字节归档，旧包与当前重建预览分开保存。
 
-当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+阶段 50 当时平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
 
 ```mermaid
 flowchart LR

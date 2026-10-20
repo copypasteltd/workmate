@@ -17,6 +17,8 @@ try {
   for (const repo of [
     "copypaste-platform",
     "copypaste-admin",
+    "copypaste-web",
+    "copypaste-extension",
     "copypaste-desktop",
     "copypaste-delivery",
   ]) {
@@ -117,6 +119,14 @@ try {
     name: `fresh independent Admin clone preserves all ${adminFiles.length} tracked source, configuration, bilingual guide and screenshot files`,
     status: "passed",
   });
+  for (const repo of ["copypaste-web", "copypaste-extension"]) {
+    const cloned = path.join(temp, repo),
+      files = (await exec("git", ["ls-files", "-z"], { cwd: cloned, windowsHide: true })).stdout.split("\0").filter(Boolean);
+    assert.ok(files.length > 0);
+    for (const file of files)
+      assert.equal(sha(await readFile(path.join(cloned, file))), sha(await readFile(path.join(root, repo, file))), `${repo} checkout bytes changed: ${file}`);
+    checks.push({ name: `fresh independent ${repo} clone preserves all ${files.length} tracked source, configuration, bilingual guide and screenshot files`, status: "passed" });
+  }
   const delivery = path.join(temp, "copypaste-delivery"),
     report = JSON.parse(
       await readFile(

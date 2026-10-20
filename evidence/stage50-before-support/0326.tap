@@ -1,0 +1,139 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# Subtest: VIP contract fixture is byte-source-bound to the unchanged original OpenAPI
+ok 1 - VIP contract fixture is byte-source-bound to the unchanged original OpenAPI
+  ---
+  duration_ms: 26695.5245
+  ...
+# Subtest: current Admin MFA, exact scopes, original strict requests and the closed legacy write path
+ok 2 - current Admin MFA, exact scopes, original strict requests and the closed legacy write path
+  ---
+  duration_ms: 1470.8083
+  ...
+# Subtest: preview has no entitlement or money effect; commit is durable, atomic and idempotent
+ok 3 - preview has no entitlement or money effect; commit is durable, atomic and idempotent
+  ---
+  duration_ms: 1671.1385
+  ...
+# Subtest: personal and enterprise features merge, quotas take max, resources remain independent
+ok 4 - personal and enterprise features merge, quotas take max, resources remain independent
+  ---
+  duration_ms: 1291.7936
+  ...
+# Subtest: extension, suspension, resumption and revocation retain origin with consecutive immutable revisions
+ok 5 - extension, suspension, resumption and revocation retain origin with consecutive immutable revisions
+  ---
+  duration_ms: 1674.3792
+  ...
+# Subtest: same-plan renewal requires the exact UUID and source; new publication cannot rebind a grant
+ok 6 - same-plan renewal requires the exact UUID and source; new publication cannot rebind a grant
+  ---
+  duration_ms: 1285.8723
+  ...
+# Subtest: replacement needs independent review and stays scheduled until its real boundary; old grants never revive
+ok 7 - replacement needs independent review and stays scheduled until its real boundary; old grants never revive
+  ---
+  duration_ms: 7944.5604
+  ...
+# Subtest: expiry is authoritative without workers; notification outbox is bounded, mode-scoped and idempotent
+ok 8 - expiry is authoritative without workers; notification outbox is bounded, mode-scoped and idempotent
+  ---
+  duration_ms: 1662.759
+  ...
+# Subtest: concurrent subject versions cannot overwrite each other and stale previews create no partial grants
+ok 9 - concurrent subject versions cannot overwrite each other and stale previews create no partial grants
+  ---
+  duration_ms: 429.1841
+  ...
+# Subtest: approval rechecks original session and current permissions; cancelled requests have no grant effect
+ok 10 - approval rechecks original session and current permissions; cancelled requests have no grant effect
+  ---
+  duration_ms: 382.0027
+  ...
+# Subtest: legacy replacement preserves unknown historical facts and cannot cut another billing mode
+ok 11 - legacy replacement preserves unknown historical facts and cannot cut another billing mode
+  ---
+  duration_ms: 329.4713
+  ...
+# isolated VIP database diagnostic controlled VIP audit failure PL/pgSQL function vip_audit_fault() line 1 at RAISE
+# {"request_id":"43a7a694-87bc-40f3-a220-76ecac7ccda1","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: audit failure rolls back subject revision, grant, operation, revision and outbox; original preview can retry
+ok 12 - audit failure rolls back subject revision, grant, operation, revision and outbox; original preview can retry
+  ---
+  duration_ms: 619.8576
+  ...
+# Subtest: current head, frozen command, duration limits and revoked permissions are rechecked
+ok 13 - current head, frozen command, duration limits and revoked permissions are rechecked
+  ---
+  duration_ms: 877.7786
+  ...
+# Subtest: verified payment must match subject and mode, is linked once and never posts money by granting VIP
+ok 14 - verified payment must match subject and mode, is linked once and never posts money by granting VIP
+  ---
+  duration_ms: 877.248
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 73981.1265

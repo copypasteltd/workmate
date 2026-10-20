@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-19T21:22:21.985102+00:00",
+  "status": "failed",
+  "phase": "restart-existing-populated-database",
+  "error_code": "55006",
+  "reason": "Migration 042 updates populated tasks and then alters their table while existing deferred trigger events are pending. Empty isolated migrations did not expose this condition.",
+  "raw_log": "billing-accounts-migration-initial.log",
+  "raw_sha256": "b530829cd68a810235351aef41421e397da8c81a706ce4543130e021605530a2",
+  "action": "Preserve applied SQL bytes; correct the schema runner and exercise populated upgrade before retrying. No history reset or partial migration acceptance."
+}
