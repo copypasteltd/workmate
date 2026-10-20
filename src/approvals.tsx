@@ -4,6 +4,7 @@ import { operationKey, completeOperation } from "./operation-key";
 import { AccountChangeFacts } from "./accounts";
 import { MembershipChangeFacts } from "./memberships";
 import { PlanPublicationFacts } from "./plans";
+import { VipChangeFacts, vipPermission } from "./vip";
 import { FeeReview, canonicalFeeAction } from "./fees";
 import {
   AsyncForm,
@@ -50,12 +51,14 @@ export function ApprovalReview({
     approval = data?.approval,
     command = data?.command;
   const permission = operation
-    ? "admin." +
-      (["entitlements.suspend", "entitlements.resume"].includes(
-        operation.action,
-      )
-        ? "entitlements.extend"
-        : operation.action)
+    ? operation.action.startsWith("entitlements.")
+      ? vipPermission(operation.action)
+      : "admin." +
+        (["entitlements.suspend", "entitlements.resume"].includes(
+          operation.action,
+        )
+          ? "entitlements.extend"
+          : operation.action)
     : "";
   const pending =
     approval?.state === "pending" && operation?.state === "pending_approval";
@@ -105,6 +108,8 @@ export function ApprovalReview({
           </dl>
           {operation.action === "plans.publish" ? (
             <PlanPublicationFacts before={data.before} />
+          ) : operation.action.startsWith("entitlements.") ? (
+            <VipChangeFacts command={command} before={data.before} />
           ) : operation.action === "tenants.members.write" ? (
             <MembershipChangeFacts
               tenant={operation.target_ids[0]}

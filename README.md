@@ -361,3 +361,26 @@ flowchart LR
 2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。
 
 2026-10-20 方案版本增量後的當前源碼復核：Web 成員 6/6（172 份來源）、Admin 成員 6/6（200 份），Web／源碼 Electron／MV3 認證 12/12（779 份）；測試前後摘要一致，自建瀏覽器／Electron／擴展均關閉，測試憑證清理。新增不可變方案定義與固定歷史授權綁定不改寫原生預覽包。完整 VIP／配額、安裝包認證及系統驗收仍按主文檔繼續追蹤。
+
+## 规范 VIP 管理与可追踪修订（阶段 47）
+
+VIP 专页替换旧通用表单，提供个人／企业主体、已发佈固定方案、真实 UUID、来源、付款引用、起止时间、重叠策略和操作原因。先检查服务器版本并展示冻结比较，再确认提交。本人不能自批；原操作者、当前实际审批者和授予修订分别保留。详情支持延长、暂停、恢复和撤销；历史未知事实明确显示。失败保留输入并聚焦错误摘要，刷新不会丢失已提交回执。
+
+```mermaid
+flowchart LR
+  Directory[授权目录与主体筛选] --> Form[结构化参数]
+  Form --> Preview[冻结影响比较]
+  Preview --> Submit[确认与持久操作回执]
+  Submit --> Review[必要时由另一管理员决定]
+  Submit --> History[原始来源与不可变修订]
+  Review --> History
+```
+
+Delivery `npm run qa:admin-vip` 使用真实邮箱／TOTP 管理员和真实用户会话，6/6 组通过，9 份原始 schema 响应通过。涵盖无效主体后的输入保留／焦点、独立审批、用户端有效权益、暂停及真实修订、375px 繁中深色表单与预约预览。目录在自身区域横向滚动，页面保持视口宽度。原始失败和旧截图保留，不冒充完整后台验收。
+
+![冻结权益比较](assets/screenshots/62-vip-frozen-comparison.png)
+![独立审批](assets/screenshots/64-vip-independent-review.png)
+![来源与暂停修订](assets/screenshots/66-vip-suspended-history.png)
+![繁中深色移动预览](assets/screenshots/68-vip-mobile-frozen-preview.png)
+
+完整席位／存储控制、VIP 与赠额原子组合、全部后台权限／导出和综合验收继续按主文档追踪。模型和外部支付为明确模拟，登录、权限和账务记录真实执行。

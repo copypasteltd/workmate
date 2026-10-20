@@ -1,5 +1,6 @@
 import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
+import { AdminVip, VipCommandModal } from "./vip";
 import {
   AdminDirectoryFilters,
   useAdminTenantOptions,
@@ -492,6 +493,8 @@ function AdminShell() {
                         <BillingPage />
                       ) : n[0] === "plans" ? (
                         <AdminPlans access={a} />
+                      ) : n[0] === "entitlements" ? (
+                        <AdminVip access={a} />
                       ) : (
                         <Section section={n[0]} />
                       )
@@ -1566,6 +1569,15 @@ function BillingModal(props: {
   onDone: () => void;
 }) {
   const a = useAdmin();
+  if (props.initial.startsWith("entitlements."))
+    return (
+      <VipCommandModal
+        access={a}
+        subject={props.user ? { kind: "user", id: props.user.id } : undefined}
+        onClose={props.onClose}
+        onDone={props.onDone}
+      />
+    );
   if (canonicalFeeAction(props.initial))
     return (
       <CanonicalFeeModal

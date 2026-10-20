@@ -361,3 +361,26 @@ flowchart LR
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
 
 Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+## Canonical VIP management and revision history (stage 47)
+
+The VIP page replaces the generic form with personal/workspace subjects, a published fixed plan UUID, source and payment reference, exact dates, overlap policy and reason. It reads the current subject version, shows frozen effects and then submits a durable operation. Independent reviewers cannot approve their own requests. Original actors, actual reviewers and grant revisions remain distinct. Details support extension, suspension, resumption and revocation, while unknown historical facts stay unknown. Errors retain inputs and focus the summary; refreshing details no longer discards an operation receipt.
+
+```mermaid
+flowchart LR
+  Directory[Scoped grants] --> Form[Structured parameters]
+  Form --> Preview[Frozen effects]
+  Preview --> Submit[Confirm and retain receipt]
+  Submit --> Review[Independent decision when required]
+  Submit --> History[Origin and immutable revisions]
+  Review --> History
+```
+
+Delivery `npm run qa:admin-vip` passes six actual browser groups and nine original response schemas using real email/TOTP Admin sessions and a real customer session. Checks cover retained invalid inputs and focus, independent review, customer effective access, suspension/history and a 375px Traditional Chinese dark form/future preview. Tables scroll within their region without widening the page. Original failed runs and screenshots are retained.
+
+![Frozen entitlement comparison](assets/screenshots/62-vip-frozen-comparison.png)
+![Independent review](assets/screenshots/64-vip-independent-review.png)
+![Suspended revision history](assets/screenshots/66-vip-suspended-history.png)
+![Mobile dark frozen preview](assets/screenshots/68-vip-mobile-frozen-preview.png)
+
+Complete seat/storage controls, atomic VIP plus credit, the entire Admin permission/export matrix and original integrated acceptance conditions remain tracked in the main docs. Model/payment dependencies are explicitly synthetic; authentication, authorization and accounting records execute for real.
