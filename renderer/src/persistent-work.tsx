@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { AdoptionReview } from "./agent-adoption";
 import { TaskInputRequests } from "./task-dependencies";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -76,6 +77,8 @@ export function Specialists() {
   const [refresh, setRefresh] = useState(0),
     [editing, setEditing] = useState<any>(null),
     [history, setHistory] = useState<any>(null),
+    [adopting, setAdopting] = useState<any>(null),
+    [notice, setNotice] = useState(false),
     [error, setError] = useState<Error | null>(null);
   const manage = ["owner", "admin"].includes(
     w.me?.memberships.find((m: any) => m.id === w.tenant)?.role,
@@ -118,6 +121,15 @@ export function Specialists() {
         }
       />
       <ErrorNotice error={data.error ?? error} />
+      {notice && (
+        <p className="success-line" role="status">
+          <Check size={16} />
+          {t(
+            "已採用新版本。既有會話保留原版本。",
+            "New version adopted. Existing conversations keep their original version.",
+          )}
+        </p>
+      )}
       {data.loading && !data.data ? (
         <Loading />
       ) : data.data?.items.length ? (
@@ -173,16 +185,7 @@ export function Specialists() {
                 {a.builtin_default && manage && (
                   <button
                     className="text-button"
-                    onClick={async () => {
-                      try {
-                        await post(w.base + "/default-assistant/versions", {
-                          expected_version: a.version,
-                        });
-                        setRefresh((v) => v + 1);
-                      } catch (e) {
-                        setError(e as Error);
-                      }
-                    }}
+                    onClick={() => setAdopting(a)}
                   >
                     {t("採用目前技能版本", "Adopt current methods")}
                   </button>
@@ -236,12 +239,37 @@ export function Specialists() {
       {editing && (
         <SpecialistEditor
           initial={editing}
-          onClose={() => setEditing(null)}
-          onSaved={() => {
+          onClose={() => {
             setEditing(null);
             setRefresh((v) => v + 1);
           }}
+          onSaved={() => {
+            setEditing(null);
+            setRefresh((v) => v + 1);
+            setNotice(true);
+          }}
         />
+      )}
+      {adopting && (
+        <Modal
+          title={t("比較並採用版本", "Compare and adopt a version")}
+          onClose={() => setAdopting(null)}
+        >
+          <AdoptionReview
+            key={adopting.id}
+            endpoint={`${w.base}/agents/${adopting.id}/version-previews`}
+            proposal={{ expected_version: adopting.version }}
+            onBack={() => {
+              setAdopting(null);
+              setRefresh((v) => v + 1);
+            }}
+            onSaved={() => {
+              setAdopting(null);
+              setRefresh((v) => v + 1);
+              setNotice(true);
+            }}
+          />
+        </Modal>
       )}
       {history && (
         <Modal
@@ -284,7 +312,9 @@ function SpecialistEditor({
     helper = useData("/v1/catalog/default-assistant"),
     brands = useData(w.base + "/brand");
   const [role, setRole] = useState(initial.role_key ?? "marketing-analyst"),
-    [tools, setTools] = useState<string[] | undefined>(initial.body?.tool_ids);
+    [tools, setTools] = useState<string[] | undefined>(initial.body?.tool_ids),
+    [draft, setDraft] = useState<any>(null),
+    [reviewing, setReviewing] = useState(false);
   const selected =
     role === "assistant"
       ? helper.data
@@ -298,125 +328,154 @@ function SpecialistEditor({
       }
       onClose={onClose}
     >
-      <AsyncForm
-        submitLabel={t("儲存專家", "Save specialist")}
-        onSubmit={async (f) => {
-          const body = {
-            name: String(f.get("name")),
-            role_key: role,
-            instructions: String(f.get("instructions")),
-            brand_id: f.get("brand") || null,
-            ...(tools ? { tool_ids: tools } : {}),
-          };
-          if (initial.id)
-            await patch(w.base + "/agents/" + initial.id, {
-              ...body,
-              expected_version: initial.version,
-              enabled: f.get("enabled") === "on",
-            });
-          else await post(w.base + "/agents", body);
-          onSaved();
-        }}
-      >
-        <ErrorNotice error={roles.error ?? brands.error} />
-        <Field label={t("專家名稱", "Specialist name")}>
-          <input
-            name="name"
-            defaultValue={initial.name ?? ""}
-            maxLength={160}
-            required
-          />
-        </Field>
-        <Field label={t("預設專業角色", "Role preset")}>
-          <select
-            value={role}
-            disabled={!!initial.id}
-            onChange={(e) => {
-              setRole(e.target.value);
-              setTools(undefined);
-            }}
-          >
-            <option value="assistant">
-              {t("預設助手", "Default assistant")}
-            </option>
-            {roles.data?.items.map((r: any) => (
-              <option key={r.role_key} value={r.role_key}>
-                {r.display_name} · {r.role_key}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field label={t("品牌", "Brand")}>
-          <select name="brand" defaultValue={initial.body?.brand?.id ?? ""}>
-            <option value="">{t("暫不綁定", "No brand binding")}</option>
-            {brands.data?.items.map((b: any) => (
-              <option key={b.id} value={b.id}>
-                {b.name} · v{b.version}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field
-          label={t("工作要求", "Working instructions")}
-          hint={t(
-            "例如：使用繁體中文、列出資料來源、海報保留品牌標誌。",
-            "For example: use Traditional Chinese, cite sources, preserve the brand mark in posters.",
-          )}
+      {reviewing ? (
+        <AdoptionReview
+          endpoint={`${w.base}/agents/${initial.id}/version-previews`}
+          proposal={draft}
+          onBack={(stale) => {
+            if (stale) onClose();
+            else setReviewing(false);
+          }}
+          onSaved={onSaved}
+        />
+      ) : (
+        <AsyncForm
+          submitLabel={
+            initial.id
+              ? t("比較變更", "Compare changes")
+              : t("儲存專家", "Save specialist")
+          }
+          onSubmit={async (f) => {
+            const body = {
+              name: String(f.get("name")),
+              role_key: role,
+              instructions: String(f.get("instructions")),
+              brand_id: f.get("brand") || null,
+              ...(tools ? { tool_ids: tools } : {}),
+            };
+            if (initial.id) {
+              setDraft({
+                expected_version: initial.version,
+                definition: { ...body, enabled: f.get("enabled") === "on" },
+              });
+              setReviewing(true);
+            } else {
+              await post(w.base + "/agents", body);
+              onSaved();
+            }
+          }}
         >
-          <textarea
-            name="instructions"
-            rows={5}
-            maxLength={8000}
-            defaultValue={initial.body?.instructions ?? ""}
-          />
-        </Field>
-        <details className="specialist-tools">
-          <summary>
-            {t("可用工具", "Allowed tools")} ·{" "}
-            {(tools ?? selected?.tool_ids ?? []).length}
-          </summary>
+          <ErrorNotice error={roles.error ?? brands.error} />
+          <Field label={t("專家名稱", "Specialist name")}>
+            <input
+              name="name"
+              defaultValue={draft?.definition.name ?? initial.name ?? ""}
+              maxLength={160}
+              required
+            />
+          </Field>
+          <Field label={t("預設專業角色", "Role preset")}>
+            <select
+              value={role}
+              disabled={!!initial.id}
+              onChange={(e) => {
+                setRole(e.target.value);
+                setTools(undefined);
+              }}
+            >
+              <option value="assistant">
+                {t("預設助手", "Default assistant")}
+              </option>
+              {roles.data?.items.map((r: any) => (
+                <option key={r.role_key} value={r.role_key}>
+                  {r.display_name} · {r.role_key}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t("品牌", "Brand")}>
+            <select
+              name="brand"
+              defaultValue={
+                draft
+                  ? (draft.definition.brand_id ?? "")
+                  : (initial.body?.brand?.id ?? "")
+              }
+            >
+              <option value="">{t("暫不綁定", "No brand binding")}</option>
+              {brands.data?.items.map((b: any) => (
+                <option key={b.id} value={b.id}>
+                  {b.name} · v{b.version}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field
+            label={t("工作要求", "Working instructions")}
+            hint={t(
+              "例如：使用繁體中文、列出資料來源、海報保留品牌標誌。",
+              "For example: use Traditional Chinese, cite sources, preserve the brand mark in posters.",
+            )}
+          >
+            <textarea
+              name="instructions"
+              rows={5}
+              maxLength={8000}
+              defaultValue={
+                draft?.definition.instructions ??
+                initial.body?.instructions ??
+                ""
+              }
+            />
+          </Field>
+          <details className="specialist-tools">
+            <summary>
+              {t("可用工具", "Allowed tools")} ·{" "}
+              {(tools ?? selected?.tool_ids ?? []).length}
+            </summary>
+            <p className="muted small-text">
+              {t(
+                "可縮減這個角色的工具範圍。",
+                "You can narrow the tools available to this role.",
+              )}
+            </p>
+            {selected?.tool_ids.map((id: string) => (
+              <label className="check-line" key={id}>
+                <input
+                  type="checkbox"
+                  checked={(tools ?? selected.tool_ids).includes(id)}
+                  onChange={(e) =>
+                    setTools(
+                      e.target.checked
+                        ? [...(tools ?? selected.tool_ids), id]
+                        : (tools ?? selected.tool_ids).filter(
+                            (v: string) => v !== id,
+                          ),
+                    )
+                  }
+                />
+                {id}
+              </label>
+            ))}
+          </details>
+          {initial.id && (
+            <label className="check-line">
+              <input
+                name="enabled"
+                type="checkbox"
+                defaultChecked={draft?.definition.enabled ?? initial.enabled}
+              />
+              {t("允許開始新工作", "Allow new work")}
+            </label>
+          )}
           <p className="muted small-text">
             {t(
-              "可縮減這個角色的工具範圍。",
-              "You can narrow the tools available to this role.",
+              "每次更新保留獨立版本。既有會話會保留原版本，直到你主動更新。",
+              "Each update creates a version. Existing conversations keep their version until you choose to update them.",
             )}
           </p>
-          {selected?.tool_ids.map((id: string) => (
-            <label className="check-line" key={id}>
-              <input
-                type="checkbox"
-                checked={(tools ?? selected.tool_ids).includes(id)}
-                onChange={(e) =>
-                  setTools(
-                    e.target.checked
-                      ? [...(tools ?? selected.tool_ids), id]
-                      : (tools ?? selected.tool_ids).filter(
-                          (v: string) => v !== id,
-                        ),
-                  )
-                }
-              />
-              {id}
-            </label>
-          ))}
-        </details>
-        {initial.id && (
-          <label className="check-line">
-            <input
-              name="enabled"
-              type="checkbox"
-              defaultChecked={initial.enabled}
-            />
-            {t("允許開始新工作", "Allow new work")}
-          </label>
-        )}
-        <p className="muted small-text">
-          {t(
-            "每次更新保留獨立版本。既有會話會保留原版本，直到你主動更新。",
-            "Each update creates a version. Existing conversations keep their version until you choose to update them.",
-          )}
-        </p>
-      </AsyncForm>
+        </AsyncForm>
+      )}
     </Modal>
   );
 }
@@ -648,6 +707,9 @@ export function ConversationDetail() {
     nav = useNavigate();
   const [refresh, setRefresh] = useState(0),
     [settings, setSettings] = useState(false),
+    [conversationAdoption, setConversationAdoption] = useState<any>(null),
+    [settingsName, setSettingsName] = useState<string | null>(null),
+    [adopted, setAdopted] = useState(false),
     [remove, setRemove] = useState(false),
     [mode, setMode] = useState("ask"),
     [intent, setIntent] = useState("delegate"),
@@ -656,7 +718,7 @@ export function ConversationDetail() {
     [error, setError] = useState<Error | null>(null);
   const pending = useRef<{ fingerprint: string; payload: any } | null>(null);
   const data = useData(w.base + "/conversations/" + id, refresh, 3000),
-    agents = useData(w.base + "/agents");
+    agents = useData(w.base + "/agents", refresh);
   const c = data.data,
     agent = agents.data?.items.find((a: any) => a.id === c?.agent_id),
     active = c?.tasks.find((task: any) =>
@@ -726,6 +788,15 @@ export function ConversationDetail() {
               </div>
             }
           />
+          {adopted && (
+            <p className="success-line" role="status">
+              <Check size={16} />
+              {t(
+                "已儲存；後續工作將使用已確認的專家版本。",
+                "Saved. Future tasks will use the confirmed specialist version.",
+              )}
+            </p>
+          )}
           <div className="conversation-layout">
             <section className="card ongoing-conversation">
               <div className="conversation-topline">
@@ -982,65 +1053,100 @@ export function ConversationDetail() {
           {settings && (
             <Modal
               title={t("會話設定", "Conversation settings")}
-              onClose={() => setSettings(false)}
+              onClose={() => {
+                setSettings(false);
+                setConversationAdoption(null);
+                setSettingsName(null);
+              }}
             >
-              <AsyncForm
-                submitLabel={t("儲存設定", "Save settings")}
-                onSubmit={async (f) => {
-                  await patch(w.base + "/conversations/" + id, {
-                    name: String(f.get("name")),
-                    expected_version: c.version,
-                    ...(f.get("adopt") === "on"
-                      ? { adopt_agent_version: agent.version }
-                      : {}),
-                  });
-                  setRefresh((v) => v + 1);
-                  setSettings(false);
-                }}
-              >
-                <Field label={t("會話名稱", "Conversation name")}>
-                  <input
-                    name="name"
-                    defaultValue={c.name}
-                    maxLength={160}
-                    required
-                  />
-                </Field>
-                {agent?.version > c.agent_version && (
-                  <label className="check-line">
-                    <input type="checkbox" name="adopt" />
-                    {t(
-                      `後續工作使用專家 v${agent.version}`,
-                      `Use specialist v${agent.version} for future tasks`,
-                    )}
-                  </label>
-                )}
-              </AsyncForm>
-              <div className="conversation-settings-actions">
-                <button
-                  className="button secondary"
-                  onClick={() =>
-                    void update({ archived: !c.archived }).then(() =>
-                      setSettings(false),
-                    )
-                  }
-                >
-                  <Archive size={16} />
-                  {c.archived
-                    ? t("取消封存", "Unarchive")
-                    : t("封存會話", "Archive conversation")}
-                </button>
-                <button
-                  className="text-button danger-text"
-                  onClick={() => {
-                    setSettings(false);
-                    setRemove(true);
+              {conversationAdoption ? (
+                <AdoptionReview
+                  endpoint={`${w.base}/conversations/${id}/adoption-previews`}
+                  proposal={conversationAdoption}
+                  onBack={(stale) => {
+                    setConversationAdoption(null);
+                    if (stale) {
+                      setSettings(false);
+                      setSettingsName(null);
+                      setRefresh((v) => v + 1);
+                    }
                   }}
-                >
-                  <Trash2 size={16} />
-                  {t("刪除會話", "Delete conversation")}
-                </button>
-              </div>
+                  onSaved={() => {
+                    setConversationAdoption(null);
+                    setSettings(false);
+                    setSettingsName(null);
+                    setRefresh((v) => v + 1);
+                    setAdopted(true);
+                  }}
+                />
+              ) : (
+                <>
+                  <AsyncForm
+                    submitLabel={t("儲存設定", "Save settings")}
+                    onSubmit={async (f) => {
+                      if (f.get("adopt") === "on") {
+                        const name = String(f.get("name"));
+                        setSettingsName(name);
+                        setConversationAdoption({
+                          name,
+                          expected_version: c.version,
+                          target_agent_version: agent.version,
+                        });
+                        return;
+                      }
+                      await patch(w.base + "/conversations/" + id, {
+                        name: String(f.get("name")),
+                        expected_version: c.version,
+                      });
+                      setRefresh((v) => v + 1);
+                      setSettings(false);
+                    }}
+                  >
+                    <Field label={t("會話名稱", "Conversation name")}>
+                      <input
+                        name="name"
+                        defaultValue={settingsName ?? c.name}
+                        maxLength={160}
+                        required
+                      />
+                    </Field>
+                    {agent?.version > c.agent_version && (
+                      <label className="check-line">
+                        <input type="checkbox" name="adopt" />
+                        {t(
+                          `後續工作使用專家 v${agent.version}`,
+                          `Use specialist v${agent.version} for future tasks`,
+                        )}
+                      </label>
+                    )}
+                  </AsyncForm>
+                  <div className="conversation-settings-actions">
+                    <button
+                      className="button secondary"
+                      onClick={() =>
+                        void update({ archived: !c.archived }).then(() =>
+                          setSettings(false),
+                        )
+                      }
+                    >
+                      <Archive size={16} />
+                      {c.archived
+                        ? t("取消封存", "Unarchive")
+                        : t("封存會話", "Archive conversation")}
+                    </button>
+                    <button
+                      className="text-button danger-text"
+                      onClick={() => {
+                        setSettings(false);
+                        setRemove(true);
+                      }}
+                    >
+                      <Trash2 size={16} />
+                      {t("刪除會話", "Delete conversation")}
+                    </button>
+                  </div>
+                </>
+              )}
             </Modal>
           )}
           {remove && (

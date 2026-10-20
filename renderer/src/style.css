@@ -1692,6 +1692,80 @@ tbody tr:hover {
   margin-bottom: 22px;
   gap: 20px;
 }
+.modal:has(.adoption-review) {
+  max-width: 850px;
+}
+.adoption-review {
+  display: grid;
+  gap: 18px;
+}
+.adoption-review p {
+  margin: 0;
+  line-height: 1.7;
+}
+.adoption-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.adoption-version {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  overflow-wrap: anywhere;
+}
+.adoption-version:last-child {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+.adoption-version h3 {
+  font-size: 16px;
+  margin: 0 0 16px;
+}
+.adoption-capability {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.adoption-capability strong {
+  display: block;
+  margin: 4px 0;
+}
+.adoption-version dl {
+  margin: 10px 0 0;
+  font-size: 12px;
+}
+.adoption-version dl > div {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+.adoption-version dt {
+  color: var(--muted);
+}
+.adoption-version dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+.adoption-method {
+  display: block;
+  margin-top: 4px;
+}
+.adoption-unknown {
+  padding: 12px;
+  background: var(--warm);
+  border-radius: 8px;
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .adoption-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .adoption-review .row-actions > button {
+    width: 100%;
+    justify-content: center;
+  }
+}
 .modal > header h2 {
   margin: 0;
   font-size: 21px;

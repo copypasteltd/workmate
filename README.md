@@ -1,5 +1,24 @@
 # CopyPaste Desktop
 
+## 明确采用版本（阶段 54）
+
+默认助手更新、专家设置与会话采用先比较明确模型、推理强度、单价及 Skill 版本，再由用户确认。五分钟比较绑定实际登录会话与配置状态，过期或变化拒绝确认；重试使用持久幂等键。已接收任务继续原模型和原费率。
+
+当前平台完整回归 **484/484**，保留原 462 项测试；专项 **93/93** 与全量重叠，不相加。实际构建版 Web **12/12**，新版无边框打包 Desktop 与真实 Chrome 原生侧栏 **11/11**。AI/媒体使用已授权假数据，身份、PostgreSQL、权限与版本事务实际执行。原始 102 项综合验收继续跟踪；以下旧章节保留其时源码与产物范围。
+
+![Actual version review](assets/screenshots/adoption-native-05-comparison-en.png)
+
+新版本机预览位于 `release/adoption-54/`：`CopyPaste-0.5.0-x64-Setup.exe`、`CopyPaste-0.5.0-x64-Portable.exe` 与 `win-unpacked/CopyPaste.exe`。无系统边框、Electron 菜单或 Alt 菜单，保留自绘窗口控制。实际执行了解包程序，Setup/Portable 未安装；均为未签名 localhost 预览。原 `release/frameless/` 保留原字节。
+
+```mermaid
+flowchart LR
+  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
+  Compare --> Consent[Explicit user consent]
+  Consent --> Save[Atomic version and receipt]
+  Save --> Future[Future tasks]
+  Existing[Already accepted tasks] --> Original[Original versions and prices]
+```
+
 ## 限时只读客服协助 / Controlled support
 
 继续使用无边框窗口和自绘标题栏，不启用 Electron 默认菜单。独立渲染器同步账户设置的支持授权界面，新增严格限定的授权列表、创建和撤销桥接操作；管理员支持视图不进入用户端桥接。

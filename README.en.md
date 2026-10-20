@@ -1,5 +1,24 @@
 # CopyPaste Desktop
 
+## Explicit adoption (stage 54)
+
+Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.
+
+Current backend regression: **484/484**, including all 462 prior named tests; focused **93/93** overlaps that total. Actual built Web: **12/12**; new packaged frameless Desktop and real native Chrome Side Panel: **11/11**. AI/media use the authorized simulated dependencies; identity, PostgreSQL, permissions and version transactions execute normally. All 102 original requirements remain tracked. Earlier sections below retain their historical source and artifact scope.
+
+![Actual version review](assets/screenshots/adoption-native-05-comparison-en.png)
+
+New local preview: `release/adoption-54/CopyPaste-0.5.0-x64-Setup.exe`, `CopyPaste-0.5.0-x64-Portable.exe` and `win-unpacked/CopyPaste.exe`. No native frame, Electron menu or Alt menu; custom controls remain active. The packaged executable was run; Setup/Portable were not installed. These are unsigned localhost previews. Previous `release/frameless/` bytes are retained.
+
+```mermaid
+flowchart LR
+  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
+  Compare --> Consent[Explicit user consent]
+  Consent --> Save[Atomic version and receipt]
+  Save --> Future[Future tasks]
+  Existing[Already accepted tasks] --> Original[Original versions and prices]
+```
+
 ## Controlled support update / 受控客服协助
 
 The client retains its frameless window, custom title bar and no default Electron menu. Its independent renderer includes support-grant settings, with a narrowly allowed list/create/revoke bridge. Administrator support views cannot cross the customer bridge.
