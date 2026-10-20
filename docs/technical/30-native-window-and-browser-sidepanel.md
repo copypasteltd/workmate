@@ -1,5 +1,13 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+## 本次追加要求的当前交付复核
+
+已按用户要求复核当前实现：Desktop 移除系统边框、Electron 应用菜单与 Alt 菜单，保留 CopyPaste 自绘拖动区及最小化、最大化/还原、关闭按钮；Extension 点击工具栏图标打开原生 Side Panel，再次点击收起，未设置 action popup。默认右侧，左右位置遵循 Chrome 用户设置，扩展不能强制覆盖该设置。
+
+两端类型检查均通过，Desktop 现有 25/25、Extension 21/21 测试通过。只读核对当前 97 份 Desktop、34 份 Extension 来源、77 份桌面运行文件、20 份扩展构建文件及 Setup/Portable/扩展 ZIP，全部与此前 11/11 实际原生验证的字节一致，见 [本次交付文件复核](../quality/native-clients-recheck-20261021.json)。本轮未重新启动浏览器或应用，不将这次文件核对计为新增 UI 或服务端验收。
+
+可在项目根目录执行 `node docs/tools/verify_current_native_clients.mjs` 复核 `release/adoption-54/` 当前交付。下文旧的 `verify_native_client_surfaces.mjs` 继续只核对其原历史预览，不替代当前版本检查。
+
 ## 当前阶段 54 的实际新版验证
 
 新版打包 Desktop 继续无系统边框、Electron 应用菜单与 Alt 菜单，自绘窗口按钮正常；扩展实际工具栏动作打开右侧原生 `SIDE_PANEL`，页面宽度随之缩小，不创建 popup 或普通标签页，再次点击收起。当前新增模型/费率入口、真实浏览器 PKCE、双语与实际版本比较流程共 11 项通过，十张三端截图中的五张来自此次原生执行，见 [当前流程与截图](54-explicit-agent-version-adoption.md) 及 [新版产物摘要](../quality/agent-adoption-artifacts-02.json)。全部自建浏览器、桌面程序与 API 已关闭。
