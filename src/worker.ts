@@ -10,6 +10,7 @@ import {
 } from "./cloud-source.js";
 import { listCloudReferences, readCloudReference } from "./cloud-references.js";
 import { PgBoss } from "pg-boss";
+import { taskCapabilities, runtimeSelection } from "./capability-bindings.js";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { z } from "zod";
@@ -152,8 +153,14 @@ export class Worker {
         ["uploads", () => cleanUploadStaging(this.db)],
         ["invitations", () => dispatchInvitationMail(this.db)],
         ["admin_approvals", () => expireAdminApprovals(this.db)],
-        ["entitlement_notifications", () => dispatchEntitlementNotifications(this.db)],
-        ["financial_notifications", () => dispatchFinancialNotifications(this.db)],
+        [
+          "entitlement_notifications",
+          () => dispatchEntitlementNotifications(this.db),
+        ],
+        [
+          "financial_notifications",
+          () => dispatchFinancialNotifications(this.db),
+        ],
       ] as const) {
         try {
           await operation();
@@ -227,20 +234,25 @@ export class Worker {
             t.project_id,
             t.input_context,
             this.db.config.CODEX_VERSION,
-            [...this.catalog.capabilityVersions.values()].map((v) => v.id),
+            (await taskCapabilities(tx, this.db.config, this.catalog, t))
+              .versionIds,
           );
           if (
             this.catalog.digest(this.catalog.role(t.role_key)) !== t.role_hash
           )
             throw new Error("Role version changed");
-        } catch {
+        } catch (error) {
+          const code =
+            error instanceof Problem && error.code.startsWith("TASK_")
+              ? error.code
+              : "AUTHORIZATION_CHANGED";
           await settle(tx, tenant, id, 0, t.created_by);
           await tx.query(
-            "UPDATE tasks SET status='cancelled',error_code='AUTHORIZATION_CHANGED',version=version+1 WHERE id=$1",
-            [id],
+            "UPDATE tasks SET status='cancelled',error_code=$2,version=version+1 WHERE id=$1",
+            [id, code],
           );
           await event(tx, tenant, id, "task.cancelled", {
-            reason: "AUTHORIZATION_CHANGED",
+            reason: code,
           });
           return null;
         }
@@ -300,7 +312,8 @@ export class Worker {
                 task.project_id,
                 task.input_context,
                 this.db.config.CODEX_VERSION,
-                [...this.catalog.capabilityVersions.values()].map((v) => v.id),
+                (await taskCapabilities(tx, this.db.config, this.catalog, t))
+                  .versionIds,
               );
             } catch {
               controller.abort();
@@ -370,6 +383,12 @@ export class Worker {
           await projectAccess(tx, actor!, tenant, task.project_id, "write");
           await assertInputDependencies(tx, task);
           await assertReportSources(tx, task);
+          const capabilities = await taskCapabilities(
+            tx,
+            this.db.config,
+            this.catalog,
+            task,
+          );
           const work = await resolveWorkContext(
             tx,
             actor!,
@@ -377,10 +396,11 @@ export class Worker {
             task.project_id,
             task.input_context,
             this.db.config.CODEX_VERSION,
-            [...this.catalog.capabilityVersions.values()].map((v) => v.id),
+            capabilities.versionIds,
           );
           return {
             ...work,
+            capabilities,
             instructions:
               work.instructions + (await inputDependencyContext(tx, task)),
           };
@@ -400,6 +420,7 @@ export class Worker {
         prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}`,
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
         skills: bound,
+        selection: runtimeSelection(context.capabilities),
         signal: controller.signal,
         onEvent: emit,
         tools: this.tools(task, actor!, fencing, effectiveRole),
@@ -501,7 +522,8 @@ export class Worker {
             t.project_id,
             live.input_context,
             this.db.config.CODEX_VERSION,
-            [...this.catalog.capabilityVersions.values()].map((v) => v.id),
+            (await taskCapabilities(tx, this.db.config, this.catalog, live))
+              .versionIds,
           );
           contextDigest = context.digest;
         } catch {
@@ -515,13 +537,38 @@ export class Worker {
             [t.id],
           )
         ).rows[0];
-        const cost =
-          tokenCharge(
+        let meteredTokens = 0;
+        try {
+          // Historical prices remain authoritative after revocation, a gateway
+          // change or a new publication. They are not an execution permission.
+          const binding = await taskCapabilities(
+            tx,
+            this.db.config,
+            this.catalog,
+            live,
+            false,
+          );
+          meteredTokens = tokenCharge(
             input,
             output,
-            this.db.config.AI_INPUT_HKD_MICROS_PER_MILLION ?? 0,
-            this.db.config.AI_OUTPUT_HKD_MICROS_PER_MILLION ?? 0,
-          ) + Number(ops.charge);
+            binding.text.body.rates[0],
+            binding.text.body.rates[1],
+          );
+        } catch {
+          if (input || output || uncertain) {
+            uncertain = true;
+            status = "failed";
+            text = "";
+            error = "TASK_PRICING_RECONCILIATION_REQUIRED";
+          }
+        }
+        const toolCharge = Number(ops.charge);
+        if (
+          !Number.isSafeInteger(toolCharge) ||
+          !Number.isSafeInteger(toolCharge + meteredTokens)
+        )
+          throw new Error("Invalid immutable tool charge");
+        const cost = meteredTokens + toolCharge;
         if (
           status === "succeeded" &&
           !uncertain &&
@@ -642,7 +689,8 @@ export class Worker {
         t.project_id,
         t.input_context,
         this.db.config.CODEX_VERSION,
-        [...this.catalog.capabilityVersions.values()].map((v) => v.id),
+        (await taskCapabilities(tx, this.db.config, this.catalog, t))
+          .versionIds,
       );
       await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
       if (
@@ -1164,7 +1212,22 @@ export class Worker {
           })
           .strict()
           .parse(args);
-        const c = this.db.config;
+        const binding = await this.db.tx(
+          async (tx) => {
+            await authorize(tx);
+            return taskCapabilities(tx, this.db.config, this.catalog, t);
+          },
+          t.tenant_id,
+          false,
+          actor.id,
+        );
+        if (!binding.image)
+          throw new Error("The task has no confirmed Image 2 capability");
+        const c = {
+          ...this.db.config,
+          AI_IMAGE_MODEL: binding.image.body.model_alias,
+          AI_IMAGE_HKD_MICROS_PER_IMAGE: binding.image.body.rates[0],
+        };
         if (
           !c.AI_IMAGE_VERIFIED ||
           !c.AI_IMAGE_MODEL ||
@@ -1317,6 +1380,7 @@ export class Worker {
                 task_id: t.id,
                 operation_id: op.id,
                 model: c.AI_IMAGE_MODEL,
+                capability_version_id: binding.image!.id,
               },
             });
             await tx.query(

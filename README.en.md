@@ -1,5 +1,24 @@
 # CopyPaste Platform
 
+## Frozen task models and prices (stage 52; configuration management in progress)
+
+New tasks bind their Codex profile, internal model, reasoning effort and pricing version in the same transaction as enqueueing and budget reservation. Worker execution, image generation/editing and settlement use the original binding; customer and administrator retries inherit it. Revocation blocks further execution while retaining original costs, and unknown image results remain in reconciliation. Historical selections are never fabricated from today's configuration.
+
+[Migration 063](migrations/063-frozen-task-capabilities.sql) adds immutable bindings protected by RLS. The application still cannot update global capabilities or Codex profiles; a bounded database function only locks specified versions. Focused suites, existing templates, private workflows and real Codex checks pass 35/35. Both native 062→063 upgrades preserve all 124 original public tables and historical SQL bytes. Original permission, fixture and outdated full-suite assertion failures remain retained. Administrative validation/publication/rollback, visible customer version confirmation and complete REQ-045/099 acceptance remain open. Stage 51 and older figures below describe their historical baselines, not all current-source workflows.
+
+```mermaid
+flowchart LR
+  Queue[Enqueue and reserve transaction] --> Binding[Immutable model/effort/rate versions]
+  Binding --> Codex[Codex and internal image requests]
+  Binding --> Settlement[Original-price settlement]
+  Codex --> Usage[Actual metered usage]
+  Usage --> Settlement
+```
+
+See the [capability and frozen pricing suite](tests/capability-bindings.test.ts). Model/media dependencies are controlled fixtures; identity, permissions, PostgreSQL, pinned Codex and ledger operations execute for real.
+
+The full Platform regression passes 435/435 with 714 unchanged source files and no failures, cancellations or skips; TypeScript checks and build pass. The original 434/435 report and old test source remain retained. Only the assertion cancelling an existing task on default changes was corrected to preserve its frozen binding; new-delegation and active-revocation checks were retained.
+
 ## Controlled support update / 受控客服协助
 
 Added time-limited customer grants and canonical administrator support sessions. Scope binds the real administrator session, target identity/membership versions, explicit projects and deadline. Body, billing and VIP authority stay independent; private bodies remain unavailable. Migration 062 is additive and does not turn legacy records into customer views.

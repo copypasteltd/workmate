@@ -66,6 +66,34 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
       for (const capability of capabilities) {
         const body = {
             ...capability,
+            schema_version: 2,
+            wire_protocol:
+              capability.profile_key === "internal-text-v1"
+                ? "responses"
+                : capability.profile_key === "internal-image2-v1"
+                  ? "images"
+                  : "unimplemented",
+            reasoning_effort:
+              capability.profile_key === "internal-text-v1"
+                ? db.config.AI_REASONING_EFFORT
+                : null,
+            supported_operations:
+              capability.profile_key === "internal-text-v1"
+                ? ["responses"]
+                : capability.profile_key === "internal-image2-v1"
+                  ? ["images.generate", "images.edit"]
+                  : [],
+            limits:
+              capability.profile_key === "internal-text-v1"
+                ? { max_prompt_chars: 60000 }
+                : capability.profile_key === "internal-image2-v1"
+                  ? {
+                      max_prompt_chars: 12000,
+                      size: "1024x1024",
+                      quality: "high",
+                      output_format: "png",
+                    }
+                  : {},
             gateway_policy: "company_internal_only",
             gateway_fingerprint: hash(
               db.config.DEMO_MODE

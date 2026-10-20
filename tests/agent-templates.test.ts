@@ -8,6 +8,7 @@ import { loadConfig } from "../src/config.js";
 import { Worker } from "../src/worker.js";
 import { CodexRuntimeAdapter, type RuntimeContext } from "../src/runtime.js";
 import { seedRuntimeProfile } from "../src/runtime-profiles.js";
+import { tokenCharge } from "../src/billing.js";
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 let s: Awaited<ReturnType<typeof buildApp>>;
 type Client = { id: string; cookie: string; csrf: string };
@@ -647,7 +648,7 @@ test("designer instances render private PDF and editable source with bounded for
   assert.equal(rendered.metadata.data_mode, "simulated");
 });
 
-test("a bound capability change cancels before a model call, and an active runtime revocation blocks the next tool and final publication", async () => {
+test("frozen task capability survives default changes, and active runtime revocation blocks the next tool and final publication", async () => {
   const f = await fixture(),
     agent = await ok(
       f.owner,
@@ -681,10 +682,18 @@ test("a bound capability change cancels before a model call, and an active runti
         [agent.agent_version_id],
       )
     ).rows[0].ids[0];
+  const oldDefinition = (
+    await s.db.control.query(
+      "SELECT body FROM internal_capability_versions WHERE id=$1",
+      [oldCapability],
+    )
+  ).rows[0].body;
   class Controlled extends CodexRuntimeAdapter {
     calls = 0;
-    async start(_context: RuntimeContext) {
+    selections: RuntimeContext["selection"][] = [];
+    async start(context: RuntimeContext) {
       this.calls++;
+      this.selections.push(context.selection);
       return {
         text: "Synthetic model result",
         inputTokens: 1,
@@ -702,11 +711,21 @@ test("a bound capability change cancels before a model call, and an active runti
   s.db.config.AI_MODEL = "controlled-model-version-two";
   await seedRuntimeProfile(s.db, s.catalog);
   await worker.run(f.tenant, taskId);
-  const cancelled = await ok(f.owner, "GET", f.base + "/tasks/" + taskId);
-  assert.equal(model.calls, 0);
-  assert.equal(cancelled.status, "cancelled");
-  assert.equal(cancelled.attempt, 0);
-  assert.equal(Number(cancelled.charged_micros), 0);
+  const completed = await ok(f.owner, "GET", f.base + "/tasks/" + taskId);
+  assert.equal(model.calls, 1);
+  assert.equal(completed.status, "succeeded");
+  assert.equal(completed.attempt, 1);
+  const selection = model.selections[0];
+  assert.ok(selection);
+  assert.equal(selection.capabilityVersionId, oldCapability);
+  assert.equal(selection.model, oldDefinition.model_alias);
+  assert.equal(selection.reasoningEffort, oldDefinition.reasoning_effort);
+  assert.equal(selection.inputRate, oldDefinition.rates[0]);
+  assert.equal(selection.outputRate, oldDefinition.rates[1]);
+  assert.equal(
+    Number(completed.charged_micros),
+    tokenCharge(1, 1, oldDefinition.rates[0], oldDefinition.rates[1]),
+  );
   assert.notEqual(
     s.catalog.capabilityVersions.get("internal-text-v1").id,
     oldCapability,

@@ -7,12 +7,24 @@ import path from "node:path";
 import type { Config } from "./config.js";
 import { canonical, hash, Problem } from "./lib.js";
 const exec = promisify(execFile);
+export interface RuntimeSelection {
+  capabilityVersionId: string;
+  runtimeVersion: string;
+  gatewayFingerprint: string;
+  dataMode: "simulated" | "configured_services";
+  model: string;
+  reasoningEffort: Config["AI_REASONING_EFFORT"];
+  inputRate: number;
+  outputRate: number;
+}
 export interface RuntimeContext {
   taskId: string;
   prompt: string;
   workspace: string;
   skills: { key: string; content: string }[];
   thread?: string;
+  // Only the server may derive this from an immutable task capability binding.
+  selection?: RuntimeSelection;
   signal: AbortSignal;
   onEvent: (kind: string, body: any) => Promise<void>;
   tools: {
@@ -60,17 +72,47 @@ export class CodexRuntimeAdapter {
     return v;
   }
   async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+    const selected = ctx.selection;
+    if (
+      selected &&
+      (!/^[a-f0-9-]{36}$/.test(selected.capabilityVersionId) ||
+        selected.runtimeVersion !== this.c.CODEX_VERSION ||
+        selected.gatewayFingerprint !==
+          hash(
+            this.c.DEMO_MODE
+              ? "synthetic-local-gateway-v1"
+              : (this.c.AI_BASE_URL ?? ""),
+          ) ||
+        selected.dataMode !==
+          (this.c.DEMO_MODE ? "simulated" : "configured_services") ||
+        typeof selected.model !== "string" ||
+        !selected.model.length ||
+        selected.model.length > 200 ||
+        !["low", "medium", "high", "xhigh", "max"].includes(
+          selected.reasoningEffort,
+        ) ||
+        ![selected.inputRate, selected.outputRate].every(
+          (n) => Number.isSafeInteger(n) && n >= 0,
+        ))
+    )
+      throw new RuntimeFailure("CAPABILITY_SELECTION_INVALID", false, true);
+    // Never mutate the shared adapter configuration: concurrent tasks can bind
+    // different model, effort and pricing versions on the same worker.
+    const c = selected
+      ? {
+          ...this.c,
+          AI_MODEL: selected.model,
+          AI_REASONING_EFFORT: selected.reasoningEffort,
+          AI_INPUT_HKD_MICROS_PER_MILLION: selected.inputRate,
+          AI_OUTPUT_HKD_MICROS_PER_MILLION: selected.outputRate,
+        }
+      : this.c;
     if (ctx.signal.aborted)
       throw new RuntimeFailure("CODEX_CANCELLED", false, true);
     await this.version();
     if (ctx.signal.aborted)
       throw new RuntimeFailure("CODEX_CANCELLED", false, true);
-    if (
-      !this.c.AI_BASE_URL ||
-      !this.c.AI_MODEL ||
-      !this.c.AI_API_KEY ||
-      !this.c.AI_VERIFIED
-    )
+    if (!c.AI_BASE_URL || !c.AI_MODEL || !c.AI_API_KEY || !c.AI_VERIFIED)
       throw new RuntimeFailure("AI_SETUP_REQUIRED", false, true);
     await mkdir(ctx.workspace, { recursive: true });
     const home = path.join(ctx.workspace, ".codex");
@@ -80,13 +122,16 @@ export class CodexRuntimeAdapter {
     const receiptPath = path.join(home, "copypaste-continuation.json");
     const fingerprint = hash(
       canonical({
-        version: this.c.CODEX_VERSION,
+        version: c.CODEX_VERSION,
+        ...(selected
+          ? { capabilityVersionId: selected.capabilityVersionId }
+          : {}),
         provider: "copypaste_internal",
-        model: this.c.AI_MODEL,
-        endpoint: this.c.AI_BASE_URL,
-        inputRate: this.c.AI_INPUT_HKD_MICROS_PER_MILLION,
-        outputRate: this.c.AI_OUTPUT_HKD_MICROS_PER_MILLION,
-        effort: this.c.AI_REASONING_EFFORT,
+        model: c.AI_MODEL,
+        endpoint: c.AI_BASE_URL,
+        inputRate: c.AI_INPUT_HKD_MICROS_PER_MILLION,
+        outputRate: c.AI_OUTPUT_HKD_MICROS_PER_MILLION,
+        effort: c.AI_REASONING_EFFORT,
         task: ctx.taskId,
         skills: ctx.skills,
         tools: ctx.tools.map(({ name, description, inputSchema }) => ({
@@ -141,15 +186,15 @@ export class CodexRuntimeAdapter {
     }
     const quote = (s: string) => JSON.stringify(s);
     const config = [
-      `model = ${quote(this.c.AI_MODEL)}`,
+      `model = ${quote(c.AI_MODEL)}`,
       'model_provider = "copypaste_internal"',
-      `model_reasoning_effort = ${quote(this.c.AI_REASONING_EFFORT)}`,
+      `model_reasoning_effort = ${quote(c.AI_REASONING_EFFORT)}`,
       'approval_policy = "never"',
       'sandbox_mode = "read-only"',
       'web_search = "disabled"',
       "[model_providers.copypaste_internal]",
       'name = "CopyPaste Internal Gateway"',
-      `base_url = ${quote(this.c.AI_BASE_URL)}`,
+      `base_url = ${quote(c.AI_BASE_URL)}`,
       'env_key = "COPYPASTE_RUNTIME_KEY"',
       'wire_api = "responses"',
       "request_max_retries = 0",
@@ -170,10 +215,10 @@ export class CodexRuntimeAdapter {
       HOME: ctx.workspace,
       USERPROFILE: ctx.workspace,
       CODEX_HOME: home,
-      COPYPASTE_RUNTIME_KEY: this.c.AI_API_KEY,
+      COPYPASTE_RUNTIME_KEY: c.AI_API_KEY,
     };
     const child = spawn(
-      this.c.CODEX_BIN,
+      c.CODEX_BIN,
       ["app-server", "--stdio", "--strict-config"],
       {
         cwd: ctx.workspace,
@@ -435,7 +480,7 @@ export class CodexRuntimeAdapter {
         JSON.stringify({ method: "initialized", params: {} }) + "\n",
       );
       const common = {
-        model: this.c.AI_MODEL,
+        model: c.AI_MODEL,
         modelProvider: "copypaste_internal",
         cwd: ctx.workspace,
         approvalPolicy: "never",
@@ -462,7 +507,7 @@ export class CodexRuntimeAdapter {
       thread = result.thread.id;
       if (
         (ctx.thread && thread !== ctx.thread) ||
-        result.model !== this.c.AI_MODEL ||
+        result.model !== c.AI_MODEL ||
         result.modelProvider !== "copypaste_internal"
       )
         throw new RuntimeFailure("CODEX_PROFILE_MISMATCH", false, true);
@@ -471,8 +516,8 @@ export class CodexRuntimeAdapter {
       accepted = true; // A lost turn/start response is uncertain and must not release the reservation.
       const t = await send("turn/start", {
         threadId: thread,
-        model: this.c.AI_MODEL,
-        effort: this.c.AI_REASONING_EFFORT,
+        model: c.AI_MODEL,
+        effort: c.AI_REASONING_EFFORT,
         input: [...skills, { type: "text", text: ctx.prompt }],
       });
       turn = t.turn.id;

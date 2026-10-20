@@ -8,6 +8,7 @@ import { reserve } from "./billing.js";
 import { Problem } from "./lib.js";
 import type { WorkContext } from "./persistent-work.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
+import { freezeTaskCapabilities } from "./capability-bindings.js";
 import {
   stageInputDependencies,
   type InputDependency,
@@ -141,6 +142,7 @@ export async function enqueueTask(
       ],
     )
   ).rows[0];
+  await freezeTaskCapabilities(tx, db.config, catalog, task);
   await freezeTaskSkills(tx, catalog, task);
   const waiting = await stageInputDependencies(
     tx,

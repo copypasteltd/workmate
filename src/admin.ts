@@ -1,5 +1,9 @@
 import { planSchema, authorizeTaskPlan } from "./plans.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
+import {
+  freezeTaskCapabilities,
+  taskCapabilities,
+} from "./capability-bindings.js";
 import { stageInputDependencies } from "./task-dependencies.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
@@ -602,7 +606,8 @@ export function registerAdmin(
                   t.project_id,
                   t.input_context,
                   db.config.CODEX_VERSION,
-                  [...catalog.capabilityVersions.values()].map((v) => v.id),
+                  (await taskCapabilities(tx, db.config, catalog, t))
+                    .versionIds,
                 );
                 const plan = await authorizeTaskPlan(
                   tx,
@@ -634,6 +639,7 @@ export function registerAdmin(
                     ],
                   )
                 ).rows[0];
+                await freezeTaskCapabilities(tx, db.config, catalog, child);
                 await freezeTaskSkills(tx, catalog, child);
                 const waiting = await stageInputDependencies(
                   tx,

@@ -489,10 +489,12 @@ export function tokenCharge(
     )
   )
     throw new Error("Invalid metering values");
-  return Number(
+  const amount =
     (BigInt(input) * BigInt(inputRate) +
       BigInt(output) * BigInt(outputRate) +
       999999n) /
-      1000000n,
-  );
+    1000000n;
+  if (amount > BigInt(Number.MAX_SAFE_INTEGER))
+    throw new Error("Metered charge exceeds the safe settlement range");
+  return Number(amount);
 }
