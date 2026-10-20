@@ -8,7 +8,25 @@ An independent Electron repository bundling the Web workspace and a narrow local
 ![Authenticated workspace](assets/screenshots/01-workspace.png)
 ![Local files](assets/screenshots/02-local-files.png)
 
-Stage 49 rechecks verify frameless Desktop, the native Chrome right Side Panel, live rights/notifications and sign-out. Native runtime and existing preview installer bytes are unchanged. The platform and Admin provide the new atomic VIP and explicit-gift command; this client consumes effective server rights. Complete installation, signing, SSO and system acceptance remain separate.
+The historical stage 49 recheck verified frameless Desktop, the native Chrome right Side Panel, live rights/notifications and sign-out while retaining that stage's installer bytes. Stage 50 below rebuilds the current previews with financial views. Complete installation, signing, SSO and system acceptance remain separate.
+
+## Durable financial notifications and three-client accounts (stage 50)
+
+The independent renderer includes the financial accounts and inbox. The main process admits only the bounded user GET/PATCH paths, with credentials retained by the secure local bridge. The window stays frameless with custom controls and no Electron application menu. The actual packaged client verifies PKCE, exact gift values, unknown refunds, cross-client read state and clearing on revocation/sign-out. Current previews are rebuilt from the new source; stage 49 binaries remain archived separately.
+
+Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+
+```mermaid
+flowchart LR
+  Source[Canonical financial fact] --> Tx[Same-transaction outbox]
+  Tx --> Worker[Current eligible recipient]
+  Worker --> Access[Recheck current authority]
+  Access --> Clients[Web / frameless Desktop / native Side Panel]
+```
+
+![Frameless financial accounts](assets/screenshots/28-financial-inbox.png)
+
+![Actual unknown refund](assets/screenshots/29-financial-unknown.png)
 
 ## Frameless window
 

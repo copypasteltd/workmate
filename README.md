@@ -8,7 +8,25 @@
 ![已登录工作区](assets/screenshots/01-workspace.png)
 ![本地文件工作流](assets/screenshots/02-local-files.png)
 
-当前阶段 49 联调重新验证了无边框 Desktop、Chrome 原生右侧 Side Panel、实时权益/通知及退出；原生运行文件与现有预览安装器保持原字节。本次新增 VIP 加显式赠额的原子操作由平台和管理后台提供。本仓库只消费实际生效的服务器权益；完整安装/签名/SSO/系统验收仍单独跟踪。
+阶段 49 历史联调已验证无边框 Desktop、Chrome 原生右侧 Side Panel、实时权益/通知和退出，当时安装器保持原字节。下方阶段 50 随费用视图源码重建当前预览；完整安装/签名/SSO/系统验收仍单独跟踪。
+
+## 事务费用通知与三端账户（阶段 50）
+
+独立 renderer 已同步费用账户和通知页面；主进程只放行限定的用户 GET/PATCH 路径，凭证继续由本地安全桥管理。保持无原生边框、无 Electron 默认菜单和自绘窗口控制。实际打包客户端已验证 PKCE、精确赠额、未知退款、跨端已读、撤权与退出清空；当前预览包随新源码重建，阶段 49 包另存保留。
+
+当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+
+```mermaid
+flowchart LR
+  Source[规范费用事实] --> Tx[同事务通知意图]
+  Tx --> Worker[当前合法接收人]
+  Worker --> Access[读取时复查权限]
+  Access --> Clients[Web / 无边框 Desktop / 原生侧栏]
+```
+
+![无边框客户端费用账户](assets/screenshots/28-financial-inbox.png)
+
+![实际未知退款](assets/screenshots/29-financial-unknown.png)
 
 ## 无边框窗口
 
