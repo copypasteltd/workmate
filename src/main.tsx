@@ -1,4 +1,5 @@
 import { ApprovalReview } from "./approvals";
+import { AdminPlans } from "./plans";
 import {
   AdminDirectoryFilters,
   useAdminTenantOptions,
@@ -345,7 +346,7 @@ const nav = [
   ["support", Headphones, "支援工作台", "Support", "admin.support.read"],
   ["audit", ScrollText, "審計與審批", "Audit & approvals", "admin.audit.read"],
   ["jobs", ListChecks, "批次與匯出", "Jobs & exports", "admin.jobs.read"],
-  ["plans", Wallet, "方案與價格", "Plans & pricing", "admin.plans.read"],
+  ["plans", Wallet, "方案與權限", "Plans & access", "admin.plans.read"],
   [
     "policy",
     SlidersHorizontal,
@@ -489,6 +490,8 @@ function AdminShell() {
                     element={
                       n[0] === "billing" ? (
                         <BillingPage />
+                      ) : n[0] === "plans" ? (
+                        <AdminPlans access={a} />
                       ) : (
                         <Section section={n[0]} />
                       )

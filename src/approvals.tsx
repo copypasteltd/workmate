@@ -3,6 +3,7 @@ import { api } from "./api";
 import { operationKey, completeOperation } from "./operation-key";
 import { AccountChangeFacts } from "./accounts";
 import { MembershipChangeFacts } from "./memberships";
+import { PlanPublicationFacts } from "./plans";
 import { FeeReview, canonicalFeeAction } from "./fees";
 import {
   AsyncForm,
@@ -102,7 +103,9 @@ export function ApprovalReview({
               <DateText value={approval.expires_at} />
             </dd>
           </dl>
-          {operation.action === "tenants.members.write" ? (
+          {operation.action === "plans.publish" ? (
+            <PlanPublicationFacts before={data.before} />
+          ) : operation.action === "tenants.members.write" ? (
             <MembershipChangeFacts
               tenant={operation.target_ids[0]}
               command={command}

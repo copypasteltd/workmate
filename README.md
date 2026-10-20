@@ -6,6 +6,26 @@
 
 ![运营概览](assets/screenshots/01-overview.png)
 
+## 方案与权限
+
+`/plans` 新增结构化方案表单、只读完整定义、同家族新版本、冻结发佈比较、确认与共用独立审批。页面沿用 CopyPaste 品牌、繁中/英文和浅深主题。精确 HKD 输入不会丢失大整数；校验失败保留表单、显示字段错误并将焦点移到可跳转摘要。原始保存版本不能原地编辑。
+
+```mermaid
+flowchart LR
+  Form[方案表单] --> Draft[新版本]
+  Draft --> Preview[核对冻结比较]
+  Preview --> Approval[独立审批]
+  Approval --> Published[发佈定义]
+```
+
+![方案目录](assets/screenshots/50-plan-directory.png)
+
+![发佈比较](assets/screenshots/53-plan-publication-preview.png)
+
+真实浏览器六组流程及八份原规范响应已通过，原报告、截图与源码摘要见 delivery 的 `admin-plans.json`、`admin-plan-contract-samples.json` 和 `admin-plan-screenshots.json`。旧 pricing 样式造成的首轮布局截图及缺失浏览器路径记录独立保留；当前 Admin 样式隔离并有布局断言。
+
+发佈定义不会自动开通 VIP、记入余额或付款。完整规范 VIP 生命周期、席位/储存执行和用户端规范消费者仍需分别验收。当前旧 VIP 页保留历史能力；勿将它与完整新授权体系混同。
+
 ## 启动
 
 Node.js 22.14+。先启动 platform API 与数据库，并通过 platform CLI 创建管理员、导入 TOTP：
@@ -46,7 +66,7 @@ npm run build
 | Support     | 限时支持会话元数据与撤销；不具备静默代登录                                 |
 | Audit       | 可追溯操作、结果与时间                                                     |
 | Jobs        | 有预览/提交的用户状态批量操作、受控 CSV 导出                               |
-| Plans       | 版本化套餐、能力/角色/并发和任务预算约束                                   |
+| Plans       | 不可变方案家族/版本、结构化定义、冻结发佈比较及独立审批                                   |
 | Policy      | 审批金额阈值与 VIP 最长期限的版本配置                                      |
 
 ![用户详情及消耗](assets/screenshots/02-user-detail.png)
@@ -339,3 +359,5 @@ flowchart LR
 ![繁中深色手机详情](assets/screenshots/admin-refund-mobile-dark.png)
 
 2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。
+
+2026-10-20 方案版本增量後的當前源碼復核：Web 成員 6/6（172 份來源）、Admin 成員 6/6（200 份），Web／源碼 Electron／MV3 認證 12/12（779 份）；測試前後摘要一致，自建瀏覽器／Electron／擴展均關閉，測試憑證清理。新增不可變方案定義與固定歷史授權綁定不改寫原生預覽包。完整 VIP／配額、安裝包認證及系統驗收仍按主文檔繼續追蹤。

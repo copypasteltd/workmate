@@ -6,6 +6,26 @@ An independent Git repository and admin client with separate identity, cookies a
 
 ![Operations overview](assets/screenshots/01-overview.png)
 
+## Plans and access
+
+`/plans` provides structured allowance forms, complete read-only definitions, new versions within a family, frozen publication comparisons, confirmation and shared independent review. CopyPaste branding, Traditional Chinese/English and light/dark themes remain consistent. HKD input preserves large integers; validation retains input, shows field errors and focuses a linked error summary. Saved versions cannot be edited in place.
+
+```mermaid
+flowchart LR
+  Form[Plan form] --> Draft[New version]
+  Draft --> Preview[Review frozen comparison]
+  Preview --> Approval[Independent review]
+  Approval --> Published[Published definition]
+```
+
+![Plan directory](assets/screenshots/50-plan-directory.png)
+
+![Publication comparison](assets/screenshots/53-plan-publication-preview.png)
+
+Six real browser flows and eight original-schema responses pass. Reports, screenshots and source digests are in delivery's `admin-plans.json`, `admin-plan-contract-samples.json` and `admin-plan-screenshots.json`. The initial missing-browser-path run and visually compressed pricing-style captures are preserved separately. Current Admin classes are isolated and guarded by layout assertions.
+
+Publication does not automatically activate VIP, credit a wallet or transfer money. Complete canonical VIP lifecycle, seat/storage enforcement and customer consumers remain separate unfinished work. The legacy VIP page retains its historical behavior.
+
 ## Run
 
 Requires Node.js 22.14+ and a running platform/database. Enroll an administrator and import TOTP using the platform CLI:
@@ -46,7 +66,7 @@ Every admin login requires email OTP and TOTP. Sensitive writes require MFA in t
 | Support     | Time-limited support-session metadata; no silent impersonation                                                |
 | Audit       | Attributable operations, outcomes and timestamps                                                              |
 | Jobs        | Preview/commit user-status batches and restricted CSV exports                                                 |
-| Plans       | Versioned capabilities/roles/concurrency/task-budget policies                                                 |
+| Plans       | Immutable families/versions, structured allowances, frozen comparisons and independent review                                                 |
 | Policy      | Versioned approval thresholds and maximum VIP duration                                                        |
 
 ![Customer detail](assets/screenshots/02-user-detail.png)
@@ -339,3 +359,5 @@ flowchart LR
 ![Traditional Chinese dark mobile detail](assets/screenshots/admin-refund-mobile-dark.png)
 
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
+
+Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
