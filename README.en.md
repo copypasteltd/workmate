@@ -6,6 +6,22 @@ An independent Git repository and admin client with separate identity, cookies a
 
 ![Operations overview](assets/screenshots/01-overview.png)
 
+## Durable financial notifications and three-client accounts (stage 50)
+
+Existing financial and VIP/explicit-gift commands now capture user-notification intent atomically on the platform, preserving the original permissions, independent review and exact ledger provenance. Pending, rejected and replayed requests do not create duplicate funding or notification facts. Bank evidence and internal reasons stay out of customer notifications. Admin retains its separate identity; the capture below shows the actual customer result, not impersonation or a new funding endpoint.
+
+Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+
+```mermaid
+flowchart LR
+  Source[Canonical financial fact] --> Tx[Same-transaction outbox]
+  Tx --> Worker[Current eligible recipient]
+  Worker --> Access[Recheck current authority]
+  Access --> Clients[Web / frameless Desktop / native Side Panel]
+```
+
+![Actual customer notification result](assets/screenshots/financial-client-inbox.png)
+
 ## Atomic VIP and explicit credit (stage 49)
 
 The existing VIP form can include a deliberate HKD gift with its own exact amount, expiry and reason. One frozen preview and one confirmation create a parent operation. The server commits canonical VIP and financial child operations in one database transaction, or rolls both back. If either risk policy requires review, the whole request waits for another administrator with both domains' permissions; pending requests create no entitlement or credit.
