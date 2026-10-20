@@ -6,6 +6,10 @@
 
 ![首页](assets/screenshots/01-landing.png)
 
+平台和 Admin 新增 VIP 加明确赠额的原子开通。Web 通过现有真实登录会话读取生效权益和独立赠额余额；VIP 到期与赠额到期分别计算。组合提交/权限/审批由服务端处理，Web 不拼接两个写请求。下图为实际模拟依赖环境中的已登录用户页面；不表示公司模型或支付机构已联调。
+
+![组合生效后的真实用户页面](assets/screenshots/79-vip-credit-user-rights.png)
+
 ## 启动与构建
 
 Node.js 22.14+。先按 platform 仓库说明启动数据库/API，再执行：

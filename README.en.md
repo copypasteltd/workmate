@@ -6,6 +6,10 @@ A Web client for Hong Kong enterprise marketing teams, using CopyPaste's warm wh
 
 ![Landing page](assets/screenshots/01-landing.png)
 
+The platform and Admin now provide atomic VIP plus explicit credit. Web reads effective rights and the independent gift balance through its existing real user session; the two expiries remain separate. The server handles the combined write, authority and approval. This capture is an actual signed-in user page with authorized simulated dependencies, not evidence of a live model or payment integration.
+
+![Actual user page after combined completion](assets/screenshots/79-vip-credit-user-rights.png)
+
 ## Run and deploy
 
 Requires Node.js 22.14+. Start the platform database/API first, then:
