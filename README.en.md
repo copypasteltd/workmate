@@ -8,6 +8,8 @@ An independent Electron repository bundling the Web workspace and a narrow local
 ![Authenticated workspace](assets/screenshots/01-workspace.png)
 ![Local files](assets/screenshots/02-local-files.png)
 
+Stage 49 rechecks verify frameless Desktop, the native Chrome right Side Panel, live rights/notifications and sign-out. Native runtime and existing preview installer bytes are unchanged. The platform and Admin provide the new atomic VIP and explicit-gift command; this client consumes effective server rights. Complete installation, signing, SSO and system acceptance remain separate.
+
 ## Frameless window
 
 The main window has no native frame/title bar or Electron default application menu, including after Alt. A 40px CopyPaste title bar provides a drag region and bilingual minimize, maximize/restore and close controls using the existing light/dark tokens. Content and modals start below it. Eight invisible edge/corner handles resize within a minimum of 800×600; the bottom-right handle also supports arrow keys (10px) and Shift+arrows (50px). System file and permission dialogs keep their native UI.
