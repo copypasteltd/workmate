@@ -7,6 +7,8 @@ An independent repository for project/specialist tasks, explicitly selected file
 ![Sign-in](assets/screenshots/01-login.png)
 ![Authenticated side panel](assets/screenshots/02-workspace.png)
 
+Stage 49 rechecks verify frameless Desktop, the native Chrome right Side Panel, live rights/notifications and sign-out. Native runtime and existing preview installer bytes are unchanged. The platform and Admin provide the new atomic VIP and explicit-gift command; this client consumes effective server rights. Complete installation, signing, SSO and system acceptance remain separate.
+
 ## Open in the browser side panel
 
 The entry follows the current MetaMask pattern: select CopyPaste from Chrome's extension menu or pin and click its icon to open the native global Side Panel, normally on the right. Clicking again closes it. It stays across page/tab navigation, and closing it does not cancel cloud tasks. Installation and browser startup do not open it automatically.
