@@ -1,0 +1,37 @@
+2026-10-21 05:30:47.632 CST [28024] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 05:30:47.637 CST [28024] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 05:30:47.637 CST [28024] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 05:30:49.601 CST [34468] LOG:  database system was shut down at 2026-10-21 04:44:41 CST
+
+2026-10-21 05:30:50.305 CST [28024] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 05:31:29.544 CST [33528] ERROR:  new row for relation "codex_runtime_profiles" violates check constraint "codex_runtime_profiles_state_check"
+2026-10-21 05:31:29.544 CST [33528] DETAIL:  Failing row contains (54825ccb-3548-4206-b65a-36ae88cfdff1, f887dba65242498f468e5c4bf4a68aa0be4219214de0f399a1b5cd79acc7d9d4, codex-internal-v1, codex, 0.163.0-alpha.10.2, stdio, company_internal_only, f, disabled, 2026-10-21 05:31:23.255899+08).
+2026-10-21 05:31:29.544 CST [33528] STATEMENT:  UPDATE codex_runtime_profiles SET state='disabled' WHERE id=$1
+
+2026-10-21 05:31:30.012 CST [31940] ERROR:  permission denied for schema public
+2026-10-21 05:31:30.012 CST [31940] STATEMENT:  CREATE FUNCTION test_adoption_audit_failure() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action='agent.version.adopt' THEN RAISE EXCEPTION 'controlled adoption audit failure'; END IF; RETURN NEW; END $$
+
+2026-10-21 05:31:30.127 CST [16508] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 05:31:31.740 CST [16508] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.028 s, sync=1.047 s, total=1.613 s; sync files=10, longest=0.156 s, average=0.105 s; distance=13304 kB, estimate=13304 kB; lsn=5/35ACBF30, redo lsn=5/35ACBED8
+
+2026-10-21 05:31:33.570 CST [28024] LOG:  received fast shutdown request
+
+2026-10-21 05:31:33.848 CST [28024] LOG:  aborting any active transactions
+
+2026-10-21 05:31:33.854 CST [28024] LOG:  background worker "logical replication launcher" (PID 34832) exited with exit code 1
+
+2026-10-21 05:31:33.869 CST [16508] LOG:  shutting down
+
+2026-10-21 05:31:33.964 CST [16508] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 05:31:34.640 CST [16508] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.072 s, total=0.772 s; sync files=1, longest=0.072 s, average=0.072 s; distance=0 kB, estimate=11974 kB; lsn=5/35ACC060, redo lsn=5/35ACC060
+
+2026-10-21 05:31:34.961 CST [28024] LOG:  database system is shut down
+

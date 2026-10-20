@@ -1,0 +1,12 @@
+import { spawn } from "node:child_process";
+import { createWriteStream } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import path from "node:path";
+const evidence=path.dirname(import.meta.filename),platform=path.resolve(evidence,"../../copypaste-platform"),prefix=path.join(evidence,"agent-adoption-runtime-diagnostic-02"),hash=b=>createHash("sha256").update(b).digest("hex");
+const files=["src/runtime.ts","tests/runtime.test.ts","src/loopback-http.ts"],snapshot=async()=>Object.fromEntries(await Promise.all(files.map(async f=>[f,hash(await readFile(path.join(platform,f)))]))),before=await snapshot();
+const raw=createWriteStream(prefix+".tap",{flags:"wx"}),child=spawn(process.execPath,["--env-file=.env","scripts/run-tests-owned.mjs","tests/runtime.test.ts"],{cwd:platform,windowsHide:true,stdio:["ignore","pipe","pipe"]});
+child.stdout.pipe(raw,{end:false});child.stderr.pipe(raw,{end:false});
+const code=await new Promise((resolve,reject)=>{child.once("close",resolve);child.once("error",reject);});await new Promise(r=>raw.end(r));const bytes=await readFile(prefix+".tap"),text=bytes.toString(),counts=Object.fromEntries(["tests","pass","fail","cancelled","skipped"].map(k=>[k,Number(text.match(new RegExp("^# "+k+" (\\d+)\\r?$","m"))?.[1]??-1)]));
+const stable=JSON.stringify(before)===JSON.stringify(await snapshot());
+await writeFile(prefix+".json",JSON.stringify({at:new Date().toISOString(),status:code===0&&stable?"passed":"failed",scope:"Diagnostic execution of both existing real Codex runtime tests with numeric-only failure detail; original assertions and budgets retained",exit_code:code,counts,source_files:before,source_unchanged:stable,raw_report:path.basename(prefix)+".tap",raw_sha256:hash(bytes),verifier_sha256:hash(await readFile(import.meta.filename))},null,2)+"\n",{flag:"wx"});console.log(JSON.stringify({exit_code:code,counts,source_unchanged:stable}));process.exitCode=code;

@@ -1,0 +1,809 @@
+2026-10-21 06:52:26.993 CST [21196] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 06:52:27.001 CST [21196] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 06:52:27.002 CST [21196] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 06:52:27.302 CST [40164] LOG:  database system was shut down at 2026-10-21 06:52:04 CST
+
+2026-10-21 06:52:27.370 CST [21196] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 06:52:38.550 CST [5684] WARNING:  there is no transaction in progress
+
+2026-10-21 06:52:38.640 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:52:40.331 CST [24268] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.016 s, sync=1.160 s, total=1.691 s; sync files=12, longest=0.201 s, average=0.097 s; distance=12935 kB, estimate=12935 kB; lsn=5/8A499F40, redo lsn=5/8A499EE8
+
+2026-10-21 06:52:53.052 CST [32704] ERROR:  permission denied for table admin_approval_decisions
+2026-10-21 06:52:53.052 CST [32704] STATEMENT:  UPDATE admin_approval_decisions SET reason='Changed record' WHERE approval_id=$1
+
+2026-10-21 06:52:53.127 CST [11756] ERROR:  permission denied for table admin_approval_requests
+2026-10-21 06:52:53.127 CST [11756] STATEMENT:  DELETE FROM admin_approval_requests WHERE id=$1
+
+2026-10-21 06:53:03.213 CST [41572] ERROR:  Controlled approval audit failure
+2026-10-21 06:53:03.213 CST [41572] CONTEXT:  PL/pgSQL function controlled_shared_approval_audit_failure() line 1 at RAISE
+2026-10-21 06:53:03.213 CST [41572] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:53:03.880 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:53:06.265 CST [24268] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.262 s, sync=1.405 s, total=2.386 s; sync files=12, longest=0.231 s, average=0.118 s; distance=13145 kB, estimate=13145 kB; lsn=5/8B1705D0, redo lsn=5/8B170578
+
+2026-10-21 06:53:18.035 CST [14856] ERROR:  Billing account subject and mode are immutable
+2026-10-21 06:53:18.035 CST [14856] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 4 at RAISE
+2026-10-21 06:53:18.035 CST [14856] STATEMENT:  UPDATE wallets SET user_id=$2 WHERE id=$1
+
+2026-10-21 06:53:18.122 CST [16260] ERROR:  Billing account subject and mode are immutable
+2026-10-21 06:53:18.122 CST [16260] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 4 at RAISE
+2026-10-21 06:53:18.122 CST [16260] STATEMENT:  UPDATE wallets SET data_mode='simulated' WHERE id=$1
+
+2026-10-21 06:53:18.225 CST [32120] ERROR:  Task billing subject and mode are immutable
+2026-10-21 06:53:18.225 CST [32120] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 6 at RAISE
+2026-10-21 06:53:18.225 CST [32120] STATEMENT:  UPDATE tasks SET created_by=$2 WHERE id=$1
+
+2026-10-21 06:53:18.327 CST [35304] ERROR:  A task payer is immutable
+2026-10-21 06:53:18.327 CST [35304] CONTEXT:  PL/pgSQL function immutable_task_payer() line 2 at RAISE
+2026-10-21 06:53:18.327 CST [35304] STATEMENT:  UPDATE tasks SET billing_account_id=$2 WHERE id=$1
+
+2026-10-21 06:53:18.418 CST [16764] ERROR:  Reserved financial identity is immutable
+2026-10-21 06:53:18.418 CST [16764] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 8 at RAISE
+2026-10-21 06:53:18.418 CST [16764] STATEMENT:  UPDATE reservations SET billing_account_id=$2 WHERE task_id=$1
+
+2026-10-21 06:53:18.519 CST [24892] ERROR:  Funding source identity and expiry are immutable
+2026-10-21 06:53:18.519 CST [24892] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 10 at RAISE
+2026-10-21 06:53:18.519 CST [24892] STATEMENT:  UPDATE funding_lots SET billing_account_id=$2 WHERE ledger_id=$1
+
+2026-10-21 06:53:18.711 CST [19680] ERROR:  Journal operation identity mismatch
+2026-10-21 06:53:18.711 CST [19680] CONTEXT:  PL/pgSQL function validate_billing_journal() line 4 at RAISE
+2026-10-21 06:53:18.711 CST [19680] STATEMENT:  INSERT INTO billing_journal(billing_account_id,operation_id,actor_id,kind,direction,bucket,amount_micros,reason) VALUES($1,$2,$3,'gift','credit','promotional',1,'Forged target')
+
+2026-10-21 06:53:18.823 CST [20708] ERROR:  permission denied for table billing_journal
+2026-10-21 06:53:18.823 CST [20708] STATEMENT:  UPDATE billing_journal SET actor_id=$2 WHERE id=$1
+
+2026-10-21 06:53:19.019 CST [8480] ERROR:  permission denied for table billing_operations
+2026-10-21 06:53:19.019 CST [8480] STATEMENT:  UPDATE billing_operations SET actor_id=$2 WHERE id=$1
+
+2026-10-21 06:53:19.653 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:53:21.765 CST [24268] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.008 s, sync=1.068 s, total=2.112 s; sync files=9, longest=0.325 s, average=0.119 s; distance=12704 kB, estimate=13101 kB; lsn=5/8BDD87C8, redo lsn=5/8BDD8770
+
+2026-10-21 06:53:42.576 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:53:44.710 CST [24268] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.012 s, sync=1.072 s, total=2.134 s; sync files=12, longest=0.244 s, average=0.090 s; distance=14252 kB, estimate=14252 kB; lsn=5/8CBC3890, redo lsn=5/8CBC3800
+
+2026-10-21 06:53:59.272 CST [29140] ERROR:  Refund ledger writes require independently verified refund evidence
+2026-10-21 06:53:59.272 CST [29140] CONTEXT:  PL/pgSQL function verified_cash_refund_ledger() line 5 at RAISE
+2026-10-21 06:53:59.272 CST [29140] STATEMENT:  COMMIT
+
+2026-10-21 06:53:59.273 CST [29140] WARNING:  there is no transaction in progress
+
+2026-10-21 06:53:59.275 CST [29140] ERROR:  permission denied for table billing_refunds
+2026-10-21 06:53:59.275 CST [29140] STATEMENT:  UPDATE billing_refunds SET amount_micros=amount_micros-1 WHERE id=$1
+
+2026-10-21 06:53:59.340 CST [41528] ERROR:  Billing source history is immutable
+2026-10-21 06:53:59.340 CST [41528] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 06:53:59.340 CST [41528] STATEMENT:  UPDATE billing_refunds SET amount_micros=amount_micros-1 WHERE id=$1
+
+2026-10-21 06:53:59.364 CST [24228] ERROR:  Funding source identity and expiry are immutable
+2026-10-21 06:53:59.364 CST [24228] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 10 at RAISE
+2026-10-21 06:53:59.364 CST [24228] STATEMENT:  UPDATE funding_lots SET expires_at=expires_at+interval '1 day' WHERE ledger_id=$1
+
+2026-10-21 06:54:07.247 CST [41124] ERROR:  controlled refund audit failure
+2026-10-21 06:54:07.247 CST [41124] CONTEXT:  PL/pgSQL function reject_refund_audit() line 1 at RAISE
+2026-10-21 06:54:07.247 CST [41124] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:54:07.312 CST [41124] ERROR:  controlled refund audit failure
+2026-10-21 06:54:07.312 CST [41124] CONTEXT:  PL/pgSQL function reject_refund_audit() line 1 at RAISE
+2026-10-21 06:54:07.312 CST [41124] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:54:11.540 CST [12348] ERROR:  controlled audit failure
+2026-10-21 06:54:11.540 CST [12348] CONTEXT:  PL/pgSQL function reject_payment_audit() line 1 at RAISE
+2026-10-21 06:54:11.540 CST [12348] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:54:11.575 CST [39940] ERROR:  Frozen financial intent is immutable
+2026-10-21 06:54:11.575 CST [39940] CONTEXT:  PL/pgSQL function immutable_financial_command() line 6 at RAISE
+2026-10-21 06:54:11.575 CST [39940] STATEMENT:  UPDATE admin_operations SET payload=jsonb_set(payload,'{command,kind}','"forged"') WHERE id=$1
+
+2026-10-21 06:54:11.578 CST [39940] ERROR:  Payment facts are append-only
+2026-10-21 06:54:11.578 CST [39940] CONTEXT:  PL/pgSQL function protect_payment_fact() line 4 at RAISE
+2026-10-21 06:54:11.578 CST [39940] STATEMENT:  UPDATE payment_records SET external_reference='edited' WHERE id=$1
+
+2026-10-21 06:54:11.579 CST [39940] ERROR:  Payment facts are append-only
+2026-10-21 06:54:11.579 CST [39940] CONTEXT:  PL/pgSQL function protect_payment_fact() line 4 at RAISE
+2026-10-21 06:54:11.579 CST [39940] STATEMENT:  DELETE FROM payment_records WHERE id=$1
+
+2026-10-21 06:54:13.450 CST [12348] ERROR:  Frozen approval is immutable
+2026-10-21 06:54:13.450 CST [12348] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-21 06:54:13.450 CST [12348] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 year' WHERE id=$1
+
+2026-10-21 06:54:15.084 CST [41124] ERROR:  Frozen financial intent is immutable
+2026-10-21 06:54:15.084 CST [41124] CONTEXT:  PL/pgSQL function immutable_financial_command() line 6 at RAISE
+2026-10-21 06:54:15.084 CST [41124] STATEMENT:  UPDATE admin_operations SET payload=payload||'{"changed":true}' WHERE id=$1
+
+2026-10-21 06:54:15.171 CST [26000] ERROR:  Frozen financial intent is immutable
+2026-10-21 06:54:15.171 CST [26000] CONTEXT:  PL/pgSQL function immutable_financial_command() line 6 at RAISE
+2026-10-21 06:54:15.171 CST [26000] STATEMENT:  UPDATE admin_operations SET id=$2 WHERE id=$1
+
+2026-10-21 06:54:15.236 CST [31212] ERROR:  Financial command history is immutable
+2026-10-21 06:54:15.236 CST [31212] CONTEXT:  PL/pgSQL function immutable_financial_command() line 4 at RAISE
+2026-10-21 06:54:15.236 CST [31212] STATEMENT:  DELETE FROM admin_operations WHERE id=$1
+
+2026-10-21 06:54:15.317 CST [37088] ERROR:  Frozen financial intent is immutable
+2026-10-21 06:54:15.317 CST [37088] CONTEXT:  PL/pgSQL function immutable_financial_command() line 6 at RAISE
+2026-10-21 06:54:15.317 CST [37088] STATEMENT:  UPDATE admin_previews SET payload=payload||'{"changed":true}' WHERE id=$1
+
+2026-10-21 06:54:15.391 CST [27584] ERROR:  Frozen financial intent is immutable
+2026-10-21 06:54:15.391 CST [27584] CONTEXT:  PL/pgSQL function immutable_financial_command() line 6 at RAISE
+2026-10-21 06:54:15.391 CST [27584] STATEMENT:  UPDATE admin_previews SET id=$2 WHERE id=$1
+
+2026-10-21 06:54:15.481 CST [35268] ERROR:  Financial command history is immutable
+2026-10-21 06:54:15.481 CST [35268] CONTEXT:  PL/pgSQL function immutable_financial_command() line 4 at RAISE
+2026-10-21 06:54:15.481 CST [35268] STATEMENT:  DELETE FROM admin_previews WHERE id=$1
+
+2026-10-21 06:54:16.552 CST [25276] ERROR:  Controlled audit failure
+2026-10-21 06:54:16.552 CST [25276] CONTEXT:  PL/pgSQL function controlled_fee_audit_failure() line 1 at RAISE
+2026-10-21 06:54:16.552 CST [25276] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:54:16.910 CST [20640] ERROR:  Review decisions are immutable
+2026-10-21 06:54:16.910 CST [20640] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-21 06:54:16.910 CST [20640] STATEMENT:  UPDATE admin_approval_decisions SET reason='Altered history' WHERE approval_id=$1
+
+2026-10-21 06:54:16.911 CST [20640] ERROR:  Review decisions are immutable
+2026-10-21 06:54:16.911 CST [20640] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-21 06:54:16.911 CST [20640] STATEMENT:  DELETE FROM admin_approval_decisions WHERE approval_id=$1
+
+2026-10-21 06:54:17.768 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:54:18.917 CST [24268] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.032 s, sync=0.818 s, total=1.149 s; sync files=12, longest=0.227 s, average=0.069 s; distance=14734 kB, estimate=14734 kB; lsn=5/8DA27328, redo lsn=5/8DA272D0
+
+2026-10-21 06:54:32.706 CST [33740] ERROR:  permission denied for table admin_enrollments
+2026-10-21 06:54:32.706 CST [33740] STATEMENT:  SELECT * FROM admin_enrollments LIMIT 1
+
+2026-10-21 06:54:33.915 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:54:35.074 CST [24268] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.014 s, sync=0.813 s, total=1.160 s; sync files=10, longest=0.202 s, average=0.082 s; distance=12975 kB, estimate=14558 kB; lsn=5/8E6D2F30, redo lsn=5/8E6D2ED8
+
+2026-10-21 06:54:48.432 CST [28728] ERROR:  permission denied for table admin_operation_policy_versions
+2026-10-21 06:54:48.432 CST [28728] STATEMENT:  UPDATE admin_operation_policy_versions SET body='{}' WHERE id=$1
+
+2026-10-21 06:54:53.744 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:54:54.886 CST [24268] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.020 s, sync=0.543 s, total=1.142 s; sync files=9, longest=0.101 s, average=0.061 s; distance=12916 kB, estimate=14394 kB; lsn=5/8F370320, redo lsn=5/8F3702C8
+
+2026-10-21 06:55:32.088 CST [41464] ERROR:  controlled support audit outage
+2026-10-21 06:55:32.088 CST [41464] CONTEXT:  PL/pgSQL function fail_support_audit() line 1 at RAISE
+2026-10-21 06:55:32.088 CST [41464] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:55:32.146 CST [41464] ERROR:  controlled support audit outage
+2026-10-21 06:55:32.146 CST [41464] CONTEXT:  PL/pgSQL function fail_support_audit() line 1 at RAISE
+2026-10-21 06:55:32.146 CST [41464] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:55:32.394 CST [6036] ERROR:  permission denied for table support_grants
+2026-10-21 06:55:32.394 CST [6036] STATEMENT:  SELECT * FROM support_grants
+
+2026-10-21 06:55:32.407 CST [41464] ERROR:  Canonical support identity, deadline and revocation are immutable
+2026-10-21 06:55:32.407 CST [41464] CONTEXT:  PL/pgSQL function guard_canonical_support_session() line 9 at RAISE
+2026-10-21 06:55:32.407 CST [41464] STATEMENT:  UPDATE support_sessions SET expires_at=expires_at+interval '1 hour' WHERE id=$1
+
+2026-10-21 06:55:32.410 CST [34460] ERROR:  permission denied for table support_session_contexts
+2026-10-21 06:55:32.410 CST [34460] STATEMENT:  UPDATE support_session_contexts SET project_ids='{}' WHERE id=$1
+
+2026-10-21 06:55:32.585 CST [1608] ERROR:  Support grant and revocation are immutable
+2026-10-21 06:55:32.585 CST [1608] CONTEXT:  PL/pgSQL function guard_support_scope() line 10 at RAISE
+2026-10-21 06:55:32.585 CST [1608] STATEMENT:  UPDATE support_grants SET revoked_at=NULL WHERE id=$1
+
+2026-10-21 06:55:38.701 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:56:07.084 CST [24268] LOG:  checkpoint complete: wrote 1786 buffers (10.9%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.282 s, sync=27.712 s, total=28.383 s; sync files=1059, longest=0.482 s, average=0.027 s; distance=24988 kB, estimate=24988 kB; lsn=5/90BE4F40, redo lsn=5/90BD74F0
+
+2026-10-21 06:56:07.505 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:56:07.968 CST [24268] LOG:  checkpoint complete: wrote 13 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.272 s, total=0.463 s; sync files=6, longest=0.069 s, average=0.046 s; distance=114 kB, estimate=22501 kB; lsn=5/90BF4088, redo lsn=5/90BF4030
+
+2026-10-21 06:56:24.826 CST [8752] ERROR:  controlled adoption audit failure
+2026-10-21 06:56:24.826 CST [8752] CONTEXT:  PL/pgSQL function test_adoption_audit_failure() line 1 at RAISE
+2026-10-21 06:56:24.826 CST [8752] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 06:56:27.774 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:56:29.033 CST [24268] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.727 s, total=1.259 s; sync files=12, longest=0.122 s, average=0.061 s; distance=13908 kB, estimate=21641 kB; lsn=5/919893B0, redo lsn=5/91989358
+
+2026-10-21 06:56:41.455 CST [39948] ERROR:  Immutable Codex profile or irreversible revocation
+2026-10-21 06:56:41.455 CST [39948] CONTEXT:  PL/pgSQL function guard_codex_profile() line 4 at RAISE
+2026-10-21 06:56:41.455 CST [39948] STATEMENT:  UPDATE codex_runtime_profiles SET kernel='dsh' WHERE id=$1
+
+2026-10-21 06:56:41.635 CST [23444] ERROR:  Immutable Codex profile or irreversible revocation
+2026-10-21 06:56:41.635 CST [23444] CONTEXT:  PL/pgSQL function guard_codex_profile() line 4 at RAISE
+2026-10-21 06:56:41.635 CST [23444] STATEMENT:  UPDATE codex_runtime_profiles SET pinned_version='changed' WHERE id=$1
+
+2026-10-21 06:56:41.637 CST [8996] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-21 06:56:41.637 CST [8996] STATEMENT:  UPDATE codex_runtime_profiles SET state='revoked' WHERE id=$1
+
+2026-10-21 06:56:41.743 CST [2192] ERROR:  permission denied for table agent_template_versions
+2026-10-21 06:56:41.743 CST [2192] STATEMENT:  UPDATE agent_template_versions SET body='{}' WHERE id=$1
+
+2026-10-21 06:56:46.493 CST [31684] ERROR:  Immutable Codex profile or irreversible revocation
+2026-10-21 06:56:46.493 CST [31684] CONTEXT:  PL/pgSQL function guard_codex_profile() line 4 at RAISE
+2026-10-21 06:56:46.493 CST [31684] STATEMENT:  UPDATE codex_runtime_profiles SET state='enabled' WHERE id=$1
+
+2026-10-21 06:56:46.586 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:56:47.598 CST [24268] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.010 s, sync=0.556 s, total=1.013 s; sync files=10, longest=0.116 s, average=0.056 s; distance=13158 kB, estimate=20793 kB; lsn=5/92662E80, redo lsn=5/92662E28
+
+2026-10-21 06:57:03.673 CST [30972] ERROR:  Frozen analysis cannot be rewritten
+2026-10-21 06:57:03.673 CST [30972] CONTEXT:  PL/pgSQL function guard_analysis_immutable() line 13 at RAISE
+2026-10-21 06:57:03.673 CST [30972] STATEMENT:  UPDATE analysis_snapshots SET body='{}' WHERE id=$1
+
+2026-10-21 06:57:03.756 CST [32928] ERROR:  Analysis task binding cannot be removed
+2026-10-21 06:57:03.756 CST [32928] CONTEXT:  PL/pgSQL function guard_analysis_task_binding() line 5 at RAISE
+2026-10-21 06:57:03.756 CST [32928] STATEMENT:  UPDATE tasks SET input_context='{}' WHERE id=$1
+
+2026-10-21 06:57:16.675 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:57:19.464 CST [24268] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.109 s, sync=1.725 s, total=2.789 s; sync files=10, longest=0.263 s, average=0.173 s; distance=13462 kB, estimate=20060 kB; lsn=5/93388900, redo lsn=5/933888A8
+
+2026-10-21 06:58:05.203 CST [30852] ERROR:  Campaign source and correction bindings are immutable
+2026-10-21 06:58:05.203 CST [30852] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 7 at RAISE
+2026-10-21 06:58:05.203 CST [30852] STATEMENT:  UPDATE analytics_datasets SET source_asset_version_id=NULL WHERE id=$1
+
+2026-10-21 06:58:05.270 CST [21544] ERROR:  Source state follows the original asset lifecycle
+2026-10-21 06:58:05.270 CST [21544] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 11 at RAISE
+2026-10-21 06:58:05.270 CST [21544] STATEMENT:  UPDATE analytics_datasets SET source_state='quarantined' WHERE id=$1
+
+2026-10-21 06:58:15.632 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:58:19.768 CST [24268] LOG:  checkpoint complete: wrote 26 buffers (0.2%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.119 s, sync=2.587 s, total=4.136 s; sync files=14, longest=0.275 s, average=0.185 s; distance=13174 kB, estimate=19371 kB; lsn=5/94066348, redo lsn=5/940662F0
+
+2026-10-21 06:58:35.316 CST [24772] ERROR:  Analytics snapshots are immutable; import a new snapshot
+2026-10-21 06:58:35.316 CST [24772] CONTEXT:  PL/pgSQL function guard_analytics_snapshot() line 15 at RAISE
+2026-10-21 06:58:35.316 CST [24772] STATEMENT:  UPDATE analytics_datasets SET rows='[]' WHERE id=$1
+
+2026-10-21 06:58:35.322 CST [24772] ERROR:  Analytics snapshots are immutable; import a new snapshot
+2026-10-21 06:58:35.322 CST [24772] CONTEXT:  PL/pgSQL function guard_analytics_snapshot() line 15 at RAISE
+2026-10-21 06:58:35.322 CST [24772] STATEMENT:  UPDATE analytics_datasets SET metric_snapshot='{}' WHERE id=$1
+
+2026-10-21 06:58:35.325 CST [24772] ERROR:  Analytics snapshots use content erasure, not physical deletion
+2026-10-21 06:58:35.325 CST [24772] CONTEXT:  PL/pgSQL function guard_analytics_snapshot() line 4 at RAISE
+2026-10-21 06:58:35.325 CST [24772] STATEMENT:  DELETE FROM analytics_datasets WHERE id=$1
+
+2026-10-21 06:58:36.714 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:58:38.234 CST [24268] LOG:  checkpoint complete: wrote 26 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.020 s, sync=1.153 s, total=1.520 s; sync files=12, longest=0.326 s, average=0.097 s; distance=12930 kB, estimate=18727 kB; lsn=5/94D06CB0, redo lsn=5/94D06C58
+
+2026-10-21 06:59:16.800 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:59:18.664 CST [24268] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.062 s, sync=1.018 s, total=1.864 s; sync files=10, longest=0.197 s, average=0.102 s; distance=13048 kB, estimate=18159 kB; lsn=5/959C4E90, redo lsn=5/959C4E38
+
+2026-10-21 06:59:41.080 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 06:59:44.104 CST [24268] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.228 s, sync=1.368 s, total=3.025 s; sync files=10, longest=0.273 s, average=0.137 s; distance=12969 kB, estimate=17640 kB; lsn=5/9666F300, redo lsn=5/9666F2A8
+
+2026-10-21 07:00:32.610 CST [19920] ERROR:  Refund ledger writes require independently verified refund evidence
+2026-10-21 07:00:32.610 CST [19920] CONTEXT:  PL/pgSQL function verified_cash_refund_ledger() line 5 at RAISE
+2026-10-21 07:00:32.610 CST [19920] STATEMENT:  COMMIT
+
+2026-10-21 07:00:32.611 CST [19920] WARNING:  there is no transaction in progress
+
+2026-10-21 07:00:34.802 CST [19920] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-21 07:00:34.802 CST [19920] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-21 07:00:34.802 CST [19920] STATEMENT:  COMMIT
+
+2026-10-21 07:00:34.802 CST [19920] WARNING:  there is no transaction in progress
+
+2026-10-21 07:00:34.805 CST [19920] ERROR:  Invalid settlement charge
+2026-10-21 07:00:34.805 CST [19920] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-21 07:00:34.805 CST [19920] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-21 07:00:34.807 CST [19920] ERROR:  Invalid settlement funding bucket
+2026-10-21 07:00:34.807 CST [19920] CONTEXT:  PL/pgSQL function validate_billing_source() line 12 at RAISE
+2026-10-21 07:00:34.807 CST [19920] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-21 07:00:34.809 CST [19920] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-21 07:00:34.809 CST [19920] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-21 07:00:34.809 CST [19920] STATEMENT:  COMMIT
+
+2026-10-21 07:00:34.809 CST [19920] WARNING:  there is no transaction in progress
+
+2026-10-21 07:00:34.877 CST [36004] ERROR:  Billing source history is immutable
+2026-10-21 07:00:34.877 CST [36004] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 07:00:34.877 CST [36004] STATEMENT:  UPDATE billing_settlement_sources SET amount_micros=1 WHERE id=$1
+
+2026-10-21 07:00:34.877 CST [36004] ERROR:  Billing source history is immutable
+2026-10-21 07:00:34.877 CST [36004] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 07:00:34.877 CST [36004] STATEMENT:  DELETE FROM billing_settlement_sources WHERE id=$1
+
+2026-10-21 07:00:35.270 CST [19920] ERROR:  Invalid settlement charge
+2026-10-21 07:00:35.270 CST [19920] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-21 07:00:35.270 CST [19920] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,amount_micros) VALUES($1,$2,$3,'credit',1)
+
+2026-10-21 07:00:35.343 CST [35300] ERROR:  Billing source history is immutable
+2026-10-21 07:00:35.343 CST [35300] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 07:00:35.343 CST [35300] STATEMENT:  UPDATE billing_credit_repayments SET amount_micros=1 WHERE funding_entry_id=$1
+
+2026-10-21 07:00:35.344 CST [35300] ERROR:  Billing source history is immutable
+2026-10-21 07:00:35.344 CST [35300] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 07:00:35.344 CST [35300] STATEMENT:  DELETE FROM billing_credit_repayments WHERE funding_entry_id=$1
+
+2026-10-21 07:00:35.493 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:00:38.642 CST [24268] LOG:  checkpoint complete: wrote 27 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.105 s, sync=1.638 s, total=3.150 s; sync files=12, longest=0.275 s, average=0.137 s; distance=12982 kB, estimate=17174 kB; lsn=5/9731CBF0, redo lsn=5/9731CB98
+
+2026-10-21 07:01:25.921 CST [23000] ERROR:  Immutable task runtime and pricing binding
+2026-10-21 07:01:25.921 CST [23000] CONTEXT:  PL/pgSQL function guard_task_runtime_binding() line 5 at RAISE
+2026-10-21 07:01:25.921 CST [23000] STATEMENT:  UPDATE task_runtime_bindings SET capability_version_ids='{}' WHERE task_id=$1
+
+2026-10-21 07:01:25.925 CST [23000] ERROR:  Immutable task runtime and pricing binding
+2026-10-21 07:01:25.925 CST [23000] CONTEXT:  PL/pgSQL function guard_task_runtime_binding() line 5 at RAISE
+2026-10-21 07:01:25.925 CST [23000] STATEMENT:  DELETE FROM task_runtime_bindings WHERE task_id=$1
+
+2026-10-21 07:01:57.951 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:03:02.767 CST [24268] LOG:  checkpoint complete: wrote 1924 buffers (11.7%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.353 s, sync=63.099 s, total=64.817 s; sync files=1061, longest=3.210 s, average=0.060 s; distance=25383 kB, estimate=25383 kB; lsn=5/98C4A958, redo lsn=5/98BE6A58
+
+2026-10-21 07:03:05.314 CST [41560] WARNING:  there is no transaction in progress
+
+2026-10-21 07:03:05.652 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:03:06.568 CST [24268] LOG:  checkpoint complete: wrote 6 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.013 s, sync=0.456 s, total=0.917 s; sync files=3, longest=0.239 s, average=0.152 s; distance=630 kB, estimate=22908 kB; lsn=5/98C84468, redo lsn=5/98C84410
+
+2026-10-21 07:04:12.533 CST [34832] ERROR:  Immutable capability document or publication
+2026-10-21 07:04:12.533 CST [34832] CONTEXT:  PL/pgSQL function immutable_capability_release_fact() line 3 at RAISE
+2026-10-21 07:04:12.533 CST [34832] STATEMENT:  UPDATE capability_releases SET reason='Changed' WHERE id=$1
+
+2026-10-21 07:04:12.535 CST [34832] ERROR:  Immutable capability document or publication
+2026-10-21 07:04:12.535 CST [34832] CONTEXT:  PL/pgSQL function immutable_capability_release_fact() line 3 at RAISE
+2026-10-21 07:04:12.535 CST [34832] STATEMENT:  DELETE FROM capability_releases WHERE id=$1
+
+2026-10-21 07:05:42.317 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:06:08.155 CST [24268] LOG:  checkpoint complete: wrote 1877 buffers (11.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.423 s, sync=24.771 s, total=25.839 s; sync files=1062, longest=0.326 s, average=0.024 s; distance=25468 kB, estimate=25468 kB; lsn=5/9A56CFA8, redo lsn=5/9A563740
+
+2026-10-21 07:06:08.768 CST [38260] ERROR:  permission denied for table capability_releases
+2026-10-21 07:06:08.768 CST [38260] STATEMENT:  INSERT INTO capability_releases DEFAULT VALUES
+
+2026-10-21 07:06:08.773 CST [38260] ERROR:  permission denied for table capability_validations
+2026-10-21 07:06:08.773 CST [38260] STATEMENT:  UPDATE capability_validations SET state='passed'
+
+2026-10-21 07:06:08.776 CST [38260] ERROR:  permission denied for table capability_heads
+2026-10-21 07:06:08.776 CST [38260] STATEMENT:  DELETE FROM capability_heads
+
+2026-10-21 07:06:08.785 CST [38260] ERROR:  cannot update view "current_internal_capabilities"
+2026-10-21 07:06:08.785 CST [38260] DETAIL:  Views that do not select from a single table or view are not automatically updatable.
+2026-10-21 07:06:08.785 CST [38260] HINT:  To enable updating the view, provide an INSTEAD OF UPDATE trigger or an unconditional ON UPDATE DO INSTEAD rule.
+2026-10-21 07:06:08.785 CST [38260] STATEMENT:  UPDATE current_internal_capabilities SET ready=true
+
+2026-10-21 07:06:08.788 CST [38260] ERROR:  permission denied for table capability_workspace_purges
+2026-10-21 07:06:08.788 CST [38260] STATEMENT:  SELECT * FROM capability_workspace_purges
+
+2026-10-21 07:06:08.788 CST [38260] ERROR:  permission denied for table capability_workspace_purges
+2026-10-21 07:06:08.788 CST [38260] STATEMENT:  UPDATE capability_workspace_purges SET state='completed'
+
+2026-10-21 07:06:57.498 CST [21408] ERROR:  controlled capability audit failure
+2026-10-21 07:06:57.498 CST [21408] CONTEXT:  PL/pgSQL function controlled_capability_audit_failure() line 1 at RAISE
+2026-10-21 07:06:57.498 CST [21408] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 07:07:39.007 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:07:41.232 CST [24268] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.010 s, sync=1.261 s, total=2.225 s; sync files=12, longest=0.220 s, average=0.106 s; distance=1142 kB, estimate=23036 kB; lsn=5/9A681160, redo lsn=5/9A681108
+
+2026-10-21 07:07:53.422 CST [30912] ERROR:  WORKSPACE_CYCLE_OR_DEPTH
+2026-10-21 07:07:53.422 CST [30912] CONTEXT:  PL/pgSQL function guard_workspace_node() line 30 at RAISE
+2026-10-21 07:07:53.422 CST [30912] STATEMENT:  UPDATE workspace_nodes SET name=$2,parent_id=$3,asset_version_id=$4,version=version+1,moderation_version=moderation_version+1,updated_at=now() WHERE id=$1
+
+2026-10-21 07:07:56.125 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:07:57.081 CST [24268] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.749 s, total=0.956 s; sync files=12, longest=0.121 s, average=0.063 s; distance=13001 kB, estimate=22032 kB; lsn=5/9B333930, redo lsn=5/9B3338D8
+
+2026-10-21 07:08:03.862 CST [12908] ERROR:  DEFAULT_ASSISTANT_IMMUTABLE
+2026-10-21 07:08:03.862 CST [12908] CONTEXT:  PL/pgSQL function guard_default_assistant() line 11 at RAISE
+2026-10-21 07:08:03.862 CST [12908] STATEMENT:  UPDATE agents SET name='Changed' WHERE id=$1
+
+2026-10-21 07:08:03.902 CST [12908] ERROR:  duplicate key value violates unique constraint "one_default_assistant_per_project"
+2026-10-21 07:08:03.902 CST [12908] STATEMENT:  INSERT INTO agents(tenant_id,project_id,name,role_key,created_by,builtin_default) VALUES($1,$2,$3,'assistant',$4,true) RETURNING *
+
+2026-10-21 07:08:05.021 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:08:06.132 CST [24268] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.877 s, total=1.112 s; sync files=12, longest=0.212 s, average=0.074 s; distance=12884 kB, estimate=21117 kB; lsn=5/9BFC8BA0, redo lsn=5/9BFC8B48
+
+2026-10-21 07:08:30.959 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:08:32.648 CST [24268] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=1.168 s, total=1.690 s; sync files=10, longest=0.181 s, average=0.117 s; distance=12913 kB, estimate=20297 kB; lsn=5/9CC65360, redo lsn=5/9CC65308
+
+2026-10-21 07:08:44.320 CST [30240] ERROR:  Execution admission context is invalid
+2026-10-21 07:08:44.320 CST [30240] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 07:08:44.320 CST [30240] STATEMENT:  SELECT claim_execution_capacity($1,$2,8,$3)
+
+2026-10-21 07:08:44.325 CST [30240] ERROR:  Execution admission context is invalid
+2026-10-21 07:08:44.325 CST [30240] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 07:08:44.325 CST [30240] STATEMENT:  SELECT claim_execution_capacity($1,$2,8,$3)
+
+2026-10-21 07:08:44.327 CST [30240] ERROR:  Execution admission context is invalid
+2026-10-21 07:08:44.327 CST [30240] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 07:08:44.327 CST [30240] STATEMENT:  SELECT claim_execution_capacity($1,$2,8,$3)
+
+2026-10-21 07:08:44.425 CST [30240] ERROR:  permission denied for table execution_capacity_policy
+2026-10-21 07:08:44.425 CST [30240] STATEMENT:  SELECT * FROM execution_capacity_policy
+
+2026-10-21 07:08:44.427 CST [30240] ERROR:  permission denied for table execution_capacity_policy
+2026-10-21 07:08:44.427 CST [30240] STATEMENT:  UPDATE execution_capacity_policy SET agent_slots=100
+
+2026-10-21 07:08:44.451 CST [30240] ERROR:  Execution admission context is invalid
+2026-10-21 07:08:44.451 CST [30240] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 07:08:44.451 CST [30240] STATEMENT:  SELECT claim_execution_capacity($1,$2,$3,$4) AS reason
+
+2026-10-21 07:08:57.359 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:08:58.519 CST [24268] LOG:  checkpoint complete: wrote 27 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.055 s, sync=0.806 s, total=1.160 s; sync files=14, longest=0.135 s, average=0.058 s; distance=14332 kB, estimate=19700 kB; lsn=5/9DA64380, redo lsn=5/9DA64328
+
+2026-10-21 07:09:09.246 CST [38240] ERROR:  permission denied for table sso_connections
+2026-10-21 07:09:09.246 CST [38240] STATEMENT:  SELECT * FROM sso_connections
+
+2026-10-21 07:09:09.311 CST [6572] ERROR:  permission denied for table federated_identities
+2026-10-21 07:09:09.311 CST [6572] STATEMENT:  SELECT * FROM federated_identities
+
+2026-10-21 07:09:09.358 CST [33412] ERROR:  permission denied for table federation_attempts
+2026-10-21 07:09:09.358 CST [33412] STATEMENT:  SELECT * FROM federation_attempts
+
+2026-10-21 07:09:11.627 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:09:12.793 CST [24268] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.012 s, sync=0.786 s, total=1.166 s; sync files=10, longest=0.142 s, average=0.079 s; distance=13009 kB, estimate=19031 kB; lsn=5/9E7187A0, redo lsn=5/9E718748
+
+2026-10-21 07:09:28.162 CST [39488] ERROR:  controlled intent failure
+2026-10-21 07:09:28.162 CST [39488] CONTEXT:  PL/pgSQL function reject_financial_test_intent() line 1 at RAISE
+	SQL statement "INSERT INTO financial_outbox(billing_account_id,kind,journal_id) VALUES(NEW.billing_account_id,'journal',NEW.id)"
+	PL/pgSQL function capture_financial_delivery() line 5 at SQL statement
+	SQL statement "INSERT INTO billing_journal(id,billing_account_id,operation_id,actor_id,kind,direction,bucket,amount_micros,reason,source_entry_id,raw_entry_id,task_id,created_at)
+	 VALUES(NEW.id,NEW.billing_account_id,NEW.operation_id,NEW.actor_id,CASE WHEN NEW.kind='charge' THEN 'consume' ELSE NEW.kind END,
+	 CASE WHEN NEW.amount_micros>0 THEN 'credit' ELSE 'debit' END,
+	 CASE WHEN NEW.kind='charge' THEN 'reserved' WHEN NEW.kind IN ('gift','gift_expiry') OR sourcekind='gift' THEN 'promotional' ELSE 'paid' END,
+	 abs(NEW.amount_micros),NEW.reason,CASE WHEN NEW.kind='charge' THEN (SELECT journal_entry_id FROM reservations WHERE task_id=NEW.task_id) ELSE NEW.source_id END,NEW.id,NEW.task_id,NEW.created_at)"
+	PL/pgSQL function journal_ledger_entry() line 6 at SQL statement
+2026-10-21 07:09:28.162 CST [39488] STATEMENT:  INSERT INTO ledger(tenant_id,billing_account_id,kind,amount_micros,reference,source_id,expires_at,idempotency_key,reason) VALUES($1,$9,$2,$3,$4,$5,$6,$7,$8) RETURNING *
+
+2026-10-21 07:09:28.347 CST [39488] ERROR:  controlled delivery failure
+2026-10-21 07:09:28.347 CST [39488] CONTEXT:  PL/pgSQL function reject_financial_test_notice() line 1 at RAISE
+2026-10-21 07:09:28.347 CST [39488] STATEMENT:  INSERT INTO financial_notifications(outbox_id,recipient_id)
+	        SELECT $1,u.id FROM users u WHERE
+	        (u.id=$2 OR EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND m.tenant_id=$3 AND m.role IN ('owner','admin')))
+	        AND financial_recipient_allowed((SELECT billing_account_id FROM financial_outbox WHERE id=$1),u.id)
+	        ON CONFLICT(outbox_id,recipient_id) DO NOTHING
+
+2026-10-21 07:09:28.621 CST [10016] ERROR:  permission denied for table financial_outbox
+2026-10-21 07:09:28.621 CST [10016] STATEMENT:  SELECT * FROM financial_outbox
+
+2026-10-21 07:09:28.709 CST [1428] ERROR:  permission denied for table financial_notifications
+2026-10-21 07:09:28.709 CST [1428] STATEMENT:  SELECT * FROM financial_notifications
+
+2026-10-21 07:09:28.816 CST [22812] ERROR:  Financial delivery must retain its real unconsumed source
+2026-10-21 07:09:28.816 CST [22812] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 24 at RAISE
+2026-10-21 07:09:28.816 CST [22812] STATEMENT:  INSERT INTO financial_outbox(billing_account_id,kind,journal_id) VALUES($1,'journal',$2)
+
+2026-10-21 07:09:28.832 CST [22812] ERROR:  Financial notification requires an authorized account recipient
+2026-10-21 07:09:28.832 CST [22812] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 35 at RAISE
+2026-10-21 07:09:28.832 CST [22812] STATEMENT:  INSERT INTO financial_notifications(outbox_id,recipient_id) VALUES($1,$2)
+
+2026-10-21 07:09:28.836 CST [22812] ERROR:  Financial notification identity and delivery time are immutable
+2026-10-21 07:09:28.836 CST [22812] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 29 at RAISE
+2026-10-21 07:09:28.836 CST [22812] STATEMENT:  UPDATE financial_notifications SET recipient_id=$2 WHERE id=$1
+
+2026-10-21 07:09:28.838 CST [22812] ERROR:  Financial delivery history cannot be removed
+2026-10-21 07:09:28.838 CST [22812] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 4 at RAISE
+2026-10-21 07:09:28.838 CST [22812] STATEMENT:  DELETE FROM financial_notifications WHERE id=$1
+
+2026-10-21 07:09:28.839 CST [22812] ERROR:  Financial delivery intent and completed delivery are immutable
+2026-10-21 07:09:28.839 CST [22812] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 11 at RAISE
+2026-10-21 07:09:28.839 CST [22812] STATEMENT:  UPDATE financial_outbox SET dispatched_at=NULL WHERE id=$1
+
+2026-10-21 07:09:28.839 CST [22812] ERROR:  Financial delivery intent and completed delivery are immutable
+2026-10-21 07:09:28.839 CST [22812] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 11 at RAISE
+2026-10-21 07:09:28.839 CST [22812] STATEMENT:  UPDATE financial_outbox SET journal_id=$2 WHERE id=$1
+
+2026-10-21 07:09:28.840 CST [22812] ERROR:  Financial delivery history cannot be removed
+2026-10-21 07:09:28.840 CST [22812] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 4 at RAISE
+2026-10-21 07:09:28.840 CST [22812] STATEMENT:  DELETE FROM financial_outbox WHERE id=$1
+
+2026-10-21 07:09:36.007 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:10:10.889 CST [24268] LOG:  checkpoint complete: wrote 1983 buffers (12.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.314 s, sync=34.028 s, total=34.883 s; sync files=1068, longest=0.268 s, average=0.032 s; distance=25610 kB, estimate=25610 kB; lsn=5/A0085A48, redo lsn=5/A001AF80
+
+2026-10-21 07:10:11.923 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:10:12.589 CST [24268] LOG:  checkpoint complete: wrote 5 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.107 s, sync=0.278 s, total=0.667 s; sync files=3, longest=0.119 s, average=0.093 s; distance=713 kB, estimate=23120 kB; lsn=5/A00CD6E8, redo lsn=5/A00CD690
+
+2026-10-21 07:10:30.179 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:10:31.316 CST [24268] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.046 s, sync=0.763 s, total=1.137 s; sync files=10, longest=0.185 s, average=0.077 s; distance=12993 kB, estimate=22107 kB; lsn=5/A0D7DEB8, redo lsn=5/A0D7DE60
+
+2026-10-21 07:10:42.305 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:10:44.380 CST [24268] LOG:  checkpoint complete: wrote 32 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=1.199 s, total=2.075 s; sync files=12, longest=0.266 s, average=0.100 s; distance=12386 kB, estimate=21135 kB; lsn=5/A19B43C0, redo lsn=5/A1996668
+
+2026-10-21 07:10:56.491 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:10:58.520 CST [24268] LOG:  checkpoint complete: wrote 26 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.040 s, sync=1.277 s, total=2.030 s; sync files=10, longest=0.287 s, average=0.128 s; distance=12712 kB, estimate=20293 kB; lsn=5/A2600A60, redo lsn=5/A2600A08
+
+2026-10-21 07:11:07.841 CST [25024] ERROR:  Review decisions are immutable
+2026-10-21 07:11:07.841 CST [25024] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-21 07:11:07.841 CST [25024] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-21 07:11:07.843 CST [25024] ERROR:  Frozen approval is immutable
+2026-10-21 07:11:07.843 CST [25024] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-21 07:11:07.843 CST [25024] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-21 07:11:08.141 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:11:09.886 CST [24268] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.031 s, sync=0.871 s, total=1.745 s; sync files=10, longest=0.157 s, average=0.087 s; distance=12616 kB, estimate=19525 kB; lsn=5/A3252BE0, redo lsn=5/A3252B88
+
+2026-10-21 07:11:27.161 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:11:27.997 CST [24268] LOG:  checkpoint complete: wrote 23 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.029 s, sync=0.524 s, total=0.837 s; sync files=10, longest=0.117 s, average=0.053 s; distance=13036 kB, estimate=18876 kB; lsn=5/A3F0DCA8, redo lsn=5/A3F0DC50
+
+2026-10-21 07:11:58.877 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:12:00.200 CST [24268] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.035 s, sync=0.691 s, total=1.323 s; sync files=10, longest=0.152 s, average=0.069 s; distance=13876 kB, estimate=18376 kB; lsn=5/A4C9B098, redo lsn=5/A4C9B040
+
+2026-10-21 07:12:16.617 CST [12664] ERROR:  permission denied for table commercial_plan_versions
+2026-10-21 07:12:16.617 CST [12664] STATEMENT:  UPDATE commercial_plan_versions SET name=$2 WHERE id=$1
+
+2026-10-21 07:12:16.620 CST [8608] ERROR:  permission denied for table commercial_plan_versions
+2026-10-21 07:12:16.620 CST [8608] STATEMENT:  DELETE FROM commercial_plan_versions WHERE id=$1
+
+2026-10-21 07:12:16.709 CST [37984] ERROR:  Commercial plan command intent is immutable
+2026-10-21 07:12:16.709 CST [37984] CONTEXT:  PL/pgSQL function immutable_commercial_intent() line 6 at RAISE
+2026-10-21 07:12:16.709 CST [37984] STATEMENT:  UPDATE admin_previews SET payload='{}' WHERE id=$1
+
+2026-10-21 07:12:16.758 CST [31932] ERROR:  Commercial plan command intent is immutable
+2026-10-21 07:12:16.758 CST [31932] CONTEXT:  PL/pgSQL function immutable_commercial_intent() line 6 at RAISE
+2026-10-21 07:12:16.758 CST [31932] STATEMENT:  UPDATE admin_operations SET payload='{}' WHERE id=$1
+
+2026-10-21 07:12:16.920 CST [17908] ERROR:  An issued grant keeps its original identity and plan snapshot
+2026-10-21 07:12:16.920 CST [17908] CONTEXT:  PL/pgSQL function protect_legacy_plan_definition() line 10 at RAISE
+2026-10-21 07:12:16.920 CST [17908] STATEMENT:  UPDATE entitlements SET plan_body=$2 WHERE id=$1
+
+2026-10-21 07:12:16.994 CST [18084] ERROR:  permission denied for table legacy_entitlement_plan_bindings
+2026-10-21 07:12:16.994 CST [18084] STATEMENT:  DELETE FROM legacy_entitlement_plan_bindings WHERE entitlement_id=$1
+
+2026-10-21 07:12:17.067 CST [23540] ERROR:  Use immutable commercial plan versions
+2026-10-21 07:12:17.067 CST [23540] CONTEXT:  PL/pgSQL function protect_legacy_plan_definition() line 5 at RAISE
+2026-10-21 07:12:17.067 CST [23540] STATEMENT:  INSERT INTO catalog_entries(kind,key,version,body) VALUES('plan','forged',1,'{}')
+
+2026-10-21 07:12:20.082 CST [21992] ERROR:  controlled plan audit failure
+2026-10-21 07:12:20.082 CST [21992] CONTEXT:  PL/pgSQL function controlled_plan_audit_failure() line 1 at RAISE
+2026-10-21 07:12:20.082 CST [21992] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 07:12:20.522 CST [21992] ERROR:  controlled plan audit failure
+2026-10-21 07:12:20.522 CST [21992] CONTEXT:  PL/pgSQL function controlled_plan_audit_failure() line 1 at RAISE
+2026-10-21 07:12:20.522 CST [21992] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 07:12:28.651 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:13:06.970 CST [24268] LOG:  checkpoint complete: wrote 1791 buffers (10.9%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.213 s, sync=37.361 s, total=38.319 s; sync files=1059, longest=0.251 s, average=0.036 s; distance=25571 kB, estimate=25571 kB; lsn=5/A65A2E38, redo lsn=5/A6593CA8
+
+2026-10-21 07:13:07.542 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:13:08.210 CST [24268] LOG:  checkpoint complete: wrote 14 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.092 s, sync=0.359 s, total=0.669 s; sync files=6, longest=0.100 s, average=0.060 s; distance=121 kB, estimate=23026 kB; lsn=5/A65B2160, redo lsn=5/A65B2108
+
+2026-10-21 07:13:33.064 CST [39952] ERROR:  Permanent deletion cannot be restored
+2026-10-21 07:13:33.064 CST [39952] CONTEXT:  PL/pgSQL function journal_content_erasure() line 6 at RAISE
+2026-10-21 07:13:33.064 CST [39952] STATEMENT:  UPDATE assets SET state='active' WHERE id=$1
+
+2026-10-21 07:13:34.260 CST [40748] ERROR:  Erased immutable object cannot be referenced
+2026-10-21 07:13:34.260 CST [40748] CONTEXT:  PL/pgSQL function guard_immutable_object_reference() line 5 at RAISE
+2026-10-21 07:13:34.260 CST [40748] STATEMENT:  INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256) VALUES($1,$2,2,$3,'text/plain',1,'test')
+
+2026-10-21 07:14:15.984 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:14:17.601 CST [24268] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.054 s, sync=1.239 s, total=1.618 s; sync files=12, longest=0.252 s, average=0.104 s; distance=14470 kB, estimate=22170 kB; lsn=5/A73D39B8, redo lsn=5/A73D3960
+
+2026-10-21 07:14:29.210 CST [39792] ERROR:  permission denied for table billing_credit_legacy_sources
+2026-10-21 07:14:29.210 CST [39792] STATEMENT:  INSERT INTO billing_credit_legacy_sources(billing_account_id,source_id) VALUES($1,$2)
+
+2026-10-21 07:14:29.809 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:14:31.431 CST [24268] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.060 s, sync=0.844 s, total=1.622 s; sync files=12, longest=0.164 s, average=0.071 s; distance=12525 kB, estimate=21206 kB; lsn=5/A800F078, redo lsn=5/A800F020
+
+2026-10-21 07:14:50.194 CST [32796] ERROR:  PLAN_SEAT_LIMIT
+2026-10-21 07:14:50.194 CST [32796] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-21 07:14:50.194 CST [32796] STATEMENT:  INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=EXCLUDED.role,status='active',version=memberships.version+1 RETURNING *
+
+2026-10-21 07:14:51.321 CST [32796] ERROR:  PLAN_SEAT_LIMIT
+2026-10-21 07:14:51.321 CST [32796] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-21 07:14:51.321 CST [32796] STATEMENT:  INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=EXCLUDED.role,status='active',version=memberships.version+1 RETURNING *
+
+2026-10-21 07:14:52.131 CST [41268] ERROR:  PLAN_SEAT_LIMIT
+2026-10-21 07:14:52.131 CST [41268] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-21 07:14:52.131 CST [41268] STATEMENT:  UPDATE memberships SET status='active',admin_suspended=false WHERE tenant_id=$1 AND user_id=$2
+
+2026-10-21 07:14:53.520 CST [32796] ERROR:  PLAN_SEAT_LIMIT
+2026-10-21 07:14:53.520 CST [32796] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-21 07:14:53.520 CST [32796] STATEMENT:  INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=EXCLUDED.role,status='active',version=memberships.version+1 RETURNING *
+
+2026-10-21 07:14:54.164 CST [38204] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:14:54.164 CST [38204] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-21 07:14:54.164 CST [38204] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+2026-10-21 07:14:56.603 CST [41752] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-21 07:14:56.603 CST [41752] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-21 07:14:56.603 CST [41752] STATEMENT:  UPDATE upload_sessions SET expires_at=clock_timestamp()+interval '1 hour' WHERE id=$1
+
+2026-10-21 07:14:57.600 CST [38204] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:14:57.600 CST [38204] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-21 07:14:57.600 CST [38204] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+2026-10-21 07:14:57.603 CST [38204] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:14:57.603 CST [38204] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-21 07:14:57.603 CST [38204] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+2026-10-21 07:14:59.020 CST [38204] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:14:59.020 CST [38204] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-21 07:14:59.020 CST [38204] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+2026-10-21 07:14:59.471 CST [32796] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:14:59.471 CST [32796] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-21 07:14:59.471 CST [32796] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+2026-10-21 07:15:00.270 CST [32796] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:15:00.270 CST [32796] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-21 07:15:00.270 CST [32796] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+2026-10-21 07:15:00.841 CST [32796] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:15:00.841 CST [32796] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-21 07:15:00.841 CST [32796] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+2026-10-21 07:15:01.577 CST [3156] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:15:01.577 CST [3156] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.bytes,NEW.upload_session_id)"
+	PL/pgSQL function guard_asset_resource_capacity() line 20 at PERFORM
+2026-10-21 07:15:01.577 CST [3156] STATEMENT:  INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256,upload_session_id) VALUES($1,$2,1,$3,'text/plain',4,$4,$5)
+
+2026-10-21 07:15:01.641 CST [12664] ERROR:  UPLOAD_RESERVATION_INVALID
+2026-10-21 07:15:01.641 CST [12664] CONTEXT:  PL/pgSQL function guard_asset_resource_capacity() line 16 at RAISE
+2026-10-21 07:15:01.641 CST [12664] STATEMENT:  INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256,upload_session_id) VALUES($1,$2,1,$3,'text/plain',4,$4,$5)
+
+2026-10-21 07:15:01.745 CST [24632] ERROR:  UPLOAD_RESERVATION_INVALID
+2026-10-21 07:15:01.745 CST [24632] CONTEXT:  PL/pgSQL function check_upload_resource_commit() line 15 at RAISE
+
+2026-10-21 07:15:01.893 CST [38840] ERROR:  UPLOAD_RESERVATION_INVALID
+2026-10-21 07:15:01.893 CST [38840] CONTEXT:  PL/pgSQL function check_upload_resource_commit() line 15 at RAISE
+
+2026-10-21 07:15:01.954 CST [35184] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-21 07:15:01.954 CST [35184] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-21 07:15:01.954 CST [35184] STATEMENT:  UPDATE upload_sessions SET size_bytes=1 WHERE id=$1
+
+2026-10-21 07:15:04.100 CST [32796] ERROR:  Fixture audit unavailable
+2026-10-21 07:15:04.100 CST [32796] CONTEXT:  PL/pgSQL function fail_resource_audit() line 1 at RAISE
+2026-10-21 07:15:04.100 CST [32796] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 07:15:04.876 CST [38204] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-21 07:15:04.876 CST [38204] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-21 07:15:04.876 CST [38204] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+2026-10-21 07:15:08.141 CST [17688] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-21 07:15:08.141 CST [17688] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-21 07:15:08.141 CST [17688] STATEMENT:  UPDATE upload_sessions SET state='cancelled' WHERE id=$1
+
+2026-10-21 07:15:08.308 CST [30416] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-21 07:15:08.308 CST [30416] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-21 07:15:08.308 CST [30416] STATEMENT:  UPDATE upload_sessions SET state='pending' WHERE id=$1
+
+2026-10-21 07:15:08.351 CST [38160] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-21 07:15:08.351 CST [38160] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-21 07:15:08.351 CST [38160] STATEMENT:  UPDATE upload_sessions SET state='pending' WHERE id=$1
+
+2026-10-21 07:15:08.946 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:15:09.955 CST [24268] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.048 s, sync=0.810 s, total=1.009 s; sync files=12, longest=0.200 s, average=0.068 s; distance=14122 kB, estimate=20497 kB; lsn=5/A8DD98E8, redo lsn=5/A8DD9890
+
+2026-10-21 07:15:46.787 CST [32772] ERROR:  permission denied for table workflow_schedule_versions
+2026-10-21 07:15:46.787 CST [32772] STATEMENT:  UPDATE workflow_schedule_versions SET body='{}' WHERE schedule_id=$1
+
+2026-10-21 07:15:48.752 CST [29920] FATAL:  terminating autovacuum process due to administrator command
+
+2026-10-21 07:15:48.865 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:15:49.926 CST [24268] LOG:  checkpoint complete: wrote 27 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.653 s, total=1.062 s; sync files=12, longest=0.112 s, average=0.055 s; distance=13115 kB, estimate=19759 kB; lsn=5/A9AA8620, redo lsn=5/A9AA85C8
+
+2026-10-21 07:15:57.397 CST [34404] ERROR:  A security revocation is permanent for this package
+2026-10-21 07:15:57.397 CST [34404] CONTEXT:  PL/pgSQL function guard_skill_installation() line 4 at RAISE
+2026-10-21 07:15:57.397 CST [34404] STATEMENT:  UPDATE skill_installations SET state='installed' WHERE id=$1
+
+2026-10-21 07:15:58.831 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:15:59.542 CST [24268] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.434 s, total=0.711 s; sync files=9, longest=0.098 s, average=0.049 s; distance=12821 kB, estimate=19065 kB; lsn=5/AA72DB40, redo lsn=5/AA72DAE8
+
+2026-10-21 07:16:10.563 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:16:11.916 CST [24268] LOG:  checkpoint complete: wrote 15 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.021 s, sync=0.499 s, total=1.353 s; sync files=8, longest=0.092 s, average=0.063 s; distance=12738 kB, estimate=18432 kB; lsn=5/AB39E390, redo lsn=5/AB39E338
+
+2026-10-21 07:16:24.923 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:16:26.242 CST [24268] LOG:  checkpoint complete: wrote 34 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.924 s, total=1.320 s; sync files=10, longest=0.151 s, average=0.093 s; distance=13222 kB, estimate=17911 kB; lsn=5/AC087D10, redo lsn=5/AC087CB8
+
+2026-10-21 07:16:46.862 CST [32592] ERROR:  controlled second-child failure
+2026-10-21 07:16:46.862 CST [32592] CONTEXT:  PL/pgSQL function vip_credit_fault() line 1 at RAISE
+2026-10-21 07:16:46.862 CST [32592] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 07:16:48.005 CST [32592] ERROR:  A combination commits both effects and its link or commits neither
+2026-10-21 07:16:48.005 CST [32592] CONTEXT:  PL/pgSQL function assert_vip_credit_commit(uuid) line 17 at RAISE
+	SQL statement "SELECT assert_vip_credit_commit(NEW.id)"
+	PL/pgSQL function check_vip_credit_operation_commit() line 3 at PERFORM
+
+2026-10-21 07:16:48.086 CST [33088] ERROR:  Combined origin and completed result are immutable
+2026-10-21 07:16:48.086 CST [33088] CONTEXT:  PL/pgSQL function protect_vip_credit_intent() line 14 at RAISE
+2026-10-21 07:16:48.086 CST [33088] STATEMENT:  UPDATE admin_operations SET payload=payload-'vip_credit_command_version' WHERE id=$1
+
+2026-10-21 07:16:48.500 CST [26004] ERROR:  permission denied for table admin_vip_credit_combinations
+2026-10-21 07:16:48.500 CST [26004] STATEMENT:  UPDATE admin_vip_credit_combinations SET credit_journal_id=gen_random_uuid() WHERE parent_operation_id=$1
+
+2026-10-21 07:16:48.556 CST [39388] ERROR:  permission denied for table admin_vip_credit_combinations
+2026-10-21 07:16:48.556 CST [39388] STATEMENT:  DELETE FROM admin_vip_credit_combinations WHERE parent_operation_id=$1
+
+2026-10-21 07:16:48.638 CST [39800] ERROR:  Combined origin and completed result are immutable
+2026-10-21 07:16:48.638 CST [39800] CONTEXT:  PL/pgSQL function protect_vip_credit_intent() line 14 at RAISE
+2026-10-21 07:16:48.638 CST [39800] STATEMENT:  UPDATE admin_operations SET state='cancelled' WHERE id=$1
+
+2026-10-21 07:16:48.735 CST [8756] ERROR:  Combined origin and completed result are immutable
+2026-10-21 07:16:48.735 CST [8756] CONTEXT:  PL/pgSQL function protect_vip_credit_intent() line 14 at RAISE
+2026-10-21 07:16:48.735 CST [8756] STATEMENT:  UPDATE admin_operations SET result='{}' WHERE id=$1
+
+2026-10-21 07:16:48.860 CST [41116] ERROR:  Combined success must retain the exact two authorized effects, subjects, credit reference and provenance
+2026-10-21 07:16:48.860 CST [41116] CONTEXT:  PL/pgSQL function assert_vip_credit_commit(uuid) line 61 at RAISE
+	SQL statement "SELECT assert_vip_credit_commit((NEW.payload->>'combination_parent_id')::uuid)"
+	PL/pgSQL function check_vip_credit_operation_commit() line 4 at PERFORM
+
+2026-10-21 07:16:51.507 CST [28048] ERROR:  controlled final link failure
+2026-10-21 07:16:51.507 CST [28048] CONTEXT:  PL/pgSQL function combination_link_fault() line 1 at RAISE
+2026-10-21 07:16:51.507 CST [28048] STATEMENT:  INSERT INTO admin_vip_credit_combinations(parent_operation_id,vip_operation_id,gift_operation_id,grant_id,credit_journal_id) VALUES($1,$2,$3,$4,$5)
+
+2026-10-21 07:16:52.294 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:16:53.121 CST [24268] LOG:  checkpoint complete: wrote 27 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.586 s, total=0.828 s; sync files=10, longest=0.117 s, average=0.059 s; distance=14193 kB, estimate=17539 kB; lsn=5/ACE64330, redo lsn=5/ACE642D8
+
+2026-10-21 07:17:03.827 CST [380] ERROR:  An issued VIP changes only through a new revision
+2026-10-21 07:17:03.827 CST [380] CONTEXT:  PL/pgSQL function protect_vip_projection() line 31 at RAISE
+2026-10-21 07:17:03.827 CST [380] STATEMENT:  UPDATE vip_grants SET ends_at=ends_at+interval '1 day' WHERE id=$1
+
+2026-10-21 07:17:03.829 CST [12028] ERROR:  permission denied for table vip_grant_events
+2026-10-21 07:17:03.829 CST [12028] STATEMENT:  DELETE FROM vip_grant_events WHERE grant_id=$1
+
+2026-10-21 07:17:03.917 CST [384] ERROR:  VIP operation origin and policy are immutable
+2026-10-21 07:17:03.917 CST [384] CONTEXT:  PL/pgSQL function protect_vip_intent() line 17 at RAISE
+2026-10-21 07:17:03.917 CST [384] STATEMENT:  UPDATE admin_operations SET policy_version_id=gen_random_uuid() WHERE id=$1
+
+2026-10-21 07:17:17.630 CST [7788] ERROR:  controlled VIP audit failure
+2026-10-21 07:17:17.630 CST [7788] CONTEXT:  PL/pgSQL function vip_audit_fault() line 1 at RAISE
+2026-10-21 07:17:17.630 CST [7788] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 07:17:19.084 CST [7788] ERROR:  VIP preview identity, expiry and consumption are immutable
+2026-10-21 07:17:19.084 CST [7788] CONTEXT:  PL/pgSQL function protect_vip_intent() line 11 at RAISE
+2026-10-21 07:17:19.084 CST [7788] STATEMENT:  UPDATE admin_previews SET expires_at=expires_at+interval '1 day' WHERE id=$1
+
+2026-10-21 07:17:21.062 CST [24268] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 07:17:22.045 CST [24268] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.036 s, sync=0.705 s, total=0.984 s; sync files=10, longest=0.150 s, average=0.071 s; distance=13677 kB, estimate=17153 kB; lsn=5/ADBBFA40, redo lsn=5/ADBBF9E8
+
+2026-10-21 07:17:30.848 CST [21196] LOG:  received fast shutdown request
+
+2026-10-21 07:17:31.180 CST [21196] LOG:  aborting any active transactions
+
+2026-10-21 07:17:31.212 CST [21196] LOG:  background worker "logical replication launcher" (PID 33168) exited with exit code 1
+
+2026-10-21 07:17:31.212 CST [24268] LOG:  shutting down
+
+2026-10-21 07:17:31.428 CST [24268] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 07:17:31.710 CST [24268] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.050 s, total=0.498 s; sync files=1, longest=0.050 s, average=0.050 s; distance=0 kB, estimate=15438 kB; lsn=5/ADBBFB58, redo lsn=5/ADBBFB58
+
+2026-10-21 07:17:31.846 CST [21196] LOG:  database system is shut down
+

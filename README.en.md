@@ -1,5 +1,24 @@
 # CopyPaste Delivery and Integration
 
+## Explicit adoption (stage 54)
+
+Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.
+
+Current backend regression: **484/484**, including all 462 prior named tests; focused **93/93** overlaps that total. Actual built Web: **12/12**; new packaged frameless Desktop and real native Chrome Side Panel: **11/11**. AI/media use the authorized simulated dependencies; identity, PostgreSQL, permissions and version transactions execute normally. All 102 original requirements remain tracked. Earlier sections below retain their historical source and artifact scope.
+
+[Focused regression](evidence/agent-adoption-candidate-06.json) · [Full regression](evidence/agent-adoption-regression-02.json) · [Built Web](evidence/agent-adoption-ui-06.json) · [Native Desktop / Side Panel](evidence/agent-adoption-native-05.json) · [Artifact hashes](evidence/agent-adoption-artifacts-02.json) · [Original-row preservation](evidence/agent-adoption-migrations.json)
+
+Run a new numbered attempt; existing reports are never overwritten. Native QA uses an owned profile, real toolbar action and PKCE, then closes its own windows and processes. Setup/Portable provenance is checked without installation. No Docker or WSL is used.
+
+```powershell
+node scripts/run-agent-adoption-candidate.mjs NEXT_ID
+node scripts/run-agent-adoption-regression.mjs NEXT_ID
+node scripts/run-agent-adoption-ui.mjs NEXT_ID
+node scripts/run-agent-adoption-native.mjs NEXT_ID
+```
+
+Replace `NEXT_ID` with a fresh two-digit number. Native extension QA uses the installed test Chromium under `.data/browsers/chromium-1248/chrome-win64/chrome.exe`; set `CHROME_BIN` to another Chromium build supporting unpacked extension testing when needed. The local database upgrade is already applied; its one-time before-state guard rejects repetition.
+
 ## Controlled capabilities and Admin publishing (stage 53)
 
 Adds focused/full regression, built-Admin browser verification and a native 064 upgrade tool with before/after row digests. Current [full regression 04](evidence/capability-release-regression-04.json) passes **462/462** with 726 unchanged sources and no failures, cancellations or skips. Its [raw TAP](evidence/capability-release-regression-04.tap) retains all 435 original tests. [Candidate 11](evidence/capability-release-candidate-11.json) passes 71/71 and overlaps the full run; [actual Admin browser run 06](evidence/capability-release-ui-06.json) passes 11/11 with 14 unedited screenshots; [supplemental contract run 02](evidence/capability-release-contract-02.json) passes six cross-consumer checks.

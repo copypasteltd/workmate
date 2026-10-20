@@ -1,0 +1,184 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# Subtest: preview freezes exact models, effort and micro rates without creating work, charges, installations or agent versions
+ok 1 - preview freezes exact models, effort and micro rates without creating work, charges, installations or agent versions
+  ---
+  duration_ms: 5104.0781
+  ...
+# Subtest: specialist confirmation is atomic, replayable and keeps conversations on their original version
+ok 2 - specialist confirmation is atomic, replayable and keeps conversations on their original version
+  ---
+  duration_ms: 338.9474
+  ...
+# Subtest: confirmed comparisons recover the current consumed state after a lost preview response
+ok 3 - confirmed comparisons recover the current consumed state after a lost preview response
+  ---
+  duration_ms: 359.2622
+  ...
+# Subtest: same key with a different proposal or reviewed hash is rejected without any version increment
+ok 4 - same key with a different proposal or reviewed hash is rejected without any version increment
+  ---
+  duration_ms: 209.5936
+  ...
+# Subtest: two confirmations race once, with one version, one skill binding set and one adoption audit
+ok 5 - two confirmations race once, with one version, one skill binding set and one adoption audit
+  ---
+  duration_ms: 313.1926
+  ...
+# Subtest: a comparison is private to its actor, actual login session, project and tenant
+ok 6 - a comparison is private to its actor, actual login session, project and tenant
+  ---
+  duration_ms: 483.402
+  ...
+# Subtest: read-only members and non-owning editors cannot create or confirm shared specialist changes
+ok 7 - read-only members and non-owning editors cannot create or confirm shared specialist changes
+  ---
+  duration_ms: 212.6276
+  ...
+# Subtest: default adoption requires project management and rejects the former one-click refresh
+ok 8 - default adoption requires project management and rejects the former one-click refresh
+  ---
+  duration_ms: 387.9206
+  ...
+# Subtest: conversation adoption reviews the exact current agent and atomically saves its name and pinned agent version
+ok 9 - conversation adoption reviews the exact current agent and atomically saves its name and pinned agent version
+  ---
+  duration_ms: 308.4386
+  ...
+# Subtest: ordinary legacy edits keep exact frozen bindings; a changed current model or rate requires a new comparison
+ok 10 - ordinary legacy edits keep exact frozen bindings; a changed current model or rate requires a new comparison
+  ---
+  duration_ms: 137.0578
+  ...
+# Subtest: a changed model, effort or rate invalidates both refresh and confirmation; an old compared rate is never silently replaced
+ok 11 - a changed model, effort or rate invalidates both refresh and confirmation; an old compared rate is never silently replaced
+  ---
+  duration_ms: 343.5275
+  ...
+# Subtest: concurrent edits invalidate a previously reviewed comparison
+ok 12 - concurrent edits invalidate a previously reviewed comparison
+  ---
+  duration_ms: 185.4382
+  ...
+# Subtest: a disable and re-enable cycle changes the installation revision and invalidates old approval
+ok 13 - a disable and re-enable cycle changes the installation revision and invalidates old approval
+  ---
+  duration_ms: 348.0559
+  ...
+# Subtest: uninstalled required methods cannot be silently restored by a preview or confirmation
+ok 14 - uninstalled required methods cannot be silently restored by a preview or confirmation
+  ---
+  duration_ms: 194.2813
+  ...
+# Subtest: session revocation prevents replay of an accepted confirmation
+ok 15 - session revocation prevents replay of an accepted confirmation
+  ---
+  duration_ms: 287.5221
+  ...
+# Subtest: expired comparisons refuse confirmation and bounded retention removes only sufficiently old comparisons
+ok 16 - expired comparisons refuse confirmation and bounded retention removes only sufficiently old comparisons
+  ---
+  duration_ms: 231.0212
+  ...
+# {"request_id":"ab053b02-f592-47a0-ae63-3f7741accd54","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: adoption audit failure rolls back version, skill bindings, comparison consumption and idempotent receipt
+ok 17 - adoption audit failure rolls back version, skill bindings, comparison consumption and idempotent receipt
+  ---
+  duration_ms: 526.2705
+  ...
+# Subtest: a revoked Codex runtime refuses confirmation without creating a version or reversing revocation
+not ok 18 - a revoked Codex runtime refuses confirmation without creating a version or reversing revocation
+  ---
+  duration_ms: 238.0822
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\agent-adoption.test.ts:2:1679'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    403 !== 409
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 409
+  actual: 403
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\agent-adoption.test.ts:645:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 17
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 14077.8121
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/c7ca147d-e8a2-4a7c-8cfc-1ccd83752014/result.json","sha256":"12fc1cddcc785cfdc74fe3c4aef60a90daa87a35f9c6860eeb66701bc7f6610f","exit_code":0}

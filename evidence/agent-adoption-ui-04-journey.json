@@ -1,0 +1,589 @@
+{
+  "at": "2026-10-20T21:49:26.032Z",
+  "status": "failed",
+  "scope": "Actual built Web with real email/OTP sessions and isolated native PostgreSQL; labelled simulated AI, no production qualification",
+  "checks": [
+    {
+      "name": "actual built Web signs in through its email challenge, one-use OTP and persisted browser session",
+      "status": "passed"
+    },
+    {
+      "name": "saving specialist settings first compares actual models, effort, prices and methods and creates no agent version",
+      "status": "passed"
+    },
+    {
+      "name": "returning to edit preserves the draft and a changed proposal produces a new frozen comparison",
+      "status": "passed"
+    },
+    {
+      "name": "explicit specialist confirmation creates exactly one version and preserves the existing conversation version",
+      "status": "passed"
+    },
+    {
+      "name": "shared default assistant refresh also requires a separate model and rate review before confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "own conversation compares pinned and target versions and saves its name and adoption atomically",
+      "status": "passed"
+    }
+  ],
+  "errors": [
+    "lost confirmation response: locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog').getByText('Unable to check or save right now. Retry; an accepted confirmation will not create another version.', { exact: true }) to be visible\u001b[22m\n\n    at <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-agent-adoption-ui.ts:466:6)"
+  ],
+  "samples": [
+    {
+      "schema": "AdoptionPreview",
+      "route": "POST /v1/tenants/c1efe0af-349e-4983-9e7c-6bc86cba39e8/projects/32b0b201-7576-4c15-af96-0afd06e12679/agents/1a1fe8c6-49f0-4700-a568-1669d42b64b1/version-previews",
+      "response": {
+        "id": "0e8b4377-848f-4e94-94c4-fa1cab83ee86",
+        "kind": "specialist",
+        "resource_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+        "project_id": "32b0b201-7576-4c15-af96-0afd06e12679",
+        "expected_version": 1,
+        "preview_hash": "acb0c7eeb86b92293dddba53673bf1a999fd043855c4768628f04b0763e5b0ab",
+        "expires_at": "2026-10-20T21:54:06.607Z",
+        "state": "ready",
+        "comparison": {
+          "kernel": "codex",
+          "gateway_policy": "company_internal_only",
+          "data_mode": "simulated",
+          "effect": "future_tasks_only",
+          "source": {
+            "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+            "agent_version": 1,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "ads-analysis",
+                "version": "1.0.0",
+                "sha256": "27ba8824edfb8b0408a010f53df848f8ca956ceb09245a94ff7189fc9a2ed626",
+                "installation_id": "e4801d9a-fbba-400f-b4cd-ee325ad032e4"
+              },
+              {
+                "key": "deterministic-metrics",
+                "version": "1.0.0",
+                "sha256": "3f42bcc73bd2ae748f3bedf76f2927730ff1beaeb53ed3759994146dfc262074",
+                "installation_id": "6e7e7489-0b48-40f4-8ef0-35941b0ced69"
+              },
+              {
+                "key": "dataviz",
+                "version": "1.0.0",
+                "sha256": "2d2d0e7952ca0b20e4137947cf7f42ff34ffbc1cc4ffaae491ef2c7ce05fc6e0",
+                "installation_id": "9a405261-d20f-4221-88f9-2f40a042605c"
+              },
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write",
+              "chart.render",
+              "connector.read",
+              "dataset.read",
+              "delivery.package",
+              "sheet.calculate"
+            ],
+            "brand": null
+          },
+          "target": {
+            "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+            "agent_version": 2,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "ads-analysis",
+                "version": "1.0.0",
+                "sha256": "27ba8824edfb8b0408a010f53df848f8ca956ceb09245a94ff7189fc9a2ed626",
+                "installation_id": "e4801d9a-fbba-400f-b4cd-ee325ad032e4"
+              },
+              {
+                "key": "deterministic-metrics",
+                "version": "1.0.0",
+                "sha256": "3f42bcc73bd2ae748f3bedf76f2927730ff1beaeb53ed3759994146dfc262074",
+                "installation_id": "6e7e7489-0b48-40f4-8ef0-35941b0ced69"
+              },
+              {
+                "key": "dataviz",
+                "version": "1.0.0",
+                "sha256": "2d2d0e7952ca0b20e4137947cf7f42ff34ffbc1cc4ffaae491ef2c7ce05fc6e0",
+                "installation_id": "9a405261-d20f-4221-88f9-2f40a042605c"
+              },
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write",
+              "chart.render",
+              "connector.read",
+              "dataset.read",
+              "delivery.package",
+              "sheet.calculate"
+            ],
+            "brand": null
+          },
+          "changed_fields": [
+            "instructions"
+          ]
+        },
+        "result": null
+      }
+    },
+    {
+      "schema": "AdoptionPreview",
+      "route": "POST /v1/tenants/c1efe0af-349e-4983-9e7c-6bc86cba39e8/projects/32b0b201-7576-4c15-af96-0afd06e12679/agents/1a1fe8c6-49f0-4700-a568-1669d42b64b1/version-previews",
+      "response": {
+        "id": "194f4d2d-f163-4059-9e88-736af9b75553",
+        "kind": "specialist",
+        "resource_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+        "project_id": "32b0b201-7576-4c15-af96-0afd06e12679",
+        "expected_version": 1,
+        "preview_hash": "c75ee8a5ecac977d2e3627e8e89393098303ac62d3aa4dcf1f7900db35b099ae",
+        "expires_at": "2026-10-20T21:54:07.147Z",
+        "state": "ready",
+        "comparison": {
+          "kernel": "codex",
+          "gateway_policy": "company_internal_only",
+          "data_mode": "simulated",
+          "effect": "future_tasks_only",
+          "source": {
+            "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+            "agent_version": 1,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "ads-analysis",
+                "version": "1.0.0",
+                "sha256": "27ba8824edfb8b0408a010f53df848f8ca956ceb09245a94ff7189fc9a2ed626",
+                "installation_id": "e4801d9a-fbba-400f-b4cd-ee325ad032e4"
+              },
+              {
+                "key": "deterministic-metrics",
+                "version": "1.0.0",
+                "sha256": "3f42bcc73bd2ae748f3bedf76f2927730ff1beaeb53ed3759994146dfc262074",
+                "installation_id": "6e7e7489-0b48-40f4-8ef0-35941b0ced69"
+              },
+              {
+                "key": "dataviz",
+                "version": "1.0.0",
+                "sha256": "2d2d0e7952ca0b20e4137947cf7f42ff34ffbc1cc4ffaae491ef2c7ce05fc6e0",
+                "installation_id": "9a405261-d20f-4221-88f9-2f40a042605c"
+              },
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write",
+              "chart.render",
+              "connector.read",
+              "dataset.read",
+              "delivery.package",
+              "sheet.calculate"
+            ],
+            "brand": null
+          },
+          "target": {
+            "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+            "agent_version": 2,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "ads-analysis",
+                "version": "1.0.0",
+                "sha256": "27ba8824edfb8b0408a010f53df848f8ca956ceb09245a94ff7189fc9a2ed626",
+                "installation_id": "e4801d9a-fbba-400f-b4cd-ee325ad032e4"
+              },
+              {
+                "key": "deterministic-metrics",
+                "version": "1.0.0",
+                "sha256": "3f42bcc73bd2ae748f3bedf76f2927730ff1beaeb53ed3759994146dfc262074",
+                "installation_id": "6e7e7489-0b48-40f4-8ef0-35941b0ced69"
+              },
+              {
+                "key": "dataviz",
+                "version": "1.0.0",
+                "sha256": "2d2d0e7952ca0b20e4137947cf7f42ff34ffbc1cc4ffaae491ef2c7ce05fc6e0",
+                "installation_id": "9a405261-d20f-4221-88f9-2f40a042605c"
+              },
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write",
+              "chart.render",
+              "connector.read",
+              "dataset.read",
+              "delivery.package",
+              "sheet.calculate"
+            ],
+            "brand": null
+          },
+          "changed_fields": [
+            "instructions"
+          ]
+        },
+        "result": null
+      }
+    },
+    {
+      "schema": "AdoptionResult",
+      "route": "POST /v1/tenants/c1efe0af-349e-4983-9e7c-6bc86cba39e8/projects/32b0b201-7576-4c15-af96-0afd06e12679/version-adoption-previews/194f4d2d-f163-4059-9e88-736af9b75553/confirmations",
+      "response": {
+        "preview_id": "194f4d2d-f163-4059-9e88-736af9b75553",
+        "kind": "specialist",
+        "resource_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+        "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+        "version": 2,
+        "agent_version": 2
+      }
+    },
+    {
+      "schema": "AdoptionPreview",
+      "route": "POST /v1/tenants/c1efe0af-349e-4983-9e7c-6bc86cba39e8/projects/32b0b201-7576-4c15-af96-0afd06e12679/agents/09425472-ec25-4a7a-a5e4-5b1c25a09158/version-previews",
+      "response": {
+        "id": "0b36953d-14a0-456e-921b-4a2890d4088c",
+        "kind": "default_assistant",
+        "resource_id": "09425472-ec25-4a7a-a5e4-5b1c25a09158",
+        "project_id": "32b0b201-7576-4c15-af96-0afd06e12679",
+        "expected_version": 1,
+        "preview_hash": "c6d1b11a20f76d5aa2d2cbe29322bf72ddd15783af7f2a8ef442c597054b702f",
+        "expires_at": "2026-10-20T21:54:07.657Z",
+        "state": "ready",
+        "comparison": {
+          "kernel": "codex",
+          "gateway_policy": "company_internal_only",
+          "data_mode": "simulated",
+          "effect": "future_tasks_only",
+          "source": {
+            "agent_id": "09425472-ec25-4a7a-a5e4-5b1c25a09158",
+            "agent_version": 1,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write"
+            ],
+            "brand": null
+          },
+          "target": {
+            "agent_id": "09425472-ec25-4a7a-a5e4-5b1c25a09158",
+            "agent_version": 2,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write"
+            ],
+            "brand": null
+          },
+          "changed_fields": []
+        },
+        "result": null
+      }
+    },
+    {
+      "schema": "AdoptionResult",
+      "route": "POST /v1/tenants/c1efe0af-349e-4983-9e7c-6bc86cba39e8/projects/32b0b201-7576-4c15-af96-0afd06e12679/version-adoption-previews/0b36953d-14a0-456e-921b-4a2890d4088c/confirmations",
+      "response": {
+        "preview_id": "0b36953d-14a0-456e-921b-4a2890d4088c",
+        "kind": "default_assistant",
+        "resource_id": "09425472-ec25-4a7a-a5e4-5b1c25a09158",
+        "agent_id": "09425472-ec25-4a7a-a5e4-5b1c25a09158",
+        "version": 2,
+        "agent_version": 2
+      }
+    },
+    {
+      "schema": "AdoptionPreview",
+      "route": "POST /v1/tenants/c1efe0af-349e-4983-9e7c-6bc86cba39e8/projects/32b0b201-7576-4c15-af96-0afd06e12679/conversations/3efe8ad7-4042-4110-afe9-ff88394ae112/adoption-previews",
+      "response": {
+        "id": "46295d1e-6911-42ff-9756-786fb9629e08",
+        "kind": "conversation",
+        "resource_id": "3efe8ad7-4042-4110-afe9-ff88394ae112",
+        "project_id": "32b0b201-7576-4c15-af96-0afd06e12679",
+        "expected_version": 1,
+        "preview_hash": "9a2c0229eb550b85c7db7c95b383891981c1a2ad7d20e122e9789f7ba9e788f9",
+        "expires_at": "2026-10-20T21:54:08.285Z",
+        "state": "ready",
+        "comparison": {
+          "kernel": "codex",
+          "gateway_policy": "company_internal_only",
+          "data_mode": "simulated",
+          "effect": "future_tasks_only",
+          "source": {
+            "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+            "agent_version": 1,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "ads-analysis",
+                "version": "1.0.0",
+                "sha256": "27ba8824edfb8b0408a010f53df848f8ca956ceb09245a94ff7189fc9a2ed626",
+                "installation_id": "e4801d9a-fbba-400f-b4cd-ee325ad032e4"
+              },
+              {
+                "key": "deterministic-metrics",
+                "version": "1.0.0",
+                "sha256": "3f42bcc73bd2ae748f3bedf76f2927730ff1beaeb53ed3759994146dfc262074",
+                "installation_id": "6e7e7489-0b48-40f4-8ef0-35941b0ced69"
+              },
+              {
+                "key": "dataviz",
+                "version": "1.0.0",
+                "sha256": "2d2d0e7952ca0b20e4137947cf7f42ff34ffbc1cc4ffaae491ef2c7ce05fc6e0",
+                "installation_id": "9a405261-d20f-4221-88f9-2f40a042605c"
+              },
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write",
+              "chart.render",
+              "connector.read",
+              "dataset.read",
+              "delivery.package",
+              "sheet.calculate"
+            ],
+            "brand": null
+          },
+          "target": {
+            "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+            "agent_version": 2,
+            "recorded": true,
+            "runtime_version": "0.163.0-alpha.10.2",
+            "capabilities": [
+              {
+                "id": "fd710d92-1e80-428f-8c0b-052b1c002658",
+                "profile_key": "internal-text-v1",
+                "model_alias": "copypaste-demo",
+                "reasoning_effort": "max",
+                "state": "ready",
+                "input_micros_per_million": "1000000",
+                "output_micros_per_million": "1000000",
+                "micros_per_image": null
+              }
+            ],
+            "skills": [
+              {
+                "key": "ads-analysis",
+                "version": "1.0.0",
+                "sha256": "27ba8824edfb8b0408a010f53df848f8ca956ceb09245a94ff7189fc9a2ed626",
+                "installation_id": "e4801d9a-fbba-400f-b4cd-ee325ad032e4"
+              },
+              {
+                "key": "deterministic-metrics",
+                "version": "1.0.0",
+                "sha256": "3f42bcc73bd2ae748f3bedf76f2927730ff1beaeb53ed3759994146dfc262074",
+                "installation_id": "6e7e7489-0b48-40f4-8ef0-35941b0ced69"
+              },
+              {
+                "key": "dataviz",
+                "version": "1.0.0",
+                "sha256": "2d2d0e7952ca0b20e4137947cf7f42ff34ffbc1cc4ffaae491ef2c7ce05fc6e0",
+                "installation_id": "9a405261-d20f-4221-88f9-2f40a042605c"
+              },
+              {
+                "key": "delivery-core",
+                "version": "1.0.0",
+                "sha256": "06f1f9792e6514d201e97ecf54bd886e1e7d183e4c1f38f85d23de2a6a5ef2e3",
+                "installation_id": "d603a11e-c38f-4805-81aa-08ee31ece518"
+              }
+            ],
+            "tool_ids": [
+              "asset.read",
+              "asset.write",
+              "chart.render",
+              "connector.read",
+              "dataset.read",
+              "delivery.package",
+              "sheet.calculate"
+            ],
+            "brand": null
+          },
+          "changed_fields": [
+            "name",
+            "instructions"
+          ]
+        },
+        "result": null
+      }
+    },
+    {
+      "schema": "AdoptionResult",
+      "route": "POST /v1/tenants/c1efe0af-349e-4983-9e7c-6bc86cba39e8/projects/32b0b201-7576-4c15-af96-0afd06e12679/version-adoption-previews/46295d1e-6911-42ff-9756-786fb9629e08/confirmations",
+      "response": {
+        "preview_id": "46295d1e-6911-42ff-9756-786fb9629e08",
+        "kind": "conversation",
+        "resource_id": "3efe8ad7-4042-4110-afe9-ff88394ae112",
+        "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+        "version": 2,
+        "agent_version": 2
+      }
+    },
+    {
+      "schema": "AdoptionResult",
+      "route": "POST committed confirmation with deliberately lost browser response",
+      "response": {
+        "preview_id": "4cab3e85-76b6-4c76-bb56-a9575dab1de9",
+        "kind": "specialist",
+        "resource_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+        "agent_id": "1a1fe8c6-49f0-4700-a568-1669d42b64b1",
+        "version": 3,
+        "agent_version": 3
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-web/assets/screenshots/adoption-04-specialist-comparison-en.png",
+      "sha256": "4475be3594ce2b1f51b7f21278cbd01ce2cbb5836bc1c2727abd3f706cb5ce35",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/adoption-04-conversation-comparison-en.png",
+      "sha256": "94dc86b1ed9c0804b7fb9391107cc0ee06f52f8a33ad634c14357ebe32806dc0",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "edited": false
+    }
+  ],
+  "browser_closed": true,
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "da44c00075a80dbf3031ecd70109a781d18decf89fdd6f7dbd67ca1c93f7638b"
+}

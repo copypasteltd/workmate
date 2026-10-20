@@ -1,0 +1,34 @@
+2026-10-21 05:34:01.692 CST [36892] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 05:34:01.698 CST [36892] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 05:34:01.699 CST [36892] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 05:34:01.982 CST [37648] LOG:  database system was shut down at 2026-10-21 05:31:34 CST
+
+2026-10-21 05:34:02.046 CST [36892] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 05:34:14.743 CST [27288] ERROR:  controlled adoption audit failure
+2026-10-21 05:34:14.743 CST [27288] CONTEXT:  PL/pgSQL function test_adoption_audit_failure() line 1 at RAISE
+2026-10-21 05:34:14.743 CST [27288] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 05:34:15.284 CST [28168] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 05:34:16.071 CST [28168] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.543 s, total=0.787 s; sync files=11, longest=0.132 s, average=0.050 s; distance=13339 kB, estimate=13339 kB; lsn=5/367D2D98, redo lsn=5/367D2D40
+
+2026-10-21 05:34:17.791 CST [36892] LOG:  received fast shutdown request
+
+2026-10-21 05:34:18.016 CST [36892] LOG:  aborting any active transactions
+
+2026-10-21 05:34:18.022 CST [36892] LOG:  background worker "logical replication launcher" (PID 29224) exited with exit code 1
+
+2026-10-21 05:34:18.022 CST [28168] LOG:  shutting down
+
+2026-10-21 05:34:18.071 CST [28168] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 05:34:18.986 CST [28168] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.632 s, total=0.965 s; sync files=10, longest=0.171 s, average=0.064 s; distance=184 kB, estimate=12023 kB; lsn=5/36800FF0, redo lsn=5/36800FF0
+
+2026-10-21 05:34:19.223 CST [36892] LOG:  database system is shut down
+

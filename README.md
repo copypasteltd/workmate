@@ -1,5 +1,24 @@
 # CopyPaste 交付与集成
 
+## 明确采用版本（阶段 54）
+
+默认助手更新、专家设置与会话采用先比较明确模型、推理强度、单价及 Skill 版本，再由用户确认。五分钟比较绑定实际登录会话与配置状态，过期或变化拒绝确认；重试使用持久幂等键。已接收任务继续原模型和原费率。
+
+当前平台完整回归 **484/484**，保留原 462 项测试；专项 **93/93** 与全量重叠，不相加。实际构建版 Web **12/12**，新版无边框打包 Desktop 与真实 Chrome 原生侧栏 **11/11**。AI/媒体使用已授权假数据，身份、PostgreSQL、权限与版本事务实际执行。原始 102 项综合验收继续跟踪；以下旧章节保留其时源码与产物范围。
+
+[Focused regression](evidence/agent-adoption-candidate-06.json) · [Full regression](evidence/agent-adoption-regression-02.json) · [Built Web](evidence/agent-adoption-ui-06.json) · [Native Desktop / Side Panel](evidence/agent-adoption-native-05.json) · [Artifact hashes](evidence/agent-adoption-artifacts-02.json) · [Original-row preservation](evidence/agent-adoption-migrations.json)
+
+复查须使用新编号，不覆盖报告。原生验证使用独立 profile、实际工具栏动作与 PKCE，结束后关闭自己的窗口和进程。Setup/Portable 核对字节来源，不代表安装验收；全程不使用 Docker/WSL。
+
+```powershell
+node scripts/run-agent-adoption-candidate.mjs NEXT_ID
+node scripts/run-agent-adoption-regression.mjs NEXT_ID
+node scripts/run-agent-adoption-ui.mjs NEXT_ID
+node scripts/run-agent-adoption-native.mjs NEXT_ID
+```
+
+`NEXT_ID` 替换为未使用的两位编号。原生侧栏 QA 默认使用本机 `.data/browsers/chromium-1248/chrome-win64/chrome.exe` 测试运行时，也可设置 `CHROME_BIN` 为支持未打包扩展测试的 Chromium。本机升级已完成，一次性升级前态守卫会拒绝重复执行。
+
 ## 受控能力配置与后台发布（阶段 53）
 
 新增专项、完整回归、构建版 Admin 浏览器流程及带前后行摘要的原生 064 升级工具。当前[完整回归 04](evidence/capability-release-regression-04.json) 通过 **462/462**，726 份来源前后一致，失败、取消、跳过均为零；[原始 TAP](evidence/capability-release-regression-04.tap) 保留全部旧 435 项测试。[候选 11](evidence/capability-release-candidate-11.json) 通过 71/71，与全量重叠；[实际后台浏览器 06](evidence/capability-release-ui-06.json) 通过 11/11、保留 14 张未编辑截图；[补充合同 02](evidence/capability-release-contract-02.json) 通过六项跨消费者检查。
