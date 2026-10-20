@@ -209,6 +209,12 @@ export function registerAdmin(
       "/v1/admin/" + section,
       { preHandler: requireAdmin(db) },
       async (req) => {
+        if (section === "support")
+          throw new Problem(
+            410,
+            "SUPPORT_SELECTION_REQUIRED",
+            "Use the scoped support sessions directory",
+          );
         const q = pagination.parse(req.query);
         return db.tx(
           async (tx) => {
@@ -319,9 +325,7 @@ export function registerAdmin(
             const order =
               section === "usage"
                 ? "charged_micros::numeric DESC"
-                : section === "support"
-                  ? "expires_at DESC"
-                  : "created_at DESC";
+                : "created_at DESC";
             const items = (
               await tx.query(
                 `SELECT * ${baseQuery} ORDER BY ${order} LIMIT $${args.length + 1} OFFSET $${args.length + 2}`,
@@ -743,49 +747,13 @@ export function registerAdmin(
         );
       },
     );
-  app.post(
-    "/v1/admin/support",
-    { preHandler: requireAdmin(db) },
-    async (req) => {
-      const b = z
-        .object({
-          tenant_id: uuid,
-          reason,
-          duration_minutes: z.number().int().min(5).max(60).default(15),
-        })
-        .strict()
-        .parse(req.body);
-      return db.tx(
-        async (tx) => {
-          await permit(
-            tx,
-            req.principal,
-            "admin.support.start",
-            { tenant: b.tenant_id },
-            { hours: b.duration_minutes / 60 },
-          );
-          const r = (
-            await tx.query(
-              "INSERT INTO support_sessions(principal_id,tenant_id,reason,expires_at) VALUES($1,$2,$3,now()+$4*interval '1 minute') RETURNING *",
-              [req.principal.id, b.tenant_id, b.reason, b.duration_minutes],
-            )
-          ).rows[0];
-          await audit(
-            tx,
-            req.principal,
-            "admin.support.start",
-            r.id,
-            "succeeded",
-            b,
-            b.tenant_id,
-          );
-          return r;
-        },
-        undefined,
-        true,
-      );
-    },
-  );
+  app.post("/v1/admin/support", { preHandler: requireAdmin(db) }, async () => {
+    throw new Problem(
+      410,
+      "SUPPORT_SELECTION_REQUIRED",
+      "Use the canonical support command with an explicit user and project selection",
+    );
+  });
   registerAdminDirectory(app, db);
   registerAdminContent(app, db, storage);
   registerAdminJobs(app, db);

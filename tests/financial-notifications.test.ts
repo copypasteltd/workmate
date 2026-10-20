@@ -1369,7 +1369,9 @@ test("an actual populated 060 upgrade preserves every original public row and do
         "SELECT version,source_sha256 FROM schema_migrations ORDER BY version",
       )
     ).rows;
-    await runMigrations(c, "populated financial delivery upgrade");
+    await runMigrations(c, "populated financial delivery upgrade", {
+      throughVersion: 61,
+    });
     for (const table of tables)
       assert.equal(
         (
@@ -1401,7 +1403,9 @@ test("an actual populated 060 upgrade preserves every original public row and do
       "INSERT INTO billing_journal(billing_account_id,operation_id,actor_id,kind,direction,bucket,amount_micros,reason) VALUES($1,$2,$3,'credit_limit','neutral','credit_limit',23,'New controlled limit')",
       [account, operation, u],
     );
-    await runMigrations(c, "financial delivery upgrade replay");
+    await runMigrations(c, "financial delivery upgrade replay", {
+      throughVersion: 61,
+    });
     assert.equal(
       (await c.query("SELECT count(*)::int n FROM financial_outbox")).rows[0].n,
       1,

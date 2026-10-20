@@ -5,6 +5,7 @@ import { registerAdminVip } from "./admin-vip.js";
 import { registerAdminVipCredit } from "./admin-vip-credit.js";
 import { registerUserEntitlements } from "./user-entitlements.js";
 import { registerFinancialNotifications } from "./financial-notifications.js";
+import { registerSupport, assertSupportContext } from "./admin-support.js";
 import { commandPublicKey } from "./device-signing.js";
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
@@ -18,7 +19,7 @@ import { retentionPolicy } from "./retention.js";
 import { Database } from "./db.js";
 import { Catalog } from "./catalog.js";
 import { Problem } from "./lib.js";
-import { registerAuth } from "./auth.js";
+import { registerAuth, principal as sessionPrincipal } from "./auth.js";
 import { registerWorkspaces } from "./workspaces.js";
 import { registerAssets } from "./assets.js";
 import { Storage } from "./storage.js";
@@ -117,6 +118,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       "X-Tenant-ID",
       "X-Billing-Account-ID",
       "X-Admin-Preview-ID",
+      "X-CopyPaste-Support-Session",
       "Last-Event-ID",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -131,6 +133,14 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     limits: { fileSize: 25 * 1024 * 1024, files: 1, fields: 10 },
   });
   app.addHook("onRequest", async (req, reply) => {
+    if (req.headers["x-copypaste-support-session"] !== undefined) {
+      try {
+        req.principal = await sessionPrincipal(db, req, "admin");
+      } catch {
+        /* A rejected context never authenticates the customer. */
+      }
+    }
+    assertSupportContext(req);
     const origin = req.headers.origin;
     if (origin && !origins.includes(origin))
       throw new Problem(
@@ -340,6 +350,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerNotifications(app, db);
   registerUserEntitlements(app, db);
   registerFinancialNotifications(app, db);
+  registerSupport(app, db);
   registerTaskDependencies(app, db);
   registerBusiness(app, db, storage, catalog);
   registerSchedules(app, db, catalog);

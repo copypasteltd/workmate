@@ -469,35 +469,12 @@ export function registerAdminJobs(app: FastifyInstance, db: Database) {
   app.post(
     "/v1/admin/support/:id/revoke",
     { preHandler: requireAdmin(db) },
-    async (req) =>
-      db.tx(
-        async (tx) => {
-          const id = uuid.parse((req.params as any).id);
-          const r = (
-            await tx.query("SELECT * FROM support_sessions WHERE id=$1", [id])
-          ).rows[0];
-          if (!r)
-            throw new Problem(404, "NOT_FOUND", "Support session not found");
-          await permit(tx, req.principal, "admin.support.revoke", {
-            tenant: r.tenant_id,
-          });
-          await tx.query(
-            "UPDATE support_sessions SET revoked_at=now() WHERE id=$1",
-            [id],
-          );
-          await audit(
-            tx,
-            req.principal,
-            "admin.support.revoke",
-            id,
-            "succeeded",
-            {},
-            r.tenant_id,
-          );
-          return { ok: true };
-        },
-        undefined,
-        true,
-      ),
+    async () => {
+      throw new Problem(
+        410,
+        "SUPPORT_SELECTION_REQUIRED",
+        "Use the canonical audited revocation command",
+      );
+    },
   );
 }

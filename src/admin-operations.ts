@@ -1,4 +1,8 @@
 import { isPaymentOperation } from "./payment-records.js";
+import {
+  isSupportOperation,
+  supportOperationAuthority,
+} from "./admin-support.js";
 import { createApprovalRequest } from "./admin-approval-storage.js";
 import {
   currentAdminControl,
@@ -458,7 +462,14 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               "admin.billing.read",
             );
           }
-          if (isVipCreditOperation(op)) {
+          if (isSupportOperation(op)) {
+            await supportOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.jobs.read",
+            );
+          } else if (isVipCreditOperation(op)) {
             await vipCreditOperationAuthority(
               tx,
               req.principal,

@@ -1,5 +1,22 @@
 # CopyPaste Platform
 
+## Controlled support update / 受控客服协助
+
+Added time-limited customer grants and canonical administrator support sessions. Scope binds the real administrator session, target identity/membership versions, explicit projects and deadline. Body, billing and VIP authority stay independent; private bodies remain unavailable. Migration 062 is additive and does not turn legacy records into customer views.
+
+![Controlled read-only support](assets/screenshots/support-view.png)
+
+Stage 51 current regression: 424/424 with 711 source files; controlled-support browser workflows: 8/8 with 816 source files and 9 unedited captures. The 14 support tests, original contract checks, migration preservation and separate native checks are bounded evidence, not completion of all 102 acceptance cases. Current binaries are rebuilt; stage 50 binaries remain unchanged in their archive.
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+
 [简体中文](README.md) · Native enterprise Agent services · 0.5.0
 
 This independent repository implements persistent PostgreSQL services, customer/admin identity, workspace/project authorization, Codex execution, marketing assets, analytics, workflows, device commands and the admin control plane. No sibling source checkout is required. The delivery root's `docs/` contains the master requirements and design baseline.
@@ -8,7 +25,7 @@ This independent repository implements persistent PostgreSQL services, customer/
 
 Migration 061 captures canonical journal, payment evidence/confirmation and refund INSERTs into an outbox in the same transaction. Independent maintenance delivers to currently eligible recipients with locking and uniqueness; retrying delivery never repeats funding. Financial GET/PATCH operations recheck the current session, workspace, role and account. Unknown refunds retain a null amount and a separate requested amount, with no internal reason, bank reference or evidence in the user DTO. Both native databases retain identical row digests across all 120 original public tables; 001–060 remain unchanged and historical notifications are not backfilled.
 
-Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+Stage 50 historical platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
 
 ```mermaid
 flowchart LR

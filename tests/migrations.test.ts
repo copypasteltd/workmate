@@ -86,7 +86,7 @@ test("a populated 041 checkpoint upgrades without pending-trigger DDL failures o
     assert.equal(
       (await c.query("SELECT max(version) AS v FROM schema_migrations")).rows[0]
         .v,
-      61,
+      62,
     );
     for (const [table, old] of [
       ["wallets", wallet],
@@ -156,6 +156,7 @@ test("a populated 041 checkpoint upgrades without pending-trigger DDL failures o
       "059-private-upload-erasure-terminal-state.sql",
       "060-atomic-vip-credit-combinations.sql",
       "061-durable-financial-notifications.sql",
+      "062-controlled-support-scopes.sql",
     ]) {
       const digest = createHash("sha256")
         .update(await readFile("migrations/" + file))
@@ -263,7 +264,7 @@ test("048 preserves real financial review history, registers frozen member/accou
     assert.equal(
       (await c.query("SELECT max(version) AS v FROM schema_migrations")).rows[0]
         .v,
-      61,
+      62,
     );
     const retainedRequest = (
       await c.query("SELECT * FROM admin_approval_requests WHERE id=$1", [

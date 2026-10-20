@@ -1,5 +1,22 @@
 # CopyPaste Platform
 
+## 限时只读客服协助 / Controlled support
+
+新增限时只读支持授权及规范 Admin 支持会话。范围绑定真实管理员会话、目标身份/成员版本、明确项目和截止时间；正文与费用/VIP权限独立，私人正文不开放。062 为追加迁移；旧记录不自动取得用户视图。
+
+![Controlled read-only support](assets/screenshots/support-view.png)
+
+阶段 51 当前平台回归 424/424（711 份来源），受控支持页面 8/8（816 份来源、9 张未编辑截图）。14 组支持专项、原规范检查、迁移保留及独立原生检查是有界证据，完整 102 项验收继续跟踪；当前包已重建，阶段 50 包原字节另存。
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+
 [English](README.en.md) · 原生企业 Agent 服务 · 0.5.0
 
 本仓库提供真实 PostgreSQL 持久化、用户与管理员身份、企业/项目权限、Codex 任务执行、营销资产、数据分析、流程、设备调度与运营控制面。它是独立 Git 仓库，不依赖相邻仓库源码。完整项目主文档位于交付根目录的 `docs/`。
@@ -8,7 +25,7 @@
 
 迁移 061 把规范账目、收款登记/核实及退款来源的真实 INSERT 与通知意图放在同一事务。独立维护任务按当前合法接收人投递，唯一约束及锁定批次防止重复；投递失败不重做资金。GET/PATCH 费用通知每次重验会话、企业、角色和账户；未知退款金额为 null，原要求金额独立保留，不暴露内部原因、银行参考或证据。两库升级前后各 120 张原公共表完整行摘要一致，001–060 不改，历史通知不回填。
 
-当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+阶段 50 当时平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
 
 ```mermaid
 flowchart LR
