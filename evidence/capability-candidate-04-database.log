@@ -1,0 +1,68 @@
+2026-10-21 00:06:31.993 CST [37732] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 00:06:32.000 CST [37732] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 00:06:32.000 CST [37732] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 00:06:32.290 CST [26264] LOG:  database system was shut down at 2026-10-21 00:04:59 CST
+
+2026-10-21 00:06:32.415 CST [37732] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 00:06:43.742 CST [7356] ERROR:  Immutable task runtime and pricing binding
+2026-10-21 00:06:43.742 CST [7356] CONTEXT:  PL/pgSQL function guard_task_runtime_binding() line 5 at RAISE
+2026-10-21 00:06:43.742 CST [7356] STATEMENT:  UPDATE task_runtime_bindings SET capability_version_ids='{}' WHERE task_id=$1
+
+2026-10-21 00:06:43.743 CST [7356] ERROR:  Immutable task runtime and pricing binding
+2026-10-21 00:06:43.743 CST [7356] CONTEXT:  PL/pgSQL function guard_task_runtime_binding() line 5 at RAISE
+2026-10-21 00:06:43.743 CST [7356] STATEMENT:  DELETE FROM task_runtime_bindings WHERE task_id=$1
+
+2026-10-21 00:06:46.288 CST [24416] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 00:06:55.827 CST [24416] LOG:  checkpoint complete: wrote 1884 buffers (11.5%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.221 s, sync=8.995 s, total=9.540 s; sync files=1026, longest=0.251 s, average=0.009 s; distance=24377 kB, estimate=24377 kB; lsn=4/336CAA0, redo lsn=4/2FF4728
+
+2026-10-21 00:06:56.653 CST [12328] WARNING:  there is no transaction in progress
+
+2026-10-21 00:06:56.746 CST [24416] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 00:06:57.594 CST [24416] LOG:  checkpoint complete: wrote 23 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.004 s, sync=0.531 s, total=0.849 s; sync files=8, longest=0.127 s, average=0.067 s; distance=3747 kB, estimate=22314 kB; lsn=4/339D528, redo lsn=4/339D4D0
+
+2026-10-21 00:07:33.532 CST [24416] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 00:07:34.785 CST [24416] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.664 s, total=1.254 s; sync files=12, longest=0.154 s, average=0.056 s; distance=12045 kB, estimate=21287 kB; lsn=4/3F60B60, redo lsn=4/3F60B08
+
+2026-10-21 00:07:37.086 CST [24416] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 00:07:37.963 CST [24416] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.005 s, sync=0.401 s, total=0.877 s; sync files=9, longest=0.095 s, average=0.045 s; distance=11954 kB, estimate=20354 kB; lsn=4/4B0D6C8, redo lsn=4/4B0D670
+
+2026-10-21 00:07:40.679 CST [38372] ERROR:  Review decisions are immutable
+2026-10-21 00:07:40.679 CST [38372] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-21 00:07:40.679 CST [38372] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-21 00:07:40.680 CST [38372] ERROR:  Frozen approval is immutable
+2026-10-21 00:07:40.680 CST [38372] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-21 00:07:40.680 CST [38372] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-21 00:07:40.807 CST [24416] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 00:07:42.617 CST [24416] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.736 s, total=1.810 s; sync files=9, longest=0.189 s, average=0.082 s; distance=11931 kB, estimate=19512 kB; lsn=4/56B4680, redo lsn=4/56B4628
+
+2026-10-21 00:07:52.873 CST [24416] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 00:07:53.783 CST [24416] LOG:  checkpoint complete: wrote 35 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.602 s, total=0.911 s; sync files=12, longest=0.130 s, average=0.051 s; distance=13247 kB, estimate=18885 kB; lsn=4/63A4568, redo lsn=4/63A4510
+
+2026-10-21 00:08:08.007 CST [37732] LOG:  received fast shutdown request
+
+2026-10-21 00:08:08.068 CST [37732] LOG:  aborting any active transactions
+
+2026-10-21 00:08:08.075 CST [37732] LOG:  background worker "logical replication launcher" (PID 10596) exited with exit code 1
+
+2026-10-21 00:08:08.076 CST [24416] LOG:  shutting down
+
+2026-10-21 00:08:08.116 CST [24416] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 00:08:08.758 CST [24416] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.488 s, total=0.682 s; sync files=10, longest=0.088 s, average=0.049 s; distance=171 kB, estimate=17014 kB; lsn=4/63CF2E0, redo lsn=4/63CF2E0
+
+2026-10-21 00:08:08.892 CST [37732] LOG:  database system is shut down
+

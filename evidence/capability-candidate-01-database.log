@@ -1,0 +1,121 @@
+2026-10-20 23:58:54.143 CST [36492] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-20 23:58:54.149 CST [36492] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-20 23:58:54.150 CST [36492] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-20 23:58:54.900 CST [30496] LOG:  database system was shut down at 2026-10-20 23:30:52 CST
+
+2026-10-20 23:58:55.145 CST [36492] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-20 23:59:20.340 CST [35916] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:20.340 CST [35916] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:20.430 CST [35916] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:20.430 CST [35916] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:20.505 CST [35916] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:20.505 CST [35916] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:20.584 CST [35916] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:20.584 CST [35916] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:20.663 CST [35916] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:20.663 CST [35916] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:20.735 CST [35916] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:20.735 CST [35916] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:20.883 CST [35916] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:20.883 CST [35916] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:23.376 CST [38900] ERROR:  Task payer does not match its subject or execution mode
+2026-10-20 23:59:23.376 CST [38900] CONTEXT:  PL/pgSQL function validate_task_payer() line 6 at RAISE
+2026-10-20 23:59:23.376 CST [38900] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key) VALUES($1,$2,$3,'Original task','Original unchanged prompt','assistant','original',100,$4)
+
+2026-10-20 23:59:23.459 CST [21764] LOG:  checkpoint starting: immediate force wait
+
+2026-10-20 23:59:32.203 CST [21764] LOG:  checkpoint complete: wrote 1794 buffers (10.9%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.187 s, sync=8.205 s, total=8.745 s; sync files=1023, longest=0.236 s, average=0.009 s; distance=24014 kB, estimate=24014 kB; lsn=3/F54618B0, redo lsn=3/F5114308
+
+2026-10-20 23:59:32.597 CST [21764] LOG:  checkpoint starting: immediate force wait
+
+2026-10-20 23:59:33.087 CST [21764] LOG:  checkpoint complete: wrote 5 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.203 s, total=0.491 s; sync files=3, longest=0.083 s, average=0.068 s; distance=3413 kB, estimate=21953 kB; lsn=3/F5469778, redo lsn=3/F5469720
+
+2026-10-20 23:59:36.459 CST [21764] LOG:  checkpoint starting: immediate force wait
+
+2026-10-20 23:59:38.345 CST [21764] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.035 s, sync=1.091 s, total=1.886 s; sync files=9, longest=0.218 s, average=0.122 s; distance=11927 kB, estimate=20951 kB; lsn=3/F600FF20, redo lsn=3/F600F500
+
+2026-10-20 23:59:41.354 CST [21764] LOG:  checkpoint starting: immediate force wait
+
+2026-10-20 23:59:41.930 CST [21764] LOG:  checkpoint complete: wrote 15 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.353 s, total=0.576 s; sync files=8, longest=0.088 s, average=0.045 s; distance=11943 kB, estimate=20050 kB; lsn=3/F6BB91A8, redo lsn=3/F6BB9150
+
+2026-10-20 23:59:44.940 CST [5304] ERROR:  Review decisions are immutable
+2026-10-20 23:59:44.940 CST [5304] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-20 23:59:44.940 CST [5304] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-20 23:59:44.941 CST [5304] ERROR:  Frozen approval is immutable
+2026-10-20 23:59:44.941 CST [5304] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-20 23:59:44.941 CST [5304] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-20 23:59:45.094 CST [21764] LOG:  checkpoint starting: immediate force wait
+
+2026-10-20 23:59:45.752 CST [21764] LOG:  checkpoint complete: wrote 15 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.368 s, total=0.659 s; sync files=9, longest=0.086 s, average=0.041 s; distance=11931 kB, estimate=19238 kB; lsn=3/F775FFC8, redo lsn=3/F775FF70
+
+2026-10-20 23:59:50.708 CST [38440] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:50.708 CST [38440] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:50.966 CST [38440] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:50.966 CST [38440] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.079 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.079 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.286 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.286 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.403 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.403 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.519 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.519 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.645 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.645 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.781 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.781 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.889 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.889 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:51.999 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:51.999 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:52.134 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:52.134 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:52.260 CST [36544] ERROR:  permission denied for table codex_runtime_profiles
+2026-10-20 23:59:52.260 CST [36544] STATEMENT:  SELECT * FROM codex_runtime_profiles WHERE id=$1 FOR SHARE
+
+2026-10-20 23:59:52.324 CST [21764] LOG:  checkpoint starting: immediate force wait
+
+2026-10-20 23:59:53.119 CST [21764] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.427 s, total=0.795 s; sync files=10, longest=0.094 s, average=0.043 s; distance=12507 kB, estimate=18565 kB; lsn=3/F8396E78, redo lsn=3/F8396E20
+
+2026-10-20 23:59:53.227 CST [33196] FATAL:  database 5575274 does not exist
+
+2026-10-21 00:00:07.452 CST [36492] LOG:  received fast shutdown request
+
+2026-10-21 00:00:07.528 CST [36492] LOG:  aborting any active transactions
+
+2026-10-21 00:00:07.535 CST [36492] LOG:  background worker "logical replication launcher" (PID 38096) exited with exit code 1
+
+2026-10-21 00:00:07.535 CST [21764] LOG:  shutting down
+
+2026-10-21 00:00:07.577 CST [21764] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 00:00:07.826 CST [21764] LOG:  checkpoint complete: wrote 2 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.105 s, total=0.291 s; sync files=3, longest=0.038 s, average=0.035 s; distance=4 kB, estimate=16709 kB; lsn=3/F8397ED0, redo lsn=3/F8397ED0
+
+2026-10-21 00:00:08.015 CST [36492] LOG:  database system is shut down
+

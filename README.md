@@ -1,5 +1,20 @@
 # CopyPaste 交付与集成
 
+## 任务能力与费率冻结的持续核查（阶段 52）
+
+当前基础修复固定任务的 Codex、模型、推理强度和原费率，包含实际图片生成/编辑、管理员重试、撤销后结算、未知费用、私人隔离和有界数据库锁。当前专项及既有模板/私人流程 [35/35](evidence/capability-candidate-05.json)；[第四次 28/28](evidence/capability-candidate-04.json) 保留当时来源。前三次候选失败及[首次全量 434/435](evidence/capability-regression-01.json)的原始 TAP、SQL 和来源摘要分别保留。全量唯一失败是默认配置改变应取消旧任务的过时断言；修正后仍保持新委派和运行撤销守卫。第二次全量回归独立执行，不以专项替代。
+
+[两库 062→063 升级](evidence/capability-migrations.json)各保留 124 张原公共表、旧 SQL 字节及历史校验值。后台配置发布/回滚与用户版本确认仍在开发。
+
+[第二次全量 435/435](evidence/capability-regression-02.json)，714 份源码前后一致，失败、取消、跳过均为 0；[原始 TAP](evidence/capability-regression-02.tap) 和本次使用的 SQL 独立保存。原 424 项测试全部保留，其中一项明确改名并修正冻结版本语义；35 项专项与全量重叠，不累计为 470 项。自建 PostgreSQL 已关闭，原生窗口/侧栏预览字节继续独立跟踪。
+
+```powershell
+npm run qa:capabilities -- 06
+npm run qa:capability-regression -- 03
+```
+
+上述命令预留新的候选编号，不能覆盖已有回执。本机两库升级已完成，`upgrade:capabilities-local` 的升级前状态和重复执行守卫会拒绝再次升级；原命令 `npm run upgrade:capabilities-local -- 04` 随当时证据保留，不要求重新执行。以下阶段 51 及更早数据属于其时基线，不能充当阶段 52 全部当前源码证据。
+
 ## 限时只读客服协助 / Controlled support
 
 交付核查新增限时支持专项、两库 061→062 的完整旧行比较、真实 Web/Admin 授权/撤销/到期流程和原始截图；全量回归与原生窗口/右侧栏继续独立验收。所有原始需求、完整验收和生产门槛保留。

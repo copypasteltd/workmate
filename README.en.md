@@ -1,5 +1,20 @@
 # CopyPaste Delivery and Integration
 
+## Frozen task capability and pricing verification (stage 52)
+
+The current foundation freezes each task's Codex, model, reasoning effort and original rates, including actual image generation/editing, administrator retries, post-revocation settlement, unknown costs, private isolation and bounded database locks. Current focused suites and existing template/private workflows pass [35/35](evidence/capability-candidate-05.json). [Candidate 04 at 28/28](evidence/capability-candidate-04.json) retains its original source scope. Three failed candidates and the [first full run at 434/435](evidence/capability-regression-01.json) retain their original TAP, SQL and source manifests. Its sole failure required cancelling old tasks after a default configuration change; the corrected assertion retains new-delegation and active-revocation guards. A second full run executes separately.
+
+[Both native 062→063 upgrades](evidence/capability-migrations.json) preserve all 124 original public tables, prior SQL bytes and historical checksums. Administrative publication/rollback and visible customer version confirmation remain in progress.
+
+The [second full regression passes 435/435](evidence/capability-regression-02.json), with 714 unchanged sources, no failures, cancellations or skips, and independently retained [raw TAP](evidence/capability-regression-02.tap) and SQL bytes. All 424 original tests remain, with one explicitly mapped semantic rename. The 35 focused cases overlap the full run and are not added to its total. Owned PostgreSQL is stopped; native frameless/Side Panel preview bytes retain separate evidence.
+
+```powershell
+npm run qa:capabilities -- 06
+npm run qa:capability-regression -- 03
+```
+
+The commands reserve new attempt identifiers and never overwrite existing evidence. Both local upgrades are complete; `upgrade:capabilities-local` rejects repeated execution or missing pre-upgrade conditions. The executed `npm run upgrade:capabilities-local -- 04` remains part of the historical record and should not be repeated. Stage 51 and older figures below describe historical baselines, not all stage 52 current-source workflows.
+
 ## Controlled support update / 受控客服协助
 
 Delivery verification adds controlled-support suites, complete old-row comparison for the native 061→062 upgrade, actual Web/Admin grant/revocation/expiry journeys and unedited screenshots. Full regression and native frameless/Side Panel verification stay separate. All original requirements, complete acceptance conditions and production gates remain tracked.
