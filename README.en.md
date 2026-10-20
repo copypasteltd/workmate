@@ -295,4 +295,16 @@ The delivery repository's `npm run qa:sessions` covers actual Web, source Electr
 
 ## Admin suspension feedback
 
-Authorized member directories identify administrative suspension separately. A suspended member cannot access the workspace, and owner edits, removal/rejoin or new invitations cannot lift the hold. An authorized administrator must restore access. Strict Member.state remains active/removed; the management directory provides the additional label. This increment builds, while current page verification remains pending.
+Authorized member directories identify administrative suspension separately. A suspended member cannot access the workspace, and owner edits, removal/rejoin or new invitations cannot lift the hold. An authorized administrator must restore access. Strict Member.state remains active/removed; the management directory provides the additional label. Six current Admin UI groups now verify the owner notice, immediate suspension denial and notice removal on restoration; the complete native/admin matrix remains outstanding.
+
+## Current membership and cross-client sessions (2026-10-20)
+
+Delivery `qa:membership` passes 6/6 actual email invitation, resend, join, removal, revocation and delayed-context groups. Four actual Invite/Member/MemberList/Ack payloads pass the original strict schemas. `qa:admin-membership-ui` separately passes six groups including suspension/restoration and the owner's notice. `qa:sessions` passes twelve Web/source Electron/MV3 groups for committed exchange/refresh receipt recovery, remote revocation, account replacement, expired/offline sign-out and cross-tab cleanup. Owned instances and test credentials are cleared, with zero model calls. Original failures remain unchanged. Complete packaged, enterprise identity, system and native membership acceptance remain outstanding.
+
+![Current invitation and resend](assets/screenshots/60-membership-invitations-current.png)
+![Viewer joins the workspace](assets/screenshots/61-membership-viewer-current.png)
+![Current member directory](assets/screenshots/62-membership-directory-current.png)
+![Owner sees administrative suspension](assets/screenshots/63-membership-admin-suspended.png)
+![Actual native authorization](assets/screenshots/64-native-authorization-current.png)
+![Current device directory](assets/screenshots/65-active-sessions-current.png)
+![Dark small-screen sessions](assets/screenshots/66-sessions-mobile-dark-current.png)

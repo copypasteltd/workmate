@@ -314,12 +314,24 @@ Workspace refresh uses authenticated `GET /v1/session/context`; canonical `GET /
 
 ## 成员与邀请 / Members and invitations
 
-成员页支持角色和项目选择、分页、所有者编辑、移除确认，以及邀请投递状态、重发和撤销。邮件登录保留邀请地址并选择实际加入的企业。未知响应保留操作身份，退出后拒绝迟到的上下文响应。单元检查 5/5；当前服务端真实 HTTP 五组通过。最终页面复核超时，失败单列保留，自建实例关闭。早期成功报告被后续运行覆盖，不作为可复核验收证据。
+成员页支持角色和项目选择、分页、所有者编辑、移除确认，以及邀请投递状态、重发和撤销。邮件登录保留邀请地址并选择实际加入的企业。未知响应保留操作身份，退出后拒绝迟到的上下文响应。单元检查 5/5；当前服务端真实 HTTP 五组通过。此前页面复核超时与早期被覆盖的成功不计为通过，原失败记录保留。2026-10-20 当前源码页面 6/6 通过，155 份源码／verifier 前后一致，实际会话退出、自建浏览器关闭。新回执和截图见下文。
 
-The member page supports project selection, paging, owner edits, removal confirmation, delivery status, resend and revocation. Invite links survive email login and select the joined workspace. Unknown replies retain their operation identity; late context/member responses cannot cross a sign-in revision. Unit checks pass 5/5 and five current-source HTTP groups pass separately. Final-source page reruns timed out; owned browsers closed. The earlier successful receipt was overwritten and is excluded from auditable acceptance evidence.
+The member page supports project selection, paging, owner edits, removal confirmation, delivery status, resend and revocation. Invite links survive email login and select the joined workspace. Unknown replies retain their operation identity; late context/member responses cannot cross a sign-in revision. Unit checks pass 5/5 and five current-source HTTP groups pass separately. Earlier page timeouts and overwritten success remain historical and are excluded from passing evidence. The current-source rerun now passes 6/6 with 155 unchanged source/verifier files, actual session revocation and owned browser closure; new evidence appears below.
 
 ![早期实际成员页 / Earlier verified member page](assets/screenshots/53-member-invitations.png)
 
 ## 后台暂停的用户端反馈
 
-获授权的成员目录将后台暂停单独显示；暂停中的成员无法访问该企业，也不能由 owner 编辑、移除后重加或接受新邀请解除。恢复由当前获授管理员执行。严格 Member.state 继续只使用 active/removed，管理提示由额外目录字段提供。本轮提示已构建，页面复核待完成。
+获授权的成员目录将后台暂停单独显示；暂停中的成员无法访问该企业，也不能由 owner 编辑、移除后重加或接受新邀请解除。恢复由当前获授管理员执行。严格 Member.state 继续只使用 active/removed，管理提示由额外目录字段提供。当前六组 Admin 页面复核已验证 owner 提示、暂停即时拒绝和恢复后移除旧提示；完整原生／后台矩阵仍保留。
+
+## 当前成员与跨端会话复核（2026-10-20）
+
+Delivery `qa:membership` 当前 6/6，覆盖真实邮箱邀请／重发／加入／移除／撤销及迟到上下文拒绝；四份实际 Invite、Member、MemberList、Ack 严格通过。另有 `qa:admin-membership-ui` 6/6 验证管理暂停、恢复和本页 owner 提示。`qa:sessions` 的 Web／源码 Electron／MV3 十二组覆盖首次交换和刷新回执丢失恢复、设备撤销、账号切换、过期／离线退出及跨标签清理。自建实例和测试会话均关闭，模型调用 0；旧失败原字节保留。全部安装包／企业身份／系统及完整成员旅程仍须验收。
+
+![当前邀请与重发](assets/screenshots/60-membership-invitations-current.png)
+![viewer 加入工作区](assets/screenshots/61-membership-viewer-current.png)
+![当前成员目录](assets/screenshots/62-membership-directory-current.png)
+![owner 看到后台暂停](assets/screenshots/63-membership-admin-suspended.png)
+![实际原生授权页](assets/screenshots/64-native-authorization-current.png)
+![当前设备目录](assets/screenshots/65-active-sessions-current.png)
+![深色窄屏设备目录](assets/screenshots/66-sessions-mobile-dark-current.png)
