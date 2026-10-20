@@ -85,24 +85,29 @@ export async function provisionRoleSkills(
   project: string,
   user: string,
   forNew = true,
+  createMissing = true,
 ) {
   await projectLock(tx, project);
   const packages = await catalog.boundSkills(role);
   const out: any[] = [];
   for (const s of packages) {
     const versionId = skillVersionId(s.key, s.version, s.sha256);
-    await tx.query(
-      `INSERT INTO skill_installations(tenant_id,project_id,skill_version_id,created_by)
+    if (createMissing)
+      await tx.query(
+        `INSERT INTO skill_installations(tenant_id,project_id,skill_version_id,created_by)
       SELECT $1,$2,$3,$4 WHERE NOT EXISTS(SELECT 1 FROM skill_installations WHERE project_id=$2 AND skill_version_id=$3)`,
-      [tenant, project, versionId, user],
-    );
+        [tenant, project, versionId, user],
+      );
     const row = (
       await tx.query(
         "SELECT * FROM skill_installations WHERE project_id=$1 AND skill_version_id=$2 ORDER BY created_at DESC,id DESC LIMIT 1",
         [project, versionId],
       )
     ).rows[0];
-    if (!row || row.state !== "installed" || (forNew && !row.enabled))
+    if (
+      (createMissing && !row) ||
+      (row && (row.state !== "installed" || (forNew && !row.enabled)))
+    )
       throw new Problem(
         409,
         "SKILL_INSTALLATION_REQUIRED",
@@ -123,7 +128,8 @@ export async function provisionRoleSkills(
       );
     out.push({
       ...s,
-      installation_id: row.id,
+      installation_id: row?.id ?? null,
+      ...(!createMissing ? { installation_version: row?.version ?? null } : {}),
       skill_version_id: versionId,
       required: role.skill_bindings.find((b: any) => b.skill_key === s.key)
         .required,

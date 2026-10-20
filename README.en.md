@@ -1,5 +1,13 @@
 # CopyPaste Platform
 
+## Explicit adoption (stage 54)
+
+Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.
+
+Current backend regression: **484/484**, including all 462 prior named tests; focused **93/93** overlaps that total. Actual built Web: **12/12**; new packaged frameless Desktop and real native Chrome Side Panel: **11/11**. AI/media use the authorized simulated dependencies; identity, PostgreSQL, permissions and version transactions execute normally. All 102 original requirements remain tracked. Earlier sections below retain their historical source and artifact scope.
+
+Migration `065-explicit-agent-adoption.sql` is forward-only: tenant/actor RLS, column-limited consumption and bounded Skill locks. Both existing databases retain all 131 pre-existing public tables and SQL001–064 byte checksums. No historical adoption facts are fabricated. Main implementation: `src/agent-adoption.ts`; semantic integration coverage: `tests/agent-adoption.test.ts`.
+
 ## Controlled capabilities and Admin publishing (stage 53)
 
 Adds typed capability documents, pinned Codex/internal-gateway verification, independently approved publication/rollback, database-backed current versions and preservation of old task bindings. See `src/capability-releases.ts`, `src/capability-verification.ts` and [forward migration 064](migrations/064-controlled-capability-releases.sql). Current full regression 04 passes **462/462** with 726 unchanged sources and no failures, cancellations or skips, including all 435 original stage 52 tests. Candidate 11's 71/71 overlaps the full run and is not added to its total. Actual built-Admin browser run 06 passes 11/11 with 14 unedited screenshots; supplemental contract run 02 passes six checks.

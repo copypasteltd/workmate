@@ -1498,3 +1498,71 @@ test("exhausted verification cleanup has an authorized versioned idempotent retr
   assert.equal(publication.data.error.code, "CAPABILITY_VERIFICATION_REQUIRED");
   assert.ok(!canonical(after).includes("private-operating-system-error"));
 });
+
+test("publishing then rolling back to the same model identity still invalidates the customer's earlier comparison", async () => {
+  const operator = await administrator(),
+    reviewer = await administrator();
+  const first = (await draft(operator)).v;
+  assert.equal((await validate(operator, first)).state, "passed");
+  await publish(operator, reviewer, first);
+  const f = await fixture(),
+    definition = {
+      name: "Reviewed publication analyst",
+      role_key: "marketing-analyst",
+      instructions: "Initial brief",
+      brand_id: null,
+    };
+  const created = await call(f.owner, "POST", f.base + "/agents", definition);
+  assert.equal(created.status, 200, JSON.stringify(created.data));
+  const proposal = {
+    expected_version: 1,
+    definition: {
+      ...definition,
+      instructions: "Private proposed brief",
+      enabled: true,
+    },
+  };
+  const compared = await call(
+    f.owner,
+    "POST",
+    `${f.base}/agents/${created.data.id}/version-previews`,
+    proposal,
+  );
+  assert.equal(compared.status, 201, JSON.stringify(compared.data));
+  const original = compared.data.comparison.target.capabilities.find(
+    (c: any) => c.profile_key === "internal-text-v1",
+  ).id;
+  const second = (await draft(operator)).v;
+  assert.equal((await validate(operator, second)).state, "passed");
+  await publish(operator, reviewer, second);
+  await publish(operator, reviewer, first, true);
+  const current = await s.db.tx(
+    (tx) => s.catalog.currentCapabilities(tx),
+    undefined,
+    true,
+  );
+  assert.equal(current.get("internal-text-v1").id, original);
+  const stale = await call(
+    f.owner,
+    "GET",
+    `${f.base}/version-adoption-previews/${compared.data.id}`,
+  );
+  assert.equal(stale.status, 409);
+  assert.equal(stale.data.error.code, "ADOPTION_PREVIEW_STALE");
+  const confirmation = await call(
+    f.owner,
+    "POST",
+    `${f.base}/version-adoption-previews/${compared.data.id}/confirmations`,
+    { preview_hash: compared.data.preview_hash, proposal },
+  );
+  assert.equal(confirmation.status, 409);
+  assert.equal(confirmation.data.error.code, "ADOPTION_PREVIEW_STALE");
+  assert.equal(
+    (
+      await s.db.control.query("SELECT version FROM agents WHERE id=$1", [
+        created.data.id,
+      ])
+    ).rows[0].version,
+    1,
+  );
+});

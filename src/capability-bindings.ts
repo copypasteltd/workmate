@@ -31,6 +31,7 @@ const definition = z
   })
   .strict();
 type Definition = z.infer<typeof definition>;
+export const capabilityDefinition = definition;
 type Capability = {
   id: string;
   body: Definition;
@@ -202,6 +203,28 @@ async function resolve(
     text: text as TaskCapabilities["text"],
     ...(image?.ready ? { image: image as TaskCapabilities["image"] } : {}),
   };
+}
+
+/** Reuse the actual task protocol/rate/gateway checks before confirming an agent. */
+export async function confirmedAgentCapabilities(
+  tx: Tx,
+  c: Config,
+  catalog: Catalog,
+  body: any,
+) {
+  return resolve(
+    tx,
+    c,
+    {
+      mode: "ask",
+      role_key: body.role_key,
+      data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
+    },
+    catalog,
+    body.runtime_profile_id,
+    body.capability_version_ids,
+    true,
+  );
 }
 
 /** A task can never adopt today's prices or model while executing or settling. */

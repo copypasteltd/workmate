@@ -384,11 +384,19 @@ test("reinstalled methods need an explicit managed default version, while previo
     ).status,
     403,
   );
+  const proposal = { expected_version: 1 };
+  const compared = await call(
+    f.owner,
+    "POST",
+    `${f.base}/agents/${old.conversation.agent_id}/version-previews`,
+    proposal,
+  );
+  assert.equal(compared.status, 201, JSON.stringify(compared.data));
   const adopted = await ok(
     f.owner,
     "POST",
-    f.base + "/default-assistant/versions",
-    { expected_version: 1 },
+    `${f.base}/version-adoption-previews/${compared.data.id}/confirmations`,
+    { preview_hash: compared.data.preview_hash, proposal },
   );
   assert.equal(adopted.version, 2);
   assert.equal(

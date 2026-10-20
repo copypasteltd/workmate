@@ -82,6 +82,7 @@ export async function agentDefinition(
   project: string,
   tenant: string,
   user: string,
+  preview = false,
 ) {
   const role = catalog.role(b.role_key);
   const currentCapabilities = await catalog.currentCapabilities(tx);
@@ -94,6 +95,8 @@ export async function agentDefinition(
     tenant,
     project,
     user,
+    true,
+    !preview,
   );
   const tools = [...new Set(b.tool_ids ?? role.tool_ids)].sort();
   if (tools.some((t) => !role.tool_ids.includes(t)))
@@ -106,7 +109,7 @@ export async function agentDefinition(
   if (b.brand_id) {
     brand = (
       await tx.query(
-        "SELECT id,version FROM brand_profiles WHERE id=$1 AND project_id=$2",
+        "SELECT id,version FROM brand_profiles WHERE id=$1 AND project_id=$2 AND content_state='active' FOR SHARE",
         [b.brand_id, project],
       )
     ).rows[0];
@@ -132,6 +135,7 @@ export async function agentDefinition(
       installation_id: s.installation_id,
       skill_version_id: s.skill_version_id,
       required: s.required,
+      ...(preview ? { installation_version: s.installation_version } : {}),
     })),
   };
 }
@@ -193,6 +197,33 @@ export async function createSpecialist(
   );
   return getAgentVersion(tx, project, row.id, undefined, true);
 }
+/** Settings edits retain the reviewed template that originally created the agent. */
+export function retainTemplateProvenance<T extends object>(
+  definition: T,
+  previous: any,
+): T {
+  return {
+    ...definition,
+    ...Object.fromEntries(
+      ["template_version_id", "template_version", "preset_definition_hash"]
+        .filter((field) => previous[field] !== undefined)
+        .map((field) => [field, previous[field]]),
+    ),
+  };
+}
+
+function agentBindings(body: any) {
+  return {
+    runtime_profile_id: body.runtime_profile_id,
+    runtime_version: body.runtime_version,
+    capability_version_ids: [...(body.capability_version_ids ?? [])].sort(),
+    role_hash: body.role_hash,
+    skills: (body.skills ?? []).map(
+      ({ installation_version: _revision, ...skill }: any) => skill,
+    ),
+    brand: body.brand,
+  };
+}
 export async function getAgentVersion(
   tx: Tx,
   project: string,
@@ -215,12 +246,13 @@ export async function getAgentVersion(
     );
   return row;
 }
-async function defaultDefinition(
+export async function defaultDefinition(
   tx: Tx,
   catalog: Catalog,
   tenant: string,
   project: string,
   user: string,
+  preview = false,
 ) {
   const role = catalog.role("assistant");
   return agentDefinition(
@@ -235,6 +267,7 @@ async function defaultDefinition(
     project,
     tenant,
     user,
+    preview,
   );
 }
 async function defaultAssistant(
@@ -635,41 +668,11 @@ export function registerPersistentWork(
                 "VERSION_CONFLICT",
                 "Refresh the default assistant before adopting current methods",
               );
-            const body = await defaultDefinition(
-              tx,
-              catalog,
-              tenant,
-              project,
-              req.principal.id,
+            throw new Problem(
+              409,
+              "ADOPTION_PREVIEW_REQUIRED",
+              "Compare models, prices and methods before adopting a new default assistant version",
             );
-            const row = (
-              await tx.query(
-                "UPDATE agents SET version=version+1,updated_at=now() WHERE id=$1 RETURNING *",
-                [a.id],
-              )
-            ).rows[0];
-            await tx.query(
-              "INSERT INTO agent_versions(tenant_id,agent_id,version,body,created_by) VALUES($1,$2,$3,$4,$5)",
-              [tenant, row.id, row.version, body, req.principal.id],
-            );
-            await bindAgentSkills(
-              tx,
-              tenant,
-              project,
-              row.id,
-              row.version,
-              body.skills,
-            );
-            await audit(
-              tx,
-              req.principal,
-              "default_assistant.version",
-              row.id,
-              "succeeded",
-              { version: row.version },
-              tenant,
-            );
-            return { ...row, body };
           },
         );
       }, tenant);
@@ -849,13 +852,14 @@ export function registerPersistentWork(
             "VERSION_CONFLICT",
             "Refresh the specialist before saving changes",
           );
-        const definition = await agentDefinition(
+        const proposed = await agentDefinition(
           tx,
           catalog,
           b,
           project,
           tenant,
           req.principal.id,
+          true,
         );
         if (a.role_key !== b.role_key)
           throw new Problem(
@@ -863,6 +867,20 @@ export function registerPersistentWork(
             "ROLE_IMMUTABLE",
             "Copy a specialist to choose a different installed role",
           );
+        const previous = await getAgentVersion(tx, project, id);
+        if (
+          canonical(agentBindings(previous.body)) !==
+          canonical(agentBindings(proposed))
+        )
+          throw new Problem(
+            409,
+            "ADOPTION_PREVIEW_REQUIRED",
+            "Compare the models, prices and methods before adopting new bindings",
+          );
+        const definition = retainTemplateProvenance(
+          { ...proposed, skills: previous.body.skills },
+          previous.body,
+        );
         const updated = (
           await tx.query(
             "UPDATE agents SET name=$2,version=version+1,enabled=$3,updated_at=now() WHERE id=$1 RETURNING *",
@@ -1040,19 +1058,11 @@ export function registerPersistentWork(
             "Conversation changed; refresh before saving",
           );
         if (b.adopt_agent_version) {
-          const a = await getAgentVersion(
-            tx,
-            project,
-            c.agent_id,
-            undefined,
-            true,
+          throw new Problem(
+            409,
+            "ADOPTION_PREVIEW_REQUIRED",
+            "Compare the versions before changing the specialist used by this conversation",
           );
-          if (a.version !== b.adopt_agent_version)
-            throw new Problem(
-              409,
-              "VERSION_CONFLICT",
-              "Adopt the current specialist version explicitly",
-            );
         }
         const updated = (
           await tx.query(

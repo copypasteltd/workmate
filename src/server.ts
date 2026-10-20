@@ -40,6 +40,7 @@ import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
 import { registerPersistentWork } from "./persistent-work.js";
+import { registerAgentAdoption } from "./agent-adoption.js";
 import { registerAdminIdentities } from "./admin-identities.js";
 import { registerSchedules } from "./schedules.js";
 import { registerFederation } from "./federation.js";
@@ -346,6 +347,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTasks(app, db, catalog);
   registerTaskEvents(app, db);
   registerPersistentWork(app, db, catalog);
+  registerAgentAdoption(app, db, catalog);
   registerAgentTemplates(app, db, catalog);
   registerSkillLifecycle(app, db, catalog);
   registerNotifications(app, db);

@@ -9,6 +9,7 @@ export const retentionPolicy = {
   task_events_days: 30,
   notification_days: 30,
   replay_result_days: 7,
+  adoption_comparison_hours: 24,
   runtime_cache: "remove_after_terminal",
   financial_audit_minimum_days: 365,
   online_erasure_target_hours: 24,
@@ -42,6 +43,13 @@ export class RetentionService {
         )
           return null;
         const counts: Record<string, number> = {};
+        counts.adoption_previews =
+          (
+            await tx.query(
+              "DELETE FROM agent_adoption_previews WHERE id IN (SELECT id FROM agent_adoption_previews WHERE expires_at<now()-interval '24 hours' ORDER BY expires_at,id FOR UPDATE SKIP LOCKED LIMIT $1)",
+              [limit],
+            )
+          ).rowCount ?? 0;
         for (const [table, column, condition] of [
           ["assets", "state", "true"],
           ["creative_projects", "content_state", "true"],

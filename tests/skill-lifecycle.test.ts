@@ -433,11 +433,53 @@ test("uninstall and explicit reinstall create a new identity without reviving qu
   );
   assert.equal(old.status, 409);
   assert.equal(old.data.error.code, "AGENT_SKILL_BINDING_CHANGED");
-  const updated = await ok(f.owner, "PATCH", f.base + "/agents/" + f.agent.id, {
+  const settings = {
     name: f.agent.name,
     role_key: "fullstack",
     expected_version: 1,
-  });
+  };
+  const bypass = await call(
+    f.owner,
+    "PATCH",
+    f.base + "/agents/" + f.agent.id,
+    settings,
+  );
+  assert.equal(bypass.status, 409);
+  assert.equal(bypass.data.error.code, "ADOPTION_PREVIEW_REQUIRED");
+  const proposal = {
+    expected_version: 1,
+    definition: {
+      name: f.agent.name,
+      role_key: "fullstack",
+      instructions: "",
+      brand_id: null,
+      enabled: true,
+    },
+  };
+  const preview = await call(
+    f.owner,
+    "POST",
+    f.base + `/agents/${f.agent.id}/version-previews`,
+    proposal,
+  );
+  assert.equal(preview.status, 201, JSON.stringify(preview.data));
+  assert.equal(
+    (
+      await s.db.control.query("SELECT version FROM agents WHERE id=$1", [
+        f.agent.id,
+      ])
+    ).rows[0].version,
+    1,
+  );
+  const updated = await ok(
+    f.owner,
+    "POST",
+    f.base + `/version-adoption-previews/${preview.data.id}/confirmations`,
+    {
+      preview_hash: preview.data.preview_hash,
+      proposal,
+    },
+  );
   assert.equal(updated.version, 2);
   const fresh = await ok(f.owner, "POST", f.base + "/conversations", {
     name: "New binding",

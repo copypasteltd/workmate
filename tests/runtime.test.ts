@@ -201,6 +201,7 @@ test(
     });
     const events: any[] = [];
     let toolCalls = 0;
+    let observed: Record<string, unknown> = {};
     try {
       const context: RuntimeContext = {
         taskId: "protocol-fixture",
@@ -236,6 +237,14 @@ test(
         ],
       };
       const result = await new CodexRuntimeAdapter(c).start(context);
+      observed = {
+        stage: "first_turn",
+        status: result.status,
+        usage_known: result.usageKnown,
+        input_tokens: result.inputTokens,
+        output_tokens: result.outputTokens,
+        tool_calls: toolCalls,
+      };
       assert.equal(result.status, "completed");
       assert.match(result.text, /Protocol fixture delivered/);
       assert.equal(result.usageKnown, true);
@@ -288,6 +297,14 @@ test(
       );
       // New adapter/process, same CODEX_HOME. No dynamicTools on thread/resume.
       const next = await new CodexRuntimeAdapter(c).start(resume);
+      observed = {
+        stage: "resumed_turn",
+        status: next.status,
+        usage_known: next.usageKnown,
+        input_tokens: next.inputTokens,
+        output_tokens: next.outputTokens,
+        tool_calls: toolCalls,
+      };
       assert.equal(next.thread, result.thread);
       assert.notEqual(next.turn, result.turn);
       assert.equal(next.status, "completed");
@@ -406,8 +423,12 @@ test(
       );
       assert.equal(calls.length, 12);
     } catch (e: any) {
+      const safe = (v: unknown) =>
+        typeof v === "number" || typeof v === "boolean"
+          ? v
+          : "not a numeric/boolean assertion";
       throw new Error(
-        `${e.code ?? e.message}; observed stages: ${events.map((e) => e.kind).join(",")}; fixture HTTP calls: ${calls.length}`,
+        `${e.code ?? "RUNTIME_TEST_FAILURE"}; assertion: ${e.operator ?? "runtime"}; actual: ${safe(e.actual)}; expected: ${safe(e.expected)}; observed: ${JSON.stringify(observed)}; observed stages: ${events.map((e) => e.kind).join(",")}; fixture HTTP calls: ${calls.length}`,
       );
     } finally {
       server.closeAllConnections();
