@@ -374,15 +374,15 @@ try {
   requirePlatform("ajv-formats")(ajv);
   ajv.addKeyword({ keyword: "components", schemaType: "object" });
   ajv.addSchema({ $id: "original", components: spec.components });
-  const validateOperation = ajv.compile({
-    $ref: "original#/components/schemas/AdminOperation",
-  });
+  const validators = new Map<string, any>();
   check = (schema, data) => {
-    assert.equal(schema, "AdminOperation");
-    assert.ok(
-      validateOperation(data),
-      JSON.stringify(validateOperation.errors),
-    );
+    if (!validators.has(schema))
+      validators.set(
+        schema,
+        ajv.compile({ $ref: `original#/components/schemas/${schema}` }),
+      );
+    const validate = validators.get(schema);
+    assert.ok(validate(data), JSON.stringify(validate.errors));
   };
   const admins = [];
   for (let n = 0; n < 2; n++) {
@@ -530,18 +530,36 @@ try {
   });
   await review.getByText("active / admin", { exact: true }).waitFor();
   await review
-    .getByLabel("Reason", { exact: true })
-    .fill("Self review must be rejected");
-  const [self] = await Promise.all([
-    actor.waitForResponse(
-      (r) =>
-        new URL(r.url()).pathname ===
-        `/v1/admin/operations/${pendingId}/decision`,
-    ),
-    review.getByRole("button", { name: "Confirm action", exact: true }).click(),
-  ]);
-  assert.equal(self.status(), 403);
-  await review.getByRole("alert").waitFor();
+    .getByText("Another administrator must review this operation.", {
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await review
+      .getByRole("button", { name: "Confirm review decision", exact: true })
+      .count(),
+    0,
+  );
+  const frozen = await browserAPI(
+    actor,
+    `/v1/admin/operations/${pendingId}/approval`,
+  );
+  assert.equal(frozen.status, 200);
+  check("AdminApproval", frozen.data);
+  assert.notEqual(frozen.data.id, pendingId);
+  const self = await browserAPI(
+    actor,
+    `/v1/admin/approvals/${frozen.data.id}/decisions`,
+    "POST",
+    {
+      expected_version: frozen.data.version,
+      payload_hash: frozen.data.payload_hash,
+      decision: "approve",
+      reason: "Actual self-review must be rejected",
+    },
+  );
+  assert.equal(self.status, 403);
+  assert.equal(self.data.code, "SELF_APPROVAL_FORBIDDEN");
   assert.equal(
     (await db.query("SELECT role FROM memberships WHERE id=$1", [membership]))
       .rows[0].role,
@@ -549,7 +567,7 @@ try {
   );
   await actor.keyboard.press("Escape");
   pass(
-    "privileged role changes remain unapplied, navigate to their exact pending operation, and visible self-approval is rejected",
+    "privileged role changes remain unapplied, navigate to their actual request, hide self-approval in the UI and reject an actual self-review API request",
   );
   stage = "independent frozen-command review and actual approval";
   await reviewer.goto(`${admin}/audit?view=approvals&search=${pendingId}`, {
@@ -567,18 +585,45 @@ try {
     "copypaste-admin",
     "30-membership-independent-review.png",
   );
+  await review.getByLabel("Decision", { exact: true }).selectOption("approve");
   await review
-    .getByLabel("Reason", { exact: true })
+    .getByLabel("Review reason", { exact: true })
     .fill("Independent operator reviewed frozen role and project scope");
   const [approved] = await Promise.all([
     reviewer.waitForResponse(
       (r) =>
         new URL(r.url()).pathname ===
-        `/v1/admin/operations/${pendingId}/decision`,
+        `/v1/admin/approvals/${frozen.data.id}/decisions`,
     ),
-    review.getByRole("button", { name: "Confirm action", exact: true }).click(),
+    review
+      .getByRole("button", { name: "Confirm review decision", exact: true })
+      .click(),
   ]);
-  assert.equal(approved.status(), 200);
+  assert.equal(approved.status(), 202);
+  check("AdminApprovalDecision", approved.request().postDataJSON());
+  sample(
+    "member-canonical-approval",
+    "decideAdminApproval",
+    await approved.json(),
+  );
+  const queue = await browserAPI(reviewer, "/v1/admin/approvals?limit=100");
+  assert.equal(queue.status, 200);
+  check("AdminApprovalList", queue.data);
+  assert.ok(
+    queue.data.items.some(
+      (a: any) =>
+        a.id === frozen.data.id &&
+        a.operation_id === pendingId &&
+        a.state === "approved",
+    ),
+  );
+  samples.push({
+    name: "canonical-member-approval-directory",
+    operation: "listAdminApprovals",
+    schema: "AdminApprovalList",
+    status: 200,
+    response: queue.data,
+  });
   const actual = await browserAPI(
     reviewer,
     `/v1/admin/operations/${pendingId}`,
@@ -590,6 +635,15 @@ try {
     "getAdminOperation",
     actual.data,
     200,
+  );
+  await reviewer.goto(`${admin}/audit?view=approvals`, {
+    waitUntil: "domcontentloaded",
+  });
+  await reviewer.getByText(frozen.data.id, { exact: true }).waitFor();
+  await shot(
+    reviewer,
+    "copypaste-admin",
+    "32-canonical-approval-directory.png",
   );
   pendingId = "";
   const latest = (
@@ -646,11 +700,18 @@ try {
   clearTimeout(deadline);
   if (pendingId && reviewer) {
     try {
+      const frozen = await browserAPI(
+        reviewer,
+        `/v1/admin/operations/${pendingId}/approval`,
+      );
+      assert.equal(frozen.status, 200);
       const result = await browserAPI(
         reviewer,
-        `/v1/admin/operations/${pendingId}/decision`,
+        `/v1/admin/approvals/${frozen.data.id}/decisions`,
         "POST",
         {
+          expected_version: frozen.data.version,
+          payload_hash: frozen.data.payload_hash,
           decision: "reject",
           reason: "Cancel this owned unfinished verification operation",
         },
@@ -771,7 +832,7 @@ try {
         ? "passed"
         : "failed",
     scope:
-      "Current source Admin membership form, supplementary frozen preview/review, exact operation navigation, independent approval and Web owner notice only; not complete normative approval directory, native journeys or full acceptance",
+      "Current source Admin membership form, supplementary frozen preview/review, exact operation navigation, independent approval and Web owner notice only; not full native journeys or full acceptance",
     model_calls: 0,
     checks,
     errors,

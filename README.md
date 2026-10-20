@@ -430,3 +430,11 @@ The real HTTP billing check uses owned email/TOTP sessions and synthetic interna
 首次 Web 恢复因退出请求缺少幂等头仍记失败；首次 Admin 页面因 schema 注册和清理枚举错误仍记失败。原 JSON／样本／截图和后续实际凭证清理分别保存在 `membership-ui-first-recovery/`、`admin-membership-ui-initial/`。不以新结果覆盖旧失败，也不声称查明旧启动超时的唯一根因。
 
 新增八份实际规范样本加入中央原始 schema 核查，总计 89/89。原全量平台 291/291、源码 664 份及原始 TAP 未变化。源码十二组认证与原生预览十组窗口／侧栏外观证据独立；完整安装包认证、系统／DPI、SSO、原生成员、生产邮件与全部 TC/NFR/G01–G10 仍在范围内。详见主文档 `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`。
+
+## 统一后台审批复核（2026-10-20）
+
+Platform 与 Admin 现有待审批业务共用真实独立请求、原始规范游标目录及四字段决定。`npm run qa:admin-membership-ui` 验证实际邮箱/TOTP 双人登录、暂停/恢复、准确请求定位、自批 UI 防护及服务器拒绝、另一人以原始版本/摘要批准，并捕获规范列表和操作响应。`npm run qa:admin-fees` 复查三项费用表单及独立审批；`npm run qa:admin-account-ui` 复查账户表单及自批防护。原生认证与 Web 成员另按既有脚本复跑。
+
+此前通过的源码快照与截图保存在 `evidence/stage42-before-unified-approvals/`；所有本轮原始失败 TAP 保留。完整付款、退款、VIP、财务通知及全体系验收仍待完成，Desktop/扩展已绑定预览字节未因后台改动重打包。
+
+本轮平台 303/303（669 份源码一致），共享审批及旧库升级专项 53/53；Web 成员 6/6、Admin 成员 6/6、费用 4/4、账户 5/5、Web/源码 Electron/MV3 认证 12/12。原规范响应校验 91/91。相互重叠的验证不重复加入平台测试总数。完整 102 项综合验收继续按 docs 逐项跟踪。

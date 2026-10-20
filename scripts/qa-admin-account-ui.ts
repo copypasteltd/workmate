@@ -26,6 +26,8 @@ let server: BrowserServer | undefined,
   browser: Browser | undefined,
   db: any,
   principal: string | undefined,
+  cleanupReviewerId: string | undefined,
+  cleanupReviewer: Page | undefined,
   user: string | undefined,
   closed = false,
   stage = "initializing";
@@ -123,6 +125,45 @@ try {
   await page.locator('input[name="code"]').fill(otp);
   await verifyAdmin(page, secret.base32);
   await page.waitForURL("**/overview");
+  // Cleanup must use an actual independent reviewer, rather than directly
+  // cancelling an operation while leaving its approval request pending.
+  const cleanupEmail = `account-ui-reviewer-${randomUUID()}@example.invalid`,
+    cleanupSecret = new OTPAuth.Secret({ size: 20 });
+  cleanupReviewerId = (
+    await db.query(
+      "INSERT INTO admin_principals(email,name,totp_secret) VALUES($1,'Synthetic account cleanup reviewer',$2) RETURNING id",
+      [cleanupEmail, seal(env.MASTER_KEY!, cleanupSecret.base32)],
+    )
+  ).rows[0].id;
+  await db.query(
+    "INSERT INTO admin_bindings(principal_id,role_key,scope_kind) VALUES($1,'super_admin','global')",
+    [cleanupReviewerId],
+  );
+  const reviewerContext = await browser.newContext({
+    viewport: { width: 1440, height: 1080 },
+  });
+  contexts.push(reviewerContext);
+  reviewerContext.setDefaultTimeout(15000);
+  await reviewerContext.addInitScript(() => {
+    localStorage.setItem("cp_locale", "en");
+    localStorage.setItem("cp_theme", "light");
+  });
+  cleanupReviewer = await reviewerContext.newPage();
+  await cleanupReviewer.goto("http://localhost:4318", {
+    waitUntil: "domcontentloaded",
+  });
+  await cleanupReviewer.getByLabel("Administrator email").fill(cleanupEmail);
+  const cleanupCode = await emailCode(
+    cleanupReviewer,
+    () =>
+      cleanupReviewer!
+        .getByRole("button", { name: "Send admin sign-in code", exact: true })
+        .click(),
+    true,
+  );
+  await cleanupReviewer.locator('input[name="code"]').fill(cleanupCode);
+  await verifyAdmin(cleanupReviewer, cleanupSecret.base32);
+  await cleanupReviewer.waitForURL("**/overview");
   pass("actual email and TOTP Admin sign-in into the current built dashboard");
   stage = "profile preview and confirmation";
   await page.goto(`http://localhost:4318/users/${user}`, {
@@ -223,12 +264,16 @@ try {
   await review.getByText("Requested state", { exact: true }).waitFor();
   await screenshot(page, "55-account-closure-review.png");
   await review
-    .getByLabel("Reason", { exact: true })
-    .fill("Self-review must be refused");
-  await review
-    .getByRole("button", { name: "Confirm action", exact: true })
-    .click();
-  await review.getByRole("alert").waitFor();
+    .getByText("Another administrator must review this operation.", {
+      exact: true,
+    })
+    .waitFor();
+  assert.equal(
+    await review
+      .getByRole("button", { name: "Confirm review decision", exact: true })
+      .count(),
+    0,
+  );
   assert.equal(
     (
       await db.query("SELECT state FROM admin_operations WHERE id=$1", [
@@ -238,7 +283,7 @@ try {
     "pending_approval",
   );
   pass(
-    "closure stays pending, review renders the exact frozen command and self-approval is rejected visibly",
+    "closure stays pending, review renders the exact frozen command and the UI prevents self-approval",
   );
   await page.keyboard.press("Escape");
   stage = "responsive themes and labels";
@@ -282,6 +327,57 @@ try {
 } catch (e) {
   errors.push(stage + ": " + (e as Error).message);
 } finally {
+  clearTimeout(deadline);
+  if (db && principal) {
+    try {
+      const pending = (
+        await db.query(
+          "SELECT a.* FROM admin_approval_requests a JOIN admin_operations o ON o.id=a.operation_id WHERE o.principal_id=$1 AND o.state='pending_approval' AND a.state='pending'",
+          [principal],
+        )
+      ).rows;
+      for (const request of pending) {
+        assert.ok(
+          cleanupReviewer,
+          "No independently authenticated cleanup reviewer",
+        );
+        const result = await cleanupReviewer.evaluate(
+          async (request) => {
+            const module = "/src/api.ts";
+            const { api } = await import(module);
+            return api(`/v1/admin/approvals/${request.id}/decisions`, {
+              method: "POST",
+              headers: { "Idempotency-Key": crypto.randomUUID() },
+              body: JSON.stringify({
+                expected_version: request.version,
+                payload_hash: request.payload_hash,
+                decision: "reject",
+                reason:
+                  "Close this owned unexecuted account verification request",
+              }),
+            });
+          },
+          {
+            id: request.id,
+            version: request.version,
+            payload_hash: request.payload_hash,
+          },
+        );
+        assert.equal(result.state, "cancelled");
+        assert.equal(
+          (
+            await db.query(
+              "SELECT state FROM admin_approval_requests WHERE id=$1",
+              [request.id],
+            )
+          ).rows[0].state,
+          "rejected",
+        );
+      }
+    } catch (e) {
+      errors.push("Owned approval cleanup: " + (e as Error).message);
+    }
+  }
   try {
     await Promise.race([
       Promise.all(contexts.map((c) => c.close())),
@@ -301,21 +397,18 @@ try {
     await server?.kill();
     closed = true;
   }
-  clearTimeout(deadline);
   if (db) {
     try {
-      if (principal) {
+      for (const ownedPrincipal of [principal, cleanupReviewerId].filter(
+        Boolean,
+      )) {
         await db.query(
           "UPDATE sessions SET revoked_at=coalesce(revoked_at,now()) WHERE admin_id=$1",
-          [principal],
+          [ownedPrincipal],
         );
         await db.query(
           "UPDATE admin_principals SET status='suspended',auth_version=auth_version+1,version=version+1 WHERE id=$1",
-          [principal],
-        );
-        await db.query(
-          "UPDATE admin_operations SET state='cancelled',version=version+1 WHERE principal_id=$1 AND state='pending_approval'",
-          [principal],
+          [ownedPrincipal],
         );
       }
     } catch {

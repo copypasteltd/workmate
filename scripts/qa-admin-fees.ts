@@ -128,6 +128,15 @@ const contexts: BrowserContext[] = [],
   screenshots: string[] = [];
 const admins: { c: Client; id: string }[] = [];
 const sourcePaths = [
+  "copypaste-platform/src/admin-approvals.ts",
+  "copypaste-platform/src/admin-approval-storage.ts",
+  "copypaste-platform/src/admin-accounts.ts",
+  "copypaste-platform/src/admin-memberships.ts",
+  "copypaste-platform/src/admin-directory.ts",
+  "copypaste-platform/src/admin-operation-policy.ts",
+  "copypaste-platform/src/worker.ts",
+  "copypaste-platform/src/auth.ts",
+  "copypaste-platform/migrations/048-unified-admin-approvals.sql",
   "copypaste-platform/src/admin-fees.ts",
   "copypaste-platform/src/admin-billing.ts",
   "copypaste-platform/src/admin-operations.ts",
@@ -139,6 +148,7 @@ const sourcePaths = [
   "copypaste-platform/migrations/046-financial-preview-intent-repair.sql",
   "copypaste-platform/migrations/047-financial-approval-requests.sql",
   "copypaste-admin/src/fees.tsx",
+  "copypaste-admin/src/approvals.tsx",
   "copypaste-admin/src/financial-money.ts",
   "copypaste-admin/src/main.tsx",
   "copypaste-admin/src/ui.tsx",
@@ -544,6 +554,7 @@ try {
     "decideAdminApproval",
     "AdminOperation",
     { status: approved.status(), data: await approved.json() },
+    202,
   );
   await d.getByText("Completed", { exact: true }).waitFor();
   const ledger = (
@@ -644,7 +655,7 @@ try {
     try {
       const pending = (
         await db.query(
-          "SELECT r.* FROM admin_fee_approval_requests r JOIN admin_operations o ON o.id=r.operation_id WHERE o.principal_id=ANY($1::uuid[]) AND o.state='pending_approval' AND r.state='pending'",
+          "SELECT r.* FROM admin_approval_requests r JOIN admin_operations o ON o.id=r.operation_id WHERE o.principal_id=ANY($1::uuid[]) AND o.state='pending_approval' AND r.state='pending'",
           [principals],
         )
       ).rows;
@@ -663,7 +674,7 @@ try {
             reason: "Close unexecuted synthetic QA request",
           },
         );
-        assert.equal(result.status, 200, JSON.stringify(result.data));
+        assert.equal(result.status, 202, JSON.stringify(result.data));
       }
     } catch {
       errors.push("Owned financial approval cleanup failed");
