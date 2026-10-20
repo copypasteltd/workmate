@@ -1,0 +1,343 @@
+# CopyPaste Web
+
+[简体中文](README.md) · Enterprise cloud workspace · 0.5.0
+
+A Web client for Hong Kong enterprise marketing teams, using CopyPaste's warm white, ink and blue palette, serif display typography, Traditional Chinese/English and light/dark/system themes. Customer deliverables retain the customer's brand. This repository builds independently and obtains data from the platform API.
+
+![Landing page](assets/screenshots/01-landing.png)
+
+## Run and deploy
+
+Requires Node.js 22.14+. Start the platform database/API first, then:
+
+```powershell
+npm ci
+npm run dev
+```
+
+Visit `http://localhost:4317`. Vite proxies `/v1` and `/health` to `127.0.0.1:4310`. All tools run natively; Docker, WSL and virtualization are prohibited.
+
+```powershell
+npm run typecheck
+npm run build
+npm run preview
+```
+
+Deploy `dist/` as static assets over HTTPS, preferably reverse-proxying `/v1` on the Web origin to the API. SPA pages fall back to `index.html`; API paths must not. Optional build-time `VITE_API_BASE` is documented in `.env.example`. If using a separate API origin, configure exact `WEB_ORIGIN`, cookie and CORS rules. Never place AI keys in public `VITE_*` variables.
+
+## Customer journey
+
+```mermaid
+flowchart LR
+  L[Landing] --> A[Email OTP]
+  A --> W[Workspace and first project]
+  W --> H[Workbench]
+  H --> R[18 presets and persistent specialists]
+  R --> C[Private conversation and scoped memory]
+  C --> T[Ask, plan or execute with a budget]
+  T --> X[Platform execution, events and cancellation]
+  X --> O[Versioned deliverables and downloads]
+  H --> M[Assets, brand and campaign data]
+  H --> F[Approval workflows and local devices]
+  H --> U[Entitlements, usage and members]
+```
+
+New customers verify a work email, create their organization and first project, then enter the workbench. Returning customers select an existing workspace/project. Invitations bind email and project. Expired/invalid codes, throttling, expired sessions, inaccessible resources and unavailable models surface real API errors.
+
+Development OTPs are available only in platform `.data/mailbox/`; production uses SMTP. No default user credentials exist. Native authorization reuses this identity through an independent PKCE flow rather than converting browser cookies to bearer tokens.
+
+## Pages
+
+| Area           | Working behavior                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| Workbench      | Project selection, specialists, recent tasks, published help/announcements and service availability |
+| Specialists    | 18 presets with bound Skills, inputs, outputs and current availability                              |
+| Projects/tasks | Project creation, budgeted tasks, status/events/output and cancellation                             |
+| Creative       | Editable JSON text/shape/pinned-PNG layers, versioned edits, SVG/PNG/template MP4 export            |
+| Assets         | Explicit uploads, thumbnails, immutable versions, downloads, rename and expiring/revocable shares   |
+| Analytics      | CSV ingestion, exact aggregate metrics, dataset detail and submitted-HTML SEO checks                |
+| Workflows      | Bounded analytics/Codex/approval steps, publish/run/approve                                         |
+| Brand          | Colors, tone, fonts and approved copy                                                               |
+| Members        | Invitations, organization roles, project scope, updates/removal and last-owner protection           |
+| Connections    | Google Ads/GA4/Search Console/Meta OAuth and explicit-account report synchronization                |
+| Devices        | Paired devices, expiring folder grants, explicit local command dispatch and results                 |
+| Usage/settings | Separate wallet and effective plan limits, charges, language/theme/profile                          |
+
+![Workbench](assets/screenshots/03-workspace.png)
+![Assets](assets/screenshots/03-assets.png)
+![Analytics in dark mode](assets/screenshots/04-analytics-dark.png)
+
+## Specialists and private work
+
+Create a specialist from an installed role, set instructions, brand and tools, then start a private conversation. Specialist edits are versioned; conversations retain their selected version until you explicitly adopt an update. Notes save without AI. Ask and plan use reading tools, while execute can create deliverables. Execution of a plan requires approval against the current context and budget.
+
+Conversations support search, pin, rename, archive/unarchive and version-checked deletion. Messages, tasks and outputs remain owner-private. Explicit publication creates a shared project copy. Workspace/brand/project/conversation/personal memories have content versions and optional expiry. Personal and conversation memory remain private. Deletion requires confirmation and completed or cancelled/settled work.
+
+The 390px mobile layout and dark theme were exercised in a real browser. A closed mobile sidebar is removed from keyboard navigation. The platform rechecks authentication, access and billing on each request.
+
+![Specialists](assets/screenshots/06-persistent-specialists.png)
+![Private conversation](assets/screenshots/07-private-conversation.png)
+![Memory preferences](assets/screenshots/08-memory-preferences.png)
+![Dark conversation](assets/screenshots/10-conversation-dark.png)
+
+## Product and authorization rules
+
+The API is authoritative for access, billing and entitlements. Hidden controls are not authorization. VIP and wallet balances are separate; personal/workspace entitlements use actual validity timestamps. Unconfigured company AI is explicitly unavailable. Installed presets are not proof of qualified live business work.
+
+All AI requests run through the platform and company internal gateway. This client holds no model keys. Browsers do not gain silent disk access: files require a user picker, and persistent folder access requires the Desktop native bridge with individual grants.
+
+`api.ts` uses credentialed requests/CSRF on Web and narrow IPC in the Desktop snapshot. Local storage contains theme/locale preferences, not authentication or model secrets. Published help/announcements render as text rather than injected HTML.
+
+## Verification and maintenance
+
+`npm test` performs type checking. The delivery repository's `npm run qa:web` and `npm run qa:persistent` exercise actual email login/onboarding, 13 workspace modules, 16 Admin pages, dark/light and mobile viewports. Screenshots use real UI/API/PostgreSQL with fictional fixture businesses and `.invalid` emails.
+
+Routes/pages live in `src/main.tsx`; context handles identity/workspace/theme/locale; `api.ts` owns transport; `native-files.tsx` is the native-file panel; `ui.tsx` and `style.css` are self-contained UI foundations. Desktop imports an explicit renderer snapshot rather than requiring sibling source during builds.
+
+Company gateway, SMTP, advertising OAuth and S3 still require deployment configuration and live qualification. SAML/SCIM, mandatory SSO policies, event triggers, parallel specialist teams, collaborative editing and full AI video/speech are unfinished. Polling is not full planned SSE. Submitted-HTML SEO checks do not promise GEO rankings.
+
+Self-hosted Manrope/Fraunces, Lucide icons and the generated blue-fold artwork are documented in [third-party notices](THIRD_PARTY_NOTICES.md). Master requirements remain in the delivery root's `docs/`.
+
+## Cloud schedules
+
+Version 0.4.0 adds daily/weekly calendars to Workflows. Select a published workflow, IANA zone, weekdays and missed-run policy, preview local/UTC times and per-run budget, then explicitly authorize. The server continues after the page closes and retains version/occurrence history. One unfinished run prevents overlap, including approval gates and uncertain charges.
+
+Users can edit, pause, reauthorize/resume or retire calendars. Pausing preserves current work; run history provides separate cancellation. Changes affect future work and paused intervals are skipped. End dates are exclusive; nonexistent DST times are skipped and repeated times run once at their first instant. Platform checks enforce these rules. See `src/schedules.tsx`; Delivery `qa:schedules` verifies actual-clock execution with the user page closed and mobile controls.
+
+![Actual cloud workflow schedules](assets/screenshots/15-cloud-schedules.png)
+
+## 0.5.0 company identity and unified sign-in
+
+OIDC uses code + PKCE S256, signature verification, state/nonce and a fixed callback. An existing registered account and active workspace membership are required. First binding requires a separate CopyPaste work-email code; domains never auto-enroll users. Configuration changes, disablement or unlinking revoke all linked users’ CopyPaste browser/native/refresh sessions and prior execution authorization. Administrator email and TOTP remain separate.
+
+`/login` offers company identity; `/sso` accepts a company sign-in key and work email; `/sso/confirm` performs first-link email proof. Account settings list owned connections and explicitly confirm signing out everywhere on disconnect. Native `/authorize` callback and PKCE parameters survive SSO, followed by explicit user consent.
+
+```mermaid
+flowchart LR
+  Member[Existing workspace member] --> IdP[Signed OIDC and PKCE]
+  IdP --> Proof[First-link email proof]
+  Proof --> Web[CopyPaste session]
+  Web --> Native[Explicit native consent and PKCE]
+  Revoke[Disable or unlink] --> All[Revoke browser and native credentials]
+```
+
+![Actual company identity interface](assets/screenshots/17-company-sign-in.png)
+
+## File and execution repairs in progress
+
+A persistent banner identifies synthetic data and lets a workspace Owner claim one demo gift. Uploads verify part and whole-file SHA-256, support pause/cancel and resume after a lost connection and reload. Limits are 100 MiB for ordinary files and 1 GiB for media. Assets show retention expiry; permanent deletion requires confirmation and has queryable cleanup progress. Task activity uses durable SSE with sequence-based reconnection and current authorization checks.
+
+These are unpublished source changes. Full 1 GiB transfers, all clients and S3 remain to be qualified. The master alignment report records exact coverage and outstanding work.
+
+![Interrupted upload](assets/screenshots/19-upload-interrupted.png)
+![Resumed upload](assets/screenshots/20-upload-resumed.png)
+![Erasure progress](assets/screenshots/17-erasure-progress.png)
+![Real Codex with labelled synthetic dependencies](assets/screenshots/21-live-task-events.png)
+
+## Cloud files (current source)
+
+Shared project and private conversation workspaces support search, folders, exact asset-version references, rename/move, text and small bitmap previews, authorized downloads, confirmed publication of copies and entry removal. Conversation uploads remain private; coding roles can continue persistent working sources in later tasks.
+
+Four browser QA groups cover these flows, two real Codex tasks driven by synthetic dependencies, four viewport widths, dark theme and Traditional Chinese. Captured responses receive separate strict schema checks. Live model quality and every file-preview format remain outside this evidence.
+
+![Pinned version preview](assets/screenshots/22-cloud-pinned-preview.png)
+![Persistent working sources](assets/screenshots/23-cloud-working-files.png)
+![Dark workspace](assets/screenshots/24-cloud-files-dark.png)
+
+## Project methods (current source)
+
+Project methods now have exact installation and specialist/task bindings. Ordinary disable affects new work; uninstall and permanent security revocation block subsequent calls, including old tasks. Reinstallation creates a new identity and requires explicit adoption by a new specialist version. Current plan access is checked before tools and final output; measured usage settles against the original reservation.
+
+Platform regression: **185/185**. `npm run qa:skills` in the delivery repository passed three browser groups; 31 captured HTTP request/response payloads passed the strict design schemas. Custom package review/publication and complete live-role qualification remain pending. Existing 0.5.0 installers are historical.
+
+![Project methods](assets/screenshots/25-project-methods.png)
+
+![Project methods — dark](assets/screenshots/26-project-methods-dark.png)
+
+## Default assistant and work notifications (current source)
+
+New work selects the text assistant by default. Edit a sample, explicitly submit and continue in a private conversation. Selecting a sample or creating an empty conversation makes no AI call. Choose professional roles for image/code specialties. An open form retains its submission identity after an unknown response, so retry does not duplicate work. The default is protected from ordinary edits/deletion; copy it for customization or explicitly adopt current methods as a project manager.
+
+The inbox supports all/unread filters, pagination, read changes and original-task navigation, switching projects first when needed. Authorization refresh failures remove stale items and the unread indicator. Assistant and inbox browser journeys each pass four groups across 375/768/1024/1440 widths, both themes and Traditional Chinese/English; this is bounded UI evidence.
+
+![Editable first brief](assets/screenshots/29-default-assistant-brief.png)
+![Private conversation with a labelled simulated result](assets/screenshots/30-default-assistant-result.png)
+![Work notifications](assets/screenshots/27-work-notifications.png)
+
+## Initial file and connection requests (current source)
+
+New work can explicitly require a file or connected account before execution. The original private conversation shows the request, current-version search, pagination and an unselected picker. Uploads from that conversation retain private ownership. Refresh and confirmation recheck access; an authorization error removes stale candidates. Resolving all inputs resumes the same task and its existing budget hold. Nothing is selected or submitted automatically.
+
+Delivery `qa:task-dependencies` passes five real browser groups, including private upload, real Codex with labelled synthetic model data, a persisted result, four widths, both themes/languages and failure recovery. These checks cover initial prerequisites, not automatic discovery or continuation after a paid step.
+
+```mermaid
+flowchart LR
+  Brief[Declare required inputs] --> Wait[Original conversation waits]
+  Wait --> Select[Upload or choose current resource]
+  Select --> Confirm[Explicit confirmation]
+  Confirm --> Run[Same task and original budget]
+  Run --> Result[Private result and notification]
+```
+
+![Waiting for an explicitly requested file](assets/screenshots/32-task-input-wait.png)
+![Traditional Chinese mobile input picker](assets/screenshots/34-task-input-mobile.png)
+![Result from the original task](assets/screenshots/35-task-input-result.png)
+
+## Shared execution slots (current source)
+
+Conversation/task pages explain capacity waits. Usage distinguishes active-work admission from shared execution slots. Queued work makes no model call; the same task and original hold resume automatically. Delivery `qa:execution-capacity` covers the actual wait, Admin queue reason, four widths/themes/languages and one real private-file result/settlement through Codex with a synthetic model. Occupancy is an explicitly synthetic fixture limited to its fresh workspace, not a load benchmark.
+
+![Original task waiting for capacity](assets/screenshots/36-capacity-wait.png)
+![Traditional Chinese mobile queue notice](assets/screenshots/38-capacity-mobile.png)
+
+## Create specialists from persisted templates
+
+The specialist directory reads 18 professional presets and the default helper from real versioned records. Categories, literal search, versioned methods and deliverable details lead to a project preflight and an explicit create action. Checking starts no AI task and reserves no budget. Editing invalidates the check; lost responses reuse the instance idempotency key. Missing tools, disabled methods and pending qualification remain visible.
+
+Eight Web/current-source Electron checks cover real sign-in, response-loss retries, rechecking restored methods, authorization errors, four widths, both themes and Traditional Chinese/English. Live professional qualification remains pending. Historical installers have not been rebuilt; this does not add an extension template editor.
+
+![Persisted template directory](assets/screenshots/44-role-templates.png)
+
+![Current dependencies ready](assets/screenshots/46-template-ready.png)
+
+![Mobile dark details](assets/screenshots/47-template-mobile-dark.png)
+
+## PDF export and original-version retries
+
+The design canvas exports and downloads actual single-page PDF review copies, also available from Assets. The UI explains that PDFs are rasterized; text and layers remain editable in the project/SVG. Stale versions offer a refresh. Retrying a lost accepted reply preserves the same file identity.
+
+Seven Web/current-source Desktop groups cover email sign-in, the canvas, version conflicts, both languages/themes, four widths and independent PDF parsing/rendering. Model dependencies remain simulated; print certification and live-role qualification are pending.
+
+![Actual PDF export](assets/screenshots/49-design-pdf-export.png)
+
+![Actual downloaded PDF rendering](assets/screenshots/50-design-pdf-render.png)
+
+## Marketing CSV, exact metrics and provenance (current source)
+
+Preview and confirm the account, currency, timezone, entity level, attribution and conversion definitions before import. Generic CSV and candidate Google/Meta-style headers support explicit column mapping. Actual UTF-8/BOM source bytes, SHA-256, definitions and computed results are retained. Duplicate requests, including a lost accepted response, return one project snapshot. Quarantine prevents reimport bypass. Unknown conversions stay unknown; exact decimal CTR/CPC/CPM/CVR/CPA/ROAS use aggregate totals and historical results are frozen.
+
+Download the original CSV, normalized CSV, JSON calculation report with 11 evidence references and an actual SVG chart. Data dates are shown; upload time is not presented as the platform extraction cutoff. Official account sync, cross-platform conversion deduplication, FX and complete AI narrative acceptance remain pending. The marketing role is still unqualified. Authorized model dependencies are simulated; database and file behavior are real. Historical installers have not been rebuilt.
+
+CSV errors identify physical lines and columns. A denied selected dataset clears metrics and downloads instead of falling back to another snapshot. Four widths, both themes/languages and lost-response retry were exercised. Shared polling waits for each response and clears stale data after failure.
+
+```mermaid
+flowchart LR
+  Pick[Choose CSV] --> Preview[Review mapping and scope]
+  Preview --> Confirm[Explicit confirmation]
+  Confirm --> Result[One snapshot / exact metrics and charts]
+  Result --> Download[Source and calculation report]
+```
+
+![Actual mapping confirmation](assets/screenshots/52-marketing-import-preview.png)
+
+![Actual metrics and charts](assets/screenshots/53-marketing-analysis.png)
+
+![Traditional Chinese dark mobile](assets/screenshots/56-marketing-mobile-zh-dark.png)
+
+## Private AnalysisSpec reports (current source)
+
+Select saved snapshots, a business question, current/comparison dates, metrics, dimensions and a maximum HKD budget in Marketing insights. Preview neither calls a model nor reserves credit. Explicit confirmation atomically creates a private Codex task, frozen calculations/evidence and one reservation. Sources, accounts, currencies, timezones and attribution stay independent; identical facts deduplicate, conflicts reject, and zero/missing comparison values retain reasons. Retrying a lost accepted response returns the same report.
+
+Real Codex reads paginated frozen evidence. The server validates evidence placeholders and numeric literals before publishing an immutable HTML asset; JSON preserves full calculations. Natural-language meaning and professional quality still require acceptance. Model dependencies are explicitly simulated. Source quarantine/erasure and project revocation block reads and downloads. All 102 complete acceptance cases, official connectors, live-role qualification and production release remain pending. Historical installers have not been rebuilt.
+
+The list polls actual task state and opens evidence details. Denied reads clear prose and download controls. Four widths, both themes and both languages passed; mobile select overflow and stale evidence after switching/denial were repaired. Delivery `qa:analysis-reports` verifies actual HTML/JSON downloads and retry after a lost accepted reply. Builds pass; Vite still warns about the approximately 511 kB main chunk.
+
+```mermaid
+flowchart LR
+  Scope[Select snapshots and dates] --> Preview[Uncharged calculation preview]
+  Preview --> Confirm[Explicit confirmation]
+  Confirm --> Task[One persisted report task]
+  Task --> Inspect[Evidence / HTML and JSON download]
+```
+
+![AnalysisSpec report](assets/screenshots/58-analysis-report-ready.png)
+
+## File-backed CSV/XLSX and correction history (current source)
+
+Marketing inputs are uploaded as immutable shared project-file versions before reviewing the sheet, header row, mapping and account definitions. Google/Meta use canonical `POST /v1/dataset-imports`; generic tables use the compatible nested endpoint. Preview calls no model and reserves no credit. Duplicate content and retries after a lost accepted reply reuse the snapshot. Original CSV/XLSX downloads verify actual bytes and SHA-256.
+
+The bounded read-only XLSX parser accepts up to 5,000,000 bytes, 50 worksheets, 100 columns and 10,000 data rows. Multiple visible sheets require explicit selection; header rows range from 1 to 100. Shared/inline strings, XML Unicode references, exact decimals and 1900/1904 dates are supported. Money inputs allow six decimal places; frozen metric values retain eight. Formulas, including cached results, macros, external links, encrypted files and merged data cells are rejected. Errors identify actual worksheet cells. The UI explains that a failed preview still retains the explicitly uploaded original project file.
+
+Corrections create new immutable snapshots and a complete ancestor chain; prior metrics and reports retain their original values. AnalysisSpec rejects selecting an ancestor with its correction before creating a task or budget hold. Source quarantine/erasure prevents dependent data, reports and downloads. Recovery closes only unclaimed unavailable tasks and releases unused holds; started or uncertain charges keep reconciliation rules. Private files require explicit publication as a shared copy first.
+
+```mermaid
+flowchart LR
+  File[CSV / XLSX] --> Version[Immutable shared file version]
+  Version --> Preview[Sheet / header / mapping / uncharged preview]
+  Preview --> Confirm[Current authorization and explicit confirmation]
+  Confirm --> Snapshot[Idempotent snapshot / frozen metrics]
+  Snapshot --> Correction[New correction / preserved ancestors]
+  Version --> Lifecycle[Source quarantine and erasure guards]
+```
+
+The full platform regression passes **185/185**; strict captured HTTP samples pass **31/31**. Four file-import and six existing CSV Web/source Electron groups pass, along with native type checks and four unit tests. Model/media dependencies are authorized synthetic data; database, Codex, files and authorization are real. All 102 complete acceptance cases, the complete official export matrix, live connectors, professional qualification and production release remain pending. Historical 0.5.0 installers have not been rebuilt. See master `docs/technical/29-file-imports-and-correction-lineage.md` for detailed limits.
+
+Upload-allocation keys persist first and are scoped by user, tenant, project and file digest; choosing the same file resumes it. Editing any input invalidates preview and confirmation. Four widths, both themes and both languages passed all 16 combinations.
+
+![Worksheet and correction selection](assets/screenshots/61-xlsx-correction-preview.png)
+
+![Frozen source and correction history](assets/screenshots/62-xlsx-source-and-lineage.png)
+
+![Traditional Chinese dark mobile](assets/screenshots/63-xlsx-mobile-zh-dark.png)
+
+Task details now offer Pause queued task / Resume task before the first model call, using the current task version and refreshing conflicts. The original task and reservation are retained. Running tasks retain cancellation; paid-step continuation remains unfinished. Delivery `qa:task-controls` verifies Web, source Desktop and MV3 controls, including one settlement after resumption.
+
+![Paused task](assets/screenshots/49-task-paused.png)
+
+## Device sessions and sign-out
+
+Account settings distinguishes Web, Desktop and Chrome Extension, marks this device and shows validity, including refreshable devices whose access has expired. Revocation has confirmation, pending feedback and reloadable errors. Revoking the current Web session clears its cookie. Credential-free cross-tab events clear the browser workspace; late responses cannot restore the previous data. Native clients use the same renderer snapshot.
+
+![Device sessions](assets/screenshots/50-active-sessions.png)
+![Small-screen dark sessions](assets/screenshots/51-sessions-mobile-dark.png)
+
+The delivery repository's `npm run qa:sessions` covers actual Web, source Electron and MV3 login/revocation, expired-access sign-out, offline feedback and delayed responses. Complete identity, device/system matrices and production release remain governed by the master acceptance plan.
+
+## Admin suspension feedback
+
+Authorized member directories identify administrative suspension separately. A suspended member cannot access the workspace, and owner edits, removal/rejoin or new invitations cannot lift the hold. An authorized administrator must restore access. Strict Member.state remains active/removed; the management directory provides the additional label. Six current Admin UI groups now verify the owner notice, immediate suspension denial and notice removal on restoration; the complete native/admin matrix remains outstanding.
+
+## Current membership and cross-client sessions (2026-10-20)
+
+Delivery `qa:membership` passes 6/6 actual email invitation, resend, join, removal, revocation and delayed-context groups. Four actual Invite/Member/MemberList/Ack payloads pass the original strict schemas. `qa:admin-membership-ui` separately passes six groups including suspension/restoration and the owner's notice. `qa:sessions` passes twelve Web/source Electron/MV3 groups for committed exchange/refresh receipt recovery, remote revocation, account replacement, expired/offline sign-out and cross-tab cleanup. Owned instances and test credentials are cleared, with zero model calls. Original failures remain unchanged. Complete packaged, enterprise identity, system and native membership acceptance remain outstanding.
+
+![Current invitation and resend](assets/screenshots/60-membership-invitations-current.png)
+![Viewer joins the workspace](assets/screenshots/61-membership-viewer-current.png)
+![Current member directory](assets/screenshots/62-membership-directory-current.png)
+![Owner sees administrative suspension](assets/screenshots/63-membership-admin-suspended.png)
+![Actual native authorization](assets/screenshots/64-native-authorization-current.png)
+![Current device directory](assets/screenshots/65-active-sessions-current.png)
+![Dark small-screen sessions](assets/screenshots/66-sessions-mobile-dark-current.png)
+
+The 2026-10-20 payment increment rerun retains Web membership 6/6 (164 source files), Admin membership 6/6 (190) and cross-client authentication 12/12 (769). Before/after hashes match, and owned sessions and browsers are closed. Complete release/system acceptance remains separately tracked.
+
+After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
+
+Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+## Effective access and entitlement notifications (stage 47)
+
+Usage consumes the original EffectiveEntitlements response: active personal/current-workspace features, server confirmation time, entitlement revision and the next activation/expiry boundary. Local consent, project authorization and budget remain independent checks. Supplementary notifications retain the actual change, grant revision and read state, with explicit pagination. Without active VIP the current free plan applies; VIP does not add wallet credit.
+
+```mermaid
+flowchart LR
+  Session[Current session and workspace] --> Server[Server-time access]
+  Server --> Access[Features and quotas]
+  Server --> Notice[Own change notifications]
+  Access --> Recheck[Resource budget and local consent at use]
+  Session --> Fence[Discard late replies after workspace change or logout]
+```
+
+The page refreshes within fifteen seconds and at the next boundary. Failures clear old rights; late responses cannot restore a signed-out account. Actual Admin grant/independent approval and suspension are checked against customer canonical reads. English light desktop and 375px Traditional Chinese dark screenshots come from real browser pages. Full native installer journeys and system acceptance remain independently tracked.
+
+![Effective customer access](assets/screenshots/67-effective-entitlements.png)
+![Mobile dark entitlements and notifications](assets/screenshots/68-entitlements-mobile-dark.png)
+
+The native screenshot review exposed a stale plan heading after a rights update. Plan name, task/budget limits and effective rights now refresh together and render only when the subject revision and pinned plan IDs agree. Boundary refresh uses the server confirmation time rather than the device clock.
+
+## Enterprise seat and storage enforcement (stage 48)
+
+Usage and Members now show confirmed workspace seats, retained bytes, pending upload reservations, capacity and over-limit status. The view refreshes manually and every 15 seconds, clearing stale totals after scope/session changes or failed reads. Workspace plans govern shared capacity; personal VIP does not expand it. Downgrades preserve existing resources while the server rejects additional allocation.
+
+![Actual workspace capacity](assets/screenshots/71-workspace-resource-usage.png)
+![Traditional Chinese dark narrow layout](assets/screenshots/73-resource-capacity-mobile-dark.png)

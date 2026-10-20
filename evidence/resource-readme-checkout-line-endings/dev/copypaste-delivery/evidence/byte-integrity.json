@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-20T10:11:59.360Z",
+  "scope": "Native fresh Git checkout integrity, not product or disaster-recovery acceptance",
+  "heads": {
+    "copypaste-platform": "9d258c7575f149f19b2902a909a2437e0d50046c",
+    "copypaste-admin": "db8beeffed73ac667a3072dda65725e1e6836b26",
+    "copypaste-desktop": "8da8b2be931a152ea03ea925d486643588ad8543",
+    "copypaste-delivery": "89eb20479c0b6bbf7fe0df8bac307c7342465935"
+  },
+  "checks": [
+    {
+      "name": "fresh independent Git clone preserves all 59 SQL files and 12 canonical schema fixtures; native migration runner validates both existing database checksum ledgers without rewriting them",
+      "status": "passed"
+    },
+    {
+      "name": "fresh Git clone loads and verifies all 28 exact-hash trusted Skill packages",
+      "status": "passed"
+    },
+    {
+      "name": "fresh independent Desktop clone matches all 47 renderer provenance digests",
+      "status": "passed"
+    },
+    {
+      "name": "Git checkout byte integrity",
+      "status": "failed",
+      "detail": "Admin checkout bytes changed: README.en.md\n+ actual - expected\n\n+ '4edd15cca965567720197814a5e1fc20e5ab4206f7e44780890343e594c7a257'\n- '9ac407758a93b3ccd2e9c2c8016f4e9b86f83368610c119549e5f7730c92c8ee'\n"
+    }
+  ],
+  "owned_temporary_clones_removed": true
+}
