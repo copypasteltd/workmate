@@ -149,7 +149,7 @@ Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新�
 
 规范用户资料、私有工作区初始化、三端消费者迁移与并发孤儿清理修复，见 [用户资料与清理竞态](technical/34-user-profile-context-and-orphan-scan-races.md)。该增量保留首次失败和历史原始回归，不替代完整原生旅程及 102 项综合验收。
 
-规范后台成员变更、管理暂停、当前范围与 MFA、独立审批和不可变策略快照见 [Admin 成员控制](technical/36-admin-membership-control-and-policy-snapshots.md)。用户端严格 Member 契约保持不变；历史未记录策略的操作不补造 UUID。当前页面验收与安装包更新仍待完成。
+规范后台成员变更、管理暂停、当前范围与 MFA、独立审批和不可变策略快照见 [Admin 成员控制](technical/36-admin-membership-control-and-policy-snapshots.md)。用户端严格 Member 契约保持不变；历史未记录策略的操作不补造 UUID。当前成员页面六组复核通过，详见下文；完整后台契约与安装包矩阵继续待完成。
 
 后充值任务结算、实付/赠送/授信来源、实际债务偿还、信用下限和数据库不可变金额校验见 [授信与结算来源](technical/39-billing-credit-and-settlement-provenance.md)。此增量不关闭完整规范费用/VIP 和真实收款对账验收。
 
@@ -158,3 +158,7 @@ Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新�
 ## 规范费用操作与实际审批增量
 
 [费用命令与独立审批](technical/41-canonical-fee-commands-and-independent-approvals.md)说明真实个人／企业账户的 gift、原来源 debit、credit-limit、无业务效果预览、独立审批请求／不可变决定及实际后台消费者。原始费用付款、退款、VIP、完整审批目录和验收范围保留，局部通过不视为整体验收。
+
+## 当前成员页面与原生认证恢复
+
+[当前源码复核](technical/42-current-membership-ui-and-native-auth-recovery.md)记录 Web 成员 6/6、Admin 成员 6/6，以及 Web／源码 Electron／MV3 认证和会话恢复 12/12。原问题回执不改写，当前报告绑定前后相同源码／运行文件与实际资源清理，14 张新截图同步各端双语 README。八份新规范响应纳入当前 89/89 检查；不据此关闭完整安装包／SSO／系统／原生成员矩阵及全部 102 项综合验收。

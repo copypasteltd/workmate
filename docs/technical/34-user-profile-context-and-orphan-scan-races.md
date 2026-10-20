@@ -37,7 +37,9 @@ Web 的上下文刷新、Desktop 设备权限同步、扩展初始化及项目�
 
 两组确定性回归使用真实本地文件：在枚举后的 stat 边界实际 unlink 一个对象，验证另一个对象仍被发现；分别注入 EACCES 和 EBUSY，确认错误向上传播且文件保留。测试仅临时替换本进程的文件系统调用，并在 finally 恢复；临时目录位于已核对的项目 `.data/` 下。
 
-## 验证与限制
+## 第 34 阶段验证与限制（历史）
+
+本节保留该阶段的实际结果；当前认证恢复结果见文末更新，旧失败和原始 TAP 不改写。
 
 本轮修复后平台完整回归 **207/207**，原始 TAP SHA-256 为 `be79794025420d55dd8f7f6853afc634d5787554d79625e02a6ec43d94256133`。Web 实际导航 **4/4**，包含从首次邮箱登录、S256 授权、创建企业及项目、加载真实会话表，到规范 Cookie/Bearer 资料和重复退出；自建浏览器已关闭。实际 HTTP schema 样本 **33/33**，原十个认证 fixture 与原始规范一致。平台、Web、Desktop、扩展和 Delivery 均完成适用的类型检查及构建。
 
@@ -54,3 +56,7 @@ Web 首轮增加会话表等待时，合成账号尚未创建企业而停留在�
 独立源码提交后的重新检出四组通过，见 Delivery `evidence/byte-integrity.json`：36 份 SQL 字节与两库迁移摘要、28 个受信任 Skill 固定摘要、43 份 renderer 来源摘要，以及 207 项原始 TAP 与记录 SHA-256；自建临时检出已移除。文档结构与契约检查通过 12,608 项、失败 0 项，此数量不代表产品验收数量。
 
 后续邀请和成员契约已按 [邀请与成员权限闭环](35-invitations-and-membership-authority.md) 修复相关子流程；本篇 207 项平台证据成对归档至 Delivery `evidence/stage34-platform/`，完整后台与原生验收仍未完成。
+
+## 当前源码认证恢复复核（2026-10-20）
+
+[当前页面与原生认证恢复](42-current-membership-ui-and-native-auth-recovery.md)记录十二组真实 Web／源码 Electron／MV3 登录和会话验证：首次交换／刷新回执丢失、双面板换账号、撤销、过期访问退出、离线反馈和迟到响应全部通过。前后 758 份源码／运行文件一致，拥有的三端实例关闭且凭证已清理。当前回执为 Delivery `evidence/auth-recovery-current.json`；旧 `auth-recovery.json` 与启动问题回执保持原字节。当前 Setup／Portable 完整认证、系统、SSO 和全部原生成员旅程仍未完成，不能用本次源码验证替代。

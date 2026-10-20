@@ -28,25 +28,25 @@ CLUSTERS = [
      '四个规范账户写入口、严格 202 AdminOperation、前向版本与标签/关闭标记、锁内当前 MFA/权限/显式拒绝及幂等、全局用户与单企业状态边界、全部会话/未交换代码撤销、关闭与重开独立审批、冻结策略/前态重检、批量守卫以及共享取消/待核费用预留。十二组专项、六组真实 HTTP 及五组新账户表单实测是局部证据；页面直接定位待审批/普通操作，三宽度的英文浅色及繁中深色已测。旧成员页面、完整列表/详情业务、费用写规范及原生综合验收仍待完成；本轮规范读取与页面增量另列。',
      ['platform_regression','admin_account_wire','admin_account_ui','runtime_schemas'], ['technical/37-admin-account-lifecycle-and-inflight-control.md']),
     ('admin_membership_control', [3,35,51,55,85,94,100],
-     '规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、真实不可变策略快照、冻结预览及独立审批重检。隔离数据库和真实 HTTP 为增量证据，当前管理页面、完整原生及全部 Admin 契约仍待验收。',
-     ['platform_regression','admin_membership_wire','runtime_schemas'], ['technical/36-admin-membership-control-and-policy-snapshots.md']),
+     '规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、不可变策略快照、冻结预览及独立审批重检。隔离数据库、真实 HTTP 及当前六组 Admin 页面验证，包括实际双人邮件/TOTP、暂停/恢复和用户端提示、精确操作跳转、自批拒绝、独立审批及繁中深色窄屏；四份实际规范响应通过。完整审批目录与全部 Admin/原生契约仍待验收。',
+     ['platform_regression','admin_membership_wire','admin_membership_ui','runtime_schemas'], ['technical/36-admin-membership-control-and-policy-snapshots.md']),
     ('invitations_and_membership_authority', [1,2,3,35,36,39,51,55,60],
-     '原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；当前 HTTP 五组及十三组隔离平台检查。当前 Web 最终页面复核、完整原生旅程、生产邮件与完整后台规范仍待完成。',
-     ['platform_regression','membership_wire','runtime_schemas'], ['technical/35-invitations-and-membership-authority.md']),
+     '原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；HTTP 五组及十三组隔离平台检查，新增当前 Web 六组实际页面验证与四份规范响应，覆盖投递/重发、真实邮箱加入/工作区选择、只读权限、即时移除/撤销和退出后的迟到上下文。完整原生成员旅程、生产邮件与完整后台规范仍待完成。',
+     ['platform_regression','membership_wire','membership_ui','runtime_schemas'], ['technical/35-invitations-and-membership-authority.md']),
     ('canonical_user_and_private_context', [1,2,3,35,36,39,51,55,60,100],
-     '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者与测试调用同步迁移；不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、实际 HTTP User schema 和 Web 初始化证据独立记录，完整原生/系统旅程未计通过。',
-     ['platform_regression','auth_navigation','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
+     '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者同步迁移，不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、HTTP User schema、Web 初始化及当前十二组 Web/源码 Electron/MV3 认证和会话恢复独立记录；安装包、完整身份/系统及原生成员旅程仍待验收。',
+     ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('canonical_authentication_and_retry_recovery', [1,2,3,35,36,39,51,55,60,100],
-     '原规范五个用户认证接口及 Web/源码 Desktop/MV3 消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执、不可复活及剩余有效期；该阶段 Web 真实导航三组和平台 203 项通过，最新资料契约增量另列。原生刷新/双面板曾完成局部实测，新增首次交换短重试有单元与服务端证据；当前扩展十二组原生重跑受启动阻塞，未计完整通过。原始 User 及工作区聚合由后续增量对齐；邀请/后台契约及完整身份/系统矩阵仍待完成。',
-     ['platform_regression','auth_navigation','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md']),
+     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 758 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
+     ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
-     '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与真实并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；五个规范用户认证接口由后续独立增量记录，完整 SSO/系统矩阵及 TC 全部条件仍未完成。',
-     ['platform_regression','sessions'], ['technical/32-cross-client-sessions-and-revocation.md']),
+     '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；当前规范认证/上下文上的十二组真实源码原生会话检查另列，含 1440px 浅色/375px 深色与双面板换账号。完整 SSO、安装/系统矩阵和 TC 全部条件仍未完成。',
+     ['platform_regression','sessions','native_auth_recovery'], ['technical/32-cross-client-sessions-and-revocation.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('initial_pause_and_native_continuation', [1,2,8,9,11,35,36,39,44,46,51,60,69,92],
      'Web/源码无边框 Desktop/MV3 排队暂停与同任务单预留恢复、领取竞争/权限与来源复查、Admin 共用领域守卫；真实 Codex 跨进程原历史/工具续聊、增量用量、中断和回执 I/O 故障保留消耗。适配器原语未接已付费步骤恢复，不构成完整暂停/检查点验收。',
      ['platform_regression','task_controls'], ['technical/31-task-controls-and-native-continuation.md']),
     ('native_window_and_sidepanel', [36,39,51,55,60,81,82],
-     '当前源码重新构建的 Desktop 无原生边框/默认菜单、自绘双语主题标题栏、实际窗口按钮与指针/键盘有界缩放、跨窗口 IPC 拒绝、真实打包登录及弹窗；Chrome action 实际创建右侧 SIDE_PANEL、跨页保留/收起及重启配置。验证绑定测试前后相同的客户端、安装器、扩展及源码字节，历史预览独立保留。完整原生认证旅程、系统/DPI、安装/卸载、签名更新与全产品可访问性仍待验收。',
+     '当前源码重新构建的 Desktop 无原生边框/默认菜单、自绘双语主题标题栏、实际窗口按钮与指针/键盘有界缩放、跨窗口 IPC 拒绝、真实打包登录及弹窗；Chrome action 实际创建右侧 SIDE_PANEL、跨页保留/收起及重启配置。验证绑定测试前后相同的客户端、安装器、扩展及源码字节，历史预览独立保留。后续源码认证十二组另列；完整安装包认证、系统/DPI、安装/卸载、签名更新与全产品可访问性仍待验收。',
      ['native_surfaces','native_artifacts','extension'], ['technical/30-native-window-and-browser-sidepanel.md']),
     ('file_imports_and_corrections', [1,2,12,14,23,24,35,39,43,44,46,49,51,55,60,90,91],
      '固定来源文件版本的 CSV/XLSX 导入、规范 ImportCreate/Snapshot、显式工作表/标题列、十进制/公式拒绝/单元格错误、跨旧接口去重、更正祖先链及汇总排斥、来源治理与删除/未领取预留释放、Web/原生 IPC 字节下载；不含完整官方导出矩阵或专业分析资格。',
@@ -102,7 +102,7 @@ CLUSTERS = [
 ]
 
 REMAINING = {
- 3:'三端登录/PKCE、五个规范用户认证接口、本人目录/整族撤销、刷新退出竞争等已有局部证据；当前新增首次交换短重试的完整原生重跑受启动阻塞。原始用户资料、邀请及成员契约已有增量证据；完整后台规范与企业身份/客户端故障矩阵仍待完成，不能据此关闭 TC-003。',
+ 3:'三端登录/PKCE、五个规范用户认证接口、本人目录/整族撤销、刷新退出竞争和当前十二组源码原生回执恢复已有局部证据；当前 Web 邀请及 Admin 成员页面各六组通过。完整后台规范、企业身份/安装包/系统及全部客户端故障矩阵仍待完成，不能据此关闭 TC-003。',
  36:'原生全局侧栏的真实 action/右侧出现、跨页保留与重启配置已验证；网页选择/站点授权和全部业务上下文的完整矩阵仍待验收。',
  89:'方案未完成工作上限和实际企业/能力执行容量已区分；席位、存储、信用、完整历史版本与正式权益全部路径仍待验收。',
  7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
@@ -224,11 +224,14 @@ def main():
         'admin_fees': DEV/'copypaste-delivery/evidence/admin-fees.json',
         'native_runtime_alias': DEV/'copypaste-delivery/evidence/billing-runtime-stable-alias.json',
         'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
+        'membership_ui': DEV/'copypaste-delivery/evidence/membership-ui-recovery.json',
         'admin_directory_ui': DEV/'copypaste-delivery/evidence/admin-directory-ui.json',
         'admin_account_ui': DEV/'copypaste-delivery/evidence/admin-account-ui.json',
         'admin_account_wire': DEV/'copypaste-delivery/evidence/admin-account-wire.json',
         'admin_membership_wire': DEV/'copypaste-delivery/evidence/admin-membership-wire.json',
+        'admin_membership_ui': DEV/'copypaste-delivery/evidence/admin-membership-ui.json',
         'auth_navigation': DEV/'copypaste-delivery/evidence/auth-navigation.json',
+        'native_auth_recovery': DEV/'copypaste-delivery/evidence/auth-recovery-current.json',
         'sessions': DEV/'copypaste-delivery/evidence/sessions.json',
         'task_controls': DEV/'copypaste-delivery/evidence/task-controls.json',
         'web_admin': DEV/'copypaste-delivery/evidence/alignment.json',
@@ -262,6 +265,27 @@ def main():
         assert report.get('status', 'passed') == 'passed'
         assert all(c['status'] == 'passed' for c in checks)
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
+        if key in {'membership_ui', 'admin_membership_ui', 'native_auth_recovery'}:
+            expected_checks, expected_sources = {
+                'membership_ui': (6, 155),
+                'admin_membership_ui': (6, 179),
+                'native_auth_recovery': (12, 758),
+            }[key]
+            assert len(checks) == expected_checks and report['model_calls'] == 0
+            assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
+            assert report['source_unchanged'] is True and len(report['source_files']) == expected_sources
+            if key == 'native_auth_recovery':
+                assert report['desktop_closed'] is True and report['extension_closed'] is True
+                assert report['owned_credentials_cleared'] is True
+            else:
+                assert report['owned_sessions_closed'] is True
+            if key == 'admin_membership_ui':
+                assert report['owned_admin_principals_disabled'] is True
+                assert len(set(report['owned_admin_principal_ids'])) == 2
+            for source, expected_digest in report['source_files'].items():
+                actual_source = (DEV/source).resolve()
+                assert actual_source.is_relative_to(DEV.resolve())
+                assert fingerprint(actual_source) == expected_digest, f'Stale {key} evidence: {source}'
         if key == 'admin_fees':
             assert len(checks) == 4 and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
@@ -384,30 +408,37 @@ def main():
     repositories=[]
     for name in ['platform','web','admin','extension','desktop','delivery']:
         repo=DEV/f'copypaste-{name}'
-        files=subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard'],cwd=repo,text=True).splitlines()
-        hashes={name:fingerprint(repo/name) for name in sorted(set(files)) if (repo/name).is_file() and (repo/name).suffix in ['.ts','.tsx','.mjs','.json','.sql','.css','.html','.md','.svg','.png','.ico']}
+        repository_files=subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard'],cwd=repo,text=True).splitlines()
+        hashes={name:fingerprint(repo/name) for name in sorted(set(repository_files)) if (repo/name).is_file() and (repo/name).suffix in ['.ts','.tsx','.mjs','.json','.sql','.css','.html','.md','.svg','.png','.ico']}
         repositories.append({'name':repo.name,'head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip(),
                              'dirty':bool(subprocess.check_output(['git','status','--porcelain'],cwd=repo).strip()),'source_hashes':hashes})
+    resolved_runtime_evidence = []
+    for name, expected_digest, resolution_key, scope in [
+        ('auth-recovery-open-issue.json', '0477456f3bb51e711c65040971db88151872096efa35b963cf1bc79a49ea9bce',
+         'native_auth_recovery', 'Twelve current-source Web/Electron/MV3 authentication/session subflows pass with unchanged source/runtime bytes and owned credential/process cleanup. Original startup failures and diagnostic bytes remain historical; packaged, SSO and full system acceptance are not established.'),
+        ('membership-current-issue.json', 'a913efc238f7f5de29bb35cae1fc8eba7e1d3a0a2325eff81e9a5e759e0002e7',
+         'membership_ui', 'Six current-source Web invitation/member subflows and four strict HTTP samples now pass. The earlier overwritten success is still excluded; original page/locator timeout receipts remain unchanged. Production mail and complete native membership acceptance remain separate.'),
+        ('admin-membership-ui-open-issue.json', '66fd84e61413f6f21de7c9914bf97853c2ea97027d5451c5b1dc864e10e7acba',
+         'admin_membership_ui', 'Six actual Admin UI subflows verify suspension/restoration, Web owner feedback, exact operation navigation, frozen independent review and a narrow dark preview. Four strict operation captures pass. Original unverified-page receipt remains unchanged; the complete normative approval directory and Admin product remain unfinished.'),
+    ]:
+        original = DEV/'copypaste-delivery/evidence'/name
+        assert fingerprint(original) == expected_digest, f'Historical issue receipt changed: {name}'
+        resolved_runtime_evidence.append({
+            'path': original.relative_to(ROOT).as_posix(), 'sha256': expected_digest,
+            'status': 'resolved_for_bounded_current_subflows', 'original_receipt_preserved': True,
+            'resolution_evidence': resolution_key,
+            'resolution_path': files[resolution_key].relative_to(ROOT).as_posix(),
+            'resolution_sha256': fingerprint(files[resolution_key]), 'scope': scope,
+        })
     result={'schema_version':'1.0','at':datetime.now(timezone.utc).isoformat(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},
             'summary':dict(Counter(r['assessment'] for r in rows)), 'fully_accepted_requirements':0,
-            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical. Separate frameless Desktop and native Side Panel previews were rebuilt from current sources and their actual QA is bound to exact source/runtime/installer/extension bytes; see dev/copypaste-delivery/evidence/native-surfaces-artifacts.json. Localhost origins; no signing, installation or production publication. Full native authentication/system acceptance remains outstanding.',
+            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical. Separate frameless Desktop and native Side Panel previews have exact source/runtime/installer/extension byte-bound appearance QA; see dev/copypaste-delivery/evidence/native-surfaces-artifacts.json. A separate current-source Web/Electron/MV3 run now passes twelve authentication/session subflows; it does not prove those flows in Setup/Portable packages. Localhost origins; no signing, installation or production publication. Full packaged authentication, SSO, installation and system acceptance remain outstanding.',
             'repositories':repositories,'evidence':evidence,
-            'unresolved_runtime_evidence':[{
-                'path':'dev/copypaste-delivery/evidence/auth-recovery-open-issue.json',
-                'sha256':fingerprint(DEV/'copypaste-delivery/evidence/auth-recovery-open-issue.json'),
-                'status':'not_completed',
-                'scope':'Expanded current-source native first-exchange journey is not proven; startup comparison and failed attempts are preserved separately, never counted as passing evidence.'}, {
-                'path':'dev/copypaste-delivery/evidence/membership-current-issue.json',
-                'sha256':fingerprint(DEV/'copypaste-delivery/evidence/membership-current-issue.json'),
-                'status':'not_completed',
-                'scope':'Current source Web membership reruns timed out at browser page/locator creation; all owned instances closed. Earlier browser success bytes were overwritten and are not accepted evidence; five current HTTP checks remain separate from final UI acceptance.'}, {
-                'path':'dev/copypaste-delivery/evidence/admin-membership-ui-open-issue.json',
-                'sha256':fingerprint(DEV/'copypaste-delivery/evidence/admin-membership-ui-open-issue.json'),
-                'status':'not_completed',
-                'scope':'Admin membership forms, frozen review and Web suspension message are built but not browser-verified; current HTTP and database checks are separate. No new screenshots are claimed.'}],
+            'unresolved_runtime_evidence':[],
+            'resolved_runtime_evidence':resolved_runtime_evidence,
             'contract_alignment':{'contract_operations':len(operations),'implemented_operations':len(actual['routes']),
                                   'unmatched_contract_method_paths':sum(not x['method_path_matches'] for x in operations),
                                   'limit':'Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.',
