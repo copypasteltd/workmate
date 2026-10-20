@@ -1,6 +1,7 @@
 import "./support.css";
 import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
+import { AdminCapabilities } from "./capabilities";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
 import {
@@ -497,6 +498,8 @@ function AdminShell() {
                         <BillingPage />
                       ) : n[0] === "plans" ? (
                         <AdminPlans access={a} />
+                      ) : n[0] === "catalog" ? (
+                        <CatalogPage />
                       ) : n[0] === "entitlements" ? (
                         <AdminVip access={a} />
                       ) : n[0] === "support" ? (
@@ -842,6 +845,36 @@ function Value({ field, value }: { field: string; value: any }) {
       </code>
     );
   return <span>{String(value)}</span>;
+}
+function CatalogPage() {
+  const a = useAdmin(),
+    { t } = useI18n(),
+    location = useLocation(),
+    capabilities =
+      new URLSearchParams(location.search).get("view") === "capabilities";
+  return (
+    <>
+      <nav
+        className="cap-navigation"
+        aria-label={t("目錄管理", "Catalog management")}
+      >
+        <Link to="/catalog" aria-current={!capabilities ? "page" : undefined}>
+          {t("角色與內容", "Roles & content")}
+        </Link>
+        <Link
+          to="/catalog?view=capabilities"
+          aria-current={capabilities ? "page" : undefined}
+        >
+          {t("模型能力", "Model capabilities")}
+        </Link>
+      </nav>
+      {capabilities ? (
+        <AdminCapabilities access={a} />
+      ) : (
+        <Section section="catalog" />
+      )}
+    </>
+  );
 }
 function Section({ section }: { section: string }) {
   const { t } = useI18n(),

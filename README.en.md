@@ -1,5 +1,25 @@
 # CopyPaste Admin Dashboard
 
+## Model configuration and independent publication (stage 53, verified Admin subflow)
+
+Open **Roles & content → Model capabilities** to manage the fixed Codex kernel, internal model aliases, text reasoning effort and exact HKD rates. Saving creates an immutable version. Inspect actual verification usage, cost, eligibility and separate workspace cleanup status. Publication/rollback compares the current and proposed configuration before another authorized administrator reviews it; a pending request is never labelled published. The existing content catalog retains its own entry.
+
+The page uses existing CopyPaste colors, bundled Manrope/Fraunces fonts, Traditional Chinese/English and light/dark themes. The production build and actual browser run 06 pass 11/11, with 14 unedited captures: email/TOTP, self-review refusal, independent publication and rollback, exact rates, image verification, 390px navigation, read-only access and current revocation. Identity, authorization and persistence execute for real; models/media use authorized simulations. Visible customer model/price comparison and explicit adoption, and all 102 original acceptance cases, remain open.
+
+![Model capability management](assets/screenshots/capabilities-06-catalog-en.png)
+
+[Traditional Chinese dark theme](assets/screenshots/capabilities-06-catalog-zh-dark.png) · [Mobile layout](assets/screenshots/capabilities-06-catalog-mobile-en.png) · [Publication comparison](assets/screenshots/capabilities-06-publication-comparison-en.png)
+
+```mermaid
+flowchart LR
+  Form[Model / effort / rates] --> Draft[Immutable version]
+  Draft --> Verify[Actual Codex / internal protocol verification]
+  Verify --> Compare[Current and proposed configuration]
+  Compare --> Request[Pending independent approval]
+  Request --> Review[Another administrator rechecks]
+  Review --> Publish[Append publication or rollback]
+```
+
 ## Controlled support update / 受控客服协助
 
 A13 now searches real customers, selects an explicit workspace/project scope and provides canonical operation receipts, revocation and a time-limited read-only view. Its persistent banner identifies the real administrator, customer, read-only mode and server deadline. Expiry, loss of access or read failure clears content.

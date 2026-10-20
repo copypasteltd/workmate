@@ -1,5 +1,25 @@
 # CopyPaste Admin Dashboard
 
+## 模型配置与独立发布（阶段 53，后台子流程已验证）
+
+在“角色与内容发布 → 模型能力”管理固定 Codex、公司内部模型别名、文字推理强度与精确港币费率。保存后建立不可变新版本；可查看实际验证用量、费用、期限和独立暂存清理状态。发布或回滚先比较当前与目标配置，再由另一位具备权限的管理员审批；待审批申请不会显示为已发布。原有角色与内容目录保留独立入口。
+
+页面沿用现有 CopyPaste 色系、Manrope/Fraunces 字体、繁体中文/英文及浅深主题。生产构建与真实浏览器流程 06 已通过 11/11，保留 14 张未编辑截图；包含邮箱/TOTP、申请人不可自批、独立发布及回滚、精确费率、图像验证、390px 导航、只读及即时撤权。身份、权限和持久化实际执行，模型与媒体为获准模拟。完整用户模型/价格比较与明确采用、102 项综合验收继续跟踪。
+
+![模型能力管理](assets/screenshots/capabilities-06-catalog-en.png)
+
+[繁体中文深色界面](assets/screenshots/capabilities-06-catalog-zh-dark.png) · [窄屏界面](assets/screenshots/capabilities-06-catalog-mobile-en.png) · [发布前后比较](assets/screenshots/capabilities-06-publication-comparison-en.png)
+
+```mermaid
+flowchart LR
+  Form[模型 / 强度 / 费率] --> Draft[不可变版本]
+  Draft --> Verify[实际 Codex / 内部协议验证]
+  Verify --> Compare[当前与目标配置比较]
+  Compare --> Request[待独立审批]
+  Request --> Review[另一位管理员重新核验]
+  Review --> Publish[追加发布或回滚事实]
+```
+
 ## 限时只读客服协助 / Controlled support
 
 A13 支援工作台新增真实用户搜索、明确企业/项目选择、规范操作回执、限时只读视图和撤销。常驻横幅显示真实管理员、目标用户、只读及服务端截止时间；到期、撤权或读取失败清除内容。

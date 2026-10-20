@@ -4,6 +4,7 @@ import { operationKey, completeOperation } from "./operation-key";
 import { AccountChangeFacts } from "./accounts";
 import { MembershipChangeFacts } from "./memberships";
 import { PlanPublicationFacts } from "./plans";
+import { CapabilityPublicationFacts } from "./capabilities";
 import { VipChangeFacts, VipCreditFacts, vipPermission } from "./vip";
 import { FeeReview, canonicalFeeAction } from "./fees";
 import {
@@ -110,6 +111,10 @@ export function ApprovalReview({
           </dl>
           {operation.action === "plans.publish" ? (
             <PlanPublicationFacts before={data.before} />
+          ) : ["catalog.publish", "catalog.rollback"].includes(
+              operation.action,
+            ) && data.before?.proposed?.document?.kernel === "codex" ? (
+            <CapabilityPublicationFacts before={data.before} />
           ) : operation.action === "entitlements.grant_with_credit" ? (
             <VipCreditFacts command={command} before={data.before} />
           ) : operation.action.startsWith("entitlements.") ? (
