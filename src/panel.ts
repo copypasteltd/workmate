@@ -1,3 +1,10 @@
+import {
+  exactHKD,
+  financialLabels,
+  financialExplanation,
+  type FinancialNotice,
+} from "./financial-notice.js";
+
 const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
   document.getElementById(id) as T;
 let tenant = "",
@@ -9,6 +16,7 @@ let pending: { fingerprint: string; id: string } | null = null;
 let workspaceRevision = 0,
   notificationRevision = 0;
 let entitlementRevision = 0;
+let financialRevision = 0;
 let dependencyRevision = 0,
   dependencyFingerprint = "";
 let taskDrawRevision = 0;
@@ -57,6 +65,7 @@ async function send(type: string, body: Record<string, unknown> = {}) {
 function resetSignedOut() {
   ++workspaceRevision;
   ++notificationRevision;
+  ++financialRevision;
   startFlow = null;
   clearTask();
   if (notificationTimer) clearInterval(notificationTimer);
@@ -75,8 +84,12 @@ function resetSignedOut() {
     "local-preview",
     "entitlement-summary",
     "entitlement-notices",
+    "financial-summary",
+    "financial-notices",
+    "financial-status",
   ])
     $(id).replaceChildren();
+  $<HTMLInputElement>("financial-unread").checked = false;
   localFile = null;
   localGrants = [];
   $("folder-browser").hidden = true;
@@ -203,6 +216,7 @@ async function populateWorkspace() {
   notificationTimer = setInterval(() => {
     void run(notifications);
     void entitlements();
+    void financial();
   }, 15000);
   await projects();
   if (revision === workspaceRevision) $("workspace").hidden = false;
@@ -210,6 +224,12 @@ async function populateWorkspace() {
 async function projects() {
   $("entitlement-summary").replaceChildren();
   $("entitlement-notices").replaceChildren();
+  for (const id of [
+    "financial-summary",
+    "financial-notices",
+    "financial-status",
+  ])
+    $(id).replaceChildren();
   const scope = tenant,
     revision = workspaceRevision;
   const d = await request(`/v1/tenants/${scope}/projects`);
@@ -226,7 +246,158 @@ async function projects() {
   await tasks();
   await notifications();
   await entitlements();
+  await financial();
 }
+async function financial() {
+  const scope = tenant,
+    revision = workspaceRevision,
+    load = ++financialRevision,
+    summary = $("financial-summary"),
+    list = $("financial-notices"),
+    status = $("financial-status"),
+    unread = $<HTMLInputElement>("financial-unread").checked;
+  const live = () =>
+    scope === tenant &&
+    revision === workspaceRevision &&
+    load === financialRevision;
+  summary.replaceChildren();
+  list.replaceChildren();
+  status.replaceChildren();
+  if (!scope) return;
+  try {
+    const [accounts, inbox] = await Promise.all([
+      request("/v1/me/billing-accounts"),
+      request(
+        "/v1/financial-notifications?limit=5&category=account_updates" +
+          (unread ? "&unread=true" : ""),
+      ),
+    ]);
+    if (!live()) return;
+    for (const account of accounts.items) {
+      const box = document.createElement("div");
+      box.className = "financial-account";
+      box.dataset.financialAccount = account.id;
+      const title = document.createElement("strong");
+      title.textContent = tr("我的個人帳戶", "My personal account");
+      box.append(title);
+      const dl = document.createElement("dl");
+      for (const [label, amount] of [
+        [tr("實付餘額", "Paid balance"), account.paid_balance.amount_micros],
+        [
+          tr("贈送餘額", "Promotional balance"),
+          account.promotional_balance.amount_micros,
+        ],
+        [tr("已預留", "Reserved"), account.reserved.amount_micros],
+        [tr("授信上限", "Credit limit"), account.credit_limit.amount_micros],
+        [tr("已用授信", "Credit debt"), account.debt.amount_micros],
+      ]) {
+        const dt = document.createElement("dt"),
+          dd = document.createElement("dd");
+        dt.textContent = label;
+        dd.textContent = exactHKD(amount);
+        dl.append(dt, dd);
+      }
+      const time = document.createElement("small");
+      time.textContent =
+        tr("確認於 ", "Confirmed at ") +
+        new Date(account.as_of).toLocaleString();
+      box.append(dl, time);
+      summary.append(box);
+    }
+    const items = inbox.items as FinancialNotice[];
+    status.textContent = tr(
+      `本頁 ${items.length} 條通知，${items.filter((n) => !n.read).length} 條未讀。`,
+      `${items.length} notices on this page, ${items.filter((n) => !n.read).length} unread.`,
+    );
+    if (!items.length) {
+      const empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = tr(
+        "目前沒有符合條件的費用通知。",
+        "No financial notices match these filters.",
+      );
+      list.append(empty);
+    }
+    for (const notice of items) {
+      const row = document.createElement("article");
+      row.className = "financial-notice";
+      row.dataset.financialNotification = notice.id;
+      const title = document.createElement("strong"),
+        amount = document.createElement("p"),
+        hint = document.createElement("p"),
+        time = document.createElement("small");
+      const labels =
+        financialLabels[notice.event_type] ??
+        ([notice.event_type, notice.event_type] as const);
+      title.textContent =
+        tr(...labels) +
+        " · " +
+        (notice.read ? tr("已讀", "Read") : tr("未讀", "Unread"));
+      amount.textContent =
+        (notice.amount
+          ? exactHKD(notice.amount.amount_micros)
+          : tr("金額待核對", "Amount unknown")) +
+        " · " +
+        (notice.subject.kind === "user"
+          ? tr("個人帳戶", "Personal account")
+          : tr("企業帳戶", "Workspace account"));
+      hint.className = "hint";
+      hint.textContent = tr(...financialExplanation(notice.event_type));
+      time.textContent = new Date(notice.recorded_at).toLocaleString();
+      row.append(title, amount);
+      if (notice.requested_amount) {
+        const requested = document.createElement("p");
+        requested.textContent =
+          tr("原退款要求：", "Original refund request: ") +
+          exactHKD(notice.requested_amount.amount_micros);
+        row.append(requested);
+      }
+      row.append(hint, time);
+      const mark = document.createElement("button");
+      mark.className = "secondary";
+      mark.textContent = notice.read
+        ? tr("標示未讀", "Mark unread")
+        : tr("標示已讀", "Mark read");
+      mark.setAttribute("aria-label", mark.textContent + ": " + tr(...labels));
+      mark.addEventListener("click", () => {
+        if (!live()) return;
+        mark.disabled = true;
+        void (async () => {
+          try {
+            await request("/v1/financial-notifications/" + notice.id, "PATCH", {
+              read: !notice.read,
+            });
+            if (live()) await financial();
+          } catch (e) {
+            if (live()) {
+              summary.replaceChildren();
+              list.replaceChildren();
+              status.textContent =
+                e instanceof Error
+                  ? e.message
+                  : tr("暫時未能確認帳戶。", "Account could not be confirmed.");
+            }
+          } finally {
+            mark.disabled = false;
+          }
+        })();
+      });
+      row.append(mark);
+      list.append(row);
+    }
+  } catch (e) {
+    if (live()) {
+      summary.replaceChildren();
+      list.replaceChildren();
+      status.textContent =
+        e instanceof Error
+          ? e.message
+          : tr("暫時未能確認帳戶。", "Account could not be confirmed.");
+    }
+  }
+}
+$("refresh-financial").addEventListener("click", () => void financial());
+$("financial-unread").addEventListener("change", () => void financial());
 async function entitlements() {
   const scope = tenant,
     revision = workspaceRevision,
@@ -1137,6 +1308,13 @@ const translations: Record<string, string> = {
   工作通知: "Work notifications",
   目前可用權益: "Current entitlements",
   更新權益: "Refresh access",
+  費用與帳戶通知: "Financial account notifications",
+  更新帳戶與通知: "Refresh accounts and notices",
+  只看未讀: "Unread only",
+  "企業帳戶通知只對目前的 Owner 或 Admin 顯示。通知保留歷史變更，目前餘額以最新確認結果為準。":
+    "Workspace account notices are available to current owners and admins. Notices record history; current balances follow the latest confirmation.",
+  "最近 5 條帳戶通知；工作預留、消費及較早記錄可在完整工作台查看。":
+    "Latest 5 account notices. Task reservations, charges and older records are available in the full workspace.",
   "使用時仍會檢查專案權限、本機授權與預算。通知顯示最近 5 條，完整記錄請開啟工作台。":
     "Project permissions, local consent and budget still apply. Latest 5 notifications; open the workspace for the complete inbox.",
   重新整理通知: "Refresh notifications",
@@ -1186,6 +1364,7 @@ async function applyLocale() {
   if (tenant) {
     await notifications();
     await entitlements();
+    await financial();
   }
   if (task) await refreshTask(task);
 }
