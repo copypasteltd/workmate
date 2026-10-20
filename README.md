@@ -185,3 +185,24 @@ Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12：�
 2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。
 
 2026-10-20 方案版本增量後的當前源碼復核：Web 成員 6/6（172 份來源）、Admin 成員 6/6（200 份），Web／源碼 Electron／MV3 認證 12/12（779 份）；測試前後摘要一致，自建瀏覽器／Electron／擴展均關閉，測試憑證清理。新增不可變方案定義與固定歷史授權綁定不改寫原生預覽包。完整 VIP／配額、安裝包認證及系統驗收仍按主文檔繼續追蹤。
+
+## 当前右侧原生侧栏与权益同步
+
+点击浏览器工具栏图标后，在浏览器右侧打开真正的 `SIDE_PANEL`，页面相应缩窄，不额外创建 popup 或普通标签页。再次点击收起，换标签页／导航保留同一个侧栏文档，浏览器重启后恢复入口行为。当前重建扩展与无边框 Desktop 的 10 组原生表面检查及 6 组真实登录／VIP 联调通过。
+
+```mermaid
+flowchart LR
+  Action[工具栏点击] --> Panel[右侧原生 Side Panel]
+  Panel --> Auth[真实浏览器 PKCE 登录]
+  Auth --> Background[认证 background 附带当前企业]
+  Background --> API[公司服务端当前有效权益]
+  API --> View[功能 确认时间 权益版本 最近五条通知]
+  Logout[退出或身份切换] --> Fence[清空缓存并隔离迟到结果]
+```
+
+侧栏每 15 秒及手动刷新；个人和当前企业权益由服务器合并，仍须项目／文件授权和预算。通知已读属于本人，不授予额外能力。原生联调验证同一用户在 Desktop 标记已读后，侧栏读取同一条持久记录；暂停按真实免费方案回退，并实际退出清理凭据。19 项单元检查通过；完整 Native Host 大文件、安装／发布和所有生产验收仍保留。
+
+![实际右侧 SIDE_PANEL 的开通权益](assets/screenshots/15-vip-effective-rights.png)
+![实际暂停后的服务端权益版本](assets/screenshots/16-vip-suspended-rights.png)
+
+验收使用实际浏览器 action 触发与 CDP 附着真实侧栏，未把 `sidepanel.html` 当普通网页替代。构建 `npm run build`；在 Chrome 扩展管理页加载 `dist/`。当前 ZIP 和字节摘要由相邻 Delivery 仓库的 `package:surfaces` 统一记录。

@@ -8,6 +8,7 @@ let notificationTimer: ReturnType<typeof setInterval> | undefined;
 let pending: { fingerprint: string; id: string } | null = null;
 let workspaceRevision = 0,
   notificationRevision = 0;
+let entitlementRevision = 0;
 let dependencyRevision = 0,
   dependencyFingerprint = "";
 let taskDrawRevision = 0;
@@ -72,6 +73,8 @@ function resetSignedOut() {
     "task-output",
     "user-name",
     "local-preview",
+    "entitlement-summary",
+    "entitlement-notices",
   ])
     $(id).replaceChildren();
   localFile = null;
@@ -102,7 +105,14 @@ const request = (
   method = "GET",
   body?: unknown,
   idempotencyKey?: string,
-) => send("API", { path, method, body, idempotencyKey });
+) =>
+  send("API", {
+    path,
+    method,
+    body,
+    idempotencyKey,
+    tenantId: tenant || undefined,
+  });
 function showError(e: unknown) {
   $("error").textContent = e instanceof Error ? e.message : String(e);
   $("error").hidden = false;
@@ -190,11 +200,16 @@ async function populateWorkspace() {
     ],
     "assistant",
   );
-  notificationTimer = setInterval(() => void run(notifications), 15000);
+  notificationTimer = setInterval(() => {
+    void run(notifications);
+    void entitlements();
+  }, 15000);
   await projects();
   if (revision === workspaceRevision) $("workspace").hidden = false;
 }
 async function projects() {
+  $("entitlement-summary").replaceChildren();
+  $("entitlement-notices").replaceChildren();
   const scope = tenant,
     revision = workspaceRevision;
   const d = await request(`/v1/tenants/${scope}/projects`);
@@ -210,7 +225,109 @@ async function projects() {
     me.memberships.find((m: any) => m.id === tenant)?.data_mode !== "simulated";
   await tasks();
   await notifications();
+  await entitlements();
 }
+async function entitlements() {
+  const scope = tenant,
+    revision = workspaceRevision,
+    load = ++entitlementRevision,
+    summary = $("entitlement-summary"),
+    notices = $("entitlement-notices");
+  summary.replaceChildren();
+  notices.replaceChildren();
+  if (!scope) return;
+  try {
+    const [current, inbox] = await Promise.all([
+      request("/v1/effective-entitlements"),
+      request("/v1/entitlement-notifications?limit=5"),
+    ]);
+    if (
+      scope !== tenant ||
+      revision !== workspaceRevision ||
+      load !== entitlementRevision
+    )
+      return;
+    const names: Record<string, [string, string]> = {
+      text: ["文字與開發", "Text & development"],
+      image: ["圖片", "Images"],
+      video: ["影片", "Video"],
+      design: ["設計", "Design"],
+      analytics: ["分析", "Analytics"],
+      workflow: ["流程", "Workflows"],
+      local_files: ["本機檔案", "Local files"],
+    };
+    const text = document.createElement("p");
+    text.textContent =
+      current.feature_ids
+        .map((id: string) => (names[id] ? tr(...names[id]) : id))
+        .join(" · ") ||
+      tr("目前方案未開啟功能。", "No features enabled by the current plan.");
+    summary.append(text);
+    const at = document.createElement("small");
+    at.textContent =
+      tr("伺服器確認：", "Server confirmed: ") +
+      new Date(current.as_of).toLocaleString() +
+      " · " +
+      tr("權益版本 ", "Entitlement version ") +
+      current.entitlement_version;
+    summary.append(at);
+    if (current.expires_at) {
+      const end = document.createElement("p");
+      end.textContent =
+        tr("下一個權益變更：", "Next access boundary: ") +
+        new Date(current.expires_at).toLocaleString();
+      summary.append(end);
+    }
+    const kinds: Record<string, [string, string]> = {
+      changed: ["權益已更新", "Entitlements updated"],
+      starts: ["授予已生效", "Grant started"],
+      expires: ["授予已到期", "Grant expired"],
+      replaced: ["方案已取代", "Plan replaced"],
+    };
+    for (const notice of inbox.items) {
+      const row = document.createElement("p");
+      row.textContent =
+        (kinds[notice.kind] ? tr(...kinds[notice.kind]) : notice.kind) +
+        " · " +
+        new Date(notice.available_at).toLocaleString();
+      if (!notice.read) {
+        const mark = document.createElement("button");
+        mark.className = "secondary";
+        mark.textContent = tr("標示已讀", "Mark read");
+        mark.addEventListener(
+          "click",
+          () =>
+            void run(async () => {
+              mark.disabled = true;
+              try {
+                await request(
+                  "/v1/entitlement-notifications/" + notice.id,
+                  "PATCH",
+                  { read: true },
+                );
+                await entitlements();
+              } finally {
+                mark.disabled = false;
+              }
+            }),
+        );
+        row.append(mark);
+      }
+      notices.append(row);
+    }
+  } catch (e) {
+    if (
+      scope === tenant &&
+      revision === workspaceRevision &&
+      load === entitlementRevision
+    )
+      summary.textContent =
+        e instanceof Error
+          ? e.message
+          : tr("暫時未能確認權益。", "Access could not be confirmed.");
+  }
+}
+$("refresh-entitlements").addEventListener("click", () => void entitlements());
 async function notifications() {
   const scope = tenant,
     list = $("notification-list"),
@@ -989,6 +1106,10 @@ const translations: Record<string, string> = {
   取消工作: "Cancel task",
   最近的工作: "Recent tasks",
   工作通知: "Work notifications",
+  目前可用權益: "Current entitlements",
+  更新權益: "Refresh access",
+  "使用時仍會檢查專案權限、本機授權與預算。通知顯示最近 5 條，完整記錄請開啟工作台。":
+    "Project permissions, local consent and budget still apply. Latest 5 notifications; open the workspace for the complete inbox.",
   重新整理通知: "Refresh notifications",
   "最近 20 條；完整記錄請開啟工作台。":
     "Latest 20; open the full workspace for the complete inbox.",
@@ -1033,7 +1154,10 @@ async function applyLocale() {
       locale === "en"
         ? "Default assistant — text and plans"
         : "預設助手 — 文字與計畫";
-  if (tenant) await notifications();
+  if (tenant) {
+    await notifications();
+    await entitlements();
+  }
   if (task) await refreshTask(task);
 }
 $("locale").addEventListener(

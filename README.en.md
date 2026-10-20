@@ -163,3 +163,24 @@ These are actual MV3 business documents. The separate 10/10 native SIDE_PANEL ac
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
 
 Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+## Current native right Side Panel and entitlement sync
+
+Clicking the toolbar action opens a real browser `SIDE_PANEL` on the right and reduces the page width, without a popup or additional ordinary tab. Another click closes it. Navigation and tab changes retain the same panel document, and a browser restart restores its entry behavior. The rebuilt extension and frameless Desktop pass ten native-surface checks and six actual login/VIP integration groups.
+
+```mermaid
+flowchart LR
+  Action[Toolbar action] --> Panel[Native right Side Panel]
+  Panel --> Auth[Real browser PKCE sign-in]
+  Auth --> Background[Authenticated background and current tenant]
+  Background --> API[Current rights from company server]
+  API --> View[Features confirmation revision and five notices]
+  Logout[Sign out or account switch] --> Fence[Clear caches and fence late replies]
+```
+
+Manual and 15-second refresh show server-merged personal/current-workspace rights. Project/file authorization and budget still apply. Reading a notice does not grant capabilities. Actual integration verifies that a Desktop read action updates the same persistent notification observed from the panel, suspension restores the real free plan, and sign-out clears credentials. Nineteen unit checks pass; full Native Host large-file, installation/publication and production acceptance remain open.
+
+![Actual native SIDE_PANEL with granted rights](assets/screenshots/15-vip-effective-rights.png)
+![Actual server entitlement revision after suspension](assets/screenshots/16-vip-suspended-rights.png)
+
+Verification triggers the actual browser action and attaches CDP to the native panel; an ordinary `sidepanel.html` tab is not substituted. Build with `npm run build`, then load `dist/` from Chrome's extension manager. The adjacent Delivery repository records the current ZIP and byte digests with `package:surfaces`.

@@ -120,7 +120,10 @@ async function request(
   method = "GET",
   body?: unknown,
   idempotencyKey?: string,
+  tenantId?: string,
 ) {
+  if (tenantId !== undefined && !/^[a-f0-9-]{36}$/i.test(tenantId))
+    throw new Error("Invalid workspace identity");
   if (
     idempotencyKey !== undefined &&
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -133,6 +136,7 @@ async function request(
     Authorization: `Bearer ${t.access_token}`,
     "Idempotency-Key": idempotencyKey ?? crypto.randomUUID(),
   };
+  if (tenantId) headers["X-Tenant-ID"] = tenantId;
   if (body !== undefined) headers["Content-Type"] = "application/json";
   const response = await fetch(safePath(path), {
     method,
@@ -243,6 +247,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
         message.method,
         message.body,
         message.idempotencyKey,
+        message.tenantId,
       );
     }
     if (message.type === "UPLOAD") return upload(message.path, message.file);
