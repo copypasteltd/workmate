@@ -1,0 +1,16 @@
+
+> @copypaste/delivery@0.5.0 qa:sessions
+> node --import tsx scripts/qa-sessions.ts
+
+PASS: real Desktop first sign-in recovers a committed code-exchange response loss with one bounded same-key retry and creates one native family
+PASS: real MV3 identity sign-in recovers a committed code-exchange response loss under the original key without replaying the code into another family
+PASS: canonical Web login, browser S256 PKCE Desktop and MV3 share a credential-free inventory; both already-open MV3 panels automatically populate on sign-in
+PASS: real Electron DPAPI credentials survive a response lost after committed rotation; the next request uses the same private key and receives that single rotation
+PASS: real MV3 session storage recovers a lost committed refresh under the same key; rotation retains the identity epoch and both panels stay signed in
+PASS: session inventory remains within the viewport at 1440px light and 375px dark, with labelled controls and a real confirmation modal
+PASS: Web confirmation revokes the Desktop family; its next protected read clears native credentials and private UI while Extension stays signed in
+PASS: Web revocation clears actual MV3 session storage and both open panels' account/task/file caches on the next request
+PASS: a different account automatically populates both existing panels; releasing the previous account's delayed unauthorized reply cannot clear or contaminate the new workspace
+PASS: Extension local sign-out revokes an already expired access session through refresh proof, without issuing another token
+PASS: offline native sign-out clears the local session, explicitly reports unconfirmed remote revocation, and can be completed from another device
+PASS: browser sign-out propagates to the other owned tab; a delayed authorized response cannot restore its previous private view
