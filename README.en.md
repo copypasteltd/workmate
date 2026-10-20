@@ -310,7 +310,7 @@ This does not accept the complete billing/admin product. Payment evidence/record
 Membership results now locate the actual operation: pending reviews use `/audit?view=approvals&search=…`; completed changes use `/jobs?search=…`. Delivery `npm run qa:admin-membership-ui` passes 6/6 groups with two real scoped email/TOTP admin logins: pure previews, suspension/restoration and Web owner feedback, frozen parameters, self-review rejection, another administrator's approval and Traditional Chinese dark at 390px. Four actual AdminOperation payloads pass strict validation; 179 source/verifier files remain unchanged. Unit tests pass 3/3 and production builds. Owned browsers/sessions close, temporary admins are confirmed suspended in the database, and model calls are zero.
 
 ![Suspension preview](assets/screenshots/29-membership-suspension-preview.png)
-![Independent frozen-command review](assets/screenshots/30-membersship-independent-review.png)
+![Independent frozen-command review](assets/screenshots/30-membership-independent-review.png)
 ![Traditional Chinese dark/mobile](assets/screenshots/31-membership-mobile-dark.png)
 
 Original unverified/failed receipts are preserved. This member workflow still uses supplementary frozen review and its legacy decision endpoint; the complete normative approval directory, other Admin domains and all native/system acceptance remain unfinished. Central evidence: `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`.
