@@ -293,7 +293,7 @@ renderer 已从明确指定的 Web 来源同步后台暂停提示并构建，来
 
 ## 当前源码认证恢复复核（2026-10-20）
 
-Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12。Desktop 实际浏览器 S256 授权、首次交换和刷新已提交回执丢失的同键恢复、DPAPI 凭证清理、Web 远程撤销、离线退出未确认反馈均已实测。762 份三端／服务端源码和运行文件前后一致，测试凭证及自建浏览器、Electron、MV3 已清理；旧启动失败与诊断保留原字节。
+Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12。Desktop 实际浏览器 S256 授权、首次交换和刷新已提交回执丢失的同键恢复、DPAPI 凭证清理、Web 远程撤销、离线退出未确认反馈均已实测。769 份三端／服务端源码和运行文件前后一致，测试凭证及自建浏览器、Electron、MV3 已清理；旧启动失败与诊断保留原字节。
 
 ![当前无边框源码客户端会话](assets/screenshots/24-active-sessions-current.png)
 ![当前离线退出提示](assets/screenshots/25-offline-signout-current.png)
