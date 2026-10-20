@@ -13,6 +13,7 @@ import { ProjectSkills } from "./skills";
 import { SessionsCard, SignOutButton, NativeSignInButton } from "./sessions";
 import { Notifications, UnreadNotifications } from "./notifications";
 import { Entitlements } from "./entitlements";
+import { FinancialInbox } from "./financial-notifications";
 import { Schedules } from "./schedules";
 import {
   CompanySignIn,
@@ -3053,6 +3054,7 @@ function Usage() {
         </div>
       </div>
       <Entitlements key={w.tenant} tenant={w.tenant} />
+      <FinancialInbox key={w.tenant + ":finance"} tenant={w.tenant} />
       {billing.error ? (
         <div className="notice">
           {t(

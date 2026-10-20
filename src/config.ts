@@ -60,10 +60,11 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
       "/v1/plans",
       "/v1/effective-entitlements",
       "/v1/entitlement-notifications",
+      "/v1/financial-notifications",
     ].includes(pathname)
   )
     return method === "GET";
-  if (/^\/v1\/entitlement-notifications\/[a-f0-9-]{36}$/i.test(pathname))
+  if (/^\/v1\/(?:entitlement|financial)-notifications\/[a-f0-9-]{36}$/i.test(pathname))
     return method === "PATCH";
   if (pathname === "/v1/tenants") return method === "GET" || method === "POST";
   if (pathname === "/v1/dataset-imports" || pathname === "/v1/reports")
