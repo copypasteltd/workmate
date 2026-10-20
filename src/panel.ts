@@ -237,9 +237,10 @@ async function entitlements() {
   notices.replaceChildren();
   if (!scope) return;
   try {
-    const [current, inbox] = await Promise.all([
+    const [current, inbox, resources] = await Promise.all([
       request("/v1/effective-entitlements"),
       request("/v1/entitlement-notifications?limit=5"),
+      request(`/v1/tenants/${scope}/resource-usage`),
     ]);
     if (
       scope !== tenant ||
@@ -271,6 +272,34 @@ async function entitlements() {
       tr("權益版本 ", "Entitlement version ") +
       current.entitlement_version;
     summary.append(at);
+    const capacity = document.createElement("p");
+    capacity.textContent =
+      tr("企業容量：席位 ", "Workspace capacity: seats ") +
+      resources.seats.used.toLocaleString() +
+      " / " +
+      resources.seats.limit.toLocaleString() +
+      " · " +
+      tr("存儲 ", "storage ") +
+      BigInt(resources.storage.total_bytes).toLocaleString() +
+      " / " +
+      BigInt(resources.storage.limit_bytes).toLocaleString() +
+      " B";
+    summary.append(capacity);
+    const storageNote = document.createElement("small");
+    storageNote.textContent = tr(
+      "包含保留版本與上傳預留；個人 VIP 不會擴大企業容量。",
+      "Includes retained versions and upload reservations. Personal VIP does not enlarge workspace capacity.",
+    );
+    summary.append(storageNote);
+    if (resources.seats.over_limit || resources.storage.over_limit) {
+      const warning = document.createElement("p");
+      warning.setAttribute("role", "status");
+      warning.textContent = tr(
+        "已超出企業容量。完成清理或聯絡管理員調整企業方案後，再新增佔用。",
+        "Workspace capacity is exceeded. Complete cleanup or contact an administrator to change the workspace plan before adding capacity.",
+      );
+      summary.append(warning);
+    }
     if (current.expires_at) {
       const end = document.createElement("p");
       end.textContent =

@@ -206,3 +206,9 @@ flowchart LR
 ![实际暂停后的服务端权益版本](assets/screenshots/16-vip-suspended-rights.png)
 
 验收使用实际浏览器 action 触发与 CDP 附着真实侧栏，未把 `sidepanel.html` 当普通网页替代。构建 `npm run build`；在 Chrome 扩展管理页加载 `dist/`。当前 ZIP 和字节摘要由相邻 Delivery 仓库的 `package:surfaces` 统一记录。
+
+## 企业席位与存储执行（阶段 48）
+
+真实原生 Side Panel 的权益摘要新增企业席位、保留字节、上传预留、上限及超额状态。字节用 BigInt 显示，企业/项目及登录上下文限制继续执行；个人 VIP 不改变共用企业容量。点击扩展图标在浏览器侧栏出现的方式保持有效，关闭自建验收页面后不留下额外标签页。
+
+![实际原生侧栏](assets/screenshots/15-vip-effective-rights.png)

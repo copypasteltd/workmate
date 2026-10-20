@@ -184,3 +184,9 @@ Manual and 15-second refresh show server-merged personal/current-workspace right
 ![Actual server entitlement revision after suspension](assets/screenshots/16-vip-suspended-rights.png)
 
 Verification triggers the actual browser action and attaches CDP to the native panel; an ordinary `sidepanel.html` tab is not substituted. Build with `npm run build`, then load `dist/` from Chrome's extension manager. The adjacent Delivery repository records the current ZIP and byte digests with `package:surfaces`.
+
+## Enterprise seat and storage enforcement (stage 48)
+
+The actual native Side Panel entitlement summary now includes workspace seats, retained bytes, pending upload reservations, limits and over-limit state. Byte values use BigInt. Existing workspace/project/session guards remain active, and personal VIP does not change shared workspace capacity. Clicking the extension action still opens the browser side panel; owned QA pages and browsers are closed afterward.
+
+![Actual native Side Panel](assets/screenshots/15-vip-effective-rights.png)
