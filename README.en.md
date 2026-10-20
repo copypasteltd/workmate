@@ -269,7 +269,7 @@ The renderer explicitly synchronizes the Web suspension notice and builds with r
 
 ## Current source authentication recovery (2026-10-20)
 
-Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups. Actual Desktop browser S256 authorization, same-key recovery after committed first-exchange/refresh response loss, DPAPI clearing, Web remote revocation and explicit offline sign-out feedback are verified. All 758 source/runtime files match before/after execution. Owned browsers, Electron, MV3 and test credentials are cleared; old startup failures and diagnostics remain unchanged.
+Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups. Actual Desktop browser S256 authorization, same-key recovery after committed first-exchange/refresh response loss, DPAPI clearing, Web remote revocation and explicit offline sign-out feedback are verified. All 762 source/runtime files match before/after execution. Owned browsers, Electron, MV3 and test credentials are cleared; old startup failures and diagnostics remain unchanged.
 
 ![Current frameless source-client sessions](assets/screenshots/24-active-sessions-current.png)
 ![Current offline sign-out feedback](assets/screenshots/25-offline-signout-current.png)
