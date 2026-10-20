@@ -152,6 +152,68 @@ async function workspace(c: Client) {
   assert.equal(r.status, 200, JSON.stringify(r.data));
   return r.data;
 }
+async function verifiedTopUp(
+  a: Client,
+  reviewer: Client,
+  owner: Client,
+  w: any,
+  amount: string,
+  reference: string,
+) {
+  const evidence = await system.db.tx(
+    (tx) =>
+      saveAsset(tx, system.storage, {
+        tenant: w.tenant.id,
+        project: w.project.id,
+        user: owner.id,
+        name: "Controlled payment receipt.txt",
+        mime: "text/plain",
+        bytes: Buffer.from(
+          "Controlled receipt; no actual money received: " + reference,
+        ),
+      }),
+    w.tenant.id,
+  );
+  const account = (
+    await system.db.control.query(
+      "SELECT id,version FROM wallets WHERE tenant_id=$1",
+      [w.tenant.id],
+    )
+  ).rows[0];
+  const receipt = {
+    billing_account_id: account.id,
+    external_reference: reference,
+    amount: { currency: "HKD", amount_micros: amount },
+    received_at: new Date(Date.now() - 1000).toISOString(),
+    evidence_asset_version_id: evidence.version.id,
+    reason: "Controlled evidence; no actual money received",
+  };
+  const recorded = await call(a, "POST", "/v1/admin/billing/payments", receipt);
+  assert.equal(recorded.status, 202, JSON.stringify(recorded.data));
+  const payment = recorded.data.result_ids[0];
+  const confirmed = await call(
+    reviewer,
+    "POST",
+    `/v1/admin/billing/payments/${payment}/confirmations`,
+    {
+      expected_version: 1,
+      verified_reference: reference,
+      reason: "Independent review of controlled payment evidence",
+    },
+  );
+  assert.equal(confirmed.status, 202, JSON.stringify(confirmed.data));
+  return {
+    account,
+    receipt,
+    command: {
+      action: "top_up",
+      expected_version: account.version,
+      amount: receipt.amount,
+      payment_record_id: payment,
+      reason: "Post independently verified controlled receipt",
+    },
+  };
+}
 async function money(a: Client, b: unknown, k = randomUUID()) {
   const old = b as any;
   if (
@@ -1886,7 +1948,8 @@ test("admin authentication requires MFA, separate audience and explicit content 
 test("admin funding preview is side-effect-free, commit replays once, concurrent spending preserves holds", async () => {
   const u = await user(),
     w = await workspace(u),
-    a = await admin();
+    a = await admin(),
+    reviewer = await admin();
   const base = {
     action: "billing.top_up",
     tenant_id: w.tenant.id,
@@ -1894,8 +1957,26 @@ test("admin funding preview is side-effect-free, commit replays once, concurrent
     reference: "QA-" + randomUUID(),
     reason: "QA confirmed payment",
   };
-  const preview = await call(a, "POST", "/v1/admin/operations/preview", base);
-  assert.equal(preview.status, 200);
+  const legacy = await call(a, "POST", "/v1/admin/operations/preview", base);
+  assert.equal(legacy.status, 409);
+  assert.equal(legacy.data.error.code, "CANONICAL_FINANCE_REQUIRED");
+  const prepared = await verifiedTopUp(
+      a,
+      reviewer,
+      u,
+      w,
+      "100000000",
+      base.reference,
+    ),
+    endpoint = `/v1/admin/billing/accounts/${prepared.account.id}`;
+  const preview = await call(
+    a,
+    "POST",
+    endpoint + "/previews",
+    prepared.command,
+  );
+  assert.equal(preview.status, 200, JSON.stringify(preview.data));
+  assert.equal(preview.data.creates_business_effect, false);
   assert.equal(
     (
       await system.db.control.query(
@@ -1906,19 +1987,25 @@ test("admin funding preview is side-effect-free, commit replays once, concurrent
     "0",
   );
   const k = randomUUID(),
-    payload = {
-      preview_id: preview.data.id,
-      payload_hash: preview.data.payload_hash,
-    };
+    headers = { "X-Admin-Preview-ID": preview.data.preview_id };
   const first = await call(
       a,
       "POST",
-      "/v1/admin/operations/commit",
-      payload,
+      endpoint + "/top-up",
+      prepared.command,
       k,
+      headers,
     ),
-    again = await call(a, "POST", "/v1/admin/operations/commit", payload, k);
-  assert.equal(first.status, 200, JSON.stringify(first.data));
+    again = await call(
+      a,
+      "POST",
+      endpoint + "/top-up",
+      prepared.command,
+      k,
+      headers,
+    );
+  assert.equal(first.status, 202, JSON.stringify(first.data));
+  assert.equal(again.status, 202, JSON.stringify(again.data));
   assert.equal(first.data.id, again.data.id);
   const tasks = await system.db.tx(async (tx) => {
     const out = [];
@@ -2159,32 +2246,62 @@ test("confirmed payment references cannot credit a second workspace, including w
   const u = await user(),
     w = await workspace(u),
     w2 = await workspace(u),
-    a = await admin();
+    a = await admin(),
+    reviewer = await admin();
   const reference = "QA-PAY-" + randomUUID();
-  assert.equal(
-    (
-      await money(a, {
-        action: "billing.top_up",
-        tenant_id: w.tenant.id,
-        amount_micros: 2_000_000,
-        reference,
-        reason: "Confirmed payment test",
-      })
-    ).status,
-    200,
+  const prepared = await verifiedTopUp(a, reviewer, u, w, "2000000", reference),
+    endpoint = `/v1/admin/billing/accounts/${prepared.account.id}`,
+    preview = await call(a, "POST", endpoint + "/previews", prepared.command);
+  assert.equal(preview.status, 200, JSON.stringify(preview.data));
+  const posted = await call(
+    a,
+    "POST",
+    endpoint + "/top-up",
+    prepared.command,
+    randomUUID(),
+    {
+      "X-Admin-Preview-ID": preview.data.preview_id,
+    },
   );
-  assert.equal(
-    (
-      await money(a, {
-        action: "billing.top_up",
-        tenant_id: w2.tenant.id,
-        amount_micros: 2_000_000,
-        reference,
-        reason: "Duplicate payment test",
-      })
-    ).status,
-    409,
+  assert.equal(posted.status, 202, JSON.stringify(posted.data));
+  const second = (
+    await system.db.control.query(
+      "SELECT id,version FROM wallets WHERE tenant_id=$1",
+      [w2.tenant.id],
+    )
+  ).rows[0];
+  const reused = await call(
+    a,
+    "POST",
+    `/v1/admin/billing/accounts/${second.id}/previews`,
+    {
+      ...prepared.command,
+      expected_version: second.version,
+    },
   );
+  assert.equal(reused.status, 409);
+  assert.equal(reused.data.error.code, "PAYMENT_ACCOUNT_MISMATCH");
+  const secondEvidence = await system.db.tx(
+    (tx) =>
+      saveAsset(tx, system.storage, {
+        tenant: w2.tenant.id,
+        project: w2.project.id,
+        user: u.id,
+        name: "Duplicate controlled receipt.txt",
+        mime: "text/plain",
+        bytes: Buffer.from(
+          "Controlled duplicate reference; no payment: " + reference,
+        ),
+      }),
+    w2.tenant.id,
+  );
+  const duplicate = await call(a, "POST", "/v1/admin/billing/payments", {
+    ...prepared.receipt,
+    billing_account_id: second.id,
+    evidence_asset_version_id: secondEvidence.version.id,
+  });
+  assert.equal(duplicate.status, 409);
+  assert.equal(duplicate.data.error.code, "PAYMENT_REFERENCE_DUPLICATE");
   const balance = (
     await system.db.control.query(
       "SELECT balance_micros FROM wallets WHERE tenant_id=$1",

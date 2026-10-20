@@ -1,3 +1,4 @@
+import { isPaymentOperation } from "./payment-records.js";
 import { createApprovalRequest } from "./admin-approval-storage.js";
 import {
   currentAdminControl,
@@ -19,6 +20,8 @@ import { fund, setCreditLimit, settle } from "./billing.js";
 import {
   isFeeOperation,
   feeOperationAuthority,
+  financialAccount,
+  financialAuthority,
   isGuardedLegacyFee,
 } from "./admin-fees.js";
 import { event } from "./tasks.js";
@@ -430,7 +433,20 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
             await tx.query("SELECT * FROM admin_operations WHERE id=$1", [id])
           ).rows[0];
           if (!op) throw new Problem(404, "NOT_FOUND", "Operation not found");
-          if (isFeeOperation(op))
+          if (isPaymentOperation(op)) {
+            const w = await financialAccount(
+              tx,
+              db,
+              op.payload.billing_account_id,
+            );
+            await financialAuthority(
+              tx,
+              req.principal,
+              w,
+              "admin.billing.read",
+            );
+          }
+          if (isFeeOperation(op) || isPaymentOperation(op))
             await feeOperationAuthority(
               tx,
               req.principal,

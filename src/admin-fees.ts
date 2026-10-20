@@ -1,3 +1,8 @@
+import {
+  confirmedPayment,
+  isPaymentOperation,
+  validatePaymentOperation,
+} from "./payment-records.js";
 import { approvalDTO } from "./admin-approval-storage.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -37,7 +42,15 @@ const positive = money.refine(
 );
 const reason = z.string().min(3).max(1000);
 const base = { expected_version: z.number().int().min(1), reason };
-export const feeGift = z
+export const feeTopUp = z
+  .object({
+    ...base,
+    action: z.literal("top_up"),
+    amount: positive,
+    payment_record_id: uuid.transform((v) => v.toLowerCase()),
+  })
+  .strict();
+const feeGift = z
   .object({
     ...base,
     action: z.literal("gift"),
@@ -56,9 +69,20 @@ export const feeDebit = z
 export const feeLimit = z
   .object({ ...base, action: z.literal("credit_limit"), new_limit: money })
   .strict();
-const command = z.discriminatedUnion("action", [feeGift, feeDebit, feeLimit]);
+const command = z.discriminatedUnion("action", [
+  feeTopUp,
+  feeGift,
+  feeDebit,
+  feeLimit,
+]);
 type Command = z.infer<typeof command>;
 const definitions = {
+  top_up: {
+    action: "billing.top_up",
+    permission: "admin.billing.top_up",
+    path: "top-up",
+    schema: feeTopUp,
+  },
   gift: {
     permission: "admin.billing.gift",
     action: "billing.gift",
@@ -112,7 +136,7 @@ function frozenCommand(op: any) {
   return parsed.data;
 }
 
-async function account(tx: Tx, db: Database, id: string) {
+export async function financialAccount(tx: Tx, db: Database, id: string) {
   const row = (
     await tx.query("SELECT * FROM wallets WHERE id=$1 FOR NO KEY UPDATE", [id])
   ).rows[0];
@@ -130,16 +154,17 @@ export async function feeOperationAuthority(
   op: any,
   permission: string,
 ) {
-  frozenCommand(op);
+  if (isPaymentOperation(op)) validatePaymentOperation(op);
+  else frozenCommand(op);
   const w = (
     await tx.query("SELECT * FROM wallets WHERE id=$1", [
       op.payload.billing_account_id,
     ])
   ).rows[0];
   if (!w) throw new Problem(404, "NOT_FOUND", "Billing account not found");
-  await authority(tx, p, w, permission);
+  await financialAuthority(tx, p, w, permission);
 }
-async function authority(
+export async function financialAuthority(
   tx: Tx,
   p: Principal,
   w: any,
@@ -200,7 +225,10 @@ async function inspect(tx: Tx, w: any, b: Command) {
   ).rows[0];
   const debt = BigInt(sums.gross) - BigInt(w.balance_micros),
     effectiveBalance = BigInt(w.balance_micros) - BigInt(sums.expired_free);
-  if (b.action === "gift" && effectiveBalance + value(b) > 9223372036854775807n)
+  if (
+    ["gift", "top_up"].includes(b.action) &&
+    effectiveBalance + value(b) > 9223372036854775807n
+  )
     throw new Problem(
       409,
       "AMOUNT_RANGE",
@@ -240,6 +268,20 @@ async function inspect(tx: Tx, w: any, b: Command) {
       "CREDIT_RESERVED",
       "Existing debt or reserved commitments exceed this limit",
     );
+  if (b.action === "top_up") {
+    source = await confirmedPayment(
+      tx,
+      w,
+      b.payment_record_id,
+      b.amount.amount_micros,
+    );
+    before.payment = {
+      id: source.id,
+      version: source.version,
+      evidence_sha256: source.evidence_sha256,
+      verified_by: source.verified_by,
+    };
+  }
   if (b.action === "debit") {
     source = (
       await tx.query(
@@ -337,10 +379,17 @@ async function apply(
             reason: b.reason,
             ...(b.action === "gift"
               ? { expires_at: b.expires_at }
-              : { source_id: checked.source.raw_entry_id }),
+              : b.action === "top_up"
+                ? { reference: `payment:${b.payment_record_id}` }
+                : { source_id: checked.source.raw_entry_id }),
           },
           `admin:${op.id}`,
         );
+  if (b.action === "top_up")
+    await tx.query(
+      "INSERT INTO payment_postings(payment_record_id,ledger_id,operation_id) VALUES($1,$2,$3)",
+      [b.payment_record_id, result.id, op.id],
+    );
   const journal = (
     await tx.query(
       "SELECT id FROM billing_journal WHERE operation_id=$1 ORDER BY id",
@@ -396,13 +445,13 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
   const auth = { preHandler: requireAdmin(db) },
     root = "/v1/admin/billing/accounts/:account";
   app.post(root + "/previews", auth, async (req) => {
-    const id = uuid.parse((req.params as any).account),
+    const id = uuid.parse((req.params as any).account).toLowerCase(),
       b = command.parse(req.body);
     return db.tx(
       async (tx) => {
         await lockAdminAccess(tx);
-        const w = await account(tx, db, id),
-          allowed = await authority(
+        const w = await financialAccount(tx, db, id),
+          allowed = await financialAuthority(
             tx,
             req.principal,
             w,
@@ -464,11 +513,13 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
                 : "recent_mfa",
               missing_permission_keys: [],
               impact_summary:
-                b.action === "credit_limit"
-                  ? `Set credit limit to HKD ${b.new_limit.amount_micros} micros; no payment or VIP change.`
-                  : b.action === "gift"
-                    ? `Grant HKD ${b.amount.amount_micros} micros until ${b.expires_at}; no payment received.`
-                    : `Debit HKD ${b.amount.amount_micros} micros from original funding entry ${b.original_entry_id}; no cash refund.`,
+                b.action === "top_up"
+                  ? `Post HKD ${b.amount.amount_micros} micros from independently verified payment ${b.payment_record_id}; no VIP change.`
+                  : b.action === "credit_limit"
+                    ? `Set credit limit to HKD ${b.new_limit.amount_micros} micros; no payment or VIP change.`
+                    : b.action === "gift"
+                      ? `Grant HKD ${b.amount.amount_micros} micros until ${b.expires_at}; no payment received.`
+                      : `Debit HKD ${b.amount.amount_micros} micros from original funding entry ${b.original_entry_id}; no cash refund.`,
               expires_at: row.expires_at.toISOString(),
               creates_business_effect: false,
               expected_target_versions: [{ id, version: w.version }],
@@ -483,14 +534,14 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
   for (const def of Object.values(definitions))
     app.post(root + "/" + def.path, auth, async (req, reply) => {
       reply.code(202);
-      const id = uuid.parse((req.params as any).account),
+      const id = uuid.parse((req.params as any).account).toLowerCase(),
         b = def.schema.parse(req.body),
         preview = uuid.optional().parse(req.headers["x-admin-preview-id"]);
       return db.tx(
         async (tx) => {
           await lockAdminAccess(tx);
-          const w = await account(tx, db, id),
-            allowed = await authority(
+          const w = await financialAccount(tx, db, id),
+            allowed = await financialAuthority(
               tx,
               req.principal,
               w,
@@ -673,9 +724,15 @@ export async function decideFeeOperation(
 ) {
   const id = op.id,
     c = frozenCommand(op),
-    w = await account(tx, db, op.payload.billing_account_id);
-  await authority(tx, reviewer, w, "admin.approvals.decide");
-  await authority(tx, reviewer, w, definitions[c.action].permission, value(c));
+    w = await financialAccount(tx, db, op.payload.billing_account_id);
+  await financialAuthority(tx, reviewer, w, "admin.approvals.decide");
+  await financialAuthority(
+    tx,
+    reviewer,
+    w,
+    definitions[c.action].permission,
+    value(c),
+  );
   if (b.decision === "approve") {
     if (
       !(
@@ -690,7 +747,7 @@ export async function decideFeeOperation(
         "Financial approval expired; submit a fresh preview",
       );
     const original = actor(op),
-      allowed = await authority(
+      allowed = await financialAuthority(
         tx,
         original,
         w,

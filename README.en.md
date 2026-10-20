@@ -415,4 +415,21 @@ flowchart LR
 
 The original OpenAPI and migrations 001–047 retain their bytes. The old operation decision endpoint refuses to invent a reviewed version. Complete payments, evidence, refunds, VIP, notifications and full Admin acceptance remain tracked.
 
-The full platform regression passes **303/303** with all 669 source hashes unchanged. Raw TAP SHA-256: `1615f06e75496988f37cb30872ee35ba7f981c23c7e8d98b3f8e409f16df612f`. The separate 53/53 approval/upgrade run is retained and is not added again to the platform total.
+The stage 43 full platform regression passed **303/303** with all 669 source hashes unchanged. Raw TAP SHA-256: `1615f06e75496988f37cb30872ee35ba7f981c23c7e8d98b3f8e409f16df612f`. The separate 53/53 approval/upgrade run is retained and is not added again to the platform total.
+
+## Manual payment evidence and exact posting (2026-10-20)
+
+The original payment list/create/confirmation contracts now retain actual evidence versions and digests. A different authorized administrator verifies the receipt; neither registration nor verification credits a wallet. Exact top-ups use an unposted verified receipt from the same subject and mode, with existing preview, MFA, limits and independent approval rules. Posting, actual credit-debt repayment, source linkage, audit and idempotent receipt commit atomically. Payment facts and operation intent are immutable; the old top-up bypass is blocked.
+
+```mermaid
+flowchart LR
+  Evidence[Original evidence version] --> Record[Record received payment]
+  Record --> Verify[Independent administrator verification]
+  Verify --> Preview[Exact source and account preview]
+  Preview --> Checks[Current authority MFA limits and review]
+  Checks --> Post[Atomic posting debt repayment audit and receipt]
+```
+
+Both native databases contain appended migrations 049–052. Original failed migration bytes and failure receipts remain; 051/052 repair the preview-field and historical-alias defects. The financial suite passes 21/21 and actual browser groups 5/5; use the latest Delivery JSON/TAP for the full platform result. This does not establish payment-provider, complete refund/VIP or all 102 acceptance conditions. Central specification: `docs/technical/44-manual-payment-evidence-and-exact-posting.md`.
+
+The final current-source regression passes **310/310**, with all 676 participating source/verifier files unchanged. Raw TAP SHA-256: `5b499c16a50ec57427ed7ff7cf4681ba2e0cef0330e97159dde7e9d25e291119`. The four updated-journey and 21 financial checks overlap the full suite and are not added twice. The original 306/310 failure and 303-test historical snapshot remain unchanged.

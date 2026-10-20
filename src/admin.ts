@@ -248,7 +248,7 @@ export function registerAdmin(
               devices:
                 "SELECT id,tenant_id,user_id,name,client,state,last_seen_at,created_at FROM devices",
               content: contentUnion,
-              jobs: "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,coalesce(payload->>'financial_command_version'='1',false) AS financial_command,payload->>'billing_account_id' AS billing_account_id FROM admin_operations",
+              jobs: "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,(coalesce(payload->>'financial_command_version'='1',false) OR coalesce(payload->>'payment_record_command_version'='1',false)) AS financial_command,payload->>'billing_account_id' AS billing_account_id FROM admin_operations",
               audit: "SELECT * FROM audit_log",
               support: "SELECT * FROM support_sessions",
               catalog:

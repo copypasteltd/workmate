@@ -6,6 +6,7 @@ import { createRequire } from "node:module";
 import * as OTPAuth from "otpauth";
 import pg from "pg";
 import { Ajv2020 } from "ajv/dist/2020.js";
+import paymentContract from "../contracts/admin-payment-schemas.json" with { type: "json" };
 import contract from "../contracts/admin-fee-schemas.json" with { type: "json" };
 import { isolatedTestEnvironment } from "./native-test-environment.js";
 import { buildApp } from "../src/server.js";
@@ -31,10 +32,10 @@ type Client = {
 const ajv = new Ajv2020({ allErrors: true });
 createRequire(import.meta.url)("ajv-formats")(ajv);
 const defs = JSON.parse(
-  JSON.stringify(contract.schemas).replaceAll(
-    "#/components/schemas/",
-    "#/$defs/",
-  ),
+  JSON.stringify({
+    ...contract.schemas,
+    ...paymentContract.schemas,
+  }).replaceAll("#/components/schemas/", "#/$defs/"),
 );
 function schema(name: string, value: unknown) {
   const check = ajv.compile({ $defs: defs, $ref: "#/$defs/" + name });
@@ -243,6 +244,438 @@ async function manualTask(u: Client, w: any, payer: string, budget = 60) {
 }
 const base = "/v1/admin/billing/accounts";
 
+test("payment and account UUIDs are case-insensitive without changing the payment identity or amount", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    w = await personal(u);
+  const r = await receipt(a, w, u);
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  const confirmed = await call(
+    reviewer,
+    "POST",
+    `/v1/admin/billing/payments/${r.payment.toUpperCase()}/confirmations`,
+    {
+      expected_version: 1,
+      reason: "Verify the same controlled payment identifier",
+      verified_reference: r.body.external_reference,
+    },
+  );
+  assert.equal(confirmed.status, 202, JSON.stringify(confirmed.data));
+  const b = await topup(w, r.payment.toUpperCase()),
+    pv = await preview(a, w.id.toUpperCase(), b);
+  assert.equal(pv.status, 200, JSON.stringify(pv.data));
+  const posted = await submit(a, w.id.toUpperCase(), b, {
+    preview: pv.data.preview_id,
+  });
+  assert.equal(posted.status, 202, JSON.stringify(posted.data));
+  assert.equal((await current(w.id)).balance_micros, "101");
+});
+
+test("verified payments repay actual credit debt before creating spendable paid funds; old external receipts cannot be posted again", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    ws = await workspace(u),
+    w = await personal(u);
+  await s.db.tx(
+    (tx) => setBillingAccountLimit(tx, w.id, "100"),
+    undefined,
+    true,
+  );
+  const task = await manualTask(u, ws, w.id, 60);
+  await s.db.tx(
+    (tx) => settle(tx, ws.tenant.id, task.id, 60, u.id),
+    ws.tenant.id,
+    false,
+    u.id,
+  );
+  assert.equal((await current(w.id)).balance_micros, "-60");
+  const r = await receipt(a, w, u, "101");
+  assert.equal(r.status, 202);
+  assert.equal((await confirmReceipt(reviewer, r)).status, 202);
+  const posted = await submit(a, w.id, await topup(w, r.payment));
+  assert.equal(posted.status, 202, JSON.stringify(posted.data));
+  const amounts = (
+    await s.db.control.query(
+      "SELECT w.balance_micros,(SELECT sum(remaining_micros)::text FROM funding_lots WHERE billing_account_id=w.id) AS paid,(SELECT sum(amount_micros)::text FROM billing_credit_repayments WHERE billing_account_id=w.id) AS repaid FROM wallets w WHERE w.id=$1",
+      [w.id],
+    )
+  ).rows[0];
+  assert.deepEqual(amounts, { balance_micros: "41", paid: "41", repaid: "60" });
+  const reference = "old-bank-receipt-" + randomUUID();
+  await s.db.tx(
+    (tx) =>
+      fund(
+        tx,
+        {
+          billing_account_id: w.id,
+          action: "top_up",
+          amount_micros: "100",
+          reference,
+          reason: "Original historical receipt fixture",
+        },
+        randomUUID(),
+      ),
+    undefined,
+    true,
+  );
+  const duplicate = await receipt(a, w, u, "100", {
+    external_reference: reference,
+  });
+  assert.equal(duplicate.data.error.code, "PAYMENT_REFERENCE_HISTORICAL");
+});
+
+test("concurrent payment postings use one source exactly once and permission revocation prevents receipt replay", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    w = await personal(u);
+  const r = await receipt(a, w, u, "123456789");
+  assert.equal(r.status, 202);
+  const confirmBody = {
+      expected_version: 1,
+      reason: "Controlled independent receipt verification",
+      verified_reference: r.body.external_reference,
+    },
+    confirmKey = randomUUID();
+  const confirmation = await call(
+    reviewer,
+    "POST",
+    `/v1/admin/billing/payments/${r.payment}/confirmations`,
+    confirmBody,
+    { key: confirmKey },
+  );
+  assert.equal(confirmation.status, 202, JSON.stringify(confirmation.data));
+  const b = await topup(w, r.payment, "123456789"),
+    pv1 = await preview(a, w.id, b),
+    pv2 = await preview(a, w.id, b);
+  const writes = await Promise.all([
+    submit(a, w.id, b, { preview: pv1.data.preview_id }),
+    submit(a, w.id, b, { preview: pv2.data.preview_id }),
+  ]);
+  assert.deepEqual(writes.map((x) => x.status).sort(), [202, 409]);
+  assert.equal((await current(w.id)).balance_micros, "123456789");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int AS n FROM payment_postings WHERE payment_record_id=$1",
+        [r.payment],
+      )
+    ).rows[0].n,
+    1,
+  );
+  await s.db.control.query(
+    "UPDATE admin_bindings SET expires_at=now()-interval '1 second' WHERE principal_id=$1",
+    [reviewer.id],
+  );
+  const replay = await call(
+    reviewer,
+    "POST",
+    `/v1/admin/billing/payments/${r.payment}/confirmations`,
+    confirmBody,
+    { key: confirmKey },
+  );
+  assert.equal(replay.status, 403, JSON.stringify(replay.data));
+});
+
+async function receipt(
+  a: Client,
+  w: any,
+  u: Client,
+  amount = "101",
+  options: any = {},
+) {
+  const ws = await workspace(u),
+    bytes = Buffer.from(
+      "Controlled bank receipt; not a real payment " + randomUUID(),
+    );
+  const key = await s.storage.put(bytes, "text/plain");
+  const asset = (
+    await s.db.control.query(
+      "INSERT INTO assets(tenant_id,project_id,name,kind,created_by,private_owner) VALUES($1,$2,'Controlled receipt','document',$3,$4) RETURNING id",
+      [ws.tenant.id, ws.project.id, u.id, w.user_id ?? null],
+    )
+  ).rows[0];
+  const version = (
+    await s.db.control.query(
+      "INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256) VALUES($1,$2,1,$3,'text/plain',$4,$5) RETURNING id",
+      [ws.tenant.id, asset.id, key, bytes.length, hash(bytes)],
+    )
+  ).rows[0];
+  const body = {
+    billing_account_id: w.id,
+    external_reference: "bank-" + randomUUID(),
+    amount: money(amount),
+    received_at: new Date(Date.now() - 1000).toISOString(),
+    evidence_asset_version_id: version.id,
+    reason: "Controlled evidence; no actual money received",
+    ...options,
+  };
+  const r = await call(a, "POST", "/v1/admin/billing/payments", body);
+  return {
+    ...r,
+    body,
+    asset: asset.id,
+    version: version.id,
+    payment: r.data.result_ids?.[0],
+  };
+}
+async function confirmReceipt(a: Client, r: any, options: any = {}) {
+  return call(
+    a,
+    "POST",
+    `/v1/admin/billing/payments/${r.payment}/confirmations`,
+    {
+      expected_version: 1,
+      verified_reference: r.body.external_reference,
+      reason: "Independently checked controlled receipt",
+      ...options,
+    },
+  );
+}
+async function topup(w: any, payment_record_id: string, amount = "101") {
+  return {
+    action: "top_up",
+    expected_version: (await current(w.id)).version,
+    amount: money(amount),
+    payment_record_id,
+    reason: "Post a verified controlled payment",
+  };
+}
+
+test("recording and independent receipt verification never change balances; exact confirmed payment posts once", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    w = await personal(u);
+  const r = await receipt(a, w, u, "9007199254740993");
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  schema("AdminOperation", r.data);
+  assert.equal((await current(w.id)).balance_micros, "0");
+  assert.equal(
+    (await confirmReceipt(a, r)).data.error.code,
+    "PAYMENT_SELF_VERIFICATION",
+  );
+  assert.equal(
+    (await preview(a, w.id, await topup(w, r.payment, "9007199254740993"))).data
+      .error.code,
+    "PAYMENT_NOT_CONFIRMED",
+  );
+  assert.equal(
+    (
+      await confirmReceipt(reviewer, r, {
+        verified_reference: "wrong-reference",
+      })
+    ).data.error.code,
+    "PAYMENT_REFERENCE_MISMATCH",
+  );
+  const confirmed = await confirmReceipt(reviewer, r);
+  assert.equal(confirmed.status, 202, JSON.stringify(confirmed.data));
+  schema("AdminOperation", confirmed.data);
+  assert.equal((await current(w.id)).balance_micros, "0");
+  assert.equal(
+    (await preview(a, w.id, await topup(w, r.payment, "1"))).data.error.code,
+    "PAYMENT_AMOUNT_MISMATCH",
+  );
+  const b = await topup(w, r.payment, "9007199254740993"),
+    pv = await preview(a, w.id, b);
+  assert.equal(pv.status, 200, JSON.stringify(pv.data));
+  schema("AdminPreview", pv.data);
+  const key = randomUUID(),
+    submitted = await submit(a, w.id, b, { key, preview: pv.data.preview_id });
+  assert.equal(submitted.status, 202, JSON.stringify(submitted.data));
+  assert.equal(submitted.data.state, "pending_approval");
+  const approved = await decide(reviewer, submitted.data);
+  assert.equal(approved.status, 202, JSON.stringify(approved.data));
+  assert.equal(approved.data.state, "succeeded");
+  assert.equal((await current(w.id)).balance_micros, "9007199254740993");
+  const j = (
+    await s.db.control.query(
+      "SELECT * FROM billing_journal WHERE operation_id=$1",
+      [submitted.data.id],
+    )
+  ).rows;
+  assert.equal(j.length, 1);
+  assert.equal(j[0].payment_record_id, r.payment);
+  assert.equal(j[0].actor_id, a.id);
+  assert.equal(
+    (await preview(a, w.id, await topup(w, r.payment, "9007199254740993"))).data
+      .error.code,
+    "PAYMENT_ALREADY_POSTED",
+  );
+  const list = await call(a, "GET", "/v1/admin/billing/payments?limit=1");
+  schema("AdminPaymentRecordList", list.data);
+  assert.equal(list.data.items[0].version, 3);
+});
+
+test("payment registration and confirmation have persistent idempotency, per-account scope and no legacy top-up bypass", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    w = await personal(u),
+    other = await personal(await user());
+  const r = await receipt(a, w, u);
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  const duplicate = await call(a, "POST", "/v1/admin/billing/payments", r.body);
+  assert.equal(duplicate.data.error.code, "PAYMENT_REFERENCE_DUPLICATE");
+  const confirmedBody = {
+      expected_version: 1,
+      verified_reference: r.body.external_reference,
+      reason: "Independent verification of test evidence",
+    },
+    idempotency = randomUUID();
+  const c1 = await call(
+    reviewer,
+    "POST",
+    `/v1/admin/billing/payments/${r.payment}/confirmations`,
+    confirmedBody,
+    { key: idempotency },
+  );
+  const c2 = await call(
+    reviewer,
+    "POST",
+    `/v1/admin/billing/payments/${r.payment}/confirmations`,
+    confirmedBody,
+    { key: idempotency },
+  );
+  assert.equal(c1.status, 202, JSON.stringify(c1.data));
+  assert.deepEqual(c1.data, c2.data);
+  assert.equal(
+    (await preview(a, other.id, await topup(other, r.payment))).data.error.code,
+    "PAYMENT_ACCOUNT_MISMATCH",
+  );
+  const ws = await workspace(u),
+    legacy = await call(a, "POST", "/v1/admin/operations/preview", {
+      action: "billing.top_up",
+      tenant_id: ws.tenant.id,
+      amount_micros: 101,
+      reference: "Unverified reference",
+      reason: "Must not post money without a verified receipt",
+    });
+  assert.equal(legacy.data.error.code, "CANONICAL_FINANCE_REQUIRED");
+  const denied = await admin(ws.tenant.id, "finance_admin");
+  assert.equal(
+    (await call(denied, "GET", `/v1/admin/billing/payments/${r.payment}`))
+      .status,
+    403,
+  );
+  const ordinary = await call(u, "GET", "/v1/admin/billing/payments");
+  assert.equal(ordinary.status, 401);
+  const direct = await submit(a, w.id, await topup(w, r.payment));
+  assert.equal(direct.status, 202, JSON.stringify(direct.data));
+  assert.equal(direct.data.state, "succeeded");
+  assert.equal((await current(w.id)).balance_micros, "101");
+  const read = await call(a, "GET", `/v1/admin/operations/${r.data.id}`);
+  schema("AdminOperation", read.data);
+});
+
+test("quarantined, changed-subject and future payment evidence cannot become product credit", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    w = await personal(u);
+  const future = await receipt(a, w, u, "101", {
+    received_at: new Date(Date.now() + 3600000).toISOString(),
+  });
+  assert.equal(future.data.error.code, "PAYMENT_DATE_INVALID");
+  const wrong = await receipt(a, await personal(await user()), u);
+  // receipt() deliberately makes private evidence for the account's subject;
+  // replacing that subject afterwards is a direct database attack fixture.
+  assert.equal(wrong.status, 202, JSON.stringify(wrong.data));
+  await s.db.control.query("UPDATE assets SET private_owner=$2 WHERE id=$1", [
+    wrong.asset,
+    u.id,
+  ]);
+  assert.equal(
+    (await confirmReceipt(reviewer, wrong)).data.error.code,
+    "PAYMENT_EVIDENCE_INVALID",
+  );
+  const r = await receipt(a, w, u);
+  assert.equal(r.status, 202);
+  await s.db.control.query(
+    "UPDATE assets SET state='quarantined' WHERE id=$1",
+    [r.asset],
+  );
+  assert.equal(
+    (await confirmReceipt(reviewer, r)).data.error.code,
+    "PAYMENT_EVIDENCE_INVALID",
+  );
+  await s.db.control.query("UPDATE assets SET state='active' WHERE id=$1", [
+    r.asset,
+  ]);
+  assert.equal((await confirmReceipt(reviewer, r)).status, 202);
+  const b = await topup(w, r.payment),
+    pv = await preview(a, w.id, b);
+  assert.equal(pv.status, 200);
+  await s.db.control.query(
+    "UPDATE assets SET state='quarantined' WHERE id=$1",
+    [r.asset],
+  );
+  const result = await submit(a, w.id, b, { preview: pv.data.preview_id });
+  assert.equal(result.data.error.code, "PAYMENT_EVIDENCE_INVALID");
+  assert.equal((await current(w.id)).balance_micros, "0");
+});
+
+test("payment audit failure rolls back registration, and committed payment facts cannot be edited or deleted", async () => {
+  const a = await admin(undefined, "super_admin"),
+    u = await user(),
+    w = await personal(u),
+    owner = new pg.Client({
+      connectionString: isolated.env.OWNER_DATABASE_URL,
+    });
+  await owner.connect();
+  try {
+    await owner.query(
+      "CREATE FUNCTION reject_payment_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action='admin.payment.record' THEN RAISE EXCEPTION 'controlled audit failure'; END IF; RETURN NEW; END $$",
+    );
+    await owner.query(
+      "CREATE TRIGGER payment_audit_fault BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION reject_payment_audit()",
+    );
+    const r = await receipt(a, w, u);
+    assert.equal(r.status, 500);
+    assert.equal(
+      (
+        await owner.query(
+          "SELECT count(*)::int AS n FROM payment_records WHERE external_reference=$1",
+          [r.body.external_reference],
+        )
+      ).rows[0].n,
+      0,
+    );
+    await owner.query("DROP TRIGGER payment_audit_fault ON audit_log");
+    const good = await call(a, "POST", "/v1/admin/billing/payments", r.body);
+    assert.equal(good.status, 202, JSON.stringify(good.data));
+    await assert.rejects(
+      owner.query(
+        "UPDATE admin_operations SET payload=jsonb_set(payload,'{command,kind}','\"forged\"') WHERE id=$1",
+        [good.data.id],
+      ),
+      /immutable/,
+    );
+    await assert.rejects(
+      owner.query(
+        "UPDATE payment_records SET external_reference='edited' WHERE id=$1",
+        [good.data.result_ids[0]],
+      ),
+      /append-only/,
+    );
+    await assert.rejects(
+      owner.query("DELETE FROM payment_records WHERE id=$1", [
+        good.data.result_ids[0],
+      ]),
+      /append-only/,
+    );
+    assert.equal((await current(w.id)).balance_micros, "0");
+  } finally {
+    await owner.query(
+      "DROP TRIGGER IF EXISTS payment_audit_fault ON audit_log",
+    );
+    await owner.query("DROP FUNCTION IF EXISTS reject_payment_audit()");
+    await owner.end();
+  }
+});
+
 const money = (n: string) => ({ currency: "HKD", amount_micros: n });
 async function current(id: string) {
   return (await s.db.control.query("SELECT * FROM wallets WHERE id=$1", [id]))
@@ -258,7 +691,11 @@ async function gift(id: string, amount = "100") {
   };
 }
 const suffix = (b: any) =>
-  b.action === "credit_limit" ? "credit-limit" : b.action;
+  b.action === "credit_limit"
+    ? "credit-limit"
+    : b.action === "top_up"
+      ? "top-up"
+      : b.action;
 async function preview(a: Client, id: string, body: any) {
   schema("AdminFeePreview", body);
   return call(a, "POST", `${base}/${id}/previews`, body);
@@ -319,7 +756,11 @@ test("fee schema snapshot is byte-derived from the unchanged original OpenAPI", 
   const original = await readFile("../../docs/contracts/openapi.json", "utf8");
   assert.equal(hash(original), contract.source_sha256);
   const schemas = JSON.parse(original).components.schemas;
-  for (const [name, body] of Object.entries(contract.schemas))
+  assert.equal(hash(original), paymentContract.source_sha256);
+  for (const [name, body] of Object.entries({
+    ...contract.schemas,
+    ...paymentContract.schemas,
+  }))
     assert.deepEqual(body, schemas[name], name);
 });
 
