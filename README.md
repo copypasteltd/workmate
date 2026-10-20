@@ -314,9 +314,9 @@ Workspace refresh uses authenticated `GET /v1/session/context`; canonical `GET /
 
 ## 成员与邀请 / Members and invitations
 
-成员页支持角色和项目选择、分页、所有者编辑、移除确认，以及邀请投递状态、重发和撤销。邮件登录保留邀请地址并选择实际加入的企业。未知响应保留操作身份，退出后拒绝迟到的上下文响应。单元检查 5/5；当前服务端真实 HTTP 五组通过。此前页面复核超时与早期被覆盖的成功不计为通过，原失败记录保留。2026-10-20 当前源码页面 6/6 通过，158 份源码／verifier 前后一致，实际会话退出、自建浏览器关闭。新回执和截图见下文。
+成员页支持角色和项目选择、分页、所有者编辑、移除确认，以及邀请投递状态、重发和撤销。邮件登录保留邀请地址并选择实际加入的企业。未知响应保留操作身份，退出后拒绝迟到的上下文响应。单元检查 5/5；当前服务端真实 HTTP 五组通过。此前页面复核超时与早期被覆盖的成功不计为通过，原失败记录保留。2026-10-20 当前源码页面 6/6 通过，164 份源码／verifier 前后一致，实际会话退出、自建浏览器关闭。新回执和截图见下文。
 
-The member page supports project selection, paging, owner edits, removal confirmation, delivery status, resend and revocation. Invite links survive email login and select the joined workspace. Unknown replies retain their operation identity; late context/member responses cannot cross a sign-in revision. Unit checks pass 5/5 and five current-source HTTP groups pass separately. Earlier page timeouts and overwritten success remain historical and are excluded from passing evidence. The current-source rerun now passes 6/6 with 158 unchanged source/verifier files, actual session revocation and owned browser closure; new evidence appears below.
+The member page supports project selection, paging, owner edits, removal confirmation, delivery status, resend and revocation. Invite links survive email login and select the joined workspace. Unknown replies retain their operation identity; late context/member responses cannot cross a sign-in revision. Unit checks pass 5/5 and five current-source HTTP groups pass separately. Earlier page timeouts and overwritten success remain historical and are excluded from passing evidence. The current-source rerun now passes 6/6 with 164 unchanged source/verifier files, actual session revocation and owned browser closure; new evidence appears below.
 
 ![早期实际成员页 / Earlier verified member page](assets/screenshots/53-member-invitations.png)
 
@@ -335,3 +335,5 @@ Delivery `qa:membership` 当前 6/6，覆盖真实邮箱邀请／重发／加入
 ![实际原生授权页](assets/screenshots/64-native-authorization-current.png)
 ![当前设备目录](assets/screenshots/65-active-sessions-current.png)
 ![深色窄屏设备目录](assets/screenshots/66-sessions-mobile-dark-current.png)
+
+2026-10-20 付款增量后的当前复核仍为成员 6/6（164 份源码）、Admin 成员 6/6（190 份）及三端认证 12/12（769 份）。前后摘要一致，拥有的会话和浏览器均清理；完整发布／系统矩阵继续独立跟踪。
