@@ -1,5 +1,12 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+## 2026-10-21 追加要求复核
+
+当前 Desktop 无系统边框、无 Electron 默认菜单，使用品牌自绘标题栏；扩展工具栏动作打开 Chrome 原生 Side Panel，不定义 popup。两端类型检查及现有 Desktop 25/25、Extension 21/21 单元测试通过。本次重新核对 95 份 Desktop、34 份扩展运行源码、实际运行目录、安装器与扩展 ZIP，全部与既有 10/10 原生窗口／侧栏实测字节一致，见 [复核回执](../quality/native-surfaces-request-recheck-20261021.json)。这次比对未重新运行浏览器 UI，也不代表安装／卸载或服务端验收。
+
+后续可从项目根目录执行 `node docs/tools/verify_native_client_surfaces.mjs` 只读复核。右侧默认位置仍遵循 Chrome 用户设置，具体边界与交互规则见下文。
+
+
 <!-- stage51-support -->
 阶段 51 已同步用户支持授权 renderer 和受限桥接，并重建当前无边框 Desktop；旧阶段 50 安装器/便携包和侧栏 ZIP 保留在各仓库 release 的 stage50 路径。当前预览 10 项实际窗口/原生侧栏检查、6 项原生权益及 8 项三端费用流程通过，精确字节见 [当前包清单](../quality/native-surfaces-artifacts.json)。这不代表安装/卸载、签名或全部系统/DPI 验收完成。下面的阶段 48 内容为当时记录。
 
