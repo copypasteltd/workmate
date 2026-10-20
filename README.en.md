@@ -10,6 +10,26 @@ The platform and Admin now provide atomic VIP plus explicit credit. Web reads ef
 
 ![Actual user page after combined completion](assets/screenshots/79-vip-credit-user-rights.png)
 
+## Durable financial notifications and three-client accounts (stage 50)
+
+Usage now includes personal paid/promotional/reserved balances, credit limit and used credit, with exact six-decimal HKD formatting. The financial inbox supports account/work events, unread filtering, pagination and read-state changes. Payment evidence/confirmation is distinct from posting; an unknown refund stays unknown. Failed reads, workspace changes, revoked access and sign-out clear stale financial content. Polling and current-session guards reject late responses.
+
+Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+
+```mermaid
+flowchart LR
+  Source[Canonical financial fact] --> Tx[Same-transaction outbox]
+  Tx --> Worker[Current eligible recipient]
+  Worker --> Access[Recheck current authority]
+  Access --> Clients[Web / frameless Desktop / native Side Panel]
+```
+
+![Exact accounts and financial inbox](assets/screenshots/39-financial-inbox.png)
+
+![Unknown refund](assets/screenshots/40-financial-unknown.png)
+
+![375px Traditional Chinese dark theme](assets/screenshots/41-financial-narrow-dark.png)
+
 ## Run and deploy
 
 Requires Node.js 22.14+. Start the platform database/API first, then:

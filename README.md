@@ -10,6 +10,26 @@
 
 ![组合生效后的真实用户页面](assets/screenshots/79-vip-credit-user-rights.png)
 
+## 事务费用通知与三端账户（阶段 50）
+
+用量页增加个人实付、赠送、预留、授信上限和已用授信，精确显示六位 HKD 小数；费用通知支持账户/工作事件、未读、分页和已读切换。收款登记/核实不等于入账，未知退款不能显示成零或成功。读取失败、切换企业、撤权及退出清除旧费用内容；15 秒刷新和当前会话守卫拒绝迟到响应。
+
+当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+
+```mermaid
+flowchart LR
+  Source[规范费用事实] --> Tx[同事务通知意图]
+  Tx --> Worker[当前合法接收人]
+  Worker --> Access[读取时复查权限]
+  Access --> Clients[Web / 无边框 Desktop / 原生侧栏]
+```
+
+![精确账户和费用通知](assets/screenshots/39-financial-inbox.png)
+
+![未知退款](assets/screenshots/40-financial-unknown.png)
+
+![375px 繁中深色](assets/screenshots/41-financial-narrow-dark.png)
+
 ## 启动与构建
 
 Node.js 22.14+。先按 platform 仓库说明启动数据库/API，再执行：
