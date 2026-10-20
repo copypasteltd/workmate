@@ -1,5 +1,22 @@
 # CopyPaste Admin Dashboard
 
+## Controlled support update / 受控客服协助
+
+A13 now searches real customers, selects an explicit workspace/project scope and provides canonical operation receipts, revocation and a time-limited read-only view. Its persistent banner identifies the real administrator, customer, read-only mode and server deadline. Expiry, loss of access or read failure clears content.
+
+![Read-only support workspace](assets/screenshots/51-support-en-light-1440.png)
+
+Stage 51 current regression: 424/424 with 711 source files; controlled-support browser workflows: 8/8 with 816 source files and 9 unedited captures. The 14 support tests, original contract checks, migration preservation and separate native checks are bounded evidence, not completion of all 102 acceptance cases. Current binaries are rebuilt; stage 50 binaries remain unchanged in their archive.
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+
 [简体中文](README.md) · Independent operations console · 0.5.0
 
 An independent Git repository and admin client with separate identity, cookies and entry point from customer Web. It manages customers, workspaces, consumption, funding, VIP, content, execution, access and published product configuration. It shares CopyPaste branding, Traditional Chinese/English and light/dark themes. The platform enforces all authorization, auditing and transactions.
@@ -10,7 +27,7 @@ An independent Git repository and admin client with separate identity, cookies a
 
 Existing financial and VIP/explicit-gift commands now capture user-notification intent atomically on the platform, preserving the original permissions, independent review and exact ledger provenance. Pending, rejected and replayed requests do not create duplicate funding or notification facts. Bank evidence and internal reasons stay out of customer notifications. Admin retains its separate identity; the capture below shows the actual customer result, not impersonation or a new funding endpoint.
 
-Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+Stage 50 historical platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
 
 ```mermaid
 flowchart LR

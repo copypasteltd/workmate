@@ -1,5 +1,7 @@
+import "./support.css";
 import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
+import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
 import {
   AdminDirectoryFilters,
@@ -497,6 +499,8 @@ function AdminShell() {
                         <AdminPlans access={a} />
                       ) : n[0] === "entitlements" ? (
                         <AdminVip access={a} />
+                      ) : n[0] === "support" ? (
+                        <AdminSupport access={a} />
                       ) : (
                         <Section section={n[0]} />
                       )

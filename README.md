@@ -1,5 +1,22 @@
 # CopyPaste Admin Dashboard
 
+## 限时只读客服协助 / Controlled support
+
+A13 支援工作台新增真实用户搜索、明确企业/项目选择、规范操作回执、限时只读视图和撤销。常驻横幅显示真实管理员、目标用户、只读及服务端截止时间；到期、撤权或读取失败清除内容。
+
+![Read-only support workspace](assets/screenshots/51-support-en-light-1440.png)
+
+阶段 51 当前平台回归 424/424（711 份来源），受控支持页面 8/8（816 份来源、9 张未编辑截图）。14 组支持专项、原规范检查、迁移保留及独立原生检查是有界证据，完整 102 项验收继续跟踪；当前包已重建，阶段 50 包原字节另存。
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+
 [English](README.en.md) · 独立运营控制台 · 0.5.0
 
 本仓库是独立 Git 管理后台，与用户 Web 使用独立身份、Cookie 和入口。它管理用户、企业、消耗、费用、VIP、内容、任务、权限和产品配置；采用 CopyPaste 同源品牌样式及繁体中文/英文、浅深主题。所有实际授权、审计和事务在 platform 执行。
@@ -10,7 +27,7 @@
 
 既有费用及 VIP/显式赠额操作现在由平台原子捕获用户通知意图，仍沿用原权限、独立审批和精确账本来源。待审、拒绝和重复请求不会再产生资金或通知事实；银行证据和内部原因不进入用户通知。后台继续使用管理员身份，下面的图片是用户端实际收到的结果，不是后台冒充用户或新的资金写入口。
 
-当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+阶段 50 当时平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
 
 ```mermaid
 flowchart LR
