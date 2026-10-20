@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-20T02:13:08.305041+00:00",
+  "at": "2026-10-20T03:31:05.224999+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -247,15 +247,99 @@
     "screenshots": [
       {
         "path": "docs/quality/current-ui-screenshot-provenance.json",
-        "sha256": "fc3b7926fdab2ad928d8b4baa5b1d7d6769a585dc923bed12967ee692b0bf574",
+        "sha256": "cf895b790d70fcbf5a1326f51e9ff886623f390d95e79d72799f7ff0cb064532",
         "verified_images": 20
       },
       {
         "path": "docs/quality/payment-screenshot-provenance.json",
-        "sha256": "b8d47e162a46c485a269f615d6af73fca259cdd72d0418c956e4dd266645f8f5",
+        "sha256": "a9e00fad294d5719b798294fd3ad3d3d6bbb1f103f6c8679fd6de3b8d9e29c99",
         "verified_images": 3
       }
     ]
+  },
+  "refund_verification": {
+    "scope": "Source-bound consumption compensation and manually reviewed cash refund subflows only; history, true provider acceptance and full financial scope remain distinct",
+    "runs": [
+      {
+        "path": "dev/copypaste-delivery/evidence/refunds-core-initial.tap",
+        "sha256": "17795fcb3c0ee396e0fce3ad40a738abf2fc776d7af5c8fbf3ff1887abced16c",
+        "counts": {
+          "tests": 25,
+          "pass": 25,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "status": "passed_at_recorded_source_stage"
+      },
+      {
+        "path": "dev/copypaste-delivery/evidence/refunds-cash-initial.tap",
+        "sha256": "4553a9e65ad4e8d0df2a544e9a0ad010797ad03d11b5e561a5234dcca12bbc8b",
+        "counts": {
+          "tests": 41,
+          "pass": 39,
+          "fail": 2,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "status": "failed_original_retained"
+      },
+      {
+        "path": "dev/copypaste-delivery/evidence/refunds-focused-second.tap",
+        "sha256": "58cdd0ecc584ef98d60e4ac644dfc4dac44b0c5609624915e991f8243217fad9",
+        "counts": {
+          "tests": 48,
+          "pass": 48,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "status": "passed_at_recorded_source_stage"
+      },
+      {
+        "path": "dev/copypaste-delivery/evidence/refunds-focused-final.tap",
+        "sha256": "1d2cefc13ac4c3bc600a1ed6bdd1a841c6bf91696c56c04bc60f742cd33bbc2c",
+        "counts": {
+          "tests": 50,
+          "pass": 50,
+          "fail": 0,
+          "cancelled": 0,
+          "skipped": 0,
+          "todo": 0
+        },
+        "status": "passed_at_recorded_source_stage"
+      }
+    ],
+    "archives": [
+      {
+        "path": "dev/copypaste-delivery/evidence/stage44-before-refunds/archive-map.json",
+        "sha256": "18174a864f530c30493ec67052396370ce623e42806914109576a820785d427e",
+        "verified_files": 160
+      },
+      {
+        "path": "dev/copypaste-delivery/evidence/refunds-before-capture-reset/archive-map.json",
+        "sha256": "13d5417fb13c1559c488cfd07418a6d9d06ea192d55be91033048d5430f8a0d8",
+        "verified_files": 19
+      },
+      {
+        "path": "dev/copypaste-delivery/evidence/refunds-ui-locator-failure/archive-map.json",
+        "sha256": "349185b04c73e9c98920f2d15604447311ed63b3b3f2b3d01a1c3c182da62210",
+        "verified_files": 23
+      },
+      {
+        "path": "dev/copypaste-delivery/evidence/refunds-auth-startup-failure/archive-map.json",
+        "sha256": "58d9791976211f2dba4909a1578f8275ac004b97ffea3fedcfec07f47ad4e381",
+        "verified_files": 3
+      }
+    ],
+    "screenshots": {
+      "path": "docs/quality/refund-screenshot-provenance.json",
+      "sha256": "25116151ba919eec32f3349489c3e7266929bc3267076a3846ed5d70fde06221",
+      "verified_images": 6
+    }
   },
   "scope": "All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report",
   "baseline_sha256": "496d31dd2408c58b21d208a83f532c1f0475571148b8415c735656b8f3527113",
@@ -287,11 +371,11 @@
   "repositories": [
     {
       "name": "copypaste-platform",
-      "head": "932fa49535449b847f034bf5427dd7b0fed715f3",
+      "head": "0e4b7dedbe5934ec86eafdfd2d86b9012201ac8d",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "508611f894e2d84f922e07fc5a024e2c4775d9fe18aec5069a9e8c23a2f561b0",
-        "README.md": "973d0208048a5fc7ae584685ce0b4cc64809b5b2e377dc3ab7b2590ba7a58daa",
+        "README.en.md": "8a0489d380e4c51b21b22700a047d0939af3fae99be742fcc7e8c1b0ede3f0c3",
+        "README.md": "615c5dfa01c364311d9a3f32bd27000a76b097b251d4a0c0c1ce5cea2c3a0383",
         "THIRD_PARTY_NOTICES.md": "5299e707ba17d7a008cf72dc0208b08dfbe9bd07176bf4dfa07cdceb83bf6d3e",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/company-sign-in.png": "633f7e7bf2ccd8606cd3ec3190b43436471e47b9d0a0a28d39039119d7e0a46a",
@@ -315,6 +399,7 @@
         "contracts/admin-fee-schemas.json": "712d6bdee1550092633bcd38d5cc7c20988f38bc653edbeaec6070e6cf8d3a7f",
         "contracts/admin-membership-schemas.json": "69a7e00fa0e94a4a3fdda4ae553626b87e8489371ba552fdfff871f3cb79e335",
         "contracts/admin-payment-schemas.json": "8545493c3efbca4aead18b59a1f6460b17b1c82bee752557180f469369dc4391",
+        "contracts/admin-refund-schemas.json": "757d2767863f2a325053aa8b46d9b8f2819d02e1f2f22b52a9c910ff6e8af436",
         "contracts/auth-schemas.json": "3fdd104fd4e8f803ba72cbf74bebe56981553048f2b564e53240fa62c4f760d4",
         "contracts/codex/ApplyPatchApprovalParams.json": "179d91081c3c84d0f79fc544a3d6d423f280c0f9d93512cdd0344c80e09b99a3",
         "contracts/codex/ApplyPatchApprovalResponse.json": "a5e145b4794ea91da6eb478626fac96bbbd4485c3399fabd1c9972d53d2d9010",
@@ -768,7 +853,7 @@
         "contracts/codex/v2/WindowsSandboxSetupStartParams.json": "8610d077fff4fc5811f2e33dea82617a15ffb82f08e55e1540aef877133f5b4f",
         "contracts/codex/v2/WindowsSandboxSetupStartResponse.json": "830bf89deac3e73e36b7d9799ceed32ee25e782c30b1d25266374aa020d3bc7e",
         "contracts/codex/v2/WindowsWorldWritableWarningNotification.json": "bfa34d4890c8121a04412b8d53314a13adf98289fdd948857fd97b808dcbe79e",
-        "contracts/implemented-routes.json": "1e52abd27bd505ea74ca10fc490dffd52a3b32d5798360769850f167e9d9921b",
+        "contracts/implemented-routes.json": "c3f4c5e79fc33bbe67a09fbf00459ebbc63f15e68fbb2df00edfe64544949271",
         "contracts/membership-schemas.json": "f5658754ca859096e8e4b4f2b6076ce90ec1e269461d59b2a9dc08162e75b1ff",
         "evidence/codex-protocol.json": "eb48a8e38d7a3979185c7abe6b15edec2467ab78815379db4449070e52d752e8",
         "migrations/001-foundation.sql": "4f07eeceebe0c1fb87e236c6700f6aa7d628f31c5c4eb33a90bc16de925d9fe5",
@@ -823,6 +908,9 @@
         "migrations/050-frozen-payment-record-commands.sql": "92d0a90082bb98e6981f34ee364fb9d65dcb5bf22ab766bc3215c6eeddd7f8d4",
         "migrations/051-payment-preview-table-specific-fields.sql": "39abb7a011cd782f032375b2fc4a7a8530efa28edcacc3cf401788582bc7cd83",
         "migrations/052-payment-historical-reference-guard.sql": "fc7b4a923fc99f99dd9dc069d1307bfb31765ea3ddf51b078566cc49dc168fe3",
+        "migrations/053-credit-repayment-refund-lineage.sql": "c2c4b5be925adf7a10a06d4df1b31efeab117e327ffa580d1402bda9a725ca97",
+        "migrations/054-source-bound-refund-facts.sql": "df262502e8c637cb74c856803a402669d8a5bdd1b15740e009e1ff9ecd285755",
+        "migrations/055-independent-cash-refund-outcomes.sql": "276ace6dd3471227257efb6edc8c11d7b7dd7f83fe1c8366c290a0e3f3a1570e",
         "package-lock.json": "897180dd90d93f77c9a14344a18ea4a496e13e9ef782fdcaf8cfe8085aa62cf5",
         "package.json": "e08a07e06a2c378cdb635de6cd1a80b4e135b6b00d500a939738aaa6554a51ff",
         "scripts/admin-create.ts": "ea2444a150ff68eb7166b446b26acc198233f0efd8d57c0a84682bf832b8513d",
@@ -871,14 +959,15 @@
         "src/admin-approvals.ts": "2637f1bac32cfcff7525782be7bccb11f3e1fd00d33ba2c7842e370531ac6fd0",
         "src/admin-billing.ts": "609b1c40df4eb4969a2d6b0b39533518499b599f980a5ff4684983662abfbe5f",
         "src/admin-content.ts": "5d9a0522bd7e5b2ad2200cf653b414163d71eec57acc7b45c8cece8741785151",
-        "src/admin-directory.ts": "88ee636ef202b2b0beb7c9b54fdb6554ed728ce77079adef7acfbbe1a07a0f02",
-        "src/admin-fees.ts": "06b6a50274cce96dc910ed3738967714eef20a1caff5bdd0da0569be1db09497",
+        "src/admin-directory.ts": "726342bd880c06b9516a173bda0c824544fb3524e0361ec904082dd7a8d165c0",
+        "src/admin-fees.ts": "5ae83612bb89d63f61bf882a62d423f04f8216891708f51e86fce865ebe9ebb7",
         "src/admin-identities.ts": "48f1be54da619ac94222aac4c3aa04b64c95250534df6f90398e0861b4a4f9d4",
         "src/admin-jobs.ts": "0a67160f6f1bce22095e30e4c6e4a0147470f5dc8d5d8205d4e21b4cb31ec68c",
         "src/admin-memberships.ts": "40be8ed6fb51c1ca4d9a547ba2c86fc92741dedca9042927031194551df4fb1f",
         "src/admin-operation-policy.ts": "47efc7dd63e4200af83d0371b3f83929258d5eccaca79b3436c896f0b9430748",
         "src/admin-operations.ts": "ea8e05040f783e320d3cd9ca319d2f1ff0266018157190eb81c621d785502c6f",
-        "src/admin-payments.ts": "3009ae01dd4a98dd4e5e77435ff9bdcd1b75666279a5ade788c1cbcf5f42620c",
+        "src/admin-payments.ts": "0d5841f20f45f2f2ff99f681558f8d1d2afd38bfb2b899fb5fe196d5f7b9abc8",
+        "src/admin-refunds.ts": "1f05355132e7fce9a1feb60df94ccc9509127f0b7b1f4f88ad0d76b68f74a906",
         "src/admin.ts": "88513ac44e4051981fd68a8297885ac113af8602375e3e1eec1971111bf4361c",
         "src/agent-templates.ts": "44ca4097682aec685d08c0cdf388d9ed2827de051f3f407689bffa6494bcb896",
         "src/analysis-calculation.ts": "dc60031a48d56622527fe2764df8f06beb0988009ca71afd65d128ce3acc80f4",
@@ -892,7 +981,8 @@
         "src/assets.ts": "579489ad0c8e6ad46bf4c0015ad82834118bc24496d550395cc470706688ed20",
         "src/auth-receipts.ts": "d1b1b6bff33be9553ff8d0227192dd5eb60690379d882e0bc68415abe7b34ea0",
         "src/auth.ts": "23f5955e407acf51191397524d1ca5c910e0c69221016a52b25d125b9a8ff318",
-        "src/billing-events.ts": "c8456097043e0b5eaa061fb4f6a9f5d402a226a3251aaefdb74d7f011c8e383b",
+        "src/billing-events.ts": "75084d40cfcce30970efc08ca3524caa2c564fbcd57eeaa8cd6167d9097f636a",
+        "src/billing-refunds.ts": "69543c1baedbf8f996063b0bab3f9edbb0b120fa4f5e9a4a8d6191ed58b0824a",
         "src/billing.ts": "f3581f12dce8967f9a6acbb2687ec4bb0ff2369bf5f8bb56b9eeed53a43a5349",
         "src/business.ts": "b231133758989ae6ba2507c9c880cd673dc2206384dc52e1ea885aafd9201baa",
         "src/catalog.ts": "259cebd55e0c54cb8d793f8cc754888256229395728aa9e97b61cb81b57d0136",
@@ -916,7 +1006,7 @@
         "src/metric-calculator.ts": "2599be95e772dc90e28ba1970a29b0ba49e29badd489c29156599b129bec1456",
         "src/notifications.ts": "064a01205f619ae5a29671291d79de2415025dca047b536ed7aa3f121b213dd2",
         "src/oidc-provider.ts": "87616cf69946ee78fcc68c97283ff68e8e2a50b4fb0ce99ef058b78b7ccf9f8d",
-        "src/payment-records.ts": "3924a73d2c15348ffa2e7105db1e170d6477844a615570074d4d5dea307ddc49",
+        "src/payment-records.ts": "57ecb1c6045d15d649ecb2088e33d8e44d2f41015c6dac904537f2bd7b8cd43c",
         "src/persistent-work.ts": "3e5d323c82bfe1b4ce057326e3a0cd623fa4dbd6b4d7d06cf8b81ead9503244b",
         "src/plans.ts": "d7b6b69c70298c344980bd2adf9baf44869a9637d8e19fee321efa4ead31bc33",
         "src/render.ts": "3636f73321b8a9f94b697eb2c36ed24dfecb19d6aeb7e503f98dec1bcda02463",
@@ -925,7 +1015,7 @@
         "src/runtime.ts": "ff43c7623a09c4951aa89dd41fbc9539dd1a206885cd4575e62e839eb44c3643",
         "src/schedule-time.ts": "1c23ce00cddd0be818298e14506ea1563096742bf409048d34e13e3f6d04feec",
         "src/schedules.ts": "a7341b39b89953fc3daa72dde43c088b645310d6bca52104fdc709e4db245111",
-        "src/server.ts": "ee6bc7f01cde2aa4bff4e0e8081353a65a86f5769d958c20efc8a151fd78bdad",
+        "src/server.ts": "523c6e60f725ef3da03049d50d750b33e83275ecf0ee4e4036091d17951e31ad",
         "src/skill-lifecycle.ts": "54f8cc8613ffdd42122b8a1f4f6f7d68d1505a4defda6094855f6c03d155c0e7",
         "src/storage.ts": "1ea54490f977700d21a448c19d0180e1d1d913d234d05d6b56e29d49524e6bc4",
         "src/task-control.ts": "54498572c7f42b6b55be2cc6388afef1493658232f7189d6deade61e7c749ff8",
@@ -943,7 +1033,7 @@
         "tests/admin-approvals.test.ts": "6ff2cd4318d4cb54f6efe31e0eca5ac1de6a1d9ed6e747eb92e83af294878837",
         "tests/admin-billing.test.ts": "a31a30edd5f302b33fb5a62dba726ba51252c1efde351f0cecf069cd71e51235",
         "tests/admin-directory.test.ts": "aeaee21a2c1dd65466fc1502134b77834c6e8af5a4d2a7d85c92434c0fa20563",
-        "tests/admin-fees.test.ts": "dea01ff840d25473e12c2274a644779dc8ef54c582b0794d6834315fdfec980a",
+        "tests/admin-fees.test.ts": "469f5d3600e4c4e7ac2230e117d42c2d8e36245cb5913ed12f3f163518fd7c9b",
         "tests/admin-identities.test.ts": "c690768980fa64f2c750aaf9c84b70e8721e4f791e590d8db6bf9f3c2d3d20af",
         "tests/admin-memberships.test.ts": "03db690e9deb1f5626ace0b3bccbe144939b0e7a5aaccc121201a644a6d9b455",
         "tests/agent-templates.test.ts": "59e215cef0980ede979c743bebae23f72c9138200c2f20a5dcca006ba1f65b0d",
@@ -955,7 +1045,7 @@
         "tests/analytics-workbook.test.ts": "8a445e5b007fce7e62433d0669e1122c81abe78743c03a00318b804413367b98",
         "tests/auth-contract.test.ts": "0156bd95ba8fa43c2b9b9301a8bfd3cc9aabe1e1ee200db8810a6cccb5c845c6",
         "tests/auth-sessions.test.ts": "7ed5f20df6df37789665af218ee2831ba2c1f935fb085f0eaaacb3391418f788",
-        "tests/billing-sources.test.ts": "4302df75ec7c2469d91e3e2a40cec25de16fd9c56b6bcaa607aad9e97203c6f9",
+        "tests/billing-sources.test.ts": "2c3a37404462c2fc68f051dc5c46aece038581b02fdfa84d8317cef070c42d84",
         "tests/cloud-files.test.ts": "ed3d9ef027e3166a0807328c65497ccf3946a5f2d165a6ad8a5fc90a29959519",
         "tests/default-assistant.test.ts": "0d127d9996fd0209193b4b03ed5ebc6d9c9463167fb9513a735e85b1ea3b7f55",
         "tests/demo.test.ts": "14d5978f29298236f5aae3daf697757fe3c0014737095700d431409a5b40362f",
@@ -963,11 +1053,12 @@
         "tests/federation.test.ts": "3ea83673701d141c6f6feb3eaca2861784898e76e7ec41a2a8ac9bcf42edaea6",
         "tests/helpers/oidc-idp.ts": "96983a2a55f9576ca2ed255bef3ac51366150192c1566f0388b46c4ec1aa1836",
         "tests/membership.test.ts": "8d7725fc7b3eaba3dbb31883573cbece5ef93c4d30852ca280f9b7b534cdf375",
-        "tests/migrations.test.ts": "4632d4b13ca9c845fcafab11835dd61ce880c240dedc345d8d1d8bcfc6d0cb85",
+        "tests/migrations.test.ts": "da4f65b0e7f0e9a4b7fb316d9411288a35eee7ab0808cb56d63ac2a51c7ab2d9",
         "tests/native-test-environment.ts": "f4d106750fbc28a6e6b14ded4aec462649c11674eb29d982f565bc475a038230",
         "tests/notifications.test.ts": "dac47a41560a6182758360a6f30f5a287f28d592ee3fa353024bf2652234e763",
         "tests/persistent-work.test.ts": "b959b6d6eb9a672c38add771349f54a1adc0ad7ae6f33fa64ab6062f4acbfa7e",
         "tests/platform.test.ts": "d2730fba6adcca4426161ab7a80ac5df03c0e38235abafa18b9d1b98e3e4b739",
+        "tests/refund-migration.test.ts": "bf5a5837cfc2b70fbcf2c918ccf3e82752c6ed62431e07380bba6e80577cd054",
         "tests/render.test.ts": "d1562c91ecf85cbb0e5a2b8199a14769918fc99fe567452b41c8de031bbfa175",
         "tests/runtime.test.ts": "f5992ae8e164e9235eceb2d3fbb9e6b32a573c278d2e7401bd5f8d936a7a1868",
         "tests/schedule-time.test.ts": "b21a14772a628b7c2cfb702033c6cb6ac08283437e49894bc72ce8888276e743",
@@ -983,11 +1074,11 @@
     },
     {
       "name": "copypaste-web",
-      "head": "871963c335909b5104845484f0efc8cd29768cff",
+      "head": "c48e64db13957d25def80d60f3281d795ac039de",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "32c4a166e9cadd517df85f6aa77490c11821fc88ddb7054e50a78e7c4b0f435b",
-        "README.md": "39cea5c2d27fa2dd04390200c6d202235e2745c61f402db4e95c4c8ed74fe80d",
+        "README.en.md": "add10c31d485969313e7eaa961bef44c6dc60f9cd92d658bdeb23dc71ee8f72c",
+        "README.md": "aa547005ce0c097d5cf19ef827e4d5d1c6008331dc3cecfb0f1ffb5e64f1a37c",
         "THIRD_PARTY_NOTICES.md": "689023ca749202be04e59a3ac3fcb7da765a6119a81ac5e08e0c3b2c0d163420",
         "assets/screenshots/01-landing.png": "2e17774c8fc815f3baa10baa2f22856a45c757d7fa35697157c78cd9e6b38116",
         "assets/screenshots/02-login.png": "a492332482b40502450f0e8386cb40db5ec3c0b66971f5a5f0020b9f1bdf2c79",
@@ -1063,16 +1154,16 @@
         "assets/screenshots/58-analysis-report-ready.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/59-analysis-report-html.png": "0f14464108374ab2db87cbd3e2611a61f8aa7bfb5c56a04a25fc62347fd97381",
         "assets/screenshots/60-analysis-report-mobile-zh-dark.png": "884251cb69b3cca3f0265c6037cc8fbaafc6466edb96ab25fa42ce2539f46260",
-        "assets/screenshots/60-membership-invitations-current.png": "28b6e9a88a0dab2c2fb9b4b7bfe964e8650d64b64ddaca6e8010b9d74eba818c",
+        "assets/screenshots/60-membership-invitations-current.png": "46add3395c6f4ecfc585d335162fc65742fdf3496628a5fc50eba14f003865b8",
         "assets/screenshots/61-membership-viewer-current.png": "fa454e6ff328742bc9c2e10e45b403744ba42ab28d1e23405025e344467d560d",
         "assets/screenshots/61-xlsx-correction-preview.png": "16f9b11988309b113abb76406d746f450ed4a2b43d2fb2475b1a5a27e68f34ed",
-        "assets/screenshots/62-membership-directory-current.png": "dcad5228a79a585258020fc05eb218611b211008e7fec1fc35c8ec2d57d8c7b6",
+        "assets/screenshots/62-membership-directory-current.png": "a4f236e4d7e8e8c01c757a5a70c31439b6f3e540e3ba27c65e2903ffa8d63e89",
         "assets/screenshots/62-xlsx-source-and-lineage.png": "ffb4544efc035da5ab614d9312996d02045e0afa26fc94a02f729d8ee03431c6",
-        "assets/screenshots/63-membership-admin-suspended.png": "f423f8892bd5c5d8b257917de5bdbfdd0bee8a4117c175d2ece6b82e01500f38",
+        "assets/screenshots/63-membership-admin-suspended.png": "afda93880890445c3fe5bd9799c0b2728a31f44fc2966be958ddc23ccfde5a5f",
         "assets/screenshots/63-xlsx-mobile-zh-dark.png": "3cd6b3f1946db0d27cc979a7ffa07b334dc0bfcab7b443edf949bee26c655bab",
-        "assets/screenshots/64-native-authorization-current.png": "081bbee1b4c1a9c3bb2fad17eb4c70aabb97dfbe443f43accaff0019c4ef90ef",
-        "assets/screenshots/65-active-sessions-current.png": "d0ddc9b4ffd7db24c5e5938213de4374cc9e6773c55a857e2b8e2507701f05d2",
-        "assets/screenshots/66-sessions-mobile-dark-current.png": "6f86138ccbe3738aa564c6c0b577f8c97d395138b573f141d94349f7653d0415",
+        "assets/screenshots/64-native-authorization-current.png": "569b36043a4992cb05e67630d0029b909c79867ea59cae1cf467b599f343ee6c",
+        "assets/screenshots/65-active-sessions-current.png": "549420876db2a90a8a336cd4297ae8703f929656f003564ea236947b8cf78f5d",
+        "assets/screenshots/66-sessions-mobile-dark-current.png": "7f8fd27e6a32d5ddd2b1209108331f6b4d65f27f7f8b05e33551363e3dc30b59",
         "index.html": "648ffc01b13a3fa31dd565475e655611229a29504fca904ff5700a508038513a",
         "output/imagegen/copypaste-folds.png": "d0ab11f304b4ea2cc6a6fa683403f71b5108e7d6ef95037979d3e5c0dcddf1b5",
         "package-lock.json": "f09b34897a7dae2eea5998bf8040926a73fda39fb438f95ebf3e8cd3bc284474",
@@ -1123,11 +1214,11 @@
     },
     {
       "name": "copypaste-admin",
-      "head": "ba5eb83ac23296e179ee290991ee414482b36a01",
+      "head": "698c3acf744269859c305ac9de8480a86b270aa1",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "20f72fb9859d78f0962a72866ff66ef1ea853069a3e004bb333cbb0d9108add2",
-        "README.md": "5a747049cf084ccdaece113237eee4ac5370261eb6924cd95b5c5f8446b99657",
+        "README.en.md": "a1111d0a76195d0fff8528052c7e087509b446fbc4f9f0cadff6052d9ca9c2e2",
+        "README.md": "179049eb857cd48990b613c32e46595532b0e488b274e40472d5a01cdf2c9fe0",
         "THIRD_PARTY_NOTICES.md": "b49d7e290707d90b160cc864e4388744d9be7ce277b361cb5a784ad29d49b641",
         "assets/screenshots/01-access.png": "c26840f8a6f934f355ca88116df70e2b2cfc65dfaa945d61224fd36c3a7c9f33",
         "assets/screenshots/01-audit.png": "2e1e24aa36d19ed2deeb13f80655256ce39310dc1146499df09db64ce2bff273",
@@ -1163,31 +1254,46 @@
         "assets/screenshots/21-task-input-review-dark.png": "a24216298ed430ac23499a00c7e5d516c9e39f049b66b42df68a75a7aad4617b",
         "assets/screenshots/22-capacity-queue.png": "5d5bb859bfaa433134b6107b8d5fa078476bff67034c203b2e160940b72b4a2e",
         "assets/screenshots/23-capacity-queue-dark.png": "4758052d7395a7329cb0f0b5a74c621adfd4cbe8718aa253f457717029880086",
-        "assets/screenshots/24-billing-accounts.png": "63c3df3ce6d5b401e3b47420f6878a69429975fec05d208ff78d41971c782458",
+        "assets/screenshots/24-billing-accounts.png": "ec369d9c42a78641eedd09b6bed27abef68e0b6a95ae53082351ad016d8d7409",
         "assets/screenshots/24-cleanup-pagination.png": "0d7b9ef2701ad1dcc1ae34f0b101f937807578dcbe8c9139e03b4536d0dab4de",
         "assets/screenshots/25-cleanup-pagination-dark.png": "bf83bacd5f7aff15a41a9aaafaff8593894d1676814ab0c75cd72d4712bd38db",
-        "assets/screenshots/25-fee-preview.png": "b1fdc84637eeed92abf8203432028bc02946ec83c9bbc115d58e1c8fb6b350d2",
+        "assets/screenshots/25-fee-preview.png": "261dc7970ac296c340bcb660108c7ff321b8229797dd43cb7fa00db7c0071143",
         "assets/screenshots/26-cleanup-mobile.png": "9291d864203cabd181156ea8443e9695ff41ecc59cce850d148dac2ceea8a6bc",
-        "assets/screenshots/26-financial-independent-review.png": "f007e3ccd631e908fa6670606a715809f255de63428c48cfee705828eef23257",
-        "assets/screenshots/27-billing-ledger.png": "74436ffc7c88ec8f0f88421aa1eb76d8d79d75d78d63f0adca69a077e9c247c7",
-        "assets/screenshots/28-billing-mobile-dark.png": "ac2c4b032d415bce6be94117fe072dd88023874e2c7134d0fb7d2834005ace15",
-        "assets/screenshots/29-membership-suspension-preview.png": "4f68a4c14e3ec078e418f9adbcc44487cd79c47e0ac0fe7966a19ac377d158e5",
-        "assets/screenshots/30-membership-independent-review.png": "c75c1fa0573c7609f7b4a117d9ae04cae1105be45bc991718f5e2fd01d24c518",
-        "assets/screenshots/31-membership-mobile-dark.png": "f48a6d32f4317971bc6f31db94a6859208732d34bc8bf807df25e46387517ec2",
-        "assets/screenshots/32-canonical-approval-directory.png": "4e8c2bb695b6ba0c92778cfb203fabd535438b4a31631f6c3503d82fc366f308",
-        "assets/screenshots/40-payment-evidence-record.png": "d21cd194d5fc4ab7ebef21206d64ec3426b295eb42091e504f83c72919f72e05",
-        "assets/screenshots/41-payment-independently-verified.png": "b571dfe43e4a1662c6562b9835e43ded43987cb0dd37edcf8bf15d5079b3f6ba",
-        "assets/screenshots/42-payment-posted-ledger.png": "a1256e272d01535fd28ff3d2204aa3482f852473cb94e51b7657e4c070ad8cfb",
+        "assets/screenshots/26-financial-independent-review.png": "f29ba30797070f7f621c42488aab151222aeb4c772eb1550c2fb1c12586cebeb",
+        "assets/screenshots/27-billing-ledger.png": "1462c9ac0d5d93b4502a6586ced7d13e82456951e9caa7e9b3f868f6aaa37576",
+        "assets/screenshots/28-billing-mobile-dark.png": "344eafdc78adb015e750f62d80beb8eff6d62affb946f3ebcd556d29aee93375",
+        "assets/screenshots/29-membership-suspension-preview.png": "e35529547b21c794c4bd70475674333f23fc46cb5bd62058c676472ccb5db904",
+        "assets/screenshots/30-membership-independent-review.png": "54266576fb8499d8a4983a108b18f96f7a123cb0a5437d42ac44d9d94cab1b7e",
+        "assets/screenshots/31-membership-mobile-dark.png": "1d55de65aa360c5680ae67f91f5081a5dbc9dbce38b3cf0df87ab0a47d566287",
+        "assets/screenshots/32-canonical-approval-directory.png": "914a26c9b0b95db3b056ddb6bf810d70c8b1f6ad8b68a051b729e00a522d9d47",
+        "assets/screenshots/40-payment-evidence-record.png": "80877cf69faec48f2a060c0ce07f1442843194cba4cad5bcaae37a3e990eefd6",
+        "assets/screenshots/41-payment-independently-verified.png": "c6fb3acc49f6932706e3bad7d01c947842f68642f96b7332b976ce51b1dabd28",
+        "assets/screenshots/42-payment-posted-ledger.png": "b89ab843dc41f7d1d78aa4abbcabed16bace1a10f999cb419aeaf4c013221775",
+        "assets/screenshots/43-consumption-compensation-preview.png": "2cc7442c5c2d6d49aed3ab09592ebfbb24d43b43e198e9bb2ad80d4410c775c0",
+        "assets/screenshots/44-cash-refund-reservation-preview.png": "52b6ba4fe17eaa5acef0cad0cc510caef7fadb02afc29c6e95e546cdea620221",
+        "assets/screenshots/45-consumption-original-sources.png": "bd7b255ddeb2eae2168363a14c2eab9097cb56acdb2a7389fae6222da43ffe8d",
+        "assets/screenshots/46-independent-partial-refund.png": "d8e8a3c86536df1863679225d1afbbc8b154bfd2a21350d264319729b8c8e117",
+        "assets/screenshots/47-refund-mismatch-reconciliation.png": "379169cbc1773b4efe0b31879ebc01859bf91e24a9159a2d22e3c991e3a7c09e",
+        "assets/screenshots/48-partial-refund-closed.png": "dc6d74d5aec5d44ab39021b4190712cd1d07f4adf2510727bce572bc5188e1cb",
+        "assets/screenshots/49-refund-mobile-dark.png": "4c817af84611ccd80ee0b5085698d0354012681ea35f86dc7ef558fc51704207",
         "assets/screenshots/54-account-profile-preview.png": "e1aef8a06b71f554cbc55701af29c210b4a53e066f66f127a31f95fc2a6c69d3",
         "assets/screenshots/55-account-closure-review.png": "45121db3d29e7345c178b6cb3469b45bd88efba3ac77d8c57c2ad21450131200",
         "assets/screenshots/56-account-control-dark-zh.png": "fa1abb01879d7772eb92ce87f93f940e7e1f3b0a064bbce3630511102fe3dd2d",
         "assets/screenshots/57-users-directory.png": "10db43f45ee11c20c078459cfb7d43d93a29b81dd84d65383ab09528ca23db29",
         "assets/screenshots/58-user-detail-scopes.png": "ccaf0796dcee823bf404e6170ce7020547426a4ae91ea58d88b4c86bef15347c",
         "assets/screenshots/59-directory-mobile-dark.png": "52e28123f1076ecffe4a2b4b8d2533217b6675f26a3eaabd782e6c76231b571a",
-        "assets/screenshots/admin-payment-evidence-record.png": "b8e6a85f3367667c028f50c5025a3d035b127ec2d1f7c8cfea93ca899f8a12ff",
-        "assets/screenshots/admin-payment-independently-verified.png": "9583cfde8c33a1787632f049e98837a9d8bec84eabb47d7da870d521bf23f546",
-        "assets/screenshots/admin-payment-posted-ledger.png": "2fa5cb0e0cc70808c70b86c760243609737e4c1b1625007e08aed4906e620b7c",
-        "assets/screenshots/payment-mobile-dark.png": "48fcb4d54f5c70c17a81ee434209ae0abd96ab03227b49ffa2538ab7338010b3",
+        "assets/screenshots/admin-payment-evidence-record.png": "383bb5b3bc0fc80cece497c017275d88acdbc625f5aaab5a72be79c6f9acdaad",
+        "assets/screenshots/admin-payment-independently-verified.png": "c000b134a0c37de52c05d0f6424ab07968a2340b0c2ef88ea482527c7a42fc87",
+        "assets/screenshots/admin-payment-posted-ledger.png": "208ea9ba311387e06df9d5b672e7d6c0ac53e385553dfae729324e41ae09592f",
+        "assets/screenshots/admin-refund-compensation-preview.png": "984193c3f81970e16b057478b47c7f076ec43cf5e7f9bde34931a0545d6a01b2",
+        "assets/screenshots/admin-refund-mismatch.png": "582d9d1415a15726aa32b15796aa51758afc4c5dc99d002c44767609df1c3262",
+        "assets/screenshots/admin-refund-mobile-dark.png": "522252142fff46584f397a97d450270316c7ae39e2206786ae6f9d5fe9439448",
+        "assets/screenshots/admin-refund-original-sources.png": "6c2b09b9d9d5aa5cc3c472aeb2e7050208de912e6b17737b73c395330af0806b",
+        "assets/screenshots/admin-refund-partial-closed.png": "e4048ddd63fc52989020f5275e1e69861ec6804ed2023ffc04ce3f2730613617",
+        "assets/screenshots/admin-refund-partial-payment.png": "cfe6cd5a51b95ebada964fb6d4764930e9875b5a960ea743d90ac28a9a0860ca",
+        "assets/screenshots/fee-failure-0.png": "de19c8a1b3633cc53749c6d66b42d4f87ba772595e5f1b7cdd52515dd4eb6d91",
+        "assets/screenshots/fee-failure-1.png": "a0174b64a782ae608deb89ea4daa50a47718c8f4d78cfd77fe0bbaac5c5e0f7c",
+        "assets/screenshots/payment-mobile-dark.png": "fbc61f88496ae445cb29354a8c29b9bc4d1245e1912accc051d8991e33b8dfbd",
         "index.html": "4dfa84425f6267930eaebe31999cdebb5371d8888b14aa902535a1c970dfa402",
         "package-lock.json": "6941458778b763858939bba5f60138a937b3469185a2479aaa1b67d1cf9df4f1",
         "package.json": "1378b2d4cf0087806025d6fc4e21672d4a68c427aa63b9f97dd213ae60c3f994",
@@ -1210,15 +1316,16 @@
         "src/deletions.tsx": "3eb83c8467ff951980d506cce5db60c493eb5791bb61dd97906cdbcabb32631e",
         "src/directory.tsx": "72646ce2067d813351904bbe454b489cea595672afb9478bec86fc30691939ce",
         "src/federation.tsx": "58f2e327845371f4f908ea8438ca594f69280879427328c6fbfb482d19af2698",
-        "src/fees.tsx": "1c6fc68494e42ba45af5b02bc18e3789de24a9c812142d924dddebda79e1fb9f",
+        "src/fees.tsx": "324613c7e9f8306681895b440f85634f7ab8dd5d867fe83b2467df1d11543ef2",
         "src/financial-money.ts": "c698fe023900ef53739f73cea8d3c6d74474cd1df91bea8416b983b958a503f4",
         "src/main.tsx": "e0111a514d4cbfcddd4873899ab3c3e2bad3fbe5684ae9a8d9f0d82c2e0ace12",
         "src/memberships.tsx": "f01d2be942c148e17f10318af0ba296d74c8238691c87e7678423e266380bd92",
         "src/operation-key.ts": "1a8051e0db33ee8a4d59b6bf2ecfefdfde7c9d0d7445e8800e3032a4be8cf8c3",
-        "src/payments.tsx": "0054c719895a4f04774fda39375f4d94cf1acce2796649770aeb282c926d6ac8",
+        "src/payments.tsx": "82c5cd0f1e1632fc9142fff0e6ae812d619699f6d24faaae858582b322124ade",
+        "src/refunds.tsx": "da387944ff907786175f4f0d7516d518e484dc1e696070c9e51d41600b1ca200",
         "src/schedules.tsx": "5e121070d6f21128d87425b4b5c01883f9f9cd71c4f4f0ef0f1258591e985be1",
         "src/shared-source.json": "539a3fd65375c61ce002b12a022bf620c3c5e17582d4ae844a5a9346970766f5",
-        "src/style.css": "857124b8e289b8922427251654db4a7ba00c3f00e856f8e7d2a7b10d583af24a",
+        "src/style.css": "f756eb6688cff4b0d1f046a4ca17dae8831bbcfb016728ebd97caafe4f5d0969",
         "src/ui.tsx": "1ec8eb09150ebab3d0c58c2ad018aef939bde9894471c4b757b819db010c3db0",
         "src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
         "tests/financial-money.test.ts": "535dbf9c135c17b963a7708a1b8916e1422968278db98420dd1b6687341ee232",
@@ -1228,11 +1335,11 @@
     },
     {
       "name": "copypaste-extension",
-      "head": "b1bf2334942149c336ed35abd5a62c0d689b87e0",
+      "head": "69d7ee26c7d2f64bf9d092bf6e25676daedfdf42",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "3e7b75bae47f7d6c007acae410d1a1e19b5278493a0ed4bf950bff9847bc7e9a",
-        "README.md": "0fa557c46cf822554fd1ea91f461379772b1b506f9097f5a004a0095af6ff681",
+        "README.en.md": "595be13cc28fb99b5326a51cdb1626622211c26a55bd69ca1c1cdde6141d58df",
+        "README.md": "5107a60472d7374056cd7ee8cfad40d22ebcc59311c717de3aae8d86f63ab5c3",
         "THIRD_PARTY_NOTICES.md": "febd7e067beb73dfaad3349b97ed1c93c4dcadeb0d3eec37620c5460d967c6c5",
         "assets/screenshots/01-login.png": "4f5c836b7ba47a69c3799620785d792ce9d53a39d6eecd27eb2cc800a591bb42",
         "assets/screenshots/02-workspace.png": "db1512639a8998e25f3c1c47c79e4854799ac78aa15caaacb0e004feecbdb01f",
@@ -1246,7 +1353,7 @@
         "assets/screenshots/11-session-revoked.png": "1f1d8c80c937b2e5f5fd55cbd568ba13acd1de60bdb91b74d2a6a166a75c16c6",
         "assets/screenshots/12-account-replacement.png": "3d11a98ebfac6b3c1c1a4ac7687e608ac0044086da3f53983e24280d02deaf01",
         "assets/screenshots/13-session-revoked-current.png": "1f1d8c80c937b2e5f5fd55cbd568ba13acd1de60bdb91b74d2a6a166a75c16c6",
-        "assets/screenshots/14-account-replacement-current.png": "1789e1ae6230d9466927fc08babaabba4404a57d4f9f18307f558730e90dbc68",
+        "assets/screenshots/14-account-replacement-current.png": "119a8b413702b6ae0b43340f9c43739e3ba5c439c491af56842c0522b07dc29c",
         "package-lock.json": "ac95a86289d5fa76f0f6bff5815acaf3d793b5dc0c3c015233189c22a7f568e1",
         "package.json": "555e0a75181e6c031793e72fadf4bf1c738f62daf6315b4fcd8463399fdf116b",
         "public/CopyPaste_Dark.svg": "dc28b1ae8c29c08b7dab43339e1f17acf9e565efd8b52ad25b3e695369d67914",
@@ -1272,11 +1379,11 @@
     },
     {
       "name": "copypaste-desktop",
-      "head": "5886d6f43229c8cf1d39fec80c6975200a5e607c",
+      "head": "167e069e6f4b6c9f39aed72a4b4c362fab513e5a",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "589a4b7d183fcdf7134a40058e7cab495a5fc4e3f174c376550d73a0a535d287",
-        "README.md": "c0d8d484a478b43ab27c03fdf5d31229179158b71a9ef55abb4229b1aeb9a2ac",
+        "README.en.md": "57fe928e88d24a54e93481c04cbe56f4dd756b4bb0c8af5db6fd8b0dd6a358c9",
+        "README.md": "66d74ed370c8675ddb7bb5a02ed1da1d3bee43ea15586d7ddacea64d74b3a322",
         "THIRD_PARTY_NOTICES.md": "4a7398e94df711fdf079352be5c7cc18cd59c3394a0369c19a17cb39e612868d",
         "assets/brand-mark.png": "d71ca3ea2dfded42efd9d213201f6948f2ecdabe20aaf80f3013c6805ea9e4a3",
         "assets/icon-128.png": "4168c6491cd687e727e14f606ff5c059890c793756da87ce83dcbe73a9cf21c7",
@@ -1307,7 +1414,7 @@
         "assets/screenshots/21-task-paused.png": "9c6d82d8450b7cef90c9959d198cc8debe2b568dabeb4562bddfe457e00e77da",
         "assets/screenshots/22-active-sessions.png": "d49018a5b35b39e3eaa40f785a25e61930958d70867a0f755d1c60c3a144f59d",
         "assets/screenshots/23-offline-signout.png": "047ca26d32ed8543bfd6bb9a8b3d13a51c78a2068f664370e93e203c32fb45ec",
-        "assets/screenshots/24-active-sessions-current.png": "de117b4aae7d7990faf701a41b9285cd8a32a27fbd4d202495264cb964a3a8d8",
+        "assets/screenshots/24-active-sessions-current.png": "bdcc5c70f681d8c25d4bed0f197a27c583d086345818477480577254feb08f8e",
         "assets/screenshots/25-offline-signout-current.png": "047ca26d32ed8543bfd6bb9a8b3d13a51c78a2068f664370e93e203c32fb45ec",
         "deployment.json": "4b36dbb1a4814041ab61771b30d4bb2e425301e254439f5d84837d104abae634",
         "package-lock.json": "15c430f91273506f8cd1778ee82b68da4a0e63357d05dee88b1d46fc3dca24fd",
@@ -1381,11 +1488,11 @@
     },
     {
       "name": "copypaste-delivery",
-      "head": "983d4bd8aaa19353e21ca3e7f6f9722e1a4eb1ab",
+      "head": "205a35d2b15944a0f3dee564f770d408e6d1b0a5",
       "dirty": false,
       "source_hashes": {
-        "README.en.md": "ecd71be971aa2c138420c9e861f4e296b9a1d22f90e9bfce66131baab4a0be59",
-        "README.md": "ea0769f766fa974e07cf5d7fdd777b586777d6cf0fecacc212c9d1370311df55",
+        "README.en.md": "7742f61fd5412855562c96e739e021f5810610052a029836b669c1535f3c69a4",
+        "README.md": "a25d278964e3a5591cf9da1cded29c913e92e63a44b6a3dee6470e30dada6846",
         "THIRD_PARTY_NOTICES.md": "6c64c50fb20d9a9756db020d15ed5607aec70a08208c82ba58932385eabe3f22",
         "assets/screenshots/analysis-reports.png": "00942a30f10439ddcd8a3387f1ed9c1e2be7e1761b1751cf3a6bf58e0dc37ee5",
         "assets/screenshots/design-pdf-export.png": "dc28fb1af46f904f6ee799d0318ad368001a95ccd6696c404715e1c2e9694bdf",
@@ -1399,7 +1506,7 @@
         "evidence/admin-billing-wire.json": "19135040df3a1dd60de8e8b40283a0bb1d834a159ce1df39b44f1c6a27e1b0aa",
         "evidence/admin-directory-contract-samples.json": "9ccb1f8b5ed61df5df09adc1693b9b9a53211e00bfc877e119d34ec52f29285a",
         "evidence/admin-directory-ui.json": "bef0915285108a158b314b8ecdf354b8144788146ac04439c73cb404cf2ac372",
-        "evidence/admin-fee-contract-samples.json": "13b8039f0bf0c314dc4528d3e0229d73888c3b0ab802d84ae17d21b2f2fe771b",
+        "evidence/admin-fee-contract-samples.json": "454bdc9d9ad068b88d118fce041e98d9a87b7c0a8da68f7b4bfb95bfc20d5702",
         "evidence/admin-fees-checkout-initial/archive-map.json": "7c98fad9bc38ef9fe3aee30d24e4dbae31733e97388d3ea45331dcdf747795ea",
         "evidence/admin-fees-checkout-initial/byte-integrity.json": "85e4375fa5246504a1046fa4af861b5d71ad86a42787d5f5616415f6c09b6087",
         "evidence/admin-fees-intermediate-platform/alignment-platform.json": "80f8ef9bfad68be3be1cf4dc0aa77fca11a1673be39f88fdaf327c7818f0fb3b",
@@ -1421,17 +1528,17 @@
         "evidence/admin-fees-ui-second/archive-map.json": "e78805f22300640afe92aaae3ea5631daa1f8d5a2e1c738669aee863f1a578a2",
         "evidence/admin-fees-ui-second/fee-failure-0.png": "8ee334800c4d281147eeda132b49ab4412ffb072a07ce1d66abd538e62602f64",
         "evidence/admin-fees-ui-second/fee-failure-1.png": "dfd00a01494e46ab386982af230122b7b8f3075a8533cdfe78ef04a8bae7cf16",
-        "evidence/admin-fees.json": "7135dc6ff6be72a66343fc1b6a5dc31eae73ba9a19dbf5184d4295fe9771f49d",
+        "evidence/admin-fees.json": "e78f3923a3995517f47362d3c33668a41ab6e10bd39977874047bae51e40c6a7",
         "evidence/admin-identities.json": "450bf2606f7debfaa80614471a930492536bc962c0037efb176bc247ded27942",
         "evidence/admin-membership-contract-samples.json": "12ed75a338c64a61a2e20ea757b8fe96d64d3ea6042b2f1b4bd2ff912bd93ed1",
-        "evidence/admin-membership-ui-contract-samples.json": "8edc98bbaaaadf6a30320ad9ed14ad6cfe5ac6f528d87d933b598b2a78db013c",
+        "evidence/admin-membership-ui-contract-samples.json": "e36a52f6a22284d48d7f1ffe978784bd03527648f1fb0b760b31129f4c398f02",
         "evidence/admin-membership-ui-initial/29-membership-suspension-preview.png": "ea9493a6614035ce1d7c2836ee001a12075ead79d0f61510f2e280b092288abb",
         "evidence/admin-membership-ui-initial/admin-membership-ui-contract-samples.json": "78c67cd33682ca166c3dcf31f089bf545b685c5fafe411be23fc0fd83888a4ac",
         "evidence/admin-membership-ui-initial/admin-membership-ui.json": "50ebf5db6a00109b1540f58edaf56a2f0666d888cd21817f7182ba15761d0d25",
         "evidence/admin-membership-ui-initial/archive-map.json": "4508b2f67ffea31bcf49c745acbea0435cb23c533b1ab20bb3f7a922866dcc1f",
         "evidence/admin-membership-ui-initial/owned-admin-cleanup.json": "7df2af5aca862ebdb1133fb62b0b453d476f423f7684e6a484a8684dc7f3750a",
         "evidence/admin-membership-ui-open-issue.json": "66fd84e61413f6f21de7c9914bf97853c2ea97027d5451c5b1dc864e10e7acba",
-        "evidence/admin-membership-ui.json": "098085c77b0a44a833a673199fba8a4011e9eea248f2a7a2eb1948983e83f9b7",
+        "evidence/admin-membership-ui.json": "d4a87cf035b5241863505b3bec61af7e78593d32198a19db4ae28a88fbcbc43c",
         "evidence/admin-membership-wire.json": "969d48811eadb1803acb1ae6051b768f73e108c9a22c1f6701ee87cff9c41d97",
         "evidence/admin-records-contract-samples.json": "c04cbf6cbb3567ad932189d1a91935da054dfbf2d061f3d0962a67a3569c970f",
         "evidence/admin-records-first-regression-failure.json": "93b6820409520949f77c7f5e6bd3bb85a21ef15d55e8c58a07a1a04bc86edbb2",
@@ -1440,7 +1547,7 @@
         "evidence/agent-templates-contract-samples.json": "2ad20cf3784cf00cb25332c4a6bb2aa13b8257d3e12a1cfff6ed442e7c6c1e86",
         "evidence/agent-templates.json": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
         "evidence/alignment-desktop.json": "ff06ef0ef7055513dfc0f627b7eec9a2f5d8e5230978bddba3682ef172969b81",
-        "evidence/alignment-platform.json": "9576f01e7e2757d5e16df10369ddff2bbd30f757f0be896ddafea001d6856279",
+        "evidence/alignment-platform.json": "f6d61bad587c2c9eb55b690edc043a5f64fc87079c4ab044d575040a1b7d554b",
         "evidence/alignment.json": "3554e721940576080a0f6e01a9f2a230a87a75ef3c97c1d934999f7c1091a2d0",
         "evidence/analysis-index-backfill.json": "422e7b934edccf8d785c6f6478316aeec3edd9da7b6ae381203dac7771fe73dc",
         "evidence/analysis-reports-contract-samples.json": "30cf0a67f891a9b9def12d8f98ee89b6951a58019aad99c7eee930c7c1bd0ddc",
@@ -1457,7 +1564,7 @@
         "evidence/auth-recovery-browser-readiness-storage.json": "dfd783d471908bfddb69b6a6bff8e420c3082cddade8ce50f665af9cc5c0ee4c",
         "evidence/auth-recovery-browser-readiness-viewport.json": "e54259adf1e23ef7ff3b88ac93cacf044ee092759c4b494eb18d1aba159762e0",
         "evidence/auth-recovery-browser-readiness.json": "516bcc6e974edd65b4391be32d142b2d010d8972a3b62dc18a0be3446e6fc16d",
-        "evidence/auth-recovery-current.json": "3a94918ae602ec77bf558312f8057e640b6acf43fb9feeb3e9521e1f659db5f8",
+        "evidence/auth-recovery-current.json": "dd5fbef30d9c12de905d0dd7f35a48ea658436b0d0db68365a9dc6e5d59f6c81",
         "evidence/auth-recovery-default-loader-cleanup.json": "fb69eb88fcfb8f7ae901325e23355cd55247cb1ceeee2e21e52f14cbf0519f9e",
         "evidence/auth-recovery-electron-default-loader.json": "189d6aea6b67279db794b1d0eea077d501d740508be8c834aceef148305aaae1",
         "evidence/auth-recovery-electron-diagnostics-cleanup.json": "e67a8317c90a20866e80d4276a2a1e0fd07315a9cfd567f281ede6b6234d33fa",
@@ -1489,7 +1596,7 @@
         "evidence/billing-runtime-alias-recovery.json": "37bf22b9af974237363e63af31cd10155eed912586170c58862f82476fdf60e6",
         "evidence/billing-runtime-stable-alias.json": "d58c79b193d4fd7bfbcf4f7702a76039666665a9d8b14c2e4e02027eb81c7ce6",
         "evidence/billing-sources-initial.json": "7e0811d5b5352626f0b99e73c5202e1946f682eae0875a76da91b4dfe572a9d1",
-        "evidence/byte-integrity.json": "e3cca9afefce1c2dc4c95a0cd0248dab7c6e080dd2244ab2e9b90228c085bc35",
+        "evidence/byte-integrity.json": "6b9a5180ae612edd6670311939fc218cb592a0a76aeb64e476d24486771248e5",
         "evidence/cloud-files-contract-samples.json": "25a282a0555568288577f6d5b2d80a6769619b62fa69865fa4745a67304d9505",
         "evidence/cloud-files.json": "cd28c3f8a0ef68ef97cc96de124e072ed7fd83ccd45e40d563b988a0daeeaf1a",
         "evidence/default-assistant.json": "7f9ee69caba3af61d737064ed2ec2e2ad7f95243cf5bd446aed31046057c2d74",
@@ -1517,7 +1624,7 @@
         "evidence/membership-first-navigation-failure/membership-failure.png": "2e8465b89d4631433f5350fa71cc00667367a5a510a88dc3d4d58481d833868f",
         "evidence/membership-first-navigation-failure/membership-navigation.json": "e785dceab66d61a01a5e17835a7b80ab8bdc7b8249b0f597f9f3cafae16252a8",
         "evidence/membership-navigation.json": "e33089ca09b2573721e266c1b69ca9aa7e87dcf04d37c2ada7169953766a3b5e",
-        "evidence/membership-ui-contract-samples.json": "70c487fca7a9f58cd7f34505f2079a3293998258f56bc218d65eb5ca51b68b04",
+        "evidence/membership-ui-contract-samples.json": "0d2ecc4841311c439e468f17cc5a43a5a1098458c0a4f490a8a7fff9dcb99034",
         "evidence/membership-ui-first-recovery/60-membership-invitations-current.png": "bd56f6c657e726a3ea5b89a61fd067bcbcc0f2a24cdf27605157e7bc436a7790",
         "evidence/membership-ui-first-recovery/61-membership-viewer-current.png": "fa454e6ff328742bc9c2e10e45b403744ba42ab28d1e23405025e344467d560d",
         "evidence/membership-ui-first-recovery/62-membership-directory-current.png": "67d1cdac6190309ef7fc740fe161ff9c81b95cc65c153ab6db80dac33490eb61",
@@ -1525,7 +1632,7 @@
         "evidence/membership-ui-first-recovery/membership-ui-contract-samples.json": "d1a487646a2386fc14a37517170cf10ea461db857a2ed9e5eb85849233b56552",
         "evidence/membership-ui-first-recovery/membership-ui-recovery.json": "36dc6b56f441ff477df9f3f39f1bb7f5899e834fb28b2d112ee9229bcf82f7eb",
         "evidence/membership-ui-first-recovery/owned-session-cleanup.json": "c8d86a7a312e7b25ec861b2aa2c3d148551b59c4f5227218f51642c6a59fc521",
-        "evidence/membership-ui-recovery.json": "d74e198bba77689fd2dfc296254fbd436559d1adae77900b59945397f935cf42",
+        "evidence/membership-ui-recovery.json": "7bb20fe0df925748982176cc88ae7abab54b5ee95860b3156120be46fdac95b1",
         "evidence/membership-wire.json": "e9c5a133fd346e291a3049c2e6aaa778ad73287f188484809a1caec713d57709",
         "evidence/native-controller.json": "7843d8d1d3271df7f9d35088309ace47bbb2a6da0b5e1a7b686be13f9308e635",
         "evidence/native-preview-refresh-initial/2b06a507-ca9b-441b-8dca-8e972491fda7-failure.png": "b1d6b54681cc8bf02c4790ab186823c680edf6a66d82faa39df08234380cbc26",
@@ -1586,6 +1693,53 @@
         "evidence/pre-membership-recovery/archive-map.json": "b573a86f3f136b13872b3aece0f024188ae56effd25f2ea0dfd5dbebe91b080e",
         "evidence/pre-membership-recovery/byte-integrity.json": "c0b5a6beee503ff56d9ba9bc174587c456935bdcb9714a66908877ba71215b06",
         "evidence/profile-platform-first-failure/alignment-platform.json": "7234718071b5d4fb4feda9ad8f2c72088bcdd994fe4f20c6965f3a3321703ade",
+        "evidence/refund-contract-samples.json": "5d9939d093d2683c36d19375aa96d37cfdab700521d268a8861d6765447c037b",
+        "evidence/refund-migrations.json": "7a6fdb976b1a0f83805ae8f0a372892d1847e4b9220bc645e7ea5c08db4d3a35",
+        "evidence/refunds-auth-startup-failure/archive-map.json": "58d9791976211f2dba4909a1578f8275ac004b97ffea3fedcfec07f47ad4e381",
+        "evidence/refunds-auth-startup-failure/dev/copypaste-delivery/evidence/auth-recovery-current.json": "64f4821d9a01e574a74aa066b3776723990d695f24bf3bd85e14432ce66da8f6",
+        "evidence/refunds-auth-startup-failure/dev/copypaste-delivery/evidence/sessions.json": "20f6f005f160070f8002a60a9da6b4af82313a606921313b5ea628ef46e51f7e",
+        "evidence/refunds-auth-startup-processes.json": "aedd7c056863534d87639a202ac75884eae4fff0852ad70758665527fe172fd7",
+        "evidence/refunds-before-capture-reset/archive-map.json": "13d5417fb13c1559c488cfd07418a6d9d06ea192d55be91033048d5430f8a0d8",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/24-billing-accounts.png": "8a2ae31d9de49174ebb4c18b60b643ef2ca13ebc94460e93847aa40dc6e52f38",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/25-fee-preview.png": "54fa5e8fbfdd0cf47b28e6949676233cd8eb8ea0cab31f308be440e857df68ca",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/26-financial-independent-review.png": "b6309543d1804e253bafb3e8588410023b7dda9d5e73127056a53023b12d9701",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/27-billing-ledger.png": "a9721d82e576735a46be94405cac7d22bc57085406a3d9bb7f372d17bce31995",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/28-billing-mobile-dark.png": "4c0617e19399991cdf2c6096af03ef0802a5a47525aab9dfe84dcadab90cf382",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/40-payment-evidence-record.png": "c5edb6bff7c684e8016d725549d24b2032204371b87b145805281f655ccc6834",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/41-payment-independently-verified.png": "c1b820ecf5709679935405d07acb1e9b9b04b4eb5ac81013b8550b4614a273c5",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/42-payment-posted-ledger.png": "a0fadd3f2b0284ee700310fa170b6d58bf77a8c292e54c51a8813f231e6267cb",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/43-consumption-compensation-preview.png": "4a55c4a01c45873cb1cf07f8ca5b58827fbd063f5b2ee2578204f23f8ca8e680",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/44-cash-refund-reservation-preview.png": "96ca18faf91ea74764fffaff998f5bcc40f145dcc8fd668be4d28751529f0655",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/45-consumption-original-sources.png": "922ff6481b39a6954e45267c5a1d9526059e798c6017a043efb2e0e92ec8b75b",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/46-independent-partial-refund.png": "800bb49c2bce7cac5eec1a8f15c09f693d713621ace27d20139c2a76fcd25841",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/47-refund-mismatch-reconciliation.png": "ca329ffa3e399f9a3516f786b9b87d9dca716ed8560a685f2b3b61eb78b79369",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/48-partial-refund-closed.png": "7e7709572d36b70d6c6c6d5de6ec4453d5f4c5b3469daed81c0a19268a7cd69d",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/49-refund-mobile-dark.png": "0f809752501aaf6d8c2b2b2859aa0b285aa1fb7b87a5c15e3c2279bbc8c91e98",
+        "evidence/refunds-before-capture-reset/dev/copypaste-admin/assets/screenshots/payment-mobile-dark.png": "d013f10aa2421e4ee8b245e6c70bd60800d4705d716252475882c6c1bc6e4a5a",
+        "evidence/refunds-before-capture-reset/dev/copypaste-delivery/evidence/admin-fee-contract-samples.json": "1d9b7b4b0f2d946ab35c8619c2f8080efbade24baf72aa83569ef177bff9aef1",
+        "evidence/refunds-before-capture-reset/dev/copypaste-delivery/evidence/admin-fees.json": "eebfe951673866bcdc95b8af023fcacd4eb7c7974b8d3e06dc45593f9f981c43",
+        "evidence/refunds-before-capture-reset/dev/copypaste-delivery/evidence/refund-contract-samples.json": "762519ca0f89de8a0c044956b4b2b9bba3d39963d40201fe7f8313275c06f3eb",
+        "evidence/refunds-ui-locator-failure/archive-map.json": "349185b04c73e9c98920f2d15604447311ed63b3b3f2b3d01a1c3c182da62210",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/24-billing-accounts.png": "dc28d5073f1d57aa8a70d6f1a91ab894d89fc8fc1e197202046a67f2619fe24c",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/25-fee-preview.png": "dbd87961a366150351bcc59c15a92faa37b0e875297fe0c261f1adadd37e6db8",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/26-financial-independent-review.png": "8a3aa5de89b7d44cdb0121667e28109b1fd7ec414a2e365f9938b1ec26f1c29e",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/27-billing-ledger.png": "d16eda23906ae2cc9087cd6a27c8f10d69f4bf95b57fd7edc3e0452645e66829",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/40-payment-evidence-record.png": "1ee15458cebbd888cde05f0bf4f06176fc52c5d49e961ebb3db9c8a47cd7f0dc",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/41-payment-independently-verified.png": "10680c31ea0409a127abfef885a057778416172a42d4409bbb3adbeb4a13cf03",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/42-payment-posted-ledger.png": "c1da9c379480619f2dbe3bfcdde7485576a83bd924f24b1c23dfff900dd91923",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/43-consumption-compensation-preview.png": "eff5319b9d2be158efb9df1e95e98b523cfa5942d9d32742fccf181db5b678ac",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/44-cash-refund-reservation-preview.png": "05e5484eb1b3f706fcf5c24ce1f1647743a053d42b09ab706d0204cae664b0ae",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/45-consumption-original-sources.png": "0ab889e7325492ba54de0b7e61abe790c67f893a759f4ac416b26f9e1f98deb2",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/46-independent-partial-refund.png": "77bd47ff8304b86c0bc2314742252f9ea377632ea4ccb79eca4b0fe10b702c5c",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/47-refund-mismatch-reconciliation.png": "1dd8cd325e0202afbfdcd7be1e696da51e2385bd1c285f2de4491ab31cc0c5d9",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/48-partial-refund-closed.png": "2bbaabad9b82e83d3df423fba14ca7ae712580d8f209f96e629b3e425e20d8b8",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/49-refund-mobile-dark.png": "b3393b7c05bc07981ddc78051b0762c134ca122c356c8985ac3db43a9bd42088",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/fee-failure-0.png": "de19c8a1b3633cc53749c6d66b42d4f87ba772595e5f1b7cdd52515dd4eb6d91",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/fee-failure-1.png": "a0174b64a782ae608deb89ea4daa50a47718c8f4d78cfd77fe0bbaac5c5e0f7c",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-admin/assets/screenshots/payment-mobile-dark.png": "4d056cce9b95d3f78140fba8106d9e760272e73422fdf0dc4d41799bf32a5ef1",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-delivery/evidence/admin-fee-contract-samples.json": "12d0b9f402b412646c13e9a02a0f33b5c766e67a170066d68ecf93e2f85eeefa",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-delivery/evidence/admin-fees.json": "38cea2fada0163c0dca47fcc8b333771ee5bd8c83088291f2d6f12523906bf0f",
+        "evidence/refunds-ui-locator-failure/dev/copypaste-delivery/evidence/refund-contract-samples.json": "42a9b1b5358d1e182f1d3bbcb7a898e2b74103e0fa95cd69b63cd47282d94dbb",
         "evidence/repository-review.json": "6862d579012df741cc506d5db57bfbc272d1ac58f44b5fff0a40b05a5996ff87",
         "evidence/schedules.json": "ada668aa7d6ce308f08bddb9df54cadde30f91ffe54141fbf6cb3e899aad8542",
         "evidence/sessions-authorize-stability.json": "29ceedf548d7b09afc79da3cbb5378d6ce336ae9ad4a71a9eb9add77c6700333",
@@ -1804,6 +1958,137 @@
         "evidence/stage43-before-payment-records/docs/quality/09-implementation-alignment-audit.md": "dafb618f1a8652d048d58f3fb59d1a0afd66dc187b26e82410b773e63096643f",
         "evidence/stage43-before-payment-records/docs/quality/requirements-alignment-progress.json": "4822a5bd94ddc75821462d0a790cfea2eb4da74470f10b1177b2ef8b39f83db2",
         "evidence/stage43-before-payment-records/docs/quality/runtime-contract-samples.json": "b773fcf8c65b545abaa63889854fc4a8c547d20f4aeba9d1fec9019fba15c313",
+        "evidence/stage44-before-refunds/archive-map.json": "18174a864f530c30493ec67052396370ce623e42806914109576a820785d427e",
+        "evidence/stage44-before-refunds/dev/copypaste-admin/assets/screenshots/40-payment-evidence-record.png": "d21cd194d5fc4ab7ebef21206d64ec3426b295eb42091e504f83c72919f72e05",
+        "evidence/stage44-before-refunds/dev/copypaste-admin/assets/screenshots/41-payment-independently-verified.png": "b571dfe43e4a1662c6562b9835e43ded43987cb0dd37edcf8bf15d5079b3f6ba",
+        "evidence/stage44-before-refunds/dev/copypaste-admin/assets/screenshots/42-payment-posted-ledger.png": "a1256e272d01535fd28ff3d2204aa3482f852473cb94e51b7657e4c070ad8cfb",
+        "evidence/stage44-before-refunds/dev/copypaste-admin/assets/screenshots/admin-payment-evidence-record.png": "b8e6a85f3367667c028f50c5025a3d035b127ec2d1f7c8cfea93ca899f8a12ff",
+        "evidence/stage44-before-refunds/dev/copypaste-admin/assets/screenshots/admin-payment-independently-verified.png": "9583cfde8c33a1787632f049e98837a9d8bec84eabb47d7da870d521bf23f546",
+        "evidence/stage44-before-refunds/dev/copypaste-admin/assets/screenshots/admin-payment-posted-ledger.png": "2fa5cb0e0cc70808c70b86c760243609737e4c1b1625007e08aed4906e620b7c",
+        "evidence/stage44-before-refunds/dev/copypaste-admin/assets/screenshots/payment-mobile-dark.png": "48fcb4d54f5c70c17a81ee434209ae0abd96ab03227b49ffa2538ab7338010b3",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-account-contract-samples.json": "11715fd58b0b16f6b2b42d585dca4ecd42107ef03934c42087cb01852a1faf73",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-account-ui.json": "10350dae1527d236cfa18f00e627c1b5ce642fd823567b65bf2c6cc631c1287b",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-account-wire.json": "8f806a540ad4f121b69676556f1669ba234cc39eac91f223cf65d2203c7b4fb1",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-billing-contract-samples.json": "0b111cf1a0e3cbf90187fb76b5f5b91cbdab150f44ec89a7d5e5c7729deaeef9",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-billing-wire.json": "19135040df3a1dd60de8e8b40283a0bb1d834a159ce1df39b44f1c6a27e1b0aa",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-directory-contract-samples.json": "9ccb1f8b5ed61df5df09adc1693b9b9a53211e00bfc877e119d34ec52f29285a",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-directory-ui.json": "bef0915285108a158b314b8ecdf354b8144788146ac04439c73cb404cf2ac372",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-fee-contract-samples.json": "13b8039f0bf0c314dc4528d3e0229d73888c3b0ab802d84ae17d21b2f2fe771b",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-fees.json": "7135dc6ff6be72a66343fc1b6a5dc31eae73ba9a19dbf5184d4295fe9771f49d",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-identities.json": "450bf2606f7debfaa80614471a930492536bc962c0037efb176bc247ded27942",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-membership-contract-samples.json": "12ed75a338c64a61a2e20ea757b8fe96d64d3ea6042b2f1b4bd2ff912bd93ed1",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-membership-ui-contract-samples.json": "8edc98bbaaaadf6a30320ad9ed14ad6cfe5ac6f528d87d933b598b2a78db013c",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-membership-ui-open-issue.json": "66fd84e61413f6f21de7c9914bf97853c2ea97027d5451c5b1dc864e10e7acba",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-membership-ui.json": "098085c77b0a44a833a673199fba8a4011e9eea248f2a7a2eb1948983e83f9b7",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-membership-wire.json": "969d48811eadb1803acb1ae6051b768f73e108c9a22c1f6701ee87cff9c41d97",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-records-contract-samples.json": "c04cbf6cbb3567ad932189d1a91935da054dfbf2d061f3d0962a67a3569c970f",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-records-first-regression-failure.json": "93b6820409520949f77c7f5e6bd3bb85a21ef15d55e8c58a07a1a04bc86edbb2",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-records.json": "c65d6c0ef8571fb73bd7e9998086e829497f9a4fd33fa388db385b4c36f515e5",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/admin-task-inputs.json": "6283b224a210851ad889aa16da7b2aa1ad74a90385888bab844ea4e90abe0448",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/agent-templates-contract-samples.json": "2ad20cf3784cf00cb25332c4a6bb2aa13b8257d3e12a1cfff6ed442e7c6c1e86",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/agent-templates.json": "8ce9cf4753b6c8d46b30e4adfa07abe2dd2e73458f029abf269f94720f0a5a1b",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/alignment-desktop.json": "ff06ef0ef7055513dfc0f627b7eec9a2f5d8e5230978bddba3682ef172969b81",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/alignment-platform.json": "9576f01e7e2757d5e16df10369ddff2bbd30f757f0be896ddafea001d6856279",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/alignment.json": "3554e721940576080a0f6e01a9f2a230a87a75ef3c97c1d934999f7c1091a2d0",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/analysis-index-backfill.json": "422e7b934edccf8d785c6f6478316aeec3edd9da7b6ae381203dac7771fe73dc",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/analysis-reports-contract-samples.json": "30cf0a67f891a9b9def12d8f98ee89b6951a58019aad99c7eee930c7c1bd0ddc",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/analysis-reports-first-journey-failure.json": "7603d79cbca797c95fcf04262ddf6d4e909533c24f403e285bb6252522eff5a0",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/analysis-reports-first-responsive-failure.json": "dbd5c2afd92b2e410dc5006e835e88d2c0a50774ffd4ded46a9eae0ae09951ea",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/analysis-reports.json": "b94dc54ab10c91ca4e5c70943cfb04970f2c5eae2d9c151125426280463b39db",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-context-first-navigation-failure.json": "26ada4dddb10362f8f532a80de62b44c57668acaf39a2544f30002459c0e2d7e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-navigation.json": "34d6ae4715c4be44a1cd026cdd3ecb439f4d0929a869dff90782597bf59c30aa",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-profile-contract-samples.json": "5ed7a625935c7f85a28efe366b233e03483f4e37be9f44e0c75c476af60d561e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-browser-readiness-evaluate-timeout.json": "4c7b9a6c43d6c11776c95cb4d1c64782e2aca5f6d2954e5fe394e77e6c8bf5ef",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-browser-readiness-first.json": "7258d87c05000edbb98fe3ad4a1d74144e449c3e6c7dec07fc48bade11daea42",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-browser-readiness-full-context.json": "516bcc6e974edd65b4391be32d142b2d010d8972a3b62dc18a0be3446e6fc16d",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-browser-readiness-full.json": "f89c227833a187417c3415889b12436a33047f2e80c0514555688f0d9c084659",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-browser-readiness-storage.json": "dfd783d471908bfddb69b6a6bff8e420c3082cddade8ce50f665af9cc5c0ee4c",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-browser-readiness-viewport.json": "e54259adf1e23ef7ff3b88ac93cacf044ee092759c4b494eb18d1aba159762e0",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-browser-readiness.json": "516bcc6e974edd65b4391be32d142b2d010d8972a3b62dc18a0be3446e6fc16d",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-current.json": "3a94918ae602ec77bf558312f8057e640b6acf43fb9feeb3e9521e1f659db5f8",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-default-loader-cleanup.json": "fb69eb88fcfb8f7ae901325e23355cd55247cb1ceeee2e21e52f14cbf0519f9e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-default-loader.json": "189d6aea6b67279db794b1d0eea077d501d740508be8c834aceef148305aaae1",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-diagnostics-cleanup.json": "e67a8317c90a20866e80d4276a2a1e0fd07315a9cfd567f281ede6b6234d33fa",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-loader.json": "ae6520a188d59f44e72a1d5886ceb1808a5e7d9a4e835ef6c1d415ea3c1711ab",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-raster.json": "cbdef15f1231fc68d55f6939cd6161fe044f6dabf4b367e3d307b091562c76a1",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-raw.json": "7040ab9d149b7a3e5aee643d2db0219d5e3a08b8113e6030ac32db255bf8f39a",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-runtime-readiness.json": "2fc91a357b60aa04d9618b91f72b737dab681680a78ea08126866e0ad74529f7",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-startup-compare.json": "9f3394e74e3331389296a44646308e3fc5d002dd04e90403584cea6449f95ded",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-startup-timeout.json": "6bd4bef70ccb33c35c1ba063257cae4d709f383912c53a74c742f6bc77e11d9f",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-electron-startup.json": "e9702dbe78ad1894019b62bf290d48460661a26358ce24b6fee89036f3ec2bce",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-harness-import-failure.json": "ebec301a42a3960b28c97a12c8d7b8434d6c5d719ed46d9887fd81c562303da3",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-initial-login-timeout.json": "a9dcccef276b30f92d4df72186582ff8a084812d9e4fb33a1aa63af69c1d4958",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-latest-integration.json": "6bd4bef70ccb33c35c1ba063257cae4d709f383912c53a74c742f6bc77e11d9f",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-launch-without-loader.json": "637470c907521546034547d1b1c4bc6420104a8363b3fca7b0ab6952607aaa89",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-loader-owned-cleanup.json": "c2bdc862dce0f3e4fe6dd7c490c8ce58309aae4cf25bb6c3cb12956a32346c36",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-matched-chromium-cleanup.json": "5a23a672d306b572a7120749e5045da5016bcb5185f91c82bd49bb9cbb7e8bf4",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-matched-chromium-direct-timeout.json": "94929c9787dd9fb4d567d0907674d2c5598a89252cf40477af08b1baacc41ddc",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-open-issue.json": "0477456f3bb51e711c65040971db88151872096efa35b963cf1bc79a49ea9bce",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery-owned-browser-cleanup.json": "2611979fb7bd210664e4395568edddf4953dd00f4e5163ff7b2cadb0ad0e639c",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/auth-recovery.json": "5c48618f1fcb2bc12343856f4a88d232daf7f2b1b7f6d054d2d7f405279ccc78",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-accounts-before-migration.json": "4381730725fd2060d86f870787d9e5e389fa4dbb7079604b4f3dd527d226850a",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-accounts-live-migration.json": "10d361b5dc8f12b66819d2f57909780d7eb1ee76f622c22f7939d66feebe710c",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-accounts-migration-initial.json": "ae8f2467f328175be1125bd8cd75796f8c81db20d4da0bfa379eda0d330672e8",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-existing-state-before-migration.json": "1aa148d6139547dd1dd4043ac1e530ecf53cea11dec5d831711bfae3d1fccd03",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-initial-checkout-failure.json": "c5b829d2046a8c1846659cd1b71e2e4d3040042190e48dbd4734868c42fae3b9",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-live-migration.json": "6a05e97b48093b9f71a4c03a62001e1962f83c5d5f77d166d77cad375a32afdd",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-runtime-alias-recovery.json": "37bf22b9af974237363e63af31cd10155eed912586170c58862f82476fdf60e6",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-runtime-stable-alias.json": "d58c79b193d4fd7bfbcf4f7702a76039666665a9d8b14c2e4e02027eb81c7ce6",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/billing-sources-initial.json": "7e0811d5b5352626f0b99e73c5202e1946f682eae0875a76da91b4dfe572a9d1",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/byte-integrity.json": "e3cca9afefce1c2dc4c95a0cd0248dab7c6e080dd2244ab2e9b90228c085bc35",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/cloud-files-contract-samples.json": "25a282a0555568288577f6d5b2d80a6769619b62fa69865fa4745a67304d9505",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/cloud-files.json": "cd28c3f8a0ef68ef97cc96de124e072ed7fd83ccd45e40d563b988a0daeeaf1a",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/default-assistant.json": "7f9ee69caba3af61d737064ed2ec2e2ad7f95243cf5bd446aed31046057c2d74",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/design-pdf.json": "b388a4cb1cca3eb9364ddefe5fad4de7cec39552b28b245e8708c10bda2221ab",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/desktop.json": "ff9f90f1b751222c2b4aa12bdb111a55f66a8ba9787b7cf24ba0066d4b3fafcc",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/execution-capacity.json": "0eaba49ee3ccc3d56bebe8f20a303d19f9105501fef8301a6ae0ea333f7aa02c",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/extension.json": "acb1ef4029a83a7d15eece8f654e31b9253ccc9604d04ffb65109112767e9eb2",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/federation.json": "0dffd44126cd8789197538c0a4de9420eca55d1e85a294863a30050755e8907e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/file-imports-contract-samples.json": "0b4a982a2d31a77b781ed1c2cdf1d9afad18f5f338b50cac1f08c9cc24ddf344",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/file-imports-first-native-failure.json": "67ee18b87450639ede7813b5bac1461d1df2c8b69307f037f2a4b1ae616495bf",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/file-imports-native-bridge-failure.json": "b7db40cd9233b1cfdabc52506b1f18b0db71a87bfb68104f1e997472c66142e8",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/file-imports.json": "8f4443e779e2ffb7ae398670cf873545e66d9c39217263f494c933d5641d12a6",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/marketing-analytics.json": "f682c98a468ff9deaf06dca70699e6b6b4fd571a4e59b2ad3471c2f9e3e06850",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/membership-contract-samples.json": "86b879af75799d5e56acc4ce4362c5ca9409ef7a71c3c85fd3f819c50fae2ba3",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/membership-current-issue.json": "a913efc238f7f5de29bb35cae1fc8eba7e1d3a0a2325eff81e9a5e759e0002e7",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/membership-navigation.json": "e33089ca09b2573721e266c1b69ca9aa7e87dcf04d37c2ada7169953766a3b5e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/membership-ui-contract-samples.json": "70c487fca7a9f58cd7f34505f2079a3293998258f56bc218d65eb5ca51b68b04",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/membership-ui-recovery.json": "d74e198bba77689fd2dfc296254fbd436559d1adae77900b59945397f935cf42",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/membership-wire.json": "e9c5a133fd346e291a3049c2e6aaa778ad73287f188484809a1caec713d57709",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/native-controller.json": "7843d8d1d3271df7f9d35088309ace47bbb2a6da0b5e1a7b686be13f9308e635",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/native-surfaces-artifacts.json": "0985777a80c0773136ae674de662b5408319d38636a20864408fe987bbdc92d8",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/native-surfaces-first-panel-layout-failure.json": "16ab14638d3023b643cc13e525d53e685264116cf87178eef0ae9cd37a9c9de4",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/native-surfaces-source.json": "da2f14f48e0c9682a794bad192e398d61de3fae644e7e9283a87e07a9e2cb0bf",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/native-surfaces.json": "eaf74e870c4b3946cbe193d5317a9d90b7514979b05a8b183442104a8132f8ca",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/notifications-contract-samples.json": "5afb15f582b2bb3fea14aca6c7a2311b0ebec884df4d5a4b157675616909bac5",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/notifications.json": "4514cb96a9af98fff4227ac99ab6904b6845a2e32eb7517ee28f9a68df032ff3",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/packaged-windows.json": "7d12a4dd06de1bbfff66a5c3cc56b7778718a7805cf3e5250ea764ac99a155c7",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/persistent-work.json": "8f1d9cd6e12aace38d8558317621062a6f071bc22a6bfb96f45c7df47ef38b1e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/release-manifest.json": "3910330ca62751e7a35338e340fd2833da45ad5e2afc6e208a7a6404a8e031a8",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/release-restore.json": "c48472175476b7bc00576c9ecc3b58f8f5f3605da0355da17abf112253e15aa3",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/repository-review.json": "6862d579012df741cc506d5db57bfbc272d1ac58f44b5fff0a40b05a5996ff87",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/schedules.json": "ada668aa7d6ce308f08bddb9df54cadde30f91ffe54141fbf6cb3e899aad8542",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/sessions-authorize-stability.json": "29ceedf548d7b09afc79da3cbb5378d6ce336ae9ad4a71a9eb9add77c6700333",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/sessions-background-focus.json": "d7eef2c188604051d591d53a8b1b3a7ed321260699678592683349ad31f74b5f",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/sessions-desktop-focus.json": "8a53e00c8622477476b37f08858098b8ecfb47208d2882da52753ee089883b55",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/sessions-gpu-diagnostic.json": "d2741ac00307cf0d07aab71b4c164d8d6e5ff54ed9a0d30f896360f400b80609",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/sessions-initial-load.json": "40062fada8b32e8f90a1cbce2c0ef8b72b5bd88a69511ecb1eba3dfe00347176",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/sessions-stage-platform-191.json": "1019c0b83df5ccb01c4dbc6f5615200c19f3884bdb6a4c89865ca85fcdfd2878",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/sessions.json": "20f6f005f160070f8002a60a9da6b4af82313a606921313b5ea628ef46e51f7e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/skills-contract-samples.json": "d37aa73ad0085210462fa1648fefcf6e53d5e9fb2fd6f2f08883c55fc72eef4a",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/skills.json": "51904fd6bd9b5fdd0fc17a8d6d120a798fe9e85571c215162a6174b93a7c7621",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/task-controls-startup-race.json": "84cde4f16ef775261df76ab8dbd5156a3fcff8a0267703c915221259574b09d4",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/task-controls.json": "453fe0a623371d6db9bd9836c8010d7b8764f0f081ac6dfd1240fb81a5c9c71e",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/task-dependencies-contract-samples.json": "d32c4dfe04a467fa72b6229dd1863e3965517b3ab6eb7e295cfc7d9429b2d126",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/task-dependencies.json": "2bdf28f7a3d09d1c26a599c9b4d2c0e3f569d650ec67560be858945cc59d14f6",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/verification.json": "c5f8f8b96a520379443318459f252683aa17376cd5b0c5f5f0d1b5952e0838b5",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/web-admin.json": "b7d9b9a0152944e22fc5f25d5cf71020505b5336e471ad0ec93e13b2f71d66e3",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/workbook-interop-first-fixture-failure.json": "911fdbdb563da000ff8dd4d1a3d25ce407d3402d3613dbfae232a5ea4d88a401",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/workbook-interop-first-unicode-failure.json": "b2b9143f7a07af0137ba0328c534d78c2b7af653d2a114d14b45c11c783054ed",
+        "evidence/stage44-before-refunds/dev/copypaste-delivery/evidence/workbook-interop.json": "e53a4cd6fae4d1e0a3495003063c3ca838adaa9c38ff4867b1696229f78b770c",
+        "evidence/stage44-before-refunds/docs/quality/requirements-alignment-progress.json": "ebb52e9e72d59373654efbc15702bdff79c51088fe9764b2c7b16e48f677b4b3",
+        "evidence/stage44-before-refunds/docs/quality/runtime-contract-samples.json": "43053d0bc01a4c3745733d404687894dbdb2bcdb5fdfa74b6c13d8d6dbae276e",
+        "evidence/stage44-before-refunds/docs/quality/validation-report.json": "fdea1df2be981ad4446deee5e5ae9cfb22e04ee3eeb55b55dbd36b24b4e145db",
         "evidence/task-controls-startup-race.json": "84cde4f16ef775261df76ab8dbd5156a3fcff8a0267703c915221259574b09d4",
         "evidence/task-controls.json": "453fe0a623371d6db9bd9836c8010d7b8764f0f081ac6dfd1240fb81a5c9c71e",
         "evidence/task-dependencies-contract-samples.json": "d32c4dfe04a467fa72b6229dd1863e3965517b3ab6eb7e295cfc7d9429b2d126",
@@ -1872,7 +2157,7 @@
         "scripts/qa-admin-account-wire.ts": "3f42c5e346e0b25f1986ed325df84fd5f6de0e27e2fdbd9e6bd77bc94b471448",
         "scripts/qa-admin-billing-wire.ts": "e8fea851f33c893e1bc08d353a3471222a6285ddaf707160af8937857efc6f11",
         "scripts/qa-admin-directory-ui.ts": "7f8300f1e0dbdc34040406d545d0df0b884aeaea354a448c54f0b2893d3d5892",
-        "scripts/qa-admin-fees.ts": "82b43c164718005bbbb2afc9a37def3811ee4dc46551811529dd5e964d0dbd24",
+        "scripts/qa-admin-fees.ts": "e0e8f0e7e6735b6ada4c9295de100773d4c30e5db439f7b75743167c8d050ead",
         "scripts/qa-admin-identities.ts": "22e3a6e4bd6101addbba8d7dfab11b64c560a3a871fa233f8eeb370b1ba825fc",
         "scripts/qa-admin-membership-ui.ts": "4f1001fb15e50c456a5772fab6d4ebc5d83754e49f1d5de4f88b28ed71021613",
         "scripts/qa-admin-membership-wire.ts": "bc5549647ad147b931cdcd5623b26f85f0ca1e3fac161a746cccd0598c469650",
@@ -1907,6 +2192,7 @@
         "scripts/qa-packaged.ts": "95ec693a11dab746295be0cce85b5f783b39373522a39f547c78741bd70c5440",
         "scripts/qa-persistent-work.ts": "770d3fc635f69428032de5cc4fbae3cd37202933c17d4381b3fec71c96c12fe3",
         "scripts/qa-platform-regression.mjs": "94b9ec29afd6241be5a42cd6ff771f08eafb37b43d2f32d1f886c02a6956dd21",
+        "scripts/qa-refund-migrations.mjs": "6c835f107ec20c72da3dc09cf9267cd4c9cf1587b11cc18738be88faeb536592",
         "scripts/qa-schedules.ts": "2f16428a5d8557cef1729812664e50177bbe513b4a53feffbbb80e6ff21a8f25",
         "scripts/qa-sessions.ts": "884755c6865dafcba84a1a1bf97408c72d8d413f8a9df7e9ed18db735286c01a",
         "scripts/qa-skills.ts": "257d67233dcefd19ab75f69e339ff515a7d54efad4fd645436de2b9b45ae0f3d",
@@ -1925,13 +2211,13 @@
   "evidence": {
     "platform_regression": {
       "path": "dev/copypaste-delivery/evidence/alignment-platform.json",
-      "sha256": "9576f01e7e2757d5e16df10369ddff2bbd30f757f0be896ddafea001d6856279",
-      "at": "2026-10-20T02:04:44.165Z",
+      "sha256": "f6d61bad587c2c9eb55b690edc043a5f64fc87079c4ab044d575040a1b7d554b",
+      "at": "2026-10-20T03:13:13.143Z",
       "checks": [],
       "scope": "Current source regression, including real native PostgreSQL, controlled adapters and real Codex with synthetic model dependencies; not all 102 acceptance cases or live role qualification",
       "counts": {
-        "tests": 310,
-        "pass": 310,
+        "tests": 324,
+        "pass": 324,
         "fail": 0,
         "cancelled": 0,
         "skipped": 0,
@@ -1939,7 +2225,7 @@
       },
       "raw_report": {
         "path": "dev/copypaste-delivery/evidence/alignment-platform.tap",
-        "sha256": "5b499c16a50ec57427ed7ff7cf4681ba2e0cef0330e97159dde7e9d25e291119"
+        "sha256": "c4c41077349484a5c39042643335c71724ec44bdaae335b1c250cde9f869634f"
       }
     },
     "billing_migration": {
@@ -1986,8 +2272,8 @@
     },
     "admin_fees": {
       "path": "dev/copypaste-delivery/evidence/admin-fees.json",
-      "sha256": "7135dc6ff6be72a66343fc1b6a5dc31eae73ba9a19dbf5184d4295fe9771f49d",
-      "at": "2026-10-20T01:52:00.324Z",
+      "sha256": "e78f3923a3995517f47362d3c33668a41ab6e10bd39977874047bae51e40c6a7",
+      "at": "2026-10-20T03:05:16.188Z",
       "checks": [
         {
           "name": "real email and TOTP HTTP sessions, real personal account, original immutable OpenAPI schema snapshots; no AI or payment-provider call",
@@ -2002,6 +2288,18 @@
           "status": "passed"
         },
         {
+          "name": "actual canonical consumption refund preview/write restores the original promotional funding and expiry, with a visible immutable source breakdown",
+          "status": "passed"
+        },
+        {
+          "name": "actual cash refund UI holds original paid funds, rejects requester self-review, preserves unknown/mismatch observations, verifies a partial payout exactly once and releases only the confirmed unpaid remainder",
+          "status": "passed"
+        },
+        {
+          "name": "actual refund directory and persisted closed partial payout render in Traditional Chinese dark mode at 390px without page-width overflow",
+          "status": "passed"
+        },
+        {
           "name": "actual uploaded evidence and two real browser administrators record and independently verify payment without changing balances; a separate exact top-up posts once, retains source provenance and recovers the committed receipt",
           "status": "passed"
         },
@@ -2010,7 +2308,120 @@
           "status": "passed"
         }
       ],
-      "scope": "Four canonical financial commands and manual payment evidence: current local HTTP and owned Chromium UI with real email/TOTP sessions and simulated financial fixtures; no external payment, complete payment/refund/VIP, native or production acceptance"
+      "scope": "Five canonical financial commands, source-bound compensation and manual payment/refund evidence: current local HTTP and owned Chromium UI with real email/TOTP sessions and simulated financial fixtures; no external payment, complete payment/VIP, native or production acceptance"
+    },
+    "refund_migrations": {
+      "path": "dev/copypaste-delivery/evidence/refund-migrations.json",
+      "sha256": "7a6fdb976b1a0f83805ae8f0a372892d1847e4b9220bc645e7ea5c08db4d3a35",
+      "at": "2026-10-20T03:06:03.651Z",
+      "checks": [],
+      "scope": "Actual native database migration metadata and RLS table checks, with original startup/migration logs; read-only verification, not complete financial or production acceptance"
+    },
+    "refund_schemas": {
+      "path": "docs/quality/refund-contract-samples.json",
+      "sha256": "ea4530a40ac879e1aae9c4e30e333a51e7a5a2b61882a18e83fb007be80ff721",
+      "at": "2026-10-20T03:22:28.667791+00:00",
+      "checks": [
+        {
+          "sample": 1,
+          "direction": "response",
+          "schema": "AdminRefundDetail",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 2,
+          "direction": "response",
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 2,
+          "direction": "request",
+          "schema": "AdminRefundOutcome",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 3,
+          "direction": "response",
+          "schema": "AdminRefundDetail",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 4,
+          "direction": "response",
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 4,
+          "direction": "request",
+          "schema": "AdminRefundOutcome",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 5,
+          "direction": "response",
+          "schema": "AdminRefundDetail",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 6,
+          "direction": "response",
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 6,
+          "direction": "request",
+          "schema": "AdminRefundOutcome",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 7,
+          "direction": "response",
+          "schema": "AdminRefundDetail",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 8,
+          "direction": "response",
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 8,
+          "direction": "request",
+          "schema": "AdminRefundOutcome",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 9,
+          "direction": "response",
+          "schema": "AdminRefundDetail",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "sample": 10,
+          "direction": "response",
+          "schema": "AdminRefundList",
+          "status": "passed",
+          "errors": []
+        }
+      ],
+      "scope": "Supplemental refund payload shapes and actual captured state coverage; original OpenAPI unchanged; not full financial acceptance"
     },
     "native_runtime_alias": {
       "path": "dev/copypaste-delivery/evidence/billing-runtime-stable-alias.json",
@@ -2049,8 +2460,8 @@
     },
     "membership_ui": {
       "path": "dev/copypaste-delivery/evidence/membership-ui-recovery.json",
-      "sha256": "d74e198bba77689fd2dfc296254fbd436559d1adae77900b59945397f935cf42",
-      "at": "2026-10-20T01:47:52.481Z",
+      "sha256": "7bb20fe0df925748982176cc88ae7abab54b5ee95860b3156120be46fdac95b1",
+      "at": "2026-10-20T03:06:52.596Z",
       "checks": [
         {
           "name": "real owner onboarding, explicit viewer/project invitation, strict 201 response and durable mailbox delivery",
@@ -2205,8 +2616,8 @@
     },
     "admin_membership_ui": {
       "path": "dev/copypaste-delivery/evidence/admin-membership-ui.json",
-      "sha256": "098085c77b0a44a833a673199fba8a4011e9eea248f2a7a2eb1948983e83f9b7",
-      "at": "2026-10-20T01:52:22.684Z",
+      "sha256": "d4a87cf035b5241863505b3bec61af7e78593d32198a19db4ae28a88fbcbc43c",
+      "at": "2026-10-20T02:59:27.858Z",
       "checks": [
         {
           "name": "two real scoped Admin email/TOTP browser logins and an actual customer invitation fixture; original membership schemas unchanged",
@@ -2261,8 +2672,8 @@
     },
     "native_auth_recovery": {
       "path": "dev/copypaste-delivery/evidence/auth-recovery-current.json",
-      "sha256": "3a94918ae602ec77bf558312f8057e640b6acf43fb9feeb3e9521e1f659db5f8",
-      "at": "2026-10-20T01:50:11.752Z",
+      "sha256": "dd5fbef30d9c12de905d0dd7f35a48ea658436b0d0db68365a9dc6e5d59f6c81",
+      "at": "2026-10-20T03:14:44.293Z",
       "checks": [
         {
           "name": "real Desktop first sign-in recovers a committed code-exchange response loss with one bounded same-key retry and creates one native family",
@@ -2935,11 +3346,11 @@
     },
     "checkout_integrity": {
       "path": "dev/copypaste-delivery/evidence/byte-integrity.json",
-      "sha256": "e3cca9afefce1c2dc4c95a0cd0248dab7c6e080dd2244ab2e9b90228c085bc35",
-      "at": "2026-10-20T02:11:23.240Z",
+      "sha256": "6b9a5180ae612edd6670311939fc218cb592a0a76aeb64e476d24486771248e5",
+      "at": "2026-10-20T03:29:10.636Z",
       "checks": [
         {
-          "name": "fresh independent Git clone preserves all 52 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
+          "name": "fresh independent Git clone preserves all 55 SQL files; native migration runner validates both existing database checksum ledgers without rewriting them",
           "status": "passed"
         },
         {
@@ -2951,11 +3362,11 @@
           "status": "passed"
         },
         {
-          "name": "fresh independent Admin clone preserves all 110 tracked source, configuration, bilingual guide and screenshot files",
+          "name": "fresh independent Admin clone preserves all 126 tracked source, configuration, bilingual guide and screenshot files",
           "status": "passed"
         },
         {
-          "name": "fresh delivery clone preserves raw 310-test TAP bytes and its recorded SHA-256",
+          "name": "fresh delivery clone preserves raw 324-test TAP bytes and its recorded SHA-256",
           "status": "passed"
         }
       ],
@@ -2963,8 +3374,8 @@
     },
     "runtime_schemas": {
       "path": "docs/quality/runtime-contract-samples.json",
-      "sha256": "43053d0bc01a4c3745733d404687894dbdb2bcdb5fdfa74b6c13d8d6dbae276e",
-      "at": "2026-10-20T02:08:14.044034+00:00",
+      "sha256": "154a5021db212eaf0c14f497f59576115c0c9dd37f97291f18b38d3dcbc94bf6",
+      "at": "2026-10-20T03:22:27.071533+00:00",
       "checks": [
         {
           "source": "cloud-files-contract-samples.json",
@@ -3637,14 +4048,42 @@
           "schema": "AdminPaymentRecordList",
           "status": "passed",
           "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 16,
+          "schema": "AdminPreview",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 17,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 18,
+          "schema": "AdminPreview",
+          "status": "passed",
+          "errors": []
+        },
+        {
+          "source": "admin-fee-contract-samples.json",
+          "sample": 19,
+          "schema": "AdminOperation",
+          "status": "passed",
+          "errors": []
         }
       ],
       "scope": "Captured canonical authentication, membership, Admin directories/accounts/ledger, four fee commands, manual payment records/confirmations and independent approval responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or payment/refund/VIP conformance"
     },
     "documentation": {
       "path": "docs/quality/validation-report.json",
-      "sha256": "fdea1df2be981ad4446deee5e5ae9cfb22e04ee3eeb55b55dbd36b24b4e145db",
-      "at": "2026-10-20T02:08:29.651519+00:00",
+      "sha256": "ac510b67c1f07f4a75b7185ab0f800dd3f2ee9e5051c620bbed29157d7bb5eac",
+      "at": "2026-10-20T03:30:54.849576+00:00",
       "checks": [],
       "scope": "documentation_contracts_and_recorded_design_evidence_only"
     }
@@ -3658,7 +4097,7 @@
       "original_receipt_preserved": true,
       "resolution_evidence": "native_auth_recovery",
       "resolution_path": "dev/copypaste-delivery/evidence/auth-recovery-current.json",
-      "resolution_sha256": "3a94918ae602ec77bf558312f8057e640b6acf43fb9feeb3e9521e1f659db5f8",
+      "resolution_sha256": "dd5fbef30d9c12de905d0dd7f35a48ea658436b0d0db68365a9dc6e5d59f6c81",
       "scope": "Twelve current-source Web/Electron/MV3 authentication/session subflows pass with unchanged source/runtime bytes and owned credential/process cleanup. Original startup failures and diagnostic bytes remain historical; packaged, SSO and full system acceptance are not established."
     },
     {
@@ -3668,7 +4107,7 @@
       "original_receipt_preserved": true,
       "resolution_evidence": "membership_ui",
       "resolution_path": "dev/copypaste-delivery/evidence/membership-ui-recovery.json",
-      "resolution_sha256": "d74e198bba77689fd2dfc296254fbd436559d1adae77900b59945397f935cf42",
+      "resolution_sha256": "7bb20fe0df925748982176cc88ae7abab54b5ee95860b3156120be46fdac95b1",
       "scope": "Six current-source Web invitation/member subflows and four strict HTTP samples now pass. The earlier overwritten success is still excluded; original page/locator timeout receipts remain unchanged. Production mail and complete native membership acceptance remain separate."
     },
     {
@@ -3678,14 +4117,14 @@
       "original_receipt_preserved": true,
       "resolution_evidence": "admin_membership_ui",
       "resolution_path": "dev/copypaste-delivery/evidence/admin-membership-ui.json",
-      "resolution_sha256": "098085c77b0a44a833a673199fba8a4011e9eea248f2a7a2eb1948983e83f9b7",
+      "resolution_sha256": "d4a87cf035b5241863505b3bec61af7e78593d32198a19db4ae28a88fbcbc43c",
       "scope": "Six actual Admin UI subflows verify suspension/restoration, Web owner feedback, exact operation navigation, frozen independent review and a narrow dark preview. Six strict operation/list captures pass. Original unverified-page receipt remains unchanged; shared normative approvals are a bounded increment and complete Admin acceptance remains unfinished."
     }
   ],
   "contract_alignment": {
     "contract_operations": 225,
-    "implemented_operations": 294,
-    "unmatched_contract_method_paths": 136,
+    "implemented_operations": 298,
+    "unmatched_contract_method_paths": 135,
     "limit": "Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.",
     "operations": [
       {
@@ -4847,7 +5286,7 @@
         "method": "POST",
         "path": "/v1/admin/billing/accounts/{account_id}/refund",
         "operation_id": "createAdminFeeRefund",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -5381,7 +5820,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -5658,7 +6097,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -5960,7 +6399,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -6348,6 +6787,7 @@
       ],
       "acceptance_evidence": [
         "admin_billing_wire",
+        "admin_fees",
         "billing_accounts_migration",
         "billing_migration",
         "desktop",
@@ -6355,6 +6795,8 @@
         "native_runtime_alias",
         "notifications",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas",
         "task_controls",
         "web_admin"
@@ -6362,6 +6804,20 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有工具/任务事件；attempt、step、trace 和用户可读失败定位与契约不一致。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "billing_subjects_and_events",
           "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
@@ -7304,7 +7760,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -7523,7 +7979,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -7725,7 +8181,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -8314,6 +8770,7 @@
       ],
       "acceptance_evidence": [
         "admin_billing_wire",
+        "admin_fees",
         "admin_task_inputs",
         "analysis_index",
         "analysis_reports",
@@ -8328,6 +8785,8 @@
         "marketing_analytics",
         "native_runtime_alias",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas",
         "skills",
         "task_controls",
@@ -8338,6 +8797,20 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有整数账本、预留与对账；需覆盖新增并行/媒体/本地路径的竞争与未知费用。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "billing_subjects_and_events",
           "verified_subflow": "真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。",
@@ -8793,7 +9266,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -9190,7 +9663,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -9559,7 +10032,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -11009,11 +11482,27 @@
         "admin_fees",
         "admin_membership_ui",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有独立 MFA 与后台会话；旧异步作业、全部设备令牌与撤销需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "shared_admin_approvals",
           "verified_subflow": "现有费用、成员、账户与旧后台待审批操作共用真实请求；原始严格游标列表和四字段/202决定、当前整体范围/模式/重叠拒绝、本人自批防护与双业务权限/MFA、原会话/策略/前态复查、事务审计回滚及并发幂等。SQL 048 保留原费用身份，登记已冻结成员/账户，缺失事实的旧操作取消并记录；后台实际过期无伪造人工决定。十一组共享专项和旧047带数据升级，以及当前六组成员/五组费用页面为局部证据。完整支付/凭证/退款/VIP、通知/outbox、全业务权限/导出/原生及全部综合验收继续保留。",
@@ -11089,11 +11578,27 @@
         "admin_fees",
         "admin_membership_ui",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有用户去重/详情；完整筛选、注册/登录及所有关联入口需核查。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "shared_admin_approvals",
           "verified_subflow": "现有费用、成员、账户与旧后台待审批操作共用真实请求；原始严格游标列表和四字段/202决定、当前整体范围/模式/重叠拒绝、本人自批防护与双业务权限/MFA、原会话/策略/前态复查、事务审计回滚及并发幂等。SQL 048 保留原费用身份，登记已冻结成员/账户，缺失事实的旧操作取消并记录；后台实际过期无伪造人工决定。十一组共享专项和旧047带数据升级，以及当前六组成员/五组费用页面为局部证据。完整支付/凭证/退款/VIP、通知/outbox、全业务权限/导出/原生及全部综合验收继续保留。",
@@ -11319,7 +11824,7 @@
       "acceptance_case": "TC-087",
       "acceptance_conditions": "只产生一次合法分录，异参重放冲突；余额不可直接 PATCH；额度可用性与预留一致，赠送不算实收，失败有可查询 operation。",
       "assessment": "partial_verified",
-      "finding": "赠送限时额度、扣回原入账、授信及已核实付款充值已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；人工凭据登记/另一人核实与原付款唯一入账已作局部验证。正式支付机构及未知结果对账、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。",
+      "finding": "赠送/原额扣回/授信/核实付款、消费原来源补偿及现金承诺/独立分次核实已有规范命令、实际页面、日限、独立审批和回执证据；未知/差额保留预留。历史授信来源人工对账、正式支付机构、方案/VIP、金融 outbox 和全部费用验收仍待完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/admin.ts",
         "dev/copypaste-platform/src/admin-operations.ts",
@@ -11336,12 +11841,28 @@
         "cloud_files",
         "native_runtime_alias",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas",
         "web_admin"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有人工财务预览/提交；限时额度、扣回、来源退款和全场景幂等需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "manual_payment_evidence_and_posting",
           "verified_subflow": "原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。",
@@ -11417,7 +11938,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "赠送限时额度、扣回原入账、授信及已核实付款充值已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；人工凭据登记/另一人核实与原付款唯一入账已作局部验证。正式支付机构及未知结果对账、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。",
+      "remaining_complete_acceptance_conditions": "赠送/原额扣回/授信/核实付款、消费原来源补偿及现金承诺/独立分次核实已有规范命令、实际页面、日限、独立审批和回执证据；未知/差额保留预留。历史授信来源人工对账、正式支付机构、方案/VIP、金融 outbox 和全部费用验收仍待完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -11793,12 +12314,28 @@
         "admin_membership_wire",
         "admin_records",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas",
         "skills"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有细粒度权限/deny/委派；全动作、字段、列表、下载和异步执行须逐项覆盖。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "manual_payment_evidence_and_posting",
           "verified_subflow": "原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。",
@@ -11945,11 +12482,27 @@
         "admin_fees",
         "admin_membership_ui",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有审计/MFA/独立审批；新增敏感路径和任务审批不可变性需完整验收。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "manual_payment_evidence_and_posting",
           "verified_subflow": "原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。",
@@ -12050,6 +12603,8 @@
         "desktop",
         "documentation",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas",
         "skills",
         "web_admin"
@@ -12057,6 +12612,20 @@
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有 16 页；列配置、分页筛选、异常与可访问表单的全流程仍需复核。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "manual_payment_evidence_and_posting",
           "verified_subflow": "原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。",
@@ -12217,12 +12786,28 @@
         "auth_navigation",
         "native_auth_recovery",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas",
         "sessions"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有请求/worker 重查；缺少统一撤销事件、客户端重连同步与站内通知。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "manual_payment_evidence_and_posting",
           "verified_subflow": "原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。",
@@ -12301,7 +12886,7 @@
         },
         {
           "cluster": "canonical_authentication_and_retry_recovery",
-          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
+          "verified_subflow": "原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。",
           "evidence": [
             "platform_regression",
             "auth_navigation",
@@ -12349,7 +12934,7 @@
       "acceptance_case": "TC-101",
       "acceptance_conditions": "真实收款仅确认一次，累计退款不超原可退额；赠送无法伪造实收，退款渠道和余额退回分开；未知入对账，补偿不删历史账。",
       "assessment": "partial_verified",
-      "finding": "人工实收凭据登记、另一位管理员核实、原付款精确充值、同笔唯一入账、历史外部编号防重、赠额不伪装实收及事实只追加已有数据库和实际页面证据。原交易累计可退额度、消费原资金桶返还、退款申请与到账确认、未知退款对账、正式支付机构和完整退款页面仍待实现及验收。",
+      "finding": "人工付款及原交易累计退款、原结算/还款资金桶补偿、过期赠额不复活、现金申请与独立实际分次付款、剩余未付/未知/差额对账、不可变事实及实际后台页面已有局部证据。历史授信来源人工对账、正式支付机构/回调、完整财务通知/用户费用消费者和全部退款矩阵仍待实现及验收。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/admin.ts",
         "dev/copypaste-platform/src/admin-operations.ts",
@@ -12364,11 +12949,27 @@
         "billing_migration",
         "native_runtime_alias",
         "platform_regression",
+        "refund_migrations",
+        "refund_schemas",
         "runtime_schemas"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有付款引用与退款约束；实际财务对账 UI、补偿分录及累计可退需全面验收。",
       "verified_repairs": [
+        {
+          "cluster": "source_bound_refunds_and_cash_reconciliation",
+          "verified_subflow": "原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。",
+          "evidence": [
+            "platform_regression",
+            "admin_fees",
+            "refund_migrations",
+            "refund_schemas",
+            "runtime_schemas"
+          ],
+          "implementation_docs": [
+            "technical/45-source-bound-refunds-and-cash-reconciliation.md"
+          ]
+        },
         {
           "cluster": "manual_payment_evidence_and_posting",
           "verified_subflow": "原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。",
@@ -12407,7 +13008,7 @@
           ]
         }
       ],
-      "remaining_complete_acceptance_conditions": "人工实收凭据登记、另一位管理员核实、原付款精确充值、同笔唯一入账、历史外部编号防重、赠额不伪装实收及事实只追加已有数据库和实际页面证据。原交易累计可退额度、消费原资金桶返还、退款申请与到账确认、未知退款对账、正式支付机构和完整退款页面仍待实现及验收。",
+      "remaining_complete_acceptance_conditions": "人工付款及原交易累计退款、原结算/还款资金桶补偿、过期赠额不复活、现金申请与独立实际分次付款、剩余未付/未知/差额对账、不可变事实及实际后台页面已有局部证据。历史授信来源人工对账、正式支付机构/回调、完整财务通知/用户费用消费者和全部退款矩阵仍待实现及验收。",
       "acceptance_case_execution": "not_completed"
     },
     {

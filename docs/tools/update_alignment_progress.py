@@ -12,6 +12,9 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('source_bound_refunds_and_cash_reconciliation', [11,46,83,84,87,94,96,98,100,101],
+     '原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。',
+     ['platform_regression','admin_fees','refund_migrations','refund_schemas','runtime_schemas'], ['technical/45-source-bound-refunds-and-cash-reconciliation.md']),
     ('manual_payment_evidence_and_posting', [87,94,96,98,100,101],
      '原始付款列表、登记与独立核实、精确付款充值及真正流水关联；原凭据/模式/主体检查，双人核实与当前 MFA/权限，来源与金额完全一致，香港日界及审批仍走共用费用控制器，同笔付款并发只入账一次、实际授信还款、历史外部编号防重与事务审计回滚。付款事实和操作意图只追加/不可变；051/052按原字节保留失败迁移并追加修复。完整退款、支付机构/VIP与综合验收仍保留。',
      ['platform_regression','admin_fees','runtime_schemas'], ['technical/44-manual-payment-evidence-and-exact-posting.md']),
@@ -43,7 +46,7 @@ CLUSTERS = [
      '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者同步迁移，不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、HTTP User schema、Web 初始化及当前十二组 Web/源码 Electron/MV3 认证和会话恢复独立记录；安装包、完整身份/系统及原生成员旅程仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('canonical_authentication_and_retry_recovery', [1,2,3,35,36,39,51,55,60,100],
-     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 769 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
+     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 775 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
      '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；当前规范认证/上下文上的十二组真实源码原生会话检查另列，含 1440px 浅色/375px 深色与双面板换账号。完整 SSO、安装/系统矩阵和 TC 全部条件仍未完成。',
@@ -165,7 +168,7 @@ REMAINING = {
  82:'局部两主题/语言/四尺寸通过；全组件状态、100/200% 缩放、键盘/对比/reduced-motion 验收待完成。',
  85:'规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。',
  86:'模拟数据单列且微额费用可读；正式多维消费归属和未知成本全量钻取仍待验收。',
- 87:'赠送限时额度、扣回原入账、授信及已核实付款充值已有规范预览/写入、实际页面、日限、独立审批与回执恢复证据；人工凭据登记/另一人核实与原付款唯一入账已作局部验证。正式支付机构及未知结果对账、支付及消费退款、方案/VIP、金融 outbox 和全部费用验收仍待完成。',
+ 87:'赠送/原额扣回/授信/核实付款、消费原来源补偿及现金承诺/独立分次核实已有规范命令、实际页面、日限、独立审批和回执证据；未知/差额保留预留。历史授信来源人工对账、正式支付机构、方案/VIP、金融 outbox 和全部费用验收仍待完成。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
  92:'独立 MFA/企业范围的 Admin 排队暂停、共用领域守卫、原受益用户撤权与费用待核对拒绝已有验证；运行中检查点、全工作流/Routine 控制和未知外部动作人工核对仍待齐。',
@@ -173,7 +176,7 @@ REMAINING = {
  98:'清理记录已验证组合筛选/URL/分页、有界滚动、四宽度、主题/语言、请求拒绝清空和失效重试对话框；全后台筛选、列配置、异常及完整键盘/缩放仍待验证。',
  99:'可信方法版本/撤销已补强；模型/费率的受控验证发布、兼容版本与后台全闭环待完成。',
  100:'规范成员操作的原因/前后差异审计、不可变有效策略、冻结预览及独立审批的原权限/版本/期限重查已有证据；全部资金/内容/权限策略、批次与生产审计留存仍待完成。',
- 101:'人工实收凭据登记、另一位管理员核实、原付款精确充值、同笔唯一入账、历史外部编号防重、赠额不伪装实收及事实只追加已有数据库和实际页面证据。原交易累计可退额度、消费原资金桶返还、退款申请与到账确认、未知退款对账、正式支付机构和完整退款页面仍待实现及验收。',
+ 101:'人工付款及原交易累计退款、原结算/还款资金桶补偿、过期赠额不复活、现金申请与独立实际分次付款、剩余未付/未知/差额对账、不可变事实及实际后台页面已有局部证据。历史授信来源人工对账、正式支付机构/回调、完整财务通知/用户费用消费者和全部退款矩阵仍待实现及验收。',
  102:'当前方案能力及领取时用户并发已复查，企业/能力槽位按数据库统一约束；全部媒体、团队、调度、席位和存储交集未齐。',
 }
 
@@ -300,6 +303,48 @@ def payment_record_repair_history():
     return {'scope':'Bounded manual evidence and exact posting repair; original failures retained, full refunds/VIP/payment-provider acceptance not established','runs':runs,'archives':archives,'native_migrations':migrations,'screenshots':screenshots}
 
 
+def refund_repair_history():
+    evidence = DEV/'copypaste-delivery/evidence'
+    runs = []
+    for name, expected in [('refunds-core-initial.tap',(25,25,0)),('refunds-cash-initial.tap',(41,39,2)),('refunds-focused-second.tap',(48,48,0)),('refunds-focused-final.tap',(50,50,0))]:
+        path = evidence/name
+        raw = path.read_text(encoding='utf-8')
+        counts = {k:int(re.search(r'^# '+k+r' (\d+)$',raw,re.M)[1]) for k in ['tests','pass','fail','cancelled','skipped','todo']}
+        assert tuple(counts[k] for k in ['tests','pass','fail']) == expected
+        assert all(counts[k] == 0 for k in ['cancelled','skipped','todo'])
+        runs.append({'path':path.relative_to(ROOT).as_posix(),'sha256':fingerprint(path),'counts':counts,'status':'failed_original_retained' if counts['fail'] else 'passed_at_recorded_source_stage'})
+    archives = []
+    for name, count in [('stage44-before-refunds',160),('refunds-before-capture-reset',19),('refunds-ui-locator-failure',23),('refunds-auth-startup-failure',3)]:
+        manifest = evidence/name/'archive-map.json'
+        entries = load(manifest)['files']
+        assert len(entries) == count
+        for entry in entries:
+            path = (ROOT/entry['archived']).resolve()
+            assert path.is_relative_to(evidence.resolve())
+            assert fingerprint(path) == entry['sha256'], f'Changed refund history: {path}'
+        archives.append({'path':manifest.relative_to(ROOT).as_posix(),'sha256':fingerprint(manifest),'verified_files':count})
+    old = load(evidence/'stage44-before-refunds/dev/copypaste-delivery/evidence/alignment-platform.json')
+    assert old['counts'] == {'tests':310,'pass':310,'fail':0,'cancelled':0,'skipped':0,'todo':0}
+    assert fingerprint(evidence/'stage44-before-refunds/dev/copypaste-delivery/evidence/alignment-platform.tap') == old['sha256']
+    failed = load(evidence/'refunds-ui-locator-failure/dev/copypaste-delivery/evidence/admin-fees.json')
+    assert failed['status'] == 'failed' and len(failed['checks']) == 7 and failed['browser_closed'] is True
+    assert len(failed['errors']) == 1 and 'strict mode violation' in failed['errors'][0]
+    auth_failure = load(evidence/'refunds-auth-startup-failure/dev/copypaste-delivery/evidence/auth-recovery-current.json')
+    assert auth_failure['status'] == 'failed' and not auth_failure['checks']
+    assert 'electron.launch: Timeout 60000ms exceeded' in auth_failure['errors'][0]
+    processes = load(evidence/'refunds-auth-startup-processes.json')
+    assert processes['owned_startup_pid_present'] is False and processes['electron_process_count'] == 0
+    for version in [53,54,55]:
+        assert f'copypaste: applied migration {version}' in (evidence/'refunds-primary-native-database-start.log').read_text(encoding='utf-8')
+        assert f'copypaste_test: applied migration {version}' in (evidence/'refunds-live-migrations-053-055.log').read_text(encoding='utf-8')
+    image_receipt = DOCS/'quality/refund-screenshot-provenance.json'
+    for image in load(image_receipt)['files']:
+        assert fingerprint(ROOT/image['original']) == image['original_sha256']
+        assert fingerprint(ROOT/image['viewport']) == image['viewport_sha256']
+        assert fingerprint(DEV/'copypaste-admin/assets/screenshots'/Path(image['viewport']).name) == image['viewport_sha256']
+    return {'scope':'Source-bound consumption compensation and manually reviewed cash refund subflows only; history, true provider acceptance and full financial scope remain distinct', 'runs':runs,'archives':archives,'screenshots':{'path':image_receipt.relative_to(ROOT).as_posix(),'sha256':fingerprint(image_receipt),'verified_images':len(load(image_receipt)['files'])}}
+
+
 def main():
     # Mirror the exact client build receipt into the documentation tree; source
     # repositories retain the original evidence and all actual artifacts.
@@ -327,6 +372,8 @@ def main():
         'billing_accounts_migration': DEV/'copypaste-delivery/evidence/billing-accounts-live-migration.json',
         'admin_billing_wire': DEV/'copypaste-delivery/evidence/admin-billing-wire.json',
         'admin_fees': DEV/'copypaste-delivery/evidence/admin-fees.json',
+        'refund_migrations': DEV/'copypaste-delivery/evidence/refund-migrations.json',
+        'refund_schemas': DOCS/'quality/refund-contract-samples.json',
         'native_runtime_alias': DEV/'copypaste-delivery/evidence/billing-runtime-stable-alias.json',
         'membership_wire': DEV/'copypaste-delivery/evidence/membership-wire.json',
         'membership_ui': DEV/'copypaste-delivery/evidence/membership-ui-recovery.json',
@@ -372,9 +419,9 @@ def main():
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
         if key in {'membership_ui', 'admin_membership_ui', 'native_auth_recovery'}:
             expected_checks, expected_sources = {
-                'membership_ui': (6, 164),
-                'admin_membership_ui': (6, 190),
-                'native_auth_recovery': (12, 769),
+                'membership_ui': (6, 169),
+                'admin_membership_ui': (6, 196),
+                'native_auth_recovery': (12, 775),
             }[key]
             assert len(checks) == expected_checks and report['model_calls'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
@@ -392,13 +439,29 @@ def main():
                 assert actual_source.is_relative_to(DEV.resolve())
                 assert fingerprint(actual_source) == expected_digest, f'Stale {key} evidence: {source}'
         if key == 'admin_fees':
-            assert len(checks) == 5 and report['model_calls'] == 0 and report['external_payments'] == 0
+            assert len(checks) == 8 and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
-            assert report['source_unchanged'] is True and len(report['source_files']) == 39
+            assert report['source_unchanged'] is True and len(report['source_files']) == 47
             for source, expected_digest in report['source_files'].items():
                 actual_source = (DEV/source).resolve()
                 assert actual_source.is_relative_to(DEV.resolve())
                 assert fingerprint(actual_source) == expected_digest, f'Stale fee UI evidence: {source}'
+        if key == 'refund_migrations':
+            assert report['verifier_sha256'] == fingerprint(DEV/'copypaste-delivery/scripts/qa-refund-migrations.mjs')
+            assert {d['database'] for d in report['databases']} == {'copypaste','copypaste_test'}
+            for database in report['databases']:
+                assert database['checksums_match'] is True and database['read_only'] is True
+                assert [m['version'] for m in database['migrations']] == [53,54,55]
+                assert len(database['tables']) == 8 and all(t['relrowsecurity'] for t in database['tables'])
+            for source, expected_digest in report['source_files'].items():
+                assert fingerprint(DEV/source) == expected_digest
+            for log in report['logs']:
+                assert fingerprint(DEV/'copypaste-delivery'/log['path']) == log['sha256']
+        if key == 'refund_schemas':
+            assert len(checks) == 14
+            assert report['verifier_sha256'] == fingerprint(DOCS/'tools/validate_refund_contract_samples.py')
+            for source, expected_digest in report['source_files'].items():
+                assert fingerprint(ROOT/source) == expected_digest
         if key == 'native_runtime_alias':
             assert report['launcher_sha256'] == fingerprint(DEV/'copypaste-platform/scripts/native-db-launch.mjs')
             assert report['real_executable_present'] is True and report['prior_temp_alias_removed'] is True
@@ -538,6 +601,7 @@ def main():
     result={'schema_version':'1.0','at':datetime.now(timezone.utc).isoformat(),
             'shared_approval_verification':approval_repair_history(),
              'payment_record_verification':payment_record_repair_history(),
+             'refund_verification':refund_repair_history(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},

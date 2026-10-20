@@ -6,7 +6,7 @@
 
 当前 Desktop 无边框与 Chrome 原生侧栏预览已按最新源码重建并复核，补齐桌面会话上下文的本地 API 权限。源码及打包界面各 10 项、Desktop 25 项测试和产物准入 11 项通过，报告绑定实际测试字节，见 [当前原生预览](technical/30-native-window-and-browser-sidepanel.md)。完整系统及认证矩阵仍独立待验收。
 
-人工付款已补充凭据登记、独立核实和准确入账子流程，见 [付款证据与充值](technical/44-manual-payment-evidence-and-exact-posting.md)。完整退款、支付机构、VIP 和综合验收继续保留。
+人工付款已补充凭据登记、独立核实和准确入账，见 [付款证据与充值](technical/44-manual-payment-evidence-and-exact-posting.md)。新增原消费资金来源补偿、原付款退款冻结、独立核实部分付款与剩余未付、未知/差额对账，见 [退款与付款核实](technical/45-source-bound-refunds-and-cash-reconciliation.md)。历史授信来源对账、支付机构、VIP 和综合验收继续保留。
 
 后台现有待审批业务统一使用真实请求、原始游标目录和版本/摘要决定；旧记录升级与实际期限处理见 [统一审批请求](technical/43-shared-admin-approval-requests.md)。完整财务业务、全部后台和综合验收继续保留。
 
