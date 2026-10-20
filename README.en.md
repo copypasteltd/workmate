@@ -334,3 +334,10 @@ The page refreshes within fifteen seconds and at the next boundary. Failures cle
 ![Mobile dark entitlements and notifications](assets/screenshots/68-entitlements-mobile-dark.png)
 
 The native screenshot review exposed a stale plan heading after a rights update. Plan name, task/budget limits and effective rights now refresh together and render only when the subject revision and pinned plan IDs agree. Boundary refresh uses the server confirmation time rather than the device clock.
+
+## Enterprise seat and storage enforcement (stage 48)
+
+Usage and Members now show confirmed workspace seats, retained bytes, pending upload reservations, capacity and over-limit status. The view refreshes manually and every 15 seconds, clearing stale totals after scope/session changes or failed reads. Workspace plans govern shared capacity; personal VIP does not expand it. Downgrades preserve existing resources while the server rejects additional allocation.
+
+![Actual workspace capacity](assets/screenshots/71-workspace-resource-usage.png)
+![Traditional Chinese dark narrow layout](assets/screenshots/73-resource-capacity-mobile-dark.png)

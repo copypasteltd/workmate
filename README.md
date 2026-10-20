@@ -361,3 +361,10 @@ flowchart LR
 ![繁中深色权益与通知](assets/screenshots/68-entitlements-mobile-dark.png)
 
 本轮实际原生截图发现旧方案标题不会随新权益更新，现已修复：方案名、并发/预算与有效权益共同刷新，比较主体版本和固定方案集合后才显示；下一边界按服务端确认时间安排，避免本机时钟偏差。
+
+## 企业席位与存储执行（阶段 48）
+
+用量页和成员页显示服务器确认的企业席位、保留文件、上传预留、总容量及超额提示。每 15 秒及手动刷新；工作区、会话变化或读取失败时清空旧统计。容量由企业方案控制，个人 VIP 不扩容。降级不删除已有成员或文件；新增占用由服务端拒绝。
+
+![实际企业容量](assets/screenshots/71-workspace-resource-usage.png)
+![繁中深色窄屏](assets/screenshots/73-resource-capacity-mobile-dark.png)

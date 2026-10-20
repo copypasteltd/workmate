@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { api, patch, post } from "./api";
 import { completeOperation, operationKey } from "./operation-key";
 import { useWorkspace } from "./context";
+import { ResourceUsage } from "./resource-usage";
 import {
   AsyncForm,
   Badge,
@@ -101,6 +102,7 @@ export function Members() {
           </button>
         }
       />
+      <ResourceUsage key={w.tenant} tenant={w.tenant} revision={refresh} />
       <ErrorNotice error={members.error} />
       {members.loading && !members.data && <Loading />}
       <div className="card table-scroll">
