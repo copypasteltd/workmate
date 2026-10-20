@@ -310,3 +310,5 @@ Delivery `qa:membership` passes 6/6 actual email invitation, resend, join, remov
 ![Dark small-screen sessions](assets/screenshots/66-sessions-mobile-dark-current.png)
 
 The 2026-10-20 payment increment rerun retains Web membership 6/6 (164 source files), Admin membership 6/6 (190) and cross-client authentication 12/12 (769). Before/after hashes match, and owned sessions and browsers are closed. Complete release/system acceptance remains separately tracked.
+
+After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
