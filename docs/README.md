@@ -6,6 +6,8 @@
 
 当前 Desktop 无边框与 Chrome 原生侧栏预览已按最新源码重建并复核，补齐桌面会话上下文的本地 API 权限。源码及打包界面各 10 项、Desktop 25 项测试和产物准入 11 项通过，报告绑定实际测试字节，见 [当前原生预览](technical/30-native-window-and-browser-sidepanel.md)。完整系统及认证矩阵仍独立待验收。
 
+后台现有待审批业务统一使用真实请求、原始游标目录和版本/摘要决定；旧记录升级与实际期限处理见 [统一审批请求](technical/43-shared-admin-approval-requests.md)。完整财务业务、全部后台和综合验收继续保留。
+
 开发与构建根目录固定为 `D:\dev\copypasted\自有agent\`，所有文档统一位于该根目录的 `docs\`。后续命令直接在 D 盘工作区执行，旧入口仅作会话兼容；见 [工作区与路径规范](governance/03-workspace-and-path-policy.md)。
 
 产品服务在港企业，首批为现有客户的 marketing 团队。以统一企业平台支撑云端 Web、Chrome 扩展/原生桥接、完整 Desktop，覆盖营销素材生产、广告及网站分析、SEO/GEO 和重复流程。全部 AI 请求经过公司内部服务器，**Codex 为唯一 Agent 内核**，由 CORE01 固定；实际 Codex 版本与受控 Responses 工具回合已验证；公司内部网关尚待提供配置并真实联调。
@@ -161,4 +163,8 @@ Web、无边框 Desktop 与扩展的设备目录、整族撤销、退出/刷新�
 
 ## 当前成员页面与原生认证恢复
 
-[当前源码复核](technical/42-current-membership-ui-and-native-auth-recovery.md)记录 Web 成员 6/6、Admin 成员 6/6，以及 Web／源码 Electron／MV3 认证和会话恢复 12/12。原问题回执不改写，当前报告绑定前后相同源码／运行文件与实际资源清理，14 张新截图同步各端双语 README。八份新规范响应纳入当前 89/89 检查；不据此关闭完整安装包／SSO／系统／原生成员矩阵及全部 102 项综合验收。
+[当前源码复核](technical/42-current-membership-ui-and-native-auth-recovery.md)记录 Web 成员 6/6、Admin 成员 6/6，以及 Web／源码 Electron／MV3 认证和会话恢复 12/12。原问题回执不改写，当前报告绑定前后相同源码／运行文件与实际资源清理，14 张新截图同步各端双语 README。该轮八份新规范响应纳入当时 89/89 检查；不据此关闭完整安装包／SSO／系统／原生成员矩阵及全部 102 项综合验收。
+
+## 后台统一审批当前复核
+
+[统一审批请求](technical/43-shared-admin-approval-requests.md)补齐真实请求身份、原始游标列表与四字段决定、双人当前授权及实际过期。平台全量 303/303，Admin 成员/费用/账户分别 6/6、4/4、5/5，Web 成员 6/6，三端认证 12/12，原规范样本 91/91。原始失败和旧通过快照保留；这些局部结果不等于完整 102 项验收。

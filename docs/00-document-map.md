@@ -83,3 +83,5 @@ ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 
 企业共用执行槽、当前用户方案、能力容量、同任务自动排队和跨企业交错派发见 [执行容量与公平派发](technical/23-execution-capacity-and-fair-dispatch.md)。
 
 后台清理记录分页、当前授权显示及测试数据库隔离见 [Admin 记录与原生测试](technical/24-admin-record-pages-and-test-isolation.md)。
+
+- [后台统一审批请求、原始契约与向前升级](technical/43-shared-admin-approval-requests.md)。

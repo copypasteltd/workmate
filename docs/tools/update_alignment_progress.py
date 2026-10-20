@@ -12,8 +12,11 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('shared_admin_approvals', [83,84,85,87,94,96,98,100],
+     '现有费用、成员、账户与旧后台待审批操作共用真实请求；原始严格游标列表和四字段/202决定、当前整体范围/模式/重叠拒绝、本人自批防护与双业务权限/MFA、原会话/策略/前态复查、事务审计回滚及并发幂等。SQL 048 保留原费用身份，登记已冻结成员/账户，缺失事实的旧操作取消并记录；后台实际过期无伪造人工决定。十一组共享专项和旧047带数据升级，以及当前六组成员/四组费用页面为局部证据。完整支付/凭证/退款/VIP、通知/outbox、全业务权限/导出/原生及全部综合验收继续保留。',
+     ['platform_regression','admin_membership_ui','admin_fees','runtime_schemas'], ['technical/43-shared-admin-approval-requests.md']),
     ('canonical_fees_and_independent_approvals', [83,84,87,94,96,98],
-     '三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、全部审批列表契约及财务通知/outbox、原生和综合验收仍未完成。',
+     '三项原始规范赠送/原账项扣减/授信命令及真实 Admin 表单；精确 HKD 字符串、只读预览、冻结版本/来源/策略、当前 MFA 和整体账户范围、单笔及每日限额、同键回执恢复、独立审批请求与不可变决策记录、审批前原操作者会话和当前授权重检、账务与审计原子回滚。十四组新增数据库专项、四组浏览器/HTTP 和十份规范响应是局部证据；完整付款/凭证/退款/VIP、完整业务审批与财务通知/outbox、原生和综合验收仍未完成。',
      ['platform_regression','admin_fees','runtime_schemas'], ['technical/41-canonical-fee-commands-and-independent-approvals.md']),
     ('billing_subjects_and_events', [11,46,86,87,101],
      '真实个人/企业账户和模拟/正式模式分离；直接任务付款快照与幂等、共用 BigInt 资金内核；原操作者/操作/账项来源及预留/消费/释放/信用事件持久且不可变，历史未知事实不补造；三处原始规范账户/账本读取、整体财务范围与重叠项目拒绝、签名游标、旧企业账本排除个人消费。带旧数据的升级、隔离专项与当前 HTTP 读取是局部证据；全部工作流及用户端付款选择、完整费用/凭证/退款/VIP写入和所有综合验收仍未完成。',
@@ -28,7 +31,7 @@ CLUSTERS = [
      '四个规范账户写入口、严格 202 AdminOperation、前向版本与标签/关闭标记、锁内当前 MFA/权限/显式拒绝及幂等、全局用户与单企业状态边界、全部会话/未交换代码撤销、关闭与重开独立审批、冻结策略/前态重检、批量守卫以及共享取消/待核费用预留。十二组专项、六组真实 HTTP 及五组新账户表单实测是局部证据；页面直接定位待审批/普通操作，三宽度的英文浅色及繁中深色已测。旧成员页面、完整列表/详情业务、费用写规范及原生综合验收仍待完成；本轮规范读取与页面增量另列。',
      ['platform_regression','admin_account_wire','admin_account_ui','runtime_schemas'], ['technical/37-admin-account-lifecycle-and-inflight-control.md']),
     ('admin_membership_control', [3,35,51,55,85,94,100],
-     '规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、不可变策略快照、冻结预览及独立审批重检。隔离数据库、真实 HTTP 及当前六组 Admin 页面验证，包括实际双人邮件/TOTP、暂停/恢复和用户端提示、精确操作跳转、自批拒绝、独立审批及繁中深色窄屏；四份实际规范响应通过。完整审批目录与全部 Admin/原生契约仍待验收。',
+     '规范 AdminMembershipChange / 202 AdminOperation 与当前操作查询；企业范围和显式项目 deny、近期 MFA、共用成员锁/最后 owner、管理暂停绕过拦截、持久幂等、不可变策略快照、冻结预览及独立审批重检。隔离数据库、真实 HTTP 及当前六组 Admin 页面验证，包括实际双人邮件/TOTP、暂停/恢复和用户端提示、精确操作跳转、自批拒绝、独立审批及繁中深色窄屏；四份实际规范响应通过。共享审批目录与决定另列增量，全部 Admin/原生契约仍待验收。',
      ['platform_regression','admin_membership_wire','admin_membership_ui','runtime_schemas'], ['technical/36-admin-membership-control-and-policy-snapshots.md']),
     ('invitations_and_membership_authority', [1,2,3,35,36,39,51,55,60],
      '原始 Invite/Member/MemberList/Ack、独立成员 ID、企业头及分页、角色/项目守卫、锁内当前权限、最后所有者、接受与移除幂等、旧待用邀请撤销、加密投递重试和重发版本；HTTP 五组及十三组隔离平台检查，新增当前 Web 六组实际页面验证与四份规范响应，覆盖投递/重发、真实邮箱加入/工作区选择、只读权限、即时移除/撤销和退出后的迟到上下文。完整原生成员旅程、生产邮件与完整后台规范仍待完成。',
@@ -37,7 +40,7 @@ CLUSTERS = [
      '原始 GET /v1/me 严格 User 与受认证工作区上下文分离；三端实际消费者同步迁移，不同账号混合 Cookie/Bearer 只返回选用身份的工作区，原生不得取得浏览器 CSRF。真实 PostgreSQL、HTTP User schema、Web 初始化及当前十二组 Web/源码 Electron/MV3 认证和会话恢复独立记录；安装包、完整身份/系统及原生成员旅程仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('canonical_authentication_and_retry_recovery', [1,2,3,35,36,39,51,55,60,100],
-     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 758 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
+     '原规范五个用户认证接口及三端消费者、HTTP-only 验证码 flow、S256/顶层授权与 CSRF、原子加密回执及剩余有效期。当前十二组 Web/源码 Electron/MV3 实测覆盖首次交换与刷新已提交回执丢失的同键恢复、单个凭证族、双面板账号隔离、远程撤销、过期/离线退出及迟到响应。旧启动失败和诊断原字节保留；新证据前后 762 份源码/运行文件一致且拥有的三端实例和凭证已清理。完整 SSO/安装包/系统矩阵仍待验收。',
      ['platform_regression','auth_navigation','native_auth_recovery','runtime_schemas'], ['technical/33-canonical-authentication-and-retry-recovery.md','technical/34-user-profile-context-and-orphan-scan-races.md']),
     ('cross_client_session_lifecycle', [1,2,3,35,36,39,51,55,60,100],
      '三端实际登录/PKCE、无凭证设备目录/当前装置、过期访问仍可撤销、刷新整族与并发竞争、迟到回执隔离、离线退出反馈、本地文件授权清理、成员撤销后旧入口及跨标签清理；当前规范认证/上下文上的十二组真实源码原生会话检查另列，含 1440px 浅色/375px 深色与双面板换账号。完整 SSO、安装/系统矩阵和 TC 全部条件仍未完成。',
@@ -195,6 +198,51 @@ def verify_file_manifest(root, entries, exact_directory=False):
         assert paths == {p.resolve() for p in root.rglob('*') if p.is_file()}
 
 
+def approval_repair_history():
+    delivery = DEV/'copypaste-delivery'
+    evidence = delivery/'evidence'
+    runs = []
+    for name, expected in [
+        ('unified-approvals-focused-initial.tap', (48,32,16)),
+        ('unified-approvals-focused-second.tap', (48,43,5)),
+        ('unified-approvals-migration-first.tap', (3,2,1)),
+        ('unified-approvals-focused-third.tap', (53,53,0)),
+    ]:
+        path = evidence/name
+        raw = path.read_text(encoding='utf-8')
+        counts = {key:int(re.search(r'^# '+key+r' (\d+)$',raw,re.M)[1])
+                  for key in ['tests','pass','fail','cancelled','skipped','todo']}
+        assert tuple(counts[key] for key in ['tests','pass','fail']) == expected
+        assert all(counts[key] == 0 for key in ['cancelled','skipped','todo'])
+        runs.append({'path':path.relative_to(ROOT).as_posix(), 'sha256':fingerprint(path),
+                     'counts':counts, 'status':'passed' if not counts['fail'] else 'failed_original_retained'})
+    archives = []
+    for name in [
+        'stage42-before-unified-approvals/archive-map.json',
+        'stage42-before-unified-approvals/additional-account/archive-map.json',
+        'unified-approvals-fees-initial/archive-map.json',
+        'unified-approvals-fees-initial/raw-text-archive-map.json',
+        'unified-approvals-before-lf-normalization/archive-map.json',
+    ]:
+        manifest = evidence/name
+        rows = load(manifest)['files']
+        assert rows
+        for row in rows:
+            archived = Path(row['archive'])
+            path = ((delivery/archived) if archived.parts[0] == 'evidence' else (manifest.parent/archived)).resolve()
+            assert path.is_relative_to(delivery.resolve())
+            assert fingerprint(path) == row['sha256'], f'Changed approval history: {path}'
+        archives.append({'path':manifest.relative_to(ROOT).as_posix(), 'sha256':fingerprint(manifest),
+                         'verified_files':len(rows)})
+    live = evidence/'unified-approvals-live-migration.log'
+    raw = live.read_text(encoding='utf-8')
+    assert 'copypaste: applied migration 48' in raw and 'copypaste_test: applied migration 48' in raw
+    return {'scope':'Bounded shared approval repairs only; initial failures and prior success bytes preserved',
+            'focused_runs':runs, 'archives':archives,
+            'native_migration_log':{'path':live.relative_to(ROOT).as_posix(), 'sha256':fingerprint(live)},
+            'migration_048_sha256':fingerprint(DEV/'copypaste-platform/migrations/048-unified-admin-approvals.sql')}
+
+
 def main():
     # Mirror the exact client build receipt into the documentation tree; source
     # repositories retain the original evidence and all actual artifacts.
@@ -267,9 +315,9 @@ def main():
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
         if key in {'membership_ui', 'admin_membership_ui', 'native_auth_recovery'}:
             expected_checks, expected_sources = {
-                'membership_ui': (6, 155),
-                'admin_membership_ui': (6, 179),
-                'native_auth_recovery': (12, 758),
+                'membership_ui': (6, 158),
+                'admin_membership_ui': (6, 183),
+                'native_auth_recovery': (12, 762),
             }[key]
             assert len(checks) == expected_checks and report['model_calls'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
@@ -289,7 +337,7 @@ def main():
         if key == 'admin_fees':
             assert len(checks) == 4 and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
-            assert report['source_unchanged'] is True and len(report['source_files']) >= 20
+            assert report['source_unchanged'] is True and len(report['source_files']) == 30
             for source, expected_digest in report['source_files'].items():
                 actual_source = (DEV/source).resolve()
                 assert actual_source.is_relative_to(DEV.resolve())
@@ -419,7 +467,7 @@ def main():
         ('membership-current-issue.json', 'a913efc238f7f5de29bb35cae1fc8eba7e1d3a0a2325eff81e9a5e759e0002e7',
          'membership_ui', 'Six current-source Web invitation/member subflows and four strict HTTP samples now pass. The earlier overwritten success is still excluded; original page/locator timeout receipts remain unchanged. Production mail and complete native membership acceptance remain separate.'),
         ('admin-membership-ui-open-issue.json', '66fd84e61413f6f21de7c9914bf97853c2ea97027d5451c5b1dc864e10e7acba',
-         'admin_membership_ui', 'Six actual Admin UI subflows verify suspension/restoration, Web owner feedback, exact operation navigation, frozen independent review and a narrow dark preview. Four strict operation captures pass. Original unverified-page receipt remains unchanged; the complete normative approval directory and Admin product remain unfinished.'),
+         'admin_membership_ui', 'Six actual Admin UI subflows verify suspension/restoration, Web owner feedback, exact operation navigation, frozen independent review and a narrow dark preview. Six strict operation/list captures pass. Original unverified-page receipt remains unchanged; shared normative approvals are a bounded increment and complete Admin acceptance remains unfinished.'),
     ]:
         original = DEV/'copypaste-delivery/evidence'/name
         assert fingerprint(original) == expected_digest, f'Historical issue receipt changed: {name}'
@@ -431,6 +479,7 @@ def main():
             'resolution_sha256': fingerprint(files[resolution_key]), 'scope': scope,
         })
     result={'schema_version':'1.0','at':datetime.now(timezone.utc).isoformat(),
+            'shared_approval_verification':approval_repair_history(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},

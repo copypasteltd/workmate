@@ -1,5 +1,7 @@
 # 实际开发、独立仓库与交付
 
+2026-10-20 最新共享审批增量见 [独立请求与原始契约](43-shared-admin-approval-requests.md)：平台 303/303、三端认证 12/12，原有客户端预览不因后台改动重打包；完整需求验收仍逐项保留。
+
 版本：2.0 · 2026-10-19 · 产品代码：0.5.0。以下记录实际代码和运行边界；v1.5 的 102 条长期需求继续保留，不能把本轮检查等同全量验收。
 
 当前源码持续修复已扩展到 35 个迁移、持久删除/上传/事件、云文件、项目技能、通知、默认助手、资料补齐、执行容量、后台记录、持久模板、真实 PDF 审阅稿、CSV 冻结指标及 AnalysisSpec 报告任务；原始完整离线包保留，本次客户端预览包另列，不用下述 0.5.0 历史指标代替本轮验证。实际行为分别见 [基础修复](17-erasure-transfer-retention-events.md)、[持久云文件](18-persistent-cloud-files.md)、[项目技能](19-project-skill-lifecycle.md)、[通知](20-in-app-notifications.md)、[默认助手](21-default-assistant-and-first-delegation.md)、[资料补齐](22-pre-execution-input-checkpoint.md)、[执行容量](23-execution-capacity-and-fair-dispatch.md)、[后台记录](24-admin-record-pages-and-test-isolation.md)、[持久模板](25-role-template-registry-and-runtime-binding.md)、[PDF 设计交付](26-design-pdf-review-delivery.md)、[营销导入](27-marketing-import-metrics-and-evidence.md) 与 [报告任务](28-analysis-report-tasks-and-evidence.md)。

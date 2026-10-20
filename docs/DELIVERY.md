@@ -4,7 +4,7 @@
 
 正在执行全体系需求修复，未发布的改动见 [修复记录](quality/09-implementation-alignment-audit.md)。用户已授权暂用假数据，可在 delivery 运行 `npm run demo` 启动标识清晰的模拟环境，Codex 内核和业务逻辑仍真实执行。下列 0.5.0 安装包与归档不代表当前未发布源码。
 
-当前源码新增 [AnalysisSpec 报告与证据](technical/28-analysis-report-tasks-and-evidence.md)：多来源/比较预览、真实私人 Codex 任务与预算、分页固定事实、数字引用检查、持久 HTML/JSON 文件及 Web/源码 Desktop 下载。当前平台回归 185/185；完整综合验收和真实角色资格继续保留，不使用旧安装包演示本轮新增功能。
+当前源码新增 [AnalysisSpec 报告与证据](technical/28-analysis-report-tasks-and-evidence.md)：多来源/比较预览、真实私人 Codex 任务与预算、分页固定事实、数字引用检查、持久 HTML/JSON 文件及 Web/源码 Desktop 下载。最新平台回归 303/303，共享审批与原始目录/决定增量见 [统一后台审批](technical/43-shared-admin-approval-requests.md)；完整综合验收和真实角色资格继续保留，不使用旧安装包演示本轮新增功能。
 
 ## 本次无边框与侧栏客户端预览
 

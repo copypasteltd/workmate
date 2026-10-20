@@ -1,5 +1,5 @@
 {
-  "at": "2026-10-20T00:08:17.944898+00:00",
+  "at": "2026-10-20T01:07:04.503085+00:00",
   "scope": "Captured canonical authentication, membership, Admin directories/accounts/ledger, three fee commands and independent approval responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or payment/refund/VIP conformance",
   "sources": [
     {
@@ -64,9 +64,9 @@
     },
     {
       "file": "dev/copypaste-delivery/evidence/membership-ui-contract-samples.json",
-      "at": "2026-10-19T23:23:05.519Z",
+      "at": "2026-10-20T00:56:46.534Z",
       "origin": "http://localhost:4317",
-      "sha256": "0d6b1eb82a9814ca7f90f482b9f7b61d57a1a731a5b4a8fcecebe23501218537"
+      "sha256": "efca37a84bdcb94fefc3fc43980d44187940afbb81a818db5971f13a138d3765"
     },
     {
       "file": "dev/copypaste-delivery/evidence/admin-membership-contract-samples.json",
@@ -76,9 +76,9 @@
     },
     {
       "file": "dev/copypaste-delivery/evidence/admin-membership-ui-contract-samples.json",
-      "at": "2026-10-19T23:39:45.870Z",
+      "at": "2026-10-20T01:03:00.221Z",
       "origin": "http://localhost:4318",
-      "sha256": "8dc9c8d458b0897aaebb5089329bd0e366c76f610a5a46ec78019b347366bce4"
+      "sha256": "4947b392113fe785eea764acc9e86f8a366ac7fa17b7fd9a0de9c4936ea8772c"
     },
     {
       "file": "dev/copypaste-delivery/evidence/admin-account-contract-samples.json",
@@ -100,9 +100,9 @@
     },
     {
       "file": "dev/copypaste-delivery/evidence/admin-fee-contract-samples.json",
-      "at": "2026-10-19T22:45:49.772Z",
+      "at": "2026-10-20T01:04:44.371Z",
       "origin": "http://localhost:4310",
-      "sha256": "589755abd84e3d6466c98522e23fd669eab672db5409a4319cea08731e18074c"
+      "sha256": "2b0071b0b3e6d51b8cee61518e3f82cc8db972925a9c615a8f2f8d3549170994"
     }
   ],
   "authentication_fixture": {
@@ -141,6 +141,12 @@
     "schemas": 12,
     "status": "passed",
     "scope": "All twelve schema dependencies exactly match the original; current wire captures cover previews, gifts, original-source debits, credit limits and one independent approval decision, not all twelve command implementations"
+  },
+  "admin_approval_fixture": {
+    "file": "dev/copypaste-platform/contracts/admin-approval-schemas.json",
+    "schemas": 4,
+    "status": "passed",
+    "scope": "All four original schemas and source digest are unchanged; shared list and member-decision captures are bounded evidence"
   },
   "openapi_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
   "checks": [
@@ -497,6 +503,20 @@
     {
       "source": "admin-membership-ui-contract-samples.json",
       "sample": 4,
+      "schema": "AdminOperation",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-ui-contract-samples.json",
+      "sample": 5,
+      "schema": "AdminApprovalList",
+      "status": "passed",
+      "errors": []
+    },
+    {
+      "source": "admin-membership-ui-contract-samples.json",
+      "sample": 6,
       "schema": "AdminOperation",
       "status": "passed",
       "errors": []
