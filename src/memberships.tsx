@@ -156,8 +156,16 @@ export function AdminMembershipManager({
           >
             {t("刷新操作狀態", "Refresh operation status")}
           </button>
-          <Link className="text-link" to="/audit" onClick={onClose}>
-            {t("查看審計與審批", "Open audit & approvals")}
+          <Link
+            className="text-link"
+            to={
+              result.state === "pending_approval"
+                ? `/audit?view=approvals&search=${encodeURIComponent(result.id)}`
+                : `/jobs?search=${encodeURIComponent(result.id)}`
+            }
+            onClick={onClose}
+          >
+            {t("查看操作記錄", "View operation records")}
           </Link>
         </>
       ) : preview ? (

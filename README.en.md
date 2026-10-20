@@ -199,7 +199,7 @@ Queued pause/resume now shares platform domain guards with customer controls: on
 
 ## Workspace membership management
 
-User details now open a membership form for role, active/admin-suspended/removed state, explicit projects and reason. Preview the before/after access, then execute or submit for independent review. Reviewers see frozen business parameters and the deadline. Unknown-result retries retain their operation identity; the browser receipt stores no raw reasons or credentials. The UI builds, but current page interactions and screenshots remain unverified; existing gallery images retain their historical scope.
+User details now open a membership form for role, active/admin-suspended/removed state, explicit projects and reason. Preview the before/after access, then execute or submit for independent review. Reviewers see frozen business parameters and the deadline. Unknown-result retries retain their operation identity; the browser receipt stores no raw reasons or credentials. Six current UI groups now pass, with corrected result navigation and three new screenshots below; earlier unverified receipts and gallery images retain their historical scope.
 
 ```mermaid
 flowchart LR
@@ -267,3 +267,13 @@ flowchart LR
 ![Traditional Chinese dark/mobile](assets/screenshots/28-billing-mobile-dark.png)
 
 This does not accept the complete billing/admin product. Payment evidence/records, external refunds/reconciliation, original-bucket consumption refunds, immutable plans/VIP, financial outbox, the full canonical approval directory and remaining client consumers still require implementation and acceptance. Existing legacy funding/refund/VIP pages do not establish those contracts. Central scope: `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`.
+
+## Current membership UI verification (2026-10-20)
+
+Membership results now locate the actual operation: pending reviews use `/audit?view=approvals&search=…`; completed changes use `/jobs?search=…`. Delivery `npm run qa:admin-membership-ui` passes 6/6 groups with two real scoped email/TOTP admin logins: pure previews, suspension/restoration and Web owner feedback, frozen parameters, self-review rejection, another administrator's approval and Traditional Chinese dark at 390px. Four actual AdminOperation payloads pass strict validation; 179 source/verifier files remain unchanged. Unit tests pass 3/3 and production builds. Owned browsers/sessions close, temporary admins are confirmed suspended in the database, and model calls are zero.
+
+![Suspension preview](assets/screenshots/29-membership-suspension-preview.png)
+![Independent frozen-command review](assets/screenshots/30-membersship-independent-review.png)
+![Traditional Chinese dark/mobile](assets/screenshots/31-membership-mobile-dark.png)
+
+Original unverified/failed receipts are preserved. This member workflow still uses supplementary frozen review and its legacy decision endpoint; the complete normative approval directory, other Admin domains and all native/system acceptance remain unfinished. Central evidence: `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`.

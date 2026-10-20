@@ -199,7 +199,7 @@ flowchart LR
 
 ## 企业成员管理
 
-用户详情新增企业成员入口：选择角色、启用/后台暂停/移除、项目范围和原因，先预览前后差异，再执行或交由独立审批。审批人读取冻结业务参数与期限。未知响应重试复用原操作身份；原始原因和凭证不写入该浏览器回执。页面已构建；本轮页面交互和截图尚未验证，已有图库保留其历史来源。
+用户详情新增企业成员入口：选择角色、启用/后台暂停/移除、项目范围和原因，先预览前后差异，再执行或交由独立审批。审批人读取冻结业务参数与期限。未知响应重试复用原操作身份；原始原因和凭证不写入该浏览器回执。当前六组实际页面交互已通过，结果定位已修正，三张新图见下文；早期未验证回执与既有图库保持其历史来源。
 
 ```mermaid
 flowchart LR
@@ -267,3 +267,13 @@ flowchart LR
 ![繁中深色窄屏](assets/screenshots/28-billing-mobile-dark.png)
 
 这不代表整个收费或后台体系验收完成。规范付款凭证／记录、支付退款对账、消费退款分桶、不可变方案/VIP、金融 outbox、完整规范审批目录与各用户端消费者仍须继续。现有旧入款、退款、VIP 页面保留其历史能力，不能当作上述完整契约。完整范围和限制见项目主文档 `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`。
+
+## 当前成员操作页面复核（2026-10-20）
+
+成员结果链接现在按真实操作 ID 定位：待审批进入 `/audit?view=approvals&search=…`，已完成进入 `/jobs?search=…`。Delivery `npm run qa:admin-membership-ui` 使用两名范围受限管理员的实际邮箱／TOTP 登录，6/6 通过纯预览、暂停／恢复与 Web owner 提示、冻结参数、自批拒绝、另一管理员批准和繁中深色 390px。四份真实 AdminOperation 严格通过，179 份源码／verifier 一致。单元检查 3/3、生产构建通过；浏览器和会话关闭，临时管理员经数据库确认已暂停，没有模型调用。
+
+![管理暂停预览](assets/screenshots/29-membership-suspension-preview.png)
+![独立管理员审阅冻结参数](assets/screenshots/30-membership-independent-review.png)
+![繁中深色窄屏预览](assets/screenshots/31-membership-mobile-dark.png)
+
+此前未验证和最初失败回执仍原字节保留。当前成员审批采用补充冻结审阅／旧 decision 入口；完整原始审批目录、其他 Admin 业务和全部原生／系统验收仍待完成。详细证据见主文档 `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`。
