@@ -28,7 +28,8 @@ test("native preview admission binds a green report to the actual runtime, insta
       });
       await put(repo, "src/main.ts", "original source");
       await put(repo, "README.md", "documentation");
-      execFileSync("git", ["add", "src/main.ts", "README.md"], {
+      await put(repo, ".gitignore", "release/\ndist/\n.data/\n.env\n");
+      execFileSync("git", ["add", "src/main.ts", "README.md", ".gitignore"], {
         cwd: repo,
         windowsHide: true,
       });
@@ -71,6 +72,31 @@ test("native preview admission binds a green report to the actual runtime, insta
       const { tested_artifacts, ...legacy } = report;
       assert.throws(() => assertTestedSurfaces(legacy, snapshot));
     });
+    await t.test(
+      "bind new source bytes before staging and keep the same manifest after staging",
+      async () => {
+        const file = "renderer/src/new-entitlements.tsx";
+        await put(desktop, file, "new renderer source");
+        const untracked = await captureNativeSurfaces(options);
+        assert.equal(
+          untracked.desktop.source_files.filter((entry) => entry.path === file)
+            .length,
+          1,
+        );
+        assert.throws(
+          () => assertTestedSurfaces(report, untracked),
+          /bytes differ/,
+        );
+        execFileSync("git", ["add", file], { cwd: desktop, windowsHide: true });
+        assert.deepEqual(await captureNativeSurfaces(options), untracked);
+        execFileSync("git", ["rm", "--cached", "--quiet", file], {
+          cwd: desktop,
+          windowsHide: true,
+        });
+        await rm(path.join(desktop, file));
+        assertTestedSurfaces(report, await captureNativeSurfaces(options));
+      },
+    );
     for (const [root, file, original] of [
       [desktop, runtime + "resources/app.asar", "fixture application"],
       [desktop, runtime + "resources/native-host.cjs", "fixture native host"],

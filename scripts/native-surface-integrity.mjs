@@ -34,21 +34,24 @@ async function manifest(root, files) {
 }
 
 async function runtimeSources(root) {
-  const { stdout } = await exec("git", ["ls-files", "-z"], {
-    cwd: root,
-    windowsHide: true,
-  });
+  const { stdout } = await exec(
+    "git",
+    ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+    {
+      cwd: root,
+      windowsHide: true,
+    },
+  );
   // Documentation/screenshots do not affect a running client. Include all other
-  // tracked inputs, including icons, fonts, config, locks and renderer snapshots.
-  const files = stdout
-    .split("\0")
-    .filter(
-      (file) =>
-        file &&
-        !/^README(?:\.[\w-]+)?\.md$/.test(file) &&
-        !file.startsWith("assets/screenshots/") &&
-        !file.startsWith("docs/"),
-    );
+  // tracked and new inputs, including icons, fonts, config, locks and renderer
+  // snapshots. Staging a source file must not change the captured file set.
+  const files = [...new Set(stdout.split("\0"))].filter(
+    (file) =>
+      file &&
+      !/^README(?:\.[\w-]+)?\.md$/.test(file) &&
+      !file.startsWith("assets/screenshots/") &&
+      !file.startsWith("docs/"),
+  );
   return manifest(root, files);
 }
 
