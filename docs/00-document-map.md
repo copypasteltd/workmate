@@ -1,5 +1,7 @@
 # 文档体系与使用规则
 
+阶段 52 当前增量为 [任务能力、模型和原价冻结](technical/52-capability-versions-and-frozen-task-pricing.md)。本次追加的验证与原始失败单独登记；以下阶段 51 的页面和原生包证据保持历史来源，不因后台变更自动视为重新验收。全部 102 项原始需求及完整门槛继续由 [逐项进度](quality/requirements-alignment-progress.json) 跟踪。
+
 <!-- stage51-support -->
 当前阶段 51 的 [限时只读支持](technical/51-controlled-read-only-support.md) 补充用户授权、后台 A13、真实管理员范围、事务与撤销/到期界面，并保留全部原验收；[逐项进度](quality/requirements-alignment-progress.json) 记录当前来源及有界证据。Desktop 无边框、无默认菜单和 Chrome 原生右侧 Side Panel 的规则以 [客户端专册](technical/30-native-window-and-browser-sidepanel.md) 为准。
 
