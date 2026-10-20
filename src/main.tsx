@@ -1,3 +1,4 @@
+import { ApprovalReview } from "./approvals";
 import {
   AdminDirectoryFilters,
   useAdminTenantOptions,
@@ -514,7 +515,7 @@ function Overview() {
     a = useAdmin();
   const { data, error, loading } = useData("/v1/admin/overview", 0, 30000);
   const approvals = useData(
-    a.has("admin.approvals.read") ? "/v1/admin/approvals" : null,
+    a.has("admin.approvals.read") ? "/v1/admin/approvals/summary" : null,
   );
   return (
     <>
@@ -587,7 +588,7 @@ function Overview() {
                   </p>
                 </div>
                 <Link to="/audit" className="attention-number">
-                  {approvals.data?.total ?? "—"}
+                  {approvals.data?.pending ?? "—"}
                   <ArrowUpRight size={16} />
                 </Link>
               </div>
@@ -714,12 +715,22 @@ const columns: Record<string, string[]> = {
   access: ["name", "email", "status", "enrollment_state", "created_at"],
   support: ["reason", "tenant_id", "expires_at", "body_granted"],
   audit: ["action", "actor_kind", "outcome", "target", "created_at"],
-  approvals: ["action", "state", "principal_id", "created_at"],
+  approvals: [
+    "id",
+    "operation_id",
+    "requester_id",
+    "state",
+    "expires_at",
+    "version",
+  ],
   jobs: ["action", "state", "created_at"],
   plans: ["key", "version", "state", "created_at"],
   policy: ["key", "version", "state", "created_at"],
 };
 const headers: Record<string, [string, string]> = {
+  id: ["審批請求", "Approval request"],
+  operation_id: ["操作", "Operation"],
+  requester_id: ["申請人", "Requester"],
   display_name: ["名稱", "Name"],
   masked_contact: ["聯絡資料", "Contact"],
   tenant_ids: ["企業", "Workspaces"],
@@ -864,23 +875,37 @@ function Section({ section }: { section: string }) {
         ? "devices"
         : section;
   const directory = active === "users" || active === "tenants";
+  const cursorPaged = directory || active === "approvals";
   const directoryQuery = new URLSearchParams({ limit: "50", ...filters });
-  if (search.trim()) directoryQuery.set("q", search.trim());
+  if (search.trim() && active !== "approvals")
+    directoryQuery.set("q", search.trim());
   if (cursors[page - 1]) directoryQuery.set("cursor", cursors[page - 1]!);
-  const { data, error, loading } = useData(
-    "/v1/admin/" +
-      active +
-      (directory
-        ? "?" + directoryQuery.toString()
-        : "?page=" +
-          page +
-          "&page_size=50&search=" +
-          encodeURIComponent(search)),
+  const {
+    data: rawData,
+    error,
+    loading,
+  } = useData(
+    active === "approvals" && search.trim()
+      ? `/v1/admin/operations/${encodeURIComponent(search.trim())}/approval`
+      : "/v1/admin/" +
+          active +
+          (cursorPaged
+            ? "?" + directoryQuery.toString()
+            : "?page=" +
+              page +
+              "&page_size=50&search=" +
+              encodeURIComponent(search)),
     refresh,
   );
+  const data =
+    active === "approvals" && search.trim()
+      ? rawData
+        ? { items: [rawData], next_cursor: null }
+        : null
+      : rawData;
   const entry = nav.find((n) => n[0] === section)!;
   const bump = () => {
-    if (directory) {
+    if (cursorPaged) {
       setPage(1);
       setCursors([null]);
     }
@@ -1058,7 +1083,7 @@ function Section({ section }: { section: string }) {
                   setPage(1);
                 }}
               >
-                {t("待審批", "Pending approvals")}
+                {t("審批請求", "Approval requests")}
               </button>
             </>
           ) : section === "connections" ? (
@@ -1090,7 +1115,11 @@ function Section({ section }: { section: string }) {
           <label className="search-field">
             <Search size={16} />
             <input
-              placeholder={t("搜尋記錄…", "Search records…")}
+              placeholder={
+                active === "approvals"
+                  ? t("按操作 ID 定位…", "Find by operation ID…")
+                  : t("搜尋記錄…", "Search records…")
+              }
               aria-label="Search records"
               value={search}
               onChange={(e) => {
@@ -1278,7 +1307,7 @@ function Section({ section }: { section: string }) {
                             </button>
                           )}
                         {active === "approvals" &&
-                          a.has("admin.approvals.decide") && (
+                          a.has("admin.approvals.read") && (
                             <button
                               title="Review operation"
                               onClick={() => {
@@ -1340,10 +1369,10 @@ function Section({ section }: { section: string }) {
                 aria-label="Next page"
                 disabled={
                   loading ||
-                  (directory ? !data.next_cursor : page * 50 >= data.total)
+                  (cursorPaged ? !data.next_cursor : page * 50 >= data.total)
                 }
                 onClick={() => {
-                  if (directory)
+                  if (cursorPaged)
                     setCursors((v) => [...v.slice(0, page), data.next_cursor]);
                   setPage((v) => v + 1);
                 }}
@@ -2122,25 +2151,9 @@ function AdminDialog({
   const body = useData(
     kind === "body" ? "/v1/admin/content/" + row?.id + "/body" : null,
   );
-  const membershipReview = useData(
-    kind === "approval" && row?.action === "tenants.members.write"
-      ? `/v1/admin/operations/${row.id}/membership-review`
-      : null,
-  );
-  const accountAction = [
-    "users.profile.write",
-    "users.status.write",
-    "users.sessions.revoke",
-    "tenants.status.write",
-  ].includes(row?.action);
-  const accountReview = useData(
-    kind === "approval" && accountAction
-      ? `/v1/admin/operations/${row.id}/account-review`
-      : null,
-  );
-  if (kind === "approval" && canonicalFeeAction(row?.action))
+  if (kind === "approval")
     return (
-      <FeeReview
+      <ApprovalReview
         id={row.id}
         operator={a.me.user.id}
         has={a.has}
@@ -2230,23 +2243,6 @@ function AdminDialog({
               await post("/v1/admin/execution/" + row.id + "/action", {
                 action: String(f.get("action")),
                 version: row.version,
-                reason,
-              });
-            if (kind === "approval")
-              if (
-                (row.action === "tenants.members.write" &&
-                  !membershipReview.data) ||
-                (accountAction && !accountReview.data)
-              )
-                throw new Error(
-                  t(
-                    "請先載入完整成員變更再審批。",
-                    "Load the complete membership change before deciding.",
-                  ),
-                );
-            if (kind === "approval")
-              await post("/v1/admin/operations/" + row.id + "/decision", {
-                decision: String(f.get("decision")),
                 reason,
               });
             if (kind === "revoke")
@@ -2380,66 +2376,6 @@ function AdminDialog({
                 <option value="retry">Retry</option>
               </select>
             </Field>
-          )}
-          {kind === "approval" && (
-            <>
-              {row.action === "tenants.members.write" && (
-                <>
-                  <ErrorNotice error={membershipReview.error} />
-                  {membershipReview.loading && <Loading />}
-                  {membershipReview.data && (
-                    <>
-                      <MembershipChangeFacts
-                        tenant={membershipReview.data.tenant_id}
-                        command={membershipReview.data.command}
-                        before={membershipReview.data.before}
-                      />
-                      <p>
-                        {t("審批期限", "Approval deadline")}:{" "}
-                        <DateText value={membershipReview.data.expires_at} />
-                      </p>
-                      <p>
-                        {t("策略版本", "Policy version")}:{" "}
-                        <code>
-                          {membershipReview.data.operation.policy_version_id}
-                        </code>
-                      </p>
-                    </>
-                  )}
-                </>
-              )}
-              {accountAction && (
-                <>
-                  <ErrorNotice error={accountReview.error} />
-                  {accountReview.loading && <Loading />}
-                  {accountReview.data && (
-                    <>
-                      <AccountChangeFacts
-                        target={accountReview.data.target_id}
-                        command={accountReview.data.command}
-                        before={accountReview.data.before}
-                      />
-                      <p>
-                        {t("審批期限", "Approval deadline")}:{" "}
-                        <DateText value={accountReview.data.expires_at} />
-                      </p>
-                      <p>
-                        {t("策略版本", "Policy version")}:{" "}
-                        <code>
-                          {accountReview.data.operation.policy_version_id}
-                        </code>
-                      </p>
-                    </>
-                  )}
-                </>
-              )}
-              <Field label={t("審批決定", "Decision")}>
-                <select name="decision">
-                  <option value="approve">Approve</option>
-                  <option value="reject">Reject</option>
-                </select>
-              </Field>
-            </>
           )}
           {kind === "publish" && (
             <Field label={t("發佈操作", "Publication action")}>

@@ -277,3 +277,20 @@ Membership results now locate the actual operation: pending reviews use `/audit?
 ![Traditional Chinese dark/mobile](assets/screenshots/31-membership-mobile-dark.png)
 
 Original unverified/failed receipts are preserved. This member workflow still uses supplementary frozen review and its legacy decision endpoint; the complete normative approval directory, other Admin domains and all native/system acceptance remain unfinished. Central evidence: `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`.
+
+## Shared approval directory and independent review (2026-10-20)
+
+The directory consumes the original AdminApprovalList and displays real request IDs, associated operations, requesters, persisted states, deadlines and revisions with signed cursor pagination. Membership/account result links resolve the actual request; review submits its frozen revision and hash. Requesters see a notice requiring another administrator. A different reviewer needs both approval and business permissions. Fees retain their detailed amount and original-source review. Overview pending counts use a separate scoped summary.
+
+```mermaid
+flowchart LR
+  Queue[Approval request directory] --> Frozen[Frozen command and prior state]
+  Link[Business operation result link] --> Frozen
+  Frozen --> Other[Different reviewer confirms revision and hash]
+  Other --> API[Atomic server authorization and execution]
+  API --> Reload[Reload actual request and business state]
+```
+
+![Normative approval request directory](assets/screenshots/32-canonical-approval-directory.png)
+
+This increment does not constitute complete payments, refunds, VIP or full Admin authority-matrix acceptance; all original conditions remain tracked.

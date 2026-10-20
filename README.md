@@ -277,3 +277,20 @@ flowchart LR
 ![繁中深色窄屏预览](assets/screenshots/31-membership-mobile-dark.png)
 
 此前未验证和最初失败回执仍原字节保留。当前成员审批采用补充冻结审阅／旧 decision 入口；完整原始审批目录、其他 Admin 业务和全部原生／系统验收仍待完成。详细证据见主文档 `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`。
+
+## 统一审批目录与独立审阅（2026-10-20）
+
+审批目录使用原规范 AdminApprovalList，显示真实请求、关联操作、申请人、持久状态、期限与版本，使用签名游标分页。成员/账户结果可准确定位审批请求，审阅冻结参数后以版本与摘要提交规范决定。本人页面显示另一名管理员审阅提示；具有审批及业务权限的其他管理员可决定。费用沿用完整金额/来源审阅页面。概览单独显示当前权限范围内未超时的待审批计数。
+
+```mermaid
+flowchart LR
+  Queue[审批请求目录] --> Frozen[原始参数与变更前态]
+  Link[业务操作结果链接] --> Frozen
+  Frozen --> Other[独立管理员确认版本和摘要]
+  Other --> API[服务端原子授权与执行]
+  API --> Reload[刷新真实请求与业务状态]
+```
+
+![规范审批请求目录](assets/screenshots/32-canonical-approval-directory.png)
+
+该增量不代表完整付款、退款、VIP 和全部后台权限矩阵验收；规范及完整剩余条件继续保留。
