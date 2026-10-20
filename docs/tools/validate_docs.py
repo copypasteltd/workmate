@@ -2,6 +2,7 @@
 from pathlib import Path
 from urllib.parse import unquote, urldefrag, urlparse
 import base64
+import argparse
 import copy
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
@@ -727,6 +728,14 @@ def validate_metrics():
     COUNTS.update(metric_cases=len(vectors['cases']),metric_value_assertions=assertions)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--report', help='New JSON report filename under docs/quality; never overwrite an existing named report')
+    args = parser.parse_args()
+    if args.report and not re.fullmatch(r'[a-z0-9][a-z0-9-]{0,120}\.json', args.report):
+        parser.error('--report must be a JSON filename without directories')
+    report_path = ROOT / 'quality' / (args.report or 'validation-report.json')
+    if args.report and report_path.exists():
+        parser.error('Preserve the existing report and select a new filename')
     documents = {}
     for p in sorted(ROOT.rglob('*.json')):
         if p.name=='validation-report.json':
@@ -756,8 +765,9 @@ def main():
             'status':'passed' if not FAILED else 'failed','counts':COUNTS,
             'checks_passed':len(PASSED),'checks_failed':len(FAILED),'failures':FAILED,
             'not_validated':['real_admin_dashboard_identity_authorization_financial_and_entitlement_enforcement','real_codex_app_server_integration_and_kernel_enforcement','real_internal_gateway_and_model','real_media_output','real_role_skill_loading_and_qualification','external_platform_authorization','running_web_extension_desktop','complete_product_visual_and_accessibility_acceptance','performance_recovery_security_in_production','full_RFC8785_cross_language_conformance']}
-    report_path=ROOT/'quality/validation-report.json'
-    report_path.write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    report['verifier_sha256'] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    with report_path.open('x' if args.report else 'w', encoding='utf-8') as file:
+        file.write(json.dumps(report,ensure_ascii=False,indent=2)+'\n')
     print(json.dumps(report,ensure_ascii=False,indent=2))
     return 1 if FAILED else 0
 
