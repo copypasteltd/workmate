@@ -7,7 +7,25 @@ An independent repository for project/specialist tasks, explicitly selected file
 ![Sign-in](assets/screenshots/01-login.png)
 ![Authenticated side panel](assets/screenshots/02-workspace.png)
 
-Stage 49 rechecks verify frameless Desktop, the native Chrome right Side Panel, live rights/notifications and sign-out. Native runtime and existing preview installer bytes are unchanged. The platform and Admin provide the new atomic VIP and explicit-gift command; this client consumes effective server rights. Complete installation, signing, SSO and system acceptance remain separate.
+The historical stage 49 recheck verified frameless Desktop, the native Chrome right Side Panel, live rights/notifications and sign-out while retaining that stage's installer bytes. Stage 50 below rebuilds the current previews with financial views. Complete installation, signing, SSO and system acceptance remain separate.
+
+## Durable financial notifications and three-client accounts (stage 50)
+
+The toolbar continues to open the real native Chrome Side Panel, normally on the right and subject to Chrome’s placement preference. It adds exact personal balances, the latest five account notices, unread filtering and read-state controls; Web provides full history/work events. Workspace changes, failed reads, revocation and sign-out clear stale content, and workspace/request revisions reject late results. Actual dark-theme hint contrast measures 11.59:1. Only owned browsers were used and closed.
+
+Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+
+```mermaid
+flowchart LR
+  Source[Canonical financial fact] --> Tx[Same-transaction outbox]
+  Tx --> Worker[Current eligible recipient]
+  Worker --> Access[Recheck current authority]
+  Access --> Clients[Web / frameless Desktop / native Side Panel]
+```
+
+![Native Side Panel accounts](assets/screenshots/17-financial-inbox.png)
+
+![Unknown refund in the native panel](assets/screenshots/18-financial-unknown.png)
 
 ## Open in the browser side panel
 
