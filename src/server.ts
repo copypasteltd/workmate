@@ -4,6 +4,7 @@ import { registerAdminPlans } from "./admin-plans.js";
 import { registerAdminVip } from "./admin-vip.js";
 import { registerAdminVipCredit } from "./admin-vip-credit.js";
 import { registerUserEntitlements } from "./user-entitlements.js";
+import { registerFinancialNotifications } from "./financial-notifications.js";
 import { commandPublicKey } from "./device-signing.js";
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
@@ -338,6 +339,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerSkillLifecycle(app, db, catalog);
   registerNotifications(app, db);
   registerUserEntitlements(app, db);
+  registerFinancialNotifications(app, db);
   registerTaskDependencies(app, db);
   registerBusiness(app, db, storage, catalog);
   registerSchedules(app, db, catalog);
