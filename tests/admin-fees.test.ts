@@ -7,6 +7,7 @@ import * as OTPAuth from "otpauth";
 import pg from "pg";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import paymentContract from "../contracts/admin-payment-schemas.json" with { type: "json" };
+import refundContract from "../contracts/admin-refund-schemas.json" with { type: "json" };
 import contract from "../contracts/admin-fee-schemas.json" with { type: "json" };
 import { isolatedTestEnvironment } from "./native-test-environment.js";
 import { buildApp } from "../src/server.js";
@@ -35,6 +36,7 @@ const defs = JSON.parse(
   JSON.stringify({
     ...contract.schemas,
     ...paymentContract.schemas,
+    ...refundContract.schemas,
   }).replaceAll("#/components/schemas/", "#/$defs/"),
 );
 function schema(name: string, value: unknown) {
@@ -64,7 +66,17 @@ async function call(
     },
     payload: body === undefined ? undefined : JSON.stringify(body),
   });
-  return { status: raw.statusCode, data: raw.json(), raw };
+  const data = raw.json();
+  if (raw.statusCode === 200 && url.startsWith("/v1/admin/billing/refunds"))
+    schema(
+      url.split("?")[0] === "/v1/admin/billing/refunds"
+        ? "AdminRefundList"
+        : "AdminRefundDetail",
+      data,
+    );
+  if (raw.statusCode === 202 && url.startsWith("/v1/admin/billing/refunds"))
+    schema("AdminOperation", data);
+  return { status: raw.statusCode, data, raw };
 }
 async function signIn(
   address: string,
@@ -242,7 +254,837 @@ async function manualTask(u: Client, w: any, payer: string, budget = 60) {
     u.id,
   );
 }
+async function consumed(
+  u: Client,
+  workspace: any,
+  account: any,
+  amount: number,
+) {
+  const task = await manualTask(u, workspace, account.id, amount);
+  await s.db.tx(
+    (tx) => settle(tx, workspace.tenant.id, task.id, amount, u.id),
+    workspace.tenant.id,
+    false,
+    u.id,
+  );
+  return (
+    await s.db.control.query(
+      "SELECT * FROM billing_journal WHERE task_id=$1 AND kind='consume'",
+      [task.id],
+    )
+  ).rows[0];
+}
+async function refundBody(
+  account: string,
+  entry: string,
+  amount: string,
+  destination = "paid_balance",
+) {
+  const body = {
+    action: "refund",
+    expected_version: (await current(account)).version,
+    reason: "Controlled original-source refund",
+    amount: money(amount),
+    original_entry_id: entry,
+    destination,
+  };
+  schema("AdminFeeRefund", body);
+  return body;
+}
+async function cashRefundFixture(
+  a: Client,
+  reviewer: Client,
+  owner: Client,
+  original = "101",
+  amount = "60",
+) {
+  const account = await personal(owner),
+    r = await receipt(a, account, owner, original);
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  assert.equal((await confirmReceipt(reviewer, r)).status, 202);
+  assert.equal(
+    (await submit(a, account.id, await topup(account, r.payment, original)))
+      .status,
+    202,
+  );
+  const entry = (
+    await s.db.control.query(
+      "SELECT * FROM billing_journal WHERE payment_record_id=$1",
+      [r.payment],
+    )
+  ).rows[0];
+  const posted = await submit(
+    a,
+    account.id,
+    await refundBody(account.id, entry.id, amount, "payment_method"),
+  );
+  assert.equal(posted.status, 202, JSON.stringify(posted.data));
+  const refund = (
+    await s.db.control.query(
+      "SELECT * FROM billing_refunds WHERE operation_id=$1",
+      [posted.data.id],
+    )
+  ).rows[0];
+  return { account, payment: r.payment, entry, refund, operation: posted.data };
+}
+async function refundEvidence(owner: Client, account: any) {
+  const ws = await workspace(owner),
+    bytes = Buffer.from(
+      "Controlled cash refund outcome; no money transferred " + randomUUID(),
+    ),
+    key = await s.storage.put(bytes, "text/plain");
+  const asset = (
+    await s.db.control.query(
+      "INSERT INTO assets(tenant_id,project_id,name,kind,created_by,private_owner) VALUES($1,$2,'Controlled refund evidence','document',$3,$4) RETURNING id",
+      [ws.tenant.id, ws.project.id, owner.id, account.user_id],
+    )
+  ).rows[0];
+  return (
+    await s.db.control.query(
+      "INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256) VALUES($1,$2,1,$3,'text/plain',$4,$5) RETURNING id",
+      [ws.tenant.id, asset.id, key, bytes.length, hash(bytes)],
+    )
+  ).rows[0].id;
+}
+const refundOutcomeBody = (
+  version: number,
+  outcome: string,
+  amount: string | null = null,
+  evidence: string | null = null,
+  reference: string | null = null,
+) => ({
+  expected_version: version,
+  reason: "Independent controlled cash outcome review",
+  outcome,
+  observed_amount: amount === null ? null : money(amount),
+  evidence_asset_version_id: evidence,
+  external_reference: reference,
+  occurred_at: evidence ? new Date(Date.now() - 1000).toISOString() : null,
+});
+const observeRefund = (actor: Client, id: string, body: any, key?: string) =>
+  call(actor, "POST", `/v1/admin/billing/refunds/${id}/outcomes`, body, {
+    key,
+  });
 const base = "/v1/admin/billing/accounts";
+
+test("independent cash evidence supports unknown, actual partial payout and confirmed remaining failure without claiming full payment", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    owner = await user(),
+    f = await cashRefundFixture(a, reviewer, owner);
+  const evidence = await refundEvidence(owner, f.account);
+  assert.equal(
+    (
+      await observeRefund(
+        a,
+        f.refund.id,
+        refundOutcomeBody(
+          1,
+          "paid",
+          "20",
+          evidence,
+          "controlled-cash-" + randomUUID(),
+        ),
+      )
+    ).status,
+    403,
+  );
+  const unknown = await observeRefund(
+    reviewer,
+    f.refund.id,
+    refundOutcomeBody(1, "unknown"),
+  );
+  assert.equal(unknown.status, 202, JSON.stringify(unknown.data));
+  assert.equal((await current(f.account.id)).reserved_micros, "60");
+  const reference = "controlled-cash-" + randomUUID(),
+    body = refundOutcomeBody(2, "paid", "20", evidence, reference),
+    key = randomUUID();
+  const paid = await observeRefund(reviewer, f.refund.id, body, key);
+  assert.equal(paid.status, 202, JSON.stringify(paid.data));
+  schema("AdminOperation", paid.data);
+  assert.equal((await current(f.account.id)).balance_micros, "81");
+  assert.equal((await current(f.account.id)).reserved_micros, "40");
+  const replayed = await observeRefund(reviewer, f.refund.id, body, key);
+  assert.equal(replayed.status, 202);
+  assert.equal(replayed.data.id, paid.data.id);
+  const duplicate = await observeRefund(
+    reviewer,
+    f.refund.id,
+    refundOutcomeBody(3, "paid", "1", evidence, reference),
+  );
+  assert.equal(duplicate.status, 409);
+  assert.equal(duplicate.data.error.code, "REFUND_REFERENCE_DUPLICATE");
+  const failed = await observeRefund(
+    reviewer,
+    f.refund.id,
+    refundOutcomeBody(
+      3,
+      "not_paid",
+      "0",
+      evidence,
+      "controlled-bank-declined-" + randomUUID(),
+    ),
+  );
+  assert.equal(failed.status, 202, JSON.stringify(failed.data));
+  assert.equal((await current(f.account.id)).balance_micros, "81");
+  assert.equal((await current(f.account.id)).reserved_micros, "0");
+  const actual = (
+    await call(a, "GET", `/v1/admin/billing/refunds/${f.refund.id}`)
+  ).data;
+  assert.equal(actual.refund.state, "partially_paid_closed");
+  assert.equal(actual.refund.confirmed_paid.amount_micros, "20");
+  assert.equal(actual.events.length, 3);
+  const original = (
+    await call(a, "GET", `/v1/admin/operations/${f.operation.id}`)
+  ).data;
+  assert.equal(original.state, "partially_succeeded");
+  schema("AdminOperation", original);
+  assert.equal(
+    (
+      await observeRefund(
+        reviewer,
+        f.refund.id,
+        refundOutcomeBody(4, "paid", "1", evidence, "late-" + randomUUID()),
+      )
+    ).status,
+    409,
+  );
+  const second = await submit(
+    a,
+    f.account.id,
+    await refundBody(f.account.id, f.entry.id, "81", "payment_method"),
+  );
+  assert.equal(second.status, 202, JSON.stringify(second.data));
+  assert.equal((await current(f.account.id)).reserved_micros, "81");
+});
+
+test("cash discrepancies preserve an immutable observation and the original hold until independent reconciliation", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    owner = await user(),
+    f = await cashRefundFixture(a, reviewer, owner),
+    evidence = await refundEvidence(owner, f.account);
+  const mismatch = await observeRefund(
+    reviewer,
+    f.refund.id,
+    refundOutcomeBody(1, "paid", "61", evidence, "discrepant-" + randomUUID()),
+  );
+  assert.equal(mismatch.status, 202, JSON.stringify(mismatch.data));
+  assert.equal((await current(f.account.id)).balance_micros, "101");
+  assert.equal((await current(f.account.id)).reserved_micros, "60");
+  const detail = (
+    await call(a, "GET", `/v1/admin/billing/refunds/${f.refund.id}`)
+  ).data;
+  assert.equal(detail.refund.state, "reconciling_mismatch");
+  assert.equal(detail.events[0].observed_amount_micros, "61");
+  const payments = (await call(a, "GET", "/v1/admin/billing/payments")).data
+    .items;
+  const payment = payments.find((p: any) => p.id === f.payment);
+  schema("AdminPaymentRecord", payment);
+  assert.equal(payment.state, "reconciling");
+  assert.equal(payment.version, 5);
+  const future = {
+    ...refundOutcomeBody(2, "paid", "60", evidence, "future-" + randomUUID()),
+    occurred_at: new Date(Date.now() + 86400000).toISOString(),
+  };
+  assert.equal(
+    (await observeRefund(reviewer, f.refund.id, future)).data.error.code,
+    "REFUND_DATE_INVALID",
+  );
+  const completed = await observeRefund(
+    reviewer,
+    f.refund.id,
+    refundOutcomeBody(2, "paid", "60", evidence, "reconciled-" + randomUUID()),
+  );
+  assert.equal(completed.status, 202, JSON.stringify(completed.data));
+  assert.equal((await current(f.account.id)).balance_micros, "41");
+  assert.equal((await current(f.account.id)).reserved_micros, "0");
+});
+
+test("concurrent actual cash outcomes debit once; full external repayment derives the original payment refunded state", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    owner = await user(),
+    f = await cashRefundFixture(a, reviewer, owner, "101", "101"),
+    evidence = await refundEvidence(owner, f.account);
+  const body = refundOutcomeBody(
+    1,
+    "paid",
+    "101",
+    evidence,
+    "once-" + randomUUID(),
+  );
+  const responses = await Promise.all([
+    observeRefund(reviewer, f.refund.id, body),
+    observeRefund(reviewer, f.refund.id, {
+      ...body,
+      external_reference: "other-" + randomUUID(),
+    }),
+  ]);
+  assert.deepEqual(responses.map((r) => r.status).sort(), [202, 409]);
+  assert.equal((await current(f.account.id)).balance_micros, "0");
+  assert.equal((await current(f.account.id)).reserved_micros, "0");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int AS n FROM ledger WHERE billing_account_id=$1 AND kind='refund'",
+        [f.account.id],
+      )
+    ).rows[0].n,
+    1,
+  );
+  const payment = (
+    await call(a, "GET", `/v1/admin/billing/payments/${f.payment}`)
+  ).data;
+  assert.equal(payment.payment.state, "refunded");
+  assert.equal(payment.refunded_amount.amount_micros, "101");
+  assert.equal(
+    (
+      await preview(
+        a,
+        f.account.id,
+        await refundBody(f.account.id, f.entry.id, "1", "payment_method"),
+      )
+    ).data.error.code,
+    "REFUND_FUNDS_UNAVAILABLE",
+  );
+});
+
+test("refund facts reject cross-account evidence, account permissions and legacy ledger bypasses, and retain source expiry", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    owner = await user(),
+    other = await user(),
+    f = await cashRefundFixture(a, reviewer, owner),
+    foreign = await refundEvidence(other, await personal(other));
+  assert.equal(
+    (
+      await observeRefund(
+        reviewer,
+        f.refund.id,
+        refundOutcomeBody(1, "paid", "60", foreign, "foreign-" + randomUUID()),
+      )
+    ).data.error.code,
+    "PAYMENT_EVIDENCE_INVALID",
+  );
+  const scoped = await admin(undefined, "user_operator");
+  assert.equal(
+    (await call(scoped, "GET", `/v1/admin/billing/refunds/${f.refund.id}`))
+      .status,
+    403,
+  );
+  const fake = () =>
+    s.db.tx(
+      (tx) =>
+        tx.query(
+          "INSERT INTO ledger(tenant_id,billing_account_id,kind,amount_micros,reference,source_id,idempotency_key,reason) VALUES(NULL,$1,'refund',-1,'unverified',$2,$3,'Controlled invalid bypass')",
+          [f.account.id, f.entry.raw_entry_id, randomUUID()],
+        ),
+      undefined,
+      true,
+    );
+  await assert.rejects(fake, /independently verified refund evidence/);
+  await assert.rejects(
+    s.db.control.query(
+      "UPDATE billing_refunds SET amount_micros=amount_micros-1 WHERE id=$1",
+      [f.refund.id],
+    ),
+    /permission denied/,
+  );
+  const ownerConnection = new pg.Client({
+    connectionString: isolated.env.OWNER_DATABASE_URL,
+  });
+  await ownerConnection.connect();
+  try {
+    await assert.rejects(
+      ownerConnection.query(
+        "UPDATE billing_refunds SET amount_micros=amount_micros-1 WHERE id=$1",
+        [f.refund.id],
+      ),
+      /immutable/,
+    );
+  } finally {
+    await ownerConnection.end();
+  }
+  const giftLot = await payment(f.account.id, "1", "gift");
+  await assert.rejects(
+    s.db.control.query(
+      "UPDATE funding_lots SET expires_at=expires_at+interval '1 day' WHERE ledger_id=$1",
+      [giftLot.id],
+    ),
+    /immutable/,
+  );
+});
+
+test("a consumption refund restores original promotional/paid funds and cancels only its actual unpaid credit; replay and cumulative limits preserve the original charge", async () => {
+  const a = await admin(undefined, "super_admin"),
+    u = await user(),
+    ws = await workspace(u),
+    w = await personal(u);
+  await s.db.tx(
+    (tx) => setBillingAccountLimit(tx, w.id, "100"),
+    undefined,
+    true,
+  );
+  await payment(w.id, "50", "gift");
+  await payment(w.id, "101");
+  const charge = await consumed(u, ws, w, 180),
+    before = await current(w.id),
+    b = await refundBody(w.id, charge.id, "180"),
+    pv = await preview(a, w.id, b),
+    key = randomUUID();
+  assert.equal(before.balance_micros, "-29");
+  assert.equal(pv.status, 200, JSON.stringify(pv.data));
+  assert.deepEqual(await current(w.id), before);
+  schema("AdminFeeRefund", b);
+  schema("AdminPreview", pv.data);
+  const posted = await submit(a, w.id, b, { key, preview: pv.data.preview_id });
+  assert.equal(posted.status, 202, JSON.stringify(posted.data));
+  assert.equal(posted.data.state, "succeeded");
+  const again = await call(a, "POST", `${base}/${w.id}/refund`, b, {
+    key,
+    headers: { "x-admin-preview-id": pv.data.preview_id },
+  });
+  assert.equal(again.status, 202);
+  assert.equal(again.data.id, posted.data.id);
+  assert.equal((await current(w.id)).balance_micros, "151");
+  assert.equal((await current(w.id)).spent_micros, "180");
+  const lots = (
+    await s.db.control.query(
+      "SELECT kind,sum(remaining_micros)::text AS amount FROM funding_lots WHERE billing_account_id=$1 GROUP BY kind ORDER BY kind",
+      [w.id],
+    )
+  ).rows;
+  assert.deepEqual(lots, [
+    { kind: "gift", amount: "50" },
+    { kind: "paid", amount: "101" },
+  ]);
+  assert.equal(
+    (
+      await s.db.control.query("SELECT amount_micros FROM ledger WHERE id=$1", [
+        charge.raw_entry_id,
+      ])
+    ).rows[0].amount_micros,
+    "-180",
+  );
+  const duplicate = await preview(
+    a,
+    w.id,
+    await refundBody(w.id, charge.id, "1"),
+  );
+  assert.equal(duplicate.status, 409);
+  assert.equal(duplicate.data.error.code, "REFUND_LIMIT_EXCEEDED");
+});
+
+test("refunded credit that was repaid with a gift and a payment returns those exact sources rather than converting gift funding to cash", async () => {
+  const a = await admin(undefined, "super_admin"),
+    u = await user(),
+    ws = await workspace(u),
+    w = await personal(u);
+  await s.db.tx(
+    (tx) => setBillingAccountLimit(tx, w.id, "100"),
+    undefined,
+    true,
+  );
+  const charge = await consumed(u, ws, w, 60);
+  await payment(w.id, "40", "gift");
+  await payment(w.id, "15");
+  assert.equal((await current(w.id)).balance_micros, "-5");
+  const r = await submit(a, w.id, await refundBody(w.id, charge.id, "60"));
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  assert.equal((await current(w.id)).balance_micros, "55");
+  assert.deepEqual(
+    (
+      await s.db.control.query(
+        "SELECT kind,sum(remaining_micros)::text AS amount FROM funding_lots WHERE billing_account_id=$1 GROUP BY kind ORDER BY kind",
+        [w.id],
+      )
+    ).rows,
+    [
+      { kind: "gift", amount: "40" },
+      { kind: "paid", amount: "15" },
+    ],
+  );
+  const debt = (
+    await s.db.control.query(
+      "SELECT (SELECT sum(remaining_micros) FROM funding_lots WHERE billing_account_id=w.id)-balance_micros AS debt FROM wallets w WHERE id=$1",
+      [w.id],
+    )
+  ).rows[0].debt;
+  assert.equal(debt, "0");
+  const later = await consumed(u, ws, w, 80);
+  await payment(w.id, "25");
+  assert.equal((await current(w.id)).balance_micros, "0");
+  const repaid = (
+    await s.db.control.query(
+      "SELECT DISTINCT s.charge_id FROM billing_credit_repayment_parts p JOIN billing_settlement_sources s ON s.id=p.credit_source_id JOIN ledger l ON l.id=p.funding_entry_id WHERE p.billing_account_id=$1 AND l.amount_micros=25",
+      [w.id],
+    )
+  ).rows;
+  assert.deepEqual(repaid, [{ charge_id: later.raw_entry_id }]);
+});
+
+test("expired promotional consumption refunds retain compensation and expiry facts without reviving spendable gift credit", async () => {
+  const a = await admin(undefined, "super_admin"),
+    u = await user(),
+    ws = await workspace(u),
+    w = await personal(u);
+  const until = new Date(Date.now() + 2000).toISOString();
+  await s.db.tx(
+    (tx) =>
+      fund(
+        tx,
+        {
+          billing_account_id: w.id,
+          action: "gift",
+          amount_micros: "101",
+          expires_at: until,
+          reason: "Controlled gift expiry boundary",
+        },
+        randomUUID(),
+      ),
+    undefined,
+    true,
+  );
+  const charge = await consumed(u, ws, w, 100);
+  await new Promise((resolve) => setTimeout(resolve, 2100));
+  const b = await refundBody(w.id, charge.id, "100"),
+    r = await submit(a, w.id, b);
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  assert.equal((await current(w.id)).balance_micros, "0");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT remaining_micros FROM funding_lots WHERE billing_account_id=$1",
+        [w.id],
+      )
+    ).rows[0].remaining_micros,
+    "0",
+  );
+  const facts = (
+    await s.db.control.query(
+      "SELECT kind,direction,bucket,amount_micros FROM billing_journal WHERE operation_id=$1 ORDER BY kind",
+      [r.data.id],
+    )
+  ).rows;
+  assert.deepEqual(facts, [
+    {
+      kind: "compensation",
+      direction: "credit",
+      bucket: "promotional",
+      amount_micros: "100",
+    },
+    {
+      kind: "gift_expiry",
+      direction: "debit",
+      bucket: "promotional",
+      amount_micros: "100",
+    },
+  ]);
+});
+
+test("a cash refund reserves only unspent independently verified original payment funds and remains in reconciliation", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    w = await personal(u);
+  const receiptRow = await receipt(a, w, u, "101");
+  assert.equal(receiptRow.status, 202);
+  assert.equal((await confirmReceipt(reviewer, receiptRow)).status, 202);
+  assert.equal(
+    (await submit(a, w.id, await topup(w, receiptRow.payment))).status,
+    202,
+  );
+  const entry = (
+    await s.db.control.query(
+      "SELECT * FROM billing_journal WHERE payment_record_id=$1",
+      [receiptRow.payment],
+    )
+  ).rows[0];
+  const b = await refundBody(w.id, entry.id, "60", "payment_method"),
+    r = await submit(a, w.id, b);
+  assert.equal(r.status, 202, JSON.stringify(r.data));
+  assert.equal(r.data.state, "reconciling");
+  assert.equal((await current(w.id)).balance_micros, "101");
+  assert.equal((await current(w.id)).reserved_micros, "60");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int AS n FROM ledger WHERE billing_account_id=$1 AND kind='refund'",
+        [w.id],
+      )
+    ).rows[0].n,
+    0,
+  );
+  const tooMuch = await preview(
+    a,
+    w.id,
+    await refundBody(w.id, entry.id, "42", "payment_method"),
+  );
+  assert.equal(tooMuch.status, 409);
+  assert.equal(tooMuch.data.error.code, "REFUND_FUNDS_UNAVAILABLE");
+  const wrongMode = await preview(
+    a,
+    w.id,
+    await refundBody(w.id, entry.id, "1"),
+  );
+  assert.equal(wrongMode.status, 409);
+  assert.equal(wrongMode.data.error.code, "CONSUMPTION_REQUIRED");
+});
+
+test("high-value consumption refunds require a frozen independent approval and retain every original bucket", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    ws = await workspace(u),
+    w = await personal(u);
+  await payment(w.id, "10000000000", "gift");
+  const entry = await consumed(u, ws, w, 10000000000),
+    b = await refundBody(w.id, entry.id, "10000000000"),
+    pending = await submit(a, w.id, b);
+  assert.equal(pending.data.state, "pending_approval");
+  assert.equal((await current(w.id)).balance_micros, "0");
+  assert.equal(
+    (await decide(a, pending.data)).data.error.code,
+    "SELF_APPROVAL_FORBIDDEN",
+  );
+  const result = await decide(reviewer, pending.data);
+  assert.equal(result.status, 202, JSON.stringify(result.data));
+  assert.equal(result.data.state, "succeeded");
+  assert.equal((await current(w.id)).balance_micros, "10000000000");
+  const parts = (
+    await s.db.control.query(
+      "SELECT j.bucket,j.amount_micros,j.actor_id FROM billing_refunds r JOIN billing_refund_source_parts p ON p.refund_id=r.id JOIN billing_journal j ON j.id=p.journal_id WHERE r.operation_id=$1",
+      [pending.data.id],
+    )
+  ).rows;
+  assert.deepEqual(parts, [
+    { bucket: "promotional", amount_micros: "10000000000", actor_id: a.id },
+  ]);
+});
+
+test("refund scopes include the actual enterprise and personal subject; current deny and recent MFA are checked before replay", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    ws = await workspace(u),
+    w = await enterprise(ws.tenant.id),
+    finance = await admin(ws.tenant.id, "finance_admin");
+  await payment(w.id, "101", "gift");
+  const entry = await consumed(u, ws, w, 80),
+    body = await refundBody(w.id, entry.id, "80");
+  const applied = await submit(finance, w.id, body);
+  assert.equal(applied.status, 202, JSON.stringify(applied.data));
+  const record = (
+    await s.db.control.query(
+      "SELECT * FROM billing_refunds WHERE operation_id=$1",
+      [applied.data.id],
+    )
+  ).rows[0];
+  const directory = await call(
+    finance,
+    "GET",
+    "/v1/admin/billing/refunds?limit=1",
+  );
+  assert.equal(directory.status, 200, JSON.stringify(directory.data));
+  assert.ok(
+    directory.data.items.every((r: any) => r.billing_account_id === w.id),
+  );
+  assert.equal(
+    (await call(finance, "GET", `/v1/admin/billing/refunds/${record.id}`))
+      .status,
+    200,
+  );
+  const f = await cashRefundFixture(a, reviewer, u);
+  assert.equal(
+    (await observeRefund(finance, f.refund.id, refundOutcomeBody(1, "unknown")))
+      .status,
+    403,
+  );
+  const key = randomUUID(),
+    observation = refundOutcomeBody(1, "unknown");
+  assert.equal(
+    (await observeRefund(reviewer, f.refund.id, observation, key)).status,
+    202,
+  );
+  await bind(reviewer, ["admin.billing.refund"], "global", null, "deny");
+  assert.equal(
+    (await observeRefund(reviewer, f.refund.id, observation, key)).status,
+    403,
+  );
+  await s.db.control.query(
+    "UPDATE sessions SET mfa_at=now()-interval '11 minutes' WHERE admin_id=$1",
+    [finance.id],
+  );
+  assert.equal(
+    (await preview(finance, w.id, await refundBody(w.id, entry.id, "1"))).data
+      .error.code,
+    "MFA_REQUIRED",
+  );
+});
+
+test("refund request and actual payout audit failures roll back facts, holds and idempotency together", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    f = await cashRefundFixture(a, reviewer, u),
+    evidence = await refundEvidence(u, f.account),
+    ownerConnection = new pg.Client({
+      connectionString: isolated.env.OWNER_DATABASE_URL,
+    });
+  await ownerConnection.connect();
+  try {
+    const body = await refundBody(
+        f.account.id,
+        f.entry.id,
+        "10",
+        "payment_method",
+      ),
+      pv = await preview(a, f.account.id, body),
+      key = randomUUID(),
+      before = await current(f.account.id);
+    await ownerConnection.query(
+      "CREATE FUNCTION reject_refund_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN IF NEW.action IN ('admin.billing.refund','admin.billing.refund.outcome') THEN RAISE EXCEPTION 'controlled refund audit failure'; END IF; RETURN NEW; END $$",
+    );
+    await ownerConnection.query(
+      "CREATE TRIGGER refund_audit_fault BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION reject_refund_audit()",
+    );
+    assert.equal(
+      (
+        await submit(a, f.account.id, body, {
+          key,
+          preview: pv.data.preview_id,
+        })
+      ).status,
+      500,
+    );
+    assert.deepEqual(await current(f.account.id), before);
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT count(*)::int AS n FROM billing_refunds WHERE billing_account_id=$1",
+          [f.account.id],
+        )
+      ).rows[0].n,
+      1,
+    );
+    const observed = refundOutcomeBody(
+        1,
+        "paid",
+        "60",
+        evidence,
+        "audit-" + randomUUID(),
+      ),
+      outcomeKey = randomUUID();
+    assert.equal(
+      (await observeRefund(reviewer, f.refund.id, observed, outcomeKey)).status,
+      500,
+    );
+    assert.deepEqual(await current(f.account.id), before);
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT count(*)::int AS n FROM billing_refund_events WHERE refund_id=$1",
+          [f.refund.id],
+        )
+      ).rows[0].n,
+      0,
+    );
+    await ownerConnection.query("DROP TRIGGER refund_audit_fault ON audit_log");
+    assert.equal(
+      (await observeRefund(reviewer, f.refund.id, observed, outcomeKey)).status,
+      202,
+    );
+    assert.equal((await current(f.account.id)).balance_micros, "41");
+    // The other pending preview was not consumed, but the actual payout changed its source snapshot.
+    assert.equal(
+      (
+        await submit(a, f.account.id, body, {
+          key,
+          preview: pv.data.preview_id,
+        })
+      ).status,
+      409,
+    );
+  } finally {
+    await ownerConnection.query(
+      "DROP TRIGGER IF EXISTS refund_audit_fault ON audit_log",
+    );
+    await ownerConnection.query(
+      "DROP FUNCTION IF EXISTS reject_refund_audit()",
+    );
+    await ownerConnection.end();
+  }
+});
+
+test("concurrent compensation cannot exceed the original consumption or return the same funding twice", async () => {
+  const a = await admin(undefined, "super_admin"),
+    u = await user(),
+    ws = await workspace(u),
+    w = await personal(u);
+  await payment(w.id, "101", "gift");
+  const entry = await consumed(u, ws, w, 101),
+    b = await refundBody(w.id, entry.id, "80"),
+    p1 = await preview(a, w.id, b),
+    p2 = await preview(a, w.id, b);
+  const results = await Promise.all([
+    submit(a, w.id, b, { preview: p1.data.preview_id }),
+    submit(a, w.id, b, { preview: p2.data.preview_id }),
+  ]);
+  assert.deepEqual(results.map((r) => r.status).sort(), [202, 409]);
+  assert.equal((await current(w.id)).balance_micros, "80");
+  assert.equal(
+    (await preview(a, w.id, await refundBody(w.id, entry.id, "22"))).data.error
+      .code,
+    "REFUND_LIMIT_EXCEEDED",
+  );
+  assert.equal(
+    (await submit(a, w.id, await refundBody(w.id, entry.id, "21"))).status,
+    202,
+  );
+  assert.equal((await current(w.id)).balance_micros, "101");
+});
+
+test("a task can spend only funds outside a cash commitment; settlement and independently verified payout preserve each hold", async () => {
+  const a = await admin(undefined, "super_admin"),
+    reviewer = await admin(undefined, "super_admin"),
+    u = await user(),
+    f = await cashRefundFixture(a, reviewer, u),
+    ws = await workspace(u);
+  const heldTask = await manualTask(u, ws, f.account.id, 41);
+  assert.equal((await current(f.account.id)).reserved_micros, "101");
+  await assert.rejects(
+    manualTask(u, ws, f.account.id, 1),
+    (e: any) => e.code === "INSUFFICIENT_CREDIT",
+  );
+  const evidence = await refundEvidence(u, f.account);
+  assert.equal(
+    (
+      await observeRefund(
+        reviewer,
+        f.refund.id,
+        refundOutcomeBody(
+          1,
+          "paid",
+          "60",
+          evidence,
+          "task-hold-" + randomUUID(),
+        ),
+      )
+    ).status,
+    202,
+  );
+  assert.equal((await current(f.account.id)).balance_micros, "41");
+  assert.equal((await current(f.account.id)).reserved_micros, "41");
+  await s.db.tx(
+    (tx) => settle(tx, ws.tenant.id, heldTask.id, 41, u.id),
+    ws.tenant.id,
+    false,
+    u.id,
+  );
+  assert.equal((await current(f.account.id)).balance_micros, "0");
+  assert.equal((await current(f.account.id)).reserved_micros, "0");
+});
 
 test("payment and account UUIDs are case-insensitive without changing the payment identity or amount", async () => {
   const a = await admin(undefined, "super_admin"),

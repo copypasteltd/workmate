@@ -7,7 +7,12 @@ export async function billingEvent(
   account: string,
   event: {
     action: string;
-    kind: "reserve" | "release" | "credit_limit" | "compensation";
+    kind:
+      | "reserve"
+      | "release"
+      | "credit_limit"
+      | "compensation"
+      | "gift_expiry";
     direction: "credit" | "debit" | "neutral";
     bucket: "paid" | "promotional" | "reserved" | "credit_limit";
     amount: bigint;
@@ -28,7 +33,7 @@ export async function billingEvent(
   if (event.actor?.admin_operation_id) {
     operation = (
       await tx.query(
-        "INSERT INTO billing_operations(id,billing_account_id,actor_id,action,admin_operation_id,policy_version_id,source_task_id,provenance) SELECT id,$2,principal_id,$3,id,policy_version_id,$4,'current_event' FROM admin_operations WHERE id=$1 AND principal_id=$5 RETURNING id",
+        "INSERT INTO billing_operations(id,billing_account_id,actor_id,action,admin_operation_id,policy_version_id,source_task_id,provenance) SELECT id,$2,principal_id,$3,id,policy_version_id,$4,'current_event' FROM admin_operations WHERE id=$1 AND principal_id=$5 ON CONFLICT(id) DO NOTHING RETURNING id",
         [
           event.actor.admin_operation_id,
           account,
@@ -38,6 +43,19 @@ export async function billingEvent(
         ],
       )
     ).rows[0];
+    if (!operation)
+      operation = (
+        await tx.query(
+          "SELECT b.id FROM billing_operations b JOIN admin_operations o ON o.id=b.admin_operation_id WHERE b.id=$1 AND b.billing_account_id=$2 AND b.actor_id=$3 AND b.action=$4 AND b.source_task_id IS NOT DISTINCT FROM $5::uuid AND b.policy_version_id=o.policy_version_id AND o.principal_id=$3",
+          [
+            event.actor.admin_operation_id,
+            account,
+            actor,
+            event.action,
+            event.task_id ?? null,
+          ],
+        )
+      ).rows[0];
     if (!operation)
       throw new Problem(
         409,

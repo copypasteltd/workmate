@@ -80,6 +80,7 @@ const pay = (
   w: Workspace,
   amount: number,
   kind: "top_up" | "gift" = "top_up",
+  expiresAt = new Date(Date.now() + 86400000).toISOString(),
 ) =>
   db.tx(
     (tx) =>
@@ -92,7 +93,7 @@ const pay = (
           reason: "Controlled fixture only; no money received",
           ...(kind === "top_up"
             ? { reference: "fixture-" + randomUUID() }
-            : { expires_at: new Date(Date.now() + 86400000).toISOString() }),
+            : { expires_at: expiresAt }),
         },
         randomUUID(),
       ),
@@ -216,12 +217,14 @@ test("released funds from the same original lot merge into one immutable source"
 
 test("expired gifts retain held funds and expire only the unused remainder after settlement", async () => {
   const w = await fixture(),
-    funding = await pay(w, 60, "gift"),
+    funding = await pay(
+      w,
+      60,
+      "gift",
+      new Date(Date.now() + 2000).toISOString(),
+    ),
     id = await hold(w, 50);
-  await db.control.query(
-    "UPDATE funding_lots SET expires_at=now()-interval '1 second' WHERE ledger_id=$1",
-    [funding.id],
-  );
+  await new Promise((resolve) => setTimeout(resolve, 2100));
   balances(await state(w), "50", "50", "0");
   await close(w, id, 20);
   await close(w, id, 20);
@@ -313,14 +316,21 @@ test("accumulated balances above Number.MAX_SAFE_INTEGER retain their last micro
   balances(await state(w), "1", "0", "0");
 });
 
-test("repayment does not create refundable paid funds and credit cannot drop below actual debt", async () => {
-  const w = await fixture(),
-    id = await hold(w, 40);
-  await close(w, id, 40);
-  const funding = await pay(w, 100);
-  await assert.rejects(refund(w, funding.id, 61), failure("FUNDS_UNAVAILABLE"));
-  await refund(w, funding.id, 60);
-  balances(await state(w), "0", "0", "0");
+test("repayment cannot be refunded without independently verified evidence and credit cannot drop below actual debt", async () => {
+  const repayment = await fixture(),
+    id = await hold(repayment, 40);
+  await close(repayment, id, 40);
+  const funding = await pay(repayment, 100);
+  await assert.rejects(
+    refund(repayment, funding.id, 61),
+    failure("FUNDS_UNAVAILABLE"),
+  );
+  await assert.rejects(
+    refund(repayment, funding.id, 60),
+    /independently verified refund evidence/,
+  );
+  balances(await state(repayment), "60", "0", "0");
+  const w = await fixture();
   const a = await hold(w, 80);
   await pay(w, 50);
   const b = await hold(w, 50);

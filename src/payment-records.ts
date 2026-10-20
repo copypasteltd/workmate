@@ -53,7 +53,14 @@ export async function paymentEvidence(tx: Tx, w: any, id: string) {
 export async function paymentRecord(tx: Tx, id: string) {
   return (
     await tx.query(
-      "SELECT p.*,c.verified_by,c.verified_reference,c.created_at AS confirmed_at,s.ledger_id,s.created_at AS posted_at,1+(CASE WHEN c.payment_record_id IS NULL THEN 0 ELSE 1 END)+(CASE WHEN s.payment_record_id IS NULL THEN 0 ELSE 1 END) AS version FROM payment_records p LEFT JOIN payment_confirmations c ON c.payment_record_id=p.id LEFT JOIN payment_postings s ON s.payment_record_id=p.id WHERE p.id=$1",
+      `SELECT p.*,c.verified_by,c.verified_reference,c.created_at AS confirmed_at,s.ledger_id,s.created_at AS posted_at,
+       1+(CASE WHEN c.payment_record_id IS NULL THEN 0 ELSE 1 END)+(CASE WHEN s.payment_record_id IS NULL THEN 0 ELSE 1 END)
+       +(SELECT count(*)::int FROM billing_refunds r WHERE r.payment_record_id=p.id)
+       +(SELECT count(*)::int FROM billing_refund_events e JOIN billing_refunds r ON r.id=e.refund_id WHERE r.payment_record_id=p.id) AS version,
+       coalesce((SELECT sum(e.observed_amount_micros) FROM billing_refund_events e JOIN billing_refunds r ON r.id=e.refund_id WHERE r.payment_record_id=p.id AND e.outcome='paid'),0)::text AS refunded_micros,
+       EXISTS(SELECT 1 FROM billing_refunds r WHERE r.payment_record_id=p.id AND r.amount_micros>coalesce((SELECT sum(e.observed_amount_micros) FROM billing_refund_events e WHERE e.refund_id=r.id AND e.outcome='paid'),0) AND NOT EXISTS(SELECT 1 FROM billing_refund_events e WHERE e.refund_id=r.id AND e.outcome='not_paid')) AS refund_pending,
+       EXISTS(SELECT 1 FROM billing_refunds r WHERE r.payment_record_id=p.id AND r.amount_micros>coalesce((SELECT sum(e.observed_amount_micros) FROM billing_refund_events e WHERE e.refund_id=r.id AND e.outcome='paid'),0) AND (SELECT e.outcome FROM billing_refund_events e WHERE e.refund_id=r.id ORDER BY e.expected_version DESC LIMIT 1) IN ('unknown','mismatch') AND NOT EXISTS(SELECT 1 FROM billing_refund_events e WHERE e.refund_id=r.id AND e.outcome='not_paid')) AS refund_reconciling
+       FROM payment_records p LEFT JOIN payment_confirmations c ON c.payment_record_id=p.id LEFT JOIN payment_postings s ON s.payment_record_id=p.id WHERE p.id=$1`,
       [id],
     )
   ).rows[0];
@@ -63,7 +70,16 @@ export const paymentDTO = (p: any) => ({
   billing_account_id: p.billing_account_id,
   external_reference: p.external_reference,
   amount: { currency: "HKD", amount_micros: p.amount_micros },
-  state: p.verified_by ? "confirmed" : "recorded",
+  state:
+    BigInt(p.refunded_micros ?? 0) >= BigInt(p.amount_micros)
+      ? "refunded"
+      : p.refund_reconciling
+        ? "reconciling"
+        : p.refund_pending
+          ? "refunding"
+          : p.verified_by
+            ? "confirmed"
+            : "recorded",
   version: p.version,
   received_at: p.received_at.toISOString(),
 });

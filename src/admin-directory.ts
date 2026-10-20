@@ -263,6 +263,7 @@ const cursorShape = z
       "billing_accounts",
       "billing_ledger",
       "billing_payments",
+      "billing_refunds",
       "approvals",
     ]),
     owner: uuid,

@@ -60,7 +60,7 @@ const query = z
 const mode = (db: Database) =>
   db.config.DEMO_MODE ? "simulated" : "configured_services";
 
-async function operation(
+export async function createPaymentEvidenceOperation(
   tx: Tx,
   p: Principal,
   w: any,
@@ -68,7 +68,10 @@ async function operation(
   requestKey: string,
 ) {
   const policy = await pinAdminPolicy(tx, {
-    type: "manual-payment-evidence.v1",
+    type:
+      (command as any).kind === "refund_outcome"
+        ? "manual-refund-evidence.v1"
+        : "manual-payment-evidence.v1",
     independent_evidence_verifier: true,
     posts_credit: false,
   });
@@ -84,7 +87,7 @@ async function operation(
           billing_account_id: w.id,
           command,
         },
-        `payment:${paymentCommandHash(w.id, { kind: (command as any).kind, target: (command as any).payment_id ?? w.id, requestKey })}`,
+        `payment:${paymentCommandHash(w.id, { kind: (command as any).kind, target: (command as any).refund_id ?? (command as any).payment_id ?? w.id, requestKey })}`,
         policy,
         [w.id],
       ],
@@ -184,6 +187,11 @@ export function registerAdminPayments(app: FastifyInstance, db: Database) {
           posted_entry_id: p.ledger_id ?? null,
           posted_at: p.posted_at?.toISOString() ?? null,
           data_mode: w.data_mode,
+          refunded_amount: {
+            currency: "HKD",
+            amount_micros: p.refunded_micros,
+          },
+          refund_pending: p.refund_pending,
         };
       },
       undefined,
@@ -255,7 +263,7 @@ export function registerAdminPayments(app: FastifyInstance, db: Database) {
                 "PAYMENT_REFERENCE_HISTORICAL",
                 "This external reference already occurs in the historical funding ledger; reconcile that original transaction",
               );
-            const op = await operation(
+            const op = await createPaymentEvidenceOperation(
               tx,
               req.principal,
               w,
@@ -362,7 +370,7 @@ export function registerAdminPayments(app: FastifyInstance, db: Database) {
                 "PAYMENT_EVIDENCE_CHANGED",
                 "The evidence no longer matches its recorded digest",
               );
-            const op = await operation(
+            const op = await createPaymentEvidenceOperation(
               tx,
               req.principal,
               w,

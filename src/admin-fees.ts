@@ -23,6 +23,7 @@ import {
   pinAdminPolicy,
 } from "./admin-operation-policy.js";
 import { fund, setBillingAccountLimit } from "./billing.js";
+import { inspectRefund, applyRefund } from "./billing-refunds.js";
 import { replay } from "./access.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 
@@ -69,14 +70,30 @@ export const feeDebit = z
 export const feeLimit = z
   .object({ ...base, action: z.literal("credit_limit"), new_limit: money })
   .strict();
+export const feeRefund = z
+  .object({
+    ...base,
+    action: z.literal("refund"),
+    amount: positive,
+    original_entry_id: uuid.transform((v) => v.toLowerCase()),
+    destination: z.enum(["payment_method", "paid_balance"]),
+  })
+  .strict();
 const command = z.discriminatedUnion("action", [
   feeTopUp,
   feeGift,
   feeDebit,
   feeLimit,
+  feeRefund,
 ]);
 type Command = z.infer<typeof command>;
 const definitions = {
+  refund: {
+    action: "billing.refund",
+    permission: "admin.billing.refund",
+    path: "refund",
+    schema: feeRefund,
+  },
   top_up: {
     action: "billing.top_up",
     permission: "admin.billing.top_up",
@@ -314,6 +331,10 @@ async function inspect(tx: Tx, w: any, b: Command) {
       expires_at: source.expires_at?.toISOString() ?? null,
     };
   }
+  if (b.action === "refund") {
+    source = await inspectRefund(tx, w, b, effectiveBalance);
+    before.source = source;
+  }
   const risk =
     b.action === "credit_limit"
       ? value(b) > BigInt(w.credit_limit_micros)
@@ -335,7 +356,7 @@ async function daily(
   const spent = BigInt(
     (
       await tx.query(
-        "SELECT coalesce(sum(CASE WHEN j.kind='credit_limit' THEN greatest(0,j.amount_micros-coalesce((o.payload#>>'{before,credit_limit_micros}')::numeric,0)) ELSE j.amount_micros END),0)::text AS n FROM billing_journal j JOIN admin_operations o ON o.id=j.operation_id JOIN wallets w ON w.id=j.billing_account_id WHERE j.actor_id=$1 AND o.action=$2 AND w.data_mode=$3 AND j.created_at>=(date_trunc('day',now() AT TIME ZONE 'Asia/Hong_Kong') AT TIME ZONE 'Asia/Hong_Kong')",
+        "SELECT coalesce(sum(CASE WHEN o.action='billing.credit_limit.write' THEN greatest(0,(o.payload#>>'{command,new_limit,amount_micros}')::numeric-coalesce((o.payload#>>'{before,credit_limit_micros}')::numeric,0)) ELSE coalesce((o.payload#>>'{command,amount,amount_micros}')::numeric,(o.payload->>'amount_micros')::numeric,(SELECT sum(j.amount_micros) FROM billing_journal j WHERE j.operation_id=o.id)) END),0)::text AS n FROM admin_operations o JOIN wallets w ON (w.id=NULLIF(o.payload->>'billing_account_id','')::uuid OR (o.payload->>'billing_account_id' IS NULL AND w.tenant_id=o.tenant_id)) WHERE o.principal_id=$1 AND o.action=$2 AND w.data_mode=$3 AND EXISTS(SELECT 1 FROM billing_journal j WHERE j.operation_id=o.id AND j.created_at>=(date_trunc('day',now() AT TIME ZONE 'Asia/Hong_Kong') AT TIME ZONE 'Asia/Hong_Kong'))",
         [p.id, definitions[b.action].action, dataMode],
       )
     ).rows[0].n,
@@ -364,27 +385,29 @@ async function apply(
   op: any,
 ) {
   const result =
-    b.action === "credit_limit"
-      ? await setBillingAccountLimit(tx, w.id, b.new_limit.amount_micros, {
-          actor_id: p.id,
-          admin_operation_id: op.id,
-          reason: b.reason,
-        })
-      : await fund(
-          tx,
-          {
-            billing_account_id: w.id,
-            action: b.action,
-            amount_micros: b.amount.amount_micros,
+    b.action === "refund"
+      ? await applyRefund(tx, w, b, checked.source, op, p)
+      : b.action === "credit_limit"
+        ? await setBillingAccountLimit(tx, w.id, b.new_limit.amount_micros, {
+            actor_id: p.id,
+            admin_operation_id: op.id,
             reason: b.reason,
-            ...(b.action === "gift"
-              ? { expires_at: b.expires_at }
-              : b.action === "top_up"
-                ? { reference: `payment:${b.payment_record_id}` }
-                : { source_id: checked.source.raw_entry_id }),
-          },
-          `admin:${op.id}`,
-        );
+          })
+        : await fund(
+            tx,
+            {
+              billing_account_id: w.id,
+              action: b.action,
+              amount_micros: b.amount.amount_micros,
+              reason: b.reason,
+              ...(b.action === "gift"
+                ? { expires_at: b.expires_at }
+                : b.action === "top_up"
+                  ? { reference: `payment:${b.payment_record_id}` }
+                  : { source_id: checked.source.raw_entry_id }),
+            },
+            `admin:${op.id}`,
+          );
   if (b.action === "top_up")
     await tx.query(
       "INSERT INTO payment_postings(payment_record_id,ledger_id,operation_id) VALUES($1,$2,$3)",
@@ -403,7 +426,7 @@ async function apply(
     )
   ).rows[0];
   await tx.query(
-    "UPDATE admin_operations SET state='succeeded',result=$2,result_ids=$3,version=version+1 WHERE id=$1",
+    "UPDATE admin_operations SET state=$4,result=$2,result_ids=$3,version=version+1 WHERE id=$1",
     [
       op.id,
       {
@@ -411,8 +434,16 @@ async function apply(
         before: checked.before,
         after,
         journal_ids: journal,
+        ...(b.action === "refund"
+          ? {
+              refund_id: result.id,
+              destination: b.destination,
+              payment_confirmed: false,
+            }
+          : {}),
       },
-      journal,
+      b.action === "refund" ? [result.id, ...journal] : journal,
+      b.action === "refund" ? result.state : "succeeded",
     ],
   );
   await audit(
@@ -420,7 +451,9 @@ async function apply(
     p,
     definitions[b.action].permission,
     op.id,
-    "succeeded",
+    b.action === "refund" && result.state === "reconciling"
+      ? "reconciling"
+      : "succeeded",
     {
       reason: b.reason,
       billing_account_id: w.id,
@@ -513,13 +546,17 @@ export function registerAdminFees(app: FastifyInstance, db: Database) {
                 : "recent_mfa",
               missing_permission_keys: [],
               impact_summary:
-                b.action === "top_up"
-                  ? `Post HKD ${b.amount.amount_micros} micros from independently verified payment ${b.payment_record_id}; no VIP change.`
-                  : b.action === "credit_limit"
-                    ? `Set credit limit to HKD ${b.new_limit.amount_micros} micros; no payment or VIP change.`
-                    : b.action === "gift"
-                      ? `Grant HKD ${b.amount.amount_micros} micros until ${b.expires_at}; no payment received.`
-                      : `Debit HKD ${b.amount.amount_micros} micros from original funding entry ${b.original_entry_id}; no cash refund.`,
+                b.action === "refund"
+                  ? b.destination === "payment_method"
+                    ? `Reserve HKD ${b.amount.amount_micros} micros from the verified original payment for a cash refund; external payment remains unconfirmed until independent evidence review.`
+                    : `Compensate HKD ${b.amount.amount_micros} micros to the original consumption sources; expired promotional credit remains expired and no cash payment is made.`
+                  : b.action === "top_up"
+                    ? `Post HKD ${b.amount.amount_micros} micros from independently verified payment ${b.payment_record_id}; no VIP change.`
+                    : b.action === "credit_limit"
+                      ? `Set credit limit to HKD ${b.new_limit.amount_micros} micros; no payment or VIP change.`
+                      : b.action === "gift"
+                        ? `Grant HKD ${b.amount.amount_micros} micros until ${b.expires_at}; no payment received.`
+                        : `Debit HKD ${b.amount.amount_micros} micros from original funding entry ${b.original_entry_id}; no cash refund.`,
               expires_at: row.expires_at.toISOString(),
               creates_business_effect: false,
               expected_target_versions: [{ id, version: w.version }],

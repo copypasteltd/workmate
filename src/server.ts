@@ -26,6 +26,7 @@ import { registerAdminMemberships } from "./admin-memberships.js";
 import { registerAdminAccounts } from "./admin-accounts.js";
 import { registerAdminBilling } from "./admin-billing.js";
 import { registerAdminPayments } from "./admin-payments.js";
+import { registerAdminRefunds } from "./admin-refunds.js";
 import { registerAdminFees } from "./admin-fees.js";
 import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
@@ -312,6 +313,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminBilling(app, db);
   registerAdminFees(app, db);
   registerAdminPayments(app, db);
+  registerAdminRefunds(app, db);
   registerAdminApprovals(app, db);
   registerAdminIdentities(app, db);
   let started = false;
