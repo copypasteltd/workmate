@@ -1,10 +1,33 @@
 # CopyPaste Delivery and Integration
 
+## Controlled capabilities and Admin publishing (stage 53)
+
+Adds focused/full regression, built-Admin browser verification and a native 064 upgrade tool with before/after row digests. Current [full regression 04](evidence/capability-release-regression-04.json) passes **462/462** with 726 unchanged sources and no failures, cancellations or skips. Its [raw TAP](evidence/capability-release-regression-04.tap) retains all 435 original tests. [Candidate 11](evidence/capability-release-candidate-11.json) passes 71/71 and overlaps the full run; [actual Admin browser run 06](evidence/capability-release-ui-06.json) passes 11/11 with 14 unedited screenshots; [supplemental contract run 02](evidence/capability-release-contract-02.json) passes six cross-consumer checks.
+
+The [native 063→064 upgrade](evidence/capability-release-upgrade.json) and [before/after comparison](evidence/capability-release-migrations.json) pass: both databases preserve complete row digests for all 125 original public tables, historical SQL and checksums. All six new control tables force RLS and deny direct application-account access, without fabricated validation or publication history; 064 is now immutable. [Full-run fixture reclamation](evidence/capability-release-regression-04-fixture-cleanup.json) confirms actual deletion of two deferred directories after workers exited. All browsers and services owned by these runs are stopped.
+
+Image verification adds complete decoding and bounded inflation; local HTTP fixtures allocate Fetch-compatible ports. An [actual forbidden-port counterexample](evidence/fetch-port-counterexample-01.json) demonstrates that a kernel-listening server can receive no Fetch request. Full run 03 did not record its allocated port, so its exact value remains unknown. Full runs 01 at 456/458, 02 at 458/458 and 03 at 460/461, every candidate and browser runs 01–05 retain their original evidence and separate source scopes.
+
+Verification workspace cleanup is a separate durable job and does not rewrite model receipts or costs. Parent-owned fixture reclamation requires actual filesystem checks; failure fails the entire run. Upgrade admission verifies focused/full TAP, actual cleanup receipts, SQL and the entire source set. The browser script starts owned native PostgreSQL, built Admin and an isolated API, executes real email/MFA, independent approval, rollback, read-only and revocation journeys, captures actual pages, then closes every owned browser and service. Model/media dependencies are authorized fixtures. Visible customer adoption, current three-client business checks, per-request gateway limits and complete acceptance remain open. Stage 52 results below retain their historical source scope.
+
+```mermaid
+flowchart LR
+  Source[Frozen current source and SQL] --> Tests[Focused and full Platform regression]
+  Source --> Browser[Actual built-Admin browser journeys]
+  Source --> Contract[Supplemental and original contract consumers]
+  Tests --> Upgrade[Native two-database row and permission checks]
+  Browser --> Evidence[Raw reports / unedited captures / cleanup receipts]
+  Contract --> Evidence
+  Upgrade --> Evidence
+```
+
+Use fresh attempt identifiers for another run; existing evidence cannot be overwritten. Both local databases are already upgraded, and the one-time upgrade command rejects repeated execution. Fresh runs can use `node scripts/run-capability-release-candidate.mjs 12`, `node scripts/run-capability-release-regression.mjs 05` and `node --import tsx scripts/check-capability-release-contract.ts 03`. For browser checks use `node scripts/run-capability-release-ui.mjs 07`; if the default Playwright browser is absent, explicitly set `CHROME_BIN` to the actual Chrome executable. The runner uses an isolated profile and closes its owned instances.
+
 ## Frozen task capability and pricing verification (stage 52)
 
 The current foundation freezes each task's Codex, model, reasoning effort and original rates, including actual image generation/editing, administrator retries, post-revocation settlement, unknown costs, private isolation and bounded database locks. Current focused suites and existing template/private workflows pass [35/35](evidence/capability-candidate-05.json). [Candidate 04 at 28/28](evidence/capability-candidate-04.json) retains its original source scope. Three failed candidates and the [first full run at 434/435](evidence/capability-regression-01.json) retain their original TAP, SQL and source manifests. Its sole failure required cancelling old tasks after a default configuration change; the corrected assertion retains new-delegation and active-revocation guards. A second full run executes separately.
 
-[Both native 062→063 upgrades](evidence/capability-migrations.json) preserve all 124 original public tables, prior SQL bytes and historical checksums. Administrative publication/rollback and visible customer version confirmation remain in progress.
+[Both native 062→063 upgrades](evidence/capability-migrations.json) preserve all 124 original public tables, prior SQL bytes and historical checksums. At stage 52, administrative publication/rollback and visible customer version confirmation remained open; the later Admin subflow is described in stage 53 above.
 
 The [second full regression passes 435/435](evidence/capability-regression-02.json), with 714 unchanged sources, no failures, cancellations or skips, and independently retained [raw TAP](evidence/capability-regression-02.tap) and SQL bytes. All 424 original tests remain, with one explicitly mapped semantic rename. The 35 focused cases overlap the full run and are not added to its total. Owned PostgreSQL is stopped; native frameless/Side Panel preview bytes retain separate evidence.
 

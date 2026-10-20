@@ -1,0 +1,56 @@
+2026-10-21 01:15:59.507 CST [33456] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 01:15:59.514 CST [33456] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 01:15:59.515 CST [33456] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 01:15:59.756 CST [23280] LOG:  database system was shut down at 2026-10-21 01:14:37 CST
+
+2026-10-21 01:15:59.810 CST [33456] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 01:16:05.544 CST [30352] ERROR:  Immutable capability document or publication
+2026-10-21 01:16:05.544 CST [30352] CONTEXT:  PL/pgSQL function immutable_capability_release_fact() line 3 at RAISE
+2026-10-21 01:16:05.544 CST [30352] STATEMENT:  UPDATE capability_releases SET reason='Changed' WHERE id=$1
+
+2026-10-21 01:16:05.545 CST [30352] ERROR:  Immutable capability document or publication
+2026-10-21 01:16:05.545 CST [30352] CONTEXT:  PL/pgSQL function immutable_capability_release_fact() line 3 at RAISE
+2026-10-21 01:16:05.545 CST [30352] STATEMENT:  DELETE FROM capability_releases WHERE id=$1
+
+2026-10-21 01:17:00.811 CST [34248] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 01:17:41.399 CST [34248] LOG:  checkpoint complete: wrote 1868 buffers (11.4%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.241 s, sync=39.700 s, total=40.589 s; sync files=1051, longest=0.254 s, average=0.038 s; distance=25031 kB, estimate=25031 kB; lsn=4/5F35A610, redo lsn=4/5F338880
+
+2026-10-21 01:17:41.761 CST [4960] ERROR:  permission denied for table capability_releases
+2026-10-21 01:17:41.761 CST [4960] STATEMENT:  INSERT INTO capability_releases DEFAULT VALUES
+
+2026-10-21 01:17:41.764 CST [4960] ERROR:  permission denied for table capability_validations
+2026-10-21 01:17:41.764 CST [4960] STATEMENT:  UPDATE capability_validations SET state='passed'
+
+2026-10-21 01:17:41.765 CST [4960] ERROR:  permission denied for table capability_heads
+2026-10-21 01:17:41.765 CST [4960] STATEMENT:  DELETE FROM capability_heads
+
+2026-10-21 01:17:41.766 CST [4960] ERROR:  cannot update view "current_internal_capabilities"
+2026-10-21 01:17:41.766 CST [4960] DETAIL:  Views that do not select from a single table or view are not automatically updatable.
+2026-10-21 01:17:41.766 CST [4960] HINT:  To enable updating the view, provide an INSTEAD OF UPDATE trigger or an unconditional ON UPDATE DO INSTEAD rule.
+2026-10-21 01:17:41.766 CST [4960] STATEMENT:  UPDATE current_internal_capabilities SET ready=true
+
+2026-10-21 01:18:04.012 CST [34248] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 01:18:05.001 CST [34248] LOG:  checkpoint complete: wrote 33 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.008 s, sync=0.730 s, total=0.990 s; sync files=12, longest=0.125 s, average=0.061 s; distance=586 kB, estimate=22587 kB; lsn=4/5F3CB3B0, redo lsn=4/5F3CB358
+
+2026-10-21 01:18:05.833 CST [33456] LOG:  received fast shutdown request
+
+2026-10-21 01:18:05.924 CST [33456] LOG:  aborting any active transactions
+
+2026-10-21 01:18:05.931 CST [33456] LOG:  background worker "logical replication launcher" (PID 30780) exited with exit code 1
+
+2026-10-21 01:18:05.931 CST [34248] LOG:  shutting down
+
+2026-10-21 01:18:05.975 CST [34248] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 01:18:06.242 CST [34248] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.058 s, total=0.311 s; sync files=1, longest=0.058 s, average=0.058 s; distance=0 kB, estimate=20328 kB; lsn=4/5F3CB4C8, redo lsn=4/5F3CB4C8
+
+2026-10-21 01:18:06.356 CST [33456] LOG:  database system is shut down
+

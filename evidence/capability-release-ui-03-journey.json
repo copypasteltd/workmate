@@ -1,0 +1,395 @@
+{
+  "at": "2026-10-20T19:37:50.905Z",
+  "status": "failed",
+  "scope": "Actual built Admin, real email/TOTP sessions, isolated native PostgreSQL, actual pinned Codex and labelled simulated AI/media; no production or original end-to-end acceptance claim",
+  "checks": [
+    {
+      "name": "two actual independent email and TOTP Admin sessions in an isolated database",
+      "status": "passed"
+    },
+    {
+      "name": "typed text fields preserve a single HKD micro and exact rates through real persistence and pinned Codex tool-loop validation",
+      "status": "passed"
+    },
+    {
+      "name": "request stays pending without a current head, self-review is unavailable, and independent UI review creates the actual publication",
+      "status": "passed"
+    }
+  ],
+  "errors": [
+    "new immutable version and publication comparison: response.json: Protocol error (Network.getResponseBody): No resource with given identifier found\nResponse body is not available for a response that was navigated away from. Read response.body() before triggering any navigation."
+  ],
+  "samples": [
+    {
+      "schema": "CapabilityReleaseList",
+      "route": "GET current configuration list",
+      "response": {
+        "items": [],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/capability-releases/drafts",
+      "response": {
+        "id": "4363fabf-a2d8-429f-90c4-de351524d6c4",
+        "action": "catalog.draft",
+        "target_ids": [
+          "1ff13e10-1eaa-416d-bb17-c79fafc551ef"
+        ],
+        "actor_id": "740eb71a-d5b2-4c6d-be49-5f6b64a395ca",
+        "state": "succeeded",
+        "payload_hash": "c17ff5cf6e1fbdbd5667eefa50fe3cfee2b6acb04ef48534f2e9a2c17e772840",
+        "policy_version_id": "bcbc8166-8e09-4e40-9aab-d4c37351ff14",
+        "version": 2,
+        "created_at": "2026-10-20T19:37:12.569Z",
+        "result_ids": [
+          "1ff13e10-1eaa-416d-bb17-c79fafc551ef"
+        ]
+      }
+    },
+    {
+      "schema": "CapabilityValidation",
+      "route": "POST /v1/admin/capability-releases/1ff13e10-1eaa-416d-bb17-c79fafc551ef/validations",
+      "response": {
+        "id": "3bc2d710-19ed-4c51-97a9-b6ba53839050",
+        "release_id": "1ff13e10-1eaa-416d-bb17-c79fafc551ef",
+        "state": "passed",
+        "capability_version_id": "58aadcea-5acb-4942-b4d6-c488f9c74b17",
+        "created_at": "2026-10-20T19:37:13.716Z",
+        "finished_at": "2026-10-20T19:37:21.773Z",
+        "expires_at": "2026-10-21T19:37:21.773Z",
+        "result": {
+          "checks": [
+            "pinned_codex",
+            "requested_model_and_effort",
+            "tool_call_and_result",
+            "completed_output",
+            "known_usage"
+          ],
+          "accepted": true,
+          "data_mode": "simulated",
+          "model_alias": "copypaste-demo",
+          "usage_known": true,
+          "input_tokens": 200,
+          "codex_version": "0.163.0-alpha.10.2",
+          "output_tokens": 100,
+          "definition_hash": "6c41c2aea7634784b0c231ba05e2b913d1002f50ac4cfafb23b818638438038d",
+          "reasoning_effort": "medium",
+          "known_cost_micros": "124",
+          "codex_binary_sha256": "f6dbf48cb70f62649c645f26c87dc9bf84cc36986202dfad8e12fb5b8ca70312",
+          "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+          "supported_operations": [
+            "responses"
+          ],
+          "workspace_cleanup_completed": false,
+          "workspace_cleanup_error_code": "EBUSY"
+        },
+        "workspace_cleanup": {
+          "validation_id": "3bc2d710-19ed-4c51-97a9-b6ba53839050",
+          "state": "queued",
+          "version": 1,
+          "attempts": 0,
+          "next_attempt_at": "2026-10-20T19:37:51.773Z",
+          "completed_at": null,
+          "error_code": "EBUSY"
+        }
+      }
+    },
+    {
+      "schema": "CapabilityRelease",
+      "route": "GET exact text configuration",
+      "response": {
+        "id": "1ff13e10-1eaa-416d-bb17-c79fafc551ef",
+        "kind": "model_capability",
+        "profile_key": "internal-text-v1",
+        "data_mode": "simulated",
+        "version": 1,
+        "document": {
+          "rates": [
+            1,
+            1234567
+          ],
+          "kernel": "codex",
+          "model_alias": "copypaste-demo",
+          "profile_key": "internal-text-v1",
+          "gateway_policy": "company_internal_only",
+          "reasoning_effort": "medium"
+        },
+        "definition_hash": "6c41c2aea7634784b0c231ba05e2b913d1002f50ac4cfafb23b818638438038d",
+        "runtime_profile_id": "6bdcb377-5c01-46d5-a015-e9277aab117f",
+        "created_at": "2026-10-20T19:37:12.569Z",
+        "state": "validated",
+        "validation_id": "3bc2d710-19ed-4c51-97a9-b6ba53839050",
+        "validation_state": "passed",
+        "validation_expires_at": "2026-10-21T19:37:21.773Z",
+        "validation_error_codes": [],
+        "head_revision": 0,
+        "current_publication_id": null
+      }
+    },
+    {
+      "schema": "CapabilityReleaseList",
+      "route": "GET current configuration list",
+      "response": {
+        "items": [
+          {
+            "id": "1ff13e10-1eaa-416d-bb17-c79fafc551ef",
+            "kind": "model_capability",
+            "profile_key": "internal-text-v1",
+            "data_mode": "simulated",
+            "version": 1,
+            "document": {
+              "rates": [
+                1,
+                1234567
+              ],
+              "kernel": "codex",
+              "model_alias": "copypaste-demo",
+              "profile_key": "internal-text-v1",
+              "gateway_policy": "company_internal_only",
+              "reasoning_effort": "medium"
+            },
+            "definition_hash": "6c41c2aea7634784b0c231ba05e2b913d1002f50ac4cfafb23b818638438038d",
+            "runtime_profile_id": "6bdcb377-5c01-46d5-a015-e9277aab117f",
+            "created_at": "2026-10-20T19:37:12.569Z",
+            "state": "validated",
+            "validation_id": "3bc2d710-19ed-4c51-97a9-b6ba53839050",
+            "validation_state": "passed",
+            "validation_expires_at": "2026-10-21T19:37:21.773Z",
+            "validation_error_codes": [],
+            "head_revision": 0,
+            "current_publication_id": null
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "CapabilityPublicationPreview",
+      "route": "POST /v1/admin/capability-releases/1ff13e10-1eaa-416d-bb17-c79fafc551ef/publications-previews",
+      "response": {
+        "preview_id": "befd8a30-e4a2-4396-b50c-6feaaf2242fa",
+        "payload_hash": "f4d49ab226088140a12a951251e404e0cdaa489ad194e0bf6c7f92f24f017f55",
+        "before": {
+          "profile_key": "internal-text-v1",
+          "data_mode": "simulated",
+          "head_revision": 0,
+          "publication_id": null,
+          "current": null,
+          "proposed": {
+            "release_id": "1ff13e10-1eaa-416d-bb17-c79fafc551ef",
+            "version": 1,
+            "document": {
+              "rates": [
+                1,
+                1234567
+              ],
+              "kernel": "codex",
+              "model_alias": "copypaste-demo",
+              "profile_key": "internal-text-v1",
+              "gateway_policy": "company_internal_only",
+              "reasoning_effort": "medium"
+            },
+            "validation_id": "3bc2d710-19ed-4c51-97a9-b6ba53839050",
+            "capability_version_id": "58aadcea-5acb-4942-b4d6-c488f9c74b17"
+          }
+        },
+        "expires_at": "2026-10-20T19:42:23.501Z",
+        "decision": "independent_approval",
+        "creates_business_effect": false
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/capability-releases/1ff13e10-1eaa-416d-bb17-c79fafc551ef/publications",
+      "response": {
+        "id": "5f0632f2-db87-4d86-98d6-b95b2de3fd31",
+        "action": "catalog.publish",
+        "target_ids": [
+          "1ff13e10-1eaa-416d-bb17-c79fafc551ef"
+        ],
+        "actor_id": "740eb71a-d5b2-4c6d-be49-5f6b64a395ca",
+        "state": "pending_approval",
+        "payload_hash": "f4d49ab226088140a12a951251e404e0cdaa489ad194e0bf6c7f92f24f017f55",
+        "policy_version_id": "bcbc8166-8e09-4e40-9aab-d4c37351ff14",
+        "version": 1,
+        "created_at": "2026-10-20T19:37:25.953Z",
+        "result_ids": []
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST shared approval decision",
+      "response": {
+        "id": "5f0632f2-db87-4d86-98d6-b95b2de3fd31",
+        "action": "catalog.publish",
+        "target_ids": [
+          "1ff13e10-1eaa-416d-bb17-c79fafc551ef"
+        ],
+        "actor_id": "740eb71a-d5b2-4c6d-be49-5f6b64a395ca",
+        "state": "succeeded",
+        "payload_hash": "f4d49ab226088140a12a951251e404e0cdaa489ad194e0bf6c7f92f24f017f55",
+        "policy_version_id": "bcbc8166-8e09-4e40-9aab-d4c37351ff14",
+        "version": 2,
+        "created_at": "2026-10-20T19:37:25.953Z",
+        "result_ids": [
+          "1ff13e10-1eaa-416d-bb17-c79fafc551ef",
+          "931736cf-d11e-4bde-857a-d8c864ca197b"
+        ]
+      }
+    },
+    {
+      "schema": "CapabilityReleaseList",
+      "route": "GET current configuration list",
+      "response": {
+        "items": [
+          {
+            "id": "1ff13e10-1eaa-416d-bb17-c79fafc551ef",
+            "kind": "model_capability",
+            "profile_key": "internal-text-v1",
+            "data_mode": "simulated",
+            "version": 1,
+            "document": {
+              "rates": [
+                1,
+                1234567
+              ],
+              "kernel": "codex",
+              "model_alias": "copypaste-demo",
+              "profile_key": "internal-text-v1",
+              "gateway_policy": "company_internal_only",
+              "reasoning_effort": "medium"
+            },
+            "definition_hash": "6c41c2aea7634784b0c231ba05e2b913d1002f50ac4cfafb23b818638438038d",
+            "runtime_profile_id": "6bdcb377-5c01-46d5-a015-e9277aab117f",
+            "created_at": "2026-10-20T19:37:12.569Z",
+            "state": "published",
+            "validation_id": "3bc2d710-19ed-4c51-97a9-b6ba53839050",
+            "validation_state": "passed",
+            "validation_expires_at": "2026-10-21T19:37:21.773Z",
+            "validation_error_codes": [],
+            "head_revision": 1,
+            "current_publication_id": "931736cf-d11e-4bde-857a-d8c864ca197b"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/capability-releases/drafts",
+      "response": {
+        "id": "8e14a13e-beeb-4978-a5bd-8acf01439354",
+        "action": "catalog.draft",
+        "target_ids": [
+          "6596bb0c-9c08-4e6b-ad7c-36e24ca80dd0"
+        ],
+        "actor_id": "740eb71a-d5b2-4c6d-be49-5f6b64a395ca",
+        "state": "succeeded",
+        "payload_hash": "868b8ba7801f87e5d956315a29bff38d13c53d542bafe2ac1920426dbda81272",
+        "policy_version_id": "bcbc8166-8e09-4e40-9aab-d4c37351ff14",
+        "version": 2,
+        "created_at": "2026-10-20T19:37:31.981Z",
+        "result_ids": [
+          "6596bb0c-9c08-4e6b-ad7c-36e24ca80dd0"
+        ]
+      }
+    },
+    {
+      "schema": "CapabilityValidation",
+      "route": "POST /v1/admin/capability-releases/6596bb0c-9c08-4e6b-ad7c-36e24ca80dd0/validations",
+      "response": {
+        "id": "6bb625be-8864-47e1-b10f-201daf913e36",
+        "release_id": "6596bb0c-9c08-4e6b-ad7c-36e24ca80dd0",
+        "state": "passed",
+        "capability_version_id": "082f43c7-761b-43b5-bb6e-f7a29699dabb",
+        "created_at": "2026-10-20T19:37:32.446Z",
+        "finished_at": "2026-10-20T19:37:39.240Z",
+        "expires_at": "2026-10-21T19:37:39.240Z",
+        "result": {
+          "checks": [
+            "pinned_codex",
+            "requested_model_and_effort",
+            "tool_call_and_result",
+            "completed_output",
+            "known_usage"
+          ],
+          "accepted": true,
+          "data_mode": "simulated",
+          "model_alias": "copypaste-demo",
+          "usage_known": true,
+          "input_tokens": 200,
+          "codex_version": "0.163.0-alpha.10.2",
+          "output_tokens": 100,
+          "definition_hash": "c551f949990cb7aed0e8445080622f3a3bb9ee48474659827db262d51b24c307",
+          "reasoning_effort": "max",
+          "known_cost_micros": "801",
+          "codex_binary_sha256": "f6dbf48cb70f62649c645f26c87dc9bf84cc36986202dfad8e12fb5b8ca70312",
+          "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+          "supported_operations": [
+            "responses"
+          ],
+          "workspace_cleanup_completed": false,
+          "workspace_cleanup_error_code": "EBUSY"
+        },
+        "workspace_cleanup": {
+          "validation_id": "6bb625be-8864-47e1-b10f-201daf913e36",
+          "state": "queued",
+          "version": 1,
+          "attempts": 0,
+          "next_attempt_at": "2026-10-20T19:38:09.240Z",
+          "completed_at": null,
+          "error_code": "EBUSY"
+        }
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-admin/assets/screenshots/capabilities-03-validation-text-en.png",
+      "sha256": "4c2525ac883f5f078ab31cd467d1554ba87315bf26df58ceceb722a42bad0768",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/capabilities-03-first-publication-en.png",
+      "sha256": "688501ea7829c38247684bc4d3680b49744473c3140de44e233eead9a0a95cdb",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/capabilities-03-independent-review-1-en.png",
+      "sha256": "888770e283d002d9f94f23c81eb0c4b18a7a0f10a6a2dff9507b5e34684c4215",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/capabilities-03-validation-version-en.png",
+      "sha256": "f22945f864d8cc6386acb0defe3dc0559cc5d5addcc774a28eae8c6dbdfe6122",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    }
+  ],
+  "browser_closed": true,
+  "browser_runtime": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "36a30716f0994b377f1ce6b47cfe35399b9719e31d597fe0ea0d8f3b62aed532",
+    "version": "155.0.8059.80"
+  },
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "9f1b597a3908433f4e4150ccfdf410823816c8582968962336208064f10f2da5"
+}

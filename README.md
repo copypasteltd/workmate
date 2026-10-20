@@ -1,10 +1,33 @@
 # CopyPaste 交付与集成
 
+## 受控能力配置与后台发布（阶段 53）
+
+新增专项、完整回归、构建版 Admin 浏览器流程及带前后行摘要的原生 064 升级工具。当前[完整回归 04](evidence/capability-release-regression-04.json) 通过 **462/462**，726 份来源前后一致，失败、取消、跳过均为零；[原始 TAP](evidence/capability-release-regression-04.tap) 保留全部旧 435 项测试。[候选 11](evidence/capability-release-candidate-11.json) 通过 71/71，与全量重叠；[实际后台浏览器 06](evidence/capability-release-ui-06.json) 通过 11/11、保留 14 张未编辑截图；[补充合同 02](evidence/capability-release-contract-02.json) 通过六项跨消费者检查。
+
+[本机 063→064 升级](evidence/capability-release-upgrade.json)及[前后比较](evidence/capability-release-migrations.json)通过：两库各保留 125 张原公共表的完整行摘要、旧 SQL 和校验值。六张新控制表强制 RLS、普通应用账号无直接权限，未补造历史验证或发布；064 不再修改。[全量夹具收尾](evidence/capability-release-regression-04-fixture-cleanup.json)确认两个延期目录在工作进程退出后实际删除，全部本轮自建浏览器与服务均已关闭。
+
+图片验证补齐完整解码与有界解压，本地 HTTP 夹具使用 Fetch 允许的端口。[实际禁止端口反例](evidence/fetch-port-counterexample-01.json) 证明内核监听成功仍可被 Fetch 拒绝；第三次全量失败未记录旧端口，不推定其具体值。完整回归 01 的 456/458、02 的 458/458、03 的 460/461、所有候选及浏览器 01–05 的原始记录分别保留，不能互相替代。
+
+验证后的暂存清理是独立持久任务，不修改模型回执或费用。测试夹具的父级收尾要求实际文件检查，失败会使整轮失败。升级工具同时验证专项、完整 TAP、实际回收回执、SQL 和完整源码集合。浏览器脚本启动自有原生 PostgreSQL、构建版 Admin 与隔离 API，执行真实邮箱/MFA、独立审批、回滚、只读与撤权，以及实际截图后关闭全部自建浏览器和服务。模型与媒体使用获准假数据；用户可见版本确认、三端新业务复查、网关逐请求限制及完整综合验收仍待完成。
+
+```mermaid
+flowchart LR
+  Source[冻结当前源码及 SQL] --> Tests[专项与完整平台回归]
+  Source --> Browser[构建版 Admin 实际浏览器]
+  Source --> Contract[补充合同及原规范消费者]
+  Tests --> Upgrade[原生两库前后行摘要与权限检查]
+  Browser --> Evidence[原始报告 / 未编辑截图 / 清理回执]
+  Contract --> Evidence
+  Upgrade --> Evidence
+```
+
+复查时使用新的执行编号，既有证据不可覆盖；本机两库已升级，升级命令有一次性前态守卫，不重复执行。新一轮可分别执行 `node scripts/run-capability-release-candidate.mjs 12`、`node scripts/run-capability-release-regression.mjs 05`、`node --import tsx scripts/check-capability-release-contract.ts 03`。浏览器执行 `node scripts/run-capability-release-ui.mjs 07`；默认 Playwright 浏览器未安装时，将 `CHROME_BIN` 明确设置为实际 Chrome 程序路径，脚本使用独立 profile 并负责关闭自建实例。
+
 ## 任务能力与费率冻结的持续核查（阶段 52）
 
 当前基础修复固定任务的 Codex、模型、推理强度和原费率，包含实际图片生成/编辑、管理员重试、撤销后结算、未知费用、私人隔离和有界数据库锁。当前专项及既有模板/私人流程 [35/35](evidence/capability-candidate-05.json)；[第四次 28/28](evidence/capability-candidate-04.json) 保留当时来源。前三次候选失败及[首次全量 434/435](evidence/capability-regression-01.json)的原始 TAP、SQL 和来源摘要分别保留。全量唯一失败是默认配置改变应取消旧任务的过时断言；修正后仍保持新委派和运行撤销守卫。第二次全量回归独立执行，不以专项替代。
 
-[两库 062→063 升级](evidence/capability-migrations.json)各保留 124 张原公共表、旧 SQL 字节及历史校验值。后台配置发布/回滚与用户版本确认仍在开发。
+[两库 062→063 升级](evidence/capability-migrations.json)各保留 124 张原公共表、旧 SQL 字节及历史校验值。阶段 52 当时后台配置发布/回滚与用户版本确认仍在开发，后续后台子流程见上方阶段 53。
 
 [第二次全量 435/435](evidence/capability-regression-02.json)，714 份源码前后一致，失败、取消、跳过均为 0；[原始 TAP](evidence/capability-regression-02.tap) 和本次使用的 SQL 独立保存。原 424 项测试全部保留，其中一项明确改名并修正冻结版本语义；35 项专项与全量重叠，不累计为 470 项。自建 PostgreSQL 已关闭，原生窗口/侧栏预览字节继续独立跟踪。
 
