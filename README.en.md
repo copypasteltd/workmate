@@ -279,3 +279,24 @@ This run uses source Electron with current dist/renderer-dist; it does not accep
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
 
 Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+## Current preview: frameless window and live entitlements
+
+The CopyPaste title bar provides custom minimize, maximize, restore, close and bounded resize controls. Electron's native frame and default menu are removed. The rebuilt `release/frameless/` preview passes ten actual native-window/Side Panel checks. Six additional packaged Desktop/native Side Panel groups verify browser S256 PKCE, canonical VIP grants and suspensions, coherent plan/task-quota refresh, persistent notification reads and sign-out cleanup. Twelve source-runtime session groups are separate. Authorized synthetic model/media dependencies remain in use; full installation, update, SSO and system-matrix acceptance is still open.
+
+```mermaid
+flowchart LR
+  Login[System browser authorization] --> Session[DPAPI credentials]
+  Session --> Bridge[Restricted IPC methods and paths]
+  Bridge --> Rights[Current server plan and rights]
+  Rights --> Coherence[Matching revision and pinned plans]
+  Coherence --> UI[Plan quotas features and notices]
+  Logout[Sign out or remote revocation] --> Clear[Clear credentials and local grants]
+```
+
+Manual and scheduled refresh update the plan and rights together. A mismatch between the two transactions triggers another confirmation, preventing stale plan headings. Suspension restores the actually published free plan, including its existing features. VIP changes do not post wallet funds. The native bridge only exposes explicit entitlement/notice reads and the current user's notification read action.
+
+![Actual frameless Desktop with current Pro plan and rights](assets/screenshots/26-vip-effective-rights.png)
+![Actual suspension restores the free plan and limits](assets/screenshots/27-vip-suspended-rights.png)
+
+The adjacent Delivery repository generates `qa:native-surfaces` and `qa:native-vip` receipts. `evidence/native-vip.json` binds 790 source files and the runtime, installers and extension bytes. The independent renderer snapshot contains 46 recorded file digests and builds from its own clone.

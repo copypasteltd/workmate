@@ -55,6 +55,16 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
     return false;
   }
   if (pathname === "/v1/session/context") return method === "GET";
+  if (
+    [
+      "/v1/plans",
+      "/v1/effective-entitlements",
+      "/v1/entitlement-notifications",
+    ].includes(pathname)
+  )
+    return method === "GET";
+  if (/^\/v1\/entitlement-notifications\/[a-f0-9-]{36}$/i.test(pathname))
+    return method === "PATCH";
   if (pathname === "/v1/tenants") return method === "GET" || method === "POST";
   if (pathname === "/v1/dataset-imports" || pathname === "/v1/reports")
     return method === "POST";

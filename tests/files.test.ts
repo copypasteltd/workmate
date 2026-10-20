@@ -94,6 +94,10 @@ test("native workspace bridge permits canonical session/onboarding/business call
   const id = "11111111-1111-4111-8111-111111111111";
   for (const [route, method] of [
     ["/v1/session/context", "GET"],
+    ["/v1/plans?limit=30", "GET"],
+    ["/v1/effective-entitlements", "GET"],
+    ["/v1/entitlement-notifications", "GET"],
+    [`/v1/entitlement-notifications/${id}`, "PATCH"],
     ["/v1/tenants", "POST"],
     ["/v1/me/sessions", "GET"],
     [`/v1/me/sessions/${id}`, "DELETE"],
@@ -106,6 +110,9 @@ test("native workspace bridge permits canonical session/onboarding/business call
     assert.equal(rendererApiOperation(route, method), true, route);
   for (const [route, method] of [
     ["/v1/session/context", "POST"],
+    ["/v1/effective-entitlements", "POST"],
+    ["/v1/plans", "DELETE"],
+    [`/v1/entitlement-notifications/${id}`, "DELETE"],
     ["/v1/session/context/extra", "GET"],
     ["/v1/auth/token", "POST"],
     ["/v1/auth/sessions", "POST"],

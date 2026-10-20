@@ -303,3 +303,24 @@ Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12。D
 2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。
 
 2026-10-20 方案版本增量後的當前源碼復核：Web 成員 6/6（172 份來源）、Admin 成員 6/6（200 份），Web／源碼 Electron／MV3 認證 12/12（779 份）；測試前後摘要一致，自建瀏覽器／Electron／擴展均關閉，測試憑證清理。新增不可變方案定義與固定歷史授權綁定不改寫原生預覽包。完整 VIP／配額、安裝包認證及系統驗收仍按主文檔繼續追蹤。
+
+## 当前预览：无边框与实时权益
+
+窗口保留 CopyPaste 自绘标题栏、最小化／最大化／还原／关闭和有界缩放，不显示 Electron 默认边框及菜单。当前 `release/frameless/` 预览重新构建，10 组真实窗口／原生侧栏检查通过。额外 6 组实际打包 Desktop／原生 Side Panel 联调验证浏览器 S256 PKCE、规范 VIP 开通与暂停、方案及并发额度共同刷新、持久通知已读和退出清理；源码会话专项 12 组另列。模型与媒体仍使用获准模拟依赖，这些结果不等于完整安装／更新／SSO／系统矩阵验收。
+
+```mermaid
+flowchart LR
+  Login[系统浏览器授权] --> Session[DPAPI 本机凭据]
+  Session --> Bridge[限定方法及路径的 IPC]
+  Bridge --> Rights[服务端当前权益及方案]
+  Rights --> Coherence[版本和固定方案一致后显示]
+  Coherence --> UI[方案 配额 功能和通知]
+  Logout[退出或远端撤销] --> Clear[清空凭据与本机授权]
+```
+
+方案与权益手动及定时共同刷新；跨事务版本不一致时重新确认，避免旧方案标题配上新功能。暂停后回到真实已发佈免费方案，保留其本来具有的功能；VIP 不写入账户余额。原生桥只开放明确的权益／通知读取和本人通知已读路径。
+
+![实际无边框 Desktop：实时 Pro 方案及权益](assets/screenshots/26-vip-effective-rights.png)
+![实际暂停后回到免费方案和配额](assets/screenshots/27-vip-suspended-rights.png)
+
+回执由相邻 Delivery 仓库的 `qa:native-surfaces`、`qa:native-vip` 生成；`evidence/native-vip.json` 保存 790 份源码及原生运行时／安装器／扩展字节绑定。独立 renderer 当前有 46 项摘要，新仓库克隆可自行构建。
