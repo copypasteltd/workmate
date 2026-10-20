@@ -15,8 +15,10 @@ import {
 import { name, Problem, uuid } from "./lib.js";
 import { wallet } from "./billing.js";
 import { lockUserAuthorities, currentUserAuthority } from "./user-authority.js";
+import { registerResourceQuotas } from "./resource-quota-routes.js";
 
 export function registerWorkspaces(app: FastifyInstance, db: Database) {
+  registerResourceQuotas(app, db);
   registerMemberships(app, db);
   app.get(
     "/v1/tenants/:tenant/plan",

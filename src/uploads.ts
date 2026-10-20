@@ -465,6 +465,7 @@ export function registerUploads(
           conversation: s.conversation_id ?? undefined,
           asset: s.asset_id ?? undefined,
           expectedVersion: s.expected_version ?? undefined,
+          sourceUpload: id,
           metadata: {
             upload_id: id,
             source_filename: s.filename,

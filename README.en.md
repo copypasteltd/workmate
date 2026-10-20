@@ -490,3 +490,12 @@ The original `GET /v1/plans` and `GET /v1/effective-entitlements` are implemente
 The complete platform regression passes 354/354 with 694 source files unchanged. Focused VIP tests overlap that total. The original OpenAPI and all eleven VIP schema dependencies are unchanged. Migrations 001–056 match stage 46 Git bytes; applied 057 is immutable. Initial native startup migrated the primary before its row snapshot, so that pre-upgrade proof is unavailable. The test database has a complete 056→057 comparison. Original failures and this limitation remain documented; fifteen legacy migration digests remain unknown/null.
 
 Run `npm run build` and `npm test`; actual page and native checks live in the separate Delivery repository. Complete seat/storage enforcement, atomic VIP plus credit, installer/SSO/system matrices and all 102 original acceptance conditions remain separate. Earlier results are historical. See the main project document `docs/technical/47-canonical-vip-lifecycle-and-effective-entitlements.md` for current scope.
+
+## Enterprise seat and storage enforcement (stage 48)
+
+Workspace plans now enforce active membership seats and logical retained asset bytes plus pending upload reservations. Personal VIP does not enlarge shared workspace capacity. Database guards cover invitation acceptance, member restoration, independent admin approvals, asset copies/derived versions and reservation conversion. Downgrades preserve existing resources and block additional allocation. Retained bytes are released only after successful erasure.
+
+Supplemental GET `/v1/tenants/:tenant/resource-usage` and `/v1/admin/tenants/:tenant/resource-usage` return decimal byte strings without changing the original strict `EffectiveEntitlements`. Admin aggregation needs both whole-workspace permissions and reveals no private file rows. Native PostgreSQL upgrades 058 and 059 independently compared 23 original business tables in each of two databases. Applied SQL remains immutable. The original private-attachment deletion regression is preserved; forward migration 059 fixes it without weakening the existing deletion test.
+
+![Actual workspace capacity](assets/screenshots/workspace-capacity.png)
+![Actual admin capacity](assets/screenshots/admin-workspace-capacity.png)

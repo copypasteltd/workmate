@@ -23,6 +23,7 @@ import {
 import type { Config } from "./config.js";
 import type { Tx } from "./db.js";
 import { hash, Problem } from "./lib.js";
+import { assertStorageCapacity } from "./resource-quotas.js";
 export class Storage {
   private s3?: S3Client;
   private sweepCursor?: string;
@@ -283,6 +284,7 @@ type AssetInput = {
   expectedVersion?: number;
   conversation?: string;
   metadata?: unknown;
+  sourceUpload?: string;
 };
 export async function saveAsset(
   tx: Tx,
@@ -409,11 +411,22 @@ async function saveAssetContent(
       )
     ).rows[0];
   // Object writes are immutable. If the DB transaction rolls back, the unreferenced object is safe for later GC.
+  await assertStorageCapacity(tx, b.tenant, size, b.sourceUpload);
   const key = await put();
   const version = (
     await tx.query(
-      "INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256,metadata) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,version,mime_type,bytes,sha256,metadata,created_at",
-      [b.tenant, a.id, a.current_version, key, b.mime, size, digest, metadata],
+      "INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256,metadata,upload_session_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id,version,mime_type,bytes,sha256,metadata,created_at",
+      [
+        b.tenant,
+        a.id,
+        a.current_version,
+        key,
+        b.mime,
+        size,
+        digest,
+        metadata,
+        b.sourceUpload ?? null,
+      ],
     )
   ).rows[0];
   if (sourceTask)

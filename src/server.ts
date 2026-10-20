@@ -181,6 +181,34 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       details = error.details;
     } else if (
       (error as any).code === "23514" &&
+      [
+        "PLAN_SEAT_LIMIT",
+        "PLAN_STORAGE_LIMIT",
+        "PLAN_RECONCILIATION_REQUIRED",
+        "UPLOAD_RESERVATION_INVALID",
+        "RESOURCE_SCOPE_INVALID",
+        "RESOURCE_IDENTITY_IMMUTABLE",
+      ].includes((error as any).message)
+    ) {
+      status = 409;
+      code = (error as any).message;
+      message = (
+        {
+          PLAN_SEAT_LIMIT:
+            "Workspace seat limit reached; remove a membership or change the workspace plan",
+          PLAN_STORAGE_LIMIT:
+            "Workspace storage limit reached; finish content cleanup, cancel pending uploads or change the workspace plan",
+          PLAN_RECONCILIATION_REQUIRED:
+            "A valid fixed plan definition is required before adding resources",
+          UPLOAD_RESERVATION_INVALID:
+            "The upload reservation is unavailable or does not match this content",
+          RESOURCE_SCOPE_INVALID: "The resource scope or size is invalid",
+          RESOURCE_IDENTITY_IMMUTABLE:
+            "A resource identity or completed upload cannot be changed",
+        } as Record<string, string>
+      )[code];
+    } else if (
+      (error as any).code === "23514" &&
       (error as any).message === "UPLOAD_QUOTA"
     ) {
       status = 429;

@@ -24,7 +24,7 @@ export const allowancesSchema = z
     allowed_role_ids: strings,
     seat_limit: integer,
     task_concurrency: integer,
-    storage_bytes: z.number().int().nonnegative(),
+    storage_bytes: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
     included_credit: z
       .object({
         currency: z.literal("HKD"),

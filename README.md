@@ -569,3 +569,12 @@ flowchart LR
 当前完整平台回归 354/354（694 份来源前后一致），VIP 专项与其重叠。原始 OpenAPI 与 11 个 VIP 依赖 schema 保持不变。001–056 与阶段 46 提交原字节一致，057 已应用后不改写。升级第一次启动主库先自动迁移，缺少其升级前行快照；测试库有完整 056→057 比较，失败记录和主库限制保留。15 条旧迁移本来没有摘要，仍为 null。
 
 运行 `npm run build`、`npm test`；实际页面与原生复核由 Delivery 独立仓库提供。完整席位／存储执行、VIP 加赠额的原子操作、所有安装／SSO／系统及原始 102 条综合验收仍单独跟踪。此前章节的结果属于各自历史阶段；完整当前证据见主文档 `docs/technical/47-canonical-vip-lifecycle-and-effective-entitlements.md`。
+
+## 企业席位与存储执行（阶段 48）
+
+企业方案现在实际约束启用成员、云文件保留版本和有效上传预留；个人 VIP 不扩充企业容量。邀请接受、成员恢复、Admin 审批、文件复制/派生和上传转换均走数据库守卫。降级保留现有资源并拒绝新增占用；只有实际擦除成功才释放保留字节。后台聚合读取同时要求企业和权益整体权限，不暴露私人文件明细。
+
+新增补充 GET `/v1/tenants/:tenant/resource-usage` 与 `/v1/admin/tenants/:tenant/resource-usage`，原严格 `EffectiveEntitlements` 不变。字节为十进制整数字符串。058 与 059 已在原生 PostgreSQL 主库/测试库顺序执行，分别核对 23 类原有业务行；已应用 SQL 不再修改。首次完整回归的私人附件删除冲突保留原失败，以 059 前向修复，原删除测试未放宽。
+
+![实际容量页面](assets/screenshots/workspace-capacity.png)
+![实际后台容量](assets/screenshots/admin-workspace-capacity.png)

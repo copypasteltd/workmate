@@ -10,6 +10,7 @@ import {
   requireSensitiveAdmin as recentAdmin,
 } from "./admin-access.js";
 import { lockUserAuthorities } from "./user-authority.js";
+import { resourceSnapshot } from "./resource-quotas.js";
 import {
   currentAdminControl,
   pinAdminPolicy,
@@ -145,6 +146,18 @@ async function inspect(tx: Tx, tenant: string, b: Change) {
       "MEMBERSHIP_MISSING",
       "A new membership must start active",
     );
+  if (
+    b.state === "active" &&
+    (old?.status !== "active" || old?.admin_suspended)
+  ) {
+    const resource = await resourceSnapshot(tx, tenant);
+    if (resource.seats.used >= resource.seats.limit)
+      throw new Problem(
+        409,
+        "PLAN_SEAT_LIMIT",
+        "Workspace seat limit reached; remove a membership or change the workspace plan",
+      );
+  }
   const ids = [...new Set(b.project_ids)].sort();
   const projects = (
     await tx.query(
