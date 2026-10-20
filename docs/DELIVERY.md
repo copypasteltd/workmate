@@ -1,5 +1,9 @@
 # CopyPaste 0.5.0 代码交付入口
 
+当前阶段 54 的 [用户明确采用版本](technical/54-explicit-agent-version-adoption.md) 已通过完整平台回归 484/484、专项 93/93、实际 Web 12/12、实际新版打包 Desktop / 原生右侧栏 11/11，两库 065 升级各保留 131 张原公共表。当前新增预览路径为 `dev/copypaste-desktop/release/adoption-54/` 的 Setup、Portable 与解包程序，以及 `dev/copypaste-extension/release/adoption-54/CopyPaste-0.5.0-sidepanel.zip`，见 [完整字节清单](quality/agent-adoption-artifacts-02.json)。Desktop 无系统边框、Electron 默认菜单或 Alt 菜单；扩展真实工具栏按钮打开默认右侧原生 Side Panel，再次点击收起。各端双语 README、逻辑图与实际截图已同步。产物为未签名 localhost 预览，实际运行了解包程序和原生侧栏，未进行安装或上架验收。
+
+这些是未签名 localhost 预览；实际执行解包 EXE 与 Side Panel，Setup/Portable 未安装，未上架。下方费用阶段的 410/410、旧 `release/frameless/`、`release/sidepanel/` 及其他更早数据保留其原历史范围；不能用于验收新增源码。完整 102 项综合验收继续跟踪。
+
 当前费用通知增量最终验证：Platform 410/410（707 份来源）、真实三端费用 8/8（808 份来源）、4 份补充严格响应和 8 张未编辑截图；原规范响应另为 125/125，退款补充检查 14/14。已有后台、成员、无边框窗口、原生侧栏、权益及会话恢复十项上下文执行均通过。061 两库升级各 120 张原公共表完整行摘要一致；完整商业及全部综合验收继续跟踪。
 
 本轮随最新源码重建下列无边框 Desktop／原生 Side Panel，新增 [事务费用通知与三端账户](technical/50-durable-financial-notifications.md)。真实费用事实与 outbox 同事务提交，已读不影响资金；当前权限和未知退款明确区分。此前企业容量、058/059 原生升级及 057 主库缺少升级前行证明的历史限制仍按各自报告保留。旧客户端包存入阶段 49 归档，不覆盖历史字节。后文 375、354、340、324 及更早数字均为各阶段历史记录。

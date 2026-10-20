@@ -1,8 +1,14 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
-## 2026-10-21 追加要求复核
+## 当前阶段 54 的实际新版验证
 
-当前 Desktop 无系统边框、无 Electron 默认菜单，使用品牌自绘标题栏；扩展工具栏动作打开 Chrome 原生 Side Panel，不定义 popup。两端类型检查及现有 Desktop 25/25、Extension 21/21 单元测试通过。本次重新核对 95 份 Desktop、34 份扩展运行源码、实际运行目录、安装器与扩展 ZIP，全部与既有 10/10 原生窗口／侧栏实测字节一致，见 [复核回执](../quality/native-surfaces-request-recheck-20261021.json)。这次比对未重新运行浏览器 UI，也不代表安装／卸载或服务端验收。
+新版打包 Desktop 继续无系统边框、Electron 应用菜单与 Alt 菜单，自绘窗口按钮正常；扩展实际工具栏动作打开右侧原生 `SIDE_PANEL`，页面宽度随之缩小，不创建 popup 或普通标签页，再次点击收起。当前新增模型/费率入口、真实浏览器 PKCE、双语与实际版本比较流程共 11 项通过，十张三端截图中的五张来自此次原生执行，见 [当前流程与截图](54-explicit-agent-version-adoption.md) 及 [新版产物摘要](../quality/agent-adoption-artifacts-02.json)。全部自建浏览器、桌面程序与 API 已关闭。
+
+新包位于各端 `release/adoption-54/`；下面 `release/frameless/`、`release/sidepanel/`、95/34 份来源及旧核查命令保留其原历史范围，不能用于验收新增版本。复查新版须在交付仓库使用未占用编号执行 `node scripts/run-agent-adoption-native.mjs NN`，具体浏览器运行时与状态见双语 README。左右位置仍尊重 Chrome 用户设置。
+
+## 2026-10-21 追加要求的历史只读复核
+
+当时 Desktop 无系统边框、无 Electron 默认菜单，使用品牌自绘标题栏；扩展工具栏动作打开 Chrome 原生 Side Panel，不定义 popup。两端类型检查及现有 Desktop 25/25、Extension 21/21 单元测试通过。本次重新核对 95 份 Desktop、34 份扩展运行源码、实际运行目录、安装器与扩展 ZIP，全部与既有 10/10 原生窗口／侧栏实测字节一致，见 [复核回执](../quality/native-surfaces-request-recheck-20261021.json)。这次比对未重新运行浏览器 UI，也不代表安装／卸载或服务端验收。
 
 后续可从项目根目录执行 `node docs/tools/verify_native_client_surfaces.mjs` 只读复核。右侧默认位置仍遵循 Chrome 用户设置，具体边界与交互规则见下文。
 
