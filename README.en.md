@@ -1,10 +1,30 @@
 # CopyPaste Platform
 
-## Frozen task models and prices (stage 52; configuration management in progress)
+## Controlled capabilities and Admin publishing (stage 53)
+
+Adds typed capability documents, pinned Codex/internal-gateway verification, independently approved publication/rollback, database-backed current versions and preservation of old task bindings. See `src/capability-releases.ts`, `src/capability-verification.ts` and [forward migration 064](migrations/064-controlled-capability-releases.sql). Current full regression 04 passes **462/462** with 726 unchanged sources and no failures, cancellations or skips, including all 435 original stage 52 tests. Candidate 11's 71/71 overlaps the full run and is not added to its total. Actual built-Admin browser run 06 passes 11/11 with 14 unedited screenshots; supplemental contract run 02 passes six checks.
+
+064 is applied to both existing local databases, each preserving complete row digests for all 125 original public tables, SQL 001–063 bytes and historical migration checksums. All six new control tables force RLS and deny direct application-account access; historical publications are not fabricated. Migration 064 is now immutable. The full run's two deferred fixtures were actually reclaimed after workers exited; all browsers, services and databases owned by these runs are stopped.
+
+Image verification fully decodes PNG, checking CRCs, scanlines and bounded inflation. Accepted corrupt responses retain reconciliation and known costs without replaying model calls. Local HTTP fixtures allocate Fetch-compatible ports and retain an actual forbidden-port zero-request counterexample. Verification and durable workspace reclamation remain separate facts: only actual removal completes cleanup, and retries never call the model or rewrite costs.
+
+`npm test` uses `scripts/run-tests-owned.mjs`: bounded Windows locks can defer reclamation until test workers exit, but failed actual removal still fails the overall run. Two real-child-process tests check live-worker and replaced-path refusal. Full runs 01 at 456/458, 02 at 458/458 and 03 at 460/461, and every candidate's original evidence, retain their historical source scope. SQL 001–063 and historical retained fixtures remain unchanged. The additive machine contract at `docs/contracts/capability-releases.openapi.json` is tracked separately from the original OpenAPI. Visible customer model/price comparison and adoption, per-request gateway limits and complete acceptance remain open. The 435/435 figures below describe the original stage 52 source baseline.
+
+```mermaid
+flowchart LR
+  Draft[Immutable text/image configuration] --> Verify[Pinned Codex / actual internal gateway verification]
+  Verify --> Compare[Frozen publication or rollback comparison]
+  Compare --> Review[Independent administrator approval]
+  Review --> Head[Database current version]
+  Head --> Task[Atomic task version and price binding]
+  Head --> Adoption[Customer comparison and adoption: pending]
+```
+
+## Frozen task models and prices (stage 52 historical baseline)
 
 New tasks bind their Codex profile, internal model, reasoning effort and pricing version in the same transaction as enqueueing and budget reservation. Worker execution, image generation/editing and settlement use the original binding; customer and administrator retries inherit it. Revocation blocks further execution while retaining original costs, and unknown image results remain in reconciliation. Historical selections are never fabricated from today's configuration.
 
-[Migration 063](migrations/063-frozen-task-capabilities.sql) adds immutable bindings protected by RLS. The application still cannot update global capabilities or Codex profiles; a bounded database function only locks specified versions. Focused suites, existing templates, private workflows and real Codex checks pass 35/35. Both native 062→063 upgrades preserve all 124 original public tables and historical SQL bytes. Original permission, fixture and outdated full-suite assertion failures remain retained. Administrative validation/publication/rollback, visible customer version confirmation and complete REQ-045/099 acceptance remain open. Stage 51 and older figures below describe their historical baselines, not all current-source workflows.
+[Migration 063](migrations/063-frozen-task-capabilities.sql) adds immutable bindings protected by RLS. The application still cannot update global capabilities or Codex profiles; a bounded database function only locks specified versions. At that stage, focused suites, existing templates, private workflows and real Codex checks passed 35/35. Both native 062→063 upgrades preserve all 124 original public tables and historical SQL bytes. Original permission, fixture and outdated full-suite assertion failures remain retained. Stage 52 left administrative validation/publication/rollback and customer version confirmation open; the later Admin subflow is described in stage 53 above. Customer confirmation and complete REQ-045/099 acceptance remain open. Stage 51 and older figures below retain their historical scope.
 
 ```mermaid
 flowchart LR
@@ -17,7 +37,7 @@ flowchart LR
 
 See the [capability and frozen pricing suite](tests/capability-bindings.test.ts). Model/media dependencies are controlled fixtures; identity, permissions, PostgreSQL, pinned Codex and ledger operations execute for real.
 
-The full Platform regression passes 435/435 with 714 unchanged source files and no failures, cancellations or skips; TypeScript checks and build pass. The original 434/435 report and old test source remain retained. Only the assertion cancelling an existing task on default changes was corrected to preserve its frozen binding; new-delegation and active-revocation checks were retained.
+The stage 52 full Platform regression passed 435/435 with 714 unchanged source files and no failures, cancellations or skips; TypeScript checks and build passed. The original 434/435 report and old test source remain retained. Only the assertion cancelling an existing task on default changes was corrected to preserve its frozen binding; new-delegation and active-revocation checks were retained.
 
 ## Controlled support update / 受控客服协助
 

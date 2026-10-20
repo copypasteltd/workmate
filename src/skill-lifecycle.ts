@@ -566,7 +566,7 @@ export function registerSkillLifecycle(
       } catch {
         missing.push("platform_method_disabled");
       }
-      const ready = catalog.available(db.config, role);
+      const ready = await catalog.availableFor(tx, db.config, role);
       if (!ready.available) missing.push(ready.reason!);
       const plan = await effectivePlan(tx, tenant, req.principal.id);
       if (

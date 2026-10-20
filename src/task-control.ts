@@ -10,6 +10,7 @@ import { resolveWorkContext } from "./persistent-work.js";
 import { assertReportSources } from "./analysis-reports.js";
 import { checkInputDependencies } from "./task-dependencies.js";
 import { settle } from "./billing.js";
+import { boundTaskAvailability } from "./capability-bindings.js";
 
 /** Caller holds the task row lock. Cancellation is a request, never proof that
  * an accepted external operation was free or that its reservation can be freed. */
@@ -140,7 +141,12 @@ export async function controlUnclaimedTask(
         "ROLE_VERSION_CHANGED",
         "The task's role version is no longer available",
       );
-    const availability = catalog.available(db.config, role, task.mode);
+    const { availability, binding } = await boundTaskAvailability(
+      tx,
+      db.config,
+      catalog,
+      task,
+    );
     if (!availability.available)
       throw new Problem(
         503,
@@ -162,7 +168,7 @@ export async function controlUnclaimedTask(
       task.project_id,
       task.input_context,
       db.config.CODEX_VERSION,
-      [...catalog.capabilityVersions.values()].map((v) => v.id),
+      binding.versionIds,
     );
     if (await checkInputDependencies(tx, task)) {
       await tx.query(

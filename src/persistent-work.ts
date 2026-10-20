@@ -84,6 +84,7 @@ export async function agentDefinition(
   user: string,
 ) {
   const role = catalog.role(b.role_key);
+  const currentCapabilities = await catalog.currentCapabilities(tx);
   const runtime = await activeRuntimeProfile(tx, catalog);
   await catalog.ensureEnabled(tx, b.role_key);
   const skills = await provisionRoleSkills(
@@ -116,10 +117,7 @@ export async function agentDefinition(
     runtime_profile_id: runtime.id,
     runtime_version: runtime.pinned_version,
     capability_version_ids: role.model_bindings
-      .map(
-        (binding: any) =>
-          catalog.capabilityVersions.get(binding.profile_key)?.id,
-      )
+      .map((binding: any) => currentCapabilities.get(binding.profile_key)?.id)
       .filter(Boolean),
     name: b.name,
     role_key: role.role_key,
@@ -365,7 +363,7 @@ export async function freezeWorkContext(
     context,
     catalog?.runtimeProfile.pinned_version,
     catalog
-      ? [...catalog.capabilityVersions.values()].map((v) => v.id)
+      ? [...(await catalog.currentCapabilities(tx)).values()].map((v) => v.id)
       : undefined,
   );
   return context;
@@ -1342,7 +1340,9 @@ export function registerPersistentWork(
               project,
               task.input_context,
               db.config.CODEX_VERSION,
-              [...catalog.capabilityVersions.values()].map((v) => v.id),
+              [...(await catalog.currentCapabilities(tx)).values()].map(
+                (v) => v.id,
+              ),
             );
             try {
               await assertInputDependencies(tx, task);

@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, readFile, writeFile, lstat } from "node:fs/promises";
 import path from "node:path";
 import pg from "pg";
 import { runMigrations } from "../scripts/migration-runner.js";
+import { removeOwnedUUIDDirectory } from "../src/owned-directory-cleanup.js";
 
 /** One native database and owned data directory per integration-test file.
  * Persistent reconciliation records must not consume another run's slots.
@@ -38,12 +39,52 @@ export async function isolatedTestEnvironment(
       }
       created = false;
     }
-    await rm(directory, {
-      recursive: true,
-      force: true,
-      maxRetries: 10,
-      retryDelay: 100,
-    });
+    try {
+      await removeOwnedUUIDDirectory(base, id);
+    } catch (error: any) {
+      const runDirectory = process.env.COPYPASTE_TEST_RECLAMATION_DIR;
+      if (
+        process.platform !== "win32" ||
+        !runDirectory ||
+        !["EBUSY", "EPERM", "EACCES", "ENOTEMPTY"].includes(error.code)
+      )
+        throw error;
+      const run = path.resolve(runDirectory);
+      assert.equal(
+        path.dirname(run),
+        path.resolve(".data/test-fixture-reclamation"),
+      );
+      assert.match(
+        path.basename(run),
+        /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/,
+      );
+      assert.ok(!(await lstat(run)).isSymbolicLink());
+      const manifest = JSON.parse(
+        await readFile(path.join(run, "manifest.json"), "utf8"),
+      );
+      assert.equal(
+        manifest.token,
+        process.env.COPYPASTE_TEST_RECLAMATION_TOKEN,
+      );
+      assert.ok(
+        Number.isSafeInteger(manifest.owner_pid) && manifest.owner_pid > 0,
+      );
+      process.kill(manifest.owner_pid, 0);
+      await writeFile(
+        path.join(run, id + ".json"),
+        JSON.stringify({
+          id,
+          directory,
+          worker_pid: process.pid,
+          token: manifest.token,
+          error_code: error.code,
+        }),
+        { flag: "wx" },
+      );
+      // The parent launcher must actually reclaim this fresh fixture after this
+      // worker exits. Its hard failure is included in the overall exit status.
+      console.log("# owned fixture queued for post-worker reclamation " + id);
+    }
     cleaned = true;
   };
   try {

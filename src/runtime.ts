@@ -105,6 +105,9 @@ export class CodexRuntimeAdapter {
           AI_REASONING_EFFORT: selected.reasoningEffort,
           AI_INPUT_HKD_MICROS_PER_MILLION: selected.inputRate,
           AI_OUTPUT_HKD_MICROS_PER_MILLION: selected.outputRate,
+          // The server issued this selection only after validating the frozen
+          // binding against bootstrap verification or a published receipt.
+          AI_VERIFIED: true,
         }
       : this.c;
     if (ctx.signal.aborted)

@@ -1,5 +1,6 @@
 import type { Database } from "./db.js";
 import type { Storage } from "./storage.js";
+import { purgeCapabilityWorkspaces } from "./capability-workspace-cleanup.js";
 
 export const retentionPolicy = {
   files_days: 90,
@@ -22,6 +23,7 @@ export class RetentionService {
   ) {}
   async advance(force = false) {
     await this.purgeRuntime();
+    await purgeCapabilityWorkspaces(this.db);
     if (!force && Date.now() - this.lastSweep < 60_000) return;
     await this.expireContent();
     this.lastSweep = Date.now();
@@ -70,7 +72,13 @@ export class RetentionService {
           [limit * 10],
         );
         counts.event_tasks = events.rowCount ?? 0;
-        counts.notifications=(await tx.query("DELETE FROM notifications WHERE id IN (SELECT id FROM notifications WHERE created_at<now()-interval '30 days' ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT $1)",[limit*10])).rowCount??0;
+        counts.notifications =
+          (
+            await tx.query(
+              "DELETE FROM notifications WHERE id IN (SELECT id FROM notifications WHERE created_at<now()-interval '30 days' ORDER BY created_at,id FOR UPDATE SKIP LOCKED LIMIT $1)",
+              [limit * 10],
+            )
+          ).rowCount ?? 0;
         // Retain uniqueness and request hashes. An old network retry must not
         // recreate a paid task after its serialized response has expired.
         counts.replays =

@@ -2,7 +2,7 @@ import { planSchema, authorizeTaskPlan } from "./plans.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
 import {
   freezeTaskCapabilities,
-  taskCapabilities,
+  boundTaskAvailability,
 } from "./capability-bindings.js";
 import { stageInputDependencies } from "./task-dependencies.js";
 import { resolveWorkContext } from "./persistent-work.js";
@@ -582,7 +582,8 @@ export function registerAdmin(
                 );
                 await catalog.ensureEnabled(tx, t.role_key);
                 const role = catalog.role(t.role_key);
-                const ready = catalog.available(db.config, role, t.mode);
+                const { availability: ready, binding } =
+                  await boundTaskAvailability(tx, db.config, catalog, t);
                 if (!ready.available)
                   throw new Problem(
                     503,
@@ -606,8 +607,7 @@ export function registerAdmin(
                   t.project_id,
                   t.input_context,
                   db.config.CODEX_VERSION,
-                  (await taskCapabilities(tx, db.config, catalog, t))
-                    .versionIds,
+                  binding.versionIds,
                 );
                 const plan = await authorizeTaskPlan(
                   tx,

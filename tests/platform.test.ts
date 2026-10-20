@@ -14,6 +14,8 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
+import { createServer } from "node:http";
+import { listenLoopbackHTTP } from "../src/loopback-http.js";
 import * as OTPAuth from "otpauth";
 import { buildApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
@@ -897,9 +899,16 @@ test(
       stored.map((e) => Number(e.seq)),
       Array.from({ length: 10 }, (_, i) => i + 1),
     );
-    const address = system.app.server.listening
-      ? "http://127.0.0.1:" + (system.app.server.address() as any).port
-      : await system.app.listen({ host: "127.0.0.1", port: 0 });
+    if (!system.app.server.listening) {
+      const reservation = createServer(),
+        port = await listenLoopbackHTTP(reservation);
+      await new Promise<void>((resolve, reject) =>
+        reservation.close((error) => (error ? reject(error) : resolve())),
+      );
+      await system.app.listen({ host: "127.0.0.1", port });
+    }
+    const address =
+      "http://127.0.0.1:" + (system.app.server.address() as any).port;
     const url = address + `/v1/tasks/${id}/events`,
       headers = { cookie: u.cookie, "X-Tenant-ID": tenant };
     const readEvents = async (after: number, n: number) => {

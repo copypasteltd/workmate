@@ -2,6 +2,7 @@ import { createServer, type ServerResponse } from "node:http";
 import { randomBytes, randomUUID } from "node:crypto";
 import type { Config } from "./config.js";
 import { pngFromSVG } from "./render.js";
+import { listenLoopbackHTTP } from "./loopback-http.js";
 
 /** A loopback-only, synthetic dependency for development. The Codex kernel,
  * authorization, tool execution, assets, queue and ledger remain real. */
@@ -97,7 +98,10 @@ export async function startDemoGateway(c: Config) {
       );
       const reportTool = find("analysis_report_facts");
       let tool: any, args: any;
-      if (reportTool && !used(reportTool.name)) {
+      if (find("capability_probe") && !used(find("capability_probe").name)) {
+        tool = find("capability_probe");
+        args = { nonce: tool.parameters?.properties?.nonce?.enum?.[0] };
+      } else if (reportTool && !used(reportTool.name)) {
         tool = reportTool;
         args = {};
       } else if (
@@ -258,11 +262,7 @@ export async function startDemoGateway(c: Config) {
   });
   server.requestTimeout = 30_000;
   server.headersTimeout = 10_000;
-  await new Promise<void>((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(0, "127.0.0.1", resolve);
-  });
-  const port = (server.address() as { port: number }).port;
+  const port = await listenLoopbackHTTP(server);
   return {
     config: {
       ...c,

@@ -5,6 +5,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { loadConfig } from "../src/config.js";
+import { listenLoopbackHTTP } from "../src/loopback-http.js";
 import {
   CodexRuntimeAdapter,
   RuntimeFailure,
@@ -185,7 +186,7 @@ test(
       });
       res.end();
     });
-    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    await listenLoopbackHTTP(server);
     const port = (server.address() as any).port;
     const { parent, root } = await fixtureWorkspace();
     const c = loadConfig({

@@ -22,6 +22,7 @@ import { tokenCharge, reserve } from "../src/billing.js";
 import { freezeTaskSkills } from "../src/skill-lifecycle.js";
 import { runMigrations } from "../scripts/migration-runner.js";
 import { pngFromSVG } from "../src/render.js";
+import { listenLoopbackHTTP } from "../src/loopback-http.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 let s: Awaited<ReturnType<typeof buildApp>>;
@@ -275,7 +276,7 @@ before(async () => {
     });
     res.end();
   });
-  await new Promise<void>((resolve) => gateway.listen(0, "127.0.0.1", resolve));
+  await listenLoopbackHTTP(gateway);
   s = await buildApp(
     loadConfig({
       ...isolated.env,
@@ -775,7 +776,9 @@ test("a populated 062 upgrade preserves every old public table and does not fabr
       return values;
     };
     const before = await snapshot();
-    await runMigrations(owner, "populated capability-binding upgrade");
+    await runMigrations(owner, "populated capability-binding upgrade", {
+      throughVersion: 63,
+    });
     assert.deepEqual(await snapshot(), before);
     assert.ok(tables.length >= 124);
     assert.equal(
@@ -791,7 +794,7 @@ test("a populated 062 upgrade preserves every old public table and does not fabr
         .rows[0].v,
       63,
     );
-    await runMigrations(owner, "unchanged 063 replay");
+    await runMigrations(owner, "unchanged 063 replay", { throughVersion: 63 });
     assert.deepEqual(await snapshot(), before);
   } finally {
     await owner.end();

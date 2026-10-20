@@ -182,6 +182,7 @@ async function templateVersion(tx: Tx, id: string, version?: number) {
   return row;
 }
 async function presentationContext(tx: Tx, catalog: Catalog, db: Database) {
+  const capabilityMap = await catalog.currentCapabilities(tx);
   const configured = await catalog.publicConfigured(tx, db.config, true);
   const runtimes = (
     await tx.query("SELECT id,state,pinned_version FROM codex_runtime_profiles")
@@ -189,10 +190,10 @@ async function presentationContext(tx: Tx, catalog: Catalog, db: Database) {
   const capabilities = (
     await tx.query(
       "SELECT id,ready,revoked FROM internal_capability_versions WHERE id=ANY($1::uuid[])",
-      [[...catalog.capabilityVersions.values()].map((v) => v.id)],
+      [[...(await catalog.currentCapabilities(tx)).values()].map((v) => v.id)],
     )
   ).rows;
-  return { configured, runtimes, capabilities };
+  return { configured, runtimes, capabilities, capabilityMap };
 }
 function present(
   context: Awaited<ReturnType<typeof presentationContext>>,
@@ -221,7 +222,7 @@ function present(
       !context.capabilities.some(
         (capability) =>
           capability.id ===
-            catalog.capabilityVersions.get(binding.profile_key)?.id &&
+            context.capabilityMap.get(binding.profile_key)?.id &&
           capability.ready &&
           !capability.revoked,
       ),
@@ -301,8 +302,9 @@ async function assess(
   } catch (error) {
     missing.push(error instanceof Problem ? error.code : "PLAN_UNAVAILABLE");
   }
+  const currentCapabilities = await catalog.currentCapabilities(tx);
   for (const binding of role.model_bindings) {
-    const configured = catalog.capabilityVersions.get(binding.profile_key),
+    const configured = currentCapabilities.get(binding.profile_key),
       current =
         configured &&
         (

@@ -8,7 +8,10 @@ import { reserve } from "./billing.js";
 import { Problem } from "./lib.js";
 import type { WorkContext } from "./persistent-work.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
-import { freezeTaskCapabilities } from "./capability-bindings.js";
+import {
+  freezeTaskCapabilities,
+  boundTaskAvailability,
+} from "./capability-bindings.js";
 import {
   stageInputDependencies,
   type InputDependency,
@@ -57,13 +60,6 @@ export async function enqueueTask(
   const role = catalog.role(b.role_key);
   await catalog.boundSkills(role);
   await catalog.ensureEnabled(tx, b.role_key);
-  const ready = catalog.available(db.config, role, b.mode);
-  if (!ready.available)
-    throw new Problem(
-      503,
-      ready.reason!,
-      "此服務正在準備，請聯絡工作區管理員 / This service requires workspace setup",
-    );
   if (options.context && options.context.role_hash !== catalog.digest(role))
     throw new Problem(
       409,
@@ -73,12 +69,14 @@ export async function enqueueTask(
   let parent: any;
   if (b.parent_id) {
     parent = (
-      await tx.query(
-        "SELECT private_owner,conversation_id FROM tasks WHERE id=$1 AND project_id=$2",
-        [b.parent_id, project],
-      )
+      await tx.query("SELECT * FROM tasks WHERE id=$1 AND project_id=$2", [
+        b.parent_id,
+        project,
+      ])
     ).rows[0];
     if (!parent) throw new Problem(404, "NOT_FOUND", "Original task not found");
+    if (parent.private_owner && parent.private_owner !== actor.id)
+      throw new Problem(404, "NOT_FOUND", "Original task not found");
     if (
       parent.conversation_id &&
       options.conversation?.id !== parent.conversation_id
@@ -89,6 +87,21 @@ export async function enqueueTask(
         "Continue this private task from its original conversation",
       );
   }
+  const ready = parent
+    ? (
+        await boundTaskAvailability(tx, db.config, catalog, {
+          ...parent,
+          role_key: b.role_key,
+          mode: b.mode ?? "execute",
+        })
+      ).availability
+    : await catalog.availableFor(tx, db.config, role, b.mode);
+  if (!ready.available)
+    throw new Problem(
+      503,
+      ready.reason!,
+      "此服務正在準備，請聯絡工作區管理員 / This service requires workspace setup",
+    );
   if (options.billing_account_id) {
     const payer = (
       await tx.query(

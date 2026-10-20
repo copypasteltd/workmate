@@ -1462,7 +1462,7 @@ export async function advanceWorkflows(
           );
           return;
         }
-        if (!catalog.available(db.config, role).available) {
+        if (!(await catalog.availableFor(tx, db.config, role)).available) {
           await tx.query(
             "UPDATE workflow_runs SET state='failed',error_code='AI_SETUP_REQUIRED' WHERE id=$1",
             [r.id],

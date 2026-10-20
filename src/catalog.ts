@@ -19,6 +19,45 @@ export class Catalog {
   admin: any;
   runtimeProfile: any;
   capabilityVersions = new Map<string, any>();
+  /** Bootstrap identities remain a fallback until a controlled publication.
+   * Published heads are read per transaction, never cached in a Worker. */
+  async currentCapabilities(tx: Tx) {
+    await tx.query(
+      "SELECT pg_advisory_xact_lock_shared(hashtextextended('capability-heads:'||current_setting('app.data_mode'),0))",
+    );
+    const fallback = (
+      await tx.query(
+        "SELECT * FROM internal_capability_versions WHERE id=ANY($1::uuid[])",
+        [[...this.capabilityVersions.values()].map((row) => row.id)],
+      )
+    ).rows;
+    const result = new Map<string, any>(
+      fallback.map((row) => [row.profile_key, row]),
+    );
+    const published = (
+      await tx.query(
+        "SELECT * FROM current_internal_capabilities WHERE data_mode=current_setting('app.data_mode')",
+      )
+    ).rows;
+    for (const row of published) {
+      if (row.runtime_profile_id !== this.runtimeProfile.id)
+        throw new Problem(
+          409,
+          "CAPABILITY_RUNTIME_CHANGED",
+          "The published capability requires its validated Codex runtime",
+        );
+      result.set(row.profile_key, row);
+    }
+    return result;
+  }
+  async availableFor(
+    tx: Tx,
+    c: Config,
+    role: any,
+    mode: "execute" | "ask" | "plan" = "execute",
+  ) {
+    return this.available(c, role, mode, await this.currentCapabilities(tx));
+  }
   async load() {
     const c = JSON.parse(
       await readFile("catalog/role-preset-catalog.json", "utf8"),
@@ -77,6 +116,7 @@ export class Catalog {
       );
   }
   async publicConfigured(tx: Tx, c: Config, includeDefault = false) {
+    const capabilities = await this.currentCapabilities(tx);
     const rows = (
       await tx.query(
         "SELECT kind,key,body FROM catalog_entries WHERE state='published' AND kind IN ('role','skill')",
@@ -95,6 +135,7 @@ export class Catalog {
       );
       return {
         ...r,
+        ...this.available(c, r, "execute", capabilities),
         ...(presentation?.display_name
           ? { display_name: presentation.display_name }
           : {}),
@@ -137,7 +178,40 @@ export class Catalog {
     c: Config,
     role: any,
     mode: "execute" | "ask" | "plan" = "execute",
+    capabilities?: Map<string, any>,
   ) {
+    if (capabilities) {
+      const text = capabilities.get("internal-text-v1"),
+        image = capabilities.get("internal-image2-v1");
+      const usable = (v: any) =>
+        v?.ready &&
+        !v.revoked &&
+        v.body.data_mode ===
+          (c.DEMO_MODE ? "simulated" : "configured_services") &&
+        v.body.gateway_fingerprint ===
+          createHash("sha256")
+            .update(
+              c.DEMO_MODE
+                ? "synthetic-local-gateway-v1"
+                : (c.AI_BASE_URL ?? ""),
+            )
+            .digest("hex");
+      c = {
+        ...c,
+        AI_MODEL: text?.body.model_alias ?? undefined,
+        AI_REASONING_EFFORT:
+          text?.body.reasoning_effort ?? c.AI_REASONING_EFFORT,
+        AI_VERIFIED: !!(usable(text) && (text.publication_id || c.AI_VERIFIED)),
+        AI_INPUT_HKD_MICROS_PER_MILLION: text?.body.rates[0] ?? undefined,
+        AI_OUTPUT_HKD_MICROS_PER_MILLION: text?.body.rates[1] ?? undefined,
+        AI_IMAGE_MODEL: image?.body.model_alias ?? undefined,
+        AI_IMAGE_VERIFIED: !!(
+          usable(image) &&
+          (image.publication_id || c.AI_IMAGE_VERIFIED)
+        ),
+        AI_IMAGE_HKD_MICROS_PER_IMAGE: image?.body.rates[0] ?? undefined,
+      };
+    }
     if (
       mode === "execute" &&
       role.tool_ids.some((id: string) =>

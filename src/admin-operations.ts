@@ -10,6 +10,10 @@ import {
 } from "./admin-operation-policy.js";
 import { planDefinition } from "./plans.js";
 import { isPlanOperation, planOperationAuthority } from "./admin-plans.js";
+import {
+  isCapabilityOperation,
+  capabilityOperationAuthority,
+} from "./capability-releases.js";
 import { isVipOperation, vipOperationAuthority } from "./admin-vip.js";
 import {
   isVipCreditOperation,
@@ -475,6 +479,19 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               req.principal,
               op,
               "admin.jobs.read",
+            );
+          } else if (isCapabilityOperation(op)) {
+            await capabilityOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.jobs.read",
+            );
+            await capabilityOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.catalog.read",
             );
           } else if (isPlanOperation(op)) {
             await planOperationAuthority(

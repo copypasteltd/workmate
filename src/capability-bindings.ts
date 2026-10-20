@@ -175,12 +175,24 @@ async function resolve(
         }))
   )
     throw invalid();
+  const published =
+    usable && (!c.AI_VERIFIED || (usesImage && !c.AI_IMAGE_VERIFIED))
+      ? new Set(
+          (
+            await tx.query(
+              "SELECT id FROM published_capability_versions WHERE id=ANY($1::uuid[]) AND data_mode=$2",
+              [ids, task.data_mode],
+            )
+          ).rows.map((row) => row.id),
+        )
+      : new Set<string>();
   if (
     usable &&
     (!c.AI_BASE_URL ||
       !c.AI_API_KEY ||
-      !c.AI_VERIFIED ||
-      (usesImage && (!image?.ready || !c.AI_IMAGE_VERIFIED)))
+      (!c.AI_VERIFIED && !published.has(text.id)) ||
+      (usesImage &&
+        (!image?.ready || (!c.AI_IMAGE_VERIFIED && !published.has(image.id)))))
   )
     throw invalid();
   return {
@@ -257,11 +269,10 @@ export async function freezeTaskCapabilities(
     runtimeId = agent.runtime_profile_id;
     ids = agent.body.capability_version_ids;
   } else {
+    const current = await catalog.currentCapabilities(tx);
     ids = catalog
       .role(task.role_key)
-      .model_bindings.map(
-        (b: any) => catalog.capabilityVersions.get(b.profile_key)?.id,
-      )
+      .model_bindings.map((b: any) => current.get(b.profile_key)?.id)
       .filter((id: unknown): id is string => typeof id === "string");
   }
   const selected = await resolve(tx, c, task, catalog, runtimeId, ids, true);
@@ -282,6 +293,28 @@ export async function freezeTaskCapabilities(
     ],
   );
   return selected;
+}
+
+/** Availability of existing work follows its validated binding, including a
+ * superseded publication. Today's default must not gate an unchanged task. */
+export async function boundTaskAvailability(
+  tx: Tx,
+  c: Config,
+  catalog: Catalog,
+  task: any,
+) {
+  const binding = await taskCapabilities(tx, c, catalog, task);
+  const versions = new Map<string, any>([["internal-text-v1", binding.text]]);
+  if (binding.image) versions.set("internal-image2-v1", binding.image);
+  return {
+    binding,
+    availability: catalog.available(
+      { ...c, AI_VERIFIED: true, AI_IMAGE_VERIFIED: !!binding.image },
+      catalog.role(task.role_key),
+      task.mode,
+      versions,
+    ),
+  };
 }
 
 export function runtimeSelection(binding: TaskCapabilities): RuntimeSelection {
