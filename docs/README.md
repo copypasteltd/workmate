@@ -1,14 +1,16 @@
 # CopyPaste 企业 Agent 文档
 
-当前方案增量最终验证：Platform 340/340（688 份来源）、Admin 方案 6/6、原规范响应 108/108；完整方案/VIP/配额和全部综合验收继续按逐项进度跟踪。
+当前 VIP 增量：Platform 354/354（694 份来源）、Admin VIP 6/6（9 份原规范响应）、Admin 方案 6/6；当前原规范响应 122/122。重新打包后的无边框 Desktop／原生 Side Panel 外观 10/10、实际原生 VIP 联调 6/6、源码跨端认证 12/12。完整席位/储存及全部综合验收继续按逐项进度跟踪。
 
 新增不可变方案家族/版本、发佈前冻结比较、独立审批与历史授权固定绑定，见 [方案版本与授权绑定](technical/46-immutable-plans-and-legacy-grant-bindings.md)。方案发佈不自动开通 VIP 或入账；完整权益、席位及储存配额执行继续保留。
+
+规范授予/续期/替换/暂停/恢复/撤销、个人企业实时合并、严格用户读取及持久权益通知，见 [VIP 生命周期与有效权益](technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)。057 已应用，旧 SQL 不改写；主库首次迁移缺少升级前行快照的限制与原失败保留。
 
 版本：2.0 · 2026-10-20 · 状态：保留 v1.5 需求设计基线，当前产品 0.5.0 增加企业 OIDC 身份、独立邮箱连接证明与跨端授权撤销；六个独立仓库的实现与验收按版本记录。主文档继续在本目录维护。
 
 最新后台增量对齐用户列表、详情及企业列表的严格原规范，新增签名游标、字段/项目范围交集、账本确认扣费、有效 VIP 与实际页面消费者，见 [规范目录与消耗](technical/38-admin-canonical-directories-and-scoped-usage.md)。已有 [账户生命周期与在途控制](technical/37-admin-account-lifecycle-and-inflight-control.md) 继续生效。邀请、成员、完整原生、规范费用/VIP写及全部验收仍按逐项进度记录。
 
-当前 Desktop 无边框与 Chrome 原生侧栏预览已按最新源码重建并复核，补齐桌面会话上下文的本地 API 权限。源码及打包界面各 10 项、Desktop 25 项测试和产物准入 11 项通过，报告绑定实际测试字节，见 [当前原生预览](technical/30-native-window-and-browser-sidepanel.md)。完整系统及认证矩阵仍独立待验收。
+当前 Desktop 无边框与 Chrome 原生侧栏预览已按最新源码重建并复核，补齐桌面权益／通知的限定本地 API，以及共同刷新的实时方案／权益。实际打包界面 10 项、Desktop 单元 25 项、原生权益联调 6 项和源码会话 12 项通过，报告绑定实际测试字节，见 [当前原生预览](technical/30-native-window-and-browser-sidepanel.md) 及 [本轮联调](technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)。完整系统及认证矩阵仍独立待验收。
 
 人工付款已补充凭据登记、独立核实和准确入账，见 [付款证据与充值](technical/44-manual-payment-evidence-and-exact-posting.md)。新增原消费资金来源补偿、原付款退款冻结、独立核实部分付款与剩余未付、未知/差额对账，见 [退款与付款核实](technical/45-source-bound-refunds-and-cash-reconciliation.md)。历史授信来源对账、支付机构、VIP 和综合验收继续保留。
 

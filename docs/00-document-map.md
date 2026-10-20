@@ -85,3 +85,4 @@ ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 
 后台清理记录分页、当前授权显示及测试数据库隔离见 [Admin 记录与原生测试](technical/24-admin-record-pages-and-test-isolation.md)。
 
 - [后台统一审批请求、原始契约与向前升级](technical/43-shared-admin-approval-requests.md)。
+- [规范 VIP 生命周期、个人／企业有效权益及三端同步](technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)。

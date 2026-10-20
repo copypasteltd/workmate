@@ -12,8 +12,11 @@ DOCS, DEV = ROOT / 'docs', ROOT / 'dev'
 
 # Entries describe verified subflows, never a whole-requirement acceptance pass.
 CLUSTERS = [
+    ('canonical_vip_lifecycle_and_live_entitlements', [47,83,84,88,89,94,96,98,100,102],
+     '原始 VIP 授予/修订命令、签名游标与实际 Admin 冻结表单；个人/企业及模式主体版本、固定方案和原操作者来源、显式重叠/预约替换、真实同版本续期、暂停/恢复/撤销/实时到期，当前 MFA/整体范围/重叠拒绝、付费财务读取、独立审批及原会话/策略/前态复查，并发幂等和审计事务回滚。用户原始 PlanList/EffectiveEntitlements、合并功能和最大配额、独立资源/预算、持久个人通知/outbox与真实页面为局部证据。057 已实际应用，两库 001–056 原文件不变；测试库有完整前后行比较，主库首次自动启动先执行 057，缺少主库升级前行快照，失败与限制保留。完整席位/存储、VIP加赠额原子操作、旧授权规范迁移、完整安装/SSO/系统和全部综合验收继续保留。',
+     ['platform_regression','admin_vip','native_vip','vip_migrations','runtime_schemas'], ['technical/47-canonical-vip-lifecycle-and-effective-entitlements.md']),
     ('immutable_plan_definitions_and_legacy_bindings', [47,88,89,94,96,98,100,102],
-     '原始 AdminPlanDraft/版本列表/202 发佈命令与实际结构化 Admin 页面：不可变家族版本、冻结比较、全域当前权限与重叠 deny、近期 MFA、独立审批及原会话/策略/前态复查、并发版本/发佈幂等和审计回滚。056 保留真实旧行，原快照与现在计算的空快照绑定分开标源，自定义快照不补造原 UUID，新发佈不重绑旧授权。24 项聚焦及当前完整回归、六组页面为局部证据；完整规范 VIP/个人企业合并、席位/储存实际执行、用户方案接口、通知/outbox 和全部综合验收继续保留。',
+     '原始 AdminPlanDraft/版本列表/202 发佈命令与实际结构化 Admin 页面：不可变家族版本、冻结比较、全域当前权限与重叠 deny、近期 MFA、独立审批及原会话/策略/前态复查、并发版本/发佈幂等和审计回滚。056 保留真实旧行，原快照与现在计算的空快照绑定分开标源，自定义快照不补造原 UUID，新发佈不重绑旧授权。24 项聚焦及当前完整回归、六组页面为局部证据；规范 VIP、个人企业合并及用户读取的后续有界修复另列，完整席位/储存、生产及全部综合验收继续保留。',
      ['platform_regression','admin_plans','plan_migrations','runtime_schemas'], ['technical/46-immutable-plans-and-legacy-grant-bindings.md']),
     ('source_bound_refunds_and_cash_reconciliation', [11,46,83,84,87,94,96,98,100,101],
      '原始 AdminFeeRefund 与实际统一表单：消费补偿按不可变结算/偿还来源返还原赠额、付费及授信，原到期时间保留；现金退款绑定已核实原付款，只预留未用资金，再由另一实际管理员逐次核实真实付款/剩余未付，未知及差额保留预留。两库053–055固定真实期初债务，拒绝旧流水绕过；权限/MFA/版本/并发/累计及审计回滚受测。50项聚焦、当前全量及8组浏览器是局部证据；历史授信来源人工对账、真实支付机构、通知/outbox、完整VIP/财务/权限与所有综合验收继续保留。',
@@ -116,8 +119,8 @@ CLUSTERS = [
 REMAINING = {
  3:'三端登录/PKCE、五个规范用户认证接口、本人目录/整族撤销、刷新退出竞争和当前十二组源码原生回执恢复已有局部证据；当前 Web 邀请及 Admin 成员页面各六组通过。完整后台规范、企业身份/安装包/系统及全部客户端故障矩阵仍待完成，不能据此关闭 TC-003。',
  36:'原生全局侧栏的真实 action/右侧出现、跨页保留与重启配置已验证；网页选择/站点授权和全部业务上下文的完整矩阵仍待验收。',
- 88:'旧授权原身份/方案快照不可原地改写，固定来源绑定不随目录发佈改变，缺失历史事实不补造；该来源与版本基础有局部证据。完整规范个人/企业 VIP 开通、续期、升级、降级、暂停、撤销、到期、重叠优先级、预览及通知仍待实现与验收。',
- 89:'不可变家族版本、原规范草稿/发佈与独立审批、旧授权固定绑定和真实升级有局部证据；完整规范授权生命周期、个人/企业权益合并、席位/储存实际配额、信用及用户端规范消费者仍待验收。',
+ 88:'固定方案版本、原授予来源、规范生命周期、实时个人/企业合并和三端读取的局部证据不关闭完整 VIP 验收；席位/存储、旧授予规范迁移、全状态与生产矩阵继续保留。',
+ 89:'功能集合、同类配额最大值、当前服务器时间边界及资源/预算交集已有局部证据；全部席位/储存、媒体、团队和调度配额仍待实现及完整验收。',
  7:'明确提交的文件/连接需求已能在原任务补齐；自动发现阻塞字段与全业务输入引导仍待完成。',
  69:'已实现首次模型调用前的显式文件/连接检查点；已付费步骤恢复、自动识别、capability/device 和离线等待仍未完成。',
  1:'需对其余连接器、团队、媒体、批量/导出和所有规范接口继续进行跨企业负向验证。',
@@ -142,7 +145,7 @@ REMAINING = {
  43:'当前新增方法/上传/云文件仍走受控工具；新增媒体/后台/所有出站路径尚需验收。',
  44:'锁定真实 Codex 的跨进程原线程/工具续聊、配置回执、增量用量、中断与 I/O 故障已有原语验证；Worker 已付费步骤续做、全故障/多节点与完整恢复仍待完成。',
  46:'保留整数预留/结算和对账；新增并行/媒体/本地全路径竞争及所有未知费用仍需验收。',
- 47:'模拟 gift 不代表真实收款或正式权益全量验收；席位/存储/额度执行仍待齐。',
+ 47:'规范固定方案和个人/企业有效权益已有局部证据；模拟数据不代表真实收款，席位/存储/完整额度执行和所有综合验收仍待齐。',
  49:'在线永久删除/保留规则/进度已修复；项目/企业整删、导出、备份轮换与删除重放未完成。',
  50:'需完成全端传输/媒体分支、正式 OAuth 和区域流向的全部证明。',
  51:'新增流程已有双语与微额费用修复；全产品动态文案、时区及指标口径待齐。',
@@ -172,7 +175,7 @@ REMAINING = {
  82:'局部两主题/语言/四尺寸通过；全组件状态、100/200% 缩放、键盘/对比/reduced-motion 验收待完成。',
  85:'规范成员变更/操作查询、管理暂停/恢复及账号与企业状态分离已有隔离数据库和当前 HTTP 证据；完整用户/企业字段、责任转移、跨端页面和全部后台矩阵继续待验收。',
  86:'模拟数据单列且微额费用可读；正式多维消费归属和未知成本全量钻取仍待验收。',
- 87:'赠送/原额扣回/授信/核实付款、消费原来源补偿及现金承诺/独立分次核实已有规范命令、实际页面、日限、独立审批和回执证据；未知/差额保留预留。历史授信来源人工对账、正式支付机构、方案/VIP、金融 outbox 和全部费用验收仍待完成。',
+ 87:'赠送/原额扣回/授信/核实付款、消费原来源补偿及现金承诺/独立分次核实已有规范命令、实际页面、日限、独立审批和回执证据；未知/差额保留预留。方案及 VIP 的有界增量另列；历史授信来源人工对账、正式支付机构、VIP 加赠额原子组合、金融 outbox 和全部费用验收仍待完成。',
  90:'内容目录新增云节点；专业团队、方案、自定义方法及所有正文修订治理未完成。',
  91:'在线隔离/永久删除/进度已补强；所有下载/索引/链接与备份恢复场景仍待完整验收。',
  92:'独立 MFA/企业范围的 Admin 排队暂停、共用领域守卫、原受益用户撤权与费用待核对拒绝已有验证；运行中检查点、全工作流/Routine 控制和未知外部动作人工核对仍待齐。',
@@ -387,6 +390,63 @@ def plan_repair_history():
     return {'scope':'Immutable definitions/publications and honest legacy binding foundation only; complete VIP, quota, customer endpoints and all acceptance cases remain in scope', 'runs':runs,'archives':archives,'screenshots':{'path':image_receipt.relative_to(ROOT).as_posix(),'sha256':fingerprint(image_receipt),'verified_images':8,'raw_receipt_sha256':fingerprint(raw_images)}}
 
 
+def vip_repair_history():
+    evidence = DEV/'copypaste-delivery/evidence'
+    tracked = set(subprocess.check_output(['git','ls-files','-z'],cwd=evidence.parent,text=True).split('\0'))
+    runs = []
+    for number, expected in enumerate([(14,0,14),(14,5,9),(14,14,0),(44,43,1),(50,50,0),(14,14,0)],1):
+        tap = evidence/f'platform-vip-candidate-{number:02d}.tap'
+        sql = evidence/f'vip-candidate-{number:02d}-migration-057.sql'
+        raw = tap.read_text(encoding='utf-8')
+        counts = {k:int(re.search(r'^# '+k+r' (\d+)$',raw,re.M)[1]) for k in ['tests','pass','fail','cancelled','skipped','todo']}
+        assert tuple(counts[k] for k in ['tests','pass','fail']) == expected
+        assert all(counts[k] == 0 for k in ['cancelled','skipped','todo'])
+        runs.append({'path':tap.relative_to(ROOT).as_posix(),'sha256':fingerprint(tap),'counts':counts,
+                     'migration_candidate':{'path':sql.relative_to(ROOT).as_posix(),'sha256':fingerprint(sql)},
+                     'status':'failed_original_retained' if counts['fail'] else 'passed_at_recorded_source_stage'})
+    current_sql = DEV/'copypaste-platform/migrations/057-canonical-vip-grant-lifecycle.sql'
+    assert fingerprint(evidence/'vip-candidate-06-migration-057.sql') == fingerprint(current_sql)
+    archives = []
+    names = [('stage46-before-canonical-vip',316),('vip-ui-initial',9),('vip-ui-result-reset',13),
+             ('vip-ui-mobile-overflow',20),('vip-ui-before-settled-screenshots',14),('vip-admin-membership-close-timeout',8),
+             ('vip-before-live-plan-coherence',18),('vip-layout-before-lf-checkout',6)]
+    names += [(p.parent.name,None) for p in sorted(evidence.glob('vip-native-*/archive-map.json'))]
+    for name, expected_count in names:
+        manifest = evidence/name/'archive-map.json'
+        entries = load(manifest)['files']
+        if expected_count is not None:
+            assert len(entries) == expected_count
+        else:
+            assert len(entries) >= 4
+        for entry in entries:
+            path = (ROOT/entry['archived']).resolve()
+            assert path.is_relative_to(evidence.resolve())
+            assert fingerprint(path) == entry['sha256'], f'Changed VIP history: {path}'
+            assert path.relative_to(evidence.parent).as_posix() in tracked, f'Uncommitted VIP history: {path}'
+        archives.append({'path':manifest.relative_to(ROOT).as_posix(),'sha256':fingerprint(manifest),'verified_files':len(entries)})
+    image_receipt = DOCS/'quality/vip-screenshot-provenance.json'
+    images = load(image_receipt)
+    assert len(images['files']) == 15 and len(images['receipts']) == 2
+    for receipt in images['receipts']:
+        assert fingerprint(ROOT/receipt['report']) == receipt['report_sha256']
+        assert fingerprint(ROOT/receipt['screenshots']) == receipt['screenshots_sha256']
+    for image in images['files']:
+        assert fingerprint(ROOT/image['source']) == image['sha256']
+        assert fingerprint(ROOT/image['documentation']) == image['sha256']
+    initial = load(evidence/'vip-upgrade-initial-failure.json')
+    second = load(evidence/'vip-upgrade-second-failure.json')
+    assert initial['status'] == second['status'] == 'failed_original_retained'
+    assert initial['pre_upgrade_row_snapshot_available_for_primary'] is False
+    assert initial['migration_057_immutable_after_this_attempt'] is True
+    assert initial['database_child_closed'] is second['database_child_closed'] is True
+    for source, digest in initial['verifier_candidates'].items():
+        assert fingerprint(DEV/'copypaste-delivery'/source) == digest
+    assert fingerprint(evidence/'vip-second-qa-vip-migrations.mjs') == second['verifier_candidate_sha256']
+    return {'scope':'Canonical VIP and effective-rights subflows only; primary pre-upgrade row snapshot missing, complete product acceptance remains open',
+            'runs':runs,'archives':archives,'screenshots':{'path':image_receipt.relative_to(ROOT).as_posix(),
+            'sha256':fingerprint(image_receipt),'verified_images':15}}
+
+
 def main():
     # Mirror the exact client build receipt into the documentation tree; source
     # repositories retain the original evidence and all actual artifacts.
@@ -415,6 +475,9 @@ def main():
         'admin_billing_wire': DEV/'copypaste-delivery/evidence/admin-billing-wire.json',
         'admin_fees': DEV/'copypaste-delivery/evidence/admin-fees.json',
         'admin_plans': DEV/'copypaste-delivery/evidence/admin-plans.json',
+        'admin_vip': DEV/'copypaste-delivery/evidence/admin-vip.json',
+        'native_vip': DEV/'copypaste-delivery/evidence/native-vip.json',
+        'vip_migrations': DEV/'copypaste-delivery/evidence/vip-migrations.json',
         'plan_migrations': DEV/'copypaste-delivery/evidence/plan-migrations.json',
         'refund_migrations': DEV/'copypaste-delivery/evidence/refund-migrations.json',
         'refund_schemas': DOCS/'quality/refund-contract-samples.json',
@@ -463,9 +526,9 @@ def main():
         assert not report.get('errors') and not report.get('failures'), f'{key}: report contains failures'
         if key in {'membership_ui', 'admin_membership_ui', 'native_auth_recovery'}:
             expected_checks, expected_sources = {
-                'membership_ui': (6, 172),
-                'admin_membership_ui': (6, 200),
-                'native_auth_recovery': (12, 779),
+                'membership_ui': (6, 177),
+                'admin_membership_ui': (6, 206),
+                'native_auth_recovery': (12, 786),
             }[key]
             assert len(checks) == expected_checks and report['model_calls'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
@@ -491,12 +554,62 @@ def main():
                 assert actual_source.is_relative_to(DEV.resolve())
                 assert fingerprint(actual_source) == expected_digest, f'Stale fee UI evidence: {source}'
         if key == 'admin_plans':
-            assert len(checks) == 6 and len(report['source_files']) == 634
+            assert len(checks) == 6 and len(report['source_files']) == 640
             assert report['source_unchanged'] is True and report['model_calls'] == 0 and report['external_payments'] == 0
             assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
             assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
             for source, expected_digest in report['source_files'].items():
                 assert fingerprint(DEV/source) == expected_digest, f'Stale plan UI evidence: {source}'
+        if key in {'admin_vip','native_vip'}:
+            assert len(checks) == 6 and report['model_calls'] == 0 and report['external_payments'] == 0
+            assert report['browser_closed'] is True and report['user_browser_tabs_touched'] is False
+            assert report['owned_sessions_closed'] is True and report['owned_admin_principals_disabled'] is True
+            assert report['source_unchanged'] is True
+            assert len(report['source_files']) == (787 if key == 'admin_vip' else 790)
+            for source, expected_digest in report['source_files'].items():
+                actual = (DEV/source).resolve()
+                assert actual.is_relative_to(DEV.resolve())
+                assert fingerprint(actual) == expected_digest, f'Stale VIP evidence: {source}'
+            if key == 'native_vip':
+                assert report['desktop_closed'] is True and report['extension_closed'] is True
+                assert report['owned_native_credentials_cleared'] is True
+                assert report['artifacts_unchanged_after_run'] is True
+                assert report['tested_artifacts'] == load(files['native_surfaces'])['tested_artifacts']
+        if key == 'vip_migrations':
+            assert report['verifier_sha256'] == fingerprint(DEV/'copypaste-delivery/scripts/qa-vip-migrations.mjs')
+            before = DEV/'copypaste-delivery/evidence/vip-migrations-before.json'
+            assert fingerprint(before) == report['before_sha256']
+            assert {d['database'] for d in report['databases']} == {'copypaste','copypaste_test'}
+            for database in report['databases']:
+                old = next(d for d in load(before)['databases'] if d['database'] == database['database'])
+                assert database['migrations'][:56] == old['migrations'][:56]
+                assert len(database['migrations']) == 57 and database['migrations'][-1]['version'] == 57
+                assert database['original'] == old['original'] and len(database['original']) == 7
+                assert database['read_only'] is True and database['applied_checksums_unchanged'] is True
+                assert database['original_facts_unchanged_since_observed_baseline'] is True
+                complete = database['database'] == 'copypaste_test'
+                assert database['complete_pre_upgrade_row_snapshot'] is complete
+                assert database['original_facts_unchanged_across_057'] is (True if complete else None)
+                assert database['original_row_baseline_phase'] == ('before_057' if complete else 'after_initial_057_startup')
+                assert database['security_invoker_view'] is True
+                assert len(database['tables']) == 6 and all(t['relrowsecurity'] and t['relforcerowsecurity'] for t in database['tables'])
+                assert len(database['new_table_rows_at_upgrade']) == 6 and set(database['new_table_rows_at_upgrade'].values()) == {0}
+                assert database['legacy_migrations_without_stored_checksum'] == list(range(1,16))
+                assert len(database['original_migration_bytes']) == 56
+                for name, expected_digest in database['original_migration_bytes'].items():
+                    assert fingerprint(DEV/'copypaste-platform/migrations'/name) == expected_digest
+                    original_bytes = subprocess.check_output(['git','show',database['original_migration_source_commit']+':migrations/'+name],cwd=DEV/'copypaste-platform')
+                    assert hashlib.sha256(original_bytes).hexdigest() == expected_digest
+                for migration in database['migrations']:
+                    if migration['version'] <= 15:
+                        assert migration['source_sha256'] is None
+                    else:
+                        source = next((DEV/'copypaste-platform/migrations').glob(f"{migration['version']:03d}-*.sql"))
+                        assert migration['source_sha256'] == fingerprint(source)
+            for source, expected_digest in report['source_files'].items():
+                assert fingerprint(DEV/source) == expected_digest
+            for log in report['logs']:
+                assert fingerprint(DEV/'copypaste-delivery'/log['path']) == log['sha256']
         if key == 'plan_migrations':
             assert report['verifier_sha256'] == fingerprint(DEV/'copypaste-delivery/scripts/qa-plan-migrations.mjs')
             assert {d['database'] for d in report['databases']} == {'copypaste','copypaste_test'}
@@ -670,11 +783,12 @@ def main():
              'payment_record_verification':payment_record_repair_history(),
              'refund_verification':refund_repair_history(),
              'plan_verification':plan_repair_history(),
+             'vip_verification':vip_repair_history(),
             'scope':'All 102 requirements remain in scope; bounded repair progress, not a complete acceptance report',
             'baseline_sha256':fingerprint(baseline_path),'user_test_data_instruction':baseline['user_test_data_instruction'],
             'requirements_amendments':{'path':amendment_path.relative_to(ROOT).as_posix(),'sha256':fingerprint(amendment_path),'changes':amendment['changes'],'original_acceptance_baseline_preserved':True},
             'summary':dict(Counter(r['assessment'] for r in rows)), 'fully_accepted_requirements':0,
-            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical. Separate frameless Desktop and native Side Panel previews have exact source/runtime/installer/extension byte-bound appearance QA; see dev/copypaste-delivery/evidence/native-surfaces-artifacts.json. A separate current-source Web/Electron/MV3 run now passes twelve authentication/session subflows; it does not prove those flows in Setup/Portable packages. Localhost origins; no signing, installation or production publication. Full packaged authentication, SSO, installation and system acceptance remain outstanding.',
+            'qualified_live_roles':0, 'release_artifacts':'Original 0.5.0 offline bundles remain historical. Rebuilt frameless Desktop and native Side Panel previews have ten byte-bound appearance checks and six actual packaged Desktop/native Side Panel VIP/authentication subflows, including coherent live plan/rights refresh, own notification reads and sign-out. See dev/copypaste-delivery/evidence/native-surfaces-artifacts.json. Twelve current-source Web/Electron/MV3 session subflows remain a separate report. Setup/Portable have byte provenance and were not installed by these checks. Localhost origins; no signing or production publication. Full packaged authentication, SSO, installation and system acceptance remain outstanding.',
             'repositories':repositories,'evidence':evidence,
             'unresolved_runtime_evidence':[],
             'resolved_runtime_evidence':resolved_runtime_evidence,

@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator, FormatChecker
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / 'contracts/openapi.json'
 SAMPLES = [ROOT.parent / 'dev/copypaste-delivery/evidence' / name for name in
-           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'membership-ui-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-membership-ui-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json', 'admin-billing-contract-samples.json', 'admin-fee-contract-samples.json', 'admin-plan-contract-samples.json']]
+           ['cloud-files-contract-samples.json', 'skills-contract-samples.json', 'notifications-contract-samples.json', 'task-dependencies-contract-samples.json', 'admin-records-contract-samples.json', 'agent-templates-contract-samples.json', 'analysis-reports-contract-samples.json', 'file-imports-contract-samples.json', 'auth-profile-contract-samples.json', 'membership-contract-samples.json', 'membership-ui-contract-samples.json', 'admin-membership-contract-samples.json', 'admin-membership-ui-contract-samples.json', 'admin-account-contract-samples.json', 'admin-directory-contract-samples.json', 'admin-billing-contract-samples.json', 'admin-fee-contract-samples.json', 'admin-plan-contract-samples.json', 'admin-vip-contract-samples.json', 'native-vip-contract-samples.json']]
 OUTPUT = ROOT / 'quality/runtime-contract-samples.json'
 AUTH_FIXTURE = ROOT.parent / 'dev/copypaste-platform/contracts/auth-schemas.json'
 
@@ -81,6 +81,12 @@ def main():
     for name, schema in plans['schemas'].items():
         if schema != spec['components']['schemas'][name]:
             raise ValueError(f'Plan fixture changed the original schema: {name}')
+    vip = json.loads((AUTH_FIXTURE.parent / 'admin-vip-schemas.json').read_text(encoding='utf-8'))
+    if vip['normative_source_sha256'] != hashlib.sha256(SPEC.read_bytes()).hexdigest() or set(vip['schemas']) != {'AdminOperation','AdminPreview','AdminVersionReason','AdminVipExtend','AdminVipGrant','AdminVipGrantCreate','AdminVipGrantList','EffectiveEntitlements','Money','Plan','PlanList'}:
+        raise ValueError('VIP fixture must retain all eleven original schema dependencies')
+    for name, schema in vip['schemas'].items():
+        if schema != spec['components']['schemas'][name]:
+            raise ValueError(f'VIP fixture changed the original schema: {name}')
     checks = []
     sources = []
     for source in SAMPLES:
@@ -104,7 +110,7 @@ def main():
     if not checks:
         raise ValueError('No captured responses; empty evidence cannot pass')
     report = {'at': datetime.now(timezone.utc).isoformat(),
-              'scope': 'Captured canonical authentication, membership, Admin directories/accounts/ledger, four fee commands, manual payment records/confirmations and independent approval responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or payment/refund/VIP conformance',
+              'scope': 'Captured canonical authentication, membership, Admin directories/accounts/ledger, four fee commands, manual payment records/confirmations, independent approval and bounded VIP lifecycle/user PlanList/effective-entitlement responses, plus cloud workspace, project Skill, notification, dependency, cleanup, template, Report/Snapshot/Evidence and ImportCreate samples only; not full API or financial/VIP/system acceptance',
               'sources': sources,
               'authentication_fixture': {
                   'file': AUTH_FIXTURE.relative_to(ROOT.parent).as_posix(),
@@ -119,6 +125,7 @@ def main():
               'admin_payment_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-payment-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(payments['schemas']), 'status': 'passed', 'scope': 'Exact original schemas and digest; actual manual evidence, confirmation, list and posting captures are bounded evidence'},
               'admin_approval_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-approval-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(approvals['schemas']), 'status': 'passed', 'scope': 'All four original schemas and source digest are unchanged; shared list and member-decision captures are bounded evidence'},
               'admin_plan_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-plan-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(plans['schemas']), 'status': 'passed', 'scope': 'Nine exact original schemas and dependencies; current Admin draft, publication, directory and preview captures are bounded evidence, not complete grants or customer PlanList conformance'},
+              'admin_vip_fixture': {'file': (AUTH_FIXTURE.parent / 'admin-vip-schemas.json').relative_to(ROOT.parent).as_posix(), 'schemas': len(vip['schemas']), 'status': 'passed', 'scope': 'Eleven exact original schemas and dependencies; actual Admin form, approval, personal grant and user reads are bounded evidence, not complete seat/storage, atomic VIP plus gift or production acceptance'},
               'openapi_sha256': hashlib.sha256(SPEC.read_bytes()).hexdigest(),
               'checks': checks}
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

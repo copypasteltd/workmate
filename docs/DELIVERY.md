@@ -1,6 +1,8 @@
 # CopyPaste 0.5.0 代码交付入口
 
-当前方案增量最终验证：Platform 340/340（688 份来源）、Admin 方案 6/6、原规范响应 108/108；完整方案/VIP/配额和全部综合验收继续按逐项进度跟踪。
+当前 VIP 增量最终验证：Platform 354/354（694 份来源）、Admin VIP 6/6、原生 VIP 6/6、原生外观 10/10、源码跨端认证 12/12，原规范响应 122/122。完整席位／储存、VIP 加赠额原子组合和全部综合验收继续按逐项进度跟踪。
+
+本轮已重建下列无边框 Desktop／右侧原生侧栏预览，加入实际有效方案、配额、权益和通知读取，见 [当前 VIP 开发与联调](technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)。057 已实际应用；测试库有完整旧行升级比较，主库首次自动迁移早于快照，缺少升级前行证明的限制如实保留。后文 340、324 及更早数字为各阶段历史记录。
 
 新增方案定义子流程：不可变草稿、新版本、冻结发佈比较、独立审批和历史授权固定绑定，见 [方案版本与升级](technical/46-immutable-plans-and-legacy-grant-bindings.md)。原生数据库前向升级 056；完整 VIP/配额/用户端规范接口仍逐项保留。下方 324 项退款回执属于前阶段记录。
 
@@ -14,12 +16,12 @@
 
 ## 本次无边框与侧栏客户端预览
 
-最新 Desktop 使用品牌自绘标题栏，无原生边框及 Electron 默认菜单；扩展按钮打开 Chrome 原生全局侧栏，默认右侧并遵从浏览器用户位置偏好。真实打包 EXE 与侧栏综合验证 10/10，原有扩展业务回归 8/8；说明及实际截图见 [窗口与原生侧栏](technical/30-native-window-and-browser-sidepanel.md)。
+最新 Desktop 使用品牌自绘标题栏，无原生边框及 Electron 默认菜单；扩展按钮打开 Chrome 原生全局侧栏，默认右侧并遵从浏览器用户位置偏好。真实打包 EXE 与侧栏外观验证 10/10，实际原生权限／登录联调 6/6；原有扩展业务 8/8 是历史回归。说明及实际截图见 [窗口与原生侧栏](technical/30-native-window-and-browser-sidepanel.md)。
 
 - 安装器：`dev/copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Setup.exe`。
 - 便携版：`dev/copypaste-desktop/release/frameless/CopyPaste-0.5.0-x64-Portable.exe`。
 - 扩展 ZIP：`dev/copypaste-extension/release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`；解压后在 Chrome 开发者模式加载目录。
-- [产物与 SHA-256 清单](quality/native-surfaces-artifacts.json)：源码提交、29 个嵌入构建文件一致性、三个预览包及真实打包验证报告摘要。产物路径相对 `dev/`，此清单逐字节镜像交付仓库原始报告。
+- [产物与 SHA-256 清单](quality/native-surfaces-artifacts.json)：源码提交、嵌入构建文件一致性、三个预览包及真实打包验证报告摘要。产物路径相对 `dev/`，此清单逐字节镜像交付仓库原始报告。
 
 这些是未签名、localhost 配置的客户端预览，未安装/发布，与下面历史完整离线包分开保存。启动当前后端后使用；模型和媒体继续按授权使用假数据，业务持久化及 Codex 为真实运行。CSV/XLSX 文件版本、更正链和来源生命周期见 [文件导入](technical/29-file-imports-and-correction-lineage.md)。
 
