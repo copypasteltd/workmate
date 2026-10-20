@@ -1,5 +1,7 @@
 # M11/M12 内部 AI、费用、权益与运营
 
+当前实现新增 [企业席位与存储约束](../technical/48-enterprise-seat-and-storage-enforcement.md)：仅企业方案决定共用容量，个人 VIP 不扩容；启用成员、所有未擦除版本和有效上传预留据实统计。准入与授权变更串行化，超额拒绝新占用，降级保留既有数据；后台整体范围读取同时要求企业与权益权限。本册其他完整商业和综合验收要求继续保留。
+
 关联：REQ-043–048、050、052–054、056、058、060、083–102。ADMIN01 的页面规格见 [Admin Dashboard](../product/08-admin-dashboard.md)，技术主线见 [后台控制面](../technical/11-admin-control-plane.md)。
 
 ## 1. 能力与内部路由

@@ -1,6 +1,6 @@
 # Admin Dashboard 产品与交互规格
 
-当前代码的方案定义、独立发佈审批和历史授权固定绑定见 [方案实现增量](../technical/46-immutable-plans-and-legacy-grant-bindings.md)。本节长期要求不缩减；完整 VIP 生命周期与席位/储存等商业配额仍须分别验收。
+当前代码已有 [方案定义与历史绑定](../technical/46-immutable-plans-and-legacy-grant-bindings.md)、[规范 VIP 生命周期](../technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)，并新增 [企业容量守卫与后台面板](../technical/48-enterprise-seat-and-storage-enforcement.md)。企业列表的容量入口要求企业及权益整体读取权限，显示真实席位、保留文件、上传预留、上限和超额；权限撤销清空旧值。所有准入在服务端和数据库执行。本节长期要求不缩减，完整商业、生产及综合验收继续逐项记录。
 
 0.3.0 实际账号邀请、本人 MFA、状态/会话与权限委派增量见 [管理员身份生命周期](../technical/14-admin-identity-lifecycle.md)。本册其他规划范围继续保留，实际验收单独记录。
 

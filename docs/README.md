@@ -1,8 +1,8 @@
 # CopyPaste 企业 Agent 文档
 
-当前 VIP 增量：Platform 354/354（694 份来源）、Admin VIP 6/6（9 份原规范响应）、Admin 方案 6/6；当前原规范响应 122/122。重新打包后的无边框 Desktop／原生 Side Panel 外观 10/10、实际原生 VIP 联调 6/6、源码跨端认证 12/12。完整席位/储存及全部综合验收继续按逐项进度跟踪。
+当前企业容量增量：Platform 375/375（699 份来源）、真实容量页面 8/8；Admin VIP/方案各 6/6、费用 8/8，原规范响应 122/122。新构建无边框 Desktop／原生 Side Panel 外观 10/10、实际原生权益联调 6/6、源码跨端认证 12/12。企业席位与保留资产/上传预留已有实际准入及释放约束；完整商业、生产与全部综合验收继续按逐项进度跟踪。
 
-新增不可变方案家族/版本、发佈前冻结比较、独立审批与历史授权固定绑定，见 [方案版本与授权绑定](technical/46-immutable-plans-and-legacy-grant-bindings.md)。方案发佈不自动开通 VIP 或入账；完整权益、席位及储存配额执行继续保留。
+新增不可变方案家族/版本、发佈前冻结比较、独立审批与历史授权固定绑定，见 [方案版本与授权绑定](technical/46-immutable-plans-and-legacy-grant-bindings.md)。方案发佈不自动开通 VIP 或入账；席位及存储的后续实际执行见 [企业容量](technical/48-enterprise-seat-and-storage-enforcement.md)，其他完整商业验收继续保留。
 
 规范授予/续期/替换/暂停/恢复/撤销、个人企业实时合并、严格用户读取及持久权益通知，见 [VIP 生命周期与有效权益](technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)。057 已应用，旧 SQL 不改写；主库首次迁移缺少升级前行快照的限制与原失败保留。
 
