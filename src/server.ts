@@ -1,6 +1,8 @@
 import { registerAdminApprovals } from "./admin-approvals.js";
 import { seedCommercialPlans } from "./commercial-plans.js";
 import { registerAdminPlans } from "./admin-plans.js";
+import { registerAdminVip } from "./admin-vip.js";
+import { registerUserEntitlements } from "./user-entitlements.js";
 import { commandPublicKey } from "./device-signing.js";
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
@@ -306,11 +308,13 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAgentTemplates(app, db, catalog);
   registerSkillLifecycle(app, db, catalog);
   registerNotifications(app, db);
+  registerUserEntitlements(app, db);
   registerTaskDependencies(app, db);
   registerBusiness(app, db, storage, catalog);
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminPlans(app, db, catalog);
+  registerAdminVip(app, db);
   registerAdminOperations(app, db);
   registerAdminMemberships(app, db);
   registerAdminAccounts(app, db);

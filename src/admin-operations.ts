@@ -6,6 +6,7 @@ import {
 } from "./admin-operation-policy.js";
 import { planDefinition } from "./plans.js";
 import { isPlanOperation, planOperationAuthority } from "./admin-plans.js";
+import { isVipOperation, vipOperationAuthority } from "./admin-vip.js";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
 import type { Database, Tx } from "./db.js";
@@ -184,6 +185,12 @@ async function policy(tx: Tx) {
 }
 async function validate(tx: Tx, p: Principal, b: Command) {
   await lockAdminAccess(tx);
+  if (b.action.startsWith("entitlements."))
+    throw new Problem(
+      409,
+      "CANONICAL_VIP_REQUIRED",
+      "Use the subject-specific VIP preview and versioned command",
+    );
   if (isGuardedLegacyFee(b.action))
     throw new Problem(
       409,
@@ -460,6 +467,19 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               op,
               "admin.plans.read",
             );
+          } else if (isVipOperation(op)) {
+            await vipOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.jobs.read",
+            );
+            await vipOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.entitlements.read",
+            );
           } else if (isFeeOperation(op) || isPaymentOperation(op))
             await feeOperationAuthority(
               tx,
@@ -562,6 +582,12 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               [b.preview_id, req.principal.id],
             )
           ).rows[0];
+          if (owned?.action?.startsWith("entitlements."))
+            throw new Problem(
+              409,
+              "CANONICAL_VIP_REQUIRED",
+              "Use the canonical VIP preview and grant command",
+            );
           if (isGuardedLegacyFee(owned?.action))
             throw new Problem(
               409,

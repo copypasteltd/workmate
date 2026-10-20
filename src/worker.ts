@@ -151,6 +151,7 @@ export class Worker {
         ["uploads", () => cleanUploadStaging(this.db)],
         ["invitations", () => dispatchInvitationMail(this.db)],
         ["admin_approvals", () => expireAdminApprovals(this.db)],
+        ["entitlement_notifications", () => dispatchEntitlementNotifications(this.db)],
       ] as const) {
         try {
           await operation();
@@ -1346,3 +1347,4 @@ export class Worker {
     await this.boss.stop({ graceful: true, timeout: 20000 });
   }
 }
+import { dispatchEntitlementNotifications } from "./user-entitlements.js";

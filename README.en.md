@@ -468,3 +468,25 @@ flowchart LR
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
 
 Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+## Canonical VIP lifecycle and effective access (stage 47)
+
+Admin now uses the original grant and revision commands for personal or workspace VIP. The fixed plan UUID, source, original interval, actor and operation remain intact. Extensions, suspension, resumption, revocation and scheduled replacement append immutable revisions. Frozen previews, current MFA and whole-subject permissions, explicit denies, independent review, version conflicts, durable retry, audit rollback and the notification outbox share the same controls. Paid grants require an independently verified matching payment and finance permission. Granting VIP posts neither credit nor a charge; the old generic write path cannot bypass this controller.
+
+```mermaid
+flowchart LR
+  Admin[Authorized administrator] --> Preview[Frozen command and subject version]
+  Preview --> Guard[Current permissions MFA policy and state]
+  Guard --> Review[Independent review when required]
+  Guard --> Commit[Atomic commit]
+  Review --> Commit
+  Commit --> Facts[Grant revision audit operation and outbox]
+  Facts --> Effective[Server-time personal and workspace access]
+  Effective --> Runtime[Resource role capability budget and local consent]
+```
+
+The original `GET /v1/plans` and `GET /v1/effective-entitlements` are implemented. Active features and roles form a union, comparable quotas use their maximum, and explicit grants do not gain extra free-plan features. Server time controls activation, replacement and expiry even when workers fail. Supplementary notifications remain restricted to the current user's mode and subjects.
+
+The complete platform regression passes 354/354 with 694 source files unchanged. Focused VIP tests overlap that total. The original OpenAPI and all eleven VIP schema dependencies are unchanged. Migrations 001–056 match stage 46 Git bytes; applied 057 is immutable. Initial native startup migrated the primary before its row snapshot, so that pre-upgrade proof is unavailable. The test database has a complete 056→057 comparison. Original failures and this limitation remain documented; fifteen legacy migration digests remain unknown/null.
+
+Run `npm run build` and `npm test`; actual page and native checks live in the separate Delivery repository. Complete seat/storage enforcement, atomic VIP plus credit, installer/SSO/system matrices and all 102 original acceptance conditions remain separate. Earlier results are historical. See the main project document `docs/technical/47-canonical-vip-lifecycle-and-effective-entitlements.md` for current scope.

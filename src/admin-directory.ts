@@ -223,7 +223,7 @@ async function userDto(
       uid = e.arg(row.id);
     const plans = (
       await tx.query(
-        `SELECT DISTINCT e.plan FROM entitlements e,users u WHERE u.id=${uid} AND ${entitled(e, "u", q)} ORDER BY e.plan`,
+        `SELECT DISTINCT e.plan FROM entitlement_access e,users u WHERE u.id=${uid} AND ${entitled(e, "u", q)} ORDER BY e.plan`,
         e.values,
       )
     ).rows.map((r) => r.plan);
@@ -265,6 +265,7 @@ const cursorShape = z
       "billing_payments",
       "billing_refunds",
       "commercial_plans",
+      "vip_grants",
       "approvals",
     ]),
     owner: uuid,
@@ -399,7 +400,7 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
           where += ` AND (u.name ILIKE ${term} OR (${s.userField("admin.users.contact.read")} AND u.email ILIKE ${term}))`;
         }
         if (q.vip !== undefined)
-          where += ` AND ${s.noDeniedMembership("admin.entitlements.read")} AND (${s.personalField("admin.entitlements.read")} OR EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND ${memberFilter(s, q)} AND ${s.scope("admin.entitlements.read", "m.tenant_id")})) AND ${q.vip ? "" : "NOT "}EXISTS(SELECT 1 FROM entitlements e WHERE e.plan<>'starter' AND ${entitled(s, "u", q)})`;
+          where += ` AND ${s.noDeniedMembership("admin.entitlements.read")} AND (${s.personalField("admin.entitlements.read")} OR EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND ${memberFilter(s, q)} AND ${s.scope("admin.entitlements.read", "m.tenant_id")})) AND ${q.vip ? "" : "NOT "}EXISTS(SELECT 1 FROM entitlement_access e WHERE e.plan<>'starter' AND ${entitled(s, "u", q)})`;
         where += ` AND u.created_at<=${s.arg(bounds.asof)}::timestamptz`;
         if (bounds.after)
           where += ` AND (u.created_at,u.id)<(${s.arg(bounds.after.at)}::timestamptz,${s.arg(bounds.after.id)}::uuid)`;
@@ -464,7 +465,7 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
           const e = new ReadScope(s.bs);
           const plans = (
             await tx.query(
-              `SELECT DISTINCT e.plan FROM entitlements e,users u WHERE u.id=${e.arg(id)} AND ${entitled(e)} ORDER BY e.plan`,
+              `SELECT DISTINCT e.plan FROM entitlement_access e,users u WHERE u.id=${e.arg(id)} AND ${entitled(e)} ORDER BY e.plan`,
               e.values,
             )
           ).rows.map((r) => r.plan);
@@ -549,7 +550,7 @@ export function registerAdminDirectory(app: FastifyInstance, db: Database) {
           const personal = personalAllowed
             ? (
                 await tx.query(
-                  "SELECT id,plan,state,starts_at,ends_at FROM entitlements WHERE user_id=$1 ORDER BY created_at DESC,id DESC",
+                  "SELECT id,plan,state,starts_at,ends_at FROM entitlement_access WHERE user_id=$1 ORDER BY created_at DESC,id DESC",
                   [id],
                 )
               ).rows

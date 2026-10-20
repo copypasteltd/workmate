@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Tx } from "./db.js";
 import { Problem } from "./lib.js";
 import { publishedLegacyDefinition } from "./commercial-plans.js";
+import { effectiveVip } from "./vip.js";
 const all = [
   "text",
   "image",
@@ -66,37 +67,7 @@ export async function planDefinition(tx: Tx, key: string) {
   return publishedLegacyDefinition(tx, key);
 }
 export async function effectivePlan(tx: Tx, tenant: string, user: string) {
-  await tx.query("SELECT set_config('app.actor_id',$1,true)", [user]);
-  const grants = (
-    await tx.query(
-      "SELECT e.*,b.runtime_body AS bound_body,b.plan_version_id AS bound_plan_version_id,b.provenance AS binding_provenance FROM entitlements e LEFT JOIN legacy_entitlement_plan_bindings b ON b.entitlement_id=e.id WHERE (e.tenant_id=$1 OR e.user_id=$2) AND e.state='active' AND e.starts_at<=now() AND e.ends_at>now() ORDER BY CASE e.plan WHEN 'business' THEN 3 WHEN 'pro' THEN 2 ELSE 1 END DESC,e.ends_at DESC,e.id DESC",
-      [tenant, user],
-    )
-  ).rows;
-  const g = grants[0];
-  if (!g)
-    return {
-      ...(await planDefinition(tx, "starter")),
-      subject: "default",
-      ends_at: null,
-    };
-  if (!g.bound_body)
-    throw new Problem(
-      409,
-      "PLAN_RECONCILIATION_REQUIRED",
-      "This historical grant has no bound valid plan definition",
-    );
-  const body = planSchema.parse(g.bound_body);
-  return {
-    plan: g.plan,
-    version: g.plan_version,
-    body,
-    subject: g.tenant_id ? "tenant" : "user",
-    ends_at: g.ends_at,
-    grant_id: g.id,
-    plan_version_id: g.bound_plan_version_id,
-    binding_provenance: g.binding_provenance,
-  };
+  return effectiveVip(tx, tenant, user);
 }
 export async function authorizeTaskPlan(
   tx: Tx,

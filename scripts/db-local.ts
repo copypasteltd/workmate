@@ -87,7 +87,12 @@ await bootstrap.end();
 const c = new pg.Client({ connectionString: owner.href });
 await c.connect();
 await c.query("GRANT CONNECT,CREATE ON DATABASE copypaste TO cp_queue");
-await runMigrations(c, "copypaste");
+// Upgrade tooling must be able to snapshot an existing cluster before any DDL.
+// Normal development startup still migrates by default. This does not change
+// the production guard above or start any other database/virtualized service.
+if (process.env.COPYPASTE_NATIVE_DATABASE_START_ONLY !== "true")
+  await runMigrations(c, "copypaste");
+else console.log("Native PostgreSQL startup only; migrations explicitly deferred.");
 await c.end();
 console.log(
   "Native PostgreSQL ready on 127.0.0.1:" +

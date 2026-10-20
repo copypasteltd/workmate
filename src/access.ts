@@ -151,7 +151,7 @@ export async function eraseReplayContent(tx: Tx, ids: string[]) {
 export const activePlans = async (tx: Tx, tenant: string) =>
   (
     await tx.query(
-      "SELECT id,plan,starts_at,ends_at,state,auto_renew FROM entitlements WHERE tenant_id=$1 AND state='active' AND starts_at<=now() AND ends_at>now() ORDER BY ends_at DESC",
+      "SELECT id,plan,starts_at,ends_at,state,auto_renew FROM entitlement_access WHERE tenant_id=$1 AND state='active' AND starts_at<=now() AND ends_at>now() ORDER BY ends_at DESC",
       [tenant],
     )
   ).rows;

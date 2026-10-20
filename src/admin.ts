@@ -239,7 +239,7 @@ export function registerAdmin(
               billing:
                 "SELECT l.*,t.name AS tenant_name FROM ledger l JOIN tenants t ON t.id=l.tenant_id JOIN wallets w ON w.tenant_id=l.tenant_id AND (l.billing_account_id IS NULL OR l.billing_account_id=w.id)",
               entitlements:
-                "SELECT e.*,t.name AS tenant_name,u.name AS user_name,(e.state='active' AND e.starts_at<=now() AND e.ends_at>now()) AS effective FROM entitlements e LEFT JOIN tenants t ON t.id=e.tenant_id LEFT JOIN users u ON u.id=e.user_id",
+                "SELECT e.*,t.name AS tenant_name,u.name AS user_name,(e.state='active' AND e.starts_at<=now() AND e.ends_at>now()) AS effective FROM entitlement_access e LEFT JOIN tenants t ON t.id=e.tenant_id LEFT JOIN users u ON u.id=e.user_id",
               execution:
                 "SELECT id,tenant_id,project_id,created_by,title,role_key,status,execution_class,capacity_wait_reason,acceptance,charged_micros,budget_micros,cancel_requested,error_code,version,created_at FROM tasks",
               connections:
@@ -247,7 +247,7 @@ export function registerAdmin(
               devices:
                 "SELECT id,tenant_id,user_id,name,client,state,last_seen_at,created_at FROM devices",
               content: contentUnion,
-              jobs: "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,(coalesce(payload->>'financial_command_version'='1',false) OR coalesce(payload->>'payment_record_command_version'='1',false)) AS financial_command,payload->>'billing_account_id' AS billing_account_id FROM admin_operations",
+              jobs: "SELECT id,principal_id,action,tenant_id,state,result,approved_by,created_at,(coalesce(payload->>'financial_command_version'='1',false) OR coalesce(payload->>'payment_record_command_version'='1',false)) AS financial_command,payload->>'billing_account_id' AS billing_account_id,coalesce(payload->>'vip_command_version'='1',false) AS vip_command,payload->>'data_mode' AS data_mode,CASE WHEN payload->>'subject_kind'='user' THEN (payload->>'subject_id')::uuid ELSE NULL::uuid END AS user_id FROM admin_operations",
               audit: "SELECT * FROM audit_log",
               support: "SELECT * FROM support_sessions",
               catalog:
@@ -275,10 +275,14 @@ export function registerAdmin(
               const scope = await readScope(tx, req.principal, perm);
               filter = `EXISTS(SELECT 1 FROM wallets w WHERE w.tenant_id=r.tenant_id AND ${scope.account(perm)})`;
               args = scope.values;
+            } else if (section === "entitlements") {
+              const scope = await readScope(tx, req.principal, perm);
+              filter = scope.account(perm, "r");
+              args = scope.values;
             } else if (["jobs", "approvals"].includes(section)) {
               const scope = await readScope(tx, req.principal, perm);
               const ordinary = scope.scope(perm, "r.tenant_id");
-              filter = `(CASE WHEN r.financial_command THEN EXISTS(SELECT 1 FROM wallets w WHERE w.id::text=r.billing_account_id AND w.data_mode=${scope.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${scope.account(perm)} AND ${scope.account("admin.billing.read")}) ELSE ${ordinary} END)`;
+              filter = `(CASE WHEN r.vip_command THEN r.data_mode=${scope.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${scope.account(perm, "r")} AND ${scope.account("admin.entitlements.read", "r")} WHEN r.financial_command THEN EXISTS(SELECT 1 FROM wallets w WHERE w.id::text=r.billing_account_id AND w.data_mode=${scope.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${scope.account(perm)} AND ${scope.account("admin.billing.read")}) ELSE ${ordinary} END)`;
               args = scope.values;
             } else if (
               ["catalog", "plans", "policy", "access"].includes(section)
@@ -951,6 +955,21 @@ function registerAdminCatalog(
                 .int()
                 .positive()
                 .max(24 * 366 * 5),
+              vip_approval_hours: z
+                .number()
+                .int()
+                .min(1)
+                .max(24 * 366 * 5)
+                .optional(),
+              vip_replace_requires_approval: z.boolean().optional(),
+              vip_paid_requires_approval: z.boolean().optional(),
+              vip_all_changes_require_approval: z.boolean().optional(),
+              vip_approval_window_minutes: z
+                .number()
+                .int()
+                .min(1)
+                .max(10)
+                .optional(),
               membership_privileged_requires_approval: z.boolean().optional(),
               plan_publication_requires_approval: z.boolean().optional(),
               plan_approval_window_minutes: z

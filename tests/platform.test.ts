@@ -214,6 +214,38 @@ async function verifiedTopUp(
     },
   };
 }
+async function canonicalVip(
+  a: Client,
+  subject: { kind: "user" | "tenant"; id: string },
+  end: string,
+) {
+  const version = (
+    await system.db.control.query(
+      "SELECT published_version_id AS id FROM commercial_plans WHERE legacy_key='pro'",
+    )
+  ).rows[0].id;
+  const current = await call(
+    a,
+    "GET",
+    `/v1/admin/entitlement-grants/subjects/${subject.kind}/${subject.id}`,
+  );
+  const body = {
+    subject,
+    plan_version_id: version,
+    starts_at: new Date(Date.now() - 1000).toISOString(),
+    ends_at: end,
+    overlap_policy: "reject",
+    source: "manual",
+    auto_renew: false,
+    expected_subject_version: current.data.version,
+    reason: "Controlled canonical VIP fixture",
+  };
+  const preview = await call(a, "POST", "/v1/admin/entitlement-previews", body);
+  if (preview.status !== 200) return preview;
+  return call(a, "POST", "/v1/admin/entitlement-grants", body, randomUUID(), {
+    "x-admin-preview-id": preview.data.preview_id,
+  });
+}
 async function money(a: Client, b: unknown, k = randomUUID()) {
   const old = b as any;
   if (
@@ -2062,23 +2094,20 @@ test("VIP validity uses real timestamps and financial limits/independent approva
     w = await workspace(u),
     a = await admin(),
     b = await admin("finance_admin");
-  const vip = await money(a, {
-    action: "entitlements.grant",
-    tenant_id: w.tenant.id,
-    plan: "pro",
-    starts_at: new Date(Date.now() - 1000).toISOString(),
-    ends_at: new Date(Date.now() + 86400000).toISOString(),
-    reason: "QA VIP grant",
-  });
-  assert.equal(vip.status, 200, JSON.stringify(vip.data));
+  const vipEnd = new Date(Date.now() + 5000).toISOString();
+  const vip = await canonicalVip(
+    a,
+    { kind: "tenant", id: w.tenant.id },
+    vipEnd,
+  );
+  assert.equal(vip.status, 202, JSON.stringify(vip.data));
   assert.equal(
     (await call(u, "GET", `/v1/tenants/${w.tenant.id}/billing`)).data
       .entitlements.length,
     1,
   );
-  await system.db.control.query(
-    "UPDATE entitlements SET ends_at=now()-interval '1 second',starts_at=now()-interval '2 days' WHERE id=$1",
-    [vip.data.result.id],
+  await new Promise((r) =>
+    setTimeout(r, Math.max(0, Date.parse(vipEnd) - Date.now() + 100)),
   );
   assert.equal(
     (await call(u, "GET", `/v1/tenants/${w.tenant.id}/billing`)).data
@@ -2454,17 +2483,10 @@ test("personal VIP freezes its policy, enforces concurrent quotas, expires witho
   const u = await user(),
     w = await workspace(u),
     a = await admin();
-  const grant = {
-    action: "entitlements.grant",
-    user_id: u.id,
-    plan: "pro",
-    starts_at: new Date(Date.now() - 1000).toISOString(),
-    ends_at: new Date(Date.now() + 86400000).toISOString(),
-    reason: "QA personal entitlement",
-  };
-  const g = await money(a, grant);
-  assert.equal(g.status, 200, JSON.stringify(g.data));
-  const duplicate = await money(a, grant);
+  const end = new Date(Date.now() + 10000).toISOString();
+  const g = await canonicalVip(a, { kind: "user", id: u.id }, end);
+  assert.equal(g.status, 202, JSON.stringify(g.data));
+  const duplicate = await canonicalVip(a, { kind: "user", id: u.id }, end);
   assert.equal(duplicate.status, 409);
   assert.equal(duplicate.data.error.code, "ENTITLEMENT_OVERLAP");
   const effective = await call(u, "GET", `/v1/tenants/${w.tenant.id}/plan`);
@@ -2515,15 +2537,14 @@ test("personal VIP freezes its policy, enforces concurrent quotas, expires witho
   assert.equal(
     (
       await system.db.control.query(
-        "SELECT count(*)::int AS n FROM entitlement_events WHERE entitlement_id=$1",
-        [g.data.result.id],
+        "SELECT count(*)::int AS n FROM vip_grant_events WHERE grant_id=$1",
+        [g.data.result_ids[0]],
       )
     ).rows[0].n,
     1,
   );
-  await system.db.control.query(
-    "UPDATE entitlements SET starts_at=now()-interval '2 days',ends_at=now()-interval '1 day' WHERE id=$1",
-    [g.data.result.id],
+  await new Promise((r) =>
+    setTimeout(r, Math.max(0, Date.parse(end) - Date.now() + 100)),
   );
   assert.equal(
     (await call(u, "GET", `/v1/tenants/${w.tenant.id}/plan`)).data.plan,
