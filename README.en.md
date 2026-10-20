@@ -6,6 +6,20 @@ This repository is independently versioned alongside five product repositories. 
 
 ![Actual product surfaces](assets/screenshots/product-surfaces.png)
 
+## Current immutable plan increment
+
+The Admin definition form, frozen comparison and independent publication review use real APIs. Legacy grants retain fixed execution definitions. Both native databases advance to 056 with old-row and migration-digest comparisons. `npm run qa:admin-plans` passes six groups covering real email/TOTP sessions, structured forms, exact money, retained validation/focus, durable receipts, independent review, immutable versions and Traditional Chinese dark mobile views. Owned Chromium processes close, sessions are revoked and test administrators disabled. No model or payment call is made. Screenshots ship in the independent Admin repository.
+
+```mermaid
+flowchart LR
+  Source[Independent source repositories] --> Build[Native build]
+  Build --> API[Isolated database and actual API]
+  API --> Browser[Real Admin pages]
+  Browser --> Evidence[Raw receipts screenshots and source digests]
+```
+
+Set `CHROME_BIN` to an installed native Chrome/Chromium executable. `evidence/plan-ui-browser-path-failure/` and `plan-ui-layout-before-fix/` retain initial failures and original captures. The focused suite passes 24/24; the current `alignment-platform.json` and raw TAP record the complete platform run. Complete VIP/quota, production services and native system acceptance remain unfinished. Existing native preview bytes are unchanged.
+
 ## Frameless Desktop and native side-panel previews
 
 Desktop uses a branded title bar without the native frame or Electron default menus. The extension action opens Chrome's global Side Panel, normally on the right. The 2026-10-20 current-source and rebuilt packaged runs each pass **10/10** checks: real controls, Alt, pointer/keyboard resizing with an 800×600 minimum, cross-window IPC denial, PKCE, modal clearance and theme/language behavior. Their records are preserved separately. Browser entry uses `Extensions.triggerAction` and a real `SIDE_PANEL` context. Chrome controls the left/right preference. The previous **8/8** extension result remains historical business evidence; the full native authentication/system matrix has separate acceptance work.
@@ -391,3 +405,7 @@ flowchart LR
 ```
 
 After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
+
+Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+Independent Git checkout verification also compares every tracked canonical schema fixture byte-for-byte, preventing line-ending conversion from invalidating source receipts. The final full platform regression passes 340/340 with 688 unchanged source files; current evidence retains the raw TAP and its digest.

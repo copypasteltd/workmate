@@ -1,0 +1,323 @@
+{
+  "at": "2026-10-20T04:13:48.111Z",
+  "origin": "http://localhost:4310",
+  "scope": "Actual local HTTP payloads from current Admin plan forms and shared independent approval; original schemas unchanged",
+  "samples": [
+    {
+      "name": "published-and-draft-plan-directory",
+      "operation": "listAdminPlanVersions",
+      "schema": "AdminPlanVersionList",
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "481b0cde-5f31-47f4-bc0d-1d96ca7a89cf",
+            "plan_id": "3c6e7a1f-a3da-4fb9-9ac1-3bfa0b030c12",
+            "version": 1,
+            "name": "Pro",
+            "allowances": {
+              "seat_limit": 2147483647,
+              "feature_ids": [
+                "text",
+                "image",
+                "video",
+                "design",
+                "analytics",
+                "workflow",
+                "local_files"
+              ],
+              "credit_policy": "no_automatic_credit",
+              "storage_bytes": 9007199254740991,
+              "included_credit": {
+                "currency": "HKD",
+                "amount_micros": "0"
+              },
+              "allowed_role_ids": [
+                "assistant",
+                "fullstack",
+                "frontend",
+                "backend-api",
+                "software-qa",
+                "ui-ux",
+                "designer",
+                "brand-visual",
+                "ad-creative",
+                "ecommerce",
+                "social-content",
+                "illustration-ip",
+                "typography-layout",
+                "presentation",
+                "landing-page",
+                "information-design",
+                "video-motion",
+                "marketing-analyst",
+                "workflow-consultant"
+              ],
+              "task_concurrency": 3
+            },
+            "state": "published"
+          },
+          {
+            "id": "3843c675-41fc-4e1c-a709-56b219741bcf",
+            "plan_id": "3c6e7a1f-a3da-4fb9-9ac1-3bfa0b030c13",
+            "version": 1,
+            "name": "Business",
+            "allowances": {
+              "seat_limit": 2147483647,
+              "feature_ids": [
+                "text",
+                "image",
+                "video",
+                "design",
+                "analytics",
+                "workflow",
+                "local_files"
+              ],
+              "credit_policy": "no_automatic_credit",
+              "storage_bytes": 9007199254740991,
+              "included_credit": {
+                "currency": "HKD",
+                "amount_micros": "0"
+              },
+              "allowed_role_ids": [
+                "assistant",
+                "fullstack",
+                "frontend",
+                "backend-api",
+                "software-qa",
+                "ui-ux",
+                "designer",
+                "brand-visual",
+                "ad-creative",
+                "ecommerce",
+                "social-content",
+                "illustration-ip",
+                "typography-layout",
+                "presentation",
+                "landing-page",
+                "information-design",
+                "video-motion",
+                "marketing-analyst",
+                "workflow-consultant"
+              ],
+              "task_concurrency": 8
+            },
+            "state": "published"
+          },
+          {
+            "id": "0f49e53b-421f-4785-9883-94068abfc655",
+            "plan_id": "3c6e7a1f-a3da-4fb9-9ac1-3bfa0b030c11",
+            "version": 1,
+            "name": "Starter",
+            "allowances": {
+              "seat_limit": 2147483647,
+              "feature_ids": [
+                "text",
+                "image",
+                "video",
+                "design",
+                "analytics",
+                "workflow",
+                "local_files"
+              ],
+              "credit_policy": "no_automatic_credit",
+              "storage_bytes": 9007199254740991,
+              "included_credit": {
+                "currency": "HKD",
+                "amount_micros": "0"
+              },
+              "allowed_role_ids": [
+                "assistant",
+                "fullstack",
+                "frontend",
+                "backend-api",
+                "software-qa",
+                "ui-ux",
+                "designer",
+                "brand-visual",
+                "ad-creative",
+                "ecommerce",
+                "social-content",
+                "illustration-ip",
+                "typography-layout",
+                "presentation",
+                "landing-page",
+                "information-design",
+                "video-motion",
+                "marketing-analyst",
+                "workflow-consultant"
+              ],
+              "task_concurrency": 1
+            },
+            "state": "published"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "draft-created-from-actual-form",
+      "operation": "createAdminPlanDraft",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "f9ad6eb0-105d-491c-a1cf-474f3f23ad7d",
+        "action": "plans.draft",
+        "target_ids": [
+          "47040abd-03ce-4c9e-a653-75fab3318a4c"
+        ],
+        "actor_id": "e2109e3d-0e88-4654-883f-a222ed4a0386",
+        "state": "succeeded",
+        "payload_hash": "07068e78b077e6a6a9bc4b1f0a19697da01cd17a35b7a1048e934c4222f7b7b6",
+        "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
+        "version": 2,
+        "created_at": "2026-10-20T04:13:36.557Z",
+        "result_ids": [
+          "f8d854f2-9ece-4598-8c9b-6476399cdd94"
+        ]
+      }
+    },
+    {
+      "name": "actual-publication-preview",
+      "operation": "supplementalPlanPublicationPreview",
+      "schema": "AdminPreview",
+      "status": 200,
+      "response": {
+        "preview_id": "45ea9628-ee84-46ac-99a5-4db3261293b9",
+        "payload_hash": "cfc90bcc21c7779014ff0c046facb46c8fdc11e803052395071456f1bcf6640b",
+        "target_ids": [
+          "f8d854f2-9ece-4598-8c9b-6476399cdd94"
+        ],
+        "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
+        "decision": "independent_approval",
+        "missing_permission_keys": [],
+        "impact_summary": "Publish this immutable version for future grants. Existing grants keep their bound definitions. Publication does not credit a wallet or charge a payment.",
+        "expires_at": "2026-10-20T04:18:38.268Z",
+        "creates_business_effect": false,
+        "expected_target_versions": [
+          {
+            "id": "f8d854f2-9ece-4598-8c9b-6476399cdd94",
+            "version": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "publication-submitted-from-actual-form",
+      "operation": "publishAdminPlanVersion",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "24c60d95-6b6e-4a7b-84bc-4043fb63e4dc",
+        "action": "plans.publish",
+        "target_ids": [
+          "f8d854f2-9ece-4598-8c9b-6476399cdd94"
+        ],
+        "actor_id": "e2109e3d-0e88-4654-883f-a222ed4a0386",
+        "state": "pending_approval",
+        "payload_hash": "cfc90bcc21c7779014ff0c046facb46c8fdc11e803052395071456f1bcf6640b",
+        "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
+        "version": 1,
+        "created_at": "2026-10-20T04:13:39.395Z",
+        "result_ids": []
+      }
+    },
+    {
+      "name": "durable-publication-receipt-replay",
+      "operation": "publishAdminPlanVersion",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "24c60d95-6b6e-4a7b-84bc-4043fb63e4dc",
+        "state": "pending_approval",
+        "action": "plans.publish",
+        "version": 1,
+        "actor_id": "e2109e3d-0e88-4654-883f-a222ed4a0386",
+        "created_at": "2026-10-20T04:13:39.395Z",
+        "result_ids": [],
+        "target_ids": [
+          "f8d854f2-9ece-4598-8c9b-6476399cdd94"
+        ],
+        "payload_hash": "cfc90bcc21c7779014ff0c046facb46c8fdc11e803052395071456f1bcf6640b",
+        "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9"
+      }
+    },
+    {
+      "name": "independently-published-plan",
+      "operation": "decideAdminApproval",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "24c60d95-6b6e-4a7b-84bc-4043fb63e4dc",
+        "action": "plans.publish",
+        "target_ids": [
+          "f8d854f2-9ece-4598-8c9b-6476399cdd94"
+        ],
+        "actor_id": "e2109e3d-0e88-4654-883f-a222ed4a0386",
+        "state": "succeeded",
+        "payload_hash": "cfc90bcc21c7779014ff0c046facb46c8fdc11e803052395071456f1bcf6640b",
+        "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
+        "version": 2,
+        "created_at": "2026-10-20T04:13:39.395Z",
+        "result_ids": [
+          "f8d854f2-9ece-4598-8c9b-6476399cdd94",
+          "aa9b86e1-f2c5-4af4-b49f-5e2c75e643ed"
+        ]
+      }
+    },
+    {
+      "name": "exact-published-plan-definition",
+      "operation": "supplementalAdminPlanVersion",
+      "schema": "AdminPlanVersion",
+      "status": 200,
+      "response": {
+        "id": "f8d854f2-9ece-4598-8c9b-6476399cdd94",
+        "plan_id": "47040abd-03ce-4c9e-a653-75fab3318a4c",
+        "version": 1,
+        "name": "Campaign team 9562564b",
+        "allowances": {
+          "seat_limit": 12,
+          "feature_ids": [
+            "text",
+            "image",
+            "design",
+            "analytics"
+          ],
+          "credit_policy": "separate_idempotent_grant",
+          "storage_bytes": 1073741824,
+          "included_credit": {
+            "currency": "HKD",
+            "amount_micros": "9007199254740993"
+          },
+          "allowed_role_ids": [
+            "assistant"
+          ],
+          "task_concurrency": 3
+        },
+        "state": "published"
+      }
+    },
+    {
+      "name": "new-version-draft",
+      "operation": "createAdminPlanDraft",
+      "schema": "AdminOperation",
+      "status": 202,
+      "response": {
+        "id": "24065ba9-68e6-44ce-9c86-4051e06a6401",
+        "action": "plans.draft",
+        "target_ids": [
+          "47040abd-03ce-4c9e-a653-75fab3318a4c"
+        ],
+        "actor_id": "e2109e3d-0e88-4654-883f-a222ed4a0386",
+        "state": "succeeded",
+        "payload_hash": "648237cbe54eeef3ac3f29543dabc8d5d7cafb448d0720e8335bb568155feb1f",
+        "policy_version_id": "907dd58a-2c17-478e-a183-cd0800f994e9",
+        "version": 2,
+        "created_at": "2026-10-20T04:13:44.466Z",
+        "result_ids": [
+          "25794b1d-df26-4778-919a-7a1dc0378468"
+        ]
+      }
+    }
+  ]
+}

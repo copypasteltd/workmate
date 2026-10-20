@@ -129,6 +129,12 @@ const contexts: BrowserContext[] = [],
   screenshots: string[] = [];
 const admins: { c: Client; id: string }[] = [];
 const sourcePaths = [
+  "copypaste-platform/src/admin-plans.ts",
+  "copypaste-platform/src/commercial-plans.ts",
+  "copypaste-platform/src/plans.ts",
+  "copypaste-platform/migrations/056-immutable-commercial-plan-versions.sql",
+  "copypaste-platform/contracts/admin-plan-schemas.json",
+  "copypaste-admin/src/plans.tsx",
   "copypaste-platform/src/admin-refunds.ts",
   "copypaste-platform/src/billing-refunds.ts",
   "copypaste-platform/src/billing-events.ts",

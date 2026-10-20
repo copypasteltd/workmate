@@ -6,6 +6,20 @@
 
 ![四个客户端实际页面](assets/screenshots/product-surfaces.png)
 
+## 当前方案版本增量
+
+后台方案定义、冻结比较和独立审批已接上真实 API，历史授权保留固定执行定义；两库前向升级 056 并核对旧行及旧迁移摘要。新增 `npm run qa:admin-plans`：真实邮箱/TOTP、当前方案表单、精确金额、失败输入与焦点、幂等回执、独立审批、版本保留及繁中深色移动端，六组检查通过。自建 Chromium 全部关闭，测试会话撤销、管理员停用；没有模型/支付调用。示例截图随独立 Admin 仓库交付。
+
+```mermaid
+flowchart LR
+  Source[独立源码仓库] --> Build[原生构建]
+  Build --> API[隔离数据库与实际 API]
+  API --> Browser[真实后台页面]
+  Browser --> Evidence[原始回执 截图 源码摘要]
+```
+
+使用 `CHROME_BIN` 指定已安装的原生 Chrome/Chromium。`evidence/plan-ui-browser-path-failure/` 与 `plan-ui-layout-before-fix/` 保留首次错误和原截图；不覆盖旧成功记录。方案聚焦 24/24，完整平台回归以当前 `alignment-platform.json` 和原字节 TAP 为准。完整 VIP/配额/正式服务/原生综合验收仍保留；本轮不改变原生安装预览字节。
+
 ## 无边框 Desktop 与原生侧栏预览
 
 Desktop 使用无原生边框、无 Electron 默认菜单的自绘品牌标题栏；扩展按钮打开 Chrome 原生全局 Side Panel，默认位于右侧。2026-10-20 当前源码版和重新打包版各 **10/10** 组通过，检查真实 EXE 的按钮、Alt、指针/键盘缩放的 800×600 下限、跨窗口 IPC 拒绝、PKCE、弹窗位置及主题语言；两次记录分开保留。浏览器 action 使用 `Extensions.triggerAction` 和实际 `SIDE_PANEL` 上下文，左右位置由 Chrome 用户偏好控制。扩展先前 **8/8** 是历史业务增量，完整原生认证及系统矩阵继续独立验收。
@@ -465,3 +479,7 @@ flowchart LR
 ```
 
 2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。
+
+2026-10-20 方案版本增量後的當前源碼復核：Web 成員 6/6（172 份來源）、Admin 成員 6/6（200 份），Web／源碼 Electron／MV3 認證 12/12（779 份）；測試前後摘要一致，自建瀏覽器／Electron／擴展均關閉，測試憑證清理。新增不可變方案定義與固定歷史授權綁定不改寫原生預覽包。完整 VIP／配額、安裝包認證及系統驗收仍按主文檔繼續追蹤。
+
+獨立 Git 檢出同時比較全部已追蹤的 canonical schema 夾具原字節，防止換行轉換造成來源回執漂移。完整平台最終回歸 340/340（688 份來源前後一致）；原始 TAP 與摘要保持在當前 evidence。

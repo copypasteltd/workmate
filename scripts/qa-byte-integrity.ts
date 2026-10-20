@@ -43,6 +43,15 @@ try {
       sha(await readFile(path.join(platform, "migrations", file))),
       `migration bytes changed during checkout: ${file}`,
     );
+  const fixtures = (await readdir(path.join(cloned, "contracts"))).filter((f) =>
+    f.endsWith("-schemas.json"),
+  );
+  for (const file of fixtures)
+    assert.equal(
+      sha(await readFile(path.join(cloned, "contracts", file))),
+      sha(await readFile(path.join(platform, "contracts", file))),
+      `canonical schema fixture bytes changed during checkout: ${file}`,
+    );
   const loader = pathToFileURL(
     path.join(platform, "node_modules/tsx/dist/loader.mjs"),
   ).href;
@@ -57,7 +66,7 @@ try {
     { cwd: cloned, windowsHide: true, maxBuffer: 1024 * 1024 },
   );
   checks.push({
-    name: `fresh independent Git clone preserves all ${migrations.length} SQL files; native migration runner validates both existing database checksum ledgers without rewriting them`,
+    name: `fresh independent Git clone preserves all ${migrations.length} SQL files and ${fixtures.length} canonical schema fixtures; native migration runner validates both existing database checksum ledgers without rewriting them`,
     status: "passed",
   });
   const cat = pathToFileURL(path.join(platform, "src/catalog.ts")).href;
