@@ -1,11 +1,13 @@
 import {
   chromium,
   type Browser,
+  type BrowserContext,
   type BrowserServer,
   type Page,
 } from "playwright";
-import { readFile, writeFile } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import path from "node:path";
 import assert from "node:assert/strict";
 import { emailCode } from "./qa-auth.js";
@@ -17,6 +19,44 @@ const ownerEmail = `membership-owner-${randomUUID()}@example.invalid`,
 const checks: string[] = [],
   errors: string[] = [],
   samples: any[] = [];
+const contexts: BrowserContext[] = [],
+  screenshots: string[] = [];
+async function sources() {
+  const result: Record<string, string> = {};
+  for (const repo of [
+    "copypaste-platform",
+    "copypaste-web",
+    "copypaste-delivery",
+  ]) {
+    const folder = path.resolve("..", repo);
+    const files = execFileSync(
+      "git",
+      ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+      { cwd: folder, encoding: "utf8", windowsHide: true },
+    )
+      .split("\0")
+      .filter(Boolean);
+    for (const file of [...new Set(files)].sort()) {
+      const include =
+        repo === "copypaste-delivery"
+          ? ["scripts/qa-membership.ts", "scripts/qa-auth.ts"].includes(file)
+          : /^(src|migrations)\//.test(file) ||
+            /^(package(-lock)?\.json|index\.html|vite\.config\.ts)$/.test(file);
+      if (include)
+        result[`${repo}/${file}`] = createHash("sha256")
+          .update(await readFile(path.join(folder, file)))
+          .digest("hex");
+    }
+  }
+  return result;
+}
+const sourceBefore = await sources();
+let stage = "browser launch",
+  sessionsClosed = false;
+const deadline = setTimeout(() => {
+  errors.push("Owned membership QA exceeded 240 seconds at " + stage);
+  void server?.kill();
+}, 240000);
 const browserArgs = [
   "--disable-gpu",
   ...(process.env.COPYPASTE_QA_IN_PROCESS_GPU === "1"
@@ -66,6 +106,19 @@ async function login(page: Page, email: string) {
   await page.locator('input[name="code"]').fill(code);
   await page.locator('form button[type="submit"]').click();
 }
+async function capture(page: Page, name: string) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+  });
+  const folder = path.resolve("../copypaste-web/assets/screenshots");
+  await mkdir(folder, { recursive: true });
+  await page.screenshot({
+    path: path.join(folder, name),
+    fullPage: true,
+    animations: "disabled",
+  });
+  screenshots.push(name);
+}
 async function mailLink(id: string) {
   const file = path.resolve(
     "../copypaste-platform/.data/mailbox",
@@ -110,15 +163,19 @@ try {
     }),
     "Owner browser context",
   );
+  contexts.push(context);
   await context.addInitScript(() => {
-    localStorage.setItem("cp_locale", "en");
-    localStorage.setItem("cp_theme", "light");
+    if (!localStorage.getItem("cp_locale"))
+      localStorage.setItem("cp_locale", "en");
+    if (!localStorage.getItem("cp_theme"))
+      localStorage.setItem("cp_theme", "light");
   });
   owner = await bounded(context.newPage(), "Owner browser page");
   observe(owner);
   owner.setDefaultTimeout(20000);
   owner.on("pageerror", (e) => errors.push(e.message));
   await owner.goto(web + "/login", { waitUntil: "domcontentloaded" });
+  stage = "owner email login and onboarding";
   await login(owner, ownerEmail);
   await owner.waitForURL("**/welcome");
   await owner
@@ -139,6 +196,7 @@ try {
   const w = await created.json();
   await owner.waitForURL("**/app");
   const base = `/v1/tenants/${w.tenant.id}`;
+  stage = "owner member invitation";
   await owner.goto(web + "/app/members", { waitUntil: "domcontentloaded" });
   await owner
     .getByRole("button", { name: "Invite a member", exact: true })
@@ -189,19 +247,14 @@ try {
   checks.push(
     "real resend confirmation rotates the email link and keeps invitation metadata free of credentials",
   );
-  await owner.screenshot({
-    path: path.resolve(
-      "../copypaste-web/assets/screenshots/53-member-invitations.png",
-    ),
-    fullPage: true,
-    animations: "disabled",
-  });
+  await capture(owner, "60-membership-invitations-current.png");
   const memberContext = await bounded(
     browser.newContext({
       viewport: { width: 1360, height: 950 },
     }),
     "Recipient browser context",
   );
+  contexts.push(memberContext);
   await memberContext.addInitScript(() => {
     localStorage.setItem("cp_locale", "en");
   });
@@ -212,6 +265,7 @@ try {
   member.setDefaultTimeout(20000);
   member.on("pageerror", (e) => errors.push(e.message));
   await member.goto(oldLink, { waitUntil: "domcontentloaded" });
+  stage = "recipient email login, rotated token and invitation acceptance";
   await member.waitForURL("**/login?**");
   await login(member, recipient);
   await member.waitForURL("**/invite?**");
@@ -268,6 +322,7 @@ try {
   checks.push(
     "invitation survives real email login, rotated old link is rejected, acceptance selects the joined workspace and viewer management controls remain hidden",
   );
+  await capture(member, "61-membership-viewer-current.png");
   const list = await owner.evaluate(async (base) => {
     const m = "/src/api.ts";
     return (await import(m)).api(base + "/members");
@@ -282,6 +337,8 @@ try {
   await owner.reload({ waitUntil: "domcontentloaded" });
   const mr = owner.locator(`[data-member-id="${membership.id}"]`);
   await mr.waitFor();
+  await capture(owner, "62-membership-directory-current.png");
+  stage = "real member removal and existing-session authority";
   await mr.getByRole("button", { name: "Remove member", exact: true }).click();
   const [removed] = await Promise.all([
     owner.waitForResponse(
@@ -354,6 +411,7 @@ try {
   checks.push(
     "real Revoke confirmation invalidates its delivered link for the matching recipient",
   );
+  stage = "delayed context response across logout";
   let release!: () => void, ready!: () => void;
   const gate = new Promise<void>((r) => (release = r)),
     intercepted = new Promise<void>((r) => (ready = r));
@@ -393,13 +451,55 @@ try {
   if (owner)
     freshFailureCapture = await owner
       .screenshot({
-        path: "evidence/membership-failure.png",
+        path: "evidence/membership-ui-recovery-failure.png",
         fullPage: true,
         timeout: 5000,
       })
       .then(() => true)
       .catch(() => false);
 } finally {
+  clearTimeout(deadline);
+  sessionsClosed = true;
+  for (const context of contexts) {
+    try {
+      const r = await context.request.get(apiOrigin + "/v1/session/context", {
+        timeout: 5000,
+      });
+      if (r.status() === 401) continue;
+      assert.equal(
+        r.status(),
+        200,
+        "Owned session cleanup must read its current context",
+      );
+      const session = await r.json();
+      const ended = await context.request.delete(
+        apiOrigin + "/v1/auth/session",
+        {
+          headers: {
+            "X-CSRF-Token": session.csrf_token,
+            "Idempotency-Key": randomUUID(),
+            Origin: web,
+          },
+          timeout: 5000,
+        },
+      );
+      assert.ok(
+        [200, 204].includes(ended.status()),
+        `Owned session logout failed: ${ended.status()} ${await ended.text()}`,
+      );
+      assert.equal(
+        (
+          await context.request.get(apiOrigin + "/v1/session/context", {
+            timeout: 5000,
+          })
+        ).status(),
+        401,
+      );
+    } catch (e) {
+      sessionsClosed = false;
+      errors.push("Owned session cleanup: " + (e as Error).message);
+    }
+  }
   if (browser)
     await bounded(browser.close(), "Browser disconnect", 10000).catch((e) =>
       errors.push(e.message),
@@ -419,11 +519,25 @@ try {
       server.process().exitCode !== null ||
       server.process().signalCode !== null;
   }
+  const sourceAfter = await sources(),
+    stable = JSON.stringify(sourceBefore) === JSON.stringify(sourceAfter);
+  if (!stable)
+    errors.push(
+      "Participating runtime or verifier changed during membership QA",
+    );
   await writeFile(
-    "evidence/membership-navigation.json",
+    "evidence/membership-ui-recovery.json",
     JSON.stringify(
       {
         at: new Date().toISOString(),
+        status:
+          !errors.length &&
+          closed &&
+          sessionsClosed &&
+          stable &&
+          checks.length === 6
+            ? "passed"
+            : "failed",
         scope:
           "Actual headless Web invitation/member journey and client context race; no packaged/native runtime acceptance claim.",
         model_calls: 0,
@@ -436,18 +550,24 @@ try {
         browser_args: browserArgs,
         observed,
         failure_screenshot: freshFailureCapture
-          ? "membership-failure.png"
+          ? "membership-ui-recovery-failure.png"
           : null,
         checks: checks.map((name) => ({ name, status: "passed" })),
         errors,
         browser_closed: closed,
+        user_browser_tabs_touched: false,
+        owned_sessions_closed: sessionsClosed,
+        source_unchanged: stable,
+        source_files: sourceBefore,
+        screenshots,
+        stage,
       },
       null,
       2,
     ) + "\n",
   );
   await writeFile(
-    "evidence/membership-contract-samples.json",
+    "evidence/membership-ui-contract-samples.json",
     JSON.stringify(
       {
         at: new Date().toISOString(),
@@ -462,5 +582,12 @@ try {
   console.log(
     JSON.stringify({ checks: checks.length, errors, browser_closed: closed }),
   );
-  if (errors.length || !closed) process.exitCode = 1;
+  if (
+    errors.length ||
+    !closed ||
+    !sessionsClosed ||
+    !stable ||
+    checks.length !== 6
+  )
+    process.exitCode = 1;
 }

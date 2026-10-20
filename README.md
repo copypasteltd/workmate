@@ -315,9 +315,9 @@ The platform runner records unmodified TAP bytes and SHA-256. The sessions journ
 
 These source checks do not rebuild historical installers/ZIPs or close all 102 acceptance cases. Existing package manifests and their original verification receipts remain unchanged.
 
-最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
+历史启动限制：此前十二组原生复核未完成，失败与诊断仍见 `evidence/auth-recovery-open-issue.json`，原七组 `sessions.json` 保持原字节。2026-10-20 当前源码十二组已通过，使用新的 `evidence/auth-recovery-current.json`；具体范围和截图见下文，完整安装包／SSO／系统矩阵仍待验收。
 
-Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.
+Historical startup limitation: the earlier twelve-flow run did not complete; its failures and diagnostic comparison remain unchanged. The current-source rerun now passes **12/12** in `evidence/auth-recovery-current.json`, with scope and screenshots below. The original seven-flow session receipt remains historical. Complete packaged authentication, SSO and system matrices are still unaccepted.
 
 浏览器检查使用锁定 Playwright 对应的引擎；可在本仓库中设置以下原生 Windows 路径。Headless Shell 用于 Web 检查，完整 Chromium 供 MV3 使用。 / Use the locked Playwright engines: Headless Shell for Web and full Chromium for MV3.
 
@@ -335,7 +335,7 @@ npm run qa:auth-navigation
 
 用户端 QA 的工作区/CSRF 初始化改用 `GET /v1/session/context`；规范导航专项另外通过实际 HTTP 分别检查 Cookie 与 Bearer 的 `GET /v1/me` 原始 `User`，只保存合成账号的公开资料字段作为 schema 样本。后台 `/v1/admin/me` 及用户 `PATCH /v1/me` 不变。
 
-`npm run qa:sessions` 的当前十二组流程报告改存 `evidence/auth-recovery.json`，保留原七组 `sessions.json`。显式 Electron 可执行路径同时加载当前固定 Playwright 的 ready-event bridge；退出超时只清理本次 ChildProcess 的进程树，并仍将验证记为失败。`npm run qa:electron-readiness` 是不加载产品模块的 CJS/ESM 原生诊断，不属于业务验收。两次本轮失败及清理证据保留，完整原生旅程仍未通过。
+当前 `npm run qa:sessions` 将十二组结果写入 `evidence/auth-recovery-current.json`，旧 `auth-recovery.json`、原七组 `sessions.json` 和不加载产品模块的 `qa:electron-readiness` 诊断保持原字节。当前使用显式 Electron 路径与直接源码启动，和已通过的原生窗口 QA 一致；这不证明旧失败的唯一根因。拥有的 BrowserServer／Electron／MV3 关闭有界，超时仅回收已核对的自建进程树。当前十二组及实际资源释放结果见下文。
 
 Client QA bootstrap uses `GET /v1/session/context`. Real HTTP profile checks validate canonical browser and native `User` responses and export only synthetic profile fields. Admin profile and user profile mutations keep their own routes. Current twelve-flow session QA writes `auth-recovery.json`, preserving the historical seven-flow receipt. The pinned Playwright ready-event bridge is explicit; bounded shutdown can kill only its owned process tree and still fails acceptance. Minimal Electron readiness is diagnostic evidence, not product acceptance. Expanded native journeys remain unproven.
 
@@ -345,9 +345,9 @@ Client QA bootstrap uses `GET /v1/session/context`. Real HTTP profile checks val
 
 ## 邀请与成员验收 / Invitation and member checks
 
-`npm run qa:membership` 验证实际 Web 创建与投递、轮换重发、邮箱登录/加入、移除、撤销，以及真实退出后迟到响应拒绝：模型调用 0；早期成功报告被重跑覆盖，不作为可审计证据。最终源码的页面复核超时，拥有的浏览器已关闭，失败记录在 `evidence/membership-current-issue.json`。当前 `npm run qa:membership-wire` 真实 HTTP 五组通过并退出拥有的会话。四份实际响应加入原始 schema 校验，累计 37/37。首次 Vite 代理响应匹配失败保留在 `evidence/membership-first-navigation-failure/`。
+`npm run qa:membership` 验证实际 Web 创建与投递、轮换重发、邮箱登录/加入、移除、撤销，以及真实退出后迟到响应拒绝：模型调用 0；早期成功报告被重跑覆盖，不作为可审计证据。此前页面复核超时的原记录仍在 `evidence/membership-current-issue.json`；当前新回执 `membership-ui-recovery.json` 六组通过，拥有的会话与浏览器均关闭。当前 `npm run qa:membership-wire` 真实 HTTP 五组通过并退出拥有的会话。四份实际响应加入原始 schema 校验，累计 37/37。首次 Vite 代理响应匹配失败保留在 `evidence/membership-first-navigation-failure/`。
 
-The earlier successful `qa:membership` receipt was overwritten and is excluded from auditable acceptance evidence. Final-source page reruns timed out and are not accepted; all owned browsers closed. `qa:membership-wire` separately passes five current-source HTTP groups and closes both owned sessions. Four canonical HTTP response samples bring strict schema checks to 37/37. The first origin-matching fixture failure is preserved. Original 207-test evidence is archived byte-for-byte in `evidence/stage34-platform/`; the 218-test stage before exhausted-lease coverage is in `evidence/stage35-initial-platform/`. Latest platform and fresh-checkout results are separate raw evidence. Production SMTP, the complete Admin/native matrix and rebuilt release artifacts remain pending.
+The earlier successful `qa:membership` receipt was overwritten and is excluded from auditable acceptance evidence. Earlier page timeout receipts remain historical. The new current-source `membership-ui-recovery.json` passes six groups and closes owned sessions/browsers. `qa:membership-wire` separately passes five current-source HTTP groups and closes both owned sessions. Four canonical HTTP response samples bring strict schema checks to 37/37. The first origin-matching fixture failure is preserved. Original 207-test evidence is archived byte-for-byte in `evidence/stage34-platform/`; the 218-test stage before exhausted-lease coverage is in `evidence/stage35-initial-platform/`. Latest platform and fresh-checkout results are separate raw evidence. Production SMTP, the complete Admin/native matrix and rebuilt release artifacts remain pending.
 
 最新平台全套 **220/220**；严格实际 HTTP 样本 **37/37**；当前 HTTP 五组通过；当前页面复核失败独立保存，早期成功字节缺失不作通过证明。 / Latest platform **220/220**, strict captured HTTP schemas **37/37**, and five current-source HTTP groups passed; current page failures are retained and the overwritten earlier success is not accepted.
 
@@ -416,3 +416,17 @@ The real HTTP billing check uses owned email/TOTP sessions and synthetic interna
 `admin-fees-focused.tap` 为费用／迁移 16/16；最初三次不全通过与拆分真实请求前的 14/14 原输出均保留。两次最初浏览器脚本定位／初始化失败与诊断在 `admin-fees-ui-initial/`、`admin-fees-ui-second/`。此前 277 项输出在 `pre-admin-fees/`；中间 289 项因运行期间继续修改源码，明确存为非最终证明。路由清单更新前的稳定 291 项结果单独保留在 `admin-fees-pre-route-inventory/`。最终全量与字节证据仍以当前 JSON/TAP 为准。
 
 完整付款凭证／记录、现金退款对账、消费退款分桶、不可变方案/VIP、金融 outbox、完整原始审批目录和全端／NFR／发布门仍保留。前述历史阶段的通过数字不等于当前全部验收完成。
+
+## 当前成员页面及原生认证恢复（2026-10-20）
+
+| 命令 | 当前回执 | 结果 | 源码／运行文件 |
+| --- | --- | --- | --- |
+| `npm run qa:membership` | `evidence/membership-ui-recovery.json` | Web 6/6，严格响应 4 份 | 155，前后一致 |
+| `npm run qa:admin-membership-ui` | `evidence/admin-membership-ui.json` | Admin 6/6，严格响应 4 份 | 179，前后一致 |
+| `npm run qa:sessions` | `evidence/auth-recovery-current.json` | Web／源码 Electron／MV3 12/12 | 758，含实际 dist／renderer-dist，前后一致 |
+
+所有测试使用真实登录／授权／数据库和自建会话，模型调用 0；拥有的 BrowserServer、Electron、MV3 实例均关闭，凭证撤销，临时管理员经数据库确认已暂停，用户原有页面未触碰。14 张实际截图在各端独立仓库和中英 README，同时同步中央文档。三份旧未完成回执保持原 SHA-256，由中央进度快照关联当前局部成功证据。
+
+首次 Web 恢复因退出请求缺少幂等头仍记失败；首次 Admin 页面因 schema 注册和清理枚举错误仍记失败。原 JSON／样本／截图和后续实际凭证清理分别保存在 `membership-ui-first-recovery/`、`admin-membership-ui-initial/`。不以新结果覆盖旧失败，也不声称查明旧启动超时的唯一根因。
+
+新增八份实际规范样本加入中央原始 schema 核查，总计 89/89。原全量平台 291/291、源码 664 份及原始 TAP 未变化。源码十二组认证与原生预览十组窗口／侧栏外观证据独立；完整安装包认证、系统／DPI、SSO、原生成员、生产邮件与全部 TC/NFR/G01–G10 仍在范围内。详见主文档 `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`。

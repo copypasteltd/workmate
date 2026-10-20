@@ -2,15 +2,16 @@ import {
   chromium,
   _electron,
   type Browser,
+  type BrowserServer,
   type BrowserContext,
   type ElectronApplication,
   type Page,
 } from "playwright";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import { createHash, randomUUID } from "node:crypto";
 import { parseEnv } from "node:util";
 import { createRequire } from "node:module";
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
 import assert from "node:assert/strict";
@@ -32,6 +33,7 @@ const pass = (name: string) => {
   console.log("PASS: " + name);
 };
 let browser: Browser | undefined,
+  browserServer: BrowserServer | undefined,
   context: BrowserContext | undefined,
   mv3: BrowserContext | undefined,
   app: ElectronApplication | undefined,
@@ -42,6 +44,106 @@ let browser: Browser | undefined,
   extensionClosed = false;
 let releaseReads: (() => void) | undefined;
 let authorizationCaptured = false;
+let mv3Pid = 0,
+  credentialsCleared = false,
+  beforeSources: Record<string, string> = {};
+async function sourceSnapshot() {
+  const result: Record<string, string> = {};
+  const add = async (repo: string, file: string) => {
+    result[`${repo}/${file}`] = createHash("sha256")
+      .update(await readFile(path.join(root, repo, file)))
+      .digest("hex");
+  };
+  for (const repo of [
+    "copypaste-platform",
+    "copypaste-web",
+    "copypaste-desktop",
+    "copypaste-extension",
+    "copypaste-delivery",
+  ]) {
+    const files = [
+      ...new Set(
+        execFileSync(
+          "git",
+          ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+          { cwd: path.join(root, repo), encoding: "utf8", windowsHide: true },
+        )
+          .split("\0")
+          .filter(Boolean),
+      ),
+    ].sort();
+    for (const file of files) {
+      const include =
+        repo === "copypaste-delivery"
+          ? [
+              "scripts/qa-sessions.ts",
+              "scripts/qa-auth.ts",
+              "package.json",
+              "package-lock.json",
+            ].includes(file)
+          : /^(src|migrations|renderer|scripts|catalog|contracts)\//.test(
+              file,
+            ) ||
+            /^(package(-lock)?\.json|index\.html|renderer-source\.json|vite\.config\.ts)$/.test(
+              file,
+            );
+      if (include) await add(repo, file);
+    }
+  }
+  const walk = async (repo: string, folder: string) => {
+    for (const entry of (
+      await readdir(path.join(root, repo, folder), { withFileTypes: true })
+    ).sort((a, b) => a.name.localeCompare(b.name))) {
+      const file = `${folder}/${entry.name}`;
+      if (entry.isDirectory()) await walk(repo, file);
+      else if (entry.isFile()) await add(repo, file);
+    }
+  };
+  await walk("copypaste-desktop", "dist");
+  await walk("copypaste-desktop", "renderer-dist");
+  await walk("copypaste-extension", "dist");
+  return result;
+}
+async function bounded<T>(
+  operation: Promise<T>,
+  label: string,
+  ms = 10000,
+): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      operation,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(label + " timed out")), ms);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function forceOwnedPid(pid?: number) {
+  if (!pid) return;
+  try {
+    process.kill(pid, 0);
+  } catch {
+    return;
+  }
+  await promisify(execFile)("taskkill", ["/PID", String(pid), "/T", "/F"], {
+    windowsHide: true,
+    timeout: 5000,
+  });
+}
+const overallDeadline = setTimeout(() => {
+  errors.push(
+    "Owned native authentication verification exceeded 600 seconds; last completed group " +
+      checks.length,
+  );
+  void Promise.allSettled([
+    forceOwnedPid(app?.process().pid),
+    forceOwnedPid(mv3Pid),
+    browserServer?.kill(),
+  ]);
+}, 600000);
 async function until<T>(
   read: () => Promise<T>,
   accept: (v: T) => boolean,
@@ -112,7 +214,7 @@ async function authorize(page: Page) {
     await page.screenshot({
       path: path.join(
         root,
-        "copypaste-web/assets/screenshots/52-native-authorization.png",
+        "copypaste-web/assets/screenshots/64-native-authorization-current.png",
       ),
       fullPage: true,
       animations: "disabled",
@@ -189,6 +291,7 @@ async function rotationCount(client: string) {
   );
 }
 try {
+  beforeSources = await sourceSnapshot();
   const config = await until<any>(
     async () => {
       try {
@@ -212,7 +315,7 @@ try {
   const pg = createRequire(path.join(platform, "package.json"))("pg");
   db = new pg.Client({ connectionString: url.href });
   await db.connect();
-  browser = await chromium.launch({
+  browserServer = await chromium.launchServer({
     headless: true,
     executablePath:
       process.env.WEB_CHROME_BIN ??
@@ -221,6 +324,9 @@ try {
     // The controlled Windows diagnostic stalls the GPU path but passes normal
     // rAF/timer/click checks with software rendering. Keep product flags intact.
     args: ["--disable-gpu"],
+  });
+  browser = await chromium.connect(browserServer.wsEndpoint(), {
+    timeout: 15000,
   });
   runtime.chromium_version = browser.version();
   runtime.chromium_executable =
@@ -265,21 +371,7 @@ try {
       desktop,
       "node_modules/electron/dist/electron.exe",
     ),
-    // Playwright omits its ready-event bridge when executablePath is supplied.
-    // Use the loader shipped with this exact pinned Playwright installation.
-    args: [
-      "--require",
-      path.join(
-        path.dirname(
-          createRequire(import.meta.url).resolve(
-            "playwright-core/package.json",
-          ),
-        ),
-        "lib/server/electron/loader.js",
-      ),
-      desktop,
-      "--disable-gpu",
-    ],
+    args: ["--disable-gpu", desktop],
     env: {
       ...process.env,
       COPYPASTE_USER_DATA: path.resolve(".data/sessions-desktop-" + run),
@@ -362,6 +454,14 @@ try {
       viewport: { width: 390, height: 950 },
     },
   );
+  const mv3Session = await mv3.browser()!.newBrowserCDPSession();
+  const processInfo = await mv3Session.send("SystemInfo.getProcessInfo");
+  mv3Pid = processInfo.processInfo.find((p) => p.type === "browser")?.id ?? 0;
+  assert.ok(
+    Number.isInteger(mv3Pid) && mv3Pid > 0,
+    "The owned MV3 browser must expose its actual process identity",
+  );
+  await mv3Session.detach();
   await mv3.addCookies(await context.cookies());
   await mv3.addInitScript(() => {
     try {
@@ -452,7 +552,7 @@ try {
   await web.screenshot({
     path: path.join(
       root,
-      "copypaste-web/assets/screenshots/50-active-sessions.png",
+      "copypaste-web/assets/screenshots/65-active-sessions-current.png",
     ),
     animations: "disabled",
     fullPage: true,
@@ -461,7 +561,10 @@ try {
     .getByRole("region", { name: "Active sessions", exact: true })
     .scrollIntoViewIfNeeded();
   await native.screenshot({
-    path: path.join(desktop, "assets/screenshots/22-active-sessions.png"),
+    path: path.join(
+      desktop,
+      "assets/screenshots/24-active-sessions-current.png",
+    ),
     animations: "disabled",
   });
   pass(
@@ -649,7 +752,7 @@ try {
   await web.screenshot({
     path: path.join(
       root,
-      "copypaste-web/assets/screenshots/51-sessions-mobile-dark.png",
+      "copypaste-web/assets/screenshots/66-sessions-mobile-dark-current.png",
     ),
     animations: "disabled",
     fullPage: true,
@@ -726,7 +829,10 @@ try {
     false,
   );
   await panel.screenshot({
-    path: path.join(extension, "assets/screenshots/11-session-revoked.png"),
+    path: path.join(
+      extension,
+      "assets/screenshots/13-session-revoked-current.png",
+    ),
     fullPage: true,
   });
   pass(
@@ -797,7 +903,10 @@ try {
   );
   assert.equal(await secondPanel.locator("#error").isVisible(), false);
   await secondPanel.screenshot({
-    path: path.join(extension, "assets/screenshots/12-account-replacement.png"),
+    path: path.join(
+      extension,
+      "assets/screenshots/14-account-replacement-current.png",
+    ),
     fullPage: true,
   });
   pass(
@@ -890,7 +999,10 @@ try {
     .filter({ hasText: "Remote revocation could not be confirmed" })
     .waitFor();
   await native.screenshot({
-    path: path.join(desktop, "assets/screenshots/23-offline-signout.png"),
+    path: path.join(
+      desktop,
+      "assets/screenshots/25-offline-signout-current.png",
+    ),
     animations: "disabled",
   });
   assert.equal(await native.locator(".session-row").count(), 0);
@@ -961,6 +1073,7 @@ try {
   console.error(error);
   process.exitCode = 1;
 } finally {
+  clearTimeout(overallDeadline);
   releaseReads?.();
   const cleanup = async (name: string, close: () => Promise<void>) => {
     try {
@@ -1011,14 +1124,48 @@ try {
     });
   if (mv3)
     await cleanup("MV3 cleanup", async () => {
-      await mv3!.close();
+      try {
+        await bounded(mv3!.close(), "Owned MV3 shutdown");
+      } catch (e) {
+        await forceOwnedPid(mv3Pid);
+        extensionClosed = true;
+        throw e;
+      }
       extensionClosed = true;
     });
-  if (context) await cleanup("Owned context cleanup", () => context!.close());
+  if (context)
+    await cleanup("Owned context cleanup", () =>
+      bounded(context!.close(), "Owned browser context shutdown"),
+    );
   if (browser)
     await cleanup("Owned browser cleanup", async () => {
-      await browser!.close();
-      browserClosed = true;
+      try {
+        await bounded(browser!.close(), "Owned browser disconnect");
+        await bounded(browserServer!.close(), "Owned browser shutdown");
+      } catch (e) {
+        await browserServer?.kill();
+        throw e;
+      } finally {
+        browserClosed = Boolean(
+          browserServer &&
+            (browserServer.process().exitCode !== null ||
+              browserServer.process().signalCode !== null),
+        );
+      }
+    });
+  if (browserServer && !browserClosed)
+    await cleanup("Owned browser fallback cleanup", async () => {
+      try {
+        await bounded(
+          browserServer!.close(),
+          "Owned browser fallback shutdown",
+        );
+      } catch {
+        await browserServer!.kill();
+      }
+      browserClosed =
+        browserServer!.process().exitCode !== null ||
+        browserServer!.process().signalCode !== null;
     });
   if (db) {
     if (fixtureUsers.length)
@@ -1031,17 +1178,60 @@ try {
           "UPDATE sessions SET revoked_at=coalesce(revoked_at,now()) WHERE user_id=ANY($1::uuid[])",
           [fixtureUsers],
         );
+        assert.equal(
+          Number(
+            (
+              await db.query(
+                "SELECT count(*) AS n FROM sessions WHERE user_id=ANY($1::uuid[]) AND revoked_at IS NULL",
+                [fixtureUsers],
+              )
+            ).rows[0].n,
+          ),
+          0,
+        );
+        assert.equal(
+          Number(
+            (
+              await db.query(
+                "SELECT count(*) AS n FROM refresh_tokens WHERE user_id=ANY($1::uuid[]) AND revoked_at IS NULL",
+                [fixtureUsers],
+              )
+            ).rows[0].n,
+          ),
+          0,
+        );
+        credentialsCleared = true;
       });
     await cleanup("Database cleanup", () => db.end());
   }
-  if (errors.length || !browserClosed || !desktopClosed || !extensionClosed)
+  let afterSources: Record<string, string> = {};
+  await cleanup("Runtime source verification", async () => {
+    afterSources = await sourceSnapshot();
+  });
+  const stable =
+    Object.keys(beforeSources).length > 0 &&
+    JSON.stringify(beforeSources) === JSON.stringify(afterSources);
+  if (!stable)
+    errors.push(
+      "Runtime or verifier bytes changed during native authentication QA",
+    );
+  if (
+    errors.length ||
+    !browserClosed ||
+    !desktopClosed ||
+    !extensionClosed ||
+    !credentialsCleared ||
+    !stable ||
+    checks.length !== 12
+  )
     process.exitCode = 1;
   await mkdir("evidence", { recursive: true });
   await writeFile(
-    "evidence/auth-recovery.json",
+    "evidence/auth-recovery-current.json",
     JSON.stringify(
       {
         at: new Date().toISOString(),
+        status: !process.exitCode ? "passed" : "failed",
         dependency_mode: "simulated",
         rendering_mode:
           "software (--disable-gpu for owned Chromium and source Electron); product launch flags unchanged; controlled diagnostic retained in sessions-gpu-diagnostic.json",
@@ -1056,6 +1246,10 @@ try {
         browser_closed: browserClosed,
         desktop_closed: desktopClosed,
         extension_closed: extensionClosed,
+        user_browser_tabs_touched: false,
+        owned_credentials_cleared: credentialsCleared,
+        source_unchanged: stable,
+        source_files: beforeSources,
       },
       null,
       2,

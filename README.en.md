@@ -342,3 +342,17 @@ The final full platform regression passes **291/291**, with 664 participating so
 The focused fee/migration TAP passes 16/16. Initial failures and the earlier pre-request 14/14 raw output remain preserved. Two initial browser-script locator/initialization failures and diagnostics are archived separately. Previous 277-test evidence is under `pre-admin-fees/`; an intermediate 289-test run explicitly cannot prove final source because implementation continued during its execution. The coherent 291-test result before the route inventory update is separately preserved under `admin-fees-pre-route-inventory/`. Current JSON/TAP and clone receipts govern the final result.
 
 Full payment evidence/records, cash refunds/reconciliation, original-bucket consumption refunds, immutable plans/VIP, financial outbox, complete normative approval directories and remaining native/NFR/release gates are still required. Historical stage counts are not complete current acceptance.
+
+## Current membership UI and native authentication recovery (2026-10-20)
+
+| Command | Current receipt | Result | Source/runtime files |
+| --- | --- | --- | --- |
+| `npm run qa:membership` | `evidence/membership-ui-recovery.json` | Web 6/6, four strict captures | 155, unchanged |
+| `npm run qa:admin-membership-ui` | `evidence/admin-membership-ui.json` | Admin 6/6, four strict captures | 179, unchanged |
+| `npm run qa:sessions` | `evidence/auth-recovery-current.json` | Web/source Electron/MV3 12/12 | 758 including actual dist/renderer-dist, unchanged |
+
+Actual authentication/authorization/database behavior is used with owned test identities; model calls are zero. Owned BrowserServer, Electron and MV3 instances close, credentials are revoked and temporary admins are confirmed suspended in the database. User tabs are untouched. Fourteen actual screenshots ship in independent client repositories and bilingual READMEs, mirrored centrally. Three original issue receipts retain their SHA-256 and link to the new bounded passing evidence in the central snapshot.
+
+The first Web recovery remained failed because logout lacked an idempotency header; the initial Admin UI run remained failed for schema-container registration and a cleanup enum. Their raw receipts, samples, screenshots and subsequent actual credential cleanup are preserved in `membership-ui-first-recovery/` and `admin-membership-ui-initial/`. New results do not overwrite failures or establish one cause for the older startup timeouts.
+
+Eight new captures bring original-schema checks to 89/89. The full 291/291 platform regression, its 664 participating source files and raw TAP remain unchanged. Twelve source authentication flows are separate from ten native-preview window/side-panel groups. Full packaged authentication, system/DPI, SSO, native membership, production mail and all TC/NFR/G01–G10 acceptance remain outstanding. Central scope: `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`.
