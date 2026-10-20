@@ -150,3 +150,12 @@ The background coalesces refreshes and fences late login/refresh writes. A defin
 ![Panel business document after revocation](assets/screenshots/11-session-revoked.png)
 
 `npm test` has ten session race/fault groups. Delivery `qa:sessions` uses real MV3 and identity PKCE for remote revocation and expired-access sign-out. Its isolated MV3 document does not replace the native SIDE_PANEL appearance test. The previous sidebar preview ZIP retains its original manifest and does not include this repair.
+
+## Current MV3 session recovery (2026-10-20)
+
+Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups: actual identity S256 login, same-key recovery of committed exchange/refresh responses, real session-storage revocation, automatic sign-in/account replacement in two existing business pages, stale previous-account 401 isolation and expired-access sign-out. All 758 source/runtime files match; owned instances and credentials are cleared. Old failures remain unchanged and model calls are zero.
+
+![Private views cleared after revocation](assets/screenshots/13-session-revoked-current.png)
+![Existing page replaces its account](assets/screenshots/14-account-replacement-current.png)
+
+These are actual MV3 business documents. The separate 10/10 native SIDE_PANEL action evidence covers right-side appearance; these screenshots do not replace it. The recorded side-panel ZIP remains byte-identical. Complete packaged, identity, system and membership acceptance is still outstanding.

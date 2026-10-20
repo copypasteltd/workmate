@@ -163,12 +163,21 @@ The historical Side Panel ZIP retains its original manifest and does not include
 
 当前 `npm test` **19/19**，包含十五组会话竞争/持久化边界与四组首次交换重试检查。 / Current native tests: **19/19**, including fifteen session and four initial-exchange checks.
 
-最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
+历史启动限制：此前十二组原生复核未完成，失败与诊断仍见 `evidence/auth-recovery-open-issue.json`，原七组 `sessions.json` 保持原字节。2026-10-20 当前源码十二组已通过，使用新的 `evidence/auth-recovery-current.json`；具体范围和截图见下文，完整安装包／SSO／系统矩阵仍待验收。
 
-Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.
+Historical startup limitation: the earlier twelve-flow run did not complete; its failures and diagnostic comparison remain unchanged. The current-source rerun now passes **12/12** in `evidence/auth-recovery-current.json`, with scope and screenshots below. The original seven-flow session receipt remains historical. Complete packaged authentication, SSO and system matrices are still unaccepted.
 
 ## 用户资料契约 / User profile contract
 
 侧栏初始化与项目刷新改用受认证的 `GET /v1/session/context` 读取本人资料和工作区；规范 `GET /v1/me` 仅返回 `User`。原生凭证仍只在受信任后台保存，多面板换账号守卫继续生效。本次源码和 dist 构建不改写历史侧栏 ZIP。
 
 Panel bootstrap and project refresh now use authenticated `GET /v1/session/context` for profile and workspace access. Canonical `GET /v1/me` returns only `User`. Credentials remain in the trusted background; multiple-panel identity fences remain active. Historical preview ZIPs are preserved.
+
+## 当前 MV3 会话恢复复核（2026-10-20）
+
+Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12：真实 identity S256 登录，首次交换和刷新回执丢失的同键恢复，实际 session storage 撤销，两份已打开业务页自动登录／换账号、旧账号迟到 401 隔离及过期访问仍可退出。758 份源码／运行文件一致，凭证和自建三端实例均清理；旧失败诊断保持原字节，模型调用 0。
+
+![撤销后清除私有界面](assets/screenshots/13-session-revoked-current.png)
+![已有页面自动换账号](assets/screenshots/14-account-replacement-current.png)
+
+当前认证使用实际 MV3 业务文档；右侧栏出现方式另由原生 SIDE_PANEL action 的 10/10 外观证据覆盖，不能用此截图替代。侧栏 ZIP 原字节保持不变，完整打包／身份／系统及成员旅程仍须验收。
