@@ -294,3 +294,5 @@ flowchart LR
 ![规范审批请求目录](assets/screenshots/32-canonical-approval-directory.png)
 
 该增量不代表完整付款、退款、VIP 和全部后台权限矩阵验收；规范及完整剩余条件继续保留。
+
+当前复核：成员 6/6、费用 4/4、账户 5/5；列表和决定的实际响应按原始 schema 验证。新组件的工作区与 Git LF 字节统一后重新复核，初始回执另行归档。

@@ -294,3 +294,5 @@ flowchart LR
 ![Normative approval request directory](assets/screenshots/32-canonical-approval-directory.png)
 
 This increment does not constitute complete payments, refunds, VIP or full Admin authority-matrix acceptance; all original conditions remain tracked.
+
+Current checks pass: membership 6/6, fees 4/4 and accounts 5/5, with real list/decision payloads validated against the original schemas. The new component was rerun after matching working-tree bytes to Git LF bytes; earlier receipts remain archived.
