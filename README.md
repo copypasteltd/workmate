@@ -1,5 +1,22 @@
 # CopyPaste Desktop
 
+## 限时只读客服协助 / Controlled support
+
+继续使用无边框窗口和自绘标题栏，不启用 Electron 默认菜单。独立渲染器同步账户设置的支持授权界面，新增严格限定的授权列表、创建和撤销桥接操作；管理员支持视图不进入用户端桥接。
+
+阶段 51 当前平台回归 424/424（711 份来源），受控支持页面 8/8（816 份来源、9 张未编辑截图）。14 组支持专项、原规范检查、迁移保留及独立原生检查是有界证据，完整 102 项验收继续跟踪；当前包已重建，阶段 50 包原字节另存。
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+设置表单来自已验证的独立 Web 渲染器快照；实际打包窗口和会话另行验证，安装签名及完整系统/DPI 矩阵仍待验收。
+
+
 [English](README.en.md) · Windows 企业 Agent 客户端 · 0.5.0
 
 独立 Electron 仓库，内置完整 Web 工作区快照与窄权限本地桥接。支持系统浏览器登录、Windows 用户级凭证保护、明确的本地目录授权、平台签名文件排程，以及 Chrome Native Messaging。实际 Agent 内核仍由公司平台的 Codex 执行，客户端不直连模型供应商。
@@ -14,7 +31,7 @@
 
 独立 renderer 已同步费用账户和通知页面；主进程只放行限定的用户 GET/PATCH 路径，凭证继续由本地安全桥管理。保持无原生边框、无 Electron 默认菜单和自绘窗口控制。实际打包客户端已验证 PKCE、精确赠额、未知退款、跨端已读、撤权与退出清空；当前预览包随新源码重建，阶段 49 包另存保留。
 
-当前平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
+阶段 50 当时平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
 
 ```mermaid
 flowchart LR

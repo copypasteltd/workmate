@@ -75,7 +75,7 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest =
-    /^\/v1\/(me(?:[/?]|$)|plans(?:[/?]|$)|effective-entitlements(?:[/?]|$)|entitlement-notifications(?:[/?]|$)|financial-notifications(?:[/?]|$)|session\/context(?:[/?]|$)|members\/|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:session|logout|native\/authorize)$)/.test(
+    /^\/v1\/(me(?:[/?]|$)|plans(?:[/?]|$)|effective-entitlements(?:[/?]|$)|entitlement-notifications(?:[/?]|$)|financial-notifications(?:[/?]|$)|support-grants(?:[/?]|$)|session\/context(?:[/?]|$)|members\/|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:session|logout|native\/authorize)$)/.test(
       path,
     );
   const headers = new Headers(options.headers);

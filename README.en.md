@@ -1,5 +1,22 @@
 # CopyPaste Desktop
 
+## Controlled support update / 受控客服协助
+
+The client retains its frameless window, custom title bar and no default Electron menu. Its independent renderer includes support-grant settings, with a narrowly allowed list/create/revoke bridge. Administrator support views cannot cross the customer bridge.
+
+Stage 51 current regression: 424/424 with 711 source files; controlled-support browser workflows: 8/8 with 816 source files and 9 unedited captures. The 14 support tests, original contract checks, migration preservation and separate native checks are bounded evidence, not completion of all 102 acceptance cases. Current binaries are rebuilt; stage 50 binaries remain unchanged in their archive.
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+The settings form shares the verified Web renderer. Packaged window/session checks remain separate; installer signing and the full OS/DPI matrix are pending.
+
+
 [简体中文](README.md) · Windows enterprise Agent client · 0.5.0
 
 An independent Electron repository bundling the Web workspace and a narrow local bridge. It supports system-browser login, Windows user-level encrypted credentials, explicit folder grants, platform-signed local file dispatch and Chrome Native Messaging. Codex execution remains on the company platform; the client never connects directly to model providers.
@@ -14,7 +31,7 @@ The historical stage 49 recheck verified frameless Desktop, the native Chrome ri
 
 The independent renderer includes the financial accounts and inbox. The main process admits only the bounded user GET/PATCH paths, with credentials retained by the secure local bridge. The window stays frameless with custom controls and no Electron application menu. The actual packaged client verifies PKCE, exact gift values, unknown refunds, cross-client read state and clearing on revocation/sign-out. Current previews are rebuilt from the new source; stage 49 binaries remain archived separately.
 
-Current platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+Stage 50 historical platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
 
 ```mermaid
 flowchart LR
