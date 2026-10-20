@@ -271,9 +271,9 @@ Native sign-in and refresh consume the canonical token contract. A first code ex
 
 当前 `npm test` **24/24**，原生会话十五组、首次交换四组及文件/DPAPI 等原有能力均通过；渲染来源摘要 **43** 项。 / Current native tests: **24/24**; renderer provenance: **43** files.
 
-最新限制：扩大首次交换恢复专项时，本机 Electron/普通 Chromium 启动复测阻塞；失败与已提交/当前 main 对照见 Delivery `evidence/auth-recovery-open-issue.json`。本轮完整十二组原生流程未计通过，`sessions.json` 保留原七组历史回执。实际 Web 规范导航三组及当前平台/原生单元检查分别记录。
+历史启动限制：此前十二组原生复核未完成，失败与诊断仍见 `evidence/auth-recovery-open-issue.json`，原七组 `sessions.json` 保持原字节。2026-10-20 当前源码十二组已通过，使用新的 `evidence/auth-recovery-current.json`；具体范围和截图见下文，完整安装包／SSO／系统矩阵仍待验收。
 
-Latest limitation: the expanded twelve-flow native journey is **not completed** because current startup attempts stall. Failed attempts and the committed/current-main comparison are preserved; the comparison shares current dependencies and does not exclude all source issues. Historical session receipts stay unchanged. Current Web navigation and platform/native unit results are recorded separately.
+Historical startup limitation: the earlier twelve-flow run did not complete; its failures and diagnostic comparison remain unchanged. The current-source rerun now passes **12/12** in `evidence/auth-recovery-current.json`, with scope and screenshots below. The original seven-flow session receipt remains historical. Complete packaged authentication, SSO and system matrices are still unaccepted.
 
 ## 用户资料契约 / User profile contract
 
@@ -283,10 +283,19 @@ Device sync and the explicit renderer snapshot now read workspace authorization 
 
 ## 成员管理同步 / Membership renderer update
 
-显式 renderer 快照同步规范邀请、独立成员 ID、项目授权选择、分页、投递状态与移除确认；主进程传递企业头。45 份 renderer 来源摘要随仓库记录。当前源码类型检查和构建通过；历史安装包及完整原生启动/认证旅程尚未完成本轮验收。
+显式 renderer 快照同步规范邀请、独立成员 ID、项目授权选择、分页、投递状态与移除确认；主进程传递企业头。45 份 renderer 来源摘要随仓库记录。当前源码类型检查和构建通过；当前源码十二组原生认证／会话恢复另列通过；完整安装包认证、SSO／系统矩阵仍未验收。
 
-The explicit 45-file renderer snapshot includes canonical invitation/member operations, project selection, pagination, delivery status and removal confirmation. IPC forwards the tenant header. Current sources typecheck and build; historical installers and the expanded native launch/authentication journey are not accepted as this increment.
+The explicit 45-file renderer snapshot includes canonical invitation/member operations, project selection, pagination, delivery status and removal confirmation. IPC forwards the tenant header. Current sources typecheck/build and twelve source authentication/session-recovery groups now pass separately; complete packaged authentication, SSO and system acceptance remain outstanding.
 
 ## 成员暂停反馈来源同步
 
-renderer 已从明确指定的 Web 来源同步后台暂停提示并构建，来源摘要随仓库保存。原生无边框、自绘窗口控件和菜单移除规则保持有效；本轮未重新打安装器/便携包，也未完成当前原生页面认证矩阵。
+renderer 已从明确指定的 Web 来源同步后台暂停提示并构建，来源摘要随仓库保存。原生无边框、自绘窗口控件和菜单移除规则保持有效；本次页面复核没有重打安装器／便携包；源码认证十二组通过，完整安装包／系统矩阵仍待验收。
+
+## 当前源码认证恢复复核（2026-10-20）
+
+Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12。Desktop 实际浏览器 S256 授权、首次交换和刷新已提交回执丢失的同键恢复、DPAPI 凭证清理、Web 远程撤销、离线退出未确认反馈均已实测。758 份三端／服务端源码和运行文件前后一致，测试凭证及自建浏览器、Electron、MV3 已清理；旧启动失败与诊断保留原字节。
+
+![当前无边框源码客户端会话](assets/screenshots/24-active-sessions-current.png)
+![当前离线退出提示](assets/screenshots/25-offline-signout-current.png)
+
+本次使用 source Electron 和当前 dist／renderer-dist，不把十二组记为 Setup／Portable 安装包认证。原生边框及默认菜单继续移除；窗口／右侧栏外观使用单独 10/10 原生预览证据。完整安装卸载、系统／DPI、签名／更新和企业身份矩阵仍待验收。

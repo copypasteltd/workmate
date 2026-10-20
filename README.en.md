@@ -265,4 +265,13 @@ This increment delivers source/builds. Historical frameless preview installers r
 
 ## Membership suspension renderer source
 
-The renderer explicitly synchronizes the Web suspension notice and builds with recorded source hashes. Frameless native controls and the removed Electron application menu remain enforced. Installers/portable packages were not rebuilt for this increment, and the current complete native authentication/page matrix remains unproven.
+The renderer explicitly synchronizes the Web suspension notice and builds with recorded source hashes. Frameless native controls and the removed Electron application menu remain enforced. This UI rerun did not rebuild installers/portable packages. Twelve current source authentication/session groups pass separately; the complete packaged/system matrix remains unproven.
+
+## Current source authentication recovery (2026-10-20)
+
+Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups. Actual Desktop browser S256 authorization, same-key recovery after committed first-exchange/refresh response loss, DPAPI clearing, Web remote revocation and explicit offline sign-out feedback are verified. All 758 source/runtime files match before/after execution. Owned browsers, Electron, MV3 and test credentials are cleared; old startup failures and diagnostics remain unchanged.
+
+![Current frameless source-client sessions](assets/screenshots/24-active-sessions-current.png)
+![Current offline sign-out feedback](assets/screenshots/25-offline-signout-current.png)
+
+This run uses source Electron with current dist/renderer-dist; it does not accept twelve flows in Setup/Portable packages. Native frames/default menus remain removed. The independent 10/10 native-preview evidence governs window/side-panel appearance. Complete installation/uninstall, system/DPI, signing/updates and enterprise identity acceptance remain outstanding.
