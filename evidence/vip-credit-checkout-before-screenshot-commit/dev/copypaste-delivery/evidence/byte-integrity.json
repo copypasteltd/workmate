@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-20T11:59:19.429Z",
+  "scope": "Native fresh Git checkout integrity, not product or disaster-recovery acceptance",
+  "heads": {
+    "copypaste-platform": "1b8d91dc064b53c235212599d407836743aafd92",
+    "copypaste-admin": "6d92f6a6cda7ab083e2f59a449ee67c12a5c5ecb",
+    "copypaste-desktop": "cd4d7e8c5aef55aa269d4d2aabf61262a3d7ec46",
+    "copypaste-delivery": "1435ac7094bcdde3753d8b9a4ea76e46bb91e75a"
+  },
+  "checks": [
+    {
+      "name": "fresh independent Git clone preserves all 60 SQL files and 13 canonical schema fixtures; native migration runner validates both existing database checksum ledgers without rewriting them",
+      "status": "passed"
+    },
+    {
+      "name": "fresh Git clone loads and verifies all 28 exact-hash trusted Skill packages",
+      "status": "passed"
+    },
+    {
+      "name": "fresh independent Desktop clone matches all 47 renderer provenance digests",
+      "status": "passed"
+    },
+    {
+      "name": "Git checkout byte integrity",
+      "status": "failed",
+      "detail": "Admin checkout bytes changed: assets/screenshots/admin-payment-evidence-record.png\n+ actual - expected\n\n+ 'be96a8c5a7f1795b8a051362e327f1dff7db54e43c69dcc27bc63ad8a4aebd12'\n- 'd8386543e3dccec3c7416666564469237ce32b9311de0274115a8f3d2b209ca4'\n"
+    }
+  ],
+  "owned_temporary_clones_removed": true
+}

@@ -1,0 +1,23 @@
+
+> @copypaste/delivery@0.5.0 qa:byte-integrity
+> node --import tsx scripts/qa-byte-integrity.ts
+
+node:internal/modules/run_main:122
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Admin checkout bytes changed: assets/screenshots/admin-payment-evidence-record.png
++ actual - expected
+
++ 'be96a8c5a7f1795b8a051362e327f1dff7db54e43c69dcc27bc63ad8a4aebd12'
+- 'd8386543e3dccec3c7416666564469237ce32b9311de0274115a8f3d2b209ca4'
+
+    at <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-delivery\scripts\qa-byte-integrity.ts:111:12) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'be96a8c5a7f1795b8a051362e327f1dff7db54e43c69dcc27bc63ad8a4aebd12',
+  expected: 'd8386543e3dccec3c7416666564469237ce32b9311de0274115a8f3d2b209ca4',
+  operator: 'strictEqual'
+}
+
+Node.js v22.14.0
