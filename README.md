@@ -1,5 +1,24 @@
 # CopyPaste Chrome Extension
 
+## 明确采用版本（阶段 54）
+
+默认助手更新、专家设置与会话采用先比较明确模型、推理强度、单价及 Skill 版本，再由用户确认。五分钟比较绑定实际登录会话与配置状态，过期或变化拒绝确认；重试使用持久幂等键。已接收任务继续原模型和原费率。
+
+当前平台完整回归 **484/484**，保留原 462 项测试；专项 **93/93** 与全量重叠，不相加。实际构建版 Web **12/12**，新版无边框打包 Desktop 与真实 Chrome 原生侧栏 **11/11**。AI/媒体使用已授权假数据，身份、PostgreSQL、权限与版本事务实际执行。原始 102 项综合验收继续跟踪；以下旧章节保留其时源码与产物范围。
+
+![Actual version review](assets/screenshots/adoption-native-05-sidepanel-en.png)
+
+点击工具栏图标打开原生 Side Panel，默认右侧，再次点击收起；不设置 action popup。新增双语“檢視模型與費率版本”进入公司固定 `/app/specialists` 工作区，侧栏继续使用独立精简渲染器。左右位置由 Chrome 偏好决定。新版可加载 ZIP：`release/adoption-54/CopyPaste-0.5.0-sidepanel.zip`，原 `release/sidepanel/` 字节保留。
+
+```mermaid
+flowchart LR
+  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
+  Compare --> Consent[Explicit user consent]
+  Consent --> Save[Atomic version and receipt]
+  Save --> Future[Future tasks]
+  Existing[Already accepted tasks] --> Original[Original versions and prices]
+```
+
 ## 限时只读客服协助 / Controlled support
 
 继续由 Chrome 工具栏按钮开启原生右侧 Side Panel。客服授权在 Web 账户设置管理，侧栏不会获取管理员支持会话或用户的其他登录凭证。

@@ -1,5 +1,24 @@
 # CopyPaste Chrome Extension
 
+## Explicit adoption (stage 54)
+
+Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.
+
+Current backend regression: **484/484**, including all 462 prior named tests; focused **93/93** overlaps that total. Actual built Web: **12/12**; new packaged frameless Desktop and real native Chrome Side Panel: **11/11**. AI/media use the authorized simulated dependencies; identity, PostgreSQL, permissions and version transactions execute normally. All 102 original requirements remain tracked. Earlier sections below retain their historical source and artifact scope.
+
+![Actual version review](assets/screenshots/adoption-native-05-sidepanel-en.png)
+
+Click the toolbar icon to open the actual native Side Panel (right side with default Chrome settings); click again to close. No action popup is configured. The new bilingual review button opens the company's fixed `/app/specialists` workspace; the panel uses its own compact renderer. Chrome controls left/right placement. New loadable ZIP: `release/adoption-54/CopyPaste-0.5.0-sidepanel.zip`; the previous `release/sidepanel/` bytes remain intact.
+
+```mermaid
+flowchart LR
+  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
+  Compare --> Consent[Explicit user consent]
+  Consent --> Save[Atomic version and receipt]
+  Save --> Future[Future tasks]
+  Existing[Already accepted tasks] --> Original[Original versions and prices]
+```
+
 ## Controlled support update / 受控客服协助
 
 The toolbar action continues to open the native Chrome Side Panel on the right. Customers manage support grants in Web account settings; the panel does not acquire administrator support sessions or other customer login credentials.

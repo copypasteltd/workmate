@@ -270,7 +270,9 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       });
     }
     if (message.type === "OPEN_WEB") {
-      await chrome.tabs.create({ url: settings.webOrigin + "/app" });
+      const destination =
+        message.section === "specialists" ? "/app/specialists" : "/app";
+      await chrome.tabs.create({ url: settings.webOrigin + destination });
       return { ok: true };
     }
     if (message.type === "STATUS")

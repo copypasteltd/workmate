@@ -1000,6 +1000,13 @@ $("open-web").addEventListener(
       await send("OPEN_WEB");
     }),
 );
+$("review-models").addEventListener(
+  "click",
+  () =>
+    void run(async () => {
+      await send("OPEN_WEB", { section: "specialists" });
+    }),
+);
 $("tenant").addEventListener(
   "change",
   () =>
@@ -1281,6 +1288,7 @@ $("local-revoke").addEventListener(
     }),
 );
 const translations: Record<string, string> = {
+  檢視模型與費率版本: "Review model and rate versions",
   "工作，就從": "Your next idea,",
   "這裡開始。": "starts here.",
   "把網頁、素材和想法帶到你的工作空間。專業角色，隨時接手下一步。":
