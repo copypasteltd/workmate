@@ -549,7 +549,16 @@ try {
   await userPage
     .getByRole("heading", { name: "Current entitlements", exact: true })
     .waitFor();
-  await userPage.getByText("Confirmed by server", { exact: false }).waitFor();
+  await userPage
+    .locator("section")
+    .filter({
+      has: userPage.getByRole("heading", {
+        name: "Current entitlements",
+        exact: true,
+      }),
+    })
+    .getByText("Confirmed by server", { exact: false })
+    .waitFor();
   await userPage.waitForFunction(() => {
     const title = document.querySelector(".plan-card h2")?.textContent;
     return !!title && !/Confirming plan|正在確認方案/.test(title);

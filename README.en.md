@@ -432,3 +432,18 @@ Archive manifests preserve original SQL/TAP candidates, result-modal and narrow-
 
 ![Actual packaged frameless Desktop](../copypaste-desktop/assets/screenshots/26-vip-effective-rights.png)
 ![Actual native right panel rights](../copypaste-extension/assets/screenshots/15-vip-effective-rights.png)
+
+## Enterprise seat and storage enforcement (stage 48)
+
+`npm run qa:resources` exercises eight actual browser subflows: real email/TOTP sessions, independently approved workspace plans, an actual upload, usage/member/admin views, over-limit downgrade and permission revocation. Upgrades 058 and 059 each retain before/after comparisons of 23 original tables in both native databases. Their upgrade commands refuse to overwrite original snapshots.
+
+```mermaid
+flowchart LR
+  Plan[Fixed workspace plan] --> Lock[Current authority and transaction locks]
+  Lock --> Admission[Membership and asset admission]
+  Admission --> Commit[Actual rows audit and idempotent results]
+  Commit --> Views[Web Desktop Side Panel Admin capacity]
+  Erasure[Successful physical erasure] --> Release[Release retained bytes]
+```
+
+The initial 374-test run with one deletion conflict, the ambiguous UI locator failure and their original receipts remain archived. Current native previews were rebuilt and bound to source/runtime/installer bytes. No Docker or WSL is used. Current results are recorded in `evidence/alignment-platform.json`, `resource-ui.json` and `native-surfaces-artifacts.json`. All 102 complete acceptance cases remain separate.

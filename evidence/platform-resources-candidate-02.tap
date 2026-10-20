@@ -1,0 +1,165 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# Subtest: tenant resource totals retain fixed UUIDs and compatibility ceilings are explicitly labelled
+ok 1 - tenant resource totals retain fixed UUIDs and compatibility ceilings are explicitly labelled
+  ---
+  duration_ms: 4145.3935
+  ...
+# Subtest: two valid invitations race for one remaining seat; rejection retains the invitation and retry can succeed after a removal
+ok 2 - two valid invitations race for one remaining seat; rejection retains the invitation and retry can succeed after a removal
+  ---
+  duration_ms: 348.2986
+  ...
+# Subtest: personal VIP cannot enlarge tenant seats, and a global user freeze does not release an active seat
+ok 3 - personal VIP cannot enlarge tenant seats, and a global user freeze does not release an active seat
+  ---
+  duration_ms: 332.9884
+  ...
+# Subtest: an existing active seat can change role at capacity, while removed and administrator-suspended seats need current capacity
+ok 4 - an existing active seat can change role at capacity, while removed and administrator-suspended seats need current capacity
+  ---
+  duration_ms: 194.5572
+  ...
+# Subtest: a new publication does not widen an existing grant, and explicit downgrade preserves existing seats
+ok 5 - a new publication does not widen an existing grant, and explicit downgrade preserves existing seats
+  ---
+  duration_ms: 708.2005
+  ...
+# Subtest: concurrent upload reservations count across users and exact-key retries do not double reserve storage
+ok 6 - concurrent upload reservations count across users and exact-key retries do not double reserve storage
+  ---
+  duration_ms: 178.0804
+  ...
+# Subtest: a full storage reservation converts atomically to one version without double charging and completion can be replayed
+ok 7 - a full storage reservation converts atomically to one version without double charging and completion can be replayed
+  ---
+  duration_ms: 354.6568
+  ...
+# Subtest: cancellation and clock expiry release reservations without a worker; an expired commitment cannot be revived
+ok 8 - cancellation and clock expiry release reservations without a worker; an expired commitment cannot be revived
+  ---
+  duration_ms: 153.4332
+  ...
+# Subtest: all retained versions and independent copies are charged; rejected growth performs no object write
+ok 9 - all retained versions and independent copies are charged; rejected growth performs no object write
+  ---
+  duration_ms: 297.0551
+  ...
+# Subtest: a quota downgrade preserves bytes and existing reservations can finish without additional capacity
+ok 10 - a quota downgrade preserves bytes and existing reservations can finish without additional capacity
+  ---
+  duration_ms: 345.8564
+  ...
+# Subtest: independent asset transactions race for the same remaining bytes and the losing transaction leaves no version
+ok 11 - independent asset transactions race for the same remaining bytes and the losing transaction leaves no version
+  ---
+  duration_ms: 178.4058
+  ...
+# Subtest: an aggregate includes other members' private versions without exposing private rows or filenames
+not ok 12 - an aggregate includes other members' private versions without exposing private rows or filenames
+  ---
+  duration_ms: 208.85
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\resource-quotas.test.ts:1:16367'
+  failureType: 'testCodeFailure'
+  error: 'column "title" of relation "conversations" does not exist'
+  code: '42703'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\resource-quotas.test.ts:640:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: quarantine and logical deletion retain charged bytes until successful physical cleanup
+ok 13 - quarantine and logical deletion retain charged bytes until successful physical cleanup
+  ---
+  duration_ms: 429.1614
+  ...
+# Subtest: direct version INSERTs cannot bypass capacity or forge an uncommitted or mismatched upload conversion
+ok 14 - direct version INSERTs cannot bypass capacity or forge an uncommitted or mismatched upload conversion
+  ---
+  duration_ms: 558.8354
+  ...
+# Subtest: new versions uploaded by another authorized project member consume that uploader's reservation
+ok 15 - new versions uploaded by another authorized project member consume that uploader's reservation
+  ---
+  duration_ms: 490.3752
+  ...
+# Subtest: tenant quota reads reject foreign users, require both whole-tenant admin permissions, and respect overlapping project denies
+ok 16 - tenant quota reads reject foreign users, require both whole-tenant admin permissions, and respect overlapping project denies
+  ---
+  duration_ms: 261.7184
+  ...
+# {"request_id":"f1226e6d-ccaa-4d34-8a5e-4ae93f634d65","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: audit failure rolls back a new reservation and its replay; the same request can subsequently reserve once
+ok 17 - audit failure rolls back a new reservation and its replay; the same request can subsequently reserve once
+  ---
+  duration_ms: 202.5941
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 16
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12380.4448

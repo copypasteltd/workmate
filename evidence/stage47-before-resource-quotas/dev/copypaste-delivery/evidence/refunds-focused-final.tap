@@ -1,0 +1,594 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# Subtest: independent cash evidence supports unknown, actual partial payout and confirmed remaining failure without claiming full payment
+ok 1 - independent cash evidence supports unknown, actual partial payout and confirmed remaining failure without claiming full payment
+  ---
+  duration_ms: 15214.5071
+  ...
+# Subtest: cash discrepancies preserve an immutable observation and the original hold until independent reconciliation
+ok 2 - cash discrepancies preserve an immutable observation and the original hold until independent reconciliation
+  ---
+  duration_ms: 1285.6002
+  ...
+# Subtest: concurrent actual cash outcomes debit once; full external repayment derives the original payment refunded state
+ok 3 - concurrent actual cash outcomes debit once; full external repayment derives the original payment refunded state
+  ---
+  duration_ms: 1396.2839
+  ...
+# Subtest: refund facts reject cross-account evidence, account permissions and legacy ledger bypasses, and retain source expiry
+ok 4 - refund facts reject cross-account evidence, account permissions and legacy ledger bypasses, and retain source expiry
+  ---
+  duration_ms: 1313.5751
+  ...
+# Subtest: a consumption refund restores original promotional/paid funds and cancels only its actual unpaid credit; replay and cumulative limits preserve the original charge
+ok 5 - a consumption refund restores original promotional/paid funds and cancels only its actual unpaid credit; replay and cumulative limits preserve the original charge
+  ---
+  duration_ms: 1292.8466
+  ...
+# Subtest: refunded credit that was repaid with a gift and a payment returns those exact sources rather than converting gift funding to cash
+ok 6 - refunded credit that was repaid with a gift and a payment returns those exact sources rather than converting gift funding to cash
+  ---
+  duration_ms: 647.4071
+  ...
+# Subtest: expired promotional consumption refunds retain compensation and expiry facts without reviving spendable gift credit
+ok 7 - expired promotional consumption refunds retain compensation and expiry facts without reviving spendable gift credit
+  ---
+  duration_ms: 2588.5235
+  ...
+# Subtest: a cash refund reserves only unspent independently verified original payment funds and remains in reconciliation
+ok 8 - a cash refund reserves only unspent independently verified original payment funds and remains in reconciliation
+  ---
+  duration_ms: 1030.7015
+  ...
+# Subtest: high-value consumption refunds require a frozen independent approval and retain every original bucket
+ok 9 - high-value consumption refunds require a frozen independent approval and retain every original bucket
+  ---
+  duration_ms: 599.9811
+  ...
+# Subtest: refund scopes include the actual enterprise and personal subject; current deny and recent MFA are checked before replay
+ok 10 - refund scopes include the actual enterprise and personal subject; current deny and recent MFA are checked before replay
+  ---
+  duration_ms: 1367.4661
+  ...
+# {"request_id":"9ffb8800-5933-4e10-af0e-c50c979b1e3b","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# {"request_id":"05812a82-68c7-446d-9eef-d8996a9626cd","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: refund request and actual payout audit failures roll back facts, holds and idempotency together
+ok 11 - refund request and actual payout audit failures roll back facts, holds and idempotency together
+  ---
+  duration_ms: 1400.605
+  ...
+# Subtest: concurrent compensation cannot exceed the original consumption or return the same funding twice
+ok 12 - concurrent compensation cannot exceed the original consumption or return the same funding twice
+  ---
+  duration_ms: 1066.5814
+  ...
+# Subtest: a task can spend only funds outside a cash commitment; settlement and independently verified payout preserve each hold
+ok 13 - a task can spend only funds outside a cash commitment; settlement and independently verified payout preserve each hold
+  ---
+  duration_ms: 1342.3301
+  ...
+# Subtest: payment and account UUIDs are case-insensitive without changing the payment identity or amount
+ok 14 - payment and account UUIDs are case-insensitive without changing the payment identity or amount
+  ---
+  duration_ms: 530.8851
+  ...
+# Subtest: verified payments repay actual credit debt before creating spendable paid funds; old external receipts cannot be posted again
+ok 15 - verified payments repay actual credit debt before creating spendable paid funds; old external receipts cannot be posted again
+  ---
+  duration_ms: 746.8558
+  ...
+# Subtest: concurrent payment postings use one source exactly once and permission revocation prevents receipt replay
+ok 16 - concurrent payment postings use one source exactly once and permission revocation prevents receipt replay
+  ---
+  duration_ms: 640.8732
+  ...
+# Subtest: recording and independent receipt verification never change balances; exact confirmed payment posts once
+ok 17 - recording and independent receipt verification never change balances; exact confirmed payment posts once
+  ---
+  duration_ms: 1514.3274
+  ...
+# Subtest: payment registration and confirmation have persistent idempotency, per-account scope and no legacy top-up bypass
+ok 18 - payment registration and confirmation have persistent idempotency, per-account scope and no legacy top-up bypass
+  ---
+  duration_ms: 1014.4403
+  ...
+# Subtest: quarantined, changed-subject and future payment evidence cannot become product credit
+ok 19 - quarantined, changed-subject and future payment evidence cannot become product credit
+  ---
+  duration_ms: 834.5266
+  ...
+# {"request_id":"7e48edd9-0ec5-4cc1-a170-95c7e41bc038","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: payment audit failure rolls back registration, and committed payment facts cannot be edited or deleted
+ok 20 - payment audit failure rolls back registration, and committed payment facts cannot be edited or deleted
+  ---
+  duration_ms: 465.346
+  ...
+# Subtest: fee schema snapshot is byte-derived from the unchanged original OpenAPI
+ok 21 - fee schema snapshot is byte-derived from the unchanged original OpenAPI
+  ---
+  duration_ms: 65.6767
+  ...
+# Subtest: financial preview has no ledger, expiry or account effects and freezes the real policy
+ok 22 - financial preview has no ledger, expiry or account effects and freezes the real policy
+  ---
+  duration_ms: 291.1203
+  ...
+# Subtest: personal and enterprise gifts retain actual administrator, policy and journal identity; replay never double-credits
+ok 23 - personal and enterprise gifts retain actual administrator, policy and journal identity; replay never double-credits
+  ---
+  duration_ms: 695.9175
+  ...
+# Subtest: debits bind an original funding bucket and cannot consume another source, expired credit or held funds
+ok 24 - debits bind an original funding bucket and cannot consume another source, expired credit or held funds
+  ---
+  duration_ms: 1047.1576
+  ...
+# Subtest: daily limits use exact amounts and replay; delegated caps cannot be widened
+ok 25 - daily limits use exact amounts and replay; delegated caps cannot be widened
+  ---
+  duration_ms: 962.0799
+  ...
+# Subtest: independent fee approval requires the exact version/hash, two actual authorized actors and both permissions
+ok 26 - independent fee approval requires the exact version/hash, two actual authorized actors and both permissions
+  ---
+  duration_ms: 711.7965
+  ...
+# Subtest: approval fails closed after original session revocation, authority/target or policy changes; rejection remains possible
+ok 27 - approval fails closed after original session revocation, authority/target or policy changes; rejection remains possible
+  ---
+  duration_ms: 1869.2023
+  ...
+# Subtest: credit limits accept zero and exact integers beyond JS precision while preserving debt and holds
+ok 28 - credit limits accept zero and exact integers beyond JS precision while preserving debt and holds
+  ---
+  duration_ms: 898.433
+  ...
+# Subtest: financial intent is immutable at the database boundary and legacy paths cannot bypass canonical controls
+ok 29 - financial intent is immutable at the database boundary and legacy paths cannot bypass canonical controls
+  ---
+  duration_ms: 1587.0461
+  ...
+# Subtest: scope denies cover personal/enterprise financial writes and operation reads; MFA is live
+ok 30 - scope denies cover personal/enterprise financial writes and operation reads; MFA is live
+  ---
+  duration_ms: 841.6995
+  ...
+# Subtest: concurrent task reservation and financial write serialize without a foreign-key lock upgrade deadlock
+ok 31 - concurrent task reservation and financial write serialize without a foreign-key lock upgrade deadlock
+  ---
+  duration_ms: 312.2493
+  ...
+# {"request_id":"7fa14cab-a7a8-4ea7-8db7-d4280efb525a","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: audit failure rolls back the complete fee change and leaves its preview available for a safe retry
+ok 32 - audit failure rolls back the complete fee change and leaves its preview available for a safe retry
+  ---
+  duration_ms: 583.1972
+  ...
+# Subtest: expired frozen review requests cannot be approved or rewritten; their actual rejection is immutable
+ok 33 - expired frozen review requests cannot be approved or rewritten; their actual rejection is immutable
+  ---
+  duration_ms: 557.0581
+  ...
+# Subtest: new gifts cannot overflow the account and daily credit increases cannot be reset by reducing the limit
+ok 34 - new gifts cannot overflow the account and daily credit increases cannot be reset by reducing the limit
+  ---
+  duration_ms: 1164.5291
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# Subtest: a credit hold predating a top-up consumes its real paid source exactly once
+ok 35 - a credit hold predating a top-up consumes its real paid source exactly once
+  ---
+  duration_ms: 6768.9019
+  ...
+# Subtest: another task's funded hold survives credit consumption; incoming credit repays gross debt
+ok 36 - another task's funded hold survives credit consumption; incoming credit repays gross debt
+  ---
+  duration_ms: 461.8888
+  ...
+# Subtest: released funds from the same original lot merge into one immutable source
+ok 37 - released funds from the same original lot merge into one immutable source
+  ---
+  duration_ms: 243.91
+  ...
+# Subtest: expired gifts retain held funds and expire only the unused remainder after settlement
+ok 38 - expired gifts retain held funds and expire only the unused remainder after settlement
+  ---
+  duration_ms: 2300.9247
+  ...
+# Subtest: late gifts are consumed before credit, with paid funds and expiry kept separate
+ok 39 - late gifts are consumed before credit, with paid funds and expiry kept separate
+  ---
+  duration_ms: 163.8485
+  ...
+# Subtest: uncertain and over-budget usage keep the original hold without inventing charge sources
+ok 40 - uncertain and over-budget usage keep the original hold without inventing charge sources
+  ---
+  duration_ms: 227.1439
+  ...
+# Subtest: concurrent settlement, top-up and source refund serialize without spending another hold
+ok 41 - concurrent settlement, top-up and source refund serialize without spending another hold
+  ---
+  duration_ms: 467.2911
+  ...
+# Subtest: accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+ok 42 - accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+  ---
+  duration_ms: 445.1676
+  ...
+# Subtest: repayment cannot be refunded without independently verified evidence and credit cannot drop below actual debt
+ok 43 - repayment cannot be refunded without independently verified evidence and credit cannot drop below actual debt
+  ---
+  duration_ms: 591.6236
+  ...
+# Subtest: invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+ok 44 - invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+  ---
+  duration_ms: 240.5582
+  ...
+# Subtest: database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+ok 45 - database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+  ---
+  duration_ms: 278.0492
+  ...
+# Subtest: source and credit repayment records retain tenant isolation and immutable repayment provenance
+ok 46 - source and credit repayment records retain tenant isolation and immutable repayment provenance
+  ---
+  duration_ms: 299.3369
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# Subtest: a changed applied migration digest stops startup and the forward-only history remains intact
+ok 47 - a changed applied migration digest stops startup and the forward-only history remains intact
+  ---
+  duration_ms: 7727.2041
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# populated 041 upgrade: applied migration 42
+# populated 041 upgrade: applied migration 43
+# populated 041 upgrade: applied migration 44
+# populated 041 upgrade: applied migration 45
+# populated 041 upgrade: applied migration 46
+# populated 041 upgrade: applied migration 47
+# populated 041 upgrade: applied migration 48
+# populated 041 upgrade: applied migration 49
+# populated 041 upgrade: applied migration 50
+# populated 041 upgrade: applied migration 51
+# populated 041 upgrade: applied migration 52
+# populated 041 upgrade: applied migration 53
+# populated 041 upgrade: applied migration 54
+# populated 041 upgrade: applied migration 55
+# Subtest: a populated 041 checkpoint upgrades without pending-trigger DDL failures or rewriting original financial facts
+ok 48 - a populated 041 checkpoint upgrades without pending-trigger DDL failures or rewriting original financial facts
+  ---
+  duration_ms: 8570.5654
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# populated 047 approval upgrade: applied migration 48
+# populated 047 approval upgrade: applied migration 49
+# populated 047 approval upgrade: applied migration 50
+# populated 047 approval upgrade: applied migration 51
+# populated 047 approval upgrade: applied migration 52
+# populated 047 approval upgrade: applied migration 53
+# populated 047 approval upgrade: applied migration 54
+# populated 047 approval upgrade: applied migration 55
+# Subtest: 048 preserves real financial review history, registers frozen member/account requests and cancels unrecorded legacy commands
+ok 49 - 048 preserves real financial review history, registers frozen member/account requests and cancels unrecorded legacy commands
+  ---
+  duration_ms: 8169.7219
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# populated 052 credit provenance upgrade: applied migration 53
+# populated 052 credit provenance upgrade: applied migration 54
+# populated 052 credit provenance upgrade: applied migration 55
+# Subtest: a populated 052 upgrade freezes actual opening credit and preserves missing legacy provenance without inventing repayment links
+ok 50 - a populated 052 upgrade freezes actual opening credit and preserves missing legacy provenance without inventing repayment links
+  ---
+  duration_ms: 12745.0356
+  ...
+1..50
+# tests 50
+# suites 0
+# pass 50
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 122491.3984

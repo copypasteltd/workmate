@@ -506,3 +506,18 @@ flowchart LR
 
 ![实际打包无边框 Desktop](../copypaste-desktop/assets/screenshots/26-vip-effective-rights.png)
 ![实际原生右侧栏权益](../copypaste-extension/assets/screenshots/15-vip-effective-rights.png)
+
+## 企业席位与存储执行（阶段 48）
+
+新增 `npm run qa:resources`：真实邮箱/TOTP、独立审批授予企业方案、实际上传、用户用量/成员、后台容量、降级超额和撤权清空八组。058、059 分别有升级前/后两库 23 类原行比较，`upgrade:resources-local` 与 `upgrade:resource-erasure-local` 保留真实快照，禁止重复覆盖前态。原始 374 项中 1 项删除冲突、定位歧义和前后各阶段回执均保留。
+
+```mermaid
+flowchart LR
+  Plan[固定企业方案] --> Lock[现行权限与事务锁]
+  Lock --> Admission[成员和云资产准入]
+  Admission --> Commit[实际行 审计 幂等结果]
+  Commit --> Views[Web Desktop Side Panel Admin 容量]
+  Erasure[真实物理擦除] --> Release[释放保留字节]
+```
+
+当前原生预览重新构建并绑定源码、运行目录和安装器字节；不使用 Docker/WSL。完整当前数字见 `evidence/alignment-platform.json`、`resource-ui.json` 和 `native-surfaces-artifacts.json`。原始 102 条综合验收仍单独保留。

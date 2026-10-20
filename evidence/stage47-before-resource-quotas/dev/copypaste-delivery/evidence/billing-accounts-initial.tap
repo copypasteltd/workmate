@@ -1,0 +1,113 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# Subtest: a credit hold predating a top-up consumes its real paid source exactly once
+ok 1 - a credit hold predating a top-up consumes its real paid source exactly once
+  ---
+  duration_ms: 3636.4718
+  ...
+# Subtest: another task's funded hold survives credit consumption; incoming credit repays gross debt
+ok 2 - another task's funded hold survives credit consumption; incoming credit repays gross debt
+  ---
+  duration_ms: 96.663
+  ...
+# Subtest: released funds from the same original lot merge into one immutable source
+ok 3 - released funds from the same original lot merge into one immutable source
+  ---
+  duration_ms: 50.8858
+  ...
+# Subtest: expired gifts retain held funds and expire only the unused remainder after settlement
+ok 4 - expired gifts retain held funds and expire only the unused remainder after settlement
+  ---
+  duration_ms: 48.1484
+  ...
+# Subtest: late gifts are consumed before credit, with paid funds and expiry kept separate
+ok 5 - late gifts are consumed before credit, with paid funds and expiry kept separate
+  ---
+  duration_ms: 45.8845
+  ...
+# Subtest: uncertain and over-budget usage keep the original hold without inventing charge sources
+ok 6 - uncertain and over-budget usage keep the original hold without inventing charge sources
+  ---
+  duration_ms: 54.124
+  ...
+# Subtest: concurrent settlement, top-up and source refund serialize without spending another hold
+ok 7 - concurrent settlement, top-up and source refund serialize without spending another hold
+  ---
+  duration_ms: 140.3427
+  ...
+# Subtest: accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+ok 8 - accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+  ---
+  duration_ms: 126.7659
+  ...
+# Subtest: repayment does not create refundable paid funds and credit cannot drop below actual debt
+ok 9 - repayment does not create refundable paid funds and credit cannot drop below actual debt
+  ---
+  duration_ms: 198.8097
+  ...
+# Subtest: invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+ok 10 - invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+  ---
+  duration_ms: 91.9921
+  ...
+# Subtest: database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+ok 11 - database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+  ---
+  duration_ms: 164.9779
+  ...
+# Subtest: source and credit repayment records retain tenant isolation and immutable repayment provenance
+ok 12 - source and credit repayment records retain tenant isolation and immutable repayment provenance
+  ---
+  duration_ms: 97.519
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6773.2961
