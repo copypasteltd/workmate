@@ -200,7 +200,6 @@ export function registerAdmin(
     "billing",
     "entitlements",
     "execution",
-    "connections",
     "devices",
     "content",
     "jobs",

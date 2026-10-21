@@ -49,6 +49,7 @@ import { registerSchedules } from "./schedules.js";
 import { registerFederation } from "./federation.js";
 import { registerDeletions } from "./deletions.js";
 import { startDemoGateway } from "./demo-gateway.js";
+import { startConnectorFixture } from "./connector-fixture.js";
 import { registerDemo } from "./demo.js";
 import { registerUploads } from "./uploads.js";
 import { registerTaskEvents } from "./task-events.js";
@@ -69,6 +70,8 @@ import {
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   const demo = c.DEMO_MODE ? await startDemoGateway(c) : undefined;
   if (demo) c = demo.config;
+  const connectorFixture = c.DEMO_MODE && !c.CONNECTOR_FIXTURE_ORIGIN ? await startConnectorFixture(c) : undefined;
+  if (connectorFixture) c = connectorFixture.config;
   const db = new Database(c);
   const catalog = new Catalog();
   await catalog.load();
@@ -388,8 +391,9 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     if (started) await worker.stop();
     await db.close();
     await demo?.close();
+    await connectorFixture?.close();
   });
-  return { app, db, catalog, worker, storage, routes };
+  return { app, db, catalog, worker, storage, routes, connectorFixture };
 }
 if (
   process.argv[1] &&

@@ -6,6 +6,19 @@ import { spawn } from "node:child_process";
 // This is a filesystem alias, not a VM or a second copy of project files.
 // All data, binaries and source still reside in this repository under dev/.
 const real = process.cwd();
+let child;
+let shutdownRequested = false;
+let controlReady = false;
+function requestShutdown() {
+  shutdownRequested = true;
+  if (controlReady && child?.connected && child.exitCode === null)
+    child.send({ action: "shutdown" });
+}
+process.on("SIGINT", requestShutdown);
+process.on("SIGTERM", requestShutdown);
+process.on("message", (message) => {
+  if (message?.action === "shutdown") requestShutdown();
+});
 let temp,
   alias = real;
 if (process.platform === "win32" && /[^\x00-\x7f]/.test(real)) {
@@ -29,7 +42,7 @@ if (process.platform === "win32" && /[^\x00-\x7f]/.test(real)) {
   alias = path.join(temp, "runtime");
   await symlink(real, alias, "junction");
 }
-const child = spawn(
+child = spawn(
   process.execPath,
   [
     "--preserve-symlinks",
@@ -43,6 +56,12 @@ const child = spawn(
     stdio: ["ignore", "inherit", "inherit", "ipc"],
   },
 );
+child.on("message", (message) => {
+  if (message?.control === "ready") {
+    controlReady = true;
+    if (shutdownRequested) requestShutdown();
+  }
+});
 let stopped = false;
 async function cleanup() {
   if (stopped) return;
@@ -54,11 +73,6 @@ async function cleanup() {
     await rmdir(temp).catch(() => {});
   }
 }
-process.on("SIGINT", () => child.send({ action: "shutdown" }));
-process.on("SIGTERM", () => child.send({ action: "shutdown" }));
-process.on("message", (message) => {
-  if (message?.action === "shutdown") child.send(message);
-});
 child.on("exit", async (code) => {
   await cleanup();
   process.exitCode = code ?? 1;

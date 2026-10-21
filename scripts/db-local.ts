@@ -37,15 +37,12 @@ const server = new NativePostgres({
   authMethod: "scram-sha-256",
   initdbFlags: ["--locale=C", "--encoding=UTF8"],
 });
-try {
-  await access(path.join(dir, "PG_VERSION"));
-} catch {
-  await server.initialise();
-}
-await server.start();
+let started = false;
 let stopping = false;
+let shutdownRequested = false;
 async function stop() {
-  if (stopping) return;
+  shutdownRequested = true;
+  if (!started || stopping) return;
   stopping = true;
   await server.stop();
   process.exit(0);
@@ -55,6 +52,17 @@ process.on("SIGTERM", stop);
 process.on("message", (message) => {
   if ((message as any)?.action === "shutdown") void stop();
 });
+// The launcher retains an early shutdown request until this control channel
+// exists. Recovery may continue safely before PostgreSQL can be stopped.
+if (process.connected) process.send?.({ control: "ready" });
+try {
+  await access(path.join(dir, "PG_VERSION"));
+} catch {
+  await server.initialise();
+}
+await server.start();
+started = true;
+if (shutdownRequested) await stop();
 const base = new URL(owner);
 base.pathname = "/postgres";
 const bootstrap = new pg.Client({ connectionString: base.href });
@@ -92,7 +100,10 @@ await c.query("GRANT CONNECT,CREATE ON DATABASE copypaste TO cp_queue");
 // the production guard above or start any other database/virtualized service.
 if (process.env.COPYPASTE_NATIVE_DATABASE_START_ONLY !== "true")
   await runMigrations(c, "copypaste");
-else console.log("Native PostgreSQL startup only; migrations explicitly deferred.");
+else
+  console.log(
+    "Native PostgreSQL startup only; migrations explicitly deferred.",
+  );
 await c.end();
 console.log(
   "Native PostgreSQL ready on 127.0.0.1:" +

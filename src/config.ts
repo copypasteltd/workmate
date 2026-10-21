@@ -114,6 +114,15 @@ const schema = z.object({
   WORKER_ENABLED: bool.default(true),
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(10),
   DEMO_MODE: bool.default(false),
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_ADS_API_VERSION: z.string().regex(/^v\d+$/).optional(),
+  GOOGLE_ADS_DEVELOPER_TOKEN: z.string().min(1).optional(),
+  META_APP_ID: z.string().min(1).optional(),
+  META_APP_SECRET: z.string().min(1).optional(),
+  META_GRAPH_VERSION: z.string().regex(/^v\d+\.\d+$/).optional(),
+  CONNECTOR_FIXTURE_ORIGIN: z.string().url().optional(),
+  CONNECTOR_FIXTURE_KEY: z.string().min(32).optional(),
   EXTENSION_ID: z.string().optional(),
   S3_ENDPOINT: z.string().url().optional(),
   S3_REGION: z.string().default("auto"),
@@ -137,6 +146,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     "ADMIN_ORIGIN",
     "API_ORIGIN",
     "SSO_CALLBACK_ORIGIN",
+    "CONNECTOR_FIXTURE_ORIGIN",
   ] as const) {
     if (!c[key]) continue;
     const u = new URL(c[key]);
@@ -144,6 +154,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       throw new Error(
         `${key} must be an exact HTTP(S) origin without a path or credentials`,
       );
+  }
+  if (c.CONNECTOR_FIXTURE_ORIGIN || c.CONNECTOR_FIXTURE_KEY) {
+    const u = c.CONNECTOR_FIXTURE_ORIGIN ? new URL(c.CONNECTOR_FIXTURE_ORIGIN) : null;
+    if (!c.DEMO_MODE || c.NODE_ENV === "production" || !u || !c.CONNECTOR_FIXTURE_KEY ||
+        !["127.0.0.1", "localhost", "[::1]"].includes(u.hostname) || u.protocol !== "http:")
+      throw new Error("Connector fixtures require a private loopback HTTP origin and key in non-production DEMO_MODE");
   }
   for (const value of c.SSO_ALLOWED_ORIGINS.split(",")
     .map((v) => v.trim())

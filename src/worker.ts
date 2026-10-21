@@ -1,5 +1,6 @@
 import { expireAdminApprovals } from "./admin-approval-storage.js";
 import { advanceCreativeMatrices } from "./creative-matrices.js";
+import { advanceConnectors } from "./connectors.js";
 import { advanceVideoProjects, createVideoProject, enqueueVideoRender } from "./video-projects.js";
 import { videoCreate } from "./video-project-model.js";
 import { videoRendererProfile } from "./video-render.js";
@@ -84,6 +85,8 @@ export class Worker {
   private matrixRun: Promise<unknown> | null = null;
   private videoRun: Promise<unknown> | null = null;
   private videoAbort = new AbortController();
+  private connectorRun: Promise<unknown> | null = null;
+  private connectorAbort = new AbortController();
   private active = new Map<string, AbortController>();
   private erasure: ErasureService;
   private retention: RetentionService;
@@ -170,6 +173,11 @@ export class Worker {
         this.videoRun = advanceVideoProjects(this.db, this.storage, undefined, { signal: this.videoAbort.signal })
           .catch(() => console.error(JSON.stringify({ component: "worker.video_projects", error_code: "VIDEO_MAINTENANCE_FAILED" })))
           .finally(() => { this.videoRun = null; });
+      }
+      if (!this.stopping && !this.connectorRun) {
+        this.connectorRun = advanceConnectors(this.db, this.storage, { signal: this.connectorAbort.signal })
+          .catch(() => console.error(JSON.stringify({ component: "worker.connectors", error_code: "CONNECTOR_MAINTENANCE_FAILED" })))
+          .finally(() => { this.connectorRun = null; });
       }
       // A connector/workflow error must never starve cleanup or other due work.
       for (const [name, operation] of [
@@ -1589,7 +1597,9 @@ export class Worker {
     for (const c of this.active.values()) c.abort();
     await this.boss.stop({ graceful: true, timeout: 20000 });
     this.videoAbort.abort();
+    this.connectorAbort.abort();
     await this.videoRun;
+    await this.connectorRun;
     await this.matrixRun;
   }
 }
