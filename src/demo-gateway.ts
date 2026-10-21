@@ -65,6 +65,17 @@ export async function startDemoGateway(c: Config) {
         json(200, result);
         return;
       }
+      if (req.url === "/v1/responses/input_tokens") {
+        const body = JSON.parse(bytes.toString());
+        if (body.model !== "copypaste-demo") {
+          json(400, { error: { code: "DEMO_MODEL_REQUIRED" } });
+          return;
+        }
+        // This fixture declares its synthetic input usage; no tokenizer or
+        // external model is invoked and this never qualifies a live service.
+        json(200, { object: "response.input_tokens", input_tokens: 100 });
+        return;
+      }
       if (req.url !== "/v1/responses") {
         json(404, { error: { code: "NOT_FOUND" } });
         return;
@@ -273,6 +284,8 @@ export async function startDemoGateway(c: Config) {
       AI_IMAGE_MODEL: "copypaste-demo-image",
       AI_VERIFIED: true,
       AI_IMAGE_VERIFIED: true,
+      AI_INPUT_COUNT_VERIFIED: true,
+      AI_INPUT_COUNT_HKD_MICROS_PER_CALL: 0,
       AI_INPUT_HKD_MICROS_PER_MILLION: 1000000,
       AI_OUTPUT_HKD_MICROS_PER_MILLION: 1000000,
       AI_IMAGE_HKD_MICROS_PER_IMAGE: 10000,

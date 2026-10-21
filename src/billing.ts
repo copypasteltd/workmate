@@ -125,6 +125,7 @@ export async function reserve(
     "INSERT INTO reservations(task_id,tenant_id,billing_account_id,amount_micros) VALUES($1,$2,$4,$3)",
     [task, tenant, hold.toString(), w.id],
   );
+  await tx.query("SELECT register_task_ai_budget($1)", [task]);
   const lots = (
     await tx.query(
       "SELECT * FROM funding_lots WHERE billing_account_id=$1 AND remaining_micros>reserved_micros AND (expires_at IS NULL OR expires_at>now()) ORDER BY expires_at ASC NULLS LAST,created_at,id FOR UPDATE",

@@ -200,6 +200,14 @@ before(async () => {
     const raw = Buffer.concat(chunks).toString();
     const body = req.url === "/v1/images/edits" ? raw : JSON.parse(raw || "{}");
     requests.push({ path: req.url!, body });
+    if (req.url === "/v1/responses/input_tokens") {
+      res
+        .writeHead(200, { "Content-Type": "application/json" })
+        .end(
+          JSON.stringify({ object: "response.input_tokens", input_tokens: 7 }),
+        );
+      return;
+    }
     if (req.url?.startsWith("/v1/images/")) {
       if (rejectImage) {
         res.destroy();
@@ -342,6 +350,8 @@ before(async () => {
       AI_MODEL: "copypaste-contract-fixture",
       AI_REASONING_EFFORT: "high",
       AI_VERIFIED: "true",
+      AI_INPUT_COUNT_VERIFIED: "true",
+      AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "0",
       AI_INPUT_HKD_MICROS_PER_MILLION: "1000000",
       AI_OUTPUT_HKD_MICROS_PER_MILLION: "2000000",
       AI_IMAGE_MODEL: "image-original-fixture",
@@ -425,11 +435,28 @@ test(
   async () => {
     const f = await fixture(),
       queued = await createTask(f);
-    let toolFinished = false;
+    let toolFinished = false,
+      revocationCommitted = false;
     class RevokingRuntime extends CodexRuntimeAdapter {
       override start(ctx: RuntimeContext) {
         return super.start({
           ...ctx,
+          requestAuthority: {
+            ...ctx.requestAuthority!,
+            authorize: async (request) => {
+              // Revoke at the actual follow-up authorization boundary. Revoking
+              // in the tool races the worker's independent 3-second heartbeat:
+              // it can interrupt Codex before the gateway sees another request.
+              if (toolFinished && !revocationCommitted) {
+                await s.db.control.query(
+                  "UPDATE users SET auth_version=auth_version+1 WHERE id=$1",
+                  [f.owner.id],
+                );
+                revocationCommitted = true;
+              }
+              return ctx.requestAuthority!.authorize(request);
+            },
+          },
           tools: ctx.tools.map((tool) =>
             tool.name !== "project_assets"
               ? tool
@@ -437,10 +464,6 @@ test(
                   ...tool,
                   run: async (args: unknown, callId: string) => {
                     const result = await tool.run(args, callId);
-                    await s.db.control.query(
-                      "UPDATE users SET auth_version=auth_version+1 WHERE id=$1",
-                      [f.owner.id],
-                    );
                     toolFinished = true;
                     return result;
                   },
@@ -454,6 +477,11 @@ test(
     await worker(new RevokingRuntime(s.db.config)).run(f.tenant, queued.id);
     assert.equal(toolFinished, true);
     assert.equal(
+      revocationCommitted,
+      true,
+      "The original identity is revoked before authorizing the actual follow-up",
+    );
+    assert.equal(
       requests.slice(start).filter((r) => r.path === "/v1/responses").length,
       1,
     );
@@ -466,8 +494,27 @@ test(
         [queued.id],
       )
     ).rows;
+    const authorized = events.filter(
+      (e) => e.kind === "gateway.request_authorized",
+    );
     assert.equal(
-      events.filter((e) => e.kind === "gateway.request_authorized").length,
+      authorized.length,
+      2,
+      "One exact count and one generation were authorized before revocation",
+    );
+    assert.equal(
+      authorized.filter((e) => e.body.operation === "responses").length,
+      1,
+    );
+    assert.equal(
+      authorized.filter((e) => e.body.operation === "responses.input_tokens")
+        .length,
+      1,
+    );
+    assert.equal(
+      requests
+        .slice(start)
+        .filter((r) => r.path === "/v1/responses/input_tokens").length,
       1,
     );
     assert.ok(
@@ -744,7 +791,9 @@ test("actual image generation and edit keep the original internal image alias, o
   await worker(runtime).run(f.tenant, queued.id);
   const completed = await task(queued.id);
   assert.equal(completed.status, "succeeded", completed.error_code);
-  assert.equal(completed.charged_micros, "429");
+  // The injected test adapter reported synthetic text counters without a text
+  // gateway call. Only the two actual provider image facts can be billed here.
+  assert.equal(completed.charged_micros, "400");
   const images = requests
     .slice(start)
     .filter((r) => r.path.startsWith("/v1/images/"));

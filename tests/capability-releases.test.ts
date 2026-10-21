@@ -1,3 +1,4 @@
+import { seedProviderBudgetPolicy } from "../src/provider-budgets.js";
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID, createHash } from "node:crypto";
@@ -276,6 +277,8 @@ before(async () => {
       DEV_MAILBOX: "true",
       WORKER_ENABLED: "false",
       DEMO_MODE: "true",
+      AI_VERIFICATION_PER_RUN_BUDGET_MICROS: "100000000",
+      AI_PLATFORM_VERIFICATION_DAILY_BUDGET_MICROS: "1000000000000",
     }),
     { worker: false },
   );
@@ -434,7 +437,7 @@ test("actual pinned Codex performs a tool loop with requested model/effort and k
         [v.id],
       )
     ).rows[0].n,
-    3,
+    5,
   );
   const authorized = (
     await s.db.control.query(
@@ -442,10 +445,19 @@ test("actual pinned Codex performs a tool loop with requested model/effort and k
       [v.id],
     )
   ).rows;
-  assert.equal(authorized.length, 2);
-  assert.equal(new Set(authorized.map((row) => row.body.operation_id)).size, 2);
+  assert.equal(authorized.length, 4);
+  assert.equal(new Set(authorized.map((row) => row.body.operation_id)).size, 4);
+  assert.equal(
+    authorized.filter((row) => row.body.operation === "responses").length,
+    2,
+  );
+  assert.equal(
+    authorized.filter((row) => row.body.operation === "responses.input_tokens")
+      .length,
+    2,
+  );
   for (const { body } of authorized) {
-    assert.equal(body.operation, "responses");
+    assert.ok(["responses", "responses.input_tokens"].includes(body.operation));
     assert.equal(body.model_alias, d.v.document.model_alias);
     assert.match(body.request_hash, /^[a-f0-9]{64}$/);
     assert.ok(body.request_bytes > 0);
@@ -1356,8 +1368,10 @@ test("a later failed verification blocks an earlier passed receipt for the same 
   assert.equal((await validate(a, d.v)).state, "passed");
   await rejectedImageGateway(400, async (count) => {
     const r = await validate(a, d.v);
-    assert.equal(r.state, "failed", JSON.stringify(r));
-    assert.equal(r.result.usage_known, true);
+    // HTTP rejection alone cannot prove that an already dispatched provider
+    // operation is free. The later attempt still blocks older qualification.
+    assert.equal(r.state, "reconciling", JSON.stringify(r));
+    assert.equal(r.result.usage_known, false);
     assert.equal(count(), 1);
   });
   assert.equal(
@@ -1823,4 +1837,147 @@ test("publishing then rolling back to the same model identity still invalidates 
     ).rows[0].version,
     1,
   );
+});
+
+test("administrator verification shares a bounded run budget and retains the first image fee when the second is denied", async () => {
+  const a = await administrator(),
+    doc = imageDocument();
+  const original = s.db.config.AI_VERIFICATION_PER_RUN_BUDGET_MICROS;
+  try {
+    s.db.config.AI_VERIFICATION_PER_RUN_BUDGET_MICROS = doc.rates[0];
+    await seedProviderBudgetPolicy(s.db);
+    const d = await draft(a, doc),
+      v = await validate(a, d.v);
+    assert.equal(v.state, "failed", JSON.stringify(v));
+    assert.equal(v.result.error_code, "AI_REQUEST_BUDGET_EXHAUSTED");
+    assert.equal(v.result.known_cost_micros, String(doc.rates[0]));
+    assert.equal(v.result.usage_known, true);
+    assert.equal(v.capability_version_id, null);
+    const calls = (
+      await s.db.control.query(
+        "SELECT * FROM ai_gateway_requests WHERE validation_id=$1 ORDER BY created_at,id",
+        [v.id],
+      )
+    ).rows;
+    assert.deepEqual(
+      calls.map((r) => r.state),
+      ["completed", "cancelled"],
+    );
+    assert.equal(calls[1].dispatched_at, null);
+    assert.equal(calls[1].known_charge_micros, "0");
+  } finally {
+    s.db.config.AI_VERIFICATION_PER_RUN_BUDGET_MICROS = original;
+    await seedProviderBudgetPolicy(s.db);
+  }
+});
+
+test("administrator daily platform budget is shared across validations and never uses customer wallets", async () => {
+  const a = await administrator(),
+    doc = imageDocument();
+  const original = s.db.config.AI_PLATFORM_VERIFICATION_DAILY_BUDGET_MICROS;
+  try {
+    const used = (
+      await s.db.control.query(
+        "SELECT ai_budget_used(NULL,id)::text AS numerator FROM ai_platform_budget_periods WHERE data_mode='simulated' AND purpose='verification' AND utc_day=(clock_timestamp() AT TIME ZONE 'UTC')::date",
+      )
+    ).rows;
+    assert.equal(used.length, 1);
+    const current = Number((BigInt(used[0].numerator) + 999999n) / 1000000n);
+    s.db.config.AI_PLATFORM_VERIFICATION_DAILY_BUDGET_MICROS =
+      current + doc.rates[0];
+    await seedProviderBudgetPolicy(s.db);
+    const before = (
+      await s.db.control.query(
+        "SELECT id,balance_micros,reserved_micros FROM wallets ORDER BY id",
+      )
+    ).rows;
+    const first = await draft(a, doc),
+      v = await validate(a, first.v);
+    assert.equal(v.state, "failed", JSON.stringify(v));
+    assert.equal(v.result.error_code, "AI_REQUEST_PLATFORM_BUDGET_EXHAUSTED");
+    assert.equal(v.result.known_cost_micros, String(doc.rates[0]));
+    const second = await draft(a, imageDocument()),
+      denied = await validate(a, second.v);
+    assert.equal(denied.state, "failed", JSON.stringify(denied));
+    assert.equal(denied.result.known_cost_micros, "0");
+    assert.equal(
+      denied.result.error_code,
+      "AI_REQUEST_PLATFORM_BUDGET_EXHAUSTED",
+    );
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT count(*) FROM ai_gateway_requests WHERE validation_id=$1 AND dispatched_at IS NOT NULL",
+          [denied.id],
+        )
+      ).rows[0].count,
+      "0",
+    );
+    assert.deepEqual(
+      (
+        await s.db.control.query(
+          "SELECT id,balance_micros,reserved_micros FROM wallets ORDER BY id",
+        )
+      ).rows,
+      before,
+    );
+  } finally {
+    s.db.config.AI_PLATFORM_VERIFICATION_DAILY_BUDGET_MICROS = original;
+    await seedProviderBudgetPolicy(s.db);
+  }
+});
+
+test("administrator text verification accounts for its explicit counting fee entirely within platform funds", async () => {
+  const a = await administrator(),
+    doc = document();
+  const original = s.db.config.AI_INPUT_COUNT_HKD_MICROS_PER_CALL;
+  try {
+    s.db.config.AI_INPUT_COUNT_HKD_MICROS_PER_CALL = 17;
+    await seedProviderBudgetPolicy(s.db);
+    const d = await draft(a, doc);
+    const wallets = (
+      await s.db.control.query(
+        "SELECT id,balance_micros,reserved_micros FROM wallets ORDER BY id",
+      )
+    ).rows;
+    const v = await validate(a, d.v);
+    assert.equal(v.state, "passed", JSON.stringify(v));
+    const counts = (
+      await s.db.control.query(
+        "SELECT * FROM ai_input_count_requests WHERE validation_id=$1",
+        [v.id],
+      )
+    ).rows;
+    assert.equal(
+      counts.length,
+      2,
+      "The real Codex tool loop counts both generation contexts",
+    );
+    assert.equal(counts[0].price_micros, "17");
+    assert.equal(counts[0].state, "completed");
+    const numerator = (
+      await s.db.control.query(
+        "SELECT coalesce(sum(charge_numerator),0)::text AS n FROM ai_gateway_requests WHERE validation_id=$1",
+        [v.id],
+      )
+    ).rows[0].n;
+    assert.equal(
+      v.result.known_cost_micros,
+      String(
+        (BigInt(numerator) + BigInt(counts.length) * 17000000n + 999999n) /
+          1000000n,
+      ),
+    );
+    assert.deepEqual(
+      (
+        await s.db.control.query(
+          "SELECT id,balance_micros,reserved_micros FROM wallets ORDER BY id",
+        )
+      ).rows,
+      wallets,
+    );
+  } finally {
+    s.db.config.AI_INPUT_COUNT_HKD_MICROS_PER_CALL = original;
+    await seedProviderBudgetPolicy(s.db);
+  }
 });

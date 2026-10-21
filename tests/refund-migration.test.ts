@@ -1,3 +1,4 @@
+import { reserveBeforeBudget } from "./fixtures/billing-before-budget.js";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -11,7 +12,9 @@ import { runMigrations } from "../scripts/migration-runner.js";
 
 test("a populated 052 upgrade freezes actual opening credit and preserves missing legacy provenance without inventing repayment links", async () => {
   const isolated = await isolatedTestEnvironment({ throughVersion: 52 }),
-    db = new Database(loadConfig({ ...isolated.env, NODE_ENV: "test" })),
+    db = new Database(
+      loadConfig({ ...isolated.env, NODE_ENV: "test", DEMO_MODE: "true" }),
+    ),
     owner = new pg.Client({
       connectionString: isolated.env.OWNER_DATABASE_URL,
     });
@@ -46,6 +49,7 @@ test("a populated 052 upgrade freezes actual opening credit and preserves missin
       undefined,
       true,
     );
+    let upgraded = false;
     const charge = (amount: number) =>
       db.tx(async (tx) => {
         const task = (
@@ -54,7 +58,12 @@ test("a populated 052 upgrade freezes actual opening credit and preserves missin
             [w.tenant, w.project, w.user, amount, randomUUID()],
           )
         ).rows[0].id;
-        await reserve(tx, w.tenant, task, amount);
+        await (upgraded ? reserve : reserveBeforeBudget)(
+          tx,
+          w.tenant,
+          task,
+          amount,
+        );
         await settle(tx, w.tenant, task, amount, w.user);
         return (
           await tx.query(
@@ -88,6 +97,7 @@ test("a populated 052 upgrade freezes actual opening credit and preserves missin
       )
     ).rows;
     await runMigrations(owner, "populated 052 credit provenance upgrade");
+    upgraded = true;
     assert.equal(
       (
         await owner.query(

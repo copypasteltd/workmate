@@ -37,6 +37,7 @@ import {
 } from "./runtime.js";
 import { projectAccess, replay } from "./access.js";
 import { settle, tokenCharge } from "./billing.js";
+import { taskProviderBudgetReceipt } from "./provider-budgets.js";
 import { canonical, hash, Problem, uuid } from "./lib.js";
 import { event } from "./tasks.js";
 import { analyticsEvidence } from "./analytics.js";
@@ -435,6 +436,7 @@ export class Worker {
         skills: bound,
         selection: runtimeSelection(context.capabilities),
         requestAuthority: {
+          budgeted: true,
           taskId: id,
           tenantId: tenant,
           projectId: task.project_id,
@@ -592,7 +594,22 @@ export class Worker {
           !Number.isSafeInteger(toolCharge + meteredTokens)
         )
           throw new Error("Invalid immutable tool charge");
-        const cost = meteredTokens + toolCharge;
+        const receipt = await taskProviderBudgetReceipt(tx, t.id);
+        // Actual gateway facts survive a lost terminal frame or a pricing
+        // violation. Tool image facts are already included, so never add twice.
+        const cost = receipt.requests
+          ? receipt.knownChargeMicros
+          : meteredTokens + toolCharge;
+        if (receipt.requests) {
+          input = receipt.inputTokens;
+          output = receipt.outputTokens;
+          uncertain ||= receipt.uncertain || receipt.violation;
+          if (receipt.violation) {
+            status = "failed";
+            text = "";
+            error = "AI_REQUEST_BUDGET_VIOLATION";
+          }
+        }
         if (
           status === "succeeded" &&
           !uncertain &&
@@ -740,8 +757,9 @@ export class Worker {
   ) {
     const authorize = async (tx: Tx) => {
       const binding = await this.authorizeTaskRequest(tx, t, actor, fencing);
-      const capability =
-        request.operation === "responses" ? binding.text : binding.image;
+      const capability = request.operation.startsWith("responses")
+        ? binding.text
+        : binding.image;
       if (
         !capability ||
         request.taskId !== t.id ||
@@ -791,6 +809,7 @@ export class Worker {
       async (tx) => {
         await authorize(tx);
       },
+      request,
     );
   }
   private tools(
@@ -1391,17 +1410,8 @@ export class Worker {
             if (old.state === "succeeded") return old;
             throw new Error("Operation requires reconciliation; do not replay");
           }
-          const sum = (
-            await tx.query(
-              "SELECT coalesce(sum(charge_micros),0)::text AS n FROM tool_operations WHERE task_id=$1 AND state<>'failed'",
-              [t.id],
-            )
-          ).rows[0];
-          if (
-            Number(sum.n) + c.AI_IMAGE_HKD_MICROS_PER_IMAGE! >
-            Number(t.budget_micros)
-          )
-            throw new Error("Image budget exceeded");
+          // Common durable gateway allocation checks all task text and images
+          // against the original reservation immediately before dispatch.
           return (
             await tx.query(
               "INSERT INTO tool_operations(tenant_id,task_id,call_id,action,state,input_hash,charge_micros) VALUES($1,$2,$3,$6,'accepted',$4,$5) RETURNING *",
@@ -1438,6 +1448,7 @@ export class Worker {
             model: c.AI_IMAGE_MODEL,
             operationId: op.id,
             authority: {
+              budgeted: true,
               taskId: t.id,
               tenantId: t.tenant_id,
               projectId: t.project_id,

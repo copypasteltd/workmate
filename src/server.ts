@@ -53,6 +53,7 @@ import { registerCloudFiles } from "./cloud-files.js";
 import { registerNotifications } from "./notifications.js";
 import { registerTaskDependencies } from "./task-dependencies.js";
 import { seedRuntimeProfile } from "./runtime-profiles.js";
+import { seedProviderBudgetPolicy } from "./provider-budgets.js";
 import {
   seedAgentTemplates,
   registerAgentTemplates,
@@ -83,6 +84,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   await seedCommercialPlans(db, catalog);
   await seedSkillVersions(db, catalog);
   await seedRuntimeProfile(db, catalog);
+  await seedProviderBudgetPolicy(db);
   await seedAgentTemplates(db, catalog);
   const storage = new Storage(c);
   const worker = new Worker(db, catalog, storage);

@@ -17,7 +17,9 @@ let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, db: Database;
 type Workspace = { tenant: string; project: string; user: string };
 before(async () => {
   isolated = await isolatedTestEnvironment();
-  db = new Database(loadConfig({ ...isolated.env, NODE_ENV: "test" }));
+  db = new Database(
+    loadConfig({ ...isolated.env, NODE_ENV: "test", DEMO_MODE: "true" }),
+  );
 });
 after(async () => {
   try {

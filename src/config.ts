@@ -45,6 +45,29 @@ const schema = z.object({
   AI_ALLOWED_HOSTS: z.string().default(""),
   AI_VERIFIED: bool.default(false),
   AI_IMAGE_VERIFIED: bool.default(false),
+  AI_INPUT_COUNT_VERIFIED: bool.default(false),
+  AI_INPUT_COUNT_HKD_MICROS_PER_CALL: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).optional(),
+  ),
+  AI_VERIFICATION_PER_RUN_BUDGET_MICROS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(Number.MAX_SAFE_INTEGER)
+    .default(1_000_000),
+  AI_PLATFORM_VERIFICATION_DAILY_BUDGET_MICROS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(Number.MAX_SAFE_INTEGER)
+    .default(100_000_000),
+  AI_PLATFORM_COUNT_DAILY_BUDGET_MICROS: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(Number.MAX_SAFE_INTEGER)
+    .default(100_000_000),
   AI_IMAGE_HKD_MICROS_PER_IMAGE: z.coerce.number().int().positive().optional(),
   AI_INPUT_HKD_MICROS_PER_MILLION: z.coerce
     .number()

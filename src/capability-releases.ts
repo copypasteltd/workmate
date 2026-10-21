@@ -13,6 +13,7 @@ import {
   providerRequestPermit,
 } from "./provider-request-control.js";
 import { activeRuntimeProfile } from "./runtime-profiles.js";
+import { validationProviderBudgetReceipt } from "./provider-budgets.js";
 import { globalPlanAuthority } from "./admin-plans.js";
 import {
   currentAdminControl,
@@ -665,10 +666,12 @@ export function registerCapabilityReleases(
             definition_hash: row.definition_hash,
           },
         );
+        await tx.query("SELECT register_validation_ai_budget($1)", [v.id]);
         return { row, v };
       },
       undefined,
       true,
+      req.principal.id,
     );
     if (prepared.v.execution_nonce !== nonce)
       return db.tx(
@@ -687,6 +690,7 @@ export function registerCapabilityReleases(
         prepared.v.id,
         AbortSignal.timeout(180000),
         {
+          budgeted: true,
           taskId: prepared.v.id,
           actorId: req.principal.id,
           authorize: async (request) => {
@@ -726,7 +730,11 @@ export function registerCapabilityReleases(
                 !capabilityBody(
                   db.config,
                   document,
-                ).supported_operations.includes(request.operation)
+                ).supported_operations.includes(
+                  request.operation === "responses.input_tokens"
+                    ? "responses"
+                    : request.operation,
+                )
               )
                 throw new Problem(
                   409,
@@ -764,6 +772,7 @@ export function registerCapabilityReleases(
               admitted,
               { actorId: req.principal.id, control: true },
               check,
+              request,
             );
           },
         },
@@ -788,6 +797,22 @@ export function registerCapabilityReleases(
           capabilityDocument.parse(prepared.row.definition),
         ),
       };
+    }
+    const budgetReceipt = await validationProviderBudgetReceipt(
+      db,
+      prepared.v.id,
+    );
+    if (budgetReceipt.requests) {
+      outcome.evidence.known_cost_micros = String(
+        budgetReceipt.knownChargeMicros,
+      );
+      outcome.evidence.accepted = budgetReceipt.dispatched > 0;
+      outcome.evidence.usage_known = !budgetReceipt.uncertain;
+      if (budgetReceipt.uncertain || budgetReceipt.violation) {
+        outcome.state = "reconciling";
+        if (budgetReceipt.violation)
+          outcome.evidence.error_code = "AI_REQUEST_BUDGET_VIOLATION";
+      }
     }
     let denied: unknown;
     const result = await db.tx(

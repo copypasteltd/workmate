@@ -5,7 +5,11 @@ import type { Config } from "./config.js";
 import { hash } from "./lib.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
 
-export type AIOperation = "responses" | "images.generate" | "images.edit";
+export type AIOperation =
+  | "responses"
+  | "responses.input_tokens"
+  | "images.generate"
+  | "images.edit";
 export interface AIRequestIdentity {
   taskId: string;
   tenantId?: string;
@@ -21,8 +25,13 @@ export interface AIRequestInfo extends AIRequestIdentity {
   model: string;
   requestBytes: number;
   requestHash: string;
+  generationOperationId?: string;
+  generationHash?: string;
+  inputCountId?: string;
+  maxOutputTokens?: number;
 }
 export interface AIRequestAuthority extends AIRequestIdentity {
+  budgeted?: true;
   authorize(request: AIRequestInfo): Promise<AIRequestPermit | void>;
 }
 export type AIRequestOutcome =
@@ -31,10 +40,12 @@ export type AIRequestOutcome =
       inputTokens?: number;
       outputTokens?: number;
       imageUnits?: 1;
+      countedInputTokens?: number;
       httpStatus?: number;
     }
   | { state: "unknown" | "cancelled"; code: string; httpStatus?: number };
 export interface AIRequestPermit {
+  readonly requestId?: string;
   dispatch(): Promise<void>;
   finish(outcome: AIRequestOutcome): Promise<void>;
 }
@@ -83,6 +94,7 @@ function endpoint(c: Config, operation: AIOperation) {
     throw denied("AI_GATEWAY_NOT_ALLOWED", 403);
   const suffix = {
     responses: "/responses",
+    "responses.input_tokens": "/responses/input_tokens",
     "images.generate": "/images/generations",
     "images.edit": "/images/edits",
   }[operation];
@@ -200,6 +212,8 @@ export interface InternalAIRequest {
   authority: AIRequestAuthority;
   signal: AbortSignal;
   operationId?: string;
+  generationOperationId?: string;
+  generationHash?: string;
   onDispatch?(): void;
   stripKernelQuestionTool?: boolean;
 }
@@ -207,6 +221,7 @@ export interface InternalAIRequest {
 /** The only provider fetch entry point: no caller-supplied URL or headers. */
 export async function internalAIRequest(c: Config, request: InternalAIRequest) {
   const url = endpoint(c, request.operation);
+  let normalized: Record<string, unknown> | undefined;
   let bytes: Buffer, contentType: string;
   if (request.body instanceof FormData) {
     if (request.operation !== "images.edit")
@@ -242,13 +257,16 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
             request.tools ?? [],
             request.stripKernelQuestionTool ?? false,
           )
-        : (imageFields(request.body, request.model), request.body);
+        : request.operation === "responses.input_tokens"
+          ? request.body
+          : (imageFields(request.body, request.model), request.body);
+    normalized = body;
     bytes = Buffer.from(JSON.stringify(body));
     contentType = "application/json";
   }
   if (bytes.length > c.AI_MAX_REQUEST_BYTES)
     throw denied("AI_REQUEST_TOO_LARGE", 413);
-  const { authorize, ...identity } = request.authority;
+  const { authorize, budgeted, ...identity } = request.authority;
   const info: AIRequestInfo = {
     ...identity,
     requestId: request.operationId ?? randomUUID(),
@@ -256,7 +274,102 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
     model: request.model,
     requestBytes: bytes.length,
     requestHash: hash(bytes),
+    generationOperationId: request.generationOperationId,
+    generationHash: request.generationHash,
   };
+  if (request.operation === "responses.input_tokens") {
+    if (
+      !budgeted ||
+      !info.generationOperationId ||
+      !info.generationHash ||
+      normalized?.model !== request.model
+    )
+      throw denied("AI_INPUT_COUNT_SCOPE_INVALID", 403);
+  }
+  if (budgeted && request.operation === "responses") {
+    // Count the exact normalized context, including tools, instructions and
+    // structured output. Generation-only transport parameters are excluded.
+    const countFields = new Set([
+      "conversation",
+      "input",
+      "instructions",
+      "model",
+      "parallel_tool_calls",
+      "personality",
+      "previous_response_id",
+      "reasoning",
+      "text",
+      "tool_choice",
+      "tools",
+      "truncation",
+    ]);
+    const generationFields = new Set([
+      "stream",
+      "stream_options",
+      "background",
+      "store",
+      "metadata",
+      "client_metadata",
+      "include",
+      "service_tier",
+      "prompt_cache_key",
+      "prompt_cache_retention",
+      "safety_identifier",
+      "user",
+      "temperature",
+      "top_p",
+      "top_logprobs",
+      "max_tool_calls",
+      "max_output_tokens",
+    ]);
+    if (
+      Object.keys(normalized!).some(
+        (key) => !countFields.has(key) && !generationFields.has(key),
+      )
+    )
+      throw denied("AI_INPUT_COUNT_CONTEXT_UNSUPPORTED", 403);
+    const countResponse = await internalAIRequest(c, {
+      operation: "responses.input_tokens",
+      model: request.model,
+      body: Object.fromEntries(
+        Object.entries(normalized!).filter(([key]) => countFields.has(key)),
+      ),
+      authority: request.authority,
+      signal: request.signal,
+      generationOperationId: info.requestId,
+      generationHash: info.requestHash,
+    });
+    try {
+      if (!countResponse.ok)
+        throw new AIRequestFailure("AI_INPUT_COUNT_FAILED", 502, true);
+      const count = await countResponse.json();
+      if (
+        count?.object !== "response.input_tokens" ||
+        !Number.isSafeInteger(count.input_tokens) ||
+        count.input_tokens < 0
+      )
+        throw new AIRequestFailure("AI_INPUT_COUNT_INVALID", 502, true);
+      const proof = requestPermits.get(countResponse)?.requestId;
+      if (!proof)
+        throw new AIRequestFailure("AI_INPUT_COUNT_PERMIT_MISSING", 502, true);
+      await finishInternalAIRequest(countResponse, {
+        state: "completed",
+        countedInputTokens: count.input_tokens,
+        httpStatus: countResponse.status,
+      });
+      info.inputCountId = proof;
+      info.maxOutputTokens = Number(normalized!.max_output_tokens);
+    } catch (error) {
+      await countResponse.body?.cancel().catch(() => {});
+      await finishInternalAIRequest(countResponse, {
+        state: "unknown",
+        code: "AI_INPUT_COUNT_FAILED",
+        httpStatus: countResponse.status,
+      });
+      if (error instanceof AIRequestFailure) throw error;
+      throw new AIRequestFailure("AI_INPUT_COUNT_INVALID", 502, true);
+    }
+  }
   const headers: Record<string, string> = {
     "Content-Type": contentType,
     Authorization: `Bearer ${c.AI_API_KEY}`,
@@ -284,6 +397,8 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
   let permit: AIRequestPermit | void;
   try {
     permit = await authorize(info);
+    if (budgeted && !permit)
+      throw denied("AI_REQUEST_BUDGET_PERMIT_REQUIRED", 403);
   } catch (error) {
     if (error instanceof AIRequestFailure) throw error;
     throw denied("AI_REQUEST_AUTHORIZATION_CHANGED", 403);
