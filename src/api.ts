@@ -53,6 +53,7 @@ declare global {
       ) => Promise<{ status: number; body: any }>;
       download: (path: string, name: string) => Promise<unknown>;
       openExternal: (url: string) => Promise<void>;
+      authorizeConnector: (state: string) => Promise<void>;
       onAuthChanged: (fn: () => void) => () => void;
       version: string;
     };
@@ -75,6 +76,10 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest =
+    (/^\/v1\/(?:connector-providers|connections|syncs|connector-snapshots|snapshots)(?:[/?]|$)/.test(
+      path,
+    ) &&
+      !path.startsWith("/v1/connections/launch/")) ||
     /^\/v1\/(me(?:[/?]|$)|plans(?:[/?]|$)|effective-entitlements(?:[/?]|$)|entitlement-notifications(?:[/?]|$)|financial-notifications(?:[/?]|$)|support-grants(?:[/?]|$)|session\/context(?:[/?]|$)|members\/|tenants(?:[/?]|$)|invites\/|agent-templates(?:[/?]|$)|auth\/(?:session|logout|native\/authorize)$)/.test(
       path,
     );

@@ -1,3 +1,4 @@
+import { Connections, ConnectorLaunch } from "./connections";
 import "./support.css";
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
@@ -157,6 +158,7 @@ function AppRoutes() {
       <Route path="/welcome" element={<Onboarding />} />
       <Route path="/invite" element={<Invite />} />
       <Route path="/authorize" element={<NativeAuthorize />} />
+      <Route path="/connect-provider" element={<ConnectorLaunch />} />
       <Route path="/app/*" element={<Shell />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -2061,7 +2063,11 @@ function Creative() {
         }
       />
       <ErrorNotice error={error} />
-      <VideoProjects key={w.base} base={w.base} assets={assets.data?.items ?? []} />
+      <VideoProjects
+        key={w.base}
+        base={w.base}
+        assets={assets.data?.items ?? []}
+      />
       <CreativeMatrices base={w.base} assets={assets.data?.items ?? []} />
       {data?.items.length ? (
         <div className="project-grid">
@@ -2466,119 +2472,6 @@ function Analytics() {
           )}
         </Modal>
       )}
-    </>
-  );
-}
-function Connections() {
-  const { t } = useI18n(),
-    w = useWorkspace(),
-    [refresh, setRefresh] = useState(0),
-    [err, setErr] = useState<Error | null>(null);
-  const { data, error } = useData(w.base + "/connections", refresh);
-  return (
-    <>
-      <PageHeader
-        eyebrow="BRING YOUR WORK TOGETHER."
-        title={t("連接應用", "Connections")}
-        description={t(
-          "由企業授權連接廣告及分析帳戶。你可以隨時撤銷存取。",
-          "Connect your company’s advertising and analytics accounts. Revoke access whenever you need.",
-        )}
-      />
-      <ErrorNotice error={error ?? err} />
-      <div className="connection-grid">
-        {(data?.providers ?? []).map((p: any) => {
-          const connected = data.items.find(
-            (c: any) => c.provider === p.key && c.state === "connected",
-          );
-          return (
-            <article className="card connection-card" key={p.key}>
-              <div className="connection-brand">
-                <span>{p.name[0]}</span>
-                <Badge value={connected ? "connected" : "pending"} />
-              </div>
-              <h2>{p.name}</h2>
-              <p className="muted">
-                {p.key === "ga4"
-                  ? t(
-                      "網站受眾、來源與轉換。",
-                      "Audience, acquisition and conversions.",
-                    )
-                  : p.key === "search_console"
-                    ? t(
-                        "搜尋曝光、點擊與關鍵字。",
-                        "Search impressions, clicks and queries.",
-                      )
-                    : t(
-                        "廣告活動、花費與表現。",
-                        "Campaigns, spend and performance.",
-                      )}
-              </p>
-              {connected ? (
-                <div className="row-actions">
-                  <button
-                    className="button secondary small"
-                    onClick={() => {
-                      const account = prompt(
-                        t(
-                          "輸入帳戶 / Property ID",
-                          "Enter account / property ID",
-                        ),
-                      );
-                      if (account)
-                        void post(
-                          w.base + "/connections/" + connected.id + "/report",
-                          {
-                            account_id: account,
-                            start_date: new Date(Date.now() - 30 * 86400000)
-                              .toISOString()
-                              .slice(0, 10),
-                            end_date: new Date().toISOString().slice(0, 10),
-                          },
-                        )
-                          .then(() => setRefresh((v) => v + 1))
-                          .catch(setErr);
-                    }}
-                  >
-                    {t("同步報表", "Fetch report")}
-                  </button>
-                  <button
-                    className="text-button"
-                    onClick={() =>
-                      void api(w.base + "/connections/" + connected.id, {
-                        method: "DELETE",
-                      })
-                        .then(() => setRefresh((v) => v + 1))
-                        .catch(setErr)
-                    }
-                  >
-                    {t("撤銷", "Revoke")}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  className="button secondary"
-                  onClick={() =>
-                    void post(w.base + "/connections/authorize", {
-                      provider: p.key,
-                    })
-                      .then((r) => window.location.assign(r.url))
-                      .catch(setErr)
-                  }
-                >
-                  {t("連接帳戶", "Connect account")}
-                  <ArrowUpRight size={16} />
-                </button>
-              )}
-              <small>
-                {!p.configured
-                  ? t("連接服務待企業設定", "Company connection setup required")
-                  : t("由帳戶擁有人授權", "Authorized by account owner")}
-              </small>
-            </article>
-          );
-        })}
-      </div>
     </>
   );
 }
