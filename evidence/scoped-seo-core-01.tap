@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: SEO scope normalizes exact hosts and URL fragments, with segment-bound path prefixes
+ok 1 - SEO scope normalizes exact hosts and URL fragments, with segment-bound path prefixes
+  ---
+  duration_ms: 6.8856
+  ...
+# Subtest: SEO rejects ambiguous nested encodings, credentials, protocols, ports and unconfirmed seeds
+ok 2 - SEO rejects ambiguous nested encodings, credentials, protocols, ports and unconfirmed seeds
+  ---
+  duration_ms: 1.3739
+  ...
+# Subtest: SEO public address policy denies private, metadata, transition and reserved IPv4/IPv6 ranges
+ok 3 - SEO public address policy denies private, metadata, transition and reserved IPv4/IPv6 ranges
+  ---
+  duration_ms: 2.0089
+  ...
+# Subtest: SEO resolution rejects all mixed public/private answers and avoids DNS for literal addresses
+ok 4 - SEO resolution rejects all mixed public/private answers and avoids DNS for literal addresses
+  ---
+  duration_ms: 1.6134
+  ...
+# Subtest: simulated SEO transport requires private fixture configuration and is forbidden in production
+ok 5 - simulated SEO transport requires private fixture configuration and is forbidden in production
+  ---
+  duration_ms: 0.2692
+  ...
+# Subtest: actual fixture HTTP requires its private key and preserves raw response hashes
+ok 6 - actual fixture HTTP requires its private key and preserves raw response hashes
+  ---
+  duration_ms: 23.5875
+  ...
+# Subtest: actual transport exposes one redirect hop and never follows an unconfirmed host or private literal
+ok 7 - actual transport exposes one redirect hop and never follows an unconfirmed host or private literal
+  ---
+  duration_ms: 4.0213
+  ...
+# Subtest: actual transport enforces response size, encoding and caller cancellation
+not ok 8 - actual transport enforces response size, encoding and caller cancellation
+  ---
+  duration_ms: 10.3489
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\scoped-seo-core.test.ts:1:5927'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      Comparison {
+    +   code: 'SEO_RESPONSE_TRUNCATED'
+    -   code: 'SEO_RESPONSE_LIMIT'
+      }
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    code: 'SEO_RESPONSE_LIMIT'
+  actual:
+  error: 'The website response could not be collected within the confirmed limits'
+  stack: |-
+    IncomingMessage.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\seo-http.ts:314:18)
+    IncomingMessage.emit (node:events:518:28)
+    IncomingMessage._destroy (node:_http_incoming:221:10)
+    _destroy (node:internal/streams/destroy:122:10)
+    IncomingMessage.destroy (node:internal/streams/destroy:84:5)
+    IncomingMessage.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\seo-http.ts:308:24)
+    IncomingMessage.emit (node:events:518:28)
+    addChunk (node:internal/streams/readable:561:12)
+    readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    Readable.push (node:internal/streams/readable:392:5)
+  operator: 'rejects'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\scoped-seo-core.test.ts:234:3)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: actual HTTP conditional read returns 304 with no fabricated content
+ok 9 - actual HTTP conditional read returns 304 with no fabricated content
+  ---
+  duration_ms: 6.1252
+  ...
+# Subtest: HTML decoding preserves BOM, legacy encoding, original hash and decoded hash
+ok 10 - HTML decoding preserves BOM, legacy encoding, original hash and decoded hash
+  ---
+  duration_ms: 3.3727
+  ...
+# Subtest: HTML parser ignores script/comment/template impostors and decodes title entities
+ok 11 - HTML parser ignores script/comment/template impostors and decodes title entities
+  ---
+  duration_ms: 3.4686
+  ...
+# Subtest: HTML page evidence captures canonical, JSON-LD, named directives and login limitations
+ok 12 - HTML page evidence captures canonical, JSON-LD, named directives and login limitations
+  ---
+  duration_ms: 1.0833
+  ...
+# Subtest: link discovery honors first base URL and reports a bounded frontier
+ok 13 - link discovery honors first base URL and reports a bounded frontier
+  ---
+  duration_ms: 45.305
+  ...
+# Subtest: robots matching selects named groups, merges groups, uses longest match and favors allow on a tie
+ok 14 - robots matching selects named groups, merges groups, uses longest match and favors allow on a tie
+  ---
+  duration_ms: 1.3701
+  ...
+# Subtest: robots matching preserves reserved encoding, decodes unreserved octets and supports Unicode, wildcard and end markers
+ok 15 - robots matching preserves reserved encoding, decodes unreserved octets and supports Unicode, wildcard and end markers
+  ---
+  duration_ms: 0.5945
+  ...
+# Subtest: robots reads at least 500 KiB but blocks unsupported policy complexity instead of discarding rules
+ok 16 - robots reads at least 500 KiB but blocks unsupported policy complexity instead of discarding rules
+  ---
+  duration_ms: 11.0848
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 15
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1791.7501

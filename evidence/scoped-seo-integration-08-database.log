@@ -1,0 +1,65 @@
+2026-10-22 03:33:02.874 CST [23152] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 03:33:02.881 CST [23152] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 03:33:02.882 CST [23152] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 03:33:03.124 CST [11712] LOG:  database system was shut down at 2026-10-22 03:29:59 CST
+
+2026-10-22 03:33:03.381 CST [23152] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 03:33:09.552 CST [8400] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 03:33:10.616 CST [8400] LOG:  checkpoint complete: wrote 22 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.018 s, sync=0.845 s, total=1.064 s; sync files=12, longest=0.184 s, average=0.071 s; distance=15058 kB, estimate=15058 kB; lsn=A/167E8CD8, redo lsn=A/167E8C80
+
+2026-10-22 03:33:15.438 CST [8400] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 03:33:17.432 CST [8400] LOG:  checkpoint complete: wrote 22 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.737 s, total=1.995 s; sync files=10, longest=0.162 s, average=0.074 s; distance=15069 kB, estimate=15069 kB; lsn=A/176A03A8, redo lsn=A/176A0350
+
+2026-10-22 03:33:26.141 CST [38600] ERROR:  Review decisions are immutable
+2026-10-22 03:33:26.141 CST [38600] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-22 03:33:26.141 CST [38600] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-22 03:33:26.143 CST [38600] ERROR:  Frozen approval is immutable
+2026-10-22 03:33:26.143 CST [38600] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-22 03:33:26.143 CST [38600] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-22 03:33:26.342 CST [8400] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 03:33:28.481 CST [8400] LOG:  checkpoint complete: wrote 46 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.031 s, sync=0.823 s, total=2.139 s; sync files=13, longest=0.160 s, average=0.064 s; distance=15222 kB, estimate=15222 kB; lsn=A/1857DC88, redo lsn=A/1857DC30
+
+2026-10-22 03:33:39.435 CST [35260] ERROR:  SEO task binding cannot be removed
+2026-10-22 03:33:39.435 CST [35260] CONTEXT:  PL/pgSQL function guard_seo_binding() line 40 at RAISE
+2026-10-22 03:33:39.435 CST [35260] STATEMENT:  UPDATE tasks SET input_context='{}' WHERE id=$1
+
+2026-10-22 03:34:10.072 CST [32412] ERROR:  permission denied for table seo_documents
+2026-10-22 03:34:10.072 CST [32412] STATEMENT:  UPDATE seo_documents SET url_sha256=$2 WHERE run_id=$1
+
+2026-10-22 03:34:10.176 CST [31468] ERROR:  SEO identity or finished history cannot be rewritten
+2026-10-22 03:34:10.176 CST [31468] CONTEXT:  PL/pgSQL function guard_seo_history() line 16 at RAISE
+2026-10-22 03:34:10.176 CST [31468] STATEMENT:  UPDATE seo_runs SET checkpoint='{}',revision=revision+1 WHERE id=$1
+
+2026-10-22 03:35:50.928 CST [36100] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-22 03:35:50.928 CST [36100] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-22 03:35:50.928 CST [36100] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+2026-10-22 03:35:51.136 CST [8400] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 03:35:51.939 CST [8400] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.013 s, sync=0.578 s, total=0.804 s; sync files=12, longest=0.126 s, average=0.049 s; distance=18359 kB, estimate=18359 kB; lsn=A/1976B890, redo lsn=A/1976B838
+
+2026-10-22 03:35:55.398 CST [23152] LOG:  received fast shutdown request
+
+2026-10-22 03:35:55.451 CST [23152] LOG:  aborting any active transactions
+
+2026-10-22 03:35:55.458 CST [23152] LOG:  background worker "logical replication launcher" (PID 38488) exited with exit code 1
+
+2026-10-22 03:35:55.459 CST [8400] LOG:  shutting down
+
+2026-10-22 03:35:55.505 CST [8400] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 03:35:55.736 CST [8400] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.053 s, total=0.278 s; sync files=1, longest=0.053 s, average=0.053 s; distance=0 kB, estimate=16523 kB; lsn=A/1976B9A8, redo lsn=A/1976B9A8
+
+2026-10-22 03:35:55.875 CST [23152] LOG:  database system is shut down
+

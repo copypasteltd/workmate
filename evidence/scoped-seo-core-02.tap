@@ -1,0 +1,90 @@
+TAP version 13
+# Subtest: SEO scope normalizes exact hosts and URL fragments, with segment-bound path prefixes
+ok 1 - SEO scope normalizes exact hosts and URL fragments, with segment-bound path prefixes
+  ---
+  duration_ms: 7.7131
+  ...
+# Subtest: SEO rejects ambiguous nested encodings, credentials, protocols, ports and unconfirmed seeds
+ok 2 - SEO rejects ambiguous nested encodings, credentials, protocols, ports and unconfirmed seeds
+  ---
+  duration_ms: 2.1656
+  ...
+# Subtest: SEO public address policy denies private, metadata, transition and reserved IPv4/IPv6 ranges
+ok 3 - SEO public address policy denies private, metadata, transition and reserved IPv4/IPv6 ranges
+  ---
+  duration_ms: 2.9215
+  ...
+# Subtest: SEO resolution rejects all mixed public/private answers and avoids DNS for literal addresses
+ok 4 - SEO resolution rejects all mixed public/private answers and avoids DNS for literal addresses
+  ---
+  duration_ms: 1.7826
+  ...
+# Subtest: simulated SEO transport requires private fixture configuration and is forbidden in production
+ok 5 - simulated SEO transport requires private fixture configuration and is forbidden in production
+  ---
+  duration_ms: 0.3401
+  ...
+# Subtest: actual fixture HTTP requires its private key and preserves raw response hashes
+ok 6 - actual fixture HTTP requires its private key and preserves raw response hashes
+  ---
+  duration_ms: 49.4848
+  ...
+# Subtest: actual transport exposes one redirect hop and never follows an unconfirmed host or private literal
+ok 7 - actual transport exposes one redirect hop and never follows an unconfirmed host or private literal
+  ---
+  duration_ms: 8.2479
+  ...
+# Subtest: actual transport enforces response size, encoding and caller cancellation
+ok 8 - actual transport enforces response size, encoding and caller cancellation
+  ---
+  duration_ms: 27.4626
+  ...
+# Subtest: actual HTTP conditional read returns 304 with no fabricated content
+ok 9 - actual HTTP conditional read returns 304 with no fabricated content
+  ---
+  duration_ms: 9.3728
+  ...
+# Subtest: HTML decoding preserves BOM, legacy encoding, original hash and decoded hash
+ok 10 - HTML decoding preserves BOM, legacy encoding, original hash and decoded hash
+  ---
+  duration_ms: 3.7821
+  ...
+# Subtest: HTML parser ignores script/comment/template impostors and decodes title entities
+ok 11 - HTML parser ignores script/comment/template impostors and decodes title entities
+  ---
+  duration_ms: 5.2148
+  ...
+# Subtest: HTML page evidence captures canonical, JSON-LD, named directives and login limitations
+ok 12 - HTML page evidence captures canonical, JSON-LD, named directives and login limitations
+  ---
+  duration_ms: 1.5087
+  ...
+# Subtest: link discovery honors first base URL and reports a bounded frontier
+ok 13 - link discovery honors first base URL and reports a bounded frontier
+  ---
+  duration_ms: 42.8862
+  ...
+# Subtest: robots matching selects named groups, merges groups, uses longest match and favors allow on a tie
+ok 14 - robots matching selects named groups, merges groups, uses longest match and favors allow on a tie
+  ---
+  duration_ms: 1.6298
+  ...
+# Subtest: robots matching preserves reserved encoding, decodes unreserved octets and supports Unicode, wildcard and end markers
+ok 15 - robots matching preserves reserved encoding, decodes unreserved octets and supports Unicode, wildcard and end markers
+  ---
+  duration_ms: 0.8288
+  ...
+# Subtest: robots reads at least 500 KiB but blocks unsupported policy complexity instead of discarding rules
+ok 16 - robots reads at least 500 KiB but blocks unsupported policy complexity instead of discarding rules
+  ---
+  duration_ms: 8.6554
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 765.5044

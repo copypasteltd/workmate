@@ -1,0 +1,63 @@
+2026-10-22 02:58:28.518 CST [28868] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 02:58:28.525 CST [28868] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 02:58:28.526 CST [28868] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 02:58:28.896 CST [6148] LOG:  database system was shut down at 2026-10-22 02:55:05 CST
+
+2026-10-22 02:58:28.975 CST [28868] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 02:58:37.827 CST [16584] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 02:58:38.953 CST [16584] LOG:  checkpoint complete: wrote 22 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.865 s, total=1.126 s; sync files=12, longest=0.221 s, average=0.073 s; distance=15061 kB, estimate=15061 kB; lsn=A/701EB20, redo lsn=A/701EAC8
+
+2026-10-22 02:58:48.712 CST [16584] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 02:58:51.882 CST [16584] LOG:  checkpoint complete: wrote 34 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.026 s, sync=2.035 s, total=3.170 s; sync files=10, longest=0.334 s, average=0.204 s; distance=15324 kB, estimate=15324 kB; lsn=A/7F15BE0, redo lsn=A/7F15B88
+
+2026-10-22 02:58:58.479 CST [19040] ERROR:  Review decisions are immutable
+2026-10-22 02:58:58.479 CST [19040] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-22 02:58:58.479 CST [19040] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-22 02:58:58.480 CST [19040] ERROR:  Frozen approval is immutable
+2026-10-22 02:58:58.480 CST [19040] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-22 02:58:58.480 CST [19040] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-22 02:58:58.595 CST [16584] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 02:59:00.358 CST [16584] LOG:  checkpoint complete: wrote 32 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=1.233 s, total=1.764 s; sync files=10, longest=0.289 s, average=0.124 s; distance=15291 kB, estimate=15320 kB; lsn=A/8E04828, redo lsn=A/8E04798
+
+2026-10-22 02:59:07.295 CST [17176] ERROR:  SEO task binding cannot be removed
+2026-10-22 02:59:07.295 CST [17176] CONTEXT:  PL/pgSQL function guard_seo_binding() line 40 at RAISE
+2026-10-22 02:59:07.295 CST [17176] STATEMENT:  UPDATE tasks SET input_context='{}' WHERE id=$1
+
+2026-10-22 02:59:28.668 CST [29216] ERROR:  permission denied for table seo_documents
+2026-10-22 02:59:28.668 CST [29216] STATEMENT:  UPDATE seo_documents SET url_sha256=$2 WHERE run_id=$1
+
+2026-10-22 02:59:28.724 CST [29268] ERROR:  SEO identity or finished history cannot be rewritten
+2026-10-22 02:59:28.724 CST [29268] CONTEXT:  PL/pgSQL function guard_seo_history() line 16 at RAISE
+2026-10-22 02:59:28.724 CST [29268] STATEMENT:  UPDATE seo_runs SET checkpoint='{}',revision=revision+1 WHERE id=$1
+
+2026-10-22 03:00:20.392 CST [11520] FATAL:  terminating autovacuum process due to administrator command
+
+2026-10-22 03:00:20.937 CST [16584] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 03:00:23.873 CST [16584] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.036 s, sync=1.368 s, total=2.936 s; sync files=10, longest=0.268 s, average=0.137 s; distance=17807 kB, estimate=17807 kB; lsn=A/9F68760, redo lsn=A/9F68708
+
+2026-10-22 03:00:26.625 CST [28868] LOG:  received fast shutdown request
+
+2026-10-22 03:00:26.704 CST [28868] LOG:  aborting any active transactions
+
+2026-10-22 03:00:26.713 CST [28868] LOG:  background worker "logical replication launcher" (PID 34612) exited with exit code 1
+
+2026-10-22 03:00:26.713 CST [16584] LOG:  shutting down
+
+2026-10-22 03:00:26.760 CST [16584] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 03:00:27.319 CST [16584] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.070 s, total=0.606 s; sync files=1, longest=0.070 s, average=0.070 s; distance=0 kB, estimate=16027 kB; lsn=A/9F68878, redo lsn=A/9F68878
+
+2026-10-22 03:00:27.497 CST [28868] LOG:  database system is shut down
+
