@@ -1,5 +1,24 @@
 # CopyPaste 交付与集成
 
+## 内部推理请求（阶段 55）
+
+[当前专项 03](evidence/inference-request-candidate-03.json)通过 **112/112**，[完整回归 02](evidence/inference-request-regression-02.json)通过 **531/531**；733 份来源前后一致，全部原 484 项命名测试保留，专项包含于全量。[取消诊断 02](evidence/inference-request-cancel-probe-02.json)使用实际 Codex，确认首次请求前取消为未接收、已知零用量。记录绑定前后相同的源码、原始 TAP、验证脚本、不可改写的 SQL001–065 及实际夹具回收；自建数据库已关闭。首轮失败和此前源码的通过报告分别保留；模型/媒体使用获准假数据，Codex 和原生 PostgreSQL 实际执行。本轮没有打开浏览器或客户端，不将旧页面回执当作当前后端的界面证明。
+
+The inference runner preserves raw output and exact source hashes, owns its native PostgreSQL process, and verifies actual post-worker fixture reclamation. Use a fresh two-digit ID for each mode; never overwrite an earlier report. Current authorization, scoped credentials, frozen media specifications, uncertain spend and natural process exit are checked independently of full product acceptance. No Docker or WSL is used.
+
+The current focused run passed **112/112**, included in **531/531 full tests**. All 733 source files remained unchanged and all 484 earlier named tests are retained. Actual fixture reclamation and owned database shutdown passed. The cancellation probe uses real Codex; model/media responses remain simulated. Earlier failures and exact verifier/source preimages are preserved.
+
+原始 TAP 与数据库日志保留工具输出的尾空格和结尾空行。Git 空白检查覆盖源码、文档、脚本与源码前像，排除原始 `.tap` 和 `*-database.log`；原始证据仍逐文件校验摘要并扫描配置密钥。
+
+Raw TAP and database logs retain tool-emitted trailing whitespace and final blank lines. Git whitespace checks cover code, documentation, scripts and source preimages, excluding raw `.tap` and `*-database.log` files. Evidence digests and configured-credential scans still cover those original bytes.
+
+```powershell
+node scripts/run-inference-request-checks.mjs NEXT_ID
+node scripts/run-inference-request-checks.mjs NEXT_ID --full
+```
+
+跨 Worker 的供应商限额和逐调用预算仍待实现。以下各阶段保留其原始源码、页面及产物范围。
+
 ## 明确采用版本（阶段 54）
 
 默认助手更新、专家设置与会话采用先比较明确模型、推理强度、单价及 Skill 版本，再由用户确认。五分钟比较绑定实际登录会话与配置状态，过期或变化拒绝确认；重试使用持久幂等键。已接收任务继续原模型和原费率。

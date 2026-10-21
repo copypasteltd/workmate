@@ -1,0 +1,797 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# Subtest: real pinned Codex sends the queued task's original model and effort and settlement uses its original prices after a configuration change
+ok 1 - real pinned Codex sends the queued task's original model and effort and settlement uses its original prices after a configuration change
+  ---
+  duration_ms: 22805.678
+  ...
+# Subtest: real pinned Codex cannot dispatch its next response after the original user's authority is revoked; the first measured response is still charged
+ok 2 - real pinned Codex cannot dispatch its next response after the original user's authority is revoked; the first measured response is still charged
+  ---
+  duration_ms: 3578.5035
+  ...
+# Subtest: each real worker inference request rechecks the current identity, membership, task lease, fencing, cancellation and budget scope
+    # Subtest: user authentication version
+    ok 1 - user authentication version
+      ---
+      duration_ms: 486.1322
+      ...
+    # Subtest: user suspension
+    ok 2 - user suspension
+      ---
+      duration_ms: 345.1318
+      ...
+    # Subtest: removed membership
+    ok 3 - removed membership
+      ---
+      duration_ms: 278.0459
+      ...
+    # Subtest: workspace suspension
+    ok 4 - workspace suspension
+      ---
+      duration_ms: 291.0189
+      ...
+    # Subtest: archived project
+    ok 5 - archived project
+      ---
+      duration_ms: 328.7442
+      ...
+    # Subtest: task cancellation
+    ok 6 - task cancellation
+      ---
+      duration_ms: 515.0927
+      ...
+    # Subtest: expired task lease
+    ok 7 - expired task lease
+      ---
+      duration_ms: 306.2356
+      ...
+    # Subtest: stale fencing
+    ok 8 - stale fencing
+      ---
+      duration_ms: 300.7877
+      ...
+    # Subtest: non-reserved budget
+    ok 9 - non-reserved budget
+      ---
+      duration_ms: 260.9398
+      ...
+    1..9
+ok 3 - each real worker inference request rechecks the current identity, membership, task lease, fencing, cancellation and budget scope
+  ---
+  duration_ms: 3120.0237
+  ...
+# Subtest: new tasks use a different immutable identity when only effort or rates change; retries retain the original binding
+ok 4 - new tasks use a different immutable identity when only effort or rates change; retries retain the original binding
+  ---
+  duration_ms: 863.2263
+  ...
+# Subtest: actual image generation and edit keep the original internal image alias, operation rate and artifact provenance
+not ok 5 - actual image generation and edit keep the original internal image alias, operation rate and artifact provenance
+  ---
+  duration_ms: 204.9976
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-bindings.test.ts:4:8959'
+  failureType: 'testCodeFailure'
+  error: |-
+    TASK_CAPABILITY_BINDING_UNAVAILABLE
+    + actual - expected
+    
+    + 'cancelled'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'cancelled'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-bindings.test.ts:666:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: accepted malformed, non-canonical, wrong-size and multiple images retain an uncertain charge and never create an asset
+    # Subtest: invalid image 1
+    ok 1 - invalid image 1
+      ---
+      duration_ms: 475.1045
+      ...
+    # Subtest: invalid image 2
+    ok 2 - invalid image 2
+      ---
+      duration_ms: 389.6248
+      ...
+    # Subtest: invalid image 3
+    not ok 3 - invalid image 3
+      ---
+      duration_ms: 180.9449
+      location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-bindings.test.ts:7:957'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly equal:
+        + actual - expected
+        
+        + 'queued'
+        - 'reconciling'
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: 'reconciling'
+      actual: 'queued'
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-bindings.test.ts:737:14)
+        process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        async Test.run (node:internal/test_runner/test:980:9)
+        async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-bindings.test.ts:719:5)
+        async Test.run (node:internal/test_runner/test:980:9)
+        async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+      ...
+    # Subtest: invalid image 4
+    not ok 4 - invalid image 4
+      ---
+      duration_ms: 148.6382
+      location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-bindings.test.ts:7:957'
+      failureType: 'testCodeFailure'
+      error: |-
+        Expected values to be strictly equal:
+        + actual - expected
+        
+        + 'queued'
+        - 'reconciling'
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: 'reconciling'
+      actual: 'queued'
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-bindings.test.ts:737:14)
+        process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        async Test.run (node:internal/test_runner/test:980:9)
+        async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-bindings.test.ts:719:5)
+        async Test.run (node:internal/test_runner/test:980:9)
+        async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+      ...
+    1..4
+not ok 6 - accepted malformed, non-canonical, wrong-size and multiple images retain an uncertain charge and never create an asset
+  ---
+  duration_ms: 1732.6323
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-bindings.test.ts:7:422'
+  failureType: 'subtestsFailed'
+  error: '2 subtests failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: an accepted image with a lost result keeps reconciliation and its original reserved operation price
+not ok 7 - an accepted image with a lost result keeps reconciliation and its original reserved operation price
+  ---
+  duration_ms: 164.0651
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-bindings.test.ts:7:1846'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'queued'
+    - 'reconciling'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'reconciling'
+  actual: 'queued'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-bindings.test.ts:781:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: revocation blocks execution while preserving original settlement for already accepted usage
+ok 8 - revocation blocks execution while preserving original settlement for already accepted usage
+  ---
+  duration_ms: 243.6652
+  ...
+# Subtest: an actual admin retry and idempotent replay preserve the original capability after configuration changes
+ok 9 - an actual admin retry and idempotent replay preserve the original capability after configuration changes
+  ---
+  duration_ms: 330.4802
+  ...
+# Subtest: bindings enforce database immutability, private-task RLS and gateway identity without exposing server credentials
+ok 10 - bindings enforce database immutability, private-task RLS and gateway identity without exposing server credentials
+  ---
+  duration_ms: 482.8407
+  ...
+# Subtest: legacy queued tasks without historical bindings fail before any runtime call and release only unused reservation
+ok 11 - legacy queued tasks without historical bindings fail before any runtime call and release only unused reservation
+  ---
+  duration_ms: 158.4759
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# populated capability-binding upgrade: applied migration 63
+# Subtest: a populated 062 upgrade preserves every old public table and does not fabricate bindings for historical tasks
+ok 12 - a populated 062 upgrade preserves every old public table and does not fabricate bindings for historical tasks
+  ---
+  duration_ms: 14440.9487
+  ...
+# Subtest: bounded version locks serialize revocation without granting application update privileges
+ok 13 - bounded version locks serialize revocation without granting application update privileges
+  ---
+  duration_ms: 801.8642
+  ...
+# Subtest: token metering retains exact integer ceiling and rejects settlement overflow
+ok 14 - token metering retains exact integer ceiling and rejects settlement overflow
+  ---
+  duration_ms: 4.6554
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# Subtest: capability contract fixture preserves the exact original schemas and digest
+ok 15 - capability contract fixture preserves the exact original schemas and digest
+  ---
+  duration_ms: 4578.0478
+  ...
+# Subtest: capability management requires the Admin audience, whole-global permission, current MFA and no overlapping deny
+ok 16 - capability management requires the Admin audience, whole-global permission, current MFA and no overlapping deny
+  ---
+  duration_ms: 294.1414
+  ...
+# Subtest: typed drafts reject engine, endpoint, credentials and unavailable protocols; replay and immutable documents retain exact bytes
+ok 17 - typed drafts reject engine, endpoint, credentials and unavailable protocols; replay and immutable documents retain exact bytes
+  ---
+  duration_ms: 344.3954
+  ...
+# Subtest: actual pinned Codex performs a tool loop with requested model/effort and known usage; a validation key never repeats the call
+ok 18 - actual pinned Codex performs a tool loop with requested model/effort and known usage; a validation key never repeats the call
+  ---
+  duration_ms: 8961.3873
+  ...
+# Subtest: an unsupported text model cannot qualify and keeps an honest known or reconciling receipt
+ok 19 - an unsupported text model cannot qualify and keeps an honest known or reconciling receipt
+  ---
+  duration_ms: 5575.4757
+  ...
+# Subtest: publication requires another currently authorized Admin and atomically advances the database head seen by other catalogs
+ok 20 - publication requires another currently authorized Admin and atomically advances the database head seen by other catalogs
+  ---
+  duration_ms: 17360.1447
+  ...
+# Subtest: canonical customer capabilities follow strict schemas and scoped signed pagination without accepting a third cursor segment
+ok 21 - canonical customer capabilities follow strict schemas and scoped signed pagination without accepting a third cursor segment
+  ---
+  duration_ms: 380.0393
+  ...
+# Subtest: new tasks bind the published version while queued tasks retain original prices across a later publication and rollback
+ok 22 - new tasks bind the published version while queued tasks retain original prices across a later publication and rollback
+  ---
+  duration_ms: 21205.2913
+  ...
+# Subtest: head changes invalidate an exact reviewed preview and a pending approval rather than rebasing the change
+ok 23 - head changes invalidate an exact reviewed preview and a pending approval rather than rebasing the change
+  ---
+  duration_ms: 18593.5961
+  ...
+# Subtest: expired unknown verifications become reconciling and keep the same receipt on replay without restarting a model call
+ok 24 - expired unknown verifications become reconciling and keep the same receipt on replay without restarting a model call
+  ---
+  duration_ms: 67.9592
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# populated capability-release upgrade: applied migration 64
+# Subtest: a populated 063 to 064 upgrade preserves all prior table bytes and migration checksums without fabricating publication facts
+ok 25 - a populated 063 to 064 upgrade preserves all prior table bytes and migration checksums without fabricating publication facts
+  ---
+  duration_ms: 11607.044
+  ...
+# Subtest: application credentials cannot mutate capability documents, validation receipts or publication heads
+ok 26 - application credentials cannot mutate capability documents, validation receipts or publication heads
+  ---
+  duration_ms: 117.5717
+  ...
+# Subtest: verification refuses a PATH-only Codex command with a useful safe setup receipt
+ok 27 - verification refuses a PATH-only Codex command with a useful safe setup receipt
+  ---
+  duration_ms: 147.2206
+  ...
+# Subtest: image verification actually generates and edits bounded PNG bytes and records both confirmed operation prices
+ok 28 - image verification actually generates and edits bounded PNG bytes and records both confirmed operation prices
+  ---
+  duration_ms: 5842.4696
+  ...
+# Subtest: an accepted image verification with an unknown result keeps a durable reconciling receipt and never automatically replays
+ok 29 - an accepted image verification with an unknown result keeps a durable reconciling receipt and never automatically replays
+  ---
+  duration_ms: 1223.504
+  ...
+# Subtest: a kernel-listening forbidden Fetch port receives no HTTP and the owned loopback listener rebinds to a usable port
+ok 30 - a kernel-listening forbidden Fetch port receives no HTTP and the owned loopback listener rebinds to a usable port
+  ---
+  duration_ms: 6.0884
+  ...
+# {"blocked_port":6000,"blocked_received_calls":0,"selected_port":11736,"selected_received_calls":1}
+# Subtest: each administrator image operation rechecks the real session, MFA, permissions, runtime and validation lease while retaining the first known fee
+    # Subtest: session revoked
+    ok 1 - session revoked
+      ---
+      duration_ms: 1827.4431
+      ...
+    # Subtest: MFA expired
+    ok 2 - MFA expired
+      ---
+      duration_ms: 1221.6205
+      ...
+    # Subtest: binding removed
+    ok 3 - binding removed
+      ---
+      duration_ms: 1320.7533
+      ...
+    # Subtest: administrator suspended
+    ok 4 - administrator suspended
+      ---
+      duration_ms: 1476.0901
+      ...
+    # Subtest: runtime revoked
+    ok 5 - runtime revoked
+      ---
+      duration_ms: 1633.5599
+      ...
+    # Subtest: validation lease expired
+    not ok 6 - validation lease expired
+      ---
+      duration_ms: 1186.9144
+      location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-releases.test.ts:1:28029'
+      failureType: 'unhandledRejection'
+      error: 'Immutable completed capability verification'
+      code: '23514'
+      name: 'error'
+      stack: |-
+        D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg-pool\index.js:45:11
+        process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+        async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-releases.test.ts:1150:13)
+        async Server.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-releases.test.ts:987:5)
+      ...
+    1..6
+not ok 31 - each administrator image operation rechecks the real session, MFA, permissions, runtime and validation lease while retaining the first known fee
+  ---
+  duration_ms: 8759.3689
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-releases.test.ts:1:27667'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: accepted malformed PNG, base64 and image-count responses cannot qualify or replay as a free failed call
+ok 32 - accepted malformed PNG, base64 and image-count responses cannot qualify or replay as a free failed call
+  ---
+  duration_ms: 27070.1525
+  ...
+# Subtest: an accepted corrupt edit preserves the confirmed generation price while its remaining cost stays unknown
+ok 33 - an accepted corrupt edit preserves the confirmed generation price while its remaining cost stays unknown
+  ---
+  duration_ms: 1956.869
+  ...
+# Subtest: complete grayscale, palette and 16-bit Adam7 PNG pixels decode within the verification bound
+ok 34 - complete grayscale, palette and 16-bit Adam7 PNG pixels decode within the verification bound
+  ---
+  duration_ms: 483.6145
+  ...
+# Subtest: a later failed verification blocks an earlier passed receipt for the same immutable document
+not ok 35 - a later failed verification blocks an earlier passed receipt for the same immutable document
+  ---
+  duration_ms: 149505.9715
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-releases.test.ts:1:34644'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'reconciling'
+    - 'passed'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'passed'
+  actual: 'reconciling'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-releases.test.ts:1267:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"request_id":"d15d27a0-36d1-47b2-88a9-5a750a252f94","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: an audit write failure rolls back publication, head advance, operation and approval decision together
+ok 36 - an audit write failure rolls back publication, head advance, operation and approval decision together
+  ---
+  duration_ms: 10006.7718
+  ...
+# Subtest: approval rechecks the original operator's current MFA before any publication or approval effect
+ok 37 - approval rechecks the original operator's current MFA before any publication or approval effect
+  ---
+  duration_ms: 7449.088
+  ...
+# {"request_id":"0a6e4c2d-c014-48f2-a8da-e10e8fabb9a6","code":"AI_SETUP_REQUIRED","error_type":"Problem"}
+# Subtest: resuming and retrying confirmed old work uses its original binding even when a newer default is revoked
+ok 38 - resuming and retrying confirmed old work uses its original binding even when a newer default is revoked
+  ---
+  duration_ms: 8711.7085
+  ...
+# Subtest: verification cache reclamation persists busy retries and completion separately from immutable usage without invoking a model
+ok 39 - verification cache reclamation persists busy retries and completion separately from immutable usage without invoking a model
+  ---
+  duration_ms: 96.1651
+  ...
+# Subtest: exhausted verification cleanup has an authorized versioned idempotent retry and leaves verification and cost facts unchanged
+ok 40 - exhausted verification cleanup has an authorized versioned idempotent retry and leaves verification and cost facts unchanged
+  ---
+  duration_ms: 151.8909
+  ...
+# Subtest: publishing then rolling back to the same model identity still invalidates the customer's earlier comparison
+ok 41 - publishing then rolling back to the same model identity still invalidates the customer's earlier comparison
+  ---
+  duration_ms: 19931.9808
+  ...
+# Error: Test "validation lease expired" at tests\\capability-releases.test.ts:1:28029 generated asynchronous activity after the test ended. This activity created the error "AssertionError [ERR_ASSERTION]: a second provider operation is not authorized\\n\\n2 !== 1\\n" and would have caused the test to fail, but instead triggered an unhandledRejection event.
+# Subtest: scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+ok 42 - scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+  ---
+  duration_ms: 78.6922
+  ...
+# Subtest: authority revocation between responses blocks the next provider call and does not expose callback errors
+ok 43 - authority revocation between responses blocks the next provider call and does not expose callback errors
+  ---
+  duration_ms: 19.2162
+  ...
+# Subtest: credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+ok 44 - credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+  ---
+  duration_ms: 29.7442
+  ...
+# Subtest: model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+ok 45 - model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+  ---
+  duration_ms: 31.478
+  ...
+# Subtest: declared and streamed oversized request bodies never reach the provider
+ok 46 - declared and streamed oversized request bodies never reach the provider
+  ---
+  duration_ms: 9.2736
+  ...
+# Subtest: a run has one in-flight request and a hard forwarded-request ceiling
+ok 47 - a run has one in-flight request and a hard forwarded-request ceiling
+  ---
+  duration_ms: 11.2182
+  ...
+# Subtest: expiry and explicit cancellation revoke a scoped credential without a provider request
+ok 48 - expiry and explicit cancellation revoke a scoped credential without a provider request
+  ---
+  duration_ms: 79.8615
+  ...
+# Subtest: redirects are not followed and an uncertain dispatched request cannot be replayed
+ok 49 - redirects are not followed and an uncertain dispatched request cannot be replayed
+  ---
+  duration_ms: 10.8738
+  ...
+# Subtest: truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+ok 50 - truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+  ---
+  duration_ms: 37.7403
+  ...
+# Subtest: split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+ok 51 - split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+  ---
+  duration_ms: 3048.2373
+  ...
+# Subtest: an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+ok 52 - an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+  ---
+  duration_ms: 9.9849
+  ...
+# Subtest: the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+ok 53 - the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+  ---
+  duration_ms: 191.9456
+  ...
+# Subtest: registered function-call frames and arguments are streamed unchanged after validation
+ok 54 - registered function-call frames and arguments are streamed unchanged after validation
+  ---
+  duration_ms: 9.8185
+  ...
+# Subtest: malformed or oversized SSE frames are rejected before forwarding an event
+ok 55 - malformed or oversized SSE frames are rejected before forwarding an event
+  ---
+  duration_ms: 16.876
+  ...
+# Subtest: stream idle timeout aborts an accepted provider request and prevents another dispatch
+ok 56 - stream idle timeout aborts an accepted provider request and prevents another dispatch
+  ---
+  duration_ms: 55.8444
+  ...
+# Subtest: request deadline aborts even a non-idle stream and a response with no first byte
+ok 57 - request deadline aborts even a non-idle stream and a response with no first byte
+  ---
+  duration_ms: 172.189
+  ...
+# Subtest: declared and chunked oversized responses are bounded and never automatically replayed
+ok 58 - declared and chunked oversized responses are bounded and never automatically replayed
+  ---
+  duration_ms: 42.8097
+  ...
+# Subtest: image generation and multipart editing use the same trusted authorization and exact frozen specification
+ok 59 - image generation and multipart editing use the same trusted authorization and exact frozen specification
+  ---
+  duration_ms: 19.2721
+  ...
+# Subtest: invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+ok 60 - invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+  ---
+  duration_ms: 4.3096
+  ...
+# Subtest: real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
+ok 61 - real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
+  ---
+  duration_ms: 11099.0682
+  ...
+# Subtest: cancelling an initializing real Codex process rejects the pending RPC and closes the child
+ok 62 - cancelling an initializing real Codex process rejects the pending RPC and closes the child
+  ---
+  duration_ms: 97.1929
+  ...
+1..62
+# tests 81
+# suites 0
+# pass 73
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 421690.2859
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/22ac040e-4934-430f-abe6-c7346476f7ec/result.json","sha256":"9f021eeaf260443335465da4916390215692696ff24569b6f831ff260cf78fa7","exit_code":0}
