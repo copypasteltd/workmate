@@ -56,6 +56,38 @@ const schema = z.object({
     .int()
     .nonnegative()
     .optional(),
+  AI_MAX_REQUEST_BYTES: z.coerce
+    .number()
+    .int()
+    .min(1024)
+    .max(40_000_000)
+    .default(16_000_000),
+  AI_MAX_RESPONSE_BYTES: z.coerce
+    .number()
+    .int()
+    .min(1024)
+    .max(100_000_000)
+    .default(70_000_000),
+  AI_MAX_OUTPUT_TOKENS: z.coerce
+    .number()
+    .int()
+    .min(16)
+    .max(131072)
+    .default(16384),
+  AI_MAX_REQUESTS_PER_TURN: z.coerce.number().int().min(1).max(512).default(64),
+  AI_REQUEST_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(10)
+    .max(900000)
+    .default(180000),
+  AI_STREAM_IDLE_TIMEOUT_MS: z.coerce
+    .number()
+    .int()
+    .min(10)
+    .max(300000)
+    .default(60000),
+  AI_SCOPE_TTL_MS: z.coerce.number().int().min(10).max(900000).default(900000),
   WORKER_ENABLED: bool.default(true),
   WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(100).default(10),
   DEMO_MODE: bool.default(false),
@@ -126,6 +158,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
   if (c.AI_BASE_URL) {
     const u = new URL(c.AI_BASE_URL);
+    if (!["http:", "https:"].includes(u.protocol))
+      throw new Error("AI gateway requires HTTP(S)");
     if (u.username || u.password || u.search || u.hash)
       throw new Error("AI gateway URL cannot contain credentials or query");
     if (

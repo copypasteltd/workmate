@@ -23,12 +23,18 @@ import { freezeTaskSkills } from "../src/skill-lifecycle.js";
 import { runMigrations } from "../scripts/migration-runner.js";
 import { pngFromSVG } from "../src/render.js";
 import { listenLoopbackHTTP } from "../src/loopback-http.js";
+import {
+  AIRequestFailure,
+  internalAIRequest,
+} from "../src/internal-ai-gateway.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 let s: Awaited<ReturnType<typeof buildApp>>;
 let initial: Config;
 let gateway: Server;
 let rejectImage = false;
+let nextTextTool: string | undefined;
+let imageResponse: unknown | undefined;
 const requests: { path: string; body: any }[] = [];
 type Client = { id: string; cookie: string; csrf: string; admin?: boolean };
 const fixtureKey = "controlled-capability-fixture-not-a-provider-key";
@@ -181,7 +187,7 @@ async function change(values: Partial<Config>) {
 before(async () => {
   isolated = await isolatedTestEnvironment();
   const png = pngFromSVG(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#1f5eff"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#1f5eff"/></svg>',
   );
   gateway = createServer(async (req, res) => {
     if (req.headers.authorization !== "Bearer " + fixtureKey) {
@@ -200,7 +206,11 @@ before(async () => {
       }
       res
         .writeHead(200, { "Content-Type": "application/json" })
-        .end(JSON.stringify({ data: [{ b64_json: png.toString("base64") }] }));
+        .end(
+          JSON.stringify(
+            imageResponse ?? { data: [{ b64_json: png.toString("base64") }] },
+          ),
+        );
       return;
     }
     if (req.url !== "/v1/responses") {
@@ -237,6 +247,48 @@ before(async () => {
         `event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`,
       );
     emit("response.created", { response });
+    if (nextTextTool) {
+      const tool = {
+        id: "fc_" + randomUUID(),
+        type: "function_call",
+        name: nextTextTool,
+        call_id: "call_" + randomUUID(),
+        arguments: "{}",
+        status: "completed",
+      };
+      nextTextTool = undefined;
+      emit("response.output_item.added", {
+        output_index: 0,
+        item: { ...tool, arguments: "", status: "in_progress" },
+      });
+      emit("response.function_call_arguments.delta", {
+        item_id: tool.id,
+        output_index: 0,
+        delta: "{}",
+      });
+      emit("response.function_call_arguments.done", {
+        item_id: tool.id,
+        output_index: 0,
+        arguments: "{}",
+      });
+      emit("response.output_item.done", { output_index: 0, item: tool });
+      emit("response.completed", {
+        response: {
+          ...response,
+          status: "completed",
+          output: [tool],
+          usage: {
+            input_tokens: 7,
+            output_tokens: 11,
+            total_tokens: 18,
+            input_tokens_details: { cached_tokens: 0 },
+            output_tokens_details: { reasoning_tokens: 0 },
+          },
+        },
+      });
+      res.end();
+      return;
+    }
     emit("response.output_item.added", {
       output_index: 0,
       item: { ...item, status: "in_progress", content: [] },
@@ -298,9 +350,17 @@ before(async () => {
     { worker: false },
   );
   initial = { ...s.db.config };
+  // This isolated suite deliberately keeps five unknown image operations.
+  // Give its fixture eight image slots so each counterexample executes; retain
+  // every reconciliation fact and leave the production policy unchanged.
+  await s.db.control.query(
+    "UPDATE execution_capacity_policy SET image_slots=8 WHERE data_mode='configured_services'",
+  );
 });
 afterEach(async () => {
   rejectImage = false;
+  nextTextTool = undefined;
+  imageResponse = undefined;
   if (s && initial) {
     Object.assign(s.db.config, initial);
     await seedRuntimeProfile(s.db, s.catalog);
@@ -356,6 +416,264 @@ test(
     );
   },
 );
+
+test(
+  "real pinned Codex cannot dispatch its next response after the original user's authority is revoked; the first measured response is still charged",
+  { timeout: 120000 },
+  async () => {
+    const f = await fixture(),
+      queued = await createTask(f);
+    let toolFinished = false;
+    class RevokingRuntime extends CodexRuntimeAdapter {
+      override start(ctx: RuntimeContext) {
+        return super.start({
+          ...ctx,
+          tools: ctx.tools.map((tool) =>
+            tool.name !== "project_assets"
+              ? tool
+              : {
+                  ...tool,
+                  run: async (args: unknown, callId: string) => {
+                    const result = await tool.run(args, callId);
+                    await s.db.control.query(
+                      "UPDATE users SET auth_version=auth_version+1 WHERE id=$1",
+                      [f.owner.id],
+                    );
+                    toolFinished = true;
+                    return result;
+                  },
+                },
+          ),
+        });
+      }
+    }
+    nextTextTool = "project_assets";
+    const start = requests.length;
+    await worker(new RevokingRuntime(s.db.config)).run(f.tenant, queued.id);
+    assert.equal(toolFinished, true);
+    assert.equal(
+      requests.slice(start).filter((r) => r.path === "/v1/responses").length,
+      1,
+    );
+    const completed = await task(queued.id);
+    assert.equal(completed.status, "cancelled", completed.error_code);
+    assert.equal(completed.charged_micros, "29");
+    const events = (
+      await s.db.control.query(
+        "SELECT kind,body FROM task_events WHERE task_id=$1 AND kind LIKE 'gateway.%' ORDER BY created_at",
+        [queued.id],
+      )
+    ).rows;
+    assert.equal(
+      events.filter((e) => e.kind === "gateway.request_authorized").length,
+      1,
+    );
+    assert.ok(
+      events.some(
+        (e) =>
+          e.kind === "gateway.request_rejected" &&
+          e.body.code === "AI_REQUEST_AUTHORIZATION_CHANGED" &&
+          e.body.dispatched === false,
+      ),
+    );
+    assert.notEqual(
+      (
+        await s.db.control.query(
+          "SELECT status FROM reservations WHERE task_id=$1",
+          [queued.id],
+        )
+      ).rows[0].status,
+      "reconciling",
+    );
+  },
+);
+
+test(
+  "cancelling after real Codex thread creation but before any provider dispatch releases the original reservation as known zero spend",
+  { timeout: 120000 },
+  async () => {
+    const f = await fixture(),
+      queued = await createTask(f),
+      controller = new AbortController();
+    let started = false,
+      failure: Record<string, unknown> | undefined;
+    class CancellingRuntime extends CodexRuntimeAdapter {
+      override async start(ctx: RuntimeContext) {
+        try {
+          return await super.start({
+            ...ctx,
+            signal: AbortSignal.any([ctx.signal, controller.signal]),
+            onEvent: async (kind, body) => {
+              await ctx.onEvent(kind, body);
+              if (kind === "runtime.thread") {
+                started = true;
+                const cancelled = await call(
+                  f.owner,
+                  "POST",
+                  f.base + "/tasks/" + queued.id + "/cancel",
+                );
+                assert.equal(
+                  cancelled.status,
+                  200,
+                  JSON.stringify(cancelled.data),
+                );
+                controller.abort();
+              }
+            },
+          });
+        } catch (error) {
+          if (error instanceof RuntimeFailure)
+            failure = {
+              code: error.code,
+              accepted: error.accepted,
+              usageKnown: error.usageKnown,
+              input: error.inputTokens,
+              output: error.outputTokens,
+            };
+          throw error;
+        }
+      }
+    }
+    const first = requests.length;
+    await worker(new CancellingRuntime(s.db.config)).run(f.tenant, queued.id);
+    assert.equal(started, true);
+    assert.equal(requests.length, first);
+    assert.deepEqual(failure, {
+      code: "CODEX_CANCELLED",
+      accepted: false,
+      usageKnown: true,
+      input: 0,
+      output: 0,
+    });
+    const completed = await task(queued.id);
+    assert.equal(completed.attempt, 1);
+    assert.equal(completed.status, "cancelled", completed.error_code);
+    assert.equal(completed.charged_micros, "0");
+    assert.equal(
+      (
+        await s.db.control.query(
+          "SELECT status FROM reservations WHERE task_id=$1",
+          [queued.id],
+        )
+      ).rows[0].status,
+      "released",
+    );
+  },
+);
+
+test("each real worker inference request rechecks the current identity, membership, task lease, fencing, cancellation and budget scope", async (t) => {
+  const mutations = [
+    [
+      "user authentication version",
+      "UPDATE users SET auth_version=auth_version+1 WHERE id=$1",
+      "UPDATE users SET auth_version=auth_version-1 WHERE id=$1",
+      "user",
+    ],
+    [
+      "user suspension",
+      "UPDATE users SET status='suspended' WHERE id=$1",
+      "UPDATE users SET status='active' WHERE id=$1",
+      "user",
+    ],
+    [
+      "removed membership",
+      "UPDATE memberships SET status='removed' WHERE tenant_id=$1",
+      "UPDATE memberships SET status='active' WHERE tenant_id=$1",
+      "tenant",
+    ],
+    [
+      "workspace suspension",
+      "UPDATE tenants SET status='suspended' WHERE id=$1",
+      "UPDATE tenants SET status='active' WHERE id=$1",
+      "tenant",
+    ],
+    [
+      "archived project",
+      "UPDATE projects SET archived=true WHERE id=$1",
+      "UPDATE projects SET archived=false WHERE id=$1",
+      "project",
+    ],
+    [
+      "task cancellation",
+      "UPDATE tasks SET cancel_requested=true WHERE id=$1",
+      "UPDATE tasks SET cancel_requested=false WHERE id=$1",
+      "task",
+    ],
+    [
+      "expired task lease",
+      "UPDATE tasks SET lease_until=now()-interval '1 minute' WHERE id=$1",
+      "UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1",
+      "task",
+    ],
+    [
+      "stale fencing",
+      "UPDATE tasks SET fencing_token=gen_random_uuid() WHERE id=$1",
+      "UPDATE tasks SET fencing_token=$2 WHERE id=$1",
+      "task",
+    ],
+    [
+      "non-reserved budget",
+      "UPDATE reservations SET status='reconciling' WHERE task_id=$1",
+      "UPDATE reservations SET status='reserved' WHERE task_id=$1",
+      "task",
+    ],
+  ] as const;
+  for (const [name, apply, undo, target] of mutations)
+    await t.test(name, async () => {
+      const f = await fixture(),
+        queued = await createTask(f);
+      let checked = false;
+      const runtime = new ControlledRuntime(async (ctx) => {
+        const identity = ctx.requestAuthority!;
+        assert.ok(identity);
+        const id =
+          target === "user"
+            ? f.owner.id
+            : target === "tenant"
+              ? f.tenant
+              : target === "project"
+                ? f.project
+                : queued.id;
+        const start = requests.length;
+        await s.db.control.query(apply, [id]);
+        try {
+          await assert.rejects(
+            internalAIRequest(s.db.config, {
+              operation: "responses",
+              model: ctx.selection!.model,
+              reasoningEffort: ctx.selection!.reasoningEffort,
+              tools: [],
+              authority: identity,
+              signal: ctx.signal,
+              body: {
+                model: ctx.selection!.model,
+                reasoning: { effort: ctx.selection!.reasoningEffort },
+                stream: true,
+                input: "Must be rejected before any provider dispatch",
+                tools: [],
+              },
+            }),
+            (error: unknown) =>
+              error instanceof AIRequestFailure &&
+              error.code === "AI_REQUEST_AUTHORIZATION_CHANGED" &&
+              !error.dispatched,
+          );
+          assert.equal(requests.length, start);
+          checked = true;
+        } finally {
+          await s.db.control.query(
+            undo,
+            target === "task" && name === "stale fencing"
+              ? [id, identity.fencingToken]
+              : [id],
+          );
+        }
+      });
+      await worker(runtime).run(f.tenant, queued.id);
+      assert.equal(checked, true);
+      assert.equal((await task(queued.id)).status, "succeeded");
+    });
+});
 
 test("new tasks use a different immutable identity when only effort or rates change; retries retain the original binding", async () => {
   const f = await fixture(),
@@ -430,10 +748,21 @@ test("actual image generation and edit keep the original internal image alias, o
     .filter((r) => r.path.startsWith("/v1/images/"));
   assert.equal(images.length, 2);
   assert.equal(images[0].body.model, "image-original-fixture");
+  assert.equal(images[0].body.size, "1024x1024");
+  assert.equal(images[0].body.quality, "high");
+  assert.equal(images[0].body.n, 1);
+  assert.equal(images[0].body.output_format, "png");
   assert.match(
     images[1].body,
     /name="model"\r\n\r\nimage-original-fixture\r\n/,
   );
+  for (const [key, value] of Object.entries({
+    size: "1024x1024",
+    quality: "high",
+    n: "1",
+    output_format: "png",
+  }))
+    assert.ok(images[1].body.includes(`name="${key}"\r\n\r\n${value}\r\n`));
   const saved = (
     await s.db.control.query(
       "SELECT metadata FROM asset_versions WHERE asset_id=$1",
@@ -451,6 +780,63 @@ test("actual image generation and edit keep the original internal image alias, o
     ).rows.map((r) => r.charge_micros),
     ["200", "200"],
   );
+});
+
+test("accepted malformed, non-canonical, wrong-size and multiple images retain an uncertain charge and never create an asset", async (t) => {
+  const tiny = pngFromSVG(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="red"/></svg>',
+  );
+  const encoded = tiny.toString("base64");
+  const payloads = [
+    { data: [{ b64_json: encoded }] },
+    { data: [{ b64_json: encoded + "\n" }] },
+    { data: [{ b64_json: tiny.subarray(0, 8).toString("base64") }] },
+    { data: [{ b64_json: encoded }, { b64_json: encoded }] },
+  ];
+  for (let i = 0; i < payloads.length; i++)
+    await t.test(`invalid image ${i + 1}`, async () => {
+      const f = await fixture(),
+        queued = await createTask(f, "designer");
+      imageResponse = payloads[i];
+      const runtime = new ControlledRuntime(async (ctx) => {
+        const tool = ctx.tools.find((tool) => tool.name === "image2_generate")!;
+        await assert.rejects(
+          tool.run(
+            {
+              prompt: "Controlled invalid image result",
+              filename: "invalid.png",
+            },
+            "invalid-image-fixture",
+          ),
+        );
+      });
+      const start = requests.length;
+      await worker(runtime).run(f.tenant, queued.id);
+      assert.equal((await task(queued.id)).status, "reconciling");
+      assert.equal(
+        requests.slice(start).filter((r) => r.path.startsWith("/v1/images/"))
+          .length,
+        1,
+      );
+      assert.deepEqual(
+        (
+          await s.db.control.query(
+            "SELECT state,charge_micros FROM tool_operations WHERE task_id=$1",
+            [queued.id],
+          )
+        ).rows,
+        [{ state: "reconciling", charge_micros: "200" }],
+      );
+      assert.equal(
+        (
+          await s.db.control.query(
+            "SELECT count(*)::int AS n FROM assets WHERE project_id=$1",
+            [f.project],
+          )
+        ).rows[0].n,
+        0,
+      );
+    });
 });
 
 test("an accepted image with a lost result keeps reconciliation and its original reserved operation price", async () => {

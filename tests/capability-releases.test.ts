@@ -26,6 +26,8 @@ import {
 import { removeOwnedUUIDDirectory } from "../src/owned-directory-cleanup.js";
 import { validateVerificationPNG } from "../src/png-validation.js";
 import { listenLoopbackHTTP } from "../src/loopback-http.js";
+import { CodexRuntimeAdapter, type RuntimeContext } from "../src/runtime.js";
+import { Worker } from "../src/worker.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
   s: Awaited<ReturnType<typeof buildApp>>;
@@ -430,8 +432,22 @@ test("actual pinned Codex performs a tool loop with requested model/effort and k
         [v.id],
       )
     ).rows[0].n,
-    1,
+    3,
   );
+  const authorized = (
+    await s.db.control.query(
+      "SELECT body FROM capability_validation_events WHERE validation_id=$1 AND body->>'event'='gateway.request_authorized'",
+      [v.id],
+    )
+  ).rows;
+  assert.equal(authorized.length, 2);
+  assert.equal(new Set(authorized.map((row) => row.body.operation_id)).size, 2);
+  for (const { body } of authorized) {
+    assert.equal(body.operation, "responses");
+    assert.equal(body.model_alias, d.v.document.model_alias);
+    assert.match(body.request_hash, /^[a-f0-9]{64}$/);
+    assert.ok(body.request_bytes > 0);
+  }
   assert.equal(
     (
       await s.db.control.query(
@@ -884,6 +900,90 @@ test("an accepted image verification with an unknown result keeps a durable reco
   );
 });
 
+test(
+  "a published image capability executes generation and edit through the real worker when the environment verification flag is false",
+  { timeout: 120000 },
+  async () => {
+    const a = await administrator(),
+      reviewer = await administrator(),
+      doc = imageDocument(),
+      d = await draft(a, doc);
+    assert.equal((await validate(a, d.v)).state, "passed");
+    await publish(a, reviewer, d.v);
+    const prior = s.db.config.AI_IMAGE_VERIFIED;
+    s.db.config.AI_IMAGE_VERIFIED = false;
+    try {
+      const f = await fixture();
+      const created = await call(f.owner, "POST", f.base + "/tasks", {
+        title: "Published image capability",
+        prompt: "Summarize the two controlled generated images.",
+        role_key: "designer",
+        budget_micros: 10000000,
+      });
+      assert.equal(created.status, 200, JSON.stringify(created.data));
+      let generated = false,
+        edited = false;
+      class PublishedImageRuntime extends CodexRuntimeAdapter {
+        override async start(ctx: RuntimeContext) {
+          const asset: any = await ctx.tools
+            .find((tool) => tool.name === "image2_generate")!
+            .run(
+              {
+                prompt: "A square blue paper shape",
+                filename: "published.png",
+              },
+              "published-generation",
+            );
+          generated = true;
+          await ctx.tools
+            .find((tool) => tool.name === "image2_edit")!
+            .run(
+              {
+                asset_id: asset.id,
+                prompt: "A square blue paper shape with a lighter edge",
+                filename: "published-edit.png",
+              },
+              "published-edit",
+            );
+          edited = true;
+          // The worker's two real media calls were exercised above. Keep the
+          // demo text provider from intentionally requesting a third image.
+          return super.start({
+            ...ctx,
+            tools: ctx.tools.filter((tool) => !tool.name.startsWith("image2_")),
+          });
+        }
+      }
+      await new Worker(
+        s.db,
+        s.catalog,
+        s.storage,
+        new PublishedImageRuntime(s.db.config),
+      ).run(f.tenant, created.data.id);
+      const completed = (
+        await s.db.control.query("SELECT * FROM tasks WHERE id=$1", [
+          created.data.id,
+        ])
+      ).rows[0];
+      assert.equal(generated && edited, true, completed.error_code);
+      assert.equal(completed.status, "succeeded", completed.error_code);
+      const operations = (
+        await s.db.control.query(
+          "SELECT state,charge_micros FROM tool_operations WHERE task_id=$1 ORDER BY created_at",
+          [completed.id],
+        )
+      ).rows;
+      assert.deepEqual(operations, [
+        { state: "succeeded", charge_micros: String(doc.rates[0]) },
+        { state: "succeeded", charge_micros: String(doc.rates[0]) },
+      ]);
+      assert.ok(BigInt(completed.charged_micros) >= BigInt(doc.rates[0]) * 2n);
+    } finally {
+      s.db.config.AI_IMAGE_VERIFIED = prior;
+    }
+  },
+);
+
 function pngChunk(kind: string, data: Buffer) {
   const bytes = Buffer.alloc(data.length + 12);
   bytes.writeUInt32BE(data.length);
@@ -961,14 +1061,25 @@ test("a kernel-listening forbidden Fetch port receives no HTTP and the owned loo
 async function controlledImagePayloads(
   payloads: unknown[],
   work: (calls: () => number) => Promise<void>,
+  afterRequest?: (count: number) => Promise<void>,
 ) {
   const original = s.db.config.AI_BASE_URL;
   let calls = 0;
+  let hookFailure: unknown;
   const server = createServer(async (req, res) => {
     for await (const _ of req) {
       /* Drain the actual request body. */
     }
     const payload = payloads[calls++];
+    try {
+      await afterRequest?.(calls);
+    } catch (error) {
+      hookFailure = error;
+      res
+        .writeHead(500, { "content-type": "application/json" })
+        .end(JSON.stringify({ error: { code: "FIXTURE_HOOK_FAILED" } }));
+      return;
+    }
     res
       .writeHead(payload === undefined ? 503 : 200, {
         "content-type": "application/json",
@@ -985,8 +1096,153 @@ async function controlledImagePayloads(
     await new Promise<void>((resolve, reject) =>
       server.close((error) => (error ? reject(error) : resolve())),
     );
+    if (hookFailure) throw hookFailure;
   }
 }
+
+test("each administrator image operation rechecks the real session, MFA, permissions and runtime while retaining the first known fee", async (t) => {
+  const png = imagePayload(blankVerificationPNG());
+  for (const condition of [
+    "session revoked",
+    "MFA expired",
+    "binding removed",
+    "administrator suspended",
+    "runtime revoked",
+  ] as const)
+    await t.test(condition, async () => {
+      const originalProfile = s.catalog.runtimeProfile;
+      if (condition === "runtime revoked")
+        s.catalog.runtimeProfile = (
+          await s.db.control.query(
+            "INSERT INTO codex_runtime_profiles(fingerprint,profile_key,kernel,pinned_version,transport,gateway_policy,automatic_fallback) SELECT $1,profile_key,kernel,pinned_version,transport,gateway_policy,automatic_fallback FROM codex_runtime_profiles WHERE id=$2 RETURNING *",
+            [hash(randomUUID()), originalProfile.id],
+          )
+        ).rows[0];
+      const a = await administrator(),
+        inspector = await administrator({
+          permissions: ["admin.catalog.read"],
+        }),
+        doc = imageDocument(),
+        d = await draft(a, doc),
+        key = randomUUID();
+      const profileId = (
+        await s.db.control.query(
+          "SELECT runtime_profile_id FROM capability_releases WHERE id=$1",
+          [d.v.id],
+        )
+      ).rows[0].runtime_profile_id;
+      let calls = 0;
+      try {
+        await controlledImagePayloads(
+          [png, png],
+          async (count) => {
+            const result = await call(
+              a,
+              "POST",
+              `${root}/${d.v.id}/validations`,
+              command(d.v),
+              { "idempotency-key": key },
+            );
+            calls = count();
+            assert.equal(calls, 1);
+            const validation = (
+              await s.db.control.query(
+                "SELECT * FROM capability_validations WHERE release_id=$1",
+                [d.v.id],
+              )
+            ).rows[0];
+            assert.ok(validation);
+            assert.equal(
+              validation.state,
+              "cancelled",
+              JSON.stringify(result.data),
+            );
+            assert.equal(validation.capability_version_id, null);
+            assert.equal(
+              validation.result.error_code,
+              "AI_REQUEST_AUTHORIZATION_CHANGED",
+            );
+            assert.equal(validation.result.accepted, true);
+            assert.equal(validation.result.usage_known, true);
+            assert.equal(
+              validation.result.known_cost_micros,
+              String(doc.rates[0]),
+            );
+            assert.ok(validation.result.checks.includes("images.generate"));
+            assert.ok(!validation.result.checks.includes("images.edit"));
+            const events = (
+              await s.db.control.query(
+                "SELECT body FROM capability_validation_events WHERE validation_id=$1",
+                [validation.id],
+              )
+            ).rows.map((row) => row.body);
+            assert.equal(
+              events.filter(
+                (event) => event.event === "gateway.request_authorized",
+              ).length,
+              1,
+            );
+            assert.equal(
+              events.filter((event) => "actor_authorized" in event).length,
+              1,
+            );
+            assert.equal(
+              events.find((event) => "actor_authorized" in event)
+                .actor_authorized,
+              false,
+            );
+            if (condition !== "runtime revoked") {
+              const detail = await call(
+                inspector,
+                "GET",
+                `${root}/validations/${validation.id}`,
+              );
+              assert.equal(detail.status, 200, JSON.stringify(detail.data));
+              assert.equal(
+                detail.data.result.known_cost_micros,
+                String(doc.rates[0]),
+              );
+            }
+            assert.equal(result.status, 403, JSON.stringify(result.data));
+          },
+          async (count) => {
+            assert.equal(
+              count,
+              1,
+              "a second provider operation is not authorized",
+            );
+            const mutations = {
+              "session revoked": [
+                "UPDATE sessions SET revoked_at=now() WHERE admin_id=$1",
+                a.id,
+              ],
+              "MFA expired": [
+                "UPDATE sessions SET mfa_at=now()-interval '11 minutes' WHERE admin_id=$1",
+                a.id,
+              ],
+              "binding removed": [
+                "DELETE FROM admin_bindings WHERE principal_id=$1",
+                a.id,
+              ],
+              "administrator suspended": [
+                "UPDATE admin_principals SET status='suspended' WHERE id=$1",
+                a.id,
+              ],
+              "runtime revoked": [
+                "UPDATE codex_runtime_profiles SET state='revoked' WHERE id=$1",
+                profileId,
+              ],
+            } as const;
+            const [sql, id] = mutations[condition];
+            await s.db.control.query(sql, [id]);
+          },
+        );
+      } finally {
+        s.catalog.runtimeProfile = originalProfile;
+      }
+      assert.equal(calls, 1);
+    });
+});
 
 test("accepted malformed PNG, base64 and image-count responses cannot qualify or replay as a free failed call", async () => {
   const a = await administrator(),

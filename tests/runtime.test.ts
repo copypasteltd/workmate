@@ -428,7 +428,10 @@ test(
           ? v
           : "not a numeric/boolean assertion";
       throw new Error(
-        `${e.code ?? "RUNTIME_TEST_FAILURE"}; assertion: ${e.operator ?? "runtime"}; actual: ${safe(e.actual)}; expected: ${safe(e.expected)}; observed: ${JSON.stringify(observed)}; observed stages: ${events.map((e) => e.kind).join(",")}; fixture HTTP calls: ${calls.length}`,
+        `${e.code ?? "RUNTIME_TEST_FAILURE"}; assertion: ${e.operator ?? "runtime"}; actual: ${safe(e.actual)}; expected: ${safe(e.expected)}; observed: ${JSON.stringify(observed)}; observed stages: ${events.map((e) => e.kind).join(",")}; gateway rejections: ${events
+          .filter((e) => e.kind === "gateway.request_rejected")
+          .map((e) => JSON.stringify(e.body))
+          .join(",")}; fixture HTTP calls: ${calls.length}`,
       );
     } finally {
       server.closeAllConnections();

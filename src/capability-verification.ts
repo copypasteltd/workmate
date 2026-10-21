@@ -9,6 +9,11 @@ import { CodexRuntimeAdapter, RuntimeFailure } from "./runtime.js";
 import { tokenCharge } from "./billing.js";
 import { removeOwnedUUIDDirectory } from "./owned-directory-cleanup.js";
 import { validateVerificationPNG } from "./png-validation.js";
+import {
+  internalAIRequest,
+  AIRequestFailure,
+  type AIRequestAuthority,
+} from "./internal-ai-gateway.js";
 
 const rate = z.number().int().nonnegative().safe().max(1e12);
 const common = {
@@ -77,6 +82,7 @@ export async function verifyCapability(
   document: z.infer<typeof capabilityDocument>,
   validationId: string,
   signal: AbortSignal,
+  requestAuthority: AIRequestAuthority,
 ) {
   if (!c.AI_BASE_URL || !c.AI_API_KEY)
     throw new Problem(
@@ -128,6 +134,7 @@ export async function verifyCapability(
           prompt: `Call capability_probe once with nonce ${nonce}, then summarize its returned result in one sentence. This is an internal protocol verification.`,
           skills: [],
           signal,
+          requestAuthority,
           onEvent: async () => {},
           tools: [
             {
@@ -224,37 +231,31 @@ export async function verifyCapability(
             "verification.png",
           );
         }
-        evidence.accepted = true;
-        evidence.usage_known = false;
-        const response = await fetch(
-          c.AI_BASE_URL.replace(/\/$/, "") +
-            (operation === "edit" ? "/images/edits" : "/images/generations"),
-          {
-            method: "POST",
-            redirect: "error",
-            signal,
-            headers: {
-              Authorization: `Bearer ${c.AI_API_KEY}`,
-              "Idempotency-Key": `${validationId}:${operation}`,
-              ...(operation === "generate"
-                ? { "Content-Type": "application/json" }
-                : {}),
-            },
-            body:
-              operation === "edit"
-                ? form
-                : JSON.stringify({
-                    model: document.model_alias,
-                    prompt:
-                      "A square blue paper shape on a plain light background. Internal protocol verification.",
-                    n: 1,
-                    size: "1024x1024",
-                    quality: "high",
-                    output_format: "png",
-                  }),
+        const response = await internalAIRequest(c, {
+          operation: operation === "edit" ? "images.edit" : "images.generate",
+          model: document.model_alias,
+          authority: requestAuthority,
+          operationId: `${validationId}:${operation}`,
+          signal,
+          onDispatch: () => {
+            evidence.accepted = true;
+            evidence.usage_known = false;
           },
-        );
+          body:
+            operation === "edit"
+              ? form
+              : {
+                  model: document.model_alias,
+                  prompt:
+                    "A square blue paper shape on a plain light background. Internal protocol verification.",
+                  n: 1,
+                  size: "1024x1024",
+                  quality: "high",
+                  output_format: "png",
+                },
+        });
         if (!response.ok) {
+          await response.body?.cancel().catch(() => {});
           if (response.status >= 400 && response.status < 500)
             evidence.usage_known = true;
           throw new Error("Image gateway rejected verification");
@@ -310,6 +311,12 @@ export async function verifyCapability(
           tokenCharge(error.inputTokens, error.outputTokens, ...document.rates),
         );
       evidence.error_code = error.code;
+    } else if (error instanceof AIRequestFailure) {
+      evidence.error_code = error.code;
+      if (error.dispatched) {
+        evidence.accepted = true;
+        evidence.usage_known = false;
+      }
     } else
       evidence.error_code =
         error instanceof Problem

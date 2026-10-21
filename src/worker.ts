@@ -11,6 +11,12 @@ import {
 import { listCloudReferences, readCloudReference } from "./cloud-references.js";
 import { PgBoss } from "pg-boss";
 import { taskCapabilities, runtimeSelection } from "./capability-bindings.js";
+import {
+  internalAIRequest,
+  AIRequestFailure,
+  type AIRequestInfo,
+} from "./internal-ai-gateway.js";
+import { validateVerificationPNG } from "./png-validation.js";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { z } from "zod";
@@ -421,6 +427,17 @@ export class Worker {
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
         skills: bound,
         selection: runtimeSelection(context.capabilities),
+        requestAuthority: {
+          taskId: id,
+          tenantId: tenant,
+          projectId: task.project_id,
+          actorId: actor!.id,
+          capabilityVersionId: context.capabilities.text.id,
+          attempt: task.attempt,
+          fencingToken: fencing,
+          authorize: (request) =>
+            this.authorizeInference(task, actor!, fencing, request),
+        },
         signal: controller.signal,
         onEvent: emit,
         tools: this.tools(task, actor!, fencing, effectiveRole),
@@ -663,6 +680,99 @@ export class Worker {
       t.created_by,
     );
   }
+  private async authorizeTaskRequest(
+    tx: any,
+    t: any,
+    actor: Principal,
+    fencing: string,
+  ) {
+    await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
+    await this.catalog.ensureEnabled(tx, t.role_key);
+    await assertTaskSkills(tx, this.catalog, t);
+    await assertInputDependencies(tx, t);
+    await assertReportSources(tx, t);
+    await authorizeExecutionPlan(
+      tx,
+      t.tenant_id,
+      t.created_by,
+      this.catalog.role(t.role_key),
+      t.mode,
+    );
+    const capabilities = await taskCapabilities(
+      tx,
+      this.db.config,
+      this.catalog,
+      t,
+    );
+    await resolveWorkContext(
+      tx,
+      actor,
+      t.tenant_id,
+      t.project_id,
+      t.input_context,
+      this.db.config.CODEX_VERSION,
+      capabilities.versionIds,
+    );
+    await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
+    if (
+      !(
+        await tx.query(
+          "SELECT 1 FROM tasks WHERE id=$1 AND tenant_id=$3 AND project_id=$4 AND created_by=$5 AND fencing_token=$2 AND status='running' AND content_state='active' AND NOT cancel_requested AND lease_until>now()",
+          [t.id, fencing, t.tenant_id, t.project_id, actor.id],
+        )
+      ).rowCount
+    )
+      throw new Problem(409, "RUN_FENCED", "Execution is no longer active");
+    return capabilities;
+  }
+  private async authorizeInference(
+    t: any,
+    actor: Principal,
+    fencing: string,
+    request: AIRequestInfo,
+  ) {
+    return this.db.tx(
+      async (tx) => {
+        const binding = await this.authorizeTaskRequest(tx, t, actor, fencing);
+        const capability =
+          request.operation === "responses" ? binding.text : binding.image;
+        if (
+          !capability ||
+          request.taskId !== t.id ||
+          request.tenantId !== t.tenant_id ||
+          request.projectId !== t.project_id ||
+          request.actorId !== actor.id ||
+          request.capabilityVersionId !== capability.id ||
+          request.model !== capability.body.model_alias ||
+          request.attempt !== t.attempt ||
+          request.fencingToken !== fencing ||
+          !(
+            await tx.query(
+              "SELECT 1 FROM reservations WHERE task_id=$1 AND status='reserved'",
+              [t.id],
+            )
+          ).rowCount
+        )
+          throw new Problem(
+            409,
+            "AI_REQUEST_SCOPE_INVALID",
+            "Inference scope is no longer authorized",
+          );
+        await event(tx, t.tenant_id, t.id, "gateway.request_authorized", {
+          operation_id: request.requestId,
+          operation: request.operation,
+          capability_version_id: capability.id,
+          model_alias: request.model,
+          request_bytes: request.requestBytes,
+          request_hash: request.requestHash,
+          attempt: t.attempt,
+        });
+      },
+      t.tenant_id,
+      false,
+      actor.id,
+    );
+  }
   private tools(
     t: any,
     actor: Principal,
@@ -670,38 +780,7 @@ export class Worker {
     role: any,
   ): RuntimeContext["tools"] {
     const authorize = async (tx: any) => {
-      await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
-      await this.catalog.ensureEnabled(tx, t.role_key);
-      await assertTaskSkills(tx, this.catalog, t);
-      await assertInputDependencies(tx, t);
-      await assertReportSources(tx, t);
-      await authorizeExecutionPlan(
-        tx,
-        t.tenant_id,
-        t.created_by,
-        this.catalog.role(t.role_key),
-        t.mode,
-      );
-      await resolveWorkContext(
-        tx,
-        actor,
-        t.tenant_id,
-        t.project_id,
-        t.input_context,
-        this.db.config.CODEX_VERSION,
-        (await taskCapabilities(tx, this.db.config, this.catalog, t))
-          .versionIds,
-      );
-      await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
-      if (
-        !(
-          await tx.query(
-            "SELECT 1 FROM tasks WHERE id=$1 AND fencing_token=$2 AND status='running' AND NOT cancel_requested",
-            [t.id, fencing],
-          )
-        ).rowCount
-      )
-        throw new Problem(409, "RUN_FENCED", "Execution is no longer active");
+      await this.authorizeTaskRequest(tx, t, actor, fencing);
     };
     const txTool =
       (fn: (tx: any, a: any) => Promise<unknown>, schema: z.ZodType) =>
@@ -1227,6 +1306,7 @@ export class Worker {
           ...this.db.config,
           AI_IMAGE_MODEL: binding.image.body.model_alias,
           AI_IMAGE_HKD_MICROS_PER_IMAGE: binding.image.body.rates[0],
+          AI_IMAGE_VERIFIED: true,
         };
         if (
           !c.AI_IMAGE_VERIFIED ||
@@ -1324,6 +1404,7 @@ export class Worker {
             form.append("prompt", b.prompt);
             form.append("n", "1");
             form.append("size", "1024x1024");
+            form.append("quality", "high");
             form.append("output_format", "png");
             form.append(
               "image",
@@ -1331,41 +1412,50 @@ export class Worker {
               source.name,
             );
           }
-          const response = await fetch(
-            c.AI_BASE_URL.replace(/\/$/, "") +
-              (edit ? "/images/edits" : "/images/generations"),
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${c.AI_API_KEY}`,
-                ...(edit ? {} : { "Content-Type": "application/json" }),
-                "Idempotency-Key": op.id,
-              },
-              body: edit
-                ? form
-                : JSON.stringify({
-                    model: c.AI_IMAGE_MODEL,
-                    prompt: b.prompt,
-                    n: 1,
-                    size: "1024x1024",
-                    quality: "high",
-                    output_format: "png",
-                  }),
-              redirect: "error",
-              signal: AbortSignal.timeout(180000),
+          const response = await internalAIRequest(c, {
+            operation: edit ? "images.edit" : "images.generate",
+            model: c.AI_IMAGE_MODEL,
+            operationId: op.id,
+            authority: {
+              taskId: t.id,
+              tenantId: t.tenant_id,
+              projectId: t.project_id,
+              actorId: actor.id,
+              capabilityVersionId: binding.image!.id,
+              attempt: t.attempt,
+              fencingToken: fencing,
+              authorize: (request) =>
+                this.authorizeInference(t, actor, fencing, request),
             },
-          );
-          if (!response.ok) throw new Error("Image gateway rejected operation");
+            body: edit
+              ? form
+              : {
+                  model: c.AI_IMAGE_MODEL,
+                  prompt: b.prompt,
+                  n: 1,
+                  size: "1024x1024",
+                  quality: "high",
+                  output_format: "png",
+                },
+            signal: AbortSignal.any([
+              AbortSignal.timeout(c.AI_REQUEST_TIMEOUT_MS),
+              ...(this.active.get(t.id) ? [this.active.get(t.id)!.signal] : []),
+            ]),
+          });
+          if (!response.ok) {
+            await response.body?.cancel().catch(() => {});
+            throw new Error("Image gateway rejected operation");
+          }
           const r: any = await response.json();
+          if (!Array.isArray(r.data) || r.data.length !== 1)
+            throw new Error("Exactly one inline image is required");
           const encoded = r.data?.[0]?.b64_json;
           if (typeof encoded !== "string" || encoded.length > 70_000_000)
             throw new Error("Gateway must return bounded base64 image bytes");
           const bytes = Buffer.from(encoded, "base64");
-          if (
-            bytes.length < 8 ||
-            bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a"
-          )
-            throw new Error("Invalid PNG response");
+          if (bytes.toString("base64") !== encoded)
+            throw new Error("Canonical PNG base64 is required");
+          validateVerificationPNG(bytes);
           return this.db.tx(async (tx) => {
             await authorize(tx);
             const a = await saveAsset(tx, this.storage, {
@@ -1389,19 +1479,26 @@ export class Worker {
             );
             return a;
           }, t.tenant_id);
-        } catch {
+        } catch (error) {
           await this.db.tx(
             (tx) =>
               tx.query(
-                "UPDATE tool_operations SET state='reconciling' WHERE id=$1 AND state='accepted'",
-                [op.id],
+                "UPDATE tool_operations SET state=$2 WHERE id=$1 AND state='accepted'",
+                [
+                  op.id,
+                  error instanceof AIRequestFailure && !error.dispatched
+                    ? "failed"
+                    : "reconciling",
+                ],
               ),
             t.tenant_id,
             false,
             actor.id,
           );
           throw new Error(
-            "Image result is uncertain and needs reconciliation; do not retry creation",
+            error instanceof AIRequestFailure && !error.dispatched
+              ? "Image request was rejected before dispatch"
+              : "Image result is uncertain and needs reconciliation; do not retry creation",
           );
         }
       },

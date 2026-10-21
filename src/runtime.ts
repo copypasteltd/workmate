@@ -6,6 +6,10 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type { Config } from "./config.js";
 import { canonical, hash, Problem } from "./lib.js";
+import {
+  startScopedInferenceGateway,
+  type AIRequestAuthority,
+} from "./internal-ai-gateway.js";
 const exec = promisify(execFile);
 export interface RuntimeSelection {
   capabilityVersionId: string;
@@ -25,6 +29,7 @@ export interface RuntimeContext {
   thread?: string;
   // Only the server may derive this from an immutable task capability binding.
   selection?: RuntimeSelection;
+  requestAuthority?: AIRequestAuthority;
   signal: AbortSignal;
   onEvent: (kind: string, body: any) => Promise<void>;
   tools: {
@@ -110,6 +115,14 @@ export class CodexRuntimeAdapter {
           AI_VERIFIED: true,
         }
       : this.c;
+    if (
+      selected &&
+      (!ctx.requestAuthority ||
+        ctx.requestAuthority.taskId !== ctx.taskId ||
+        ctx.requestAuthority.capabilityVersionId !==
+          selected.capabilityVersionId)
+    )
+      throw new RuntimeFailure("AI_REQUEST_SCOPE_REQUIRED", false, true);
     if (ctx.signal.aborted)
       throw new RuntimeFailure("CODEX_CANCELLED", false, true);
     await this.version();
@@ -187,456 +200,520 @@ export class CodexRuntimeAdapter {
       await writeFile(file, s.content);
       skills.push({ type: "skill", name: s.key, path: file });
     }
-    const quote = (s: string) => JSON.stringify(s);
-    const config = [
-      `model = ${quote(c.AI_MODEL)}`,
-      'model_provider = "copypaste_internal"',
-      `model_reasoning_effort = ${quote(c.AI_REASONING_EFFORT)}`,
-      'approval_policy = "never"',
-      'sandbox_mode = "read-only"',
-      'web_search = "disabled"',
-      "[model_providers.copypaste_internal]",
-      'name = "CopyPaste Internal Gateway"',
-      `base_url = ${quote(c.AI_BASE_URL)}`,
-      'env_key = "COPYPASTE_RUNTIME_KEY"',
-      'wire_api = "responses"',
-      "request_max_retries = 0",
-      "stream_max_retries = 0",
-      "[features]",
-      "shell_tool = false",
-      "multi_agent = false",
-      "[analytics]",
-      "enabled = false",
-    ].join("\n");
-    await writeFile(path.join(home, "config.toml"), config);
-    const env: NodeJS.ProcessEnv = {
-      PATH: process.env.PATH,
-      Path: process.env.Path,
-      SystemRoot: process.env.SystemRoot,
-      TEMP: process.env.TEMP,
-      TMP: process.env.TMP,
-      HOME: ctx.workspace,
-      USERPROFILE: ctx.workspace,
-      CODEX_HOME: home,
-      COPYPASTE_RUNTIME_KEY: c.AI_API_KEY,
-    };
-    const child = spawn(
-      c.CODEX_BIN,
-      ["app-server", "--stdio", "--strict-config"],
-      {
-        cwd: ctx.workspace,
-        env,
-        windowsHide: true,
-        stdio: ["pipe", "pipe", "pipe"],
+    const gateway = await startScopedInferenceGateway(c, {
+      model: c.AI_MODEL,
+      reasoningEffort: c.AI_REASONING_EFFORT,
+      tools: ctx.tools.map((tool) => tool.name),
+      authority: ctx.requestAuthority ?? {
+        taskId: ctx.taskId,
+        authorize: async () => {},
       },
-    );
-    // Register before any RPC: exit can precede pipe closure on Windows.
-    const closed = new Promise<void>((resolve) =>
-      child.once("close", () => resolve()),
-    );
-    let hasExited = false;
-    const exited = new Promise<void>((resolve) => {
-      const finishExit = () => {
-        hasExited = true;
-        resolve();
+      signal: ctx.signal,
+      onRejected: (body) => ctx.onEvent("gateway.request_rejected", body),
+    });
+    try {
+      const quote = (s: string) => JSON.stringify(s);
+      const config = [
+        `model = ${quote(c.AI_MODEL)}`,
+        'model_provider = "copypaste_internal"',
+        `model_reasoning_effort = ${quote(c.AI_REASONING_EFFORT)}`,
+        'approval_policy = "never"',
+        'sandbox_mode = "read-only"',
+        'web_search = "disabled"',
+        "[model_providers.copypaste_internal]",
+        'name = "CopyPaste Internal Gateway"',
+        `base_url = ${quote(gateway.baseURL)}`,
+        'env_key = "COPYPASTE_RUNTIME_KEY"',
+        'wire_api = "responses"',
+        "request_max_retries = 0",
+        "stream_max_retries = 0",
+        "supports_websockets = false",
+        "[features]",
+        "shell_tool = false",
+        "multi_agent = false",
+        "goals = false",
+        "view_image = false",
+        "image_generation = false",
+        "computer_use = false",
+        "browser_use = false",
+        "browser_use_external = false",
+        "apps = false",
+        "plugins = false",
+        "remote_plugin = false",
+        "skill_mcp_dependency_install = false",
+        "skill_search = false",
+        "workspace_dependencies = false",
+        "sleep_tool = false",
+        "tool_suggest = false",
+        "[analytics]",
+        "enabled = false",
+      ].join("\n");
+      await writeFile(path.join(home, "config.toml"), config);
+      const env: NodeJS.ProcessEnv = {
+        PATH: process.env.PATH,
+        Path: process.env.Path,
+        SystemRoot: process.env.SystemRoot,
+        TEMP: process.env.TEMP,
+        TMP: process.env.TMP,
+        HOME: ctx.workspace,
+        USERPROFILE: ctx.workspace,
+        CODEX_HOME: home,
+        COPYPASTE_RUNTIME_KEY: gateway.credential,
       };
-      child.once("exit", finishExit);
-      child.once("error", finishExit);
-    });
-    const waitForExit = async (ms: number) => {
-      let timer: ReturnType<typeof setTimeout> | undefined;
-      try {
-        await Promise.race([
-          exited,
-          new Promise<void>((resolve) => {
-            timer = setTimeout(resolve, ms);
-          }),
-        ]);
-      } finally {
-        if (timer) clearTimeout(timer);
-      }
-      return hasExited;
-    };
-    const lines = createInterface({ input: child.stdout });
-    let seq = 0,
-      accepted = false,
-      thread = "",
-      turn = "",
-      text = "",
-      input = 0,
-      output = 0,
-      usageKnown = false;
-    let threadInput = baselineInput,
-      threadOutput = baselineOutput;
-    let completedResult: RuntimeResult | undefined;
-    let invalidUsage = false;
-    const pending = new Map<
-      number,
-      {
-        resolve: (v: any) => void;
-        reject: (e: Error) => void;
-        timer: ReturnType<typeof setTimeout>;
-      }
-    >();
-    const send = (method: string, params: unknown) =>
-      new Promise<any>((resolve, reject) => {
-        if (ctx.signal.aborted && method !== "turn/interrupt") {
-          reject(
-            new RuntimeFailure(
-              "CODEX_CANCELLED",
-              accepted,
-              usageKnown,
-              input,
-              output,
-            ),
-          );
-          return;
-        }
-        const id = ++seq;
-        const timer = setTimeout(() => {
-          pending.delete(id);
-          reject(
-            new RuntimeFailure(
-              "CODEX_RPC_TIMEOUT",
-              accepted,
-              usageKnown,
-              input,
-              output,
-            ),
-          );
-        }, 60_000);
-        pending.set(id, { resolve, reject, timer });
-        child.stdin.write(JSON.stringify({ id, method, params }) + "\n");
+      const child = spawn(
+        c.CODEX_BIN,
+        ["app-server", "--stdio", "--strict-config"],
+        {
+          cwd: ctx.workspace,
+          env,
+          windowsHide: true,
+          stdio: ["pipe", "pipe", "pipe"],
+        },
+      );
+      // Register before any RPC: exit can precede pipe closure on Windows.
+      const closed = new Promise<void>((resolve) =>
+        child.once("close", () => resolve()),
+      );
+      let hasExited = false;
+      const exited = new Promise<void>((resolve) => {
+        const finishExit = () => {
+          hasExited = true;
+          resolve();
+        };
+        child.once("exit", finishExit);
+        child.once("error", finishExit);
       });
-    let finish!: (v: string) => void;
-    const done = new Promise<string>((r) => {
-      finish = r;
-    });
-    const onLine = async (line: string) => {
-      let m: any;
-      try {
-        m = JSON.parse(line);
-      } catch {
-        return;
-      }
-      if (m.id !== undefined && (m.result !== undefined || m.error)) {
-        const p = pending.get(m.id);
-        if (p) {
-          clearTimeout(p.timer);
-          pending.delete(m.id);
-          if (m.error)
-            p.reject(
+      const waitForExit = async (ms: number) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            exited,
+            new Promise<void>((resolve) => {
+              timer = setTimeout(resolve, ms);
+            }),
+          ]);
+        } finally {
+          if (timer) clearTimeout(timer);
+        }
+        return hasExited;
+      };
+      const lines = createInterface({ input: child.stdout });
+      let seq = 0,
+        accepted = false,
+        thread = "",
+        turn = "",
+        text = "",
+        input = 0,
+        output = 0,
+        usageKnown = false;
+      let threadInput = baselineInput,
+        threadOutput = baselineOutput;
+      let completedResult: RuntimeResult | undefined;
+      let invalidUsage = false;
+      const pending = new Map<
+        number,
+        {
+          resolve: (v: any) => void;
+          reject: (e: Error) => void;
+          timer: ReturnType<typeof setTimeout>;
+        }
+      >();
+      const send = (method: string, params: unknown) =>
+        new Promise<any>((resolve, reject) => {
+          if (ctx.signal.aborted && method !== "turn/interrupt") {
+            reject(
               new RuntimeFailure(
-                "CODEX_RPC_REJECTED",
+                "CODEX_CANCELLED",
                 accepted,
                 usageKnown,
                 input,
                 output,
               ),
             );
-          else p.resolve(m.result);
-        }
-        return;
-      }
-      if (m.id !== undefined && m.method) {
-        if (m.method === "item/tool/call") {
-          const tool = ctx.tools.find((t) => t.name === m.params?.tool);
-          let result: any;
-          try {
-            if (!tool || ctx.signal.aborted)
-              throw new Error("Tool not allowed");
-            result = {
-              success: true,
-              contentItems: [
-                {
-                  type: "inputText",
-                  text: JSON.stringify(
-                    await tool.run(m.params.arguments, m.params.callId),
-                  ),
-                },
-              ],
-            };
-          } catch {
-            result = {
-              success: false,
-              contentItems: [
-                {
-                  type: "inputText",
-                  text: "Tool execution failed or permission denied. Do not fabricate a result.",
-                },
-              ],
-            };
-          }
-          child.stdin.write(JSON.stringify({ id: m.id, result }) + "\n");
-        } else
-          child.stdin.write(
-            JSON.stringify({ id: m.id, result: { decision: "decline" } }) +
-              "\n",
-          );
-        return;
-      }
-      if (m.method === "item/agentMessage/delta") {
-        const delta = String(m.params?.delta ?? "");
-        text += delta;
-        await ctx.onEvent("message.delta", { text: delta });
-      }
-      if (m.method === "thread/tokenUsage/updated") {
-        const u = m.params?.tokenUsage?.total;
-        // Resume may emit the previous turn's usage. It is not new spend.
-        if (
-          u &&
-          turn &&
-          m.params?.threadId === thread &&
-          m.params?.turnId === turn
-        ) {
-          const nextInput = Number(u.inputTokens),
-            nextOutput = Number(u.outputTokens);
-          if (
-            !Number.isSafeInteger(nextInput) ||
-            !Number.isSafeInteger(nextOutput) ||
-            nextInput < threadInput ||
-            nextOutput < threadOutput
-          ) {
-            invalidUsage = true;
-            usageKnown = false;
             return;
           }
-          threadInput = nextInput;
-          threadOutput = nextOutput;
-          input = threadInput - baselineInput;
-          output = threadOutput - baselineOutput;
-          usageKnown =
-            !invalidUsage &&
-            Number.isSafeInteger(input) &&
-            input >= 0 &&
-            Number.isSafeInteger(output) &&
-            output >= 0;
-        }
-      }
-      if (m.method === "turn/completed")
-        finish(m.params?.turn?.status ?? "failed");
-      if (m.method === "error" && m.params?.willRetry === false)
-        finish("failed");
-    };
-    let chain = Promise.resolve();
-    lines.on("line", (l) => {
-      chain = chain.then(() => onLine(l)).catch(() => finish("failed"));
-    });
-    child.stderr.on("data", () => {
-      /* Raw runtime stderr can contain sensitive input; do not log it. */
-    });
-    const failPending = (code = "CODEX_CONNECTION_LOST") => {
-      for (const p of pending.values()) {
-        clearTimeout(p.timer);
-        p.reject(new RuntimeFailure(code, accepted, usageKnown, input, output));
-      }
-      pending.clear();
-    };
-    child.on("error", () => {
-      failPending();
-      finish("process_error");
-    });
-    child.on("exit", () => {
-      failPending();
-      finish("process_exit");
-    });
-    child.stdin.on("error", () => {
-      failPending();
-      finish("process_error");
-    });
-    let interruptTimer: ReturnType<typeof setTimeout> | undefined;
-    const abort = () => {
-      if (!turn) {
-        failPending("CODEX_CANCELLED");
-        finish("interrupted");
-        child.kill();
-        return;
-      }
-      if (thread && turn)
-        void send("turn/interrupt", { threadId: thread, turnId: turn }).catch(
-          () => {},
-        );
-      interruptTimer ??= setTimeout(() => {
-        failPending("CODEX_CANCELLED");
-        finish("interrupted");
-        child.kill();
-      }, 15000);
-    };
-    ctx.signal.addEventListener("abort", abort, { once: true });
-    const deadline = setTimeout(() => {
-      abort();
-      failPending("CODEX_RPC_TIMEOUT");
-      finish("timeout");
-    }, 15 * 60_000);
-    if (ctx.signal.aborted) abort();
-    try {
-      await ctx.onEvent("runtime.phase", { phase: "initialize" });
-      await send("initialize", {
-        clientInfo: {
-          name: "copypaste_enterprise",
-          title: "CopyPaste",
-          version: "0.2.0",
-        },
-        capabilities: { experimentalApi: true },
-      });
-      child.stdin.write(
-        JSON.stringify({ method: "initialized", params: {} }) + "\n",
-      );
-      const common = {
-        model: c.AI_MODEL,
-        modelProvider: "copypaste_internal",
-        cwd: ctx.workspace,
-        approvalPolicy: "never",
-        sandbox: "read-only",
-        developerInstructions:
-          "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. Deliver editable sources and report unresolved requirements.",
-      };
-      const result = await send(
-        ctx.thread ? "thread/resume" : "thread/start",
-        ctx.thread
-          ? { ...common, threadId: ctx.thread, excludeTurns: true }
-          : {
-              ...common,
-              allowProviderModelFallback: false,
-              dynamicTools: ctx.tools.map(
-                ({ name, description, inputSchema }) => ({
-                  name,
-                  description,
-                  inputSchema,
-                }),
+          const id = ++seq;
+          const timer = setTimeout(() => {
+            pending.delete(id);
+            reject(
+              new RuntimeFailure(
+                "CODEX_RPC_TIMEOUT",
+                accepted,
+                usageKnown,
+                input,
+                output,
               ),
-            },
-      );
-      thread = result.thread.id;
-      if (
-        (ctx.thread && thread !== ctx.thread) ||
-        result.model !== c.AI_MODEL ||
-        result.modelProvider !== "copypaste_internal"
-      )
-        throw new RuntimeFailure("CODEX_PROFILE_MISMATCH", false, true);
-      await ctx.onEvent("runtime.thread", { thread_id: thread });
-      await saveReceipt({ state: "in_flight", thread, fingerprint });
-      accepted = true; // A lost turn/start response is uncertain and must not release the reservation.
-      const t = await send("turn/start", {
-        threadId: thread,
-        model: c.AI_MODEL,
-        effort: c.AI_REASONING_EFFORT,
-        input: [...skills, { type: "text", text: ctx.prompt }],
-      });
-      turn = t.turn.id;
-      await ctx.onEvent("runtime.turn", { thread_id: thread, turn_id: turn });
-      if (ctx.signal.aborted) abort();
-      const status = await done;
-      await ctx.onEvent("runtime.phase", { phase: "finished", status });
-      await chain;
-      // Earlier model responses in this turn may have usage, while the latest
-      // accepted response is still unknown. Partial totals do not settle a turn.
-      if (accepted && status !== "completed") usageKnown = false;
-      if (["timeout", "process_exit", "process_error"].includes(status))
-        throw new RuntimeFailure(
-          "CODEX_CONNECTION_LOST",
-          accepted,
-          usageKnown,
-          input,
-          output,
-        );
-      completedResult = {
-        text,
-        inputTokens: input,
-        outputTokens: output,
-        usageKnown,
-        accepted,
-        thread,
-        turn,
-        status,
-      };
-      return completedResult;
-    } catch (e) {
-      if (e instanceof RuntimeFailure) {
-        if (e.accepted) e.usageKnown = false;
-        throw e;
-      }
-      throw new RuntimeFailure(
-        "CODEX_RUNTIME_FAILED",
-        accepted,
-        accepted ? false : usageKnown,
-        input,
-        output,
-      );
-    } finally {
-      await ctx.onEvent("runtime.phase", { phase: "cleanup" }).catch(() => {});
-      clearTimeout(deadline);
-      if (interruptTimer) clearTimeout(interruptTimer);
-      ctx.signal.removeEventListener("abort", abort);
-      lines.close();
-      for (const p of pending.values()) {
-        clearTimeout(p.timer);
-        p.reject(new Error("Runtime stopped"));
-      }
-      child.stdin.end();
-      // EOF lets app-server close its databases normally. Windows can retain
-      // inherited pipe handles after the process exits; do not treat those as
-      // a running kernel, and explicitly close our own handles after exit.
-      if (!(await waitForExit(250))) child.kill("SIGKILL");
-      if (!(await waitForExit(10000)))
-        throw new RuntimeFailure(
-          "CODEX_CLEANUP_FAILED",
-          accepted,
-          usageKnown,
-          input,
-          output,
-        );
-      child.stdin.destroy();
-      child.stdout.destroy();
-      child.stderr.destroy();
-      let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
-      try {
-        await Promise.race([
-          closed,
-          new Promise<never>((_, reject) => {
-            cleanupTimer = setTimeout(
-              () =>
-                reject(
-                  new RuntimeFailure(
-                    "CODEX_CLEANUP_FAILED",
-                    accepted,
-                    usageKnown,
-                    input,
-                    output,
-                  ),
-                ),
-              5000,
             );
-          }),
-        ]);
-      } finally {
-        if (cleanupTimer) clearTimeout(cleanupTimer);
-      }
-      await ctx.onEvent("runtime.phase", { phase: "closed" }).catch(() => {});
-      if (
-        completedResult?.status === "completed" &&
-        completedResult.usageKnown
-      ) {
+          }, 60_000);
+          pending.set(id, { resolve, reject, timer });
+          child.stdin.write(JSON.stringify({ id, method, params }) + "\n");
+        });
+      let finish!: (v: string) => void;
+      const done = new Promise<string>((r) => {
+        finish = r;
+      });
+      const onLine = async (line: string) => {
+        let m: any;
         try {
-          await saveReceipt({
-            state: "ready",
-            thread,
-            fingerprint,
-            inputTokens: threadInput,
-            outputTokens: threadOutput,
-          });
+          m = JSON.parse(line);
         } catch {
-          // Receipt I/O failure must retain measured spend, never appear to
-          // the worker as an unaccepted/zero-cost initialization failure.
+          return;
+        }
+        if (m.id !== undefined && (m.result !== undefined || m.error)) {
+          const p = pending.get(m.id);
+          if (p) {
+            clearTimeout(p.timer);
+            pending.delete(m.id);
+            if (m.error)
+              p.reject(
+                new RuntimeFailure(
+                  "CODEX_RPC_REJECTED",
+                  accepted,
+                  usageKnown,
+                  input,
+                  output,
+                ),
+              );
+            else p.resolve(m.result);
+          }
+          return;
+        }
+        if (m.id !== undefined && m.method) {
+          if (m.method === "item/tool/call") {
+            const tool = ctx.tools.find((t) => t.name === m.params?.tool);
+            let result: any;
+            try {
+              if (!tool || ctx.signal.aborted)
+                throw new Error("Tool not allowed");
+              result = {
+                success: true,
+                contentItems: [
+                  {
+                    type: "inputText",
+                    text: JSON.stringify(
+                      await tool.run(m.params.arguments, m.params.callId),
+                    ),
+                  },
+                ],
+              };
+            } catch {
+              result = {
+                success: false,
+                contentItems: [
+                  {
+                    type: "inputText",
+                    text: "Tool execution failed or permission denied. Do not fabricate a result.",
+                  },
+                ],
+              };
+            }
+            child.stdin.write(JSON.stringify({ id: m.id, result }) + "\n");
+          } else
+            child.stdin.write(
+              JSON.stringify({ id: m.id, result: { decision: "decline" } }) +
+                "\n",
+            );
+          return;
+        }
+        if (m.method === "item/agentMessage/delta") {
+          const delta = String(m.params?.delta ?? "");
+          text += delta;
+          await ctx.onEvent("message.delta", { text: delta });
+        }
+        if (m.method === "thread/tokenUsage/updated") {
+          const u = m.params?.tokenUsage?.total;
+          // Resume may emit the previous turn's usage. It is not new spend.
+          if (
+            u &&
+            turn &&
+            m.params?.threadId === thread &&
+            m.params?.turnId === turn
+          ) {
+            const nextInput = Number(u.inputTokens),
+              nextOutput = Number(u.outputTokens);
+            if (
+              !Number.isSafeInteger(nextInput) ||
+              !Number.isSafeInteger(nextOutput) ||
+              nextInput < threadInput ||
+              nextOutput < threadOutput
+            ) {
+              invalidUsage = true;
+              usageKnown = false;
+              return;
+            }
+            threadInput = nextInput;
+            threadOutput = nextOutput;
+            input = threadInput - baselineInput;
+            output = threadOutput - baselineOutput;
+            usageKnown =
+              !invalidUsage &&
+              Number.isSafeInteger(input) &&
+              input >= 0 &&
+              Number.isSafeInteger(output) &&
+              output >= 0;
+          }
+        }
+        if (m.method === "turn/completed")
+          finish(m.params?.turn?.status ?? "failed");
+        if (m.method === "error" && m.params?.willRetry === false)
+          finish("failed");
+      };
+      let chain = Promise.resolve();
+      lines.on("line", (l) => {
+        chain = chain.then(() => onLine(l)).catch(() => finish("failed"));
+      });
+      child.stderr.on("data", () => {
+        /* Raw runtime stderr can contain sensitive input; do not log it. */
+      });
+      const failPending = (code = "CODEX_CONNECTION_LOST") => {
+        for (const p of pending.values()) {
+          clearTimeout(p.timer);
+          p.reject(
+            new RuntimeFailure(code, accepted, usageKnown, input, output),
+          );
+        }
+        pending.clear();
+      };
+      child.on("error", () => {
+        failPending();
+        finish("process_error");
+      });
+      child.on("exit", () => {
+        failPending();
+        finish("process_exit");
+      });
+      child.stdin.on("error", () => {
+        failPending();
+        finish("process_error");
+      });
+      let interruptTimer: ReturnType<typeof setTimeout> | undefined;
+      const abort = () => {
+        if (!turn) {
+          failPending("CODEX_CANCELLED");
+          finish("interrupted");
+          child.kill();
+          return;
+        }
+        if (thread && turn)
+          void send("turn/interrupt", { threadId: thread, turnId: turn }).catch(
+            () => {},
+          );
+        interruptTimer ??= setTimeout(() => {
+          failPending("CODEX_CANCELLED");
+          finish("interrupted");
+          child.kill();
+        }, 15000);
+      };
+      ctx.signal.addEventListener("abort", abort, { once: true });
+      const deadline = setTimeout(() => {
+        abort();
+        failPending("CODEX_RPC_TIMEOUT");
+        finish("timeout");
+      }, 15 * 60_000);
+      if (ctx.signal.aborted) abort();
+      try {
+        await ctx.onEvent("runtime.phase", { phase: "initialize" });
+        await send("initialize", {
+          clientInfo: {
+            name: "copypaste_enterprise",
+            title: "CopyPaste",
+            version: "0.2.0",
+          },
+          capabilities: { experimentalApi: true },
+        });
+        child.stdin.write(
+          JSON.stringify({ method: "initialized", params: {} }) + "\n",
+        );
+        const common = {
+          model: c.AI_MODEL,
+          modelProvider: "copypaste_internal",
+          cwd: ctx.workspace,
+          approvalPolicy: "never",
+          sandbox: "read-only",
+          environments: [],
+          developerInstructions:
+            "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. Deliver editable sources and report unresolved requirements.",
+        };
+        const result = await send(
+          ctx.thread ? "thread/resume" : "thread/start",
+          ctx.thread
+            ? { ...common, threadId: ctx.thread, excludeTurns: true }
+            : {
+                ...common,
+                allowProviderModelFallback: false,
+                dynamicTools: ctx.tools.map(
+                  ({ name, description, inputSchema }) => ({
+                    name,
+                    description,
+                    inputSchema,
+                  }),
+                ),
+              },
+        );
+        thread = result.thread.id;
+        if (
+          (ctx.thread && thread !== ctx.thread) ||
+          result.model !== c.AI_MODEL ||
+          result.modelProvider !== "copypaste_internal"
+        )
+          throw new RuntimeFailure("CODEX_PROFILE_MISMATCH", false, true);
+        await ctx.onEvent("runtime.thread", { thread_id: thread });
+        await saveReceipt({ state: "in_flight", thread, fingerprint });
+        accepted = true; // A lost turn/start response is uncertain and must not release the reservation.
+        const t = await send("turn/start", {
+          threadId: thread,
+          model: c.AI_MODEL,
+          effort: c.AI_REASONING_EFFORT,
+          input: [...skills, { type: "text", text: ctx.prompt }],
+        });
+        turn = t.turn.id;
+        await ctx.onEvent("runtime.turn", { thread_id: thread, turn_id: turn });
+        if (ctx.signal.aborted) abort();
+        const status = await done;
+        await ctx.onEvent("runtime.phase", { phase: "finished", status });
+        await chain;
+        if (gateway.forwardedRequests === 0) {
+          // A local denial is proof that no provider request was dispatched.
+          accepted = false;
+          usageKnown = true;
+          input = output = 0;
+        }
+        // A later local rejection does not make already measured spend unknown.
+        // Both the native counters and every dispatched response must agree;
+        // partial usage, a broken stream or a native regression stays unknown.
+        const measured = gateway.measuredUsage;
+        if (
+          accepted &&
+          status !== "completed" &&
+          (!measured.allResponsesKnown ||
+            measured.inputTokens !== input ||
+            measured.outputTokens !== output)
+        )
+          usageKnown = false;
+        if (["timeout", "process_exit", "process_error"].includes(status))
           throw new RuntimeFailure(
-            "CODEX_CHECKPOINT_WRITE_FAILED",
+            "CODEX_CONNECTION_LOST",
             accepted,
             usageKnown,
             input,
             output,
           );
+        completedResult = {
+          text,
+          inputTokens: input,
+          outputTokens: output,
+          usageKnown,
+          accepted,
+          thread,
+          turn,
+          status,
+        };
+        return completedResult;
+      } catch (e) {
+        // Revoke the grant before proving zero dispatches. An authorization
+        // callback still in flight must not dispatch after this observation.
+        await gateway.close();
+        if (gateway.forwardedRequests === 0) {
+          accepted = false;
+          usageKnown = true;
+          input = output = 0;
+          if (e instanceof RuntimeFailure) {
+            e.accepted = false;
+            e.usageKnown = true;
+            e.inputTokens = e.outputTokens = 0;
+          }
+        }
+        if (e instanceof RuntimeFailure) {
+          if (e.accepted) e.usageKnown = false;
+          throw e;
+        }
+        throw new RuntimeFailure(
+          "CODEX_RUNTIME_FAILED",
+          accepted,
+          accepted ? false : usageKnown,
+          input,
+          output,
+        );
+      } finally {
+        await gateway.close();
+        await ctx
+          .onEvent("runtime.phase", { phase: "cleanup" })
+          .catch(() => {});
+        clearTimeout(deadline);
+        if (interruptTimer) clearTimeout(interruptTimer);
+        ctx.signal.removeEventListener("abort", abort);
+        lines.close();
+        for (const p of pending.values()) {
+          clearTimeout(p.timer);
+          p.reject(new Error("Runtime stopped"));
+        }
+        child.stdin.end();
+        // EOF lets app-server close its databases normally. Windows can retain
+        // inherited pipe handles after the process exits; do not treat those as
+        // a running kernel, and explicitly close our own handles after exit.
+        if (!(await waitForExit(250))) child.kill("SIGKILL");
+        if (!(await waitForExit(10000)))
+          throw new RuntimeFailure(
+            "CODEX_CLEANUP_FAILED",
+            accepted,
+            usageKnown,
+            input,
+            output,
+          );
+        child.stdin.destroy();
+        child.stdout.destroy();
+        child.stderr.destroy();
+        let cleanupTimer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          await Promise.race([
+            closed,
+            new Promise<never>((_, reject) => {
+              cleanupTimer = setTimeout(
+                () =>
+                  reject(
+                    new RuntimeFailure(
+                      "CODEX_CLEANUP_FAILED",
+                      accepted,
+                      usageKnown,
+                      input,
+                      output,
+                    ),
+                  ),
+                5000,
+              );
+            }),
+          ]);
+        } finally {
+          if (cleanupTimer) clearTimeout(cleanupTimer);
+        }
+        await ctx.onEvent("runtime.phase", { phase: "closed" }).catch(() => {});
+        if (
+          completedResult?.status === "completed" &&
+          completedResult.usageKnown
+        ) {
+          try {
+            await saveReceipt({
+              state: "ready",
+              thread,
+              fingerprint,
+              inputTokens: threadInput,
+              outputTokens: threadOutput,
+            });
+          } catch {
+            // Receipt I/O failure must retain measured spend, never appear to
+            // the worker as an unaccepted/zero-cost initialization failure.
+            throw new RuntimeFailure(
+              "CODEX_CHECKPOINT_WRITE_FAILED",
+              accepted,
+              usageKnown,
+              input,
+              output,
+            );
+          }
         }
       }
+    } finally {
+      await gateway.close();
     }
   }
 }

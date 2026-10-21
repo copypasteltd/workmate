@@ -1,5 +1,24 @@
 # CopyPaste Platform
 
+## 内部推理请求（阶段 55）
+
+Codex 每次运行使用独立、限时、限定模型/强度/工具的 loopback 凭证，内核不再获得公司主密钥。文本、图片及后台验证共用[受控出站入口](src/internal-ai-gateway.ts)；每笔请求重新检查当前用户/任务/能力/预算预留，后台验证还检查真实会话及 MFA。完整 SSE 帧通过工具白名单后才交给内核；不明结果不自动重发。图片生成与编辑均检查实际单张 1024×1024 PNG，保留冻结价格和已知费用。
+
+当前专项 **112/112**，完整平台回归 **531/531**，733 份来源前后一致，原 484 项命名测试全部保留；专项包含于全量，不累加。构建通过。实际用户取消接口验证在首次请求前取消会释放原预算预留并记录零消耗。模型及媒体使用获准假数据，Codex、身份、数据库及权限实际运行。跨 Worker 的供应商限额、逐调用预算和完整原始验收继续独立实现；下方历史阶段数字只适用于其时源码。
+
+Scoped inference uses one expiring loopback credential per Codex run. The kernel never receives the company master key. Every implemented AI path shares server-controlled routing, current authorization, trusted attribution, protocol/tool validation and bounded reads. Earlier measured spend survives a later local denial; uncertain dispatched operations are never automatically replayed. See [.env.example](.env.example) for request ceilings and [integration tests](tests/internal-ai-gateway.test.ts) for authorization, streaming, media and natural process-exit checks. Durable provider limits and per-call budget allocation remain separate work.
+
+Validation: **112/112 focused checks within 531/531 full tests**, 733 unchanged source files and all 484 earlier named tests retained. Build passed. Cancelling through the user API before the first dispatch releases the original reservation with known zero spend. Codex, PostgreSQL and authorization are real; model and media responses are simulated. This is a bounded repair, not full product acceptance.
+
+```mermaid
+flowchart LR
+  Codex[Codex / scoped credential] --> Guard[Current authority / frozen capability]
+  Images[Controlled media tools] --> Guard
+  Admin[Admin verification / session / MFA] --> Guard
+  Guard --> Gateway[Company internal API]
+  Gateway --> Stream[Validate full frames / measured usage]
+```
+
 ## 明确采用版本（阶段 54）
 
 默认助手更新、专家设置与会话采用先比较明确模型、推理强度、单价及 Skill 版本，再由用户确认。五分钟比较绑定实际登录会话与配置状态，过期或变化拒绝确认；重试使用持久幂等键。已接收任务继续原模型和原费率。
