@@ -1,0 +1,192 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# Subtest: provider policy routes enforce Admin audience, fresh MFA and dedicated permission
+ok 1 - provider policy routes enforce Admin audience, fresh MFA and dedicated permission
+  ---
+  duration_ms: 8524.3932
+  ...
+# Subtest: provider immutable policy publication is independently approved and survives startup seeding
+not ok 2 - provider immutable policy publication is independently approved and survives startup seeding
+  ---
+  duration_ms: 326.5321
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\provider-admin.test.ts:1:9866'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    error: permission denied for table ai_provider_policy_drafts
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\provider-admin.test.ts:448:3)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: provider publication rejects self approval and stale heads
+ok 3 - provider publication rejects self approval and stale heads
+  ---
+  duration_ms: 754.0509
+  ...
+# Subtest: provider publication rejects incomplete counting contracts and unknown fields
+ok 4 - provider publication rejects incomplete counting contracts and unknown fields
+  ---
+  duration_ms: 176.4948
+  ...
+# Subtest: provider approvals recheck revoked requester and preserve pending operation
+ok 5 - provider approvals recheck revoked requester and preserve pending operation
+  ---
+  duration_ms: 315.1671
+  ...
+# Subtest: provider directory hides internal cost and excludes cross-tenant records
+ok 6 - provider directory hides internal cost and excludes cross-tenant records
+  ---
+  duration_ms: 2339.1805
+  ...
+# Subtest: provider signed pagination rejects tampering and changed filters
+ok 7 - provider signed pagination rejects tampering and changed filters
+  ---
+  duration_ms: 39.0288
+  ...
+# {"request_id":"7648c676-f0fd-4938-abb8-1d70a1d739d9","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"23514"}
+# Subtest: provider evidence binds exact request identity and retains canonical download
+not ok 8 - provider evidence binds exact request identity and retains canonical download
+  ---
+  duration_ms: 392.0938
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\provider-admin.test.ts:1:13211'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    500 !== 400
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 400
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\provider-admin.test.ts:587:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: provider cost confirmation keeps original unknown observation and capacity held
+ok 9 - provider cost confirmation keeps original unknown observation and capacity held
+  ---
+  duration_ms: 486.7545
+  ...
+# Subtest: provider capacity release never clears unknown fees or budget commitment
+ok 10 - provider capacity release never clears unknown fees or budget commitment
+  ---
+  duration_ms: 755.0736
+  ...
+# Subtest: provider incorrect invoice cannot alter frozen charge but can independently prove termination
+ok 11 - provider incorrect invoice cannot alter frozen charge but can independently prove termination
+  ---
+  duration_ms: 441.6905
+  ...
+# Subtest: provider task settlement derives one customer charge, excludes counting, and preserves business failure
+ok 12 - provider task settlement derives one customer charge, excludes counting, and preserves business failure
+  ---
+  duration_ms: 1130.7405
+  ...
+# Subtest: provider task settlement refuses unknown costs and legacy arbitrary amount bypass
+ok 13 - provider task settlement refuses unknown costs and legacy arbitrary amount bypass
+  ---
+  duration_ms: 520.8868
+  ...
+# Subtest: provider operation and approval directory cannot leak costs through generic jobs.read
+ok 14 - provider operation and approval directory cannot leak costs through generic jobs.read
+  ---
+  duration_ms: 414.1774
+  ...
+# Subtest: provider exact fee math uses one rounding and refuses nonzero not-executed claims
+ok 15 - provider exact fee math uses one rounding and refuses nonzero not-executed claims
+  ---
+  duration_ms: 0.8916
+  ...
+# Subtest: provider operational enablement previews exact principal then revokes old sessions without changing existing role
+ok 16 - provider operational enablement previews exact principal then revokes old sessions without changing existing role
+  ---
+  duration_ms: 32.9526
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 14
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 20092.1762
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/d4abbdd1-d7a6-4a17-b4a8-7de3dd7b328a/result.json","sha256":"12c474298916cb57631c7288b096e130d24d7eb40638518fb8aac0e4a90b9f5f","exit_code":0}

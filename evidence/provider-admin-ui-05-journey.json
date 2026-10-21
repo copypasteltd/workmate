@@ -1,0 +1,525 @@
+{
+  "at": "2026-10-21T06:12:33.266Z",
+  "status": "failed",
+  "scope": "Actual built Admin, real email/TOTP sessions, isolated native PostgreSQL and labelled simulated provider observations; no live service qualification or original end-to-end acceptance claim",
+  "checks": [
+    {
+      "name": "two independent actual email and TOTP browser sessions",
+      "status": "passed"
+    },
+    {
+      "name": "typed policy fields retain a three-micro HKD counting fee and an immutable draft has no live effect",
+      "status": "passed"
+    },
+    {
+      "name": "actual policy preview and review reject self-approval and update the published head only after a second Admin approves",
+      "status": "passed"
+    },
+    {
+      "name": "request directory and detail retain an actual persisted unknown observation and a held shared capacity slot",
+      "status": "passed"
+    }
+  ],
+  "errors": [
+    "human source registration and canonical download: /v1/admin/ai/requests/generation/195a2714-9b28-40c9-b31c-632f8b66b078/evidence\n\n400 !== 202\n"
+  ],
+  "samples": [
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "ProviderCurrentPolicy",
+      "route": "GET current policy before publication",
+      "response": {
+        "data_mode": "simulated",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "revision": 0,
+        "publication_id": null,
+        "limits": {
+          "id": "fffefba7-ab60-4352-b8fc-3a15de10d4ed",
+          "data_mode": "simulated",
+          "version": 2,
+          "global_slots": 100,
+          "tenant_slots": 100,
+          "actor_slots": 100,
+          "text_slots": 100,
+          "image_slots": 100,
+          "verification_slots": 100,
+          "global_rpm": 100000,
+          "tenant_rpm": 100000,
+          "actor_rpm": 100000,
+          "text_rpm": 100000,
+          "image_rpm": 100000,
+          "verification_rpm": 100000,
+          "preparation_seconds": 30,
+          "created_by": null,
+          "reason": "Isolated retained-counterexample test fixture",
+          "created_at": "2026-10-21T06:12:27.311Z"
+        },
+        "budget": {
+          "id": "728a48e6-cf0b-48aa-835c-9d042d634ef2",
+          "data_mode": "simulated",
+          "fingerprint": "9694800cbf131633feaa62134cf5ab64ac0985bc8116f4256b8f8803766d9c83",
+          "count_verified": true,
+          "count_price_micros": "0",
+          "verification_run_micros": "1000000",
+          "verification_daily_micros": "100000000",
+          "counting_daily_micros": "100000000",
+          "reason": "Server configured provider budget policy",
+          "created_at": "2026-10-21T06:12:27.100Z"
+        },
+        "periods": []
+      }
+    },
+    {
+      "schema": "ProviderPolicyList",
+      "route": "GET immutable policy directory",
+      "response": {
+        "items": [],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/policies/drafts",
+      "response": {
+        "id": "45ebc07d-ae36-4d4f-b8b2-ffdc00d08211",
+        "action": "ai.policy.draft",
+        "target_ids": [
+          "5edad189-a316-430e-a0bf-b814c011da14"
+        ],
+        "actor_id": "1ce1f989-7537-4476-959d-cb9306cdef69",
+        "state": "succeeded",
+        "payload_hash": "4dd07ae891d9179b0f48d3aa80ff5c2abf3178420d51ca358aa3e01af343b64e",
+        "policy_version_id": "b9e0aeb3-18dd-490d-a45d-de08632c43f9",
+        "version": 2,
+        "created_at": "2026-10-21T06:12:29.317Z",
+        "result_ids": [
+          "5edad189-a316-430e-a0bf-b814c011da14"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderPreview",
+      "route": "POST /v1/admin/ai/previews",
+      "response": {
+        "preview_id": "3771334c-fba6-482c-bac3-e9e8135840bc",
+        "payload_hash": "af1fe946e856aac6ab4e47343ee50bb015b0bf8c3d0598d1612e62fbb2729670",
+        "policy_version_id": "b9e0aeb3-18dd-490d-a45d-de08632c43f9",
+        "before": {
+          "scope": {
+            "data_mode": "simulated",
+            "tenant_id": null,
+            "project_id": null
+          },
+          "draft": {
+            "id": "5edad189-a316-430e-a0bf-b814c011da14",
+            "data_mode": "simulated",
+            "version": 1,
+            "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+            "definition": {
+              "budget": {
+                "count_verified": true,
+                "count_price_micros": 3,
+                "counting_daily_micros": 10000000,
+                "verification_run_micros": 1000000,
+                "verification_daily_micros": 10000000
+              },
+              "limits": {
+                "text_rpm": 100000,
+                "actor_rpm": 100000,
+                "image_rpm": 100000,
+                "global_rpm": 100000,
+                "tenant_rpm": 100000,
+                "text_slots": 100,
+                "actor_slots": 100,
+                "image_slots": 100,
+                "global_slots": 100,
+                "tenant_slots": 100,
+                "verification_rpm": 100000,
+                "verification_slots": 100,
+                "preparation_seconds": 30
+              },
+              "count_contract": {
+                "terms": "Synthetic counting fee: HKD 0.000003 per call. No live service qualification.",
+                "service": "responses.input_tokens",
+                "reference": "Synthetic internal counting contract",
+                "fee_micros": 3,
+                "effective_at": "2025-12-31T16:00:00.000Z"
+              }
+            },
+            "actor_id": "1ce1f989-7537-4476-959d-cb9306cdef69",
+            "operation_id": "45ebc07d-ae36-4d4f-b8b2-ffdc00d08211",
+            "reason": "Synthetic independent provider policy browser verification",
+            "created_at": "2026-10-21T06:12:29.335Z"
+          },
+          "current": {
+            "data_mode": "simulated",
+            "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+            "revision": 0,
+            "publication_id": null,
+            "limits": {
+              "id": "fffefba7-ab60-4352-b8fc-3a15de10d4ed",
+              "data_mode": "simulated",
+              "version": 2,
+              "global_slots": 100,
+              "tenant_slots": 100,
+              "actor_slots": 100,
+              "text_slots": 100,
+              "image_slots": 100,
+              "verification_slots": 100,
+              "global_rpm": 100000,
+              "tenant_rpm": 100000,
+              "actor_rpm": 100000,
+              "text_rpm": 100000,
+              "image_rpm": 100000,
+              "verification_rpm": 100000,
+              "preparation_seconds": 30,
+              "created_by": null,
+              "reason": "Isolated retained-counterexample test fixture",
+              "created_at": "2026-10-21T06:12:27.311Z"
+            },
+            "budget": {
+              "id": "728a48e6-cf0b-48aa-835c-9d042d634ef2",
+              "data_mode": "simulated",
+              "fingerprint": "9694800cbf131633feaa62134cf5ab64ac0985bc8116f4256b8f8803766d9c83",
+              "count_verified": true,
+              "count_price_micros": "0",
+              "verification_run_micros": "1000000",
+              "verification_daily_micros": "100000000",
+              "counting_daily_micros": "100000000",
+              "reason": "Server configured provider budget policy",
+              "created_at": "2026-10-21T06:12:27.100Z"
+            },
+            "periods": []
+          },
+          "definition": {
+            "limits": {
+              "global_slots": 100,
+              "tenant_slots": 100,
+              "actor_slots": 100,
+              "text_slots": 100,
+              "image_slots": 100,
+              "verification_slots": 100,
+              "global_rpm": 100000,
+              "tenant_rpm": 100000,
+              "actor_rpm": 100000,
+              "text_rpm": 100000,
+              "image_rpm": 100000,
+              "verification_rpm": 100000,
+              "preparation_seconds": 30
+            },
+            "budget": {
+              "count_verified": true,
+              "count_price_micros": 3,
+              "verification_run_micros": 1000000,
+              "verification_daily_micros": 10000000,
+              "counting_daily_micros": 10000000
+            },
+            "count_contract": {
+              "reference": "Synthetic internal counting contract",
+              "terms": "Synthetic counting fee: HKD 0.000003 per call. No live service qualification.",
+              "service": "responses.input_tokens",
+              "fee_micros": 3,
+              "effective_at": "2025-12-31T16:00:00.000Z"
+            }
+          }
+        },
+        "command": {
+          "action": "ai.policy.publish",
+          "draft_id": "5edad189-a316-430e-a0bf-b814c011da14",
+          "expected_revision": 0,
+          "reason": "Synthetic independent provider policy browser verification"
+        },
+        "decision": "independent_approval",
+        "expires_at": "2026-10-21T06:17:29.636Z",
+        "creates_business_effect": false
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/operations",
+      "response": {
+        "id": "eb295917-c8c7-47e6-98d0-73452b9431a6",
+        "action": "ai.policy.publish",
+        "target_ids": [
+          "5edad189-a316-430e-a0bf-b814c011da14"
+        ],
+        "actor_id": "1ce1f989-7537-4476-959d-cb9306cdef69",
+        "state": "pending_approval",
+        "payload_hash": "af1fe946e856aac6ab4e47343ee50bb015b0bf8c3d0598d1612e62fbb2729670",
+        "policy_version_id": "b9e0aeb3-18dd-490d-a45d-de08632c43f9",
+        "version": 1,
+        "created_at": "2026-10-21T06:12:29.750Z",
+        "result_ids": []
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST independent approval",
+      "response": {
+        "id": "eb295917-c8c7-47e6-98d0-73452b9431a6",
+        "action": "ai.policy.publish",
+        "target_ids": [
+          "5edad189-a316-430e-a0bf-b814c011da14"
+        ],
+        "actor_id": "1ce1f989-7537-4476-959d-cb9306cdef69",
+        "state": "succeeded",
+        "payload_hash": "af1fe946e856aac6ab4e47343ee50bb015b0bf8c3d0598d1612e62fbb2729670",
+        "policy_version_id": "b9e0aeb3-18dd-490d-a45d-de08632c43f9",
+        "version": 2,
+        "created_at": "2026-10-21T06:12:29.750Z",
+        "result_ids": [
+          "1991abcb-56cf-4cad-a20a-e6ccd5f53899",
+          "5edad189-a316-430e-a0bf-b814c011da14",
+          "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+          "1504c8a2-4b04-4f4c-908b-cb476f390cc7"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderCurrentPolicy",
+      "route": "GET independently published policy",
+      "response": {
+        "data_mode": "simulated",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "revision": 1,
+        "publication_id": "1991abcb-56cf-4cad-a20a-e6ccd5f53899",
+        "limits": {
+          "id": "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+          "data_mode": "simulated",
+          "version": 3,
+          "global_slots": 100,
+          "tenant_slots": 100,
+          "actor_slots": 100,
+          "text_slots": 100,
+          "image_slots": 100,
+          "verification_slots": 100,
+          "global_rpm": 100000,
+          "tenant_rpm": 100000,
+          "actor_rpm": 100000,
+          "text_rpm": 100000,
+          "image_rpm": 100000,
+          "verification_rpm": 100000,
+          "preparation_seconds": 30,
+          "created_by": "1ce1f989-7537-4476-959d-cb9306cdef69",
+          "reason": "Synthetic independent provider policy browser verification",
+          "created_at": "2026-10-21T06:12:30.755Z"
+        },
+        "budget": {
+          "id": "1504c8a2-4b04-4f4c-908b-cb476f390cc7",
+          "data_mode": "simulated",
+          "fingerprint": "5517dabb905a4a7c1e70b6d73217f43048baf0f2124790b25f09d8c00aa08eff",
+          "count_verified": true,
+          "count_price_micros": "3",
+          "verification_run_micros": "1000000",
+          "verification_daily_micros": "10000000",
+          "counting_daily_micros": "10000000",
+          "reason": "Synthetic independent provider policy browser verification",
+          "created_at": "2026-10-21T06:12:30.755Z"
+        },
+        "periods": []
+      }
+    },
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [
+          {
+            "id": "195a2714-9b28-40c9-b31c-632f8b66b078",
+            "channel": "generation",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "fac5ce5e-bf46-4c0f-ba97-cb6fe54cddae",
+            "validation_id": null,
+            "tenant_id": "ef4b205d-ca84-4850-bfec-6cc30467a966",
+            "project_id": "9b2e52f7-fdc5-4be5-865b-3f8a78b32982",
+            "actor_id": "f4e60fc9-ad2d-45f5-bc02-508565eebb89",
+            "attempt": 1,
+            "capability_version_id": "0f353977-90c3-4eba-a7a3-0de5768effd9",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses",
+            "operation_id": "c035f7c8-571b-43b6-b25f-988e433b0c85",
+            "model_alias": "copypaste-demo",
+            "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+            "request_bytes": 20,
+            "policy_version_id": "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+            "dispatch_policy_version_id": "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+            "state": "unknown",
+            "prepared_until": "2026-10-21T06:13:01.261Z",
+            "created_at": "2026-10-21T06:12:31.262Z",
+            "dispatched_at": "2026-10-21T06:12:31.307Z",
+            "finished_at": "2026-10-21T06:12:31.318Z",
+            "released_at": null,
+            "outcome_code": "SIMULATED_RESPONSE_LOST",
+            "http_status": null,
+            "capacity_held": true,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "unknown",
+              "source": "unknown",
+              "rate_snapshot": [
+                1000000,
+                1000000
+              ],
+              "numerator": null,
+              "amount_micros": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "image_units": null,
+              "counted_input_tokens": null,
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          },
+          {
+            "id": "5b46e446-82df-4a63-9829-274779c0ca1b",
+            "channel": "input_count",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "fac5ce5e-bf46-4c0f-ba97-cb6fe54cddae",
+            "validation_id": null,
+            "tenant_id": "ef4b205d-ca84-4850-bfec-6cc30467a966",
+            "project_id": "9b2e52f7-fdc5-4be5-865b-3f8a78b32982",
+            "actor_id": "f4e60fc9-ad2d-45f5-bc02-508565eebb89",
+            "attempt": 1,
+            "capability_version_id": "0f353977-90c3-4eba-a7a3-0de5768effd9",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses.input_tokens",
+            "operation_id": "91933ea7-a0f4-4086-a997-3a329128e1d9",
+            "model_alias": "copypaste-demo",
+            "request_hash": "00cdefc18610839a4cf3c3d578a389f9af7add711baef9f40954df036484bc5e",
+            "request_bytes": 10,
+            "policy_version_id": "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+            "dispatch_policy_version_id": "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+            "state": "completed",
+            "prepared_until": "2026-10-21T06:13:01.128Z",
+            "created_at": "2026-10-21T06:12:31.150Z",
+            "dispatched_at": "2026-10-21T06:12:31.195Z",
+            "finished_at": "2026-10-21T06:12:31.215Z",
+            "released_at": "2026-10-21T06:12:31.215Z",
+            "outcome_code": null,
+            "http_status": 200,
+            "capacity_held": false,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "known",
+              "source": "gateway_observation",
+              "rate_snapshot": [
+                3
+              ],
+              "numerator": "3000000",
+              "amount_micros": "3",
+              "input_tokens": "0",
+              "output_tokens": "0",
+              "image_units": 0,
+              "counted_input_tokens": "100",
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "ProviderRequestDetail",
+      "route": "GET /v1/admin/ai/requests/generation/195a2714-9b28-40c9-b31c-632f8b66b078",
+      "response": {
+        "id": "195a2714-9b28-40c9-b31c-632f8b66b078",
+        "channel": "generation",
+        "data_mode": "simulated",
+        "subject_kind": "task",
+        "task_id": "fac5ce5e-bf46-4c0f-ba97-cb6fe54cddae",
+        "validation_id": null,
+        "tenant_id": "ef4b205d-ca84-4850-bfec-6cc30467a966",
+        "project_id": "9b2e52f7-fdc5-4be5-865b-3f8a78b32982",
+        "actor_id": "f4e60fc9-ad2d-45f5-bc02-508565eebb89",
+        "attempt": 1,
+        "capability_version_id": "0f353977-90c3-4eba-a7a3-0de5768effd9",
+        "release_id": null,
+        "request_class": "text",
+        "operation": "responses",
+        "operation_id": "c035f7c8-571b-43b6-b25f-988e433b0c85",
+        "model_alias": "copypaste-demo",
+        "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+        "request_bytes": 20,
+        "policy_version_id": "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+        "dispatch_policy_version_id": "4fdfa77e-274a-4b68-adaf-633c2814b8ef",
+        "state": "unknown",
+        "prepared_until": "2026-10-21T06:13:01.261Z",
+        "created_at": "2026-10-21T06:12:31.262Z",
+        "dispatched_at": "2026-10-21T06:12:31.307Z",
+        "finished_at": "2026-10-21T06:12:31.318Z",
+        "released_at": null,
+        "outcome_code": "SIMULATED_RESPONSE_LOST",
+        "http_status": null,
+        "capacity_held": true,
+        "termination_confirmation_id": null,
+        "cost": {
+          "state": "unknown",
+          "source": "unknown",
+          "rate_snapshot": [
+            1000000,
+            1000000
+          ],
+          "numerator": null,
+          "amount_micros": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "image_units": null,
+          "counted_input_tokens": null,
+          "confirmation_id": null,
+          "evidence_id": null
+        },
+        "evidence": []
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-05-policy-draft-en.png",
+      "sha256": "e2c3112db8aa9f873945aab43d28208684bd14e2e491df84fee74b1a6647b9e9",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-05-independent-review-1-en.png",
+      "sha256": "80a77a0547d77b4ec425395156b53bac35bde8ecfee67d72dfc0fc4affaa260c",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-05-unknown-request-en.png",
+      "sha256": "79f62b086210bbf6ebf910fe3a83fd38e1ecfda36ac641440ee5833b74c3d2e1",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    }
+  ],
+  "browser_closed": true,
+  "browser_runtime": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "36a30716f0994b377f1ce6b47cfe35399b9719e31d597fe0ea0d8f3b62aed532",
+    "version": "155.0.8059.80"
+  },
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "8a2a119af25bab80ad1f60a63225802e6f047672e441675c64c37429b5cf6111"
+}

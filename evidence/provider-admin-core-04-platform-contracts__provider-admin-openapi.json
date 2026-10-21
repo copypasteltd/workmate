@@ -1,0 +1,1454 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste additive provider Admin controls",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/v1/admin/ai/policy": {
+      "get": {
+        "operationId": "provider_get_policy",
+        "summary": "Current independently published limits and budgets; UTC-day boundaries remain frozen",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.policy.read",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current scoped facts"
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/policies": {
+      "get": {
+        "operationId": "provider_get_policies",
+        "summary": "Immutable policy draft and publication directory",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.policy.read",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current scoped facts"
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/policies/drafts": {
+      "post": {
+        "operationId": "provider_post_policies_drafts",
+        "summary": "Register an immutable policy draft; no live effect",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.policy.draft",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted controlled operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOperation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderPolicyDraft"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/requests": {
+      "get": {
+        "operationId": "provider_get_requests",
+        "summary": "Scoped request directory with separate extra cost-field permission",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.requests.read",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "data_mode",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "subject_kind",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "task",
+                "validation"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "operation",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "responses",
+                "images.generate",
+                "images.edit",
+                "responses.input_tokens"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "prepared",
+                "dispatched",
+                "completed",
+                "unknown",
+                "cancelled",
+                "denied"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "cost_state",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "known",
+                "unknown",
+                "manually_confirmed"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "capacity_state",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "held",
+                "released"
+              ]
+            }
+          },
+          {
+            "in": "query",
+            "name": "tenant_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "project_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "task_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "validation_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "capability_version_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "release_id",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period_from",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period_to",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current scoped facts"
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/requests/{channel}/{request_id}": {
+      "get": {
+        "operationId": "provider_get_requests_channel_request_id",
+        "summary": "Original observation and explicit manual overlays; no private request body or execution nonce",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.requests.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "generation",
+                "input_count"
+              ]
+            }
+          },
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current scoped facts"
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/requests/{channel}/{request_id}/evidence": {
+      "post": {
+        "operationId": "provider_post_requests_channel_request_id_evidence",
+        "summary": "Register inspectable human evidence; no fee, ledger or capacity effect",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.evidence.write",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "generation",
+                "input_count"
+              ]
+            }
+          },
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted controlled operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOperation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderEvidenceCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/evidence/{evidence_id}": {
+      "get": {
+        "operationId": "provider_get_evidence_evidence_id",
+        "summary": "Reauthorize and read canonical human evidence for download",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.cost.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "evidence_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current scoped facts"
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/tasks/{task_id}/settlement": {
+      "get": {
+        "operationId": "provider_get_tasks_task_id_settlement",
+        "summary": "Current original task, reservation and immutable violations; no charge",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "admin.ai.cost.read",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current scoped facts"
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/previews": {
+      "post": {
+        "operationId": "provider_post_previews",
+        "summary": "Freeze exact current facts for independent review; no business effect",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "action-specific",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current scoped facts"
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/ai/operations": {
+      "post": {
+        "operationId": "provider_post_operations",
+        "summary": "Submit exact preview for another currently authorized Admin; never self-approve",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-permission": "action-specific",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 8,
+              "maxLength": 128
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted controlled operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOperation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict schema, binding or cursor invalid"
+          },
+          "401": {
+            "description": "Independent Admin session required"
+          },
+          "403": {
+            "description": "Current scoped permission, explicit deny, recent MFA or independent review failed"
+          },
+          "409": {
+            "description": "Current target, policy, proof, price, budget, preview or task changed"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProviderSubmit"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "AdminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session"
+      }
+    },
+    "schemas": {
+      "ProviderLimits": {
+        "type": "object",
+        "properties": {
+          "global_slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "tenant_slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "actor_slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "text_slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "image_slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "verification_slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "global_rpm": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "tenant_rpm": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "actor_rpm": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "text_rpm": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "image_rpm": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "verification_rpm": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "preparation_seconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 300
+          }
+        },
+        "required": [
+          "global_slots",
+          "tenant_slots",
+          "actor_slots",
+          "text_slots",
+          "image_slots",
+          "verification_slots",
+          "global_rpm",
+          "tenant_rpm",
+          "actor_rpm",
+          "text_rpm",
+          "image_rpm",
+          "verification_rpm",
+          "preparation_seconds"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderBudgetDefinition": {
+        "type": "object",
+        "properties": {
+          "count_verified": {
+            "type": "boolean"
+          },
+          "count_price_micros": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verification_run_micros": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "verification_daily_micros": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "counting_daily_micros": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "count_verified",
+          "count_price_micros",
+          "verification_run_micros",
+          "verification_daily_micros",
+          "counting_daily_micros"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderPolicyDefinition": {
+        "type": "object",
+        "properties": {
+          "limits": {
+            "type": "object",
+            "properties": {
+              "global_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "tenant_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "actor_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "text_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "image_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "verification_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "global_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              "tenant_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              "actor_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              "text_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              "image_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              "verification_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              "preparation_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              }
+            },
+            "required": [
+              "global_slots",
+              "tenant_slots",
+              "actor_slots",
+              "text_slots",
+              "image_slots",
+              "verification_slots",
+              "global_rpm",
+              "tenant_rpm",
+              "actor_rpm",
+              "text_rpm",
+              "image_rpm",
+              "verification_rpm",
+              "preparation_seconds"
+            ],
+            "additionalProperties": false
+          },
+          "budget": {
+            "type": "object",
+            "properties": {
+              "count_verified": {
+                "type": "boolean"
+              },
+              "count_price_micros": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "verification_run_micros": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "verification_daily_micros": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "counting_daily_micros": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "count_verified",
+              "count_price_micros",
+              "verification_run_micros",
+              "verification_daily_micros",
+              "counting_daily_micros"
+            ],
+            "additionalProperties": false
+          },
+          "count_contract": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "reference": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 300
+                  },
+                  "terms": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 16000
+                  },
+                  "service": {
+                    "type": "string",
+                    "enum": [
+                      "responses.input_tokens"
+                    ]
+                  },
+                  "fee_micros": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "effective_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "reference",
+                  "terms",
+                  "service",
+                  "fee_micros",
+                  "effective_at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "limits",
+          "budget",
+          "count_contract"
+        ],
+        "additionalProperties": false,
+        "description": "Verified counting additionally requires matching explicit fee/contract and an effective contract bound to the current company gateway. Publication never qualifies a live model."
+      },
+      "ProviderPolicyDraft": {
+        "type": "object",
+        "properties": {
+          "definition": {
+            "$ref": "#/components/schemas/ProviderPolicyDefinition"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "definition",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderPolicyPublication": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "ai.policy.publish"
+            ]
+          },
+          "draft_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "action",
+          "draft_id",
+          "expected_revision",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderRequestCommand": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "ai.cost.reconcile",
+              "ai.capacity.release"
+            ]
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "generation",
+              "input_count"
+            ]
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "evidence_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "action",
+          "channel",
+          "request_id",
+          "evidence_id",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderTaskSettlement": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "ai.tasks.settle"
+            ]
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_task_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "acknowledge_violation_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "maxItems": 100,
+            "uniqueItems": true
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "action",
+          "task_id",
+          "expected_task_version",
+          "acknowledge_violation_ids",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderCommand": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ProviderPolicyPublication"
+          },
+          {
+            "$ref": "#/components/schemas/ProviderRequestCommand"
+          },
+          {
+            "$ref": "#/components/schemas/ProviderTaskSettlement"
+          }
+        ]
+      },
+      "ProviderEvidenceDocument": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "const": 1
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "operation_id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_:-]{16,128}$"
+          },
+          "request_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "provider_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          },
+          "source_reference": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          },
+          "source_note": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 8000
+          },
+          "observed_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "terminated": {
+            "const": true
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "failed",
+              "cancelled",
+              "not_executed"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "HKD"
+            ]
+          },
+          "billed_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,33})$"
+          },
+          "usage": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "text"
+                    ]
+                  },
+                  "input_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "output_tokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "input_tokens",
+                  "output_tokens"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "image"
+                    ]
+                  },
+                  "image_units": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": [
+                  "kind",
+                  "image_units"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "input_count"
+                    ]
+                  },
+                  "counted_input_tokens": {
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "counted_input_tokens"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "data_mode",
+          "operation_id",
+          "request_hash",
+          "provider_reference",
+          "source_reference",
+          "source_note",
+          "observed_at",
+          "terminated",
+          "outcome",
+          "currency",
+          "billed_micros",
+          "usage"
+        ],
+        "additionalProperties": false,
+        "description": "Human-submitted immutable source statement, not an authenticated gateway callback. Bound to the original unknown request, mode, hash, operation and dispatch time. Confirmation always needs an independent reviewer."
+      },
+      "ProviderEvidenceCreate": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/ProviderEvidenceDocument"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "document",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderSubmit": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "$ref": "#/components/schemas/ProviderCommand"
+          },
+          "preview_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "command",
+          "preview_id"
+        ],
+        "additionalProperties": false
+      },
+      "AdminOperation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending_approval",
+              "queued",
+              "running",
+              "succeeded",
+              "partially_succeeded",
+              "failed",
+              "cancelled",
+              "reconciling"
+            ]
+          },
+          "payload_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policy_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0
+          },
+          "error_code": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "target_ids",
+          "actor_id",
+          "state",
+          "payload_hash",
+          "policy_version_id",
+          "version",
+          "created_at",
+          "result_ids"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "x-original-contract-unchanged": true,
+  "x-independent-review-endpoints": [
+    "/v1/admin/operations/{operation}/approval",
+    "/v1/admin/approvals/{approval}/review",
+    "/v1/admin/approvals/{approval_id}/decisions"
+  ]
+}

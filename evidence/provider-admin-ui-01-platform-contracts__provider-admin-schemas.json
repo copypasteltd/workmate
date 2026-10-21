@@ -1,0 +1,2650 @@
+{
+  "schemas": {
+    "ProviderLimits": {
+      "type": "object",
+      "properties": {
+        "global_slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "tenant_slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "actor_slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "text_slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "image_slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "verification_slots": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "global_rpm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "tenant_rpm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "actor_rpm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "text_rpm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "image_rpm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "verification_rpm": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        },
+        "preparation_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        }
+      },
+      "required": [
+        "global_slots",
+        "tenant_slots",
+        "actor_slots",
+        "text_slots",
+        "image_slots",
+        "verification_slots",
+        "global_rpm",
+        "tenant_rpm",
+        "actor_rpm",
+        "text_rpm",
+        "image_rpm",
+        "verification_rpm",
+        "preparation_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderBudgetDefinition": {
+      "type": "object",
+      "properties": {
+        "count_verified": {
+          "type": "boolean"
+        },
+        "count_price_micros": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_run_micros": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "verification_daily_micros": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "counting_daily_micros": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "count_verified",
+        "count_price_micros",
+        "verification_run_micros",
+        "verification_daily_micros",
+        "counting_daily_micros"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderPolicyDefinition": {
+      "type": "object",
+      "properties": {
+        "limits": {
+          "type": "object",
+          "properties": {
+            "global_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "tenant_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "actor_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "text_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "image_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "verification_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "global_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "tenant_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "actor_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "text_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "image_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "verification_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "preparation_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300
+            }
+          },
+          "required": [
+            "global_slots",
+            "tenant_slots",
+            "actor_slots",
+            "text_slots",
+            "image_slots",
+            "verification_slots",
+            "global_rpm",
+            "tenant_rpm",
+            "actor_rpm",
+            "text_rpm",
+            "image_rpm",
+            "verification_rpm",
+            "preparation_seconds"
+          ],
+          "additionalProperties": false
+        },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "count_verified": {
+              "type": "boolean"
+            },
+            "count_price_micros": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "verification_run_micros": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "verification_daily_micros": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "counting_daily_micros": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "count_verified",
+            "count_price_micros",
+            "verification_run_micros",
+            "verification_daily_micros",
+            "counting_daily_micros"
+          ],
+          "additionalProperties": false
+        },
+        "count_contract": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "reference": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 300
+                },
+                "terms": {
+                  "type": "string",
+                  "minLength": 10,
+                  "maxLength": 16000
+                },
+                "service": {
+                  "type": "string",
+                  "enum": [
+                    "responses.input_tokens"
+                  ]
+                },
+                "fee_micros": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "effective_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "reference",
+                "terms",
+                "service",
+                "fee_micros",
+                "effective_at"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "limits",
+        "budget",
+        "count_contract"
+      ],
+      "additionalProperties": false,
+      "description": "Verified counting additionally requires matching explicit fee/contract and an effective contract bound to the current company gateway. Publication never qualifies a live model."
+    },
+    "ProviderPolicyDraft": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "$ref": "#/components/schemas/ProviderPolicyDefinition"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "definition",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderPolicyPublication": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "ai.policy.publish"
+          ]
+        },
+        "draft_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "action",
+        "draft_id",
+        "expected_revision",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderRequestCommand": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "ai.cost.reconcile",
+            "ai.capacity.release"
+          ]
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "generation",
+            "input_count"
+          ]
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "evidence_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "action",
+        "channel",
+        "request_id",
+        "evidence_id",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderTaskSettlement": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "ai.tasks.settle"
+          ]
+        },
+        "task_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_task_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "acknowledge_violation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "maxItems": 100,
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "action",
+        "task_id",
+        "expected_task_version",
+        "acknowledge_violation_ids",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderCommand": {
+      "oneOf": [
+        {
+          "$ref": "#/components/schemas/ProviderPolicyPublication"
+        },
+        {
+          "$ref": "#/components/schemas/ProviderRequestCommand"
+        },
+        {
+          "$ref": "#/components/schemas/ProviderTaskSettlement"
+        }
+      ]
+    },
+    "ProviderEvidenceDocument": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_:-]{16,128}$"
+        },
+        "request_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "provider_reference": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 300
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 500
+        },
+        "source_note": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 8000
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "terminated": {
+          "const": true
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "failed",
+            "cancelled",
+            "not_executed"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "enum": [
+            "HKD"
+          ]
+        },
+        "billed_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]{0,33})$"
+        },
+        "usage": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "text"
+                  ]
+                },
+                "input_tokens": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "output_tokens": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "kind",
+                "input_tokens",
+                "output_tokens"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "image"
+                  ]
+                },
+                "image_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "kind",
+                "image_units"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "input_count"
+                  ]
+                },
+                "counted_input_tokens": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "counted_input_tokens"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "data_mode",
+        "operation_id",
+        "request_hash",
+        "provider_reference",
+        "source_reference",
+        "source_note",
+        "observed_at",
+        "terminated",
+        "outcome",
+        "currency",
+        "billed_micros",
+        "usage"
+      ],
+      "additionalProperties": false,
+      "description": "Human-submitted immutable source statement, not an authenticated gateway callback. Bound to the original unknown request, mode, hash, operation and dispatch time. Confirmation always needs an independent reviewer."
+    },
+    "ProviderEvidenceCreate": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/components/schemas/ProviderEvidenceDocument"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "document",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderSubmit": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "$ref": "#/components/schemas/ProviderCommand"
+        },
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "command",
+        "preview_id"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderCurrentPolicy": {
+      "type": "object",
+      "properties": {
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "gateway_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "publication_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "data_mode": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "global_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "tenant_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "actor_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "text_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "image_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "verification_slots": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "global_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "tenant_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "actor_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "text_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "image_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "verification_rpm": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000
+            },
+            "preparation_seconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300
+            },
+            "created_by": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 1000
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "data_mode",
+            "version",
+            "global_slots",
+            "tenant_slots",
+            "actor_slots",
+            "text_slots",
+            "image_slots",
+            "verification_slots",
+            "global_rpm",
+            "tenant_rpm",
+            "actor_rpm",
+            "text_rpm",
+            "image_rpm",
+            "verification_rpm",
+            "preparation_seconds",
+            "created_by",
+            "reason",
+            "created_at"
+          ],
+          "additionalProperties": false
+        },
+        "budget": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "data_mode": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            },
+            "fingerprint": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "count_verified": {
+              "type": "boolean"
+            },
+            "count_price_micros": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,39})$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "verification_run_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            "verification_daily_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            "counting_daily_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 1000
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "data_mode",
+            "fingerprint",
+            "count_verified",
+            "count_price_micros",
+            "verification_run_micros",
+            "verification_daily_micros",
+            "counting_daily_micros",
+            "reason",
+            "created_at"
+          ],
+          "additionalProperties": false
+        },
+        "periods": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "purpose": {
+                "type": "string",
+                "enum": [
+                  "verification",
+                  "input_count"
+                ]
+              },
+              "utc_day": {
+                "type": "string",
+                "format": "date"
+              },
+              "amount_micros": {
+                "type": "string",
+                "pattern": "^(0|[1-9][0-9]{0,39})$"
+              },
+              "policy_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "id",
+              "purpose",
+              "utc_day",
+              "amount_micros",
+              "policy_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "data_mode",
+        "gateway_fingerprint",
+        "revision",
+        "publication_id",
+        "limits",
+        "budget",
+        "periods"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderPolicyList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "data_mode": {
+                "type": "string",
+                "enum": [
+                  "simulated",
+                  "configured_services"
+                ]
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "gateway_fingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "definition": {
+                "$ref": "#/components/schemas/ProviderPolicyDefinition"
+              },
+              "actor_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "operation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 1000
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "publication_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "published_at": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cursor_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "data_mode",
+              "version",
+              "gateway_fingerprint",
+              "definition",
+              "actor_id",
+              "operation_id",
+              "reason",
+              "created_at",
+              "publication_id",
+              "published_at",
+              "cursor_at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderRequestCost": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unknown",
+            "manually_confirmed"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "gateway_observation",
+            "human_evidence",
+            "unknown"
+          ]
+        },
+        "rate_snapshot": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "minItems": 1,
+          "maxItems": 2
+        },
+        "numerator": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "amount_micros": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "input_tokens": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "output_tokens": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "image_units": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "counted_input_tokens": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "source",
+        "rate_snapshot",
+        "numerator",
+        "amount_micros",
+        "input_tokens",
+        "output_tokens",
+        "image_units",
+        "counted_input_tokens",
+        "confirmation_id",
+        "evidence_id"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "generation",
+            "input_count"
+          ]
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "subject_kind": {
+          "type": "string",
+          "enum": [
+            "task",
+            "validation"
+          ]
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tenant_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "project_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capability_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "release_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dispatch_policy_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "termination_confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attempt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_class": {
+          "type": "string",
+          "enum": [
+            "text",
+            "image"
+          ]
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "responses",
+            "images.generate",
+            "images.edit",
+            "responses.input_tokens"
+          ]
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "request_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "request_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "prepared",
+            "dispatched",
+            "completed",
+            "unknown",
+            "cancelled",
+            "denied"
+          ]
+        },
+        "prepared_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dispatched_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "released_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome_code": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "http_status": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capacity_held": {
+          "type": "boolean"
+        },
+        "cost": {
+          "$ref": "#/components/schemas/ProviderRequestCost"
+        }
+      },
+      "required": [
+        "id",
+        "channel",
+        "data_mode",
+        "subject_kind",
+        "task_id",
+        "validation_id",
+        "tenant_id",
+        "project_id",
+        "actor_id",
+        "capability_version_id",
+        "release_id",
+        "dispatch_policy_version_id",
+        "termination_confirmation_id",
+        "attempt",
+        "request_class",
+        "operation",
+        "operation_id",
+        "model_alias",
+        "request_hash",
+        "request_bytes",
+        "policy_version_id",
+        "state",
+        "prepared_until",
+        "created_at",
+        "dispatched_at",
+        "finished_at",
+        "released_at",
+        "outcome_code",
+        "http_status",
+        "capacity_held"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderRequestList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/ProviderRequest"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderRequestDetail": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "channel": {
+          "type": "string",
+          "enum": [
+            "generation",
+            "input_count"
+          ]
+        },
+        "data_mode": {
+          "type": "string",
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "subject_kind": {
+          "type": "string",
+          "enum": [
+            "task",
+            "validation"
+          ]
+        },
+        "task_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "validation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "tenant_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "project_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actor_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capability_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "release_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dispatch_policy_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "termination_confirmation_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attempt": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "request_class": {
+          "type": "string",
+          "enum": [
+            "text",
+            "image"
+          ]
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "responses",
+            "images.generate",
+            "images.edit",
+            "responses.input_tokens"
+          ]
+        },
+        "operation_id": {
+          "type": "string",
+          "minLength": 16,
+          "maxLength": 128
+        },
+        "model_alias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "request_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "request_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "prepared",
+            "dispatched",
+            "completed",
+            "unknown",
+            "cancelled",
+            "denied"
+          ]
+        },
+        "prepared_until": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "dispatched_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "released_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome_code": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "http_status": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 599
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "capacity_held": {
+          "type": "boolean"
+        },
+        "cost": {
+          "$ref": "#/components/schemas/ProviderRequestCost"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "document_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "actor_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 1000
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "document_hash",
+              "actor_id",
+              "reason",
+              "created_at"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "id",
+        "channel",
+        "data_mode",
+        "subject_kind",
+        "task_id",
+        "validation_id",
+        "tenant_id",
+        "project_id",
+        "actor_id",
+        "capability_version_id",
+        "release_id",
+        "dispatch_policy_version_id",
+        "termination_confirmation_id",
+        "attempt",
+        "request_class",
+        "operation",
+        "operation_id",
+        "model_alias",
+        "request_hash",
+        "request_bytes",
+        "policy_version_id",
+        "state",
+        "prepared_until",
+        "created_at",
+        "dispatched_at",
+        "finished_at",
+        "released_at",
+        "outcome_code",
+        "http_status",
+        "capacity_held"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderEvidenceRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "document": {
+          "$ref": "#/components/schemas/ProviderEvidenceDocument"
+        },
+        "canonical_document": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40000
+        },
+        "document_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "human_submission"
+          ]
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "document",
+        "canonical_document",
+        "document_hash",
+        "source",
+        "actor_id",
+        "reason",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderTaskSettlementFacts": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "tenant_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "data_mode": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            },
+            "status": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "charged_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            },
+            "budget_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            }
+          },
+          "required": [
+            "id",
+            "tenant_id",
+            "data_mode",
+            "status",
+            "version",
+            "charged_micros",
+            "budget_micros"
+          ],
+          "additionalProperties": false
+        },
+        "reservation": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000
+                },
+                "amount_micros": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,39})$"
+                }
+              },
+              "required": [
+                "status",
+                "amount_micros"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "INPUT_COUNT_MISMATCH",
+                  "OUTPUT_LIMIT_EXCEEDED",
+                  "ALLOCATION_EXCEEDED"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "code"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "task",
+        "reservation",
+        "violations"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderPolicyBefore": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "object",
+          "properties": {
+            "data_mode": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            },
+            "tenant_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "project_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "data_mode",
+            "tenant_id",
+            "project_id"
+          ],
+          "additionalProperties": false
+        },
+        "draft": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "data_mode": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "gateway_fingerprint": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "definition": {
+              "$ref": "#/components/schemas/ProviderPolicyDefinition"
+            },
+            "actor_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "operation_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 1000
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "data_mode",
+            "version",
+            "gateway_fingerprint",
+            "definition",
+            "actor_id",
+            "operation_id",
+            "reason",
+            "created_at"
+          ],
+          "additionalProperties": false
+        },
+        "current": {
+          "$ref": "#/components/schemas/ProviderCurrentPolicy"
+        },
+        "definition": {
+          "$ref": "#/components/schemas/ProviderPolicyDefinition"
+        }
+      },
+      "required": [
+        "scope",
+        "draft",
+        "current",
+        "definition"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderRequestBefore": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "object",
+          "properties": {
+            "data_mode": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            },
+            "tenant_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "project_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "data_mode",
+            "tenant_id",
+            "project_id"
+          ],
+          "additionalProperties": false
+        },
+        "request": {
+          "$ref": "#/components/schemas/ProviderRequest"
+        },
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "document_hash": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "document": {
+              "$ref": "#/components/schemas/ProviderEvidenceDocument"
+            },
+            "actor_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "id",
+            "document_hash",
+            "document",
+            "actor_id",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "cost": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "numerator": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,39})$"
+                },
+                "amount_micros": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]{0,39})$"
+                },
+                "input_tokens": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "output_tokens": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "image_units": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "counted_input_tokens": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "numerator",
+                "amount_micros",
+                "input_tokens",
+                "output_tokens",
+                "image_units",
+                "counted_input_tokens"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "scope",
+        "request",
+        "evidence",
+        "cost"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderTaskBefore": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "object",
+          "properties": {
+            "data_mode": {
+              "type": "string",
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            },
+            "tenant_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "project_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "data_mode",
+            "tenant_id",
+            "project_id"
+          ],
+          "additionalProperties": false
+        },
+        "task": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "reconciling"
+              ]
+            },
+            "created_by": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "status",
+            "created_by"
+          ],
+          "additionalProperties": false
+        },
+        "reservation": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "reserved",
+                "reconciling"
+              ]
+            },
+            "amount_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,39})$"
+            }
+          },
+          "required": [
+            "id",
+            "status",
+            "amount_micros"
+          ],
+          "additionalProperties": false
+        },
+        "receipt": {
+          "type": "object",
+          "properties": {
+            "requests": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "knownChargeMicros": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "inputTokens": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "outputTokens": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "uncertain": {
+              "type": "boolean"
+            },
+            "violation": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "requests",
+            "knownChargeMicros",
+            "inputTokens",
+            "outputTokens",
+            "uncertain",
+            "violation"
+          ],
+          "additionalProperties": false
+        },
+        "violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "INPUT_COUNT_MISMATCH",
+                  "OUTPUT_LIMIT_EXCEEDED",
+                  "ALLOCATION_EXCEEDED"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "code"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "generation",
+                  "input_count"
+                ]
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "prepared",
+                  "dispatched",
+                  "completed",
+                  "unknown",
+                  "cancelled",
+                  "denied"
+                ]
+              },
+              "cost_state": {
+                "type": "string",
+                "enum": [
+                  "known",
+                  "unknown",
+                  "manually_confirmed"
+                ]
+              },
+              "numerator": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]{0,39})$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cost_confirmation_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "channel",
+              "state",
+              "cost_state",
+              "numerator",
+              "cost_confirmation_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "receipt_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "scope",
+        "task",
+        "reservation",
+        "receipt",
+        "violations",
+        "facts",
+        "receipt_hash"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderPreview": {
+      "type": "object",
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "before": {
+          "oneOf": [
+            {
+              "$ref": "#/components/schemas/ProviderPolicyBefore"
+            },
+            {
+              "$ref": "#/components/schemas/ProviderRequestBefore"
+            },
+            {
+              "$ref": "#/components/schemas/ProviderTaskBefore"
+            }
+          ]
+        },
+        "command": {
+          "$ref": "#/components/schemas/ProviderCommand"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "independent_approval"
+          ]
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "creates_business_effect": {
+          "const": false
+        }
+      },
+      "required": [
+        "preview_id",
+        "payload_hash",
+        "policy_version_id",
+        "before",
+        "command",
+        "decision",
+        "expires_at",
+        "creates_business_effect"
+      ],
+      "additionalProperties": false
+    },
+    "AdminOperation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending_approval",
+            "queued",
+            "running",
+            "succeeded",
+            "partially_succeeded",
+            "failed",
+            "cancelled",
+            "reconciling"
+          ]
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "target_ids",
+        "actor_id",
+        "state",
+        "payload_hash",
+        "policy_version_id",
+        "version",
+        "created_at",
+        "result_ids"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

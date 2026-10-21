@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-21T06:08:52.062Z",
+  "status": "failed",
+  "scope": "Actual built Admin, real email/TOTP sessions, isolated native PostgreSQL and labelled simulated provider observations; no live service qualification or original end-to-end acceptance claim",
+  "checks": [
+    {
+      "name": "two independent actual email and TOTP browser sessions",
+      "status": "passed"
+    }
+  ],
+  "errors": [
+    "typed policy draft: locator.fill: Error: Malformed value\nCall log:\n\u001b[2m  - waiting for getByRole('dialog', { name: 'New policy draft', exact: true }).getByLabel('Contract effective time', { exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <input step=\"1\" required=\"\" name=\"effective_at\" type=\"datetime-local\" aria-label=\"Contract effective time\"/>\u001b[22m\n\u001b[2m    - fill(\"2026-01-01T00:00:00\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n"
+  ],
+  "samples": [
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "ProviderCurrentPolicy",
+      "route": "GET current policy before publication",
+      "response": {
+        "data_mode": "simulated",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "revision": 0,
+        "publication_id": null,
+        "limits": {
+          "id": "4bf195ba-8885-4419-834e-ce4c8acfb7f6",
+          "data_mode": "simulated",
+          "version": 2,
+          "global_slots": 100,
+          "tenant_slots": 100,
+          "actor_slots": 100,
+          "text_slots": 100,
+          "image_slots": 100,
+          "verification_slots": 100,
+          "global_rpm": 100000,
+          "tenant_rpm": 100000,
+          "actor_rpm": 100000,
+          "text_rpm": 100000,
+          "image_rpm": 100000,
+          "verification_rpm": 100000,
+          "preparation_seconds": 30,
+          "created_by": null,
+          "reason": "Isolated retained-counterexample test fixture",
+          "created_at": "2026-10-21T06:08:48.816Z"
+        },
+        "budget": {
+          "id": "e5266464-5d54-4301-bd3b-eb1302aded42",
+          "data_mode": "simulated",
+          "fingerprint": "9694800cbf131633feaa62134cf5ab64ac0985bc8116f4256b8f8803766d9c83",
+          "count_verified": true,
+          "count_price_micros": "0",
+          "verification_run_micros": "1000000",
+          "verification_daily_micros": "100000000",
+          "counting_daily_micros": "100000000",
+          "reason": "Server configured provider budget policy",
+          "created_at": "2026-10-21T06:08:48.595Z"
+        },
+        "periods": []
+      }
+    },
+    {
+      "schema": "ProviderPolicyList",
+      "route": "GET immutable policy directory",
+      "response": {
+        "items": [],
+        "next_cursor": null
+      }
+    }
+  ],
+  "screenshots": [],
+  "browser_closed": true,
+  "browser_runtime": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "36a30716f0994b377f1ce6b47cfe35399b9719e31d597fe0ea0d8f3b62aed532",
+    "version": "155.0.8059.80"
+  },
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "8a2a119af25bab80ad1f60a63225802e6f047672e441675c64c37429b5cf6111"
+}

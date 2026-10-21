@@ -1,0 +1,38 @@
+2026-10-21 13:37:35.006 CST [28184] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 13:37:35.016 CST [28184] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 13:37:35.017 CST [28184] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 13:37:35.257 CST [40344] LOG:  database system was shut down at 2026-10-21 13:34:59 CST
+
+2026-10-21 13:37:35.401 CST [28184] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 13:37:47.039 CST [17532] ERROR:  permission denied for table ai_provider_policy_drafts
+2026-10-21 13:37:47.039 CST [17532] STATEMENT:  UPDATE ai_provider_policy_drafts SET reason='changed' WHERE id=$1
+
+2026-10-21 13:37:51.059 CST [4272] ERROR:  Evidence does not bind the original unknown request
+2026-10-21 13:37:51.059 CST [4272] CONTEXT:  PL/pgSQL function guard_ai_provider_evidence() line 17 at RAISE
+2026-10-21 13:37:51.059 CST [4272] STATEMENT:  INSERT INTO ai_provider_evidence(provider_request_id,count_request_id,data_mode,canonical_document,document,actor_id,operation_id,reason)
+	          VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id,document_hash
+
+2026-10-21 13:37:54.947 CST [39640] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 13:37:55.855 CST [39640] LOG:  checkpoint complete: wrote 27 buffers (0.2%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.497 s, total=0.908 s; sync files=12, longest=0.104 s, average=0.042 s; distance=14858 kB, estimate=14858 kB; lsn=7/F0688AA8, redo lsn=7/F0688A50
+
+2026-10-21 13:37:56.957 CST [28184] LOG:  received fast shutdown request
+
+2026-10-21 13:37:57.007 CST [28184] LOG:  aborting any active transactions
+
+2026-10-21 13:37:57.016 CST [28184] LOG:  background worker "logical replication launcher" (PID 27296) exited with exit code 1
+
+2026-10-21 13:37:57.017 CST [39640] LOG:  shutting down
+
+2026-10-21 13:37:57.287 CST [39640] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 13:37:57.447 CST [39640] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.045 s, total=0.431 s; sync files=1, longest=0.045 s, average=0.045 s; distance=0 kB, estimate=13372 kB; lsn=7/F0688BC0, redo lsn=7/F0688BC0
+
+2026-10-21 13:37:57.577 CST [28184] LOG:  database system is shut down
+

@@ -1,0 +1,1614 @@
+{
+  "at": "2026-10-21T06:39:57.734Z",
+  "status": "passed",
+  "scope": "Actual built Admin, real email/TOTP sessions, isolated native PostgreSQL and labelled simulated provider observations; no live service qualification or original end-to-end acceptance claim",
+  "checks": [
+    {
+      "name": "two independent actual email and TOTP browser sessions",
+      "status": "passed"
+    },
+    {
+      "name": "typed policy fields retain a three-micro HKD counting fee and an immutable draft has no live effect",
+      "status": "passed"
+    },
+    {
+      "name": "actual policy preview and review reject self-approval and update the published head only after a second Admin approves",
+      "status": "passed"
+    },
+    {
+      "name": "request directory and detail retain an actual persisted unknown observation and a held shared capacity slot",
+      "status": "passed"
+    },
+    {
+      "name": "human source registration is inspectable and canonical download matches its SHA-256 without confirming fees or capacity",
+      "status": "passed"
+    },
+    {
+      "name": "independent cost confirmation retains the original unknown observation, keeps capacity held and creates no customer debit",
+      "status": "passed"
+    },
+    {
+      "name": "a separately previewed and approved termination fact releases shared capacity",
+      "status": "passed"
+    },
+    {
+      "name": "independent settlement derives exactly one original customer debit, excludes platform counting fees and retains a failed business result",
+      "status": "passed"
+    },
+    {
+      "name": "read-only UI and actual DTO omit all cost and evidence fields and the server rejects a forced mutation",
+      "status": "passed"
+    },
+    {
+      "name": "Chinese dark desktop and 390-pixel layouts fit their viewport and request dialogs close with Escape",
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "samples": [
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "ProviderCurrentPolicy",
+      "route": "GET current policy before publication",
+      "response": {
+        "data_mode": "simulated",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "revision": 0,
+        "publication_id": null,
+        "limits": {
+          "id": "fd4d3f6f-083f-471b-a5e9-f60fe74e355b",
+          "data_mode": "simulated",
+          "version": 2,
+          "global_slots": 100,
+          "tenant_slots": 100,
+          "actor_slots": 100,
+          "text_slots": 100,
+          "image_slots": 100,
+          "verification_slots": 100,
+          "global_rpm": 100000,
+          "tenant_rpm": 100000,
+          "actor_rpm": 100000,
+          "text_rpm": 100000,
+          "image_rpm": 100000,
+          "verification_rpm": 100000,
+          "preparation_seconds": 30,
+          "created_by": null,
+          "reason": "Isolated retained-counterexample test fixture",
+          "created_at": "2026-10-21T06:39:44.839Z"
+        },
+        "budget": {
+          "id": "d30f458f-c273-4d4c-ad07-8f880f884f14",
+          "data_mode": "simulated",
+          "fingerprint": "9694800cbf131633feaa62134cf5ab64ac0985bc8116f4256b8f8803766d9c83",
+          "count_verified": true,
+          "count_price_micros": "0",
+          "verification_run_micros": "1000000",
+          "verification_daily_micros": "100000000",
+          "counting_daily_micros": "100000000",
+          "reason": "Server configured provider budget policy",
+          "created_at": "2026-10-21T06:39:44.610Z"
+        },
+        "periods": []
+      }
+    },
+    {
+      "schema": "ProviderPolicyList",
+      "route": "GET immutable policy directory",
+      "response": {
+        "items": [],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/policies/drafts",
+      "response": {
+        "id": "022c3013-2c60-4c83-9594-42968b6ba538",
+        "action": "ai.policy.draft",
+        "target_ids": [
+          "12550850-a544-4ff7-8edf-d38068c6f159"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "succeeded",
+        "payload_hash": "4dd07ae891d9179b0f48d3aa80ff5c2abf3178420d51ca358aa3e01af343b64e",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 2,
+        "created_at": "2026-10-21T06:39:47.338Z",
+        "result_ids": [
+          "12550850-a544-4ff7-8edf-d38068c6f159"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderPreview",
+      "route": "POST /v1/admin/ai/previews",
+      "response": {
+        "preview_id": "c6df658d-08ac-48f3-9221-276d00c009ed",
+        "payload_hash": "38b7f4e6090314f917532f8247c137ca6bf93a4247a2b95cc37dcf8d5f513664",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "before": {
+          "scope": {
+            "data_mode": "simulated",
+            "tenant_id": null,
+            "project_id": null
+          },
+          "draft": {
+            "id": "12550850-a544-4ff7-8edf-d38068c6f159",
+            "data_mode": "simulated",
+            "version": 1,
+            "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+            "definition": {
+              "budget": {
+                "count_verified": true,
+                "count_price_micros": 3,
+                "counting_daily_micros": 10000000,
+                "verification_run_micros": 1000000,
+                "verification_daily_micros": 10000000
+              },
+              "limits": {
+                "text_rpm": 100000,
+                "actor_rpm": 100000,
+                "image_rpm": 100000,
+                "global_rpm": 100000,
+                "tenant_rpm": 100000,
+                "text_slots": 100,
+                "actor_slots": 100,
+                "image_slots": 100,
+                "global_slots": 100,
+                "tenant_slots": 100,
+                "verification_rpm": 100000,
+                "verification_slots": 100,
+                "preparation_seconds": 30
+              },
+              "count_contract": {
+                "terms": "Synthetic counting fee: HKD 0.000003 per call. No live service qualification.",
+                "service": "responses.input_tokens",
+                "reference": "Synthetic internal counting contract",
+                "fee_micros": 3,
+                "effective_at": "2025-12-31T16:00:00.000Z"
+              }
+            },
+            "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+            "operation_id": "022c3013-2c60-4c83-9594-42968b6ba538",
+            "reason": "Synthetic independent provider policy browser verification",
+            "created_at": "2026-10-21T06:39:47.360Z"
+          },
+          "current": {
+            "data_mode": "simulated",
+            "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+            "revision": 0,
+            "publication_id": null,
+            "limits": {
+              "id": "fd4d3f6f-083f-471b-a5e9-f60fe74e355b",
+              "data_mode": "simulated",
+              "version": 2,
+              "global_slots": 100,
+              "tenant_slots": 100,
+              "actor_slots": 100,
+              "text_slots": 100,
+              "image_slots": 100,
+              "verification_slots": 100,
+              "global_rpm": 100000,
+              "tenant_rpm": 100000,
+              "actor_rpm": 100000,
+              "text_rpm": 100000,
+              "image_rpm": 100000,
+              "verification_rpm": 100000,
+              "preparation_seconds": 30,
+              "created_by": null,
+              "reason": "Isolated retained-counterexample test fixture",
+              "created_at": "2026-10-21T06:39:44.839Z"
+            },
+            "budget": {
+              "id": "d30f458f-c273-4d4c-ad07-8f880f884f14",
+              "data_mode": "simulated",
+              "fingerprint": "9694800cbf131633feaa62134cf5ab64ac0985bc8116f4256b8f8803766d9c83",
+              "count_verified": true,
+              "count_price_micros": "0",
+              "verification_run_micros": "1000000",
+              "verification_daily_micros": "100000000",
+              "counting_daily_micros": "100000000",
+              "reason": "Server configured provider budget policy",
+              "created_at": "2026-10-21T06:39:44.610Z"
+            },
+            "periods": []
+          },
+          "definition": {
+            "limits": {
+              "global_slots": 100,
+              "tenant_slots": 100,
+              "actor_slots": 100,
+              "text_slots": 100,
+              "image_slots": 100,
+              "verification_slots": 100,
+              "global_rpm": 100000,
+              "tenant_rpm": 100000,
+              "actor_rpm": 100000,
+              "text_rpm": 100000,
+              "image_rpm": 100000,
+              "verification_rpm": 100000,
+              "preparation_seconds": 30
+            },
+            "budget": {
+              "count_verified": true,
+              "count_price_micros": 3,
+              "verification_run_micros": 1000000,
+              "verification_daily_micros": 10000000,
+              "counting_daily_micros": 10000000
+            },
+            "count_contract": {
+              "reference": "Synthetic internal counting contract",
+              "terms": "Synthetic counting fee: HKD 0.000003 per call. No live service qualification.",
+              "service": "responses.input_tokens",
+              "fee_micros": 3,
+              "effective_at": "2025-12-31T16:00:00.000Z"
+            }
+          }
+        },
+        "command": {
+          "action": "ai.policy.publish",
+          "draft_id": "12550850-a544-4ff7-8edf-d38068c6f159",
+          "expected_revision": 0,
+          "reason": "Synthetic independent provider policy browser verification"
+        },
+        "decision": "independent_approval",
+        "expires_at": "2026-10-21T06:44:47.670Z",
+        "creates_business_effect": false
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/operations",
+      "response": {
+        "id": "5c15d990-6e52-4f0a-b3b7-65cf5bcf9f22",
+        "action": "ai.policy.publish",
+        "target_ids": [
+          "12550850-a544-4ff7-8edf-d38068c6f159"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "pending_approval",
+        "payload_hash": "38b7f4e6090314f917532f8247c137ca6bf93a4247a2b95cc37dcf8d5f513664",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 1,
+        "created_at": "2026-10-21T06:39:47.788Z",
+        "result_ids": []
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST independent approval",
+      "response": {
+        "id": "5c15d990-6e52-4f0a-b3b7-65cf5bcf9f22",
+        "action": "ai.policy.publish",
+        "target_ids": [
+          "12550850-a544-4ff7-8edf-d38068c6f159"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "succeeded",
+        "payload_hash": "38b7f4e6090314f917532f8247c137ca6bf93a4247a2b95cc37dcf8d5f513664",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 2,
+        "created_at": "2026-10-21T06:39:47.788Z",
+        "result_ids": [
+          "fced9836-da3a-4193-83c4-4204978bd4d9",
+          "12550850-a544-4ff7-8edf-d38068c6f159",
+          "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+          "051bf3c7-b87c-45af-b998-cbbca5d30c32"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderCurrentPolicy",
+      "route": "GET independently published policy",
+      "response": {
+        "data_mode": "simulated",
+        "gateway_fingerprint": "118706d9f6c3d7de771cf382402aecb2f71b5d6eb3bc1cc60da1a298de3488f7",
+        "revision": 1,
+        "publication_id": "fced9836-da3a-4193-83c4-4204978bd4d9",
+        "limits": {
+          "id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+          "data_mode": "simulated",
+          "version": 3,
+          "global_slots": 100,
+          "tenant_slots": 100,
+          "actor_slots": 100,
+          "text_slots": 100,
+          "image_slots": 100,
+          "verification_slots": 100,
+          "global_rpm": 100000,
+          "tenant_rpm": 100000,
+          "actor_rpm": 100000,
+          "text_rpm": 100000,
+          "image_rpm": 100000,
+          "verification_rpm": 100000,
+          "preparation_seconds": 30,
+          "created_by": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+          "reason": "Synthetic independent provider policy browser verification",
+          "created_at": "2026-10-21T06:39:48.734Z"
+        },
+        "budget": {
+          "id": "051bf3c7-b87c-45af-b998-cbbca5d30c32",
+          "data_mode": "simulated",
+          "fingerprint": "4d06fd75d3de5b839003957b54eff83dc15662f29d1dd70e564edf91aa5492b9",
+          "count_verified": true,
+          "count_price_micros": "3",
+          "verification_run_micros": "1000000",
+          "verification_daily_micros": "10000000",
+          "counting_daily_micros": "10000000",
+          "reason": "Synthetic independent provider policy browser verification",
+          "created_at": "2026-10-21T06:39:48.734Z"
+        },
+        "periods": []
+      }
+    },
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [
+          {
+            "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+            "channel": "generation",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses",
+            "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+            "model_alias": "copypaste-demo",
+            "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+            "request_bytes": 20,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "unknown",
+            "prepared_until": "2026-10-21T06:40:19.244Z",
+            "created_at": "2026-10-21T06:39:49.246Z",
+            "dispatched_at": "2026-10-21T06:39:49.306Z",
+            "finished_at": "2026-10-21T06:39:49.318Z",
+            "released_at": null,
+            "outcome_code": "SIMULATED_RESPONSE_LOST",
+            "http_status": null,
+            "capacity_held": true,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "unknown",
+              "source": "unknown",
+              "rate_snapshot": [
+                1000000,
+                1000000
+              ],
+              "numerator": null,
+              "amount_micros": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "image_units": null,
+              "counted_input_tokens": null,
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          },
+          {
+            "id": "3a109052-6adf-4fcf-891b-1bdaedb3ae7a",
+            "channel": "input_count",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses.input_tokens",
+            "operation_id": "f04ecc38-9436-4dfb-99aa-7ecb17a758cc",
+            "model_alias": "copypaste-demo",
+            "request_hash": "00cdefc18610839a4cf3c3d578a389f9af7add711baef9f40954df036484bc5e",
+            "request_bytes": 10,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "completed",
+            "prepared_until": "2026-10-21T06:40:19.110Z",
+            "created_at": "2026-10-21T06:39:49.133Z",
+            "dispatched_at": "2026-10-21T06:39:49.179Z",
+            "finished_at": "2026-10-21T06:39:49.199Z",
+            "released_at": "2026-10-21T06:39:49.199Z",
+            "outcome_code": null,
+            "http_status": 200,
+            "capacity_held": false,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "known",
+              "source": "gateway_observation",
+              "rate_snapshot": [
+                3
+              ],
+              "numerator": "3000000",
+              "amount_micros": "3",
+              "input_tokens": "0",
+              "output_tokens": "0",
+              "image_units": 0,
+              "counted_input_tokens": "100",
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "ProviderRequestDetail",
+      "route": "GET /v1/admin/ai/requests/generation/a50fb94f-e131-4fe8-aa55-8e921c45b202",
+      "response": {
+        "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+        "channel": "generation",
+        "data_mode": "simulated",
+        "subject_kind": "task",
+        "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+        "validation_id": null,
+        "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+        "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+        "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+        "attempt": 1,
+        "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+        "release_id": null,
+        "request_class": "text",
+        "operation": "responses",
+        "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+        "model_alias": "copypaste-demo",
+        "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+        "request_bytes": 20,
+        "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "state": "unknown",
+        "prepared_until": "2026-10-21T06:40:19.244Z",
+        "created_at": "2026-10-21T06:39:49.246Z",
+        "dispatched_at": "2026-10-21T06:39:49.306Z",
+        "finished_at": "2026-10-21T06:39:49.318Z",
+        "released_at": null,
+        "outcome_code": "SIMULATED_RESPONSE_LOST",
+        "http_status": null,
+        "capacity_held": true,
+        "termination_confirmation_id": null,
+        "cost": {
+          "state": "unknown",
+          "source": "unknown",
+          "rate_snapshot": [
+            1000000,
+            1000000
+          ],
+          "numerator": null,
+          "amount_micros": null,
+          "input_tokens": null,
+          "output_tokens": null,
+          "image_units": null,
+          "counted_input_tokens": null,
+          "confirmation_id": null,
+          "evidence_id": null
+        },
+        "evidence": []
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/requests/generation/a50fb94f-e131-4fe8-aa55-8e921c45b202/evidence",
+      "response": {
+        "id": "42466cf2-f34c-4b75-8e5a-9a99af8b9f32",
+        "action": "ai.evidence.write",
+        "target_ids": [
+          "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "succeeded",
+        "payload_hash": "7f4e9cd6be5d753f8989585094fc76165ba176c56a9b34e14c66ef8e40ab83e7",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 2,
+        "created_at": "2026-10-21T06:39:50.567Z",
+        "result_ids": [
+          "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderEvidenceRecord",
+      "route": "GET immutable source evidence",
+      "response": {
+        "id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+        "document": {
+          "usage": {
+            "kind": "text",
+            "input_tokens": 100,
+            "output_tokens": 11
+          },
+          "outcome": "completed",
+          "currency": "HKD",
+          "data_mode": "simulated",
+          "terminated": true,
+          "observed_at": "2026-10-21T06:39:50.000Z",
+          "source_note": "Human-entered simulated provider record for independent browser review; no authenticated callback.",
+          "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+          "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+          "billed_micros": "111",
+          "schema_version": 1,
+          "source_reference": "Synthetic retained usage statement",
+          "provider_reference": "Synthetic invoice reference"
+        },
+        "canonical_document": "{\"billed_micros\":\"111\",\"currency\":\"HKD\",\"data_mode\":\"simulated\",\"observed_at\":\"2026-10-21T06:39:50.000Z\",\"operation_id\":\"a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7\",\"outcome\":\"completed\",\"provider_reference\":\"Synthetic invoice reference\",\"request_hash\":\"d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81\",\"schema_version\":1,\"source_note\":\"Human-entered simulated provider record for independent browser review; no authenticated callback.\",\"source_reference\":\"Synthetic retained usage statement\",\"terminated\":true,\"usage\":{\"input_tokens\":100,\"kind\":\"text\",\"output_tokens\":11}}",
+        "document_hash": "6cf5fb1f74a2c2608ff5ede29865e6f757b912635a0f5aa3dcef20b3edc4fd22",
+        "source": "human_submission",
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "reason": "Retain synthetic source facts for independent reconciliation",
+        "created_at": "2026-10-21T06:39:50.584Z"
+      }
+    },
+    {
+      "schema": "ProviderPreview",
+      "route": "POST /v1/admin/ai/previews",
+      "response": {
+        "preview_id": "efa9ee35-7d9d-4f64-990d-b21d69c1e45c",
+        "payload_hash": "50042d44b3347b940ab83ca1c1b9b561089ffe1c30c98c275e68a5ade947867c",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "before": {
+          "scope": {
+            "data_mode": "simulated",
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71"
+          },
+          "request": {
+            "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+            "channel": "generation",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses",
+            "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+            "model_alias": "copypaste-demo",
+            "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+            "request_bytes": 20,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "unknown",
+            "prepared_until": "2026-10-21T06:40:19.244Z",
+            "created_at": "2026-10-21T06:39:49.246Z",
+            "dispatched_at": "2026-10-21T06:39:49.306Z",
+            "finished_at": "2026-10-21T06:39:49.318Z",
+            "released_at": null,
+            "outcome_code": "SIMULATED_RESPONSE_LOST",
+            "http_status": null,
+            "capacity_held": true,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "unknown",
+              "source": "unknown",
+              "rate_snapshot": [
+                1000000,
+                1000000
+              ],
+              "numerator": null,
+              "amount_micros": null,
+              "input_tokens": null,
+              "output_tokens": null,
+              "image_units": null,
+              "counted_input_tokens": null,
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          },
+          "evidence": {
+            "id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+            "document_hash": "6cf5fb1f74a2c2608ff5ede29865e6f757b912635a0f5aa3dcef20b3edc4fd22",
+            "document": {
+              "usage": {
+                "kind": "text",
+                "input_tokens": 100,
+                "output_tokens": 11
+              },
+              "outcome": "completed",
+              "currency": "HKD",
+              "data_mode": "simulated",
+              "terminated": true,
+              "observed_at": "2026-10-21T06:39:50.000Z",
+              "source_note": "Human-entered simulated provider record for independent browser review; no authenticated callback.",
+              "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+              "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+              "billed_micros": "111",
+              "schema_version": 1,
+              "source_reference": "Synthetic retained usage statement",
+              "provider_reference": "Synthetic invoice reference"
+            },
+            "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+            "reason": "Retain synthetic source facts for independent reconciliation"
+          },
+          "cost": {
+            "numerator": "111000000",
+            "amount_micros": "111",
+            "input_tokens": 100,
+            "output_tokens": 11,
+            "image_units": 0,
+            "counted_input_tokens": null
+          }
+        },
+        "command": {
+          "action": "ai.cost.reconcile",
+          "channel": "generation",
+          "request_id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+          "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+          "reason": "Retain synthetic source facts for independent reconciliation"
+        },
+        "decision": "independent_approval",
+        "expires_at": "2026-10-21T06:44:51.351Z",
+        "creates_business_effect": false
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/operations",
+      "response": {
+        "id": "60f5d675-927b-4634-816c-35f2a11837e7",
+        "action": "ai.cost.reconcile",
+        "target_ids": [
+          "a50fb94f-e131-4fe8-aa55-8e921c45b202"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "pending_approval",
+        "payload_hash": "50042d44b3347b940ab83ca1c1b9b561089ffe1c30c98c275e68a5ade947867c",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 1,
+        "created_at": "2026-10-21T06:39:51.446Z",
+        "result_ids": []
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST independent approval",
+      "response": {
+        "id": "60f5d675-927b-4634-816c-35f2a11837e7",
+        "action": "ai.cost.reconcile",
+        "target_ids": [
+          "a50fb94f-e131-4fe8-aa55-8e921c45b202"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "succeeded",
+        "payload_hash": "50042d44b3347b940ab83ca1c1b9b561089ffe1c30c98c275e68a5ade947867c",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 2,
+        "created_at": "2026-10-21T06:39:51.446Z",
+        "result_ids": [
+          "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+          "e763971f-61f7-4534-b400-744c8cc62322",
+          "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderRequestDetail",
+      "route": "GET cost-confirmed original request",
+      "response": {
+        "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+        "channel": "generation",
+        "data_mode": "simulated",
+        "subject_kind": "task",
+        "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+        "validation_id": null,
+        "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+        "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+        "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+        "attempt": 1,
+        "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+        "release_id": null,
+        "request_class": "text",
+        "operation": "responses",
+        "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+        "model_alias": "copypaste-demo",
+        "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+        "request_bytes": 20,
+        "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "state": "unknown",
+        "prepared_until": "2026-10-21T06:40:19.244Z",
+        "created_at": "2026-10-21T06:39:49.246Z",
+        "dispatched_at": "2026-10-21T06:39:49.306Z",
+        "finished_at": "2026-10-21T06:39:49.318Z",
+        "released_at": null,
+        "outcome_code": "SIMULATED_RESPONSE_LOST",
+        "http_status": null,
+        "capacity_held": true,
+        "termination_confirmation_id": null,
+        "cost": {
+          "state": "manually_confirmed",
+          "source": "human_evidence",
+          "rate_snapshot": [
+            1000000,
+            1000000
+          ],
+          "numerator": "111000000",
+          "amount_micros": "111",
+          "input_tokens": "100",
+          "output_tokens": "11",
+          "image_units": 0,
+          "counted_input_tokens": null,
+          "confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322",
+          "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+        },
+        "evidence": [
+          {
+            "id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+            "document_hash": "6cf5fb1f74a2c2608ff5ede29865e6f757b912635a0f5aa3dcef20b3edc4fd22",
+            "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+            "reason": "Retain synthetic source facts for independent reconciliation",
+            "created_at": "2026-10-21T06:39:50.584Z"
+          }
+        ]
+      }
+    },
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [
+          {
+            "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+            "channel": "generation",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses",
+            "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+            "model_alias": "copypaste-demo",
+            "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+            "request_bytes": 20,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "unknown",
+            "prepared_until": "2026-10-21T06:40:19.244Z",
+            "created_at": "2026-10-21T06:39:49.246Z",
+            "dispatched_at": "2026-10-21T06:39:49.306Z",
+            "finished_at": "2026-10-21T06:39:49.318Z",
+            "released_at": null,
+            "outcome_code": "SIMULATED_RESPONSE_LOST",
+            "http_status": null,
+            "capacity_held": true,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "manually_confirmed",
+              "source": "human_evidence",
+              "rate_snapshot": [
+                1000000,
+                1000000
+              ],
+              "numerator": "111000000",
+              "amount_micros": "111",
+              "input_tokens": "100",
+              "output_tokens": "11",
+              "image_units": 0,
+              "counted_input_tokens": null,
+              "confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322",
+              "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+            }
+          },
+          {
+            "id": "3a109052-6adf-4fcf-891b-1bdaedb3ae7a",
+            "channel": "input_count",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses.input_tokens",
+            "operation_id": "f04ecc38-9436-4dfb-99aa-7ecb17a758cc",
+            "model_alias": "copypaste-demo",
+            "request_hash": "00cdefc18610839a4cf3c3d578a389f9af7add711baef9f40954df036484bc5e",
+            "request_bytes": 10,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "completed",
+            "prepared_until": "2026-10-21T06:40:19.110Z",
+            "created_at": "2026-10-21T06:39:49.133Z",
+            "dispatched_at": "2026-10-21T06:39:49.179Z",
+            "finished_at": "2026-10-21T06:39:49.199Z",
+            "released_at": "2026-10-21T06:39:49.199Z",
+            "outcome_code": null,
+            "http_status": 200,
+            "capacity_held": false,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "known",
+              "source": "gateway_observation",
+              "rate_snapshot": [
+                3
+              ],
+              "numerator": "3000000",
+              "amount_micros": "3",
+              "input_tokens": "0",
+              "output_tokens": "0",
+              "image_units": 0,
+              "counted_input_tokens": "100",
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "ProviderRequestDetail",
+      "route": "GET /v1/admin/ai/requests/generation/a50fb94f-e131-4fe8-aa55-8e921c45b202",
+      "response": {
+        "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+        "channel": "generation",
+        "data_mode": "simulated",
+        "subject_kind": "task",
+        "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+        "validation_id": null,
+        "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+        "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+        "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+        "attempt": 1,
+        "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+        "release_id": null,
+        "request_class": "text",
+        "operation": "responses",
+        "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+        "model_alias": "copypaste-demo",
+        "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+        "request_bytes": 20,
+        "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "state": "unknown",
+        "prepared_until": "2026-10-21T06:40:19.244Z",
+        "created_at": "2026-10-21T06:39:49.246Z",
+        "dispatched_at": "2026-10-21T06:39:49.306Z",
+        "finished_at": "2026-10-21T06:39:49.318Z",
+        "released_at": null,
+        "outcome_code": "SIMULATED_RESPONSE_LOST",
+        "http_status": null,
+        "capacity_held": true,
+        "termination_confirmation_id": null,
+        "cost": {
+          "state": "manually_confirmed",
+          "source": "human_evidence",
+          "rate_snapshot": [
+            1000000,
+            1000000
+          ],
+          "numerator": "111000000",
+          "amount_micros": "111",
+          "input_tokens": "100",
+          "output_tokens": "11",
+          "image_units": 0,
+          "counted_input_tokens": null,
+          "confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322",
+          "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+        },
+        "evidence": [
+          {
+            "id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+            "document_hash": "6cf5fb1f74a2c2608ff5ede29865e6f757b912635a0f5aa3dcef20b3edc4fd22",
+            "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+            "reason": "Retain synthetic source facts for independent reconciliation",
+            "created_at": "2026-10-21T06:39:50.584Z"
+          }
+        ]
+      }
+    },
+    {
+      "schema": "ProviderPreview",
+      "route": "POST /v1/admin/ai/previews",
+      "response": {
+        "preview_id": "f64d3d47-14ec-47f1-a089-0fd4ce0a0e48",
+        "payload_hash": "b3097f27bb22bcf95b18171bdc54948bdded8c3d1b90817bb32253f259b6022c",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "before": {
+          "scope": {
+            "data_mode": "simulated",
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71"
+          },
+          "request": {
+            "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+            "channel": "generation",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses",
+            "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+            "model_alias": "copypaste-demo",
+            "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+            "request_bytes": 20,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "unknown",
+            "prepared_until": "2026-10-21T06:40:19.244Z",
+            "created_at": "2026-10-21T06:39:49.246Z",
+            "dispatched_at": "2026-10-21T06:39:49.306Z",
+            "finished_at": "2026-10-21T06:39:49.318Z",
+            "released_at": null,
+            "outcome_code": "SIMULATED_RESPONSE_LOST",
+            "http_status": null,
+            "capacity_held": true,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "manually_confirmed",
+              "source": "human_evidence",
+              "rate_snapshot": [
+                1000000,
+                1000000
+              ],
+              "numerator": "111000000",
+              "amount_micros": "111",
+              "input_tokens": "100",
+              "output_tokens": "11",
+              "image_units": 0,
+              "counted_input_tokens": null,
+              "confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322",
+              "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+            }
+          },
+          "evidence": {
+            "id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+            "document_hash": "6cf5fb1f74a2c2608ff5ede29865e6f757b912635a0f5aa3dcef20b3edc4fd22",
+            "document": {
+              "usage": {
+                "kind": "text",
+                "input_tokens": 100,
+                "output_tokens": 11
+              },
+              "outcome": "completed",
+              "currency": "HKD",
+              "data_mode": "simulated",
+              "terminated": true,
+              "observed_at": "2026-10-21T06:39:50.000Z",
+              "source_note": "Human-entered simulated provider record for independent browser review; no authenticated callback.",
+              "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+              "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+              "billed_micros": "111",
+              "schema_version": 1,
+              "source_reference": "Synthetic retained usage statement",
+              "provider_reference": "Synthetic invoice reference"
+            },
+            "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+            "reason": "Retain synthetic source facts for independent reconciliation"
+          },
+          "cost": null
+        },
+        "command": {
+          "action": "ai.capacity.release",
+          "channel": "generation",
+          "request_id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+          "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+          "reason": "Retain synthetic source facts for independent reconciliation"
+        },
+        "decision": "independent_approval",
+        "expires_at": "2026-10-21T06:44:52.469Z",
+        "creates_business_effect": false
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/operations",
+      "response": {
+        "id": "dbce3fd3-a90a-4264-a5bc-ca2ed17954a2",
+        "action": "ai.capacity.release",
+        "target_ids": [
+          "a50fb94f-e131-4fe8-aa55-8e921c45b202"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "pending_approval",
+        "payload_hash": "b3097f27bb22bcf95b18171bdc54948bdded8c3d1b90817bb32253f259b6022c",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 1,
+        "created_at": "2026-10-21T06:39:52.561Z",
+        "result_ids": []
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST independent approval",
+      "response": {
+        "id": "dbce3fd3-a90a-4264-a5bc-ca2ed17954a2",
+        "action": "ai.capacity.release",
+        "target_ids": [
+          "a50fb94f-e131-4fe8-aa55-8e921c45b202"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "succeeded",
+        "payload_hash": "b3097f27bb22bcf95b18171bdc54948bdded8c3d1b90817bb32253f259b6022c",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 2,
+        "created_at": "2026-10-21T06:39:52.561Z",
+        "result_ids": [
+          "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+          "3cad9912-914f-41f0-b910-bccdf1807765",
+          "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [
+          {
+            "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+            "channel": "generation",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses",
+            "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+            "model_alias": "copypaste-demo",
+            "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+            "request_bytes": 20,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "unknown",
+            "prepared_until": "2026-10-21T06:40:19.244Z",
+            "created_at": "2026-10-21T06:39:49.246Z",
+            "dispatched_at": "2026-10-21T06:39:49.306Z",
+            "finished_at": "2026-10-21T06:39:49.318Z",
+            "released_at": null,
+            "outcome_code": "SIMULATED_RESPONSE_LOST",
+            "http_status": null,
+            "capacity_held": false,
+            "termination_confirmation_id": "3cad9912-914f-41f0-b910-bccdf1807765",
+            "cost": {
+              "state": "manually_confirmed",
+              "source": "human_evidence",
+              "rate_snapshot": [
+                1000000,
+                1000000
+              ],
+              "numerator": "111000000",
+              "amount_micros": "111",
+              "input_tokens": "100",
+              "output_tokens": "11",
+              "image_units": 0,
+              "counted_input_tokens": null,
+              "confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322",
+              "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+            }
+          },
+          {
+            "id": "3a109052-6adf-4fcf-891b-1bdaedb3ae7a",
+            "channel": "input_count",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses.input_tokens",
+            "operation_id": "f04ecc38-9436-4dfb-99aa-7ecb17a758cc",
+            "model_alias": "copypaste-demo",
+            "request_hash": "00cdefc18610839a4cf3c3d578a389f9af7add711baef9f40954df036484bc5e",
+            "request_bytes": 10,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "completed",
+            "prepared_until": "2026-10-21T06:40:19.110Z",
+            "created_at": "2026-10-21T06:39:49.133Z",
+            "dispatched_at": "2026-10-21T06:39:49.179Z",
+            "finished_at": "2026-10-21T06:39:49.199Z",
+            "released_at": "2026-10-21T06:39:49.199Z",
+            "outcome_code": null,
+            "http_status": 200,
+            "capacity_held": false,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "known",
+              "source": "gateway_observation",
+              "rate_snapshot": [
+                3
+              ],
+              "numerator": "3000000",
+              "amount_micros": "3",
+              "input_tokens": "0",
+              "output_tokens": "0",
+              "image_units": 0,
+              "counted_input_tokens": "100",
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "schema": "ProviderRequestDetail",
+      "route": "GET /v1/admin/ai/requests/generation/a50fb94f-e131-4fe8-aa55-8e921c45b202",
+      "response": {
+        "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+        "channel": "generation",
+        "data_mode": "simulated",
+        "subject_kind": "task",
+        "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+        "validation_id": null,
+        "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+        "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+        "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+        "attempt": 1,
+        "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+        "release_id": null,
+        "request_class": "text",
+        "operation": "responses",
+        "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+        "model_alias": "copypaste-demo",
+        "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+        "request_bytes": 20,
+        "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "state": "unknown",
+        "prepared_until": "2026-10-21T06:40:19.244Z",
+        "created_at": "2026-10-21T06:39:49.246Z",
+        "dispatched_at": "2026-10-21T06:39:49.306Z",
+        "finished_at": "2026-10-21T06:39:49.318Z",
+        "released_at": null,
+        "outcome_code": "SIMULATED_RESPONSE_LOST",
+        "http_status": null,
+        "capacity_held": false,
+        "termination_confirmation_id": "3cad9912-914f-41f0-b910-bccdf1807765",
+        "cost": {
+          "state": "manually_confirmed",
+          "source": "human_evidence",
+          "rate_snapshot": [
+            1000000,
+            1000000
+          ],
+          "numerator": "111000000",
+          "amount_micros": "111",
+          "input_tokens": "100",
+          "output_tokens": "11",
+          "image_units": 0,
+          "counted_input_tokens": null,
+          "confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322",
+          "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+        },
+        "evidence": [
+          {
+            "id": "4aad7f77-6141-40f9-96a2-f432dd9cded0",
+            "document_hash": "6cf5fb1f74a2c2608ff5ede29865e6f757b912635a0f5aa3dcef20b3edc4fd22",
+            "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+            "reason": "Retain synthetic source facts for independent reconciliation",
+            "created_at": "2026-10-21T06:39:50.584Z"
+          }
+        ]
+      }
+    },
+    {
+      "schema": "ProviderTaskSettlementFacts",
+      "route": "GET original task settlement facts",
+      "response": {
+        "task": {
+          "id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+          "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+          "data_mode": "simulated",
+          "status": "reconciling",
+          "version": 1,
+          "charged_micros": "0",
+          "budget_micros": "1000000"
+        },
+        "reservation": {
+          "status": "reconciling",
+          "amount_micros": "1000000"
+        },
+        "violations": []
+      }
+    },
+    {
+      "schema": "ProviderPreview",
+      "route": "POST /v1/admin/ai/previews",
+      "response": {
+        "preview_id": "5b243fdd-9e45-4f80-915d-766d5a046c37",
+        "payload_hash": "f24906ff9b1670e14adf09fac5dda7c07eb7121c38006df9092aa1c8b2f7042e",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "before": {
+          "scope": {
+            "data_mode": "simulated",
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": null
+          },
+          "task": {
+            "id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "version": 1,
+            "status": "reconciling",
+            "created_by": "5a5c755b-dc29-401a-8729-ed38f8877ae6"
+          },
+          "reservation": {
+            "id": null,
+            "status": "reconciling",
+            "amount_micros": "1000000"
+          },
+          "receipt": {
+            "requests": 1,
+            "knownChargeMicros": 111,
+            "inputTokens": 100,
+            "outputTokens": 11,
+            "uncertain": false,
+            "violation": false
+          },
+          "violations": [],
+          "facts": [
+            {
+              "id": "3a109052-6adf-4fcf-891b-1bdaedb3ae7a",
+              "channel": "input_count",
+              "state": "completed",
+              "cost_state": "known",
+              "numerator": "3000000",
+              "cost_confirmation_id": null
+            },
+            {
+              "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+              "channel": "generation",
+              "state": "unknown",
+              "cost_state": "manually_confirmed",
+              "numerator": "111000000",
+              "cost_confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322"
+            }
+          ],
+          "receipt_hash": "9d0fe78ffad2226e1817f819d35459cbf20ea03bc8dc72b531a39cd44bd613f8"
+        },
+        "command": {
+          "action": "ai.tasks.settle",
+          "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+          "expected_task_version": 1,
+          "acknowledge_violation_ids": [],
+          "reason": "Settle confirmed original usage without retrying the business task"
+        },
+        "decision": "independent_approval",
+        "expires_at": "2026-10-21T06:44:53.810Z",
+        "creates_business_effect": false
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/ai/operations",
+      "response": {
+        "id": "7455326d-33dc-4f87-a290-5b286799b5e1",
+        "action": "ai.tasks.settle",
+        "target_ids": [
+          "0613af31-2b90-43e2-9785-5a7560bfde1b"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "pending_approval",
+        "payload_hash": "f24906ff9b1670e14adf09fac5dda7c07eb7121c38006df9092aa1c8b2f7042e",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 1,
+        "created_at": "2026-10-21T06:39:53.938Z",
+        "result_ids": []
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST independent approval",
+      "response": {
+        "id": "7455326d-33dc-4f87-a290-5b286799b5e1",
+        "action": "ai.tasks.settle",
+        "target_ids": [
+          "0613af31-2b90-43e2-9785-5a7560bfde1b"
+        ],
+        "actor_id": "c716ffb6-ed61-42fc-9d52-a15bb7d3a2e7",
+        "state": "succeeded",
+        "payload_hash": "f24906ff9b1670e14adf09fac5dda7c07eb7121c38006df9092aa1c8b2f7042e",
+        "policy_version_id": "8f99c314-e6e9-49d8-ad8f-4515c7cb57e4",
+        "version": 2,
+        "created_at": "2026-10-21T06:39:53.938Z",
+        "result_ids": [
+          "0613af31-2b90-43e2-9785-5a7560bfde1b",
+          "165635ff-19e8-4b71-8aad-ccf58331d66f",
+          "fd380466-96e2-4a11-84cd-30a1ae078bf3"
+        ]
+      }
+    },
+    {
+      "schema": "ProviderRequestDetail",
+      "route": "GET redacted request detail",
+      "response": {
+        "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+        "channel": "generation",
+        "data_mode": "simulated",
+        "subject_kind": "task",
+        "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+        "validation_id": null,
+        "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+        "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+        "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+        "attempt": 1,
+        "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+        "release_id": null,
+        "request_class": "text",
+        "operation": "responses",
+        "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+        "model_alias": "copypaste-demo",
+        "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+        "request_bytes": 20,
+        "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+        "state": "unknown",
+        "prepared_until": "2026-10-21T06:40:19.244Z",
+        "created_at": "2026-10-21T06:39:49.246Z",
+        "dispatched_at": "2026-10-21T06:39:49.306Z",
+        "finished_at": "2026-10-21T06:39:49.318Z",
+        "released_at": null,
+        "outcome_code": "SIMULATED_RESPONSE_LOST",
+        "http_status": null,
+        "capacity_held": false,
+        "termination_confirmation_id": "3cad9912-914f-41f0-b910-bccdf1807765"
+      }
+    },
+    {
+      "schema": "ProviderRequestList",
+      "route": "GET /v1/admin/ai/requests",
+      "response": {
+        "items": [
+          {
+            "id": "a50fb94f-e131-4fe8-aa55-8e921c45b202",
+            "channel": "generation",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses",
+            "operation_id": "a5ff4879-cbd0-4f43-b7f8-a12a9f7172f7",
+            "model_alias": "copypaste-demo",
+            "request_hash": "d39e143ec452bb1c4af787d4c5f99a229f370ebedfaeb442c9a9f27dc9e4cc81",
+            "request_bytes": 20,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "unknown",
+            "prepared_until": "2026-10-21T06:40:19.244Z",
+            "created_at": "2026-10-21T06:39:49.246Z",
+            "dispatched_at": "2026-10-21T06:39:49.306Z",
+            "finished_at": "2026-10-21T06:39:49.318Z",
+            "released_at": null,
+            "outcome_code": "SIMULATED_RESPONSE_LOST",
+            "http_status": null,
+            "capacity_held": false,
+            "termination_confirmation_id": "3cad9912-914f-41f0-b910-bccdf1807765",
+            "cost": {
+              "state": "manually_confirmed",
+              "source": "human_evidence",
+              "rate_snapshot": [
+                1000000,
+                1000000
+              ],
+              "numerator": "111000000",
+              "amount_micros": "111",
+              "input_tokens": "100",
+              "output_tokens": "11",
+              "image_units": 0,
+              "counted_input_tokens": null,
+              "confirmation_id": "e763971f-61f7-4534-b400-744c8cc62322",
+              "evidence_id": "4aad7f77-6141-40f9-96a2-f432dd9cded0"
+            }
+          },
+          {
+            "id": "3a109052-6adf-4fcf-891b-1bdaedb3ae7a",
+            "channel": "input_count",
+            "data_mode": "simulated",
+            "subject_kind": "task",
+            "task_id": "0613af31-2b90-43e2-9785-5a7560bfde1b",
+            "validation_id": null,
+            "tenant_id": "f7dc6ac8-3a52-4618-bd4b-b1a4ee7ab69b",
+            "project_id": "e6264495-67e3-44d7-b420-7524573b1d71",
+            "actor_id": "5a5c755b-dc29-401a-8729-ed38f8877ae6",
+            "attempt": 1,
+            "capability_version_id": "c24f2644-d279-48e3-b324-2701259d25da",
+            "release_id": null,
+            "request_class": "text",
+            "operation": "responses.input_tokens",
+            "operation_id": "f04ecc38-9436-4dfb-99aa-7ecb17a758cc",
+            "model_alias": "copypaste-demo",
+            "request_hash": "00cdefc18610839a4cf3c3d578a389f9af7add711baef9f40954df036484bc5e",
+            "request_bytes": 10,
+            "policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "dispatch_policy_version_id": "1a19a8ac-e5b1-44a5-9659-880da9718bf2",
+            "state": "completed",
+            "prepared_until": "2026-10-21T06:40:19.110Z",
+            "created_at": "2026-10-21T06:39:49.133Z",
+            "dispatched_at": "2026-10-21T06:39:49.179Z",
+            "finished_at": "2026-10-21T06:39:49.199Z",
+            "released_at": "2026-10-21T06:39:49.199Z",
+            "outcome_code": null,
+            "http_status": 200,
+            "capacity_held": false,
+            "termination_confirmation_id": null,
+            "cost": {
+              "state": "known",
+              "source": "gateway_observation",
+              "rate_snapshot": [
+                3
+              ],
+              "numerator": "3000000",
+              "amount_micros": "3",
+              "input_tokens": "0",
+              "output_tokens": "0",
+              "image_units": 0,
+              "counted_input_tokens": "100",
+              "confirmation_id": null,
+              "evidence_id": null
+            }
+          }
+        ],
+        "next_cursor": null
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-policy-draft-en.png",
+      "sha256": "cddba1f466ea030d1b48a3c97d9541fcd772619a687b8d1632301882288935eb",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-independent-review-1-en.png",
+      "sha256": "60173b6d863e9980decdf3834a50335fa67797c914d46b5c3add21d32cd6ba5a",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-unknown-request-en.png",
+      "sha256": "98ba730d509ae1b30d0c1c7bb9cf99027a85243c2903316c877bf2ffeb426cda",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-source-evidence-en.png",
+      "sha256": "4d5f8fc049170947f02a2790566bd27adfdb08f143653919fdf0df9ccb16e7d1",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-independent-review-2-en.png",
+      "sha256": "bff91875e3b22e890b40b74d22c9fc5e13b8011a540b8d2ab8e208edc1742fdf",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-independent-review-3-en.png",
+      "sha256": "195b7cd6eefbacaab6a2d8d9d9e9db845e4fc025fbc4e5d938155edab40db2fd",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-independent-review-4-en.png",
+      "sha256": "bab187d9df3ff83b45b81e41789e117c0f146f6a3993fea3cafc87ff444479d6",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-read-only-en.png",
+      "sha256": "915b1dd075859d749921a4c7f8505b30cace747301b769e776faa8876c008da1",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-requests-zh-dark.png",
+      "sha256": "4b3f5b79af5b9b43bf9e33137e7fcff36b82b044917cbb88b13dbf21baa194c1",
+      "viewport": {
+        "width": 1440,
+        "height": 1050
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-requests-zh-mobile.png",
+      "sha256": "05af4cd077bf7f1e423ad3b097e2d4e0399567d2c09c6d18c52552aeb9ea6acf",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/provider-admin-08-detail-zh-mobile.png",
+      "sha256": "9e7f2ee1a5ae6aecdcae87e71ef374203a457a9ff3743d1325e9eab1efa3bb2c",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "edited": false
+    }
+  ],
+  "browser_closed": true,
+  "browser_runtime": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "36a30716f0994b377f1ce6b47cfe35399b9719e31d597fe0ea0d8f3b62aed532",
+    "version": "155.0.8059.80"
+  },
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "8a2a119af25bab80ad1f60a63225802e6f047672e441675c64c37429b5cf6111"
+}
