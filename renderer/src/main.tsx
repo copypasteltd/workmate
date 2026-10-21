@@ -2,6 +2,7 @@ import "./support.css";
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
 import { CreativeMatrices } from "./creative-matrices";
+import { VideoProjects } from "./video-projects";
 import { MarketingImport } from "./marketing-import";
 import { MarketingAnalysis } from "./marketing-analysis";
 import { MarketingReports } from "./marketing-reports";
@@ -2060,6 +2061,7 @@ function Creative() {
         }
       />
       <ErrorNotice error={error} />
+      <VideoProjects key={w.base} base={w.base} assets={assets.data?.items ?? []} />
       <CreativeMatrices base={w.base} assets={assets.data?.items ?? []} />
       {data?.items.length ? (
         <div className="project-grid">

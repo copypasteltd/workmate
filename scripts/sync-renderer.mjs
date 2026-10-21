@@ -52,7 +52,7 @@ console.log(
 let html = await readFile("renderer/index.html", "utf8");
 html = html.replace(
   "<head>",
-  '<head><meta http-equiv=\"Content-Security-Policy\" content=\"default-src &apos;self&apos;; script-src &apos;self&apos;; style-src &apos;self&apos; &apos;unsafe-inline&apos;; img-src &apos;self&apos; data: blob:; font-src &apos;self&apos;; connect-src &apos;none&apos;; frame-src &apos;none&apos;; object-src &apos;none&apos;; base-uri &apos;self&apos;\">',
+  '<head><meta http-equiv=\"Content-Security-Policy\" content=\"default-src &apos;self&apos;; script-src &apos;self&apos;; style-src &apos;self&apos; &apos;unsafe-inline&apos;; img-src &apos;self&apos; data: blob:; media-src blob:; font-src &apos;self&apos;; connect-src &apos;none&apos;; frame-src &apos;none&apos;; object-src &apos;none&apos;; base-uri &apos;self&apos;\">',
 );
 await writeFile("renderer/index.html", html);
 
