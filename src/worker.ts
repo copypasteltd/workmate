@@ -13,14 +13,20 @@ import { PgBoss } from "pg-boss";
 import { taskCapabilities, runtimeSelection } from "./capability-bindings.js";
 import {
   internalAIRequest,
+  finishInternalAIRequest,
   AIRequestFailure,
   type AIRequestInfo,
 } from "./internal-ai-gateway.js";
+import {
+  admitProviderRequest,
+  providerRequestPermit,
+  recoverProviderRequests,
+} from "./provider-request-control.js";
 import { validateVerificationPNG } from "./png-validation.js";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { z } from "zod";
-import type { Database } from "./db.js";
+import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import type { Storage } from "./storage.js";
 import { saveAsset } from "./storage.js";
@@ -146,6 +152,7 @@ export class Worker {
     } finally {
       // A connector/workflow error must never starve cleanup or other due work.
       for (const [name, operation] of [
+        ["provider_requests", () => recoverProviderRequests(this.db)],
         ["queue_recovery", () => recoverQueuedClaims(this.db)],
         ["schedules", () => advanceSchedules(this.db, this.catalog)],
         [
@@ -731,33 +738,37 @@ export class Worker {
     fencing: string,
     request: AIRequestInfo,
   ) {
-    return this.db.tx(
+    const authorize = async (tx: Tx) => {
+      const binding = await this.authorizeTaskRequest(tx, t, actor, fencing);
+      const capability =
+        request.operation === "responses" ? binding.text : binding.image;
+      if (
+        !capability ||
+        request.taskId !== t.id ||
+        request.tenantId !== t.tenant_id ||
+        request.projectId !== t.project_id ||
+        request.actorId !== actor.id ||
+        request.capabilityVersionId !== capability.id ||
+        request.model !== capability.body.model_alias ||
+        request.attempt !== t.attempt ||
+        request.fencingToken !== fencing ||
+        !(
+          await tx.query(
+            "SELECT 1 FROM reservations WHERE task_id=$1 AND status='reserved'",
+            [t.id],
+          )
+        ).rowCount
+      )
+        throw new Problem(
+          409,
+          "AI_REQUEST_SCOPE_INVALID",
+          "Inference scope is no longer authorized",
+        );
+      return capability;
+    };
+    const admitted = await this.db.tx(
       async (tx) => {
-        const binding = await this.authorizeTaskRequest(tx, t, actor, fencing);
-        const capability =
-          request.operation === "responses" ? binding.text : binding.image;
-        if (
-          !capability ||
-          request.taskId !== t.id ||
-          request.tenantId !== t.tenant_id ||
-          request.projectId !== t.project_id ||
-          request.actorId !== actor.id ||
-          request.capabilityVersionId !== capability.id ||
-          request.model !== capability.body.model_alias ||
-          request.attempt !== t.attempt ||
-          request.fencingToken !== fencing ||
-          !(
-            await tx.query(
-              "SELECT 1 FROM reservations WHERE task_id=$1 AND status='reserved'",
-              [t.id],
-            )
-          ).rowCount
-        )
-          throw new Problem(
-            409,
-            "AI_REQUEST_SCOPE_INVALID",
-            "Inference scope is no longer authorized",
-          );
+        const capability = await authorize(tx);
         await event(tx, t.tenant_id, t.id, "gateway.request_authorized", {
           operation_id: request.requestId,
           operation: request.operation,
@@ -767,10 +778,19 @@ export class Worker {
           request_hash: request.requestHash,
           attempt: t.attempt,
         });
+        return admitProviderRequest(tx, "task", request);
       },
       t.tenant_id,
       false,
       actor.id,
+    );
+    return providerRequestPermit(
+      this.db,
+      admitted,
+      { tenantId: t.tenant_id, actorId: actor.id, control: false },
+      async (tx) => {
+        await authorize(tx);
+      },
     );
   }
   private tools(
@@ -1397,6 +1417,7 @@ export class Worker {
           ).rows[0];
         }, t.tenant_id);
         if (op.state === "succeeded") return op.result;
+        let inferenceResponse: Response | undefined;
         try {
           const form = new FormData();
           if (source) {
@@ -1412,7 +1433,7 @@ export class Worker {
               source.name,
             );
           }
-          const response = await internalAIRequest(c, {
+          const response = (inferenceResponse = await internalAIRequest(c, {
             operation: edit ? "images.edit" : "images.generate",
             model: c.AI_IMAGE_MODEL,
             operationId: op.id,
@@ -1441,7 +1462,7 @@ export class Worker {
               AbortSignal.timeout(c.AI_REQUEST_TIMEOUT_MS),
               ...(this.active.get(t.id) ? [this.active.get(t.id)!.signal] : []),
             ]),
-          });
+          }));
           if (!response.ok) {
             await response.body?.cancel().catch(() => {});
             throw new Error("Image gateway rejected operation");
@@ -1456,6 +1477,11 @@ export class Worker {
           if (bytes.toString("base64") !== encoded)
             throw new Error("Canonical PNG base64 is required");
           validateVerificationPNG(bytes);
+          await finishInternalAIRequest(response, {
+            state: "completed",
+            imageUnits: 1,
+            httpStatus: response.status,
+          });
           return this.db.tx(async (tx) => {
             await authorize(tx);
             const a = await saveAsset(tx, this.storage, {
@@ -1480,6 +1506,14 @@ export class Worker {
             return a;
           }, t.tenant_id);
         } catch (error) {
+          await finishInternalAIRequest(inferenceResponse, {
+            state: "unknown",
+            code:
+              error instanceof AIRequestFailure
+                ? error.code
+                : "AI_IMAGE_RESULT_UNKNOWN",
+            httpStatus: inferenceResponse?.status,
+          }).catch(() => {});
           await this.db.tx(
             (tx) =>
               tx.query(

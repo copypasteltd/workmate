@@ -28,6 +28,7 @@ import { validateVerificationPNG } from "../src/png-validation.js";
 import { listenLoopbackHTTP } from "../src/loopback-http.js";
 import { CodexRuntimeAdapter, type RuntimeContext } from "../src/runtime.js";
 import { Worker } from "../src/worker.js";
+import { installIsolatedProviderPolicy } from "./provider-policy-fixture.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
   s: Awaited<ReturnType<typeof buildApp>>;
@@ -278,6 +279,7 @@ before(async () => {
     }),
     { worker: false },
   );
+  await installIsolatedProviderPolicy(s.db);
 });
 after(async () => {
   if (s) await s.app.close();

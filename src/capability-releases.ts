@@ -8,6 +8,10 @@ import { audit, requireAdmin, requireUser } from "./auth.js";
 import { key, replay, projectAccess, tenantAccess } from "./access.js";
 import { canonical, hash, hmac, equal, Problem, uuid } from "./lib.js";
 import { gatewayFingerprint } from "./capability-bindings.js";
+import {
+  admitProviderRequest,
+  providerRequestPermit,
+} from "./provider-request-control.js";
 import { activeRuntimeProfile } from "./runtime-profiles.js";
 import { globalPlanAuthority } from "./admin-plans.js";
 import {
@@ -685,51 +689,51 @@ export function registerCapabilityReleases(
         {
           taskId: prepared.v.id,
           actorId: req.principal.id,
-          authorize: async (request) =>
-            db.tx(
-              async (tx) => {
-                await capabilityAuthority(
-                  tx,
-                  req.principal,
-                  "admin.catalog.publish",
-                );
-                const current = (
-                  await tx.query(
-                    "SELECT *,lease_until>now() AS lease_current FROM capability_validations WHERE id=$1",
-                    [prepared.v.id],
-                  )
-                ).rows[0];
-                const currentRelease = await release(tx, db, id);
-                const document = capabilityDocument.parse(
-                  prepared.row.definition,
-                );
-                if (
-                  !current ||
-                  current.state !== "running" ||
-                  !current.lease_current ||
-                  current.execution_nonce !== nonce ||
-                  current.principal_id !== req.principal.id ||
-                  current.session_id !== req.principal.sessionId ||
-                  current.release_id !== id ||
-                  currentRelease.definition_hash !==
-                    prepared.row.definition_hash ||
-                  currentRelease.gateway_fingerprint !==
-                    gatewayFingerprint(db.config) ||
-                  (await activeRuntimeProfile(tx, catalog)).id !==
-                    prepared.row.runtime_profile_id ||
-                  request.taskId !== current.id ||
-                  request.actorId !== req.principal.id ||
-                  request.model !== document.model_alias ||
-                  !capabilityBody(
-                    db.config,
-                    document,
-                  ).supported_operations.includes(request.operation)
+          authorize: async (request) => {
+            const check = async (tx: Tx, recordEvent = false) => {
+              await capabilityAuthority(
+                tx,
+                req.principal,
+                "admin.catalog.publish",
+              );
+              const current = (
+                await tx.query(
+                  "SELECT *,lease_until>now() AS lease_current FROM capability_validations WHERE id=$1",
+                  [prepared.v.id],
                 )
-                  throw new Problem(
-                    409,
-                    "CAPABILITY_CONTEXT_CHANGED",
-                    "Verification scope is no longer authorized",
-                  );
+              ).rows[0];
+              const currentRelease = await release(tx, db, id);
+              const document = capabilityDocument.parse(
+                prepared.row.definition,
+              );
+              if (
+                !current ||
+                current.state !== "running" ||
+                !current.lease_current ||
+                current.execution_nonce !== nonce ||
+                current.principal_id !== req.principal.id ||
+                current.session_id !== req.principal.sessionId ||
+                current.release_id !== id ||
+                currentRelease.definition_hash !==
+                  prepared.row.definition_hash ||
+                currentRelease.gateway_fingerprint !==
+                  gatewayFingerprint(db.config) ||
+                (await activeRuntimeProfile(tx, catalog)).id !==
+                  prepared.row.runtime_profile_id ||
+                request.taskId !== current.id ||
+                request.actorId !== req.principal.id ||
+                request.model !== document.model_alias ||
+                !capabilityBody(
+                  db.config,
+                  document,
+                ).supported_operations.includes(request.operation)
+              )
+                throw new Problem(
+                  409,
+                  "CAPABILITY_CONTEXT_CHANGED",
+                  "Verification scope is no longer authorized",
+                );
+              if (recordEvent)
                 await tx.query(
                   "INSERT INTO capability_validation_events(validation_id,body) VALUES($1,$2)",
                   [
@@ -745,10 +749,23 @@ export function registerCapabilityReleases(
                     },
                   ],
                 );
+            };
+            const admitted = await db.tx(
+              async (tx) => {
+                await check(tx, true);
+                return admitProviderRequest(tx, "validation", request);
               },
               undefined,
               true,
-            ),
+              req.principal.id,
+            );
+            return providerRequestPermit(
+              db,
+              admitted,
+              { actorId: req.principal.id, control: true },
+              check,
+            );
+          },
         },
       );
     } catch (error) {

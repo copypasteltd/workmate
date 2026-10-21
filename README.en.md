@@ -1,5 +1,26 @@
 # CopyPaste Platform
 
+## Durable provider requests (stage 56)
+
+Worker text, image tools and Admin verification share PostgreSQL admission, concurrency and rolling-minute limits. Immutable request identity, policy versions and events preserve the original task, capability and rates. Current authority is checked again before dispatch. Unknown outcomes and lost originators retain capacity and are never automatically replayed. Bounded terminal frames reach Codex only after validated usage commits, so its next response cannot race the preceding persistence step. Exact cost numerators support aggregate rounding; request facts do not charge the ledger again.
+
+Validation passed **116/116 focused checks within 546/546 full tests**, with 738 unchanged source files and all 531 stage 55 named tests retained. Type checking and the actual build passed. Both existing native databases upgraded from 065 to 066, preserving all rows of 132 original public tables, SQL001–065 bytes and historical checksums. No historical provider requests were fabricated. Migration 066 is now immutable.
+
+Codex and PostgreSQL are real; model/media responses are authorized simulations. No browser or native client was opened in this stage. Earlier screenshots and packages retain their original source scope. Per-call budget allocation, complete Admin policy/reconciliation controls and original whole-product acceptance remain open.
+
+```mermaid
+flowchart LR
+  Codex[Codex scoped credential] --> Current[Current user / capability / lease]
+  Media[Image tools] --> Current
+  Admin[Admin verification / MFA] --> Current
+  Current --> Admit[PostgreSQL shared admission / policy]
+  Admit --> Dispatch[Reauthorize / dispatch intent]
+  Dispatch --> Internal[Company internal API]
+  Internal --> Facts[Validate termination / exact usage]
+  Internal --> Unknown[Unknown / retain capacity]
+  Facts --> Handoff[Persist before next Codex response]
+```
+
 ## Explicit adoption (stage 54)
 
 Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.

@@ -15,6 +15,7 @@ import {
   type RuntimeResult,
 } from "../src/runtime.js";
 import { seedRuntimeProfile } from "../src/runtime-profiles.js";
+import { installIsolatedProviderPolicy } from "./provider-policy-fixture.js";
 import { taskCapabilities } from "../src/capability-bindings.js";
 import { Worker } from "../src/worker.js";
 import { hash, canonical, seal } from "../src/lib.js";
@@ -350,6 +351,7 @@ before(async () => {
     { worker: false },
   );
   initial = { ...s.db.config };
+  await installIsolatedProviderPolicy(s.db);
   // This isolated suite deliberately keeps five unknown image operations.
   // Give its fixture eight image slots so each counterexample executes; retain
   // every reconciliation fact and leave the production policy unchanged.

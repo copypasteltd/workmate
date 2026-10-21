@@ -11,6 +11,7 @@ import { removeOwnedUUIDDirectory } from "./owned-directory-cleanup.js";
 import { validateVerificationPNG } from "./png-validation.js";
 import {
   internalAIRequest,
+  finishInternalAIRequest,
   AIRequestFailure,
   type AIRequestAuthority,
 } from "./internal-ai-gateway.js";
@@ -109,6 +110,7 @@ export async function verifyCapability(
       checks: [],
     };
   let state: "passed" | "failed" | "reconciling" = "failed";
+  let pendingResponse: Response | undefined;
   try {
     await new CodexRuntimeAdapter(c).version();
     if (document.profile_key === "internal-text-v1") {
@@ -231,7 +233,7 @@ export async function verifyCapability(
             "verification.png",
           );
         }
-        const response = await internalAIRequest(c, {
+        const response = (pendingResponse = await internalAIRequest(c, {
           operation: operation === "edit" ? "images.edit" : "images.generate",
           model: document.model_alias,
           authority: requestAuthority,
@@ -253,7 +255,7 @@ export async function verifyCapability(
                   quality: "high",
                   output_format: "png",
                 },
-        });
+        }));
         if (!response.ok) {
           await response.body?.cancel().catch(() => {});
           if (response.status >= 400 && response.status < 500)
@@ -288,6 +290,12 @@ export async function verifyCapability(
         if (bytes.toString("base64") !== encoded)
           throw new Error("Canonical PNG base64 is required");
         validateVerificationPNG(bytes);
+        await finishInternalAIRequest(response, {
+          state: "completed",
+          imageUnits: 1,
+          httpStatus: response.status,
+        });
+        pendingResponse = undefined;
         pngs.push(bytes);
         evidence.usage_known = true;
         evidence.known_cost_micros = String(
@@ -301,6 +309,14 @@ export async function verifyCapability(
       throw new Error("The runtime binary changed during verification");
     state = "passed";
   } catch (error) {
+    await finishInternalAIRequest(pendingResponse, {
+      state: "unknown",
+      code:
+        error instanceof AIRequestFailure
+          ? error.code
+          : "AI_VERIFICATION_RESULT_UNKNOWN",
+      httpStatus: pendingResponse?.status,
+    }).catch(() => {});
     if (error instanceof RuntimeFailure) {
       evidence.accepted = error.accepted;
       evidence.usage_known = error.usageKnown;

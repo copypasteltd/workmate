@@ -23,7 +23,28 @@ export interface AIRequestInfo extends AIRequestIdentity {
   requestHash: string;
 }
 export interface AIRequestAuthority extends AIRequestIdentity {
-  authorize(request: AIRequestInfo): Promise<void>;
+  authorize(request: AIRequestInfo): Promise<AIRequestPermit | void>;
+}
+export type AIRequestOutcome =
+  | {
+      state: "completed";
+      inputTokens?: number;
+      outputTokens?: number;
+      imageUnits?: 1;
+      httpStatus?: number;
+    }
+  | { state: "unknown" | "cancelled"; code: string; httpStatus?: number };
+export interface AIRequestPermit {
+  dispatch(): Promise<void>;
+  finish(outcome: AIRequestOutcome): Promise<void>;
+}
+const requestPermits = new WeakMap<Response, AIRequestPermit>();
+/** Only a validated complete response may release a dispatched provider slot. */
+export async function finishInternalAIRequest(
+  response: Response | undefined,
+  outcome: AIRequestOutcome,
+) {
+  if (response) await requestPermits.get(response)?.finish(outcome);
 }
 interface ToolPolicyFacts {
   tool_count: number;
@@ -33,6 +54,7 @@ interface ToolPolicyFacts {
 }
 export class AIRequestFailure extends Error {
   toolPolicy?: ToolPolicyFacts;
+  retryAfterSeconds?: number;
   constructor(
     public code: string,
     public status: number,
@@ -259,14 +281,34 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
   if (!/^[\w:-]{16,128}$/.test(info.requestId))
     throw denied("AI_REQUEST_SCOPE_INVALID", 403);
   if (request.signal.aborted) throw denied("AI_REQUEST_CANCELLED", 409);
+  let permit: AIRequestPermit | void;
   try {
-    await authorize(info);
-  } catch {
+    permit = await authorize(info);
+  } catch (error) {
+    if (error instanceof AIRequestFailure) throw error;
     throw denied("AI_REQUEST_AUTHORIZATION_CHANGED", 403);
   }
-  if (request.signal.aborted) throw denied("AI_REQUEST_CANCELLED", 409);
+  if (request.signal.aborted) {
+    await permit?.finish({
+      state: "cancelled",
+      code: "CANCELLED_BEFORE_DISPATCH",
+    });
+    throw denied("AI_REQUEST_CANCELLED", 409);
+  }
   const controller = new AbortController();
   const signal = AbortSignal.any([controller.signal, request.signal]);
+  let fetchInvoked = false,
+    httpStatus: number | undefined;
+  const observeAbort = () => {
+    clear();
+    void permit
+      ?.finish({
+        state: fetchInvoked ? "unknown" : "cancelled",
+        code: "AI_REQUEST_ABORTED",
+        httpStatus,
+      })
+      .catch(() => {});
+  };
   const total = setTimeout(() => controller.abort(), c.AI_REQUEST_TIMEOUT_MS);
   let idle: ReturnType<typeof setTimeout> | undefined;
   const resetIdle = () => {
@@ -277,12 +319,15 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
   const clear = () => {
     clearTimeout(total);
     if (idle) clearTimeout(idle);
-    signal.removeEventListener("abort", clear);
+    signal.removeEventListener("abort", observeAbort);
   };
   // A consumer may have stopped reading with a queued response chunk. Abort
   // must release timers even when no further stream pull or cancel happens.
-  signal.addEventListener("abort", clear, { once: true });
+  signal.addEventListener("abort", observeAbort, { once: true });
   try {
+    await permit?.dispatch();
+    if (signal.aborted) throw denied("AI_REQUEST_CANCELLED", 409);
+    fetchInvoked = true;
     request.onDispatch?.();
     const response = await fetch(url, {
       method: "POST",
@@ -291,6 +336,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
       redirect: "error",
       signal,
     });
+    httpStatus = response.status;
     if (
       Number(response.headers.get("content-length")) > c.AI_MAX_RESPONSE_BYTES
     ) {
@@ -299,6 +345,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
     }
     if (!response.body) {
       clear();
+      if (permit) requestPermits.set(response, permit);
       return response;
     }
     const reader = response.body.getReader();
@@ -324,6 +371,13 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
           clear();
           controller.abort();
           await reader.cancel().catch(() => {});
+          await permit
+            ?.finish({
+              state: "unknown",
+              code: "AI_STREAM_INTERRUPTED",
+              httpStatus,
+            })
+            .catch(() => {});
           out.error(
             error instanceof AIRequestFailure
               ? error
@@ -335,18 +389,43 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
         clear();
         controller.abort();
         await reader.cancel().catch(() => {});
+        await permit
+          ?.finish({
+            state: "unknown",
+            code: "AI_RESPONSE_CANCELLED",
+            httpStatus,
+          })
+          .catch(() => {});
       },
     });
-    return new Response(bounded, {
+    const exposed = new Response(bounded, {
       status: response.status,
       statusText: response.statusText,
       headers: response.headers,
     });
+    if (permit) requestPermits.set(exposed, permit);
+    return exposed;
   } catch (error) {
     clear();
     controller.abort();
+    await permit
+      ?.finish({
+        state: fetchInvoked ? "unknown" : "cancelled",
+        code:
+          error instanceof AIRequestFailure
+            ? error.code
+            : "AI_GATEWAY_REQUEST_FAILED",
+        httpStatus,
+      })
+      .catch(() => {});
     if (error instanceof AIRequestFailure) throw error;
-    throw new AIRequestFailure("AI_UPSTREAM_UNCERTAIN", 502, true);
+    throw new AIRequestFailure(
+      fetchInvoked
+        ? "AI_UPSTREAM_UNCERTAIN"
+        : "AI_REQUEST_AUTHORIZATION_CHANGED",
+      fetchInvoked ? 502 : 403,
+      fetchInvoked,
+    );
   }
 }
 
@@ -413,6 +492,7 @@ export async function startScopedInferenceGateway(
       return json(429, "AI_SCOPED_REQUEST_LIMIT");
     busy = true;
     let dispatched = false;
+    let upstream: Response | undefined;
     const disconnected = new AbortController();
     res.once("close", () => {
       if (!res.writableFinished) disconnected.abort();
@@ -434,7 +514,7 @@ export async function startScopedInferenceGateway(
       }
       if (!body || typeof body !== "object" || Array.isArray(body))
         throw denied("AI_INVALID_JSON");
-      const response = await internalAIRequest(c, {
+      const response = (upstream = await internalAIRequest(c, {
         operation: "responses",
         model: options.model,
         reasoningEffort: options.reasoningEffort,
@@ -451,7 +531,7 @@ export async function startScopedInferenceGateway(
           dispatched = true;
           forwarded++;
         },
-      });
+      }));
       if (
         response.ok &&
         !/^text\/event-stream(?:\s*;|$)/i.test(
@@ -480,6 +560,8 @@ export async function startScopedInferenceGateway(
         measuredInput = 0,
         measuredOutput = 0;
       let frameLines: string[] = [];
+      const terminalFrames: Buffer[] = [];
+      let terminalBytes = 0;
       const knownCalls = new Set<string>();
       const inspectItem = (item: any) => {
         if (!item) return;
@@ -501,6 +583,8 @@ export async function startScopedInferenceGateway(
           .map((line) => line.slice(5).replace(/^ /, ""))
           .join("\n");
         if (!data || data === "[DONE]") return;
+        if (terminal)
+          throw new AIRequestFailure("AI_RESPONSE_PROTOCOL_INVALID", 502, true);
         let event: any;
         try {
           event = JSON.parse(data);
@@ -574,7 +658,18 @@ export async function startScopedInferenceGateway(
           if (match[1] === "") {
             const frame = Buffer.from(frameLines.join(""), "latin1");
             inspectFrame(frame);
-            await write(frame);
+            if (terminal) {
+              // The kernel may start its next response as soon as it sees a
+              // terminal event. Persist usage before exposing that handoff.
+              terminalBytes += frame.length;
+              if (terminalBytes > c.AI_MAX_REQUEST_BYTES)
+                throw new AIRequestFailure(
+                  "AI_RESPONSE_EVENT_TOO_LARGE",
+                  502,
+                  true,
+                );
+              terminalFrames.push(frame);
+            } else await write(frame);
             frameLines = [];
             frameBytes = 0;
           }
@@ -605,13 +700,32 @@ export async function startScopedInferenceGateway(
       if (response.status >= 500 || (response.ok && (!terminal || !usageKnown)))
         poisoned = true;
       if (response.ok && terminal && usageKnown) {
+        await finishInternalAIRequest(response, {
+          state: "completed",
+          inputTokens: measuredInput,
+          outputTokens: measuredOutput,
+          httpStatus: response.status,
+        });
         measured++;
         inputTokens += measuredInput;
         outputTokens += measuredOutput;
-      }
-      res.end();
+      } else
+        await finishInternalAIRequest(response, {
+          state: "unknown",
+          code: "AI_RESPONSE_TERMINATION_UNKNOWN",
+          httpStatus: response.status,
+        });
+      // One synchronous end leaves no asynchronous busy interval after the
+      // terminal bytes become visible. Buffering is bounded above.
+      res.end(Buffer.concat(terminalFrames));
     } catch (error) {
       req.resume();
+      await finishInternalAIRequest(upstream, {
+        state: "unknown",
+        code:
+          error instanceof AIRequestFailure ? error.code : "AI_GATEWAY_FAILED",
+        httpStatus: upstream?.status,
+      }).catch(() => {});
       if (dispatched) poisoned = true;
       await options
         .onRejected?.({
@@ -625,12 +739,14 @@ export async function startScopedInferenceGateway(
             : {}),
         })
         .catch(() => {});
-      if (!res.headersSent)
+      if (!res.headersSent) {
+        if (error instanceof AIRequestFailure && error.retryAfterSeconds)
+          res.setHeader("Retry-After", String(error.retryAfterSeconds));
         json(
           error instanceof AIRequestFailure ? error.status : 502,
           error instanceof AIRequestFailure ? error.code : "AI_GATEWAY_FAILED",
         );
-      else res.destroy();
+      } else res.destroy();
     } finally {
       busy = false;
     }

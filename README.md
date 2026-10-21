@@ -1,5 +1,26 @@
 # CopyPaste Platform
 
+## 持久供应商请求（阶段 56）
+
+真实 Worker 的文本、图片及后台验证共用 PostgreSQL 准入、跨进程并发/速率限额和发出前重新鉴权。不可变请求归属、策略与事件固定原任务、能力及费率；未知结果和进程丢失继续占容量，不自动重放。合法终止的用量事务完成后才把有界终止帧交给 Codex，避免下一轮在落盘期间误撞“忙碌”限制。精确费用分子供聚合后统一取整，逐请求事实不会再次扣账。
+
+专项 **116/116** 包含于全量 **546/546**，738 份来源前后一致，保留阶段 55 全部 531 项命名测试；类型检查及实际构建通过。两套现有原生数据库完成 065→066，各保留 132 张原公共表全部行摘要与 SQL001–065 字节和历史校验值，未补造历史请求。SQL066 已进入不可改写的迁移历史。
+
+Codex 与原生 PostgreSQL 实际执行，模型及媒体使用获准假数据。本轮没有打开浏览器或客户端；以前截图和原生包保留其原来源范围。逐调用预算、后台完整策略发布/核对和原始综合验收继续跟踪；以下旧章节仅适用于其时源码。
+
+```mermaid
+flowchart LR
+  Codex[Codex scoped credential] --> Current[Current user / capability / lease]
+  Media[Image tools] --> Current
+  Admin[Admin verification / MFA] --> Current
+  Current --> Admit[PostgreSQL shared admission / policy]
+  Admit --> Dispatch[Reauthorize / dispatch intent]
+  Dispatch --> Internal[Company internal API]
+  Internal --> Facts[Validate termination / exact usage]
+  Internal --> Unknown[Unknown / retain capacity]
+  Facts --> Handoff[Persist before next Codex response]
+```
+
 ## 内部推理请求（阶段 55）
 
 Codex 每次运行使用独立、限时、限定模型/强度/工具的 loopback 凭证，内核不再获得公司主密钥。文本、图片及后台验证共用[受控出站入口](src/internal-ai-gateway.ts)；每笔请求重新检查当前用户/任务/能力/预算预留，后台验证还检查真实会话及 MFA。完整 SSE 帧通过工具白名单后才交给内核；不明结果不自动重发。图片生成与编辑均检查实际单张 1024×1024 PNG，保留冻结价格和已知费用。
