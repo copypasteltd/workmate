@@ -1,4 +1,5 @@
 import "./support.css";
+import { AdminConnectionDetail } from "./connections";
 import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
 import { AdminCapabilities } from "./capabilities";
@@ -741,7 +742,7 @@ const columns: Record<string, string[]> = {
     "created_at",
   ],
   catalog: ["kind", "key", "version", "state", "created_at"],
-  connections: ["name", "provider", "state", "created_at"],
+  connections: ["id", "provider", "state", "account_ids"],
   devices: ["name", "client", "state", "last_seen_at"],
   access: ["name", "email", "status", "enrollment_state", "created_at"],
   support: ["reason", "tenant_id", "expires_at", "body_granted"],
@@ -936,7 +937,8 @@ function Section({ section }: { section: string }) {
         ? "devices"
         : section;
   const directory = active === "users" || active === "tenants";
-  const cursorPaged = directory || active === "approvals";
+  const cursorPaged =
+    directory || active === "approvals" || active === "connections";
   const directoryQuery = new URLSearchParams({ limit: "50", ...filters });
   if (search.trim() && active !== "approvals")
     directoryQuery.set("q", search.trim());
@@ -1403,6 +1405,17 @@ function Section({ section }: { section: string }) {
                               <Ban size={15} />
                             </button>
                           )}
+                        {active === "connections" && (
+                          <button
+                            title="Connection details"
+                            onClick={() => {
+                              setRow(r);
+                              setDialog("connection");
+                            }}
+                          >
+                            <Eye size={15} />
+                          </button>
+                        )}
                         {["catalog", "plans", "policy"].includes(active) && (
                           <button
                             title="Publishing controls"
@@ -1563,6 +1576,13 @@ function Section({ section }: { section: string }) {
           onDone={bump}
         />
       )}{" "}
+      {dialog === "connection" && row && (
+        <AdminConnectionDetail
+          id={row.id}
+          canReadBody={a.has("admin.content.body.read")}
+          onClose={() => setDialog(null)}
+        />
+      )}
       {dialog === "batch" && (
         <BatchDialog onClose={() => setDialog(null)} onDone={bump} />
       )}
@@ -1596,19 +1616,22 @@ function Section({ section }: { section: string }) {
           }}
         />
       )}
-      {dialog && !["batch", "invite", "principal", "sso"].includes(dialog) && (
-        <AdminDialog
-          kind={dialog}
-          row={row}
-          active={active}
-          data={data}
-          onClose={() => {
-            setDialog(null);
-            setRow(null);
-          }}
-          onDone={bump}
-        />
-      )}
+      {dialog &&
+        !["batch", "invite", "principal", "sso", "connection"].includes(
+          dialog,
+        ) && (
+          <AdminDialog
+            kind={dialog}
+            row={row}
+            active={active}
+            data={data}
+            onClose={() => {
+              setDialog(null);
+              setRow(null);
+            }}
+            onDone={bump}
+          />
+        )}
     </>
   );
 }
@@ -2330,9 +2353,16 @@ function AdminDialog({
                 reason,
               });
             if (kind === "revoke")
-              await post("/v1/admin/" + active + "/" + row.id + "/revoke", {
-                reason,
-              });
+              await post(
+                "/v1/admin/" +
+                  active +
+                  "/" +
+                  row.id +
+                  (active === "connections" ? "/revocations" : "/revoke"),
+                {
+                  reason,
+                },
+              );
             if (kind === "publish")
               await post(
                 "/v1/admin/catalog/" + row.id + "/" + String(f.get("action")),
