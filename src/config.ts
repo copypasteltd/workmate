@@ -38,6 +38,26 @@ export function apiURL(origin: string, value: string) {
   return u.href;
 }
 
+export function connectorLaunchURL(origin: string, state: unknown) {
+  if (typeof state !== "string" || !/^[\w-]{43}$/.test(state))
+    throw new Error("Invalid provider authorization state");
+  const company = new URL(origin);
+  if (
+    company.origin !== origin ||
+    company.username ||
+    company.password ||
+    (company.protocol !== "https:" &&
+      !(
+        company.protocol === "http:" &&
+        ["127.0.0.1", "localhost"].includes(company.hostname)
+      ))
+  )
+    throw new Error("Company origin is fixed");
+  const launch = new URL("/connect-provider", company);
+  launch.searchParams.set("state", state);
+  return launch.href;
+}
+
 /** Only product operations may cross the renderer's authenticated API bridge. */
 export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   if (
@@ -64,11 +84,34 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
     ].includes(pathname)
   )
     return method === "GET";
-  if (/^\/v1\/(?:entitlement|financial)-notifications\/[a-f0-9-]{36}$/i.test(pathname))
+  if (
+    /^\/v1\/(?:entitlement|financial)-notifications\/[a-f0-9-]{36}$/i.test(
+      pathname,
+    )
+  )
     return method === "PATCH";
-  if (pathname === "/v1/support-grants") return method === "GET" || method === "POST";
-  if (/^\/v1\/support-grants\/[a-f0-9-]{36}\/revoke$/i.test(pathname)) return method === "POST";
+  if (pathname === "/v1/support-grants")
+    return method === "GET" || method === "POST";
+  if (/^\/v1\/support-grants\/[a-f0-9-]{36}\/revoke$/i.test(pathname))
+    return method === "POST";
   if (pathname === "/v1/tenants") return method === "GET" || method === "POST";
+  if (pathname === "/v1/connector-providers") return method === "GET";
+  if (pathname === "/v1/connections")
+    return method === "GET" || method === "POST";
+  if (/^\/v1\/connections\/[a-f0-9-]{36}$/i.test(pathname))
+    return ["PATCH", "DELETE"].includes(method);
+  if (/^\/v1\/connections\/[a-f0-9-]{36}\/(?:detail|history)$/i.test(pathname))
+    return method === "GET";
+  if (/^\/v1\/connections\/[a-f0-9-]{36}\/(?:syncs|discovery)$/i.test(pathname))
+    return method === "POST";
+  if (/^\/v1\/syncs\/[a-f0-9-]{36}(?:\/detail)?$/i.test(pathname))
+    return method === "GET";
+  if (/^\/v1\/syncs\/[a-f0-9-]{36}\/(?:cancel|retry)$/i.test(pathname))
+    return method === "POST";
+  if (
+    /^\/v1\/(?:snapshots|connector-snapshots)\/[a-f0-9-]{36}$/i.test(pathname)
+  )
+    return method === "GET";
   if (pathname === "/v1/dataset-imports" || pathname === "/v1/reports")
     return method === "POST";
   if (/^\/v1\/evidence\/[a-f0-9-]{36}$/i.test(pathname))

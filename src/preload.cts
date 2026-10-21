@@ -216,6 +216,8 @@ contextBridge.exposeInMainWorld(
     download: (p: string, n: string) =>
       ipcRenderer.invoke("asset:download", p, n),
     openExternal: (u: string) => ipcRenderer.invoke("external", u),
+    authorizeConnector: (s: string) =>
+      ipcRenderer.invoke("connector:authorize", s),
     onAuthChanged: (fn: () => void) => {
       ipcRenderer.on("auth:changed", fn);
       return () => ipcRenderer.removeListener("auth:changed", fn);

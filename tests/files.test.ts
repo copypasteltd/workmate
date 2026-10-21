@@ -11,7 +11,11 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { LocalFiles, type Journal, resolveInGrant } from "../src/files.js";
-import { apiURL, rendererApiOperation } from "../src/config.js";
+import {
+  apiURL,
+  rendererApiOperation,
+  connectorLaunchURL,
+} from "../src/config.js";
 test("folder grants enforce expiry, explicit writes, create-only semantics and idempotency", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "cp-files-"));
   try {
@@ -133,6 +137,63 @@ test("native workspace bridge permits canonical session/onboarding/business call
     assert.equal(rendererApiOperation(route, method), false, route);
   assert.equal(rendererApiOperation(null), false);
   assert.equal(rendererApiOperation("/v1/me", {}), false);
+});
+
+test("marketing bridge permits scoped reporting operations while rejecting admin and OAuth credential access", () => {
+  const id = "11111111-1111-4111-8111-111111111111";
+  for (const [route, method] of [
+    ["/v1/connector-providers", "GET"],
+    ["/v1/connections", "POST"],
+    ["/v1/connections?limit=20", "GET"],
+    [`/v1/connections/${id}`, "PATCH"],
+    [`/v1/connections/${id}`, "DELETE"],
+    [`/v1/connections/${id}/detail`, "GET"],
+    [`/v1/connections/${id}/history?cursor=${id}`, "GET"],
+    [`/v1/connections/${id}/syncs`, "POST"],
+    [`/v1/connections/${id}/discovery`, "POST"],
+    [`/v1/syncs/${id}/cancel`, "POST"],
+    [`/v1/syncs/${id}/retry`, "POST"],
+    [`/v1/connector-snapshots/${id}?offset=0&limit=25`, "GET"],
+  ])
+    assert.equal(rendererApiOperation(route, method), true, route);
+  for (const [route, method] of [
+    ["/v1/connector-providers", "POST"],
+    [`/v1/connections/${id}/history`, "POST"],
+    [`/v1/connector-snapshots/${id}`, "DELETE"],
+    [`/v1/connections/${id}/syncs`, "GET"],
+    [`/v1/admin/connections/${id}/revocations`, "POST"],
+    ["/v1/connections/callback", "GET"],
+    [`/v1/connections/launch/${"a".repeat(43)}`, "GET"],
+  ])
+    assert.equal(rendererApiOperation(route, method), false, route);
+});
+
+test("provider authorization opens only the configured company page with a bounded state", () => {
+  const state = "a".repeat(43);
+  assert.equal(
+    connectorLaunchURL("https://app.example.invalid", state),
+    `https://app.example.invalid/connect-provider?state=${state}`,
+  );
+  assert.equal(
+    new URL(connectorLaunchURL("http://127.0.0.1:4310", state)).origin,
+    "http://127.0.0.1:4310",
+  );
+  for (const value of [
+    null,
+    {},
+    "https://evil.invalid",
+    `${state}&redirect=https://evil.invalid`,
+    "a".repeat(44),
+  ])
+    assert.throws(() =>
+      connectorLaunchURL("https://app.example.invalid", value),
+    );
+  for (const origin of [
+    "http://evil.invalid",
+    "https://company.invalid/redirect",
+    "https://user:pass@company.invalid",
+  ])
+    assert.throws(() => connectorLaunchURL(origin, state));
 });
 test("sign-out removes every folder grant and cached file result before queued work can replay", async () => {
   const base = path.resolve(".data/test/logout-grants");

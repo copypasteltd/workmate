@@ -34,7 +34,12 @@ import {
   type Journal,
   type FileCommand,
 } from "./files.js";
-import { configuration, apiURL, rendererApiOperation } from "./config.js";
+import {
+  configuration,
+  apiURL,
+  rendererApiOperation,
+  connectorLaunchURL,
+} from "./config.js";
 
 const config = configuration();
 let window: BrowserWindow | null = null;
@@ -536,6 +541,17 @@ async function createWindow() {
     if (![config.web, "https://copypaste.hk"].includes(u.origin))
       throw new Error("External origin is not allowed");
     return shell.openExternal(u.href);
+  });
+  ipcMain.handle("connector:authorize", (e, state) => {
+    if (
+      !window ||
+      e.sender !== window.webContents ||
+      e.senderFrame !== window.webContents.mainFrame
+    )
+      throw new Error(
+        "Provider authorization is restricted to the application frame",
+      );
+    return shell.openExternal(connectorLaunchURL(config.web, state));
   });
   ipcMain.handle("asset:download", async (_e, p, name) => {
     // Validate the server path before any native selection, then stream to the
