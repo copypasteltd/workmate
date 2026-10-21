@@ -1,0 +1,293 @@
+import { after, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { mkdir, readdir, rm } from "node:fs/promises";
+import path from "node:path";
+import { createCanvas } from "@napi-rs/canvas";
+import { hash } from "../src/lib.js";
+import {
+  videoDefinition,
+  videoSeconds,
+  videoSubtitlesVtt,
+  type VideoDefinition,
+} from "../src/video-project-model.js";
+import { renderVideoProject, type VideoSource } from "../src/video-render.js";
+
+const base = path.resolve(".data/video-render-tests"),
+  directory = path.join(base, randomUUID());
+after(async () => {
+  assert.equal(path.dirname(directory), base);
+  await rm(directory, { recursive: true, force: true });
+});
+export function fixtureDefinition(): VideoDefinition {
+  return videoDefinition.parse({
+    schema_version: "copypaste-video-1",
+    template: "campaign-cuts-1",
+    locale: "zh-HK",
+    width: 720,
+    height: 1280,
+    frame_rate: { numerator: 30, denominator: 1 },
+    duration_frames: 450,
+    script: {
+      title: "香港夏日活動",
+      brief: "原創字幕與授權音軌測試",
+      narration: "由團隊提供文稿，沒有合成語音。",
+      call_to_action: "立即了解",
+    },
+    brand: {
+      label: "CopyPaste",
+      background: "#f1f2f4",
+      ink: "#17202c",
+      accent: "#2458df",
+      logo: null,
+    },
+    storyboard: [
+      {
+        key: "opening",
+        start_frame: 0,
+        end_frame: 150,
+        direction: "品牌開場",
+        headline: "讓創意落地",
+        body: "為香港企業建立工作流程",
+        image: null,
+      },
+      {
+        key: "benefit",
+        start_frame: 150,
+        end_frame: 300,
+        direction: "展示效益",
+        headline: "從想法到成品",
+        body: "固定素材版本與時間線",
+        image: null,
+      },
+      {
+        key: "cta",
+        start_frame: 300,
+        end_frame: 450,
+        direction: "行動呼籲",
+        headline: "開始你的下一個項目",
+        body: "完整工程，可再製作",
+        image: null,
+      },
+    ],
+    subtitles: [
+      { key: "one", start_frame: 0, end_frame: 150, text: "創意，現在開始。" },
+      {
+        key: "two",
+        start_frame: 150,
+        end_frame: 300,
+        text: "從想法到完整成片。",
+      },
+      {
+        key: "three",
+        start_frame: 300,
+        end_frame: 450,
+        text: "把時間交還給團隊。",
+      },
+    ],
+    audio: null,
+  });
+}
+export function fixtureWave(seconds: number) {
+  const rate = 48000,
+    count = Math.ceil(rate * seconds),
+    data = Buffer.alloc(44 + count * 2);
+  data.write("RIFF", 0);
+  data.writeUInt32LE(data.length - 8, 4);
+  data.write("WAVEfmt ", 8);
+  data.writeUInt32LE(16, 16);
+  data.writeUInt16LE(1, 20);
+  data.writeUInt16LE(1, 22);
+  data.writeUInt32LE(rate, 24);
+  data.writeUInt32LE(rate * 2, 28);
+  data.writeUInt16LE(2, 32);
+  data.writeUInt16LE(16, 34);
+  data.write("data", 36);
+  data.writeUInt32LE(count * 2, 40);
+  for (let i = 0; i < count; i++)
+    data.writeInt16LE(
+      Math.round(
+        Math.sin((i * 2 * Math.PI * 220) / rate) *
+          7000 *
+          Math.min(1, i / 4800, (count - i) / 4800),
+      ),
+      44 + i * 2,
+    );
+  return data;
+}
+const render = (
+  definition: VideoDefinition,
+  sources: VideoSource[] = [],
+  options = {},
+) =>
+  renderVideoProject(definition, sources, { dataDir: directory, ...options });
+test("video timeline rejects gaps, overlaps, fractional frames, unsafe bounds and duplicate cues", () => {
+  const d = fixtureDefinition();
+  for (const mutate of [
+    (x: any) => x.storyboard[1].start_frame++,
+    (x: any) => x.storyboard[0].end_frame--,
+    (x: any) => (x.duration_frames = 449.5),
+    (x: any) => (x.width = 721),
+    (x: any) => (x.frame_rate.denominator = 1000),
+    (x: any) => (x.subtitles[1].key = "one"),
+    (x: any) => (x.subtitles[1].start_frame = 149),
+    (x: any) => {
+      x.width = 1920;
+      x.height = 1920;
+      x.duration_frames = 1800;
+    },
+  ]) {
+    const candidate = structuredClone(d);
+    mutate(candidate);
+    assert.equal(videoDefinition.safeParse(candidate).success, false);
+  }
+});
+test("video sidecar converts rational frames to escaped WebVTT timestamps", () => {
+  const d = fixtureDefinition();
+  d.frame_rate = { numerator: 30000, denominator: 1001 };
+  d.subtitles[0].text = "<script>& text";
+  const vtt = videoSubtitlesVtt(d);
+  assert.ok(vtt.includes("00:00:00.000 --> 00:00:05.005"));
+  assert.ok(vtt.includes("&lt;script&gt;&amp; text"));
+  assert.equal(videoSeconds(d), 15.015);
+});
+test("TC018 15s portrait encodes all 450 frames, provided subtitles, non-silent owned audio and reproducible project", async () => {
+  const d = fixtureDefinition(),
+    bytes = fixtureWave(16),
+    audio = {
+      asset_id: randomUUID(),
+      version: 1,
+      bytes,
+      sha256: hash(bytes),
+      mime_type: "audio/wav",
+    };
+  d.audio = {
+    source: { asset_id: audio.asset_id, version: 1 },
+    source_in_frame: 15,
+    gain_db: -3,
+    role: "music",
+    rights_basis: "owned",
+    rights_reference:
+      "Original deterministic test tone generated by this fixture",
+  };
+  const result = await render(d, [audio]);
+  assert.equal(result.probe.duration_frames, 450);
+  assert.equal(result.probe.duration_seconds, 15);
+  assert.equal(result.probe.fully_decoded, true);
+  assert.equal(result.probe.audio_codec, "aac");
+  assert.equal(result.probe.audio?.generated, false);
+  assert.equal(result.probe.subtitles.cues, 3);
+  assert.equal(result.probe.audio?.silent, false);
+  assert.equal(result.probe.audio?.measured_after_encode, true);
+  assert.ok(result.probe.audio?.mean_volume_db > -50);
+  assert.equal(result.manifest.sources[0].sha256, audio.sha256);
+  assert.equal(result.manifest.definition.audio?.source.version, 1);
+  assert.ok(result.bytes.length > 10000);
+  assert.notEqual(hash(result.firstFrame), hash(result.lastFrame));
+  assert.ok(result.script.includes("Narration text is not synthesized audio"));
+  assert.deepEqual(await readdir(path.join(directory, "video-render")), []);
+});
+test("video refuses missing fixed source, changed source bytes and a short track without publishing fallback", async () => {
+  const d = fixtureDefinition(),
+    bytes = fixtureWave(1),
+    audio = {
+      asset_id: randomUUID(),
+      version: 1,
+      bytes,
+      sha256: hash(bytes),
+      mime_type: "audio/wav",
+    };
+  d.audio = {
+    source: { asset_id: audio.asset_id, version: 1 },
+    source_in_frame: 0,
+    gain_db: 0,
+    role: "provided_voice",
+    rights_basis: "owned",
+    rights_reference: "Original test tone",
+  };
+  await assert.rejects(render(d), { code: "VIDEO_SOURCE_UNAVAILABLE" });
+  await assert.rejects(render(d, [{ ...audio, sha256: "0".repeat(64) }]), {
+    code: "VIDEO_SOURCE_INTEGRITY",
+  });
+  await assert.rejects(render(d, [audio]), { code: "VIDEO_AUDIO_TOO_SHORT" });
+  assert.deepEqual(await readdir(path.join(directory, "video-render")), []);
+});
+test("video refuses unsupported glyphs, unreadable brand contrast, overflow and a changed renderer", async () => {
+  const d = fixtureDefinition();
+  d.storyboard[0].headline = "\u{1FAE8}";
+  await assert.rejects(render(d), { code: "VIDEO_GLYPH_MISSING" });
+  d.storyboard[0].headline = "有效文字";
+  d.brand.ink = d.brand.background;
+  await assert.rejects(render(d), { code: "VIDEO_TEXT_CONTRAST" });
+  d.brand.ink = "#17202c";
+  d.storyboard[0].headline = "長\n".repeat(120);
+  await assert.rejects(render(d), { code: "VIDEO_TEXT_OVERFLOW" });
+  d.storyboard[0].headline = "有效文字";
+  await assert.rejects(
+    render(d, [], { expectedProfile: { renderer: "old" } }),
+    { code: "VIDEO_RENDERER_CHANGED" },
+  );
+});
+test("video supports actual fractional frame rate and explicit absence of audio without silent voice synthesis", async () => {
+  const d = fixtureDefinition();
+  d.width = 256;
+  d.height = 456;
+  d.duration_frames = 90;
+  d.frame_rate = { numerator: 30000, denominator: 1001 };
+  d.storyboard = [
+    { ...d.storyboard[0], headline: "開始", body: "固定時間線", end_frame: 90 },
+  ];
+  d.subtitles = [{ ...d.subtitles[0], end_frame: 90, text: "測試字幕" }];
+  const result = await render(d);
+  assert.equal(result.probe.frame_rate, "30000/1001");
+  assert.equal(result.probe.duration_frames, 90);
+  assert.equal(result.probe.audio_codec, null);
+  assert.equal(result.probe.audio, null);
+});
+test("video decodes fixed PNGs and rejects external or disguised image data", async () => {
+  const d = fixtureDefinition(),
+    canvas = createCanvas(32, 32),
+    ctx = canvas.getContext("2d");
+  ctx.fillStyle = "#2458df";
+  ctx.fillRect(0, 0, 32, 32);
+  const bytes = canvas.toBuffer("image/png"),
+    source = {
+      asset_id: randomUUID(),
+      version: 1,
+      bytes,
+      sha256: hash(bytes),
+      mime_type: "image/png",
+    };
+  d.width = 256;
+  d.height = 456;
+  d.duration_frames = 90;
+  d.storyboard = [
+    {
+      ...d.storyboard[0],
+      headline: "測試",
+      body: "圖片",
+      image: { asset_id: source.asset_id, version: 1 },
+      end_frame: 90,
+    },
+  ];
+  d.subtitles = [];
+  const result = await render(d, [source]);
+  assert.equal(result.manifest.sources.length, 1);
+  assert.equal(result.probe.subtitles.burned_in, false);
+  const bad = Buffer.from(
+    '<svg><image href="https://example.invalid/a.png"/></svg>',
+  );
+  await assert.rejects(
+    render(d, [{ ...source, bytes: bad, sha256: hash(bad) }]),
+    { code: "VIDEO_IMAGE_INVALID" },
+  );
+});
+test("video respects explicit cancellation and removes its owned intermediate directory", async () => {
+  await mkdir(directory, { recursive: true });
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(
+    render(fixtureDefinition(), [], { signal: controller.signal }),
+    { code: "VIDEO_CANCELLED" },
+  );
+});

@@ -1,0 +1,524 @@
+{
+  "at": "2026-10-21T11:46:07.259Z",
+  "status": "passed",
+  "scope": "Built Web and actual API/native PostgreSQL; native FFmpeg composition with supplied original fixture media only, no AI or live-provider qualification",
+  "checks": [
+    {
+      "name": "actual email sign-in, user session and enterprise/project onboarding",
+      "status": "passed"
+    },
+    {
+      "name": "client timeline validation blocks a one-frame gap and enables saving only after continuous coverage is restored",
+      "status": "passed"
+    },
+    {
+      "name": "actual video editor saves separate script, three contiguous scenes, captions, fixed PNG/audio versions and rights; invalid frame gaps disable saving",
+      "status": "passed"
+    },
+    {
+      "name": "actual 15 second 9:16 H264/AAC file has 450 decoded frames, burned Chinese captions, measured non-silent owned soundtrack and real Chrome playback",
+      "status": "passed"
+    },
+    {
+      "name": "all six real browser downloads preserve frozen sources, font/encoder hashes, separate script/storyboard/VTT/probe and actual MP4 bytes",
+      "status": "passed"
+    },
+    {
+      "name": "actual version edit, source-integrity failure and explicit retry keep all history and leave the earlier delivered MP4 unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "actual cancel action stops the durable queued render without publishing or silently retrying",
+      "status": "passed"
+    },
+    {
+      "name": "concurrent project updates preserve the user's open draft and disable stale saves",
+      "status": "passed"
+    },
+    {
+      "name": "source quarantine removes current playback/download actions and denies the protected preview; restoring the source preserves original immutable files",
+      "status": "passed"
+    },
+    {
+      "name": "Traditional Chinese dark and 390-pixel video workspace/editor fit the viewport and close with Escape",
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "samples": [
+    {
+      "schema": "VideoCreated",
+      "route": "POST /v1/tenants/0e4841a8-74d2-4bd8-9c14-ae5ab69cb07d/projects/943f4fb0-3581-4839-b161-e2764a44791b/video-projects",
+      "response": {
+        "id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "version": 1
+      }
+    },
+    {
+      "schema": "VideoDetail",
+      "route": "GET current video",
+      "response": {
+        "id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "name": "Harbour studio video",
+        "version": 1,
+        "data_mode": "simulated",
+        "definition": {
+          "audio": {
+            "role": "music",
+            "source": {
+              "version": 1,
+              "asset_id": "1998da87-7998-43d2-aa86-feecf83cbfa3"
+            },
+            "gain_db": -3,
+            "rights_basis": "owned",
+            "source_in_frame": 15,
+            "rights_reference": "Owned: deterministic tone authored by this local acceptance fixture."
+          },
+          "brand": {
+            "ink": "#17202C",
+            "logo": {
+              "version": 1,
+              "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+            },
+            "label": "CopyPaste",
+            "accent": "#2458DF",
+            "background": "#F1F2F4"
+          },
+          "width": 720,
+          "height": 1280,
+          "locale": "en",
+          "script": {
+            "brief": "Original supplied product image, three scenes, captions and an owned soundtrack.",
+            "title": "A little room for your next idea",
+            "narration": "The provided script remains editable. This is not synthesized speech.",
+            "call_to_action": "Discover more"
+          },
+          "template": "campaign-cuts-1",
+          "subtitles": [
+            {
+              "key": "cue-e97cc9d6",
+              "text": "從想法，到第一步。",
+              "end_frame": 150,
+              "start_frame": 0
+            },
+            {
+              "key": "cue-d7275bf4",
+              "text": "每一個畫面，都有根據。",
+              "end_frame": 300,
+              "start_frame": 150
+            },
+            {
+              "key": "cue-276ee8e7",
+              "text": "一起完成下一個創意。 ",
+              "end_frame": 450,
+              "start_frame": 300
+            }
+          ],
+          "frame_rate": {
+            "numerator": 30,
+            "denominator": 1
+          },
+          "storyboard": [
+            {
+              "key": "opening",
+              "body": "A Hong Kong team. A new direction.",
+              "image": {
+                "version": 1,
+                "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+              },
+              "headline": "Room for a new idea",
+              "direction": "Open with the brand",
+              "end_frame": 150,
+              "start_frame": 0
+            },
+            {
+              "key": "benefit",
+              "body": "Supplied assets, fixed in time.",
+              "image": {
+                "version": 1,
+                "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+              },
+              "headline": "Made for your next move",
+              "direction": "Show the supplied product",
+              "end_frame": 300,
+              "start_frame": 150
+            },
+            {
+              "key": "action",
+              "body": "Your next campaign starts here.",
+              "image": {
+                "version": 1,
+                "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+              },
+              "headline": "Let's make it happen",
+              "direction": "Close with the call to action",
+              "end_frame": 450,
+              "start_frame": 300
+            }
+          ],
+          "schema_version": "copypaste-video-1",
+          "duration_frames": 450
+        },
+        "renderer_profile": {
+          "font_id": "noto-sans-tc-864727d210d54f25",
+          "renderer": "copypaste-campaign-cuts-1",
+          "audio_codec": "aac",
+          "font_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f",
+          "video_codec": "h264",
+          "pixel_format": "yuv420p",
+          "ffmpeg_sha256": "40cbd764aa9f5e9ae10b41da9e53fc901c606832f05af38f67ec763a580020c5",
+          "ffprobe_sha256": "a01e80f85f8e33492efabb13b56f5ba6534868deae1984c28680422880831ef3",
+          "audio_sample_rate": 48000
+        },
+        "input_hash": "73cc1114e03aca547a3c02695a51c3af031d260e9919befc7c47bb16b8aec90e",
+        "versions": [
+          {
+            "version": 1,
+            "input_hash": "73cc1114e03aca547a3c02695a51c3af031d260e9919befc7c47bb16b8aec90e",
+            "renderer_profile": {
+              "font_id": "noto-sans-tc-864727d210d54f25",
+              "renderer": "copypaste-campaign-cuts-1",
+              "audio_codec": "aac",
+              "font_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f",
+              "video_codec": "h264",
+              "pixel_format": "yuv420p",
+              "ffmpeg_sha256": "40cbd764aa9f5e9ae10b41da9e53fc901c606832f05af38f67ec763a580020c5",
+              "ffprobe_sha256": "a01e80f85f8e33492efabb13b56f5ba6534868deae1984c28680422880831ef3",
+              "audio_sample_rate": 48000
+            },
+            "actor_id": "cc341f2f-5bd4-40f3-8bfa-1462580bcf36",
+            "created_at": "2026-10-21T11:45:41.521Z"
+          }
+        ],
+        "renders": [],
+        "cost": {
+          "ai_cost_micros": "0",
+          "source": "local_composition_no_ai",
+          "currency": "HKD"
+        }
+      }
+    },
+    {
+      "schema": "VideoQueued",
+      "route": "POST /v1/tenants/0e4841a8-74d2-4bd8-9c14-ae5ab69cb07d/projects/943f4fb0-3581-4839-b161-e2764a44791b/video-projects/89e231ba-5c4a-402b-b7fc-2d2b61896cc0/renders",
+      "response": {
+        "video_id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "id": "650f57e5-086e-4657-85d0-2e819bb31488",
+        "revision": 1,
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "VideoDetail",
+      "route": "GET completed video",
+      "response": {
+        "id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "name": "Harbour studio video",
+        "version": 1,
+        "data_mode": "simulated",
+        "definition": {
+          "audio": {
+            "role": "music",
+            "source": {
+              "version": 1,
+              "asset_id": "1998da87-7998-43d2-aa86-feecf83cbfa3"
+            },
+            "gain_db": -3,
+            "rights_basis": "owned",
+            "source_in_frame": 15,
+            "rights_reference": "Owned: deterministic tone authored by this local acceptance fixture."
+          },
+          "brand": {
+            "ink": "#17202C",
+            "logo": {
+              "version": 1,
+              "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+            },
+            "label": "CopyPaste",
+            "accent": "#2458DF",
+            "background": "#F1F2F4"
+          },
+          "width": 720,
+          "height": 1280,
+          "locale": "en",
+          "script": {
+            "brief": "Original supplied product image, three scenes, captions and an owned soundtrack.",
+            "title": "A little room for your next idea",
+            "narration": "The provided script remains editable. This is not synthesized speech.",
+            "call_to_action": "Discover more"
+          },
+          "template": "campaign-cuts-1",
+          "subtitles": [
+            {
+              "key": "cue-e97cc9d6",
+              "text": "從想法，到第一步。",
+              "end_frame": 150,
+              "start_frame": 0
+            },
+            {
+              "key": "cue-d7275bf4",
+              "text": "每一個畫面，都有根據。",
+              "end_frame": 300,
+              "start_frame": 150
+            },
+            {
+              "key": "cue-276ee8e7",
+              "text": "一起完成下一個創意。 ",
+              "end_frame": 450,
+              "start_frame": 300
+            }
+          ],
+          "frame_rate": {
+            "numerator": 30,
+            "denominator": 1
+          },
+          "storyboard": [
+            {
+              "key": "opening",
+              "body": "A Hong Kong team. A new direction.",
+              "image": {
+                "version": 1,
+                "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+              },
+              "headline": "Room for a new idea",
+              "direction": "Open with the brand",
+              "end_frame": 150,
+              "start_frame": 0
+            },
+            {
+              "key": "benefit",
+              "body": "Supplied assets, fixed in time.",
+              "image": {
+                "version": 1,
+                "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+              },
+              "headline": "Made for your next move",
+              "direction": "Show the supplied product",
+              "end_frame": 300,
+              "start_frame": 150
+            },
+            {
+              "key": "action",
+              "body": "Your next campaign starts here.",
+              "image": {
+                "version": 1,
+                "asset_id": "8a26e7f1-c1df-417b-bb3b-48f1159135dc"
+              },
+              "headline": "Let's make it happen",
+              "direction": "Close with the call to action",
+              "end_frame": 450,
+              "start_frame": 300
+            }
+          ],
+          "schema_version": "copypaste-video-1",
+          "duration_frames": 450
+        },
+        "renderer_profile": {
+          "font_id": "noto-sans-tc-864727d210d54f25",
+          "renderer": "copypaste-campaign-cuts-1",
+          "audio_codec": "aac",
+          "font_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f",
+          "video_codec": "h264",
+          "pixel_format": "yuv420p",
+          "ffmpeg_sha256": "40cbd764aa9f5e9ae10b41da9e53fc901c606832f05af38f67ec763a580020c5",
+          "ffprobe_sha256": "a01e80f85f8e33492efabb13b56f5ba6534868deae1984c28680422880831ef3",
+          "audio_sample_rate": 48000
+        },
+        "input_hash": "73cc1114e03aca547a3c02695a51c3af031d260e9919befc7c47bb16b8aec90e",
+        "versions": [
+          {
+            "version": 1,
+            "input_hash": "73cc1114e03aca547a3c02695a51c3af031d260e9919befc7c47bb16b8aec90e",
+            "renderer_profile": {
+              "font_id": "noto-sans-tc-864727d210d54f25",
+              "renderer": "copypaste-campaign-cuts-1",
+              "audio_codec": "aac",
+              "font_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f",
+              "video_codec": "h264",
+              "pixel_format": "yuv420p",
+              "ffmpeg_sha256": "40cbd764aa9f5e9ae10b41da9e53fc901c606832f05af38f67ec763a580020c5",
+              "ffprobe_sha256": "a01e80f85f8e33492efabb13b56f5ba6534868deae1984c28680422880831ef3",
+              "audio_sample_rate": 48000
+            },
+            "actor_id": "cc341f2f-5bd4-40f3-8bfa-1462580bcf36",
+            "created_at": "2026-10-21T11:45:41.521Z"
+          }
+        ],
+        "renders": [
+          {
+            "id": "650f57e5-086e-4657-85d0-2e819bb31488",
+            "video_id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+            "version": 1,
+            "revision": 3,
+            "state": "succeeded",
+            "error_code": null,
+            "mp4_asset_id": "039012ce-892a-4709-80d5-1835fb6cc4ff",
+            "project_asset_id": "3f4119cb-bb10-4ff7-a570-ecbb824f3c6f",
+            "script_asset_id": "ca55160c-08c2-46dc-aa87-65dc9ffcb9ea",
+            "storyboard_asset_id": "a147c02e-d55f-446f-9bcd-52668ef6ab3e",
+            "subtitles_asset_id": "b8573d94-7f70-4b47-ac27-ae08fd3acf05",
+            "probe_asset_id": "19e9f5b6-2c1e-4257-acd1-acf740d764bd",
+            "probe": {
+              "audio": {
+                "role": "music",
+                "silent": false,
+                "gain_db": -3,
+                "generated": false,
+                "rights_basis": "owned",
+                "source_sha256": "37bae3595828b6a570e91f109276f4fba97cedc1dc16d30f7096cf983a4b9924",
+                "mean_volume_db": -22.4,
+                "source_in_frame": 15,
+                "rights_reference": "Owned: deterministic tone authored by this local acceptance fixture.",
+                "measured_after_encode": true
+              },
+              "bytes": 322521,
+              "width": 720,
+              "height": 1280,
+              "sha256": "787f226d2dadad3fb36d08981959c0d86685f4966d24b4ab79289d7f37a965b7",
+              "subtitles": {
+                "cues": 3,
+                "source": "provided_text",
+                "burned_in": true,
+                "safe_area": {
+                  "top": 0.8,
+                  "left": 0.08,
+                  "right": 0.08,
+                  "bottom": 0.08
+                }
+              },
+              "frame_rate": "30/1",
+              "audio_codec": "aac",
+              "video_codec": "h264",
+              "pixel_format": "yuv420p",
+              "fully_decoded": true,
+              "duration_frames": 450,
+              "duration_seconds": 15,
+              "renderer_profile": {
+                "font_id": "noto-sans-tc-864727d210d54f25",
+                "renderer": "copypaste-campaign-cuts-1",
+                "audio_codec": "aac",
+                "font_sha256": "864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f",
+                "video_codec": "h264",
+                "pixel_format": "yuv420p",
+                "ffmpeg_sha256": "40cbd764aa9f5e9ae10b41da9e53fc901c606832f05af38f67ec763a580020c5",
+                "ffprobe_sha256": "a01e80f85f8e33492efabb13b56f5ba6534868deae1984c28680422880831ef3",
+                "audio_sample_rate": 48000
+              },
+              "audio_sample_rate": "48000"
+            },
+            "ai_cost_micros": "0",
+            "cost_source": "local_composition_no_ai",
+            "elapsed_ms": 3888,
+            "output_bytes": "327909",
+            "created_at": "2026-10-21T11:45:41.675Z",
+            "started_at": "2026-10-21T11:45:41.731Z",
+            "finished_at": "2026-10-21T11:45:45.621Z",
+            "output_available": true
+          }
+        ],
+        "cost": {
+          "ai_cost_micros": "0",
+          "source": "local_composition_no_ai",
+          "currency": "HKD"
+        }
+      }
+    },
+    {
+      "schema": "VideoCreated",
+      "route": "POST /v1/tenants/0e4841a8-74d2-4bd8-9c14-ae5ab69cb07d/projects/943f4fb0-3581-4839-b161-e2764a44791b/video-projects/89e231ba-5c4a-402b-b7fc-2d2b61896cc0/edit",
+      "response": {
+        "id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "version": 2
+      }
+    },
+    {
+      "schema": "VideoQueued",
+      "route": "POST /v1/tenants/0e4841a8-74d2-4bd8-9c14-ae5ab69cb07d/projects/943f4fb0-3581-4839-b161-e2764a44791b/video-projects/89e231ba-5c4a-402b-b7fc-2d2b61896cc0/renders",
+      "response": {
+        "video_id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "id": "ebafe6ea-3452-4462-b654-3c0cb889e6bc",
+        "revision": 1,
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "VideoQueued",
+      "route": "POST /v1/tenants/0e4841a8-74d2-4bd8-9c14-ae5ab69cb07d/projects/943f4fb0-3581-4839-b161-e2764a44791b/video-projects/89e231ba-5c4a-402b-b7fc-2d2b61896cc0/renders",
+      "response": {
+        "video_id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "id": "27bc9f92-a656-4696-8610-0b4481e4ffd6",
+        "revision": 1,
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "VideoQueued",
+      "route": "POST /v1/tenants/0e4841a8-74d2-4bd8-9c14-ae5ab69cb07d/projects/943f4fb0-3581-4839-b161-e2764a44791b/video-projects/89e231ba-5c4a-402b-b7fc-2d2b61896cc0/renders",
+      "response": {
+        "video_id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+        "id": "e8d0d0e9-3bb2-41d1-9866-4d930fce9874",
+        "revision": 1,
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "VideoCancelled",
+      "route": "POST /v1/tenants/0e4841a8-74d2-4bd8-9c14-ae5ab69cb07d/projects/943f4fb0-3581-4839-b161-e2764a44791b/video-projects/89e231ba-5c4a-402b-b7fc-2d2b61896cc0/renders/e8d0d0e9-3bb2-41d1-9866-4d930fce9874/cancel",
+      "response": {
+        "id": "e8d0d0e9-3bb2-41d1-9866-4d930fce9874",
+        "revision": 2,
+        "state": "cancelled"
+      }
+    },
+    {
+      "schema": "VideoList",
+      "route": "GET current project list",
+      "response": {
+        "items": [
+          {
+            "id": "89e231ba-5c4a-402b-b7fc-2d2b61896cc0",
+            "name": "Harbour studio video",
+            "version": 3,
+            "created_at": "2026-10-21T11:45:41.494Z"
+          }
+        ],
+        "next_cursor": null
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-web/assets/screenshots/template-video-02-create-en.png",
+      "sha256": "97e49b4e39cb12138de9d5b357d20b4ce3bdf6610f96f739b6bb6f09741a7953"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/template-video-02-player-en.png",
+      "sha256": "15da2bacdf541726e41c8264ee23559951c6e4c566626d2e3337de6f8f7a52a6"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/template-video-02-workspace-en.png",
+      "sha256": "0e049b904f0181b4d0f5c6bc4e647c15374c399cc16bc6ca97c8811c4ae2af42"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/template-video-02-workspace-zh-dark.png",
+      "sha256": "60efa99ac189d44d3aa3df9dcbe0a151b5b04979dbddc3416aba025a238b805a"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/template-video-02-workspace-zh-narrow.png",
+      "sha256": "3514016174c942244ca520a44dcfb0cb11a3ced79bf26cccdde9eb214f1a3168"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/template-video-02-editor-zh-narrow.png",
+      "sha256": "7406330a1f797244213fa2816bac383bff93a2d4fc77f50eac3e154e9ed6b1cf"
+    }
+  ],
+  "browser_closed": true,
+  "browser_runtime": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "36a30716f0994b377f1ce6b47cfe35399b9719e31d597fe0ea0d8f3b62aed532",
+    "version": "155.0.8059.80"
+  },
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "a90f692c9ad9c0c7089706b2e621e48cc9349534108560e52135f7dbad1539ad"
+}
