@@ -1021,6 +1021,13 @@ $("video-workspace").addEventListener(
       await send("OPEN_WEB", { section: "video" });
     }),
 );
+$("marketing-connections").addEventListener(
+  "click",
+  () =>
+    void run(async () => {
+      await send("OPEN_WEB", { section: "connections" });
+    }),
+);
 $("tenant").addEventListener(
   "change",
   () =>
@@ -1304,6 +1311,7 @@ $("local-revoke").addEventListener(
 const translations: Record<string, string> = {
   批量設計工作台: "Open batch design workspace",
   影片製作工作台: "Open video production workspace",
+  營銷帳戶與同步: "Marketing accounts & sync",
   檢視模型與費率版本: "Review model and rate versions",
   "工作，就從": "Your next idea,",
   "這裡開始。": "starts here.",
