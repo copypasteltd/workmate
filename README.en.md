@@ -1,5 +1,40 @@
 # CopyPaste Web
 
+This repository is the customer cloud workspace. Sign in, choose a workspace/project, then open Marketing insights → Website audits & rechecks to confirm scope and inspect evidence, reports and recheck history.
+
+## Scoped website audits and rechecks (stage 62)
+
+Open Marketing insights → Website audits & rechecks. Confirm seed URLs, exact hosts, path prefixes, page-request and AI budgets, then explicitly authorize collection. Inspect progress, uncovered URLs, access limits and URL findings with original quotes, capture times, HTTP/charset facts and hashes. Download actual JSON/HTML attachments. An explicitly requested same-scope recheck creates immutable new history and confirms changes only for pages actually inspected.
+
+Business and AI data remain **synthetic as authorized**. The non-production fixture performs actual native HTTP; a real locked Codex process interprets retained facts through the company's internal OpenAI-compatible synthetic gateway. Public deployment and live model quality remain unqualified. Every DNS answer and redirect is scoped. Collection submits no credentials/forms and executes no scripts. Robots, login pages, errors, unvisited scope and sequential collection limits stay explicit. Storage exhaustion stops collection and releases the unused inference reservation.
+
+Private sources, cache ancestors, recheck history, reports and deliberately published copies retain current authorization, retention, quarantine and erasure controls. Identity is checked again after storage I/O. Admin tenant/project scope, metadata, body access and content operations remain separate. Quarantining a source fences derived customer evidence. Saved website change tasks, Search Console connection metrics, GEO observations, canonical TaskDTO and complete original acceptance remain tracked.
+
+**Desktop stays frameless**, with custom dragging and minimize/maximize/close controls, no Electron native frame, application menu or Alt menu. Email-code sessions use local test mailbox delivery, with actual PKCE identity and tenant-bound authenticated native saves. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to Chrome preferences. Its Website audits & rechecks action opens only the fixed company workspace. Owned temporary test tabs are closed.
+
+Validation: **45/45 focused checks, 716/716 Platform tests**, retaining all **674** previous named tests; **13 actual Web/Admin and 20 newly packaged native checks**. Both native databases upgrade SQL077→079 while retaining all rows in **164** prior public tables and SQL001–077. Three added tables are empty with FORCE RLS. Original product tracking remains 81 partially verified, 21 not proven complete and zero fully accepted requirements.
+
+Current localhost previews: Desktop `release/scoped-seo-62-02/`; Extension `release/scoped-seo-62-02/CopyPaste-0.5.0-sidepanel.zip`. The unpacked Desktop and actual native Side Panel were run. Setup/Portable remain unsigned and were not installed, published or production-qualified. Earlier sections retain historical source/package scope.
+
+```mermaid
+flowchart LR
+  Login[Email / PKCE and current project] --> Confirm[Confirm host / path / request and AI budgets]
+  Confirm --> Crawl[Durable bounded HTTP / robots / DNS pinning]
+  Crawl --> Evidence[Immutable URL findings and raw source versions]
+  Evidence --> Codex[Locked Codex / internal gateway / bound facts]
+  Codex --> Download[JSON and validated HTML downloads]
+  Evidence --> Recheck[Explicit same-scope immutable recheck]
+  Recheck --> Compare[Observed repairs / persistent / unknown]
+  Desktop[Frameless Desktop / native authenticated save] --> Download
+  Panel[Toolbar / Chrome native Side Panel] --> Confirm
+  Admin[Scoped Admin / separate metadata and body permissions] --> Govern[Quarantine / retention / erasure]
+  Govern --> Evidence
+```
+
+![Actual URL findings and retained quotes](assets/screenshots/scoped-seo-05-findings-en.png)
+
+![Traditional Chinese narrow recheck](assets/screenshots/scoped-seo-05-recheck-zh-narrow.png)
+
 ## Marketing accounts and native clients (stage 61)
 
 Connections supports Google Ads, Meta Ads, Google Analytics 4 and Search Console. Select a provider, complete the clearly labelled synthetic consent, wait for account/property/site discovery, then confirm discovered accounts and the projects allowed to use snapshots. Select dates and explicitly create a snapshot. The workbench shows durable pages, errors, rate-limit retry time and immutable history. Queued/running jobs can be cancelled; an explicit retry creates a new linked job.
