@@ -1,6 +1,12 @@
 # CopyPaste 0.5.0 代码交付入口
 
-当前阶段 54 的 [用户明确采用版本](technical/54-explicit-agent-version-adoption.md) 已通过完整平台回归 484/484、专项 93/93、实际 Web 12/12、实际新版打包 Desktop / 原生右侧栏 11/11，两库 065 升级各保留 131 张原公共表。当前新增预览路径为 `dev/copypaste-desktop/release/adoption-54/` 的 Setup、Portable 与解包程序，以及 `dev/copypaste-extension/release/adoption-54/CopyPaste-0.5.0-sidepanel.zip`，见 [完整字节清单](quality/agent-adoption-artifacts-02.json)。Desktop 无系统边框、Electron 默认菜单或 Alt 菜单；扩展真实工具栏按钮打开默认右侧原生 Side Panel，再次点击收起。各端双语 README、逻辑图与实际截图已同步。产物为未签名 localhost 预览，实际运行了解包程序和原生侧栏，未进行安装或上架验收。
+当前后端与后台源码已完成[阶段 58 调用管理](technical/58-provider-admin-control-and-reconciliation.md)：专项 **158/158** 包含于全量 **588/588**，保留原全部 559 项命名测试；实际构建版 Admin **10 项流程及 29 份严格响应样本**通过。策略发布、人工费用来源、容量释放和原任务结算分别审计并独立审批；SQL068 原生升级保留两库各 144 张原表全部行摘要，既有管理员权限不自动扩大。中英 README 含启用命令、逻辑图和实际截图，见[完整核查回执](quality/provider-admin-checkpoint.json)。原始 102 项与 TC/NFR/G01–G10 的范围保持不变；下方旧阶段数字保留各自来源。
+
+[提交字节核对](quality/provider-admin-staged-verification-01.json)确认暂存源码与上述实际测试来源一致，13,130 份已扫描留档保持原字节。空格检查仅逐一排除 12 份原始品牌 SVG 前像和 20 份未编辑的原始日志；每份均有摘要绑定，产品源码无例外。
+
+最新无边框 Desktop 与原生 Side Panel 的源码、运行目录及 Setup/Portable/ZIP 再次[逐字节复核通过](quality/native-clients-recheck-20261021-02.json)，与既有 11/11 原生 UI 验收一致。此次只读核对没有新建浏览器或安装应用。
+
+当前最新客户端预览（阶段 54）的 [用户明确采用版本](technical/54-explicit-agent-version-adoption.md) 已通过完整平台回归 484/484、专项 93/93、实际 Web 12/12、实际新版打包 Desktop / 原生右侧栏 11/11，两库 065 升级各保留 131 张原公共表。当前新增预览路径为 `dev/copypaste-desktop/release/adoption-54/` 的 Setup、Portable 与解包程序，以及 `dev/copypaste-extension/release/adoption-54/CopyPaste-0.5.0-sidepanel.zip`，见 [完整字节清单](quality/agent-adoption-artifacts-02.json)。Desktop 无系统边框、Electron 默认菜单或 Alt 菜单；扩展真实工具栏按钮打开默认右侧原生 Side Panel，再次点击收起。各端双语 README、逻辑图与实际截图已同步。产物为未签名 localhost 预览，实际运行了解包程序和原生侧栏，未进行安装或上架验收。
 
 这些是未签名 localhost 预览；实际执行解包 EXE 与 Side Panel，Setup/Portable 未安装，未上架。下方费用阶段的 410/410、旧 `release/frameless/`、`release/sidepanel/` 及其他更早数据保留其原历史范围；不能用于验收新增源码。完整 102 项综合验收继续跟踪。
 
@@ -37,7 +43,7 @@
 | --------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | platform  | [中文](../dev/copypaste-platform/README.md) / [English](../dev/copypaste-platform/README.en.md)   | API、PostgreSQL/RLS、Codex Worker、身份、账本、权限及业务工具   |
 | web       | [中文](../dev/copypaste-web/README.md) / [English](../dev/copypaste-web/README.en.md)             | 访问、邮箱开户、企业初始化、角色、会话、素材、营销分析与流程    |
-| admin     | [中文](../dev/copypaste-admin/README.md) / [English](../dev/copypaste-admin/README.en.md)         | 独立 MFA、16 页后台、用户/消耗/费用/VIP、68 权限与审计          |
+| admin     | [中文](../dev/copypaste-admin/README.md) / [English](../dev/copypaste-admin/README.en.md)         | 独立 MFA、用户/消耗/费用/VIP、调用管理、分域权限与审计          |
 | extension | [中文](../dev/copypaste-extension/README.md) / [English](../dev/copypaste-extension/README.en.md) | Chrome MV3、浏览器授权、主动文件/网页选择及 Native Messaging    |
 | desktop   | [中文](../dev/copypaste-desktop/README.md) / [English](../dev/copypaste-desktop/README.en.md)     | Windows 工作区、浏览器 PKCE、目录授权、签名云命令与 Chrome Host |
 | delivery  | [中文](../dev/copypaste-delivery/README.md) / [English](../dev/copypaste-delivery/README.en.md)   | 原生启动/停止、跨端验收、截图、发布及离线恢复核查               |

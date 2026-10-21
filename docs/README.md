@@ -1,5 +1,7 @@
 # CopyPaste 企业 Agent 文档
 
+阶段 58 的[调用管理与独立核对后台](technical/58-provider-admin-control-and-reconciliation.md)通过专项 **158/158**、全量 **588/588**（保留全部原 559 项测试）、真实构建版 Admin **10 项流程与 29 份严格响应样本**。费用确认、容量释放和原任务唯一结算分别受控；策略、证据、范围与近期 MFA 重新检查。两库 067→068 各保留 144 张原表全部行摘要及 SQL001–067，新七表强制 RLS，不自动授予已有管理员新权限。[核查回执](quality/provider-admin-checkpoint.json)绑定源码与失败记录；原始 102 项、TC/NFR/G01–G10 与实网资格范围不变。
+
 阶段 57 的[逐调用预算](technical/57-per-request-budget-enforcement.md)通过专项 **129/129** 和全量 **559/559**（专项包含于全量），741 份平台来源不变，保留原 546 项测试；类型检查与实际构建通过。文本与图片共用原预留，内部实际计数独立由平台付费，Admin 验证具有运行及每日预算；超额与未知保留实际费用和承诺。两库 066→067 各保留 136 张原公共表全部行摘要与 SQL001–066，未补造历史消费。[核查回执](quality/provider-budget-checkpoint.json)保留失败及源码前像。完整后台策略控制与原始 102 项综合验收继续跟踪；之前 UI/原生报告保留原来源范围。
 
 阶段 56 的 [持久请求与共享限额](technical/56-durable-provider-request-control.md) 通过专项 **116/116** 和全量 **546/546**（专项包含于全量），738 份来源前后一致，保留原 531 项命名测试；类型检查和构建通过。跨进程准入、逐次用量、未知容量、孤立执行恢复及终止帧落盘交接已覆盖。两库增量升级各保留 132 张原公共表完整行摘要及 SQL001–065，未补造历史请求；066 自此不可改写。[核查回执](quality/provider-control-checkpoint.json)保留全部失败和源码前像。本轮没有打开浏览器或客户端；逐调用预算、完整后台策略控制及原始 102 项综合验收继续跟踪。
@@ -108,6 +110,7 @@ Web 主线以自然语言委派、会话中的真实执行、右侧成果/云文
 | 技术 | [默认助手与首次委派](technical/21-default-assistant-and-first-delegation.md)         | 无需自建专家、私人会话、原子预留与明确版本采纳                          |
 | 技术 | [用户明确采用版本](technical/54-explicit-agent-version-adoption.md) | 默认助手、专家与会话的模型/强度/费率比较、明确确认及三端验证 |
 | 技术 | [内部推理请求约束](technical/55-scoped-internal-inference-requests.md) | 短期范围凭证、逐次权限、完整流工具校验、图片规格与已知费用 |
+| 技术 | [58 调用管理与独立核对](technical/58-provider-admin-control-and-reconciliation.md) | 策略发布、费用与容量独立审批及原任务结算 |
 | 技术 | [57 逐调用预算与平台费用](technical/57-per-request-budget-enforcement.md) | 原预算分配、实际输入计数、平台验证预算及结算事实 |
 | 技术 | [持久请求与共享限额](technical/56-durable-provider-request-control.md) | 跨进程准入、速率、用量事实、未知容量与逐次预算后续要求 |
 | 质量 | [全体系需求差异复查](quality/09-implementation-alignment-audit.md)                   | 不可覆盖的 102 条基线、契约漂移、修复证据与未完成条件                   |
