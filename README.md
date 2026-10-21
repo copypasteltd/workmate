@@ -1,5 +1,31 @@
 # CopyPaste Platform
 
+## 批量设计与当前客户端（阶段 59）
+
+设计画布新增按创意 × 语言 × 尺寸建立的交付矩阵，每批最多 60 格。提供繁中/英文文案、同项目固定 PNG 和默认或自订尺寸；每种尺寸重新布局，保存实际 PNG、SVG 与 JSON 编辑描述。修改、重试、失败和输出历史均按单元独立保存。排版本身不调用 AI，费用来源明确为本地合成、AI HK$0，不包含已有素材的上游费用。
+
+领取与发布分别检查当前权限、输入修订和素材；取消、撤权及过期租约阻止迟到输出。后台原正文权限和企业/项目范围继续适用；源图隔离阻止派生文件读取，删除会物理清理所有嵌入副本。SVG 引用服务器字体，本阶段不分发或宣称完成自订字体商用授权。
+
+专项 **22/22** 包含于完整平台 **607/607**，保留全部原 588 项命名测试；实际 Web **10 项**及新打包客户端 **13 项**流程通过。Web 8、Desktop 25、Extension 21、交付工具 12 项独立单元测试通过。两库 068→069 各保留 151 张原公共表全部行摘要及 SQL001–068，新三表强制 RLS。
+
+Desktop 保留无边框、自绘窗口控制和无 Electron 默认菜单；扩展工具栏打开原生 Side Panel，再次点击收起。侧栏提供批量设计入口，完整画布在公司工作台打开。当前预览路径为 Desktop `release/matrices-59-02/`、Extension `release/matrices-59-02/CopyPaste-0.5.0-sidepanel.zip`；旧包不覆盖。安装器和便携版未签名、未进行安装或商店发行验收，使用 localhost 后端。全部其他专业业务、实网服务、完整 102 项及 TC/NFR/G01–G10 继续独立跟踪。
+
+```mermaid
+flowchart LR
+  Brief[Copy / fixed PNG / languages / sizes] --> Bound[Authorize / 60-unit bound]
+  Bound --> Units[Durable independent units]
+  Units --> Layout[Reflow text and image / lease]
+  Layout --> Recheck[Recheck current authority and sources]
+  Recheck --> Files[PNG / SVG / editable JSON]
+  Layout --> Failed[Keep failed receipt]
+  Failed --> Retry[Retry only this cell]
+  Files --> Edit[New input revision for this cell]
+  Retry --> Units
+  Edit --> Units
+```
+
+![Actual Web consumer of the Platform API](assets/screenshots/creative-matrix-04-matrix-18-en.png)
+
 ## 调用管理后台（阶段 58）
 
 Admin 的“调用管理”提供策略草稿与独立发布、逐请求筛选和费用字段授权、不可变人工证据及下载、费用确认、容量释放和原任务结算。费用、容量及客户扣费分别执行，保留原始未知观测；实际费率从任务冻结版本推导，不接受客户端填写结算额。平台输入计数费用不转入客户钱包。现有任意金额核账不能绕过逐请求记录。

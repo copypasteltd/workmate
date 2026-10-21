@@ -1,4 +1,5 @@
 import { expireAdminApprovals } from "./admin-approval-storage.js";
+import { advanceCreativeMatrices } from "./creative-matrices.js";
 import { dispatchFinancialNotifications } from "./financial-notifications.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import { cleanAuthReceipts } from "./auth-receipts.js";
@@ -76,6 +77,8 @@ export class Worker {
   private boss: PgBoss;
   private timer?: ReturnType<typeof setInterval>;
   private dispatching = false;
+  private stopping = false;
+  private matrixRun: Promise<unknown> | null = null;
   private active = new Map<string, AbortController>();
   private erasure: ErasureService;
   private retention: RetentionService;
@@ -151,6 +154,13 @@ export class Worker {
         "UPDATE reservations r SET status='reconciling' FROM tasks t WHERE t.id=r.task_id AND t.status='reconciling' AND r.status='reserved'",
       );
     } finally {
+      // Local media composition has its own bounded queue and must not hold up
+      // request recovery, invitations, erasure or other maintenance work.
+      if (!this.stopping && !this.matrixRun) {
+        this.matrixRun = advanceCreativeMatrices(this.db,this.storage)
+          .catch(()=>console.error(JSON.stringify({component:"worker.creative_matrices",error_code:"MATRIX_MAINTENANCE_FAILED"})))
+          .finally(()=>{this.matrixRun=null;});
+      }
       // A connector/workflow error must never starve cleanup or other due work.
       for (const [name, operation] of [
         ["provider_requests", () => recoverProviderRequests(this.db)],
@@ -1550,9 +1560,11 @@ export class Worker {
     };
   }
   async stop() {
+    this.stopping = true;
     if (this.timer) clearInterval(this.timer);
     for (const c of this.active.values()) c.abort();
     await this.boss.stop({ graceful: true, timeout: 20000 });
+    await this.matrixRun;
   }
 }
 import { dispatchEntitlementNotifications } from "./user-entitlements.js";

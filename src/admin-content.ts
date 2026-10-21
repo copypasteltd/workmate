@@ -11,6 +11,7 @@ import { eraseConversation } from "./persistent-work.js";
 import { eraseSchedule } from "./schedules.js";
 import { cancelWorkflowRun } from "./workflow-control.js";
 import { eraseWorkspaceNode } from "./cloud-files.js";
+import { matrixContentBody } from "./creative-matrices.js";
 const tables = [
   "assets",
   "tasks",
@@ -146,7 +147,9 @@ export function registerAdminContent(
             };
           }
           const body =
-            table === "workflow_schedules"
+            table === "creative_projects" && r.kind === "creative_matrix"
+              ? await matrixContentBody(tx, r)
+              : table === "workflow_schedules"
               ? (
                   await tx.query(
                     "SELECT revision,body,created_at FROM workflow_schedule_versions WHERE schedule_id=$1 ORDER BY revision DESC LIMIT 100",

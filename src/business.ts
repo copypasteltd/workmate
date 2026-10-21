@@ -164,7 +164,7 @@ export function registerBusiness(
       return {
         items: (
           await tx.query(
-            "SELECT * FROM creative_projects WHERE project_id=$1 ORDER BY created_at DESC LIMIT 100",
+            "SELECT * FROM creative_projects WHERE project_id=$1 AND kind='poster' ORDER BY created_at DESC LIMIT 100",
             [project],
           )
         ).rows,
@@ -199,7 +199,7 @@ export function registerBusiness(
         await projectAccess(tx, req.principal, tenant, project, "write");
         const r = (
           await tx.query(
-            "UPDATE creative_projects SET name=$3,body=$4,version=version+1 WHERE id=$1 AND project_id=$2 AND version=$5 RETURNING *",
+            "UPDATE creative_projects SET name=$3,body=$4,version=version+1 WHERE id=$1 AND project_id=$2 AND version=$5 AND kind='poster' RETURNING *",
             [id, project, b.name, b.body, b.version],
           )
         ).rows[0];
