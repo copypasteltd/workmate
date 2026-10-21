@@ -1,5 +1,21 @@
 # CopyPaste 交付与集成
 
+## 持久供应商请求（阶段 56）
+
+专项 03 通过 **116/116**，完整回归 01 通过 **546/546**；专项包含于全量，738 份来源前后一致，保留全部原 531 项命名测试。类型检查与实际构建通过。原生 065→066 升级在两库各保留 132 张原公共表的全部行摘要、SQL001–065 和旧校验值；新增四表强制 RLS，未补造历史请求或用量。
+
+[Focused run](evidence/provider-control-candidate-03.json) · [Full regression](evidence/provider-control-regression-01.json) · [Build and types](evidence/provider-control-static-01.json) · [Local upgrade](evidence/provider-control-upgrade.json) · [Original-row preservation](evidence/provider-control-migrations.json)
+
+真实多 Node 进程、Worker、后台验证和 Codex 路径覆盖共享限额、撤权零请求、未知占槽、孤立执行恢复、精确费用及终止帧落盘交接。模型和媒体使用假数据。首次 SQL 语法错误、首次交接回归失败、编译辅助写法失败及各次源码前像均保留，较早通过报告不代表当前源码。实际夹具回收和自建数据库关闭均通过，本轮没有打开浏览器或客户端。
+
+```powershell
+node scripts/run-provider-control-checks.mjs NEXT_ID --core
+node scripts/run-provider-control-checks.mjs NEXT_ID
+node scripts/run-provider-control-checks.mjs NEXT_ID --full
+```
+
+编号须为未使用的两位数字，不能覆盖报告。本机升级已有一次性前态守卫，升级后不再执行；SQL066 不再编辑。原始 TAP 和数据库日志保留工具输出的空白，其他源码/文档/脚本仍执行空白检查。逐调用预算、完整后台策略控制及原始综合验收继续跟踪。
+
 ## 内部推理请求（阶段 55）
 
 [当前专项 03](evidence/inference-request-candidate-03.json)通过 **112/112**，[完整回归 02](evidence/inference-request-regression-02.json)通过 **531/531**；733 份来源前后一致，全部原 484 项命名测试保留，专项包含于全量。[取消诊断 02](evidence/inference-request-cancel-probe-02.json)使用实际 Codex，确认首次请求前取消为未接收、已知零用量。记录绑定前后相同的源码、原始 TAP、验证脚本、不可改写的 SQL001–065 及实际夹具回收；自建数据库已关闭。首轮失败和此前源码的通过报告分别保留；模型/媒体使用获准假数据，Codex 和原生 PostgreSQL 实际执行。本轮没有打开浏览器或客户端，不将旧页面回执当作当前后端的界面证明。

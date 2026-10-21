@@ -1,5 +1,21 @@
 # CopyPaste Delivery and Integration
 
+## Durable provider requests (stage 56)
+
+Focused run 03 passed **116/116**, included in **546/546 full tests**. All 738 source files remained unchanged, and all 531 earlier named tests remain present. Type checking and the actual build passed. Both native databases upgraded from 065 to 066, preserving every row of 132 original public tables, SQL001–065 bytes and historical checksums. Four new tables force RLS; no historical request or usage facts were fabricated.
+
+[Focused run](evidence/provider-control-candidate-03.json) · [Full regression](evidence/provider-control-regression-01.json) · [Build and types](evidence/provider-control-static-01.json) · [Local upgrade](evidence/provider-control-upgrade.json) · [Original-row preservation](evidence/provider-control-migrations.json)
+
+Real Node workers, Codex and PostgreSQL exercise shared limits, revoked authority, unknown capacity, orphan recovery, exact cost facts and durable terminal-frame handoff. Model/media responses are simulated. Initial SQL, handoff and compilation failures retain their raw diagnostics and exact source preimages. Actual fixture reclamation and owned database shutdown passed. No browser or native client was opened; earlier UI evidence retains its original scope.
+
+```powershell
+node scripts/run-provider-control-checks.mjs NEXT_ID --core
+node scripts/run-provider-control-checks.mjs NEXT_ID
+node scripts/run-provider-control-checks.mjs NEXT_ID --full
+```
+
+Use a fresh two-digit ID and never overwrite evidence. The one-time local upgrade guard now refuses another pre-upgrade capture; migration 066 is immutable. Raw TAP/database logs retain tool-emitted whitespace, while code, documentation and scripts still pass whitespace checks. Per-call budget allocation, complete Admin policy controls and original product acceptance remain open.
+
 ## Explicit adoption (stage 54)
 
 Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.
