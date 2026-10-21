@@ -1,0 +1,83 @@
+2026-10-21 11:42:43.394 CST [8540] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 11:42:43.401 CST [8540] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 11:42:43.401 CST [8540] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 11:42:43.707 CST [14508] LOG:  database system was shut down at 2026-10-21 11:41:00 CST
+
+2026-10-21 11:42:43.869 CST [8540] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 11:42:51.730 CST [37464] ERROR:  Refund ledger writes require independently verified refund evidence
+2026-10-21 11:42:51.730 CST [37464] CONTEXT:  PL/pgSQL function verified_cash_refund_ledger() line 5 at RAISE
+2026-10-21 11:42:51.730 CST [37464] STATEMENT:  COMMIT
+
+2026-10-21 11:42:51.731 CST [37464] WARNING:  there is no transaction in progress
+
+2026-10-21 11:42:51.938 CST [37464] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-21 11:42:51.938 CST [37464] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-21 11:42:51.938 CST [37464] STATEMENT:  COMMIT
+
+2026-10-21 11:42:51.938 CST [37464] WARNING:  there is no transaction in progress
+
+2026-10-21 11:42:51.940 CST [37464] ERROR:  Invalid settlement charge
+2026-10-21 11:42:51.940 CST [37464] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-21 11:42:51.940 CST [37464] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-21 11:42:51.941 CST [37464] ERROR:  Invalid settlement funding bucket
+2026-10-21 11:42:51.941 CST [37464] CONTEXT:  PL/pgSQL function validate_billing_source() line 12 at RAISE
+2026-10-21 11:42:51.941 CST [37464] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-21 11:42:51.943 CST [37464] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-21 11:42:51.943 CST [37464] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-21 11:42:51.943 CST [37464] STATEMENT:  COMMIT
+
+2026-10-21 11:42:51.943 CST [37464] WARNING:  there is no transaction in progress
+
+2026-10-21 11:42:51.984 CST [23676] ERROR:  Billing source history is immutable
+2026-10-21 11:42:51.984 CST [23676] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 11:42:51.984 CST [23676] STATEMENT:  UPDATE billing_settlement_sources SET amount_micros=1 WHERE id=$1
+
+2026-10-21 11:42:51.985 CST [23676] ERROR:  Billing source history is immutable
+2026-10-21 11:42:51.985 CST [23676] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 11:42:51.985 CST [23676] STATEMENT:  DELETE FROM billing_settlement_sources WHERE id=$1
+
+2026-10-21 11:42:52.020 CST [37464] ERROR:  Invalid settlement charge
+2026-10-21 11:42:52.020 CST [37464] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-21 11:42:52.020 CST [37464] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,amount_micros) VALUES($1,$2,$3,'credit',1)
+
+2026-10-21 11:42:52.061 CST [31264] ERROR:  Billing source history is immutable
+2026-10-21 11:42:52.061 CST [31264] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 11:42:52.061 CST [31264] STATEMENT:  UPDATE billing_credit_repayments SET amount_micros=1 WHERE funding_entry_id=$1
+
+2026-10-21 11:42:52.061 CST [31264] ERROR:  Billing source history is immutable
+2026-10-21 11:42:52.061 CST [31264] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-21 11:42:52.061 CST [31264] STATEMENT:  DELETE FROM billing_credit_repayments WHERE funding_entry_id=$1
+
+2026-10-21 11:42:52.134 CST [37064] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:42:52.805 CST [37064] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.424 s, total=0.671 s; sync files=12, longest=0.091 s, average=0.036 s; distance=13619 kB, estimate=13619 kB; lsn=7/3DBB7A90, redo lsn=7/3DBB7A38
+
+2026-10-21 11:42:55.962 CST [40784] ERROR:  permission denied for table billing_credit_legacy_sources
+2026-10-21 11:42:55.962 CST [40784] STATEMENT:  INSERT INTO billing_credit_legacy_sources(billing_account_id,source_id) VALUES($1,$2)
+
+2026-10-21 11:42:56.120 CST [37064] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:42:56.671 CST [37064] LOG:  checkpoint complete: wrote 22 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.390 s, total=0.551 s; sync files=9, longest=0.081 s, average=0.044 s; distance=13340 kB, estimate=13591 kB; lsn=7/3E8BED10, redo lsn=7/3E8BECB8
+
+2026-10-21 11:42:57.847 CST [8540] LOG:  received fast shutdown request
+
+2026-10-21 11:42:57.898 CST [8540] LOG:  aborting any active transactions
+
+2026-10-21 11:42:57.904 CST [8540] LOG:  background worker "logical replication launcher" (PID 10480) exited with exit code 1
+
+2026-10-21 11:42:57.904 CST [37064] LOG:  shutting down
+
+2026-10-21 11:42:57.946 CST [37064] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 11:42:58.115 CST [37064] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.039 s, total=0.211 s; sync files=1, longest=0.039 s, average=0.039 s; distance=0 kB, estimate=12232 kB; lsn=7/3E8BEE28, redo lsn=7/3E8BEE28
+
+2026-10-21 11:42:58.240 CST [8540] LOG:  database system is shut down
+

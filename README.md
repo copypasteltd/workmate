@@ -1,5 +1,33 @@
 # CopyPaste 交付与集成
 
+## 逐调用预算（阶段 57）
+
+文本生成先通过公司内部 `/v1/responses/input_tokens` 计数完整实际上下文，以冻结费率和明确输出上限原子分配预算；图片与文本共用任务原预留。计数费用须明确验证及定价，由平台承担，缺少计数或价格时禁止猜测后继续生成。每个证明绑定原操作、摘要、主体和能力，只能使用一次。Admin 能力验证具有单次与每日平台预算，不使用客户钱包。
+
+最终结算聚合持久调用的精确费用分子，统一取整并只入账一次。未知结果保留承诺，用量不符或超限先存真实消费再进入核账，不扩大客户预算。仅报告模拟文本计数的注入测试适配器，不能给实际图片调用添加未经供应商记录的文本费用。
+
+专项 **129/129** 包含于全量 **559/559**，741 份来源前后一致，保留阶段 56 全部 546 项命名测试；类型检查与实际构建通过。两套现有原生数据库完成 066→067，各保留 136 张原公共表全部行摘要、SQL001–066 和历史校验值。新增八表强制 RLS，仅为明确未执行的任务补建原预算边界，未补造历史消费或已验证价格。SQL067 自此不可改写。
+
+Codex、原生 PostgreSQL 和费用事务实际执行，模型/媒体使用获准假数据。本阶段没有打开浏览器或客户端；既有截图和安装包保留其原来源范围。完整 Admin 策略发布、请求目录、按证据核对费用/容量及原始 102 项综合验收继续跟踪。以下旧章节按各自阶段理解。
+
+```mermaid
+flowchart LR
+  Context[Actual normalized context] --> Count[Company input count / platform funds]
+  Count --> Proof[One generation ID / digest / identity]
+  Proof --> Allocate[Original task budget / frozen prices / output bound]
+  Image[Image tools] --> Allocate
+  Admin[Admin run / daily platform budget] --> Allocate
+  Allocate --> Dispatch[Reauthorize / company API]
+  Dispatch --> Facts[Persist actual usage / exact numerator]
+  Facts --> Settle[One aggregate customer settlement]
+  Dispatch --> Unknown[Unknown / retain commitment]
+  Facts --> Violation[Overrun / preserve spend / reconcile]
+```
+
+[Focused run](evidence/provider-budget-candidate-05.json) · [Full regression](evidence/provider-budget-regression-03.json) · [Build and types](evidence/provider-budget-static-04.json) · [Local upgrade](evidence/provider-budget-upgrade.json) · [Original-row preservation](evidence/provider-budget-migrations.json)
+
+每次运行使用未使用的两位编号：`node scripts/run-provider-budget-checks.mjs NEXT_ID`；全量加 `--full`，专项核心加 `--core`。失败、源码前像及旧成功报告均保留。旧成功不代表当前源码；本机升级已有一次性前态守卫，升级后不可再次执行。
+
 ## 持久供应商请求（阶段 56）
 
 专项 03 通过 **116/116**，完整回归 01 通过 **546/546**；专项包含于全量，738 份来源前后一致，保留全部原 531 项命名测试。类型检查与实际构建通过。原生 065→066 升级在两库各保留 132 张原公共表的全部行摘要、SQL001–065 和旧校验值；新增四表强制 RLS，未补造历史请求或用量。

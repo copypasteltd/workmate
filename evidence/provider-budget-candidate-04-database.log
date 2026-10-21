@@ -1,0 +1,281 @@
+2026-10-21 11:43:32.865 CST [37256] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 11:43:32.871 CST [37256] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 11:43:32.871 CST [37256] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 11:43:33.086 CST [23108] LOG:  database system was shut down at 2026-10-21 11:42:58 CST
+
+2026-10-21 11:43:33.141 CST [37256] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 11:43:54.928 CST [5656] ERROR:  Immutable task runtime and pricing binding
+2026-10-21 11:43:54.928 CST [5656] CONTEXT:  PL/pgSQL function guard_task_runtime_binding() line 5 at RAISE
+2026-10-21 11:43:54.928 CST [5656] STATEMENT:  UPDATE task_runtime_bindings SET capability_version_ids='{}' WHERE task_id=$1
+
+2026-10-21 11:43:54.930 CST [5656] ERROR:  Immutable task runtime and pricing binding
+2026-10-21 11:43:54.930 CST [5656] CONTEXT:  PL/pgSQL function guard_task_runtime_binding() line 5 at RAISE
+2026-10-21 11:43:54.930 CST [5656] STATEMENT:  DELETE FROM task_runtime_bindings WHERE task_id=$1
+
+2026-10-21 11:43:58.030 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:44:08.086 CST [31464] LOG:  checkpoint complete: wrote 2128 buffers (13.0%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.226 s, sync=9.618 s, total=10.056 s; sync files=1139, longest=0.197 s, average=0.009 s; distance=26679 kB, estimate=26679 kB; lsn=7/4035A028, redo lsn=7/402CCB28
+
+2026-10-21 11:44:09.011 CST [8152] WARNING:  there is no transaction in progress
+
+2026-10-21 11:44:09.084 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:44:09.503 CST [31464] LOG:  checkpoint complete: wrote 6 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.148 s, total=0.419 s; sync files=4, longest=0.051 s, average=0.037 s; distance=827 kB, estimate=24094 kB; lsn=7/4039BAE8, redo lsn=7/4039BA90
+
+2026-10-21 11:44:15.643 CST [7368] ERROR:  Immutable capability document or publication
+2026-10-21 11:44:15.643 CST [7368] CONTEXT:  PL/pgSQL function immutable_capability_release_fact() line 3 at RAISE
+2026-10-21 11:44:15.643 CST [7368] STATEMENT:  UPDATE capability_releases SET reason='Changed' WHERE id=$1
+
+2026-10-21 11:44:15.644 CST [7368] ERROR:  Immutable capability document or publication
+2026-10-21 11:44:15.644 CST [7368] CONTEXT:  PL/pgSQL function immutable_capability_release_fact() line 3 at RAISE
+2026-10-21 11:44:15.644 CST [7368] STATEMENT:  DELETE FROM capability_releases WHERE id=$1
+
+2026-10-21 11:45:08.766 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:45:18.751 CST [31464] LOG:  checkpoint complete: wrote 2037 buffers (12.4%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.230 s, sync=9.573 s, total=9.986 s; sync files=1131, longest=0.227 s, average=0.009 s; distance=26313 kB, estimate=26313 kB; lsn=7/41D5BD48, redo lsn=7/41D4E238
+
+2026-10-21 11:45:19.055 CST [16652] ERROR:  permission denied for table capability_releases
+2026-10-21 11:45:19.055 CST [16652] STATEMENT:  INSERT INTO capability_releases DEFAULT VALUES
+
+2026-10-21 11:45:19.058 CST [16652] ERROR:  permission denied for table capability_validations
+2026-10-21 11:45:19.058 CST [16652] STATEMENT:  UPDATE capability_validations SET state='passed'
+
+2026-10-21 11:45:19.060 CST [16652] ERROR:  permission denied for table capability_heads
+2026-10-21 11:45:19.060 CST [16652] STATEMENT:  DELETE FROM capability_heads
+
+2026-10-21 11:45:19.094 CST [16652] ERROR:  cannot update view "current_internal_capabilities"
+2026-10-21 11:45:19.094 CST [16652] DETAIL:  Views that do not select from a single table or view are not automatically updatable.
+2026-10-21 11:45:19.094 CST [16652] HINT:  To enable updating the view, provide an INSTEAD OF UPDATE trigger or an unconditional ON UPDATE DO INSTEAD rule.
+2026-10-21 11:45:19.094 CST [16652] STATEMENT:  UPDATE current_internal_capabilities SET ready=true
+
+2026-10-21 11:45:19.095 CST [16652] ERROR:  permission denied for table capability_workspace_purges
+2026-10-21 11:45:19.095 CST [16652] STATEMENT:  SELECT * FROM capability_workspace_purges
+
+2026-10-21 11:45:19.096 CST [16652] ERROR:  permission denied for table capability_workspace_purges
+2026-10-21 11:45:19.096 CST [16652] STATEMENT:  UPDATE capability_workspace_purges SET state='completed'
+
+2026-10-21 11:46:16.680 CST [7756] ERROR:  controlled capability audit failure
+2026-10-21 11:46:16.680 CST [7756] CONTEXT:  PL/pgSQL function controlled_capability_audit_failure() line 1 at RAISE
+2026-10-21 11:46:16.680 CST [7756] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 11:47:04.448 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:05.215 CST [31464] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.632 s, total=0.768 s; sync files=11, longest=0.114 s, average=0.058 s; distance=2304 kB, estimate=23913 kB; lsn=7/41F8E650, redo lsn=7/41F8E5F8
+
+2026-10-21 11:47:09.945 CST [35040] ERROR:  Execution admission context is invalid
+2026-10-21 11:47:09.945 CST [35040] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 11:47:09.945 CST [35040] STATEMENT:  SELECT claim_execution_capacity($1,$2,8,$3)
+
+2026-10-21 11:47:09.948 CST [35040] ERROR:  Execution admission context is invalid
+2026-10-21 11:47:09.948 CST [35040] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 11:47:09.948 CST [35040] STATEMENT:  SELECT claim_execution_capacity($1,$2,8,$3)
+
+2026-10-21 11:47:09.949 CST [35040] ERROR:  Execution admission context is invalid
+2026-10-21 11:47:09.949 CST [35040] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 11:47:09.949 CST [35040] STATEMENT:  SELECT claim_execution_capacity($1,$2,8,$3)
+
+2026-10-21 11:47:09.952 CST [35040] ERROR:  permission denied for table execution_capacity_policy
+2026-10-21 11:47:09.952 CST [35040] STATEMENT:  SELECT * FROM execution_capacity_policy
+
+2026-10-21 11:47:09.953 CST [35040] ERROR:  permission denied for table execution_capacity_policy
+2026-10-21 11:47:09.953 CST [35040] STATEMENT:  UPDATE execution_capacity_policy SET agent_slots=100
+
+2026-10-21 11:47:09.968 CST [35040] ERROR:  Execution admission context is invalid
+2026-10-21 11:47:09.968 CST [35040] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 11 at RAISE
+2026-10-21 11:47:09.968 CST [35040] STATEMENT:  SELECT claim_execution_capacity($1,$2,$3,$4) AS reason
+
+2026-10-21 11:47:20.574 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:21.495 CST [31464] LOG:  checkpoint complete: wrote 26 buffers (0.2%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.533 s, total=0.921 s; sync files=12, longest=0.105 s, average=0.045 s; distance=15207 kB, estimate=23042 kB; lsn=7/42E68360, redo lsn=7/42E68308
+
+2026-10-21 11:47:32.156 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:33.654 CST [31464] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.768 s, total=1.498 s; sync files=10, longest=0.133 s, average=0.077 s; distance=13283 kB, estimate=22066 kB; lsn=7/43B61130, redo lsn=7/43B610D8
+
+2026-10-21 11:47:36.245 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:37.509 CST [31464] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.854 s, total=1.264 s; sync files=9, longest=0.138 s, average=0.095 s; distance=13316 kB, estimate=21191 kB; lsn=7/448623C8, redo lsn=7/44862370
+
+2026-10-21 11:47:40.574 CST [6448] ERROR:  Review decisions are immutable
+2026-10-21 11:47:40.574 CST [6448] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-21 11:47:40.574 CST [6448] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-21 11:47:40.575 CST [6448] ERROR:  Frozen approval is immutable
+2026-10-21 11:47:40.575 CST [6448] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-21 11:47:40.575 CST [6448] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-21 11:47:40.659 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:41.638 CST [31464] LOG:  checkpoint complete: wrote 36 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.011 s, sync=0.539 s, total=0.980 s; sync files=10, longest=0.158 s, average=0.054 s; distance=13401 kB, estimate=20412 kB; lsn=7/455787E0, redo lsn=7/45578788
+
+2026-10-21 11:47:48.173 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:48.913 CST [31464] LOG:  checkpoint complete: wrote 18 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.501 s, total=0.740 s; sync files=10, longest=0.094 s, average=0.051 s; distance=13436 kB, estimate=19714 kB; lsn=7/46297B98, redo lsn=7/46297B40
+
+2026-10-21 11:47:53.038 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:53.771 CST [31464] LOG:  checkpoint complete: wrote 32 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.486 s, total=0.733 s; sync files=10, longest=0.103 s, average=0.049 s; distance=13751 kB, estimate=19118 kB; lsn=7/47005A80, redo lsn=7/47005A28
+
+2026-10-21 11:47:57.627 CST [34456] ERROR:  new row for relation "ai_gateway_requests" violates check constraint "ai_gateway_requests_check2"
+2026-10-21 11:47:57.627 CST [34456] STATEMENT:  UPDATE ai_gateway_requests SET state='completed',finished_at=now(),released_at=now(),
+	       usage_known=true,input_tokens=$2,output_tokens=$3,image_units=0,charge_numerator=$4,
+	       known_charge_micros=$5,http_status=$6 WHERE id=$1
+
+2026-10-21 11:47:57.703 CST [18012] ERROR:  new row for relation "ai_gateway_requests" violates check constraint "ai_gateway_requests_check3"
+2026-10-21 11:47:57.703 CST [18012] STATEMENT:  UPDATE ai_gateway_requests SET state='completed',finished_at=now(),released_at=now(),
+	       usage_known=true,input_tokens=$2,output_tokens=$3,image_units=0,charge_numerator=$4,
+	       known_charge_micros=$5,http_status=$6 WHERE id=$1
+
+2026-10-21 11:47:57.760 CST [19712] ERROR:  new row for relation "ai_gateway_requests" violates check constraint "ai_gateway_requests_check3"
+2026-10-21 11:47:57.760 CST [19712] STATEMENT:  UPDATE ai_gateway_requests SET state='completed',finished_at=now(),released_at=now(),
+	       usage_known=true,input_tokens=$2,output_tokens=$3,image_units=0,charge_numerator=$4,
+	       known_charge_micros=$5,http_status=$6 WHERE id=$1
+
+2026-10-21 11:47:57.840 CST [41372] ERROR:  new row for relation "ai_gateway_requests" violates check constraint "ai_gateway_requests_check2"
+2026-10-21 11:47:57.840 CST [41372] STATEMENT:  UPDATE ai_gateway_requests SET state='completed',finished_at=now(),released_at=now(),
+	       usage_known=true,input_tokens=$2,output_tokens=$3,image_units=0,charge_numerator=$4,
+	       known_charge_micros=$5,http_status=$6 WHERE id=$1
+
+2026-10-21 11:47:57.905 CST [28648] ERROR:  new row for relation "ai_gateway_requests" violates check constraint "ai_gateway_requests_check2"
+2026-10-21 11:47:57.905 CST [28648] STATEMENT:  UPDATE ai_gateway_requests SET state='completed',finished_at=now(),released_at=now(),
+	       usage_known=true,input_tokens=$2,output_tokens=$3,image_units=0,charge_numerator=$4,
+	       known_charge_micros=$5,http_status=$6 WHERE id=$1
+
+2026-10-21 11:47:58.069 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:47:59.180 CST [31464] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.008 s, sync=0.549 s, total=1.112 s; sync files=10, longest=0.166 s, average=0.055 s; distance=13458 kB, estimate=18552 kB; lsn=7/47D2A508, redo lsn=7/47D2A4B0
+
+2026-10-21 11:48:03.325 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:04.296 CST [31464] LOG:  checkpoint complete: wrote 18 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.776 s, total=0.971 s; sync files=10, longest=0.170 s, average=0.078 s; distance=13467 kB, estimate=18044 kB; lsn=7/48A51378, redo lsn=7/48A51320
+
+2026-10-21 11:48:07.926 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:08.771 CST [31464] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.475 s, total=0.846 s; sync files=9, longest=0.086 s, average=0.053 s; distance=13478 kB, estimate=17587 kB; lsn=7/4977ADD8, redo lsn=7/4977AD80
+
+2026-10-21 11:48:13.709 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:14.523 CST [31464] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.491 s, total=0.815 s; sync files=10, longest=0.100 s, average=0.050 s; distance=13493 kB, estimate=17178 kB; lsn=7/4A4A83F0, redo lsn=7/4A4A8398
+
+2026-10-21 11:48:19.095 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:20.671 CST [31464] LOG:  checkpoint complete: wrote 51 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.063 s, sync=1.095 s, total=1.576 s; sync files=12, longest=0.209 s, average=0.092 s; distance=13843 kB, estimate=16844 kB; lsn=7/4B22D3C0, redo lsn=7/4B22D368
+
+2026-10-21 11:48:25.515 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:26.421 CST [31464] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.006 s, sync=0.468 s, total=0.906 s; sync files=10, longest=0.094 s, average=0.047 s; distance=13432 kB, estimate=16503 kB; lsn=7/4BF4B548, redo lsn=7/4BF4B4F0
+
+2026-10-21 11:48:30.337 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:31.279 CST [31464] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.459 s, total=0.942 s; sync files=10, longest=0.094 s, average=0.046 s; distance=13432 kB, estimate=16196 kB; lsn=7/4CC698E0, redo lsn=7/4CC69888
+
+2026-10-21 11:48:36.336 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:37.245 CST [31464] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.485 s, total=0.909 s; sync files=10, longest=0.103 s, average=0.049 s; distance=13500 kB, estimate=15926 kB; lsn=7/4D998C48, redo lsn=7/4D998BB8
+
+2026-10-21 11:48:42.810 CST [36760] ERROR:  Invalid provider budget actor
+2026-10-21 11:48:42.810 CST [36760] CONTEXT:  PL/pgSQL function allocate_ai_generation_budget(uuid,uuid,uuid,integer) line 16 at RAISE
+2026-10-21 11:48:42.810 CST [36760] STATEMENT:  SELECT allocate_ai_generation_budget($1,$2,$3,$4) AS result
+
+2026-10-21 11:48:42.927 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:43.737 CST [31464] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.010 s, sync=0.405 s, total=0.810 s; sync files=9, longest=0.086 s, average=0.045 s; distance=13454 kB, estimate=15679 kB; lsn=7/4E6BC708, redo lsn=7/4E6BC6B0
+
+2026-10-21 11:48:48.391 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:49.528 CST [31464] LOG:  checkpoint complete: wrote 40 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.018 s, sync=0.904 s, total=1.138 s; sync files=10, longest=0.211 s, average=0.091 s; distance=13637 kB, estimate=15475 kB; lsn=7/4F40DBC0, redo lsn=7/4F40DB68
+
+2026-10-21 11:48:54.214 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:48:55.111 CST [31464] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.506 s, total=0.898 s; sync files=10, longest=0.107 s, average=0.051 s; distance=13424 kB, estimate=15270 kB; lsn=7/50129F58, redo lsn=7/50129F00
+
+2026-10-21 11:48:59.831 CST [22696] ERROR:  permission denied for table ai_gateway_requests
+2026-10-21 11:48:59.831 CST [22696] STATEMENT:  UPDATE ai_gateway_requests SET request_hash=$2 WHERE id=$1
+
+2026-10-21 11:48:59.897 CST [34460] ERROR:  permission denied for table ai_gateway_policy_versions
+2026-10-21 11:48:59.897 CST [34460] STATEMENT:  UPDATE ai_gateway_policy_versions SET actor_slots=99 WHERE id=$1
+
+2026-10-21 11:48:59.958 CST [8396] ERROR:  permission denied for table ai_gateway_request_events
+2026-10-21 11:48:59.958 CST [8396] STATEMENT:  UPDATE ai_gateway_request_events SET body='{}' WHERE request_id=$1
+
+2026-10-21 11:48:59.964 CST [228] ERROR:  permission denied for table ai_gateway_requests
+2026-10-21 11:48:59.964 CST [228] STATEMENT:  UPDATE ai_gateway_requests SET state='completed'
+
+2026-10-21 11:49:00.046 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:00.927 CST [31464] LOG:  checkpoint complete: wrote 34 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.025 s, sync=0.656 s, total=0.882 s; sync files=11, longest=0.119 s, average=0.060 s; distance=13736 kB, estimate=15116 kB; lsn=7/50E941F8, redo lsn=7/50E941A0
+
+2026-10-21 11:49:04.940 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:05.569 CST [31464] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.013 s, sync=0.420 s, total=0.630 s; sync files=10, longest=0.095 s, average=0.042 s; distance=13448 kB, estimate=14950 kB; lsn=7/51BB64F8, redo lsn=7/51BB64A0
+
+2026-10-21 11:49:08.791 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:09.794 CST [31464] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.005 s, sync=0.744 s, total=1.004 s; sync files=9, longest=0.159 s, average=0.083 s; distance=13469 kB, estimate=14802 kB; lsn=7/528DEBA0, redo lsn=7/528DD950
+
+2026-10-21 11:49:13.090 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:13.793 CST [31464] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.399 s, total=0.704 s; sync files=9, longest=0.091 s, average=0.045 s; distance=13456 kB, estimate=14667 kB; lsn=7/53601A28, redo lsn=7/536019D0
+
+2026-10-21 11:49:17.637 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:18.277 CST [31464] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.043 s, sync=0.380 s, total=0.640 s; sync files=9, longest=0.094 s, average=0.043 s; distance=13437 kB, estimate=14544 kB; lsn=7/54321118, redo lsn=7/543210C0
+
+2026-10-21 11:49:22.225 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:23.202 CST [31464] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.526 s, total=0.978 s; sync files=9, longest=0.126 s, average=0.059 s; distance=13444 kB, estimate=14434 kB; lsn=7/55042268, redo lsn=7/55042210
+
+2026-10-21 11:49:27.056 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:28.118 CST [31464] LOG:  checkpoint complete: wrote 54 buffers (0.3%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.691 s, total=1.062 s; sync files=12, longest=0.171 s, average=0.058 s; distance=13698 kB, estimate=14360 kB; lsn=7/55DA2CA0, redo lsn=7/55DA2C48
+
+2026-10-21 11:49:31.683 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:32.588 CST [31464] LOG:  checkpoint complete: wrote 18 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.582 s, total=0.906 s; sync files=10, longest=0.101 s, average=0.059 s; distance=13439 kB, estimate=14268 kB; lsn=7/56AC2950, redo lsn=7/56AC28F8
+
+2026-10-21 11:49:37.614 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:38.518 CST [31464] LOG:  checkpoint complete: wrote 37 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.650 s, total=0.905 s; sync files=11, longest=0.126 s, average=0.060 s; distance=13774 kB, estimate=14219 kB; lsn=7/578361E0, redo lsn=7/57836188
+
+2026-10-21 11:49:42.614 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:43.460 CST [31464] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.569 s, total=0.846 s; sync files=10, longest=0.098 s, average=0.057 s; distance=13472 kB, estimate=14144 kB; lsn=7/5855E360, redo lsn=7/5855E308
+
+2026-10-21 11:49:47.131 CST [28712] ERROR:  permission denied for table ai_request_budget_allocations
+2026-10-21 11:49:47.131 CST [28712] STATEMENT:  UPDATE ai_request_budget_allocations SET amount_numerator=0 WHERE id=$1
+
+2026-10-21 11:49:47.133 CST [10752] ERROR:  permission denied for table ai_input_count_requests
+2026-10-21 11:49:47.133 CST [10752] STATEMENT:  SELECT * FROM ai_input_count_requests
+
+2026-10-21 11:49:47.200 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:48.285 CST [31464] LOG:  checkpoint complete: wrote 18 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.455 s, total=1.085 s; sync files=10, longest=0.094 s, average=0.046 s; distance=13442 kB, estimate=14074 kB; lsn=7/5927EDA8, redo lsn=7/5927ED50
+
+2026-10-21 11:49:52.841 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:49:53.459 CST [31464] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.009 s, sync=0.447 s, total=0.619 s; sync files=9, longest=0.103 s, average=0.050 s; distance=13472 kB, estimate=14014 kB; lsn=7/59FA7018, redo lsn=7/59FA6FC0
+
+2026-10-21 11:50:11.725 CST [31464] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 11:50:12.643 CST [31464] LOG:  checkpoint complete: wrote 41 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.651 s, total=0.918 s; sync files=12, longest=0.154 s, average=0.055 s; distance=13882 kB, estimate=14000 kB; lsn=7/5AD358A8, redo lsn=7/5AD35850
+
+2026-10-21 11:50:13.675 CST [37256] LOG:  received fast shutdown request
+
+2026-10-21 11:50:13.727 CST [37256] LOG:  aborting any active transactions
+
+2026-10-21 11:50:13.734 CST [37256] LOG:  background worker "logical replication launcher" (PID 40860) exited with exit code 1
+
+2026-10-21 11:50:13.735 CST [31464] LOG:  shutting down
+
+2026-10-21 11:50:13.775 CST [31464] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 11:50:13.924 CST [31464] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.039 s, total=0.189 s; sync files=1, longest=0.039 s, average=0.039 s; distance=0 kB, estimate=12600 kB; lsn=7/5AD359C0, redo lsn=7/5AD359C0
+
+2026-10-21 11:50:14.038 CST [37256] LOG:  database system is shut down
+

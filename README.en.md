@@ -1,5 +1,33 @@
 # CopyPaste Delivery and Integration
 
+## Per-request budgets (stage 57)
+
+Text generation counts its complete normalized context through the company `/v1/responses/input_tokens` endpoint, then atomically allocates frozen input prices and an explicit output bound against the task's original reservation. Images share that same budget. Counting needs an explicitly verified price and uses platform funds. Missing counts or prices block generation. Each proof is bound to one operation, digest, original identity and capability. Admin verification has independent run and daily platform budgets and never uses customer wallets.
+
+Settlement aggregates durable exact cost numerators and rounds once for one ledger charge. Unknown outcomes retain commitments. Input mismatches and overruns persist actual spend before reconciliation and cannot enlarge the customer budget. Injected adapters reporting synthetic text counters cannot add unobserved text costs to real image operations.
+
+Validation passed **129/129 focused checks within 559/559 full tests**, with 741 unchanged source files and all 546 stage 56 named tests retained. Type checking and the actual build passed. Both existing native databases upgraded from 066 to 067, preserving every row of 136 original public tables, SQL001–066 and their historical checksums. Eight new tables force RLS. Only definitely unexecuted tasks receive original budget bounds; no historical spend or verified prices were fabricated. SQL067 is now immutable.
+
+Codex, PostgreSQL and accounting transactions are real; model/media responses are authorized simulations. No browser or native client was opened. Previous screenshots and packages retain their original source scope. Complete Admin policy publication, request directory, evidence-based cost/capacity reconciliation and all original product acceptance remain open.
+
+```mermaid
+flowchart LR
+  Context[Actual normalized context] --> Count[Company input count / platform funds]
+  Count --> Proof[One generation ID / digest / identity]
+  Proof --> Allocate[Original task budget / frozen prices / output bound]
+  Image[Image tools] --> Allocate
+  Admin[Admin run / daily platform budget] --> Allocate
+  Allocate --> Dispatch[Reauthorize / company API]
+  Dispatch --> Facts[Persist actual usage / exact numerator]
+  Facts --> Settle[One aggregate customer settlement]
+  Dispatch --> Unknown[Unknown / retain commitment]
+  Facts --> Violation[Overrun / preserve spend / reconcile]
+```
+
+[Focused run](evidence/provider-budget-candidate-05.json) · [Full regression](evidence/provider-budget-regression-03.json) · [Build and types](evidence/provider-budget-static-04.json) · [Local upgrade](evidence/provider-budget-upgrade.json) · [Original-row preservation](evidence/provider-budget-migrations.json)
+
+Use a fresh two-digit ID with `node scripts/run-provider-budget-checks.mjs NEXT_ID`; add `--full` for all tests or `--core` for core cases. Failures, source preimages and earlier passing reports are retained. Earlier success does not qualify current bytes. The one-time local upgrade guard cannot be rerun after migration.
+
 ## Durable provider requests (stage 56)
 
 Focused run 03 passed **116/116**, included in **546/546 full tests**. All 738 source files remained unchanged, and all 531 earlier named tests remain present. Type checking and the actual build passed. Both native databases upgraded from 065 to 066, preserving every row of 132 original public tables, SQL001–065 bytes and historical checksums. Four new tables force RLS; no historical request or usage facts were fabricated.
