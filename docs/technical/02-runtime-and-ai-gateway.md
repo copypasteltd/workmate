@@ -2,6 +2,8 @@
 
 实施状态：本分册保留长期设计约束；本轮锁定版本、实际 API/工具、各端实现与差异，以 [实际开发清单](12-implementation-and-repositories.md) 和 [运行验收](../quality/04-implementation-acceptance.md) 为准，未实现项没有删除。
 
+[短期凭证与逐次鉴权](55-scoped-internal-inference-requests.md)补充当前统一出站入口、真实 Codex 内核工具约束、完整 SSE 帧检查、逐请求当前权限、图片规格及费用状态；正式回归记录在该分册独立维护。跨 Worker 供应商限额与逐调用预算仍是后续完整实现要求。
+
 阶段 52 的 [任务能力版本与原价冻结](52-capability-versions-and-frozen-task-pricing.md) 已将模型别名、推理强度、协议、费率和网关指纹绑定到具体任务。Worker 与图片工具使用原绑定，重试继承；仅默认配置改变不会静默改用新版本。受控后台发布/回滚、用户可见的版本采纳及短期逐请求网关凭证仍是完整设计要求，尚未以本次基础实现宣告完成。
 
 
