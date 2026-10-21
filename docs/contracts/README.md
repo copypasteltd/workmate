@@ -14,7 +14,7 @@
 | [video-project.schema.json](video-project.schema.json) | 最小视频工程：整数帧时序、轨道、素材及字幕图层 |
 | [delivery-manifest.schema.json](delivery-manifest.schema.json) | 导出文件路径、摘要、版本、使用范围及缺项 |
 | [analytics-metric-vectors.json](analytics-metric-vectors.json) | 加权指标、零分母、缺失转化及多币种固定预期 |
-| [role-preset-catalog.json](role-preset-catalog.json) | 18 个角色、28 个逻辑 Skill、必需/可选模型、输入流程/交付/逐角色场景；当前 design_only |
+| [role-preset-catalog.json](role-preset-catalog.json) | 18 个角色、29 个逻辑 Skill、必需/可选模型、输入流程/交付/逐角色场景；当前 design_only |
 | [role-preset-catalog.schema.json](role-preset-catalog.schema.json) | 设计目录结构；至少 12 个条目及内部 AI 路径等静态约束，非运行资格 |
 | [admin-permission-catalog.json](admin-permission-catalog.json) | 八类后台角色、显式权限、范围、字段和执行约束；设计快照 |
 | [admin-permission-catalog.schema.json](admin-permission-catalog.schema.json) | 权限目录严格结构，不允许通配符或生产授权声明 |
@@ -75,7 +75,7 @@ OpenAPI 官方 meta-schema 来自 [2022-10-07 schema](https://spec.openapis.org/
 
 ## 6. 角色预设的设计数据与运行契约
 
-[build_role_presets.py](../tools/build_role_presets.py)是目录及 schema 的生成来源，已由 build_contracts.py 顺序调用；修改角色绑定先改此来源，再重建 quality/validate。设计快照有 18 个角色和 28 个逻辑技能，全部包为 planned、能力 unverified、验证用例 not_run，不含生产 Key、真实模型 alias 或技能包内容。
+[build_role_presets.py](../tools/build_role_presets.py)是目录及 schema 的生成来源，已由 build_contracts.py 顺序调用；修改角色绑定先改此来源，再重建 quality/validate。设计目录有 18 个角色和 29 个逻辑技能，全部包为 planned、能力 unverified、验证用例 not_run，不含生产 Key、真实模型 alias 或技能包内容。
 
 validate_docs.py 对目录执行 schema 与跨引用检查，核对 Skill 精确版本、必需/可选模型传递、工具来源、角色覆盖、指定设计师及逐角色正常/修改/异常设计。OpenAPI 另外描述模板发布、项目预检查、实例化及资格引用。设计快照的条目数不等于通过生产验收的可用角色数；至少十二个真正合格角色的门槛由发布服务及实际运行证据落实。
 

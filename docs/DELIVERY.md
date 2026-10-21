@@ -1,5 +1,8 @@
 # CopyPaste 0.5.0 代码交付入口
 
+<!-- stage60-template-video -->
+阶段 60 的[基础视频工程](technical/60-template-video-production.md)已实现单模板的独立脚本、分镜、字幕、品牌和固定素材/授权音轨，交付实际 MP4 与其余五类源文件。专项 **34/34** 纳入平台 **638/638**，保留原全部 607 项命名测试；实际 Web **10 项**及新打包原生客户端 **17 项**通过。修复当前权限、过期素材、公开分享与预览 I/O 后校验；独立 Admin 正文权限和删除继续生效。Desktop 继续无边框、无 Electron/Alt 菜单；Extension 工具栏开关原生右侧 Side Panel，并提供视频工作台入口。两库 069→071 保留 154 张原表全部行摘要及 SQL001–069；新三表强制 RLS。当前预览在各端 `release/video-60/`，签名/安装/商店资格仍独立跟踪；实际本地合成不调用 AI。[核查回执](quality/template-video-checkpoint.json)与[当前包清单](quality/template-video-artifacts.json)保留实际版本；原始 102 项及 TC/NFR/G01–G10 完整条件不变。
+
 <!-- stage59-creative-matrices -->
 阶段 59 的[营销设计矩阵](technical/59-creative-production-matrices.md)已完成确定性排版子流程：创意 × 语言 × 尺寸最多 60 个独立单元，保存实际 PNG、SVG 与 JSON；失败、修改、重试与费用按格独立。专项 **22/22** 纳入平台 **607/607**（保留原全部 588 项命名测试），实际 Web **10 项**及新打包原生客户端 **13 项**通过。修复了桌面长页面滚动后的弹窗定位，继续无边框、无默认菜单；扩展实际按钮打开/关闭 Chrome 原生 Side Panel，并提供完整设计工作台入口。两库 068→069 各保留 151 张原表全部行摘要及 SQL001–068。新包位于各端 `release/matrices-59-02/`，旧包保留；未签名 localhost 预览不代表安装或生产资格。排版不调用 AI，AI HK$0 不包括原素材上游费用；Codex 委派、专业媒体和字体资格仍独立跟踪。[核查回执](quality/creative-matrix-checkpoint.json)保留全部失败与源码前像，原始 102 项、TC/NFR/G01–G10 的完整条件不变。
 
@@ -70,7 +73,7 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 
 ## 实现与验收
 
-唯一 Agent 内核为固定版本 Codex；所有模型及图像请求只走服务端公司内部 OpenAI 兼容网关。18 个角色、28 个 Skill 包已安装，任务执行前验证能力、权限、权益和预算。缺少已验证的公司模型配置时明确拒绝 AI 执行，不生成虚假成功结果。
+唯一 Agent 内核为固定版本 Codex；所有模型及图像请求只走服务端公司内部 OpenAI 兼容网关。18 个角色、29 个 Skill 包随附交付，任务执行前验证能力、权限、权益和预算。缺少已验证的公司模型配置时明确拒绝 AI 执行，不生成虚假成功结果。
 
 本轮六仓库类型检查与构建、平台 84 项逻辑测试及 Desktop 3 项测试均通过。浏览器、扩展、真实打包客户端、原生重启与离线恢复的具体结果见 [当前验收](quality/08-enterprise-federation-acceptance.md) 和 [机器可读证据](quality/implementation-evidence.json)。这些检查不能替代全部 102 项长期综合验收。
 

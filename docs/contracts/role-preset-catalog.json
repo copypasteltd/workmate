@@ -649,6 +649,26 @@
         "extension",
         "desktop"
       ]
+    },
+    {
+      "skill_key": "template-video-composition",
+      "version": "1.0.0",
+      "purpose": "固定素材与授权音轨的模板视频合成",
+      "candidate_sources": [
+        "video-cut-ffmpeg"
+      ],
+      "package_state": "planned",
+      "package_sha256": null,
+      "ai_network_policy": "internal_only",
+      "tool_ids": [
+        "video.render"
+      ],
+      "required_model_profiles": [],
+      "supported_clients": [
+        "web",
+        "extension",
+        "desktop"
+      ]
     }
   ],
   "roles": [
@@ -2358,7 +2378,7 @@
     {
       "role_key": "video-motion",
       "catalog_id": "R16",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "display_name": "视频与动效设计师",
       "category": "design",
       "status": "design_only",
@@ -2370,12 +2390,7 @@
           "required": true
         },
         {
-          "skill_key": "motion-composition",
-          "version": "1.0.0",
-          "required": true
-        },
-        {
-          "skill_key": "media-render",
+          "skill_key": "template-video-composition",
           "version": "1.0.0",
           "required": true
         },
@@ -2383,51 +2398,18 @@
           "skill_key": "delivery-core",
           "version": "1.0.0",
           "required": true
-        },
-        {
-          "skill_key": "image2-production",
-          "version": "1.0.0",
-          "required": false
-        },
-        {
-          "skill_key": "video-generation",
-          "version": "1.0.0",
-          "required": false
-        },
-        {
-          "skill_key": "speech-production",
-          "version": "1.0.0",
-          "required": false
         }
       ],
       "model_bindings": [
         {
           "profile_key": "internal-text-v1",
           "required": true
-        },
-        {
-          "profile_key": "internal-image2-v1",
-          "required": false
-        },
-        {
-          "profile_key": "internal-video-v1",
-          "required": false
-        },
-        {
-          "profile_key": "internal-speech-v1",
-          "required": false
         }
       ],
       "tool_ids": [
         "asset.read",
         "asset.write",
         "delivery.package",
-        "image.edit.internal",
-        "image.generate.internal",
-        "media.inspect",
-        "speech.generate.internal",
-        "timeline.edit",
-        "video.generate.internal",
         "video.render"
       ],
       "input_contract": {

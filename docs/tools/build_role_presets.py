@@ -35,6 +35,7 @@ SKILLS = [
     ('workflow-execution', '有界流程执行与恢复', [], ['workflow.run','connector.read']),
     ('video-generation', '内部生成式视频作业', [], ['video.generate.internal']),
     ('speech-production', '内部配音与字幕作业', [], ['speech.generate.internal']),
+    ('template-video-composition', '固定素材与授权音轨的模板视频合成', ['video-cut-ffmpeg'], ['video.render']),
 ]
 
 # number, key, label, category, required skills, required input, optional input,
@@ -239,6 +240,14 @@ def build_catalog():
                       'sample_task':sample, 'acceptance_checks':[normal,revision,failure],
                       'qualification_cases':{'normal':normal, 'revision':revision, 'dependency_or_permission_failure':failure, 'execution_status':'not_run'},
                       'initial_stage':'M2' if n==18 else 'M1', 'readiness_evidence':[]})
+    # R16 v1.1 installs the implemented composition surface. The original role
+    # acceptance cases remain unchanged; optional generation/voice qualification
+    # stays separate from supplied-asset video composition.
+    video_role = next(r for r in roles if r['role_key'] == 'video-motion')
+    video_role['version'] = '1.1.0'
+    video_role['skill_bindings'] = [{'skill_key':k,'version':VERSION,'required':True} for k in ['video-storyboard','template-video-composition','delivery-core']]
+    video_role['model_bindings'] = [{'profile_key':'internal-text-v1', 'required':True}]
+    video_role['tool_ids'] = ['asset.read', 'asset.write', 'delivery.package', 'video.render']
     models = []
     for key,kind,requested,official,protocol in [
         ('internal-text-v1','text','gpt 6 luna max',None,'openai_responses'),
@@ -312,4 +321,4 @@ def generate():
 
 if __name__ == '__main__':
     generate()
-    print('Generated 18 proposed roles and 28 logical skills; runtime qualification remains not_run.')
+    print('Generated 18 proposed roles and 29 logical skills; runtime qualification remains not_run.')

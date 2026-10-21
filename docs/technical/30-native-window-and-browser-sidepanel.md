@@ -1,5 +1,8 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage60-template-video -->
+阶段 60 在新包 `release/video-60/` 实际验证 17 项原生流程：无系统边框、默认菜单和 Alt 菜单；自绘控制；真实 PKCE、受保护视频桥接、成片播放及系统文件保存。扩展真实工具栏仍在右侧打开/收起原生 Side Panel，新增固定公司视频工作台入口。详见[视频回执](../quality/template-video-checkpoint.json)与[新包清单](../quality/template-video-artifacts.json)。下方阶段 59 及更早包保留历史执行范围；Chrome 左右位置遵循用户设置。
+
 <!-- stage59-creative-matrices -->
 阶段 59 已重建并实际执行当前无边框 Desktop 与 Chrome 原生侧栏，新增设计矩阵入口和滚动后的弹窗定位修复。本次 13 项原生流程通过，实际来源及包见[阶段 59 回执](../quality/creative-matrix-checkpoint.json)与[当前包清单](../quality/creative-matrix-artifacts.json)。当前包为各端 `release/matrices-59-02/`；下面阶段 54 的包和核对命令保留其原历史范围。右侧仍尊重 Chrome 用户设置，未签名 localhost 预览未代表安装、商店及生产验收。
 

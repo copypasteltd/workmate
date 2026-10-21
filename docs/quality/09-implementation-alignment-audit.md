@@ -1,5 +1,8 @@
 # 全体系需求差异复查与修复
 
+<!-- stage60-template-video -->
+阶段 60 的[基础视频工程](../technical/60-template-video-production.md)已实现单模板的独立脚本、分镜、字幕、品牌和固定素材/授权音轨，交付实际 MP4 与其余五类源文件。专项 **34/34** 纳入平台 **638/638**，保留原全部 607 项命名测试；实际 Web **10 项**及新打包原生客户端 **17 项**通过。修复当前权限、过期素材、公开分享与预览 I/O 后校验；独立 Admin 正文权限和删除继续生效。Desktop 继续无边框、无 Electron/Alt 菜单；Extension 工具栏开关原生右侧 Side Panel，并提供视频工作台入口。两库 069→071 保留 154 张原表全部行摘要及 SQL001–069；新三表强制 RLS。当前预览在各端 `release/video-60/`，签名/安装/商店资格仍独立跟踪；实际本地合成不调用 AI。[核查回执](template-video-checkpoint.json)与[当前包清单](template-video-artifacts.json)保留实际版本；原始 102 项及 TC/NFR/G01–G10 完整条件不变。
+
 <!-- stage59-creative-matrices -->
 阶段 59 的[营销设计矩阵](../technical/59-creative-production-matrices.md)已完成确定性排版子流程：创意 × 语言 × 尺寸最多 60 个独立单元，保存实际 PNG、SVG 与 JSON；失败、修改、重试与费用按格独立。专项 **22/22** 纳入平台 **607/607**（保留原全部 588 项命名测试），实际 Web **10 项**及新打包原生客户端 **13 项**通过。修复了桌面长页面滚动后的弹窗定位，继续无边框、无默认菜单；扩展实际按钮打开/关闭 Chrome 原生 Side Panel，并提供完整设计工作台入口。两库 068→069 各保留 151 张原表全部行摘要及 SQL001–068。新包位于各端 `release/matrices-59-02/`，旧包保留；未签名 localhost 预览不代表安装或生产资格。排版不调用 AI，AI HK$0 不包括原素材上游费用；Codex 委派、专业媒体和字体资格仍独立跟踪。[核查回执](creative-matrix-checkpoint.json)保留全部失败与源码前像，原始 102 项、TC/NFR/G01–G10 的完整条件不变。
 

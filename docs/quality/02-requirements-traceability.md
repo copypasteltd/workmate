@@ -1,5 +1,8 @@
 # 需求追踪矩阵
 
+<!-- stage60-template-video -->
+阶段 60 验证 REQ-018/TC-018 的单模板本地合成子流程，串联独立工程、真实字幕/音轨成片、Web 和无边框客户端、原生侧栏入口、权限与物理删除；[实际证据](template-video-checkpoint.json)绑定实际来源，原始综合验收条件保留。
+
 <!-- stage59-creative-matrices -->
 阶段 59 在原 REQ-017/TC-017 条件下验证了本地排版子流程；关联 REQ-012/016/022/048/049/052 的独立输出、权限与删除。原表及原验收条件保持不变，当前执行与剩余项见[矩阵回执](creative-matrix-checkpoint.json)和[增量设计](../technical/59-creative-production-matrices.md)。
 
