@@ -1,5 +1,31 @@
 # CopyPaste Desktop
 
+## Batch designs and current clients (stage 59)
+
+Design canvas now creates a creative × language × size matrix, capped at 60 independent delivery units. Supply Traditional Chinese/English copy, a fixed shared project PNG and preset or custom dimensions. Each size receives its own layout and actual PNG, SVG and editable JSON files. Edits, retries, failures and output history belong to individual units. Layout makes no AI calls: its recorded AI cost is HK$0 from local composition, excluding upstream source creation costs.
+
+Claims and publication recheck current authority, input revision and source access. Cancellation, revocation and expired leases fence late output. Existing scoped Admin body permissions apply. Source quarantine blocks derived downloads; deletion physically erases embedded copies. SVG references server fonts; custom font distribution and commercial font qualification remain separate work.
+
+Validation: **22/22 focused checks within 607/607 complete Platform tests**, retaining all original 588 named tests; **10 actual Web journeys and 13 new packaged/native journeys** passed. Independent unit suites passed Web 8, Desktop 25, Extension 21 and Delivery 12. Both native databases upgraded 068→069 while preserving every row digest in 151 prior public tables and SQL001–068; three new tables force RLS.
+
+Desktop remains frameless with custom controls and no default Electron menu. The extension toolbar opens the native Side Panel and toggles it closed; its batch-design entry opens the full company workspace. Current previews are Desktop `release/matrices-59-02/` and Extension `release/matrices-59-02/CopyPaste-0.5.0-sidepanel.zip`. Earlier packages remain intact. These unsigned localhost previews have not passed installer execution or store distribution acceptance. Other professional workflows, live services, all original 102 requirements and TC/NFR/G01–G10 remain independently tracked.
+
+```mermaid
+flowchart LR
+  Brief[Copy / fixed PNG / languages / sizes] --> Bound[Authorize / 60-unit bound]
+  Bound --> Units[Durable independent units]
+  Units --> Layout[Reflow text and image / lease]
+  Layout --> Recheck[Recheck current authority and sources]
+  Recheck --> Files[PNG / SVG / editable JSON]
+  Layout --> Failed[Keep failed receipt]
+  Failed --> Retry[Retry only this cell]
+  Files --> Edit[New input revision for this cell]
+  Retry --> Units
+  Edit --> Units
+```
+
+![Actual packaged frameless Desktop](assets/screenshots/matrix-native-04-matrix-en.png)
+
 ## Explicit adoption (stage 54)
 
 Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.

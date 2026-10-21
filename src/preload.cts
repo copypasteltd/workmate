@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     html, body { height:100%; overflow:hidden; }
     #root { position:fixed; inset:40px 0 0; overflow:auto; transform:translateZ(0); }
     #root:has(.modal-backdrop) { overflow:hidden; }
+    #root .modal-backdrop { top:var(--cp-root-scroll,0px); bottom:calc(0px - var(--cp-root-scroll,0px)); }
     #root .app-shell, #root .main-shell { min-height:calc(100vh - 40px); }
     #copypaste-titlebar { position:fixed; inset:0 0 auto; height:40px; z-index:10000;
       display:flex; align-items:center; justify-content:space-between; background:var(--bg,#f6f6f4);
@@ -36,6 +37,14 @@ document.addEventListener("DOMContentLoaded", () => {
     .cp-window-resize:focus-visible { outline:2px solid var(--blue,#1f5eff); outline-offset:-2px; }
   `;
   document.head.append(style);
+  // A transformed root contains fixed overlays. Offset its existing scroll so
+  // dialogs stay below the native title bar without resetting the user's page.
+  const root = document.getElementById("root");
+  const syncOverlayOffset = () => {
+    root?.style.setProperty("--cp-root-scroll", `${root.scrollTop}px`);
+  };
+  root?.addEventListener("scroll", syncOverlayOffset, { passive: true });
+  syncOverlayOffset();
   const bar = document.createElement("header");
   bar.id = "copypaste-titlebar";
   const brand = document.createElement("span");
