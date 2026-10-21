@@ -275,9 +275,11 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
           ? "/app/specialists"
           : message.section === "connections"
             ? "/app/connections"
-            : ["creative", "video"].includes(message.section)
-              ? "/app/creative"
-              : "/app";
+            : message.section === "seo"
+              ? "/app/analytics?view=seo"
+              : ["creative", "video"].includes(message.section)
+                ? "/app/creative"
+                : "/app";
       await chrome.tabs.create({ url: settings.webOrigin + destination });
       return { ok: true };
     }

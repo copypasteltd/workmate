@@ -1028,6 +1028,13 @@ $("marketing-connections").addEventListener(
       await send("OPEN_WEB", { section: "connections" });
     }),
 );
+$("website-audits").addEventListener(
+  "click",
+  () =>
+    void run(async () => {
+      await send("OPEN_WEB", { section: "seo" });
+    }),
+);
 $("tenant").addEventListener(
   "change",
   () =>
@@ -1312,6 +1319,7 @@ const translations: Record<string, string> = {
   批量設計工作台: "Open batch design workspace",
   影片製作工作台: "Open video production workspace",
   營銷帳戶與同步: "Marketing accounts & sync",
+  網站診斷與復查: "Website audits & rechecks",
   檢視模型與費率版本: "Review model and rate versions",
   "工作，就從": "Your next idea,",
   "這裡開始。": "starts here.",
