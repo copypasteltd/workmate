@@ -271,7 +271,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     }
     if (message.type === "OPEN_WEB") {
       const destination =
-        message.section === "specialists" ? "/app/specialists" : message.section === "creative" ? "/app/creative" : "/app";
+        message.section === "specialists" ? "/app/specialists" : ["creative", "video"].includes(message.section) ? "/app/creative" : "/app";
       await chrome.tabs.create({ url: settings.webOrigin + destination });
       return { ok: true };
     }
