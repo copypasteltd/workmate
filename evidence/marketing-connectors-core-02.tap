@@ -1,0 +1,438 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# Subtest: google_ads: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+ok 1 - google_ads: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+  ---
+  duration_ms: 20915.5742
+  ...
+# Subtest: meta_ads: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+ok 2 - meta_ads: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+  ---
+  duration_ms: 757.5397
+  ...
+# Subtest: ga4: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+ok 3 - ga4: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+  ---
+  duration_ms: 1172.0876
+  ...
+# Subtest: search_console: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+ok 4 - search_console: actual HTTP consent, discovered account scope, all pages, immutable snapshot, strict original DTO and exports
+  ---
+  duration_ms: 898.9167
+  ...
+# Subtest: authorization creation is idempotent and scoped list uses the exact canonical response
+ok 5 - authorization creation is idempotent and scoped list uses the exact canonical response
+  ---
+  duration_ms: 267.4528
+  ...
+# Subtest: OAuth state cannot be replayed, changed or completed after the initiating session is revoked
+ok 6 - OAuth state cannot be replayed, changed or completed after the initiating session is revoked
+  ---
+  duration_ms: 195.1817
+  ...
+# Subtest: OAuth validates actual scopes and never persists a credential after scope denial
+ok 7 - OAuth validates actual scopes and never persists a credential after scope denial
+  ---
+  duration_ms: 90.4778
+  ...
+# Subtest: foreign tenant/project and arbitrary undiscovered account selection cause no supplier request
+ok 8 - foreign tenant/project and arbitrary undiscovered account selection cause no supplier request
+  ---
+  duration_ms: 433.7803
+  ...
+# Subtest: manager/denied site accounts cannot be bound and optimistic versions prevent stale edits
+ok 9 - manager/denied site accounts cannot be bound and optimistic versions prevent stale edits
+  ---
+  duration_ms: 305.4771
+  ...
+# Subtest: invalid calendar dates, reversed/oversized ranges and injected query fields are rejected before enqueue
+ok 10 - invalid calendar dates, reversed/oversized ranges and injected query fields are rejected before enqueue
+  ---
+  duration_ms: 420.5758
+  ...
+# Subtest: 429 persists Retry-After and continues the frozen page without duplicate facts
+ok 11 - 429 persists Retry-After and continues the frozen page without duplicate facts
+  ---
+  duration_ms: 329.0948
+  ...
+# Subtest: partial pages survive a permanent later-page failure and retry creates a new immutable snapshot
+ok 12 - partial pages survive a permanent later-page failure and retry creates a new immutable snapshot
+  ---
+  duration_ms: 648.9177
+  ...
+# Subtest: expired credentials require reauthorization and no later page is requested
+ok 13 - expired credentials require reauthorization and no later page is requested
+  ---
+  duration_ms: 929.2814
+  ...
+# Subtest: revocation while a page is in flight discards its bytes, clears credentials and cancels future reads
+ok 14 - revocation while a page is in flight discards its bytes, clears credentials and cancels future reads
+  ---
+  duration_ms: 560.4979
+  ...
+# Subtest: cancel is durable; a changed scope fences old queued queries and explicit retry uses the newly confirmed scope
+ok 15 - cancel is durable; a changed scope fences old queued queries and explicit retry uses the newly confirmed scope
+  ---
+  duration_ms: 840.0848
+  ...
+# Subtest: a worker crash lease resumes the same safe read without duplicating a stored page
+ok 16 - a worker crash lease resumes the same safe read without duplicating a stored page
+  ---
+  duration_ms: 914.1474
+  ...
+# Subtest: cursor loops and changing GA4 row counts produce partial snapshots, never complete
+ok 17 - cursor loops and changing GA4 row counts produce partial snapshots, never complete
+  ---
+  duration_ms: 651.8976
+  ...
+# Subtest: out-of-scope returned account data is rejected and not published
+ok 18 - out-of-scope returned account data is rejected and not published
+  ---
+  duration_ms: 202.6072
+  ...
+# Subtest: current user authority is rechecked before the first supplier read
+ok 19 - current user authority is rechecked before the first supplier read
+  ---
+  duration_ms: 414.7964
+  ...
+# Subtest: source quarantine, expiry and physical deletion deny every derived snapshot and analysis
+ok 20 - source quarantine, expiry and physical deletion deny every derived snapshot and analysis
+  ---
+  duration_ms: 1128.9827
+  ...
+# Subtest: RLS and least-privilege identities isolate all six new tables from cross-tenant and queue access
+ok 21 - RLS and least-privilege identities isolate all six new tables from cross-tenant and queue access
+  ---
+  duration_ms: 1497.1878
+  ...
+# Subtest: transport rejects custom hosts/credentials and fixtures are forbidden outside local demo
+ok 22 - transport rejects custom hosts/credentials and fixtures are forbidden outside local demo
+  ---
+  duration_ms: 2.8069
+  ...
+# Subtest: provider PKCE refuses a code exchanged with a different verifier
+ok 23 - provider PKCE refuses a code exchanged with a different verifier
+  ---
+  duration_ms: 5.7706
+  ...
+# Subtest: stored token expiry refreshes via the supplier before read and retains ciphertext-only storage
+ok 24 - stored token expiry refreshes via the supplier before read and retains ciphertext-only storage
+  ---
+  duration_ms: 488.8766
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# Subtest: a changed applied migration digest stops startup and the forward-only history remains intact
+ok 25 - a changed applied migration digest stops startup and the forward-only history remains intact
+  ---
+  duration_ms: 6966.0766
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# populated 041 upgrade: applied migration 42
+# populated 041 upgrade: applied migration 43
+# populated 041 upgrade: applied migration 44
+# populated 041 upgrade: applied migration 45
+# populated 041 upgrade: applied migration 46
+# populated 041 upgrade: applied migration 47
+# populated 041 upgrade: applied migration 48
+# populated 041 upgrade: applied migration 49
+# populated 041 upgrade: applied migration 50
+# populated 041 upgrade: applied migration 51
+# populated 041 upgrade: applied migration 52
+# populated 041 upgrade: applied migration 53
+# populated 041 upgrade: applied migration 54
+# populated 041 upgrade: applied migration 55
+# populated 041 upgrade: applied migration 56
+# populated 041 upgrade: applied migration 57
+# populated 041 upgrade: applied migration 58
+# populated 041 upgrade: applied migration 59
+# populated 041 upgrade: applied migration 60
+# populated 041 upgrade: applied migration 61
+# populated 041 upgrade: applied migration 62
+# populated 041 upgrade: applied migration 63
+# populated 041 upgrade: applied migration 64
+# populated 041 upgrade: applied migration 65
+# populated 041 upgrade: applied migration 66
+# populated 041 upgrade: applied migration 67
+# populated 041 upgrade: applied migration 68
+# populated 041 upgrade: applied migration 69
+# populated 041 upgrade: applied migration 70
+# populated 041 upgrade: applied migration 71
+# populated 041 upgrade: applied migration 72
+# populated 041 upgrade: applied migration 73
+# Subtest: a populated 041 checkpoint upgrades without pending-trigger DDL failures or rewriting original financial facts
+ok 26 - a populated 041 checkpoint upgrades without pending-trigger DDL failures or rewriting original financial facts
+  ---
+  duration_ms: 9632.9485
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# populated 047 approval upgrade: applied migration 48
+# populated 047 approval upgrade: applied migration 49
+# populated 047 approval upgrade: applied migration 50
+# populated 047 approval upgrade: applied migration 51
+# populated 047 approval upgrade: applied migration 52
+# populated 047 approval upgrade: applied migration 53
+# populated 047 approval upgrade: applied migration 54
+# populated 047 approval upgrade: applied migration 55
+# populated 047 approval upgrade: applied migration 56
+# populated 047 approval upgrade: applied migration 57
+# populated 047 approval upgrade: applied migration 58
+# populated 047 approval upgrade: applied migration 59
+# populated 047 approval upgrade: applied migration 60
+# populated 047 approval upgrade: applied migration 61
+# populated 047 approval upgrade: applied migration 62
+# populated 047 approval upgrade: applied migration 63
+# populated 047 approval upgrade: applied migration 64
+# populated 047 approval upgrade: applied migration 65
+# populated 047 approval upgrade: applied migration 66
+# populated 047 approval upgrade: applied migration 67
+# populated 047 approval upgrade: applied migration 68
+# populated 047 approval upgrade: applied migration 69
+# populated 047 approval upgrade: applied migration 70
+# populated 047 approval upgrade: applied migration 71
+# populated 047 approval upgrade: applied migration 72
+# populated 047 approval upgrade: applied migration 73
+# Subtest: 048 preserves real financial review history, registers frozen member/account requests and cancels unrecorded legacy commands
+ok 27 - 048 preserves real financial review history, registers frozen member/account requests and cancels unrecorded legacy commands
+  ---
+  duration_ms: 10130.3449
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 81160.9644
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/09268df3-3108-436b-9897-b3c148d3af2b/result.json","sha256":"32cf487eff370b411940b3ab86c9320953dc88b645060904e4c7302d96f91c61","exit_code":0}

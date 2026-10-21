@@ -1,0 +1,275 @@
+.connector-providers {
+  margin-bottom: 28px;
+}
+.connector-workspace {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.connector-directory {
+  position: sticky;
+  top: 24px;
+  padding: 20px;
+}
+.connector-directory h2 {
+  font-size: 18px;
+  margin: 0 0 18px;
+}
+.connector-directory-item {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 15px 12px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: inherit;
+  cursor: pointer;
+}
+.connector-directory-item.selected {
+  border-color: var(--line);
+  background: var(--warm);
+}
+.connector-directory-item small {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.connector-directory-item .badge {
+  justify-self: start;
+}
+.connector-panels {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.connector-panels > .card {
+  padding: 28px;
+}
+.connector-panels h2 {
+  margin: 4px 0 18px;
+}
+.connector-panels .section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.connector-scope fieldset {
+  border: 0;
+  padding: 0;
+  margin: 20px 0;
+}
+.connector-scope legend {
+  font-weight: 600;
+  font-size: 14px;
+  margin: 16px 0 12px;
+}
+.connector-account-list {
+  display: grid;
+  gap: 8px;
+  max-height: 380px;
+  overflow: auto;
+  margin-bottom: 24px;
+}
+.connector-account {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.connector-account span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.connector-account input,
+.connector-project-list input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.connector-account small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.connector-account.unavailable {
+  opacity: 0.6;
+}
+.connector-project-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.connector-project-list label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.connector-project-list small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.connector-panels .row-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 18px;
+}
+.connector-freshness {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+  margin-top: 24px;
+}
+.connector-freshness > div {
+  display: grid;
+  gap: 7px;
+}
+.connector-freshness span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.connector-freshness strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.connector-job-list {
+  margin-top: 8px;
+}
+.connector-job,
+.connector-snapshot {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.connector-job:last-child,
+.connector-snapshot:last-child {
+  border-bottom: 0;
+}
+.connector-job > div:first-child,
+.connector-snapshot > div:first-child {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.connector-job small,
+.connector-snapshot small {
+  font-size: 12px;
+  color: var(--muted);
+}
+.connector-job p {
+  font-size: 13px;
+}
+.connector-facts {
+  min-width: 0;
+}
+.connector-facts .table-wrap {
+  max-height: 48vh;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 22px 0;
+}
+.connector-facts table {
+  min-width: 650px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.connector-facts th,
+.connector-facts td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.connector-facts th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  font-weight: 600;
+}
+.connector-facts td small {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.connector-facts dl {
+  margin: 8px 0;
+}
+.connector-facts dl > div {
+  display: grid;
+  gap: 3px;
+  margin-bottom: 7px;
+}
+.connector-facts dt {
+  color: var(--muted);
+}
+.connector-facts dd {
+  margin: 0;
+  max-width: 260px;
+  overflow-wrap: anywhere;
+}
+.connector-facts details {
+  padding: 16px;
+  background: var(--warm);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.connector-facts li {
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.connector-launch {
+  max-width: 640px;
+  margin: 12vh auto;
+  padding: 36px;
+}
+@media (max-width: 1050px) {
+  .connector-workspace {
+    grid-template-columns: 1fr;
+  }
+  .connector-directory {
+    position: static;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .connector-directory h2 {
+    width: 100%;
+    margin: 0;
+  }
+  .connector-directory-item {
+    width: auto;
+    min-width: 175px;
+  }
+  .connector-panels > .card {
+    padding: 22px;
+  }
+}
+@media (max-width: 600px) {
+  .connector-freshness {
+    grid-template-columns: 1fr;
+  }
+  .connector-panels > .card {
+    padding: 18px;
+  }
+  .connector-directory-item {
+    min-width: 140px;
+    flex: 1;
+  }
+  .connector-providers {
+    gap: 12px;
+  }
+}

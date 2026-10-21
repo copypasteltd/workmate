@@ -1,0 +1,107 @@
+2026-10-21 22:19:48.762 CST [24020] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 22:19:48.767 CST [24020] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 22:19:48.768 CST [24020] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 22:19:49.488 CST [23144] LOG:  database system was shut down at 2026-10-21 21:31:58 CST
+
+2026-10-21 22:19:49.751 CST [24020] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 22:20:19.778 CST [17020] ERROR:  query would be affected by row-level security policy for table "connector_analysis_sources"
+2026-10-21 22:20:19.778 CST [17020] CONTEXT:  SQL function "connector_asset_available" statement 1
+	SQL function "analysis_asset_available" statement 1
+2026-10-21 22:20:19.778 CST [17020] STATEMENT:  SELECT s.* FROM connector_snapshots s JOIN assets a ON a.id=s.asset_id
+	              JOIN asset_versions v ON v.asset_id=s.asset_id AND v.version=s.asset_version
+	              WHERE s.id=$1 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND connector_asset_available(s.asset_id)
+
+2026-10-21 22:20:20.154 CST [17020] ERROR:  query would be affected by row-level security policy for table "connector_analysis_sources"
+2026-10-21 22:20:20.154 CST [17020] CONTEXT:  SQL function "connector_asset_available" statement 1
+	SQL function "analysis_asset_available" statement 1
+2026-10-21 22:20:20.154 CST [17020] STATEMENT:  SELECT s.* FROM connector_snapshots s JOIN assets a ON a.id=s.asset_id
+	              JOIN asset_versions v ON v.asset_id=s.asset_id AND v.version=s.asset_version
+	              WHERE s.id=$1 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND connector_asset_available(s.asset_id)
+
+2026-10-21 22:20:20.571 CST [17020] ERROR:  query would be affected by row-level security policy for table "connector_analysis_sources"
+2026-10-21 22:20:20.571 CST [17020] CONTEXT:  SQL function "connector_asset_available" statement 1
+	SQL function "analysis_asset_available" statement 1
+2026-10-21 22:20:20.571 CST [17020] STATEMENT:  SELECT s.* FROM connector_snapshots s JOIN assets a ON a.id=s.asset_id
+	              JOIN asset_versions v ON v.asset_id=s.asset_id AND v.version=s.asset_version
+	              WHERE s.id=$1 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND connector_asset_available(s.asset_id)
+
+2026-10-21 22:20:20.955 CST [17020] ERROR:  query would be affected by row-level security policy for table "connector_analysis_sources"
+2026-10-21 22:20:20.955 CST [17020] CONTEXT:  SQL function "connector_asset_available" statement 1
+	SQL function "analysis_asset_available" statement 1
+2026-10-21 22:20:20.955 CST [17020] STATEMENT:  SELECT s.* FROM connector_snapshots s JOIN assets a ON a.id=s.asset_id
+	              JOIN asset_versions v ON v.asset_id=s.asset_id AND v.version=s.asset_version
+	              WHERE s.id=$1 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND connector_asset_available(s.asset_id)
+
+2026-10-21 22:20:25.639 CST [36072] ERROR:  permission denied for table connector_profiles
+2026-10-21 22:20:25.639 CST [36072] STATEMENT:  SELECT * FROM connector_profiles
+
+2026-10-21 22:20:25.647 CST [17020] ERROR:  permission denied for table connector_oauth_states
+2026-10-21 22:20:25.647 CST [17020] STATEMENT:  SELECT count(*) FROM connector_oauth_states
+
+2026-10-21 22:20:25.720 CST [35960] ERROR:  permission denied for table connector_oauth_states
+2026-10-21 22:20:25.720 CST [35960] STATEMENT:  SELECT * FROM connector_oauth_states
+
+2026-10-21 22:20:25.801 CST [35972] ERROR:  permission denied for table connector_accounts
+2026-10-21 22:20:25.801 CST [35972] STATEMENT:  SELECT * FROM connector_accounts
+
+2026-10-21 22:20:25.903 CST [26884] ERROR:  permission denied for table connector_jobs
+2026-10-21 22:20:25.903 CST [26884] STATEMENT:  SELECT * FROM connector_jobs
+
+2026-10-21 22:20:26.013 CST [21908] ERROR:  permission denied for table connector_pages
+2026-10-21 22:20:26.013 CST [21908] STATEMENT:  SELECT * FROM connector_pages
+
+2026-10-21 22:20:26.090 CST [34408] ERROR:  permission denied for table connector_snapshots
+2026-10-21 22:20:26.090 CST [34408] STATEMENT:  SELECT * FROM connector_snapshots
+
+2026-10-21 22:20:26.189 CST [39916] ERROR:  permission denied for table connector_analysis_sources
+2026-10-21 22:20:26.189 CST [39916] STATEMENT:  SELECT * FROM connector_analysis_sources
+
+2026-10-21 22:20:29.291 CST [17020] ERROR:  query would be affected by row-level security policy for table "connector_analysis_sources"
+2026-10-21 22:20:29.291 CST [17020] CONTEXT:  SQL function "connector_asset_available" statement 1
+	SQL function "analysis_asset_available" statement 1
+2026-10-21 22:20:29.291 CST [17020] STATEMENT:  SELECT 1 FROM assets WHERE id=$1 AND project_id=$2 AND state='active' AND private_owner IS NULL
+
+2026-10-21 22:20:31.508 CST [1428] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 22:20:32.411 CST [1428] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.029 s, sync=0.649 s, total=0.904 s; sync files=15, longest=0.102 s, average=0.044 s; distance=17008 kB, estimate=17008 kB; lsn=9/94A97CD0, redo lsn=9/94A97C78
+
+2026-10-21 22:20:35.880 CST [1428] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 22:20:36.654 CST [1428] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.485 s, total=0.774 s; sync files=9, longest=0.140 s, average=0.054 s; distance=14785 kB, estimate=16785 kB; lsn=9/959083D0, redo lsn=9/95908378
+
+2026-10-21 22:20:40.884 CST [1428] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 22:20:41.403 CST [1428] LOG:  checkpoint complete: wrote 16 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.347 s, total=0.519 s; sync files=8, longest=0.106 s, average=0.044 s; distance=14798 kB, estimate=16587 kB; lsn=9/9677BF50, redo lsn=9/9677BEF8
+
+2026-10-21 22:20:44.766 CST [39528] ERROR:  Review decisions are immutable
+2026-10-21 22:20:44.766 CST [39528] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-21 22:20:44.766 CST [39528] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-21 22:20:44.769 CST [39528] ERROR:  Frozen approval is immutable
+2026-10-21 22:20:44.769 CST [39528] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-21 22:20:44.769 CST [39528] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-21 22:20:44.930 CST [1428] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 22:20:45.728 CST [1428] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.601 s, total=0.799 s; sync files=11, longest=0.130 s, average=0.055 s; distance=15147 kB, estimate=16443 kB; lsn=9/97646B68, redo lsn=9/97646B10
+
+2026-10-21 22:20:47.541 CST [24020] LOG:  received fast shutdown request
+
+2026-10-21 22:20:47.618 CST [24020] LOG:  aborting any active transactions
+
+2026-10-21 22:20:47.626 CST [24020] LOG:  background worker "logical replication launcher" (PID 38740) exited with exit code 1
+
+2026-10-21 22:20:47.626 CST [1428] LOG:  shutting down
+
+2026-10-21 22:20:47.669 CST [1428] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 22:20:47.858 CST [1428] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.051 s, total=0.232 s; sync files=1, longest=0.051 s, average=0.051 s; distance=0 kB, estimate=14798 kB; lsn=9/97646C80, redo lsn=9/97646C80
+
+2026-10-21 22:20:47.967 CST [24020] LOG:  database system is shut down
+

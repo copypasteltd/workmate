@@ -1,0 +1,1488 @@
+{
+  "at": "2026-10-21T16:31:34.534Z",
+  "status": "passed",
+  "scope": "Actual built Web/Admin with protocol-shaped synthetic HTTP suppliers and native PostgreSQL; no live provider account or whole-product qualification",
+  "checks": [
+    {
+      "name": "actual browser email sign-in, session restoration and company/project onboarding",
+      "status": "passed"
+    },
+    {
+      "name": "Google Ads: actual consent, authorized directory and explicit scope confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "Google Ads: complete durable pagination, fixed facts, coverage limits and actual JSON/CSV downloads",
+      "status": "passed"
+    },
+    {
+      "name": "Meta Ads: actual consent, authorized directory and explicit scope confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "Meta Ads: complete durable pagination, fixed facts, coverage limits and actual JSON/CSV downloads",
+      "status": "passed"
+    },
+    {
+      "name": "Google Analytics 4: actual consent, authorized directory and explicit scope confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "GA4: provider rate limit is retained and shown before a scheduled retry",
+      "status": "passed"
+    },
+    {
+      "name": "Google Analytics 4: complete durable pagination, fixed facts, coverage limits and actual JSON/CSV downloads",
+      "status": "passed"
+    },
+    {
+      "name": "Google Search Console: actual consent, authorized directory and explicit scope confirmation",
+      "status": "passed"
+    },
+    {
+      "name": "Google Search Console: complete durable pagination, fixed facts, coverage limits and actual JSON/CSV downloads",
+      "status": "passed"
+    },
+    {
+      "name": "actual cancel action stops queued supplier reads without publishing",
+      "status": "passed"
+    },
+    {
+      "name": "current source quarantine removes download/facts actions and restoration retains original immutable history",
+      "status": "passed"
+    },
+    {
+      "name": "Traditional Chinese dark and 390-pixel workbench/facts fit the viewport with bounded inner tables",
+      "status": "passed"
+    },
+    {
+      "name": "actual Admin mailbox/TOTP sign-in and scoped metadata separate credentials and content-body permissions",
+      "status": "passed"
+    },
+    {
+      "name": "actual Admin canonical 202 revocation records its operation, cancels queued reads, clears credentials and updates the customer view",
+      "status": "passed"
+    },
+    {
+      "name": "metadata-only Admin sees connection scope but has no revoke or source-body controls",
+      "status": "passed"
+    },
+    {
+      "name": "Traditional Chinese dark/narrow Admin metadata is readable and closes with Escape",
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "samples": [
+    {
+      "schema": "Connection",
+      "route": "POST /v1/connections",
+      "response": {
+        "id": "b524c1e8-a729-4ca7-92af-167e347ffc5b",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "google_ads",
+        "state": "pending",
+        "auth_version": 0,
+        "account_ids": [],
+        "data_as_of": null,
+        "authorization_url": "http://127.0.0.1:2068/consent/google_ads?client_id=copypaste-simulated-client&state=vkM5PDVLBf8GvvUD2a06HZifnZRgFST7VHXdwMP5eTo&redirect_uri=http%3A%2F%2Flocalhost%3A4310%2Fv1%2Fconnections%2Fcallback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fadwords&response_type=code&access_type=offline&prompt=consent&code_challenge_method=S256&code_challenge=7poQt18vQsxndwum35XzIkOvpSWzjf4gKoWOvsNhqZk",
+        "version": 0
+      }
+    },
+    {
+      "schema": "ConnectorDetail",
+      "route": "GET current discovered scope",
+      "response": {
+        "connection": {
+          "id": "b524c1e8-a729-4ca7-92af-167e347ffc5b",
+          "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+          "provider": "google_ads",
+          "state": "active",
+          "auth_version": 1,
+          "account_ids": [],
+          "data_as_of": null,
+          "version": 1
+        },
+        "name": "Google Ads",
+        "source_mode": "simulated",
+        "api_version": "v26",
+        "project_ids": [],
+        "scopes": [
+          "https://www.googleapis.com/auth/adwords"
+        ],
+        "catalog_state": "complete",
+        "limitations": [],
+        "accounts": [
+          {
+            "account_id": "100",
+            "name": "模擬集團經理",
+            "timezone": "Asia/Hong_Kong",
+            "currency": "HKD",
+            "readable": false,
+            "kind": "manager",
+            "login_customer_id": null,
+            "reporting_identity": null,
+            "reporting_identity_source": "not_applicable",
+            "permission_level": "oauth_accessible"
+          },
+          {
+            "account_id": "101",
+            "name": "香港品牌 · 101",
+            "timezone": "Asia/Hong_Kong",
+            "currency": "HKD",
+            "readable": true,
+            "kind": "advertiser",
+            "login_customer_id": "100",
+            "reporting_identity": null,
+            "reporting_identity_source": "not_applicable",
+            "permission_level": "oauth_accessible"
+          },
+          {
+            "account_id": "102",
+            "name": "香港品牌 · 102",
+            "timezone": "Asia/Hong_Kong",
+            "currency": "HKD",
+            "readable": true,
+            "kind": "advertiser",
+            "login_customer_id": "100",
+            "reporting_identity": null,
+            "reporting_identity_source": "not_applicable",
+            "permission_level": "oauth_accessible"
+          }
+        ],
+        "last_sync_at": null,
+        "jobs": [
+          {
+            "id": "85bf8bf5-7f7b-4fe4-b238-dedf7f9cf0c2",
+            "connection_id": "b524c1e8-a729-4ca7-92af-167e347ffc5b",
+            "state": "complete",
+            "kind": "discover",
+            "status": "complete",
+            "segment": 0,
+            "page_count": 3,
+            "row_count": 0,
+            "raw_bytes": 0,
+            "attempts": 0,
+            "error_code": null,
+            "limitations": [],
+            "captured_at": "2026-10-21T16:31:02.524Z",
+            "next_attempt_at": "2026-10-21T16:31:02.196Z",
+            "created_at": "2026-10-21T16:31:02.196Z",
+            "spec_hash": "6f3e50cb6cd952331bced72b611fdb033548ccb7a45a3109430f9162ba10316b",
+            "source_mode": "simulated",
+            "retry_of": null
+          }
+        ],
+        "snapshots": [],
+        "next_history_cursor": null
+      }
+    },
+    {
+      "schema": "Connection",
+      "route": "PATCH /v1/connections/b524c1e8-a729-4ca7-92af-167e347ffc5b",
+      "response": {
+        "id": "b524c1e8-a729-4ca7-92af-167e347ffc5b",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "google_ads",
+        "state": "active",
+        "auth_version": 1,
+        "account_ids": [
+          "101",
+          "102"
+        ],
+        "data_as_of": null,
+        "version": 2
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "POST /v1/connections/b524c1e8-a729-4ca7-92af-167e347ffc5b/syncs",
+      "response": {
+        "id": "250be3a7-2f1d-4ea8-87ac-d9a6a50483b6",
+        "connection_id": "b524c1e8-a729-4ca7-92af-167e347ffc5b",
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "GET completed sync",
+      "response": {
+        "id": "250be3a7-2f1d-4ea8-87ac-d9a6a50483b6",
+        "connection_id": "b524c1e8-a729-4ca7-92af-167e347ffc5b",
+        "state": "complete",
+        "snapshot_id": "82c82498-6694-4954-842c-a3c7a896fa1d"
+      }
+    },
+    {
+      "schema": "ConnectorFacts",
+      "route": "GET /v1/connector-snapshots/82c82498-6694-4954-842c-a3c7a896fa1d",
+      "response": {
+        "id": "82c82498-6694-4954-842c-a3c7a896fa1d",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "source": "google_ads",
+        "state": "complete",
+        "source_mode": "simulated",
+        "row_count": 6,
+        "captured_at": "2026-10-21T16:31:03.559Z",
+        "data_as_of": null,
+        "limitations": [
+          "PROVIDER_DATA_CUTOFF_UNAVAILABLE",
+          "LATE_ATTRIBUTION_CAN_CHANGE_NEW_SNAPSHOTS",
+          "GOOGLE_ADS_CONFIGURED_CONVERSION_ACTIONS_AND_ATTRIBUTION"
+        ],
+        "specification": {
+          "dates": {
+            "date_to": "2026-10-20",
+            "date_from": "2026-09-21"
+          },
+          "queries": [
+            {
+              "account": {
+                "kind": "advertiser",
+                "name": "香港品牌 · 101",
+                "currency": "HKD",
+                "readable": true,
+                "timezone": "Asia/Hong_Kong",
+                "account_id": "101",
+                "permission_level": "oauth_accessible",
+                "login_customer_id": "100",
+                "reporting_identity": null,
+                "reporting_identity_source": "not_applicable"
+              },
+              "date_to": "2026-10-20",
+              "profile": "campaign",
+              "version": "marketing-read/1.0.0",
+              "provider": "google_ads",
+              "date_from": "2026-09-21",
+              "page_size": 2,
+              "api_version": "v26",
+              "conversion_action_type": "purchase"
+            },
+            {
+              "account": {
+                "kind": "advertiser",
+                "name": "香港品牌 · 102",
+                "currency": "HKD",
+                "readable": true,
+                "timezone": "Asia/Hong_Kong",
+                "account_id": "102",
+                "permission_level": "oauth_accessible",
+                "login_customer_id": "100",
+                "reporting_identity": null,
+                "reporting_identity_source": "not_applicable"
+              },
+              "date_to": "2026-10-20",
+              "profile": "campaign",
+              "version": "marketing-read/1.0.0",
+              "provider": "google_ads",
+              "date_from": "2026-09-21",
+              "page_size": 2,
+              "api_version": "v26",
+              "conversion_action_type": "purchase"
+            }
+          ],
+          "accounts": [
+            "101",
+            "102"
+          ],
+          "project_ids": [
+            "f7189d11-9c37-457c-9387-1d43792ef45a"
+          ],
+          "binding_version": 2,
+          "connection_auth_version": 1
+        },
+        "spec_hash": "56af97a04593e7b5441f39d28fa11c8a1f243ea144c5da36ad7e16a5e86f8358",
+        "dataset_ids": [
+          "b945d485-d6a1-40d8-9e65-705049183d6f",
+          "39a604d0-c782-4045-8a8f-aa2f687349ec"
+        ],
+        "asset_id": "b2d8d260-6886-44d6-a5b1-d04aeded6453",
+        "facts": [
+          {
+            "key": "715bc727683728054ad3587a701992290068199c3acfde8eed39bef53a347545",
+            "account_id": "101",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "700",
+              "campaign_name": "香港新品"
+            },
+            "metrics": {
+              "impressions": "1000",
+              "clicks": "80",
+              "spend": "123.456789",
+              "conversions": "2",
+              "revenue": "500"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "d70839c3c3a14be760d69b249dd05eafd016d449586db679cda6ff7609719657",
+            "account_id": "101",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "701",
+              "campaign_name": "品牌搜尋"
+            },
+            "metrics": {
+              "impressions": "1100",
+              "clicks": "81",
+              "spend": "124.456789",
+              "conversions": "3",
+              "revenue": "600"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "0190fc2f4db9b1f915ff4943d8a0cebb480fd669c6ea3a4526d648c8cba44367",
+            "account_id": "101",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "702",
+              "campaign_name": "再行銷"
+            },
+            "metrics": {
+              "impressions": "1200",
+              "clicks": "82",
+              "spend": "125.456789",
+              "conversions": null,
+              "revenue": null
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "aa41d4a2caef2a90db4281a4713529cae80ccfaa0acea2c95b576ce299a05e6f",
+            "account_id": "102",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "700",
+              "campaign_name": "香港新品"
+            },
+            "metrics": {
+              "impressions": "1000",
+              "clicks": "80",
+              "spend": "123.456789",
+              "conversions": "2",
+              "revenue": "500"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "ffa28e335e8118237e7cf1f60af5207cf2b6ce6a6108fecfda4e173bd0a5025d",
+            "account_id": "102",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "701",
+              "campaign_name": "品牌搜尋"
+            },
+            "metrics": {
+              "impressions": "1100",
+              "clicks": "81",
+              "spend": "124.456789",
+              "conversions": "3",
+              "revenue": "600"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "03823082e9b3550c42e3fdc2ffbb4c12fc0527a019e29b94636a8d5f28f13a02",
+            "account_id": "102",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "702",
+              "campaign_name": "再行銷"
+            },
+            "metrics": {
+              "impressions": "1200",
+              "clicks": "82",
+              "spend": "125.456789",
+              "conversions": null,
+              "revenue": null
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          }
+        ],
+        "next_offset": null
+      }
+    },
+    {
+      "schema": "Connection",
+      "route": "POST /v1/connections",
+      "response": {
+        "id": "db0d95ce-c5f6-4485-a165-1492f12f96df",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "meta_ads",
+        "state": "pending",
+        "auth_version": 0,
+        "account_ids": [],
+        "data_as_of": null,
+        "authorization_url": "http://127.0.0.1:2068/consent/meta_ads?client_id=copypaste-simulated-client&state=YdfeQcGeD0lz55a8k2lAytaUiHxW-PsAZ5EnmQcogko&redirect_uri=http%3A%2F%2Flocalhost%3A4310%2Fv1%2Fconnections%2Fcallback&scope=ads_read&response_type=code",
+        "version": 0
+      }
+    },
+    {
+      "schema": "ConnectorDetail",
+      "route": "GET current discovered scope",
+      "response": {
+        "connection": {
+          "id": "db0d95ce-c5f6-4485-a165-1492f12f96df",
+          "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+          "provider": "meta_ads",
+          "state": "active",
+          "auth_version": 1,
+          "account_ids": [],
+          "data_as_of": null,
+          "version": 1
+        },
+        "name": "Meta Ads",
+        "source_mode": "simulated",
+        "api_version": "v26.0",
+        "project_ids": [],
+        "scopes": [
+          "ads_read"
+        ],
+        "catalog_state": "complete",
+        "limitations": [],
+        "accounts": [
+          {
+            "account_id": "301",
+            "name": "香港活動廣告",
+            "timezone": "Asia/Hong_Kong",
+            "currency": "HKD",
+            "readable": true,
+            "kind": "advertiser",
+            "login_customer_id": null,
+            "reporting_identity": null,
+            "reporting_identity_source": "not_applicable",
+            "permission_level": "ads_read"
+          }
+        ],
+        "last_sync_at": null,
+        "jobs": [
+          {
+            "id": "0aa30271-eb82-4e93-b9af-50017320c03a",
+            "connection_id": "db0d95ce-c5f6-4485-a165-1492f12f96df",
+            "state": "complete",
+            "kind": "discover",
+            "status": "complete",
+            "segment": 0,
+            "page_count": 1,
+            "row_count": 0,
+            "raw_bytes": 0,
+            "attempts": 0,
+            "error_code": null,
+            "limitations": [],
+            "captured_at": "2026-10-21T16:31:06.297Z",
+            "next_attempt_at": "2026-10-21T16:31:06.016Z",
+            "created_at": "2026-10-21T16:31:06.016Z",
+            "spec_hash": "41e15d198d09ac50c5c3ab9a54970c5d0933e1985287747afd22ff7738f24528",
+            "source_mode": "simulated",
+            "retry_of": null
+          }
+        ],
+        "snapshots": [],
+        "next_history_cursor": null
+      }
+    },
+    {
+      "schema": "Connection",
+      "route": "PATCH /v1/connections/db0d95ce-c5f6-4485-a165-1492f12f96df",
+      "response": {
+        "id": "db0d95ce-c5f6-4485-a165-1492f12f96df",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "meta_ads",
+        "state": "active",
+        "auth_version": 1,
+        "account_ids": [
+          "301"
+        ],
+        "data_as_of": null,
+        "version": 2
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "POST /v1/connections/db0d95ce-c5f6-4485-a165-1492f12f96df/syncs",
+      "response": {
+        "id": "a8474d47-60bb-4f51-9bd0-5e32a804a119",
+        "connection_id": "db0d95ce-c5f6-4485-a165-1492f12f96df",
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "GET completed sync",
+      "response": {
+        "id": "a8474d47-60bb-4f51-9bd0-5e32a804a119",
+        "connection_id": "db0d95ce-c5f6-4485-a165-1492f12f96df",
+        "state": "complete",
+        "snapshot_id": "c63789b1-807b-44f9-90a3-62d495d8d2a3"
+      }
+    },
+    {
+      "schema": "ConnectorFacts",
+      "route": "GET /v1/connector-snapshots/c63789b1-807b-44f9-90a3-62d495d8d2a3",
+      "response": {
+        "id": "c63789b1-807b-44f9-90a3-62d495d8d2a3",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "source": "meta_ads",
+        "state": "complete",
+        "source_mode": "simulated",
+        "row_count": 3,
+        "captured_at": "2026-10-21T16:31:09.135Z",
+        "data_as_of": null,
+        "limitations": [
+          "PROVIDER_DATA_CUTOFF_UNAVAILABLE",
+          "LATE_ATTRIBUTION_CAN_CHANGE_NEW_SNAPSHOTS",
+          "META_ACTION_TYPE_EXACT_MATCH_MISSING_IS_UNKNOWN",
+          "META_CONVERSION_TIME_ACCOUNT_ATTRIBUTION"
+        ],
+        "specification": {
+          "dates": {
+            "date_to": "2026-10-20",
+            "date_from": "2026-09-21"
+          },
+          "queries": [
+            {
+              "account": {
+                "kind": "advertiser",
+                "name": "香港活動廣告",
+                "currency": "HKD",
+                "readable": true,
+                "timezone": "Asia/Hong_Kong",
+                "account_id": "301",
+                "permission_level": "ads_read",
+                "login_customer_id": null,
+                "reporting_identity": null,
+                "reporting_identity_source": "not_applicable"
+              },
+              "date_to": "2026-10-20",
+              "profile": "campaign",
+              "version": "marketing-read/1.0.0",
+              "provider": "meta_ads",
+              "date_from": "2026-09-21",
+              "page_size": 2,
+              "api_version": "v26.0",
+              "conversion_action_type": "purchase"
+            }
+          ],
+          "accounts": [
+            "301"
+          ],
+          "project_ids": [
+            "f7189d11-9c37-457c-9387-1d43792ef45a"
+          ],
+          "binding_version": 2,
+          "connection_auth_version": 1
+        },
+        "spec_hash": "a73abaef6438e0bd1b93bcaefed5db7377d13ac205cabad74c9ee6938fa84146",
+        "dataset_ids": [
+          "4aa2e474-7391-40a8-9c39-e5ef35325eca"
+        ],
+        "asset_id": "f27e0cce-e0e1-4098-b93f-5464d46b2414",
+        "facts": [
+          {
+            "key": "9a24ee6ee4a5f53b3a1c4123c72c32ccdb74653813864752374e0c041460163d",
+            "account_id": "301",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "800",
+              "campaign_name": "節日推廣",
+              "conversion_action_type": "purchase",
+              "attribution_setting": "7d_click,1d_view"
+            },
+            "metrics": {
+              "impressions": "500",
+              "clicks": "50",
+              "spend": "75.50",
+              "conversions": "2",
+              "revenue": "200"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "743602fa3fa7925d6815084eeebb374104e3faf94da017c40007c5db31f66aee",
+            "account_id": "301",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "801",
+              "campaign_name": "產品介紹",
+              "conversion_action_type": "purchase",
+              "attribution_setting": "7d_click,1d_view"
+            },
+            "metrics": {
+              "impressions": "501",
+              "clicks": "51",
+              "spend": "75.50",
+              "conversions": "2",
+              "revenue": "200"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "9f111340b128586265940351c9be9ec2d18ee5994b333b1662abd6a0467335db",
+            "account_id": "301",
+            "profile": "campaign",
+            "date": "2026-09-21",
+            "dimensions": {
+              "campaign_id": "802",
+              "campaign_name": "會員招募",
+              "conversion_action_type": "purchase",
+              "attribution_setting": "7d_click,1d_view"
+            },
+            "metrics": {
+              "impressions": "502",
+              "clicks": "52",
+              "spend": "75.50",
+              "conversions": null,
+              "revenue": null
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          }
+        ],
+        "next_offset": null
+      }
+    },
+    {
+      "schema": "Connection",
+      "route": "POST /v1/connections",
+      "response": {
+        "id": "563d6402-9a8e-4f46-b306-43f7c1d776db",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "ga4",
+        "state": "pending",
+        "auth_version": 0,
+        "account_ids": [],
+        "data_as_of": null,
+        "authorization_url": "http://127.0.0.1:2068/consent/ga4?client_id=copypaste-simulated-client&state=nrQ4E3C75778mqPZzAh_B22ELwv70QpxJrqUVeD1UVU&redirect_uri=http%3A%2F%2Flocalhost%3A4310%2Fv1%2Fconnections%2Fcallback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fanalytics.readonly&response_type=code&access_type=offline&prompt=consent&code_challenge_method=S256&code_challenge=rhDFt-ToFDVPJxCYo6hoAYWTnejVaksJ4O0CmFq5PvA",
+        "version": 0
+      }
+    },
+    {
+      "schema": "ConnectorDetail",
+      "route": "GET current discovered scope",
+      "response": {
+        "connection": {
+          "id": "563d6402-9a8e-4f46-b306-43f7c1d776db",
+          "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+          "provider": "ga4",
+          "state": "active",
+          "auth_version": 1,
+          "account_ids": [],
+          "data_as_of": null,
+          "version": 1
+        },
+        "name": "Google Analytics 4",
+        "source_mode": "simulated",
+        "api_version": "v1beta",
+        "project_ids": [],
+        "scopes": [
+          "https://www.googleapis.com/auth/analytics.readonly"
+        ],
+        "catalog_state": "complete",
+        "limitations": [],
+        "accounts": [
+          {
+            "account_id": "201",
+            "name": "香港品牌官網",
+            "timezone": "Asia/Hong_Kong",
+            "currency": "HKD",
+            "readable": true,
+            "kind": "property",
+            "login_customer_id": null,
+            "reporting_identity": "BLENDED",
+            "reporting_identity_source": "provider",
+            "permission_level": "analytics.readonly"
+          }
+        ],
+        "last_sync_at": null,
+        "jobs": [
+          {
+            "id": "945c9f1b-c712-4082-b97c-b7ba660df903",
+            "connection_id": "563d6402-9a8e-4f46-b306-43f7c1d776db",
+            "state": "complete",
+            "kind": "discover",
+            "status": "complete",
+            "segment": 0,
+            "page_count": 3,
+            "row_count": 0,
+            "raw_bytes": 0,
+            "attempts": 0,
+            "error_code": null,
+            "limitations": [],
+            "captured_at": "2026-10-21T16:31:12.651Z",
+            "next_attempt_at": "2026-10-21T16:31:12.205Z",
+            "created_at": "2026-10-21T16:31:12.205Z",
+            "spec_hash": "5db2f34cf72b907b4c69a077e75b74cdf838928167d3cd1ab4e9963b41065100",
+            "source_mode": "simulated",
+            "retry_of": null
+          }
+        ],
+        "snapshots": [],
+        "next_history_cursor": null
+      }
+    },
+    {
+      "schema": "Connection",
+      "route": "PATCH /v1/connections/563d6402-9a8e-4f46-b306-43f7c1d776db",
+      "response": {
+        "id": "563d6402-9a8e-4f46-b306-43f7c1d776db",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "ga4",
+        "state": "active",
+        "auth_version": 1,
+        "account_ids": [
+          "201"
+        ],
+        "data_as_of": null,
+        "version": 2
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "POST /v1/connections/563d6402-9a8e-4f46-b306-43f7c1d776db/syncs",
+      "response": {
+        "id": "6fad8740-c54a-4b80-9047-f0b12ce3fb33",
+        "connection_id": "563d6402-9a8e-4f46-b306-43f7c1d776db",
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "GET completed sync",
+      "response": {
+        "id": "6fad8740-c54a-4b80-9047-f0b12ce3fb33",
+        "connection_id": "563d6402-9a8e-4f46-b306-43f7c1d776db",
+        "state": "complete",
+        "snapshot_id": "b2824a97-aff4-4faf-b94b-1a33dd6c6e15"
+      }
+    },
+    {
+      "schema": "ConnectorFacts",
+      "route": "GET /v1/connector-snapshots/b2824a97-aff4-4faf-b94b-1a33dd6c6e15",
+      "response": {
+        "id": "b2824a97-aff4-4faf-b94b-1a33dd6c6e15",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "source": "ga4",
+        "state": "complete",
+        "source_mode": "simulated",
+        "row_count": 6,
+        "captured_at": "2026-10-21T16:31:17.619Z",
+        "data_as_of": null,
+        "limitations": [
+          "PROVIDER_DATA_CUTOFF_UNAVAILABLE",
+          "LATE_ATTRIBUTION_CAN_CHANGE_NEW_SNAPSHOTS",
+          "GA4_USERS_NOT_ADDITIVE_ACROSS_ROWS_OR_REPORTS",
+          "GA4_DATES_WITHOUT_ROWS_ARE_NOT_ZERO",
+          "GA4_THRESHOLDING"
+        ],
+        "specification": {
+          "dates": {
+            "date_to": "2026-10-20",
+            "date_from": "2026-09-21"
+          },
+          "queries": [
+            {
+              "account": {
+                "kind": "property",
+                "name": "香港品牌官網",
+                "currency": "HKD",
+                "readable": true,
+                "timezone": "Asia/Hong_Kong",
+                "account_id": "201",
+                "permission_level": "analytics.readonly",
+                "login_customer_id": null,
+                "reporting_identity": "BLENDED",
+                "reporting_identity_source": "provider"
+              },
+              "date_to": "2026-10-20",
+              "profile": "ga4_traffic",
+              "version": "marketing-read/1.0.0",
+              "provider": "ga4",
+              "date_from": "2026-09-21",
+              "page_size": 2,
+              "api_version": "v1beta",
+              "conversion_action_type": "purchase"
+            },
+            {
+              "account": {
+                "kind": "property",
+                "name": "香港品牌官網",
+                "currency": "HKD",
+                "readable": true,
+                "timezone": "Asia/Hong_Kong",
+                "account_id": "201",
+                "permission_level": "analytics.readonly",
+                "login_customer_id": null,
+                "reporting_identity": "BLENDED",
+                "reporting_identity_source": "provider"
+              },
+              "date_to": "2026-10-20",
+              "profile": "ga4_events",
+              "version": "marketing-read/1.0.0",
+              "provider": "ga4",
+              "date_from": "2026-09-21",
+              "page_size": 2,
+              "api_version": "v1beta",
+              "conversion_action_type": "purchase"
+            }
+          ],
+          "accounts": [
+            "201"
+          ],
+          "project_ids": [
+            "f7189d11-9c37-457c-9387-1d43792ef45a"
+          ],
+          "binding_version": 2,
+          "connection_auth_version": 1
+        },
+        "spec_hash": "981f91a506f9759e1fc606753d7cf97485fb246176cf8b70662364e7a21ae553",
+        "dataset_ids": [],
+        "asset_id": "afed20d8-9b05-43be-b0fb-ed6093d8555c",
+        "facts": [
+          {
+            "key": "999de5c1c7473bd71c787510a4835b071c205062efe73b2b445dd569c7fb0cb0",
+            "account_id": "201",
+            "profile": "ga4_traffic",
+            "date": "2026-09-21",
+            "dimensions": {
+              "sessionDefaultChannelGroup": "Organic Search",
+              "landingPagePlusQueryString": "/"
+            },
+            "metrics": {
+              "sessions": "120",
+              "totalUsers": "100",
+              "screenPageViews": "150",
+              "keyEvents": "3",
+              "totalRevenue": "800.50"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "7a0345ff8528faaa78e60f84162a92ef45e02ead5fce5479369c0400e6ec1078",
+            "account_id": "201",
+            "profile": "ga4_traffic",
+            "date": "2026-09-21",
+            "dimensions": {
+              "sessionDefaultChannelGroup": "Paid Search",
+              "landingPagePlusQueryString": "/offer"
+            },
+            "metrics": {
+              "sessions": "120",
+              "totalUsers": "100",
+              "screenPageViews": "150",
+              "keyEvents": "3",
+              "totalRevenue": "800.50"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "f2b2239361031aceb1c0972f2887442f67661ec104853871dd6c955f49968064",
+            "account_id": "201",
+            "profile": "ga4_traffic",
+            "date": "2026-09-21",
+            "dimensions": {
+              "sessionDefaultChannelGroup": "Direct",
+              "landingPagePlusQueryString": "/contact"
+            },
+            "metrics": {
+              "sessions": "120",
+              "totalUsers": "100",
+              "screenPageViews": "150",
+              "keyEvents": "3",
+              "totalRevenue": "800.50"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "5dfbea1c66dca2169585be154604392289eb3cf5340236b253e4cf37054b1b26",
+            "account_id": "201",
+            "profile": "ga4_events",
+            "date": "2026-09-21",
+            "dimensions": {
+              "eventName": "page_view"
+            },
+            "metrics": {
+              "eventCount": "150",
+              "totalUsers": "100",
+              "keyEvents": "3"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "964c41fabd5d8844e6f185a9990408286ca17d2baf07179625a442356b234402",
+            "account_id": "201",
+            "profile": "ga4_events",
+            "date": "2026-09-21",
+            "dimensions": {
+              "eventName": "generate_lead"
+            },
+            "metrics": {
+              "eventCount": "150",
+              "totalUsers": "100",
+              "keyEvents": "3"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          },
+          {
+            "key": "4e1f30447d1d0a97403780c6cbe30d11c7c2e95132d87c919a65f13ff7257e75",
+            "account_id": "201",
+            "profile": "ga4_events",
+            "date": "2026-09-21",
+            "dimensions": {
+              "eventName": "purchase"
+            },
+            "metrics": {
+              "eventCount": "150",
+              "totalUsers": "100",
+              "keyEvents": "3"
+            },
+            "currency": "HKD",
+            "timezone": "Asia/Hong_Kong"
+          }
+        ],
+        "next_offset": null
+      }
+    },
+    {
+      "schema": "Connection",
+      "route": "POST /v1/connections",
+      "response": {
+        "id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "search_console",
+        "state": "pending",
+        "auth_version": 0,
+        "account_ids": [],
+        "data_as_of": null,
+        "authorization_url": "http://127.0.0.1:2068/consent/search_console?client_id=copypaste-simulated-client&state=Mhs7oslJgkPlCwDhoirI80abX3_eL2x8EQnCFjruro8&redirect_uri=http%3A%2F%2Flocalhost%3A4310%2Fv1%2Fconnections%2Fcallback&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fwebmasters.readonly&response_type=code&access_type=offline&prompt=consent&code_challenge_method=S256&code_challenge=RZK8xm_knRUelCZ84jsgfTaDDniSPndHL_7yKf7T-_o",
+        "version": 0
+      }
+    },
+    {
+      "schema": "ConnectorDetail",
+      "route": "GET current discovered scope",
+      "response": {
+        "connection": {
+          "id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+          "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+          "provider": "search_console",
+          "state": "active",
+          "auth_version": 1,
+          "account_ids": [],
+          "data_as_of": null,
+          "version": 1
+        },
+        "name": "Google Search Console",
+        "source_mode": "simulated",
+        "api_version": "v1beta",
+        "project_ids": [],
+        "scopes": [
+          "https://www.googleapis.com/auth/webmasters.readonly"
+        ],
+        "catalog_state": "complete",
+        "limitations": [],
+        "accounts": [
+          {
+            "account_id": "https://denied.invalid/",
+            "name": "https://denied.invalid/",
+            "timezone": "America/Los_Angeles",
+            "currency": null,
+            "readable": false,
+            "kind": "site",
+            "login_customer_id": null,
+            "reporting_identity": null,
+            "reporting_identity_source": "not_applicable",
+            "permission_level": "siteUnverifiedUser"
+          },
+          {
+            "account_id": "https://example.hk/",
+            "name": "https://example.hk/",
+            "timezone": "America/Los_Angeles",
+            "currency": null,
+            "readable": true,
+            "kind": "site",
+            "login_customer_id": null,
+            "reporting_identity": null,
+            "reporting_identity_source": "not_applicable",
+            "permission_level": "siteFullUser"
+          },
+          {
+            "account_id": "sc-domain:example.hk",
+            "name": "sc-domain:example.hk",
+            "timezone": "America/Los_Angeles",
+            "currency": null,
+            "readable": true,
+            "kind": "site",
+            "login_customer_id": null,
+            "reporting_identity": null,
+            "reporting_identity_source": "not_applicable",
+            "permission_level": "siteOwner"
+          }
+        ],
+        "last_sync_at": null,
+        "jobs": [
+          {
+            "id": "d8f3c18c-8db2-41cf-ba64-0635decc927f",
+            "connection_id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+            "state": "complete",
+            "kind": "discover",
+            "status": "complete",
+            "segment": 0,
+            "page_count": 1,
+            "row_count": 0,
+            "raw_bytes": 0,
+            "attempts": 0,
+            "error_code": null,
+            "limitations": [],
+            "captured_at": "2026-10-21T16:31:20.000Z",
+            "next_attempt_at": "2026-10-21T16:31:19.873Z",
+            "created_at": "2026-10-21T16:31:19.873Z",
+            "spec_hash": "9c79b15a9c0176ca0257689accdedf0156236f520a3e4f54ec439fd1842ed6d0",
+            "source_mode": "simulated",
+            "retry_of": null
+          }
+        ],
+        "snapshots": [],
+        "next_history_cursor": null
+      }
+    },
+    {
+      "schema": "Connection",
+      "route": "PATCH /v1/connections/3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+      "response": {
+        "id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "provider": "search_console",
+        "state": "active",
+        "auth_version": 1,
+        "account_ids": [
+          "https://example.hk/",
+          "sc-domain:example.hk"
+        ],
+        "data_as_of": null,
+        "version": 2
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "POST /v1/connections/3655bc10-6a23-42fa-90ee-6ca38720a5b6/syncs",
+      "response": {
+        "id": "ac28bc28-78a8-4018-af5d-a0ac222b6157",
+        "connection_id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "GET completed sync",
+      "response": {
+        "id": "ac28bc28-78a8-4018-af5d-a0ac222b6157",
+        "connection_id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+        "state": "complete",
+        "snapshot_id": "5178c529-b493-4ed2-9c1e-c26b008d9ff1"
+      }
+    },
+    {
+      "schema": "ConnectorFacts",
+      "route": "GET /v1/connector-snapshots/5178c529-b493-4ed2-9c1e-c26b008d9ff1",
+      "response": {
+        "id": "5178c529-b493-4ed2-9c1e-c26b008d9ff1",
+        "project_id": "f7189d11-9c37-457c-9387-1d43792ef45a",
+        "source": "search_console",
+        "state": "complete",
+        "source_mode": "simulated",
+        "row_count": 6,
+        "captured_at": "2026-10-21T16:31:20.722Z",
+        "data_as_of": null,
+        "limitations": [
+          "PROVIDER_DATA_CUTOFF_UNAVAILABLE",
+          "LATE_ATTRIBUTION_CAN_CHANGE_NEW_SNAPSHOTS",
+          "GSC_TOP_ROWS_ONLY_NOT_FULL_COVERAGE",
+          "GSC_ANONYMIZED_QUERIES_OMITTED",
+          "GSC_AVERAGE_POSITION_NOT_ADDITIVE",
+          "GSC_WEB_FINAL_BY_PAGE_PACIFIC_TIME"
+        ],
+        "specification": {
+          "dates": {
+            "date_to": "2026-10-20",
+            "date_from": "2026-09-21"
+          },
+          "queries": [
+            {
+              "account": {
+                "kind": "site",
+                "name": "https://example.hk/",
+                "currency": null,
+                "readable": true,
+                "timezone": "America/Los_Angeles",
+                "account_id": "https://example.hk/",
+                "permission_level": "siteFullUser",
+                "login_customer_id": null,
+                "reporting_identity": null,
+                "reporting_identity_source": "not_applicable"
+              },
+              "date_to": "2026-10-20",
+              "profile": "search_performance",
+              "version": "marketing-read/1.0.0",
+              "provider": "search_console",
+              "date_from": "2026-09-21",
+              "page_size": 2,
+              "api_version": "v1beta",
+              "conversion_action_type": "purchase"
+            },
+            {
+              "account": {
+                "kind": "site",
+                "name": "sc-domain:example.hk",
+                "currency": null,
+                "readable": true,
+                "timezone": "America/Los_Angeles",
+                "account_id": "sc-domain:example.hk",
+                "permission_level": "siteOwner",
+                "login_customer_id": null,
+                "reporting_identity": null,
+                "reporting_identity_source": "not_applicable"
+              },
+              "date_to": "2026-10-20",
+              "profile": "search_performance",
+              "version": "marketing-read/1.0.0",
+              "provider": "search_console",
+              "date_from": "2026-09-21",
+              "page_size": 2,
+              "api_version": "v1beta",
+              "conversion_action_type": "purchase"
+            }
+          ],
+          "accounts": [
+            "https://example.hk/",
+            "sc-domain:example.hk"
+          ],
+          "project_ids": [
+            "f7189d11-9c37-457c-9387-1d43792ef45a"
+          ],
+          "binding_version": 2,
+          "connection_auth_version": 1
+        },
+        "spec_hash": "c865d5921c7c51095bf8b11933241ac5d51271837e09aef9a5aa0671d8e19f55",
+        "dataset_ids": [],
+        "asset_id": "5ab7b103-c94a-406d-8767-e5099b41cf6f",
+        "facts": [
+          {
+            "key": "ccc216dced4e6b44716c50ef74feb6c6c68e12a412e23a44e454f3239c67a498",
+            "account_id": "https://example.hk/",
+            "profile": "search_performance",
+            "date": "2026-09-21",
+            "dimensions": {
+              "query": "香港設計",
+              "page": "https://example.hk/",
+              "country": "hkg",
+              "device": "MOBILE"
+            },
+            "metrics": {
+              "clicks": "20",
+              "impressions": "200",
+              "ctr": "0.1",
+              "position": "4.5"
+            },
+            "currency": null,
+            "timezone": "America/Los_Angeles"
+          },
+          {
+            "key": "cf6c4020806c140f1750a1a6ecf0272e6d02f70c9c63743e6a0db56cb2f4e1e4",
+            "account_id": "https://example.hk/",
+            "profile": "search_performance",
+            "date": "2026-09-21",
+            "dimensions": {
+              "query": "企業代理",
+              "page": "https://example.hk/",
+              "country": "hkg",
+              "device": "MOBILE"
+            },
+            "metrics": {
+              "clicks": "21",
+              "impressions": "201",
+              "ctr": "0.1",
+              "position": "5.5"
+            },
+            "currency": null,
+            "timezone": "America/Los_Angeles"
+          },
+          {
+            "key": "0d1203ac515c90e317fa97ae53397426e368239d9939adb3e6d21cdff7a7836b",
+            "account_id": "https://example.hk/",
+            "profile": "search_performance",
+            "date": "2026-09-21",
+            "dimensions": {
+              "query": "品牌服務",
+              "page": "https://example.hk/",
+              "country": "hkg",
+              "device": "MOBILE"
+            },
+            "metrics": {
+              "clicks": "22",
+              "impressions": "202",
+              "ctr": "0.1",
+              "position": "6.5"
+            },
+            "currency": null,
+            "timezone": "America/Los_Angeles"
+          },
+          {
+            "key": "2f967644833316f6eb85650217cb274f33a133b764047612c2bd09f804635752",
+            "account_id": "sc-domain:example.hk",
+            "profile": "search_performance",
+            "date": "2026-09-21",
+            "dimensions": {
+              "query": "香港設計",
+              "page": "https://example.hk/",
+              "country": "hkg",
+              "device": "MOBILE"
+            },
+            "metrics": {
+              "clicks": "20",
+              "impressions": "200",
+              "ctr": "0.1",
+              "position": "4.5"
+            },
+            "currency": null,
+            "timezone": "America/Los_Angeles"
+          },
+          {
+            "key": "01a0e560035e3f10921821bb41c1cf214f1a7388907126ff3d51ff81d7e4b7fb",
+            "account_id": "sc-domain:example.hk",
+            "profile": "search_performance",
+            "date": "2026-09-21",
+            "dimensions": {
+              "query": "企業代理",
+              "page": "https://example.hk/",
+              "country": "hkg",
+              "device": "MOBILE"
+            },
+            "metrics": {
+              "clicks": "21",
+              "impressions": "201",
+              "ctr": "0.1",
+              "position": "5.5"
+            },
+            "currency": null,
+            "timezone": "America/Los_Angeles"
+          },
+          {
+            "key": "52be8ea4fb4602993878ed12075456d3d197bc6cd8ecf9c7eb9b4f43fe674ee0",
+            "account_id": "sc-domain:example.hk",
+            "profile": "search_performance",
+            "date": "2026-09-21",
+            "dimensions": {
+              "query": "品牌服務",
+              "page": "https://example.hk/",
+              "country": "hkg",
+              "device": "MOBILE"
+            },
+            "metrics": {
+              "clicks": "22",
+              "impressions": "202",
+              "ctr": "0.1",
+              "position": "6.5"
+            },
+            "currency": null,
+            "timezone": "America/Los_Angeles"
+          }
+        ],
+        "next_offset": null
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "POST /v1/connections/3655bc10-6a23-42fa-90ee-6ca38720a5b6/syncs",
+      "response": {
+        "id": "b3157e7a-941d-4d78-83dd-3ebb8837811e",
+        "connection_id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "ConnectorJob",
+      "route": "POST /v1/syncs/b3157e7a-941d-4d78-83dd-3ebb8837811e/cancel",
+      "response": {
+        "id": "b3157e7a-941d-4d78-83dd-3ebb8837811e",
+        "connection_id": "3655bc10-6a23-42fa-90ee-6ca38720a5b6",
+        "state": "failed",
+        "kind": "sync",
+        "status": "cancelled",
+        "segment": 0,
+        "page_count": 0,
+        "row_count": 0,
+        "raw_bytes": 0,
+        "attempts": 0,
+        "error_code": "CONNECTOR_CANCELLED",
+        "limitations": [],
+        "captured_at": "2026-10-21T16:31:23.219Z",
+        "next_attempt_at": "2026-10-21T16:31:23.133Z",
+        "created_at": "2026-10-21T16:31:23.133Z",
+        "spec_hash": "c865d5921c7c51095bf8b11933241ac5d51271837e09aef9a5aa0671d8e19f55",
+        "source_mode": "simulated",
+        "retry_of": null
+      }
+    },
+    {
+      "schema": "ConnectorSync",
+      "route": "POST /v1/connections/db0d95ce-c5f6-4485-a165-1492f12f96df/syncs",
+      "response": {
+        "id": "ced4aca9-9681-4aa9-a645-05b47b979f86",
+        "connection_id": "db0d95ce-c5f6-4485-a165-1492f12f96df",
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "AdminOperation",
+      "route": "POST /v1/admin/connections/db0d95ce-c5f6-4485-a165-1492f12f96df/revocations",
+      "response": {
+        "id": "f6fd845e-064f-4d57-b5aa-8c1f5b6fdcf2",
+        "action": "connections.revoke",
+        "target_ids": [
+          "db0d95ce-c5f6-4485-a165-1492f12f96df"
+        ],
+        "actor_id": "9da37ffa-5f5d-416d-88a1-7f019528edef",
+        "state": "succeeded",
+        "payload_hash": "bb8dd6101ba46fae6acaacd1e5fa01a96f25d1a0c2d9cd1a2e2606f6c62238f3",
+        "policy_version_id": "1f22e39b-ab48-4ba1-9778-fa86424e0bbd",
+        "version": 2,
+        "created_at": "2026-10-21T16:31:29.542Z",
+        "result_ids": [
+          "db0d95ce-c5f6-4485-a165-1492f12f96df"
+        ]
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-web/assets/screenshots/marketing-connectors-12-simulated-consent.png",
+      "sha256": "268a40908a9fc5c76755a2bf94f6ce50850377778745f08b474ea571f6e87dc4",
+      "edited": false
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/marketing-connectors-12-meta-facts-en.png",
+      "sha256": "b76491fa59f4f4ebd91fb1f2904c734fd1cd945708c7b0c0fe46dd3b3b761c6b",
+      "edited": false
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/marketing-connectors-12-ga4-facts-en.png",
+      "sha256": "9a9ef61aa5959bb1bc63ee2f5af944ca8ec9c1be877870a73ec828e03cd5143a",
+      "edited": false
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/marketing-connectors-12-workspace-zh-dark.png",
+      "sha256": "4d373f119c62ceb275870afd9c624b4c9d5c8e63acf7bc03837018b2967c6683",
+      "edited": false
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/marketing-connectors-12-facts-zh-narrow.png",
+      "sha256": "00654f5a408e07603fe19cff5cf51fadb4ddadda02b0f2497d21f9c91e55fc49",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/marketing-connectors-12-connection-detail-en.png",
+      "sha256": "39b5b6246b2c4afc5eec9c83340b6ebe0e14ad1df89b7295657ad4e3e4e1f9ab",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/marketing-connectors-12-connection-zh-dark.png",
+      "sha256": "57944f7c0889947edc521992c5eefcafe5f2086c420ced8ca8d403d3d540d67a",
+      "edited": false
+    },
+    {
+      "path": "copypaste-admin/assets/screenshots/marketing-connectors-12-connection-zh-narrow.png",
+      "sha256": "f16775cf118b2efd07beb482aaf3d1d13e5f583a398a21fc1ac9b59e71315209",
+      "edited": false
+    }
+  ],
+  "downloads": [
+    {
+      "provider": "google_ads",
+      "format": "json",
+      "bytes": 3617,
+      "sha256": "89f2642e859f095d8993ad2585a9e45361d941df273290b174219f1827c8a60e",
+      "actual_browser_download": true
+    },
+    {
+      "provider": "google_ads",
+      "format": "csv",
+      "bytes": 1445,
+      "sha256": "6645d464915fc606c6f613fa4ac8593622fd193339e9518dcfd06ac4230adf41",
+      "actual_browser_download": true
+    },
+    {
+      "provider": "meta_ads",
+      "format": "json",
+      "bytes": 2336,
+      "sha256": "4f812c2d69730607d9e2dab609df15bb8a1dd73515006efc0c4cf125feb571dc",
+      "actual_browser_download": true
+    },
+    {
+      "provider": "meta_ads",
+      "format": "csv",
+      "bytes": 999,
+      "sha256": "32f0e0efcefcee1b761f83ed3825a279c4e7c982d580c58dafa510240f88e320",
+      "actual_browser_download": true
+    },
+    {
+      "provider": "ga4",
+      "format": "json",
+      "bytes": 3598,
+      "sha256": "ef53d7b2776e759cebc880441ad8831dfc40bf826dee8e57be2a5b0592532e27",
+      "actual_browser_download": true
+    },
+    {
+      "provider": "ga4",
+      "format": "csv",
+      "bytes": 1367,
+      "sha256": "35e1521d03175a1943431a0f15476f7fb60f849ad9238d603e14904d7bde0c29",
+      "actual_browser_download": true
+    },
+    {
+      "provider": "search_console",
+      "format": "json",
+      "bytes": 4023,
+      "sha256": "5445fea11f87574ce831413796e90cd2191170b79169be7a984e5c151d8a823a",
+      "actual_browser_download": true
+    },
+    {
+      "provider": "search_console",
+      "format": "csv",
+      "bytes": 1702,
+      "sha256": "bd914f570a52735e9b155b65a250c9515abba8f7ef5fef59562a7ff2655ca93b",
+      "actual_browser_download": true
+    }
+  ],
+  "browser_closed": true,
+  "browser_runtime": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "36a30716f0994b377f1ce6b47cfe35399b9719e31d597fe0ea0d8f3b62aed532",
+    "version": "155.0.8059.80"
+  },
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "f77175187fe8aa4975b28181c97042485827120b7c0e832e6bba25a7a4c0492f"
+}

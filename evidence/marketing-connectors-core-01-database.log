@@ -1,0 +1,107 @@
+2026-10-21 21:22:54.613 CST [37240] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 21:22:54.624 CST [37240] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 21:22:54.625 CST [37240] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 21:22:56.754 CST [34420] LOG:  database system was shut down at 2026-10-21 20:19:51 CST
+
+2026-10-21 21:22:57.179 CST [37240] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 21:23:56.217 CST [39480] ERROR:  Campaign imports require an available shared project source version
+2026-10-21 21:23:56.217 CST [39480] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 24 at RAISE
+2026-10-21 21:23:56.217 CST [39480] STATEMENT:  INSERT INTO analytics_datasets(tenant_id,project_id,name,currency,timezone,rows,source,created_by,raw_csv,source_filename,source_sha256,import_key,spec_hash,import_spec,import_metadata,metric_snapshot,source_asset_version_id,supersedes_id)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+	    ON CONFLICT(tenant_id,project_id,import_key) WHERE import_key IS NOT NULL AND content_state<>'deleted' DO NOTHING RETURNING *
+
+2026-10-21 21:23:56.823 CST [39480] ERROR:  Campaign imports require an available shared project source version
+2026-10-21 21:23:56.823 CST [39480] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 24 at RAISE
+2026-10-21 21:23:56.823 CST [39480] STATEMENT:  INSERT INTO analytics_datasets(tenant_id,project_id,name,currency,timezone,rows,source,created_by,raw_csv,source_filename,source_sha256,import_key,spec_hash,import_spec,import_metadata,metric_snapshot,source_asset_version_id,supersedes_id)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+	    ON CONFLICT(tenant_id,project_id,import_key) WHERE import_key IS NOT NULL AND content_state<>'deleted' DO NOTHING RETURNING *
+
+2026-10-21 21:23:57.659 CST [39480] ERROR:  Finished connector jobs are immutable
+2026-10-21 21:23:57.659 CST [39480] CONTEXT:  PL/pgSQL function guard_connector_job() line 3 at RAISE
+2026-10-21 21:23:57.659 CST [39480] STATEMENT:  UPDATE connector_jobs SET spec_hash=$2,revision=revision+1 WHERE id=$1
+
+2026-10-21 21:23:57.799 CST [29140] ERROR:  permission denied for table connector_pages
+2026-10-21 21:23:57.799 CST [29140] STATEMENT:  DELETE FROM connector_pages WHERE job_id=$1
+
+2026-10-21 21:23:58.711 CST [31432] ERROR:  Finished connector jobs are immutable
+2026-10-21 21:23:58.711 CST [31432] CONTEXT:  PL/pgSQL function guard_connector_job() line 3 at RAISE
+2026-10-21 21:23:58.711 CST [31432] STATEMENT:  UPDATE connector_jobs SET spec_hash=$2,revision=revision+1 WHERE id=$1
+
+2026-10-21 21:23:58.776 CST [38396] ERROR:  permission denied for table connector_pages
+2026-10-21 21:23:58.776 CST [38396] STATEMENT:  DELETE FROM connector_pages WHERE job_id=$1
+
+2026-10-21 21:24:00.810 CST [32380] ERROR:  Campaign imports require an available shared project source version
+2026-10-21 21:24:00.810 CST [32380] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 24 at RAISE
+2026-10-21 21:24:00.810 CST [32380] STATEMENT:  INSERT INTO analytics_datasets(tenant_id,project_id,name,currency,timezone,rows,source,created_by,raw_csv,source_filename,source_sha256,import_key,spec_hash,import_spec,import_metadata,metric_snapshot,source_asset_version_id,supersedes_id)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+	    ON CONFLICT(tenant_id,project_id,import_key) WHERE import_key IS NOT NULL AND content_state<>'deleted' DO NOTHING RETURNING *
+
+2026-10-21 21:24:03.417 CST [32380] ERROR:  Campaign imports require an available shared project source version
+2026-10-21 21:24:03.417 CST [32380] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 24 at RAISE
+2026-10-21 21:24:03.417 CST [32380] STATEMENT:  INSERT INTO analytics_datasets(tenant_id,project_id,name,currency,timezone,rows,source,created_by,raw_csv,source_filename,source_sha256,import_key,spec_hash,import_spec,import_metadata,metric_snapshot,source_asset_version_id,supersedes_id)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+	    ON CONFLICT(tenant_id,project_id,import_key) WHERE import_key IS NOT NULL AND content_state<>'deleted' DO NOTHING RETURNING *
+
+2026-10-21 21:24:05.318 CST [32380] ERROR:  Campaign imports require an available shared project source version
+2026-10-21 21:24:05.318 CST [32380] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 24 at RAISE
+2026-10-21 21:24:05.318 CST [32380] STATEMENT:  INSERT INTO analytics_datasets(tenant_id,project_id,name,currency,timezone,rows,source,created_by,raw_csv,source_filename,source_sha256,import_key,spec_hash,import_spec,import_metadata,metric_snapshot,source_asset_version_id,supersedes_id)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+	    ON CONFLICT(tenant_id,project_id,import_key) WHERE import_key IS NOT NULL AND content_state<>'deleted' DO NOTHING RETURNING *
+
+2026-10-21 21:24:05.841 CST [17308] ERROR:  permission denied for table connector_profiles
+2026-10-21 21:24:05.841 CST [17308] STATEMENT:  SELECT * FROM connector_profiles
+
+2026-10-21 21:24:05.848 CST [20460] ERROR:  permission denied for table connector_oauth_states
+2026-10-21 21:24:05.848 CST [20460] STATEMENT:  SELECT count(*) FROM connector_oauth_states
+
+2026-10-21 21:24:05.917 CST [20588] ERROR:  permission denied for table connector_oauth_states
+2026-10-21 21:24:05.917 CST [20588] STATEMENT:  SELECT * FROM connector_oauth_states
+
+2026-10-21 21:24:06.035 CST [19200] ERROR:  permission denied for table connector_accounts
+2026-10-21 21:24:06.035 CST [19200] STATEMENT:  SELECT * FROM connector_accounts
+
+2026-10-21 21:24:06.126 CST [39480] ERROR:  permission denied for table connector_jobs
+2026-10-21 21:24:06.126 CST [39480] STATEMENT:  SELECT * FROM connector_jobs
+
+2026-10-21 21:24:06.226 CST [41688] ERROR:  permission denied for table connector_pages
+2026-10-21 21:24:06.226 CST [41688] STATEMENT:  SELECT * FROM connector_pages
+
+2026-10-21 21:24:06.292 CST [23896] ERROR:  permission denied for table connector_snapshots
+2026-10-21 21:24:06.292 CST [23896] STATEMENT:  SELECT * FROM connector_snapshots
+
+2026-10-21 21:24:07.127 CST [18896] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 21:24:08.693 CST [18896] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.073 s, sync=0.994 s, total=1.566 s; sync files=11, longest=0.167 s, average=0.091 s; distance=16177 kB, estimate=16177 kB; lsn=9/8D2B1300, redo lsn=9/8D2B12A8
+
+2026-10-21 21:24:15.368 CST [18896] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 21:24:16.879 CST [18896] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.987 s, total=1.511 s; sync files=9, longest=0.137 s, average=0.110 s; distance=14733 kB, estimate=16032 kB; lsn=9/8E114848, redo lsn=9/8E1147F0
+
+2026-10-21 21:24:22.243 CST [18896] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 21:24:23.354 CST [18896] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.008 s, sync=0.809 s, total=1.111 s; sync files=10, longest=0.221 s, average=0.081 s; distance=14877 kB, estimate=15917 kB; lsn=9/8EF9BC50, redo lsn=9/8EF9BBF8
+
+2026-10-21 21:24:31.486 CST [18896] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 21:24:32.960 CST [18896] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.828 s, total=1.475 s; sync files=10, longest=0.213 s, average=0.083 s; distance=15013 kB, estimate=15827 kB; lsn=9/8FE451F8, redo lsn=9/8FE451A0
+
+2026-10-21 21:24:35.033 CST [37240] LOG:  received fast shutdown request
+
+2026-10-21 21:24:35.203 CST [37240] LOG:  aborting any active transactions
+
+2026-10-21 21:24:35.227 CST [37240] LOG:  background worker "logical replication launcher" (PID 21736) exited with exit code 1
+
+2026-10-21 21:24:35.227 CST [18896] LOG:  shutting down
+
+2026-10-21 21:24:35.259 CST [18896] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 21:24:35.462 CST [18896] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.047 s, total=0.235 s; sync files=1, longest=0.047 s, average=0.047 s; distance=0 kB, estimate=14244 kB; lsn=9/8FE45310, redo lsn=9/8FE45310
+
+2026-10-21 21:24:35.681 CST [37240] LOG:  database system is shut down
+

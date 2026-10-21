@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-21T16:18:57.477Z",
+  "status": "passed",
+  "scope": "Actual owned native PostgreSQL immediate-startup and ready-state IPC shutdown, no migrations, fixture insertion, browser or virtualization",
+  "source_files": {
+    "scripts/native-db-launch.mjs": "509580fb1456b65c6612fb28729b49cdaa620d45ff0ea714f4139410eb0cf297",
+    "scripts/db-local.ts": "fab9cd4f39673a8905e9aa27e8491dca24bb549505a687aae967f6b5f21f83a5",
+    "dist/scripts/db-local.js": "79031bdec34776830e0b6c177d320c9d1ca9c63dab8c7dabbed3375d603d7d7f"
+  },
+  "source_unchanged": true,
+  "verifier": {
+    "path": "evidence/marketing-connector-startup-01-verifier.mjs",
+    "sha256": "fa0a8d132aef1453544675e78c7763c581538538faf5723e234f0e81935f9423"
+  },
+  "checks": [
+    {
+      "when": "immediately_after_spawn",
+      "status": "passed",
+      "exit_code": 0,
+      "shutdown_requested": true,
+      "actual_checkpointed_shutdown": true,
+      "owned_database_listener_closed": true,
+      "raw_report": "evidence/marketing-connector-startup-01-immediately_after_spawn.log",
+      "raw_sha256": "6d8309c99f362dce655c1f6b2ad9ad592835d8bc32e1925b5556d01f3dc45adb"
+    },
+    {
+      "when": "after_database_ready",
+      "status": "passed",
+      "exit_code": 0,
+      "shutdown_requested": true,
+      "actual_checkpointed_shutdown": true,
+      "owned_database_listener_closed": true,
+      "raw_report": "evidence/marketing-connector-startup-01-after_database_ready.log",
+      "raw_sha256": "c0493447db4c83f0e5062754aed8f263c58e275472a6d209e76e3af7370ecc0f"
+    }
+  ]
+}
