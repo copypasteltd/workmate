@@ -1,5 +1,8 @@
 # 需求追踪矩阵
 
+<!-- stage59-creative-matrices -->
+阶段 59 在原 REQ-017/TC-017 条件下验证了本地排版子流程；关联 REQ-012/016/022/048/049/052 的独立输出、权限与删除。原表及原验收条件保持不变，当前执行与剩余项见[矩阵回执](creative-matrix-checkpoint.json)和[增量设计](../technical/59-creative-production-matrices.md)。
+
 版本：1.5 · 2026-10-18。REQ 定义以 [SRS](../requirements/01-srs.md) 为准。本表是设计覆盖，不代表实现完成。
 
 每项完整产品、模块、技术文件、operationId 和用例列表在 [traceability.json](traceability.json)。下表只显示前两个 operationId 以便阅读；同号 TC 的全部用例设计见 [测试计划](01-test-and-acceptance-plan.md)。

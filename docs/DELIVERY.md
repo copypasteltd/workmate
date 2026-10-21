@@ -1,5 +1,8 @@
 # CopyPaste 0.5.0 代码交付入口
 
+<!-- stage59-creative-matrices -->
+阶段 59 的[营销设计矩阵](technical/59-creative-production-matrices.md)已完成确定性排版子流程：创意 × 语言 × 尺寸最多 60 个独立单元，保存实际 PNG、SVG 与 JSON；失败、修改、重试与费用按格独立。专项 **22/22** 纳入平台 **607/607**（保留原全部 588 项命名测试），实际 Web **10 项**及新打包原生客户端 **13 项**通过。修复了桌面长页面滚动后的弹窗定位，继续无边框、无默认菜单；扩展实际按钮打开/关闭 Chrome 原生 Side Panel，并提供完整设计工作台入口。两库 068→069 各保留 151 张原表全部行摘要及 SQL001–068。新包位于各端 `release/matrices-59-02/`，旧包保留；未签名 localhost 预览不代表安装或生产资格。排版不调用 AI，AI HK$0 不包括原素材上游费用；Codex 委派、专业媒体和字体资格仍独立跟踪。[核查回执](quality/creative-matrix-checkpoint.json)保留全部失败与源码前像，原始 102 项、TC/NFR/G01–G10 的完整条件不变。
+
 当前后端与后台源码已完成[阶段 58 调用管理](technical/58-provider-admin-control-and-reconciliation.md)：专项 **158/158** 包含于全量 **588/588**，保留原全部 559 项命名测试；实际构建版 Admin **10 项流程及 29 份严格响应样本**通过。策略发布、人工费用来源、容量释放和原任务结算分别审计并独立审批；SQL068 原生升级保留两库各 144 张原表全部行摘要，既有管理员权限不自动扩大。中英 README 含启用命令、逻辑图和实际截图，见[完整核查回执](quality/provider-admin-checkpoint.json)。原始 102 项与 TC/NFR/G01–G10 的范围保持不变；下方旧阶段数字保留各自来源。
 
 [提交字节核对](quality/provider-admin-staged-verification-01.json)确认暂存源码与上述实际测试来源一致，13,130 份已扫描留档保持原字节。空格检查仅逐一排除 12 份原始品牌 SVG 前像和 20 份未编辑的原始日志；每份均有摘要绑定，产品源码无例外。

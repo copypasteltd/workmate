@@ -1,5 +1,8 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage59-creative-matrices -->
+阶段 59 已重建并实际执行当前无边框 Desktop 与 Chrome 原生侧栏，新增设计矩阵入口和滚动后的弹窗定位修复。本次 13 项原生流程通过，实际来源及包见[阶段 59 回执](../quality/creative-matrix-checkpoint.json)与[当前包清单](../quality/creative-matrix-artifacts.json)。当前包为各端 `release/matrices-59-02/`；下面阶段 54 的包和核对命令保留其原历史范围。右侧仍尊重 Chrome 用户设置，未签名 localhost 预览未代表安装、商店及生产验收。
+
 ## 本次追加要求的当前交付复核
 
 已按用户要求复核当前实现：Desktop 移除系统边框、Electron 应用菜单与 Alt 菜单，保留 CopyPaste 自绘拖动区及最小化、最大化/还原、关闭按钮；Extension 点击工具栏图标打开原生 Side Panel，再次点击收起，未设置 action popup。默认右侧，左右位置遵循 Chrome 用户设置，扩展不能强制覆盖该设置。
@@ -110,3 +113,5 @@ QA 自建进程使用 `--disable-gpu`，产品默认启动参数不变；所有�
 - [Electron 自绘标题栏](https://www.electronjs.org/docs/latest/tutorial/custom-title-bar)：拖动区和控件区域。
 - [Chrome Side Panel API](https://developer.chrome.com/docs/extensions/reference/api/sidePanel)：action 默认动作、全局侧栏、位置读取和版本边界。
 - [Chrome DevTools Extensions 协议](https://chromedevtools.github.io/devtools-protocol/tot/Extensions/)：实际扩展按钮默认动作测试。
+
+当前阶段 59 包的只读复核：在项目根目录执行 `node docs/tools/verify_creative_matrix_clients.mjs NN`，使用未占用的两位报告编号。它核对实际运行包、源码、内嵌代码及扩展 ZIP 内容，保留旧包，不启动浏览器或应用。

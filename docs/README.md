@@ -1,5 +1,8 @@
 # CopyPaste 企业 Agent 文档
 
+<!-- stage59-creative-matrices -->
+阶段 59 的[营销设计矩阵](technical/59-creative-production-matrices.md)已完成确定性排版子流程：创意 × 语言 × 尺寸最多 60 个独立单元，保存实际 PNG、SVG 与 JSON；失败、修改、重试与费用按格独立。专项 **22/22** 纳入平台 **607/607**（保留原全部 588 项命名测试），实际 Web **10 项**及新打包原生客户端 **13 项**通过。修复了桌面长页面滚动后的弹窗定位，继续无边框、无默认菜单；扩展实际按钮打开/关闭 Chrome 原生 Side Panel，并提供完整设计工作台入口。两库 068→069 各保留 151 张原表全部行摘要及 SQL001–068。新包位于各端 `release/matrices-59-02/`，旧包保留；未签名 localhost 预览不代表安装或生产资格。排版不调用 AI，AI HK$0 不包括原素材上游费用；Codex 委派、专业媒体和字体资格仍独立跟踪。[核查回执](quality/creative-matrix-checkpoint.json)保留全部失败与源码前像，原始 102 项、TC/NFR/G01–G10 的完整条件不变。
+
 阶段 58 的[调用管理与独立核对后台](technical/58-provider-admin-control-and-reconciliation.md)通过专项 **158/158**、全量 **588/588**（保留全部原 559 项测试）、真实构建版 Admin **10 项流程与 29 份严格响应样本**。费用确认、容量释放和原任务唯一结算分别受控；策略、证据、范围与近期 MFA 重新检查。两库 067→068 各保留 144 张原表全部行摘要及 SQL001–067，新七表强制 RLS，不自动授予已有管理员新权限。[核查回执](quality/provider-admin-checkpoint.json)绑定源码与失败记录；原始 102 项、TC/NFR/G01–G10 与实网资格范围不变。
 
 阶段 57 的[逐调用预算](technical/57-per-request-budget-enforcement.md)通过专项 **129/129** 和全量 **559/559**（专项包含于全量），741 份平台来源不变，保留原 546 项测试；类型检查与实际构建通过。文本与图片共用原预留，内部实际计数独立由平台付费，Admin 验证具有运行及每日预算；超额与未知保留实际费用和承诺。两库 066→067 各保留 136 张原公共表全部行摘要与 SQL001–066，未补造历史消费。[核查回执](quality/provider-budget-checkpoint.json)保留失败及源码前像。完整后台策略控制与原始 102 项综合验收继续跟踪；之前 UI/原生报告保留原来源范围。
@@ -111,6 +114,7 @@ Web 主线以自然语言委派、会话中的真实执行、右侧成果/云文
 | 技术 | [用户明确采用版本](technical/54-explicit-agent-version-adoption.md) | 默认助手、专家与会话的模型/强度/费率比较、明确确认及三端验证 |
 | 技术 | [内部推理请求约束](technical/55-scoped-internal-inference-requests.md) | 短期范围凭证、逐次权限、完整流工具校验、图片规格与已知费用 |
 | 技术 | [58 调用管理与独立核对](technical/58-provider-admin-control-and-reconciliation.md) | 策略发布、费用与容量独立审批及原任务结算 |
+| 技术 | [59 营销设计矩阵](technical/59-creative-production-matrices.md) | 独立单元、真实排版、重试、权限与派生删除 |
 | 技术 | [57 逐调用预算与平台费用](technical/57-per-request-budget-enforcement.md) | 原预算分配、实际输入计数、平台验证预算及结算事实 |
 | 技术 | [持久请求与共享限额](technical/56-durable-provider-request-control.md) | 跨进程准入、速率、用量事实、未知容量与逐次预算后续要求 |
 | 质量 | [全体系需求差异复查](quality/09-implementation-alignment-audit.md)                   | 不可覆盖的 102 条基线、契约漂移、修复证据与未完成条件                   |
