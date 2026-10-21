@@ -367,17 +367,19 @@ export function AsyncForm({
   onSubmit,
   children,
   submitLabel,
+  submitDisabled = false,
 }: {
   onSubmit: (form: FormData) => Promise<void>;
   children: ReactNode;
   submitLabel: string;
+  submitDisabled?: boolean;
 }) {
   const [busy, setBusy] = useState(false),
     [error, setError] = useState<Error | null>(null),
     [done, setDone] = useState(false);
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (busy) return;
+    if (busy || submitDisabled) return;
     const form = new FormData(e.currentTarget);
     setBusy(true);
     setError(null);
@@ -401,7 +403,11 @@ export function AsyncForm({
           已儲存 / Saved
         </p>
       )}
-      <button className="button primary" type="submit" disabled={busy}>
+      <button
+        className="button primary"
+        type="submit"
+        disabled={busy || submitDisabled}
+      >
         {busy ? <LoaderCircle size={17} className="spin" /> : null}
         {submitLabel}
         {!busy && <ArrowUpRight size={17} />}
