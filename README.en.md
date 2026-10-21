@@ -1,5 +1,44 @@
 # CopyPaste Admin Dashboard
 
+## Provider Admin controls (stage 58)
+
+The Admin Provider controls page supports immutable policy drafts and independent publication, scoped request filters and extra cost-field authority, downloadable immutable human evidence, separate cost and capacity confirmation, and original task settlement. Original unknown observations remain intact. Settlement derives frozen prices instead of accepting a client amount, excludes platform-funded input counting and creates one customer debit. Legacy arbitrary reconciliation cannot bypass durable provider records.
+
+Validation passed **158/158 focused checks within 588/588 full tests**, retaining all 559 stage 57 named tests. The same 753 Platform sources passed type checking and the actual build. The built Admin passed **10 real browser journeys and 29 strict response samples**, including email/TOTP sign-in, a second reviewer, separate cost/capacity facts, one settlement, scoped redaction, bilingual dark and narrow layouts. AI observations are explicitly simulated. All owned browsers and services were closed.
+
+Both existing native databases upgraded from 067 to 068 while preserving every row digest in 144 original public tables, SQL001–067 and historical checksums. Seven new tables force RLS without automatically granting existing administrators new rights or fabricating publications, evidence or charges. All original 102 requirements, TC/NFR/G01–G10, live-role qualification and distribution acceptance remain open; older sections retain their historical scope.
+
+```mermaid
+flowchart LR
+  Original[Original unknown observation] --> Scope[Scoped request directory]
+  Scope --> Evidence[Immutable human source record]
+  Evidence --> Preview[Current facts / no business effect]
+  Preview --> Review[Independent Admin / reauthorize]
+  Review --> Cost[Append confirmed cost]
+  Review --> Capacity[Separate termination confirmation]
+  Cost --> Task[Original task / aggregate once]
+  Task --> Ledger[One debit / failed business result]
+```
+
+### Explicit activation for an existing administrator
+
+From the Platform repository, a trusted operator previews one active, MFA-enrolled permanent global super administrator:
+
+```powershell
+node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "Assign provider control owner"
+node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "Assign provider control owner" --apply --expected-hash PREVIEW_SHA256
+```
+
+Use the exact preview hash and unchanged reason. Preview again if the database or target authority changes. Activation revokes old sessions and requires fresh email/TOTP sign-in. Explicitly activate two separate administrators for independent review. The command never selects a principal or expands existing roles automatically. Keep `.env` and private identity configuration outside Git.
+
+### Actual unedited pages with labelled simulated data
+
+![Provider request / simulated evidence](assets/screenshots/provider-admin-08-unknown-request-en.png)
+
+![Independent provider policy review](assets/screenshots/provider-admin-08-independent-review-1-en.png)
+
+![Chinese dark narrow request detail](assets/screenshots/provider-admin-08-detail-zh-mobile.png)
+
 ## Model configuration and independent publication (stage 53, verified Admin subflow)
 
 Open **Roles & content → Model capabilities** to manage the fixed Codex kernel, internal model aliases, text reasoning effort and exact HKD rates. Saving creates an immutable version. Inspect actual verification usage, cost, eligibility and separate workspace cleanup status. Publication/rollback compares the current and proposed configuration before another authorized administrator reviews it; a pending request is never labelled published. The existing content catalog retains its own entry.

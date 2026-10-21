@@ -1,5 +1,44 @@
 # CopyPaste Admin Dashboard
 
+## 调用管理后台（阶段 58）
+
+Admin 的“调用管理”提供策略草稿与独立发布、逐请求筛选和费用字段授权、不可变人工证据及下载、费用确认、容量释放和原任务结算。费用、容量及客户扣费分别执行，保留原始未知观测；实际费率从任务冻结版本推导，不接受客户端填写结算额。平台输入计数费用不转入客户钱包。现有任意金额核账不能绕过逐请求记录。
+
+专项 **158/158** 包含于完整 **588/588**，保留阶段 57 全部 559 个命名测试；753 份平台来源与实际类型检查、构建一致。实际构建版 Admin 浏览器通过 **10 项流程、29 份严格响应样本**，覆盖真实邮箱/TOTP 登录、另一管理员审批、独立费用/容量、一次结算、权限隐藏、中英文、深色和窄屏。模拟 AI 来源明确标识；所有自建浏览器及服务均已关闭。
+
+两套现有原生数据库完成 067→068，各保留 144 张原公共表完整行摘要、SQL001–067 与历史校验值。七张新表强制 RLS，不自动新增既有管理员权限、政策发布、证据或费用。完整原始 102 项、TC/NFR/G01–G10、真实模型资格和发行验收继续跟踪；以下旧章节保留各自历史范围。
+
+```mermaid
+flowchart LR
+  Original[Original unknown observation] --> Scope[Scoped request directory]
+  Scope --> Evidence[Immutable human source record]
+  Evidence --> Preview[Current facts / no business effect]
+  Preview --> Review[Independent Admin / reauthorize]
+  Review --> Cost[Append confirmed cost]
+  Review --> Capacity[Separate termination confirmation]
+  Cost --> Task[Original task / aggregate once]
+  Task --> Ledger[One debit / failed business result]
+```
+
+### 既有管理员显式启用
+
+在 Platform 仓库使用受控运维身份，先预览指定的已启用且完成 MFA 的全局超级管理员：
+
+```powershell
+node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "指定调用管理负责人"
+node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "指定调用管理负责人" --apply --expected-hash PREVIEW_SHA256
+```
+
+第二条必须使用第一次的完整摘要及相同原因；目标权限或数据库变化时重新预览。启用会撤销旧会话，管理员须重新完成邮箱/TOTP 登录。至少分别启用两位管理员才能执行独立审批；该命令不会自行选择或扩大既有角色。不要将 `.env` 或摘要前后的身份配置提交到仓库。
+
+### 实际页面截图（未编辑、明确模拟数据）
+
+![Provider request / simulated evidence](assets/screenshots/provider-admin-08-unknown-request-en.png)
+
+![Independent provider policy review](assets/screenshots/provider-admin-08-independent-review-1-en.png)
+
+![Chinese dark narrow request detail](assets/screenshots/provider-admin-08-detail-zh-mobile.png)
+
 ## 模型配置与独立发布（阶段 53，后台子流程已验证）
 
 在“角色与内容发布 → 模型能力”管理固定 Codex、公司内部模型别名、文字推理强度与精确港币费率。保存后建立不可变新版本；可查看实际验证用量、费用、期限和独立暂存清理状态。发布或回滚先比较当前与目标配置，再由另一位具备权限的管理员审批；待审批申请不会显示为已发布。原有角色与内容目录保留独立入口。

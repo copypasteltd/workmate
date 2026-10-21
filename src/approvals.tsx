@@ -5,6 +5,7 @@ import { AccountChangeFacts } from "./accounts";
 import { MembershipChangeFacts } from "./memberships";
 import { PlanPublicationFacts } from "./plans";
 import { CapabilityPublicationFacts } from "./capabilities";
+import { ProviderReviewFacts } from "./provider-control";
 import { VipChangeFacts, VipCreditFacts, vipPermission } from "./vip";
 import { FeeReview, canonicalFeeAction } from "./fees";
 import {
@@ -109,7 +110,9 @@ export function ApprovalReview({
               <DateText value={approval.expires_at} />
             </dd>
           </dl>
-          {operation.action === "plans.publish" ? (
+          {operation.action.startsWith("ai.") ? (
+            <ProviderReviewFacts before={data.before} command={command} />
+          ) : operation.action === "plans.publish" ? (
             <PlanPublicationFacts before={data.before} />
           ) : ["catalog.publish", "catalog.rollback"].includes(
               operation.action,

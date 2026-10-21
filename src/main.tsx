@@ -2,6 +2,7 @@ import "./support.css";
 import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
 import { AdminCapabilities } from "./capabilities";
+import { AdminProviderControl } from "./provider-control";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
 import {
@@ -318,6 +319,13 @@ const nav = [
   ["users", Users, "用戶管理", "Users", "admin.users.read"],
   ["tenants", Building2, "企業管理", "Workspaces", "admin.tenants.read"],
   ["usage", ChartNoAxesCombined, "用量與消耗", "Usage", "admin.usage.read"],
+  [
+    "provider-control",
+    Workflow,
+    "調用管理",
+    "Provider controls",
+    "admin.ai.requests.read",
+  ],
   ["billing", Wallet, "費用與帳務", "Billing", "admin.billing.read"],
   [
     "entitlements",
@@ -367,7 +375,11 @@ function AdminShell() {
     location = useLocation();
   const [mobile, setMobile] = useState(false),
     [mfa, setMfa] = useState(false);
-  const start = nav.find((n) => a.has(n[4]))?.[0];
+  const start = nav.find(
+    (n) =>
+      a.has(n[4]) ||
+      (n[0] === "provider-control" && a.has("admin.ai.policy.read")),
+  )?.[0];
   useEffect(() => setMobile(false), [location.pathname]);
   return (
     <div className={"app-shell admin-shell" + (mobile ? " mobile-open" : "")}>
@@ -399,6 +411,8 @@ function AdminShell() {
             .filter(
               (n) =>
                 a.has(n[4]) ||
+                (n[0] === "provider-control" &&
+                  a.has("admin.ai.policy.read")) ||
                 (n[0] === "audit" && a.has("admin.approvals.read")),
             )
             .map(([path, Icon, zh, en]) => (
@@ -496,6 +510,8 @@ function AdminShell() {
                     element={
                       n[0] === "billing" ? (
                         <BillingPage />
+                      ) : n[0] === "provider-control" ? (
+                        <AdminProviderControl access={a} />
                       ) : n[0] === "plans" ? (
                         <AdminPlans access={a} />
                       ) : n[0] === "catalog" ? (
