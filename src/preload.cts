@@ -213,8 +213,8 @@ contextBridge.exposeInMainWorld(
     localFile: (c: unknown) => ipcRenderer.invoke("files:execute", c),
     syncDevice: (t: string) => ipcRenderer.invoke("device:sync", t),
     upload: (p: string, b: unknown) => ipcRenderer.invoke("asset:upload", p, b),
-    download: (p: string, n: string) =>
-      ipcRenderer.invoke("asset:download", p, n),
+    download: (p: string, n: string, tenantId?: string) =>
+      ipcRenderer.invoke("asset:download", p, n, tenantId),
     openExternal: (u: string) => ipcRenderer.invoke("external", u),
     authorizeConnector: (s: string) =>
       ipcRenderer.invoke("connector:authorize", s),

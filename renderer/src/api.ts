@@ -51,7 +51,11 @@ declare global {
         path: string,
         body: unknown,
       ) => Promise<{ status: number; body: any }>;
-      download: (path: string, name: string) => Promise<unknown>;
+      download: (
+        path: string,
+        name: string,
+        tenantId?: string,
+      ) => Promise<unknown>;
       openExternal: (url: string) => Promise<void>;
       authorizeConnector: (state: string) => Promise<void>;
       onAuthChanged: (fn: () => void) => () => void;
@@ -76,7 +80,7 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest =
-    (/^\/v1\/(?:connector-providers|connections|syncs|connector-snapshots|snapshots)(?:[/?]|$)/.test(
+    (/^\/v1\/(?:connector-providers|connections|syncs|connector-snapshots|snapshots|seo)(?:[/?]|$)/.test(
       path,
     ) &&
       !path.startsWith("/v1/connections/launch/")) ||
@@ -177,13 +181,21 @@ export const post = (path: string, body: unknown = {}, requestKey?: string) =>
   });
 export const patch = (path: string, body: unknown) =>
   api(path, { method: "PATCH", body: JSON.stringify(body) });
-export async function download(path: string, filename: string) {
+export async function download(
+  path: string,
+  filename: string,
+  tenantId?: string,
+) {
   const revision = sessionRevision;
   if (window.copyPasteBridge) {
-    await window.copyPasteBridge.download(path, filename);
+    await window.copyPasteBridge.download(path, filename, tenantId);
+    if (revision !== sessionRevision) throw new Error("Sign-in state changed");
     return;
   }
-  const response = await fetch(base + path, { credentials: "include" });
+  const response = await fetch(base + path, {
+    credentials: "include",
+    ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}),
+  });
   if (revision !== sessionRevision) throw new Error("Sign-in state changed");
   if (response.status === 401) endClientSession();
   if (!response.ok) throw new Error("Download unavailable");

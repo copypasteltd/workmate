@@ -195,6 +195,31 @@ test("provider authorization opens only the configured company page with a bound
   ])
     assert.throws(() => connectorLaunchURL(origin, state));
 });
+
+test("website audit bridge admits explicit read/create/recheck operations and rejects unrelated writes", () => {
+  const id = "11111111-1111-4111-8111-111111111111";
+  for (const [route, method] of [
+    ["/v1/seo/audits", "GET"],
+    ["/v1/seo/audits", "POST"],
+    [`/v1/seo/audits/${id}`, "GET"],
+    [`/v1/seo/audits/${id}/pages?offset=25`, "GET"],
+    [`/v1/seo/audits/${id}/findings?offset=0`, "GET"],
+    [`/v1/seo/audits/${id}/documents/${id}`, "GET"],
+    [`/v1/seo/audits/${id}/download?format=json`, "GET"],
+    [`/v1/seo/audits/${id}/recheck`, "POST"],
+  ])
+    assert.equal(rendererApiOperation(route, method), true, route);
+  for (const [route, method] of [
+    ["/v1/seo/audits", "DELETE"],
+    [`/v1/seo/audits/${id}`, "PATCH"],
+    [`/v1/seo/audits/${id}/download`, "POST"],
+    [`/v1/seo/audits/${id}/recheck`, "GET"],
+    [`/v1/seo/audits/${id}/documents/${id}/extra`, "GET"],
+    [`/v1/seo/audits/${id}/../../admin/users`, "GET"],
+    [`/v1/admin/seo/audits/${id}`, "GET"],
+  ])
+    assert.equal(rendererApiOperation(route, method), false, route);
+});
 test("sign-out removes every folder grant and cached file result before queued work can replay", async () => {
   const base = path.resolve(".data/test/logout-grants");
   await mkdir(base, { recursive: true });

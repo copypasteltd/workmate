@@ -553,7 +553,24 @@ async function createWindow() {
       );
     return shell.openExternal(connectorLaunchURL(config.web, state));
   });
-  ipcMain.handle("asset:download", async (_e, p, name) => {
+  ipcMain.handle("asset:download", async (e, p, name, tenantId?: string) => {
+    if (
+      !window ||
+      e.sender !== window.webContents ||
+      e.senderFrame !== window.webContents.mainFrame ||
+      !rendererApiOperation(p, "GET")
+    )
+      throw new Error(
+        "Downloads are restricted to authorized product operations in the application frame",
+      );
+    if (
+      tenantId !== undefined &&
+      (typeof tenantId !== "string" ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          tenantId,
+        ))
+    )
+      throw new Error("Invalid tenant identity");
     // Validate the server path before any native selection, then stream to the
     // selected destination without retaining a large media file in JS memory.
     const url = apiURL(config.api, p);
@@ -563,7 +580,10 @@ async function createWindow() {
     if (dest.canceled || !dest.filePath) return { saved: false };
     const t = await tokens();
     const r = await fetch(url, {
-      headers: { Authorization: `Bearer ${t.access_token}` },
+      headers: {
+        Authorization: `Bearer ${t.access_token}`,
+        ...(tenantId ? { "X-Tenant-ID": tenantId } : {}),
+      },
       redirect: "error",
     });
     if (r.status === 401) await nativeSession.invalidate(t.access_token);

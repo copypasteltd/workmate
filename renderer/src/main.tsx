@@ -7,6 +7,7 @@ import { VideoProjects } from "./video-projects";
 import { MarketingImport } from "./marketing-import";
 import { MarketingAnalysis } from "./marketing-analysis";
 import { MarketingReports } from "./marketing-reports";
+import { SeoAudits } from './seo-audits';
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -2244,8 +2245,6 @@ function Analytics() {
     [open, setOpen] = useState(false),
     [selected, setSelected] = useState<string | null>(null),
     [imported, setImported] = useState<string | null>(null),
-    [seo, setSeo] = useState(false),
-    [report, setReport] = useState<any>(null),
     [err, setErr] = useState<Error | null>(null);
   const { data, error, loading } = useData(w.base + "/analytics", refresh);
   const selectedId = selected ?? data?.items[0]?.id;
@@ -2258,6 +2257,14 @@ function Analytics() {
     setSelected(null);
     setImported(null);
   }, [w.base]);
+  const [analysisParams, setAnalysisParams] = useSearchParams();
+  const setSeo = (enabled: boolean) => {
+    const next = new URLSearchParams(analysisParams);
+    if (enabled) next.set("view", "seo");
+    else { next.delete("view"); next.delete("audit"); }
+    setAnalysisParams(next);
+  };
+  if (analysisParams.get("view") === "seo") return <SeoAudits key={w.base} onBack={() => setSeo(false)} />;
   return (
     <>
       <PageHeader
@@ -2270,7 +2277,7 @@ function Analytics() {
         action={
           <div className="row-actions">
             <button className="button secondary" onClick={() => setSeo(true)}>
-              SEO / GEO
+              {t('網站診斷', 'Website audit')}
             </button>
             <button className="button primary" onClick={() => setOpen(true)}>
               <Upload size={17} />
@@ -2429,47 +2436,6 @@ function Analytics() {
               setImported(result.duplicate ? "duplicate" : "created");
             }}
           />
-        </Modal>
-      )}
-      {seo && (
-        <Modal
-          title={t("SEO / GEO 頁面檢視", "SEO / GEO page review")}
-          onClose={() => setSeo(false)}
-        >
-          <AsyncForm
-            submitLabel={t("檢視頁面", "Review page")}
-            onSubmit={async (f) => {
-              const r = await post(w.base + "/seo/audit", {
-                url: String(f.get("url")),
-                html: String(f.get("html")),
-              });
-              setReport(r.report);
-            }}
-          >
-            <Field label={t("頁面網址", "Page URL")}>
-              <input type="url" name="url" required />
-            </Field>
-            <Field
-              label={t("頁面 HTML 原始碼", "Page HTML source")}
-              hint={t(
-                "貼上你有權使用的頁面原始碼。",
-                "Paste the source of a page you are authorized to review.",
-              )}
-            >
-              <textarea name="html" rows={5} required />
-            </Field>
-          </AsyncForm>
-          {report && (
-            <div className="audit-results">
-              {report.checks.map((c: any) => (
-                <div key={c.key}>
-                  <Badge value={c.pass ? "succeeded" : "failed"} />
-                  <span>{c.key}</span>
-                </div>
-              ))}
-              <p className="muted">{report.geo.note}</p>
-            </div>
-          )}
         </Modal>
       )}
     </>

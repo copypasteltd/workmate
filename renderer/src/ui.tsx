@@ -91,7 +91,9 @@ export function useData<T = any>(
   url: string | null,
   refresh = 0,
   interval = 0,
+  tenant = "",
 ) {
+  const scopedUrl = tenant ? tenant + ":" + url : url;
   const [data, setData] = useState<T | null>(null),
     [loadedUrl, setLoadedUrl] = useState<string | null>(null),
     [error, setError] = useState<Error | null>(null),
@@ -109,10 +111,13 @@ export function useData<T = any>(
     const load = async () => {
       try {
         if (live) setLoading(true);
-        const d = await api<T>(url, { signal: ctrl.signal });
+        const d = await api<T>(url, {
+          signal: ctrl.signal,
+          ...(tenant ? { headers: { "X-Tenant-ID": tenant } } : {}),
+        });
         if (live) {
           setData(d);
-          setLoadedUrl(url);
+          setLoadedUrl(scopedUrl);
           setError(null);
         }
       } catch (e) {
@@ -131,8 +136,8 @@ export function useData<T = any>(
       ctrl.abort();
       if (timer) clearTimeout(timer);
     };
-  }, [url, refresh, interval]);
-  return { data: loadedUrl === url ? data : null, error, loading };
+  }, [url, refresh, interval, tenant]);
+  return { data: loadedUrl === scopedUrl ? data : null, error, loading };
 }
 export function ErrorNotice({ error }: { error: unknown }) {
   const { t } = useI18n();

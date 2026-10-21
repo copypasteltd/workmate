@@ -96,6 +96,16 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
     return method === "POST";
   if (pathname === "/v1/tenants") return method === "GET" || method === "POST";
   if (pathname === "/v1/connector-providers") return method === "GET";
+  if (pathname === "/v1/seo/audits")
+    return method === "GET" || method === "POST";
+  if (
+    /^\/v1\/seo\/audits\/[a-f0-9-]{36}(?:\/(?:findings|pages|download|documents\/[a-f0-9-]{36}))?$/i.test(
+      pathname,
+    )
+  )
+    return method === "GET";
+  if (/^\/v1\/seo\/audits\/[a-f0-9-]{36}\/recheck$/i.test(pathname))
+    return method === "POST";
   if (pathname === "/v1/connections")
     return method === "GET" || method === "POST";
   if (/^\/v1\/connections\/[a-f0-9-]{36}$/i.test(pathname))
