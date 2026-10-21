@@ -53,7 +53,7 @@ for (const dir of ["dist", "renderer-dist"])
   for (const file of await directoryFiles(path.join(desktop, dir))) {
     const name = dir + "/" + file,
       bytes = await readFile(path.join(desktop, name)),
-      actual = extractFile(archive, name);
+      actual = extractFile(archive, path.join(dir, file));
     assert.equal(sha(bytes), sha(actual));
     embedded.push({ path: name, sha256: sha(actual) });
   }
