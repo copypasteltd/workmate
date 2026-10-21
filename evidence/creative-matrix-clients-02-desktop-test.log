@@ -1,0 +1,135 @@
+TAP version 13
+# Subtest: streamed downloads verify bytes and digest, reject overwrite and remove temporary files after failures
+ok 1 - streamed downloads verify bytes and digest, reject overwrite and remove temporary files after failures
+  ---
+  duration_ms: 222.7378
+  ...
+# Subtest: folder grants enforce expiry, explicit writes, create-only semantics and idempotency
+ok 2 - folder grants enforce expiry, explicit writes, create-only semantics and idempotency
+  ---
+  duration_ms: 154.0264
+  ...
+# Subtest: API bridge cannot change origin or escape the API prefix
+ok 3 - API bridge cannot change origin or escape the API prefix
+  ---
+  duration_ms: 0.5524
+  ...
+# Subtest: native workspace bridge permits canonical session/onboarding/business calls and rejects credential and path escapes
+ok 4 - native workspace bridge permits canonical session/onboarding/business calls and rejects credential and path escapes
+  ---
+  duration_ms: 1.7977
+  ...
+# Subtest: sign-out removes every folder grant and cached file result before queued work can replay
+ok 5 - sign-out removes every folder grant and cached file result before queued work can replay
+  ---
+  duration_ms: 160.93
+  ...
+# Subtest: a committed code exchange with a lost first response retries the same private key and payload once
+ok 6 - a committed code exchange with a lost first response retries the same private key and payload once
+  ---
+  duration_ms: 44.3946
+  ...
+# Subtest: definitive code-exchange rejections, including rate limits and conflicts, do not retry
+ok 7 - definitive code-exchange rejections, including rate limits and conflicts, do not retry
+  ---
+  duration_ms: 6.602
+  ...
+# Subtest: temporary code-exchange failures are bounded and do not expose remote error content
+ok 8 - temporary code-exchange failures are bounded and do not expose remote error content
+  ---
+  duration_ms: 1.0953
+  ...
+# Subtest: a complete canonical response is accepted once; an unreadable first body can safely recover
+ok 9 - a complete canonical response is accepted once; an unreadable first body can safely recover
+  ---
+  duration_ms: 3.3322
+  ...
+# Subtest: concurrent expired-token readers rotate once and use the same new credential
+ok 10 - concurrent expired-token readers rotate once and use the same new credential
+  ---
+  duration_ms: 3.6269
+  ...
+# Subtest: sign-out fences a refresh already accepted remotely and revokes its late result
+ok 11 - sign-out fences a refresh already accepted remotely and revokes its late result
+  ---
+  duration_ms: 2.25
+  ...
+# Subtest: late login after sign-out cannot replace a later account
+ok 12 - late login after sign-out cannot replace a later account
+  ---
+  duration_ms: 0.7514
+  ...
+# Subtest: a stale request's unauthorized response cannot clear a replacement account
+ok 13 - a stale request's unauthorized response cannot clear a replacement account
+  ---
+  duration_ms: 0.5227
+  ...
+# Subtest: transport/temporary failures preserve credentials; definitive rejection clears and revokes
+ok 14 - transport/temporary failures preserve credentials; definitive rejection clears and revokes
+  ---
+  duration_ms: 1.3822
+  ...
+# Subtest: logout during asynchronous credential persistence is serialized after the write
+ok 15 - logout during asynchronous credential persistence is serialized after the write
+  ---
+  duration_ms: 0.4961
+  ...
+# Subtest: malformed gateway credentials are rejected before persistence
+ok 16 - malformed gateway credentials are rejected before persistence
+  ---
+  duration_ms: 1.1619
+  ...
+# Subtest: offline sign-out removes local credentials and reports unconfirmed remote revocation
+ok 17 - offline sign-out removes local credentials and reports unconfirmed remote revocation
+  ---
+  duration_ms: 0.4924
+  ...
+# Subtest: credential persistence failure revokes the newly issued credential
+ok 18 - credential persistence failure revokes the newly issued credential
+  ---
+  duration_ms: 0.9622
+  ...
+# Subtest: a rejected obsolete refresh cannot sign out a later account
+ok 19 - a rejected obsolete refresh cannot sign out a later account
+  ---
+  duration_ms: 0.9378
+  ...
+# Subtest: a lost refresh response retains its private request key across controller restart
+ok 20 - a lost refresh response retains its private request key across controller restart
+  ---
+  duration_ms: 0.6098
+  ...
+# Subtest: legacy tokens must persist a new request key before attempting any refresh
+ok 21 - legacy tokens must persist a new request key before attempting any refresh
+  ---
+  duration_ms: 7.884
+  ...
+# Subtest: sign-out during legacy request-key persistence prevents network refresh and clears storage
+ok 22 - sign-out during legacy request-key persistence prevents network refresh and clears storage
+  ---
+  duration_ms: 0.814
+  ...
+# Subtest: only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+ok 23 - only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+  ---
+  duration_ms: 0.396
+  ...
+# Subtest: concurrent legacy readers persist one private request key and start a single rotation
+ok 24 - concurrent legacy readers persist one private request key and start a single rotation
+  ---
+  duration_ms: 1.4288
+  ...
+# Subtest: Windows DPAPI vault decrypts across native processes and rejects tampering
+ok 25 - Windows DPAPI vault decrypts across native processes and rejects tampering
+  ---
+  duration_ms: 2581.8214
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3789.7241

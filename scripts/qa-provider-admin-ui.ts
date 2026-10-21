@@ -310,7 +310,7 @@ async function fixture(
     sessionHash: "",
   };
   const cap = await s.db.tx(
-    (tx) => taskCapabilities(tx, s.db.config, s.catalog, task),
+    (tx: any) => taskCapabilities(tx, s.db.config, s.catalog, task),
     tenant,
     true,
     user.id,

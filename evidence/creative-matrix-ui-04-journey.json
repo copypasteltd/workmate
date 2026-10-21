@@ -1,0 +1,2419 @@
+{
+  "at": "2026-10-21T08:31:41.866Z",
+  "status": "passed",
+  "scope": "Built Web and actual API/native PostgreSQL; deterministic composition only, no AI or live-provider qualification",
+  "checks": [
+    {
+      "name": "actual email sign-in, user session and enterprise/project onboarding",
+      "status": "passed"
+    },
+    {
+      "name": "actual form creates 3 creatives × 2 languages × 3 sizes with fixed PNG references",
+      "status": "passed"
+    },
+    {
+      "name": "one real execution failure leaves 17 completed cells available and filterable",
+      "status": "passed"
+    },
+    {
+      "name": "actual retry and unchanged-image edit affect only two cells; 16 siblings remain byte-for-byte identical and AI cost is zero",
+      "status": "passed"
+    },
+    {
+      "name": "browser downloads actual PNG, SVG and editable JSON, with decoded dimensions and current revision text",
+      "status": "passed"
+    },
+    {
+      "name": "current revision conflicts preserve the unsaved draft and require explicit reload",
+      "status": "passed"
+    },
+    {
+      "name": "66 units are rejected in the browser before any request; custom dimensions are editable",
+      "status": "passed"
+    },
+    {
+      "name": "quarantined sources remove stale visible previews and all derived download controls on the next detail refresh",
+      "status": "passed"
+    },
+    {
+      "name": "actual stop action cancels persistent pending cells and prevents background publication",
+      "status": "passed"
+    },
+    {
+      "name": "Traditional Chinese dark and 390-pixel matrix/create dialogs fit the viewport and close with Escape",
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "samples": [
+    {
+      "schema": "MatrixCreated",
+      "route": "POST /v1/tenants/adab3ea3-121d-4e91-b817-ade7d5b67186/projects/f051aeba-04c4-4bad-a80c-ae7dfbf4d9bc/creative-batches",
+      "response": {
+        "id": "9652f2eb-0aaf-4a7b-808e-bc5c7dad7598"
+      }
+    },
+    {
+      "schema": "MatrixDetail",
+      "route": "GET detail after partial failure",
+      "response": {
+        "id": "9652f2eb-0aaf-4a7b-808e-bc5c7dad7598",
+        "name": "Harbour studio · 18 formats",
+        "version": 1,
+        "data_mode": "simulated",
+        "cancelled": false,
+        "state": "partially_succeeded",
+        "counts": {
+          "queued": 0,
+          "rendering": 0,
+          "succeeded": 17,
+          "failed": 1,
+          "cancelled": 0
+        },
+        "cost": {
+          "ai_cost_micros": "0",
+          "source": "local_composition_no_ai",
+          "currency": "HKD"
+        },
+        "units": [
+          {
+            "id": "cc705a5d-5f40-40a8-95fb-c15f7bac5e8a",
+            "creative_key": "creative-1510952a",
+            "locale": "en",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:25.944Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Room for a new idea",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "4d0aa124ea6f9c57ab49a1fe0a4b68de136defe7a8d9baa598e078ccaab8a01f",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "987ae475-905a-43c1-8658-57ef70b7d999",
+                "unit_id": "cc705a5d-5f40-40a8-95fb-c15f7bac5e8a",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "6d9859eb-5447-47f8-8e00-c01d1d171569",
+                "svg_asset_id": "50830e74-c046-47d6-881b-471f25eaef74",
+                "source_asset_id": "b0e313d1-2780-411d-bbe4-011d2c5c8640",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 79,
+                "output_bytes": "49369",
+                "started_at": "2026-10-21T08:31:25.845Z",
+                "finished_at": "2026-10-21T08:31:25.944Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "c1564d58-90fc-4025-9a95-9b7fd8467916",
+            "creative_key": "creative-1510952a",
+            "locale": "en",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:25.037Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Room for a new idea",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "00d946571b6d8b2f90b8f04b43e6c766218ccac783a6fb9a982bccee397d70a5",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "fcd49561-e837-46cb-b4c4-b6cb9c584158",
+                "unit_id": "c1564d58-90fc-4025-9a95-9b7fd8467916",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "18757f30-4fc4-4f10-882c-7b0eac8e1484",
+                "svg_asset_id": "6cc7d3cc-0b97-4226-b346-c4e67328c5fd",
+                "source_asset_id": "178b7e32-555d-4192-afca-263dd6c76cef",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 83,
+                "output_bytes": "65824",
+                "started_at": "2026-10-21T08:31:24.942Z",
+                "finished_at": "2026-10-21T08:31:25.037Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "80108b33-00d6-4566-8db3-5a924fb720ee",
+            "creative_key": "creative-1510952a",
+            "locale": "en",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.400Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Room for a new idea",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "3bb11a53003a5144f49c4df0296c1fd5ce3d195a8d7740f069fd483b15795ae0",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "8141b154-b4dd-4187-b944-84f9e1a83c2d",
+                "unit_id": "80108b33-00d6-4566-8db3-5a924fb720ee",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "3cd8bb12-3c99-473a-8036-d2ccc75d8b07",
+                "svg_asset_id": "dd4de4dc-0425-41e8-8707-ac3f760aa727",
+                "source_asset_id": "3c0ef8fe-efcb-40dc-a556-ecd7fedc995d",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 100,
+                "output_bytes": "63609",
+                "started_at": "2026-10-21T08:31:24.295Z",
+                "finished_at": "2026-10-21T08:31:24.399Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "f3a67d88-1fe8-4c0c-9c93-d73ea4a1caa7",
+            "creative_key": "creative-1510952a",
+            "locale": "zh-HK",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:26.027Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "為下一個創意騰出空間",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "88eb1151a27733585de0fcacc1e61fa96b5e0c6713b9b15db655226c11d96712",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "9a86779a-810b-4747-87da-83623ffa0bc6",
+                "unit_id": "f3a67d88-1fe8-4c0c-9c93-d73ea4a1caa7",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "9aa361f9-e2b4-4639-8610-46c44b53f130",
+                "svg_asset_id": "fd46929f-98cb-4f91-a3e5-452f91a563ac",
+                "source_asset_id": "da601530-9f87-4e5d-844d-d09467a95097",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 61,
+                "output_bytes": "44634",
+                "started_at": "2026-10-21T08:31:25.959Z",
+                "finished_at": "2026-10-21T08:31:26.027Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "82fdea36-2b92-4228-99e9-9f7e4ce459dc",
+            "creative_key": "creative-1510952a",
+            "locale": "zh-HK",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.502Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "為下一個創意騰出空間",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "79b9c15ad9d5ab58adba00c96675e5ae9f06236f75f6e9ea60371775e08284aa",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "7db64184-b16f-4d0a-aa6d-d802fd2129a5",
+                "unit_id": "82fdea36-2b92-4228-99e9-9f7e4ce459dc",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "5cf1a4a7-4730-42f8-a5bc-a7b5827b3dda",
+                "svg_asset_id": "2aa472fb-6090-4dd1-bd25-8860b4d87bcd",
+                "source_asset_id": "86cccfec-9971-42ca-8990-41432df04038",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 87,
+                "output_bytes": "63326",
+                "started_at": "2026-10-21T08:31:24.413Z",
+                "finished_at": "2026-10-21T08:31:24.502Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "8ec57c1f-559b-4f57-ae5b-ea1026c7fadc",
+            "creative_key": "creative-1510952a",
+            "locale": "zh-HK",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.614Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "為下一個創意騰出空間",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "24c247fcbdbbee1131dfee7eb1c7d0b8fe687d7a1fa53c2dbf31b1c01a89238a",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "5cd07581-5495-42ae-9ee0-6b5c4e283e30",
+                "unit_id": "8ec57c1f-559b-4f57-ae5b-ea1026c7fadc",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "a96f3e45-9b58-4657-b6b0-d65b3615322f",
+                "svg_asset_id": "7b8bf1a7-06e7-4e64-b470-d001376aa604",
+                "source_asset_id": "a61cc4c5-8a2d-41d9-b851-ec88fe87834a",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 82,
+                "output_bytes": "58651",
+                "started_at": "2026-10-21T08:31:24.524Z",
+                "finished_at": "2026-10-21T08:31:24.614Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "623a6493-cbd3-40db-94d3-d9f4e81eb2b2",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "en",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.890Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Every format. One direction.",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "c85df40b9c5a553224f6e61c728f78644bf35e45492f0ea66b5dd06b6ca7546a",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "a46e4989-bbd5-4028-a332-500fdc0f66e3",
+                "unit_id": "623a6493-cbd3-40db-94d3-d9f4e81eb2b2",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "917019af-bccf-4f10-8f44-61ad4ad931bd",
+                "svg_asset_id": "60754fa6-6f75-44aa-ad6f-81b95ef3f283",
+                "source_asset_id": "8c61bce5-92f4-4b83-9620-fb623b4ad074",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 74,
+                "output_bytes": "53190",
+                "started_at": "2026-10-21T08:31:23.812Z",
+                "finished_at": "2026-10-21T08:31:23.890Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "3127fc65-c931-495d-855c-dd9a5a77734f",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "en",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.535Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Every format. One direction.",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "465caab53dfd6d6846f17e0ec0ebef9b0b0f3bd25a20927c6de5c37f91d0c417",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "55236559-5eac-422e-ad6c-b8e3bf9ef9ee",
+                "unit_id": "3127fc65-c931-495d-855c-dd9a5a77734f",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "b87d67cb-6c04-4c10-b54d-ec0718aebb3a",
+                "svg_asset_id": "864ad5e2-20bd-4f90-8115-e67fb51dfba6",
+                "source_asset_id": "8319a781-3c9a-4969-b885-9a09724eed01",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 203,
+                "output_bytes": "71886",
+                "started_at": "2026-10-21T08:31:23.329Z",
+                "finished_at": "2026-10-21T08:31:23.534Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "724fdf2c-61cd-400d-8ebb-61be69c97a09",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "en",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.278Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Every format. One direction.",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "b0c0f37bfd2c0b10a505f3f42be4784b4f0afd4ce56e4b583f2d350042c725d3",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "1ed7b811-859a-4855-844e-1a6ea89ff9c4",
+                "unit_id": "724fdf2c-61cd-400d-8ebb-61be69c97a09",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "cb3cf13f-1fb6-48f2-8dd5-141dc1f3cbb9",
+                "svg_asset_id": "092a8aa2-d34e-4148-a745-bd4f5ea58000",
+                "source_asset_id": "d783106e-cc1c-4737-a308-eea182d70cc9",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 77,
+                "output_bytes": "62072",
+                "started_at": "2026-10-21T08:31:24.188Z",
+                "finished_at": "2026-10-21T08:31:24.278Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "047e0656-7ba5-42b4-949b-836e03d3c7c7",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "zh-HK",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "failed",
+            "error_code": "RENDER_FAILED",
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.320Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "同一方向，每個版位",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "36701a60088eb64518eb374e53a55483871ee07753a14d48bc179ad9d4633c26",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "8e72f908-74b3-4509-a66e-d8b2882fa8d1",
+                "unit_id": "047e0656-7ba5-42b4-949b-836e03d3c7c7",
+                "revision": 1,
+                "state": "failed",
+                "error_code": "RENDER_FAILED",
+                "png_asset_id": null,
+                "svg_asset_id": null,
+                "source_asset_id": null,
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 10,
+                "output_bytes": null,
+                "started_at": "2026-10-21T08:31:23.302Z",
+                "finished_at": "2026-10-21T08:31:23.319Z",
+                "output_available": false
+              }
+            ]
+          },
+          {
+            "id": "f80de3c8-62b6-440f-b6ff-053450493326",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "zh-HK",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:26.143Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "同一方向，每個版位",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "1c84e7b3806ed557d6452c7034311c14dab9ddf34fe476549ff90d4ff496cbd2",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "2611a758-19ff-45af-a7db-253c2d51d893",
+                "unit_id": "f80de3c8-62b6-440f-b6ff-053450493326",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "b703c6d6-531b-42de-9714-20b6ad5aa09b",
+                "svg_asset_id": "5ff4b278-6dec-4ecf-b26f-10587487ed90",
+                "source_asset_id": "92927947-d80f-49cf-9c2c-541ceb8627b4",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 94,
+                "output_bytes": "60106",
+                "started_at": "2026-10-21T08:31:26.043Z",
+                "finished_at": "2026-10-21T08:31:26.142Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "5ac3d4a8-3dec-4cdf-885c-4a6b782c7a97",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "zh-HK",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.790Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "同一方向，每個版位",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "7aae471f8270d69eb53fbb564b92d48488a2aeb9f68e6a01ad4a18640bdf8209",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "279c9f9c-78b3-4e1e-80d4-d72e3889081c",
+                "unit_id": "5ac3d4a8-3dec-4cdf-885c-4a6b782c7a97",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "2c8612f8-c6fe-411f-80e9-59b4a5bff6dd",
+                "svg_asset_id": "4523c91f-50e3-4c59-8444-a43ec77d2fd0",
+                "source_asset_id": "292fb0ae-d0be-4f92-8400-a382297bfab5",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 82,
+                "output_bytes": "54114",
+                "started_at": "2026-10-21T08:31:23.700Z",
+                "finished_at": "2026-10-21T08:31:23.789Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "71e87d89-6362-4166-b5fc-543111f4f394",
+            "creative_key": "creative-f92f22a2",
+            "locale": "en",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.177Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Made for your next move",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "f27cdbcb0d3a93f94870abcaae630c38db29c3400c15de0d4914a4c376776f24",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "a3721cb4-1942-4d46-aaa1-8e7b6598015e",
+                "unit_id": "71e87d89-6362-4166-b5fc-543111f4f394",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "470c4029-b15b-46dc-b4d8-583a748207d3",
+                "svg_asset_id": "92f01b50-597d-495c-b409-78920e49a651",
+                "source_asset_id": "14703761-dc52-4746-9b01-30e5b3c23078",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 62,
+                "output_bytes": "52476",
+                "started_at": "2026-10-21T08:31:24.108Z",
+                "finished_at": "2026-10-21T08:31:24.176Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "6d96cb3e-ba3e-4406-ae04-733630a4b87a",
+            "creative_key": "creative-f92f22a2",
+            "locale": "en",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.095Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Made for your next move",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "d892f46029c4920f290cb4a66427f9a522dccb9a7553a06e59e0ef18ef0ce66a",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "c99bc604-a11e-4338-9b4e-bfbea15cce1f",
+                "unit_id": "6d96cb3e-ba3e-4406-ae04-733630a4b87a",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "36991f70-b33e-42f1-a057-bebdd834e226",
+                "svg_asset_id": "b5ff9dd5-a69f-4225-bbe6-fb058c5c4f5b",
+                "source_asset_id": "daef72c5-8749-413b-9861-dec80a439373",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 92,
+                "output_bytes": "71091",
+                "started_at": "2026-10-21T08:31:23.992Z",
+                "finished_at": "2026-10-21T08:31:24.094Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "6bfc5c7a-0ea2-4c9d-8dde-9cdfbaadf429",
+            "creative_key": "creative-f92f22a2",
+            "locale": "en",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.982Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Made for your next move",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "844ad0f9a12f826e5443cf4b2e4741a85efe322ba0d86844a154e333ae31e5f2",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "6c966a85-46bb-450e-823f-683320efd0c3",
+                "unit_id": "6bfc5c7a-0ea2-4c9d-8dde-9cdfbaadf429",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "54b10ecf-8ee2-4fd4-80e0-69de814ab906",
+                "svg_asset_id": "be3dec8f-bbff-442f-b501-0944bbb49cd5",
+                "source_asset_id": "0a7c0201-9ef3-4af2-bdad-61bd3b2e36f7",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 79,
+                "output_bytes": "62901",
+                "started_at": "2026-10-21T08:31:23.899Z",
+                "finished_at": "2026-10-21T08:31:23.981Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "cad3c2d3-14df-4426-b3cd-e0cc2c9e149f",
+            "creative_key": "creative-f92f22a2",
+            "locale": "zh-HK",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:25.149Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "讓下一步更有想像",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "02c9b3ea6ba44c4a450123f26069f3af9277656729eff4cdbf9b2aadfdcca478",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "eecd1221-80e5-4b4a-a69e-3f201c2fb341",
+                "unit_id": "cad3c2d3-14df-4426-b3cd-e0cc2c9e149f",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "3e293e3b-0ff2-414b-83e1-dc8b8c5dcdf5",
+                "svg_asset_id": "c42da6b0-fe49-4907-a519-fe4bde9b7d00",
+                "source_asset_id": "b4a80782-e17e-44cb-85d2-d62f3b836eee",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 86,
+                "output_bytes": "43813",
+                "started_at": "2026-10-21T08:31:25.053Z",
+                "finished_at": "2026-10-21T08:31:25.148Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "475acabf-bef3-4db9-ac2f-c33dfabbe236",
+            "creative_key": "creative-f92f22a2",
+            "locale": "zh-HK",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.689Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "讓下一步更有想像",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "a0e930623bee991e37b88b60525d6a5e8e0a3de2d664d0dbeee59ca3bbe7738d",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "662893d6-ceb1-42e2-83dc-446ef34ea10b",
+                "unit_id": "475acabf-bef3-4db9-ac2f-c33dfabbe236",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "b4002e64-db4c-401b-bc69-41f52fb7fff1",
+                "svg_asset_id": "22911feb-b4ee-41f0-9895-393b5f5b266d",
+                "source_asset_id": "2a3f39d7-e70d-47df-8ef6-0cae8e51fef5",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 113,
+                "output_bytes": "65647",
+                "started_at": "2026-10-21T08:31:23.558Z",
+                "finished_at": "2026-10-21T08:31:23.688Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "a095236d-7db0-41a7-a2b3-07b251a7ee75",
+            "creative_key": "creative-f92f22a2",
+            "locale": "zh-HK",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.712Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "讓下一步更有想像",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "9468366fce499dd758c7b0a5ad067cea67012d8e44a01620341d17148ca52a1d",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "009bfd2a-6b11-4817-b73c-8b78c6a20598",
+                "unit_id": "a095236d-7db0-41a7-a2b3-07b251a7ee75",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "2b6c2478-6cb2-404d-98e0-00562ff16196",
+                "svg_asset_id": "1e3d3e71-3523-43ba-be0b-ff028c4b529c",
+                "source_asset_id": "5501535b-8d3f-42f4-b26b-40cc294bfe11",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 79,
+                "output_bytes": "58706",
+                "started_at": "2026-10-21T08:31:24.626Z",
+                "finished_at": "2026-10-21T08:31:24.712Z",
+                "output_available": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "schema": "MatrixUpdated",
+      "route": "POST /v1/tenants/adab3ea3-121d-4e91-b817-ade7d5b67186/projects/f051aeba-04c4-4bad-a80c-ae7dfbf4d9bc/creative-batches/9652f2eb-0aaf-4a7b-808e-bc5c7dad7598/units/047e0656-7ba5-42b4-949b-836e03d3c7c7/retry",
+      "response": {
+        "id": "9652f2eb-0aaf-4a7b-808e-bc5c7dad7598",
+        "unit_id": "047e0656-7ba5-42b4-949b-836e03d3c7c7",
+        "revision": 1,
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "MatrixUpdated",
+      "route": "POST /v1/tenants/adab3ea3-121d-4e91-b817-ade7d5b67186/projects/f051aeba-04c4-4bad-a80c-ae7dfbf4d9bc/creative-batches/9652f2eb-0aaf-4a7b-808e-bc5c7dad7598/units/cc705a5d-5f40-40a8-95fb-c15f7bac5e8a/edit",
+      "response": {
+        "id": "9652f2eb-0aaf-4a7b-808e-bc5c7dad7598",
+        "unit_id": "cc705a5d-5f40-40a8-95fb-c15f7bac5e8a",
+        "revision": 2,
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "MatrixDetail",
+      "route": "GET detail after local edit and retry",
+      "response": {
+        "id": "9652f2eb-0aaf-4a7b-808e-bc5c7dad7598",
+        "name": "Harbour studio · 18 formats",
+        "version": 1,
+        "data_mode": "simulated",
+        "cancelled": false,
+        "state": "succeeded",
+        "counts": {
+          "queued": 0,
+          "rendering": 0,
+          "succeeded": 18,
+          "failed": 0,
+          "cancelled": 0
+        },
+        "cost": {
+          "ai_cost_micros": "0",
+          "source": "local_composition_no_ai",
+          "currency": "HKD"
+        },
+        "units": [
+          {
+            "id": "cc705a5d-5f40-40a8-95fb-c15f7bac5e8a",
+            "creative_key": "creative-1510952a",
+            "locale": "en",
+            "size_key": "landscape",
+            "revision": 2,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:32.339Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "A new direction · 只改此格",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "ae204aa6f0a84db66696bdaedd1cab6fdcbb0a4464ca2cf3e1a3a6009e765dea",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "987ae475-905a-43c1-8658-57ef70b7d999",
+                "unit_id": "cc705a5d-5f40-40a8-95fb-c15f7bac5e8a",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "6d9859eb-5447-47f8-8e00-c01d1d171569",
+                "svg_asset_id": "50830e74-c046-47d6-881b-471f25eaef74",
+                "source_asset_id": "b0e313d1-2780-411d-bbe4-011d2c5c8640",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 79,
+                "output_bytes": "49369",
+                "started_at": "2026-10-21T08:31:25.845Z",
+                "finished_at": "2026-10-21T08:31:25.944Z",
+                "output_available": true
+              },
+              {
+                "id": "e4236c82-ce3a-463d-b363-0cc3d0614792",
+                "unit_id": "cc705a5d-5f40-40a8-95fb-c15f7bac5e8a",
+                "revision": 2,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "6e1b95ab-7929-496b-bde4-5d097b11a3ff",
+                "svg_asset_id": "8e222c11-6557-4cbf-8a56-f17ccd561e5e",
+                "source_asset_id": "9f10b3ca-aadb-4e36-a0a4-a8ff889afebe",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 1537,
+                "output_bytes": "53550",
+                "started_at": "2026-10-21T08:31:30.799Z",
+                "finished_at": "2026-10-21T08:31:32.339Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "c1564d58-90fc-4025-9a95-9b7fd8467916",
+            "creative_key": "creative-1510952a",
+            "locale": "en",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:25.037Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Room for a new idea",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "00d946571b6d8b2f90b8f04b43e6c766218ccac783a6fb9a982bccee397d70a5",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "fcd49561-e837-46cb-b4c4-b6cb9c584158",
+                "unit_id": "c1564d58-90fc-4025-9a95-9b7fd8467916",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "18757f30-4fc4-4f10-882c-7b0eac8e1484",
+                "svg_asset_id": "6cc7d3cc-0b97-4226-b346-c4e67328c5fd",
+                "source_asset_id": "178b7e32-555d-4192-afca-263dd6c76cef",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 83,
+                "output_bytes": "65824",
+                "started_at": "2026-10-21T08:31:24.942Z",
+                "finished_at": "2026-10-21T08:31:25.037Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "80108b33-00d6-4566-8db3-5a924fb720ee",
+            "creative_key": "creative-1510952a",
+            "locale": "en",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.400Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Room for a new idea",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "3bb11a53003a5144f49c4df0296c1fd5ce3d195a8d7740f069fd483b15795ae0",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "8141b154-b4dd-4187-b944-84f9e1a83c2d",
+                "unit_id": "80108b33-00d6-4566-8db3-5a924fb720ee",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "3cd8bb12-3c99-473a-8036-d2ccc75d8b07",
+                "svg_asset_id": "dd4de4dc-0425-41e8-8707-ac3f760aa727",
+                "source_asset_id": "3c0ef8fe-efcb-40dc-a556-ecd7fedc995d",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 100,
+                "output_bytes": "63609",
+                "started_at": "2026-10-21T08:31:24.295Z",
+                "finished_at": "2026-10-21T08:31:24.399Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "f3a67d88-1fe8-4c0c-9c93-d73ea4a1caa7",
+            "creative_key": "creative-1510952a",
+            "locale": "zh-HK",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:26.027Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "為下一個創意騰出空間",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "88eb1151a27733585de0fcacc1e61fa96b5e0c6713b9b15db655226c11d96712",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "9a86779a-810b-4747-87da-83623ffa0bc6",
+                "unit_id": "f3a67d88-1fe8-4c0c-9c93-d73ea4a1caa7",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "9aa361f9-e2b4-4639-8610-46c44b53f130",
+                "svg_asset_id": "fd46929f-98cb-4f91-a3e5-452f91a563ac",
+                "source_asset_id": "da601530-9f87-4e5d-844d-d09467a95097",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 61,
+                "output_bytes": "44634",
+                "started_at": "2026-10-21T08:31:25.959Z",
+                "finished_at": "2026-10-21T08:31:26.027Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "82fdea36-2b92-4228-99e9-9f7e4ce459dc",
+            "creative_key": "creative-1510952a",
+            "locale": "zh-HK",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.502Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "為下一個創意騰出空間",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "79b9c15ad9d5ab58adba00c96675e5ae9f06236f75f6e9ea60371775e08284aa",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "7db64184-b16f-4d0a-aa6d-d802fd2129a5",
+                "unit_id": "82fdea36-2b92-4228-99e9-9f7e4ce459dc",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "5cf1a4a7-4730-42f8-a5bc-a7b5827b3dda",
+                "svg_asset_id": "2aa472fb-6090-4dd1-bd25-8860b4d87bcd",
+                "source_asset_id": "86cccfec-9971-42ca-8990-41432df04038",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 87,
+                "output_bytes": "63326",
+                "started_at": "2026-10-21T08:31:24.413Z",
+                "finished_at": "2026-10-21T08:31:24.502Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "8ec57c1f-559b-4f57-ae5b-ea1026c7fadc",
+            "creative_key": "creative-1510952a",
+            "locale": "zh-HK",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.614Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "為下一個創意騰出空間",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-1510952a",
+              "creative_name": "Creative 1"
+            },
+            "input_hash": "24c247fcbdbbee1131dfee7eb1c7d0b8fe687d7a1fa53c2dbf31b1c01a89238a",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "5cd07581-5495-42ae-9ee0-6b5c4e283e30",
+                "unit_id": "8ec57c1f-559b-4f57-ae5b-ea1026c7fadc",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "a96f3e45-9b58-4657-b6b0-d65b3615322f",
+                "svg_asset_id": "7b8bf1a7-06e7-4e64-b470-d001376aa604",
+                "source_asset_id": "a61cc4c5-8a2d-41d9-b851-ec88fe87834a",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 82,
+                "output_bytes": "58651",
+                "started_at": "2026-10-21T08:31:24.524Z",
+                "finished_at": "2026-10-21T08:31:24.614Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "623a6493-cbd3-40db-94d3-d9f4e81eb2b2",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "en",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.890Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Every format. One direction.",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "c85df40b9c5a553224f6e61c728f78644bf35e45492f0ea66b5dd06b6ca7546a",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "a46e4989-bbd5-4028-a332-500fdc0f66e3",
+                "unit_id": "623a6493-cbd3-40db-94d3-d9f4e81eb2b2",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "917019af-bccf-4f10-8f44-61ad4ad931bd",
+                "svg_asset_id": "60754fa6-6f75-44aa-ad6f-81b95ef3f283",
+                "source_asset_id": "8c61bce5-92f4-4b83-9620-fb623b4ad074",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 74,
+                "output_bytes": "53190",
+                "started_at": "2026-10-21T08:31:23.812Z",
+                "finished_at": "2026-10-21T08:31:23.890Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "3127fc65-c931-495d-855c-dd9a5a77734f",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "en",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.535Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Every format. One direction.",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "465caab53dfd6d6846f17e0ec0ebef9b0b0f3bd25a20927c6de5c37f91d0c417",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "55236559-5eac-422e-ad6c-b8e3bf9ef9ee",
+                "unit_id": "3127fc65-c931-495d-855c-dd9a5a77734f",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "b87d67cb-6c04-4c10-b54d-ec0718aebb3a",
+                "svg_asset_id": "864ad5e2-20bd-4f90-8115-e67fb51dfba6",
+                "source_asset_id": "8319a781-3c9a-4969-b885-9a09724eed01",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 203,
+                "output_bytes": "71886",
+                "started_at": "2026-10-21T08:31:23.329Z",
+                "finished_at": "2026-10-21T08:31:23.534Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "724fdf2c-61cd-400d-8ebb-61be69c97a09",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "en",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.278Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Every format. One direction.",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "b0c0f37bfd2c0b10a505f3f42be4784b4f0afd4ce56e4b583f2d350042c725d3",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "1ed7b811-859a-4855-844e-1a6ea89ff9c4",
+                "unit_id": "724fdf2c-61cd-400d-8ebb-61be69c97a09",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "cb3cf13f-1fb6-48f2-8dd5-141dc1f3cbb9",
+                "svg_asset_id": "092a8aa2-d34e-4148-a745-bd4f5ea58000",
+                "source_asset_id": "d783106e-cc1c-4737-a308-eea182d70cc9",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 77,
+                "output_bytes": "62072",
+                "started_at": "2026-10-21T08:31:24.188Z",
+                "finished_at": "2026-10-21T08:31:24.278Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "047e0656-7ba5-42b4-949b-836e03d3c7c7",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "zh-HK",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:28.644Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "同一方向，每個版位",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "36701a60088eb64518eb374e53a55483871ee07753a14d48bc179ad9d4633c26",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "8e72f908-74b3-4509-a66e-d8b2882fa8d1",
+                "unit_id": "047e0656-7ba5-42b4-949b-836e03d3c7c7",
+                "revision": 1,
+                "state": "failed",
+                "error_code": "RENDER_FAILED",
+                "png_asset_id": null,
+                "svg_asset_id": null,
+                "source_asset_id": null,
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 10,
+                "output_bytes": null,
+                "started_at": "2026-10-21T08:31:23.302Z",
+                "finished_at": "2026-10-21T08:31:23.319Z",
+                "output_available": false
+              },
+              {
+                "id": "e9b38c36-ee2d-4560-8fd9-3d46ccfd9419",
+                "unit_id": "047e0656-7ba5-42b4-949b-836e03d3c7c7",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "4b6f4e8e-f90d-4fa1-a5b7-36a1746c7f8c",
+                "svg_asset_id": "da975faa-db4b-4868-9718-2d86e0983776",
+                "source_asset_id": "2796d3e1-6266-4fea-b33d-705c52ad51d5",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 49,
+                "output_bytes": "41559",
+                "started_at": "2026-10-21T08:31:28.581Z",
+                "finished_at": "2026-10-21T08:31:28.643Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "f80de3c8-62b6-440f-b6ff-053450493326",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "zh-HK",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:26.143Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "同一方向，每個版位",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "1c84e7b3806ed557d6452c7034311c14dab9ddf34fe476549ff90d4ff496cbd2",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "2611a758-19ff-45af-a7db-253c2d51d893",
+                "unit_id": "f80de3c8-62b6-440f-b6ff-053450493326",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "b703c6d6-531b-42de-9714-20b6ad5aa09b",
+                "svg_asset_id": "5ff4b278-6dec-4ecf-b26f-10587487ed90",
+                "source_asset_id": "92927947-d80f-49cf-9c2c-541ceb8627b4",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 94,
+                "output_bytes": "60106",
+                "started_at": "2026-10-21T08:31:26.043Z",
+                "finished_at": "2026-10-21T08:31:26.142Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "5ac3d4a8-3dec-4cdf-885c-4a6b782c7a97",
+            "creative_key": "creative-cbc58bb3",
+            "locale": "zh-HK",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.790Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "同一方向，每個版位",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-cbc58bb3",
+              "creative_name": "Creative 3"
+            },
+            "input_hash": "7aae471f8270d69eb53fbb564b92d48488a2aeb9f68e6a01ad4a18640bdf8209",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "279c9f9c-78b3-4e1e-80d4-d72e3889081c",
+                "unit_id": "5ac3d4a8-3dec-4cdf-885c-4a6b782c7a97",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "2c8612f8-c6fe-411f-80e9-59b4a5bff6dd",
+                "svg_asset_id": "4523c91f-50e3-4c59-8444-a43ec77d2fd0",
+                "source_asset_id": "292fb0ae-d0be-4f92-8400-a382297bfab5",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 82,
+                "output_bytes": "54114",
+                "started_at": "2026-10-21T08:31:23.700Z",
+                "finished_at": "2026-10-21T08:31:23.789Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "71e87d89-6362-4166-b5fc-543111f4f394",
+            "creative_key": "creative-f92f22a2",
+            "locale": "en",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.177Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Made for your next move",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "f27cdbcb0d3a93f94870abcaae630c38db29c3400c15de0d4914a4c376776f24",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "a3721cb4-1942-4d46-aaa1-8e7b6598015e",
+                "unit_id": "71e87d89-6362-4166-b5fc-543111f4f394",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "470c4029-b15b-46dc-b4d8-583a748207d3",
+                "svg_asset_id": "92f01b50-597d-495c-b409-78920e49a651",
+                "source_asset_id": "14703761-dc52-4746-9b01-30e5b3c23078",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 62,
+                "output_bytes": "52476",
+                "started_at": "2026-10-21T08:31:24.108Z",
+                "finished_at": "2026-10-21T08:31:24.176Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "6d96cb3e-ba3e-4406-ae04-733630a4b87a",
+            "creative_key": "creative-f92f22a2",
+            "locale": "en",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.095Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Made for your next move",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "d892f46029c4920f290cb4a66427f9a522dccb9a7553a06e59e0ef18ef0ce66a",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "c99bc604-a11e-4338-9b4e-bfbea15cce1f",
+                "unit_id": "6d96cb3e-ba3e-4406-ae04-733630a4b87a",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "36991f70-b33e-42f1-a057-bebdd834e226",
+                "svg_asset_id": "b5ff9dd5-a69f-4225-bbe6-fb058c5c4f5b",
+                "source_asset_id": "daef72c5-8749-413b-9861-dec80a439373",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 92,
+                "output_bytes": "71091",
+                "started_at": "2026-10-21T08:31:23.992Z",
+                "finished_at": "2026-10-21T08:31:24.094Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "6bfc5c7a-0ea2-4c9d-8dde-9cdfbaadf429",
+            "creative_key": "creative-f92f22a2",
+            "locale": "en",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.982Z",
+            "input": {
+              "copy": {
+                "body": "Independent creative work for ambitious teams.",
+                "action": "Discover more",
+                "headline": "Made for your next move",
+                "brand_line": "COPYPASTE / HONG KONG"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "en",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "844ad0f9a12f826e5443cf4b2e4741a85efe322ba0d86844a154e333ae31e5f2",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "6c966a85-46bb-450e-823f-683320efd0c3",
+                "unit_id": "6bfc5c7a-0ea2-4c9d-8dde-9cdfbaadf429",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "54b10ecf-8ee2-4fd4-80e0-69de814ab906",
+                "svg_asset_id": "be3dec8f-bbff-442f-b501-0944bbb49cd5",
+                "source_asset_id": "0a7c0201-9ef3-4af2-bdad-61bd3b2e36f7",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 79,
+                "output_bytes": "62901",
+                "started_at": "2026-10-21T08:31:23.899Z",
+                "finished_at": "2026-10-21T08:31:23.981Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "cad3c2d3-14df-4426-b3cd-e0cc2c9e149f",
+            "creative_key": "creative-f92f22a2",
+            "locale": "zh-HK",
+            "size_key": "landscape",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:25.149Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "讓下一步更有想像",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "landscape",
+                "name": "Landscape",
+                "width": 1200,
+                "height": 628
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "02c9b3ea6ba44c4a450123f26069f3af9277656729eff4cdbf9b2aadfdcca478",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "eecd1221-80e5-4b4a-a69e-3f201c2fb341",
+                "unit_id": "cad3c2d3-14df-4426-b3cd-e0cc2c9e149f",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "3e293e3b-0ff2-414b-83e1-dc8b8c5dcdf5",
+                "svg_asset_id": "c42da6b0-fe49-4907-a519-fe4bde9b7d00",
+                "source_asset_id": "b4a80782-e17e-44cb-85d2-d62f3b836eee",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 86,
+                "output_bytes": "43813",
+                "started_at": "2026-10-21T08:31:25.053Z",
+                "finished_at": "2026-10-21T08:31:25.148Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "475acabf-bef3-4db9-ac2f-c33dfabbe236",
+            "creative_key": "creative-f92f22a2",
+            "locale": "zh-HK",
+            "size_key": "portrait",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:23.689Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "讓下一步更有想像",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "portrait",
+                "name": "Portrait",
+                "width": 1080,
+                "height": 1350
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "a0e930623bee991e37b88b60525d6a5e8e0a3de2d664d0dbeee59ca3bbe7738d",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "662893d6-ceb1-42e2-83dc-446ef34ea10b",
+                "unit_id": "475acabf-bef3-4db9-ac2f-c33dfabbe236",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "b4002e64-db4c-401b-bc69-41f52fb7fff1",
+                "svg_asset_id": "22911feb-b4ee-41f0-9895-393b5f5b266d",
+                "source_asset_id": "2a3f39d7-e70d-47df-8ef6-0cae8e51fef5",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 113,
+                "output_bytes": "65647",
+                "started_at": "2026-10-21T08:31:23.558Z",
+                "finished_at": "2026-10-21T08:31:23.688Z",
+                "output_available": true
+              }
+            ]
+          },
+          {
+            "id": "a095236d-7db0-41a7-a2b3-07b251a7ee75",
+            "creative_key": "creative-f92f22a2",
+            "locale": "zh-HK",
+            "size_key": "square",
+            "revision": 1,
+            "state": "succeeded",
+            "error_code": null,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "updated_at": "2026-10-21T08:31:24.712Z",
+            "input": {
+              "copy": {
+                "body": "為企業團隊，做好每一份創意。",
+                "action": "立即了解",
+                "headline": "讓下一步更有想像",
+                "brand_line": "COPYPASTE / 香港"
+              },
+              "size": {
+                "key": "square",
+                "name": "Square",
+                "width": 1080,
+                "height": 1080
+              },
+              "image": {
+                "sha256": "b1c647d332543ca8585c55fbd62a4519e3bf045f49723622654b7e5ca7a58ba7",
+                "version": 1,
+                "asset_id": "51c47d74-1ce6-4abb-b4d7-9ce56541029e"
+              },
+              "theme": {
+                "ink": "#15171A",
+                "accent": "#1F5EFF",
+                "background": "#F6F6F4"
+              },
+              "locale": "zh-HK",
+              "renderer": "copypaste-layout-1",
+              "creative_key": "creative-f92f22a2",
+              "creative_name": "Creative 2"
+            },
+            "input_hash": "9468366fce499dd758c7b0a5ad067cea67012d8e44a01620341d17148ca52a1d",
+            "source_available": true,
+            "attempts": [
+              {
+                "id": "009bfd2a-6b11-4817-b73c-8b78c6a20598",
+                "unit_id": "a095236d-7db0-41a7-a2b3-07b251a7ee75",
+                "revision": 1,
+                "state": "succeeded",
+                "error_code": null,
+                "png_asset_id": "2b6c2478-6cb2-404d-98e0-00562ff16196",
+                "svg_asset_id": "1e3d3e71-3523-43ba-be0b-ff028c4b529c",
+                "source_asset_id": "5501535b-8d3f-42f4-b26b-40cc294bfe11",
+                "ai_cost_micros": "0",
+                "cost_source": "local_composition_no_ai",
+                "elapsed_ms": 79,
+                "output_bytes": "58706",
+                "started_at": "2026-10-21T08:31:24.626Z",
+                "finished_at": "2026-10-21T08:31:24.712Z",
+                "output_available": true
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "schema": "MatrixUpdated",
+      "route": "POST concurrent edit",
+      "response": {
+        "id": "9652f2eb-0aaf-4a7b-808e-bc5c7dad7598",
+        "unit_id": "cc705a5d-5f40-40a8-95fb-c15f7bac5e8a",
+        "revision": 3,
+        "state": "queued"
+      }
+    },
+    {
+      "schema": "MatrixCancelled",
+      "route": "POST /v1/tenants/adab3ea3-121d-4e91-b817-ade7d5b67186/projects/f051aeba-04c4-4bad-a80c-ae7dfbf4d9bc/creative-batches/8a98e683-2db3-4594-b490-9f60bfa2f742/cancel",
+      "response": {
+        "id": "8a98e683-2db3-4594-b490-9f60bfa2f742",
+        "cancelled": true
+      }
+    },
+    {
+      "schema": "MatrixList",
+      "route": "GET project batch list",
+      "response": {
+        "items": [
+          {
+            "id": "8a98e683-2db3-4594-b490-9f60bfa2f742",
+            "name": "Stopped delivery",
+            "version": 2,
+            "created_at": "2026-10-21T08:31:38.423Z",
+            "cancelled": true
+          },
+          {
+            "id": "9652f2eb-0aaf-4a7b-808e-bc5c7dad7598",
+            "name": "Harbour studio · 18 formats",
+            "version": 1,
+            "created_at": "2026-10-21T08:31:23.178Z",
+            "cancelled": false
+          }
+        ],
+        "next_cursor": null
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-create-en.png",
+      "sha256": "adccf0198a15efa44ee494eb9d43d832b2f6ec50483183629159657c30abed35"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-matrix-18-en.png",
+      "sha256": "e83470c42b9db5677a70d1f33b78c28bf76f57214f60669055b788fb378d67d4"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-failed-unit-en.png",
+      "sha256": "69eb2e6a139183546063a2ae8126be6e3168527c541ebdd5ce5a151b5ecaf3ad"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-outputs-en.png",
+      "sha256": "c79e538edc3c0a21d5f4f84ca8f445f196b373cdd847295ce2aa3db5c669f160"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-revision-conflict-en.png",
+      "sha256": "0d693c62b496fd1ede9131c10ab65aed4f3442a62058cff532f65531a89f87dd"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-limit-en.png",
+      "sha256": "26f65bfc118e62c0b1c8b86cceaf99bbaed84bb669dfc7a488558bf6168f7a38"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-custom-size-en.png",
+      "sha256": "6381ebf4644bc4fba87a2878818e5fe1b1c2a6c40c023f97d9442f9f246f6c14"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-source-unavailable-en.png",
+      "sha256": "080f7b8d5e4bfb7140f921a4a48d476308671da0981d05a185b0d409bf1f550e"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-matrix-zh-dark.png",
+      "sha256": "5805ed405dfb64279055cfb5351eedb308a5e14b962d02dedc0d2b977b323f83"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-matrix-zh-narrow.png",
+      "sha256": "7d8cd64913501281d4b92da65cbef2676f95c2c655adeeeb7a806f2e47ece155"
+    },
+    {
+      "path": "copypaste-web/assets/screenshots/creative-matrix-04-create-zh-narrow.png",
+      "sha256": "f5505606f7e0dde1e2daca85200cf618ceb6d029e2bce42bf1b024be3db371e1"
+    }
+  ],
+  "browser_closed": true,
+  "browser_runtime": {
+    "executable": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "sha256": "36a30716f0994b377f1ce6b47cfe35399b9719e31d597fe0ea0d8f3b62aed532",
+    "version": "155.0.8059.80"
+  },
+  "owned_api_closed": true,
+  "isolated_database_dropped_or_deferred_fixture_queued": true,
+  "supplemental_contract_sha256": "ecde701e51a1d4c58975a31d1ecef90675a26f51e24c08fc0dc1599ffea600eb"
+}

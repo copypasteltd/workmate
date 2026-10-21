@@ -1,0 +1,65 @@
+2026-10-21 16:06:59.731 CST [1696] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-21 16:06:59.740 CST [1696] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-21 16:06:59.740 CST [1696] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-21 16:07:00.086 CST [31024] LOG:  database system was shut down at 2026-10-21 16:02:47 CST
+
+2026-10-21 16:07:00.207 CST [1696] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-21 16:07:19.014 CST [16808] ERROR:  fixture audit unavailable
+2026-10-21 16:07:19.014 CST [16808] CONTEXT:  PL/pgSQL function fixture_matrix_audit_failure() line 1 at RAISE
+2026-10-21 16:07:19.014 CST [16808] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-21 16:07:19.971 CST [16808] ERROR:  Matrix input revisions are immutable
+2026-10-21 16:07:19.971 CST [16808] CONTEXT:  PL/pgSQL function guard_matrix_history() line 8 at RAISE
+2026-10-21 16:07:19.971 CST [16808] STATEMENT:  UPDATE creative_matrix_revisions SET input='{}' WHERE unit_id=$1
+
+2026-10-21 16:07:19.973 CST [31924] ERROR:  Finished matrix attempts are immutable
+2026-10-21 16:07:19.973 CST [31924] CONTEXT:  PL/pgSQL function guard_matrix_history() line 11 at RAISE
+2026-10-21 16:07:19.973 CST [31924] STATEMENT:  UPDATE creative_matrix_attempts SET error_code='REWRITTEN' WHERE unit_id=$1
+
+2026-10-21 16:07:19.974 CST [5100] ERROR:  permission denied for table creative_matrix_attempts
+2026-10-21 16:07:19.974 CST [5100] STATEMENT:  UPDATE creative_matrix_attempts SET state='succeeded'
+
+2026-10-21 16:07:20.053 CST [928] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 16:07:21.416 CST [928] LOG:  checkpoint complete: wrote 43 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.693 s, total=1.363 s; sync files=13, longest=0.167 s, average=0.054 s; distance=16264 kB, estimate=16264 kB; lsn=8/96856668, redo lsn=8/96856610
+
+2026-10-21 16:07:25.924 CST [928] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 16:07:26.855 CST [928] LOG:  checkpoint complete: wrote 20 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.453 s, total=0.932 s; sync files=10, longest=0.080 s, average=0.046 s; distance=14053 kB, estimate=16043 kB; lsn=8/9760FCB0, redo lsn=8/9760FC58
+
+2026-10-21 16:07:31.253 CST [928] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 16:07:31.961 CST [928] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.417 s, total=0.709 s; sync files=10, longest=0.070 s, average=0.042 s; distance=14073 kB, estimate=15846 kB; lsn=8/983CE260, redo lsn=8/983CE208
+
+2026-10-21 16:07:35.971 CST [16040] ERROR:  Review decisions are immutable
+2026-10-21 16:07:35.971 CST [16040] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-21 16:07:35.971 CST [16040] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-21 16:07:35.972 CST [16040] ERROR:  Frozen approval is immutable
+2026-10-21 16:07:35.972 CST [16040] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-21 16:07:35.972 CST [16040] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-21 16:07:36.476 CST [928] LOG:  checkpoint starting: immediate force wait
+
+2026-10-21 16:07:37.803 CST [928] LOG:  checkpoint complete: wrote 22 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.011 s, sync=0.631 s, total=1.327 s; sync files=9, longest=0.104 s, average=0.071 s; distance=14094 kB, estimate=15671 kB; lsn=8/99191E48, redo lsn=8/99191DF0
+
+2026-10-21 16:07:39.276 CST [1696] LOG:  received fast shutdown request
+
+2026-10-21 16:07:39.359 CST [1696] LOG:  aborting any active transactions
+
+2026-10-21 16:07:39.368 CST [1696] LOG:  background worker "logical replication launcher" (PID 20312) exited with exit code 1
+
+2026-10-21 16:07:39.412 CST [928] LOG:  shutting down
+
+2026-10-21 16:07:39.467 CST [928] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-21 16:07:39.694 CST [928] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.046 s, total=0.282 s; sync files=1, longest=0.046 s, average=0.046 s; distance=0 kB, estimate=14104 kB; lsn=8/99191F60, redo lsn=8/99191F60
+
+2026-10-21 16:07:39.877 CST [1696] LOG:  database system is shut down
+
