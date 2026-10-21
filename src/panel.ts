@@ -1007,6 +1007,13 @@ $("review-models").addEventListener(
       await send("OPEN_WEB", { section: "specialists" });
     }),
 );
+$("batch-designs").addEventListener(
+  "click",
+  () =>
+    void run(async () => {
+      await send("OPEN_WEB", { section: "creative" });
+    }),
+);
 $("tenant").addEventListener(
   "change",
   () =>
@@ -1288,6 +1295,7 @@ $("local-revoke").addEventListener(
     }),
 );
 const translations: Record<string, string> = {
+  批量設計工作台: "Open batch design workspace",
   檢視模型與費率版本: "Review model and rate versions",
   "工作，就從": "Your next idea,",
   "這裡開始。": "starts here.",
