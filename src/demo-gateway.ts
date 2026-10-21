@@ -108,12 +108,16 @@ export async function startDemoGateway(c: Config) {
         input.filter((i) => i.role === "user").at(-1) ?? "",
       );
       const reportTool = find("analysis_report_facts");
+      const seoTool = find("seo_audit_facts");
       let tool: any, args: any;
       if (find("capability_probe") && !used(find("capability_probe").name)) {
         tool = find("capability_probe");
         args = { nonce: tool.parameters?.properties?.nonce?.enum?.[0] };
       } else if (reportTool && !used(reportTool.name)) {
         tool = reportTool;
+        args = {};
+      } else if (seoTool && !used(seoTool.name)) {
+        tool = seoTool;
         args = {};
       } else if (
         !reportTool &&
@@ -221,6 +225,12 @@ export async function startDemoGateway(c: Config) {
           typeof value.id === "string"
         )
           return value.id;
+        if (
+          typeof value.id === "string" &&
+          typeof value.data_mode === "string" &&
+          typeof value.page_requests === "number"
+        )
+          return value.id;
         for (const item of Object.values(value)) {
           const id = evidenceReference(item, depth + 1);
           if (id) return id;
@@ -257,9 +267,10 @@ export async function startDemoGateway(c: Config) {
             content: [
               {
                 type: "output_text",
-                text: reportTool
-                  ? reportText
-                  : "【演示資料 / Simulated data】此回覆由本機模擬服務產生。Codex、授權、工具執行及產物保存流程已運行；內容和用量為測試資料。請在素材與交付查看產物。\n\nThis response uses deterministic test data. Codex and product workflow operations ran locally. Content and usage are synthetic.",
+                text:
+                  reportTool || seoTool
+                    ? reportText
+                    : "【演示資料 / Simulated data】此回覆由本機模擬服務產生。Codex、授權、工具執行及產物保存流程已運行；內容和用量為測試資料。請在素材與交付查看產物。\n\nThis response uses deterministic test data. Codex and product workflow operations ran locally. Content and usage are synthetic.",
                 annotations: [],
               },
             ],

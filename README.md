@@ -1,5 +1,38 @@
 # CopyPaste Platform
 
+本仓库提供云端 API、持久任务、预算与来源治理。客户通过 Web 或 Desktop 确认网站范围；后台抓取与 Codex 解释分别执行，并复用现有企业身份和计费约束。
+
+## 有范围约束的网站诊断与复查（阶段 62）
+
+在「行销分析 → 网站诊断与复查」确认起始网址、精确主机、路径前缀、页面请求数和 AI 预算，再明确授权启动。工作台显示范围、请求进度、未检查页面和访问限制；问题保留逐 URL 原文、取回时间、HTTP/字符编码及摘要，支持真实 JSON/HTML 下载。修复后明确建立相同范围的新复查，仅对实际检查的页面判定变化，旧版本保持不可变。
+
+按当前授权使用**模拟业务和 AI 数据**。抓取在非生产夹具执行真实原生 HTTP；Codex 是唯一 Agent 内核，报告由实际 Codex 进程经公司内部 OpenAI 兼容模拟网关生成。公网部署和真实模型质量尚未验收。仅公开获准主机/路径，每个 DNS 回答和重定向校验地址范围；不转发登录凭证、不执行脚本或提交表单。robots、登录、错误、剩余范围和串行抓取限制明确显示。存储不足停止抓取并释放未使用的模型预留。
+
+来源、缓存祖先、复查历史、报告及主动发布副本受当前私有权限、保留期、隔离和删除约束；读取存储后再次检查身份。Admin 的企业/项目范围、元数据、正文和内容操作权限分别执行，隔离来源同时阻止客户继续读取派生证据。完整「保存修改任务」、Search Console 连接指标、GEO 观测、规范 TaskDTO 和原全部验收条件继续保留。
+
+**Desktop 无边框**，保留自绘拖动区、最小化/最大化/关闭，无 Electron 默认边框、应用菜单或 Alt 菜单。登录使用邮箱验证码会话（本地测试邮箱投递）与实际 PKCE 流程；下载通过当前租户认证桥和原生保存窗口。**Extension 工具栏开关 Chrome 原生 Side Panel**，默认右侧并遵循 Chrome 的位置偏好；「网站诊断与复查」仅打开固定公司工作台，临时测试标签页在验收后关闭。
+
+验证：专项 **45/45**，完整平台 **716/716**，保留前一阶段全部 **674 项**命名测试；实际 Web/Admin **13 项**、当前新包原生 **20 项**。两库 SQL077→079 保留原 **164 张**公共表全部行摘要和 SQL001–077，三张新增表为空并强制 RLS。完整产品仍为 81 项有局部证据、21 项未证明完成、0 项完整验收。
+
+当前 localhost 预览：Desktop `release/scoped-seo-62-02/`；Extension `release/scoped-seo-62-02/CopyPaste-0.5.0-sidepanel.zip`。已执行 unpacked Desktop 与真正的 Chrome 侧栏；Setup/Portable 未签名，未执行安装、商店发布或生产验收。以下较早章节为历史记录，其「当前」只指当时的源码和包。
+
+```mermaid
+flowchart LR
+  Login[Email / PKCE and current project] --> Confirm[Confirm host / path / request and AI budgets]
+  Confirm --> Crawl[Durable bounded HTTP / robots / DNS pinning]
+  Crawl --> Evidence[Immutable URL findings and raw source versions]
+  Evidence --> Codex[Locked Codex / internal gateway / bound facts]
+  Codex --> Download[JSON and validated HTML downloads]
+  Evidence --> Recheck[Explicit same-scope immutable recheck]
+  Recheck --> Compare[Observed repairs / persistent / unknown]
+  Desktop[Frameless Desktop / native authenticated save] --> Download
+  Panel[Toolbar / Chrome native Side Panel] --> Confirm
+  Admin[Scoped Admin / separate metadata and body permissions] --> Govern[Quarantine / retention / erasure]
+  Govern --> Evidence
+```
+
+![Actual Web consumer of the scoped website API](assets/screenshots/scoped-seo-05-findings-en.png)
+
 ## 营销账户同步与三端入口（阶段 61）
 
 「连接应用」支持 Google Ads、Meta Ads、Google Analytics 4 和 Search Console。点击供应商、完成明确标识的模拟授权，等待账户/属性/站点发现完成后，选择获准账户及可使用快照的项目。确认范围、选择日期，再明确创建快照。页面显示持久分页、错误、限流后的下一次重试时间和不可变历史；排队/执行中可取消，失败重试创建新的关联作业。

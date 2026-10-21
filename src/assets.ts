@@ -49,7 +49,7 @@ export function registerAssets(
           async () => {
             const a = (
               await tx.query(
-                "SELECT a.*,v.storage_key,v.mime_type FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' FOR UPDATE OF a",
+                "SELECT a.*,v.storage_key,v.mime_type,v.metadata FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' FOR UPDATE OF a",
                 [asset, project],
               )
             ).rows[0];
@@ -69,6 +69,17 @@ export function registerAssets(
               mime: a.mime_type,
               bytes: await storage.get(a.storage_key),
               kind: "published_deliverable",
+              ...(a.metadata?.seo_run_id
+                ? {
+                    metadata: {
+                      seo_run_id: a.metadata.seo_run_id,
+                      seo_publication_source: {
+                        asset_id: a.id,
+                        version: a.current_version,
+                      },
+                    },
+                  }
+                : {}),
             });
             await audit(
               tx,

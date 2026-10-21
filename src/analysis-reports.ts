@@ -14,6 +14,7 @@ import {
 } from "./persistent-work.js";
 import { enqueueTask } from "./task-service.js";
 import { saveAsset, type Storage } from "./storage.js";
+import { assertSeoSources } from "./seo-source-access.js";
 import {
   analysisSpec,
   normalizedAnalysis,
@@ -83,6 +84,7 @@ async function datasets(tx: Tx, project: string, ids: string[]) {
   ).rows;
 }
 export async function assertReportSources(tx: Tx, t: any) {
+  await assertSeoSources(tx, t);
   const id = t.input_context?.analysis_report_id;
   if (!id) return;
   const r = (
@@ -131,10 +133,18 @@ export async function assertReportSources(tx: Tx, t: any) {
       "ANALYSIS_SOURCE_REVOKED",
       "A report source is no longer available",
     );
-  const unavailableConnector = await tx.query(`SELECT 1 FROM analysis_report_sources s JOIN analytics_datasets d ON d.id=s.dataset_id
+  const unavailableConnector = await tx.query(
+    `SELECT 1 FROM analysis_report_sources s JOIN analytics_datasets d ON d.id=s.dataset_id
     JOIN asset_versions v ON v.id=d.source_asset_version_id JOIN connector_analysis_sources x ON x.csv_asset_id=v.asset_id
-    WHERE s.report_id=$1 AND NOT connector_asset_available(x.csv_asset_id) LIMIT 1`,[id]);
-  if(unavailableConnector.rowCount) throw new Problem(403,"ANALYSIS_SOURCE_REVOKED","The retained connector source is unavailable or expired");
+    WHERE s.report_id=$1 AND NOT connector_asset_available(x.csv_asset_id) LIMIT 1`,
+    [id],
+  );
+  if (unavailableConnector.rowCount)
+    throw new Problem(
+      403,
+      "ANALYSIS_SOURCE_REVOKED",
+      "The retained connector source is unavailable or expired",
+    );
 }
 export const analysisReportInstructions = `
 This task is a frozen campaign analysis report. First call analysis_report_facts.
@@ -659,12 +669,26 @@ export function registerAnalysisReports(
             await tx.query("SELECT * FROM analytics_datasets WHERE id=$1", [id])
           ).rows[0];
           if (!d) {
-            const linked = (await tx.query(`SELECT s.* FROM connector_snapshots s JOIN assets a ON a.id=s.asset_id
+            const linked = (
+              await tx.query(
+                `SELECT s.* FROM connector_snapshots s JOIN assets a ON a.id=s.asset_id
               JOIN asset_versions v ON v.asset_id=s.asset_id AND v.version=s.asset_version
-              WHERE s.id=$1 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND connector_asset_available(s.asset_id)`, [id])).rows[0];
-            if (!linked) throw new Problem(404, "NOT_FOUND", "Snapshot not found");
-            await projectAccess(tx,req.principal,tenant,linked.project_id);
-            return snapshotFields({ id:linked.id,project_id:linked.project_id,source:linked.source,state:linked.state,row_count:linked.row_count,data_as_of:null,spec_hash:linked.spec_hash });
+              WHERE s.id=$1 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND connector_asset_available(s.asset_id)`,
+                [id],
+              )
+            ).rows[0];
+            if (!linked)
+              throw new Problem(404, "NOT_FOUND", "Snapshot not found");
+            await projectAccess(tx, req.principal, tenant, linked.project_id);
+            return snapshotFields({
+              id: linked.id,
+              project_id: linked.project_id,
+              source: linked.source,
+              state: linked.state,
+              row_count: linked.row_count,
+              data_as_of: null,
+              spec_hash: linked.spec_hash,
+            });
           }
           await projectAccess(tx, req.principal, tenant, d.project_id);
           if (!d.spec_hash || !d.metric_snapshot)

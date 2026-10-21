@@ -50,6 +50,8 @@ import { registerFederation } from "./federation.js";
 import { registerDeletions } from "./deletions.js";
 import { startDemoGateway } from "./demo-gateway.js";
 import { startConnectorFixture } from "./connector-fixture.js";
+import { startSeoFixture } from "./seo-fixture.js";
+import { registerSeoAudits } from "./seo-audits.js";
 import { registerDemo } from "./demo.js";
 import { registerUploads } from "./uploads.js";
 import { registerTaskEvents } from "./task-events.js";
@@ -70,8 +72,19 @@ import {
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   const demo = c.DEMO_MODE ? await startDemoGateway(c) : undefined;
   if (demo) c = demo.config;
-  const connectorFixture = c.DEMO_MODE && !c.CONNECTOR_FIXTURE_ORIGIN ? await startConnectorFixture(c) : undefined;
+  const connectorFixture =
+    c.DEMO_MODE && !c.CONNECTOR_FIXTURE_ORIGIN
+      ? await startConnectorFixture(c)
+      : undefined;
   if (connectorFixture) c = connectorFixture.config;
+  const seoFixture =
+    c.DEMO_MODE && !c.SEO_FIXTURE_ORIGIN ? await startSeoFixture(c) : undefined;
+  if (seoFixture)
+    c = {
+      ...c,
+      SEO_FIXTURE_ORIGIN: seoFixture.origin,
+      SEO_FIXTURE_KEY: seoFixture.key,
+    };
   const db = new Database(c);
   const catalog = new Catalog();
   await catalog.load();
@@ -353,6 +366,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerFileImports(app, db, storage);
   registerAnalysisReports(app, db, catalog, storage);
   registerTasks(app, db, catalog);
+  registerSeoAudits(app, db, catalog, storage);
   registerTaskEvents(app, db);
   registerPersistentWork(app, db, catalog);
   registerAgentAdoption(app, db, catalog);
@@ -392,8 +406,18 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     await db.close();
     await demo?.close();
     await connectorFixture?.close();
+    await seoFixture?.close();
   });
-  return { app, db, catalog, worker, storage, routes, connectorFixture };
+  return {
+    app,
+    db,
+    catalog,
+    worker,
+    storage,
+    routes,
+    connectorFixture,
+    seoFixture,
+  };
 }
 if (
   process.argv[1] &&
