@@ -1,5 +1,8 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage61-marketing-connectors -->
+阶段 61 继续验证新打包客户端的无边框、自绘最小化/最大化/关闭、无 Electron/Alt 菜单及真实 Chrome 右侧原生 Side Panel。营销授权经固定公司网页和原会话回到 Desktop，JSON 经原生保存窗口；侧栏固定打开公司营销工作台。实际原生 **16 项**见[当前回执](../quality/marketing-connector-checkpoint.json)，包位于各端 `release/connectors-61/`，旧包与旧回执未改写。
+
 <!-- stage60-template-video -->
 阶段 60 在新包 `release/video-60/` 实际验证 17 项原生流程：无系统边框、默认菜单和 Alt 菜单；自绘控制；真实 PKCE、受保护视频桥接、成片播放及系统文件保存。扩展真实工具栏仍在右侧打开/收起原生 Side Panel，新增固定公司视频工作台入口。详见[视频回执](../quality/template-video-checkpoint.json)与[新包清单](../quality/template-video-artifacts.json)。下方阶段 59 及更早包保留历史执行范围；Chrome 左右位置遵循用户设置。
 

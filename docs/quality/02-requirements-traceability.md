@@ -1,5 +1,8 @@
 # 需求追踪矩阵
 
+<!-- stage61-marketing-connectors -->
+阶段 61 对 REQ-004、025–028 的模拟连接子流程增加实际证据，并补强分析来源、权限与 Admin 控制；[绑定当前源码的回执](marketing-connector-checkpoint.json)保留失败记录、原始需求和完整 TC。局部验证不能关闭正式供应商、完整角色或综合系统验收。
+
 <!-- stage60-template-video -->
 阶段 60 验证 REQ-018/TC-018 的单模板本地合成子流程，串联独立工程、真实字幕/音轨成片、Web 和无边框客户端、原生侧栏入口、权限与物理删除；[实际证据](template-video-checkpoint.json)绑定实际来源，原始综合验收条件保留。
 
