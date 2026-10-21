@@ -1,5 +1,8 @@
 # 文档体系与使用规则
 
+<!-- stage62-scoped-seo -->
+阶段 62 新增[有范围约束的网站诊断与复查](technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](quality/scoped-seo-checkpoint.json)和[包清单](quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
+
 当前阶段 54 的 [用户明确采用专家、模型与费率版本](technical/54-explicit-agent-version-adoption.md) 已通过完整平台回归 484/484、专项 93/93、实际 Web 12/12、打包无边框 Desktop 与原生右侧 Side Panel 11/11；两库 065 升级各保留 131 张原公共表与旧迁移校验值。以下旧阶段记录保留原始源码范围，全部 102 项综合条件继续由逐项进度跟踪。
 
 历史阶段 52 增量为 [任务能力、模型和原价冻结](technical/52-capability-versions-and-frozen-task-pricing.md)。本次追加的验证与原始失败单独登记；以下阶段 51 的页面和原生包证据保持历史来源，不因后台变更自动视为重新验收。全部 102 项原始需求及完整门槛继续由 [逐项进度](quality/requirements-alignment-progress.json) 跟踪。

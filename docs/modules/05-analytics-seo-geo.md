@@ -1,5 +1,8 @@
 # M06 广告、网站、SEO 与 GEO 分析
 
+<!-- stage62-scoped-seo -->
+本阶段已实现的范围见[网站诊断与复查](../technical/62-scoped-seo-audits.md)和[实际回执](../quality/scoped-seo-checkpoint.json)。GEO 的固定提示、模型、产品、地区、语言和检索观测仍单独跟踪；普通 HTML 检查不能替代 GEO。完整修改任务与规范 TaskDTO 仍待交付。
+
 当前实现增量：CSV/XLSX 固定来源版本、规范导入、实际单元格定位、更正链和依赖删除见 [文件导入与更正链](../technical/29-file-imports-and-correction-lineage.md)；AnalysisSpec 和报告任务见 [报告任务](../technical/28-analysis-report-tasks-and-evidence.md)。以下完整模块目标继续保留，不能以局部验证替代。
 
 关联：REQ-023–031。分析模块拥有数据快照、计算口径、证据与报告，平台凭证由 M07 管理。

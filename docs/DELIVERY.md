@@ -1,5 +1,8 @@
 # CopyPaste 0.5.0 代码交付入口
 
+<!-- stage62-scoped-seo -->
+阶段 62 新增[有范围约束的网站诊断与复查](technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](quality/scoped-seo-checkpoint.json)和[包清单](quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
+
 <!-- stage61-marketing-connectors -->
 阶段 61 的[营销账户同步](technical/61-marketing-connector-synchronization.md)支持四供应商的明确模拟授权、获准账户/项目范围、持久分页、限流恢复、不可变快照和分析来源。专项 **39/39** 纳入平台 **674/674**，保留原全部 638 项命名测试；实际 Web/Admin **17 项**和新打包原生客户端 **16 项**通过。Desktop 保持无边框、自绘窗口控制、无 Electron/Alt 菜单；Extension 工具栏开关 Chrome 原生右侧 Side Panel，并提供固定营销工作台入口。Admin 的企业/项目范围、元数据、正文与新鲜 MFA 撤销分别授权，撤销取消未完成读取并清除凭证。两库 SQL071→077 保留 157 张原表的全部行摘要及 SQL001–071，新增七表强制 RLS。当前预览位于各端 `release/connectors-61/`；实际执行 unpacked 程序，签名、安装、商店和正式供应商资格仍独立跟踪。[当前回执](quality/marketing-connector-checkpoint.json)和[包清单](quality/marketing-connector-artifacts.json)限定实际执行范围；下方较早阶段的源码/截图/测试保持历史范围，原始 102 项及完整 TC/NFR/G01–G10 保留。
 

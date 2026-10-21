@@ -1,5 +1,8 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage62-scoped-seo -->
+阶段 62 新增[有范围约束的网站诊断与复查](../technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](../quality/scoped-seo-checkpoint.json)和[包清单](../quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
+
 <!-- stage61-marketing-connectors -->
 阶段 61 继续验证新打包客户端的无边框、自绘最小化/最大化/关闭、无 Electron/Alt 菜单及真实 Chrome 右侧原生 Side Panel。营销授权经固定公司网页和原会话回到 Desktop，JSON 经原生保存窗口；侧栏固定打开公司营销工作台。实际原生 **16 项**见[当前回执](../quality/marketing-connector-checkpoint.json)，包位于各端 `release/connectors-61/`，旧包与旧回执未改写。
 

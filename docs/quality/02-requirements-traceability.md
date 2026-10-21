@@ -1,5 +1,8 @@
 # 需求追踪矩阵
 
+<!-- stage62-scoped-seo -->
+阶段 62 为 REQ-029 增加受限网站抓取、逐 URL 原文、私有来源治理及不可变复查的局部证据，并补强 Codex、权限、报告和三端入口。见[当前绑定回执](scoped-seo-checkpoint.json)；原始 102 项需求、完整 TC、NFR 和 G01–G10 保留，完整修改任务、GEO、正式网站及整体验收继续跟踪。
+
 <!-- stage61-marketing-connectors -->
 阶段 61 对 REQ-004、025–028 的模拟连接子流程增加实际证据，并补强分析来源、权限与 Admin 控制；[绑定当前源码的回执](marketing-connector-checkpoint.json)保留失败记录、原始需求和完整 TC。局部验证不能关闭正式供应商、完整角色或综合系统验收。
 

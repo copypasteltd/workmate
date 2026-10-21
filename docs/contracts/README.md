@@ -1,5 +1,8 @@
 # 机器契约、编辑工程与固定样例
 
+<!-- stage62-scoped-seo -->
+新增 [scoped-seo-openapi.json](scoped-seo-openapi.json)：8 个补充操作、14 个严格结构，绑定当前模型/路由源码及真实 HTTP 响应样本。原规范 openapi.json 保持原摘要；补充契约不代表完整规范 TaskDTO 与 POST /v1/tasks 已对齐。
+
 版本：1.5 · 2026-10-18。以下接口为拟实施的产品契约，示例域名、UUID、文件摘要和业务数据均为虚构，不代表已部署服务；品牌取样另有实际官网来源。
 
 ## 1. 文件与用途

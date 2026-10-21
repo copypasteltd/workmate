@@ -1,5 +1,8 @@
 # CopyPaste 企业 Agent 文档
 
+<!-- stage62-scoped-seo -->
+阶段 62 新增[有范围约束的网站诊断与复查](technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](quality/scoped-seo-checkpoint.json)和[包清单](quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
+
 <!-- stage61-marketing-connectors -->
 阶段 61 的[营销账户同步](technical/61-marketing-connector-synchronization.md)支持四供应商的明确模拟授权、获准账户/项目范围、持久分页、限流恢复、不可变快照和分析来源。专项 **39/39** 纳入平台 **674/674**，保留原全部 638 项命名测试；实际 Web/Admin **17 项**和新打包原生客户端 **16 项**通过。Desktop 保持无边框、自绘窗口控制、无 Electron/Alt 菜单；Extension 工具栏开关 Chrome 原生右侧 Side Panel，并提供固定营销工作台入口。Admin 的企业/项目范围、元数据、正文与新鲜 MFA 撤销分别授权，撤销取消未完成读取并清除凭证。两库 SQL071→077 保留 157 张原表的全部行摘要及 SQL001–071，新增七表强制 RLS。当前预览位于各端 `release/connectors-61/`；实际执行 unpacked 程序，签名、安装、商店和正式供应商资格仍独立跟踪。[当前回执](quality/marketing-connector-checkpoint.json)和[包清单](quality/marketing-connector-artifacts.json)限定实际执行范围；下方较早阶段的源码/截图/测试保持历史范围，原始 102 项及完整 TC/NFR/G01–G10 保留。
 
@@ -121,6 +124,7 @@ Web 主线以自然语言委派、会话中的真实执行、右侧成果/云文
 | 技术 | [内部推理请求约束](technical/55-scoped-internal-inference-requests.md) | 短期范围凭证、逐次权限、完整流工具校验、图片规格与已知费用 |
 | 技术 | [58 调用管理与独立核对](technical/58-provider-admin-control-and-reconciliation.md) | 策略发布、费用与容量独立审批及原任务结算 |
 | 技术 | [59 营销设计矩阵](technical/59-creative-production-matrices.md) | 独立单元、真实排版、重试、权限与派生删除 |
+| 技术 | [62 网站诊断与复查](technical/62-scoped-seo-audits.md) | 确认范围、逐 URL 原文、来源治理、不可变复查与原生客户端 |
 | 技术 | [61 营销账户同步](technical/61-marketing-connector-synchronization.md) | 授权账户/项目、持久分页、快照来源与后台撤销 |
 | 技术 | [60 基础视频工程](technical/60-template-video-production.md) | 独立脚本/分镜、字幕/音轨、真实成片、权限与删除 |
 | 技术 | [57 逐调用预算与平台费用](technical/57-per-request-budget-enforcement.md) | 原预算分配、实际输入计数、平台验证预算及结算事实 |
