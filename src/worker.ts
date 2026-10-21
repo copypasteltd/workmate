@@ -1,5 +1,8 @@
 import { expireAdminApprovals } from "./admin-approval-storage.js";
 import { advanceCreativeMatrices } from "./creative-matrices.js";
+import { advanceVideoProjects, createVideoProject, enqueueVideoRender } from "./video-projects.js";
+import { videoCreate } from "./video-project-model.js";
+import { videoRendererProfile } from "./video-render.js";
 import { dispatchFinancialNotifications } from "./financial-notifications.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import { cleanAuthReceipts } from "./auth-receipts.js";
@@ -79,6 +82,8 @@ export class Worker {
   private dispatching = false;
   private stopping = false;
   private matrixRun: Promise<unknown> | null = null;
+  private videoRun: Promise<unknown> | null = null;
+  private videoAbort = new AbortController();
   private active = new Map<string, AbortController>();
   private erasure: ErasureService;
   private retention: RetentionService;
@@ -160,6 +165,11 @@ export class Worker {
         this.matrixRun = advanceCreativeMatrices(this.db,this.storage)
           .catch(()=>console.error(JSON.stringify({component:"worker.creative_matrices",error_code:"MATRIX_MAINTENANCE_FAILED"})))
           .finally(()=>{this.matrixRun=null;});
+      }
+      if (!this.stopping && !this.videoRun) {
+        this.videoRun = advanceVideoProjects(this.db, this.storage, undefined, { signal: this.videoAbort.signal })
+          .catch(() => console.error(JSON.stringify({ component: "worker.video_projects", error_code: "VIDEO_MAINTENANCE_FAILED" })))
+          .finally(() => { this.videoRun = null; });
       }
       // A connector/workflow error must never starve cleanup or other due work.
       for (const [name, operation] of [
@@ -1134,6 +1144,19 @@ export class Worker {
             .strict(),
         ),
       });
+    if (role.tool_ids.includes("video.render") && !t.private_owner) {
+      tools.push({
+        name: "video_project_queue",
+        description: "Create a shared, versioned script/storyboard/subtitle video project and queue native composition. Use only fixed shared project PNG/WAV/MP3 versions and declared audio rights. Returns a queued render ID, not a finished file. Does not synthesize voice or generate video through another AI service.",
+        inputSchema: z.toJSONSchema(videoCreate),
+        run: txTool(async (tx, a) => {
+          const profile = await videoRendererProfile();
+          const p = await createVideoProject(tx, this.db, actor, t.tenant_id, t.project_id, a, profile);
+          const render = await enqueueVideoRender(tx, this.db, actor, t.tenant_id, t.project_id, p.id, p.version);
+          return { project: p, render, delivery_state: "queued", requires_render_completion: true };
+        }, videoCreate),
+      });
+    }
     const allowedFormats = designFormatsForTools(role.tool_ids);
     if (allowedFormats.length) {
       const renderInput = z
@@ -1286,6 +1309,7 @@ export class Worker {
             code_write: role.tool_ids.includes("code.patch"),
             code_package: role.tool_ids.includes("delivery.package"),
             design_render: allowedFormats.length > 0,
+            video_project_queue: role.tool_ids.includes("video.render") && !t.private_owner,
             font_catalog: role.tool_ids.includes("font.inspect"),
             image2_edit: role.tool_ids.includes("image.edit.internal"),
           }) as Record<string, boolean>
@@ -1564,6 +1588,8 @@ export class Worker {
     if (this.timer) clearInterval(this.timer);
     for (const c of this.active.values()) c.abort();
     await this.boss.stop({ graceful: true, timeout: 20000 });
+    this.videoAbort.abort();
+    await this.videoRun;
     await this.matrixRun;
   }
 }

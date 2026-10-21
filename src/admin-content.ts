@@ -12,6 +12,7 @@ import { eraseSchedule } from "./schedules.js";
 import { cancelWorkflowRun } from "./workflow-control.js";
 import { eraseWorkspaceNode } from "./cloud-files.js";
 import { matrixContentBody } from "./creative-matrices.js";
+import { videoContentBody } from "./video-projects.js";
 const tables = [
   "assets",
   "tasks",
@@ -149,6 +150,8 @@ export function registerAdminContent(
           const body =
             table === "creative_projects" && r.kind === "creative_matrix"
               ? await matrixContentBody(tx, r)
+              : table === "creative_projects" && r.kind === "video"
+              ? await videoContentBody(tx, r)
               : table === "workflow_schedules"
               ? (
                   await tx.query(

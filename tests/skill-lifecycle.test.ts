@@ -174,7 +174,7 @@ after(async () => {
 
 test("preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member", async () => {
   const f = await fixture();
-  assert.equal(f.versions.length, 28);
+  assert.equal(f.versions.length, 29);
   assert.equal(f.installed.length, 5);
   const effective = await ok(
     f.owner,

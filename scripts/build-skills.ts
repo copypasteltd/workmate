@@ -5,6 +5,13 @@ const catalog = JSON.parse(
   await readFile("catalog/role-preset-catalog.json", "utf8"),
 );
 const methods: Record<string, string[]> = {
+  "template-video-composition": [
+    "Use video_project_queue with its declared copypaste-video-1 schema for a supplied-media campaign video. Keep script, contiguous storyboard, captions, integer frames and brand input independent.",
+    "Reference only available fixed shared project PNG/WAV/MP3 versions. Record the supplied audio's ownership/license, role, in point and gain; narration text alone is not synthesized speech.",
+    "Queue only in an authorized shared execute task with video.render. Reuse the operation key for the same input; changed input requires a new explicit operation. Ask/plan and private conversations have no shared writer.",
+    "Return the actual project/render IDs and queued state so the customer can follow the video workspace. A queued receipt is not an MP4. Claim completed delivery only when real validated files exist.",
+    "Failures remain visible; retries and revisions are explicit. Composition has zero AI charges, excluding upstream assets. Exported project references need the original versions and recorded native renderer; no embedded-source or generated-voice claim.",
+  ],
   "delivery-core": [
     "Inventory each requested deliverable and editable source.",
     "Write a manifest with filename, version, MIME, digest and acceptance checks.",

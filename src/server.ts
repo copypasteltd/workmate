@@ -41,6 +41,7 @@ import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
 import { registerCreativeMatrices } from "./creative-matrices.js";
+import { registerVideoProjects } from "./video-projects.js";
 import { registerPersistentWork } from "./persistent-work.js";
 import { registerAgentAdoption } from "./agent-adoption.js";
 import { registerAdminIdentities } from "./admin-identities.js";
@@ -361,6 +362,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTaskDependencies(app, db);
   registerBusiness(app, db, storage, catalog);
   registerCreativeMatrices(app, db, storage);
+  registerVideoProjects(app, db, storage);
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminPlans(app, db, catalog);

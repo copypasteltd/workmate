@@ -275,6 +275,15 @@ export class ErasureService {
       case "brand_profiles":
       case "creative_projects":
         if (j.target_type === "creative_projects") {
+          const videoOutputs = (await tx.query("SELECT unnest(ARRAY[mp4_asset_id,project_asset_id,script_asset_id,storyboard_asset_id,subtitles_asset_id,probe_asset_id]) AS id FROM video_renders WHERE video_id=$1", [id])).rows.map((a) => a.id).filter(Boolean);
+          if (videoOutputs.length) {
+            await tx.query("UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=ANY($1::uuid[]) AND state<>'deleted'", [videoOutputs]);
+            await tx.query("INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM deletion_jobs d WHERE d.target_type='assets' AND d.target_id=ANY($1::uuid[]) ON CONFLICT DO NOTHING", [videoOutputs,j.id]);
+          }
+          await tx.query("SELECT set_config('app.erasing_content','true',true)");
+          await tx.query("UPDATE video_project_versions SET definition='{}' WHERE video_id=$1 AND definition<>'{}'", [id]);
+          await tx.query("UPDATE video_renders SET probe='{}' WHERE video_id=$1 AND probe<>'{}'", [id]);
+          await tx.query("SELECT set_config('app.erasing_content','false',true)");
           const units = (await tx.query("SELECT id FROM creative_matrix_units WHERE batch_id=$1", [id])).rows.map((u) => u.id);
           if (units.length) {
             await eraseReplayContent(tx, units);
