@@ -3,6 +3,13 @@ import { z } from "zod";
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import {
+  isProviderAdminOperation,
+  providerOperationAuthority,
+  providerOperationReadPermission,
+  decideProviderAdminOperation,
+} from "./provider-admin.js";
+import { providerApprovalVisibility } from "./provider-admin-access.js";
+import {
   isCapabilityOperation,
   capabilityOperationAuthority,
   decideCapabilityOperation,
@@ -76,7 +83,9 @@ const businessPermission = (op: any) =>
           : op.action);
 
 async function authority(tx: Tx, p: Principal, op: any, permission: string) {
-  if (isVipCreditOperation(op))
+  if (isProviderAdminOperation(op))
+    await providerOperationAuthority(tx, p, op, permission);
+  else if (isVipCreditOperation(op))
     await vipCreditOperationAuthority(tx, p, op, permission);
   else if (isCapabilityOperation(op))
     await capabilityOperationAuthority(tx, p, op, permission);
@@ -94,6 +103,9 @@ async function authority(tx: Tx, p: Principal, op: any, permission: string) {
   await requireSensitiveAdmin(tx, p);
 }
 function visibility(s: ReadScope, db: Database) {
+  return `(CASE WHEN o.payload->>'provider_admin_command_version'='1' THEN ${providerApprovalVisibility(s, db)} ELSE ${legacyVisibility(s, db)} END)`;
+}
+function legacyVisibility(s: ReadScope, db: Database) {
   const permission = "admin.approvals.read";
   const globalPlan =
     s.global(permission) &&
@@ -230,18 +242,20 @@ export function registerAdminApprovals(
           uuid.parse((req.params as any).approval),
         );
         await authority(tx, req.principal, op, "admin.approvals.read");
-        const read = isCapabilityOperation(op)
-          ? "admin.catalog.read"
-          : isPlanOperation(op)
-            ? "admin.plans.read"
-            : isFeeOperation(op) || op.action.startsWith("billing.")
-              ? "admin.billing.read"
-              : op.action.startsWith("entitlements.")
-                ? "admin.entitlements.read"
-                : op.action.startsWith("users.") ||
-                    op.action === "tenants.members.write"
-                  ? "admin.users.read"
-                  : "admin.tenants.read";
+        const read = isProviderAdminOperation(op)
+          ? providerOperationReadPermission(op)
+          : isCapabilityOperation(op)
+            ? "admin.catalog.read"
+            : isPlanOperation(op)
+              ? "admin.plans.read"
+              : isFeeOperation(op) || op.action.startsWith("billing.")
+                ? "admin.billing.read"
+                : op.action.startsWith("entitlements.")
+                  ? "admin.entitlements.read"
+                  : op.action.startsWith("users.") ||
+                      op.action === "tenants.members.write"
+                    ? "admin.users.read"
+                    : "admin.tenants.read";
         await authority(tx, req.principal, op, read);
         await audit(tx, req.principal, "admin.approvals.read", r.id);
         return {
@@ -319,7 +333,15 @@ export function registerAdminApprovals(
                   "OPERATION_EXPIRED",
                   "Approval expired; create a fresh preview",
                 );
-              if (isVipCreditOperation(op))
+              if (isProviderAdminOperation(op))
+                await decideProviderAdminOperation(
+                  tx,
+                  db,
+                  req.principal,
+                  op,
+                  b,
+                );
+              else if (isVipCreditOperation(op))
                 await decideVipCreditOperation(tx, db, req.principal, op, b);
               else if (isCapabilityOperation(op))
                 await decideCapabilityOperation(

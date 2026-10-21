@@ -11,6 +11,10 @@ import {
 import { planDefinition } from "./plans.js";
 import { isPlanOperation, planOperationAuthority } from "./admin-plans.js";
 import {
+  isProviderAdminOperation,
+  providerOperationAuthority,
+} from "./provider-admin.js";
+import {
   isCapabilityOperation,
   capabilityOperationAuthority,
 } from "./capability-releases.js";
@@ -131,11 +135,25 @@ function permission(b: Command) {
 async function target(tx: Tx, b: Command) {
   let tenant = "tenant_id" in b ? b.tenant_id : undefined;
   let version: string;
-  if (b.action === "billing.reconcile")
+  if (b.action === "billing.reconcile") {
     await tx.query(
       "SELECT id FROM tasks WHERE id=$1 AND tenant_id=$2 FOR UPDATE",
       [b.task_id, b.tenant_id],
     );
+    if (
+      (
+        await tx.query(
+          "SELECT 1 FROM ai_gateway_requests WHERE task_id=$1 UNION ALL SELECT 1 FROM ai_input_count_requests WHERE task_id=$1 LIMIT 1",
+          [b.task_id],
+        )
+      ).rowCount
+    )
+      throw new Problem(
+        409,
+        "PROVIDER_RECONCILIATION_REQUIRED",
+        "Use evidence-based provider task settlement for a task with per-request records",
+      );
+  }
   if ("entitlement_id" in b) {
     const e = (
       await tx.query("SELECT * FROM entitlements WHERE id=$1 FOR UPDATE", [
@@ -278,6 +296,19 @@ async function execute(tx: Tx, b: Command, p: Principal, id: string) {
     });
   }
   if (b.action === "billing.reconcile") {
+    if (
+      (
+        await tx.query(
+          "SELECT 1 FROM ai_gateway_requests WHERE task_id=$1 UNION ALL SELECT 1 FROM ai_input_count_requests WHERE task_id=$1 LIMIT 1",
+          [b.task_id],
+        )
+      ).rowCount
+    )
+      throw new Problem(
+        409,
+        "PROVIDER_RECONCILIATION_REQUIRED",
+        "Use evidence-based provider task settlement for a task with per-request records",
+      );
     const t = (
       await tx.query(
         "SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2 AND status='reconciling' FOR UPDATE",
@@ -466,7 +497,14 @@ export function registerAdminOperations(app: FastifyInstance, db: Database) {
               "admin.billing.read",
             );
           }
-          if (isSupportOperation(op)) {
+          if (isProviderAdminOperation(op)) {
+            await providerOperationAuthority(
+              tx,
+              req.principal,
+              op,
+              "admin.jobs.read",
+            );
+          } else if (isSupportOperation(op)) {
             await supportOperationAuthority(
               tx,
               req.principal,

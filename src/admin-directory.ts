@@ -266,6 +266,8 @@ const cursorShape = z
       "billing_refunds",
       "commercial_plans",
       "capability_releases",
+      "provider_requests",
+      "provider_policies",
       "vip_grants",
       "approvals",
     ]),

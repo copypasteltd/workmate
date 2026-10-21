@@ -1,5 +1,36 @@
 # CopyPaste Platform
 
+## 调用管理后台（阶段 58）
+
+Admin 的“调用管理”提供策略草稿与独立发布、逐请求筛选和费用字段授权、不可变人工证据及下载、费用确认、容量释放和原任务结算。费用、容量及客户扣费分别执行，保留原始未知观测；实际费率从任务冻结版本推导，不接受客户端填写结算额。平台输入计数费用不转入客户钱包。现有任意金额核账不能绕过逐请求记录。
+
+专项 **158/158** 包含于完整 **588/588**，保留阶段 57 全部 559 个命名测试；753 份平台来源与实际类型检查、构建一致。实际构建版 Admin 浏览器通过 **10 项流程、29 份严格响应样本**，覆盖真实邮箱/TOTP 登录、另一管理员审批、独立费用/容量、一次结算、权限隐藏、中英文、深色和窄屏。模拟 AI 来源明确标识；所有自建浏览器及服务均已关闭。
+
+两套现有原生数据库完成 067→068，各保留 144 张原公共表完整行摘要、SQL001–067 与历史校验值。七张新表强制 RLS，不自动新增既有管理员权限、政策发布、证据或费用。完整原始 102 项、TC/NFR/G01–G10、真实模型资格和发行验收继续跟踪；以下旧章节保留各自历史范围。
+
+```mermaid
+flowchart LR
+  Original[Original unknown observation] --> Scope[Scoped request directory]
+  Scope --> Evidence[Immutable human source record]
+  Evidence --> Preview[Current facts / no business effect]
+  Preview --> Review[Independent Admin / reauthorize]
+  Review --> Cost[Append confirmed cost]
+  Review --> Capacity[Separate termination confirmation]
+  Cost --> Task[Original task / aggregate once]
+  Task --> Ledger[One debit / failed business result]
+```
+
+### 既有管理员显式启用
+
+在 Platform 仓库使用受控运维身份，先预览指定的已启用且完成 MFA 的全局超级管理员：
+
+```powershell
+node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "指定调用管理负责人"
+node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "指定调用管理负责人" --apply --expected-hash PREVIEW_SHA256
+```
+
+第二条必须使用第一次的完整摘要及相同原因；目标权限或数据库变化时重新预览。启用会撤销旧会话，管理员须重新完成邮箱/TOTP 登录。至少分别启用两位管理员才能执行独立审批；该命令不会自行选择或扩大既有角色。不要将 `.env` 或摘要前后的身份配置提交到仓库。
+
 ## 逐调用预算（阶段 57）
 
 文本生成先通过公司内部 `/v1/responses/input_tokens` 计数完整实际上下文，以冻结费率和明确输出上限原子分配预算；图片与文本共用任务原预留。计数费用须明确验证及定价，由平台承担，缺少计数或价格时禁止猜测后继续生成。每个证明绑定原操作、摘要、主体和能力，只能使用一次。Admin 能力验证具有单次与每日平台预算，不使用客户钱包。

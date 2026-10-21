@@ -1,6 +1,7 @@
 import { registerAdminApprovals } from "./admin-approvals.js";
 import { seedCommercialPlans } from "./commercial-plans.js";
 import { registerAdminPlans } from "./admin-plans.js";
+import { registerProviderAdmin } from "./provider-admin.js";
 import { registerCapabilityReleases } from "./capability-releases.js";
 import { registerAdminVip } from "./admin-vip.js";
 import { registerAdminVipCredit } from "./admin-vip-credit.js";
@@ -361,6 +362,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminPlans(app, db, catalog);
+  registerProviderAdmin(app, db);
   registerCapabilityReleases(app, db, catalog);
   registerAdminVip(app, db);
   registerAdminVipCredit(app, db);

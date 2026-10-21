@@ -1,5 +1,6 @@
 import pg from "pg";
 import type { Config } from "./config.js";
+import { hash } from "./lib.js";
 export type Tx = pg.PoolClient;
 export class Database {
   readonly app: pg.Pool;
@@ -35,6 +36,13 @@ export class Database {
       await c.query("SELECT set_config('app.actor_id',$1,true)", [actor ?? ""]);
       await c.query("SELECT set_config('app.data_mode',$1,true)", [
         this.config.DEMO_MODE ? "simulated" : "configured_services",
+      ]);
+      await c.query("SELECT set_config('app.ai_gateway_fingerprint',$1,true)", [
+        hash(
+          this.config.DEMO_MODE
+            ? "synthetic-local-gateway-v1"
+            : (this.config.AI_BASE_URL ?? ""),
+        ),
       ]);
       await c.query("SELECT set_config('app.task_id','',true)");
       await c.query("SELECT set_config('app.billing_actor_id','',true)");

@@ -9,6 +9,7 @@ import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
 import { registerAdminDirectory, readScope } from "./admin-directory.js";
 import { registerAdminJobs } from "./admin-jobs.js";
+import { providerApprovalVisibility } from "./provider-admin-access.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database } from "./db.js";
@@ -293,6 +294,14 @@ export function registerAdmin(
               const scope = await readScope(tx, req.principal, perm);
               const ordinary = scope.scope(perm, "r.tenant_id");
               filter = `(CASE WHEN r.vip_command THEN r.data_mode=${scope.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${scope.account(perm, "r")} AND ${scope.account("admin.entitlements.read", "r")} WHEN r.financial_command THEN EXISTS(SELECT 1 FROM wallets w WHERE w.id::text=r.billing_account_id AND w.data_mode=${scope.arg(db.config.DEMO_MODE ? "simulated" : "configured_services")} AND ${scope.account(perm)} AND ${scope.account("admin.billing.read")}) ELSE ${ordinary} END)`;
+              if (section === "jobs") {
+                const providerFilter = providerApprovalVisibility(
+                  scope,
+                  db,
+                  perm,
+                );
+                filter = `(CASE WHEN EXISTS(SELECT 1 FROM admin_operations o WHERE o.id=r.id AND o.payload->>'provider_admin_command_version'='1') THEN EXISTS(SELECT 1 FROM admin_operations o WHERE o.id=r.id AND ${providerFilter}) ELSE ${filter} END)`;
+              }
               args = scope.values;
             } else if (
               ["catalog", "plans", "policy", "access"].includes(section)

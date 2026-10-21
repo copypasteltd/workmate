@@ -21,6 +21,15 @@ export async function seedProviderBudgetPolicy(db: Database) {
       await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
         "ai-gateway:" + mode,
       ]);
+      if (
+        (
+          await tx.query(
+            "SELECT 1 FROM ai_provider_admin_heads WHERE data_mode=$1",
+            [mode],
+          )
+        ).rowCount
+      )
+        return; // An independently published policy owns the head after installation.
       await tx.query(
         `INSERT INTO ai_provider_budget_policies(data_mode,fingerprint,count_verified,count_price_micros,
       verification_run_micros,verification_daily_micros,counting_daily_micros,reason)
@@ -67,11 +76,10 @@ export async function validationProviderBudgetReceipt(
         await tx.query(
           `SELECT count(*)::integer AS requests,
       count(*) FILTER(WHERE dispatched_at IS NOT NULL)::integer AS dispatched,
-      coalesce(sum(charge_numerator) FILTER(WHERE state='completed'),0)::text AS numerator,
-      coalesce(bool_or(state IN ('unknown','dispatched')),false) AS uncertain,
+      coalesce(sum(effective_numerator) FILTER(WHERE cost_state<>'unknown'),0)::text AS numerator,
+      coalesce(bool_or(state='dispatched' OR (state='unknown' AND cost_state='unknown')),false) AS uncertain,
       EXISTS(SELECT 1 FROM ai_request_budget_violations x JOIN ai_gateway_requests g ON g.id=x.provider_request_id WHERE g.validation_id=$1) AS violation
-      FROM (SELECT state,dispatched_at,charge_numerator FROM ai_gateway_requests WHERE validation_id=$1
-        UNION ALL SELECT state,dispatched_at,charge_numerator FROM ai_input_count_requests WHERE validation_id=$1) q`,
+      FROM current_ai_provider_requests WHERE validation_id=$1`,
           [validationId],
         )
       ).rows[0];

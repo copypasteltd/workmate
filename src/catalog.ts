@@ -73,6 +73,28 @@ export class Catalog {
     this.admin = JSON.parse(
       await readFile("catalog/admin-permission-catalog.json", "utf8"),
     );
+    const providerAdmin = JSON.parse(
+      await readFile("catalog/provider-admin-permissions.json", "utf8"),
+    );
+    const registered = new Set(this.admin.permissions.map((p: any) => p.key));
+    if (providerAdmin.permissions.some((p: any) => registered.has(p.key)))
+      throw new Problem(
+        503,
+        "PERMISSION_CATALOG_CONFLICT",
+        "Duplicate provider permission",
+      );
+    this.admin.permissions.push(...providerAdmin.permissions);
+    const superRole = this.admin.roles.find((r: any) => r.id === "super_admin");
+    if (!superRole)
+      throw new Problem(
+        503,
+        "PERMISSION_CATALOG_INVALID",
+        "Missing initial administrator role",
+      );
+    // seedRoles uses ON CONFLICT DO NOTHING: existing installed roles are not expanded.
+    superRole.permissions.push(
+      ...providerAdmin.super_permissions_for_new_installations,
+    );
     for (const p of this.skills) await this.verifySkill(p);
   }
   async verifySkill(p: SkillPackage) {
