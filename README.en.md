@@ -1,5 +1,40 @@
 # CopyPaste Admin Dashboard
 
+<!-- stage63-source-governed-website-changes:start -->
+This repository is the Admin dashboard. Existing workspace/project scope, users, usage, billing and VIP controls remain applicable. Website sources and new drafts use separate metadata/body/action permissions; source quarantine fences dependent artifacts.
+
+## Source-governed website change tasks (stage 63)
+
+Open Marketing insights → Website audits & rechecks. Select 1–20 findings, confirm the frozen original evidence, change objective and separate AI budget, then save a private task. Pause/resume unclaimed work, cancel, inspect original evidence and download JSON/HTML drafts. Explicitly request a same-scope recheck after separately implementing and authorizing website changes. Drafts require human review; unchanged fixture pages correctly retain persistent findings.
+
+**Codex is the only kernel**, with every AI request sent through the company's internal OpenAI-compatible gateway. Business and AI data remain **synthetic as authorized**. Authentication, authorization, native HTTP fixtures, Codex processes, metering receipts and saved files actually run. Drafts must cover every selected, actually read finding; fabricated, unread, missing or duplicated references cannot publish artifacts. Original sources, cache ancestors, quarantine, retention, revocation and erasure govern private drafts and explicitly published copies. Admin metadata, private-body access and content actions retain separate permissions.
+
+**Desktop remains frameless**, with custom dragging and window controls, no Electron application or Alt menu. Downloads use the current tenant's restricted authenticated bridge and native save dialog. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to browser preferences; its fixed company link opens the website workspace.
+
+Validation: **734/734 Platform tests**, retaining all **716** prior named tests; **18 actual Web/Admin and 23 newly packaged native checks**, plus 13 checks across six repositories. Native SQL079→080 preserves every row digest in **167** prior public tables and SQL001–079 in both databases. The new table is empty with FORCE RLS. Desktop previews: `release/seo-changes-63-02/`; extension: `release/seo-changes-63-02/CopyPaste-0.5.0-sidepanel.zip`.
+
+The current unpacked Desktop and real Chrome Side Panel were exercised. Setup/Portable remain unsigned; installation, store publication, live websites/models and full product acceptance remain open. All original 102 requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 not proven complete and zero fully accepted. Earlier sections, screenshots and receipts retain their historical source/package scope.
+
+```mermaid
+flowchart LR
+  Login[Current identity and project] --> Select[Select frozen original findings]
+  Select --> Confirm[Confirm objective and separate AI budget]
+  Confirm --> Task[Private normal task / frozen skills and capabilities]
+  Task --> Facts[Codex / paginated selected facts / internal gateway]
+  Facts --> Draft[Read-bound JSON / escaped HTML / human review]
+  Draft --> Save[Web download / authenticated native save]
+  Draft --> Review[Separate manual implementation and authorization]
+  Review --> Recheck[Explicit same-scope recheck / persistent or observed repairs]
+  Admin[Scoped Admin / separate metadata and body permissions] --> Source[Quarantine / retention / revocation / erasure]
+  Source --> Task
+  Source --> Draft
+  Frame[Frameless Desktop] --> Confirm
+  Panel[Toolbar / Chrome native Side Panel] --> Select
+```
+
+![Actual product capture](assets/screenshots/seo-change-06-change-draft-body-en.png)
+<!-- stage63-source-governed-website-changes:end -->
+
 This repository is the operator dashboard. Review website sources in the tenant/project-scoped content directory. Accounts, usage, fees and VIP retain their own permissions and approvals. Customers initiate the audit workflow below; operators govern its sources through separate metadata, body and content-operation permissions.
 
 ## Scoped website audits and rechecks (stage 62)
