@@ -1,0 +1,126 @@
+2026-10-22 05:13:55.388 CST [23980] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 05:13:55.395 CST [23980] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 05:13:55.395 CST [23980] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 05:13:55.781 CST [12000] LOG:  database system was shut down at 2026-10-22 05:10:57 CST
+
+2026-10-22 05:13:55.917 CST [23980] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 05:14:01.484 CST [32448] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 05:14:02.221 CST [32448] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.466 s, total=0.737 s; sync files=10, longest=0.085 s, average=0.047 s; distance=15159 kB, estimate=15159 kB; lsn=A/70C6F5C0, redo lsn=A/70C6F568
+
+2026-10-22 05:14:06.859 CST [32448] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 05:14:07.703 CST [32448] LOG:  checkpoint complete: wrote 32 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.541 s, total=0.844 s; sync files=11, longest=0.103 s, average=0.050 s; distance=15249 kB, estimate=15249 kB; lsn=A/71B53BE8, redo lsn=A/71B53B90
+
+2026-10-22 05:14:12.695 CST [5732] ERROR:  Review decisions are immutable
+2026-10-22 05:14:12.695 CST [5732] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-22 05:14:12.695 CST [5732] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-22 05:14:12.697 CST [5732] ERROR:  Frozen approval is immutable
+2026-10-22 05:14:12.697 CST [5732] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-22 05:14:12.697 CST [5732] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-22 05:14:12.813 CST [32448] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 05:14:14.311 CST [32448] LOG:  checkpoint complete: wrote 49 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=1.182 s, total=1.498 s; sync files=10, longest=0.287 s, average=0.119 s; distance=15557 kB, estimate=15557 kB; lsn=A/72A851C0, redo lsn=A/72A85168
+
+2026-10-22 05:14:33.309 CST [32332] ERROR:  SEO task binding cannot be removed
+2026-10-22 05:14:33.309 CST [32332] CONTEXT:  PL/pgSQL function guard_seo_binding() line 40 at RAISE
+2026-10-22 05:14:33.309 CST [32332] STATEMENT:  UPDATE tasks SET input_context='{}' WHERE id=$1
+
+2026-10-22 05:15:14.079 CST [36972] ERROR:  permission denied for table seo_documents
+2026-10-22 05:15:14.079 CST [36972] STATEMENT:  UPDATE seo_documents SET url_sha256=$2 WHERE run_id=$1
+
+2026-10-22 05:15:14.237 CST [33852] ERROR:  SEO identity or finished history cannot be rewritten
+2026-10-22 05:15:14.237 CST [33852] CONTEXT:  PL/pgSQL function guard_seo_history() line 16 at RAISE
+2026-10-22 05:15:14.237 CST [33852] STATEMENT:  UPDATE seo_runs SET checkpoint='{}',revision=revision+1 WHERE id=$1
+
+2026-10-22 05:16:25.879 CST [16996] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-22 05:16:25.879 CST [16996] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-22 05:16:25.879 CST [16996] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+2026-10-22 05:16:26.032 CST [32448] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 05:16:27.706 CST [32448] LOG:  checkpoint complete: wrote 32 buffers (0.2%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.799 s, total=1.674 s; sync files=12, longest=0.190 s, average=0.067 s; distance=18346 kB, estimate=18346 kB; lsn=A/73C6FA78, redo lsn=A/73C6FA20
+
+2026-10-22 05:17:01.098 CST [34448] ERROR:  Website change history is immutable
+2026-10-22 05:17:01.098 CST [34448] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 19 at RAISE
+2026-10-22 05:17:01.098 CST [34448] STATEMENT:  UPDATE seo_change_tasks SET spec='{}' WHERE id=$1
+
+2026-10-22 05:17:01.176 CST [39236] ERROR:  Website change history is immutable
+2026-10-22 05:17:01.176 CST [39236] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 19 at RAISE
+2026-10-22 05:17:01.176 CST [39236] STATEMENT:  UPDATE seo_change_tasks SET html_asset_version_id=NULL,json_asset_version_id=NULL WHERE id=$1
+
+2026-10-22 05:17:01.241 CST [36276] ERROR:  Saved website change task binding is immutable
+2026-10-22 05:17:01.241 CST [36276] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 9 at RAISE
+2026-10-22 05:17:01.241 CST [36276] STATEMENT:  UPDATE tasks SET prompt='Detach the evidence' WHERE id=$1
+
+2026-10-22 05:18:59.123 CST [39232] ERROR:  deadlock detected
+2026-10-22 05:18:59.123 CST [39232] DETAIL:  Process 39232 waits for ShareLock on transaction 914462; blocked by process 34908.
+	Process 34908 waits for ShareLock on transaction 914460; blocked by process 39232.
+	Process 39232: INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+	Process 34908: UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1 AND fencing_token=$2
+2026-10-22 05:18:59.123 CST [39232] HINT:  See server log for query details.
+2026-10-22 05:18:59.123 CST [39232] CONTEXT:  while locking tuple (8,6) in relation "tasks"
+	SQL statement "UPDATE tasks SET last_event_seq=last_event_seq+1 WHERE id=NEW.task_id AND tenant_id=NEW.tenant_id
+	 RETURNING last_event_seq,coalesce(fencing_token,initial_attempt_id)"
+	PL/pgSQL function assign_task_event_sequence() line 3 at SQL statement
+2026-10-22 05:18:59.123 CST [39232] STATEMENT:  INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+
+2026-10-22 05:19:28.405 CST [31688] ERROR:  deadlock detected
+2026-10-22 05:19:28.405 CST [31688] DETAIL:  Process 31688 waits for ShareLock on transaction 914753; blocked by process 34908.
+	Process 34908 waits for ShareLock on transaction 914749; blocked by process 31688.
+	Process 31688: UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1 AND fencing_token=$2
+	Process 34908: INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+2026-10-22 05:19:28.405 CST [31688] HINT:  See server log for query details.
+2026-10-22 05:19:28.405 CST [31688] CONTEXT:  while locking tuple (8,6) in relation "tasks"
+2026-10-22 05:19:28.405 CST [31688] STATEMENT:  UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1 AND fencing_token=$2
+
+2026-10-22 05:19:29.574 CST [34908] ERROR:  deadlock detected
+2026-10-22 05:19:29.574 CST [34908] DETAIL:  Process 34908 waits for ShareLock on transaction 914759; blocked by process 31688.
+	Process 31688 waits for ShareLock on transaction 914757; blocked by process 34908.
+	Process 34908: INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+	Process 31688: INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+2026-10-22 05:19:29.574 CST [34908] HINT:  See server log for query details.
+2026-10-22 05:19:29.574 CST [34908] CONTEXT:  while locking tuple (8,8) in relation "tasks"
+	SQL statement "UPDATE tasks SET last_event_seq=last_event_seq+1 WHERE id=NEW.task_id AND tenant_id=NEW.tenant_id
+	 RETURNING last_event_seq,coalesce(fencing_token,initial_attempt_id)"
+	PL/pgSQL function assign_task_event_sequence() line 3 at SQL statement
+2026-10-22 05:19:29.574 CST [34908] STATEMENT:  INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+
+2026-10-22 05:19:31.036 CST [31688] ERROR:  deadlock detected
+2026-10-22 05:19:31.036 CST [31688] DETAIL:  Process 31688 waits for ShareLock on transaction 914769; blocked by process 34908.
+	Process 34908 waits for ShareLock on transaction 914766; blocked by process 31688.
+	Process 31688: INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+	Process 34908: UPDATE tasks SET lease_until=now()+interval '45 seconds' WHERE id=$1 AND fencing_token=$2
+2026-10-22 05:19:31.036 CST [31688] HINT:  See server log for query details.
+2026-10-22 05:19:31.036 CST [31688] CONTEXT:  while locking tuple (9,3) in relation "tasks"
+	SQL statement "UPDATE tasks SET last_event_seq=last_event_seq+1 WHERE id=NEW.task_id AND tenant_id=NEW.tenant_id
+	 RETURNING last_event_seq,coalesce(fencing_token,initial_attempt_id)"
+	PL/pgSQL function assign_task_event_sequence() line 3 at SQL statement
+2026-10-22 05:19:31.036 CST [31688] STATEMENT:  INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,$3,$4) RETURNING id
+
+2026-10-22 05:19:31.592 CST [32448] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 05:19:33.326 CST [32448] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 6 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.025 s, sync=1.127 s, total=1.735 s; sync files=12, longest=0.290 s, average=0.094 s; distance=19312 kB, estimate=19312 kB; lsn=A/74F4BD48, redo lsn=A/74F4BCF0
+
+2026-10-22 05:19:34.833 CST [23980] LOG:  received fast shutdown request
+
+2026-10-22 05:19:35.381 CST [23980] LOG:  aborting any active transactions
+
+2026-10-22 05:19:35.388 CST [23980] LOG:  background worker "logical replication launcher" (PID 14696) exited with exit code 1
+
+2026-10-22 05:19:35.408 CST [32448] LOG:  shutting down
+
+2026-10-22 05:19:35.927 CST [32448] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 05:19:37.075 CST [32448] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.307 s, total=1.668 s; sync files=2, longest=0.219 s, average=0.154 s; distance=1 kB, estimate=17381 kB; lsn=A/74F4C4C8, redo lsn=A/74F4C4C8
+
+2026-10-22 05:19:37.526 CST [23980] LOG:  database system is shut down
+

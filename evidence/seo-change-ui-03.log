@@ -1,0 +1,161 @@
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1976 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.56 kB │ gzip:   0.33 kB
+dist/assets/index-CbPRFgHS.css   74.01 kB │ gzip:  14.64 kB
+dist/assets/index-Bl4x--rT.js   654.65 kB │ gzip: 206.13 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 597ms
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1957 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.55 kB │ gzip:   0.34 kB
+dist/assets/index-DJAK5Qff.css   59.72 kB │ gzip:  12.27 kB
+dist/assets/index-M21DSpHS.js   560.63 kB │ gzip: 165.82 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 561ms
+2026-10-22 05:43:13.919 CST [32680] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 05:43:13.925 CST [32680] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 05:43:13.925 CST [32680] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 05:43:14.137 CST [4332] LOG:  database system was shut down at 2026-10-22 05:41:17 CST
+
+2026-10-22 05:43:14.268 CST [32680] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+  ➜  Local:   http://127.0.0.1:4317/
+  ➜  Local:   http://127.0.0.1:4318/
+isolated integration suite: applied migration 1
+isolated integration suite: applied migration 2
+isolated integration suite: applied migration 3
+isolated integration suite: applied migration 4
+isolated integration suite: applied migration 5
+isolated integration suite: applied migration 6
+isolated integration suite: applied migration 7
+isolated integration suite: applied migration 8
+isolated integration suite: applied migration 9
+isolated integration suite: applied migration 10
+isolated integration suite: applied migration 11
+isolated integration suite: applied migration 12
+isolated integration suite: applied migration 13
+isolated integration suite: applied migration 14
+isolated integration suite: applied migration 15
+isolated integration suite: applied migration 16
+isolated integration suite: applied migration 17
+isolated integration suite: applied migration 18
+isolated integration suite: applied migration 19
+isolated integration suite: applied migration 20
+isolated integration suite: applied migration 21
+isolated integration suite: applied migration 22
+isolated integration suite: applied migration 23
+isolated integration suite: applied migration 24
+isolated integration suite: applied migration 25
+isolated integration suite: applied migration 26
+isolated integration suite: applied migration 27
+isolated integration suite: applied migration 28
+isolated integration suite: applied migration 29
+isolated integration suite: applied migration 30
+isolated integration suite: applied migration 31
+isolated integration suite: applied migration 32
+isolated integration suite: applied migration 33
+isolated integration suite: applied migration 34
+isolated integration suite: applied migration 35
+isolated integration suite: applied migration 36
+isolated integration suite: applied migration 37
+isolated integration suite: applied migration 38
+isolated integration suite: applied migration 39
+isolated integration suite: applied migration 40
+isolated integration suite: applied migration 41
+isolated integration suite: applied migration 42
+isolated integration suite: applied migration 43
+isolated integration suite: applied migration 44
+isolated integration suite: applied migration 45
+isolated integration suite: applied migration 46
+isolated integration suite: applied migration 47
+isolated integration suite: applied migration 48
+isolated integration suite: applied migration 49
+isolated integration suite: applied migration 50
+isolated integration suite: applied migration 51
+isolated integration suite: applied migration 52
+isolated integration suite: applied migration 53
+isolated integration suite: applied migration 54
+isolated integration suite: applied migration 55
+isolated integration suite: applied migration 56
+isolated integration suite: applied migration 57
+isolated integration suite: applied migration 58
+isolated integration suite: applied migration 59
+isolated integration suite: applied migration 60
+isolated integration suite: applied migration 61
+isolated integration suite: applied migration 62
+isolated integration suite: applied migration 63
+isolated integration suite: applied migration 64
+isolated integration suite: applied migration 65
+isolated integration suite: applied migration 66
+isolated integration suite: applied migration 67
+isolated integration suite: applied migration 68
+isolated integration suite: applied migration 69
+isolated integration suite: applied migration 70
+isolated integration suite: applied migration 71
+isolated integration suite: applied migration 72
+isolated integration suite: applied migration 73
+isolated integration suite: applied migration 74
+isolated integration suite: applied migration 75
+isolated integration suite: applied migration 76
+isolated integration suite: applied migration 77
+isolated integration suite: applied migration 78
+isolated integration suite: applied migration 79
+isolated integration suite: applied migration 80
+PASS: actual customer email login, onboarding and current workspace selection
+PASS: explicit confirmation, out-of-scope seeds and insufficient funds stop before website traffic
+PASS: actual UI pause/resume uses current task versions and stops pre-model collection
+PASS: actual HTTP finds duplicate titles and a broken link, respects robots and downloads matching immutable UTF-16 source evidence
+PASS: browser evidence JSON attachment retains exact frozen URL findings and coverage
+2026-10-22 05:43:32.765 CST [29172] ERROR:  could not obtain lock on row in relation "tasks"
+2026-10-22 05:43:32.765 CST [29172] STATEMENT:  WITH RECURSIVE runs AS (
+	      SELECT id,previous_run_id FROM seo_runs WHERE id=$1
+	      UNION SELECT p.id,p.previous_run_id FROM seo_runs p JOIN runs c ON p.id=c.previous_run_id
+	    ), documents AS (
+	      SELECT id,run_id,cache_source_id FROM seo_documents WHERE run_id IN(SELECT id FROM runs)
+	      UNION SELECT p.id,p.run_id,p.cache_source_id FROM seo_documents p JOIN documents c ON p.id=c.cache_source_id
+	    ) SELECT t.id FROM tasks t WHERE t.id IN(
+	      SELECT task_id FROM seo_runs WHERE id IN(SELECT id FROM runs) OR id IN(SELECT run_id FROM documents)
+	    ) AND ($2::uuid IS NULL OR t.id<>$2) ORDER BY t.id FOR SHARE OF t NOWAIT
+
+PASS: actual locked Codex process reads scoped facts and publishes a validated report through the internal synthetic gateway
+PASS: task links open the existing task route and browser Back restores the saved audit
+2026-10-22 05:43:39.040 CST [38660] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 05:43:39.777 CST [38660] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.010 s, sync=0.504 s, total=0.738 s; sync files=12, longest=0.110 s, average=0.042 s; distance=15903 kB, estimate=15903 kB; lsn=A/7C1897B8, redo lsn=A/7C189760
+
+{"status":"failed","checks":7,"errors":["save selected original findings with a separate approved budget: SeoChange: [{\"instancePath\":\"\",\"schemaPath\":\"#/$defs/SeoChange/additionalProperties\",\"keyword\":\"additionalProperties\",\"params\":{\"additionalProperty\":\"project_id\"},\"message\":\"must NOT have additional properties\"}]","Final page: /app/analytics · EN\nlight\nDemo environment · simulated data\nAI responses, generated images and usage are simulated. Files and task records are actually saved.\nAdd one-time demo credit\nSkip to content\nCopyPaste\nH\nHarbour SEO team\nNew task\nN\n\nWORKSPACE\n\nWorkspace\nSpecialists\nYour specialists\nProject methods\nWork notifications\nYour conversations\nMemory & preferences\nProjects\nAssets & deliverables\nCloud files\nDesign canvas\nMarketing insights\nWorkflows\nConnections\nBrand library\nDevices & files\nMembers & access\nUsage & plan\nAccount settings\nS\nseo-ui-2136e929-b82a-4985-a5ef-2ebe0fc5a6be\nOwner\nHarbour SEO team\n/\nCampaign website\nCompany workspace\nBack to marketing insights\n\nCHECK THE PAGE. KEEP THE EVIDENCE.\n\nWebsite audits & rechecks\n\nConfirm the website scope. Keep URL findings and original evidence, then recheck after repairs.\n\nNew audit\nAudit history\nhttps://marketing.example.invalid/\n2026/10/22 05:43:25\nPartially completed\n\nCONFIRMED SCOPE\n\nConfirmed scope\nPartially completed\n\nDiagnose page, link and technical issues with URL evidence and recommendations.\n\nExact hosts\nmarketing.example.invalid\nPath prefixes\n/\nStart pages and specification\n\nSynthetic website: this audit reads fixture pages and does not fetch the real customer website.\n\n6 / 10\nPage requests\n0\nURLs remaining\n1\nrobots\nHK$0.0003\nConfirmed AI cost\nAnalysis task\nCompleted\nAI budget HK$1.0000\nView task\nCoverage and limitations\nPages, redi"],"browser_closed":true,"owned_api_closed":true}
+2026-10-22 05:43:40.547 CST [32680] LOG:  received fast shutdown request
+
+2026-10-22 05:43:40.606 CST [32680] LOG:  aborting any active transactions
+
+2026-10-22 05:43:40.614 CST [32680] LOG:  background worker "logical replication launcher" (PID 16792) exited with exit code 1
+
+2026-10-22 05:43:40.614 CST [38660] LOG:  shutting down
+
+2026-10-22 05:43:40.660 CST [38660] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 05:43:40.827 CST [38660] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.046 s, total=0.213 s; sync files=1, longest=0.046 s, average=0.046 s; distance=0 kB, estimate=14313 kB; lsn=A/7C1898D0, redo lsn=A/7C1898D0
+
+2026-10-22 05:43:40.924 CST [32680] LOG:  database system is shut down
+

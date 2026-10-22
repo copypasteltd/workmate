@@ -1,0 +1,175 @@
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1976 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.56 kB │ gzip:   0.34 kB
+dist/assets/index-CbPRFgHS.css   74.01 kB │ gzip:  14.64 kB
+dist/assets/index-BQmxVGJx.js   654.66 kB │ gzip: 206.14 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.23s
+2026-10-22 06:50:54.168 CST [27676] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 06:50:54.177 CST [27676] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 06:50:54.178 CST [27676] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 06:50:55.157 CST [37464] LOG:  database system was shut down at 2026-10-22 06:46:55 CST
+
+2026-10-22 06:50:55.275 CST [27676] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+  ➜  Local:   http://127.0.0.1:4317/
+isolated integration suite: applied migration 1
+isolated integration suite: applied migration 2
+isolated integration suite: applied migration 3
+isolated integration suite: applied migration 4
+isolated integration suite: applied migration 5
+isolated integration suite: applied migration 6
+isolated integration suite: applied migration 7
+isolated integration suite: applied migration 8
+isolated integration suite: applied migration 9
+isolated integration suite: applied migration 10
+isolated integration suite: applied migration 11
+isolated integration suite: applied migration 12
+isolated integration suite: applied migration 13
+isolated integration suite: applied migration 14
+isolated integration suite: applied migration 15
+isolated integration suite: applied migration 16
+isolated integration suite: applied migration 17
+isolated integration suite: applied migration 18
+isolated integration suite: applied migration 19
+isolated integration suite: applied migration 20
+isolated integration suite: applied migration 21
+isolated integration suite: applied migration 22
+isolated integration suite: applied migration 23
+isolated integration suite: applied migration 24
+isolated integration suite: applied migration 25
+isolated integration suite: applied migration 26
+isolated integration suite: applied migration 27
+isolated integration suite: applied migration 28
+isolated integration suite: applied migration 29
+isolated integration suite: applied migration 30
+isolated integration suite: applied migration 31
+isolated integration suite: applied migration 32
+isolated integration suite: applied migration 33
+isolated integration suite: applied migration 34
+isolated integration suite: applied migration 35
+isolated integration suite: applied migration 36
+isolated integration suite: applied migration 37
+isolated integration suite: applied migration 38
+isolated integration suite: applied migration 39
+isolated integration suite: applied migration 40
+isolated integration suite: applied migration 41
+isolated integration suite: applied migration 42
+isolated integration suite: applied migration 43
+isolated integration suite: applied migration 44
+isolated integration suite: applied migration 45
+isolated integration suite: applied migration 46
+isolated integration suite: applied migration 47
+isolated integration suite: applied migration 48
+isolated integration suite: applied migration 49
+isolated integration suite: applied migration 50
+isolated integration suite: applied migration 51
+isolated integration suite: applied migration 52
+isolated integration suite: applied migration 53
+isolated integration suite: applied migration 54
+isolated integration suite: applied migration 55
+isolated integration suite: applied migration 56
+isolated integration suite: applied migration 57
+isolated integration suite: applied migration 58
+isolated integration suite: applied migration 59
+isolated integration suite: applied migration 60
+isolated integration suite: applied migration 61
+isolated integration suite: applied migration 62
+isolated integration suite: applied migration 63
+isolated integration suite: applied migration 64
+isolated integration suite: applied migration 65
+isolated integration suite: applied migration 66
+isolated integration suite: applied migration 67
+isolated integration suite: applied migration 68
+isolated integration suite: applied migration 69
+isolated integration suite: applied migration 70
+isolated integration suite: applied migration 71
+isolated integration suite: applied migration 72
+isolated integration suite: applied migration 73
+isolated integration suite: applied migration 74
+isolated integration suite: applied migration 75
+isolated integration suite: applied migration 76
+isolated integration suite: applied migration 77
+isolated integration suite: applied migration 78
+isolated integration suite: applied migration 79
+isolated integration suite: applied migration 80
+PASS: new packaged Desktop has no native frame, application menu or Alt menu; custom title bar and sandbox isolation are intact
+PASS: custom maximize, restore and minimize controls change the actual native window state
+PASS: packaged Desktop signs in through the actual browser session, PKCE authorization and localhost callback
+PASS: actual packaged Desktop launches the fixed company authorization page, completes supplier consent in a browser and restores the native account directory without exposing a provider token
+PASS: packaged Desktop confirms discovered account/project scope, completes two durable pages and displays immutable source facts, unknown values and attribution limits below the custom title bar
+PASS: actual native JSON export uses the scoped company bridge and save dialog, and matches the immutable server asset SHA
+PASS: actual Desktop cancels a queued synchronization through its authenticated bridge with no new supplier read
+PASS: Traditional Chinese dark marketing facts remain below the custom native controls and close with Escape
+PASS: the actual sandboxed renderer cannot use its authenticated bridge to call Admin or the public provider-launch endpoint
+2026-10-22 06:51:52.932 CST [13972] ERROR:  could not obtain lock on row in relation "tasks"
+2026-10-22 06:51:52.932 CST [13972] STATEMENT:  WITH RECURSIVE runs AS (
+	      SELECT id,previous_run_id FROM seo_runs WHERE id=$1
+	      UNION SELECT p.id,p.previous_run_id FROM seo_runs p JOIN runs c ON p.id=c.previous_run_id
+	    ), documents AS (
+	      SELECT id,run_id,cache_source_id FROM seo_documents WHERE run_id IN(SELECT id FROM runs)
+	      UNION SELECT p.id,p.run_id,p.cache_source_id FROM seo_documents p JOIN documents c ON p.id=c.cache_source_id
+	    ) SELECT t.id FROM tasks t WHERE t.id IN(
+	      SELECT task_id FROM seo_runs WHERE id IN(SELECT id FROM runs) OR id IN(SELECT run_id FROM documents)
+	    ) AND ($2::uuid IS NULL OR t.id<>$2) ORDER BY t.id FOR SHARE OF t NOWAIT
+
+PASS: actual packaged frameless Desktop confirms bounded website scope, reads synthetic HTTP findings and opens retained source evidence below native controls
+PASS: actual native website evidence export forwards the current tenant through the approved bridge and saves bytes matching the immutable result SHA
+2026-10-22 06:52:05.976 CST [39152] ERROR:  could not obtain lock on row in relation "tasks"
+2026-10-22 06:52:05.976 CST [39152] STATEMENT:  WITH RECURSIVE runs AS (
+	      SELECT id,previous_run_id FROM seo_runs WHERE id=$1
+	      UNION SELECT p.id,p.previous_run_id FROM seo_runs p JOIN runs c ON p.id=c.previous_run_id
+	    ), documents AS (
+	      SELECT id,run_id,cache_source_id FROM seo_documents WHERE run_id IN(SELECT id FROM runs)
+	      UNION SELECT p.id,p.run_id,p.cache_source_id FROM seo_documents p JOIN documents c ON p.id=c.cache_source_id
+	    ) SELECT t.id FROM tasks t WHERE t.id IN(
+	      SELECT task_id FROM seo_runs WHERE id IN(SELECT id FROM runs) OR id IN(SELECT run_id FROM documents)
+	    ) AND ($2::uuid IS NULL OR t.id<>$2) ORDER BY t.id FOR SHARE OF t NOWAIT
+
+PASS: actual locked Codex process interprets retained facts through the internal synthetic gateway and the packaged Desktop saves the matching report through its native bridge
+PASS: packaged frameless Desktop confirms selected original findings and a separate budget below its custom title bar, using normal pause/resume through the restricted bridge
+PASS: actual Codex draft stays bound to selected original evidence; sandboxed native JSON/HTML saves match both immutable asset digests and source inspection remains below window controls
+2026-10-22 06:52:41.805 CST [27776] ERROR:  could not obtain lock on row in relation "tasks"
+2026-10-22 06:52:41.805 CST [27776] STATEMENT:  WITH RECURSIVE runs AS (
+	      SELECT id,previous_run_id FROM seo_runs WHERE id=$1
+	      UNION SELECT p.id,p.previous_run_id FROM seo_runs p JOIN runs c ON p.id=c.previous_run_id
+	    ), documents AS (
+	      SELECT id,run_id,cache_source_id FROM seo_documents WHERE run_id IN(SELECT id FROM runs)
+	      UNION SELECT p.id,p.run_id,p.cache_source_id FROM seo_documents p JOIN documents c ON p.id=c.cache_source_id
+	    ) SELECT t.id FROM tasks t WHERE t.id IN(
+	      SELECT task_id FROM seo_runs WHERE id IN(SELECT id FROM runs) OR id IN(SELECT run_id FROM documents)
+	    ) AND ($2::uuid IS NULL OR t.id<>$2) ORDER BY t.id FOR SHARE OF t NOWAIT
+
+FAIL: native immutable website change draft downloads: {"error":{"code":"SEO_SOURCE_CHANGING","message":"A website source is being changed; execution stopped before using it","request_id":"1301d7f5-4ade-4cac-8fc1-bea633a012a7"}}
+2026-10-22 06:52:43.009 CST [16924] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 06:52:43.870 CST [16924] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.032 s, sync=0.604 s, total=0.862 s; sync files=14, longest=0.119 s, average=0.044 s; distance=16337 kB, estimate=16337 kB; lsn=A/CF58DD08, redo lsn=A/CF58DCB0
+
+{"passed":false,"checks":14,"errors":["native immutable website change draft downloads: AssertionError [ERR_ASSERTION]: {\"error\":{\"code\":\"SEO_SOURCE_CHANGING\",\"message\":\"A website source is being changed; execution stopped before using it\",\"request_id\":\"1301d7f5-4ade-4cac-8fc1-bea633a012a7\"}}\n    at call (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-seo-change-native.ts:249:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-seo-change-native.ts:1127:9)\n    at async until (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-seo-change-native.ts:63:15)\n    at async <anonymous> (D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\scripts\\qa-seo-change-native.ts:1124:3)"],"desktop_closed":true,"browser_closed":true,"extension_closed":false,"owned_api_closed":true}
+2026-10-22 06:52:45.042 CST [27676] LOG:  received fast shutdown request
+
+2026-10-22 06:52:45.111 CST [27676] LOG:  aborting any active transactions
+
+2026-10-22 06:52:45.135 CST [27676] LOG:  background worker "logical replication launcher" (PID 3240) exited with exit code 1
+
+2026-10-22 06:52:45.135 CST [16924] LOG:  shutting down
+
+2026-10-22 06:52:45.193 CST [16924] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 06:52:45.452 CST [16924] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.051 s, total=0.317 s; sync files=1, longest=0.051 s, average=0.051 s; distance=0 kB, estimate=14703 kB; lsn=A/CF58DE20, redo lsn=A/CF58DE20
+
+2026-10-22 06:52:45.564 CST [27676] LOG:  database system is shut down
+

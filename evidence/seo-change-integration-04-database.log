@@ -1,0 +1,100 @@
+2026-10-22 06:29:13.289 CST [22392] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 06:29:13.318 CST [22392] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 06:29:13.319 CST [22392] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 06:29:14.076 CST [35500] LOG:  database system was shut down at 2026-10-22 06:27:45 CST
+
+2026-10-22 06:29:14.188 CST [22392] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 06:29:27.578 CST [2996] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 06:29:28.916 CST [2996] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.011 s, sync=0.885 s, total=1.338 s; sync files=12, longest=0.379 s, average=0.074 s; distance=15162 kB, estimate=15162 kB; lsn=A/C9029620, redo lsn=A/C90295C8
+
+2026-10-22 06:29:38.719 CST [2996] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 06:29:40.931 CST [2996] LOG:  checkpoint complete: wrote 37 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.013 s, sync=1.257 s, total=2.213 s; sync files=12, longest=0.286 s, average=0.105 s; distance=15300 kB, estimate=15300 kB; lsn=A/C9F1A770, redo lsn=A/C9F1A718
+
+2026-10-22 06:29:50.869 CST [28420] ERROR:  Review decisions are immutable
+2026-10-22 06:29:50.869 CST [28420] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-22 06:29:50.869 CST [28420] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-22 06:29:50.871 CST [28420] ERROR:  Frozen approval is immutable
+2026-10-22 06:29:50.871 CST [28420] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-22 06:29:50.871 CST [28420] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-22 06:29:51.313 CST [2996] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 06:29:53.615 CST [2996] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.029 s, sync=1.380 s, total=2.302 s; sync files=10, longest=0.340 s, average=0.138 s; distance=15364 kB, estimate=15364 kB; lsn=A/CAE1BA80, redo lsn=A/CAE1BA28
+
+2026-10-22 06:30:09.656 CST [18492] ERROR:  SEO task binding cannot be removed
+2026-10-22 06:30:09.656 CST [18492] CONTEXT:  PL/pgSQL function guard_seo_binding() line 40 at RAISE
+2026-10-22 06:30:09.656 CST [18492] STATEMENT:  UPDATE tasks SET input_context='{}' WHERE id=$1
+
+2026-10-22 06:31:08.223 CST [34768] ERROR:  permission denied for table seo_documents
+2026-10-22 06:31:08.223 CST [34768] STATEMENT:  UPDATE seo_documents SET url_sha256=$2 WHERE run_id=$1
+
+2026-10-22 06:31:08.420 CST [39208] ERROR:  SEO identity or finished history cannot be rewritten
+2026-10-22 06:31:08.420 CST [39208] CONTEXT:  PL/pgSQL function guard_seo_history() line 16 at RAISE
+2026-10-22 06:31:08.420 CST [39208] STATEMENT:  UPDATE seo_runs SET checkpoint='{}',revision=revision+1 WHERE id=$1
+
+2026-10-22 06:34:51.629 CST [2996] LOG:  checkpoint starting: time
+
+2026-10-22 06:36:28.398 CST [34820] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-22 06:36:28.398 CST [34820] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-22 06:36:28.398 CST [34820] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+2026-10-22 06:36:29.497 CST [2996] LOG:  checkpoint complete: wrote 931 buffers (5.7%), wrote 6 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=96.892 s, sync=0.566 s, total=97.868 s; sync files=12, longest=0.117 s, average=0.048 s; distance=17755 kB, estimate=17755 kB; lsn=A/CC0C7580, redo lsn=A/CBF72648
+
+2026-10-22 06:36:29.502 CST [2996] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 06:36:30.038 CST [2996] LOG:  checkpoint complete: wrote 6 buffers (0.0%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.168 s, total=0.537 s; sync files=4, longest=0.059 s, average=0.042 s; distance=1363 kB, estimate=16115 kB; lsn=A/CC0C7650, redo lsn=A/CC0C75F8
+
+2026-10-22 06:37:45.043 CST [16832] ERROR:  Website change history is immutable
+2026-10-22 06:37:45.043 CST [16832] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 19 at RAISE
+2026-10-22 06:37:45.043 CST [16832] STATEMENT:  UPDATE seo_change_tasks SET spec='{}' WHERE id=$1
+
+2026-10-22 06:37:45.136 CST [34544] ERROR:  Website change history is immutable
+2026-10-22 06:37:45.136 CST [34544] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 19 at RAISE
+2026-10-22 06:37:45.136 CST [34544] STATEMENT:  UPDATE seo_change_tasks SET html_asset_version_id=NULL,json_asset_version_id=NULL WHERE id=$1
+
+2026-10-22 06:37:45.203 CST [31452] ERROR:  Saved website change task binding is immutable
+2026-10-22 06:37:45.203 CST [31452] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 9 at RAISE
+2026-10-22 06:37:45.203 CST [31452] STATEMENT:  UPDATE tasks SET prompt='Detach the evidence' WHERE id=$1
+
+2026-10-22 06:40:47.027 CST [11652] ERROR:  could not obtain lock on row in relation "tasks"
+2026-10-22 06:40:47.027 CST [11652] STATEMENT:  WITH RECURSIVE runs AS (
+	      SELECT id,previous_run_id FROM seo_runs WHERE id=$1
+	      UNION SELECT p.id,p.previous_run_id FROM seo_runs p JOIN runs c ON p.id=c.previous_run_id
+	    ), documents AS (
+	      SELECT id,run_id,cache_source_id FROM seo_documents WHERE run_id IN(SELECT id FROM runs)
+	      UNION SELECT p.id,p.run_id,p.cache_source_id FROM seo_documents p JOIN documents c ON p.id=c.cache_source_id
+	    ) SELECT t.id FROM tasks t WHERE t.id IN(
+	      SELECT task_id FROM seo_runs WHERE id IN(SELECT id FROM runs) OR id IN(SELECT run_id FROM documents)
+	    ) AND ($2::uuid IS NULL OR t.id<>$2) ORDER BY t.id FOR SHARE OF t NOWAIT
+
+2026-10-22 06:41:29.054 CST [2996] LOG:  checkpoint starting: time
+
+2026-10-22 06:43:57.915 CST [2996] LOG:  checkpoint complete: wrote 1365 buffers (8.3%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=147.918 s, sync=0.493 s, total=148.861 s; sync files=16, longest=0.071 s, average=0.031 s; distance=19227 kB, estimate=19227 kB; lsn=A/CD5A43B8, redo lsn=A/CD38E4F0
+
+2026-10-22 06:43:57.949 CST [2996] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 06:43:58.328 CST [2996] LOG:  checkpoint complete: wrote 6 buffers (0.0%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.015 s, sync=0.175 s, total=0.380 s; sync files=4, longest=0.064 s, average=0.044 s; distance=2135 kB, estimate=17518 kB; lsn=A/CD5A4488, redo lsn=A/CD5A4430
+
+2026-10-22 06:44:11.360 CST [22392] LOG:  received fast shutdown request
+
+2026-10-22 06:44:11.437 CST [22392] LOG:  aborting any active transactions
+
+2026-10-22 06:44:11.508 CST [22392] LOG:  background worker "logical replication launcher" (PID 31208) exited with exit code 1
+
+2026-10-22 06:44:11.508 CST [2996] LOG:  shutting down
+
+2026-10-22 06:44:11.593 CST [2996] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 06:44:12.367 CST [2996] LOG:  checkpoint complete: wrote 26 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.656 s, total=0.859 s; sync files=11, longest=0.144 s, average=0.060 s; distance=124 kB, estimate=15779 kB; lsn=A/CD5C3468, redo lsn=A/CD5C3468
+
+2026-10-22 06:44:12.588 CST [22392] LOG:  database system is shut down
+
