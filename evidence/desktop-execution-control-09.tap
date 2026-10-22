@@ -1,0 +1,396 @@
+2026-10-23 01:40:57.859 CST [39952] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 01:40:57.877 CST [39952] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 01:40:57.878 CST [39952] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 01:40:59.390 CST [17308] LOG:  database system was shut down at 2026-10-23 00:46:31 CST
+
+2026-10-23 01:40:59.904 CST [39952] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# Subtest: only actual desktop native authorization can reserve local execution; no API can grant local full permission
+ok 1 - only actual desktop native authorization can reserve local execution; no API can grant local full permission
+  ---
+  duration_ms: 23857.3686
+  ...
+2026-10-23 01:42:08.903 CST [4332] ERROR:  Cloud admission cannot own local work
+2026-10-23 01:42:08.903 CST [4332] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 4 at RAISE
+2026-10-23 01:42:08.903 CST [4332] STATEMENT:  SELECT claim_execution_capacity($1,'text',8,$2)
+
+2026-10-23 01:42:08.908 CST [16408] ERROR:  Local execution cannot enter the cloud queue
+2026-10-23 01:42:08.908 CST [16408] CONTEXT:  PL/pgSQL function reject_local_cloud_dispatch() line 4 at RAISE
+2026-10-23 01:42:08.908 CST [16408] STATEMENT:  INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)
+
+2026-10-23 01:42:09.044 CST [31092] ERROR:  Execution placement is immutable
+2026-10-23 01:42:09.044 CST [31092] CONTEXT:  PL/pgSQL function guard_task_execution_location() line 4 at RAISE
+2026-10-23 01:42:09.044 CST [31092] STATEMENT:  UPDATE tasks SET execution_location='cloud' WHERE id=$1
+
+# Subtest: one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it
+ok 2 - one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it
+  ---
+  duration_ms: 850.004
+  ...
+# Subtest: lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage
+ok 3 - lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage
+  ---
+  duration_ms: 1531.5285
+  ...
+# Subtest: company gateway meters actual native Responses and settles once from server facts, excluding client usage
+ok 4 - company gateway meters actual native Responses and settles once from server facts, excluding client usage
+  ---
+  duration_ms: 2602.0224
+  ...
+# Subtest: native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch
+ok 5 - native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch
+  ---
+  duration_ms: 2647.6533
+  ...
+# Subtest: unknown company response cannot be replaced by a client zero report or release its reservation
+ok 6 - unknown company response cannot be replaced by a client zero report or release its reservation
+  ---
+  duration_ms: 2034.0334
+  ...
+# Subtest: unstarted cancellation releases only its original hold and a fresh task can continue the same local session
+ok 7 - unstarted cancellation releases only its original hold and a fresh task can continue the same local session
+  ---
+  duration_ms: 939.5665
+  ...
+# Subtest: an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation
+ok 8 - an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation
+  ---
+  duration_ms: 1475.1314
+  ...
+# Subtest: revoking the desktop sign-in family fences already-issued model credentials
+ok 9 - revoking the desktop sign-in family fences already-issued model credentials
+  ---
+  duration_ms: 895.5333
+  ...
+# Subtest: a lost local outcome or expired lease cannot be reported as zero-cost successful completion
+ok 10 - a lost local outcome or expired lease cannot be reported as zero-cost successful completion
+  ---
+  duration_ms: 2789.5145
+  ...
+# Subtest: all sixteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch
+ok 11 - all sixteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch
+  ---
+  duration_ms: 10503.1199
+  ...
+# Subtest: native company tools recheck owner, native family, role and the complete call binding before any effect
+not ok 12 - native company tools recheck owner, native family, role and the complete call binding before any effect
+  ---
+  duration_ms: 973.6873
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-executions.test.ts:4:15040'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_EXECUTION_UNAVAILABLE","message":"This local execution needs to be stopped or reconciled on its owning desktop","request_id":"ca4f4a64-acc6-400c-adfd-44dd5a4624b2"}}
+    
+    409 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-executions.test.ts:58:66)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-executions.test.ts:237:18)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: native designer generation and editing share exact company prices and never duplicate accepted images
+not ok 13 - native designer generation and editing share exact company prices and never duplicate accepted images
+  ---
+  duration_ms: 1040.6711
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-executions.test.ts:4:16477'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_EXECUTION_UNAVAILABLE","message":"This local execution needs to be stopped or reconciled on its owning desktop","request_id":"7abb8f65-b9cc-46b6-829c-2b2b2b37d556"}}
+    
+    409 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-executions.test.ts:58:66)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-executions.test.ts:251:17)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: native company namespace rejects altered schemas and unregistered names before provider dispatch
+ok 14 - native company namespace rejects altered schemas and unregistered names before provider dispatch
+  ---
+  duration_ms: 1959.7924
+  ...
+# Subtest: an unknown native company image result fences further calls and keeps the original reconciliation hold
+not ok 15 - an unknown native company image result fences further calls and keeps the original reconciliation hold
+  ---
+  duration_ms: 1042.0918
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-executions.test.ts:4:18964'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'DESKTOP_EXECUTION_UNAVAILABLE'
+    - 'DESKTOP_COMPANY_TOOL_UNCERTAIN'
+               ^
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'DESKTOP_COMPANY_TOOL_UNCERTAIN'
+  actual: 'DESKTOP_EXECUTION_UNAVAILABLE'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-executions.test.ts:278:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-23 01:42:39.670 CST [40956] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 01:42:40.738 CST [40956] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.052 s, sync=0.741 s, total=1.069 s; sync files=14, longest=0.154 s, average=0.053 s; distance=17073 kB, estimate=17073 kB; lsn=D/7BAB6D60, redo lsn=D/7BAB6D08
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+2026-10-23 01:43:24.231 CST [40956] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 01:43:26.083 CST [40956] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.094 s, sync=1.219 s, total=1.852 s; sync files=12, longest=0.182 s, average=0.102 s; distance=16150 kB, estimate=16981 kB; lsn=D/7CA7C738, redo lsn=D/7CA7C6E0
+
+# Subtest: real native Codex edits local files, uses company Image 2 and same-thread edits with server-only settlement
+not ok 16 - real native Codex edits local files, uses company Image 2 and same-thread edits with server-only settlement
+  ---
+  duration_ms: 34498.227
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-local-runtime.test.ts:1:658'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'before-native-execution'
+    - 'changed-by-real-local-codex'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'changed-by-real-local-codex'
+  actual: 'before-native-execution'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-local-runtime.test.ts:113:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# {"native_first_state":{"id":"3915eb55-1f0e-4f63-9a93-584165eb1adb","tenant":"657b6023-4d30-4593-8a56-75ac86322135","project":"bca1e71e-2a8a-4af4-876c-5bee3d96d87a","workspace":"D:\\\\dev\\\\copypasted\\\\自有agent\\\\dev\\\\copypaste-platform\\\\.data\\\\test-runs\\\\93183172a3ca4bdc8d13d543cfd6b228\\\\local","role":"designer","revoked":false,"permission":"full-access","busy":false,"phase":"idle","uncertain":false,"task":{"task_id":"e49468ec-9441-4c41-9c53-da8e9700ceeb","local_session_id":"3915eb55-1f0e-4f63-9a93-584165eb1adb","device_id":"c19cc5c2-441c-4f88-95a3-5ec6a4bfa056","execution_location":"desktop","state":"finished","status":"failed","cancel_requested":false,"budget_micros":"3000000","charged_micros":"0","accrued_micros":"0","lease_until":null,"credential_expires_at":"2026-10-22T17:48:05.663Z","output":"","result_origin":"desktop_client_report","error_code":null},"messages":[{"role":"user","text":"Change only the owned local fixture and use the company Image 2 tool for the synthetic design."},{"role":"assistant","text":"","status":"failed"}],"events":[{"kind":"local.runtime.ready","value":{"pid":32432,"version":"0.163.0-alpha.11","executable_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","thread_id":"01a164b5-c355-7441-be35-bb4ebb93316e","permission_mode":"full-access","grant_revision":1}},{"kind":"turn/started","value":{"threadId":"01a164b5-c355-7441-be35-bb4ebb93316e","turn":{"id":"01a164b5-c9b2-7141-91f1-086ae73be7a9","rootTurnId":"01a164b5-c9b2-7141-91f1-086ae73be7a9","items":[],"itemsView":"notLoaded","status":"inProgress","error":null,"startedAt":1792690997,"completedAt":null,"durationMs":null}}},{"kind":"turn/completed","value":{"threadId":"01a164b5-c355-7441-be35-bb4ebb93316e","turn":{"id":"01a164b5-c9b2-7141-91f1-086ae73be7a9","rootTurnId":"01a164b5-c9b2-7141-91f1-086ae73be7a9","items":[],"itemsView":"notLoaded","status":"failed","error":{"message":"{\\"error\\":{\\"code\\":\\"AI_DESKTOP_TOOL_NOT_ALLOWED\\",\\"message\\":\\"AI_DESKTOP_TOOL_NOT_ALLOWED\\"}}","codexErrorInfo":"other","additionalDetails":null,"misalignment":null},"startedAt":1792690997,"completedAt":1792691003,"durationMs":5293}}}],"retryable":false},"native_tools":[{"type":"function","name":"exec_command"},{"type":"function","name":"write_stdin"},{"type":"function","name":"request_user_input"},{"type":"function","name":"view_image"},{"type":"function","name":"get_goal"},{"type":"function","name":"create_goal"},{"type":"function","name":"update_goal"},{"type":"namespace","name":"copypaste","tools":[{"type":"function","name":"asset_text_read"},{"type":"function","name":"cloud_file_read"},{"type":"function","name":"cloud_files"},{"type":"function","name":"deliver_text"},{"type":"function","name":"design_render"},{"type":"function","name":"font_catalog"},{"type":"function","name":"image2_edit"},{"type":"function","name":"image2_generate"},{"type":"function","name":"project_assets"}]}],"provider_calls":0,"handler_error":null}
+1..16
+# tests 16
+# suites 0
+# pass 12
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 144968.0525
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/1b01bc85-cd4f-4cc6-b146-c26581169351/result.json","sha256":"1b5eaac0668e32fe630306f809e9bad1c0aa6df3d1b9f1acf1e6eace91f9442c","exit_code":0}
+2026-10-23 01:43:29.257 CST [39952] LOG:  received fast shutdown request
+
+2026-10-23 01:43:29.400 CST [39952] LOG:  aborting any active transactions
+
+2026-10-23 01:43:29.459 CST [39952] LOG:  background worker "logical replication launcher" (PID 43040) exited with exit code 1
+
+2026-10-23 01:43:29.459 CST [40956] LOG:  shutting down
+
+2026-10-23 01:43:29.553 CST [40956] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 01:43:30.069 CST [40956] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.029 s, sync=0.097 s, total=0.599 s; sync files=1, longest=0.097 s, average=0.097 s; distance=0 kB, estimate=15283 kB; lsn=D/7CA7C850, redo lsn=D/7CA7C850
+
+2026-10-23 01:43:30.483 CST [39952] LOG:  database system is shut down
+

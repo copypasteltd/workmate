@@ -1,0 +1,81 @@
+TAP version 13
+# Subtest: native company tools use their exact namespace and persist across same-thread follow-ups
+ok 1 - native company tools use their exact namespace and persist across same-thread follow-ups
+  ---
+  duration_ms: 12543.6595
+  ...
+# Subtest: native company writes are denied in local read-only mode before dispatch
+ok 2 - native company writes are denied in local read-only mode before dispatch
+  ---
+  duration_ms: 7880.9953
+  ...
+# Subtest: native company uncertainty stops the turn and never repeats an accepted operation
+ok 3 - native company uncertainty stops the turn and never repeats an accepted operation
+  ---
+  duration_ms: 8126.1138
+  ...
+# Subtest: native company work is aborted when the owning local runtime closes
+ok 4 - native company work is aborted when the owning local runtime closes
+  ---
+  duration_ms: 8906.8318
+  ...
+# Subtest: a clean local thread survives inference credential expiry and resumes only with a fresh credential
+ok 5 - a clean local thread survives inference credential expiry and resumes only with a fresh credential
+  ---
+  duration_ms: 33782.0293
+  ...
+# Subtest: native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+ok 6 - native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+  ---
+  duration_ms: 13112.4249
+  ...
+# {"version":"0.163.0-alpha.11","native_binary_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","outside_cwd_file_sha256":"205b67f30e170f01fa12b325555888f71d96fcaf25a0eb1cf4e249f895ffd36d","same_thread":true,"credential_excluded_from_shell":true}
+# Subtest: native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+ok 7 - native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+  ---
+  duration_ms: 11195.8589
+  ...
+# Subtest: local binary, provider, Skill and permission-owner mismatches dispatch no inference
+ok 8 - local binary, provider, Skill and permission-owner mismatches dispatch no inference
+  ---
+  duration_ms: 6377.4434
+  ...
+# Subtest: native interruption and revocation stop only this owned process and reject further local turns
+ok 9 - native interruption and revocation stop only this owned process and reject further local turns
+  ---
+  duration_ms: 5771.2085
+  ...
+# Subtest: an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+ok 10 - an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+  ---
+  duration_ms: 9244.2244
+  ...
+# Subtest: current account authority is checked before each native turn
+ok 11 - current account authority is checked before each native turn
+  ---
+  duration_ms: 5496.9762
+  ...
+# Subtest: changing a materialized Skill is rejected before another provider request
+ok 12 - changing a materialized Skill is rejected before another provider request
+  ---
+  duration_ms: 5021.0945
+  ...
+# Subtest: a previous account or project checkpoint cannot be taken over or rewritten
+ok 13 - a previous account or project checkpoint cannot be taken over or rewritten
+  ---
+  duration_ms: 11085.9274
+  ...
+# Subtest: an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+ok 14 - an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+  ---
+  duration_ms: 12653.3885
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 152450.1638

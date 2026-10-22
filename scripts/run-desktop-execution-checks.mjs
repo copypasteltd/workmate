@@ -6,8 +6,10 @@ import { createHash } from "node:crypto";
 import { createConnection } from "node:net";
 import path from "node:path";
 
-const attempt = process.argv[2], focused = process.argv.includes("--focused");
+const attempt = process.argv[2], focused = process.argv.includes("--focused"), fullPlatform = process.argv.includes("--full-platform");
 assert.match(attempt ?? "", /^\d{2}$/);
+assert.ok(!(focused && fullPlatform), "Choose focused or full-platform verification");
+if (fullPlatform) assert.ok(process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN, "Full verification includes the native integration and requires the pinned binary");
 const delivery = process.cwd(), platform = path.resolve("../copypaste-platform"), desktop = path.resolve("../copypaste-desktop");
 const prefix = "evidence/desktop-execution-control-" + attempt, hash = bytes => createHash("sha256").update(bytes).digest("hex");
 await assert.rejects(readFile(prefix + ".json"), error => error.code === "ENOENT");
@@ -41,8 +43,9 @@ try {
   const end = Date.now() + 900000;
   while (!output.includes("Native PostgreSQL ready")) { assert.equal(database.child.exitCode, null); assert.ok(Date.now() < end); await new Promise(r => setTimeout(r, 200)); }
   console.log("Owned native database ready; running local execution ownership and billing checks");
-  testExit = await launch(["--env-file=.env", "scripts/run-tests-owned.mjs", "tests/desktop-executions.test.ts", ...(process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN ? ["tests/desktop-local-runtime.test.ts"] : []),
-    ...(focused ? [] : ["tests/canonical-tasks.test.ts", "tests/execution-capacity.test.ts", "tests/internal-ai-gateway.test.ts", "tests/provider-request-control.test.ts"])], platform).closed;
+  const files = fullPlatform ? ["tests/*.test.ts"] : ["tests/desktop-executions.test.ts", ...(process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN ? ["tests/desktop-local-runtime.test.ts"] : []),
+    ...(focused ? [] : ["tests/canonical-tasks.test.ts", "tests/execution-capacity.test.ts", "tests/internal-ai-gateway.test.ts", "tests/provider-request-control.test.ts"])];
+  testExit = await launch(["--env-file=.env", "scripts/run-tests-owned.mjs", ...files], platform).closed;
 } catch (e) { error = String(e); }
 finally {
   if (database?.child.connected && database.child.exitCode === null) database.child.send({ action: "shutdown" });
@@ -51,11 +54,15 @@ finally {
   const bytes = await readFile(prefix + ".tap"), raw = bytes.toString();
   const counts = Object.fromEntries(["tests", "pass", "fail", "cancelled", "skipped", "todo"].map(key => [key, Number(raw.match(new RegExp("^# " + key + " (\\d+)\\r?$", "m"))?.[1] ?? -1)]));
   const unchanged = JSON.stringify(source) === JSON.stringify(await snapshot());
-  const passed = !error && testExit === 0 && shutdown === 0 && unchanged && counts.tests >= 9 && counts.pass === counts.tests && ["fail", "cancelled", "skipped", "todo"].every(k => counts[k] === 0) && raw.includes("# owned_fixture_cleanup");
-  const report = { at: new Date().toISOString(), status: passed ? "passed" : "failed", scope: focused ? "desktop_server_contract_focused" : "desktop_server_contract_and_existing_cloud_regressions",
+  const required = ["all sixteen connected native roles", "native company tools recheck owner", "native designer generation and editing", "native company namespace rejects altered schemas", "an unknown native company image result fences",
+    ...(process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN ? ["real native Codex edits local files, uses company Image 2 and same-thread edits"] : [])];
+  const scenarioPassed = name => raw.split(/\r?\n/).some(line => /^ok \d+ - /.test(line) && line.includes(name));
+  const passed = !error && testExit === 0 && shutdown === 0 && unchanged && counts.tests >= (process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN ? 16 : 15) && counts.pass === counts.tests && ["fail", "cancelled", "skipped", "todo"].every(k => counts[k] === 0) && raw.includes("# owned_fixture_cleanup") && required.every(scenarioPassed);
+  const report = { at: new Date().toISOString(), status: passed ? "passed" : "failed", scope: fullPlatform ? "all_platform_tests_including_cloud_business_tools_and_native_execution" : focused ? "desktop_server_contract_focused" : "desktop_server_contract_and_existing_cloud_regressions",
     error, counts, checks, test_exit_code: testExit, owned_database_shutdown: shutdown === 0, source_unchanged: unchanged, source_files: source,
     raw_report: { path: prefix + ".tap", sha256: hash(bytes) }, verifier: { path: prefix + "-verifier.mjs", sha256: hash(verifier) },
     native_binary_exercised: !!process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN,
+    required_scenarios: required,
     not_validated: ["Electron_user_permission_and_execution_integration", ...(!process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN ? ["native_Codex_through_company_billing_gateway"] : []), "signed_installer", "all_roles_and_media_tools", "entire_product_acceptance"] };
   await writeFile(prefix + ".json", JSON.stringify(report, null, 2) + "\n", { flag: "wx" });
   console.log(JSON.stringify({ status: report.status, counts, error, source_unchanged: unchanged, shutdown }));

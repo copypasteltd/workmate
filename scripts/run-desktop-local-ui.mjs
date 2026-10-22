@@ -72,7 +72,10 @@ finally {
   if (database?.child.connected && database.child.exitCode === null) database.child.send({ action: "shutdown" }); if (database) shutdown = await database.closed;
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length >= 7 && journey.electron_closed && journey.browser_closed && journey.api_closed && journey.fixture_closed
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length >= 9 && journey.company_image_calls === 2
+    && journey.checks.some(check => check.includes("native save-dialog selection")) && journey.checks.some(check => check.includes("edits the authorized source image"))
+    && journey.checks.some(check => check.includes("800x600"))
+    && journey.electron_closed && journey.browser_closed && journey.api_closed && journey.fixture_closed
     && cleanup?.exit_code === 0 && cleanup.status === "passed" && cleanup.results.every(r => r.reclaimed) && shutdown === 0 && unchanged;
   const report = { at: new Date().toISOString(), status: passed ? "passed" : "failed", error, checks, counts: { journey_checks: journey?.checks.length ?? 0, errors: journey?.errors.length ?? 1 },
     source_files: before, source_unchanged: unchanged, packaged: built, owned_database_shutdown: shutdown === 0, owned_preview_closed: !preview || preview.child.exitCode !== null || preview.child.signalCode !== null,

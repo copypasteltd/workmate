@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 
-const attempt = process.argv[2], probe = process.argv.includes("--probe"), permissionProbe = process.argv.includes("--permission-probe"), bindingProbe = process.argv.includes("--binding-probe"), filtered = probe || permissionProbe || bindingProbe;
+const attempt = process.argv[2], probe = process.argv.includes("--probe"), permissionProbe = process.argv.includes("--permission-probe"), bindingProbe = process.argv.includes("--binding-probe"), companyProbe = process.argv.includes("--company-probe"), filtered = probe || permissionProbe || bindingProbe || companyProbe;
 assert.match(attempt ?? "", /^\d{2}$/);
 const desktop = path.resolve("../copypaste-desktop");
 const binary = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
@@ -31,7 +31,7 @@ for (const [file, expected] of Object.entries(before)) {
   await writeFile(output, bytes, { flag: "wx" });
 }
 const log = createWriteStream(prefix + ".tap", { flags: "wx" });
-const child = spawn(process.execPath, ["--import", "tsx", "--test", "--test-concurrency=1", ...(filtered ? ["--test-name-pattern", bindingProbe ? "a previous account or project checkpoint" : permissionProbe ? "native full-to-read-only" : "native full access edits"] : []), "tests/integration/local-codex.native.test.ts"],
+const child = spawn(process.execPath, ["--import", "tsx", "--test", "--test-concurrency=1", ...(filtered ? ["--test-name-pattern", companyProbe ? "native company" : bindingProbe ? "a previous account or project checkpoint" : permissionProbe ? "native full-to-read-only" : "native full access edits"] : []), "tests/integration/local-codex.native.test.ts"],
   { cwd: desktop, env: { ...process.env, COPYPASTE_LOCAL_CODEX_TEST_BIN: binary }, windowsHide: true, stdio: ["ignore", "pipe", "pipe"] });
 child.stdout.pipe(log, { end: false }); child.stderr.pipe(log, { end: false });
 const exitCode = await new Promise((resolve, reject) => { child.once("close", resolve); child.once("error", reject); });
@@ -39,7 +39,7 @@ await new Promise((resolve) => log.end(resolve));
 const raw = await readFile(prefix + ".tap");
 const counts = Object.fromEntries(["tests", "pass", "fail", "cancelled", "skipped", "todo"].map((key) => [key, Number(raw.toString().match(new RegExp("^# " + key + " (\\d+)\\r?$", "m"))?.[1] ?? -1)]));
 const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot());
-const passed = exitCode === 0 && unchanged && counts.tests === (filtered ? 1 : 10) && counts.pass === counts.tests
+const passed = exitCode === 0 && unchanged && counts.tests === (companyProbe ? 4 : filtered ? 1 : 14) && counts.pass === counts.tests
   && ["fail", "cancelled", "skipped", "todo"].every((key) => counts[key] === 0);
 const report = { at: new Date().toISOString(), status: passed ? "passed" : "failed", scope: filtered ? "native_supervisor_single_probe" : "native_supervisor_integration_only",
   counts, exit_code: exitCode, source_unchanged: unchanged, source_files: before,
