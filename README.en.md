@@ -1,753 +1,106 @@
-# CopyPaste Admin Dashboard
+# Workmate · CopyPaste Admin Dashboard
 
-<!-- stage66-current-paid-inputs:start -->
-Admin retains granular permissions, scope, version and audit requirements; cancelling a waiting paid task preserves measured spend.
+[中文](README.md) · [Documentation](https://github.com/copypasteltd/workmate/blob/docs/docs/README.en.md)
 
-## Continue the original paid task after providing inputs (stage 66)
+[Backend](https://github.com/copypasteltd/workmate/tree/backend) · [Web](https://github.com/copypasteltd/workmate/tree/web) · [Admin Dashboard](https://github.com/copypasteltd/workmate/tree/admin) · [Desktop](https://github.com/copypasteltd/workmate/tree/desktop) · [Chrome Extension](https://github.com/copypasteltd/workmate/tree/extension) · [Delivery](https://github.com/copypasteltd/workmate/tree/delivery)
 
-A completed, fully measured Codex turn can now request authorized files or existing marketing connections. The model describes the gap and the user selects the resources. The same task retains its conversation, native thread, original budget hold and cumulative usage, then rechecks current permissions, sources and capacity before continuing. Input requests are bounded to eight rounds and thirty-two dependencies. Unknown external results remain subject to reconciliation.
+A cloud Agent product for Hong Kong enterprises. This repository owns **Admin Dashboard** and publishes to `admin`.
 
-Completed transactional tools retain immutable receipts. A later turn reuses matching results only after current authorization, output and source checks. Source packages also compare the actual file manifest and hashes, so changed sources produce a new package. Cancellation during an input wait settles measured spend; unknown usage is never treated as free. Web, Desktop and Side Panel distinguish recorded usage from settled charges and initial input waits from waits after a paid turn.
+## Architecture and constraints
 
-All three clients retain explicit input selections during refreshes of the same task. Native checks observe at least two actual task responses before confirmation. Workspace changes or denied current reads clear prior task content and input controls. The first failed form-remount journey and its packages remain intact; corrected packages use a separate directory.
-
-Validation: **782/782 Platform tests**, preserving all **765 prior named tests**; **34/34 focused tests** and **13 checks across six repositories**. Actual Codex child processes restore the original thread, tools and history and verify completed-file reuse and one cumulative settlement, using authorized synthetic API responses. **32 native journey checks** cover Web, packaged Desktop and the actual native Side Panel. Their input-selection journeys use explicitly identified synthetic model-turn fixtures.
-
-Desktop is frameless, with custom dragging and minimize/maximize/close buttons and no Electron default or Alt menu. Clicking the extension toolbar opens Chrome's native Side Panel, right by default while respecting browser preferences; there is no action popup. New Setup/Portable files and the Side Panel ZIP are unsigned localhost previews. Installation, signing, store publication and production model services remain unqualified.
-
-Native SQL087→091 preserves complete original-field row digests for all 169 prior public tables, migration bytes, ownership and RLS. Only the declared capacity claim changes; checkpoint/tool-receipt guards are added. New columns start at zero/null and both execution-fact tables start empty, without invented history. Code and scripts live in the D-drive dev directory; main documentation lives in docs. No local Docker, WSL or virtualization is used.
-
-Codex is the only kernel. All AI calls use the company internal OpenAI-compatible gateway. All 102 original requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 without proven completion, zero fully accepted. Canonical TaskDTO/task creation, arbitrary in-flight pause, unknown-effect recovery, complete independent role workflows and production acceptance remain open.
-
-[Implementation](../../docs/technical/66-paid-native-input-checkpoints.md) · [Evidence binding](../../docs/quality/paid-input-checkpoint.json) · [Current client artifacts](../../docs/quality/paid-input-artifacts.json)
+Codex is the only Agent kernel. All AI calls use the company's internal OpenAI-compatible server. Web, Desktop, extension and Admin share server identity, permissions, sources and billing controls. UI follows CopyPaste brand assets, colors, typography and bilingual patterns.
 
 ```mermaid
 flowchart LR
-  Run[Paid task] --> Gap[Completed measured input request]
-  Gap --> User[Human selects authorized inputs]
-  User --> Check[Same task / original hold / source and capacity checks]
-  Check --> Resume[Resume original Codex thread]
-  Resume --> Run
-  Run --> Settle[One cumulative settlement]
-```
-<!-- stage66-current-paid-inputs:end -->
-
-<!-- stage65-current-history-source-lineage:start -->
-Admin retains granular permissions, user/cost/VIP controls and audits; source governance also fences customer results.
-
-## Sources of conversations and actual reads (stage 65)
-
-Actual model reads now retain immutable file-version, cloud-reference and marketing-dataset provenance. Historical assistant results, pinned memories and approved plans remain subject to current source checks before further model input, cached tools, events and artifact persistence. A new paid delegation rejects unavailable history before creating a task or reserving funds. Conversations show an unavailable placeholder; task lists and details retain state and cost metadata while fencing unavailable acceptance bodies. Existing PLAN_STALE / PLAN_INPUT_CHANGED and initial input-selection semantics remain intact. Controlled deletion explicitly scrubs provenance; a missing erasure flag never authorizes an ordinary provenance rewrite.
-
-Explicit publication creates an independent copy with a frozen set of known inputs. Removing the original private conversation preserves that published copy. Revocation of an input file, dataset or pinned memory still fences derived copies and public shares. Restoration preserves current project, user and private-scope authorization.
-
-Validation: **765/765 Platform tests**, retaining all **746** prior named tests; **51/51 focused tests** and **13 checks across six repositories**. Actual HTTP SSE, Worker tools, downloads, plans, holds and public shares run with authorized synthetic AI/business data. Native SQL081→087 preserves row digests for all 168 original public tables, prior migrations and original function definitions. The added provenance table starts empty; historical reads are never invented.
-
-Desktop remains frameless with custom window controls and no Electron default or Alt menu. The extension uses a real Chrome native Side Panel, right by default while respecting browser preferences. Existing packages receive a read-only byte check; screenshots and native journeys retain their historical Backend source scope. Current Backend UI qualification, signed installation, store release and production acceptance remain pending.
-
-Codex is the only kernel. All AI requests use the company internal OpenAI-compatible gateway. All 102 original requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 without proven completion, zero fully accepted.
-
-```mermaid
-flowchart LR
-  Input[Actual reads and fixed references] --> Origin[Immutable source provenance]
-  Origin --> Work[History and approved plans]
-  Origin --> Copy[Independent published copies]
-  Guard[Current scope and source lifecycle] --> Work
-  Guard --> Copy
-  Work --> Result[Authorized model input and output]
-  Copy --> Share[Authorized downloads and shares]
-```
-<!-- stage65-current-history-source-lineage:end -->
-
-<!-- stage64-current-report-task-source-fences:start -->
-Admin content actions retain granular permissions. Source quarantine and expiry also fence user reports and their historical messages.
-
-## Current source fences for reports and task history (stage 64)
-
-Marketing analysis and original SEO audit task details, project lists, historical JSON messages and both SSE routes now share current source checks with their dedicated reports. When a source is quarantined or expires, an open stream stops emitting message bodies and closes at its next batch. Restoration still requires current workspace, project, private-owner and session authorization; retained reports and events remain immutable.
-
-Analysis dataset, original CSV, output artifact and terminal analysis-task retention applies before cleanup. Expired analysis inputs are rejected before task creation or budget reservation. Reads that wait for ordinary task updates recheck the actor's current authorization version before responding.
-
-Validation: **746/746 Platform tests**, retaining all **734** prior named tests; **12/12 focused tests** and **13 checks across six repositories**. Actual HTTP streams and Worker-persisted model messages run, including locked Codex through the internal synthetic gateway. AI and business data remain synthetic as authorized. Native SQL080→081 preserves every row digest in **168** prior public tables, old migrations and table ownership/RLS in both databases; only two report-access functions change.
-
-**Desktop remains frameless with no Electron application or Alt menu.** The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to browser preferences. Existing sources, ASAR, extension ZIP and stage 63 preview packages were rechecked read-only. The actual screenshots and native executions below retain their original Backend scope; this stage adds no browser/native journey qualification of the changed Backend. Installation, signing, store publication and production remain open.
-
-Codex remains the only kernel; every AI request uses the company's internal OpenAI-compatible server. All original 102 requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 not proven complete, zero fully accepted.
-
-```mermaid
-flowchart LR
-  Request[Task detail / list / JSON / SSE] --> Auth[Current tenant / project / private owner / session]
-  Auth --> Source[Current report and original-source lifecycle]
-  Source --> Locks[Source locks / identity recheck after waits]
-  Locks --> Read[Authorized immutable data or event batch]
-  Read --> Source
-  Source --> Closed[Unavailable source / no new body / close open stream]
-  Input[Analysis dataset / original CSV] --> Valid[Active and unexpired source]
-  Valid --> Reserve[Only then create task and reserve budget]
-```
-<!-- stage64-current-report-task-source-fences:end -->
-
-<!-- stage63-source-governed-website-changes:start -->
-This repository is the Admin dashboard. Existing workspace/project scope, users, usage, billing and VIP controls remain applicable. Website sources and new drafts use separate metadata/body/action permissions; source quarantine fences dependent artifacts.
-
-## Source-governed website change tasks (stage 63)
-
-Open Marketing insights → Website audits & rechecks. Select 1–20 findings, confirm the frozen original evidence, change objective and separate AI budget, then save a private task. Pause/resume unclaimed work, cancel, inspect original evidence and download JSON/HTML drafts. Explicitly request a same-scope recheck after separately implementing and authorizing website changes. Drafts require human review; unchanged fixture pages correctly retain persistent findings.
-
-**Codex is the only kernel**, with every AI request sent through the company's internal OpenAI-compatible gateway. Business and AI data remain **synthetic as authorized**. Authentication, authorization, native HTTP fixtures, Codex processes, metering receipts and saved files actually run. Drafts must cover every selected, actually read finding; fabricated, unread, missing or duplicated references cannot publish artifacts. Original sources, cache ancestors, quarantine, retention, revocation and erasure govern private drafts and explicitly published copies. Admin metadata, private-body access and content actions retain separate permissions.
-
-**Desktop remains frameless**, with custom dragging and window controls, no Electron application or Alt menu. Downloads use the current tenant's restricted authenticated bridge and native save dialog. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to browser preferences; its fixed company link opens the website workspace.
-
-Validation: **734/734 Platform tests**, retaining all **716** prior named tests; **18 actual Web/Admin and 23 newly packaged native checks**, plus 13 checks across six repositories. Native SQL079→080 preserves every row digest in **167** prior public tables and SQL001–079 in both databases. The new table is empty with FORCE RLS. Desktop previews: `release/seo-changes-63-02/`; extension: `release/seo-changes-63-02/CopyPaste-0.5.0-sidepanel.zip`.
-
-The current unpacked Desktop and real Chrome Side Panel were exercised. Setup/Portable remain unsigned; installation, store publication, live websites/models and full product acceptance remain open. All original 102 requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 not proven complete and zero fully accepted. Earlier sections, screenshots and receipts retain their historical source/package scope.
-
-```mermaid
-flowchart LR
-  Login[Current identity and project] --> Select[Select frozen original findings]
-  Select --> Confirm[Confirm objective and separate AI budget]
-  Confirm --> Task[Private normal task / frozen skills and capabilities]
-  Task --> Facts[Codex / paginated selected facts / internal gateway]
-  Facts --> Draft[Read-bound JSON / escaped HTML / human review]
-  Draft --> Save[Web download / authenticated native save]
-  Draft --> Review[Separate manual implementation and authorization]
-  Review --> Recheck[Explicit same-scope recheck / persistent or observed repairs]
-  Admin[Scoped Admin / separate metadata and body permissions] --> Source[Quarantine / retention / revocation / erasure]
-  Source --> Task
-  Source --> Draft
-  Frame[Frameless Desktop] --> Confirm
-  Panel[Toolbar / Chrome native Side Panel] --> Select
+  Web[Web workspace] --> API[Company Backend]
+  Side[Chrome native Side Panel] --> API
+  Desktop[Frameless Desktop] --> API
+  Admin[Scoped Admin] --> API
+  API --> Guard[Identity / sources / budget / queue]
+  Guard --> Codex[Version-pinned Codex and Skills]
+  Codex --> Gateway[Internal OpenAI-compatible gateway]
+  Codex --> Tools[Authorized tools and immutable deliverables]
+  Tools --> Ledger[Measured settlement / reconciliation]
 ```
 
-![Actual product capture](assets/screenshots/seo-change-06-change-draft-body-en.png)
-<!-- stage63-source-governed-website-changes:end -->
+## Administration and operator flow
 
-This repository is the operator dashboard. Review website sources in the tenant/project-scoped content directory. Accounts, usage, fees and VIP retain their own permissions and approvals. Customers initiate the audit workflow below; operators govern its sources through separate metadata, body and content-operation permissions.
+1. Enroll through trusted CLI or an administrator invitation. Sign in with a separate administrator email code and TOTP. Customer sessions cannot enter Admin directly.
+2. Filter users, workspaces, projects, account state, VIP and charge periods within current scope. Usage is attributed to its actual initiator; holds and reconciliation remain separate.
+3. User details expose workspace membership, plans, access, funding context and authorized management actions for accounts, sessions, membership, VIP and fees.
+4. Sensitive writes first preview target, version, payload and impact, then commit idempotently. Policy thresholds require independent review. MFA freshness and anti-self-grant rules continue to apply.
+5. Content metadata, private body access, downloads, quarantine/restore, share revocation and erasure have distinct permissions and audit. Ordinary workspace administration does not automatically grant another person's private conversation body.
 
-## Scoped website audits and rechecks (stage 62)
+## Permissions and control plane
 
-Open Marketing insights → Website audits & rechecks. Confirm seed URLs, exact hosts, path prefixes, page-request and AI budgets, then explicitly authorize collection. Inspect progress, uncovered URLs, access limits and URL findings with original quotes, capture times, HTTP/charset facts and hashes. Download actual JSON/HTML attachments. An explicitly requested same-scope recheck creates immutable new history and confirms changes only for pages actually inspected.
+Eight built-in administrative roles and sixty-eight normative permission keys support global/workspace/project scope, explicit denies, amount/duration/batch limits and bounded delegation. Finance, VIP, membership, identities, content, plans, model/rate configuration, provider requests, approvals, exports and audit use separate domain controls.
 
-Business and AI data remain **synthetic as authorized**. The non-production fixture performs actual native HTTP; a real locked Codex process interprets retained facts through the company's internal OpenAI-compatible synthetic gateway. Public deployment and live model quality remain unqualified. Every DNS answer and redirect is scoped. Collection submits no credentials/forms and executes no scripts. Robots, login pages, errors, unvisited scope and sequential collection limits stay explicit. Storage exhaustion stops collection and releases the unused inference reservation.
+VIP and wallet credit are separate. Fees support manually confirmed postings, gifts, source-bound refunds and reconciliation; online payment acquiring is not integrated. Frozen policy/plan versions, target-version checks and idempotency prevent duplicate actions.
 
-Private sources, cache ancestors, recheck history, reports and deliberately published copies retain current authorization, retention, quarantine and erasure controls. Identity is checked again after storage I/O. Admin tenant/project scope, metadata, body access and content operations remain separate. Quarantining a source fences derived customer evidence. Saved website change tasks, Search Console connection metrics, GEO observations, canonical TaskDTO and complete original acceptance remain tracked.
+## Source structure
 
-**Desktop stays frameless**, with custom dragging and minimize/maximize/close controls, no Electron native frame, application menu or Alt menu. Email-code sessions use local test mailbox delivery, with actual PKCE identity and tenant-bound authenticated native saves. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to Chrome preferences. Its Website audits & rechecks action opens only the fixed company workspace. Owned temporary test tabs are closed.
-
-Validation: **45/45 focused checks, 716/716 Platform tests**, retaining all **674** previous named tests; **13 actual Web/Admin and 20 newly packaged native checks**. Both native databases upgrade SQL077→079 while retaining all rows in **164** prior public tables and SQL001–077. Three added tables are empty with FORCE RLS. Original product tracking remains 81 partially verified, 21 not proven complete and zero fully accepted requirements.
-
-Current localhost previews: Desktop `release/scoped-seo-62-02/`; Extension `release/scoped-seo-62-02/CopyPaste-0.5.0-sidepanel.zip`. The unpacked Desktop and actual native Side Panel were run. Setup/Portable remain unsigned and were not installed, published or production-qualified. Earlier sections retain historical source/package scope.
-
-```mermaid
-flowchart LR
-  Login[Email / PKCE and current project] --> Confirm[Confirm host / path / request and AI budgets]
-  Confirm --> Crawl[Durable bounded HTTP / robots / DNS pinning]
-  Crawl --> Evidence[Immutable URL findings and raw source versions]
-  Evidence --> Codex[Locked Codex / internal gateway / bound facts]
-  Codex --> Download[JSON and validated HTML downloads]
-  Evidence --> Recheck[Explicit same-scope immutable recheck]
-  Recheck --> Compare[Observed repairs / persistent / unknown]
-  Desktop[Frameless Desktop / native authenticated save] --> Download
-  Panel[Toolbar / Chrome native Side Panel] --> Confirm
-  Admin[Scoped Admin / separate metadata and body permissions] --> Govern[Quarantine / retention / erasure]
-  Govern --> Evidence
-```
-
-![Scoped Admin metadata without body access](assets/screenshots/scoped-seo-05-source-metadata-en.png)
-
-![Separately authorized source body review](assets/screenshots/scoped-seo-05-source-body-en.png)
-
-## Marketing accounts and native clients (stage 61)
-
-Connections supports Google Ads, Meta Ads, Google Analytics 4 and Search Console. Select a provider, complete the clearly labelled synthetic consent, wait for account/property/site discovery, then confirm discovered accounts and the projects allowed to use snapshots. Select dates and explicitly create a snapshot. The workbench shows durable pages, errors, rate-limit retry time and immutable history. Queued/running jobs can be cancelled; an explicit retry creates a new linked job.
-
-As requested, business data remains synthetic. The supplier fixture runs only in non-production loopback development mode, using actual HTTP, one-use OAuth state, Google S256 PKCE and pagination. UI, facts and snapshots identify this mode; no real marketing account was accessed. Live application approval, actual account permissions, versions and reporting definitions require separate verification. AI requests continue through the company's OpenAI-compatible server, with Codex as the only agent kernel.
-
-Only discovered authorized accounts can be bound. Google manager paths, GA4 reporting identity/timezone, GSC site permissions and Meta ad-read scope are retained. Snapshots distinguish capture time, source dates/grains, currencies, query digests and coverage limits. Missing cutoff times and metrics remain unknown. Overlapping Meta purchase types are not summed, GA4 traffic/event grains remain separate, and GSC pagination does not claim exhaustive detail. Inspect facts or download actual JSON/CSV. Normalized Google/Meta datasets retain immutable source-asset lineage.
-
-Connection and history directories use bounded pagination; scope changes check their expected version. Revocation clears credentials, cancels unfinished work and fences late publication. Existing snapshots retain original project permissions, retention and content governance. Admin metadata is scoped by tenant/project. Body reading and fresh-MFA revocation are separate permissions; revocation returns a durable audited operation without revealing tokens. Source quarantine, expiry and physical deletion constrain derived analysis, downloads and shares while retaining content-free historical receipts.
-
-Desktop is **frameless**, with a custom drag region and minimize/maximize/close controls, no native frame, Electron application menu or Alt menu. Provider authorization opens only a fixed company page in the browser and returns to the native workspace. Protected JSON passes through the current authenticated bridge into the native save dialog. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to the user's Chrome preference. Its Marketing accounts & sync entry opens only the fixed company workspace.
-
-Validation: **39/39 focused checks within 674/674 Platform tests**, retaining all 638 prior named tests; **17 actual Web/Admin checks and 16 newly packaged native checks** passed. Independent suites: web 8, admin 3, desktop 27, extension 21, delivery 12. Both native databases upgraded SQL071→077 while retaining every row digest in 157 prior public tables and SQL001–071. Seven new tables force RLS; legacy connections receive directory-only profiles without invented account/project grants or business history.
-
-Current localhost previews: Desktop `release/connectors-61/`, Extension `release/connectors-61/CopyPaste-0.5.0-sidepanel.zip`. The unpacked executable was run. Setup/Portable remain unsigned and were not installed by these checks. All original 102 requirements and complete TC/NFR/G01–G10, professional-role and production acceptance remain tracked. Earlier receipts and screenshots below retain their original execution scope.
-
-```mermaid
-flowchart LR
-  Client[Web / frameless Desktop] --> Consent[Fixed company launch / supplier consent]
-  Consent --> Directory[Discovered authorized accounts]
-  Directory --> Scope[Confirm account and project scope]
-  Scope --> Queue[Freeze query / durable bounded pages]
-  Queue --> Recover[Cancel / bounded retry / immutable history]
-  Queue --> Snapshot[Immutable facts / cutoff / metric limits]
-  Snapshot --> Export[Actual JSON / CSV / normalized source lineage]
-  Panel[Chrome native Side Panel] --> Client
-  Admin[Scoped Admin / separate body and revoke rights] --> Queue
-  Admin --> Governance[Quarantine / expiry / physical erasure]
-  Governance --> Export
-```
-
-![Actual scoped Admin connection metadata](assets/screenshots/marketing-connectors-12-connection-detail-en.png)
-
-![Traditional Chinese narrow Admin metadata](assets/screenshots/marketing-connectors-12-connection-zh-narrow.png)
-
-## Template video and current clients (stage 60)
-
-Open Design canvas → Video production. Save independent scripts, scene/storyboard tracks, branding, captions and fixed shared project PNG versions. Optionally select a fixed WAV/MP3, its in point/gain and an ownership or license statement. Save the project, explicitly render, then play or download six files: MP4, project JSON, script, storyboard, WebVTT and media probe. Edits append versions; failed receipts remain visible and retries are explicit. Queued and running renders can be cancelled.
-
-`campaign-cuts-1` supports 3–60 seconds, 24/25/30/30000÷1001 fps and even dimensions from 256 to 1920 px within a total pixel/frame budget. Integer-frame timelines are encoded by native FFmpeg as H.264/yuv420p and optional AAC/48 kHz. Actual frames, duration, complete decoding and post-encode audio volume are verified. The bundled Noto Sans TC font includes its OFL, pinned source commit and full SHA. Missing glyphs, overflowing text, missing/quarantined/expired sources and short audio fail explicitly. Encoder fingerprints hash version output. Exported projects reference fixed source media: rebuilding requires those original versions and the recorded environment; byte-identical cross-environment output is not claimed.
-
-The durable queue has immutable input versions, leases, bounded concurrency, cancellation and final authority/source checks. Admin scope, body reading and content actions remain independent permissions. Shared and authenticated downloads recheck derived source availability. Deletion physically erases objects and content copies. Composition makes no AI call; AI HK$0 excludes upstream source creation costs.
-
-New R16 video preset v1.1.0 exposes the implemented `video.render` composition tool. Controlled Codex execute-mode calls can idempotently create and queue a project. Ask/plan and private conversations do not expose this shared writer. The 29th preset skill, `template-video-composition`, preserves the earlier 28 packages and complete acceptance conditions of all 18 roles; earlier installed versions remain unchanged. Generated video, effects, TTS/ASR and complete professional-role qualification retain separate requirements.
-
-Validation: **34/34 focused checks within 638/638 full Platform tests**, retaining all 607 previous named tests; **10 actual Web checks and 17 newly packaged native checks** passed. Independent suites: Web 8, Desktop 25, Extension 21 and Delivery 12. Both native databases upgraded 069→071 while preserving all row digests in 154 prior public tables and SQL001–069; three new tables force RLS.
-
-Desktop remains frameless, with custom controls and no Electron or Alt menu. Protected video bytes pass through the existing authenticated bridge into the local player. The extension toolbar still toggles Chrome's native Side Panel, right by default and subject to the user's Chrome setting, with a new video workspace entry. Current previews: Desktop `release/video-60/`, Extension `release/video-60/CopyPaste-0.5.0-sidepanel.zip`. The unpacked runtime was executed. Setup/Portable remain unsigned localhost previews without installer execution acceptance. All original 102 requirements and TC/NFR/G01–G10 retain their complete acceptance conditions.
-
-```mermaid
-flowchart LR
-  Editor[Script / storyboard / captions / supplied audio] --> Version[Save immutable project revision]
-  Version --> Queue[Explicit render / bounded durable queue]
-  Codex[Controlled Codex execute tool] --> Queue
-  Queue --> Check[Current authority / fixed source SHA / expiry]
-  Check --> Encode[Native FFmpeg / integer frames]
-  Encode --> Probe[Full decode / media probe / audio volume]
-  Probe --> Publish[Recheck lease and sources / publish six files]
-  Publish --> Playback[Web and frameless Desktop playback]
-  Panel[Native Chrome Side Panel] --> Editor
-  Queue --> Cancel[Cancel / immutable failure / explicit retry]
-  Publish --> Policy[Admin isolation / source expiry / physical deletion]
-```
-
-This stage verifies actual scoped video Admin API body permissions and content actions. Admin screenshots below retain their original execution scope.
-
-## Batch designs and current clients (stage 59)
-
-Design canvas now creates a creative × language × size matrix, capped at 60 independent delivery units. Supply Traditional Chinese/English copy, a fixed shared project PNG and preset or custom dimensions. Each size receives its own layout and actual PNG, SVG and editable JSON files. Edits, retries, failures and output history belong to individual units. Layout makes no AI calls: its recorded AI cost is HK$0 from local composition, excluding upstream source creation costs.
-
-Claims and publication recheck current authority, input revision and source access. Cancellation, revocation and expired leases fence late output. Existing scoped Admin body permissions apply. Source quarantine blocks derived downloads; deletion physically erases embedded copies. SVG references server fonts; custom font distribution and commercial font qualification remain separate work.
-
-Validation: **22/22 focused checks within 607/607 complete Platform tests**, retaining all original 588 named tests; **10 actual Web journeys and 13 new packaged/native journeys** passed. Independent unit suites passed Web 8, Desktop 25, Extension 21 and Delivery 12. Both native databases upgraded 068→069 while preserving every row digest in 151 prior public tables and SQL001–068; three new tables force RLS.
-
-Desktop remains frameless with custom controls and no default Electron menu. The extension toolbar opens the native Side Panel and toggles it closed; its batch-design entry opens the full company workspace. Current previews are Desktop `release/matrices-59-02/` and Extension `release/matrices-59-02/CopyPaste-0.5.0-sidepanel.zip`. Earlier packages remain intact. These unsigned localhost previews have not passed installer execution or store distribution acceptance. Other professional workflows, live services, all original 102 requirements and TC/NFR/G01–G10 remain independently tracked.
-
-```mermaid
-flowchart LR
-  Brief[Copy / fixed PNG / languages / sizes] --> Bound[Authorize / 60-unit bound]
-  Bound --> Units[Durable independent units]
-  Units --> Layout[Reflow text and image / lease]
-  Layout --> Recheck[Recheck current authority and sources]
-  Recheck --> Files[PNG / SVG / editable JSON]
-  Layout --> Failed[Keep failed receipt]
-  Failed --> Retry[Retry only this cell]
-  Files --> Edit[New input revision for this cell]
-  Retry --> Units
-  Edit --> Units
-```
-
-This stage verifies actual Admin API body authority and quarantine/restore/delete. Admin screenshots below retain their original stage 58 execution scope.
-
-## Provider Admin controls (stage 58)
-
-The Admin Provider controls page supports immutable policy drafts and independent publication, scoped request filters and extra cost-field authority, downloadable immutable human evidence, separate cost and capacity confirmation, and original task settlement. Original unknown observations remain intact. Settlement derives frozen prices instead of accepting a client amount, excludes platform-funded input counting and creates one customer debit. Legacy arbitrary reconciliation cannot bypass durable provider records.
-
-Validation passed **158/158 focused checks within 588/588 full tests**, retaining all 559 stage 57 named tests. The same 753 Platform sources passed type checking and the actual build. The built Admin passed **10 real browser journeys and 29 strict response samples**, including email/TOTP sign-in, a second reviewer, separate cost/capacity facts, one settlement, scoped redaction, bilingual dark and narrow layouts. AI observations are explicitly simulated. All owned browsers and services were closed.
-
-Both existing native databases upgraded from 067 to 068 while preserving every row digest in 144 original public tables, SQL001–067 and historical checksums. Seven new tables force RLS without automatically granting existing administrators new rights or fabricating publications, evidence or charges. All original 102 requirements, TC/NFR/G01–G10, live-role qualification and distribution acceptance remain open; older sections retain their historical scope.
-
-```mermaid
-flowchart LR
-  Original[Original unknown observation] --> Scope[Scoped request directory]
-  Scope --> Evidence[Immutable human source record]
-  Evidence --> Preview[Current facts / no business effect]
-  Preview --> Review[Independent Admin / reauthorize]
-  Review --> Cost[Append confirmed cost]
-  Review --> Capacity[Separate termination confirmation]
-  Cost --> Task[Original task / aggregate once]
-  Task --> Ledger[One debit / failed business result]
-```
-
-### Explicit activation for an existing administrator
-
-From the Platform repository, a trusted operator previews one active, MFA-enrolled permanent global super administrator:
-
-```powershell
-node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "Assign provider control owner"
-node --env-file=.env --import tsx scripts/admin-enable-provider-control.ts --principal PRINCIPAL_UUID --reason "Assign provider control owner" --apply --expected-hash PREVIEW_SHA256
-```
-
-Use the exact preview hash and unchanged reason. Preview again if the database or target authority changes. Activation revokes old sessions and requires fresh email/TOTP sign-in. Explicitly activate two separate administrators for independent review. The command never selects a principal or expands existing roles automatically. Keep `.env` and private identity configuration outside Git.
-
-### Actual unedited pages with labelled simulated data
-
-![Provider request / simulated evidence](assets/screenshots/provider-admin-08-unknown-request-en.png)
-
-![Independent provider policy review](assets/screenshots/provider-admin-08-independent-review-1-en.png)
-
-![Chinese dark narrow request detail](assets/screenshots/provider-admin-08-detail-zh-mobile.png)
-
-## Model configuration and independent publication (stage 53, verified Admin subflow)
-
-Open **Roles & content → Model capabilities** to manage the fixed Codex kernel, internal model aliases, text reasoning effort and exact HKD rates. Saving creates an immutable version. Inspect actual verification usage, cost, eligibility and separate workspace cleanup status. Publication/rollback compares the current and proposed configuration before another authorized administrator reviews it; a pending request is never labelled published. The existing content catalog retains its own entry.
-
-The page uses existing CopyPaste colors, bundled Manrope/Fraunces fonts, Traditional Chinese/English and light/dark themes. The production build and actual browser run 06 pass 11/11, with 14 unedited captures: email/TOTP, self-review refusal, independent publication and rollback, exact rates, image verification, 390px navigation, read-only access and current revocation. Identity, authorization and persistence execute for real; models/media use authorized simulations. Visible customer model/price comparison and explicit adoption, and all 102 original acceptance cases, remain open.
-
-![Model capability management](assets/screenshots/capabilities-06-catalog-en.png)
-
-[Traditional Chinese dark theme](assets/screenshots/capabilities-06-catalog-zh-dark.png) · [Mobile layout](assets/screenshots/capabilities-06-catalog-mobile-en.png) · [Publication comparison](assets/screenshots/capabilities-06-publication-comparison-en.png)
-
-```mermaid
-flowchart LR
-  Form[Model / effort / rates] --> Draft[Immutable version]
-  Draft --> Verify[Actual Codex / internal protocol verification]
-  Verify --> Compare[Current and proposed configuration]
-  Compare --> Request[Pending independent approval]
-  Request --> Review[Another administrator rechecks]
-  Review --> Publish[Append publication or rollback]
-```
-
-## Controlled support update / 受控客服协助
-
-A13 now searches real customers, selects an explicit workspace/project scope and provides canonical operation receipts, revocation and a time-limited read-only view. Its persistent banner identifies the real administrator, customer, read-only mode and server deadline. Expiry, loss of access or read failure clears content.
-
-![Read-only support workspace](assets/screenshots/51-support-en-light-1440.png)
-
-Stage 51 current regression: 424/424 with 711 source files; controlled-support browser workflows: 8/8 with 816 source files and 9 unedited captures. The 14 support tests, original contract checks, migration preservation and separate native checks are bounded evidence, not completion of all 102 acceptance cases. Current binaries are rebuilt; stage 50 binaries remain unchanged in their archive.
-
-```mermaid
-flowchart LR
-  Customer[Customer grant] --> Scope[Explicit projects and deadline]
-  Admin[Real administrator with MFA] --> Scope
-  Scope --> Read[Read-only support view]
-  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
-```
-
-
-[简体中文](README.md) · Independent operations console · 0.5.0
-
-An independent Git repository and admin client with separate identity, cookies and entry point from customer Web. It manages customers, workspaces, consumption, funding, VIP, content, execution, access and published product configuration. It shares CopyPaste branding, Traditional Chinese/English and light/dark themes. The platform enforces all authorization, auditing and transactions.
-
-![Operations overview](assets/screenshots/01-overview.png)
-
-## Durable financial notifications and three-client accounts (stage 50)
-
-Existing financial and VIP/explicit-gift commands now capture user-notification intent atomically on the platform, preserving the original permissions, independent review and exact ledger provenance. Pending, rejected and replayed requests do not create duplicate funding or notification facts. Bank evidence and internal reasons stay out of customer notifications. Admin retains its separate identity; the capture below shows the actual customer result, not impersonation or a new funding endpoint.
-
-Stage 50 historical platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
-
-```mermaid
-flowchart LR
-  Source[Canonical financial fact] --> Tx[Same-transaction outbox]
-  Tx --> Worker[Current eligible recipient]
-  Worker --> Access[Recheck current authority]
-  Access --> Clients[Web / frameless Desktop / native Side Panel]
-```
-
-![Actual customer notification result](assets/screenshots/financial-client-inbox.png)
-
-## Atomic VIP and explicit credit (stage 49)
-
-The existing VIP form can include a deliberate HKD gift with its own exact amount, expiry and reason. One frozen preview and one confirmation create a parent operation. The server commits canonical VIP and financial child operations in one database transaction, or rolls both back. If either risk policy requires review, the whole request waits for another administrator with both domains' permissions; pending requests create no entitlement or credit.
-
-```mermaid
-flowchart LR
-  Form[VIP and explicit gift] --> Preview[Freeze both versions and policies]
-  Preview --> Review[Confirm or independent review]
-  Review --> Tx[One transaction]
-  Tx --> Result[Two successful children and one credit reference]
-```
-
-![Actual combined completion](assets/screenshots/78-vip-credit-both-completed.png)
-
-The current full platform run passes 394/394 with 703 unchanged source files; the 19 focused groups are included. Nine actual Admin/user browser groups and 12 unedited captures are bounded evidence. The 125 original-schema responses and one strict supplemental request are checked separately. Additive migration 060 preserves complete old-row digests for all 119 original public tables in each native database, applied 001–059 bytes and historical null checksums. Initial fixture errors and two verifier mistakes remain archived. All original REQ/TC/NFR/G01–G10, professional role quality, real external services and production/installation acceptance remain in scope. Master details are in `docs/technical/49-atomic-vip-and-explicit-credit.md` and current Delivery receipts.
-
-
-## Plans and access
-
-`/plans` provides structured allowance forms, complete read-only definitions, new versions within a family, frozen publication comparisons, confirmation and shared independent review. CopyPaste branding, Traditional Chinese/English and light/dark themes remain consistent. HKD input preserves large integers; validation retains input, shows field errors and focuses a linked error summary. Saved versions cannot be edited in place.
-
-```mermaid
-flowchart LR
-  Form[Plan form] --> Draft[New version]
-  Draft --> Preview[Review frozen comparison]
-  Preview --> Approval[Independent review]
-  Approval --> Published[Published definition]
-```
-
-![Plan directory](assets/screenshots/50-plan-directory.png)
-
-![Publication comparison](assets/screenshots/53-plan-publication-preview.png)
-
-Six real browser flows and eight original-schema responses pass. Reports, screenshots and source digests are in delivery's `admin-plans.json`, `admin-plan-contract-samples.json` and `admin-plan-screenshots.json`. The initial missing-browser-path run and visually compressed pricing-style captures are preserved separately. Current Admin classes are isolated and guarded by layout assertions.
-
-Publication does not automatically activate VIP, credit a wallet or transfer money. Complete canonical VIP lifecycle, seat/storage enforcement and customer consumers remain separate unfinished work. The legacy VIP page retains its historical behavior.
+`src/main.tsx` implements navigation and user details. `src/directory.tsx` implements directory/period filters. Domain components implement approvals, fees, entitlements, content and configuration. Backend API authorization and ledger entries are authoritative; hidden UI buttons are not security boundaries.
 
 ## Run
-
-Requires Node.js 22.14+ and a running platform/database. Enroll an administrator and import TOTP using the platform CLI:
-
-```powershell
-# Run in the platform checkout
-npm run admin:create -- admin@your-company.example super_admin
-```
-
-Then in this repository:
 
 ```powershell
 npm ci
 npm run dev
+```
+
+Open `http://localhost:4318` after starting backend and enrolling an administrator. `npm run build` produces static deployment files. Production needs a dedicated Admin origin, HTTPS, email, MFA, assigned permissions, recovery administrators and audit retention.
+
+## Demonstration scope
+
+The actual recording establishes a separate session through Backend email OTP and TOTP, then shows directory filtering, customer usage and VIP/credit forms. Opening forms is not represented as a financial posting. Retained database/API and Admin evidence covers write, approval, concurrency and authorization behavior.
+
+## Checkout and prerequisites
+
+Clone this branch into a fresh working directory; update an existing repository without reinitializing it.
+
+```powershell
+git clone --single-branch --branch admin git@github.com:copypasteltd/workmate.git copypaste-admin
+cd copypaste-admin
+```
+
+Use Node.js ≥22.14, npm and Git with pinned lockfiles. The qualified local environment is Windows x64. Backend/full delivery also needs native PostgreSQL launcher resources, pinned Codex `0.163.0-alpha.10.2` and FFmpeg/FFprobe. No local Docker, WSL or virtualization. Run components in separate directories; see [workspace](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md).
+
+## Checks and evidence scope
+
+```powershell
 npm run typecheck
+npm test
 npm run build
 ```
 
-Visit `http://localhost:4318`. Deploy `dist/` with HTTPS, an exact Admin origin and `/v1` reverse proxy; keep SPA fallbacks separate from API responses. Optional public `VITE_API_BASE` is in `.env.example`. Never embed AI/database secrets. Docker, WSL and virtualization are prohibited.
+**782/782** Platform and **34/34** focused tests, plus **13 checks** across six repositories for types/build/existing client suites. The actual packaged Desktop and native Side Panel journey passes **32** checks, retaining every prior named test among 765. Actual Codex child-process tool/thread/usage behavior is tested through a synthetic internal API. UI turns/business data in these demonstrations are synthetic as authorized. All 102 original requirements remain: 81 partially verified, 21 without proven completion and zero fully accepted. Screenshots and test counts do not establish whole-product acceptance.
 
-Every admin login requires email OTP and TOTP. Sensitive writes require MFA in the last 10 minutes; sign in again when it expires. Development codes are in the platform's local mailbox. There is no shared default administrator.
+Canonical TaskDTO/task creation, arbitrary in-flight pause, unknown-effect recovery, independent complete role workflows, GEO, live suppliers and production/signing/store qualification remain tracked.
 
-## Sixteen pages
+## Actual screens and interactions
 
-| Page        | Implementation                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------------- |
-| Overview    | Separately authorized workspace/user/usage/reservation/reconciliation summaries                               |
-| Users       | Database pagination/search, contact permissions, profile, memberships, consumption, status/session operations |
-| Workspaces  | Status, member count and separately authorized financial fields                                               |
-| Usage       | User/workspace/project-scoped task, token and charge aggregates                                               |
-| Billing     | Personal/workspace accounts, original ledger and canonical fee previews/reviews; full payment/refund contracts pending                    |
-| VIP         | Personal/workspace grants, actual start/end times, suspend/resume/extend/revoke                               |
-| Content     | Unified metadata, separate body/download permissions, quarantine/restore and version checks                   |
-| Execution   | Status, cancellation, reconciliation and eligible child-task retries                                          |
-| Catalog     | Installed role/Skill enablement and presentation, versioned help/announcements/navigation                     |
-| Connections | Connected provider scope and revocation                                                                       |
-| Access      | Eight roles, 68 permissions, bounded custom roles, scoped/expiring bindings and revocation                    |
-| Support     | Time-limited support-session metadata; no silent impersonation                                                |
-| Audit       | Attributable operations, outcomes and timestamps                                                              |
-| Jobs        | Preview/commit user-status batches and restricted CSV exports                                                 |
-| Plans       | Immutable families/versions, structured allowances, frozen comparisons and independent review                                                 |
-| Policy      | Versioned approval thresholds and maximum VIP duration                                                        |
+Actual recordings preserve capture timing. AI turns/business data are explicitly synthetic. Admin form demonstrations do not claim a financial commit.
 
-![Customer detail](assets/screenshots/02-user-detail.png)
-![Financial ledger](assets/screenshots/01-billing.png)
-![Access management](assets/screenshots/01-access.png)
+![Actual product capture](assets/screenshots/workmate-06-users-en.png)
 
-## Administrator identity lifecycle
+![Actual product capture](assets/screenshots/workmate-06-user-usage-en.png)
 
-Version 0.3.0 adds Access-page invitations with an optional initial role, scope, amount/duration/batch limits and expiry. Account creation and initial delegation are atomic. Every delegated permission and limit must fit the inviter's current grants. Only the recipient receives the invitation link. Enrolled accounts without business permissions see an access-assignment waiting screen.
+![Actual product capture](assets/screenshots/workmate-06-vip-en.png)
 
-```mermaid
-flowchart LR
-  Bootstrap[Trusted first-admin CLI] --> Invite[Invite and bounded initial role]
-  Invite --> Mail[Recipient-only email link]
-  Mail --> OTP[Recipient verifies email]
-  OTP --> MFA[Recipient confirms new authenticator]
-  MFA --> Session[Independent admin session]
-  Session --> Scope[Scoped dashboard access]
-  Scope --> Control[Suspend / reset / revoke]
-  Control --> Fresh[Old sessions invalidated]
-```
+![Actual product capture](assets/screenshots/workmate-06-credit-en.png)
 
-The page removes the URL fragment immediately and keeps the invitation only in component memory. Email codes and MFA setups expire, limit attempts and have one consumer. New keys are returned only to the verified person. Account detail contains safe session metadata, roles/scopes, MFA and mail status. Resending invalidates the previous link/setup; failed delivery is shown explicitly. Resuming never revives old sessions.
+![Actual interaction GIF](assets/screenshots/workmate-06-interaction.gif)
 
-Sidebar authenticator settings require a recent admin sign-in and fresh email proof. The old key remains valid until the new TOTP is confirmed; success revokes old sessions and creates a current session. Account status, another administrator's MFA reset and session revocation require the matching permission, expected version and reason. Self-reset/self-suspension and removal of the last enrolled permanent recovery super administrator are rejected, including concurrent changes. Pending invitees do not count as recovery administrators. Role changes revoke sessions; pending recipients keep their invitation but must verify email and restart MFA setup.
+[MP4](assets/screenshots/workmate-06-interaction.mp4) · [Capture/source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/workmate-media-06.json)
 
-![Actual administrator inventory](assets/screenshots/04-admin-identities.png)
-![Recipient email verification](assets/screenshots/05-admin-email-enrollment.png)
-![MFA and safe session detail](assets/screenshots/08-admin-account-sessions.png)
-![Mobile account detail](assets/screenshots/09-admin-account-mobile.png)
+## Detailed design and updates
 
-Removing a deny restores access, so the server checks delegation permissions, scope intersections, limits and expiry. Operators cannot remove their own deny or delegate broader access over an explicit restriction in a smaller scope. Binding deletion supports same-key retries without repeated session revocation.
+- [Product](https://github.com/copypasteltd/workmate/blob/docs/docs/product/01-prd.md)
+- [Architecture](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/01-architecture-and-stack.md)
+- [Identity and permissions](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/07-security-and-permissions.md)
+- [Task continuation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/66-paid-native-input-checkpoints.md)
+- [Admin](https://github.com/copypasteltd/workmate/blob/docs/docs/product/08-admin-dashboard.md)
+- [Native clients](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/30-native-window-and-browser-sidepanel.md)
+- [Release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-workmate-publication.en.md)
 
-`src/admin-identities.tsx` implements enrollment, self MFA and account detail. Delivery `npm run qa:admin-identities` runs six actual browser groups, backed by 14 PostgreSQL/API test groups. Screenshots mask keys and verification codes. Production SMTP and enterprise SSO require separate live qualification.
-
-## Sensitive operations
-
-```mermaid
-flowchart LR
-  A[Admin email OTP and TOTP] --> R[Permission and scope]
-  R --> P[Financial or VIP command]
-  P --> V[Read-only preview, hash and target version]
-  V --> C[Commit within five minutes]
-  C --> T{Approval threshold reached?}
-  T -->|Yes| I[Different authorized approver]
-  T -->|No| D[Transactional commit]
-  I --> D
-  D --> L[Ledger, entitlement events and audit]
-```
-
-HKD values use integer micros. Confirmed-payment references are unique; this console does not acquire online payments. VIP is separate from wallet funds. Default monthly fees remain commercially unpriced.
-
-Global/tenant/project scope, explicit denies, amount/duration/batch limits and expiry constrain operations. Delegation cannot exceed the grantor's own grants. Self-grants and removal of the last permanent recovery administrator are rejected. Contacts, consumption, balances, content bodies and downloads are separate permissions.
-
-Published role JSON can only enable/disable installed definitions and adjust presentation; Skills can only be enabled/disabled. It cannot replace executable tools, kernel or model configuration. Quarantine affects customer visibility, sharing and subsequent execution. Collection filtering happens in authorized SQL before pagination.
-
-## Private-content governance
-
-The content inventory includes specialists, private conversations and memory alongside existing resources. Metadata and body reads require separate scoped permissions; body inspection is audited. Customer workspace administration does not provide platform-admin access to another user's private work.
-
-Quarantine affects customer APIs, RLS reads and subsequent running-task tools. Conversation deletion checks active work, then clears readable messages, task content, memory versions and cached replays. Deleted conversations/memory have no restore action. Instructions change through the versioned specialist API, preserving frozen task definitions. Retried work retains private ownership/context and rechecks authorization and entitlements.
-
-![Actual private-body governance](assets/screenshots/03-private-content-governance.png)
-
-## Verification and limits
-
-`npm test` is type checking. Delivery `npm run qa:web` exercises all 16 pages, actual OTP/TOTP, funding/VIP submission and customer detail. Delivery `npm run qa:persistent` also checks private-body reads and quarantine/restore. Platform tests cover access denial, concurrency, financial replay, VIP, bounded delegation and recovery-admin protection.
-
-Exports are limited to 500 rows and 15 minutes, with source authorization rechecked at download. A trusted CLI bootstraps the first recovery super administrator; the UI handles subsequent invitations, MFA enrollment/replacement, suspension/resumption, resend and session revocation. Support sessions expose metadata, not customer impersonation or delegated body access. Online payments, SAML/SCIM and large exports remain unfinished.
-
-`src/main.tsx` contains pages/commands, `api.ts` handles Cookie/CSRF, and UI foundations are a self-contained snapshot recorded in `shared-source.json`. Screenshots use real development records with fictional fixtures. Master documents are in the delivery root's `docs/`; see [notices](THIRD_PARTY_NOTICES.md).
-
-## Cloud schedule controls
-
-Version 0.4.0 adds scoped search and pagination for calendars on Execution, displaying metadata. Pause and resume separately require `execution.pause` / `execution.resume`, recent MFA, the current record version and a reason. Pausing preserves current work; resuming starts now without backfilling. Original user authorization is retained. Revoked authorization requires a project administrator to confirm a fresh one; an Admin cannot create new user authority through this operation.
-
-Content governance can quarantine or delete calendars. Deletion scrubs configuration bodies and replay responses while retaining audit metadata. Quarantining the parent workflow stops future triggers and cancels current runs. `src/schedules.tsx` supplies the UI; platform queries enforce scope and authorization.
-
-![Actual cloud schedule controls](assets/screenshots/11-cloud-schedules.png)
-
-## 0.5.0 company identity and unified sign-in
-
-OIDC uses code + PKCE S256, signature verification, state/nonce and a fixed callback. An existing registered account and active workspace membership are required. First binding requires a separate CopyPaste work-email code; domains never auto-enroll users. Configuration changes, disablement or unlinking revoke all linked users’ CopyPaste browser/native/refresh sessions and prior execution authorization. Administrator email and TOTP remain separate.
-
-The workspace identity action configures OIDC callback URI, email domains, client ID, write-only secret, signature and email policy. Save, check, enable and disable are separate commands. Global `admin.tenants.sso.write` excludes ordinary user operators. The UI explains metadata-only checks and the all-device sign-out impact of changes or disablement.
-
-```mermaid
-flowchart LR
-  Member[Existing workspace member] --> IdP[Signed OIDC and PKCE]
-  IdP --> Proof[First-link email proof]
-  Proof --> Web[CopyPaste session]
-  Web --> Native[Explicit native consent and PKCE]
-  Revoke[Disable or unlink] --> All[Revoke browser and native credentials]
-```
-
-![Actual company identity interface](assets/screenshots/12-company-sign-in.png)
-
-## Lifecycle repairs in progress
-
-Content management now shows durable deletion progress, failed cleanup items and retries guarded by scope, recent MFA, reason and idempotency. Permanently deleted assets cannot be restored or renamed, and download streams recheck authorization after opening. A persistent banner identifies synthetic mode; demo gifts are distinct from payments. Tiny nonzero charges display up to six decimals.
-
-These source changes have not been repackaged; 0.5.0 archives retain their original contents. Full requirements and outstanding conditions remain in the master alignment report.
-
-![Erasure journal](assets/screenshots/18-erasure-journal.png)
-![Dark cleanup panel](assets/screenshots/19-erasure-dark.png)
-
-## Cloud directory governance (current source)
-
-Workspace nodes are included in the content resource inventory. Existing scope, body-access, version, reason and audit checks govern metadata inspection, quarantine, restoration and deletion. Quarantining a folder hides descendants from user search and model reads. Entry removal preserves independent source assets; permanent asset erasure remains a separate lifecycle action.
-
-## Waiting-task input governance (current source)
-
-Authorized task-body inspection now includes requested input descriptions, provider, scope, state, selected IDs and version. Body reads retain their separate permission, data scope and audit; support-role metadata access does not expose private requests or credentials. Execution cancellation can release the original hold of an unstarted waiting task without a model charge. Retry preserves private ownership and requirements, then rechecks current resources.
-
-Delivery `qa:admin-task-inputs` passes three actual browser groups. Platform negative tests also reject support-role body access. Screenshots use synthetic task data; browser instances close after verification.
-
-![Authorized inspection of requested inputs](assets/screenshots/20-task-input-review.png)
-![The same task-body panel in dark mode](assets/screenshots/21-task-input-review-dark.png)
-
-## Execution queue reasons (current source)
-
-Execution lists readable reasons for shared workspace slots, current user limits and platform/media/service capacity. Existing execution-read scope, cancellation/retry and audit checks apply; no other-workspace counts or credentials are exposed. Delivery `qa:execution-capacity` checks the actual page after independent MFA.
-
-![Scoped queue reason](assets/screenshots/22-capacity-queue.png)
-![Dark execution queue](assets/screenshots/23-capacity-queue-dark.png)
-
-## Cleanup pages and current authorization
-
-The content journal filters by state, type and literal record/target ID. Its URL retains filters and paging. The default is 50 records, with explicit 25/50/100 choices and bounded keyboard-focusable scrolling. General Admin collections, administrator identities and schedules also default to 50. Polls start after the previous response finishes; errors hide old records, and switching queries never exposes the previous page. Retry still requires its separate delete permission, current scope, recent MFA, reason and idempotency key.
-
-Delivery `npm run qa:admin-records` passes five browser groups: 58 visible and six excluded records, paging/combined filters, grant expiry, delayed-denial cleanup, four widths and two themes/languages. Journal targets are explicit synthetic fixtures; email/MFA login and authorization queries are real. Full operational filters, column configuration and million-record benchmarks remain pending.
-
-```mermaid
-flowchart LR
-  URL[Filters and page] --> Scope[Current scope and deny]
-  Scope --> Page[Bounded records and visible total]
-  Page --> Panel[Scrollable table]
-  Error[Failure or expiry] --> Clear[Hide old records]
-```
-
-![Cleanup pagination](assets/screenshots/24-cleanup-pagination.png)
-![Traditional Chinese dark journal](assets/screenshots/25-cleanup-pagination-dark.png)
-![Narrow cleanup panel](assets/screenshots/26-cleanup-mobile.png)
-
-## Administrative boundary for template execution
-
-New persisted templates recheck current role/method disabling, project access and plans at preflight and creation. Server-owned versions pin Codex and the internal gateway, and revocation blocks later execution. Existing Admin catalog controls still apply. Drafts, complete template version editing/publication and enterprise brand overrides remain pending; the registry alone does not constitute a complete template administration panel.
-
-Queued pause/resume now shares platform domain guards with customer controls: only the unclaimed initial checkpoint and an intact original reservation are eligible. Resume rechecks beneficiary authorization, role/Skills, entitlements and inputs. Admin scope does not replace revoked beneficiary access; reasons, versions and human audit remain required. See master `docs/technical/31-task-controls-and-native-continuation.md`.
-
-## Workspace membership management
-
-User details now open a membership form for role, active/admin-suspended/removed state, explicit projects and reason. Preview the before/after access, then execute or submit for independent review. Reviewers see frozen business parameters and the deadline. Unknown-result retries retain their operation identity; the browser receipt stores no raw reasons or credentials. Six current UI groups now pass, with corrected result navigation and three new screenshots below; earlier unverified receipts and gallery images retain their historical scope.
-
-```mermaid
-flowchart LR
-  CurrentScope --> RecentMFA --> FrozenPreview --> Policy
-  Policy --> DirectApply
-  Policy --> IndependentReview --> Recheck --> DirectApply
-  DirectApply --> MembershipAndAudit
-```
-
-
-## Global accounts and workspace state
-
-The user detail account dialog separates name/labels, account state and all-session revocation. Workspace state uses the same canonical preview flow. Controls load the current revision/capabilities, show frozen differences and in-flight handling, and retain the result until dismissal. Closure/reopening defaults to another administrator's review; approval screens load the frozen command before deciding. Canonical POST commands return 202 AdminOperation and retain one idempotency key after an unknown result. Obsolete account PATCH calls are removed. Existing brand tokens, English/Traditional Chinese labels, focus handling and modal components remain in use; backend authorization is decisive.
-
-Global suspension revokes credentials across clients; workspace suspension affects that workspace. Accepted work still requires settlement/reconciliation, and account closure retains data rather than performing privacy erasure. Build, API and targeted evidence do not establish complete UI, native or release acceptance.
-
-
-The new account form passes **5/5** real browser groups: profile preview/confirmation, freeze, closure navigation and visible self-review refusal, three widths with English/light and Traditional Chinese/dark, and Escape dismissal. All owned browser resources closed. Other membership/native open issues remain separate. Results link directly to filtered approval or operation records.
-
-![Profile differences](assets/screenshots/54-account-profile-preview.png)
-![Frozen account review](assets/screenshots/55-account-closure-review.png)
-![Traditional Chinese dark controls](assets/screenshots/56-account-control-dark-zh.png)
-
-
-## Canonical directory and scoped charges
-
-User lists, details and workspace lists consume the original strict AdminUserList/AdminUserDetail/AdminTenantList. Filters include user/workspace/project, state, effective VIP, confirmed-charge interval and page size. Reset/refresh starts a new cursor sequence; previous/next use actual signed cursors. Counts describe the current page. Unauthorized contact, charge and entitlement fields display a dash or an explicit permission message instead of fabricated zero/no-VIP claims.
-
-A separately authorized context supplies workspace names, task counts and personal grant history. Account, membership, billing and VIP controls retain canonical user IDs. Billing target selection reads every authorized workspace cursor page. Typechecking and production build pass. Seven actual API/Vite UI groups cover 23 users across 20/3 pages, filters, detail and existing management entry points, recent MFA and anonymous rejection. Owned Chromium closes after synthetic-data verification.
-
-```mermaid
-flowchart LR
-  Filters[Search and advanced filters] --> First[Reset cursor]
-  First --> Page[Current authorized page]
-  Page --> Next[Saved signed cursor / previous and next]
-  Page --> Detail[Strict user detail]
-  Detail --> Actions[Account / membership / billing / VIP]
-```
-
-![Directory and filters](assets/screenshots/57-users-directory.png)
-![Strict detail and scoped workspace charges](assets/screenshots/58-user-detail-scopes.png)
-![Traditional Chinese dark mobile filters](assets/screenshots/59-directory-mobile-dark.png)
-
-These are actual local screenshots. English light layouts were checked at 375/768/1440 and Traditional Chinese dark at 375; this does not accept every language/theme/page or financial write operation. The separate older membership UI open receipt remains.
-
-## Canonical financial commands and independent review
-
-Billing now uses actual personal/workspace accounts, subject filters, cursor pages, original ledger entries, canonical gift/debit/credit-limit forms and independent approval requests. Inputs and reviews retain six decimal places. Previews do not change funds; retries keep the same idempotency key. A distinct request ID, frozen hash and version bind each review, with live financial/approval permissions and the original submitting session rechecked. Existing CopyPaste colors, bilingual labels and light/dark themes are retained.
-
-```mermaid
-flowchart LR
-  Account[Authorized account and original ledger] --> Preview[Amount, source and revision]
-  Preview --> Submit[Idempotent confirmation]
-  Submit --> Apply[Actual ledger and audit]
-  Submit --> Review[Independent administrator]
-  Review --> Apply
-```
-
-`npm test` checks precise amounts and invalid boundaries; `npm run build` checks production output. Delivery's `npm run qa:admin-fees` passed four actual HTTP/browser groups with ten strict response captures and closed its owned browser resources. Screenshots contain synthetic customers and simulated funds, with no external payment or model call.
-
-![Billing accounts](assets/screenshots/24-billing-accounts.png)
-![Pure preview](assets/screenshots/25-fee-preview.png)
-![Actual independent review](assets/screenshots/26-financial-independent-review.png)
-![Original ledger](assets/screenshots/27-billing-ledger.png)
-![Traditional Chinese dark/mobile](assets/screenshots/28-billing-mobile-dark.png)
-
-This does not accept the complete billing/admin product. Payment evidence/records, external refunds/reconciliation, original-bucket consumption refunds, immutable plans/VIP, financial outbox, the full canonical approval directory and remaining client consumers still require implementation and acceptance. Existing legacy funding/refund/VIP pages do not establish those contracts. Central scope: `docs/technical/41-canonical-fee-commands-and-independent-approvals.md`.
-
-## Current membership UI verification (2026-10-20)
-
-Membership results now locate the actual operation: pending reviews use `/audit?view=approvals&search=…`; completed changes use `/jobs?search=…`. Delivery `npm run qa:admin-membership-ui` passes 6/6 groups with two real scoped email/TOTP admin logins: pure previews, suspension/restoration and Web owner feedback, frozen parameters, self-review rejection, another administrator's approval and Traditional Chinese dark at 390px. Four actual AdminOperation payloads pass strict validation; 179 source/verifier files remain unchanged. Unit tests pass 3/3 and production builds. Owned browsers/sessions close, temporary admins are confirmed suspended in the database, and model calls are zero.
-
-![Suspension preview](assets/screenshots/29-membership-suspension-preview.png)
-![Independent frozen-command review](assets/screenshots/30-membership-independent-review.png)
-![Traditional Chinese dark/mobile](assets/screenshots/31-membership-mobile-dark.png)
-
-Original unverified/failed receipts are preserved. This member workflow still uses supplementary frozen review and its legacy decision endpoint; the complete normative approval directory, other Admin domains and all native/system acceptance remain unfinished. Central evidence: `docs/technical/42-current-membership-ui-and-native-auth-recovery.md`.
-
-## Shared approval directory and independent review (2026-10-20)
-
-The directory consumes the original AdminApprovalList and displays real request IDs, associated operations, requesters, persisted states, deadlines and revisions with signed cursor pagination. Membership/account result links resolve the actual request; review submits its frozen revision and hash. Requesters see a notice requiring another administrator. A different reviewer needs both approval and business permissions. Fees retain their detailed amount and original-source review. Overview pending counts use a separate scoped summary.
-
-```mermaid
-flowchart LR
-  Queue[Approval request directory] --> Frozen[Frozen command and prior state]
-  Link[Business operation result link] --> Frozen
-  Frozen --> Other[Different reviewer confirms revision and hash]
-  Other --> API[Atomic server authorization and execution]
-  API --> Reload[Reload actual request and business state]
-```
-
-![Normative approval request directory](assets/screenshots/32-canonical-approval-directory.png)
-
-This increment does not constitute complete payments, refunds, VIP or full Admin authority-matrix acceptance; all original conditions remain tracked.
-
-Current checks pass: membership 6/6, fees 4/4 and accounts 5/5, with real list/decision payloads validated against the original schemas. The new component was rerun after matching working-tree bytes to Git LF bytes; earlier receipts remain archived.
-
-## Payment evidence and independent verification (2026-10-20)
-
-Billing now provides the normative payment directory, signed pagination, evidence registration, independent verification and exact-source top-ups. Received, verified and posted are distinct facts. Requesters cannot verify their own receipts, and verification alone does not credit a wallet. The payment ID carries into the account preview; exact HKD strings and persistent idempotency prevent double credit. The directory reloads after the operator posts credit.
-
-```mermaid
-flowchart LR
-  Record[Review and record evidence] --> Other[Independent verifier]
-  Other --> Preview[Exact receipt and account preview]
-  Preview --> Post[Authority and necessary review]
-  Post --> Refresh[Actual ledger and directory reload]
-```
-
-![Evidence registration](assets/screenshots/admin-payment-evidence-record.png)
-![Verified without crediting the wallet](assets/screenshots/admin-payment-independently-verified.png)
-![Actual posted source](assets/screenshots/admin-payment-posted-ledger.png)
-
-These are viewport crops of retained original browser screenshots. All five groups pass with actual uploaded evidence and two real email/TOTP administrators. The explicit simulated receipts involve no bank or AI call. Complete refunds, VIP and full Admin acceptance remain tracked.
-
-## Original-source refunds and cash evidence (2026-10-20, later increment)
-
-Consumption compensation restores original promotional/paid funding or the actual credit repayment source, preserves gift expiry and cancels only the original unpaid obligation. Cash refunds reserve unspent verified original payments. A different administrator records each actual payout, remaining non-payment or unknown/mismatched result; a partial payout never becomes a false full success. Missing legacy repayment provenance requires reconciliation.
-
-Current Platform regression passes 324/324 with 683 unchanged source files. Actual financial/refund UI passes 8/8 with 47 unchanged sources; 100/100 original response schemas and 14/14 supplemental refund checks pass separately. The 50 focused cases overlap the full run. SQL 053–055 are applied to both native databases; 001–052 remain unchanged. Synthetic model/media/payment fixtures do not qualify live providers. Legacy credit reconciliation, full payment/VIP/outbox, system and complete acceptance remain outstanding. Earlier counts describe their historical stages.
-
-```mermaid
-flowchart LR
-  Intent[Original transaction and preview] --> Review[Current authority and required independent approval]
-  Review --> Sources[Restore original consumption sources]
-  Review --> Hold[Reserve refundable original payment]
-  Hold --> Other[Another administrator verifies actual outcome]
-  Other --> Paid[Debit verified payout only]
-  Other --> Unpaid[Release confirmed unpaid remainder]
-  Other --> Unknown[Keep unknown or mismatch reconciling]
-```
-
-![Original compensation sources](assets/screenshots/admin-refund-original-sources.png)
-![Independently verified partial payout](assets/screenshots/admin-refund-partial-payment.png)
-![Amount mismatch](assets/screenshots/admin-refund-mismatch.png)
-![Partial payout closed](assets/screenshots/admin-refund-partial-closed.png)
-![Traditional Chinese dark mobile detail](assets/screenshots/admin-refund-mobile-dark.png)
-
-After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
-
-Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
-
-## Canonical VIP management and revision history (stage 47)
-
-The VIP page replaces the generic form with personal/workspace subjects, a published fixed plan UUID, source and payment reference, exact dates, overlap policy and reason. It reads the current subject version, shows frozen effects and then submits a durable operation. Independent reviewers cannot approve their own requests. Original actors, actual reviewers and grant revisions remain distinct. Details support extension, suspension, resumption and revocation, while unknown historical facts stay unknown. Errors retain inputs and focus the summary; refreshing details no longer discards an operation receipt.
-
-```mermaid
-flowchart LR
-  Directory[Scoped grants] --> Form[Structured parameters]
-  Form --> Preview[Frozen effects]
-  Preview --> Submit[Confirm and retain receipt]
-  Submit --> Review[Independent decision when required]
-  Submit --> History[Origin and immutable revisions]
-  Review --> History
-```
-
-Delivery `npm run qa:admin-vip` passes six actual browser groups and nine original response schemas using real email/TOTP Admin sessions and a real customer session. Checks cover retained invalid inputs and focus, independent review, customer effective access, suspension/history and a 375px Traditional Chinese dark form/future preview. Tables scroll within their region without widening the page. Original failed runs and screenshots are retained.
-
-![Frozen entitlement comparison](assets/screenshots/62-vip-frozen-comparison.png)
-![Independent review](assets/screenshots/64-vip-independent-review.png)
-![Suspended revision history](assets/screenshots/66-vip-suspended-history.png)
-![Mobile dark frozen preview](assets/screenshots/68-vip-mobile-frozen-preview.png)
-
-Complete seat/storage controls, atomic VIP plus credit, the entire Admin permission/export matrix and original integrated acceptance conditions remain tracked in the main docs. Model/payment dependencies are explicitly synthetic; authentication, authorization and accounting records execute for real.
-
-## Enterprise seat and storage enforcement (stage 48)
-
-The tenant directory now opens a capacity panel with active seats, retained file bytes, valid upload reservations, limits and over-limit status. Both current `admin.tenants.read` and `admin.entitlements.read` must cover the whole workspace. Project-only allows are insufficient, and overlapping denies reject the aggregate. Reads are audited; failed or revoked reads clear old totals. English/Traditional Chinese, both themes and narrow layouts use existing controls.
-
-Private files contribute only to aggregate usage. Member creation/restoration and independent approval execution recheck current capacity; changing an already-active member role does not allocate another seat.
-
-![Actual admin capacity](assets/screenshots/71-admin-workspace-capacity.png)
-![Revoked capacity permission](assets/screenshots/74-admin-capacity-permission-revoked.png)
+Every later change updates both READMEs, affected actual captures/GIFs, release notes and its mapped branch. Verify remote SHAs through Delivery publishing; do not force-push collaborator history. Keep environment secrets, databases, sessions, dependencies and installers out of Git. Exact historical README bytes are retained in [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
