@@ -2,6 +2,7 @@ import { randomUUID, createHash } from "node:crypto";
 import { realpath } from "node:fs/promises";
 import path from "node:path";
 import { LocalCodexSession, LocalCodexError, type LocalCodexHooks, type LocalSessionBinding, type LocalCodexProfile, type LocalPermissionGrant, type LocalPermissionMode, type LocalTurnResult } from "./local-codex.js";
+import { parseLocalInput, parseLocalAnswers, type LocalInputRequest, type LocalInputAnswers, type LocalPendingInput } from "./local-input.js";
 
 export interface LocalAgentScope { tenant: string; project: string }
 interface Operation {
@@ -53,6 +54,10 @@ export class LocalAgentController {
   private busy = new Set<string>();
   private permissions = new Set<string>();
   private running = new Map<string, { runtime?: LocalAgentRuntime; abort: AbortController; done: Promise<void> }>();
+  // Questions and answers are live process state, never journal entries. A
+  // renderer refresh can redisplay a question; an app restart cannot replay it.
+  private inputs = new Map<string, Map<string, { view: LocalPendingInput; op: Operation; signal: AbortSignal;
+    authorize: () => Promise<void>; complete: (answers: LocalInputAnswers) => void }>>();
   constructor(private readonly io: LocalAgentIO, private readonly runtimeFactory: LocalRuntimeFactory = (p, b, h) => new LocalCodexSession(p, b, h)) {}
 
   private async state() {
@@ -109,7 +114,48 @@ export class LocalAgentController {
   private view(r: LocalRecord) {
     return structuredClone({ id: r.id, tenant: r.tenant, project: r.project, workspace: r.workspace, role: r.role, revoked: r.revoked,
       permission: r.revoked ? null : r.grant?.mode ?? null, busy: this.busy.has(r.id), phase: r.operation?.phase ?? "idle", error: r.error,
-      uncertain: !!r.uncertain, task: r.lastTask, messages: r.messages, events: r.events, retryable: !!r.operation && ["accepting", "starting", "settling"].includes(r.operation.phase) });
+      uncertain: !!r.uncertain, task: r.lastTask, messages: r.messages, events: r.events,
+      inputs: [...(this.inputs.get(r.id)?.values() ?? [])].map(input => input.view),
+      retryable: !!r.operation && ["accepting", "starting", "settling"].includes(r.operation.phase) });
+  }
+  private async waitForInput(r: LocalRecord, op: Operation, raw: LocalInputRequest, signal: AbortSignal, authorize: () => Promise<void>) {
+    const request = parseLocalInput(raw);
+    await authorize();
+    if (signal.aborted || r.operation !== op || op.stopped || op.phase !== "native_running") throw new LocalAgentError("LOCAL_INPUT_CANCELLED");
+    const inputs = this.inputs.get(r.id) ?? new Map(); this.inputs.set(r.id, inputs);
+    if (inputs.size >= 4) throw new LocalAgentError("LOCAL_INPUT_LIMIT");
+    const requestId = randomUUID();
+    return new Promise<LocalInputAnswers>((resolve, reject) => {
+      const cleanup = () => {
+        signal.removeEventListener("abort", cancelled); inputs.delete(requestId);
+        if (!inputs.size && this.inputs.get(r.id) === inputs) this.inputs.delete(r.id);
+        this.io.changed();
+      };
+      const cancelled = () => { cleanup(); reject(new LocalAgentError("LOCAL_INPUT_CANCELLED")); };
+      inputs.set(requestId, { view: { ...request, requestId, submitting: false }, op, signal, authorize,
+        complete: (answers: LocalInputAnswers) => { cleanup(); resolve(answers); } });
+      signal.addEventListener("abort", cancelled, { once: true }); this.io.changed();
+      if (signal.aborted) cancelled();
+    });
+  }
+  async answer(id: string, requestId: string, raw: unknown) {
+    const r = await this.record(id); this.grant(r);
+    if (!uuid.test(requestId)) throw new LocalAgentError("LOCAL_INPUT_NOT_FOUND");
+    const input = this.inputs.get(id)?.get(requestId), active = this.running.get(id);
+    if (!input || !active || input.signal.aborted || active.abort.signal.aborted || r.operation !== input.op || input.op.stopped)
+      throw new LocalAgentError("LOCAL_INPUT_NOT_FOUND");
+    if (input.view.submitting) throw new LocalAgentError("LOCAL_INPUT_ALREADY_SUBMITTING");
+    const answers = parseLocalAnswers(input.view, raw);
+    input.view.submitting = true; this.io.changed();
+    try {
+      await input.authorize();
+      const current = await this.record(id); this.grant(current);
+      if (current !== r || this.inputs.get(id)?.get(requestId) !== input || this.running.get(id) !== active
+        || input.signal.aborted || active.abort.signal.aborted || r.operation !== input.op || input.op.stopped)
+        throw new LocalAgentError("LOCAL_INPUT_CANCELLED");
+      input.complete(answers);
+      return this.view(r);
+    } catch (error) { input.view.submitting = false; this.io.changed(); throw error; }
   }
   async list(scope: LocalAgentScope) {
     if (!uuid.test(scope.tenant) || !uuid.test(scope.project)) throw new LocalAgentError("LOCAL_SCOPE_INVALID");
@@ -215,6 +261,7 @@ export class LocalAgentController {
         const authorize = async () => {
           await assertOwner();
           const live = await this.api(r, taskURL + "/heartbeat", "POST", {});
+          await assertOwner();
           if (live.cancel_requested || live.state !== "running" || live.status !== "running") throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
           r.lastTask = live;
         };
@@ -224,6 +271,7 @@ export class LocalAgentController {
           workspace: r.workspace, stateRoot: this.io.stateRoot, grant: { ...this.grant(r) }, skills: started.skills,
           ...(r.companyToolsVersion === 1 ? { companyTools: started.company_tools ?? [] } : {}) }, {
           authorize, approval: (kind, value) => this.io.approval(kind, value),
+          userInput: (request, signal) => this.waitForInput(r, op, request, AbortSignal.any([signal, abort.signal]), authorize),
           companyTool: async (call, signal) => {
             await assertOwner(); if (abort.signal.aborted || signal.aborted) throw new LocalCodexError("LOCAL_COMPANY_TOOL_INTERRUPTED");
             const response = await this.io.request(taskURL + "/tools", { method: "POST", tenantId: r.tenant,

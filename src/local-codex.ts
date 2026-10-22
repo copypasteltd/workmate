@@ -6,6 +6,7 @@ import { StringDecoder } from "node:string_decoder";
 import { createReadStream } from "node:fs";
 import path from "node:path";
 import { atomicFile } from "./files.js";
+import { parseLocalInput, parseLocalAnswers, type LocalInputRequest, type LocalInputAnswers } from "./local-input.js";
 
 export type LocalPermissionMode = "read-only" | "workspace-write" | "full-access";
 export interface LocalPermissionGrant {
@@ -43,6 +44,7 @@ export interface LocalCodexHooks {
   event: (kind: string, value: Record<string, unknown>) => Promise<void>;
   approval?: (kind: "command" | "file", value: Record<string, unknown>) => Promise<"accept" | "decline">;
   companyTool?: (call: LocalCompanyToolCall, signal: AbortSignal) => Promise<unknown>;
+  userInput?: (request: LocalInputRequest, signal: AbortSignal) => Promise<LocalInputAnswers>;
 }
 export interface LocalTurnResult {
   threadId: string;
@@ -112,6 +114,8 @@ export class LocalCodexSession {
   private sequence = 0;
   private pending = new Map<number, { method: string; resolve: (value: any) => void; reject: (error: LocalCodexError) => void; timer: ReturnType<typeof setTimeout> }>();
   private eventTail: Promise<void> = Promise.resolve();
+  private inputRequests = new Map<string, { itemId: string; abort: AbortController }>();
+  private seenInputRequests = new Set<string>();
   private expiry?: ReturnType<typeof setTimeout>;
   private nativeUsage: { input: number; output: number } | null = null;
   private credential = "";
@@ -286,6 +290,7 @@ export class LocalCodexSession {
         ['features.shell_tool', 'true'], ['features.apps', 'false'], ['features.plugins', 'false'], ['features.remote_plugin', 'false'],
         ['web_search', '"disabled"'], ['features.image_generation', 'false'], ['features.multi_agent', 'false'], ['features.skill_mcp_dependency_install', 'false'],
         ['features.prefer_mxc', 'false'], ['windows.sandbox', '"unelevated"'],
+        ['features.default_mode_request_user_input', 'true'],
         ['shell_environment_policy.exclude', '["COPYPASTE_LOCAL_INFERENCE_TOKEN"]'],
       ].flatMap(([key, value]) => ["-c", `${key}=${value}`]);
       this.validateGrant();
@@ -372,6 +377,7 @@ export class LocalCodexSession {
   }
 
   private fail(error: LocalCodexError) {
+    this.cancelInputs();
     for (const pending of this.pending.values()) { clearTimeout(pending.timer); pending.reject(error); }
     this.pending.clear();
     if (this.active) { clearTimeout(this.active.timer); this.active.reject(error); this.active = undefined; }
@@ -383,6 +389,47 @@ export class LocalCodexSession {
 
   private setTurnId(id: string) { if (this.active) this.active.id = id; }
   private async markUncertain() { if (this.checkpoint?.phase === "running") await this.save("uncertain"); }
+
+  private cancelInputs() {
+    for (const pending of this.inputRequests.values()) pending.abort.abort();
+    this.inputRequests.clear();
+  }
+
+  private async requestInput(message: any) {
+    const request = parseLocalInput(message.params), turn = this.active;
+    const key = typeof message.id + ":" + message.id;
+    if (!this.hooks.userInput || this.closed || this.revoked || !turn || request.threadId !== this.threadId || request.turnId !== turn.id
+      || !["string", "number"].includes(typeof message.id) || String(message.id).length > 160
+      || this.inputRequests.size >= 4 || this.seenInputRequests.size >= 64 || this.seenInputRequests.has(key)
+      || [...this.inputRequests.values()].some(pending => pending.itemId === request.itemId))
+      throw new LocalCodexError("LOCAL_INPUT_SCOPE_INVALID");
+    this.validateGrant(); await this.hooks.authorize();
+    if (this.active !== turn || this.closed || this.revoked || this.shutdown.signal.aborted) throw new LocalCodexError("LOCAL_INPUT_CANCELLED");
+    const abort = new AbortController();
+    this.inputRequests.set(key, { itemId: request.itemId, abort }); this.seenInputRequests.add(key);
+    // Human waiting must never occupy eventTail: terminal events, interrupt and
+    // process shutdown must remain observable while a question is displayed.
+    void (async () => {
+      try {
+        const answers = await new Promise<LocalInputAnswers>((resolve, reject) => {
+          const cancelled = () => reject(new LocalCodexError("LOCAL_INPUT_CANCELLED"));
+          abort.signal.addEventListener("abort", cancelled, { once: true });
+          void this.hooks.userInput!(request, abort.signal).then(resolve, reject)
+            .finally(() => abort.signal.removeEventListener("abort", cancelled));
+          if (abort.signal.aborted) cancelled();
+        });
+        const validated = parseLocalAnswers(request, answers);
+        this.validateGrant(); await this.hooks.authorize();
+        if (abort.signal.aborted || this.closed || this.revoked || this.active !== turn || !this.child || this.hasExited || this.child.stdin.destroyed)
+          throw new LocalCodexError("LOCAL_INPUT_CANCELLED");
+        this.child.stdin.write(JSON.stringify({ id: message.id, result: { answers: validated } }) + "\n");
+      } catch (error) {
+        if (!abort.signal.aborted && !this.closed && this.active === turn) {
+          this.fail(new LocalCodexError("LOCAL_INPUT_RESPONSE_FAILED")); this.stopInBackground();
+        }
+      } finally { abort.abort(); this.inputRequests.delete(key); }
+    })();
+  }
 
   private message(message: any) {
     if (message.id !== undefined && (message.result !== undefined || message.error !== undefined)) {
@@ -397,6 +444,7 @@ export class LocalCodexSession {
     }
     this.eventTail = this.eventTail.then(async () => {
       if (message.id !== undefined && message.method) {
+        if (message.method === "item/tool/requestUserInput") { await this.requestInput(message); return; }
         if (message.method === "item/tool/call") {
           const call = message.params;
           let result: { success: boolean; contentItems: { type: "inputText"; text: string }[] };
@@ -473,6 +521,7 @@ export class LocalCodexSession {
         || (["item/started", "item/completed"].includes(method) && visibleItem))
         await this.emit(method, params);
       if (method === "turn/completed" && this.active) {
+        this.cancelInputs();
         const active = this.active;
         const status = params.turn?.status;
         if (!["completed", "interrupted", "failed"].includes(status) || (active.id && params.turn.id !== active.id))
@@ -502,6 +551,7 @@ export class LocalCodexSession {
     try {
       this.validateGrant(); await this.hooks.authorize();
       this.nativeUsage = null;
+      this.seenInputRequests.clear();
       for (const skill of this.binding.skills) {
         const file = path.join(this.home, "skills", skill.key, "SKILL.md");
         if (hash(await readFile(file)) !== skill.sha256) throw new LocalCodexError("LOCAL_SKILL_CHANGED");
@@ -552,6 +602,7 @@ export class LocalCodexSession {
   }
 
   async interrupt() {
+    this.cancelInputs();
     if (this.active?.id && this.child && !this.hasExited)
       await this.rpc("turn/interrupt", { threadId: this.threadId, turnId: this.active.id }, 3000).catch(() => {});
   }
@@ -564,6 +615,7 @@ export class LocalCodexSession {
   close(): Promise<void> {
     if (this.closing) return this.closing;
     this.closed = true;
+    this.cancelInputs();
     this.shutdown.abort();
     this.closing = (async () => {
       if (this.expiry) clearTimeout(this.expiry);

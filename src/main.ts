@@ -513,7 +513,7 @@ async function createWindow() {
     try {
       await localAccessReset;
       if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("LOCAL_REQUEST_INVALID");
-      const keys: Record<string, string[]> = { list: ["tenant", "project"], create: ["tenant", "project", "role"], permission: ["id", "mode"], send: ["id", "prompt", "budget"], retry: ["id"], stop: ["id"], revoke: ["id"] };
+      const keys: Record<string, string[]> = { list: ["tenant", "project"], create: ["tenant", "project", "role"], permission: ["id", "mode"], send: ["id", "prompt", "budget"], answer: ["id", "requestId", "answers"], retry: ["id"], stop: ["id"], revoke: ["id"] };
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
@@ -522,6 +522,7 @@ async function createWindow() {
         case "create": value = await localAgent.create(payload, payload.role); break;
         case "permission": value = await localAgent.permission(payload.id, payload.mode); break;
         case "send": value = await localAgent.send(payload.id, payload.prompt, payload.budget); break;
+        case "answer": value = await localAgent.answer(payload.id, payload.requestId, payload.answers); break;
         case "retry": value = await localAgent.retry(payload.id); break;
         case "stop": value = await localAgent.stop(payload.id); break;
         case "revoke": value = await localAgent.revoke(payload.id); break;

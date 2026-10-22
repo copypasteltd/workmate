@@ -5,13 +5,14 @@ import { randomUUID, randomBytes, createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { LocalCodexSession, type LocalCodexProfile, type LocalSessionBinding, type LocalCodexHooks } from "../../src/local-codex.js";
+import type { LocalInputRequest } from "../../src/local-input.js";
 
 const digest = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
 const lock = JSON.parse(await readFile(new URL("../../contracts/local-codex-runtime.json", import.meta.url), "utf8"));
 const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
 assert.ok(executable && path.isAbsolute(executable), "Set COPYPASTE_LOCAL_CODEX_TEST_BIN to the locked absolute native Codex binary. No PATH fallback.");
 const skill = "---\nname: native-fixture-method\ndescription: Verify a local fixture without fabricating results.\n---\nNATIVE_SKILL_FROM_DISK_73D6. Inspect actual tool results and preserve unrelated files.";
-type Action = { command?: string; company?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; stage?: number };
+type Action = { command?: string; input?: { questions: any[] }; company?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; stage?: number };
 
 function emit(res: ServerResponse, type: string, payload: Record<string, unknown>) {
   res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...payload })}\n\n`);
@@ -42,6 +43,12 @@ function commandTool(tools: any[]): { name: string; parameters: any } | undefine
     if (["exec_command", "shell", "shell_command"].includes(tool.name)) return { name: tool.name, parameters: tool.parameters };
   }
 }
+function inputTool(tools: any[]): { name: string; parameters: any } | undefined {
+  for (const tool of tools ?? []) {
+    if (tool.type === "namespace") { const child = inputTool(tool.tools); if (child) return { ...child, name: tool.name + "." + child.name }; }
+    if (tool.name === "request_user_input") return { name: tool.name, parameters: tool.parameters };
+  }
+}
 async function fixture() {
   const parent = path.resolve(".data/native-local-tests");
   await mkdir(parent, { recursive: true });
@@ -67,6 +74,12 @@ async function fixture() {
         actions.shift();
         emit(res, "response.created", { response: { id: "resp_stalled", object: "response", status: "in_progress", output: [] } });
         action.stall();
+      } else if (action.input && !action.stage) {
+        const tool = inputTool(body.tools);
+        assert.ok(tool, "The pinned native runtime must advertise request_user_input in ordinary working mode");
+        action.stage = 1;
+        completed(res, requests.length, { id: "fc_input_" + requests.length, type: "function_call", name: tool.name,
+          call_id: "call_input_" + requests.length, arguments: JSON.stringify(action.input) });
       } else if (action.company && !action.stage) {
         assert.ok(body.tools.some((tool: any) => tool.type === "namespace" && tool.name === "copypaste"
           && tool.tools.some((child: any) => child.name === action.company!.tool)), "Exact company namespace must be declared by native Codex");
@@ -104,9 +117,9 @@ async function fixture() {
   const binding: LocalSessionBinding = { sessionId: randomUUID(), actorId: actor, tenantId: randomUUID(), projectId: randomUUID(), workspace, stateRoot,
     grant: { id: randomUUID(), actorId: actor, mode: "full-access", revision: 1, expiresAt: Date.now() + 300000 },
     skills: [{ key: "native-fixture-method", content: skill, sha256: digest(skill) }] };
-  const make = (p = profile, b = binding, companyTool?: LocalCodexHooks["companyTool"]) => {
+  const make = (p = profile, b = binding, companyTool?: LocalCodexHooks["companyTool"], userInput?: LocalCodexHooks["userInput"]) => {
     const session = new LocalCodexSession(p, b, { authorize: async () => { if (!authority) throw new Error("Account revoked"); },
-      companyTool, event: async (kind, value) => { events.push({ kind, value }); if (kind === "local.runtime.ready") readyPid = Number(value.pid); } });
+      companyTool, userInput, event: async (kind, value) => { events.push({ kind, value }); if (kind === "local.runtime.ready") readyPid = Number(value.pid); } });
     sessions.push(session); return session;
   };
   const start = (session: LocalCodexSession, expiresAt = Date.now() + 300000) => session.start({ token, expiresAt });
@@ -124,6 +137,49 @@ async function fixture() {
 }
 const quoted = (value: string) => "'" + value.replaceAll("'", "''") + "'";
 const writeCommand = (file: string, content: string) => `[IO.File]::WriteAllText(${quoted(file)}, ${quoted(content)}); Write-Output ('runtime-token-present=' + [bool][Environment]::GetEnvironmentVariable('COPYPASTE_LOCAL_INFERENCE_TOKEN'))`;
+
+const inputQuestions = [{ id: "palette", header: "Palette", question: "Which palette should the actual work use?", options: [
+  { label: "Company blue", description: "Use the existing CopyPaste palette." }, { label: "Warm neutral", description: "Use the reviewed warm neutral palette." },
+] }, { id: "format", header: "Format", question: "Choose the requested output format.", options: [
+  { label: "HTML", description: "A locally editable HTML file." }, { label: "PDF", description: "A portable document." },
+] }];
+test("native user input resumes the original working turn with explicit answers", { timeout: 120000 }, async () => {
+  const f = await fixture(), inputs: LocalInputRequest[] = [];
+  try {
+    const native = f.make(f.profile, f.binding, undefined, async request => {
+      inputs.push(request);
+      return { palette: { answers: ["Company blue"] }, format: { answers: ["NATIVE_USER_CHOSEN_HTML_74"] } };
+    });
+    await f.start(native); f.actions.push({ input: { questions: inputQuestions } });
+    const result = await native.turn("Ask the customer about palette and output format before continuing.");
+    assert.equal(result.status, "completed"); assert.equal(inputs.length, 1, JSON.stringify(f.requests.at(-1)?.body.input.slice(-2)));
+    assert.equal(inputs[0].threadId, result.threadId); assert.equal(inputs[0].turnId, result.turnId);
+    assert.equal(typeof inputs[0].isBlocking, "boolean"); assert.equal(inputs[0].questions.length, 2);
+    assert.equal(f.requests.length, 2);
+    assert.equal(inputs[0].questions[1].isOther, true);
+    const output = f.requests[1].body.input.find((item: any) => item.type === "function_call_output" && item.call_id === "call_input_1");
+    assert.deepEqual(JSON.parse(output.output).answers, { palette: { answers: ["Company blue"] }, format: { answers: ["NATIVE_USER_CHOSEN_HTML_74"] } });
+    assert.ok(!JSON.stringify(f.events).includes("NATIVE_USER_CHOSEN_HTML_74"));
+  } finally { await f.clean(); }
+});
+for (const withdrawal of ["interrupt", "revoke"] as const) test(`native user input does not block ${withdrawal} or terminal processing`, { timeout: 120000 }, async () => {
+  const f = await fixture(); let entered!: () => void, aborted = false;
+  const ready = new Promise<void>(resolve => { entered = resolve; });
+  try {
+    const native = f.make(f.profile, f.binding, undefined, async (_request, signal) => {
+      signal.addEventListener("abort", () => { aborted = true; }, { once: true }); entered();
+      return new Promise(() => {}); // Even an uncooperative UI hook cannot hold shutdown.
+    });
+    await f.start(native); f.actions.push({ input: { questions: inputQuestions } });
+    const turn = native.turn("Ask a question and wait for the user."); void turn.catch(() => {});
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try { await Promise.race([ready, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("Native question was not displayed")), 30000); })]); }
+    finally { if (timer) clearTimeout(timer); }
+    const started = Date.now(); await native[withdrawal]();
+    await turn.catch(() => null); await native.close();
+    assert.equal(aborted, true); assert.ok(Date.now() - started < 12000); assert.equal(f.requests.length, 1);
+  } finally { await f.clean(); }
+});
 
 test("native company tools use their exact namespace and persist across same-thread follow-ups", { timeout: 180000 }, async () => {
   const f = await fixture();
