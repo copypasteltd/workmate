@@ -9,19 +9,30 @@ import { buildApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
 import { defaults } from "../src/plans.js";
 import { desktopRuntime } from "../src/desktop-runtime.js";
+import { desktopImageFixture } from "./desktop-image-fixture.js";
 
-test("real native Codex uses company-only scoped inference, edits a local file, resumes and settles each turn once", { timeout: 180000 }, async t => {
+test("real native Codex edits local files, uses company Image 2 and same-thread edits with server-only settlement", { timeout: 180000 }, async t => {
   const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
   assert.ok(executable && path.isAbsolute(executable), "Use the explicit pinned native binary; no PATH fallback");
   const { LocalAgentController } = await import(new URL("../../copypaste-desktop/src/local-agent.ts", import.meta.url).href);
   const isolated = await isolatedTestEnvironment();
-  let app: Awaited<ReturnType<typeof buildApp>> | undefined, controller: any, stage = 0, providerCalls = 0, handlerError: unknown, nativeTools: unknown;
+  let app: Awaited<ReturnType<typeof buildApp>> | undefined, controller: any, stage = 0, providerCalls = 0, imageCalls = 0, sourceAsset = "", handlerError: unknown, nativeTools: unknown;
+  const imageBytes = desktopImageFixture();
   const directory = path.join(isolated.directory, "local"), outside = path.join(isolated.directory, "outside.txt"); await mkdir(directory);
   await writeFile(outside, "before-native-execution");
   const provider = createServer(async (req, res) => {
     try {
-      const chunks = []; for await (const b of req) chunks.push(Buffer.from(b)); const body = JSON.parse(Buffer.concat(chunks).toString());
-      assert.equal(req.headers.authorization, "Bearer native-integration-fixture"); assert.equal(body.model, "native-integration-fixture");
+      const chunks = []; for await (const b of req) chunks.push(Buffer.from(b));
+      assert.equal(req.headers.authorization, "Bearer native-integration-fixture");
+      if (req.url === "/v1/images/generations" || req.url === "/v1/images/edits") {
+        imageCalls++;
+        if (req.url.endsWith("/edits")) {
+          const form = await new Response(Buffer.concat(chunks), { headers: { "Content-Type": req.headers["content-type"]! } }).formData();
+          assert.equal(form.get("model"), "native-image-fixture"); assert.deepEqual(Buffer.from(await (form.get("image") as Blob).arrayBuffer()), imageBytes);
+        } else assert.equal(JSON.parse(Buffer.concat(chunks).toString()).model, "native-image-fixture");
+        res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ data: [{ b64_json: imageBytes.toString("base64") }] })); return;
+      }
+      const body = JSON.parse(Buffer.concat(chunks).toString()); assert.equal(body.model, "native-integration-fixture");
       if (req.url === "/v1/responses/input_tokens") { res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ object: "response.input_tokens", input_tokens: 10 })); return; }
       assert.equal(req.url, "/v1/responses"); providerCalls++;
       let item: any;
@@ -33,6 +44,12 @@ test("real native Codex uses company-only scoped inference, edits a local file, 
           : tool.parameters?.properties?.command?.type === "array" ? { command: ["powershell.exe", "-NoProfile", "-Command", command], workdir: directory, timeout_ms: 10000 }
           : { command, workdir: directory, timeout_ms: 10000 };
         item = { type: "function_call", id: "fc_native_" + providerCalls, name: tool.name, call_id: "call_native_" + providerCalls, arguments: JSON.stringify(args) };
+      } else if (stage === 1 || stage === 3) {
+        const tool = stage === 1 ? "image2_generate" : "image2_edit";
+        assert.ok(body.tools.some((namespace: any) => namespace.name === "copypaste" && namespace.tools?.some((entry: any) => entry.name === tool)));
+        assert.ok(stage === 1 || sourceAsset);
+        item = { type: "function_call", id: "fc_native_company_" + providerCalls, namespace: "copypaste", name: tool, call_id: "call_native_company_" + providerCalls,
+          arguments: JSON.stringify({ prompt: stage === 1 ? "Create the explicit synthetic brand-design fixture" : "Revise the explicit synthetic brand-design fixture", filename: stage === 1 ? "native-original.png" : "native-revised.png", ...(stage === 3 ? { asset_id: sourceAsset } : {}) }) };
       } else item = { type: "message", id: "msg_native_" + providerCalls, role: "assistant", status: "completed", content: [{ type: "output_text", text: "LOCAL_NATIVE_COMPANY_TURN_" + stage, annotations: [] }] };
       stage++;
       res.writeHead(200, { "Content-Type": "text/event-stream" });
@@ -56,10 +73,11 @@ test("real native Codex uses company-only scoped inference, edits a local file, 
     app = await buildApp(loadConfig({ ...isolated.env, NODE_ENV: "test", DEV_MAILBOX: "true", WORKER_ENABLED: "false", DEMO_MODE: "false",
       AI_BASE_URL: `http://127.0.0.1:${(provider.address() as any).port}/v1`, AI_ALLOWED_HOSTS: "127.0.0.1", AI_API_KEY: "native-integration-fixture", AI_MODEL: "native-integration-fixture", AI_VERIFIED: "true",
       AI_INPUT_HKD_MICROS_PER_MILLION: "1000000", AI_OUTPUT_HKD_MICROS_PER_MILLION: "1000000", AI_INPUT_COUNT_VERIFIED: "true", AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "0", AI_SCOPE_TTL_MS: "300000",
+      AI_IMAGE_MODEL: "native-image-fixture", AI_IMAGE_VERIFIED: "true", AI_IMAGE_HKD_MICROS_PER_IMAGE: "1000000",
     }), { worker: false });
     app.app.addHook("preHandler", async req => {
       if (req.url === "/v1/desktop-inference/v1/responses") {
-        const describe = (x: any): any => ({ type: x.type, name: x.name, tools: x.tools?.map(describe), format: x.format ? { type: x.format.type, syntax: x.format.syntax } : undefined });
+        const describe = (x: any): any => ({ type: x.type, name: x.name, tools: x.tools?.map(describe), ...(x.name && !x.tools && (req.body as any)?.tools?.some((group: any) => group.name === "copypaste" && group.tools?.includes(x)) ? { parameters: x.parameters } : {}), format: x.format ? { type: x.format.type, syntax: x.format.syntax } : undefined });
         nativeTools = (req.body as any)?.tools?.map(describe);
       }
     });
@@ -84,24 +102,31 @@ test("real native Codex uses company-only scoped inference, edits a local file, 
       identity: async () => ({ actorId: signed.body.user.id, epoch: "actual-native-auth-family" }), localEpoch: async () => "actual-native-auth-family", chooseWorkspace: async () => directory, consent: async () => true, approval: async () => "decline", changed: () => {},
       stateRoot: path.join(isolated.directory, "native-state"), companyOrigin: origin, executable, runtime: { version: desktopRuntime.pinned_version, sha256: desktopRuntime.windows_x64_sha256 },
       request: async (url: string, options: any = {}) => {
-        const r = await fetch(origin + url, { method: options.method ?? "GET", headers: { Authorization: "Bearer " + nativeToken.access_token, "Content-Type": "application/json", "Idempotency-Key": options.idempotencyKey ?? randomUUID(), "X-Tenant-ID": tenant }, body: options.body === undefined ? undefined : JSON.stringify(options.body) });
+        const r = await fetch(origin + url, { method: options.method ?? "GET", headers: { Authorization: "Bearer " + nativeToken.access_token, "Content-Type": "application/json", "Idempotency-Key": options.idempotencyKey ?? randomUUID(), "X-Tenant-ID": tenant }, body: options.body === undefined ? undefined : JSON.stringify(options.body), signal: options.signal });
         return { status: r.status, body: await r.json() };
       },
     });
-    const session = await controller.create({ tenant, project }, "fullstack"); await controller.permission(session.id, "full-access");
-    await controller.send(session.id, "Use the native terminal to change only the owned fixture outside cwd.", 1000000);
+    const session = await controller.create({ tenant, project }, "designer"); await controller.permission(session.id, "full-access");
+    await controller.send(session.id, "Change only the owned local fixture and use the company Image 2 tool for the synthetic design.", 3000000);
     if (await readFile(outside, "utf8") !== "changed-by-real-local-codex")
       t.diagnostic(JSON.stringify({ native_first_state: (await controller.list({ tenant, project })).sessions[0], native_tools: nativeTools, provider_calls: providerCalls, handler_error: handlerError ? String(handlerError) : null }));
     assert.equal(await readFile(outside, "utf8"), "changed-by-real-local-codex");
-    const firstState = (await controller.list({ tenant, project })).sessions[0]; assert.equal(firstState.task.status, "succeeded");
-    const first = (await app.db.control.query("SELECT * FROM tasks WHERE id=$1", [firstState.task.task_id])).rows[0]; assert.equal(first.charged_micros, "60"); assert.equal(first.execution_location, "desktop");
-    await controller.send(session.id, "Continue the same local thread; describe the completed file change.", 1000000);
+    const firstState = (await controller.list({ tenant, project })).sessions[0];
+    if (firstState.task?.status !== "succeeded") t.diagnostic(JSON.stringify({ native_first_state: firstState, native_tools: nativeTools, provider_calls: providerCalls, image_calls: imageCalls, handler_error: handlerError ? String(handlerError) : null }));
+    assert.equal(firstState.task.status, "succeeded");
+    const first = (await app.db.control.query("SELECT * FROM tasks WHERE id=$1", [firstState.task.task_id])).rows[0]; assert.equal(first.charged_micros, "1000090"); assert.equal(first.execution_location, "desktop");
+    const original = (await app.db.control.query("SELECT a.*,v.id AS asset_version_id,v.storage_key FROM assets a JOIN asset_versions v ON v.asset_id=a.id WHERE v.metadata->>'task_id'=$1 AND a.kind='generated_image'", [first.id])).rows;
+    assert.equal(original.length, 1); assert.equal(original[0].private_owner, signed.body.user.id); assert.deepEqual(await app.storage.get(original[0].storage_key), imageBytes);
+    sourceAsset = original[0].id;
+    assert.ok(firstState.events.some((event: any) => event.kind === "local.company-tool.completed" && event.value.artifacts.some((artifact: any) => artifact.id === sourceAsset)));
+    await controller.send(session.id, "Continue this local thread and revise the generated design using the company image edit tool.", 3000000);
     const state = (await controller.list({ tenant, project })).sessions[0], second = (await app.db.control.query("SELECT * FROM tasks WHERE id=$1", [state.task.task_id])).rows[0];
-    assert.equal(second.runtime_thread, first.runtime_thread); assert.notEqual(second.runtime_turn, first.runtime_turn); assert.equal(second.charged_micros, "30");
-    assert.equal(providerCalls, 3); assert.equal(second.status, "succeeded");
+    assert.equal(second.runtime_thread, first.runtime_thread); assert.notEqual(second.runtime_turn, first.runtime_turn); assert.equal(second.charged_micros, "1000060");
+    assert.equal(providerCalls, 5); assert.equal(imageCalls, 2); assert.equal(second.status, "succeeded");
+    assert.equal((await app.db.control.query("SELECT count(*)::int AS n FROM tool_operations WHERE task_id=ANY($1) AND state='succeeded'", [[first.id, second.id]])).rows[0].n, 2);
     assert.equal((await app.db.control.query("SELECT count(*)::int AS n FROM ledger WHERE task_id=ANY($1) AND kind='charge'", [[first.id, second.id]])).rows[0].n, 2);
     assert.equal((await app.db.control.query("SELECT count(*)::int AS n FROM outbox WHERE topic='task.run' AND payload->>'task_id'=ANY($1)", [[first.id, second.id]])).rows[0].n, 0);
-    t.diagnostic(JSON.stringify({ real_native_binary: desktopRuntime.windows_x64_sha256, native_file_changed: true, same_local_thread: true, company_provider_requests: providerCalls, settled_micros: [first.charged_micros, second.charged_micros], cloud_dispatches: 0, model_responses: "synthetic", native_consent: "injected fixture callback; actual Electron dialog tested separately" }));
+    t.diagnostic(JSON.stringify({ real_native_binary: desktopRuntime.windows_x64_sha256, native_file_changed: true, same_local_thread: true, company_provider_requests: providerCalls, company_image_requests: imageCalls, immutable_private_image_artifacts: 2, settled_micros: [first.charged_micros, second.charged_micros], cloud_dispatches: 0, model_responses: "synthetic", native_consent: "injected fixture callback; actual Electron dialog tested separately" }));
     if (handlerError) throw handlerError;
   } finally {
     await controller?.close(); await app?.app.close(); provider.closeAllConnections(); await new Promise<void>(resolve => provider.close(() => resolve())); await isolated.cleanup();

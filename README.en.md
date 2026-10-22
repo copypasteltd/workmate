@@ -7,13 +7,13 @@
 A cloud Agent product for Hong Kong enterprises. This repository owns **Backend** and publishes to `backend`.
 
 <!-- client01-direction -->
-## Current client direction — implementation gap
+## Current client direction and qualified scope
 
 CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
 
-**Current implementation:** Desktop integrates local Codex, main-process consent, file/terminal tools, same-thread follow-up, stop and company-gateway billing. Validation covers 37 client tests, 10 native-supervisor tests, 86 server/cloud-compatibility tests and seven actual packaged-Electron journey checks. Model turns and native chooser/consent decisions are explicit fixtures. Five local specialists are admitted; all eighteen roles/media tools, production signing and complete client acceptance remain open. The Extension keeps native Side Panel cloud conversations and file uploads. See [implementation and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md).
+**Current implementation:** Desktop runs Codex locally with user-granted full access, local files/terminal, same-thread follow-up, stop and company billing. Company image/design/data tools and private-artifact downloads are now connected. Validation passes 37 client tests, 14 real-native tests, 818 full Platform regression tests and nine actual packaged-Electron journey checks. Sixteen roles have the native tool protocol connected; this is not complete professional qualification. Native video/workflow integration, all eighteen roles/twenty-nine Skills, signing and full client acceptance remain open. Model/image responses and native dialog decisions are explicit synthetic fixtures. The Extension retains native Side Panel cloud conversations and selected-file uploads. See [design and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) and [source/media evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json).
 
-The architecture diagram below describes the implemented cloud/file-bridge baseline; it is not the target Desktop local-agent architecture.
+Desktop runs the native Agent locally; the Web and Extension run cloud Codex. The linked stage 73 proof states the tested scope.
 
 Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
 
@@ -146,8 +146,14 @@ Actual recordings preserve capture timing. AI turns/business data are explicitly
 
 Every later change updates both READMEs, affected actual captures/GIFs, release notes and its mapped branch. Verify remote SHAs through Delivery publishing; do not force-push collaborator history. Keep environment secrets, databases, sessions, dependencies and installers out of Git. Exact historical README bytes are retained in [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
 
-Latest Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json). Prior recordings below retain their original source scopes.
+Latest Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Prior recordings below retain their original source scopes.
 
 ## Desktop execution admission
 
 Migration 092 separates immutable cloud/desktop execution ownership. Only the Desktop native login family may create/start/heartbeat/report a local execution; web/extension/Admin cannot grant OS permission. Task creation remains in the common reservation/role/Skill/frozen-pricing domain. Local tasks never enter the cloud queue. Native scoped Responses recheck auth, ownership, lease, capabilities and server budget on admission/dispatch; hosted or unknown native tools are denied. Finish fences admission before closing upstream and settles only company-observed usage. Unknown local/provider outcomes remain reconciling. See the linked design for strict routes, RLS, idempotency and recovery.
+
+## Native company-tool contract
+
+The Agent loop stays on the customer device. Main registers trusted `copypaste` dynamic tools for the pinned native runtime, binds each call to its task/call/thread/turn, and rechecks company permissions before effects and disclosure. Local read-only denies company mutations. Original business validation remains enforced after the native schema projection. Same-call retries reuse durable results; unknown accepted image operations stop further calls and retain reconciliation holds. Private artifact downloads use exact versions and a native save selection.
+
+Latest company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.

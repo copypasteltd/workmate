@@ -4,7 +4,7 @@ import { once } from "node:events";
 import type { Config } from "./config.js";
 import { hash } from "./lib.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
-import { desktopToolDeclarations, desktopCustomTool } from "./desktop-tool-policy.js";
+import { desktopToolDeclarations, desktopCustomTool, type DesktopCompanyToolSchema } from "./desktop-tool-policy.js";
 
 export type AIOperation =
   | "responses"
@@ -127,6 +127,7 @@ function responseFields(
   tools: readonly string[],
   stripKernelQuestionTool: boolean,
   nativeDesktop = false,
+  nativeCompanyTools: readonly DesktopCompanyToolSchema[] = [],
 ) {
   const reasoning = body.reasoning as Record<string, unknown> | undefined;
   if (
@@ -159,7 +160,7 @@ function responseFields(
         tool.name === "request_user_input"
       ),
   );
-  if (nativeDesktop && !desktopToolDeclarations(declaredTools)) throw denied("AI_DESKTOP_TOOL_NOT_ALLOWED");
+  if (nativeDesktop && !desktopToolDeclarations(declaredTools, nativeCompanyTools)) throw denied("AI_DESKTOP_TOOL_NOT_ALLOWED");
   for (const tool of declaredTools) {
     if (nativeDesktop) continue;
     if (!tool || tool.type !== "function" || !tools.includes(tool.name)) {
@@ -222,6 +223,7 @@ export interface InternalAIRequest {
   stripKernelQuestionTool?: boolean;
   /** Trusted server placement, never selected by a provider payload. */
   nativeDesktop?: boolean;
+  nativeCompanyTools?: readonly DesktopCompanyToolSchema[];
 }
 
 /** The only provider fetch entry point: no caller-supplied URL or headers. */
@@ -263,6 +265,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
             request.tools ?? [],
             request.stripKernelQuestionTool ?? false,
             request.nativeDesktop ?? false,
+            request.nativeCompanyTools ?? [],
           )
         : request.operation === "responses.input_tokens"
           ? request.body
@@ -561,6 +564,7 @@ export async function startScopedInferenceGateway(
     authority: AIRequestAuthority;
     signal: AbortSignal;
     nativeDesktop?: boolean;
+    nativeCompanyTools?: readonly DesktopCompanyToolSchema[];
     onRejected?(event: {
       code: string;
       dispatched: boolean;
@@ -644,6 +648,7 @@ export async function startScopedInferenceGateway(
         tools: options.tools,
         stripKernelQuestionTool: true,
         nativeDesktop: options.nativeDesktop,
+        nativeCompanyTools: options.nativeCompanyTools,
         authority: options.authority,
         body,
         signal: AbortSignal.any([
@@ -691,7 +696,7 @@ export async function startScopedInferenceGateway(
         if (!item) return;
         if (
           (item.type === "function_call" || (options.nativeDesktop && item.type === "custom_tool_call" && desktopCustomTool(item.name))) &&
-          options.tools.includes(item.name)
+          options.tools.includes(options.nativeDesktop && item.namespace ? item.namespace + "." + item.name : item.name)
         ) {
           if (typeof item.id === "string") knownCalls.add(item.id);
           return;

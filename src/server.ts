@@ -374,7 +374,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAnalysisReports(app, db, catalog, storage);
   registerTasks(app, db, catalog);
   registerCanonicalTasks(app, db, catalog);
-  const desktopExecutions = await registerDesktopExecutions(app, db, catalog);
+  const desktopExecutions = await registerDesktopExecutions(app, db, catalog, storage);
   registerSeoAudits(app, db, catalog, storage);
   registerSeoChanges(app, db, catalog, storage);
   registerTaskEvents(app, db);

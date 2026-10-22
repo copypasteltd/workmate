@@ -11,11 +11,25 @@ import { Worker } from "../src/worker.js";
 import { recoverQueuedClaims } from "../src/task-recovery.js";
 import { defaults } from "../src/plans.js";
 import { hash } from "../src/lib.js";
+import { desktopImageFixture } from "./desktop-image-fixture.js";
+import { desktopLocalRoleKeys } from "../src/desktop-executions.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>;
 let mode: "known" | "unknown" = "known", providerCalls = 0, countCalls = 0;
+let imageCalls = 0, imageUnknown = false;
+const imageBytes = desktopImageFixture();
 const provider = createServer(async (req, res) => {
   const bytes = []; for await (const part of req) bytes.push(Buffer.from(part));
+  if (req.url === "/v1/images/generations" || req.url === "/v1/images/edits") {
+    assert.equal(req.headers.authorization, "Bearer synthetic-desktop-provider"); imageCalls++;
+    if (req.url.endsWith("/edits")) {
+      const form = await new Response(Buffer.concat(bytes), { headers: { "Content-Type": req.headers["content-type"]! } }).formData();
+      assert.equal(form.get("model"), "desktop-image-synthetic");
+      assert.deepEqual(Buffer.from(await (form.get("image") as Blob).arrayBuffer()), imageBytes);
+    } else assert.equal(JSON.parse(Buffer.concat(bytes).toString()).model, "desktop-image-synthetic");
+    res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify(imageUnknown ? { data: [] } : { data: [{ b64_json: imageBytes.toString("base64") }] }));
+    return;
+  }
   const b = JSON.parse(Buffer.concat(bytes).toString());
   assert.equal(req.headers.authorization, "Bearer synthetic-desktop-provider");
   assert.equal(b.model, "desktop-synthetic");
@@ -82,6 +96,7 @@ before(async () => {
   s = await buildApp(loadConfig({ ...isolated.env, NODE_ENV: "test", DEV_MAILBOX: "true", WORKER_ENABLED: "false", DEMO_MODE: "false", EXTENSION_ID: "a".repeat(32),
     AI_BASE_URL: `http://127.0.0.1:${(provider.address() as { port: number }).port}/v1`, AI_ALLOWED_HOSTS: "127.0.0.1", AI_API_KEY: "synthetic-desktop-provider", AI_MODEL: "desktop-synthetic", AI_VERIFIED: "true",
     AI_INPUT_HKD_MICROS_PER_MILLION: "1000000", AI_OUTPUT_HKD_MICROS_PER_MILLION: "1000000", AI_INPUT_COUNT_VERIFIED: "true", AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "0", AI_SCOPE_TTL_MS: "300000",
+    AI_IMAGE_MODEL: "desktop-image-synthetic", AI_IMAGE_VERIFIED: "true", AI_IMAGE_HKD_MICROS_PER_IMAGE: "1000000",
   }), { worker: false });
 });
 after(async () => {
@@ -95,7 +110,7 @@ test("only actual desktop native authorization can reserve local execution; no A
   const extension = await native(f.web, "extension"); assert.equal((await call(extension, "POST", f.base, f.input)).status, 403);
   assert.equal((await call(f.c, "POST", f.base, { ...f.input, full_permission: true })).status, 400);
   assert.equal((await call(f.c, "POST", f.base, { ...f.input, runtime_sha256: "0".repeat(64) })).status, 400);
-  assert.equal((await call(f.c, "POST", f.base, { ...f.input, role_key: "designer" })).data.error.code, "DESKTOP_ROLE_NOT_READY");
+  assert.equal((await call(f.c, "POST", f.base, { ...f.input, role_key: "video-motion" })).data.error.code, "DESKTOP_ROLE_NOT_READY");
   const cloudBody = { title: "Desktop must stay local", prompt: "Do not enqueue from a desktop sign-in", role_key: "fullstack", budget_micros: 1000000 };
   const cloudPath = `/v1/tenants/${f.tenant}/projects/${f.project}/tasks`;
   assert.equal((await call(f.c, "POST", cloudPath, cloudBody)).data.error.code, "DESKTOP_LOCAL_EXECUTION_REQUIRED");
@@ -196,4 +211,80 @@ test("a lost local outcome or expired lease cannot be reported as zero-cost succ
     assert.equal((await s.db.control.query("SELECT status FROM reservations WHERE task_id=$1", [result.task_id])).rows[0].status, "reconciling");
     assert.equal((await ok(f.c, "POST", r.url + "/finish", report)).status, "reconciling");
   }
+});
+
+test("all sixteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch", async () => {
+  const f = await fixture(); assert.equal(desktopLocalRoleKeys.length, 16);
+  assert.deepEqual((await ok(f.c, "GET", f.base + "/runtime")).role_keys, desktopLocalRoleKeys);
+  for (const role of desktopLocalRoleKeys) {
+    const fields = { ...f.fields, local_session_id: randomUUID() };
+    const r = await start({ ...f, fields, input: { ...f.input, ...fields, role_key: role } });
+    assert.ok(r.begun.skills.length > 0); r.begun.skills.forEach((skill: any) => assert.equal(hash(skill.content), skill.sha256));
+    assert.ok(r.begun.company_tools.every((tool: any) => tool.inputSchema.type === "object" && !["code_write", "request_input", "video_project_queue"].includes(tool.name)));
+    if (role === "designer") assert.ok(r.begun.company_tools.some((tool: any) => tool.name === "image2_generate"));
+    if (role === "marketing-analyst") assert.ok(r.begun.company_tools.some((tool: any) => tool.name === "marketing_metrics"));
+    await ok(f.c, "POST", r.url + "/finish", { ...complete, status: "failed", output: "Admission fixture only; no native business qualification claimed" });
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM outbox WHERE topic='task.run' AND payload->>'task_id'=$1", [r.created.task_id])).rows[0].n, 0);
+  }
+});
+
+test("native company tools recheck owner, native family, role and the complete call binding before any effect", async () => {
+  const f = await fixture(), r = await start(f), body = { tool: "deliver_text", arguments: { filename: "native-note.md", mime_type: "text/markdown", content: "Native company tool fixture" }, call_id: "call_company_binding", thread_id: "native-thread", turn_id: "native-turn" };
+  assert.equal((await call(f.web, "POST", r.url + "/tools", body)).status, 403);
+  const extension = await native(f.web, "extension"); assert.equal((await call(extension, "POST", r.url + "/tools", body)).status, 403);
+  const otherFamily = await native(f.web); assert.equal((await call(otherFamily, "POST", r.url + "/tools", body)).status, 404);
+  assert.equal((await call(f.c, "POST", r.url + "/tools", { ...body, tool: "code_write" })).status, 403);
+  const result = await ok(f.c, "POST", r.url + "/tools", body);
+  const retried = await ok(f.c, "POST", r.url + "/tools", body); assert.equal(result.output.id, retried.output.id);
+  assert.equal(result.output.private_owner, f.c.id);
+  for (const patch of [{ tool: "project_assets", arguments: {} }, { turn_id: "different-turn" }, { arguments: { ...body.arguments, content: "Changed" } }])
+    assert.equal((await call(f.c, "POST", r.url + "/tools", { ...body, ...patch })).status, 409);
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM assets WHERE id=$1", [result.output.id])).rows[0].n, 1);
+  await ok(f.c, "POST", r.url + "/cancel", {});
+  assert.equal((await call(f.c, "POST", r.url + "/tools", body)).status, 409);
+});
+
+test("native designer generation and editing share exact company prices and never duplicate accepted images", async () => {
+  const f = await fixture(); imageUnknown = false;
+  const r = await start({ ...f, input: { ...f.input, role_key: "designer", budget_micros: 5000000 } }), before = imageCalls;
+  const generated = { tool: "image2_generate", arguments: { filename: "native-design.png", prompt: "A synthetic company design fixture" }, call_id: "call_designer_generate", thread_id: "native-design-thread", turn_id: "native-design-turn" };
+  const first = await ok(f.c, "POST", r.url + "/tools", generated);
+  assert.equal(imageCalls, before + 1);
+  assert.equal((await ok(f.c, "POST", r.url + "/tools", generated)).output.id, first.output.id); assert.equal(imageCalls, before + 1);
+  assert.deepEqual(await s.storage.get((await s.db.control.query("SELECT storage_key FROM asset_versions WHERE id=$1", [first.output.version.id])).rows[0].storage_key), imageBytes);
+  const edit = { ...generated, tool: "image2_edit", call_id: "call_designer_edit", arguments: { ...generated.arguments, filename: "native-design-edit.png", asset_id: first.output.id } };
+  const edited = await ok(f.c, "POST", r.url + "/tools", edit); assert.notEqual(edited.output.id, first.output.id);
+  assert.equal(imageCalls, before + 2); assert.equal(edited.output.private_owner, f.c.id);
+  const finished = await ok(f.c, "POST", r.url + "/finish", complete); assert.equal(finished.status, "succeeded"); assert.equal(finished.charged_micros, "2000000");
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM tool_operations WHERE task_id=$1 AND state='succeeded'", [r.created.task_id])).rows[0].n, 2);
+});
+
+test("native company namespace rejects altered schemas and unregistered names before provider dispatch", async () => {
+  const f = await fixture(), r = await start({ ...f, input: { ...f.input, role_key: "designer" } }); mode = "known";
+  const tool = r.begun.company_tools.find((item: any) => item.name === "design_render"); const before = providerCalls;
+  const declared = { type: "namespace", name: "copypaste", tools: [{ type: "function", name: tool.name, description: tool.description, parameters: tool.inputSchema }] };
+  assert.equal((await inference(r.begun.credential.token, { tools: [{ ...declared, tools: [{ ...declared.tools[0], parameters: { type: "object", properties: { override: { type: "string" } } } }] }] })).statusCode, 400);
+  assert.equal((await inference(r.begun.credential.token, { tools: [{ ...declared, tools: [{ ...declared.tools[0], name: "unregistered" }] }] })).statusCode, 400);
+  const altered = structuredClone(declared); altered.tools[0].parameters.properties.format.enum.push("arbitrary-executable");
+  assert.equal((await inference(r.begun.credential.token, { tools: [altered] })).statusCode, 400);
+  assert.equal(providerCalls, before);
+  assert.equal((await inference(r.begun.credential.token, { tools: [declared] })).statusCode, 200);
+  const invalid = await call(f.c, "POST", r.url + "/tools", { tool: "design_render", arguments: { filename: "invalid", format: "png", document: { width: 1, height: 1, background: "#ffffff", layers: [] } }, call_id: "native_invalid_dimensions", thread_id: "native-thread", turn_id: "native-turn" });
+  assert.equal(invalid.status, 400); assert.equal(invalid.data.error.code, "VALIDATION_ERROR");
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM asset_versions WHERE metadata->>'task_id'=$1", [r.created.task_id])).rows[0].n, 0, "Original business dimensions remain enforced even though the native schema omits numeric bounds");
+  await ok(f.c, "POST", r.url + "/finish", complete);
+});
+
+test("an unknown native company image result fences further calls and keeps the original reconciliation hold", async () => {
+  const f = await fixture(); imageUnknown = true;
+  try {
+    const r = await start({ ...f, input: { ...f.input, role_key: "designer", budget_micros: 5000000 } }), before = imageCalls;
+    const body = { tool: "image2_generate", arguments: { filename: "unknown-image.png", prompt: "Synthetic unknown image result" }, call_id: "call_unknown_image", thread_id: "native-thread", turn_id: "native-turn" };
+    assert.equal((await call(f.c, "POST", r.url + "/tools", body)).data.error.code, "DESKTOP_COMPANY_TOOL_UNCERTAIN");
+    assert.equal(imageCalls, before + 1); assert.equal((await taskRow(r.created.task_id)).cancel_requested, true);
+    assert.equal((await call(f.c, "POST", r.url + "/tools", { ...body, call_id: "different_call_after_unknown" })).status, 409);
+    assert.equal(imageCalls, before + 1);
+    const finished = await ok(f.c, "POST", r.url + "/finish", complete); assert.equal(finished.status, "reconciling");
+    assert.equal((await s.db.control.query("SELECT status FROM reservations WHERE task_id=$1", [r.created.task_id])).rows[0].status, "reconciling");
+  } finally { imageUnknown = false; }
 });
