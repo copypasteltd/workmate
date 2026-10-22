@@ -11,7 +11,7 @@
 
 CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，提供客户可主动授予的 **完整本机权限**，操作能力对标 Codex Desktop。**Extension 在 Chrome 原生右侧栏采用 ChatGPT 式对话/附件结构**，获取、读取用户获选文件并上传，由云端 Codex 执行。全部产品 AI 请求仍走公司内部网关。
 
-**当前实现：** Desktop 产品入口仍是云端 Codex 与受限文件桥接；独立本机 Codex supervisor 已通过 9 项原生集成测试，本机授权界面和费用接入待实现；Extension 已有原生侧栏和基础上传，任务表单主界面仍需重排。现有截图、录屏展示该实现，不证明上述补充能力已经完成。[需求补充](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md) · [方向检查及开发调整](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/69-desktop-local-codex-and-extension-direction.md)。
+**当前实现：** Desktop 独立本机 Codex supervisor 已通过 9 项原生测试，产品的本机授权、费用和随包交付仍待接入。Extension 已接入原生右侧栏对话、历史、底部输入和明确文件版本附件；32 项扩展测试及 7 项真实侧栏旅程检查通过，模型回合按授权模拟。原 102 项及完整客户端验收继续跟踪。[本次扩展实现](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md)。
 
 下方架构图表示已实现的云端/文件桥接基线，不是 Desktop 本机 Agent 的目标架构。
 
