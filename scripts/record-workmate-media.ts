@@ -22,9 +22,11 @@ export class WorkmateRecording {
     public readonly attempt: string,
     private capture: Capture,
     private source: string,
+    private root?: string,
   ) {}
+  private resolve(...parts: string[]) { return path.resolve(this.root ?? process.cwd(), ...parts); }
   async start() {
-    this.raw = path.resolve(".data/workmate-media", randomUUID());
+    this.raw = this.resolve(".data/workmate-media", randomUUID());
     await mkdir(this.raw, { recursive: true });
     this.started = Date.now();
     this.running = true;
@@ -53,7 +55,7 @@ export class WorkmateRecording {
     this.finished = Date.now();
     assert.ok(this.frames.length >= 5, "Actual recording must contain at least five observed frames");
     assert.ok(new Set(this.frames.map(f => f.sha256)).size >= 2, "An interaction recording must change");
-    const folder = path.resolve("../copypaste-" + this.repository, "assets/screenshots");
+    const folder = this.resolve("../copypaste-" + this.repository, "assets/screenshots");
     await mkdir(folder, { recursive: true });
     const stem = "workmate-" + this.attempt + "-" + this.name;
     const video = path.join(folder, stem + ".mp4"), gif = path.join(folder, stem + ".gif");
@@ -89,7 +91,7 @@ export class WorkmateRecording {
     const files = [];
     for (const file of [video, gif]) {
       const bytes = await readFile(file);
-      files.push({ path: path.relative(path.resolve(".."), file).replaceAll("\\", "/"), bytes: bytes.length, sha256: hash(bytes) });
+      files.push({ path: path.relative(this.resolve(".."), file).replaceAll("\\", "/"), bytes: bytes.length, sha256: hash(bytes) });
     }
     return {
       component: this.repository, name: this.name, source: this.source,
@@ -99,14 +101,14 @@ export class WorkmateRecording {
       skipped_capture_errors: this.errors.length, seconds: Number(probe.format.duration),
       width: stream.width, height: stream.height, files,
       frame_manifest_sha256: hash(Buffer.from(JSON.stringify(this.frames))),
-      raw_capture_directory: path.relative(path.resolve(".."), this.raw).replaceAll("\\", "/"),
+      raw_capture_directory: path.relative(this.resolve(".."), this.raw).replaceAll("\\", "/"),
     };
   }
 }
 
-export async function saveWorkmateScreenshot(repository: string, attempt: string, name: string, bytes: Buffer, source: string) {
-  const file = path.resolve("../copypaste-" + repository, "assets/screenshots/workmate-" + attempt + "-" + name + ".png");
+export async function saveWorkmateScreenshot(repository: string, attempt: string, name: string, bytes: Buffer, source: string, root = process.cwd()) {
+  const file = path.resolve(root, "../copypaste-" + repository, "assets/screenshots/workmate-" + attempt + "-" + name + ".png");
   await mkdir(path.dirname(file), { recursive: true });
   await writeFile(file, bytes, { flag: "wx" });
-  return { path: path.relative(path.resolve(".."), file).replaceAll("\\", "/"), sha256: hash(bytes), source, edited: false };
+  return { path: path.relative(path.resolve(root, ".."), file).replaceAll("\\", "/"), sha256: hash(bytes), source, edited: false };
 }

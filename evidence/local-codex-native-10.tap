@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: a clean local thread survives inference credential expiry and resumes only with a fresh credential
+not ok 1 - a clean local thread survives inference credential expiry and resumes only with a fresh credential
+  ---
+  duration_ms: 7845.4228
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\integration\\local-codex.native.test.ts:4:5917'
+  failureType: 'testCodeFailure'
+  error: 'LOCAL_SESSION_NOT_READY'
+  code: 'LOCAL_SESSION_NOT_READY'
+  stack: |-
+    LocalCodexSession.turn (D:\dev\copypasted\自有agent\dev\copypaste-desktop\src\local-codex.ts:442:133)
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-desktop\tests\integration\local-codex.native.test.ts:126:52)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+ok 2 - native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+  ---
+  duration_ms: 14682.307
+  ...
+# {"version":"0.163.0-alpha.11","native_binary_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","outside_cwd_file_sha256":"205b67f30e170f01fa12b325555888f71d96fcaf25a0eb1cf4e249f895ffd36d","same_thread":true,"credential_excluded_from_shell":true}
+# Subtest: native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+ok 3 - native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+  ---
+  duration_ms: 13025.4865
+  ...
+# Subtest: local binary, provider, Skill and permission-owner mismatches dispatch no inference
+ok 4 - local binary, provider, Skill and permission-owner mismatches dispatch no inference
+  ---
+  duration_ms: 3183.1609
+  ...
+# Subtest: native interruption and revocation stop only this owned process and reject further local turns
+ok 5 - native interruption and revocation stop only this owned process and reject further local turns
+  ---
+  duration_ms: 7691.4721
+  ...
+# Subtest: an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+ok 6 - an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+  ---
+  duration_ms: 12081.6451
+  ...
+# Subtest: current account authority is checked before each native turn
+ok 7 - current account authority is checked before each native turn
+  ---
+  duration_ms: 8200.2177
+  ...
+# Subtest: changing a materialized Skill is rejected before another provider request
+ok 8 - changing a materialized Skill is rejected before another provider request
+  ---
+  duration_ms: 12281.2109
+  ...
+# Subtest: a previous account or project checkpoint cannot be taken over or rewritten
+ok 9 - a previous account or project checkpoint cannot be taken over or rewritten
+  ---
+  duration_ms: 13725.7264
+  ...
+# Subtest: an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+ok 10 - an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+  ---
+  duration_ms: 7958.319
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 9
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 101779.8602
