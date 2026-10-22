@@ -44,11 +44,12 @@ async function independent(directory, branch) {
   const top = await git(directory, "rev-parse", "--show-toplevel");
   assert.equal(path.resolve(top).toLowerCase(), directory.toLowerCase(), "Expected independent repository " + branch);
   assert.equal(await git(directory, "remote", "get-url", "origin"), remote);
-  assert.equal(await git(directory, "branch", "--show-current"), "codex/" + branch);
+  const localBranch = await git(directory, "branch", "--show-current");
+  assert.ok([branch, "codex/" + branch].includes(localBranch), "Use the mapped published branch or its codex/ working branch: " + branch);
   assert.equal(await git(directory, "status", "--porcelain"), "", "Commit reviewed changes before publication: " + branch);
   const commit = await git(directory, "rev-parse", "HEAD");
   assert.match(commit, /^[a-f0-9]{40}$/);
-  return { branch, directory, commit, tree: await git(directory, "rev-parse", "HEAD^{tree}") };
+  return { branch, local_branch: localBranch, directory, commit, tree: await git(directory, "rev-parse", "HEAD^{tree}") };
 }
 try {
   for (const [branch, component] of mapping) {

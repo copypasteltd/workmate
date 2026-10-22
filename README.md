@@ -63,7 +63,7 @@ node scripts/run-paid-input-native.mjs NN --media
 
 ## 分支发布
 
-提交六个组件后，更新 docs 分支的 `docs/quality/workmate-publication.json` 组件 SHA、媒体编号和更新说明，再提交主文档。所有仓库干净后运行：
+提交六个组件后，在主文档根目录执行 `python docs/tools/finalize_workmate_manifest.py --update` 明确刷新组件 SHA，再核对媒体编号、同步更新说明并提交主文档。发布器兼容本地 `codex/*` 工作分支及按 README 新检出的同名发布分支。所有仓库干净后运行：
 
 ```powershell
 node scripts/publish-workmate.mjs --check
@@ -71,6 +71,8 @@ node scripts/publish-workmate.mjs --push
 ```
 
 发布器只推送映射的八个分支，使用原子提交、远端祖先检查和推送后 SHA 核对；不强推、不删除其他分支。预检调用主文档中的历史对象、凭据、README 链接和媒体校验器。运行回执位于忽略的 `.data/publication/`，失败保留并报错。
+
+当前清单生成器绑定保留的阶段 66/旅程 06 证据。产品源码变化后，须重新验证并更新相应报告选择；不能只改组件 SHA 复用旧源码的通过结论。
 
 ## 验证边界
 

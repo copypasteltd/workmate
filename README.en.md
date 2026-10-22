@@ -63,7 +63,7 @@ Replace `NN` with a fresh two-digit ID. `qa-workmate-media.ts` hooks actual UI o
 
 ## Branch publication
 
-After committing the six components, update component SHAs, the media attempt and release notes in the docs branch's `docs/quality/workmate-publication.json`, then commit the documentation. With all repositories clean:
+After committing the six components, run `python docs/tools/finalize_workmate_manifest.py --update` at the main documentation root to explicitly refresh component SHAs. Review the media attempt and release notes, then commit docs. The publisher accepts local `codex/*` working branches and published branch names created by the README clone commands. With all repositories clean:
 
 ```powershell
 node scripts/publish-workmate.mjs --check
@@ -71,6 +71,8 @@ node scripts/publish-workmate.mjs --push
 ```
 
 The publisher updates only the eight mapped branches atomically, checks remote ancestry and verifies post-push SHAs. It never force-pushes or deletes other branches. Preflight calls the documentation audit for historical objects, credentials, README links and media. Ignored runtime receipts live in `.data/publication/`; failures remain available and stop publication.
+
+The current manifest generator binds retained Stage 66/journey 06 evidence. Product source changes require rerunning checks and selecting matching new reports; changing component SHAs alone cannot reuse passing results from older source.
 
 ## Verification boundaries
 
