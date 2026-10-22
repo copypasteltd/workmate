@@ -424,7 +424,7 @@ node scripts/run-paid-input-native.mjs NN --media
 
 ## 分支发布
 
-提交六个组件后，更新 docs 分支的 §docs/quality/workmate-publication.json§ 组件 SHA、媒体编号和更新说明，再提交主文档。所有仓库干净后运行：
+提交六个组件后，在主文档根目录执行 §python docs/tools/finalize_workmate_manifest.py --update§ 明确刷新组件 SHA，再核对媒体编号、同步更新说明并提交主文档。发布器兼容本地 §codex/*§ 工作分支及按 README 新检出的同名发布分支。所有仓库干净后运行：
 
 §§§powershell
 node scripts/publish-workmate.mjs --check
@@ -432,6 +432,8 @@ node scripts/publish-workmate.mjs --push
 §§§
 
 发布器只推送映射的八个分支，使用原子提交、远端祖先检查和推送后 SHA 核对；不强推、不删除其他分支。预检调用主文档中的历史对象、凭据、README 链接和媒体校验器。运行回执位于忽略的 §.data/publication/§，失败保留并报错。
+
+当前清单生成器绑定保留的阶段 66/旅程 06 证据。产品源码变化后，须重新验证并更新相应报告选择；不能只改组件 SHA 复用旧源码的通过结论。
 
 ## 验证边界
 
@@ -476,7 +478,7 @@ Replace §NN§ with a fresh two-digit ID. §qa-workmate-media.ts§ hooks actual 
 
 ## Branch publication
 
-After committing the six components, update component SHAs, the media attempt and release notes in the docs branch's §docs/quality/workmate-publication.json§, then commit the documentation. With all repositories clean:
+After committing the six components, run §python docs/tools/finalize_workmate_manifest.py --update§ at the main documentation root to explicitly refresh component SHAs. Review the media attempt and release notes, then commit docs. The publisher accepts local §codex/*§ working branches and published branch names created by the README clone commands. With all repositories clean:
 
 §§§powershell
 node scripts/publish-workmate.mjs --check
@@ -484,6 +486,8 @@ node scripts/publish-workmate.mjs --push
 §§§
 
 The publisher updates only the eight mapped branches atomically, checks remote ancestry and verifies post-push SHAs. It never force-pushes or deletes other branches. Preflight calls the documentation audit for historical objects, credentials, README links and media. Ignored runtime receipts live in §.data/publication/§; failures remain available and stop publication.
+
+The current manifest generator binds retained Stage 66/journey 06 evidence. Product source changes require rerunning checks and selecting matching new reports; changing component SHAs alone cannot reuse passing results from older source.
 
 ## Verification boundaries
 

@@ -1,4 +1,5 @@
 """Bind committed component bytes to the retained tests and publication plan."""
+import argparse
 from datetime import datetime, timezone
 from hashlib import sha256
 import json
@@ -25,8 +26,12 @@ def read(file):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--update", action="store_true", help="Explicitly revise an existing reviewed plan; its prior bytes remain in Git history")
+    args = parser.parse_args()
     output = ROOT / "docs/quality/workmate-publication.json"
-    assert not output.exists(), "Keep the original delivery plan; future updates must explicitly revise its reviewed component versions"
+    assert args.update or not output.exists(), "Use --update only for an explicitly reviewed version revision"
+    previous = digest(output) if output.exists() else None
     evidence = DELIVERY / "evidence"
     full = read(evidence / "paid-input-regression-02.json")
     focused = read(evidence / "paid-input-integration-10.json")
@@ -57,7 +62,8 @@ def main():
         repo = DEV / ("copypaste-" + component)
         assert git(repo, "status", "--porcelain").stdout == b""
         commit = git(repo, "rev-parse", "HEAD").stdout.decode().strip()
-        assert git(repo, "branch", "--show-current").stdout.decode().strip() == "codex/" + branch
+        local_branch = git(repo, "branch", "--show-current").stdout.decode().strip()
+        assert local_branch in {branch, "codex/" + branch}
         changes = [p.decode() for p in git(repo, "diff-tree", "--no-commit-id", "--name-only", "-r", "-z", "HEAD").stdout.split(b"\0") if p]
         for file in changes:
             assert git(repo, "show", "HEAD:" + file).stdout == (repo / file).read_bytes(), "Committed bytes changed: " + component + "/" + file
@@ -83,7 +89,7 @@ def main():
         else:
             assert not whitespace.stdout
         components.append({
-            "component": component, "branch": branch, "local_branch": "codex/" + branch,
+            "component": component, "branch": branch, "local_branch": local_branch,
             "directory": repo.relative_to(ROOT).as_posix(), "commit": commit,
             "tree": git(repo, "rev-parse", "HEAD^{tree}").stdout.decode().strip(),
             "readmes": [{"path": name, "sha256": digest(repo / name)} for name in ("README.md", "README.en.md")],
@@ -106,6 +112,7 @@ def main():
         })
     result = {
         "at": datetime.now(timezone.utc).isoformat(), "status": "ready_for_remote_verification",
+        "previous_plan_sha256": previous,
         "scope": "Final committed components and actual retained source/media evidence. Only a successful publisher receipt plus remote SHA verification establishes publication.",
         "remote": "git@github.com:copypasteltd/workmate.git",
         "documentation_branches": ["docs", "main"],

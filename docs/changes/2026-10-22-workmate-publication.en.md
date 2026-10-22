@@ -9,6 +9,7 @@ This delivery reorganizes the existing independent repositories into the request
 - Capture four actual clients as screenshots, wall-clock MP4 and GIF. Admin includes filtered users, membership/usage, VIP and credit forms. Services explicitly attribute reused client media.
 - Preserve all prior README bytes and failed capture attempts. The first browser-window capture produced black frames and failed the changing-frame check; the retained corrected capture uses the actual native SIDE_PANEL target.
 - Add a persistent synchronization rule for future code, bilingual docs, affected media and release notes.
+- The publisher accepts both published local branch names from fresh README clones and existing codex/ working branches. Explicit manifest revisions preserve prior versions in Git history and continue to bind qualified source reports.
 
 ## Verification
 

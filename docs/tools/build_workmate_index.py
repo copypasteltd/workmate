@@ -44,7 +44,17 @@ def main():
         body += ("## Repositories and branches\n\n" if en else "## 仓库和分支\n\n")
         body += ("Each component retains its independent Git history and root layout. Clone different branches into separate directories when running them together. The same documentation commit is published to §main§ and §docs§.\n\n" if en else "每个端保留独立 Git 历史和仓库根目录。多端同时运行时分别检出到不同目录。主文档相同提交发布到 §main§ 与 §docs§。\n\n")
         body += "| Branch | Directory under §dev/§ | Responsibility | README |\n| --- | --- | --- | --- |\n"
+        english_titles = {
+            "backend": "Backend / API, Codex, data and metering",
+            "web": "Cloud customer workspace",
+            "admin": "Administration and operations",
+            "desktop": "Frameless native desktop",
+            "extension": "Chrome native Side Panel",
+            "delivery": "Startup, verification, recording and publishing",
+        }
         for branch, (directory, title) in BRANCHES.items():
+            if en:
+                title = english_titles[branch]
             body += "| [" + branch + "](" + BASE + "/tree/" + branch + ") | §" + directory + "§ | " + title + " | [中文](" + BASE + "/blob/" + branch + "/README.md) / [English](" + BASE + "/blob/" + branch + "/README.en.md) |\n"
         body += "| [docs / main](" + BASE + "/tree/docs) | Project root · §docs/§ | Requirements, architecture, delivery and release notes | [中文](README.md) / [English](README.en.md) |\n\n"
         body += ("## Architecture and usage\n\n" if en else "## 架构与使用逻辑\n\n")
@@ -154,9 +164,9 @@ npm run demo
             "本次将已有独立仓库按要求整理到 GitHub 对应分支，将累积的 README 阶段说明整理为当前中英双语使用入口，保留既有源码/历史、已应用 SQL 和原始验收要求。\n\n"
         )
         release_body += (
-            "- Publish Backend, Web, Admin, Desktop, Extension and Delivery through six component branches; publish the same documentation commit to main/docs.\n- Document architecture, modules, setup, identity, permissions, fees, configuration, checks, supported workflows and limits in twelve component READMEs and two master READMEs.\n- Capture four actual clients as screenshots, wall-clock MP4 and GIF. Admin includes filtered users, membership/usage, VIP and credit forms. Services explicitly attribute reused client media.\n- Preserve all prior README bytes and failed capture attempts. The first browser-window capture produced black frames and failed the changing-frame check; the retained corrected capture uses the actual native SIDE_PANEL target.\n- Add a persistent synchronization rule for future code, bilingual docs, affected media and release notes.\n\n"
+            "- Publish Backend, Web, Admin, Desktop, Extension and Delivery through six component branches; publish the same documentation commit to main/docs.\n- Document architecture, modules, setup, identity, permissions, fees, configuration, checks, supported workflows and limits in twelve component READMEs and two master READMEs.\n- Capture four actual clients as screenshots, wall-clock MP4 and GIF. Admin includes filtered users, membership/usage, VIP and credit forms. Services explicitly attribute reused client media.\n- Preserve all prior README bytes and failed capture attempts. The first browser-window capture produced black frames and failed the changing-frame check; the retained corrected capture uses the actual native SIDE_PANEL target.\n- Add a persistent synchronization rule for future code, bilingual docs, affected media and release notes.\n- The publisher accepts both published local branch names from fresh README clones and existing codex/ working branches. Explicit manifest revisions preserve prior versions in Git history and continue to bind qualified source reports.\n\n"
             if en else
-            "- Backend、Web、Admin、Desktop、Extension、Delivery 分别发布；main/docs 发布相同主文档提交。\n- 十二份各端 README 与两份主文档 README 说明架构、模块、安装、身份、权限、费用、配置、验证、使用流程与边界。\n- 四个真实客户端新增截图、保留实际时间的 MP4 与 GIF；后台含筛选用户、企业/消耗、VIP 和费用表单。服务端明确说明引用的客户端媒体来源。\n- 保留全部旧 README 原字节与失败捕获。首次浏览器整窗捕获产生黑屏，被画面变化检查拒绝；修正后直接捕获真实原生 SIDE_PANEL 文档。\n- 固化后续代码、双语文档、相关媒体及更新说明的同步推送规则。\n\n"
+            "- Backend、Web、Admin、Desktop、Extension、Delivery 分别发布；main/docs 发布相同主文档提交。\n- 十二份各端 README 与两份主文档 README 说明架构、模块、安装、身份、权限、费用、配置、验证、使用流程与边界。\n- 四个真实客户端新增截图、保留实际时间的 MP4 与 GIF；后台含筛选用户、企业/消耗、VIP 和费用表单。服务端明确说明引用的客户端媒体来源。\n- 保留全部旧 README 原字节与失败捕获。首次浏览器整窗捕获产生黑屏，被画面变化检查拒绝；修正后直接捕获真实原生 SIDE_PANEL 文档。\n- 固化后续代码、双语文档、相关媒体及更新说明的同步推送规则。\n- 发布器兼容 README 新克隆仓库的同名本地分支和现有 codex/ 工作分支；清单可明确更新，旧版本保留于 Git 历史，源码证据绑定继续生效。\n\n"
         )
         release_body += ("## Verification\n\n" if en else "## 验证\n\n")
         release_body += "Platform 782/782 · focused 34/34 · client checks 13/13 · actual native journey 32/32.\n\n"

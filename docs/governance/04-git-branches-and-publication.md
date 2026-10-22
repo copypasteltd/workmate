@@ -14,6 +14,8 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 
 `main` 和 `docs` 发布相同的主文档提交。各分支根目录直接包含对应仓库内容，不把各端代码混放在一个分支中。`docs/README.md` 提供总导航；各端 `README.md` 为中文、`README.en.md` 为英文。GitHub 上的跨端和主文档链接使用明确分支 URL，避免依赖不存在的上级目录。
 
+表中 `codex/*` 是当前工作分支。按 README 新检出的本地同名分支（例如 `backend`、`docs`）也可直接执行发布器，无须额外重命名；其他功能分支应先审阅并整合到对应工作分支。后续使用 `python docs/tools/finalize_workmate_manifest.py --update` 明确刷新已提交组件清单，再提交主文档；旧清单保留于 Git 历史。
+
 ## 每次更新必须同步
 
 1. 在唯一 D 盘工作区的对应独立仓库修改代码；主文档和文档工具仍放在根目录 `docs/`。
@@ -28,6 +30,8 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 ## English
 
 Each component remains an independent local Git repository and publishes its root content to the branch shown above. The primary documentation repository publishes the same commit to `main` and `docs`. Every component has a complete Chinese `README.md` and English `README.en.md`, with architecture, setup, identity and usage flows, configuration, verification, screenshots and actual interaction media.
+
+The table records current `codex/*` working branches. Fresh README checkouts using the published local branch names, such as `backend` and `docs`, can also run the publisher directly. Integrate reviewed feature work into the mapped branch first. Refresh committed component versions explicitly with `python docs/tools/finalize_workmate_manifest.py --update`, then commit docs; Git history preserves the prior plan.
 
 Every subsequent change must update the corresponding documentation and bilingual release notes, refresh relevant real captures when UI behavior changes, run checks appropriate to the change, commit, push the explicitly mapped branch and compare remote commit IDs. The user has authorized ongoing synchronization to this remote. Preserve collaborator history; do not force-push or delete unrelated branches. Keep credentials, local sessions, databases, dependencies and generated installers out of Git. Synthetic demonstrations and production qualification must remain clearly distinguished.
 
