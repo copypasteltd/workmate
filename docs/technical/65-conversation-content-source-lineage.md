@@ -1,5 +1,9 @@
 # 会话历史、实际读取与产物来源链
 
+<!-- stage66-current-paid-inputs:start -->
+后续[阶段 66](66-paid-native-input-checkpoints.md)接入已完成且明确计量的付费原生回合补资料续接，保留原任务/线程/预算并累计结算。[当前绑定回执](../quality/paid-input-checkpoint.json)记录验证范围；下方旧阶段说明保留历史范围。任意执行中暂停、未知外部动作恢复和完整规范任务接口仍继续跟踪。
+<!-- stage66-current-paid-inputs:end -->
+
 <!-- stage65-current-history-source-lineage:start -->
 当前执行：平台 **765/765**，保留原全部 **746 项**命名测试；定向 **51/51**，六仓库 **13 项**检查通过。两库 SQL081→087、原 168 张公共表行摘要、旧迁移和原函数核查通过，新增来源表为空。[绑定回执](../quality/history-source-checkpoint.json)列出源码、原始报告、验证器和回收记录。仅当前后台及已授权模拟数据得到所列局部验证；既有原生包只做字节核对。
 <!-- stage65-current-history-source-lineage:end -->

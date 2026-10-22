@@ -1,5 +1,9 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage66-current-paid-inputs:start -->
+阶段 66 以重新构建的 Windows 包和真实 Chrome Side Panel 执行 **32 项**原生旅程，检查无边框、自绘按钮、无 Electron/Alt 菜单、工具栏原生右侧栏及补资料流程。见[客户端产物](../quality/paid-input-artifacts.json)和[绑定范围](../quality/paid-input-checkpoint.json)。补资料 UI 使用明确模拟回合；实际 Codex 子进程续接由后台专项另行验证。
+<!-- stage66-current-paid-inputs:end -->
+
 <!-- stage65-current-history-source-lineage:start -->
 阶段 65 保持 Desktop 无边框、无 Electron/Alt 菜单与 Chrome 原生右侧栏。既有客户端/包已[只读核对](../quality/history-source-client-recheck-02.json)，未将原生历史旅程重新标为本轮后台界面验收。见[后台来源链实现](65-conversation-content-source-lineage.md)。
 <!-- stage65-current-history-source-lineage:end -->

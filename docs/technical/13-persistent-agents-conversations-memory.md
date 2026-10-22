@@ -1,5 +1,9 @@
 # 持续 Agent、会话与记忆的实现约束
 
+<!-- stage66-current-paid-inputs:start -->
+后续[阶段 66](66-paid-native-input-checkpoints.md)接入已完成且明确计量的付费原生回合补资料续接，保留原任务/线程/预算并累计结算。[当前绑定回执](../quality/paid-input-checkpoint.json)记录验证范围；下方旧阶段说明保留历史范围。任意执行中暂停、未知外部动作恢复和完整规范任务接口仍继续跟踪。
+<!-- stage66-current-paid-inputs:end -->
+
 <!-- stage65-current-history-source-lineage:start -->
 后续[阶段 65](65-conversation-content-source-lineage.md)补充实际文件/云引用/数据集读取、历史结果和计划来源检查，以及显式发布的独立输入快照；状态与费用元数据保留。见[当前后台回执](../quality/history-source-checkpoint.json)。本文原阶段源码和执行回执保持其历史范围；已付费原生步骤的业务续接及完整验收继续跟踪。
 <!-- stage65-current-history-source-lineage:end -->

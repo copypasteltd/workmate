@@ -1,5 +1,9 @@
 # CopyPaste 企业 Agent 文档
 
+<!-- stage66-current-paid-inputs:start -->
+阶段 66 将已完成且明确计量的 Codex 回合接入原任务补资料续接，保留原线程、预算及累计费用，并检查已完成工具输出及来源。平台 **782/782**、定向 **34/34**、六仓库 13 项检查和原生旅程 **32 项**通过，原 765 项命名测试保留。原生补资料 UI 使用明确模拟回合；实际 Codex 子进程另以模拟 API 验证。Desktop 无边框及无默认/Alt 菜单、Chrome 原生右侧栏均由新打包产物实际检查。原 102 项需求、TC/NFR/G01–G10 及 81/21/0 状态保留。见[实现细则](technical/66-paid-native-input-checkpoints.md)、[绑定回执](quality/paid-input-checkpoint.json)和[新客户端预览](quality/paid-input-artifacts.json)。签名安装、商店和生产服务尚未验收；下方旧阶段记录保留当时范围。
+<!-- stage66-current-paid-inputs:end -->
+
 <!-- stage65-current-history-source-lineage:start -->
 阶段 65 新增实际读取及会话、记忆、计划和产物的来源链保护。显式发布冻结已确认输入，保留独立副本语义；失效正文不影响任务状态和费用元数据读取。平台 **765/765**、定向 **51/51**、六仓库 13 项检查通过，原 746 项命名测试保留。两库 SQL081→087 保留原 168 张公共表的全部行摘要、旧迁移和原函数定义，来源表不补造历史。见[实现细则](technical/65-conversation-content-source-lineage.md)和[绑定回执](quality/history-source-checkpoint.json)。Desktop 无边框和 Chrome 原生右侧栏保持；既有客户端和包只做只读字节核对，旧截图不代表本轮后台界面验收。完整 102 项需求、TC/NFR/G01–G10 和正式环境验收继续跟踪。
 <!-- stage65-current-history-source-lineage:end -->

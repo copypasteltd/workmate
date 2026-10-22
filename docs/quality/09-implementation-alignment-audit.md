@@ -1,5 +1,9 @@
 # 全体系需求差异复查与修复
 
+<!-- stage66-current-paid-inputs:start -->
+阶段 66 的局部修复为同一付费任务/线程补资料续接、单笔预留、累计费用及有效已完成操作复用。平台 782/782、定向 34/34、原生旅程 32 项通过；模拟数据与 UI 回合夹具明确标注。见[绑定回执](paid-input-checkpoint.json)。原发现和全部验收门槛继续保留，不把本轮实现认作完整产品验收。
+<!-- stage66-current-paid-inputs:end -->
+
 <!-- stage62-scoped-seo -->
 阶段 62 新增[有范围约束的网站诊断与复查](../technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](../quality/scoped-seo-checkpoint.json)和[包清单](../quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
 
