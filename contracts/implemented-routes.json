@@ -1,5 +1,4 @@
 {
-  "generated_at": "2026-10-20T14:54:03.972Z",
   "contract": "actual_fastify_route_inventory",
   "not_full_design_openapi": true,
   "routes": [
@@ -62,6 +61,46 @@
     {
       "method": "POST",
       "path": "/v1/admin/access/roles"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/evidence/:evidence_id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/ai/operations"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/policies"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/ai/policies/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/policy"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/ai/previews"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/requests"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/requests/:channel/:request_id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/ai/requests/:channel/:request_id/evidence"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/tasks/:task_id/settlement"
     },
     {
       "method": "GET",
@@ -193,6 +232,46 @@
     },
     {
       "method": "GET",
+      "path": "/v1/admin/capability-releases"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/capability-releases/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/capability-releases/:id/publications"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/capability-releases/:id/publications-previews"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/capability-releases/:id/rollbacks"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/capability-releases/:id/rollbacks-previews"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/capability-releases/:id/validations"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/capability-releases/drafts"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/capability-releases/validations/:validation"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/capability-releases/validations/:validation/workspace-purge-retries"
+    },
+    {
+      "method": "GET",
       "path": "/v1/admin/catalog"
     },
     {
@@ -210,6 +289,14 @@
     {
       "method": "GET",
       "path": "/v1/admin/connections"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/connections/:id/detail"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/connections/:id/revocations"
     },
     {
       "method": "POST",
@@ -665,11 +752,67 @@
     },
     {
       "method": "GET",
+      "path": "/v1/capabilities"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/capabilities/details"
+    },
+    {
+      "method": "GET",
       "path": "/v1/catalog/default-assistant"
     },
     {
       "method": "GET",
       "path": "/v1/catalog/roles"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/connections"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/connections"
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/connections/:id"
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/connections/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/connections/:id/detail"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/connections/:id/discovery"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/connections/:id/history"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/connections/:id/syncs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/connections/callback"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/connections/launch/:state"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/connector-providers"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/connector-snapshots/:id"
     },
     {
       "method": "POST",
@@ -753,10 +896,6 @@
     },
     {
       "method": "GET",
-      "path": "/v1/oauth/:provider/callback"
-    },
-    {
-      "method": "GET",
       "path": "/v1/plans"
     },
     {
@@ -774,6 +913,54 @@
     {
       "method": "GET",
       "path": "/v1/reports/:report"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/seo/audits"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run/change-tasks"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/seo/audits/:run/change-tasks"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run/change-tasks/:change"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run/change-tasks/:change/download"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run/documents/:document"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run/download"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run/findings"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/seo/audits/:run/pages"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/seo/audits/:run/recheck"
     },
     {
       "method": "GET",
@@ -820,6 +1007,22 @@
       "path": "/v1/support-grants/:id/revoke"
     },
     {
+      "method": "GET",
+      "path": "/v1/syncs/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/syncs/:id/cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/syncs/:id/detail"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/syncs/:id/retry"
+    },
+    {
       "method": "POST",
       "path": "/v1/task-dependencies/:dependency_id/resolutions"
     },
@@ -829,11 +1032,31 @@
     },
     {
       "method": "GET",
+      "path": "/v1/tasks"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tasks"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tasks/:task_id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tasks/:task_id/controls"
+    },
+    {
+      "method": "GET",
       "path": "/v1/tasks/:task_id/dependencies"
     },
     {
       "method": "GET",
       "path": "/v1/tasks/:task_id/events"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tasks/:task_id/inputs"
     },
     {
       "method": "POST",
@@ -938,6 +1161,10 @@
     {
       "method": "PATCH",
       "path": "/v1/tenants/:tenant/projects/:project/agents/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/agents/:id/version-previews"
     },
     {
       "method": "GET",
@@ -1097,6 +1324,10 @@
     },
     {
       "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/connector-snapshots/:id"
+    },
+    {
+      "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/conversations"
     },
     {
@@ -1117,6 +1348,10 @@
     },
     {
       "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/conversations/:id/adoption-previews"
+    },
+    {
+      "method": "POST",
       "path": "/v1/tenants/:tenant/projects/:project/conversations/:id/messages"
     },
     {
@@ -1126,6 +1361,30 @@
     {
       "method": "POST",
       "path": "/v1/tenants/:tenant/projects/:project/creative"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-batches"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-batches"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-batches/:batch"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-batches/:batch/cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-batches/:batch/units/:unit/edit"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/creative-batches/:batch/units/:unit/retry"
     },
     {
       "method": "PUT",
@@ -1260,6 +1519,42 @@
       "path": "/v1/tenants/:tenant/projects/:project/uploads/:id/parts/:index"
     },
     {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/version-adoption-previews/:id"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/version-adoption-previews/:id/confirmations"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects/:video"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects/:video/edit"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects/:video/renders"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects/:video/renders/:render/cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects/:video/renders/:render/preview"
+    },
+    {
       "method": "POST",
       "path": "/v1/tenants/:tenant/projects/:project/workflow-runs/:id/cancel"
     },
@@ -1366,6 +1661,17 @@
     {
       "method": "POST",
       "path": "/v1/workspaces/:workspace_id/nodes"
+    }
+  ],
+  "generated_at": "2026-10-22T10:48:00.890Z",
+  "previous_inventory_sha256": "20e190467075226a71b333159060ddf32f4064c86ba5c701f4246a2920cd26c2",
+  "source_receipt": "delivery:evidence/canonical-task-integration-03.json",
+  "superseded_implementation_paths": [
+    {
+      "method": "GET",
+      "path": "/v1/oauth/:provider/callback",
+      "replacement": "/v1/connections/callback",
+      "note": "The previous implementation inventory predates the state-bound connector flow. The normative OpenAPI is unchanged."
     }
   ]
 }
