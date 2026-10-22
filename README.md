@@ -1,5 +1,33 @@
 # CopyPaste Desktop
 
+<!-- stage64-current-report-task-source-fences:start -->
+独立 renderer 继续在无边框窗口中使用同一受控后台；当前客户端源码与包只读核对通过。
+
+## 报告与任务历史的当前来源约束（阶段 64）
+
+营销分析和原始 SEO 诊断的通用任务详情、项目任务列表、JSON 历史消息及两种 SSE 事件入口，现与专用报告共用当前来源约束。来源被隔离或到期后，已有事件流会在下一批读取时停止发送正文并关闭。恢复来源仍须通过当前企业、项目、私有所有者和登录身份检查；原有报告及历史事件保持不可变。
+
+分析数据集、原始 CSV、报告产物与终态分析任务的保留期在清理前生效。过期分析输入会在创建任务和预留费用之前拒绝。来源锁等待正常任务更新后，还会重新核对用户权限版本，避免并发撤权后仍返回消息。
+
+验证：平台完整 **746/746**，保留前阶段全部 **734 项**命名测试；新增定向 **12/12**，六仓库 **13 项**检查通过。使用实际 HTTP 事件流、Worker 保存的模型消息，以及真实锁定 Codex/内部模拟网关；AI 和业务数据继续按授权模拟。两库原生 SQL080→081 保留 **168 张**原公共表的全部行摘要、所有旧迁移和表所有者/RLS，仅更新两个报告访问函数。
+
+**Desktop 无边框、无 Electron 默认菜单或 Alt 菜单**；扩展工具栏切换 **Chrome 原生 Side Panel**，默认右侧并遵循浏览器位置偏好。现有客户端、ASAR、扩展 ZIP 及阶段 63 预览包已只读核对。下方真实截图和原生检查保留其原后台版本范围，本阶段没有新增后台的浏览器/原生端旅程验收。安装、签名、商店发布和正式环境仍待完成。
+
+仅使用 Codex，所有 AI 请求走公司内部 OpenAI 兼容服务器。原 102 项需求、全部 TC/NFR/G01–G10 保留；81 项局部验证、21 项未证明完成、0 项完整验收。
+
+```mermaid
+flowchart LR
+  Request[Task detail / list / JSON / SSE] --> Auth[Current tenant / project / private owner / session]
+  Auth --> Source[Current report and original-source lifecycle]
+  Source --> Locks[Source locks / identity recheck after waits]
+  Locks --> Read[Authorized immutable data or event batch]
+  Read --> Source
+  Source --> Closed[Unavailable source / no new body / close open stream]
+  Input[Analysis dataset / original CSV] --> Valid[Active and unexpired source]
+  Valid --> Reserve[Only then create task and reserve budget]
+```
+<!-- stage64-current-report-task-source-fences:end -->
+
 <!-- stage63-source-governed-website-changes:start -->
 本仓库含独立 renderer 快照，构建无需相邻 Web 源码。用户在无边框客户端完成相同流程，JSON/HTML 通过认证桥与系统保存窗口写入本地。
 
