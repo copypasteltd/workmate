@@ -1,5 +1,7 @@
 # 需求追踪矩阵
 
+**阶段 72 更新：** 本机 Desktop 的主进程授权、实际 Codex/文件/终端、同线程继续、停止及公司账本已接入，并以限定模拟供应商/系统对话框决定的实际打包旅程验证。Extension 保持右侧栏云端对话和附件上传。当前证据及未完成范围见 [方向落实与验收边界](../technical/72-desktop-local-execution-and-control-plane.md#7-方向检查与验收边界)。下文旧检查保留其原始时点和源码；原 102 项完整验收状态未提升。
+
 当前客户端执行方向补充 [CLIENT01](../requirements/03-client-execution-amendment.md) 关联 REQ-036–044、075、078、100、102；新增 DESK-L01–L08 与 EXT-C01–C06，见 [方向审计](client-direction-audit.json)。原 102 项及 TC 保留；Desktop 本机 Codex/完整权限和 Extension 完整对话附件流程尚未验收，旧窗口/侧栏证据不能替代。
 
 <!-- stage66-current-paid-inputs:start -->

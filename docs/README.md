@@ -9,9 +9,9 @@
 
 CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，提供客户可主动授予的 **完整本机权限**，操作能力对标 Codex Desktop。**Extension 在 Chrome 原生右侧栏采用 ChatGPT 式对话/附件结构**，获取、读取用户获选文件并上传，由云端 Codex 执行。全部产品 AI 请求仍走公司内部网关。
 
-**当前实现：** Desktop 独立本机 Codex supervisor 已通过 9 项原生测试，产品的本机授权、费用和随包交付仍待接入。Extension 已接入原生右侧栏对话、历史、底部输入和明确文件版本附件；32 项扩展测试及 7 项真实侧栏旅程检查通过，模型回合按授权模拟。原 102 项及完整客户端验收继续跟踪。[本次扩展实现](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md)。
+**当前实现：** Desktop 已接入本机 Codex、主进程授权、文件/终端、同线程继续、停止及公司网关费用通道；37 项客户端测试、10 项原生监督器测试、86 项服务端与云端兼容检查、7 项实际打包 Electron 旅程检查通过。模型回合及系统选目录/授权决定是明确测试夹具。首批 5 个本机角色可用，完整 18 角色/媒体、生产签名与全部客户端验收继续跟踪。Extension 保持原生右侧栏云端对话与文件上传。见 [实现和边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md)。
 
-本机 supervisor 的实现、实际权限测试与剩余产品接入见 [技术说明](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md)。
+本机 supervisor 的实现及历史原生权限测试见 [技术说明](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md)。
 
 <!-- /client01-direction -->
 
@@ -31,7 +31,7 @@ CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，�
 
 ## 架构与使用逻辑
 
-下图为当前目标的执行分工；现有 Desktop 包尚未实现本机 Codex 和完整本机权限。
+下图为当前目标的执行分工；当前本机候选包的执行、权限与费用验证见本次检查点；旧包保持原范围。
 
 ```mermaid
 flowchart TB
@@ -41,7 +41,7 @@ flowchart TB
   Operator[Administrator + MFA] --> Admin[Admin Dashboard]
   Web & Side & Admin --> API[Company Backend]
   Desktop --> API
-  Desktop --> LocalCodex[Customer-device Codex / pending implementation]
+  Desktop --> LocalCodex[Customer-device Codex / native candidate]
   LocalCodex --> LocalTools[Local files / terminal / skills]
   LocalCodex --> Gateway[Internal OpenAI-compatible API]
   API --> Access[Identity / tenant / project / private ownership]
@@ -91,7 +91,7 @@ npm run demo
 
 ## 验证与边界
 
-当前平台完整回归 **802/802**、统一任务专项 **52/52**，保留原 782 项命名测试；二者重叠，不相加。六仓库类型/构建/既有客户端测试 **13 项**、实际打包 Desktop/原生 Side Panel 旅程 **32 项**通过。另有独立本机 Codex supervisor **9 项**原生测试通过，尚未接入完整客户端授权/费用流程。四端媒体记录既有云端/文件桥接界面，绑定真实捕获时间、摘要及清理结果。
+历史源码平台完整回归 **802/802**（后端已更新，此回执不作为新源码的完整回归）、统一任务专项 **52/52**，保留原 782 项命名测试；二者重叠，不相加。六仓库类型/构建/既有客户端测试 **13 项**、实际打包 Desktop/原生 Side Panel 旅程 **32 项**通过。本次另有 10 项原生监督器及 7 项打包 Electron 本机旅程检查，已接入客户授权和公司费用通道；完整资格仍按新检查点跟踪。四端媒体记录既有云端/文件桥接界面，绑定真实捕获时间、摘要及清理结果。
 
 [统一任务证据](quality/canonical-task-checkpoint.json) · [本机内核证据](quality/local-codex-supervisor-checkpoint.json) · [候选包字节](quality/client-direction-package.json) · [媒体](quality/workmate-media-10.json) · [原需求进度](quality/requirements-alignment-progress.json)
 
@@ -255,3 +255,5 @@ UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独�
 后续改动同步中英 README、相关实际截图/交互、双语更新说明和对应远端分支。发布只推送明确引用，核对远程 SHA，不强推。凭据、会话、数据库、依赖及安装包不进入 Git；浏览器调用后关闭自建且不用的页面、上下文及实例。
 
 本次扩展更新：[云端对话及消息附件](technical/71-extension-cloud-conversations.md) · [更新说明](changes/2026-10-22-extension-conversations.md)。
+
+本次 Desktop 本机执行：[具体方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md) · [源码与真实旅程证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json)；既有媒体保持原始源码范围。

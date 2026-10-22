@@ -1,5 +1,7 @@
 # 全体系需求差异复查与修复
 
+**阶段 72 更新：** 本机 Desktop 的主进程授权、实际 Codex/文件/终端、同线程继续、停止及公司账本已接入，并以限定模拟供应商/系统对话框决定的实际打包旅程验证。Extension 保持右侧栏云端对话和附件上传。当前证据及未完成范围见 [方向落实与验收边界](../technical/72-desktop-local-execution-and-control-plane.md#7-方向检查与验收边界)。下文旧检查保留其原始时点和源码；原 102 项完整验收状态未提升。
+
 **当前优先方向（2026-10-22）：** 用户的 [CLIENT01](../requirements/03-client-execution-amendment.md) 明确 Desktop 本机运行 Codex 并支持客户授予完整本机权限；Extension 为 ChatGPT 式对话/附件侧栏，读取获选文件并上传云端执行。检查确认 Desktop 云端加文件桥接及扩展任务表单主线存在方向偏差。[开发调整](../technical/69-desktop-local-codex-and-extension-direction.md) 已将其列为优先改造，代码尚未完整修复；原 102 项及下方历史证据保留原范围。
 
 <!-- stage66-current-paid-inputs:start -->

@@ -45,7 +45,7 @@ RuntimeEvent 映射为状态、可见消息、工具开始/结束、检查点、
 | 故障和升级 | Codex 缺失或未验证时阻止启动；运行故障按检查点和既有重试规则处理，禁用自动切换其他内核；回滚仅回到已验收的 Codex 版本 |
 | 内部 AI | 所有 Codex 推理、媒体工具和 Skill 中 AI 请求经过公司内部服务器；不使用客户个人模型登录代替内部路由 |
 
-按用户 2026-10-22 的 [CLIENT01](../requirements/03-client-execution-amendment.md)，Web/扩展使用云端 Codex，Desktop 必须使用客户本机 Codex。Desktop 由产品安装/管理锁定版本，提供受限与客户可授予的完整本机权限模式；不能沿用云端 read-only/禁 shell 配置来限制完整模式。所有推理和媒体 AI 仍经内部网关；产品权限、账单与平台连接仍由企业平台管理。当前 Desktop 只有文件桥接，本机 Codex 集成仍待实现，见 [方向检查](69-desktop-local-codex-and-extension-direction.md)。
+按用户 2026-10-22 的 [CLIENT01](../requirements/03-client-execution-amendment.md)，Web/扩展使用云端 Codex，Desktop 必须使用客户本机 Codex。Desktop 由产品安装/管理锁定版本，提供受限与客户可授予的完整本机权限模式；不能沿用云端 read-only/禁 shell 配置来限制完整模式。所有推理和媒体 AI 仍经内部网关；产品权限、账单与平台连接仍由企业平台管理。阶段 72 已接入独立本机 Codex、客户授权和任务级公司推理凭据；原有文件桥保持可选，具体实现和资格边界见 [本机执行及控制面](72-desktop-local-execution-and-control-plane.md)。
 
 ## 4. 模型标识与能力协商
 

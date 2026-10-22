@@ -1,5 +1,7 @@
 # Desktop 本机 Codex supervisor：实现、验证与剩余接入
 
+**最新实现（阶段 72）：** Desktop 已接入本机 Codex、客户授权、主进程 IPC、公司网关费用及实际打包旅程。原文保留其初始/历史范围，当前方案与证据见 [本机执行及控制面](72-desktop-local-execution-and-control-plane.md)。下列旧回执不自动认定为新源码通过。
+
 2026-10-22。当前阶段：**独立本机内核模块已实现并通过原生集成测试；Electron 用户流程尚未接入。** 本文承接 [CLIENT01](../requirements/03-client-execution-amendment.md) 和 [方向检查](69-desktop-local-codex-and-extension-direction.md)，不将内核模块测试算作完整 Desktop 验收。
 
 ## 已落地的执行链

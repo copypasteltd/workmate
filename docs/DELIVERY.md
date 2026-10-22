@@ -1,5 +1,7 @@
 # CopyPaste 0.5.0 代码交付入口
 
+**阶段 72 更新：** 本机 Desktop 的主进程授权、实际 Codex/文件/终端、同线程继续、停止及公司账本已接入，并以限定模拟供应商/系统对话框决定的实际打包旅程验证。Extension 保持右侧栏云端对话和附件上传。当前证据及未完成范围见 [方向落实与验收边界](technical/72-desktop-local-execution-and-control-plane.md#7-方向检查与验收边界)。下文旧检查保留其原始时点和源码；原 102 项完整验收状态未提升。
+
 <!-- stage66-current-paid-inputs:start -->
 阶段 66 将已完成且明确计量的 Codex 回合接入原任务补资料续接，保留原线程、预算及累计费用，并检查已完成工具输出及来源。平台 **782/782**、定向 **34/34**、六仓库 13 项检查和原生旅程 **32 项**通过，原 765 项命名测试保留。原生补资料 UI 使用明确模拟回合；实际 Codex 子进程另以模拟 API 验证。Desktop 无边框及无默认/Alt 菜单、Chrome 原生右侧栏均由新打包产物实际检查。原 102 项需求、TC/NFR/G01–G10 及 81/21/0 状态保留。见[实现细则](technical/66-paid-native-input-checkpoints.md)、[绑定回执](quality/paid-input-checkpoint.json)和[新客户端预览](quality/paid-input-artifacts.json)。签名安装、商店和生产服务尚未验收；下方旧阶段记录保留当时范围。
 <!-- stage66-current-paid-inputs:end -->

@@ -7,7 +7,7 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 | `dev/copypaste-platform` | `codex/backend` | `backend` | API、Codex、身份权限、业务、计量与数据库 |
 | `dev/copypaste-web` | `codex/web` | `web` | 云端用户工作台 |
 | `dev/copypaste-admin` | `codex/admin` | `admin` | 独立管理后台 |
-| `dev/copypaste-desktop` | `codex/desktop` | `desktop` | 无边框 Electron、本机 Codex 内核及独立文件桥；产品流程接入中 |
+| `dev/copypaste-desktop` | `codex/desktop` | `desktop` | 无边框 Electron、本机 Codex、客户授权/费用及独立可选文件桥 |
 | `dev/copypaste-extension` | `codex/extension` | `extension` | Chrome MV3 原生右侧栏 |
 | `dev/copypaste-delivery` | `codex/delivery` | `delivery` | 原生启动、验证、录制与发布工具 |
 | 项目根目录 | `codex/docs` | `docs`、`main` | 主需求、架构、交付说明和跨分支导航 |

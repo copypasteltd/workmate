@@ -1,0 +1,32 @@
+/** Native tools have a separate contract from cloud business tools. OS access
+ * remains controlled by the customer's local permission grant and sandbox. */
+const functions = new Set([
+  "exec_command", "shell", "shell_command", "write_stdin", "update_plan",
+  "view_image", "request_user_input", "sleep", "curr_time",
+  "get_goal", "create_goal", "update_goal",
+]);
+const custom = new Set(["apply_patch"]);
+export const desktopToolNames = [...functions, ...custom].flatMap(name => [name, "functions." + name]);
+
+export function desktopToolDeclarations(tools: unknown[]): boolean {
+  if (tools.length > 32) return false;
+  const seen = new Set<string>();
+  const check = (tool: any, prefix = ""): boolean => {
+    if (!tool || typeof tool !== "object" || Array.isArray(tool)) return false;
+    if (tool.type === "namespace")
+      return !prefix && tool.name === "functions" && Array.isArray(tool.tools) && tool.tools.length <= 32
+        && tool.tools.every((child: unknown) => check(child, "functions."));
+    if (typeof tool.name !== "string" || seen.has(prefix + tool.name)) return false;
+    seen.add(prefix + tool.name);
+    if (tool.type === "function") return functions.has(tool.name)
+      && typeof tool.parameters === "object" && tool.parameters !== null && !Array.isArray(tool.parameters);
+    return tool.type === "custom" && custom.has(tool.name)
+      && tool.format?.type === "grammar" && tool.format?.syntax === "lark" && typeof tool.format?.definition === "string"
+      && tool.format.definition.length <= 200000;
+  };
+  return tools.every(tool => check(tool));
+}
+
+export function desktopCustomTool(name: unknown) {
+  return typeof name === "string" && custom.has(name.replace(/^functions\./, ""));
+}

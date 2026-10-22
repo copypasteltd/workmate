@@ -54,8 +54,8 @@
 
 ## 5. 完成判断与当前状态
 
-后续已新增独立本机 Codex supervisor，真实内核测试覆盖本机文件/终端、Skill、权限降级、线程继续和停止，见 [实现及边界](../technical/70-desktop-native-codex-supervisor.md)。该库尚未接入完整客户端授权/费用流程；以下产品级判断继续有效。
+后续已新增独立本机 Codex supervisor，真实内核测试覆盖本机文件/终端、Skill、权限降级、线程继续和停止，见 [实现及边界](../technical/70-desktop-native-codex-supervisor.md)。后续阶段 72 已接入主进程、客户授权、公司推理和费用通道，并验证实际打包程序，见 [本机执行及控制面](../technical/72-desktop-local-execution-and-control-plane.md)。以下历史检查保留原范围；全角色/工具和完整 DESK-L01–L08 仍须继续逐项验收。
 
-本次检查确认：Desktop 当前只有云端执行和受限文件桥接，DESK-L01–L08 **尚未完整实现/验证**；Extension 的原生侧栏对话、历史、底部输入和明确版本附件已接入，32 项测试及 7 项真实侧栏旅程检查通过；模型回合明确模拟。文件/角色/长时间恢复及生产等完整范围继续验证，EXT-C01–C06 **尚未完整验收**，见 [当前实现](../technical/71-extension-cloud-conversations.md)。
+初始方向检查时 Desktop 只有云端执行和受限文件桥接。阶段 72 已接入本机执行、完整权限、同线程继续和费用；仍不将首批 5 角色及自动化夹具范围提升为 DESK-L01–L08 全量验收。Extension 的原生侧栏对话、历史、底部输入和明确版本附件已接入，32 项测试及 7 项真实侧栏旅程检查通过；模型回合明确模拟。文件/角色/长时间恢复及生产等完整范围继续验证，EXT-C01–C06 **尚未完整验收**，见 [当前实现](../technical/71-extension-cloud-conversations.md)。
 
 已有窗口、侧栏、登录、云端工具和截图只证明其原有范围，不能作为本机 Codex/full permission 或新版对话附件体验通过的证据。实现偏差、目标架构、实施顺序和证据清单见 [方向检查与开发调整](../technical/69-desktop-local-codex-and-extension-direction.md)。

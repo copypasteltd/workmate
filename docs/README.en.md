@@ -9,7 +9,7 @@ A Codex-based enterprise Agent platform for Hong Kong businesses, beginning with
 
 CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
 
-**Current implementation:** The independent Desktop local Codex supervisor has passed nine native tests; product consent, billing and bundled distribution still need integration. The Extension now provides native Side Panel conversations, history, a bottom composer and immutable-version attachments. All 32 Extension tests and seven real Side Panel journey checks passed, with explicitly synthetic model turns. The original 102 requirements and full client acceptance remain open. [Extension implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md).
+**Current implementation:** Desktop integrates local Codex, main-process consent, file/terminal tools, same-thread follow-up, stop and company-gateway billing. Validation covers 37 client tests, 10 native-supervisor tests, 86 server/cloud-compatibility tests and seven actual packaged-Electron journey checks. Model turns and native chooser/consent decisions are explicit fixtures. Five local specialists are admitted; all eighteen roles/media tools, production signing and complete client acceptance remain open. The Extension keeps native Side Panel cloud conversations and file uploads. See [implementation and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md).
 
 Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
 
@@ -31,7 +31,7 @@ Each component retains its independent Git history and root layout. Clone differ
 
 ## Architecture and usage
 
-Target execution split; local Codex and full local access are not implemented in the current Desktop package.
+Current execution split. The new Desktop candidate integrates local Codex and full local access within the linked qualification scope; earlier packages retain their original scope.
 
 ```mermaid
 flowchart TB
@@ -41,7 +41,7 @@ flowchart TB
   Operator[Administrator + MFA] --> Admin[Admin Dashboard]
   Web & Side & Admin --> API[Company Backend]
   Desktop --> API
-  Desktop --> LocalCodex[Customer-device Codex / pending implementation]
+  Desktop --> LocalCodex[Customer-device Codex / native candidate]
   LocalCodex --> LocalTools[Local files / terminal / skills]
   LocalCodex --> Gateway[Internal OpenAI-compatible API]
   API --> Access[Identity / tenant / project / private ownership]
@@ -91,7 +91,7 @@ Open Web `http://localhost:4317` and Admin `http://localhost:4318`; Backend uses
 
 ## Evidence and limits
 
-The current Platform regression passes **802/802** tests, retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. Separately, **9** real-native Codex supervisor checks pass; complete Electron consent and billing integration remain pending. Four-client media records the existing cloud/file-bridge UI with actual capture timing, hashes and owned-client cleanup.
+The historical-source Platform regression passed **802/802** tests (the backend has since changed; this is not a full regression of the new source), retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. The new checkpoint adds ten real-native supervisor checks and seven packaged Electron journey checks, including consent and company billing; full qualification remains open. Four-client media records the existing cloud/file-bridge UI with actual capture timing, hashes and owned-client cleanup.
 
 [Canonical task evidence](quality/canonical-task-checkpoint.json) · [Native supervisor evidence](quality/local-codex-supervisor-checkpoint.json) · [Candidate package bytes](quality/client-direction-package.json) · [Media](quality/workmate-media-10.json) · [Requirement progress](quality/requirements-alignment-progress.json)
 
@@ -255,3 +255,5 @@ Current updates: [canonical task repair](changes/2026-10-22-canonical-task-repai
 Every later change must synchronize both READMEs, affected captures, bilingual release notes and the mapped remote branch. Publishing uses explicit refs, remote SHA checks and no force-push. Credentials, sessions, databases, dependencies and installers stay out of Git. Browser runs close owned pages/contexts/instances after use.
 
 New: [Extension cloud conversations](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md) · [Release notes](changes/2026-10-22-extension-conversations.en.md).
+
+Latest Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json). Prior recordings below retain their original source scopes.
