@@ -11,13 +11,15 @@ A cloud Agent product for Hong Kong enterprises. This repository owns **Delivery
 
 CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
 
-**Current implementation:** The Desktop product entry point still uses cloud Codex and a restricted file bridge. An independent native Codex supervisor passes nine real-native integration tests; Electron consent and billing integration remain pending. The Extension has the native Side Panel and basic uploads, while its task-form-first UI needs restructuring. Existing screenshots and recordings show that implementation and do not prove the amended capabilities. [Requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md) · [Direction audit and development plan](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/69-desktop-local-codex-and-extension-direction.md).
+**Current implementation:** The independent Desktop local Codex supervisor has passed nine native tests; product consent, billing and bundled distribution still need integration. The Extension now provides native Side Panel conversations, history, a bottom composer and immutable-version attachments. All 32 Extension tests and seven real Side Panel journey checks passed, with explicitly synthetic model turns. The original 102 requirements and full client acceptance remain open. [Extension implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md).
 
 The architecture diagram below describes the implemented cloud/file-bridge baseline; it is not the target Desktop local-agent architecture.
 
 Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
 
 <!-- /client01-direction -->
+
+To repeat the native Side Panel conversation journey, configure the existing Platform `.env` and native runtime resources, then run `node scripts/run-extension-chat.mjs NN` with an unused two-digit attempt. The runner requires free ports 4310/4317/55432, runs 32 Extension tests and type/build checks, starts only its own native PostgreSQL/preview/browser, and verifies shutdown plus isolated fixture reclamation. Model turns are synthetic; the native panel, upload, cloud Worker and ledger are real. See the [Extension checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-chat-checkpoint.json).
 
 ## Architecture and constraints
 
