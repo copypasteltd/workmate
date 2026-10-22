@@ -661,8 +661,8 @@ async function tasks() {
 async function openTask(id: string) {
   const endpoint = base(),
     revision = workspaceRevision;
+  clearTask();
   task = id;
-  if (timer) clearInterval(timer);
   const t = await request(endpoint + "/tasks/" + id);
   if (revision !== workspaceRevision || endpoint !== base() || task !== id)
     return;
@@ -679,19 +679,25 @@ async function refreshTask(id: string) {
   if (task !== id) return;
   const endpoint = base(),
     revision = workspaceRevision;
-  const t = await request(endpoint + "/tasks/" + id);
-  if (revision !== workspaceRevision || endpoint !== base() || task !== id)
-    return;
-  await drawTask(t);
-  if (revision !== workspaceRevision || endpoint !== base() || task !== id)
-    return;
-  if (
-    !["queued", "running", "paused", "needs_input"].includes(t.status) &&
-    timer
-  ) {
-    clearInterval(timer);
-    timer = undefined;
-    await tasks();
+  try {
+    const t = await request(endpoint + "/tasks/" + id);
+    if (revision !== workspaceRevision || endpoint !== base() || task !== id)
+      return;
+    await drawTask(t);
+    if (revision !== workspaceRevision || endpoint !== base() || task !== id)
+      return;
+    if (
+      !["queued", "running", "paused", "needs_input"].includes(t.status) &&
+      timer
+    ) {
+      clearInterval(timer);
+      timer = undefined;
+      await tasks();
+    }
+  } catch (error) {
+    if (revision === workspaceRevision && endpoint === base() && task === id)
+      clearTask();
+    throw error;
   }
 }
 const tr = (zh: string, en: string) => (locale === "en" ? en : zh);
@@ -719,15 +725,25 @@ async function drawTask(t: any) {
         : t.status;
   $("task-output").textContent =
     t.status === "needs_input"
-      ? tr(
-          "尚未呼叫模型，原預算保持預留。補齊資料後繼續同一項工作。",
-          "The model has not been called. The original budget remains reserved; providing all inputs continues this same task.",
-        )
-      : t.status === "queued" && t.capacity_wait_reason
+      ? Number(t.attempt) > 0
         ? tr(
-            "正在等待執行名額，系統會自動繼續原工作。尚未呼叫模型，預算仍保持預留。",
-            "Waiting for execution capacity. This same task resumes automatically; the model has not been called and the original budget remains reserved.",
+            "上一輪處理已完成，原預算保持預留。補齊資料後，沿用原工作和會話繼續；已記錄用量會納入最後結算。",
+            "The previous turn is complete. The original budget remains reserved. Providing all inputs continues this same task and conversation; recorded usage is included in the final settlement.",
+          ) + ` HKD ${(Number(t.accrued_micros ?? 0) / 1e6).toFixed(6)}`
+        : tr(
+            "尚未呼叫模型，原預算保持預留。補齊資料後繼續同一項工作。",
+            "The model has not been called. The original budget remains reserved; providing all inputs continues this same task.",
           )
+      : t.status === "queued" && t.capacity_wait_reason
+        ? Number(t.attempt) > 0
+          ? tr(
+              "正在等待下一輪執行名額。原工作、已記錄用量及預留預算均保留。",
+              "Waiting for capacity to continue. This task, recorded usage and the original budget reservation are retained.",
+            )
+          : tr(
+              "正在等待執行名額，系統會自動繼續原工作。尚未呼叫模型，預算仍保持預留。",
+              "Waiting for execution capacity. This same task resumes automatically; the model has not been called and the original budget remains reserved.",
+            )
         : t.status === "paused"
           ? tr(
               "工作已暫停，尚未呼叫模型。繼續時沿用本工作和原預留預算。",
