@@ -69,6 +69,9 @@ const nativeSession = new NativeSession({
   changed: () => {}, // storage.onChanged notifies every open trusted panel.
 });
 const getTokens = () => nativeSession.get();
+class HTTPFailure extends Error {
+  constructor(message: string, readonly status: number, readonly code?: string) { super(message); }
+}
 const login = () =>
   (loginFlow ??= performLogin().finally(() => {
     loginFlow = null;
@@ -150,7 +153,7 @@ async function request(
       throw new NativeSessionError("AUTH_CHANGED");
     throw new NativeSessionError("AUTH_REQUIRED");
   }
-  if (!response.ok) throw new Error(data.error?.message ?? "Request failed");
+  if (!response.ok) throw new HTTPFailure(data.error?.message ?? "Request failed", response.status, data.error?.code);
   return data;
 }
 async function upload(
@@ -177,7 +180,7 @@ async function upload(
       throw new NativeSessionError("AUTH_CHANGED");
     throw new NativeSessionError("AUTH_REQUIRED");
   }
-  if (!r.ok) throw new Error(data.error?.message ?? "Upload failed");
+  if (!r.ok) throw new HTTPFailure(data.error?.message ?? "Upload failed", r.status, data.error?.code);
   return data;
 }
 async function capturePage() {
@@ -296,6 +299,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
         ok: false,
         error: e.message,
         ...(e instanceof NativeSessionError ? { code: e.code } : {}),
+        ...(e instanceof HTTPFailure ? { status: e.status, code: e.code } : {}),
       }),
     );
   return true;

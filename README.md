@@ -11,7 +11,7 @@
 
 CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，提供客户可主动授予的 **完整本机权限**，操作能力对标 Codex Desktop。**Extension 在 Chrome 原生右侧栏采用 ChatGPT 式对话/附件结构**，获取、读取用户获选文件并上传，由云端 Codex 执行。全部产品 AI 请求仍走公司内部网关。
 
-**当前实现：** Desktop 产品入口仍是云端 Codex 与受限文件桥接；独立本机 Codex supervisor 已通过 9 项原生集成测试，本机授权界面和费用接入待实现；Extension 已有原生侧栏和基础上传，任务表单主界面仍需重排。现有截图、录屏展示该实现，不证明上述补充能力已经完成。[需求补充](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md) · [方向检查及开发调整](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/69-desktop-local-codex-and-extension-direction.md)。
+**当前实现：** Desktop 独立本机 Codex supervisor 已通过 9 项原生测试，产品的本机授权、费用和随包交付仍待接入。Extension 已接入原生右侧栏对话、历史、底部输入和明确文件版本附件；32 项扩展测试及 7 项真实侧栏旅程检查通过，模型回合按授权模拟。原 102 项及完整客户端验收继续跟踪。[本次扩展实现](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md)。
 
 下方架构图表示已实现的云端/文件桥接基线，不是 Desktop 本机 Agent 的目标架构。
 
@@ -40,15 +40,15 @@ flowchart LR
 
 Chrome Manifest V3 使用 `side_panel.default_path` 和 `chrome.sidePanel.setPanelBehavior({openPanelOnActionClick:true})`。点击工具栏打开真正的浏览器 Side Panel，再次点击可收起；没有 action popup 或模拟侧栏标签页。默认右侧，并遵循 Chrome 用户设置的侧栏位置。
 
-`src/background.ts` 处理生命周期、公司授权和侧栏行为；`src/panel.ts` 管理企业/项目、任务、资料与结果；`public/sidepanel.html`、`public/panel.css` 提供本地界面，`scripts/build.mjs` 生成固定服务地址、CSP 和稳定扩展 ID。
+`src/background.ts` 处理生命周期、公司授权和侧栏行为；`src/conversation.ts` 管理私有云端会话、附件版本和发送回执，`src/chat-panel.ts` 渲染消息和输入，`src/panel.ts` 连接企业/项目、任务和账户；`public/sidepanel.html`、`public/panel.css` 提供本地界面，`scripts/build.mjs` 生成固定服务地址、CSP 和稳定扩展 ID。
 
 ## 使用流程
 
 1. 构建并加载扩展，固定到浏览器工具栏。
 2. 点击图标，浏览器右侧打开工作区。通过固定公司网页完成邮箱验证和 PKCE 授权。
-3. 选择企业、项目和助手，提交工作或打开已有任务。可通过固定入口进入完整的创作、连接和网站工作台。
-4. 需要资料时选择当前获准文件版本或连接。轮询保留选择；确认后继续原任务，查看结果和累计结算。
-5. 切换范围或任务读取失败时清空旧内容。页面导航不销毁已有侧栏；关闭不用的页面释放内存。
+3. 选择企业/项目，开始新会话或从历史继续；角色与每条消息预算在折叠设置中，普通消息无需填写工作名称。
+4. 选择或拖入文件，等待“已上传，待发送”，再发送消息。每次只绑定当前消息的明确版本；断网重试或重开侧栏沿用原消息与预算，避免重复收费。
+5. 在同一云端会话继续追问，查看真实增量事件、成果与费用。可请求停止；来源失效清空旧内容。基础上传和对话不需要安装 Desktop。
 
 浏览器扩展不能任意读取电脑所有路径。上传依赖用户选择；持续目录与设备任务需要明确授权及 Native Messaging companion。`nativeMessaging` 是可选权限；模型不能授予本地权限。
 
@@ -94,13 +94,13 @@ npm run build
 
 实际录制，保留原捕获时间；AI 回合与业务数据为明确模拟。Admin 演示表单不代表财务提交。
 
-![实际页面](assets/screenshots/workmate-10-sidepanel-native-en.png)
+![实际页面](assets/screenshots/workmate-chat-05-conversation-zh.png)
 
-![实际页面](assets/screenshots/workmate-10-sidepanel-result-en.png)
+![实际页面](assets/screenshots/workmate-chat-05-continued-en.png)
 
-![实际交互 GIF](assets/screenshots/workmate-10-interaction.gif)
+![实际交互 GIF](assets/screenshots/workmate-chat-05-conversation.gif)
 
-[MP4](assets/screenshots/workmate-10-interaction.mp4) · [录制与源码回执](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/workmate-media-10.json)
+[MP4](assets/screenshots/workmate-chat-05-conversation.mp4) · [录制与源码回执](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-chat-checkpoint.json)
 
 ## 方案细则与更新
 
@@ -114,3 +114,17 @@ npm run build
 - [Local Codex update](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-native-codex-supervisor.md)
 
 后续修改需要同步中英 README、受影响的实际截图/GIF、更新说明和对应分支。提交后通过 Delivery 发布流程核对远程 SHA；不强推覆盖协作者。`.env`、数据库、会话、依赖和安装产物不进入 Git。历史 README 原字节见 [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
+
+## 当前对话与消息附件
+
+从企业/项目进入新会话或恢复历史，在底部输入消息；角色和每条消息预算可在设置中调整。文件选择/拖入、读取和上传由浏览器完成，等待“已上传，待发送”后绑定本条消息的明确版本。普通会话不必另填工作名称，基础上传/对话无需 Desktop 或 Native Messaging。通知、账户及独立任务表单折叠保留。
+
+断网后的待确认请求与侧栏恢复沿用原内容、预算和幂等键；当前来源拒绝或内容隔离会清空旧回复并阻止发送。普通未发送附件不跨关闭恢复，已上传文件仍保存在项目。当前每条消息最多 20 个非空附件、每个最多 5 MiB；仍受服务端类型与额度检查。
+
+本次 32 项测试、类型/构建及 7 项真实右侧栏旅程检查通过；身份、上传、Worker、成果和账本真实执行，模型回合明确模拟。下方旧四端媒体记录保留原范围。
+
+![真实原生对话](assets/screenshots/workmate-chat-05-continued-en.png)
+
+![获选文件上传](assets/screenshots/workmate-chat-05-attachment-ready-en.png)
+
+[本次源码及媒体检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-chat-checkpoint.json) · [具体方案与恢复规则](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md)

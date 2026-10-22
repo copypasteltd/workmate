@@ -1,3 +1,4 @@
+import { ChatPanel } from "./chat-panel.js";
 import {
   exactHKD,
   financialLabels,
@@ -16,6 +17,25 @@ let pending: { fingerprint: string; id: string } | null = null;
 let workspaceRevision = 0,
   notificationRevision = 0;
 let entitlementRevision = 0;
+let locale = "zh-HK";
+let actor = "";
+const chat = new ChatPanel({
+  request: (scope, path, method = "GET", body, key) => send("API", {
+    path, method, body, idempotencyKey: key, tenantId: scope.tenant,
+  }),
+  upload: async (scope, file) => {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    return send("UPLOAD", { path: `/v1/tenants/${scope.tenant}/projects/${scope.project}/assets`,
+      file: { name: file.name, type: file.type, base64: btoa(binary) } });
+  },
+  read: async key => (await chrome.storage.session.get(key))[key],
+  write: async (key, value) => { await chrome.storage.session.set({ [key]: value }); },
+}, () => locale, showError, () => send("CAPTURE"), async id => {
+  $<HTMLDetailsElement>("workspace-tools").open = true;
+  await openTask(id); $("task-view").scrollIntoView({ behavior: "smooth", block: "start" });
+});
 let financialRevision = 0;
 let dependencyRevision = 0,
   dependencyFingerprint = "";
@@ -49,7 +69,7 @@ async function send(type: string, body: Record<string, unknown> = {}) {
     if (r?.code === "AUTH_CHANGED")
       throw new WorkspaceChanged("Sign-in state changed");
     if (r?.code === "AUTH_REQUIRED") resetSignedOut();
-    throw new Error(
+    const failure = new Error(
       r?.code === "AUTH_REQUIRED"
         ? tr("登入已失效，請重新登入。", "Your session ended. Sign in again.")
         : r?.code === "AUTH_UNAVAILABLE"
@@ -59,10 +79,13 @@ async function send(type: string, body: Record<string, unknown> = {}) {
             )
           : (r?.error ?? "Extension unavailable"),
     );
+    Object.assign(failure, { status: r?.status, code: r?.code });
+    throw failure;
   }
   return r.data;
 }
 function resetSignedOut() {
+  chat.reset(); actor = "";
   ++workspaceRevision;
   ++notificationRevision;
   ++financialRevision;
@@ -180,6 +203,7 @@ async function populateWorkspace() {
   }
   const me = await request("/v1/session/context");
   if (revision !== workspaceRevision) return;
+  actor = me.user.id;
   $("user-name").textContent = me.user.name;
   option(
     $<HTMLSelectElement>("tenant"),
@@ -222,6 +246,7 @@ async function populateWorkspace() {
   if (revision === workspaceRevision) $("workspace").hidden = false;
 }
 async function projects() {
+  chat.reset();
   $("entitlement-summary").replaceChildren();
   $("entitlement-notices").replaceChildren();
   for (const id of [
@@ -243,6 +268,7 @@ async function projects() {
   if (revision !== workspaceRevision || scope !== tenant) return;
   $("demo-banner").hidden =
     me.memberships.find((m: any) => m.id === tenant)?.data_mode !== "simulated";
+  if (project && revision === workspaceRevision) await chat.open({ actor, tenant, project });
   await tasks();
   await notifications();
   await entitlements();
@@ -1056,6 +1082,7 @@ $("tenant").addEventListener(
   () =>
     void run(async () => {
       tenant = $<HTMLSelectElement>("tenant").value;
+      chat.reset();
       workspaceRevision++;
       $("notification-list").replaceChildren();
       $("task-list").replaceChildren();
@@ -1071,11 +1098,13 @@ $("project").addEventListener(
   () =>
     void run(async () => {
       project = $<HTMLSelectElement>("project").value;
+      chat.reset();
       workspaceRevision++;
       pending = null;
       task = "";
       if (timer) clearInterval(timer);
       $("task-view").hidden = true;
+      if (project) await chat.open({ actor, tenant, project });
       await tasks();
       await notifications();
     }),
@@ -1403,8 +1432,8 @@ while ((node = walker.nextNode())) {
   if (translations[n.textContent?.trim() ?? ""])
     original.set(n, n.textContent!);
 }
-let locale = "zh-HK";
 async function applyLocale() {
+  chat.draw();
   for (const [n, zh] of original)
     n.textContent = locale === "en" ? translations[zh.trim()] : zh;
   document.documentElement.lang = locale === "en" ? "en" : "zh-Hant-HK";

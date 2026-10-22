@@ -11,7 +11,7 @@ A cloud Agent product for Hong Kong enterprises. This repository owns **Chrome E
 
 CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
 
-**Current implementation:** The Desktop product entry point still uses cloud Codex and a restricted file bridge. An independent native Codex supervisor passes nine real-native integration tests; Electron consent and billing integration remain pending. The Extension has the native Side Panel and basic uploads, while its task-form-first UI needs restructuring. Existing screenshots and recordings show that implementation and do not prove the amended capabilities. [Requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md) · [Direction audit and development plan](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/69-desktop-local-codex-and-extension-direction.md).
+**Current implementation:** The independent Desktop local Codex supervisor has passed nine native tests; product consent, billing and bundled distribution still need integration. The Extension now provides native Side Panel conversations, history, a bottom composer and immutable-version attachments. All 32 Extension tests and seven real Side Panel journey checks passed, with explicitly synthetic model turns. The original 102 requirements and full client acceptance remain open. [Extension implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md).
 
 The architecture diagram below describes the implemented cloud/file-bridge baseline; it is not the target Desktop local-agent architecture.
 
@@ -46,9 +46,9 @@ Chrome Manifest V3 uses `side_panel.default_path` and `chrome.sidePanel.setPanel
 
 1. Build/load the extension and pin its toolbar icon.
 2. Click the icon to open the native workspace. Complete email verification and PKCE authorization at the fixed company webpage.
-3. Select workspace, project and assistant, then submit work or open a retained task. Fixed links open complete creative, connection and website workspaces.
-4. Select an authorized file version or connection when inputs are missing. Polling retains the choice; confirmation continues the original task and exposes results/cumulative settlement.
-5. Workspace changes or denied task reads clear prior content. Browser-page navigation preserves the panel; close unused owned tabs after work.
+3. Choose a workspace/project and start or restore a conversation. Specialist and per-message budget settings are collapsible; ordinary messages need no task title.
+4. Select or drop files, wait for “Uploaded, not sent”, then send. Only this message's immutable versions are attached. Network retries and reopening reuse the original request and budget.
+5. Continue asking in the same cloud conversation, observe actual incremental events, deliverables and costs, or request Stop. Source denial clears old content. Basic chat/upload requires no Desktop.
 
 An extension cannot arbitrarily read every local path. Uploads require explicit selection; persistent folder/device work requires grants and a Native Messaging companion. `nativeMessaging` is optional. Models cannot grant local permissions.
 
@@ -94,13 +94,13 @@ This revision adds canonical task APIs and atomic original-task inputs. Current 
 
 Actual recordings preserve capture timing. AI turns/business data are explicitly synthetic. Admin form demonstrations do not claim a financial commit.
 
-![Actual product capture](assets/screenshots/workmate-10-sidepanel-native-en.png)
+![Actual product capture](assets/screenshots/workmate-chat-05-conversation-zh.png)
 
-![Actual product capture](assets/screenshots/workmate-10-sidepanel-result-en.png)
+![Actual product capture](assets/screenshots/workmate-chat-05-continued-en.png)
 
-![Actual interaction GIF](assets/screenshots/workmate-10-interaction.gif)
+![Actual interaction GIF](assets/screenshots/workmate-chat-05-conversation.gif)
 
-[MP4](assets/screenshots/workmate-10-interaction.mp4) · [Capture/source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/workmate-media-10.json)
+[MP4](assets/screenshots/workmate-chat-05-conversation.mp4) · [Capture/source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-chat-checkpoint.json)
 
 ## Detailed design and updates
 
@@ -114,3 +114,17 @@ Actual recordings preserve capture timing. AI turns/business data are explicitly
 - [Local Codex update](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-native-codex-supervisor.en.md)
 
 Every later change updates both READMEs, affected actual captures/GIFs, release notes and its mapped branch. Verify remote SHAs through Delivery publishing; do not force-push collaborator history. Keep environment secrets, databases, sessions, dependencies and installers out of Git. Exact historical README bytes are retained in [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
+
+## Conversation and attachment flow
+
+Choose a company/project and start or restore a chat. Ordinary messages need no task title. Attach or drop files, wait for “Uploaded, not sent”, then send. Only confirmed immutable versions bind this message. The browser reads the selected file; cloud Codex executes through the company gateway. Basic upload/chat needs no Desktop or Native Messaging. Per-message budgets and specialists are in settings; accounts and standalone business forms are collapsed.
+
+Lost acceptance responses retain the original payload, budget and idempotency key across panel reopening. Actual incremental events update the conversation. Current source denial clears old content and blocks sending. Unsaved attachments are not restored after closing; uploaded files remain in the project. Current limits: 20 attachments, each non-empty and up to 5 MiB.
+
+Validation: 32 tests, successful type/build checks and seven native right Side Panel journey checks using real email/PKCE, uploads, Worker, files and billing. Model turns are synthetic. Earlier four-client media below keep their original scope.
+
+![Native conversation](assets/screenshots/workmate-chat-05-continued-en.png)
+
+![Uploaded attachment](assets/screenshots/workmate-chat-05-attachment-ready-en.png)
+
+[Source-bound chat evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-chat-checkpoint.json) · [Design and recovery rules](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md)
