@@ -334,7 +334,10 @@ export class LocalCodexSession {
   private armExpiry() {
     if (this.expiry) clearTimeout(this.expiry);
     const remaining = Math.min(this.credentialExpiresAt, this.grant.expiresAt) - Date.now();
-    if (remaining <= 0) { this.revoked = true; this.stopInBackground(); return; }
+    // An inference credential ending does not withdraw the customer's local
+    // permission grant. Clean idle threads may resume with a fresh credential;
+    // running/uncertain checkpoints still require explicit reconciliation.
+    if (remaining <= 0) { this.revoked = this.grant.expiresAt <= Date.now(); this.stopInBackground(); return; }
     this.expiry = setTimeout(() => this.armExpiry(), Math.min(remaining, 2147483647));
   }
 
@@ -532,7 +535,7 @@ export class LocalCodexSession {
       this.fail(new LocalCodexError("LOCAL_SESSION_CLOSED"));
       this.credential = "";
       await this.releaseLock();
-    })();
+    })().catch(error => { this.closing = undefined; throw error; });
     return this.closing;
   }
 }

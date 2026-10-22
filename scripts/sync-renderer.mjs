@@ -2,6 +2,9 @@ import { cp, readFile, writeFile, mkdir, readdir } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 const source = process.argv[2];
+let current;
+try { current = JSON.parse(await readFile("renderer-source.json", "utf8")); } catch (error) { if (error.code !== "ENOENT") throw error; }
+if (current?.native_desktop) throw new Error("The Desktop renderer includes native execution and permission flows. Merge shared Web changes explicitly; a snapshot sync would overwrite them.");
 if (!source)
   throw new Error(
     "Pass the explicit copypaste-web source directory. Existing snapshots build independently.",

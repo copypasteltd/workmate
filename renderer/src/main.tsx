@@ -9,6 +9,7 @@ import { MarketingAnalysis } from "./marketing-analysis";
 import { MarketingReports } from "./marketing-reports";
 import { SeoAudits } from "./seo-audits";
 import { NativeFiles } from "./native-files";
+import { LocalAgentWorkspace, CloudWorkspaceLink } from "./local-agent";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
 import { TaskInputRequests } from "./task-dependencies";
@@ -635,7 +636,8 @@ function NativeAuthorize() {
   );
 }
 const navigation = [
-  ["", LayoutGrid, "工作台", "Workspace"],
+  ["", Monitor, "本機 Agent", "Local Agent"],
+  ["cloud", LayoutGrid, "雲端工作台", "Cloud workspace"],
   ["roles", Sparkles, "專業角色", "Specialists"],
   ["specialists", Users, "我的專家", "Your specialists"],
   ["skills", BookOpen, "專案技能", "Project methods"],
@@ -723,14 +725,13 @@ function Shell() {
           </select>
           <ChevronDown size={14} />
         </label>
-        <button
+        <Link
+          to="/app"
           className="button primary new-task-side"
-          onClick={() => document.dispatchEvent(new Event("cp:new-task"))}
         >
           <Plus size={17} />
-          {t("新工作", "New task")}
-          <span className="keyboard-key">N</span>
-        </button>
+          {t("本機工作", "Local work")}
+        </Link>
         <p className="nav-caption">WORKSPACE</p>
         <nav>
           {[...navigation]
@@ -748,8 +749,8 @@ function Shell() {
                 <Icon size={18} strokeWidth={1.7} />
                 <span>
                   {t(
-                    navConfig(path)?.label ?? zh,
-                    navConfig(path)?.label_en ?? en,
+                    (path === "" || path === "cloud" ? undefined : navConfig(path)?.label) ?? zh,
+                    (path === "" || path === "cloud" ? undefined : navConfig(path)?.label_en) ?? en,
                   )}
                 </span>
                 {path === "notifications" && <UnreadNotifications />}
@@ -822,7 +823,8 @@ function Shell() {
           <ErrorNotice error={w.error} />
           {w.base ? (
             <Routes>
-              <Route index element={<Workbench />} />
+              <Route index element={<LocalAgentWorkspace />} />
+              <Route path="cloud" element={<CloudWorkspaceLink />} />
               <Route path="roles" element={<Roles />} />
               <Route path="specialists" element={<Specialists />} />
               <Route path="skills" element={<ProjectSkills />} />
@@ -868,7 +870,7 @@ function Shell() {
           <span>HONG KONG</span>
         </footer>
       </div>
-      <NewTaskListener />
+      {location.pathname !== "/app" && location.pathname !== "/app/" && <NewTaskListener />}
     </div>
   );
 }
@@ -913,6 +915,11 @@ function NewTask({
   const pending = useRef<{ fingerprint: string; id: string } | null>(null);
   const [selectedRole, setSelectedRole] = useState(role);
   const [requiredInput, setRequiredInput] = useState("");
+  if (window.copyPasteBridge) return <Modal title={t("選擇工作位置", "Choose where to work")} onClose={onClose}>
+    <p>{t("本機工作請選擇目錄、角色與操作權限。雲端工作請在瀏覽器開啟 Web 工作台。", "For local work, choose a folder, specialist and local permission. Use the Web workspace in your browser for cloud work.")}</p>
+    <Link className="button primary" to="/app" onClick={onClose}>{t("前往本機 Agent", "Open local Agent")}</Link>
+    <button className="button" onClick={() => void window.copyPasteBridge!.openCloudWorkspace()}>{t("開啟 Web 工作台", "Open Web workspace")}</button>
+  </Modal>;
   return (
     <Modal title={t("開始一項新工作", "Start something new")} onClose={onClose}>
       <AsyncForm

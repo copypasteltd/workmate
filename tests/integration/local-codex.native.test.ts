@@ -119,6 +119,21 @@ async function fixture() {
 const quoted = (value: string) => "'" + value.replaceAll("'", "''") + "'";
 const writeCommand = (file: string, content: string) => `[IO.File]::WriteAllText(${quoted(file)}, ${quoted(content)}); Write-Output ('runtime-token-present=' + [bool][Environment]::GetEnvironmentVariable('COPYPASTE_LOCAL_INFERENCE_TOKEN'))`;
 
+test("a clean local thread survives inference credential expiry and resumes only with a fresh credential", { timeout: 120000 }, async t => {
+  const f = await fixture();
+  try {
+    const expiresAt = Date.now() + 30000;
+    const first = f.make(); await f.start(first, expiresAt);
+    f.actions.push({}); const result = await first.turn("Create the owned clean checkpoint.", t.signal);
+    // Wait for this short-lived credential, never for a remote scheduled job.
+    await new Promise(resolve => setTimeout(resolve, Math.max(0, expiresAt - Date.now() + 300))); await first.close();
+    assert.equal((await f.checkpoint()).phase, "ready");
+    const resumed = f.make(); await f.start(resumed);
+    f.actions.push({}); const next = await resumed.turn("Continue with the renewed company credential.", t.signal);
+    assert.equal(next.threadId, result.threadId); assert.notEqual(next.turnId, result.turnId);
+  } finally { await f.clean(); }
+});
+
 test("native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread", { timeout: 120000 }, async (t) => {
   const f = await fixture();
   try {

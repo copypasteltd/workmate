@@ -12,8 +12,9 @@
     "start": "electron .",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:local": "node --import tsx --test --test-concurrency=1 tests/integration/local-codex.native.test.ts",
-    "package": "npm run build && electron-builder --win portable nsis",
-    "package:dir": "npm run build && electron-builder --win --dir",
+    "runtime:prepare": "node scripts/prepare-local-codex.mjs",
+    "package": "npm run runtime:prepare && npm run build && electron-builder --win portable nsis",
+    "package:dir": "npm run runtime:prepare && npm run build && electron-builder --win --dir",
     "renderer:sync": "node scripts/sync-renderer.mjs",
     "native:register": "electron scripts/register-native-host.mjs"
   },
@@ -72,6 +73,10 @@
       "artifactName": "CopyPaste-${version}-${arch}-Portable.${ext}"
     },
     "extraResources": [
+      {
+        "from": ".data/runtime/windows-x64",
+        "to": "local-codex"
+      },
       {
         "from": "dist/native-host.cjs",
         "to": "native-host.cjs"

@@ -5,8 +5,10 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { exclusive } from "./lock.js";
 import { LocalVault } from "./vault.js";
-import { NativeSession, NativeSessionError } from "./native-session.js";
+import { NativeSession, NativeSessionError, type NativeTokens } from "./native-session.js";
 import { exchangeNativeCode } from "./native-code.js";
+import { LocalAgentController, type LocalAgentJournal } from "./local-agent.js";
+import { localRuntimeLock } from "./local-runtime.js";
 import {
   app,
   BrowserWindow,
@@ -120,7 +122,7 @@ const nativeSession = new NativeSession({
   },
   changed: () => {
     // Revoke all local grants before another account can use cached folder state.
-    localAccessReset = files.revokeAll().then(async () => {
+    localAccessReset = Promise.all([files.revokeAll(), localAgent.invalidate()]).then(async () => {
       await save("devices", {});
       await save("command-keys", {});
     });
@@ -129,6 +131,43 @@ const nativeSession = new NativeSession({
   },
 });
 const tokens = () => nativeSession.get();
+const localAgent = new LocalAgentController({
+  read: () => load<LocalAgentJournal | null>("local-agent", null),
+  write: value => save("local-agent", value),
+  localEpoch: async () => (await load<NativeTokens | null>("auth", null))?.session_epoch ?? null,
+  identity: async () => {
+    const before = await tokens(), result = await request("/v1/session/context"), after = await tokens();
+    if (result.status !== 200 || !after.session_epoch || before.session_epoch !== after.session_epoch || !result.body.user?.id) throw new Error("LOCAL_ACCOUNT_CHANGED");
+    return { actorId: result.body.user.id, epoch: after.session_epoch };
+  },
+  request,
+  chooseWorkspace: async () => {
+    const chosen = await dialog.showOpenDialog(window!, { title: "CopyPaste · 本機工作目錄 / Local workspace", properties: ["openDirectory", "createDirectory"] });
+    return chosen.canceled ? null : chosen.filePaths[0] ?? null;
+  },
+  consent: async (mode, workspace) => {
+    const labels = { "read-only": "唯讀 / Read only", "workspace-write": "目錄內讀寫 / Workspace write", "full-access": "完整本機權限 / Full local access" };
+    const result = await dialog.showMessageBox(window!, {
+      type: mode === "full-access" ? "warning" : "question", title: "CopyPaste · 本機操作授權 / Local permission",
+      message: labels[mode],
+      detail: mode === "full-access"
+        ? `允許本機 Codex 讀寫此電腦上的檔案、執行命令及使用網路，超出工作目錄的操作也會生效。此權限不會提升 Windows 管理員權限。可隨時停止或撤銷；登出即失效。\nAllow local Codex to read/write files, run commands and use the network, including outside this workspace, under your current OS account. Stop or revoke at any time; signing out revokes access.\n\n${workspace}`
+        : `授權範圍：${workspace}\nPermission applies to this local session. You can change it while idle, stop execution, or revoke it at any time. Signing out revokes local access.`,
+      buttons: ["取消 / Cancel", "授權 / Allow"], defaultId: 0, cancelId: 0, noLink: true,
+    });
+    return result.response === 1;
+  },
+  approval: async (kind, value) => {
+    const result = await dialog.showMessageBox(window!, { type: "question", title: "CopyPaste · 操作審批 / Approve action",
+      message: kind === "command" ? "執行本機命令？ / Run local command?" : "變更本機檔案？ / Change local files?",
+      detail: JSON.stringify(value, null, 2).slice(0, 6000), buttons: ["拒絕 / Decline", "允許 / Allow"], defaultId: 0, cancelId: 0 });
+    return result.response === 1 ? "accept" : "decline";
+  },
+  changed: () => { if (window && !window.isDestroyed()) window.webContents.send("local-agent:changed"); },
+  stateRoot: userDir, companyOrigin: config.api,
+  executable: app.isPackaged ? path.join(process.resourcesPath, "local-codex", "codex.exe") : process.env.COPYPASTE_LOCAL_CODEX_BIN ?? path.join(import.meta.dirname, "../.data/runtime/windows-x64/codex.exe"),
+  runtime: localRuntimeLock,
+});
 async function request(
   url: string,
   options: {
@@ -466,7 +505,34 @@ async function createWindow() {
       throw new Error("API operation is not exposed");
     return request(p, o);
   });
+  ipcMain.handle("local-agent", async (event, action, payload) => {
+    const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
+    if (event.sender !== window?.webContents || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url.split("#")[0] !== expected)
+      throw new Error("LOCAL_IPC_DENIED");
+    try {
+      await localAccessReset;
+      if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("LOCAL_REQUEST_INVALID");
+      const keys: Record<string, string[]> = { list: ["tenant", "project"], create: ["tenant", "project", "role"], permission: ["id", "mode"], send: ["id", "prompt", "budget"], retry: ["id"], stop: ["id"], revoke: ["id"] };
+      const allowed = keys[action];
+      if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
+      let value;
+      switch (action) {
+        case "list": value = await localAgent.list(payload); break;
+        case "create": value = await localAgent.create(payload, payload.role); break;
+        case "permission": value = await localAgent.permission(payload.id, payload.mode); break;
+        case "send": value = await localAgent.send(payload.id, payload.prompt, payload.budget); break;
+        case "retry": value = await localAgent.retry(payload.id); break;
+        case "stop": value = await localAgent.stop(payload.id); break;
+        case "revoke": value = await localAgent.revoke(payload.id); break;
+      }
+      return { ok: true, value };
+    } catch (error: any) {
+      const code = typeof error?.code === "string" && /^[A-Z][A-Z0-9_]{1,90}$/.test(error.code) ? error.code : "LOCAL_OPERATION_FAILED";
+      return { ok: false, code };
+    }
+  });
   ipcMain.handle("auth:signin", () => signIn());
+  ipcMain.handle("workspace:cloud", () => shell.openExternal(config.web + "/app"));
   ipcMain.handle("auth:signout", async () => {
     const result = await nativeSession.signOut();
     await localAccessReset;
@@ -654,6 +720,10 @@ app.on("window-all-closed", () => {
   if (deviceTimer) clearInterval(deviceTimer);
   if (!nativeOrigin) app.quit();
 });
-app.on("before-quit", () => {
+let shuttingDown = false;
+app.on("before-quit", event => {
   if (deviceTimer) clearInterval(deviceTimer);
+  if (shuttingDown) return;
+  event.preventDefault(); shuttingDown = true;
+  void localAgent.close().then(() => app.exit(0), () => app.exit(1));
 });

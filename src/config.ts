@@ -71,9 +71,14 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
     const url = new URL(apiURL("https://copypaste-bridge.invalid", value));
     if (url.hash || /\\|%2f|%5c/i.test(value)) return false;
     pathname = url.pathname;
+    if (pathname.includes("%")) return false;
   } catch {
     return false;
   }
+  // Scoped native credentials and execution admission belong to the main
+  // process. The generic renderer bridge must never expose these routes.
+  if (/\/desktop-executions(?:\/|$)|^\/v1\/desktop-inference(?:\/|$)/.test(pathname))
+    return false;
   if (pathname === "/v1/session/context") return method === "GET";
   if (
     [

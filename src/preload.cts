@@ -203,6 +203,12 @@ contextBridge.exposeInMainWorld(
   "copyPasteBridge",
   Object.freeze({
     version: "0.1.0",
+    openCloudWorkspace: () => ipcRenderer.invoke("workspace:cloud"),
+    localAgent: (action: string, payload: unknown) => ipcRenderer.invoke("local-agent", action, payload),
+    onLocalAgentChanged: (fn: () => void) => {
+      ipcRenderer.on("local-agent:changed", fn);
+      return () => ipcRenderer.removeListener("local-agent:changed", fn);
+    },
     enableChrome: () => ipcRenderer.invoke("chrome:register"),
     request: (p: string, o: unknown) => ipcRenderer.invoke("api", p, o),
     signIn: () => ipcRenderer.invoke("auth:signin"),
