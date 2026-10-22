@@ -7,7 +7,7 @@ import { VideoProjects } from "./video-projects";
 import { MarketingImport } from "./marketing-import";
 import { MarketingAnalysis } from "./marketing-analysis";
 import { MarketingReports } from "./marketing-reports";
-import { SeoAudits } from './seo-audits';
+import { SeoAudits } from "./seo-audits";
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -1433,6 +1433,8 @@ function TaskDetail() {
     w.base + "/tasks/" + id,
     version,
     2500,
+    "",
+    { retainOnRefresh: true },
   );
   const events = useTaskEvents(w.base, w.tenant, id, () =>
     setVersion((v) => v + 1),
@@ -1456,6 +1458,10 @@ function TaskDetail() {
       succeeded: ["工作已完成", "Work completed"],
       failed: ["工作未完成", "Work failed"],
       cancelled: ["工作已取消", "Work cancelled"],
+      reconciling: [
+        "工作結果及用量待核對",
+        "Work and usage need reconciliation",
+      ],
       paused: ["工作已暫停", "Work paused"],
       "task.paused": ["工作已暫停", "Work paused"],
       "task.resumed": ["工作已恢復排隊", "Work resumed in queue"],
@@ -1474,10 +1480,13 @@ function TaskDetail() {
     };
     const labelKey = state || e.body.step_key || e.kind;
     if (labels[labelKey]) return t(...labels[labelKey]);
-    if (e.kind === "usage.updated")
-      return e.body.cost_state === "reconciling"
-        ? t("用量待核對", "Usage needs reconciliation")
-        : t("用量已結算", "Usage settled");
+    if (e.kind === "usage.updated") {
+      if (e.body.cost_state === "reconciling")
+        return t("用量待核對", "Usage needs reconciliation");
+      return e.body.cost_state === "confirmed"
+        ? t("用量已結算", "Usage settled")
+        : t("用量已記錄", "Usage recorded");
+    }
     if (e.kind === "task.warning")
       return t("執行狀態需要留意", "Execution needs attention");
     const step = e.body.step_key ?? e.kind;
@@ -1595,16 +1604,26 @@ function TaskDetail() {
               ) : (
                 <p className="muted">
                   {data.status === "needs_input"
-                    ? t(
-                        "正在等待你提供上述資料。尚未開始模型執行。",
-                        "Waiting for the inputs above. Model execution has not started.",
-                      )
+                    ? Number(data.attempt) > 0
+                      ? t(
+                          "正在等待上述資料，補齊後繼續原工作。已完成回合的用量保留。",
+                          "Waiting for the inputs above to continue this task. Usage from completed turns is retained.",
+                        )
+                      : t(
+                          "正在等待你提供上述資料。尚未開始模型執行。",
+                          "Waiting for the inputs above. Model execution has not started.",
+                        )
                     : data.status === "queued"
                       ? data.capacity_wait_reason
-                        ? t(
-                            "目前執行名額已滿，系統會自動繼續原工作。尚未呼叫模型，預算仍保持預留。",
-                            "Execution capacity is busy. This same task will resume automatically. The model has not been called and the budget remains reserved.",
-                          )
+                        ? Number(data.attempt) > 0
+                          ? t(
+                              "正在等待下一輪執行名額。已完成的處理、已記錄用量及預留預算均保留。",
+                              "Waiting for capacity to continue. Completed work, recorded usage and the original budget reservation are retained.",
+                            )
+                          : t(
+                              "目前執行名額已滿，系統會自動繼續原工作。尚未呼叫模型，預算仍保持預留。",
+                              "Execution capacity is busy. This same task will resume automatically. The model has not been called and the budget remains reserved.",
+                            )
                         : t(
                             "工作已排隊，正在等待專家接手。",
                             "Your task is queued for your specialist.",
@@ -1684,6 +1703,15 @@ function TaskDetail() {
                   <dd>
                     <Money value={data.budget_micros} />
                   </dd>
+                  {Number(data.accrued_micros) >
+                    Number(data.charged_micros) && (
+                    <>
+                      <dt>{t("目前已記錄用量", "Recorded usage so far")}</dt>
+                      <dd>
+                        <Money value={data.accrued_micros} />
+                      </dd>
+                    </>
+                  )}
                   <dt>{t("已結算用量", "Settled usage")}</dt>
                   <dd>
                     <Money value={data.charged_micros} />
@@ -2261,10 +2289,14 @@ function Analytics() {
   const setSeo = (enabled: boolean) => {
     const next = new URLSearchParams(analysisParams);
     if (enabled) next.set("view", "seo");
-    else { next.delete("view"); next.delete("audit"); }
+    else {
+      next.delete("view");
+      next.delete("audit");
+    }
     setAnalysisParams(next);
   };
-  if (analysisParams.get("view") === "seo") return <SeoAudits key={w.base} onBack={() => setSeo(false)} />;
+  if (analysisParams.get("view") === "seo")
+    return <SeoAudits key={w.base} onBack={() => setSeo(false)} />;
   return (
     <>
       <PageHeader
@@ -2277,7 +2309,7 @@ function Analytics() {
         action={
           <div className="row-actions">
             <button className="button secondary" onClick={() => setSeo(true)}>
-              {t('網站診斷', 'Website audit')}
+              {t("網站診斷", "Website audit")}
             </button>
             <button className="button primary" onClick={() => setOpen(true)}>
               <Upload size={17} />

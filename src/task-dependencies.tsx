@@ -8,6 +8,7 @@ import {
   ErrorNotice,
   Field,
   Loading,
+  Money,
   Modal,
   useData,
   useI18n,
@@ -40,7 +41,9 @@ export function TaskInputRequests({
       <div className="section-title">
         <h2>
           <Paperclip size={18} />
-          {t("準備好資料，再開始", "Ready the inputs, then begin")}
+          {Number(task.attempt) > 0
+            ? t("補齊資料，繼續工作", "Provide inputs to continue")
+            : t("準備好資料，再開始", "Ready the inputs, then begin")}
         </h2>
         <button
           className="text-button"
@@ -51,11 +54,22 @@ export function TaskInputRequests({
         </button>
       </div>
       <p className="muted small-text">
-        {t(
-          "這項工作尚未呼叫模型，原預算保持預留。補齊所有所需資料後，會繼續同一項工作。",
-          "This task has not called the model. Its original budget remains reserved. Once all requested inputs are ready, the same task continues.",
-        )}
+        {Number(task.attempt) > 0
+          ? t(
+              "上一輪處理已完成，原預算保持預留。補齊資料後，會沿用原工作和會話繼續處理；已記錄的用量會納入最後結算。",
+              "The previous turn is complete and the original budget remains reserved. Providing all inputs continues this same task and conversation. Recorded usage is included in the final settlement.",
+            )
+          : t(
+              "這項工作尚未呼叫模型，原預算保持預留。補齊所有所需資料後，會繼續同一項工作。",
+              "This task has not called the model. Its original budget remains reserved. Once all requested inputs are ready, the same task continues.",
+            )}
       </p>
+      {Number(task.attempt) > 0 && (
+        <p className="small-text">
+          {t("目前已記錄用量：", "Recorded usage so far: ")}
+          <Money value={task.accrued_micros ?? 0} />
+        </p>
+      )}
       <ErrorNotice error={data.error} />
       {!data.data && !data.error && <Loading />}
       {!data.error &&
