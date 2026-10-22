@@ -12,6 +12,8 @@ const attempt = process.argv[2],
   hash = (bytes) => createHash("sha256").update(bytes).digest("hex"),
   prefix = `evidence/paid-input-native-${attempt}`;
 assert.match(attempt ?? "", /^\d{2}$/);
+const media = process.argv[3] === "--media";
+assert.ok(process.argv.length === 3 || (process.argv.length === 4 && media));
 for (const suffix of [".json", ".log", "-journey.json"])
   await assert.rejects(access(prefix + suffix), (e) => e.code === "ENOENT");
 async function snapshot() {
@@ -19,6 +21,7 @@ async function snapshot() {
   for (const repo of [
     "copypaste-platform",
     "copypaste-web",
+    "copypaste-admin",
     "copypaste-desktop",
     "copypaste-extension",
     "copypaste-delivery",
@@ -153,6 +156,7 @@ let database,
   result = null,
   cleanupReceipt = null;
 let adminBuild = null;
+let adminPreview;
 try {
   const typecheck = launch(
       ["node_modules/typescript/bin/tsc", "--noEmit"],
@@ -205,12 +209,26 @@ try {
     );
     await new Promise((r) => setTimeout(r, 200));
   }
+  if (media) {
+    const adminRepo = path.resolve("../copypaste-admin");
+    const adminTypes = launch(["node_modules/typescript/bin/tsc", "--noEmit"], adminRepo);
+    assert.equal(await adminTypes.closed, 0);
+    const adminBuildProcess = launch(["node_modules/vite/bin/vite.js", "build"], adminRepo);
+    assert.equal(await adminBuildProcess.closed, 0);
+    adminPreview = launch(["node_modules/vite/bin/vite.js", "preview", "--host", "127.0.0.1", "--port", "4318", "--strictPort"], adminRepo);
+    const adminDeadline = Date.now() + 30000;
+    while (!(await occupied(4318))) {
+      assert.equal(adminPreview.child.exitCode, null);
+      assert.ok(Date.now() < adminDeadline);
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  }
   journey = launch(
     [
       "--env-file=" + path.join(platform, ".env"),
       "--import",
       "tsx",
-      "scripts/qa-paid-input-native.ts",
+      media ? "scripts/qa-workmate-media.ts" : "scripts/qa-paid-input-native.ts",
       attempt,
     ],
     process.cwd(),
@@ -248,6 +266,8 @@ try {
 } catch (error) {
   failure = error.name + ": " + error.message;
 } finally {
+  if (adminPreview && adminPreview.child.exitCode === null) adminPreview.child.kill();
+  if (adminPreview) await adminPreview.closed;
   if (preview && preview.child.exitCode === null) preview.child.kill();
   if (preview) await preview.closed;
   if (database?.child.connected && database.child.exitCode === null)
@@ -316,6 +336,7 @@ try {
           !preview ||
           preview.child.exitCode !== null ||
           preview.child.signalCode !== null,
+        owned_admin_preview_closed: !adminPreview || adminPreview.child.exitCode !== null || adminPreview.child.signalCode !== null,
       },
       null,
       2,

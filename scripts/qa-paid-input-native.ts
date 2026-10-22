@@ -55,6 +55,9 @@ const pass = (name: string) => {
   checks.push({ name, status: "passed" });
   console.log("PASS: " + name);
 };
+const mediaHook = (globalThis as any).__workmateMediaHook as
+  | undefined
+  | ((stage: string, facts: any) => Promise<void>);
 async function until<T>(
   read: () => Promise<T>,
   ok: (v: T) => boolean,
@@ -976,10 +979,17 @@ try {
     .getByRole("dialog")
     .getByRole("button", { name: "Pause", exact: true })
     .click();
-  await page
+  await until(
+    async () => (await call("GET", `/v1/seo/audits/${seoAudit.id}/change-tasks/${savedChange.id}`, undefined, tenant)).task_status,
+    (v) => v === "paused",
+    "native change pause committed before resume",
+  );
+  const resumeButton = page
     .getByRole("dialog")
-    .getByRole("button", { name: "Resume", exact: true })
-    .click();
+    .getByRole("button", { name: "Resume", exact: true });
+  await resumeButton.focus();
+  await until(() => resumeButton.isEnabled(), Boolean, "native Resume enabled");
+  await resumeButton.press("Enter");
   await until(
     async () =>
       (
@@ -1270,6 +1280,7 @@ try {
     (v) => v.includes(desktopPaid.version),
     "Desktop approved input candidate",
   );
+  await mediaHook?.("desktop.start", { page, app });
   const desktopInputRefreshes = await confirmPaidInputAfterRefreshes(
     page,
     system.app.server,
@@ -1288,6 +1299,7 @@ try {
     .getByText("Same-task UI fixture completed.", { exact: true })
     .waitFor();
   await page.getByText("Usage settled", { exact: true }).first().waitFor();
+  await mediaHook?.("desktop.stop", { page });
   inspection.desktop_paid_input = {
     task_id: desktopPaid.task.id,
     same_task: true,
@@ -1346,6 +1358,7 @@ try {
     (v) => v.includes(webPaid.version),
     "Web approved input candidate",
   );
+  await mediaHook?.("web.start", { page: auth });
   const webInputRefreshes = await confirmPaidInputAfterRefreshes(
     auth,
     system.app.server,
@@ -1364,6 +1377,7 @@ try {
     .getByText("Same-task UI fixture completed.", { exact: true })
     .waitFor();
   await auth.getByText("Usage settled", { exact: true }).first().waitFor();
+  await mediaHook?.("web.stop", { page: auth });
   inspection.web_paid_input = {
     task_id: webPaid.task.id,
     same_task: true,
@@ -1720,6 +1734,9 @@ try {
       (v) => v.includes(panelPaid.version),
       "native panel approved input candidate",
     );
+    await mediaHook?.("extension.start", {
+      panel, evaluate, main, browser: context.browser(),
+    });
     await panelShot("paid-input-en");
     pass(
       "actual right native Side Panel shows the paid input checkpoint and known usage without claiming that the model has not run; synthetic UI turn fixture",
@@ -1773,6 +1790,7 @@ try {
       (v) => v.includes("Same-task UI fixture completed."),
       "native panel observes completed original task",
     );
+    await mediaHook?.("extension.stop", { panel, evaluate, main });
     await panelShot("paid-input-complete-en");
     inspection.extension_paid_input = {
       task_id: panelPaid.task.id,
@@ -1866,6 +1884,7 @@ try {
   await context.close();
   extensionClosed = true;
   context = undefined;
+  await mediaHook?.("admin.capture", { system, env: isolated.env, tenant, project, email });
   assert.deepEqual(
     await captureNativeSurfaces(artifactsOptions),
     testedArtifacts,
