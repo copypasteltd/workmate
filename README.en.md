@@ -1,5 +1,40 @@
 # CopyPaste Chrome Extension
 
+<!-- stage63-source-governed-website-changes:start -->
+This repository is the Chrome MV3 extension. Its toolbar toggles a native Side Panel; fixed links open the authorized company workspace. Local files continue to require explicit device/folder grants.
+
+## Source-governed website change tasks (stage 63)
+
+Open Marketing insights → Website audits & rechecks. Select 1–20 findings, confirm the frozen original evidence, change objective and separate AI budget, then save a private task. Pause/resume unclaimed work, cancel, inspect original evidence and download JSON/HTML drafts. Explicitly request a same-scope recheck after separately implementing and authorizing website changes. Drafts require human review; unchanged fixture pages correctly retain persistent findings.
+
+**Codex is the only kernel**, with every AI request sent through the company's internal OpenAI-compatible gateway. Business and AI data remain **synthetic as authorized**. Authentication, authorization, native HTTP fixtures, Codex processes, metering receipts and saved files actually run. Drafts must cover every selected, actually read finding; fabricated, unread, missing or duplicated references cannot publish artifacts. Original sources, cache ancestors, quarantine, retention, revocation and erasure govern private drafts and explicitly published copies. Admin metadata, private-body access and content actions retain separate permissions.
+
+**Desktop remains frameless**, with custom dragging and window controls, no Electron application or Alt menu. Downloads use the current tenant's restricted authenticated bridge and native save dialog. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to browser preferences; its fixed company link opens the website workspace.
+
+Validation: **734/734 Platform tests**, retaining all **716** prior named tests; **18 actual Web/Admin and 23 newly packaged native checks**, plus 13 checks across six repositories. Native SQL079→080 preserves every row digest in **167** prior public tables and SQL001–079 in both databases. The new table is empty with FORCE RLS. Desktop previews: `release/seo-changes-63-02/`; extension: `release/seo-changes-63-02/CopyPaste-0.5.0-sidepanel.zip`.
+
+The current unpacked Desktop and real Chrome Side Panel were exercised. Setup/Portable remain unsigned; installation, store publication, live websites/models and full product acceptance remain open. All original 102 requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 not proven complete and zero fully accepted. Earlier sections, screenshots and receipts retain their historical source/package scope.
+
+```mermaid
+flowchart LR
+  Login[Current identity and project] --> Select[Select frozen original findings]
+  Select --> Confirm[Confirm objective and separate AI budget]
+  Confirm --> Task[Private normal task / frozen skills and capabilities]
+  Task --> Facts[Codex / paginated selected facts / internal gateway]
+  Facts --> Draft[Read-bound JSON / escaped HTML / human review]
+  Draft --> Save[Web download / authenticated native save]
+  Draft --> Review[Separate manual implementation and authorization]
+  Review --> Recheck[Explicit same-scope recheck / persistent or observed repairs]
+  Admin[Scoped Admin / separate metadata and body permissions] --> Source[Quarantine / retention / revocation / erasure]
+  Source --> Task
+  Source --> Draft
+  Frame[Frameless Desktop] --> Confirm
+  Panel[Toolbar / Chrome native Side Panel] --> Select
+```
+
+![Actual product capture](assets/screenshots/seo-change-native-04-sidepanel-en.png)
+<!-- stage63-source-governed-website-changes:end -->
+
 This repository is the Chrome MV3 native Side Panel extension. Its toolbar icon opens/closes the panel. Choose the signed-in workspace/project or explicitly open the fixed company workspace. Files and Native Messaging retain explicit grants and existing scope controls.
 
 ## Scoped website audits and rechecks (stage 62)
