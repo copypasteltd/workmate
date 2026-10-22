@@ -1,643 +1,107 @@
-# CopyPaste Desktop
+# Workmate · CopyPaste Desktop
 
-<!-- stage66-current-paid-inputs:start -->
-Windows 客户端已重新打包，保留无边框及自绘窗口控制，并支持付费任务补资料。
+[English](README.en.md) · [主文档](https://github.com/copypasteltd/workmate/blob/docs/docs/README.md)
 
-## 补资料后继续原来的付费工作（阶段 66）
+[Backend](https://github.com/copypasteltd/workmate/tree/backend) · [Web](https://github.com/copypasteltd/workmate/tree/web) · [Admin Dashboard](https://github.com/copypasteltd/workmate/tree/admin) · [Desktop](https://github.com/copypasteltd/workmate/tree/desktop) · [Chrome Extension](https://github.com/copypasteltd/workmate/tree/extension) · [Delivery](https://github.com/copypasteltd/workmate/tree/delivery)
 
-已经完成且用量明确的 Codex 回合，现在可以请求用户补充获准文件或现有营销连接。模型只描述缺口，用户明确选择资料；同一任务保留原会话、原生线程、原预算预留及累计用量，重新检查权限、来源和容量后继续。不会因为补资料而另建一笔任务预留。最多八轮、三十二项资料依赖；未知外部结果保留核对状态。
+面向香港企业的云端 Agent 产品。当前仓库负责 **Desktop**；当前远程分支为 `desktop`.
 
-完成的事务工具保存不可改写回执，续接时先检查当前授权、输出及来源，再复用相同操作结果。代码包还比较实际源文件清单和摘要，源码变化后生成新包。等待补资料期间取消，仍结算已知用量；未知用量不当成免费。Web、Desktop 和 Side Panel 区分“已记录用量”和“已结算费用”，也区分首次调用前等待与已付费回合后的等待。
+## 架构与约束
 
-三端在同一任务自动刷新时保留用户的资料选择；实际检查等待至少两次任务刷新响应后再确认。切换工作范围或当前读取被拒绝时，移除旧任务内容及输入控件。首轮发现表单重建问题的失败记录和当时包保留，新包在独立目录中构建。
-
-验证：平台 **782/782**，保留此前全部 **765 项**命名测试；定向 **34/34**，六仓库 **13 项**检查通过。实际 Codex 子进程恢复原线程、工具及历史，并验证完成文件复用和单次累计结算；模型 API 响应为用户授权的模拟数据。原生客户端旅程 **32 项**通过，Web、打包 Desktop 和真正原生 Side Panel 的补资料操作使用明确标注的模拟模型回合夹具。
-
-Desktop 采用无边框窗口、自绘拖动区及最小化/最大化/关闭按钮，无 Electron 默认或 Alt 菜单。扩展点击工具栏打开 Chrome 原生 Side Panel，默认右侧并遵循浏览器偏好；没有 action popup。新安装包、便携包及侧栏 ZIP 为未签名的 localhost 预览，尚未验收实际安装、签名、商店发布或正式模型服务。
-
-两库原生 SQL087→091 核对原 169 张公共表的完整旧字段行摘要、迁移字节、所有权及 RLS；只显式扩展容量领取函数并增加检查点/工具回执守卫。新列回填为零或空值，两张执行事实表为空，不补造历史。开发和脚本位于 D 盘 `dev/`，主文档位于 `docs/`；禁用本地 Docker/WSL/虚拟化。
-
-仅使用 Codex，全部 AI 请求经过公司内部 OpenAI 兼容服务器。原 102 项需求及全部 TC/NFR/G01–G10 继续保留：81 项局部验证、21 项未证明完成、0 项完整验收。完整规范 TaskDTO/任务创建接口、任意执行中暂停、未知副作用恢复、所有独立角色业务及生产验收继续跟踪。
-
-[实现说明](../../docs/technical/66-paid-native-input-checkpoints.md) · [执行绑定](../../docs/quality/paid-input-checkpoint.json) · [新客户端产物](../../docs/quality/paid-input-artifacts.json)
+仅使用 Codex，全部 AI 请求经公司内部 OpenAI 兼容服务器。Web、Desktop、扩展和 Admin 共用服务端身份、权限、来源与计费控制。设计沿用 CopyPaste 的品牌素材、色系、字体和中英界面。
 
 ```mermaid
 flowchart LR
-  Run[Paid task] --> Gap[Completed measured input request]
-  Gap --> User[Human selects authorized inputs]
-  User --> Check[Same task / original hold / source and capacity checks]
-  Check --> Resume[Resume original Codex thread]
-  Resume --> Run
-  Run --> Settle[One cumulative settlement]
+  Web[Web workspace] --> API[Company Backend]
+  Side[Chrome native Side Panel] --> API
+  Desktop[Frameless Desktop] --> API
+  Admin[Scoped Admin] --> API
+  API --> Guard[Identity / sources / budget / queue]
+  Guard --> Codex[Version-pinned Codex and Skills]
+  Codex --> Gateway[Internal OpenAI-compatible gateway]
+  Codex --> Tools[Authorized tools and immutable deliverables]
+  Tools --> Ledger[Measured settlement / reconciliation]
 ```
 
-![无边框 Desktop 的付费资料请求 / Frameless Desktop paid input request](assets/screenshots/paid-input-native-03-paid-input-en.png)
-<!-- stage66-current-paid-inputs:end -->
+## 原生窗口与结构
 
-<!-- stage65-current-history-source-lineage:start -->
-本阶段保持现有无边框客户端与包字节，后台新增内容来源约束。
+无边框 Electron 窗口，`frame:false`、`thickFrame:false`；清空应用菜单并禁用默认/Alt 菜单。40px 自绘标题栏提供拖动、最小化、最大化/还原和关闭。原生按钮状态已经在真实打包程序中验证。
 
-## 会话与实际读取的来源约束（阶段 65）
+`src/main.ts` 管理生命周期、登录、文件保存和受限 IPC；`src/preload.cts` 只暴露允许的桥；`src/window-controls.ts` 约束窗口动作；`renderer/` 是独立 React 界面快照。构建不依赖旁边的 Web 源码。
 
-模型实际读取的文件版本、云文件引用和营销数据集现在保存不可改写的来源引用。历史助手结果、固定记忆和已批准计划的来源失效后，后续模型、工具重放、事件和产物保存都会重新检查；新付费委派在创建任务和预留资金前拒绝失效历史。会话显示不可用提示，任务列表与详情保留状态和费用元数据并隐藏失效的验收正文。原 PLAN_STALE / PLAN_INPUT_CHANGED 和首次输入补选语义保留。受控删除明确擦除元数据；普通更新不能因缺省擦除标记而改写来源。
+contextIsolation、sandbox 开启，nodeIntegration 关闭。渲染器不能任意调用 Admin、任意 URL 或访问系统文件。公司 API 和 Web Origin 在构建期固定；模型密钥保留在服务器。
 
-显式发布创建独立副本并冻结已确认的输入来源。删除原私有会话仍保留已发布副本；被实际消费的原始文件、数据集或固定记忆失效时，派生副本和公开分享仍受来源约束。恢复来源不改变当前项目、用户或私有范围权限。
+## 使用流程
 
-验证：平台 **765/765**，保留此前全部 **746 项**命名测试；定向 **51/51**，六仓库 **13 项**检查通过。包括真实 HTTP SSE、实际 Worker 工具、文件下载、计划、资金预留及公开分享；AI 和业务数据按授权模拟。两库 SQL081→087 保留原 168 张公共表的全部行摘要、旧迁移和原函数定义，新增来源表为空，不补造历史读取。
+启动 → 打开固定公司登录网页 → 邮箱验证/PKCE 授权 → localhost 回调 → 选择企业和项目 → 使用与 Web 一致的任务、资料、会话和产物。登录与刷新族可撤销；请求附带当前范围。
 
-Desktop 保持无边框、自绘窗口控制、无 Electron 默认或 Alt 菜单；Extension 使用 Chrome 原生 Side Panel，默认右侧并遵循浏览器偏好。既有包与原生旅程只做当前字节核对，原截图和旅程保留原后台源码范围。本阶段未完成新后台的跨端界面验收、签名安装、商店发布或正式环境验收。
+用户选择文件/目录并授予有期限权限后，才执行获准操作。设备命令、签名、摘要、有效期和单次结果受后台及本地桥检查。文件下载通过当前租户的认证桥和原生保存窗口；取消不会产生一份虚假的成功文件。Codex 自动发起本地文件调度及强隔离客户代码执行仍有未完成部分。
 
-仅使用 Codex，全部 AI 请求经公司内部 OpenAI 兼容服务器。原 102 项需求、全部 TC/NFR/G01–G10 保留：81 项局部验证、21 项未证明完成、0 项完整验收。
-
-```mermaid
-flowchart LR
-  Input[Actual reads and fixed references] --> Origin[Immutable source provenance]
-  Origin --> Work[History and approved plans]
-  Origin --> Copy[Independent published copies]
-  Guard[Current scope and source lifecycle] --> Work
-  Guard --> Copy
-  Work --> Result[Authorized model input and output]
-  Copy --> Share[Authorized downloads and shares]
-```
-<!-- stage65-current-history-source-lineage:end -->
-
-<!-- stage64-current-report-task-source-fences:start -->
-独立 renderer 继续在无边框窗口中使用同一受控后台；当前客户端源码与包只读核对通过。
-
-## 报告与任务历史的当前来源约束（阶段 64）
-
-营销分析和原始 SEO 诊断的通用任务详情、项目任务列表、JSON 历史消息及两种 SSE 事件入口，现与专用报告共用当前来源约束。来源被隔离或到期后，已有事件流会在下一批读取时停止发送正文并关闭。恢复来源仍须通过当前企业、项目、私有所有者和登录身份检查；原有报告及历史事件保持不可变。
-
-分析数据集、原始 CSV、报告产物与终态分析任务的保留期在清理前生效。过期分析输入会在创建任务和预留费用之前拒绝。来源锁等待正常任务更新后，还会重新核对用户权限版本，避免并发撤权后仍返回消息。
-
-验证：平台完整 **746/746**，保留前阶段全部 **734 项**命名测试；新增定向 **12/12**，六仓库 **13 项**检查通过。使用实际 HTTP 事件流、Worker 保存的模型消息，以及真实锁定 Codex/内部模拟网关；AI 和业务数据继续按授权模拟。两库原生 SQL080→081 保留 **168 张**原公共表的全部行摘要、所有旧迁移和表所有者/RLS，仅更新两个报告访问函数。
-
-**Desktop 无边框、无 Electron 默认菜单或 Alt 菜单**；扩展工具栏切换 **Chrome 原生 Side Panel**，默认右侧并遵循浏览器位置偏好。现有客户端、ASAR、扩展 ZIP 及阶段 63 预览包已只读核对。下方真实截图和原生检查保留其原后台版本范围，本阶段没有新增后台的浏览器/原生端旅程验收。安装、签名、商店发布和正式环境仍待完成。
-
-仅使用 Codex，所有 AI 请求走公司内部 OpenAI 兼容服务器。原 102 项需求、全部 TC/NFR/G01–G10 保留；81 项局部验证、21 项未证明完成、0 项完整验收。
-
-```mermaid
-flowchart LR
-  Request[Task detail / list / JSON / SSE] --> Auth[Current tenant / project / private owner / session]
-  Auth --> Source[Current report and original-source lifecycle]
-  Source --> Locks[Source locks / identity recheck after waits]
-  Locks --> Read[Authorized immutable data or event batch]
-  Read --> Source
-  Source --> Closed[Unavailable source / no new body / close open stream]
-  Input[Analysis dataset / original CSV] --> Valid[Active and unexpired source]
-  Valid --> Reserve[Only then create task and reserve budget]
-```
-<!-- stage64-current-report-task-source-fences:end -->
-
-<!-- stage63-source-governed-website-changes:start -->
-本仓库含独立 renderer 快照，构建无需相邻 Web 源码。用户在无边框客户端完成相同流程，JSON/HTML 通过认证桥与系统保存窗口写入本地。
-
-## 网站修改任务（阶段 63）
-
-从「行销分析 → 网站诊断与复查」选择 1–20 个问题，确认冻结的原始证据、修改目标和独立 AI 预算，保存为私有任务。可暂停/继续尚未开始的任务、取消任务、查看原始证据、下载 JSON 和 HTML 修改草稿，再明确发起同范围复查。草稿需要人工审核；网站修改和 CMS 写回需要另行实施与授权。未改动的模拟页面在复查中仍显示问题持续存在。
-
-仅使用 **Codex**，全部 AI 请求经公司内部 OpenAI 兼容网关。当前按授权使用**模拟业务与 AI 数据**；代码确实执行登录、权限、原生 HTTP 夹具、Codex 子进程、计费回执和文件保存。草稿必须完整覆盖实际读取的所选问题；伪造、未读、遗漏或重复引用不能生成交付资产。来源、缓存祖先、隔离、保留期、撤权和删除约束同时覆盖草稿与主动发布副本；Admin 的元数据、正文与内容操作权限分别执行。
-
-**Desktop 无边框、无 Electron 默认菜单和 Alt 菜单**，使用自绘拖动区与窗口控制，文件通过当前租户的受限认证桥和原生保存窗口下载。**Extension 点击工具栏打开/收起 Chrome 原生 Side Panel**，默认右侧并遵循浏览器位置偏好；固定公司入口打开网站工作台。
-
-验证：完整平台 **734/734**，保留前阶段全部 **716 项**命名测试；当前实际 Web/Admin **18 项**、新包原生 **23 项**，六仓库 13 项检查通过。两库原生 SQL079→080 保留 **167 张**原表全部行摘要和 SQL001–079；新增表为空且强制 RLS。安装包位于 Desktop `release/seo-changes-63-02/`，扩展位于 Extension `release/seo-changes-63-02/CopyPaste-0.5.0-sidepanel.zip`。
-
-已运行当前 unpacked Desktop 和真正 Chrome 侧栏。Setup/Portable 未签名，安装、商店发布、正式站点/模型及完整产品验收仍待完成。原 102 项需求、TC/NFR/G01–G10 保留；81 项有局部证据、21 项未证明完成、0 项完整验收。下方较早阶段的说明、截图与回执仅代表当时的源码和包。
-
-```mermaid
-flowchart LR
-  Login[Current identity and project] --> Select[Select frozen original findings]
-  Select --> Confirm[Confirm objective and separate AI budget]
-  Confirm --> Task[Private normal task / frozen skills and capabilities]
-  Task --> Facts[Codex / paginated selected facts / internal gateway]
-  Facts --> Draft[Read-bound JSON / escaped HTML / human review]
-  Draft --> Save[Web download / authenticated native save]
-  Draft --> Review[Separate manual implementation and authorization]
-  Review --> Recheck[Explicit same-scope recheck / persistent or observed repairs]
-  Admin[Scoped Admin / separate metadata and body permissions] --> Source[Quarantine / retention / revocation / erasure]
-  Source --> Task
-  Source --> Draft
-  Frame[Frameless Desktop] --> Confirm
-  Panel[Toolbar / Chrome native Side Panel] --> Select
-```
-
-![Actual product capture](assets/screenshots/seo-change-native-04-change-draft-en.png)
-
-![Actual product capture](assets/screenshots/seo-change-native-04-change-draft-zh-dark.png)
-<!-- stage63-source-governed-website-changes:end -->
-
-本仓库是 Windows Desktop 客户端，使用隔离主进程、受限认证桥和同步的独立 renderer。当前包的自绘窗口和原生保存流程均已实际执行；启动路径见下方当前预览，之后保留的旧包路径属于历史记录。
-
-## 有范围约束的网站诊断与复查（阶段 62）
-
-在「行销分析 → 网站诊断与复查」确认起始网址、精确主机、路径前缀、页面请求数和 AI 预算，再明确授权启动。工作台显示范围、请求进度、未检查页面和访问限制；问题保留逐 URL 原文、取回时间、HTTP/字符编码及摘要，支持真实 JSON/HTML 下载。修复后明确建立相同范围的新复查，仅对实际检查的页面判定变化，旧版本保持不可变。
-
-按当前授权使用**模拟业务和 AI 数据**。抓取在非生产夹具执行真实原生 HTTP；Codex 是唯一 Agent 内核，报告由实际 Codex 进程经公司内部 OpenAI 兼容模拟网关生成。公网部署和真实模型质量尚未验收。仅公开获准主机/路径，每个 DNS 回答和重定向校验地址范围；不转发登录凭证、不执行脚本或提交表单。robots、登录、错误、剩余范围和串行抓取限制明确显示。存储不足停止抓取并释放未使用的模型预留。
-
-来源、缓存祖先、复查历史、报告及主动发布副本受当前私有权限、保留期、隔离和删除约束；读取存储后再次检查身份。Admin 的企业/项目范围、元数据、正文和内容操作权限分别执行，隔离来源同时阻止客户继续读取派生证据。完整「保存修改任务」、Search Console 连接指标、GEO 观测、规范 TaskDTO 和原全部验收条件继续保留。
-
-**Desktop 无边框**，保留自绘拖动区、最小化/最大化/关闭，无 Electron 默认边框、应用菜单或 Alt 菜单。登录使用邮箱验证码会话（本地测试邮箱投递）与实际 PKCE 流程；下载通过当前租户认证桥和原生保存窗口。**Extension 工具栏开关 Chrome 原生 Side Panel**，默认右侧并遵循 Chrome 的位置偏好；「网站诊断与复查」仅打开固定公司工作台，临时测试标签页在验收后关闭。
-
-验证：专项 **45/45**，完整平台 **716/716**，保留前一阶段全部 **674 项**命名测试；实际 Web/Admin **13 项**、当前新包原生 **20 项**。两库 SQL077→079 保留原 **164 张**公共表全部行摘要和 SQL001–077，三张新增表为空并强制 RLS。完整产品仍为 81 项有局部证据、21 项未证明完成、0 项完整验收。
-
-当前 localhost 预览：Desktop `release/scoped-seo-62-02/`；Extension `release/scoped-seo-62-02/CopyPaste-0.5.0-sidepanel.zip`。已执行 unpacked Desktop 与真正的 Chrome 侧栏；Setup/Portable 未签名，未执行安装、商店发布或生产验收。以下较早章节为历史记录，其「当前」只指当时的源码和包。
-
-```mermaid
-flowchart LR
-  Login[Email / PKCE and current project] --> Confirm[Confirm host / path / request and AI budgets]
-  Confirm --> Crawl[Durable bounded HTTP / robots / DNS pinning]
-  Crawl --> Evidence[Immutable URL findings and raw source versions]
-  Evidence --> Codex[Locked Codex / internal gateway / bound facts]
-  Codex --> Download[JSON and validated HTML downloads]
-  Evidence --> Recheck[Explicit same-scope immutable recheck]
-  Recheck --> Compare[Observed repairs / persistent / unknown]
-  Desktop[Frameless Desktop / native authenticated save] --> Download
-  Panel[Toolbar / Chrome native Side Panel] --> Confirm
-  Admin[Scoped Admin / separate metadata and body permissions] --> Govern[Quarantine / retention / erasure]
-  Govern --> Evidence
-```
-
-![Actual packaged frameless Desktop source inspection](assets/screenshots/seo-native-04-seo-source-en.png)
-
-![Actual Desktop URL findings](assets/screenshots/seo-native-04-seo-findings-en.png)
-
-## 营销账户同步与三端入口（阶段 61）
-
-「连接应用」支持 Google Ads、Meta Ads、Google Analytics 4 和 Search Console。点击供应商、完成明确标识的模拟授权，等待账户/属性/站点发现完成后，选择获准账户及可使用快照的项目。确认范围、选择日期，再明确创建快照。页面显示持久分页、错误、限流后的下一次重试时间和不可变历史；排队/执行中可取消，失败重试创建新的关联作业。
-
-当前按用户要求使用假数据：供应商夹具仅在非生产回环开发模式启用，执行实际 HTTP、OAuth state、Google S256 PKCE 和分页；界面、快照与来源均标记模拟。它没有取得真实广告或网站账户。配置正式接入前，须单独核对供应商应用资格、实际账户权限、版本和报表口径。所有 AI 调用仍经公司内部 OpenAI 兼容服务，Agent 内核仅 Codex。
-
-账户只能选自授权目录；Google 经理账户、GA4 reporting identity/时区、GSC 站点权限与 Meta 广告读取范围保留。快照分别记录抓取时间、日期/粒度、账户币种、查询摘要和覆盖限制；未提供的数据截止时间或指标保持未知。Meta 重叠购买类型不相加，GA4 流量与事件保持独立粒度，GSC 分页完成不表示覆盖所有明细。查看事实或下载真正的 JSON/CSV；Google/Meta 的规范化分析数据集保持到不可变源资产的关联。
-
-普通账户目录和历史使用有界分页，选择范围采用版本检查。撤销清除凭证、取消未完成作业并阻止迟到发布，已发布快照继续受原项目权限、保留期和内容治理控制。Admin 可按授权企业/项目查看连接与同步元数据；正文读取与撤销独立授权，撤销要求新鲜 MFA 并返回可审计的持久操作，不暴露 token。源隔离/过期/删除同步限制分析、下载和分享；物理删除保留不含正文的历史凭证。
-
-Desktop 使用**无边框、自绘拖动区和最小化/最大化/关闭按钮**，无系统边框、Electron 默认菜单或 Alt 菜单。供应商授权只经固定公司网页在浏览器完成，再回到本地工作台；受保护 JSON 通过当前会话桥接与原生保存窗口下载。Extension 点击工具栏打开/收起 **Chrome 原生 Side Panel**，默认右侧并遵循 Chrome 用户偏好；侧栏的「营销账户与同步」仅打开固定公司工作台，不接受任意外部网址。
-
-验证：专项 **39/39** 纳入完整平台 **674/674**，保留原全部 638 项命名测试；实际 Web/Admin **17 项**、新打包原生端 **16 项**通过。独立测试：web 8, admin 3, desktop 27, extension 21, delivery 12。两库原生 SQL071→077 保留 157 张原公共表的全部行摘要及 SQL001–071；七张新增表强制 RLS，旧连接只补目录，不补账户/项目权限或业务历史。
-
-当前预览：Desktop `release/connectors-61/`，Extension `release/connectors-61/CopyPaste-0.5.0-sidepanel.zip`。实际执行了 unpacked 程序；Setup/Portable 未签名且未执行安装验收，仍使用 localhost 配置。原始 102 项及 TC/NFR/G01–G10、完整专业角色和生产验收条件全部保留。下方较早阶段的回执与截图保留原执行范围。
-
-```mermaid
-flowchart LR
-  Client[Web / frameless Desktop] --> Consent[Fixed company launch / supplier consent]
-  Consent --> Directory[Discovered authorized accounts]
-  Directory --> Scope[Confirm account and project scope]
-  Scope --> Queue[Freeze query / durable bounded pages]
-  Queue --> Recover[Cancel / bounded retry / immutable history]
-  Queue --> Snapshot[Immutable facts / cutoff / metric limits]
-  Snapshot --> Export[Actual JSON / CSV / normalized source lineage]
-  Panel[Chrome native Side Panel] --> Client
-  Admin[Scoped Admin / separate body and revoke rights] --> Queue
-  Admin --> Governance[Quarantine / expiry / physical erasure]
-  Governance --> Export
-```
-
-![Actual packaged frameless Desktop](assets/screenshots/connector-native-02-facts-en.png)
-
-![Actual Traditional Chinese dark Desktop](assets/screenshots/connector-native-02-facts-zh-dark.png)
-
-## 模板视频与当前客户端（阶段 60）
-
-在「设计画布 → 影片制作」创建工程，分别填写脚本、分镜、品牌、字幕及项目共享 PNG 的固定版本。可选固定 WAV/MP3，填写音轨入点、增益和自有/已授权声明。保存工程后明确点击渲染，再播放或下载 MP4、工程 JSON、脚本、分镜、WebVTT 和媒体检测六类文件；修改追加版本，失败保留记录并由用户明确重试，排队和执行中均可取消。
-
-`campaign-cuts-1` 支持 3–60 秒、24/25/30/30000÷1001 fps 和偶数尺寸 256–1920 px，受总像素帧预算约束。以整数帧保存时间线，原生 FFmpeg 编码 H.264/yuv420p 与 AAC/48 kHz，验证实际帧数、时长、解码及音量。固定 Noto Sans TC 字体保留 OFL、来源提交和完整 SHA；缺字、文字溢出、缺失/隔离/过期素材、过短音轨明确失败。编码器指纹是版本输出摘要，工程导出引用源素材，重做需要原项目固定版本和一致环境，不保证跨环境逐字节相同。
-
-新渲染队列拥有独立版本、租约、并发额度、取消与最终发布校验。Admin 继续分别控制企业/项目范围、正文查看、隔离、恢复与删除。分享及普通下载都重验派生来源；删除清理实际对象和正文副本。原生合成不调用 AI，AI HK$0 只描述本次合成，原素材费用另计。
-
-R16 视频角色以新预设 v1.1.0 开放已实现的 `video.render` 合成工具，执行模式中的受控 Codex 工具可幂等提交工程与排队；只读、计划及私有会话不暴露共享写入工具。新增第 29 个预设 Skill `template-video-composition`，原 28 个包和 18 个角色的完整验收条件保留，旧角色版本不自动改写。生成式视频、特效、TTS/ASR 和完整专业角色仍按独立需求跟踪。
-
-专项 **34/34** 纳入完整平台 **638/638**，保留原全部 607 项命名测试；实际 Web **10 项**、新打包原生流程 **17 项**通过。Web 8、Desktop 25、Extension 21、Delivery 12 项独立测试通过。两库 069→071 保留 154 张原公共表全部行摘要及 SQL001–069，新三表强制 RLS。
-
-Desktop 无系统边框、Electron 默认菜单或 Alt 菜单，使用自绘窗口控制；受保护成片通过现有登录桥接在本地播放器打开。Extension 工具栏仍打开/收起 Chrome 原生 Side Panel，默认右侧并遵循 Chrome 用户偏好；新增视频工作台入口。当前预览位于 Desktop `release/video-60/` 和 Extension `release/video-60/CopyPaste-0.5.0-sidepanel.zip`。实际执行 unpacked 程序；安装器/便携版未签名、未执行安装验收，使用 localhost 后端。原始 102 项及 TC/NFR/G01–G10 的综合验收条件保留。
-
-```mermaid
-flowchart LR
-  Editor[Script / storyboard / captions / supplied audio] --> Version[Save immutable project revision]
-  Version --> Queue[Explicit render / bounded durable queue]
-  Codex[Controlled Codex execute tool] --> Queue
-  Queue --> Check[Current authority / fixed source SHA / expiry]
-  Check --> Encode[Native FFmpeg / integer frames]
-  Encode --> Probe[Full decode / media probe / audio volume]
-  Probe --> Publish[Recheck lease and sources / publish six files]
-  Publish --> Playback[Web and frameless Desktop playback]
-  Panel[Native Chrome Side Panel] --> Editor
-  Queue --> Cancel[Cancel / immutable failure / explicit retry]
-  Publish --> Policy[Admin isolation / source expiry / physical deletion]
-```
-
-![Actual packaged frameless Desktop video player](assets/screenshots/video-native-01-video-player-en.png)
-
-## 批量设计与当前客户端（阶段 59）
-
-设计画布新增按创意 × 语言 × 尺寸建立的交付矩阵，每批最多 60 格。提供繁中/英文文案、同项目固定 PNG 和默认或自订尺寸；每种尺寸重新布局，保存实际 PNG、SVG 与 JSON 编辑描述。修改、重试、失败和输出历史均按单元独立保存。排版本身不调用 AI，费用来源明确为本地合成、AI HK$0，不包含已有素材的上游费用。
-
-领取与发布分别检查当前权限、输入修订和素材；取消、撤权及过期租约阻止迟到输出。后台原正文权限和企业/项目范围继续适用；源图隔离阻止派生文件读取，删除会物理清理所有嵌入副本。SVG 引用服务器字体，本阶段不分发或宣称完成自订字体商用授权。
-
-专项 **22/22** 包含于完整平台 **607/607**，保留全部原 588 项命名测试；实际 Web **10 项**及新打包客户端 **13 项**流程通过。Web 8、Desktop 25、Extension 21、交付工具 12 项独立单元测试通过。两库 068→069 各保留 151 张原公共表全部行摘要及 SQL001–068，新三表强制 RLS。
-
-Desktop 保留无边框、自绘窗口控制和无 Electron 默认菜单；扩展工具栏打开原生 Side Panel，再次点击收起。侧栏提供批量设计入口，完整画布在公司工作台打开。当前预览路径为 Desktop `release/matrices-59-02/`、Extension `release/matrices-59-02/CopyPaste-0.5.0-sidepanel.zip`；旧包不覆盖。安装器和便携版未签名、未进行安装或商店发行验收，使用 localhost 后端。全部其他专业业务、实网服务、完整 102 项及 TC/NFR/G01–G10 继续独立跟踪。
-
-```mermaid
-flowchart LR
-  Brief[Copy / fixed PNG / languages / sizes] --> Bound[Authorize / 60-unit bound]
-  Bound --> Units[Durable independent units]
-  Units --> Layout[Reflow text and image / lease]
-  Layout --> Recheck[Recheck current authority and sources]
-  Recheck --> Files[PNG / SVG / editable JSON]
-  Layout --> Failed[Keep failed receipt]
-  Failed --> Retry[Retry only this cell]
-  Files --> Edit[New input revision for this cell]
-  Retry --> Units
-  Edit --> Units
-```
-
-![Actual packaged frameless Desktop](assets/screenshots/matrix-native-04-matrix-en.png)
-
-## 明确采用版本（阶段 54）
-
-默认助手更新、专家设置与会话采用先比较明确模型、推理强度、单价及 Skill 版本，再由用户确认。五分钟比较绑定实际登录会话与配置状态，过期或变化拒绝确认；重试使用持久幂等键。已接收任务继续原模型和原费率。
-
-当前平台完整回归 **484/484**，保留原 462 项测试；专项 **93/93** 与全量重叠，不相加。实际构建版 Web **12/12**，新版无边框打包 Desktop 与真实 Chrome 原生侧栏 **11/11**。AI/媒体使用已授权假数据，身份、PostgreSQL、权限与版本事务实际执行。原始 102 项综合验收继续跟踪；以下旧章节保留其时源码与产物范围。
-
-![Actual version review](assets/screenshots/adoption-native-05-comparison-en.png)
-
-新版本机预览位于 `release/adoption-54/`：`CopyPaste-0.5.0-x64-Setup.exe`、`CopyPaste-0.5.0-x64-Portable.exe` 与 `win-unpacked/CopyPaste.exe`。无系统边框、Electron 菜单或 Alt 菜单，保留自绘窗口控制。实际执行了解包程序，Setup/Portable 未安装；均为未签名 localhost 预览。原 `release/frameless/` 保留原字节。
-
-```mermaid
-flowchart LR
-  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
-  Compare --> Consent[Explicit user consent]
-  Consent --> Save[Atomic version and receipt]
-  Save --> Future[Future tasks]
-  Existing[Already accepted tasks] --> Original[Original versions and prices]
-```
-
-## 限时只读客服协助 / Controlled support
-
-继续使用无边框窗口和自绘标题栏，不启用 Electron 默认菜单。独立渲染器同步账户设置的支持授权界面，新增严格限定的授权列表、创建和撤销桥接操作；管理员支持视图不进入用户端桥接。
-
-阶段 51 当前平台回归 424/424（711 份来源），受控支持页面 8/8（816 份来源、9 张未编辑截图）。14 组支持专项、原规范检查、迁移保留及独立原生检查是有界证据，完整 102 项验收继续跟踪；当前包已重建，阶段 50 包原字节另存。
-
-```mermaid
-flowchart LR
-  Customer[Customer grant] --> Scope[Explicit projects and deadline]
-  Admin[Real administrator with MFA] --> Scope
-  Scope --> Read[Read-only support view]
-  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
-```
-
-设置表单来自已验证的独立 Web 渲染器快照；实际打包窗口和会话另行验证，安装签名及完整系统/DPI 矩阵仍待验收。
-
-
-[English](README.en.md) · Windows 企业 Agent 客户端 · 0.5.0
-
-独立 Electron 仓库，内置完整 Web 工作区快照与窄权限本地桥接。支持系统浏览器登录、Windows 用户级凭证保护、明确的本地目录授权、平台签名文件排程，以及 Chrome Native Messaging。实际 Agent 内核仍由公司平台的 Codex 执行，客户端不直连模型供应商。
-
-![无边框 Windows 工作区](assets/screenshots/18-frameless-workspace.png)
-![已登录工作区](assets/screenshots/01-workspace.png)
-![本地文件工作流](assets/screenshots/02-local-files.png)
-
-阶段 49 历史联调已验证无边框 Desktop、Chrome 原生右侧 Side Panel、实时权益/通知和退出，当时安装器保持原字节。下方阶段 50 随费用视图源码重建当前预览；完整安装/签名/SSO/系统验收仍单独跟踪。
-
-## 事务费用通知与三端账户（阶段 50）
-
-独立 renderer 已同步费用账户和通知页面；主进程只放行限定的用户 GET/PATCH 路径，凭证继续由本地安全桥管理。保持无原生边框、无 Electron 默认菜单和自绘窗口控制。实际打包客户端已验证 PKCE、精确赠额、未知退款、跨端已读、撤权与退出清空；当前预览包随新源码重建，阶段 49 包另存保留。
-
-阶段 50 当时平台回归 410/410，真实三端费用流程 8/8。AI/媒体和付款证据使用获准本机模拟；身份、数据库、权限、账本及通知实际执行。原始 102 项综合验收、生产银行及完整安装/系统矩阵继续单独跟踪。
-
-```mermaid
-flowchart LR
-  Source[规范费用事实] --> Tx[同事务通知意图]
-  Tx --> Worker[当前合法接收人]
-  Worker --> Access[读取时复查权限]
-  Access --> Clients[Web / 无边框 Desktop / 原生侧栏]
-```
-
-![无边框客户端费用账户](assets/screenshots/28-financial-inbox.png)
-
-![实际未知退款](assets/screenshots/29-financial-unknown.png)
-
-## 无边框窗口
-
-主窗口移除原生边框、标题框和 Electron 默认菜单，Alt 不会弹出菜单栏。40px 品牌标题栏可拖动，提供双语最小化/最大化/还原/关闭按钮并随浅深主题变化；弹窗位于标题栏下方。八个边缘/角落支持缩放，最小 800×600；右下角也支持方向键（10px）和 Shift+方向键（50px）。原生文件选择/权限对话框继续使用系统 UI。
-
-标题栏在隔离的 preload 内创建，位于 Web renderer 快照之外；显式同步 renderer 不会覆盖窗口实现。主进程对窗口 IPC 同时核对自己的 webContents 和主 frame，只允许固定窗口动作和有界缩放。沙箱、context isolation 和关闭 Node integration 继续生效。
-
-```mermaid
-flowchart LR
-  Bar[品牌标题栏 / 缩放区] --> Preload[隔离 preload]
-  Preload --> Guard[主窗口 / 主 frame 校验]
-  Guard --> Native[固定窗口动作 / 有界缩放]
-  Native --> State[状态与双语图标更新]
-```
-
-![标题栏与弹窗](assets/screenshots/19-frameless-dialog.png)
-![深色窗口](assets/screenshots/20-frameless-dark.png)
-
-当前源码的客户端预览构建位于 `release/frameless/`：`CopyPaste-0.5.0-x64-Setup.exe`、`CopyPaste-0.5.0-x64-Portable.exe`、`win-unpacked/CopyPaste.exe`。它们使用本机 localhost 配置，未签名；先前无边框预览原字节保留在 `release/frameless-stage30/`，历史完整 0.5.0 包继续独立保留。重建执行 `npm run build`，再执行 `node node_modules/electron-builder/cli.js --win portable nsis --config.directories.output=release/frameless --publish never`。
-
-交付仓库的 `npm run qa:native-surfaces` 验证真实窗口、Alt、按钮、指针/键盘缩放下限、跨窗口 IPC 拒绝、真实 PKCE、工作区/弹窗及主题语言。设置 `COPYPASTE_DESKTOP_EXECUTABLE` 为上述解包 EXE 可验证打包版，报告 `evidence/native-surfaces.json`。完整签名更新、卸载及多显示器/DPI 系统矩阵仍有待验收。
-
-2026-10-20 复核修复了登录成功后停留在登录页的问题：本地 API 白名单补齐只读 `/v1/session/context`，以及工作区创建、成员控制、分析证据和报告所需的既有业务入口。凭证交换仍由主进程完成，renderer 不可调用认证凭证或 Admin 接口；URL 规范化后的越界路径也会拒绝。25 项 Desktop 测试及类型检查通过。交付工具把当前测试绑定到客户端运行文件、源码、安装器及扩展字节，拒绝用历史通过报告验收新包；Setup/Portable 的安装、卸载和完整原生认证矩阵仍独立待验收。
-
-## 运行与构建
-
-Windows x64、Node.js 22.14+、npm。当前只验收 Windows；没有生成 macOS/Linux 安装包。先启动 platform 与 Web，再执行：
+## 开发和打包
 
 ```powershell
 npm ci
-npm run typecheck
-npm test
 npm run build
 npm start
 ```
 
-公开 `deployment.json` 指定 API、Web origin 与官方扩展 ID；构建时可用 `COPYPASTE_API_ORIGIN` / `COPYPASTE_WEB_ORIGIN` 覆盖，运行时同名环境变量也可覆盖。只接受 HTTPS 或 localhost。当前交付二进制面向本机演示，默认 `localhost:4310/4317`；部署到公司云端须先修改此配置重新打包。
-
 ```powershell
+npm run typecheck
+npm test
 npm run package
 ```
 
-生成 `release/CopyPaste-0.5.0-x64-Setup.exe`、`release/CopyPaste-0.5.0-x64-Portable.exe` 和 `release/win-unpacked/CopyPaste.exe`。`package:dir` 只产生解包应用用于验收。安装包尚未代码签名；不会声称已有签名证书或商店发布。原生开发，禁止 Docker、WSL 和虚拟化环境。
+`COPYPASTE_API_ORIGIN`、`COPYPASTE_WEB_ORIGIN`、`COPYPASTE_EXTENSION_ID` 或 `deployment.json` 指定公司接入；由 `scripts/configure-deployment.mjs` 编译。正式环境使用 HTTPS。当前 localhost 预览生成 NSIS Setup 和 Portable，位于本地忽略的 `release/`。
 
-## 登录与本地访问
+当前验收运行的是 `release/paid-input-66-03/win-unpacked/CopyPaste.exe`。Setup/Portable 已生成但未签名，实际安装、升级/卸载、证书和分发矩阵尚未验收。
 
-```mermaid
-flowchart LR
-  D[启动 Desktop] --> B[系统浏览器 / PKCE]
-  B --> E[邮箱验证与确认]
-  E --> L[一次性 loopback 回调]
-  L --> V[DPAPI 保护本地会话]
-  V --> W[工作区与云成果]
-  W --> F[原生选择目录]
-  F --> G[1 小时 grant / 默认只读]
-  G --> P[配对设备和固定公钥]
-  P --> C[校验平台签名、nonce、期限]
-  C --> R[受限文件执行与结果回传]
-```
+## 本地文件与扩展协作
 
-每次授权校验 state、PKCE、精确 loopback 回调和单次 code；access token 短期，refresh family 轮换。退出撤销平台会话并撤销本地目录权限。Windows DPAPI CurrentUser 保护本地 profile key；数据使用 AES-256-GCM 认证加密，明文凭证不落盘。密钥不依赖并发 Chromium profile，主客户端与 Native Host 可跨进程读取同一授权。DPAPI 通过固定原生 Windows PowerShell/.NET helper 调用，秘密只经 stdin；不执行客户命令或动态脚本。
+可按文档注册 Native Messaging companion；扩展 ID 必须匹配固定允许列表。权限不能由模型或普通网页自行扩大。本地安装客户端与浏览器侧栏共用公司身份及后台业务，不在客户端嵌入独立 AI 供应商密钥。
 
-本地状态在 `%APPDATA%/CopyPaste/`，QA 可通过 `COPYPASTE_USER_DATA` 使用隔离目录。已安装产品的正常用户数据不属于源码工作区；开发源码、依赖和打包产物都在本仓库。
+## 初次检出与环境
 
-目录根路径只留在本机。默认 read/list，写入需要额外同意且只创建新文件；最长 1 小时、最多 20 个 grant。读取最大 5 MB，创建文本最大 2 MB，目录最多 500 项。路径禁止越界、符号链接/junction、ADS、设备名、尾点/尾空格；现有文件不被覆盖。命令 journal 有数量及字节上限，撤销/过期先于重放检查。并行 Host 通过跨进程锁串行修改 journal。
-
-下载必须经过公司 API 与原生保存对话框，保存采用 create-only；上传必须来自明确选择的文件或授权目录。云命令验证 Ed25519 签名、固定公钥、nonce 与过期时间；结果使用原生 bearer+nonce 回传，尚未实现客户端结果签名。
-
-## 专家与会话
-
-0.2.0 内置最新 Web 工作区：专属专家、私密会话、五种范围的记忆，以及问答/计划/执行模式。笔记经有限原生 API 桥接保存到平台，重新加载后恢复；原生端和 Web 共用同一用户身份与权限规则。私密任务产物须明确发布才成为项目共享副本。
-
-![打包客户端的私密会话](assets/screenshots/04-private-conversation.png)
-
-## Chrome 桥接
-
-使用 Setup 安装到稳定路径，在设备页点击连接 Chrome helper 并确认，注册 `HKCU/Software/Google/Chrome/NativeMessagingHosts/hk.copypaste.agent`。只允许 `deployment.json` 中官方 ID；扩展自身还需可选 nativeMessaging 权限和逐目录授权。便携版路径可能变化，正式桥接使用 Setup 安装版。
-
-受信部署人员也可在已构建仓库执行：
+新工作副本可单独检出本分支；已有本地仓库直接更新，不重新初始化。
 
 ```powershell
-npm run native:register -- fffkcnmfdhahlnifgdilabheppkgnlok 'C:\YourStableInstall\CopyPaste.exe'
+git clone --single-branch --branch desktop git@github.com:copypasteltd/workmate.git copypaste-desktop
+cd copypaste-desktop
 ```
 
-注册操作改变当前用户的 Chrome native-host 配置，应只指向稳定、可信的本产品可执行文件；QA 不覆盖用户原有注册。Native Host 采用 Chrome 长度前缀 JSON 协议，响应最多 900 KB。
+Node.js ≥22.14、npm 和 Git；锁文件固定依赖。当前验收环境为 Windows x64。后端/完整交付还需要原生 PostgreSQL 启动资源、固定 Codex `0.163.0-alpha.10.2` 与 FFmpeg/FFprobe。禁止本地 Docker、WSL 和虚拟化。跨端运行使用多个独立工作目录；布局见 [workspace](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md).
 
-## 独立渲染器快照
-
-`renderer/` 是随仓库提交的 Web 源快照，构建不需要相邻 Web 仓库。显式更新时执行：
+## 检查与验证范围
 
 ```powershell
-npm run renderer:sync -- 'D:\path\to\copypaste-web'
+npm run typecheck
+npm test
 npm run build
 ```
 
-`renderer-source.json` 记录来源和哈希。主进程 contextIsolation、sandbox 开启，nodeIntegration/webview 关闭；页面 CSP 禁止直接网络，所有请求走有限 IPC。拒绝额外权限、任意外链和窗口导航。Native Host 独立运行时不创建浏览器页面。
+平台完整 **782/782**、专项 **34/34**，六仓库 **13 项**类型/构建/现有客户端测试检查通过；真实打包程序和原生侧栏旅程 **32 项**。保留所有原 765 项命名测试。实际 Codex 子进程的工具/线程/用量通过模拟内部 API 验证；本次 UI 回合和业务数据按授权模拟。原 102 项需求仍为 81 项局部验证、21 项未证明完成、0 项完整验收，不能把本次截图或测试数量认作完整产品验收。
 
-## 验证与边界
+完整规范 TaskDTO/任务创建、任意执行中暂停、未知外部结果恢复、全角色独立业务、GEO、真实供应商和生产/签名/商店验收仍继续跟踪。
 
-`npm test` 包括路径/撤销/重放/create-only、固定 API origin，以及真实 Windows DPAPI 跨进程解密与篡改拒绝。delivery 的 `qa:desktop` 使用实际打包应用，执行邮箱/PKCE、专家创建/私密会话笔记持久化、加密凭证、本地目录、云签名命令、Chrome 帧协议；测试对话框选择预设 fixture 路径，未自动批准用户真实目录。`qa:packaged` 另核查 isPackaged、版本与启动。
+## 实际页面与交互
 
-公司 AI 网关与外部广告平台仍需真实联调。当前没有任意桌面 UI 控制、客户 shell 执行、完整 AI 视频/语音；这不是已验收的所有长期规划功能。所有 QA 创建的浏览器与应用均在 finally 关闭。见 [第三方说明](THIRD_PARTY_NOTICES.md)；主文档位于交付根目录 `docs/`。
+实际录制，保留原捕获时间；AI 回合与业务数据为明确模拟。Admin 演示表单不代表财务提交。
 
-Chrome Host 使用 `resources/native-host.cmd` 启动受限 Node 模式脚本，避免 GUI 标准输入丢失；源码为 `src/native-host.ts`，与主窗口的输入输出分开处理。
+![实际页面](assets/screenshots/workmate-06-input-ready-en.png)
 
-## 云端定时流程
+![实际页面](assets/screenshots/workmate-06-result-en.png)
 
-0.4.0 内置同版 Web 日历界面，支持每日/每周、IANA 时区、预算预览、明确授权、版本与历史以及暂停/恢复/退役。请求经原生 bearer 桥接，权限与浏览器端一致；客户端关闭后云端仍运行。该日历不授予未经确认的本地目录权限。Delivery `qa:desktop` 在实际打包应用中创建并显示计划，再退役测试计划。
+![实际交互 GIF](assets/screenshots/workmate-06-interaction.gif)
 
-![打包客户端的云端计划](assets/screenshots/05-cloud-schedules.png)
+[MP4](assets/screenshots/workmate-06-interaction.mp4) · [录制与源码回执](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/workmate-media-06.json)
 
-## 0.5.0 企业身份与统一登录
+## 方案细则与更新
 
-OIDC 使用 code + PKCE S256、签章、state/nonce 与固定回调。先有注册账号及有效企业成员资格，再绑定企业身份；首次绑定需要独立的 CopyPaste 工作邮箱确认码，不按网域自动开户。配置改变、停用或本人解除连接会撤销关联用户的全部 CopyPaste Web/native/refresh 会话和旧执行授权。管理员登录仍独立使用邮箱与 TOTP。
+- [Product](https://github.com/copypasteltd/workmate/blob/docs/docs/product/01-prd.md)
+- [Architecture](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/01-architecture-and-stack.md)
+- [Identity and permissions](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/07-security-and-permissions.md)
+- [Task continuation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/66-paid-native-input-checkpoints.md)
+- [Admin](https://github.com/copypasteltd/workmate/blob/docs/docs/product/08-admin-dashboard.md)
+- [Native clients](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/30-native-window-and-browser-sidepanel.md)
+- [Release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-workmate-publication.md)
 
-用户在系统浏览器选择企业身份，完成后点击授权，真实 loopback PKCE 回调将独立原生凭证保存至本机 DPAPI 保护的存储。工作区账号设置显示企业连接。后台停用连接后，既有原生 access/refresh 与待交换码失效，不保留本地独立登录后门。
-
-```mermaid
-flowchart LR
-  Member[已有企业成员] --> IdP[签名 OIDC 与 PKCE]
-  IdP --> Proof[首次独立邮箱确认]
-  Proof --> Web[CopyPaste 会话]
-  Web --> Native[明确原生授权与 PKCE]
-  Revoke[停用或解除连接] --> All[浏览器与原生凭证撤销]
-```
-
-![实际企业身份界面](assets/screenshots/06-company-identity.png)
-
-## 当前修复中的文件通道
-
-工作台同步 Web 的分片续传、模拟标识、删除进度和保留期限。原生请求桥转发稳定 Idempotency-Key，重连不会分配重复上传会话。下载先由用户选择目标，以流写临时文件并验证字节数与 SHA-256，拒绝覆盖已有文件；异常清理临时文件，上限 1 GiB。JSON IPC 的任务事件按游标逐页读取。
-
-目前源码增量尚未重打 Windows 安装包，需继续执行原生界面与打包回归；历史 0.5.0 安装包不包含本节更改。
-
-## 本轮源码验收
-
-原生源码验收已通过：系统浏览器 PKCE 登录、稳定上传幂等键、29 MiB 实际分片上传、摘要一致的流式下载、拒绝覆盖既有文件，以及原生桥上的同一云目录浏览。验收结束关闭独立浏览器与客户端。
-
-![原生传输](assets/screenshots/06-verified-transfer.png)
-![Desktop 云目录](assets/screenshots/07-cloud-files.png)
-
-以上针对当前源码运行；旧 0.5.0 安装包尚未重打包，不含本轮新增功能。
-
-## 专案技能管理（当前源码快照）
-
-项目方法新增精确安装及专家/任务版本绑定。普通停用影响新工作；卸载和永久安全撤销阻止包括旧任务在内的后续调用。重装产生新身份，专家须保存新版本后采用。工具调用及结果落库前复查当前方案，实际消耗按原预留结算。
-
-平台全套回归 **185/185**；delivery 的 `npm run qa:skills` 通过三组浏览器验收，31 份实际 HTTP 请求／响应样本通过严格设计 schema。自定义包审核/发布、完整真实角色资格仍待完成，历史 0.5.0 安装包未替换。
-
-## 默认助手与通知（当前源码）
-
-同步快照支持直接使用默认文字助手、私人会话和站内通知。源码 Electron 八组旅程验证原生 PKCE、29 MiB 传输及拒绝覆盖、云目录、真实 Codex 的模拟文字文件和通知定位。首次启动可读取两个公开配置/内容接口以展示演示提示；未登录私人请求仍拒绝，写入仍要求原生凭证。
-
-模拟提示在登录前后持续显示。`npm test` 四组原生测试通过。所有浏览器和 Electron 测试实例已关闭；历史安装包仍不包含此增量。
-
-![原生工作通知与模拟提示](assets/screenshots/08-notifications.png)
-
-## 运行前资料 / Pre-execution inputs
-
-源码快照支持与 Web 相同的等待、搜索、明确选择和私人补传流程。原生验收使用实际上传的 29 MiB 文件版本，确认首次模型调用前等待，再由同任务生成真实文件；模型依赖为明确假数据。计划来源变化与当前权限由服务端重新核验。当前共八组 Electron 旅程通过，历史安装包仍待重新发布。
-
-The renderer snapshot includes the same initial input checkpoint as Web. Native QA selects the version of the actual 29 MiB upload and resumes the original task through the authenticated bridge. Eight source Electron journeys passed using real Codex with synthetic model dependencies. These source changes are not included in the historical installer.
-
-![原生资料补齐 / Native input checkpoint](assets/screenshots/09-input-wait.png)
-![原生同任务结果 / Native result](assets/screenshots/10-input-result.png)
-
-## 容量排队（当前源码）
-
-渲染快照同步企业共用名额等待提示和用量说明。服务端统一实施企业、当前用户方案与能力执行上限，容量满时保留同一任务及预留，空位释放后自动继续。源码构建与既有八组原生流程另行验证；历史安装包不含本增量。
-
-## 原生模板选择与企业隔离
-
-当前源码渲染器同步 Web 的持久模板目录、依赖预检及实例化。主进程校验企业 UUID，只向固定产品 API 转发企业头和受保护凭证；未提供、外部或非法企业身份被拒绝。真实 PKCE 后可以在 Desktop 建立专家，再由 Web 查看同一持久记录；没有隐式启动 AI 或扣费。
-
-`qa:agent-templates` 验证当前源码 Electron，独立 profile，结束后关闭应用及浏览器。18 个专业角色仍待真实资格；此截图不代表历史 0.5.0 安装包已更新。
-
-![当前源码原生模板专家](assets/screenshots/13-role-template-specialists.png)
-
-## 原生 PDF 导出与保存（当前源码）
-
-同步的画布提供单页 PDF 图片审阅稿，保留源工程。真实 PKCE 登录后由主进程以受保护令牌请求产品 API，并经现有流式下载保存到明确选定的位置。新增验收实际保存 PDF，摘要与服务端不可变版本一致，结束后关闭自建应用。历史安装包未重打。
-
-![源码客户端 PDF 导出](assets/screenshots/14-design-pdf-export.png)
-
-## 营销 CSV、精确指标与来源（当前源码）
-
-导入先预览并确认账户、币种、时区、实体层级、归因和转化定义；支持通用 CSV 及 Google/Meta 风格候选表头与手动映射。原始 UTF-8/BOM、SHA-256、映射和计算结果真实保存。相同项目内重复请求或成功回执丢失后的重试只返回原快照；被隔离的数据不能绕过限制重新上传。未知转化不计零，CTR/CPC/CPM/CVR/CPA/ROAS 用精确小数先加总再计算，历史结果冻结。
-
-原始 CSV、标准化 CSV、带 11 项证据的 JSON 计算报告及实际 SVG 可下载。页面显示实际数据日期；上传时间不冒充平台取数截止时间。没有正式广告账户同步、跨平台转化去重、FX 或完整 AI 叙述验收；营销分析角色仍未合格。模型依赖继续使用获准假数据，数据库与文件逻辑真实执行。历史安装包未重打。
-
-独立 renderer 快照包含相同流程。`qa:marketing-analytics` 使用真实 PKCE、受保护 IPC，完成 Meta 风格导入及原生 CSV 保存；本地字节与原文一致，自建 Electron/浏览器在 finally 关闭。当前源码构建、renderer 类型检查和四项原生单元测试通过。
-
-```mermaid
-flowchart LR
-  UI[Desktop 预览确认] --> IPC[受保护主进程 IPC]
-  IPC --> API[固定产品 API]
-  API --> Snapshot[原子快照与冻结指标]
-  Snapshot --> Save[原生保存 / 摘要校验]
-```
-
-![源码客户端营销分析](assets/screenshots/15-marketing-analytics.png)
-
-## AnalysisSpec 私人报告（当前源码）
-
-在行销分析选择已有快照、业务问题、日期/比较区间、指标、维度和 HKD 最高预算。预览不调用模型或预留费用；明确确认后原子建立私人 Codex 任务、冻结计算/证据及单笔预留。来源、账户、币种、时区及归因独立；重复事实去重，冲突拒绝，比较零值/无数据保留原因。接受后丢失回执重试返回原报告。
-
-真实 Codex 通过分页事实工具读取固定值，服务端检查证据占位符及数字字面量后发布固定 HTML 资产，JSON 保留完整计算。自然语言语义和专业业务质量仍待验收；当前模型为明确标识的假数据。来源隔离/删除和项目撤权阻止读取及下载。完整 102 条综合验收、正式连接、专业角色资格和生产发布仍未完成，历史安装包未更新。
-
-独立 renderer 已同步到 **41** 个来源摘要，不依赖相邻 Web 源码构建。真实浏览器 PKCE、受保护 IPC、报告读取、原任务 HashRouter 跳转及原生 HTML 保存均经过实际 Electron 验证；保存字节与 Web 下载 SHA-256 一致，自建应用及浏览器均关闭。构建、renderer 类型检查和四项原生单元测试通过。
-
-```mermaid
-flowchart LR
-  PKCE[Browser PKCE] --> UI[Private report / original task]
-  UI --> IPC[Protected API bridge]
-  IPC --> Save[Native explicit save / byte identity]
-```
-
-![AnalysisSpec report](assets/screenshots/16-analysis-report.png)
-
-## CSV／XLSX 文件导入与更正历史（当前源码）
-
-营销输入现在先保存为项目共享文件的固定版本，再预览工作表、标题列、映射和账户口径。Google/Meta 经规范 `POST /v1/dataset-imports`，通用表格沿用兼容入口；预览不调用模型或预留费用。重复上传、接受回执丢失与重试不重复建立相同快照。原始 CSV/XLSX 下载校验实际字节及 SHA-256。
-
-XLSX 限 5,000,000 字节、50 张工作表、100 列和 10,000 数据行；多表须明确选择，标题列为 1–100。只读解析共享/内联字符串、XML 中文字符引用、精确数字及 1900/1904 日期；金额输入最多六位小数，冻结指标保留八位。拒绝公式（含缓存结果）、宏、外链、加密文件和数据区合并单元格。错误定位实际工作表单元格。预览失败仍保留已明确上传的项目原始文件，界面提前说明。
-
-更正新建不可变快照并记录完整祖先链，保留旧指标和历史报告；AnalysisSpec 在建立任务/预算前拒绝同时汇总祖先及更正版。来源隔离或删除阻止依赖数据、报告和文件读取；删除恢复流程关闭尚未领取的任务并释放未用预留，已运行或费用不明的任务保留原对账规则。私人文件须先明确发布为共享副本。
-
-```mermaid
-flowchart LR
-  File[CSV / XLSX] --> Version[固定共享文件版本]
-  Version --> Preview[表 / 标题列 / 映射 / 免费预览]
-  Preview --> Confirm[当前授权与明确确认]
-  Confirm --> Snapshot[幂等快照与冻结指标]
-  Snapshot --> Correction[新更正版 / 保留祖先]
-  Version --> Lifecycle[隔离或删除依赖守卫]
-```
-
-平台完整回归 **185/185**，严格实际 HTTP 样本 **31/31**，文件导入四组及原有 CSV 六组 Web/源码 Electron 流程通过；原生类型检查和四项单元通过。模型/媒体依赖为获准假数据，数据库、Codex、文件与授权逻辑真实执行。完整 102 条综合验收、全部官方导出格式、正式连接器、专业业务资格和生产发布仍待完成，历史 0.5.0 安装包未重打。详细规则见主文档 `docs/technical/29-file-imports-and-correction-lineage.md`。
-
-该导入阶段的独立渲染快照共 41 项来源摘要（当前认证增量为 43 项）。主进程只开放规范导入的精确 POST 路径，继续校验固定 origin、企业和凭证；实际 Electron 完成 PKCE、分片上传、Meta XLSX 导入及原生字节一致下载。
-
-![源码 Desktop XLSX 导入](assets/screenshots/17-xlsx-import.png)
-
-无边框窗口中的任务详情新增“暂停排队 / 继续工作”，首次模型调用前沿用同一任务与原预留，通过现有原生 API 桥执行。真实浏览器 PKCE、暂停/恢复及取消释放额度已通过 Delivery `qa:task-controls` 验证。当前为源码变更；上一轮 `release/frameless/` 预览包保留原提交与摘要，尚未包含本轮排队控制。已付费步骤恢复仍未完成。
-
-![任务暂停](assets/screenshots/21-task-paused.png)
-
-## 会话竞争与本地退出
-
-原生会话控制器限制迟到的登录/刷新回写；并发刷新合并为一次，旧 401 不得清除后来登录的账户。确定失效才移除凭证，临时故障保留可恢复状态。退出先清空加密凭证，撤销本地目录与缓存结果，并凭刷新凭证撤销服务端整族；访问令牌过期也可退出。离线时明确提示服务端撤销未确认，可从其他已登入装置完成。登录替换也清理先前目录和设备关联。
-
-![源码无边框客户端会话](assets/screenshots/22-active-sessions.png)
-![离线退出提示](assets/screenshots/23-offline-signout.png)
-
-本轮是源码与构建交付；历史无边框预览安装包保留原提交与 SHA-256，不包含本轮会话修复。`npm test` 覆盖 10 组会话竞争/持久化与原有原生能力，交付仓库 `qa:sessions` 验证真实 Electron/PKCE 和远端撤销。
-
-## 规范原生认证与重试 / Canonical native authentication and retry
-
-浏览器授权明确使用 S256，首次交换及刷新调用规范 `/v1/auth/token`。首次交换的未知响应最多以同一标识重试一次；刷新标识先随 DPAPI 保护的加密状态保存，响应丢失后可恢复原轮换。新登录改变本地身份版本，刷新保持不变；退出和新登录继续隔离迟到结果。
-
-Native sign-in and refresh consume the canonical token contract. A first code exchange retries an unknown result once under the same key; definitive rejections are not retried. Refresh request identities persist with DPAPI-protected credentials, so a committed response loss can recover one rotation without triggering reuse revocation. Real Electron fault-injection checks live in Delivery `qa:sessions`. Historical frameless preview installers retain their original manifest and do not contain these source updates.
-
-当前 `npm test` **24/24**，原生会话十五组、首次交换四组及文件/DPAPI 等原有能力均通过；渲染来源摘要 **43** 项。 / Current native tests: **24/24**; renderer provenance: **43** files.
-
-历史启动限制：此前十二组原生复核未完成，失败与诊断仍见 `evidence/auth-recovery-open-issue.json`，原七组 `sessions.json` 保持原字节。2026-10-20 当前源码十二组已通过，使用新的 `evidence/auth-recovery-current.json`；具体范围和截图见下文，完整安装包／SSO／系统矩阵仍待验收。
-
-Historical startup limitation: the earlier twelve-flow run did not complete; its failures and diagnostic comparison remain unchanged. The current-source rerun now passes **12/12** in `evidence/auth-recovery-current.json`, with scope and screenshots below. The original seven-flow session receipt remains historical. Complete packaged authentication, SSO and system matrices are still unaccepted.
-
-## 用户资料契约 / User profile contract
-
-原生设备同步及本仓库 renderer 快照均改用受认证的 `GET /v1/session/context` 读取工作区授权；规范 `GET /v1/me` 仅返回 `User`。renderer 通过显式 `renderer:sync` 复制并重新记录摘要，未单独修改快照。此次源码改动未重新构建历史界面预览安装包。
-
-Device sync and the explicit renderer snapshot now read workspace authorization from authenticated `GET /v1/session/context`. Canonical `GET /v1/me` returns only `User`. Snapshot provenance is regenerated by `renderer:sync`; earlier preview installers are not rebuilt by this source change.
-
-## 成员管理同步 / Membership renderer update
-
-显式 renderer 快照同步规范邀请、独立成员 ID、项目授权选择、分页、投递状态与移除确认；主进程传递企业头。45 份 renderer 来源摘要随仓库记录。当前源码类型检查和构建通过；当前源码十二组原生认证／会话恢复另列通过；完整安装包认证、SSO／系统矩阵仍未验收。
-
-The explicit 45-file renderer snapshot includes canonical invitation/member operations, project selection, pagination, delivery status and removal confirmation. IPC forwards the tenant header. Current sources typecheck/build and twelve source authentication/session-recovery groups now pass separately; complete packaged authentication, SSO and system acceptance remain outstanding.
-
-## 成员暂停反馈来源同步
-
-renderer 已从明确指定的 Web 来源同步后台暂停提示并构建，来源摘要随仓库保存。原生无边框、自绘窗口控件和菜单移除规则保持有效；本次页面复核没有重打安装器／便携包；源码认证十二组通过，完整安装包／系统矩阵仍待验收。
-
-## 当前源码认证恢复复核（2026-10-20）
-
-Delivery `qa:sessions` 的 Web／源码 Electron／MV3 十二组现已 12/12。Desktop 实际浏览器 S256 授权、首次交换和刷新已提交回执丢失的同键恢复、DPAPI 凭证清理、Web 远程撤销、离线退出未确认反馈均已实测。769 份三端／服务端源码和运行文件前后一致，测试凭证及自建浏览器、Electron、MV3 已清理；旧启动失败与诊断保留原字节。
-
-![当前无边框源码客户端会话](assets/screenshots/24-active-sessions-current.png)
-![当前离线退出提示](assets/screenshots/25-offline-signout-current.png)
-
-本次使用 source Electron 和当前 dist／renderer-dist，不把十二组记为 Setup／Portable 安装包认证。原生边框及默认菜单继续移除；窗口／右侧栏外观使用单独 10/10 原生预览证据。完整安装卸载、系统／DPI、签名／更新和企业身份矩阵仍待验收。
-
-2026-10-20 退款增量后当前源码复核：Web 成员 6/6（169 份来源）、Admin 成员 6/6（196 份）和 Web/源码 Electron/MV3 认证 12/12（775 份）通过，前后摘要一致，拥有的会话、浏览器、Electron 和扩展进程均已清理。首轮 Electron 调试连接超时原回执保留，随后相同源码重跑通过。Desktop 无边框和原生 Side Panel 预览包保持原字节；完整安装包认证及系统矩阵仍须独立验收。
-
-2026-10-20 方案版本增量後的當前源碼復核：Web 成員 6/6（172 份來源）、Admin 成員 6/6（200 份），Web／源碼 Electron／MV3 認證 12/12（779 份）；測試前後摘要一致，自建瀏覽器／Electron／擴展均關閉，測試憑證清理。新增不可變方案定義與固定歷史授權綁定不改寫原生預覽包。完整 VIP／配額、安裝包認證及系統驗收仍按主文檔繼續追蹤。
-
-## 当前预览：无边框与实时权益
-
-窗口保留 CopyPaste 自绘标题栏、最小化／最大化／还原／关闭和有界缩放，不显示 Electron 默认边框及菜单。当前 `release/frameless/` 预览重新构建，10 组真实窗口／原生侧栏检查通过。额外 6 组实际打包 Desktop／原生 Side Panel 联调验证浏览器 S256 PKCE、规范 VIP 开通与暂停、方案及并发额度共同刷新、持久通知已读和退出清理；源码会话专项 12 组另列。模型与媒体仍使用获准模拟依赖，这些结果不等于完整安装／更新／SSO／系统矩阵验收。
-
-```mermaid
-flowchart LR
-  Login[系统浏览器授权] --> Session[DPAPI 本机凭据]
-  Session --> Bridge[限定方法及路径的 IPC]
-  Bridge --> Rights[服务端当前权益及方案]
-  Rights --> Coherence[版本和固定方案一致后显示]
-  Coherence --> UI[方案 配额 功能和通知]
-  Logout[退出或远端撤销] --> Clear[清空凭据与本机授权]
-```
-
-方案与权益手动及定时共同刷新；跨事务版本不一致时重新确认，避免旧方案标题配上新功能。暂停后回到真实已发佈免费方案，保留其本来具有的功能；VIP 不写入账户余额。原生桥只开放明确的权益／通知读取和本人通知已读路径。
-
-![实际无边框 Desktop：实时 Pro 方案及权益](assets/screenshots/26-vip-effective-rights.png)
-![实际暂停后回到免费方案和配额](assets/screenshots/27-vip-suspended-rights.png)
-
-回执由相邻 Delivery 仓库的 `qa:native-surfaces`、`qa:native-vip` 生成；`evidence/native-vip.json` 保存 790 份源码及原生运行时／安装器／扩展字节绑定。独立 renderer 当前有 46 项摘要，新仓库克隆可自行构建。
-
-## 企业席位与存储执行（阶段 48）
-
-独立 renderer 已同步企业容量组件，当前来源清单为 47 项。用量页和成员页通过既有限定 IPC 读取席位、保留字节、上传预留及上限；登录/退出、工作区切换和读取失败遵守共用状态清理。预览 Setup、Portable 和实际运行目录已重新构建；无边框、自绘窗口按钮、无默认菜单规则继续生效。
-
-当前原生外观十组、打包 Desktop/真实 Side Panel 联调六组及源码认证十二组分别记录；不将重叠检查算作完整安装、系统、SSO或生产验收。
-
-![实际新桌面预览](assets/screenshots/26-vip-effective-rights.png)
+后续修改需要同步中英 README、受影响的实际截图/GIF、更新说明和对应分支。提交后通过 Delivery 发布流程核对远程 SHA；不强推覆盖协作者。`.env`、数据库、会话、依赖和安装产物不进入 Git。历史 README 原字节见 [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
