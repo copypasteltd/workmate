@@ -1,3 +1,4 @@
+import { assertTaskContentSources } from "./task-content-sources.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
@@ -538,6 +539,8 @@ export async function resolveWorkContext(
         "CONTEXT_REVOKED",
         "A referenced conversation result is unavailable",
       );
+    if (message.role === "assistant" && message.task_id)
+      await assertTaskContentSources(tx, { id: message.task_id });
     data.history.push({ role: message.role, content: message.body });
   }
   const instructions = JSON.stringify(data);
@@ -1018,7 +1021,7 @@ export function registerPersistentWork(
           ...c,
           messages: (
             await tx.query(
-              "SELECT id,role,intent,body,task_id,created_at FROM conversation_messages WHERE conversation_id=$1 ORDER BY created_at,id",
+              "SELECT id,role,intent,CASE WHEN role='assistant' AND task_id IS NOT NULL AND NOT task_content_sources_available(task_id) THEN '內容暫不可用 / Source unavailable' ELSE body END AS body,task_id,created_at,(role='assistant' AND task_id IS NOT NULL AND NOT task_content_sources_available(task_id)) AS source_unavailable FROM conversation_messages WHERE conversation_id=$1 ORDER BY created_at,id",
               [id],
             )
           ).rows,
@@ -1262,6 +1265,14 @@ export function registerPersistentWork(
       const id = uuid.parse((req.params as any).id);
       return db.tx(async (tx) => {
         await projectAccess(tx, req.principal, tenant, project);
+        const source = (
+          await tx.query("SELECT id FROM tasks WHERE id=$1 AND project_id=$2", [
+            id,
+            project,
+          ])
+        ).rows[0];
+        if (!source) throw new Problem(404, "NOT_FOUND", "Plan not found");
+        await assertTaskContentSources(tx, source);
         const plan = (
           await tx.query(
             "SELECT * FROM task_plans WHERE task_id=$1 AND project_id=$2",
@@ -1291,6 +1302,26 @@ export function registerPersistentWork(
         .parse(req.body);
       return db.tx(async (tx) => {
         await projectAccess(tx, req.principal, tenant, project, "write");
+        const source = (
+          await tx.query("SELECT id FROM tasks WHERE id=$1 AND project_id=$2", [
+            id,
+            project,
+          ])
+        ).rows[0];
+        if (!source) throw new Problem(404, "NOT_FOUND", "Plan not found");
+        if (
+          !(
+            await tx.query("SELECT task_content_sources_available($1) AS ok", [
+              id,
+            ])
+          ).rows[0].ok
+        )
+          throw new Problem(
+            409,
+            "PLAN_STALE",
+            "A source used by this plan is no longer available",
+          );
+        await projectAccess(tx, req.principal, tenant, project, "write");
         return replay(
           tx,
           req.principal.id,
@@ -1318,6 +1349,20 @@ export function registerPersistentWork(
                 "PLAN_OWNER_REQUIRED",
                 "Only the delegating user can authorize execution of this plan",
               );
+            try {
+              await assertTaskContentSources(tx, task);
+            } catch (error) {
+              if (
+                error instanceof Problem &&
+                error.code === "TASK_SOURCE_REVOKED"
+              )
+                throw new Problem(
+                  409,
+                  "PLAN_STALE",
+                  "A source used by this plan is no longer available",
+                );
+              throw error;
+            }
             const approvalHash = hash(canonical(b));
             if (plan.approved_task_id) {
               if (plan.approval_hash !== approvalHash)
@@ -1421,6 +1466,7 @@ export function registerPersistentWork(
               },
               `plan:${id}`,
               {
+                content_source_task_id: task.id,
                 context: task.input_context.agent_id
                   ? task.input_context
                   : undefined,

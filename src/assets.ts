@@ -49,7 +49,7 @@ export function registerAssets(
           async () => {
             const a = (
               await tx.query(
-                "SELECT a.*,v.storage_key,v.mime_type,v.metadata FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' FOR UPDATE OF a",
+                "SELECT a.*,v.id AS source_version_id,v.storage_key,v.mime_type,v.metadata FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active' FOR UPDATE OF a",
                 [asset, project],
               )
             ).rows[0];
@@ -61,6 +61,17 @@ export function registerAssets(
                 "VERSION_CONFLICT",
                 "Refresh the private artifact before publishing",
               );
+            const provenance = (
+              await tx.query("SELECT publication_input_sources($1) AS refs", [
+                a.source_version_id,
+              ])
+            ).rows[0].refs;
+            if (!provenance)
+              throw new Problem(
+                409,
+                "TASK_SOURCE_REVOKED",
+                "A source used by this artifact is no longer available",
+              );
             const result = await saveAsset(tx, storage, {
               tenant,
               project,
@@ -69,9 +80,15 @@ export function registerAssets(
               mime: a.mime_type,
               bytes: await storage.get(a.storage_key),
               kind: "published_deliverable",
+              metadata: {
+                publication_origin_version_id: a.source_version_id,
+                publication_sources: provenance,
+              },
               ...(a.metadata?.seo_run_id
                 ? {
                     metadata: {
+                      publication_origin_version_id: a.source_version_id,
+                      publication_sources: provenance,
                       seo_run_id: a.metadata.seo_run_id,
                       ...(a.metadata.seo_change_task_id
                         ? { seo_change_task_id: a.metadata.seo_change_task_id }
@@ -284,7 +301,7 @@ export function registerAssets(
     // A share remains bounded to its owner's current membership and active content.
     const r = (
       await db.control.query(
-        "SELECT v.*,a.name,s.tenant_id,a.id AS asset_id FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN tenants t ON t.id=s.tenant_id JOIN memberships m ON m.tenant_id=t.id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND t.status='active' AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin')",
+        "SELECT v.*,a.name,s.tenant_id,a.id AS asset_id FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN tenants t ON t.id=s.tenant_id JOIN memberships m ON m.tenant_id=t.id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND task_asset_sources_available(a.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND t.status='active' AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin')",
         [hash(value)],
       )
     ).rows[0];
@@ -293,7 +310,7 @@ export function registerAssets(
     try {
       const valid = (
         await db.control.query(
-          "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active'",
+          "SELECT 1 FROM shares s JOIN assets a ON a.id=s.asset_id JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version JOIN memberships m ON m.tenant_id=s.tenant_id AND m.user_id=s.created_by JOIN users u ON u.id=m.user_id JOIN tenants t ON t.id=s.tenant_id WHERE s.digest=$1 AND s.revoked_at IS NULL AND s.expires_at>now() AND a.state='active' AND a.private_owner IS NULL AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL AND task_asset_sources_available(a.id) AND analysis_asset_available(a.id) AND matrix_asset_available(a.id) AND video_asset_available(a.id) AND m.status='active' AND u.status='active' AND m.role IN ('owner','admin') AND t.status='active'",
           [hash(value)],
         )
       ).rowCount;

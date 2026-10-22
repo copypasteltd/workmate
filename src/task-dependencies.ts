@@ -51,6 +51,7 @@ async function resources(tx: Tx, task: any, dependency: any, ids: string[]) {
         `SELECT v.id,v.asset_id,v.version,a.name,v.mime_type AS content_type,v.bytes::text AS size_bytes,v.sha256
    FROM asset_versions v JOIN assets a ON a.id=v.asset_id
    WHERE v.id=ANY($1::uuid[]) AND a.tenant_id=$2 AND a.project_id=$3 AND a.state='active'
+   AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
    AND v.version=a.current_version AND (a.private_owner IS NULL OR (a.private_owner=$4 AND a.private_owner=$5::uuid)) FOR SHARE OF a`,
         [
           ids,

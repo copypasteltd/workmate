@@ -39,6 +39,7 @@ export async function enqueueTask(
     context?: WorkContext;
     conversation?: any;
     billing_account_id?: string;
+    content_source_task_id?: string;
   } = {},
 ) {
   if (b.prompt.length > 60000)
@@ -155,7 +156,12 @@ export async function enqueueTask(
         b.mode ?? "execute",
         options.conversation?.id ?? null,
         options.context ? actor.id : (parent?.private_owner ?? null),
-        options.context ?? {},
+        {
+          ...(options.context ?? {}),
+          ...(options.content_source_task_id
+            ? { plan_source_task_id: options.content_source_task_id }
+            : {}),
+        },
         plan,
         options.billing_account_id ?? null,
       ],

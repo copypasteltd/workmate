@@ -1,3 +1,4 @@
+import { assertTaskContentSources } from "./task-content-sources.js";
 import { enqueueTask } from "./task-service.js";
 import {
   workMode,
@@ -65,7 +66,10 @@ export function registerTasks(
       return {
         items: (
           await tx.query(
-            `SELECT id,title,role_key,status,mode,conversation_id,private_owner,acceptance,charged_micros,budget_micros,created_at,updated_at,parent_id,version
+            `SELECT id,title,role_key,status,mode,conversation_id,private_owner,
+             CASE WHEN task_content_sources_available(id) THEN acceptance ELSE NULL END AS acceptance,
+             NOT task_content_sources_available(id) AS source_unavailable,
+             charged_micros,budget_micros,created_at,updated_at,parent_id,version
              FROM tasks WHERE tenant_id=$1 AND project_id=$2
              AND (NOT(input_context ? 'analysis_report_id') OR EXISTS(
                SELECT 1 FROM analysis_reports r WHERE r.task_id=tasks.id AND r.id::text=tasks.input_context->>'analysis_report_id' AND analysis_report_available(r.id)))
@@ -157,6 +161,23 @@ export function registerTasks(
       ).rows[0];
       if (!t) throw new Problem(404, "NOT_FOUND", "Task not found");
       await assertReportSources(tx, t, false);
+      try {
+        await assertTaskContentSources(tx, t);
+      } catch (error) {
+        if (
+          !(error instanceof Problem) ||
+          !["TASK_SOURCE_REVOKED", "TASK_SOURCE_BUSY"].includes(error.code)
+        )
+          throw error;
+        await projectAccess(tx, req.principal, tenant, project);
+        return {
+          ...t,
+          prompt: "",
+          output: "",
+          input_context: {},
+          source_unavailable: true,
+        };
+      }
       await projectAccess(tx, req.principal, tenant, project);
       return t;
     }, tenant);
@@ -187,6 +208,7 @@ export function registerTasks(
           ])
         ).rows[0];
         await assertReportSources(tx, sourceTask, false);
+        await assertTaskContentSources(tx, sourceTask);
         await projectAccess(tx, req.principal, tenant, project);
         return {
           items: (

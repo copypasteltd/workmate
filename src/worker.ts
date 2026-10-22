@@ -1,3 +1,7 @@
+import {
+  assertTaskContentSources,
+  recordTaskSourceRead,
+} from "./task-content-sources.js";
 import { expireAdminApprovals } from "./admin-approval-storage.js";
 import { advanceCreativeMatrices } from "./creative-matrices.js";
 import { advanceConnectors } from "./connectors.js";
@@ -350,6 +354,8 @@ export class Worker {
             this.catalog.digest(this.catalog.role(t.role_key)) !== t.role_hash
           )
             throw new Error("Role version changed");
+          if (!(await checkInputDependencies(tx, t))) return null;
+          await assertTaskContentSources(tx, t);
         } catch (error) {
           const code =
             error instanceof Problem && error.code.startsWith("TASK_")
@@ -365,7 +371,6 @@ export class Worker {
           });
           return null;
         }
-        if (!(await checkInputDependencies(tx, t))) return null;
         if (!(await seoCrawlReady(tx, t))) return null;
         const started = await claimCapacity(
           tx,
@@ -426,6 +431,7 @@ export class Worker {
                 (await taskCapabilities(tx, this.db.config, this.catalog, t))
                   .versionIds,
               );
+              await assertTaskContentSources(tx, t);
             } catch {
               controller.abort();
               return;
@@ -462,6 +468,7 @@ export class Worker {
           ).rows[0];
           if (!live) throw new Error("Fenced execution");
           await assertReportSources(tx, live);
+          await assertTaskContentSources(tx, live);
           if (kind === "runtime.thread")
             await tx.query("UPDATE tasks SET runtime_thread=$2 WHERE id=$1", [
               id,
@@ -516,6 +523,7 @@ export class Worker {
             this.db.config.CODEX_VERSION,
             capabilities.versionIds,
           );
+          await assertTaskContentSources(tx, task);
           return {
             ...work,
             capabilities,
@@ -657,6 +665,7 @@ export class Worker {
             (await taskCapabilities(tx, this.db.config, this.catalog, live))
               .versionIds,
           );
+          await assertTaskContentSources(tx, live);
           contextDigest = context.digest;
         } catch {
           status = "cancelled";
@@ -878,6 +887,7 @@ export class Worker {
       this.db.config.CODEX_VERSION,
       capabilities.versionIds,
     );
+    await assertTaskContentSources(tx, t);
     await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
     if (
       !(
@@ -1020,9 +1030,18 @@ export class Worker {
               Number(v.bytes) > 500000
             )
               throw new Error("Unsupported text asset");
-            return {
-              text: (await this.storage.get(v.storage_key)).toString("utf8"),
-            };
+            const text = (await this.storage.get(v.storage_key)).toString(
+              "utf8",
+            );
+            await recordTaskSourceRead(
+              tx,
+              t,
+              "asset_version",
+              v.id,
+              v.id,
+              v.sha256,
+            );
+            return { text };
           },
           z.object({ asset_id: uuid }).strict(),
         ),
@@ -1096,6 +1115,7 @@ export class Worker {
               )
             ).rows[0];
             if (!d) throw new Error("Dataset not found");
+            await recordTaskSourceRead(tx, t, "dataset", d.id);
             return {
               currency: d.currency,
               timezone: d.timezone,

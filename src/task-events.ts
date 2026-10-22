@@ -1,3 +1,4 @@
+import { assertTaskContentSources } from "./task-content-sources.js";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ServerResponse } from "node:http";
 import { setTimeout as delay } from "node:timers/promises";
@@ -156,6 +157,7 @@ export function registerTaskEvents(app: FastifyInstance, db: Database) {
             throw new Problem(404, "NOT_FOUND", "Task not found");
           await projectAccess(tx, actor, tenant, t.project_id);
           await assertReportSources(tx, t, false);
+          await assertTaskContentSources(tx, t);
           // Source locks may wait for an ordinary task-control transaction.
           // Recheck current membership/auth version after that wait as well.
           await projectAccess(tx, actor, tenant, t.project_id);

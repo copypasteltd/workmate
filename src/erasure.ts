@@ -109,6 +109,9 @@ export class ErasureService {
           );
           return;
         }
+        // Only a verified deleted target enters controlled content erasure.
+        // Immutable source bindings allow this transaction to scrub their data.
+        await tx.query("SELECT set_config('app.erasing_content','true',true)");
         await this.scrub(tx, job);
         const items = (
           await tx.query(

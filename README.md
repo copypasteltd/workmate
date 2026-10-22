@@ -1,5 +1,32 @@
 # CopyPaste Platform
 
+<!-- stage65-current-history-source-lineage:start -->
+本仓库新增实际读取来源、内容遍历、发布输入快照和受控来源锁，保留原 SQL001–081。
+
+## 会话与实际读取的来源约束（阶段 65）
+
+模型实际读取的文件版本、云文件引用和营销数据集现在保存不可改写的来源引用。历史助手结果、固定记忆和已批准计划的来源失效后，后续模型、工具重放、事件和产物保存都会重新检查；新付费委派在创建任务和预留资金前拒绝失效历史。会话显示不可用提示，任务列表与详情保留状态和费用元数据并隐藏失效的验收正文。原 PLAN_STALE / PLAN_INPUT_CHANGED 和首次输入补选语义保留。受控删除明确擦除元数据；普通更新不能因缺省擦除标记而改写来源。
+
+显式发布创建独立副本并冻结已确认的输入来源。删除原私有会话仍保留已发布副本；被实际消费的原始文件、数据集或固定记忆失效时，派生副本和公开分享仍受来源约束。恢复来源不改变当前项目、用户或私有范围权限。
+
+验证：平台 **765/765**，保留此前全部 **746 项**命名测试；定向 **51/51**，六仓库 **13 项**检查通过。包括真实 HTTP SSE、实际 Worker 工具、文件下载、计划、资金预留及公开分享；AI 和业务数据按授权模拟。两库 SQL081→087 保留原 168 张公共表的全部行摘要、旧迁移和原函数定义，新增来源表为空，不补造历史读取。
+
+Desktop 保持无边框、自绘窗口控制、无 Electron 默认或 Alt 菜单；Extension 使用 Chrome 原生 Side Panel，默认右侧并遵循浏览器偏好。既有包与原生旅程只做当前字节核对，原截图和旅程保留原后台源码范围。本阶段未完成新后台的跨端界面验收、签名安装、商店发布或正式环境验收。
+
+仅使用 Codex，全部 AI 请求经公司内部 OpenAI 兼容服务器。原 102 项需求、全部 TC/NFR/G01–G10 保留：81 项局部验证、21 项未证明完成、0 项完整验收。
+
+```mermaid
+flowchart LR
+  Input[Actual reads and fixed references] --> Origin[Immutable source provenance]
+  Origin --> Work[History and approved plans]
+  Origin --> Copy[Independent published copies]
+  Guard[Current scope and source lifecycle] --> Work
+  Guard --> Copy
+  Work --> Result[Authorized model input and output]
+  Copy --> Share[Authorized downloads and shares]
+```
+<!-- stage65-current-history-source-lineage:end -->
+
 <!-- stage64-current-report-task-source-fences:start -->
 本仓库新增 SQL081 与报告/任务读取来源检查；SQL001–080 保持原字节。
 

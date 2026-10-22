@@ -1,3 +1,4 @@
+import { assertTaskContentSources } from "./task-content-sources.js";
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import type { Principal } from "./auth.js";
@@ -154,6 +155,7 @@ export async function controlUnclaimedTask(
         "The task's execution capability is unavailable",
       );
     await assertReportSources(tx, task);
+    await assertTaskContentSources(tx, task);
     await authorizeExecutionPlan(
       tx,
       task.tenant_id,

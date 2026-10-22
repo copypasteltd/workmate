@@ -1,3 +1,4 @@
+import { recordTaskSourceRead } from "./task-content-sources.js";
 import { zipSync } from "fflate";
 import type { Tx } from "./db.js";
 import { saveAsset, type Storage } from "./storage.js";
@@ -93,6 +94,14 @@ export async function readCloudSource(
   const bytes = await storage.get(r.file.storage_key);
   if (hash(bytes) !== r.file.sha256)
     throw new Error("WORKING_SOURCE_INTEGRITY_FAILED");
+  await recordTaskSourceRead(
+    tx,
+    t,
+    "asset_version",
+    r.file.asset_version_id,
+    r.file.asset_version_id,
+    r.file.sha256,
+  );
   return {
     path: r.path,
     content: bytes.toString("utf8"),
