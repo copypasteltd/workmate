@@ -26,8 +26,9 @@ import {
   useI18n,
 } from "./ui";
 import "./seo-audits.css";
+import { SeoChanges } from "./seo-changes";
 
-type Audit = {
+export type Audit = {
   id: string;
   project_id: string;
   task_id: string;
@@ -61,7 +62,7 @@ type Audit = {
   budget: { amount_micros: string };
   confirmed_cost: { amount_micros: string };
 };
-type Finding = {
+export type Finding = {
   id: string;
   key: string;
   code: string;
@@ -209,6 +210,9 @@ export function SeoAudits({ onBack }: { onBack: () => void }) {
     [busy, setBusy] = useState(false),
     [offset, setOffset] = useState(0),
     [pageOffset, setPageOffset] = useState(0);
+  const [selectedFindings, setSelectedFindings] = useState<
+    Record<string, Finding>
+  >({});
   const saving = useRef(false),
     evidenceRevision = useRef(0);
   const directory = useData<{ items: Audit[] }>(
@@ -247,14 +251,16 @@ export function SeoAudits({ onBack }: { onBack: () => void }) {
     setOffset(0);
     setPageOffset(0);
     setSource(null);
+    setSelectedFindings({});
     evidenceRevision.current++;
   }, [id, w.base]);
   useEffect(() => {
-    if (detail.error || directory.error) {
+    if (detail.error || directory.error || report.error) {
       evidenceRevision.current++;
       setSource(null);
+      setSelectedFindings({});
     }
-  }, [detail.error, directory.error]);
+  }, [detail.error, directory.error, report.error]);
   useEffect(
     () => () => {
       evidenceRevision.current++;
@@ -604,7 +610,32 @@ export function SeoAudits({ onBack }: { onBack: () => void }) {
                           className={"seo-finding " + finding.severity}
                         >
                           <div>
-                            <h3>{seoFindingLabel(finding.code, t)}</h3>
+                            <div className="seo-finding-choice">
+                              <input
+                                type="checkbox"
+                                id={`seo-finding-${finding.id}`}
+                                checked={!!selectedFindings[finding.id]}
+                                disabled={
+                                  !selectedFindings[finding.id] &&
+                                  Object.keys(selectedFindings).length >= 20
+                                }
+                                onChange={(e) =>
+                                  setSelectedFindings((previous) => {
+                                    const next = { ...previous };
+                                    if (e.target.checked)
+                                      next[finding.id] = finding;
+                                    else delete next[finding.id];
+                                    return next;
+                                  })
+                                }
+                                aria-label={`${t("選取修改問題", "Select finding")}: ${seoFindingLabel(finding.code, t)} ${finding.url}`}
+                              />
+                              <h3>
+                                <label htmlFor={`seo-finding-${finding.id}`}>
+                                  {seoFindingLabel(finding.code, t)}
+                                </label>
+                              </h3>
+                            </div>
                             <span className="seo-severity">
                               {finding.severity === "error"
                                 ? t("需修復", "Repair")
@@ -650,6 +681,20 @@ export function SeoAudits({ onBack }: { onBack: () => void }) {
                     />
                   </section>
                 )}
+                {report.data &&
+                  d.project_id === w.project &&
+                  !detail.error &&
+                  !report.error &&
+                  !directory.error && (
+                    <SeoChanges
+                      key={`${w.base}:${d.id}:${d.result_asset_version_id}`}
+                      audit={d}
+                      selected={Object.values(selectedFindings)}
+                      clearSelection={() => setSelectedFindings({})}
+                      onRecheck={() => setRecheck(d)}
+                      onSource={(id, finding) => void showSource(id, finding)}
+                    />
+                  )}
                 {report.data?.comparison && (
                   <section className="card seo-comparison">
                     <h2>
