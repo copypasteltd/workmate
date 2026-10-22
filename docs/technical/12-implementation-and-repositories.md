@@ -1,5 +1,7 @@
 # 实际开发、独立仓库与交付
 
+**阶段 74 当前增量：** 本机 Codex 的追问、选择/自填回答、同任务回合继续、等待时停止及撤权已接通；当前 Desktop 有 47 项客户端、17 项真实原生和 12 项实际打包旅程检查。后端源码未变，沿用阶段 73 的 818 项完整回归范围。详见 [方案与限定证据](74-desktop-native-user-input.md)。18 角色/29 Skill 及全部原始验收范围保留，以下较早记录保持各自原始源码边界。
+
 **最新实现（阶段 72）：** Desktop 已接入本机 Codex、客户授权、主进程 IPC、公司网关费用及实际打包旅程。原文保留其初始/历史范围，当前方案与证据见 [本机执行及控制面](72-desktop-local-execution-and-control-plane.md)。下列旧回执不自动认定为新源码通过。
 
 **2026-10-22 方向检查：** [CLIENT01](../requirements/03-client-execution-amendment.md) 已明确 Desktop 的 Codex 必须本机运行且支持用户可授予的完整本机权限。当前实现仍是云端 Codex 与受限文件桥接，不能算满足该要求。Extension 已接入原生右侧栏对话、历史和明确版本附件，验证范围见 [实现说明](71-extension-cloud-conversations.md)。具体代码依据与优先改造项见 [方向检查](69-desktop-local-codex-and-extension-direction.md)。下方历史测试/包记录保留原实际范围。

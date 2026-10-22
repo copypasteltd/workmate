@@ -1,5 +1,7 @@
 # Desktop 本机 Codex 与公司业务工具
 
+**阶段 74 当前增量：** 本机 Codex 的追问、选择/自填回答、同任务回合继续、等待时停止及撤权已接通；当前 Desktop 有 47 项客户端、17 项真实原生和 12 项实际打包旅程检查。后端源码未变，沿用阶段 73 的 818 项完整回归范围。详见 [方案与限定证据](74-desktop-native-user-input.md)。18 角色/29 Skill 及全部原始验收范围保留，以下较早记录保持各自原始源码边界。
+
 本次延续 [CLIENT01](../requirements/03-client-execution-amendment.md) 和 [本机控制面](72-desktop-local-execution-and-control-plane.md)。Desktop 的 Codex 进程、会话、文件与终端继续运行在客户电脑；公司服务器提供模型、媒体、项目资料与账本服务。调用公司生图服务不会创建云端 Agent，也不会把 Desktop 会话迁往云端。Extension 继续使用 [原生侧栏云端对话及附件](71-extension-cloud-conversations.md)。
 
 ## 1. 用户流程
