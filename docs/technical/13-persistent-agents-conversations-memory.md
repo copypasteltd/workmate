@@ -1,5 +1,9 @@
 # 持续 Agent、会话与记忆的实现约束
 
+<!-- stage65-current-history-source-lineage:start -->
+后续[阶段 65](65-conversation-content-source-lineage.md)补充实际文件/云引用/数据集读取、历史结果和计划来源检查，以及显式发布的独立输入快照；状态与费用元数据保留。见[当前后台回执](../quality/history-source-checkpoint.json)。本文原阶段源码和执行回执保持其历史范围；已付费原生步骤的业务续接及完整验收继续跟踪。
+<!-- stage65-current-history-source-lineage:end -->
+
 版本：1.7 · 2026-10-19 · 产品代码 0.2.0。关联 REQ-005/006/061/062/067/068/079/090/091。0.1.0 交付记录继续作为上一版本证据；本轮限定实现的检查见 [验收记录](../quality/05-persistent-work-acceptance.md)，不代替全部需求验收。
 
 本轮补齐持续专家、私有多任务会话和分域文本记忆；后续仍需按全部需求继续建设。企业 SSO、团队、云计划、完整云目录、媒体与真实公司模型准入没有因本轮工作而被移出目标。

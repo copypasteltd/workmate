@@ -1,5 +1,9 @@
 # 排队暂停、同任务恢复与 Codex 原生续聊
 
+<!-- stage65-current-history-source-lineage:start -->
+后续[阶段 65](65-conversation-content-source-lineage.md)补充实际文件/云引用/数据集读取、历史结果和计划来源检查，以及显式发布的独立输入快照；状态与费用元数据保留。见[当前后台回执](../quality/history-source-checkpoint.json)。本文原阶段源码和执行回执保持其历史范围；已付费原生步骤的业务续接及完整验收继续跟踪。
+<!-- stage65-current-history-source-lineage:end -->
+
 本轮修复 REQ-009/044 的部分缺口，保留全部 102 条需求和原始验收条件。用户端 Web、无边框 Desktop 和 Chrome 扩展已支持**首次模型调用前**暂停排队、恢复原任务及取消；Admin 与用户端复用同一领域函数。模型/媒体依赖依照用户指示使用假数据，PostgreSQL、登录、Codex 程序、文件与费用账本实际执行。
 
 ## 已实现的任务控制

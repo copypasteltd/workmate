@@ -1,5 +1,9 @@
 # 需求追踪矩阵
 
+<!-- stage65-current-history-source-lineage:start -->
+阶段 65 记录实际读取、历史上下文及独立发布输入的来源约束，见[绑定回执](history-source-checkpoint.json)。全部 102 项原始需求、TC/NFR/G01–G10 及 81 局部验证/21 未证明完成/0 完整验收保持；原字段与失败记录保留。
+<!-- stage65-current-history-source-lineage:end -->
+
 <!-- stage64-current-report-task-source-fences:start -->
 阶段 64 新增原始分析/SEO 任务历史与活动事件流的来源约束证据，见[绑定回执](task-source-checkpoint.json)。原 102 项需求、全部 TC/NFR/G01–G10、81 项局部验证、21 项未证明完成和 0 项完整验收保持不变。原字段与旧失败记录保留。
 <!-- stage64-current-report-task-source-fences:end -->

@@ -1,5 +1,9 @@
 # 任务详情、历史消息与来源访问边界
 
+<!-- stage65-current-history-source-lineage:start -->
+后续[阶段 65](65-conversation-content-source-lineage.md)补充实际文件/云引用/数据集读取、历史结果和计划来源检查，以及显式发布的独立输入快照；状态与费用元数据保留。见[当前后台回执](../quality/history-source-checkpoint.json)。本文原阶段源码和执行回执保持其历史范围；已付费原生步骤的业务续接及完整验收继续跟踪。
+<!-- stage65-current-history-source-lineage:end -->
+
 <!-- stage64-current-report-task-source-fences:start -->
 ## 当前已执行的范围
 

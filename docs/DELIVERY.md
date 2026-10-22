@@ -1,5 +1,9 @@
 # CopyPaste 0.5.0 代码交付入口
 
+<!-- stage65-current-history-source-lineage:start -->
+阶段 65 新增实际读取及会话、记忆、计划和产物的来源链保护。显式发布冻结已确认输入，保留独立副本语义；失效正文不影响任务状态和费用元数据读取。平台 **765/765**、定向 **51/51**、六仓库 13 项检查通过，原 746 项命名测试保留。两库 SQL081→087 保留原 168 张公共表的全部行摘要、旧迁移和原函数定义，来源表不补造历史。见[实现细则](technical/65-conversation-content-source-lineage.md)和[绑定回执](quality/history-source-checkpoint.json)。Desktop 无边框和 Chrome 原生右侧栏保持；既有客户端和包只做只读字节核对，旧截图不代表本轮后台界面验收。完整 102 项需求、TC/NFR/G01–G10 和正式环境验收继续跟踪。
+<!-- stage65-current-history-source-lineage:end -->
+
 <!-- stage64-current-report-task-source-fences:start -->
 阶段 64 修复原始分析/SEO 报告在通用任务详情、列表、JSON 历史与两种 SSE 中的来源边界；已有流逐批复查，失效后停止发送正文。分析输入与原始 CSV 到期在创建任务/预留费用前拒绝。平台 **746/746**、定向 **12/12**、六仓库 13 项检查通过；前全部 734 项命名测试保留。两库 SQL080→081 保留 168 张原公共表全部行摘要与旧迁移，仅更新两个报告访问函数。见[实现细则](technical/64-task-source-visibility.md)、[当前绑定证据](quality/task-source-checkpoint.json)。无边框 Desktop 与 Chrome 原生右侧栏的既有客户端/包只读核对通过；下方旧界面截图及原生验收保留其原后台版本范围。完整 102 项需求和 TC/NFR/G01–G10 继续跟踪，当前仅为已授权模拟环境中的局部验证。
 <!-- stage64-current-report-task-source-fences:end -->

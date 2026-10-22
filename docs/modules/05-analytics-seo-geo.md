@@ -1,5 +1,9 @@
 # M06 广告、网站、SEO 与 GEO 分析
 
+<!-- stage65-current-history-source-lineage:start -->
+营销事实工具的实际数据集读取现纳入[阶段 65 来源链](../technical/65-conversation-content-source-lineage.md)，与固定文件、历史上下文、计划及独立发布输入共同复查当前状态和保留期。GEO、网站/CMS 写回和完整 TC-029 继续跟踪。
+<!-- stage65-current-history-source-lineage:end -->
+
 <!-- stage64-current-report-task-source-fences:start -->
 原始分析与 SEO 报告的通用任务历史现执行相同来源治理，包括活动 SSE 的后续消息。分析数据集、原始 CSV、产物和终态任务的保留期在清理前生效。见[阶段 64 实现](../technical/64-task-source-visibility.md)与[绑定回执](../quality/task-source-checkpoint.json)。网站/CMS 写回、GEO 和完整 TC-029 继续跟踪。
 <!-- stage64-current-report-task-source-fences:end -->

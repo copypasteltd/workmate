@@ -1,5 +1,9 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage65-current-history-source-lineage:start -->
+阶段 65 保持 Desktop 无边框、无 Electron/Alt 菜单与 Chrome 原生右侧栏。既有客户端/包已[只读核对](../quality/history-source-client-recheck-02.json)，未将原生历史旅程重新标为本轮后台界面验收。见[后台来源链实现](65-conversation-content-source-lineage.md)。
+<!-- stage65-current-history-source-lineage:end -->
+
 <!-- stage64-current-report-task-source-fences:start -->
 阶段 64 后台修复未改动原生端源码；现有无边框 Desktop、无 Electron/Alt 菜单与 Chrome 原生右侧栏的源码及包已[只读核对](../quality/task-source-client-recheck-01.json)。下方阶段 63 的真实原生检查及截图仍代表原后台版本，未被重新标为新后台旅程。见[当前后台来源约束](64-task-source-visibility.md)。
 <!-- stage64-current-report-task-source-fences:end -->
