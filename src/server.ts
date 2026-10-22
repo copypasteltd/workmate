@@ -30,6 +30,7 @@ import { registerFileImports } from "./analytics-file-routes.js";
 import { registerAnalysisReports } from "./analysis-reports.js";
 import { registerTasks } from "./tasks.js";
 import { registerCanonicalTasks } from "./canonical-tasks.js";
+import { registerDesktopExecutions } from "./desktop-executions.js";
 import { registerAdmin } from "./admin.js";
 import { registerAdminOperations } from "./admin-operations.js";
 import { registerAdminMemberships } from "./admin-memberships.js";
@@ -263,6 +264,10 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       status = 409;
       code = "ALREADY_EXISTS";
       message = "A matching record or payment reference already exists";
+    } else if ((error as any).code === "23514" && ["Local session binding is immutable", "Invalid local task owner", "Immutable desktop execution ownership"].includes((error as any).message)) {
+      status = 409;
+      code = "DESKTOP_BINDING_CONFLICT";
+      message = "The local session belongs to another account, device or project; create a new local session";
     } else if ((error as any).code === "23503") {
       status = 409;
       code = "RELATED_RECORD_REQUIRED";
@@ -369,6 +374,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAnalysisReports(app, db, catalog, storage);
   registerTasks(app, db, catalog);
   registerCanonicalTasks(app, db, catalog);
+  const desktopExecutions = await registerDesktopExecutions(app, db, catalog);
   registerSeoAudits(app, db, catalog, storage);
   registerSeoChanges(app, db, catalog, storage);
   registerTaskEvents(app, db);
@@ -407,6 +413,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   }
   app.addHook("onClose", async () => {
     if (started) await worker.stop();
+    await desktopExecutions.close();
     await db.close();
     await demo?.close();
     await connectorFixture?.close();
@@ -419,6 +426,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     worker,
     storage,
     routes,
+    desktopExecutions,
     connectorFixture,
     seoFixture,
   };

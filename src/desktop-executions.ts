@@ -1,0 +1,304 @@
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { Database, Tx } from "./db.js";
+import type { Catalog } from "./catalog.js";
+import type { Principal } from "./auth.js";
+import { randomUUID } from "node:crypto";
+import { Readable } from "node:stream";
+import { z } from "zod";
+import { requireUser, audit } from "./auth.js";
+import { key, projectAccess, replay } from "./access.js";
+import { canonical, hash, micros, name, Problem, seal, token, unseal, uuid } from "./lib.js";
+import { validFederation } from "./federation-session.js";
+import { enqueueTask } from "./task-service.js";
+import { event } from "./tasks.js";
+import { assertTaskSkills } from "./skill-lifecycle.js";
+import { assertTaskContentSources } from "./task-content-sources.js";
+import { authorizeExecutionPlan } from "./plans.js";
+import { taskCapabilities } from "./capability-bindings.js";
+import { admitProviderRequest, providerRequestPermit } from "./provider-request-control.js";
+import { taskProviderBudgetReceipt } from "./provider-budgets.js";
+import { settle } from "./billing.js";
+import { startScopedInferenceGateway, type AIRequestInfo } from "./internal-ai-gateway.js";
+import { desktopRuntime, seedDesktopRuntime } from "./desktop-runtime.js";
+import { desktopToolNames } from "./desktop-tool-policy.js";
+import { requestTaskCancellation } from "./task-control.js";
+
+const params = z.object({ tenant: uuid, project: uuid });
+const executionParams = params.extend({ execution: uuid });
+const binding = z.object({ device_id: uuid, local_session_id: uuid, workspace_hash: z.string().regex(/^[a-f0-9]{64}$/),
+  runtime_version: z.literal(desktopRuntime.pinned_version), runtime_sha256: z.literal(desktopRuntime.windows_x64_sha256) });
+const createBody = binding.extend({ title: name, prompt: z.string().trim().min(1).max(30000), role_key: z.string().max(80), budget_micros: micros }).strict();
+const reportBody = z.object({ status: z.enum(["completed", "failed", "interrupted", "unknown"]), output: z.string().max(100000),
+  thread_id: z.string().min(1).max(128), turn_id: z.string().min(1).max(128) }).strict();
+// Native media/business tools need their own company-tool integration. Never
+// advertise those roles as fully operational merely because Skills can load.
+export const desktopLocalRoleKeys = ["fullstack", "frontend", "backend-api", "software-qa", "landing-page"];
+const denied = (code = "DESKTOP_EXECUTION_UNAVAILABLE") => new Problem(409, code, "This local execution needs to be stopped or reconciled on its owning desktop");
+type Gateway = Awaited<ReturnType<typeof startScopedInferenceGateway>>;
+
+/** Platform grants inference/budget only. It cannot grant local OS permissions. */
+export async function registerDesktopExecutions(app: FastifyInstance, db: Database, catalog: Catalog) {
+  await seedDesktopRuntime(db);
+  const gateways = new Map<string, Promise<Gateway>>(), shutdown = new AbortController();
+  const base = "/v1/tenants/:tenant/projects/:project/desktop-executions";
+
+  async function desktopFamily(tx: Tx, actor: Principal) {
+    if (actor.audience !== "native") throw new Problem(403, "DESKTOP_SIGN_IN_REQUIRED", "Sign in from the desktop application");
+    const row = (await tx.query(
+      `SELECT family_id FROM refresh_tokens WHERE session_id=$1 AND user_id=$2 AND client_id='desktop'
+       AND revoked_at IS NULL AND expires_at>now() LIMIT 1`, [actor.sessionId, actor.id],
+    )).rows[0];
+    if (!row) throw new Problem(403, "DESKTOP_SIGN_IN_REQUIRED", "A current desktop authorization is required");
+    return row.family_id as string;
+  }
+
+  async function own(tx: Tx, req: FastifyRequest, write = false, lock = false) {
+    const p = executionParams.parse(req.params);
+    await projectAccess(tx, req.principal, p.tenant, p.project, write ? "write" : "read");
+    const family = await desktopFamily(tx, req.principal);
+    const t = (await tx.query("SELECT * FROM tasks WHERE id=$1 AND project_id=$2" + (lock ? " FOR UPDATE" : ""), [p.execution, p.project])).rows[0];
+    if (!t || t.execution_location !== "desktop") throw new Problem(404, "NOT_FOUND", "Local execution not found");
+    const d = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1" + (lock ? " FOR UPDATE" : ""), [t.id])).rows[0];
+    if (!d || d.actor_id !== req.principal.id || d.native_family_id !== family) throw new Problem(404, "NOT_FOUND", "Local execution not found");
+    return { d, t };
+  }
+
+  async function authorize(tx: Tx, d: any, t: any, active = true) {
+    const actor: Principal = { id: t.created_by, authVersion: t.actor_auth_version, audience: "native", email: "", name: "", sessionId: "", sessionHash: "" };
+    await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
+    const sessions = (await tx.query(
+      `SELECT s.* FROM sessions s JOIN refresh_tokens f ON f.session_id=s.id WHERE f.family_id=$1 AND f.client_id='desktop'
+       AND f.user_id=$2 AND f.revoked_at IS NULL AND f.expires_at>now() AND s.revoked_at IS NULL AND s.expires_at>now()
+       AND s.auth_version=$3 ORDER BY s.created_at DESC LIMIT 1`, [d.native_family_id, actor.id, actor.authVersion],
+    )).rows;
+    if (!sessions[0] || !(await validFederation(tx, sessions[0]))) throw denied("DESKTOP_AUTHORIZATION_REVOKED");
+    await catalog.ensureEnabled(tx, t.role_key);
+    if (catalog.digest(catalog.role(t.role_key)) !== t.role_hash) throw denied("DESKTOP_ROLE_VERSION_CHANGED");
+    await assertTaskSkills(tx, catalog, t);
+    await authorizeExecutionPlan(tx, t.tenant_id, t.created_by, catalog.role(t.role_key), t.mode);
+    await assertTaskContentSources(tx, t);
+    const capabilities = await taskCapabilities(tx, db.config, catalog, t);
+    if (active && (d.state !== "running" || t.status !== "running" || t.cancel_requested || t.content_state !== "active"
+      || new Date(t.lease_until).getTime() <= Date.now() || new Date(d.credential_expires_at).getTime() <= Date.now())) throw denied();
+    if (!(await tx.query("SELECT 1 FROM reservations WHERE task_id=$1 AND status='reserved'", [t.id])).rowCount) throw denied("DESKTOP_RESERVATION_UNAVAILABLE");
+    await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
+    return { actor, capabilities };
+  }
+
+  async function inferenceAuthority(d: any, t: any, request: AIRequestInfo) {
+    const check = async (tx: Tx) => {
+      // Lock the task before its execution row everywhere; dispatch, finish and
+      // heartbeat use the same ordering and cannot admit behind finalization.
+      const current = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [t.id])).rows[0];
+      const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [t.id])).rows[0];
+      if (!current || !execution || current.fencing_token !== t.fencing_token) throw denied();
+      const { capabilities } = await authorize(tx, execution, current);
+      if (request.taskId !== t.id || request.tenantId !== t.tenant_id || request.projectId !== t.project_id || request.actorId !== t.created_by
+        || request.attempt !== t.attempt || request.fencingToken !== t.fencing_token || request.capabilityVersionId !== capabilities.text.id
+        || request.model !== capabilities.text.body.model_alias || !request.operation.startsWith("responses")) throw denied("AI_REQUEST_SCOPE_INVALID");
+    };
+    const admitted = await db.tx(async tx => { await check(tx); return admitProviderRequest(tx, "task", request); }, t.tenant_id, false, t.created_by);
+    return providerRequestPermit(db, admitted, { tenantId: t.tenant_id, actorId: t.created_by, control: false }, check, request);
+  }
+
+  async function closeGateway(id: string) {
+    const gateway = gateways.get(id);
+    if (!gateway) return;
+    try { await (await gateway).close(); } finally { if (gateways.get(id) === gateway) gateways.delete(id); }
+  }
+
+  const publicExecution = (d: any, t: any) => ({ task_id: t.id, local_session_id: d.local_session_id, device_id: d.device_id,
+    execution_location: "desktop", state: d.state, status: t.status, cancel_requested: t.cancel_requested,
+    budget_micros: t.budget_micros, charged_micros: t.charged_micros, accrued_micros: t.accrued_micros,
+    lease_until: t.lease_until, credential_expires_at: d.credential_expires_at, output: t.output,
+    result_origin: d.client_report ? "desktop_client_report" : null, error_code: t.error_code });
+
+  app.get(base + "/runtime", { preHandler: requireUser(db) }, async req => {
+    const p = params.parse(req.params);
+    return db.tx(async tx => { await projectAccess(tx, req.principal, p.tenant, p.project, "write"); await desktopFamily(tx, req.principal);
+      return { ...desktopRuntime, role_keys: desktopLocalRoleKeys, local_permission_authority: "customer_device_only" }; }, p.tenant);
+  });
+
+  app.post(base, { preHandler: requireUser(db) }, async req => {
+    const p = params.parse(req.params), b = createBody.parse(req.body);
+    return db.tx(async tx => {
+      await projectAccess(tx, req.principal, p.tenant, p.project, "write");
+      const family = await desktopFamily(tx, req.principal);
+      if (!desktopLocalRoleKeys.includes(b.role_key)) throw new Problem(409, "DESKTOP_ROLE_NOT_READY", "This specialist's native company tools are not qualified yet");
+      await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", ["desktop-session:" + b.local_session_id]);
+      return replay(tx, req.principal.id, "desktop.create:" + p.project, key(req), b, async () => {
+        const previous = (await tx.query("SELECT d.*,t.role_key,t.role_hash FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE local_session_id=$1 ORDER BY d.created_at DESC LIMIT 1", [b.local_session_id])).rows[0];
+        if (previous && (previous.tenant_id !== p.tenant || previous.project_id !== p.project || previous.actor_id !== req.principal.id
+          || previous.device_id !== b.device_id || previous.native_family_id !== family || previous.workspace_hash !== b.workspace_hash
+          || previous.runtime_sha256 !== b.runtime_sha256 || previous.role_key !== b.role_key || previous.role_hash !== catalog.digest(catalog.role(b.role_key))
+          || previous.state !== "finished")) throw denied("DESKTOP_SESSION_BINDING_CHANGED");
+        const t = await enqueueTask(tx, db, catalog, req.principal, p.tenant, p.project, {
+          title: b.title, prompt: b.prompt, role_key: b.role_key, budget_micros: b.budget_micros,
+          ...(previous ? { parent_id: previous.task_id } : {}),
+        }, key(req), { execution_location: "desktop" });
+        const d = (await tx.query(
+          `INSERT INTO desktop_executions(task_id,tenant_id,project_id,actor_id,device_id,local_session_id,native_family_id,workspace_hash,runtime_sha256)
+           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+          [t.id, p.tenant, p.project, req.principal.id, b.device_id, b.local_session_id, family, b.workspace_hash, b.runtime_sha256],
+        )).rows[0];
+        await event(tx, p.tenant, t.id, "desktop.execution.prepared", { device_id: b.device_id, local_session_id: b.local_session_id, execution_location: "desktop" });
+        return publicExecution(d, t);
+      });
+    }, p.tenant);
+  });
+
+  app.get(base + "/:execution", { preHandler: requireUser(db) }, async req => {
+    const p = executionParams.parse(req.params);
+    return db.tx(async tx => { const { d, t } = await own(tx, req); await assertTaskContentSources(tx, t); return publicExecution(d, t); }, p.tenant);
+  });
+
+  app.post(base + "/:execution/start", { preHandler: requireUser(db) }, async req => {
+    const p = executionParams.parse(req.params), b = binding.strict().parse(req.body);
+    return db.tx(async tx => {
+      const { d, t } = await own(tx, req, true, true);
+      if (d.device_id !== b.device_id || d.local_session_id !== b.local_session_id || d.workspace_hash !== b.workspace_hash || d.runtime_sha256 !== b.runtime_sha256) throw denied("DESKTOP_SESSION_BINDING_CHANGED");
+      await authorize(tx, d, t, false);
+      const receipt = await replay(tx, req.principal.id, "desktop.start:" + t.id, key(req), b, async () => {
+        if (d.state !== "prepared" || t.status !== "queued" || t.cancel_requested || t.attempt !== 0) throw denied();
+        const plan = await authorizeExecutionPlan(tx, p.tenant, req.principal.id, catalog.role(t.role_key));
+        const reason = (await tx.query("SELECT claim_desktop_capacity($1,$2,$3,$4) AS reason", [t.id, b.device_id, plan.body.max_active_tasks, randomUUID()])).rows[0].reason;
+        if (reason) throw new Problem(429, "DESKTOP_CAPACITY_WAIT", "Execution capacity is occupied; retry this request");
+        const secret = token(), expiresAt = new Date(Date.now() + db.config.AI_SCOPE_TTL_MS);
+        await tx.query("UPDATE desktop_executions SET state='running',credential_cipher=$2,credential_hash=$3,credential_expires_at=$4,started_at=now() WHERE task_id=$1",
+          [t.id, seal(db.config.MASTER_KEY!, secret), hash(secret), expiresAt]);
+        await event(tx, p.tenant, t.id, "desktop.execution.started", { runtime_version: desktopRuntime.pinned_version, execution_location: "desktop" });
+        return { task_id: t.id };
+      });
+      const live = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1", [receipt.task_id])).rows[0];
+      const task = (await tx.query("SELECT * FROM tasks WHERE id=$1", [receipt.task_id])).rows[0];
+      const { capabilities } = await authorize(tx, live, task);
+      const skills = await Promise.all((await catalog.boundSkills(catalog.role(task.role_key))).map(async skill => ({ key: skill.key, sha256: skill.sha256, content: await catalog.verifySkill(skill) })));
+      return { ...publicExecution(live, task), credential: { token: unseal(db.config.MASTER_KEY!, live.credential_cipher), expires_at: live.credential_expires_at },
+        inference_path: "/v1/desktop-inference/v1", model: capabilities.text.body.model_alias, effort: capabilities.text.body.reasoning_effort,
+        runtime: desktopRuntime, skills, prompt: task.prompt,
+        role_instructions: catalog.role(task.role_key).workflow.map((step: any) => step.instruction).join("\n") };
+    }, p.tenant);
+  });
+
+  app.post(base + "/:execution/heartbeat", { preHandler: requireUser(db) }, async req => {
+    const p = executionParams.parse(req.params); z.object({}).strict().parse(req.body);
+    return db.tx(async tx => {
+      const { d, t } = await own(tx, req, true, true);
+      if (d.state === "running" && t.status === "running" && !t.cancel_requested) {
+        await authorize(tx, d, t);
+        const cost = await taskProviderBudgetReceipt(tx, t.id);
+        await tx.query("UPDATE tasks SET lease_until=now()+interval '45 seconds',accrued_micros=$2 WHERE id=$1", [t.id, cost.knownChargeMicros]);
+      }
+      return publicExecution(d, (await tx.query("SELECT * FROM tasks WHERE id=$1", [t.id])).rows[0]);
+    }, p.tenant);
+  });
+
+  app.post(base + "/:execution/cancel", { preHandler: requireUser(db) }, async req => {
+    const p = executionParams.parse(req.params); z.object({}).strict().parse(req.body); key(req);
+    const result = await db.tx(async tx => {
+      const { d, t } = await own(tx, req, false, true);
+      const cancelled = await requestTaskCancellation(tx, t);
+      if (d.state === "prepared" && ["cancelled", "failed"].includes(cancelled.status))
+        await tx.query("UPDATE desktop_executions SET state='finished',finished_at=now() WHERE task_id=$1", [t.id]);
+      return publicExecution((await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1", [t.id])).rows[0], cancelled);
+    }, p.tenant);
+    await closeGateway(p.execution);
+    return result;
+  });
+
+  app.post(base + "/:execution/finish", { preHandler: requireUser(db) }, async req => {
+    const p = executionParams.parse(req.params), report = reportBody.parse(req.body); key(req);
+    // First fence admission durably; then close any in-flight upstream; finally
+    // settle only server-observed usage. A retry resumes these same phases.
+    await db.tx(async tx => {
+      const { d, t } = await own(tx, req, false, true);
+      if (d.client_report && d.client_report.hash !== hash(canonical(report))) throw denied("DESKTOP_RESULT_CONFLICT");
+      if (["finished", "reconciling"].includes(d.state)) return;
+      if (d.state !== "running" && d.state !== "stopping") throw denied();
+      await tx.query("UPDATE desktop_executions SET state='stopping',client_report=$2 WHERE task_id=$1", [t.id, { hash: hash(canonical(report)), status: report.status, thread_id: report.thread_id, turn_id: report.turn_id }]);
+    }, p.tenant);
+    await closeGateway(p.execution);
+    return db.tx(async tx => {
+      const { d, t } = await own(tx, req, false, true);
+      if (["finished", "reconciling"].includes(d.state)) return publicExecution(d, t);
+      await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
+      const cost = await taskProviderBudgetReceipt(tx, t.id);
+      const uncertain = cost.uncertain || cost.violation || report.status === "unknown" || t.status === "reconciling" || new Date(t.lease_until).getTime() <= Date.now();
+      const status = uncertain ? "reconciling" : t.cancel_requested || report.status === "interrupted" ? "cancelled" : report.status === "completed" ? "succeeded" : "failed";
+      await tx.query("UPDATE tasks SET status=$2,output=$3,runtime_thread=$4,runtime_turn=$5,input_tokens=$6,output_tokens=$7,accrued_micros=$8,lease_until=NULL,version=version+1,updated_at=now() WHERE id=$1",
+        [t.id, status, report.output, report.thread_id, report.turn_id, cost.inputTokens, cost.outputTokens, cost.knownChargeMicros]);
+      await settle(tx, p.tenant, t.id, cost.knownChargeMicros, t.created_by, uncertain);
+      await tx.query("UPDATE desktop_executions SET state=$2,finished_at=now() WHERE task_id=$1", [t.id, uncertain ? "reconciling" : "finished"]);
+      await event(tx, p.tenant, t.id, "desktop.execution.finished", { status, result_origin: "desktop_client_report", provider_usage: "company_server_receipt", charged_micros: String(cost.knownChargeMicros), usage_known: !uncertain });
+      await audit(tx, req.principal, "desktop.finish", t.id, "succeeded", { status, usage_known: !uncertain }, p.tenant);
+      return publicExecution((await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1", [t.id])).rows[0], (await tx.query("SELECT * FROM tasks WHERE id=$1", [t.id])).rows[0]);
+    }, p.tenant);
+  });
+
+  app.post("/v1/desktop-inference/v1/responses", { bodyLimit: db.config.AI_MAX_REQUEST_BYTES }, async (req, reply) => {
+    if (req.headers.origin || req.headers.cookie) throw new Problem(403, "DESKTOP_INFERENCE_ONLY", "Use the scoped native inference credential");
+    const secret = req.headers.authorization?.match(/^Bearer ([\w-]{43})$/)?.[1];
+    const d = secret ? (await db.control.query("SELECT * FROM desktop_executions WHERE credential_hash=$1", [hash(secret)])).rows[0] : null;
+    if (!d) throw new Problem(401, "DESKTOP_CREDENTIAL_REQUIRED", "A current scoped desktop credential is required");
+    const prepared = await db.tx(async tx => {
+      const t = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [d.task_id])).rows[0];
+      const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [d.task_id])).rows[0];
+      if (!t || !execution || execution.credential_hash !== hash(secret!)) throw denied();
+      const { capabilities } = await authorize(tx, execution, t);
+      return { t, execution, capabilities };
+    }, d.tenant_id, false, d.actor_id);
+    let gateway = gateways.get(d.task_id);
+    if (!gateway) {
+      const { t, execution, capabilities } = prepared;
+      gateway = startScopedInferenceGateway(db.config, { model: capabilities.text.body.model_alias!, reasoningEffort: capabilities.text.body.reasoning_effort!,
+        tools: desktopToolNames, nativeDesktop: true, signal: shutdown.signal,
+        authority: { taskId: t.id, tenantId: t.tenant_id, projectId: t.project_id, actorId: t.created_by, attempt: t.attempt,
+          fencingToken: t.fencing_token, capabilityVersionId: capabilities.text.id, budgeted: true,
+          authorize: request => inferenceAuthority(execution, t, request) } });
+      gateways.set(d.task_id, gateway);
+      void gateway.catch(() => { if (gateways.get(d.task_id) === gateway) gateways.delete(d.task_id); });
+    }
+    const live = await gateway, disconnected = new AbortController();
+    reply.raw.once("close", () => { if (!reply.raw.writableFinished) disconnected.abort(); });
+    const response = await fetch(live.baseURL + "/responses", { method: "POST", headers: { Authorization: "Bearer " + live.credential, "Content-Type": "application/json" },
+      body: JSON.stringify(req.body), redirect: "error", signal: AbortSignal.any([shutdown.signal, disconnected.signal, AbortSignal.timeout(Math.max(1, new Date(d.credential_expires_at).getTime() - Date.now()))]) });
+    reply.code(response.status).type(response.headers.get("content-type") ?? "application/json");
+    if (response.headers.has("retry-after")) reply.header("Retry-After", response.headers.get("retry-after"));
+    return reply.send(response.body ? Readable.fromWeb(response.body as any) : "");
+  });
+
+  async function recover() {
+    const rows = (await db.control.query(
+      `SELECT d.task_id FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE
+       (d.state='prepared' AND (d.created_at<now()-interval '5 minutes' OR t.status IN ('cancelled','failed','reconciling')))
+       OR (d.state IN ('running','stopping') AND (t.status='reconciling' OR t.lease_until<=now() OR d.credential_expires_at<=now())) LIMIT 100`,
+    )).rows;
+    for (const row of rows) {
+      await closeGateway(row.task_id);
+      await db.tx(async tx => {
+        const t = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [row.task_id])).rows[0];
+        const d = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [row.task_id])).rows[0];
+        if (!t || !d || ["finished", "reconciling"].includes(d.state)) return;
+        const unclaimed = d.state === "prepared" && t.attempt === 0;
+        if (!unclaimed && t.status !== "reconciling" && new Date(t.lease_until).getTime() > Date.now() && new Date(d.credential_expires_at).getTime() > Date.now()) return;
+        const cost = await taskProviderBudgetReceipt(tx, t.id), uncertain = !unclaimed || cost.uncertain || cost.violation;
+        await tx.query("UPDATE tasks SET status=$2,error_code=$3,lease_until=NULL,accrued_micros=$4,version=version+1 WHERE id=$1",
+          [t.id, uncertain ? "reconciling" : "cancelled", uncertain ? "DESKTOP_OWNER_LOST" : "DESKTOP_START_EXPIRED", cost.knownChargeMicros]);
+        await settle(tx, t.tenant_id, t.id, cost.knownChargeMicros, t.created_by, uncertain);
+        await tx.query("UPDATE desktop_executions SET state=$2,finished_at=now() WHERE task_id=$1", [t.id, uncertain ? "reconciling" : "finished"]);
+        await event(tx, t.tenant_id, t.id, "desktop.execution.owner_lost", { usage_known: !uncertain, automatically_replayed: false });
+      }, undefined, true);
+    }
+    return rows.length;
+  }
+  let maintenanceRun: Promise<unknown> | undefined;
+  const maintenance = db.config.WORKER_ENABLED ? setInterval(() => {
+    if (maintenanceRun || shutdown.signal.aborted) return;
+    maintenanceRun = recover().catch(error => app.log.error({ err: error }, "Desktop execution recovery failed")).finally(() => { maintenanceRun = undefined; });
+  }, 5000) : undefined;
+  maintenance?.unref();
+  return { recover, async close() {
+    if (maintenance) clearInterval(maintenance);
+    shutdown.abort(); await maintenanceRun; await Promise.allSettled([...gateways.keys()].map(closeGateway));
+  } };
+}

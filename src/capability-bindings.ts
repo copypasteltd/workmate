@@ -4,6 +4,7 @@ import type { Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import type { RuntimeSelection } from "./runtime.js";
 import { canonical, hash, Problem } from "./lib.js";
+import { desktopRuntime, desktopRuntimeFingerprint, desktopRuntimeId } from "./desktop-runtime.js";
 
 const effort = z.enum(["low", "medium", "high", "xhigh", "max"]);
 const rate = z.number().int().nonnegative().safe();
@@ -100,7 +101,9 @@ async function resolve(
     profile.automatic_fallback ||
     (usable &&
       (profile.state !== "enabled" ||
-        profile.pinned_version !== c.CODEX_VERSION))
+        (task.execution_location === "desktop"
+          ? profile.fingerprint !== desktopRuntimeFingerprint || profile.pinned_version !== desktopRuntime.pinned_version
+          : profile.pinned_version !== c.CODEX_VERSION)))
   )
     throw invalid("TASK_RUNTIME_PROFILE_UNAVAILABLE");
   const rows = (
@@ -297,6 +300,9 @@ export async function freezeTaskCapabilities(
       .role(task.role_key)
       .model_bindings.map((b: any) => current.get(b.profile_key)?.id)
       .filter((id: unknown): id is string => typeof id === "string");
+  }
+  if (task.execution_location === "desktop") {
+    runtimeId = await desktopRuntimeId(tx);
   }
   const selected = await resolve(tx, c, task, catalog, runtimeId, ids, true);
   await tx.query(

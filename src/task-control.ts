@@ -61,6 +61,8 @@ export async function controlUnclaimedTask(
   action: "pause" | "resume",
 ) {
   const expected = action === "pause" ? "queued" : "paused";
+  if (task.execution_location === "desktop")
+    throw new Problem(409, "LOCAL_EXECUTION_CONTROL_REQUIRED", "Control this execution from its local desktop session");
   if (
     task.status !== expected ||
     task.attempt !== 0 ||

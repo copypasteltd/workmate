@@ -320,7 +320,7 @@ export class Worker {
             [id, tenant],
           )
         ).rows[0];
-        if (!t || t.status !== "queued") return null;
+        if (!t || t.execution_location !== "cloud" || t.status !== "queued") return null;
         if ((t.data_mode === "simulated") !== this.db.config.DEMO_MODE)
           return null;
         const u = (

@@ -9,7 +9,7 @@ export async function recoverQueuedClaims(db: Database) {
     async (tx) => {
       const tasks = (
         await tx.query(
-          "SELECT * FROM tasks WHERE status='queued' AND data_mode=$1 AND (next_claim_retry_at<=now() OR content_state<>'active' OR cancel_requested) ORDER BY (content_state<>'active' OR cancel_requested) DESC,next_claim_retry_at,id FOR UPDATE SKIP LOCKED LIMIT 20",
+          "SELECT * FROM tasks WHERE execution_location='cloud' AND status='queued' AND data_mode=$1 AND (next_claim_retry_at<=now() OR content_state<>'active' OR cancel_requested) ORDER BY (content_state<>'active' OR cancel_requested) DESC,next_claim_retry_at,id FOR UPDATE SKIP LOCKED LIMIT 20",
           [db.config.DEMO_MODE ? "simulated" : "configured_services"],
         )
       ).rows;

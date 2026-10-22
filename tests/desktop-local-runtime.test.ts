@@ -1,0 +1,109 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID, randomBytes, createHash } from "node:crypto";
+import { createServer } from "node:http";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { defaults } from "../src/plans.js";
+import { desktopRuntime } from "../src/desktop-runtime.js";
+
+test("real native Codex uses company-only scoped inference, edits a local file, resumes and settles each turn once", { timeout: 180000 }, async t => {
+  const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
+  assert.ok(executable && path.isAbsolute(executable), "Use the explicit pinned native binary; no PATH fallback");
+  const { LocalAgentController } = await import(new URL("../../copypaste-desktop/src/local-agent.ts", import.meta.url).href);
+  const isolated = await isolatedTestEnvironment();
+  let app: Awaited<ReturnType<typeof buildApp>> | undefined, controller: any, stage = 0, providerCalls = 0, handlerError: unknown, nativeTools: unknown;
+  const directory = path.join(isolated.directory, "local"), outside = path.join(isolated.directory, "outside.txt"); await mkdir(directory);
+  await writeFile(outside, "before-native-execution");
+  const provider = createServer(async (req, res) => {
+    try {
+      const chunks = []; for await (const b of req) chunks.push(Buffer.from(b)); const body = JSON.parse(Buffer.concat(chunks).toString());
+      assert.equal(req.headers.authorization, "Bearer native-integration-fixture"); assert.equal(body.model, "native-integration-fixture");
+      if (req.url === "/v1/responses/input_tokens") { res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ object: "response.input_tokens", input_tokens: 10 })); return; }
+      assert.equal(req.url, "/v1/responses"); providerCalls++;
+      let item: any;
+      if (stage === 0) {
+        const tools = (body.tools ?? []).flatMap((x: any) => x.type === "namespace" ? x.tools.map((y: any) => ({ ...y, name: x.name + "." + y.name })) : [x]);
+        const tool = tools.find((x: any) => /(?:^|\.)(exec_command|shell|shell_command)$/.test(x.name)); assert.ok(tool, "Native terminal tool is declared");
+        const command = `[IO.File]::WriteAllText('${outside.replaceAll("'", "''")}', 'changed-by-real-local-codex'); Write-Output 'LOCAL_TOOL_COMPLETED'`;
+        const args = tool.parameters?.properties?.cmd ? { cmd: command, workdir: directory, yield_time_ms: 1000, max_output_tokens: 1000 }
+          : tool.parameters?.properties?.command?.type === "array" ? { command: ["powershell.exe", "-NoProfile", "-Command", command], workdir: directory, timeout_ms: 10000 }
+          : { command, workdir: directory, timeout_ms: 10000 };
+        item = { type: "function_call", id: "fc_native_" + providerCalls, name: tool.name, call_id: "call_native_" + providerCalls, arguments: JSON.stringify(args) };
+      } else item = { type: "message", id: "msg_native_" + providerCalls, role: "assistant", status: "completed", content: [{ type: "output_text", text: "LOCAL_NATIVE_COMPANY_TURN_" + stage, annotations: [] }] };
+      stage++;
+      res.writeHead(200, { "Content-Type": "text/event-stream" });
+      const emit = (type: string, value: any) => res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...value })}\n\n`);
+      const response = { id: "resp_native_" + providerCalls, object: "response", model: body.model, created_at: 1, status: "in_progress", output: [] };
+      emit("response.created", { response });
+      emit("response.output_item.added", { output_index: 0, item: item.type === "function_call" ? { ...item, arguments: "" } : item });
+      if (item.type === "function_call") {
+        emit("response.function_call_arguments.delta", { output_index: 0, item_id: item.id, delta: item.arguments });
+        emit("response.function_call_arguments.done", { output_index: 0, item_id: item.id, arguments: item.arguments });
+      } else {
+        emit("response.output_text.delta", { output_index: 0, item_id: item.id, content_index: 0, delta: item.content[0].text });
+        emit("response.output_text.done", { output_index: 0, item_id: item.id, content_index: 0, text: item.content[0].text });
+      }
+      emit("response.output_item.done", { output_index: 0, item });
+      emit("response.completed", { response: { ...response, status: "completed", output: [item], usage: { input_tokens: 10, output_tokens: 20, total_tokens: 30 } } }); res.end();
+    } catch (error) { handlerError = error; if (!res.headersSent) res.writeHead(502); res.end(); }
+  });
+  await new Promise<void>(resolve => provider.listen(0, "127.0.0.1", resolve));
+  try {
+    app = await buildApp(loadConfig({ ...isolated.env, NODE_ENV: "test", DEV_MAILBOX: "true", WORKER_ENABLED: "false", DEMO_MODE: "false",
+      AI_BASE_URL: `http://127.0.0.1:${(provider.address() as any).port}/v1`, AI_ALLOWED_HOSTS: "127.0.0.1", AI_API_KEY: "native-integration-fixture", AI_MODEL: "native-integration-fixture", AI_VERIFIED: "true",
+      AI_INPUT_HKD_MICROS_PER_MILLION: "1000000", AI_OUTPUT_HKD_MICROS_PER_MILLION: "1000000", AI_INPUT_COUNT_VERIFIED: "true", AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "0", AI_SCOPE_TTL_MS: "300000",
+    }), { worker: false });
+    app.app.addHook("preHandler", async req => {
+      if (req.url === "/v1/desktop-inference/v1/responses") {
+        const describe = (x: any): any => ({ type: x.type, name: x.name, tools: x.tools?.map(describe), format: x.format ? { type: x.format.type, syntax: x.format.syntax } : undefined });
+        nativeTools = (req.body as any)?.tools?.map(describe);
+      }
+    });
+    await app.app.listen({ host: "127.0.0.1", port: 0 }); const origin = `http://127.0.0.1:${(app.app.server.address() as any).port}`;
+    const inject = async (url: string, payload?: any, headers: any = {}) => {
+      const result = await app!.app.inject({ method: payload === undefined ? "GET" : "POST", url, headers, payload });
+      assert.equal(result.statusCode, 200, result.body); return { body: result.json(), raw: result };
+    };
+    const challenge = (await inject("/v1/auth/challenge", { email: "native-" + randomUUID() + "@example.invalid" })).body;
+    const mail = JSON.parse(await readFile(app.db.config.DATA_DIR + "/mailbox/" + challenge.challenge_id + ".json", "utf8"));
+    const signed = await inject("/v1/auth/verify", { challenge_id: challenge.challenge_id, code: mail.text.match(/\b\d{6}\b/)[0] });
+    const headers = { cookie: signed.raw.cookies[0].name + "=" + signed.raw.cookies[0].value, "x-csrf-token": signed.body.csrf_token, "Idempotency-Key": randomUUID() };
+    const workspace = (await inject("/v1/tenants", { name: "Real native integration", project_name: "Owned local project" }, headers)).body;
+    const tenant = workspace.tenant.id, project = workspace.project.id;
+    await app.db.control.query("UPDATE wallets SET credit_limit_micros=100000000 WHERE tenant_id=$1", [tenant]);
+    await app.db.control.query("INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body) VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Owned native fixture',$2)", [tenant, defaults.business]);
+    const verifier = randomBytes(32).toString("base64url"), redirect = "http://127.0.0.1:18249/callback";
+    const authorization = (await inject("/v1/auth/native/authorize", { client_id: "desktop", redirect_uri: redirect, state: randomBytes(32).toString("hex"), code_challenge: createHash("sha256").update(verifier).digest("base64url") }, headers)).body;
+    const nativeToken = (await inject("/v1/auth/native/token", { client_id: "desktop", redirect_uri: redirect, code: new URL(authorization.redirect).searchParams.get("code"), code_verifier: verifier })).body;
+    let journal: any;
+    controller = new LocalAgentController({ read: async () => journal, write: async (j: any) => { journal = structuredClone(j); },
+      identity: async () => ({ actorId: signed.body.user.id, epoch: "actual-native-auth-family" }), localEpoch: async () => "actual-native-auth-family", chooseWorkspace: async () => directory, consent: async () => true, approval: async () => "decline", changed: () => {},
+      stateRoot: path.join(isolated.directory, "native-state"), companyOrigin: origin, executable, runtime: { version: desktopRuntime.pinned_version, sha256: desktopRuntime.windows_x64_sha256 },
+      request: async (url: string, options: any = {}) => {
+        const r = await fetch(origin + url, { method: options.method ?? "GET", headers: { Authorization: "Bearer " + nativeToken.access_token, "Content-Type": "application/json", "Idempotency-Key": options.idempotencyKey ?? randomUUID(), "X-Tenant-ID": tenant }, body: options.body === undefined ? undefined : JSON.stringify(options.body) });
+        return { status: r.status, body: await r.json() };
+      },
+    });
+    const session = await controller.create({ tenant, project }, "fullstack"); await controller.permission(session.id, "full-access");
+    await controller.send(session.id, "Use the native terminal to change only the owned fixture outside cwd.", 1000000);
+    if (await readFile(outside, "utf8") !== "changed-by-real-local-codex")
+      t.diagnostic(JSON.stringify({ native_first_state: (await controller.list({ tenant, project })).sessions[0], native_tools: nativeTools, provider_calls: providerCalls, handler_error: handlerError ? String(handlerError) : null }));
+    assert.equal(await readFile(outside, "utf8"), "changed-by-real-local-codex");
+    const firstState = (await controller.list({ tenant, project })).sessions[0]; assert.equal(firstState.task.status, "succeeded");
+    const first = (await app.db.control.query("SELECT * FROM tasks WHERE id=$1", [firstState.task.task_id])).rows[0]; assert.equal(first.charged_micros, "60"); assert.equal(first.execution_location, "desktop");
+    await controller.send(session.id, "Continue the same local thread; describe the completed file change.", 1000000);
+    const state = (await controller.list({ tenant, project })).sessions[0], second = (await app.db.control.query("SELECT * FROM tasks WHERE id=$1", [state.task.task_id])).rows[0];
+    assert.equal(second.runtime_thread, first.runtime_thread); assert.notEqual(second.runtime_turn, first.runtime_turn); assert.equal(second.charged_micros, "30");
+    assert.equal(providerCalls, 3); assert.equal(second.status, "succeeded");
+    assert.equal((await app.db.control.query("SELECT count(*)::int AS n FROM ledger WHERE task_id=ANY($1) AND kind='charge'", [[first.id, second.id]])).rows[0].n, 2);
+    assert.equal((await app.db.control.query("SELECT count(*)::int AS n FROM outbox WHERE topic='task.run' AND payload->>'task_id'=ANY($1)", [[first.id, second.id]])).rows[0].n, 0);
+    t.diagnostic(JSON.stringify({ real_native_binary: desktopRuntime.windows_x64_sha256, native_file_changed: true, same_local_thread: true, company_provider_requests: providerCalls, settled_micros: [first.charged_micros, second.charged_micros], cloud_dispatches: 0, model_responses: "synthetic", native_consent: "injected fixture callback; actual Electron dialog tested separately" }));
+    if (handlerError) throw handlerError;
+  } finally {
+    await controller?.close(); await app?.app.close(); provider.closeAllConnections(); await new Promise<void>(resolve => provider.close(() => resolve())); await isolated.cleanup();
+  }
+});

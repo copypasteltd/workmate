@@ -7,7 +7,7 @@ export async function readyOutbox(tx: Tx, dataMode: string) {
       `WITH ready AS (
     SELECT o.id,o.created_at,row_number() OVER(PARTITION BY o.tenant_id ORDER BY o.created_at,o.id) AS tenant_position
     FROM outbox o WHERE o.dispatched_at IS NULL AND (o.topic<>'task.run' OR EXISTS(
-      SELECT 1 FROM tasks t WHERE t.id::text=o.payload->>'task_id' AND t.data_mode=$1 AND t.status='queued' AND NOT t.cancel_requested AND t.capacity_retry_at<=now()
+      SELECT 1 FROM tasks t WHERE t.execution_location='cloud' AND t.id::text=o.payload->>'task_id' AND t.data_mode=$1 AND t.status='queued' AND NOT t.cancel_requested AND t.capacity_retry_at<=now()
         AND (t.input_context->>'seo_audit_id' IS NULL OR EXISTS(SELECT 1 FROM seo_runs sr WHERE sr.id::text=t.input_context->>'seo_audit_id' AND sr.task_id=t.id AND sr.state IN('complete','partial') AND sr.result_asset_version_id IS NOT NULL AND sr.invalidated_at IS NULL))))
   ) SELECT o.* FROM outbox o JOIN ready r ON r.id=o.id
     ORDER BY r.tenant_position,r.created_at,o.id FOR UPDATE OF o SKIP LOCKED LIMIT 20`,

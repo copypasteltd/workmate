@@ -11,11 +11,11 @@
 
 CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，提供客户可主动授予的 **完整本机权限**，操作能力对标 Codex Desktop。**Extension 在 Chrome 原生右侧栏采用 ChatGPT 式对话/附件结构**，获取、读取用户获选文件并上传，由云端 Codex 执行。全部产品 AI 请求仍走公司内部网关。
 
-**当前实现：** Desktop 独立本机 Codex supervisor 已通过 9 项原生测试，产品的本机授权、费用和随包交付仍待接入。Extension 已接入原生右侧栏对话、历史、底部输入和明确文件版本附件；32 项扩展测试及 7 项真实侧栏旅程检查通过，模型回合按授权模拟。原 102 项及完整客户端验收继续跟踪。[本次扩展实现](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md)。
+**当前实现：** Desktop 已接入本机 Codex、主进程授权、文件/终端、同线程继续、停止及公司网关费用通道；37 项客户端测试、10 项原生监督器测试、86 项服务端与云端兼容检查、7 项实际打包 Electron 旅程检查通过。模型回合及系统选目录/授权决定是明确测试夹具。首批 5 个本机角色可用，完整 18 角色/媒体、生产签名与全部客户端验收继续跟踪。Extension 保持原生右侧栏云端对话与文件上传。见 [实现和边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md)。
 
 下方架构图表示已实现的云端/文件桥接基线，不是 Desktop 本机 Agent 的目标架构。
 
-本机 supervisor 的实现、实际权限测试与剩余产品接入见 [技术说明](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md)。
+本机 supervisor 的实现及历史原生权限测试见 [技术说明](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md)。
 
 <!-- /client01-direction -->
 
@@ -25,15 +25,14 @@ CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，�
 
 ```mermaid
 flowchart LR
-  Web[Web workspace] --> API[Company Backend]
-  Side[Chrome native Side Panel] --> API
-  Desktop[Frameless Desktop] --> API
-  Admin[Scoped Admin] --> API
-  API --> Guard[Identity / sources / budget / queue]
-  Guard --> Codex[Version-pinned Codex and Skills]
-  Codex --> Gateway[Internal OpenAI-compatible gateway]
-  Codex --> Tools[Authorized tools and immutable deliverables]
-  Tools --> Ledger[Measured settlement / reconciliation]
+  Desktop[Frameless Desktop] --> Main[Trusted local permission and session control]
+  Main --> Native[Customer-device Codex and local tools]
+  Main --> Control[Company identity / role / budget control]
+  Native --> Gateway[Company scoped AI gateway]
+  Web[Web] --> Cloud[Cloud Codex and business tools]
+  Extension[Native right Side Panel and selected-file uploads] --> Cloud
+  Cloud --> Gateway
+  Gateway --> Ledger[Server-observed usage and ledger]
 ```
 
 ## 服务结构与执行逻辑
@@ -114,7 +113,7 @@ npm run build
 npm test
 ```
 
-平台完整 **802/802**、任务专项 **52/52**，六仓库 **13 项**类型/构建/既有客户端测试检查、真实打包程序和原生侧栏旅程 **32 项**通过。保留原 782 项命名回归测试。任务专项调用实际 PostgreSQL、身份、账本与 Worker；另有实际 Codex 子进程连接模拟内部网关的续接验证。UI 回合及业务数据按授权模拟。原 102 项需求仍为 81 项局部验证、21 项未证明完成、0 项完整验收。
+历史源码的平台完整 **802/802**、任务专项 **52/52**，六仓库 **13 项**类型/构建/既有客户端测试检查、真实打包程序和原生侧栏旅程 **32 项**通过。保留原 782 项命名回归测试。任务专项调用实际 PostgreSQL、身份、账本与 Worker；另有实际 Codex 子进程连接模拟内部网关的续接验证。UI 回合及业务数据按授权模拟。原 102 项需求仍为 81 项局部验证、21 项未证明完成、0 项完整验收。
 
 完整规范 TaskDTO/任务创建、任意执行中暂停、未知外部结果恢复、全角色独立业务、GEO、真实供应商和生产/签名/商店验收仍继续跟踪。
 
@@ -146,3 +145,9 @@ npm test
 - [Local Codex update](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-native-codex-supervisor.md)
 
 后续修改需要同步中英 README、受影响的实际截图/GIF、更新说明和对应分支。提交后通过 Delivery 发布流程核对远程 SHA；不强推覆盖协作者。`.env`、数据库、会话、依赖和安装产物不进入 Git。历史 README 原字节见 [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
+
+本次 Desktop 本机执行：[具体方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md) · [源码与真实旅程证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json)；既有媒体保持原始源码范围。
+
+## Desktop 本机执行准入
+
+迁移 092 固定 cloud/desktop 执行归属；只有 Desktop 原生登录 family 可创建/开始/续租/上报本机执行，Web/Extension/Admin 不能代授 OS 权限。创建仍复用角色/Skill、原价和费用预留；本机任务不入云队列。原生 scoped Responses 在准入/派发重验身份、归属、租约、能力及服务端预算，拒绝未知/托管工具。完成先封锁推理，再关闭上游，仅按公司观测结算；未知本机/供应商结果保留待核对预留。严格路由、RLS、幂等和恢复见上方方案。
