@@ -1,5 +1,42 @@
 # CopyPaste Desktop
 
+<!-- stage63-source-governed-website-changes:start -->
+本仓库含独立 renderer 快照，构建无需相邻 Web 源码。用户在无边框客户端完成相同流程，JSON/HTML 通过认证桥与系统保存窗口写入本地。
+
+## 网站修改任务（阶段 63）
+
+从「行销分析 → 网站诊断与复查」选择 1–20 个问题，确认冻结的原始证据、修改目标和独立 AI 预算，保存为私有任务。可暂停/继续尚未开始的任务、取消任务、查看原始证据、下载 JSON 和 HTML 修改草稿，再明确发起同范围复查。草稿需要人工审核；网站修改和 CMS 写回需要另行实施与授权。未改动的模拟页面在复查中仍显示问题持续存在。
+
+仅使用 **Codex**，全部 AI 请求经公司内部 OpenAI 兼容网关。当前按授权使用**模拟业务与 AI 数据**；代码确实执行登录、权限、原生 HTTP 夹具、Codex 子进程、计费回执和文件保存。草稿必须完整覆盖实际读取的所选问题；伪造、未读、遗漏或重复引用不能生成交付资产。来源、缓存祖先、隔离、保留期、撤权和删除约束同时覆盖草稿与主动发布副本；Admin 的元数据、正文与内容操作权限分别执行。
+
+**Desktop 无边框、无 Electron 默认菜单和 Alt 菜单**，使用自绘拖动区与窗口控制，文件通过当前租户的受限认证桥和原生保存窗口下载。**Extension 点击工具栏打开/收起 Chrome 原生 Side Panel**，默认右侧并遵循浏览器位置偏好；固定公司入口打开网站工作台。
+
+验证：完整平台 **734/734**，保留前阶段全部 **716 项**命名测试；当前实际 Web/Admin **18 项**、新包原生 **23 项**，六仓库 13 项检查通过。两库原生 SQL079→080 保留 **167 张**原表全部行摘要和 SQL001–079；新增表为空且强制 RLS。安装包位于 Desktop `release/seo-changes-63-02/`，扩展位于 Extension `release/seo-changes-63-02/CopyPaste-0.5.0-sidepanel.zip`。
+
+已运行当前 unpacked Desktop 和真正 Chrome 侧栏。Setup/Portable 未签名，安装、商店发布、正式站点/模型及完整产品验收仍待完成。原 102 项需求、TC/NFR/G01–G10 保留；81 项有局部证据、21 项未证明完成、0 项完整验收。下方较早阶段的说明、截图与回执仅代表当时的源码和包。
+
+```mermaid
+flowchart LR
+  Login[Current identity and project] --> Select[Select frozen original findings]
+  Select --> Confirm[Confirm objective and separate AI budget]
+  Confirm --> Task[Private normal task / frozen skills and capabilities]
+  Task --> Facts[Codex / paginated selected facts / internal gateway]
+  Facts --> Draft[Read-bound JSON / escaped HTML / human review]
+  Draft --> Save[Web download / authenticated native save]
+  Draft --> Review[Separate manual implementation and authorization]
+  Review --> Recheck[Explicit same-scope recheck / persistent or observed repairs]
+  Admin[Scoped Admin / separate metadata and body permissions] --> Source[Quarantine / retention / revocation / erasure]
+  Source --> Task
+  Source --> Draft
+  Frame[Frameless Desktop] --> Confirm
+  Panel[Toolbar / Chrome native Side Panel] --> Select
+```
+
+![Actual product capture](assets/screenshots/seo-change-native-04-change-draft-en.png)
+
+![Actual product capture](assets/screenshots/seo-change-native-04-change-draft-zh-dark.png)
+<!-- stage63-source-governed-website-changes:end -->
+
 本仓库是 Windows Desktop 客户端，使用隔离主进程、受限认证桥和同步的独立 renderer。当前包的自绘窗口和原生保存流程均已实际执行；启动路径见下方当前预览，之后保留的旧包路径属于历史记录。
 
 ## 有范围约束的网站诊断与复查（阶段 62）

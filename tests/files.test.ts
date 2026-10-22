@@ -220,6 +220,27 @@ test("website audit bridge admits explicit read/create/recheck operations and re
   ])
     assert.equal(rendererApiOperation(route, method), false, route);
 });
+test("saved website change bridge exposes creation and private reads without any website mutation operation", () => {
+  const id = "11111111-1111-4111-8111-111111111111",
+    base = `/v1/seo/audits/${id}/change-tasks`;
+  for (const [route, method] of [
+    [base, "GET"],
+    [base, "POST"],
+    [base + `/${id}`, "GET"],
+    [base + `/${id}/download?format=html`, "GET"],
+  ])
+    assert.equal(rendererApiOperation(route, method), true);
+  for (const [route, method] of [
+    [base, "DELETE"],
+    [base + `/${id}`, "PATCH"],
+    [base + `/${id}`, "POST"],
+    [base + `/${id}/download`, "POST"],
+    [base + `/${id}/apply`, "POST"],
+    [base + `/${id}/publish`, "POST"],
+    [base + `/${id}/download/extra`, "GET"],
+  ])
+    assert.equal(rendererApiOperation(route, method), false);
+});
 test("sign-out removes every folder grant and cached file result before queued work can replay", async () => {
   const base = path.resolve(".data/test/logout-grants");
   await mkdir(base, { recursive: true });

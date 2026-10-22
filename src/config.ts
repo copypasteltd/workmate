@@ -98,6 +98,14 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   if (pathname === "/v1/connector-providers") return method === "GET";
   if (pathname === "/v1/seo/audits")
     return method === "GET" || method === "POST";
+  if (/^\/v1\/seo\/audits\/[a-f0-9-]{36}\/change-tasks$/i.test(pathname))
+    return method === "GET" || method === "POST";
+  if (
+    /^\/v1\/seo\/audits\/[a-f0-9-]{36}\/change-tasks\/[a-f0-9-]{36}(?:\/download)?$/i.test(
+      pathname,
+    )
+  )
+    return method === "GET";
   if (
     /^\/v1\/seo\/audits\/[a-f0-9-]{36}(?:\/(?:findings|pages|download|documents\/[a-f0-9-]{36}))?$/i.test(
       pathname,
