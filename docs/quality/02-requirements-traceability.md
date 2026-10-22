@@ -1,5 +1,9 @@
 # 需求追踪矩阵
 
+<!-- stage64-current-report-task-source-fences:start -->
+阶段 64 新增原始分析/SEO 任务历史与活动事件流的来源约束证据，见[绑定回执](task-source-checkpoint.json)。原 102 项需求、全部 TC/NFR/G01–G10、81 项局部验证、21 项未证明完成和 0 项完整验收保持不变。原字段与旧失败记录保留。
+<!-- stage64-current-report-task-source-fences:end -->
+
 <!-- stage63-source-governed-website-changes:start -->
 阶段 63 为 UC05/REQ-029 新增来源治理的修改任务与真实客户端证据，见[绑定回执](seo-change-checkpoint.json)。完整范围保持 102 项需求、全部 TC、NFR 与 G01–G10，81 项局部验证、21 项未证明完成、0 项完整验收。原需求文本、原验收条件与原始发现保持原值。
 <!-- stage63-source-governed-website-changes:end -->

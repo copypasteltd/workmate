@@ -1,5 +1,9 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage64-current-report-task-source-fences:start -->
+阶段 64 后台修复未改动原生端源码；现有无边框 Desktop、无 Electron/Alt 菜单与 Chrome 原生右侧栏的源码及包已[只读核对](../quality/task-source-client-recheck-01.json)。下方阶段 63 的真实原生检查及截图仍代表原后台版本，未被重新标为新后台旅程。见[当前后台来源约束](64-task-source-visibility.md)。
+<!-- stage64-current-report-task-source-fences:end -->
+
 <!-- stage63-source-governed-website-changes:start -->
 当前阶段 63 新包完成 **23 项**实际原生检查，见[修改任务与来源治理](63-source-governed-website-change-tasks.md)、[当前回执](../quality/seo-change-checkpoint.json)和[包清单](../quality/seo-change-artifacts.json)。Desktop 无边框、无 Electron/Alt 菜单，自绘拖动和窗口控制保留；修改任务 JSON/HTML 使用当前租户认证桥与原生保存。扩展工具栏切换真实 Chrome 原生 Side Panel，默认右侧并遵循浏览器偏好。Setup/Portable 为未签名 localhost 预览。下方较早检查仅代表当时的源码和包。
 <!-- stage63-source-governed-website-changes:end -->

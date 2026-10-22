@@ -1,5 +1,9 @@
 # CopyPaste 0.5.0 代码交付入口
 
+<!-- stage64-current-report-task-source-fences:start -->
+阶段 64 修复原始分析/SEO 报告在通用任务详情、列表、JSON 历史与两种 SSE 中的来源边界；已有流逐批复查，失效后停止发送正文。分析输入与原始 CSV 到期在创建任务/预留费用前拒绝。平台 **746/746**、定向 **12/12**、六仓库 13 项检查通过；前全部 734 项命名测试保留。两库 SQL080→081 保留 168 张原公共表全部行摘要与旧迁移，仅更新两个报告访问函数。见[实现细则](technical/64-task-source-visibility.md)、[当前绑定证据](quality/task-source-checkpoint.json)。无边框 Desktop 与 Chrome 原生右侧栏的既有客户端/包只读核对通过；下方旧界面截图及原生验收保留其原后台版本范围。完整 102 项需求和 TC/NFR/G01–G10 继续跟踪，当前仅为已授权模拟环境中的局部验证。
+<!-- stage64-current-report-task-source-fences:end -->
+
 <!-- stage63-source-governed-website-changes:start -->
 阶段 63 补齐 UC05「保存修改任务」子流程：选取冻结问题、确认独立预算、私有普通任务、Codex 分页事实、不可变修改草稿、原始来源治理、真实下载与明确复查。完整平台 **734/734**，保留前全部 **716 项**命名测试；实际 Web/Admin **18 项**、当前新包原生 **23 项**。Desktop 无边框且无 Electron/Alt 菜单；工具栏切换真正 Chrome 侧栏。两库 SQL079→080 保留原 167 张公共表全部行摘要，新增一张空的强制 RLS 表。见[实现与范围](technical/63-source-governed-website-change-tasks.md)、[当前证据](quality/seo-change-checkpoint.json)和[当前包清单](quality/seo-change-artifacts.json)。原 102 项需求和完整 TC/NFR/G01–G10 保留；正式模型、站点、公网部署、CMS 写回和完整产品验收继续跟踪。
 <!-- stage63-source-governed-website-changes:end -->

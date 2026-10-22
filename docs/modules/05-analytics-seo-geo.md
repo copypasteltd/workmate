@@ -1,5 +1,9 @@
 # M06 广告、网站、SEO 与 GEO 分析
 
+<!-- stage64-current-report-task-source-fences:start -->
+原始分析与 SEO 报告的通用任务历史现执行相同来源治理，包括活动 SSE 的后续消息。分析数据集、原始 CSV、产物和终态任务的保留期在清理前生效。见[阶段 64 实现](../technical/64-task-source-visibility.md)与[绑定回执](../quality/task-source-checkpoint.json)。网站/CMS 写回、GEO 和完整 TC-029 继续跟踪。
+<!-- stage64-current-report-task-source-fences:end -->
+
 <!-- stage63-source-governed-website-changes:start -->
 当前已补齐来源治理的「保存修改任务」子流程：选定冻结问题、独立预算、私有普通任务、Codex 草稿、下载和明确复查。见[实现细则](../technical/63-source-governed-website-change-tasks.md)及[绑定证据](../quality/seo-change-checkpoint.json)。网站/CMS 写回须另行授权；Search Console 在诊断内的连接指标、GEO 观测、正式站点与完整 TC-029 保留。下方前期范围说明是历史记录。
 <!-- stage63-source-governed-website-changes:end -->

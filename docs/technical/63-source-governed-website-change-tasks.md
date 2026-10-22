@@ -1,5 +1,9 @@
 # 网站修改任务与来源治理
 
+<!-- stage64-current-report-task-source-fences:start -->
+本页原「原始诊断/其他分析报告历史消息仍待核实」事项已由[阶段 64](64-task-source-visibility.md)完成所列专用与通用入口、活动 SSE 和保留期的定向核查及修复。新的后台证据见[阶段 64 回执](../quality/task-source-checkpoint.json)；本页阶段 63 的 UI/原生及四操作契约源码绑定保持历史原值。完整 TaskDTO、续接任务来源审查、正式环境与完整产品验收继续跟踪。
+<!-- stage64-current-report-task-source-fences:end -->
+
 <!-- stage63-source-governed-website-changes:start -->
 ## 当前执行与交付
 
