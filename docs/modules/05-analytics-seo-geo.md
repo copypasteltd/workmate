@@ -1,5 +1,9 @@
 # M06 广告、网站、SEO 与 GEO 分析
 
+<!-- stage63-source-governed-website-changes:start -->
+当前已补齐来源治理的「保存修改任务」子流程：选定冻结问题、独立预算、私有普通任务、Codex 草稿、下载和明确复查。见[实现细则](../technical/63-source-governed-website-change-tasks.md)及[绑定证据](../quality/seo-change-checkpoint.json)。网站/CMS 写回须另行授权；Search Console 在诊断内的连接指标、GEO 观测、正式站点与完整 TC-029 保留。下方前期范围说明是历史记录。
+<!-- stage63-source-governed-website-changes:end -->
+
 <!-- stage62-scoped-seo -->
 本阶段已实现的范围见[网站诊断与复查](../technical/62-scoped-seo-audits.md)和[实际回执](../quality/scoped-seo-checkpoint.json)。GEO 的固定提示、模型、产品、地区、语言和检索观测仍单独跟踪；普通 HTML 检查不能替代 GEO。完整修改任务与规范 TaskDTO 仍待交付。
 

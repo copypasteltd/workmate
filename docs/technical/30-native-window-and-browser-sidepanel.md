@@ -1,5 +1,9 @@
 # Desktop 无边框窗口与 Chrome 原生侧栏
 
+<!-- stage63-source-governed-website-changes:start -->
+当前阶段 63 新包完成 **23 项**实际原生检查，见[修改任务与来源治理](63-source-governed-website-change-tasks.md)、[当前回执](../quality/seo-change-checkpoint.json)和[包清单](../quality/seo-change-artifacts.json)。Desktop 无边框、无 Electron/Alt 菜单，自绘拖动和窗口控制保留；修改任务 JSON/HTML 使用当前租户认证桥与原生保存。扩展工具栏切换真实 Chrome 原生 Side Panel，默认右侧并遵循浏览器偏好。Setup/Portable 为未签名 localhost 预览。下方较早检查仅代表当时的源码和包。
+<!-- stage63-source-governed-website-changes:end -->
+
 <!-- stage62-scoped-seo -->
 阶段 62 新增[有范围约束的网站诊断与复查](../technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](../quality/scoped-seo-checkpoint.json)和[包清单](../quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
 

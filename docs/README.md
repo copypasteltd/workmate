@@ -1,5 +1,9 @@
 # CopyPaste 企业 Agent 文档
 
+<!-- stage63-source-governed-website-changes:start -->
+阶段 63 补齐 UC05「保存修改任务」子流程：选取冻结问题、确认独立预算、私有普通任务、Codex 分页事实、不可变修改草稿、原始来源治理、真实下载与明确复查。完整平台 **734/734**，保留前全部 **716 项**命名测试；实际 Web/Admin **18 项**、当前新包原生 **23 项**。Desktop 无边框且无 Electron/Alt 菜单；工具栏切换真正 Chrome 侧栏。两库 SQL079→080 保留原 167 张公共表全部行摘要，新增一张空的强制 RLS 表。见[实现与范围](technical/63-source-governed-website-change-tasks.md)、[当前证据](quality/seo-change-checkpoint.json)和[当前包清单](quality/seo-change-artifacts.json)。原 102 项需求和完整 TC/NFR/G01–G10 保留；正式模型、站点、公网部署、CMS 写回和完整产品验收继续跟踪。
+<!-- stage63-source-governed-website-changes:end -->
+
 <!-- stage62-scoped-seo -->
 阶段 62 新增[有范围约束的网站诊断与复查](technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](quality/scoped-seo-checkpoint.json)和[包清单](quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
 

@@ -1,5 +1,9 @@
 # 需求追踪矩阵
 
+<!-- stage63-source-governed-website-changes:start -->
+阶段 63 为 UC05/REQ-029 新增来源治理的修改任务与真实客户端证据，见[绑定回执](seo-change-checkpoint.json)。完整范围保持 102 项需求、全部 TC、NFR 与 G01–G10，81 项局部验证、21 项未证明完成、0 项完整验收。原需求文本、原验收条件与原始发现保持原值。
+<!-- stage63-source-governed-website-changes:end -->
+
 <!-- stage62-scoped-seo -->
 阶段 62 为 REQ-029 增加受限网站抓取、逐 URL 原文、私有来源治理及不可变复查的局部证据，并补强 Codex、权限、报告和三端入口。见[当前绑定回执](scoped-seo-checkpoint.json)；原始 102 项需求、完整 TC、NFR 和 G01–G10 保留，完整修改任务、GEO、正式网站及整体验收继续跟踪。
 
