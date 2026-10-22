@@ -6,6 +6,7 @@ import type { Database } from "./db.js";
 import { requireUser, principal } from "./auth.js";
 import { projectAccess } from "./access.js";
 import { Problem, uuid } from "./lib.js";
+import { assertSeoChangeSources } from "./seo-changes.js";
 
 const cursor = z.coerce
   .number()
@@ -147,13 +148,14 @@ export function registerTaskEvents(app: FastifyInstance, db: Database) {
           ]);
           const t = (
             await tx.query(
-              "SELECT project_id,last_event_seq FROM tasks WHERE id=$1",
+              "SELECT id,project_id,last_event_seq,input_context FROM tasks WHERE id=$1",
               [task],
             )
           ).rows[0];
           if (!t || (p.project && p.project !== t.project_id))
             throw new Problem(404, "NOT_FOUND", "Task not found");
           await projectAccess(tx, actor, tenant, t.project_id);
+          await assertSeoChangeSources(tx, t);
           // Control query only returns the watermark for an already-authorized task.
           const watermark = (
             await db.control.query(

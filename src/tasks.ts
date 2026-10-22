@@ -12,6 +12,7 @@ import { key, projectAccess, replay } from "./access.js";
 import { micros, name, Problem, uuid } from "./lib.js";
 import type { Catalog } from "./catalog.js";
 import { inputDependencies } from "./task-dependencies.js";
+import { assertSeoChangeSources } from "./seo-changes.js";
 import {
   controlUnclaimedTask,
   requestTaskCancellation,
@@ -64,7 +65,7 @@ export function registerTasks(
       return {
         items: (
           await tx.query(
-            "SELECT id,title,role_key,status,mode,conversation_id,private_owner,acceptance,charged_micros,budget_micros,created_at,updated_at,parent_id,version FROM tasks WHERE tenant_id=$1 AND project_id=$2 ORDER BY created_at DESC LIMIT 100",
+            "SELECT id,title,role_key,status,mode,conversation_id,private_owner,acceptance,charged_micros,budget_micros,created_at,updated_at,parent_id,version FROM tasks WHERE tenant_id=$1 AND project_id=$2 AND (NOT(input_context ? 'seo_change_task_id') OR EXISTS(SELECT 1 FROM seo_change_tasks c WHERE c.task_id=tasks.id AND seo_change_available(c.id))) ORDER BY created_at DESC LIMIT 100",
             [tenant, project],
           )
         ).rows,
@@ -147,6 +148,7 @@ export function registerTasks(
         ])
       ).rows[0];
       if (!t) throw new Problem(404, "NOT_FOUND", "Task not found");
+      await assertSeoChangeSources(tx, t);
       return t;
     }, tenant);
   });
@@ -169,6 +171,13 @@ export function registerTasks(
           ).rowCount
         )
           throw new Problem(404, "NOT_FOUND", "Task not found");
+        const sourceTask = (
+          await tx.query("SELECT * FROM tasks WHERE id=$1 AND project_id=$2", [
+            task,
+            project,
+          ])
+        ).rows[0];
+        await assertSeoChangeSources(tx, sourceTask);
         return {
           items: (
             await tx.query(

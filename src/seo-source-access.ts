@@ -1,7 +1,11 @@
 import type { Tx } from "./db.js";
 import { Problem } from "./lib.js";
 
-export async function assertSeoSources(tx: Tx, task: any) {
+export async function assertSeoSources(
+  tx: Tx,
+  task: any,
+  ownExecution = false,
+) {
   const id = task.input_context?.seo_audit_id;
   if (!id) return;
   const check = async () =>
@@ -19,6 +23,27 @@ export async function assertSeoSources(tx: Tx, task: any) {
     );
   await tx.query("SAVEPOINT seo_source_locks");
   try {
+    // Heartbeats and runtime events also update the executing task. Serialize
+    // those short transactions instead of mistaking their row locks for source
+    // moderation or attempting concurrent SHARE-to-UPDATE lock upgrades.
+    if (ownExecution)
+      await tx.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [task.id]);
+    // Source-task moderation must be fenced as well as asset moderation. A
+    // retained cache source can belong to an earlier independent audit. Wait
+    // for ordinary controls/heartbeats, then recheck current availability;
+    // those task-row updates do not by themselves revoke retained evidence.
+    await tx.query(
+      `WITH RECURSIVE runs AS (
+      SELECT id,previous_run_id FROM seo_runs WHERE id=$1
+      UNION SELECT p.id,p.previous_run_id FROM seo_runs p JOIN runs c ON p.id=c.previous_run_id
+    ), documents AS (
+      SELECT id,run_id,cache_source_id FROM seo_documents WHERE run_id IN(SELECT id FROM runs)
+      UNION SELECT p.id,p.run_id,p.cache_source_id FROM seo_documents p JOIN documents c ON p.id=c.cache_source_id
+    ) SELECT t.id FROM tasks t WHERE t.id IN(
+      SELECT task_id FROM seo_runs WHERE id IN(SELECT id FROM runs) OR id IN(SELECT run_id FROM documents)
+    ) AND ($2::uuid IS NULL OR t.id<>$2) ORDER BY t.id FOR SHARE OF t`,
+      [id, ownExecution ? task.id : null],
+    );
     // Include earlier comparison runs and every retained conditional-cache ancestor.
     // Lifecycle changes and erasure lock the parent asset first. Versions are
     // append-only for cp_app; locking them would require unnecessary UPDATE grants.

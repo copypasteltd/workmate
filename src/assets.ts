@@ -73,6 +73,9 @@ export function registerAssets(
                 ? {
                     metadata: {
                       seo_run_id: a.metadata.seo_run_id,
+                      ...(a.metadata.seo_change_task_id
+                        ? { seo_change_task_id: a.metadata.seo_change_task_id }
+                        : {}),
                       seo_publication_source: {
                         asset_id: a.id,
                         version: a.current_version,

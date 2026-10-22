@@ -52,6 +52,7 @@ import { startDemoGateway } from "./demo-gateway.js";
 import { startConnectorFixture } from "./connector-fixture.js";
 import { startSeoFixture } from "./seo-fixture.js";
 import { registerSeoAudits } from "./seo-audits.js";
+import { registerSeoChanges } from "./seo-changes.js";
 import { registerDemo } from "./demo.js";
 import { registerUploads } from "./uploads.js";
 import { registerTaskEvents } from "./task-events.js";
@@ -367,6 +368,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAnalysisReports(app, db, catalog, storage);
   registerTasks(app, db, catalog);
   registerSeoAudits(app, db, catalog, storage);
+  registerSeoChanges(app, db, catalog, storage);
   registerTaskEvents(app, db);
   registerPersistentWork(app, db, catalog);
   registerAgentAdoption(app, db, catalog);

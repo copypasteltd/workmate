@@ -15,6 +15,7 @@ import {
 import { enqueueTask } from "./task-service.js";
 import { saveAsset, type Storage } from "./storage.js";
 import { assertSeoSources } from "./seo-source-access.js";
+import { assertSeoChangeSources } from "./seo-changes.js";
 import {
   analysisSpec,
   normalizedAnalysis,
@@ -84,7 +85,8 @@ async function datasets(tx: Tx, project: string, ids: string[]) {
   ).rows;
 }
 export async function assertReportSources(tx: Tx, t: any) {
-  await assertSeoSources(tx, t);
+  await assertSeoSources(tx, t, true);
+  await assertSeoChangeSources(tx, t);
   const id = t.input_context?.analysis_report_id;
   if (!id) return;
   const r = (

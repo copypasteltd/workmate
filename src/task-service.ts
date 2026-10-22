@@ -77,6 +77,12 @@ export async function enqueueTask(
     if (!parent) throw new Problem(404, "NOT_FOUND", "Original task not found");
     if (parent.private_owner && parent.private_owner !== actor.id)
       throw new Problem(404, "NOT_FOUND", "Original task not found");
+    if (parent.input_context?.seo_change_task_id)
+      throw new Problem(
+        409,
+        "SEO_CHANGE_NEW_TASK_REQUIRED",
+        "Save a new change task from the retained audit so evidence and budget remain bound",
+      );
     if (
       parent.conversation_id &&
       options.conversation?.id !== parent.conversation_id

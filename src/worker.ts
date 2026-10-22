@@ -4,6 +4,12 @@ import { advanceConnectors } from "./connectors.js";
 import { advanceSeoAudits } from "./seo-audits.js";
 import { seoCrawlReady } from "./seo-source-access.js";
 import {
+  seoChangeFacts,
+  seoChangeInstructions,
+  finalizeSeoChange,
+  cancelUnavailableSeoChanges,
+} from "./seo-changes.js";
+import {
   seoAuditFacts,
   seoAuditInstructions,
   finalizeSeoReport,
@@ -251,6 +257,7 @@ export class Worker {
         ["federation", () => expireFederationAttempts(this.db.control)],
         ["auth_receipts", () => cleanAuthReceipts(this.db)],
         ["retention", () => this.retention.advance()],
+        ["seo-change-sources", () => cancelUnavailableSeoChanges(this.db)],
         ["erasure", () => this.erasure.advance()],
         ["uploads", () => cleanUploadStaging(this.db)],
         ["invitations", () => dispatchInvitationMail(this.db)],
@@ -379,10 +386,11 @@ export class Worker {
     const controller = new AbortController();
     this.active.set(id, controller);
     let checking = false;
+    let heartbeatPending: Promise<void> = Promise.resolve();
     const heartbeat = setInterval(() => {
       if (checking) return;
       checking = true;
-      void this.db
+      heartbeatPending = this.db
         .tx(
           async (tx) => {
             const t = (
@@ -436,6 +444,13 @@ export class Worker {
           checking = false;
         });
     }, 3000);
+    const stopHeartbeat = async () => {
+      clearInterval(heartbeat);
+      // A timer callback may still own a transaction after clearInterval. Join
+      // it before finalization so it cannot renew a completed task's lease or
+      // leave a source lock behind after run() has returned to its caller.
+      await heartbeatPending;
+    };
     const emit = async (kind: string, body: any) =>
       this.db.tx(
         async (tx) => {
@@ -520,7 +535,7 @@ export class Worker {
       };
       const result = await this.runtime.start({
         taskId: id,
-        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}${task.input_context?.seo_audit_id ? "\n\n" + seoAuditInstructions : ""}`,
+        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}${task.input_context?.seo_audit_id ? "\n\n" + seoAuditInstructions : ""}${task.input_context?.seo_change_task_id ? "\n\n" + seoChangeInstructions : ""}`,
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
         skills: bound,
         selection: runtimeSelection(context.capabilities),
@@ -541,6 +556,7 @@ export class Worker {
         tools: this.tools(task, actor!, fencing, effectiveRole),
       });
       completedUsage = result;
+      await stopHeartbeat();
       await this.finish(
         task,
         fencing,
@@ -555,6 +571,7 @@ export class Worker {
         !result.usageKnown && result.accepted,
       );
     } catch (e) {
+      await stopHeartbeat();
       const f = e instanceof RuntimeFailure ? e : null;
       await this.finish(
         task,
@@ -571,7 +588,7 @@ export class Worker {
         f?.code ?? "RUNTIME_UNAVAILABLE",
       );
     } finally {
-      clearInterval(heartbeat);
+      await stopHeartbeat();
       this.active.delete(id);
     }
   }
@@ -735,6 +752,25 @@ export class Worker {
             text = await finalizeSeoReport(tx, this.storage, live, text);
           } catch (e) {
             if (!(e instanceof Problem) || e.code !== "SEO_NARRATIVE_INVALID")
+              throw e;
+            status = "failed";
+            error = e.code;
+            text = "";
+          }
+        }
+        if (
+          status === "succeeded" &&
+          !uncertain &&
+          !ops.uncertain &&
+          live.input_context?.seo_change_task_id
+        ) {
+          try {
+            text = await finalizeSeoChange(tx, this.storage, live, text);
+          } catch (e) {
+            if (
+              !(e instanceof Problem) ||
+              e.code !== "SEO_CHANGE_NARRATIVE_INVALID"
+            )
               throw e;
             status = "failed";
             error = e.code;
@@ -1417,6 +1453,26 @@ export class Worker {
             .strict(),
         ),
       });
+    if (
+      t.input_context?.seo_change_task_id &&
+      role.tool_ids.includes("asset.read")
+    )
+      tools.push({
+        name: "seo_change_facts",
+        description:
+          "Read a bounded page of selected frozen website findings and original evidence. Follow next_offset; draft only, no website writes are authorized.",
+        inputSchema: {
+          type: "object",
+          properties: { offset: { type: "integer", minimum: 0, maximum: 20 } },
+          additionalProperties: false,
+        },
+        run: txTool(
+          (tx, b) => seoChangeFacts(tx, this.storage, t, b.offset),
+          z
+            .object({ offset: z.number().int().min(0).max(20).default(0) })
+            .strict(),
+        ),
+      });
     const permitted = tools.filter(
       (tool) =>
         (
@@ -1433,6 +1489,9 @@ export class Worker {
             seo_audit_facts:
               !!t.input_context?.seo_audit_id &&
               role.tool_ids.includes("asset.read"),
+            seo_change_facts:
+              !!t.input_context?.seo_change_task_id &&
+              role.tool_ids.includes("asset.read"),
             image2_generate: role.tool_ids.includes("image.generate.internal"),
             code_read: role.tool_ids.includes("code.read"),
             code_write: role.tool_ids.includes("code.patch"),
@@ -1447,6 +1506,8 @@ export class Worker {
     );
     if (t.input_context?.seo_audit_id)
       return permitted.filter((tool) => tool.name === "seo_audit_facts");
+    if (t.input_context?.seo_change_task_id)
+      return permitted.filter((tool) => tool.name === "seo_change_facts");
     // A model cannot regain write capabilities by ignoring the requested mode.
     return t.mode === "ask" ||
       t.mode === "plan" ||

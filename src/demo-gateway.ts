@@ -109,6 +109,46 @@ export async function startDemoGateway(c: Config) {
       );
       const reportTool = find("analysis_report_facts");
       const seoTool = find("seo_audit_facts");
+      const changeTool = find("seo_change_facts");
+      const changePages: any[] = [];
+      const changeCalls = new Set(
+        current
+          .filter(
+            (i) => i.type === "function_call" && i.name === changeTool?.name,
+          )
+          .map((i) => i.call_id),
+      );
+      const collectChangePages = (value: any, depth = 0): void => {
+        if (depth > 12 || value == null) return;
+        if (typeof value === "string") {
+          try {
+            collectChangePages(JSON.parse(value), depth + 1);
+          } catch {
+            /* Other text is not a synthetic tool receipt. */
+          }
+        } else if (Array.isArray(value))
+          value.forEach((item) => collectChangePages(item, depth + 1));
+        else if (typeof value === "object") {
+          if (
+            typeof value.change_id === "string" &&
+            typeof value.spec_hash === "string" &&
+            Array.isArray(value.items)
+          ) {
+            changePages.push(value);
+            return;
+          }
+          Object.values(value).forEach((item) =>
+            collectChangePages(item, depth + 1),
+          );
+        }
+      };
+      current
+        .filter(
+          (i) =>
+            i.type === "function_call_output" && changeCalls.has(i.call_id),
+        )
+        .forEach((i) => collectChangePages(i.output));
+      const lastChangePage = changePages.at(-1);
       let tool: any, args: any;
       if (find("capability_probe") && !used(find("capability_probe").name)) {
         tool = find("capability_probe");
@@ -119,6 +159,13 @@ export async function startDemoGateway(c: Config) {
       } else if (seoTool && !used(seoTool.name)) {
         tool = seoTool;
         args = {};
+      } else if (
+        changeTool &&
+        (!used(changeTool.name) ||
+          (lastChangePage && lastChangePage.next_offset !== null))
+      ) {
+        tool = changeTool;
+        args = lastChangePage ? { offset: lastChangePage.next_offset } : {};
       } else if (
         !reportTool &&
         find("image2_generate") &&
@@ -267,8 +314,22 @@ export async function startDemoGateway(c: Config) {
             content: [
               {
                 type: "output_text",
-                text:
-                  reportTool || seoTool
+                text: changeTool
+                  ? JSON.stringify({
+                      changes: changePages
+                        .flatMap((page) => page.items)
+                        .map((f) => ({
+                          finding_id: f.id,
+                          rationale:
+                            "Synthetic draft grounded in the selected retained finding. / 依據已選原始問題的模擬修改草稿。",
+                          proposed_change:
+                            "Review the retained URL and prepare the corresponding source correction for human approval. No website change has been applied. / 請人工審核對應頁面修訂；網站尚未修改。",
+                          verification: [
+                            "Review the source correction manually, then explicitly recheck the same authorized website scope. / 人工核對修改後，明確發起同範圍復查。",
+                          ],
+                        })),
+                    })
+                  : reportTool || seoTool
                     ? reportText
                     : "【演示資料 / Simulated data】此回覆由本機模擬服務產生。Codex、授權、工具執行及產物保存流程已運行；內容和用量為測試資料。請在素材與交付查看產物。\n\nThis response uses deterministic test data. Codex and product workflow operations ran locally. Content and usage are synthetic.",
                 annotations: [],

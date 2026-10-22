@@ -20,7 +20,7 @@ Partial crawling is not full-site coverage. A sample and technical heuristics do
 Do not publish with deliver_text. The server validates the references and creates the immutable report.
 `;
 const runFor = async (tx: Tx, task: any) => {
-  await assertSeoSources(tx, task);
+  await assertSeoSources(tx, task, true);
   const run = (
     await tx.query("SELECT * FROM seo_runs WHERE id=$1 AND task_id=$2", [
       task.input_context?.seo_audit_id,
