@@ -2,7 +2,7 @@
 
 2026-10-22。状态：**已确认方向偏差，已修订设计约束，相关运行能力待实现。** 权威需求见 [CLIENT01](../requirements/03-client-execution-amendment.md)，机器核查见 [方向审计](../quality/client-direction-audit.json)。
 
-后续实现进度：独立本机 Codex supervisor 已通过 9 项真实原生进程测试，见 [内核增量](70-desktop-native-codex-supervisor.md) 和 [检查点](../quality/local-codex-supervisor-checkpoint.json)。Electron 的用户授权/费用接入及 Extension 对话附件改版仍待完成。下表保留本次初始检查的原范围，机器审计及源码前像未重写为新产品通过。
+后续实现进度：独立本机 Codex supervisor 已通过 9 项真实原生进程测试，见 [内核增量](70-desktop-native-codex-supervisor.md) 和 [检查点](../quality/local-codex-supervisor-checkpoint.json)。Electron 的用户授权/费用接入仍待完成；Extension 的对话/附件主线已接入并完成限定旅程验证，见 [扩展实现](71-extension-cloud-conversations.md)。下表保留本次初始检查的原范围，机器审计及源码前像未重写为新产品通过。
 
 ## 1. 检查结论
 
