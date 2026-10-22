@@ -1,5 +1,32 @@
 # CopyPaste Delivery and Integration
 
+<!-- stage65-current-history-source-lineage:start -->
+This repository retains pre-fix and intermediate failures and adds source-lineage regression and native two-database upgrade verification.
+
+## Sources of conversations and actual reads (stage 65)
+
+Actual model reads now retain immutable file-version, cloud-reference and marketing-dataset provenance. Historical assistant results, pinned memories and approved plans remain subject to current source checks before further model input, cached tools, events and artifact persistence. A new paid delegation rejects unavailable history before creating a task or reserving funds. Conversations show an unavailable placeholder; task lists and details retain state and cost metadata while fencing unavailable acceptance bodies. Existing PLAN_STALE / PLAN_INPUT_CHANGED and initial input-selection semantics remain intact. Controlled deletion explicitly scrubs provenance; a missing erasure flag never authorizes an ordinary provenance rewrite.
+
+Explicit publication creates an independent copy with a frozen set of known inputs. Removing the original private conversation preserves that published copy. Revocation of an input file, dataset or pinned memory still fences derived copies and public shares. Restoration preserves current project, user and private-scope authorization.
+
+Validation: **765/765 Platform tests**, retaining all **746** prior named tests; **51/51 focused tests** and **13 checks across six repositories**. Actual HTTP SSE, Worker tools, downloads, plans, holds and public shares run with authorized synthetic AI/business data. Native SQL081→087 preserves row digests for all 168 original public tables, prior migrations and original function definitions. The added provenance table starts empty; historical reads are never invented.
+
+Desktop remains frameless with custom window controls and no Electron default or Alt menu. The extension uses a real Chrome native Side Panel, right by default while respecting browser preferences. Existing packages receive a read-only byte check; screenshots and native journeys retain their historical Backend source scope. Current Backend UI qualification, signed installation, store release and production acceptance remain pending.
+
+Codex is the only kernel. All AI requests use the company internal OpenAI-compatible gateway. All 102 original requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 without proven completion, zero fully accepted.
+
+```mermaid
+flowchart LR
+  Input[Actual reads and fixed references] --> Origin[Immutable source provenance]
+  Origin --> Work[History and approved plans]
+  Origin --> Copy[Independent published copies]
+  Guard[Current scope and source lifecycle] --> Work
+  Guard --> Copy
+  Work --> Result[Authorized model input and output]
+  Copy --> Share[Authorized downloads and shares]
+```
+<!-- stage65-current-history-source-lineage:end -->
+
 <!-- stage64-current-report-task-source-fences:start -->
 This repository adds actual HTTP source-access checks, regression receipts preserving failed attempts, and native database upgrade verification. Docker/WSL are not used.
 

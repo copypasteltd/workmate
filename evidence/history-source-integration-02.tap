@@ -1,0 +1,210 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# {"case":"selected_source","conversation_canary":true,"download_status":200}
+# Subtest: selected source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+not ok 1 - selected source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+  ---
+  duration_ms: 4811.8828
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-history-sources.test.ts:1:5891'
+  failureType: 'testCodeFailure'
+  error: 'Quarantined source text remains in the user-visible conversation'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-history-sources.test.ts:290:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# {"case":"actual_read_source","conversation_canary":true,"download_status":200}
+# Subtest: dynamically read source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+not ok 2 - dynamically read source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+  ---
+  duration_ms: 512.1923
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-history-sources.test.ts:1:5891'
+  failureType: 'testCodeFailure'
+  error: 'Quarantined source text remains in the user-visible conversation'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-history-sources.test.ts:290:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"case":"expired_history_delegation","response":200,"before":{"tasks":1,"reservations":1,"reserved":"0"},"after":{"tasks":2,"reservations":2,"reserved":"1000000"}}
+# Subtest: expired historical source rejects a new paid conversation delegation before creating a task or reservation
+not ok 3 - expired historical source rejects a new paid conversation delegation before creating a task or reservation
+  ---
+  duration_ms: 776.2557
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-history-sources.test.ts:1:6940'
+  failureType: 'testCodeFailure'
+  error: 'Expired retained source entered a new paid task'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-history-sources.test.ts:323:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"case":"queued_history","calls":1,"leaked_to_model":true}
+# Subtest: a queued continuation cannot send an earlier result to its model after the original source is quarantined
+not ok 4 - a queued continuation cannot send an earlier result to its model after the original source is quarantined
+  ---
+  duration_ms: 852.9527
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-history-sources.test.ts:1:7429'
+  failureType: 'testCodeFailure'
+  error: |-
+    Revoked source history was supplied to a new model turn
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-history-sources.test.ts:346:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"case":"historical_plan","plan_read":200,"approval":200}
+# Subtest: a plan produced from conversation history becomes unavailable and cannot be approved after its original source is quarantined
+not ok 5 - a plan produced from conversation history becomes unavailable and cannot be approved after its original source is quarantined
+  ---
+  duration_ms: 877.929
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-history-sources.test.ts:1:8178'
+  failureType: 'testCodeFailure'
+  error: 'A source-revoked plan body remains readable'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-history-sources.test.ts:392:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"case":"mid_turn_read_revocation","status":"succeeded","persisted_canary":true}
+# Subtest: an actual unselected read revocation blocks the next model event and tool before publishing a copied result
+not ok 6 - an actual unselected read revocation blocks the next model event and tool before publishing a copied result
+  ---
+  duration_ms: 678.3038
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-history-sources.test.ts:1:9370'
+  failureType: 'testCodeFailure'
+  error: 'Source revocation was ignored after an actual model file read'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'succeeded'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-history-sources.test.ts:434:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 0
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13844.0652
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/3fff640d-03be-4311-a9b8-abe1a0ad67f9/result.json","sha256":"b263e02eecc8d68da0b8e636ade15079f1f10b35017bc3791071637d9b701021","exit_code":0}

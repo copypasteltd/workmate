@@ -1,0 +1,55 @@
+2026-10-22 10:28:43.244 CST [36568] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 10:28:43.249 CST [36568] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 10:28:43.250 CST [36568] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 10:28:43.816 CST [38204] LOG:  database system was shut down at 2026-10-22 10:20:11 CST
+
+2026-10-22 10:28:44.083 CST [36568] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 10:29:01.651 CST [16468] ERROR:  WORKSPACE_CYCLE_OR_DEPTH
+2026-10-22 10:29:01.651 CST [16468] CONTEXT:  PL/pgSQL function guard_workspace_node() line 30 at RAISE
+2026-10-22 10:29:01.651 CST [16468] STATEMENT:  UPDATE workspace_nodes SET name=$2,parent_id=$3,asset_version_id=$4,version=version+1,moderation_version=moderation_version+1,updated_at=now() WHERE id=$1
+
+2026-10-22 10:29:04.054 CST [28628] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:29:04.832 CST [28628] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.526 s, total=0.779 s; sync files=12, longest=0.111 s, average=0.044 s; distance=16111 kB, estimate=16111 kB; lsn=B/84503980, redo lsn=B/84503928
+
+2026-10-22 10:29:15.336 CST [28628] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:29:16.315 CST [28628] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.779 s, total=0.979 s; sync files=12, longest=0.310 s, average=0.065 s; distance=16780 kB, estimate=16780 kB; lsn=B/85566BD8, redo lsn=B/85566B80
+
+2026-10-22 10:29:24.158 CST [28628] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:29:24.864 CST [28628] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.005 s, sync=0.527 s, total=0.706 s; sync files=10, longest=0.111 s, average=0.053 s; distance=16009 kB, estimate=16703 kB; lsn=B/86509000, redo lsn=B/86508FA8
+
+2026-10-22 10:29:39.534 CST [31376] ERROR:  permission denied for table task_source_reads
+2026-10-22 10:29:39.534 CST [31376] STATEMENT:  UPDATE task_source_reads SET sha256=repeat('0',64) WHERE task_id=$1
+
+2026-10-22 10:29:39.599 CST [37856] ERROR:  permission denied for table task_source_reads
+2026-10-22 10:29:39.599 CST [37856] STATEMENT:  SELECT * FROM task_source_reads
+
+2026-10-22 10:29:39.600 CST [34824] ERROR:  permission denied for function content_source_manifest
+2026-10-22 10:29:39.600 CST [34824] STATEMENT:  SELECT content_source_manifest($1,$2,ARRAY[$3::uuid],'{}')
+
+2026-10-22 10:29:42.234 CST [28628] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:29:42.971 CST [28628] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.557 s, total=0.738 s; sync files=12, longest=0.111 s, average=0.047 s; distance=17347 kB, estimate=17347 kB; lsn=B/875F9E40, redo lsn=B/875F9DE8
+
+2026-10-22 10:29:44.258 CST [36568] LOG:  received fast shutdown request
+
+2026-10-22 10:29:44.327 CST [36568] LOG:  aborting any active transactions
+
+2026-10-22 10:29:44.343 CST [36568] LOG:  background worker "logical replication launcher" (PID 33364) exited with exit code 1
+
+2026-10-22 10:29:44.343 CST [28628] LOG:  shutting down
+
+2026-10-22 10:29:44.378 CST [28628] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 10:29:44.644 CST [28628] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.034 s, total=0.299 s; sync files=1, longest=0.034 s, average=0.034 s; distance=0 kB, estimate=15612 kB; lsn=B/875F9F90, redo lsn=B/875F9F90
+
+2026-10-22 10:29:44.756 CST [36568] LOG:  database system is shut down
+

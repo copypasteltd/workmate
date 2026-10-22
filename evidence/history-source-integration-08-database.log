@@ -1,0 +1,70 @@
+2026-10-22 09:59:57.804 CST [8732] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 09:59:57.810 CST [8732] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 09:59:57.810 CST [8732] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 09:59:58.704 CST [7432] LOG:  database system was shut down at 2026-10-22 09:54:13 CST
+
+2026-10-22 09:59:59.029 CST [8732] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 10:01:52.328 CST [25128] ERROR:  WORKSPACE_CYCLE_OR_DEPTH
+2026-10-22 10:01:52.328 CST [25128] CONTEXT:  PL/pgSQL function guard_workspace_node() line 30 at RAISE
+2026-10-22 10:01:52.328 CST [25128] STATEMENT:  UPDATE workspace_nodes SET name=$2,parent_id=$3,asset_version_id=$4,version=version+1,moderation_version=moderation_version+1,updated_at=now() WHERE id=$1
+
+2026-10-22 10:01:56.963 CST [24248] ERROR:  new row violates row-level security policy for table "task_source_reads"
+2026-10-22 10:01:56.963 CST [24248] STATEMENT:  INSERT INTO task_source_reads(tenant_id,project_id,task_id,kind,resource_id,asset_version_id,sha256) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING
+
+2026-10-22 10:01:57.215 CST [31200] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:01:59.403 CST [31200] LOG:  checkpoint complete: wrote 50 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.064 s, sync=1.565 s, total=2.189 s; sync files=16, longest=0.321 s, average=0.098 s; distance=16061 kB, estimate=16061 kB; lsn=B/78289038, redo lsn=B/78288FE0
+
+2026-10-22 10:02:31.663 CST [20376] ERROR:  deadlock detected
+2026-10-22 10:02:31.663 CST [20376] DETAIL:  Process 20376 waits for ShareLock on transaction 1027038; blocked by process 38116.
+	Process 38116 waits for ShareLock on transaction 1027040; blocked by process 20376.
+	Process 20376: SELECT * FROM tasks WHERE id=$1 AND project_id=$2 FOR UPDATE
+	Process 38116: SELECT * FROM conversations WHERE id=$1 AND project_id=$2 AND created_by=$3 AND content_state='active' FOR UPDATE
+2026-10-22 10:02:31.663 CST [20376] HINT:  See server log for query details.
+2026-10-22 10:02:31.663 CST [20376] CONTEXT:  while locking tuple (2,4) in relation "tasks"
+2026-10-22 10:02:31.663 CST [20376] STATEMENT:  SELECT * FROM tasks WHERE id=$1 AND project_id=$2 FOR UPDATE
+
+2026-10-22 10:02:36.488 CST [31200] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:02:39.616 CST [31200] LOG:  checkpoint complete: wrote 33 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.031 s, sync=2.216 s, total=3.128 s; sync files=15, longest=0.449 s, average=0.148 s; distance=16831 kB, estimate=16831 kB; lsn=B/792F8CC0, redo lsn=B/792F8C68
+
+2026-10-22 10:03:01.443 CST [31200] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:03:03.813 CST [31200] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.028 s, sync=1.206 s, total=2.371 s; sync files=11, longest=0.206 s, average=0.110 s; distance=16110 kB, estimate=16759 kB; lsn=B/7A2B4890, redo lsn=B/7A2B4838
+
+2026-10-22 10:03:32.473 CST [29324] ERROR:  permission denied for table cloud_workspaces
+2026-10-22 10:03:32.473 CST [29324] STATEMENT:  SELECT id FROM cloud_workspaces WHERE id=ANY($1::uuid[]) ORDER BY id FOR SHARE NOWAIT
+
+2026-10-22 10:03:34.538 CST [10188] ERROR:  permission denied for table task_source_reads
+2026-10-22 10:03:34.538 CST [10188] STATEMENT:  UPDATE task_source_reads SET sha256=repeat('0',64) WHERE task_id=$1
+
+2026-10-22 10:03:35.162 CST [31524] ERROR:  permission denied for table task_source_reads
+2026-10-22 10:03:35.162 CST [31524] STATEMENT:  SELECT * FROM task_source_reads
+
+2026-10-22 10:03:35.185 CST [29324] ERROR:  permission denied for function content_source_manifest
+2026-10-22 10:03:35.185 CST [29324] STATEMENT:  SELECT content_source_manifest($1,$2,ARRAY[$3::uuid],'{}')
+
+2026-10-22 10:03:36.727 CST [31200] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 10:03:40.134 CST [31200] LOG:  checkpoint complete: wrote 34 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.071 s, sync=1.703 s, total=3.408 s; sync files=14, longest=0.484 s, average=0.122 s; distance=17189 kB, estimate=17189 kB; lsn=B/7B37DF28, redo lsn=B/7B37DED0
+
+2026-10-22 10:03:41.792 CST [8732] LOG:  received fast shutdown request
+
+2026-10-22 10:03:41.941 CST [8732] LOG:  aborting any active transactions
+
+2026-10-22 10:03:42.056 CST [8732] LOG:  background worker "logical replication launcher" (PID 21828) exited with exit code 1
+
+2026-10-22 10:03:42.056 CST [31200] LOG:  shutting down
+
+2026-10-22 10:03:42.208 CST [31200] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 10:03:42.850 CST [31200] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.116 s, total=0.750 s; sync files=1, longest=0.116 s, average=0.116 s; distance=0 kB, estimate=15470 kB; lsn=B/7B37E058, redo lsn=B/7B37E058
+
+2026-10-22 10:03:43.200 CST [8732] LOG:  database system is shut down
+

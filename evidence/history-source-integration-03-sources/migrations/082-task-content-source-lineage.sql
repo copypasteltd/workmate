@@ -1,0 +1,229 @@
+-- Additive provenance for actual model reads. Never rewrite prior migrations,
+-- retained responses, pinned source versions or historical cost facts.
+CREATE TABLE task_source_reads (
+ tenant_id uuid NOT NULL, project_id uuid NOT NULL, task_id uuid NOT NULL,
+ kind text NOT NULL CHECK(kind IN('asset_version','cloud_reference','dataset')),
+ resource_id uuid NOT NULL, asset_version_id uuid REFERENCES asset_versions(id), sha256 text,
+ recorded_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+ PRIMARY KEY(task_id,kind,resource_id),
+ FOREIGN KEY(tenant_id,project_id,task_id) REFERENCES tasks(tenant_id,project_id,id),
+ CHECK((kind='dataset' AND asset_version_id IS NULL AND sha256 IS NULL)
+  OR (kind<>'dataset' AND asset_version_id IS NOT NULL AND sha256 ~ '^[0-9a-f]{64}$')),
+ CHECK(kind<>'asset_version' OR resource_id=asset_version_id)
+);
+ALTER TABLE task_source_reads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE task_source_reads FORCE ROW LEVEL SECURITY;
+CREATE POLICY task_source_control ON task_source_reads TO cp_control USING(true) WITH CHECK(true);
+CREATE POLICY task_source_app ON task_source_reads TO cp_app
+ USING(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid AND EXISTS(SELECT 1 FROM tasks t WHERE t.id=task_id))
+ WITH CHECK(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid
+  AND task_id=nullif(current_setting('app.task_id',true),'')::uuid
+  AND EXISTS(SELECT 1 FROM tasks t WHERE t.id=task_id AND t.created_by=nullif(current_setting('app.actor_id',true),'')::uuid AND t.status='running'));
+GRANT SELECT,INSERT ON task_source_reads TO cp_app,cp_control;
+CREATE FUNCTION guard_task_source_read() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+ SET search_path=pg_catalog,public SET row_security=on AS $$
+DECLARE t tasks; a assets; v asset_versions; n workspace_nodes; w cloud_workspaces;
+BEGIN
+ IF TG_OP<>'INSERT' THEN RAISE EXCEPTION 'Task read provenance is immutable' USING ERRCODE='23514'; END IF;
+ SELECT * INTO t FROM tasks WHERE id=NEW.task_id;
+ IF t.tenant_id IS DISTINCT FROM NEW.tenant_id OR t.project_id IS DISTINCT FROM NEW.project_id THEN
+  RAISE EXCEPTION 'Task read scope mismatch' USING ERRCODE='23514'; END IF;
+ IF NEW.kind='dataset' THEN
+  IF NOT EXISTS(SELECT 1 FROM analytics_datasets d WHERE d.id=NEW.resource_id AND d.tenant_id=t.tenant_id AND d.project_id=t.project_id
+   AND d.content_state='active' AND d.source_state='active' AND d.retention_expires_at>clock_timestamp()) THEN
+   RAISE EXCEPTION 'Task dataset source unavailable' USING ERRCODE='23514'; END IF;
+ ELSE
+  SELECT * INTO v FROM asset_versions WHERE id=NEW.asset_version_id;
+  SELECT * INTO a FROM assets WHERE id=v.asset_id;
+  IF a.tenant_id IS DISTINCT FROM t.tenant_id OR a.project_id IS DISTINCT FROM t.project_id
+   OR a.state<>'active' OR a.retention_expires_at<=clock_timestamp() OR v.erased_at IS NOT NULL OR v.sha256 IS DISTINCT FROM NEW.sha256
+   OR (a.private_owner IS NOT NULL AND (a.private_owner IS DISTINCT FROM t.created_by OR a.private_owner IS DISTINCT FROM t.private_owner)) THEN
+   RAISE EXCEPTION 'Task file source unavailable' USING ERRCODE='23514'; END IF;
+  IF NEW.kind='cloud_reference' THEN
+   SELECT * INTO n FROM workspace_nodes WHERE id=NEW.resource_id;
+   SELECT * INTO w FROM cloud_workspaces WHERE id=n.workspace_id;
+   IF n.asset_version_id IS DISTINCT FROM v.id OR n.content_state<>'active' OR n.reference_state<>'ready'
+    OR w.tenant_id IS DISTINCT FROM t.tenant_id OR w.project_id IS DISTINCT FROM t.project_id OR w.content_state<>'active'
+    OR (w.private_owner IS NOT NULL AND (w.private_owner IS DISTINCT FROM t.created_by OR w.conversation_id IS DISTINCT FROM t.conversation_id)) THEN
+    RAISE EXCEPTION 'Task cloud source unavailable' USING ERRCODE='23514'; END IF;
+  END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_task_source_read() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_task_source_read() FROM PUBLIC;
+CREATE TRIGGER task_source_read_guard BEFORE INSERT OR UPDATE OR DELETE ON task_source_reads
+ FOR EACH ROW EXECUTE FUNCTION guard_task_source_read();
+CREATE INDEX task_plan_execution_source ON task_plans(approved_task_id) WHERE approved_task_id IS NOT NULL;
+
+-- Walk raw control-visible metadata once, without recursively invoking the new
+-- asset policy. No bodies or credentials leave this helper. A visited set also
+-- permits a task to inspect its own output without recursive-policy failures.
+CREATE FUNCTION content_source_manifest(scope_tenant uuid,scope_project uuid,task_ids uuid[],version_ids uuid[]) RETURNS jsonb
+ LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=pg_catalog,public SET row_security=on AS $$
+DECLARE pending_tasks uuid[]:=task_ids; pending_versions uuid[]:=version_ids; seen_tasks uuid[]:='{}'; seen_versions uuid[]:='{}';
+ tid uuid; vid uuid; t tasks; a assets; v asset_versions; d record; r record; m record; av jsonb; targets jsonb:='[]'; more uuid[];
+BEGIN
+ WHILE cardinality(pending_tasks)>0 OR cardinality(pending_versions)>0 LOOP
+  IF cardinality(seen_tasks)+cardinality(seen_versions)>4096 THEN RETURN NULL; END IF;
+  IF cardinality(pending_tasks)>0 THEN
+   tid:=pending_tasks[1]; pending_tasks:=pending_tasks[2:];
+   IF tid=ANY(seen_tasks) THEN CONTINUE; END IF;
+   seen_tasks:=array_append(seen_tasks,tid);
+   SELECT * INTO t FROM tasks WHERE id=tid AND tenant_id=scope_tenant AND project_id=scope_project;
+   IF t.id IS NULL OR t.content_state<>'active' OR (t.status IN('succeeded','failed','cancelled') AND t.retention_expires_at<=clock_timestamp()) THEN RETURN NULL; END IF;
+   IF NOT EXISTS(SELECT 1 FROM memberships x JOIN users u ON u.id=x.user_id JOIN tenants z ON z.id=x.tenant_id JOIN projects p ON p.id=t.project_id
+    WHERE x.tenant_id=t.tenant_id AND x.user_id=t.created_by AND x.status='active' AND u.status='active' AND z.status='active' AND NOT p.archived
+    AND (x.role IN('owner','admin') OR EXISTS(SELECT 1 FROM project_members pm WHERE pm.project_id=p.id AND pm.user_id=x.user_id))) THEN RETURN NULL; END IF;
+   IF t.conversation_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM conversations c WHERE c.id=t.conversation_id AND c.content_state='active' AND c.created_by=t.created_by) THEN RETURN NULL; END IF;
+   IF t.input_context ? 'agent_id' THEN
+    SELECT v.body INTO av FROM agents x JOIN agent_versions v ON v.agent_id=x.id AND v.version=(t.input_context->>'agent_version')::int
+     WHERE x.id=(t.input_context->>'agent_id')::uuid AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id AND x.content_state='active';
+    IF av IS NULL THEN RETURN NULL; END IF;
+    targets:=targets||jsonb_build_array(jsonb_build_object('kind','agents','id',t.input_context->>'agent_id'));
+    IF av->'brand'->>'id' IS NOT NULL THEN
+     IF NOT EXISTS(SELECT 1 FROM brand_profiles b WHERE b.id=(av->'brand'->>'id')::uuid AND b.tenant_id=t.tenant_id AND b.project_id=t.project_id AND b.content_state='active') THEN RETURN NULL; END IF;
+     targets:=targets||jsonb_build_array(jsonb_build_object('kind','brand_profiles','id',av->'brand'->>'id'));
+    END IF;
+    FOR r IN SELECT * FROM jsonb_to_recordset(coalesce(t.input_context->'memories','[]')) AS x(id uuid,version int) LOOP
+     SELECT x.*,v.content INTO m FROM memories x JOIN memory_versions v ON v.memory_id=x.id AND v.version=r.version
+      WHERE x.id=r.id AND x.tenant_id=t.tenant_id AND x.content_state='active' AND (x.expires_at IS NULL OR x.expires_at>clock_timestamp());
+     IF m.id IS NULL OR m.content IS NULL OR NOT(m.scope='tenant' OR (m.scope='personal' AND m.private_owner=t.created_by)
+      OR (m.scope='project' AND m.project_id=t.project_id) OR (m.scope='brand' AND m.project_id=t.project_id AND m.brand_id=(av->'brand'->>'id')::uuid)
+      OR (m.scope='conversation' AND m.project_id=t.project_id AND m.conversation_id=t.conversation_id AND m.private_owner=t.created_by)) IS NOT TRUE THEN RETURN NULL; END IF;
+     targets:=targets||jsonb_build_array(jsonb_build_object('kind','memories','id',r.id));
+    END LOOP;
+   END IF;
+   FOR r IN SELECT * FROM jsonb_to_recordset(coalesce(t.input_context->'history','[]')) AS x(id uuid) LOOP
+    SELECT x.* INTO m FROM conversation_messages x WHERE x.id=r.id AND x.conversation_id=t.conversation_id;
+    IF m.id IS NULL THEN RETURN NULL; END IF;
+    IF m.role='assistant' AND m.task_id IS NOT NULL THEN pending_tasks:=array_append(pending_tasks,m.task_id); END IF;
+   END LOOP;
+   SELECT coalesce(array_agg(p.task_id),'{}') INTO more FROM task_plans p WHERE p.approved_task_id=t.id;
+   pending_tasks:=pending_tasks||more;
+   IF t.input_context ? 'plan_source_task_id' THEN
+    IF NOT(t.input_context->>'plan_source_task_id' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$') THEN RETURN NULL; END IF;
+    pending_tasks:=array_append(pending_tasks,(t.input_context->>'plan_source_task_id')::uuid);
+   END IF;
+   -- Only consumed inputs constrain a retained result. The initial input
+   -- checkpoint must remain usable for a fresh authorized selection.
+   IF t.attempt>0 THEN
+    FOR d IN SELECT * FROM task_dependencies WHERE task_id=t.id AND state='resolved' LOOP
+     IF d.kind='file' THEN
+      IF EXISTS(SELECT 1 FROM unnest(d.resource_ids) x(id) LEFT JOIN asset_versions v ON v.id=x.id LEFT JOIN assets a ON a.id=v.asset_id
+       WHERE a.id IS NULL OR a.tenant_id<>t.tenant_id OR a.project_id<>t.project_id OR (a.private_owner IS NOT NULL AND (a.private_owner IS DISTINCT FROM t.created_by OR a.private_owner IS DISTINCT FROM t.private_owner))) THEN RETURN NULL; END IF;
+      pending_versions:=pending_versions||d.resource_ids;
+     ELSE
+      IF cardinality(d.resource_ids)<>1 OR NOT EXISTS(SELECT 1 FROM connections c WHERE c.id=d.resource_ids[1] AND c.tenant_id=t.tenant_id AND c.project_id=t.project_id AND c.state='connected' AND c.provider=d.provider) THEN RETURN NULL; END IF;
+      targets:=targets||jsonb_build_array(jsonb_build_object('kind','connections','id',d.resource_ids[1]));
+     END IF;
+    END LOOP;
+   END IF;
+   FOR r IN SELECT * FROM task_source_reads WHERE task_id=t.id LOOP
+    IF r.kind='dataset' THEN
+     SELECT * INTO d FROM analytics_datasets x WHERE x.id=r.resource_id AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id
+      AND x.content_state='active' AND x.source_state='active' AND x.retention_expires_at>clock_timestamp();
+     IF d.id IS NULL THEN RETURN NULL; END IF;
+     targets:=targets||jsonb_build_array(jsonb_build_object('kind','analytics_datasets','id',d.id));
+     IF d.source_asset_version_id IS NOT NULL THEN pending_versions:=array_append(pending_versions,d.source_asset_version_id); END IF;
+    ELSE
+     IF NOT EXISTS(SELECT 1 FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.id=r.asset_version_id AND v.sha256=r.sha256
+      AND a.tenant_id=t.tenant_id AND a.project_id=t.project_id AND (a.private_owner IS NULL OR (a.private_owner=t.created_by AND a.private_owner=t.private_owner))) THEN RETURN NULL; END IF;
+     IF r.kind='cloud_reference' THEN
+      SELECT n.id,n.workspace_id INTO m FROM workspace_nodes n JOIN cloud_workspaces w ON w.id=n.workspace_id WHERE n.id=r.resource_id
+       AND n.asset_version_id=r.asset_version_id AND n.content_state='active' AND n.reference_state='ready' AND w.content_state='active'
+       AND w.tenant_id=t.tenant_id AND w.project_id=t.project_id AND (w.private_owner IS NULL OR (w.private_owner=t.created_by AND w.conversation_id=t.conversation_id));
+      IF m.id IS NULL THEN RETURN NULL; END IF;
+      targets:=targets||jsonb_build_array(jsonb_build_object('kind','workspace_nodes','id',m.id),jsonb_build_object('kind','cloud_workspaces','id',m.workspace_id));
+     END IF;
+     pending_versions:=array_append(pending_versions,r.asset_version_id);
+    END IF;
+   END LOOP;
+   IF t.conversation_id IS NOT NULL THEN targets:=targets||jsonb_build_array(jsonb_build_object('kind','conversations','id',t.conversation_id)); END IF;
+  ELSE
+   vid:=pending_versions[1]; pending_versions:=pending_versions[2:];
+   IF vid=ANY(seen_versions) THEN CONTINUE; END IF;
+   seen_versions:=array_append(seen_versions,vid);
+   SELECT * INTO v FROM asset_versions WHERE id=vid;
+   SELECT * INTO a FROM assets WHERE id=v.asset_id;
+   IF a.id IS NULL OR a.tenant_id<>scope_tenant OR a.project_id<>scope_project OR a.state<>'active' OR a.retention_expires_at<=clock_timestamp()
+    OR v.erased_at IS NOT NULL OR NOT analysis_asset_available(a.id) OR NOT matrix_asset_available(a.id) OR NOT video_asset_available(a.id) THEN RETURN NULL; END IF;
+   targets:=targets||jsonb_build_array(jsonb_build_object('kind','assets','id',a.id));
+   IF v.metadata ? 'task_id' THEN
+    IF NOT(v.metadata->>'task_id' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$') THEN RETURN NULL; END IF;
+    pending_tasks:=array_append(pending_tasks,(v.metadata->>'task_id')::uuid);
+   END IF;
+   IF v.metadata ? 'publication_source_version_id' THEN
+    IF NOT(v.metadata->>'publication_source_version_id' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$') THEN RETURN NULL; END IF;
+    pending_versions:=array_append(pending_versions,(v.metadata->>'publication_source_version_id')::uuid);
+   END IF;
+  END IF;
+ END LOOP;
+ RETURN targets;
+END $$;
+ALTER FUNCTION content_source_manifest(uuid,uuid,uuid[],uuid[]) OWNER TO cp_control;
+REVOKE ALL ON FUNCTION content_source_manifest(uuid,uuid,uuid[],uuid[]) FROM PUBLIC;
+
+CREATE FUNCTION task_content_source_manifest(task uuid) RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER
+ SET search_path=pg_catalog,public SET row_security=on AS $$
+ SELECT content_source_manifest(t.tenant_id,t.project_id,ARRAY[t.id],'{}') FROM tasks t WHERE t.id=task
+  AND t.tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid
+  AND (t.private_owner IS NULL OR t.private_owner=nullif(current_setting('app.actor_id',true),'')::uuid)
+$$;
+CREATE FUNCTION task_content_sources_available(task uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+ SET search_path=pg_catalog,public SET row_security=on AS $$ SELECT task_content_source_manifest(task) IS NOT NULL $$;
+CREATE FUNCTION task_asset_sources_available(asset uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+ SET search_path=pg_catalog,public SET row_security=on AS $$
+ SELECT EXISTS(SELECT 1 FROM assets a WHERE a.id=asset AND NOT EXISTS(SELECT 1 FROM asset_versions v WHERE v.asset_id=a.id AND v.version=a.current_version
+  AND (v.metadata ? 'task_id' OR v.metadata ? 'publication_source_version_id')
+  AND content_source_manifest(a.tenant_id,a.project_id,'{}',ARRAY[v.id]) IS NULL))
+$$;
+CREATE FUNCTION task_asset_version_sources_available(version uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+ SET search_path=pg_catalog,public SET row_security=on AS $$
+ SELECT EXISTS(SELECT 1 FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.id=version
+  AND (NOT(v.metadata ? 'task_id' OR v.metadata ? 'publication_source_version_id')
+   OR content_source_manifest(a.tenant_id,a.project_id,'{}',ARRAY[v.id]) IS NOT NULL))
+$$;
+ALTER FUNCTION task_content_source_manifest(uuid) OWNER TO cp_control;
+ALTER FUNCTION task_content_sources_available(uuid) OWNER TO cp_control;
+ALTER FUNCTION task_asset_sources_available(uuid) OWNER TO cp_control;
+ALTER FUNCTION task_asset_version_sources_available(uuid) OWNER TO cp_control;
+REVOKE ALL ON FUNCTION task_content_source_manifest(uuid),task_content_sources_available(uuid),task_asset_sources_available(uuid),task_asset_version_sources_available(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION task_content_source_manifest(uuid),task_content_sources_available(uuid),task_asset_sources_available(uuid),task_asset_version_sources_available(uuid) TO cp_app,cp_control;
+CREATE POLICY task_asset_source_scope ON assets AS RESTRICTIVE FOR SELECT TO cp_app USING(task_asset_sources_available(id));
+CREATE POLICY task_asset_version_source_scope ON asset_versions AS RESTRICTIVE FOR SELECT TO cp_app USING(task_asset_version_sources_available(id));
+
+CREATE FUNCTION guard_content_source_binding() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+ SET search_path=pg_catalog,public SET row_security=on AS $$
+DECLARE a assets; source assets;
+BEGIN
+ IF TG_TABLE_NAME='tasks' THEN
+  IF TG_OP='UPDATE' AND OLD.input_context->'plan_source_task_id' IS DISTINCT FROM NEW.input_context->'plan_source_task_id'
+   AND NOT(NEW.content_state='deleted' AND current_setting('app.erasing_content',true)='true') THEN
+   RAISE EXCEPTION 'Approved plan source is immutable' USING ERRCODE='23514'; END IF;
+  IF TG_OP='INSERT' AND NEW.input_context ? 'plan_source_task_id' THEN
+   IF NEW.parent_id::text IS DISTINCT FROM NEW.input_context->>'plan_source_task_id' OR NOT EXISTS(
+    SELECT 1 FROM tasks t JOIN task_plans p ON p.task_id=t.id WHERE t.id=NEW.parent_id AND t.tenant_id=NEW.tenant_id AND t.project_id=NEW.project_id
+     AND t.created_by=NEW.created_by AND t.mode='plan' AND t.status='succeeded') THEN
+    RAISE EXCEPTION 'Approved plan source scope mismatch' USING ERRCODE='23514'; END IF;
+  END IF;
+ ELSE
+  IF TG_OP='UPDATE' AND OLD.metadata->'publication_source_version_id' IS DISTINCT FROM NEW.metadata->'publication_source_version_id'
+   AND NOT(NEW.erased_at IS NOT NULL AND current_setting('app.erasing_content',true)='true') THEN
+   RAISE EXCEPTION 'Published source binding is immutable' USING ERRCODE='23514'; END IF;
+  IF TG_OP='INSERT' AND NEW.metadata ? 'publication_source_version_id' THEN
+   SELECT * INTO a FROM assets WHERE id=NEW.asset_id;
+   SELECT x.* INTO source FROM asset_versions v JOIN assets x ON x.id=v.asset_id WHERE v.id=(NEW.metadata->>'publication_source_version_id')::uuid;
+   IF a.kind<>'published_deliverable' OR source.id IS NULL OR source.tenant_id IS DISTINCT FROM a.tenant_id OR source.project_id IS DISTINCT FROM a.project_id
+    OR source.private_owner IS DISTINCT FROM a.created_by OR source.state<>'active' THEN
+    RAISE EXCEPTION 'Published source scope mismatch' USING ERRCODE='23514'; END IF;
+  END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_content_source_binding() OWNER TO cp_control;
+REVOKE ALL ON FUNCTION guard_content_source_binding() FROM PUBLIC;
+CREATE TRIGGER task_plan_source_binding BEFORE INSERT OR UPDATE OF input_context ON tasks FOR EACH ROW EXECUTE FUNCTION guard_content_source_binding();
+CREATE TRIGGER asset_publication_source_binding BEFORE INSERT OR UPDATE OF metadata ON asset_versions FOR EACH ROW EXECUTE FUNCTION guard_content_source_binding();
+
+INSERT INTO schema_migrations(version) VALUES(82);

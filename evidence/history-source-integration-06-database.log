@@ -1,0 +1,74 @@
+2026-10-22 09:52:22.735 CST [30884] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 09:52:22.744 CST [30884] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 09:52:22.744 CST [30884] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 09:52:23.722 CST [25856] LOG:  database system was shut down at 2026-10-22 09:51:08 CST
+
+2026-10-22 09:52:23.814 CST [30884] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 09:52:38.540 CST [34688] ERROR:  record "v" has no field "agent_id"
+2026-10-22 09:52:38.540 CST [34688] CONTEXT:  SQL statement "SELECT v.body         FROM agents x JOIN agent_versions v ON v.agent_id=x.id AND v.version=(t.input_context->>'agent_version')::int
+	     WHERE x.id=(t.input_context->>'agent_id')::uuid AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id AND x.content_state='active'"
+	PL/pgSQL function content_source_manifest(uuid,uuid,uuid[],uuid[]) line 18 at SQL statement
+	SQL function "task_content_source_manifest" statement 1
+2026-10-22 09:52:38.540 CST [34688] STATEMENT:  SELECT task_content_source_manifest($1) AS refs
+
+2026-10-22 09:52:38.882 CST [34688] ERROR:  record "v" has no field "agent_id"
+2026-10-22 09:52:38.882 CST [34688] CONTEXT:  SQL statement "SELECT v.body         FROM agents x JOIN agent_versions v ON v.agent_id=x.id AND v.version=(t.input_context->>'agent_version')::int
+	     WHERE x.id=(t.input_context->>'agent_id')::uuid AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id AND x.content_state='active'"
+	PL/pgSQL function content_source_manifest(uuid,uuid,uuid[],uuid[]) line 18 at SQL statement
+	SQL function "task_content_source_manifest" statement 1
+2026-10-22 09:52:38.882 CST [34688] STATEMENT:  SELECT task_content_source_manifest($1) AS refs
+
+2026-10-22 09:52:39.573 CST [34688] ERROR:  record "v" has no field "agent_id"
+2026-10-22 09:52:39.573 CST [34688] CONTEXT:  SQL statement "SELECT v.body         FROM agents x JOIN agent_versions v ON v.agent_id=x.id AND v.version=(t.input_context->>'agent_version')::int
+	     WHERE x.id=(t.input_context->>'agent_id')::uuid AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id AND x.content_state='active'"
+	PL/pgSQL function content_source_manifest(uuid,uuid,uuid[],uuid[]) line 18 at SQL statement
+	SQL function "task_content_source_manifest" statement 1
+2026-10-22 09:52:39.573 CST [34688] STATEMENT:  SELECT task_content_source_manifest($1) AS refs
+
+2026-10-22 09:52:40.006 CST [34688] ERROR:  record "v" has no field "agent_id"
+2026-10-22 09:52:40.006 CST [34688] CONTEXT:  SQL statement "SELECT v.body         FROM agents x JOIN agent_versions v ON v.agent_id=x.id AND v.version=(t.input_context->>'agent_version')::int
+	     WHERE x.id=(t.input_context->>'agent_id')::uuid AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id AND x.content_state='active'"
+	PL/pgSQL function content_source_manifest(uuid,uuid,uuid[],uuid[]) line 18 at SQL statement
+	SQL function "task_content_source_manifest" statement 1
+2026-10-22 09:52:40.006 CST [34688] STATEMENT:  SELECT task_content_source_manifest($1) AS refs
+
+2026-10-22 09:52:41.041 CST [34688] ERROR:  record "v" has no field "agent_id"
+2026-10-22 09:52:41.041 CST [34688] CONTEXT:  SQL statement "SELECT v.body         FROM agents x JOIN agent_versions v ON v.agent_id=x.id AND v.version=(t.input_context->>'agent_version')::int
+	     WHERE x.id=(t.input_context->>'agent_id')::uuid AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id AND x.content_state='active'"
+	PL/pgSQL function content_source_manifest(uuid,uuid,uuid[],uuid[]) line 18 at SQL statement
+	SQL function "task_content_source_manifest" statement 1
+2026-10-22 09:52:41.041 CST [34688] STATEMENT:  SELECT task_content_source_manifest($1) AS refs
+
+2026-10-22 09:52:41.676 CST [34688] ERROR:  record "v" has no field "agent_id"
+2026-10-22 09:52:41.676 CST [34688] CONTEXT:  SQL statement "SELECT v.body         FROM agents x JOIN agent_versions v ON v.agent_id=x.id AND v.version=(t.input_context->>'agent_version')::int
+	     WHERE x.id=(t.input_context->>'agent_id')::uuid AND x.tenant_id=t.tenant_id AND x.project_id=t.project_id AND x.content_state='active'"
+	PL/pgSQL function content_source_manifest(uuid,uuid,uuid[],uuid[]) line 18 at SQL statement
+	SQL function "task_content_source_manifest" statement 1
+2026-10-22 09:52:41.676 CST [34688] STATEMENT:  SELECT task_content_source_manifest($1) AS refs
+
+2026-10-22 09:52:41.969 CST [17036] FATAL:  terminating autovacuum process due to administrator command
+
+2026-10-22 09:52:42.136 CST [2516] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 09:52:44.441 CST [2516] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.029 s, sync=1.344 s, total=2.305 s; sync files=13, longest=0.266 s, average=0.104 s; distance=15737 kB, estimate=15737 kB; lsn=B/76305078, redo lsn=B/76305020
+
+2026-10-22 09:52:45.545 CST [30884] LOG:  received fast shutdown request
+
+2026-10-22 09:52:45.878 CST [30884] LOG:  aborting any active transactions
+
+2026-10-22 09:52:45.886 CST [30884] LOG:  background worker "logical replication launcher" (PID 31168) exited with exit code 1
+
+2026-10-22 09:52:45.886 CST [2516] LOG:  shutting down
+
+2026-10-22 09:52:45.982 CST [2516] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 09:52:46.606 CST [2516] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.030 s, total=0.720 s; sync files=1, longest=0.030 s, average=0.030 s; distance=0 kB, estimate=14163 kB; lsn=B/76305190, redo lsn=B/76305190
+
+2026-10-22 09:52:46.710 CST [30884] LOG:  database system is shut down
+
