@@ -77,15 +77,43 @@ function tenantOf(req: FastifyRequest) {
   return uuid.parse((req.params as any).tenant ?? req.headers["x-tenant-id"]);
 }
 async function datasets(tx: Tx, project: string, ids: string[]) {
-  return (
+  await tx.query("SAVEPOINT analysis_input_sources");
+  try {
     await tx.query(
-      "SELECT * FROM analytics_datasets WHERE project_id=$1 AND id=ANY($2::uuid[]) ORDER BY id FOR SHARE",
+      `SELECT a.id FROM assets a WHERE a.id IN(
+         SELECT v.asset_id FROM asset_versions v JOIN analytics_datasets d ON d.source_asset_version_id=v.id
+         WHERE d.project_id=$1 AND d.id=ANY($2::uuid[])) ORDER BY a.id FOR SHARE OF a NOWAIT`,
       [project, ids],
-    )
-  ).rows;
+    );
+    const rows = (
+      await tx.query(
+        `SELECT d.* FROM analytics_datasets d WHERE d.project_id=$1 AND d.id=ANY($2::uuid[])
+         AND d.content_state='active' AND d.source_state='active' AND d.retention_expires_at>clock_timestamp()
+         AND (d.source_asset_version_id IS NULL OR EXISTS(
+           SELECT 1 FROM asset_versions v JOIN assets a ON a.id=v.asset_id
+           WHERE v.id=d.source_asset_version_id AND v.sha256=d.source_sha256 AND v.erased_at IS NULL
+           AND a.tenant_id=d.tenant_id AND a.project_id=d.project_id AND a.private_owner IS NULL
+           AND a.state='active' AND a.retention_expires_at>clock_timestamp()))
+         ORDER BY d.id FOR SHARE OF d`,
+        [project, ids],
+      )
+    ).rows;
+    await tx.query("RELEASE SAVEPOINT analysis_input_sources");
+    return rows;
+  } catch (error) {
+    await tx.query("ROLLBACK TO SAVEPOINT analysis_input_sources");
+    await tx.query("RELEASE SAVEPOINT analysis_input_sources");
+    if ((error as any).code === "55P03")
+      throw new Problem(
+        403,
+        "ANALYSIS_SOURCE_CHANGING",
+        "An analysis source is being changed; retry after reviewing its current availability",
+      );
+    throw error;
+  }
 }
-export async function assertReportSources(tx: Tx, t: any) {
-  await assertSeoSources(tx, t, true);
+export async function assertReportSources(tx: Tx, t: any, ownExecution = true) {
+  await assertSeoSources(tx, t, ownExecution);
   await assertSeoChangeSources(tx, t);
   const id = t.input_context?.analysis_report_id;
   if (!id) return;
@@ -106,6 +134,18 @@ export async function assertReportSources(tx: Tx, t: any) {
   let source: any[];
   await tx.query("SAVEPOINT analysis_source_lock");
   try {
+    // File moderation takes the asset lock before updating its datasets.
+    // Use the same order, and retain both locks through the authorized read.
+    await tx.query(
+      `SELECT a.id FROM assets a WHERE a.id IN(
+         SELECT v.asset_id FROM asset_versions v
+         JOIN analytics_datasets d ON d.source_asset_version_id=v.id
+         JOIN analysis_report_sources s ON s.dataset_id=d.id WHERE s.report_id=$1
+         UNION SELECT v.asset_id FROM analysis_reports r
+         JOIN asset_versions v ON v.id=r.asset_version_id WHERE r.id=$1)
+       ORDER BY a.id FOR SHARE OF a NOWAIT`,
+      [id],
+    );
     source = (
       await tx.query(
         "SELECT d.id FROM analytics_datasets d JOIN analysis_report_sources s ON s.dataset_id=d.id WHERE s.report_id=$1 AND d.content_state='active' AND d.source_state='active' ORDER BY d.id FOR SHARE OF d NOWAIT",
@@ -124,6 +164,8 @@ export async function assertReportSources(tx: Tx, t: any) {
       );
     throw e;
   }
+  // Re-evaluate the report policy after acquiring locks. Retention can expire
+  // without a dataset-state transition or a cleanup worker.
   const expected = (
     await tx.query("SELECT source_count FROM analysis_reports WHERE id=$1", [
       id,

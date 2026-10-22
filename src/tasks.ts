@@ -12,7 +12,7 @@ import { key, projectAccess, replay } from "./access.js";
 import { micros, name, Problem, uuid } from "./lib.js";
 import type { Catalog } from "./catalog.js";
 import { inputDependencies } from "./task-dependencies.js";
-import { assertSeoChangeSources } from "./seo-changes.js";
+import { assertReportSources } from "./analysis-reports.js";
 import {
   controlUnclaimedTask,
   requestTaskCancellation,
@@ -65,7 +65,15 @@ export function registerTasks(
       return {
         items: (
           await tx.query(
-            "SELECT id,title,role_key,status,mode,conversation_id,private_owner,acceptance,charged_micros,budget_micros,created_at,updated_at,parent_id,version FROM tasks WHERE tenant_id=$1 AND project_id=$2 AND (NOT(input_context ? 'seo_change_task_id') OR EXISTS(SELECT 1 FROM seo_change_tasks c WHERE c.task_id=tasks.id AND seo_change_available(c.id))) ORDER BY created_at DESC LIMIT 100",
+            `SELECT id,title,role_key,status,mode,conversation_id,private_owner,acceptance,charged_micros,budget_micros,created_at,updated_at,parent_id,version
+             FROM tasks WHERE tenant_id=$1 AND project_id=$2
+             AND (NOT(input_context ? 'analysis_report_id') OR EXISTS(
+               SELECT 1 FROM analysis_reports r WHERE r.task_id=tasks.id AND r.id::text=tasks.input_context->>'analysis_report_id' AND analysis_report_available(r.id)))
+             AND (NOT(input_context ? 'seo_audit_id') OR EXISTS(
+               SELECT 1 FROM seo_runs r WHERE r.task_id=tasks.id AND r.id::text=tasks.input_context->>'seo_audit_id' AND seo_run_sources_available(r.id)))
+             AND (NOT(input_context ? 'seo_change_task_id') OR EXISTS(
+               SELECT 1 FROM seo_change_tasks c WHERE c.task_id=tasks.id AND c.id::text=tasks.input_context->>'seo_change_task_id' AND seo_change_available(c.id)))
+             ORDER BY created_at DESC LIMIT 100`,
             [tenant, project],
           )
         ).rows,
@@ -148,7 +156,8 @@ export function registerTasks(
         ])
       ).rows[0];
       if (!t) throw new Problem(404, "NOT_FOUND", "Task not found");
-      await assertSeoChangeSources(tx, t);
+      await assertReportSources(tx, t, false);
+      await projectAccess(tx, req.principal, tenant, project);
       return t;
     }, tenant);
   });
@@ -177,7 +186,8 @@ export function registerTasks(
             project,
           ])
         ).rows[0];
-        await assertSeoChangeSources(tx, sourceTask);
+        await assertReportSources(tx, sourceTask, false);
+        await projectAccess(tx, req.principal, tenant, project);
         return {
           items: (
             await tx.query(

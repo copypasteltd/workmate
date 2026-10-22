@@ -6,7 +6,7 @@ import type { Database } from "./db.js";
 import { requireUser, principal } from "./auth.js";
 import { projectAccess } from "./access.js";
 import { Problem, uuid } from "./lib.js";
-import { assertSeoChangeSources } from "./seo-changes.js";
+import { assertReportSources } from "./analysis-reports.js";
 
 const cursor = z.coerce
   .number()
@@ -155,7 +155,10 @@ export function registerTaskEvents(app: FastifyInstance, db: Database) {
           if (!t || (p.project && p.project !== t.project_id))
             throw new Problem(404, "NOT_FOUND", "Task not found");
           await projectAccess(tx, actor, tenant, t.project_id);
-          await assertSeoChangeSources(tx, t);
+          await assertReportSources(tx, t, false);
+          // Source locks may wait for an ordinary task-control transaction.
+          // Recheck current membership/auth version after that wait as well.
+          await projectAccess(tx, actor, tenant, t.project_id);
           // Control query only returns the watermark for an already-authorized task.
           const watermark = (
             await db.control.query(
