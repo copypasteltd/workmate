@@ -4,6 +4,17 @@
 
 面向香港企业的 Codex Agent 平台，首批面向现有客户的 marketing 团队。云端 Web、Chrome 原生侧栏、完整无边框 Desktop 共用公司身份、业务控制及内部 OpenAI 兼容网关；Admin 管理用户、内容、消耗、费用与 VIP。
 
+<!-- client01-direction -->
+## 当前客户端方向与实现差异
+
+CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，提供客户可主动授予的 **完整本机权限**，操作能力对标 Codex Desktop。**Extension 在 Chrome 原生右侧栏采用 ChatGPT 式对话/附件结构**，获取、读取用户获选文件并上传，由云端 Codex 执行。全部产品 AI 请求仍走公司内部网关。
+
+**当前实现：** Desktop 产品入口仍是云端 Codex 与受限文件桥接；独立本机 Codex supervisor 已通过 9 项原生集成测试，本机授权界面和费用接入待实现；Extension 已有原生侧栏和基础上传，任务表单主界面仍需重排。现有截图、录屏展示该实现，不证明上述补充能力已经完成。[需求补充](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md) · [方向检查及开发调整](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/69-desktop-local-codex-and-extension-direction.md)。
+
+本机 supervisor 的实现、实际权限测试与剩余产品接入见 [技术说明](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md)。
+
+<!-- /client01-direction -->
+
 ## 仓库和分支
 
 每个端保留独立 Git 历史和仓库根目录。多端同时运行时分别检出到不同目录。主文档相同提交发布到 `main` 与 `docs`。
@@ -20,13 +31,19 @@
 
 ## 架构与使用逻辑
 
+下图为当前目标的执行分工；现有 Desktop 包尚未实现本机 Codex 和完整本机权限。
+
 ```mermaid
 flowchart TB
   User[Customer] --> Web[Cloud Web]
   User --> Side[Chrome native Side Panel]
   User --> Desktop[Frameless Desktop]
   Operator[Administrator + MFA] --> Admin[Admin Dashboard]
-  Web & Side & Desktop & Admin --> API[Company Backend]
+  Web & Side & Admin --> API[Company Backend]
+  Desktop --> API
+  Desktop --> LocalCodex[Customer-device Codex / pending implementation]
+  LocalCodex --> LocalTools[Local files / terminal / skills]
+  LocalCodex --> Gateway[Internal OpenAI-compatible API]
   API --> Access[Identity / tenant / project / private ownership]
   Access --> Input[Explicit sources / role / skills / version]
   Input --> Budget[Plan / permission / budget hold]
@@ -36,6 +53,8 @@ flowchart TB
   Tools --> Results[Immutable outputs / usage / settlement]
   Results --> Clients[Governed client reads and downloads]
 ```
+
+以下操作描述当前云端/文件桥接基线；Desktop 的本机 Codex 与完整权限按 CLIENT01 改造后另行验收。
 
 1. 邮箱验证码登录后选择企业和项目，确认当前权限与费用来源。Desktop/Extension 经公司网页和 PKCE 授权；Admin 使用独立邮箱 OTP/TOTP 身份。
 2. 选择默认助手、18 个角色预设或私人专员；任务固定角色、Skill、模型和费率版本，明确选择文件、品牌资源和授权连接。
@@ -72,11 +91,11 @@ npm run demo
 
 ## 验证与边界
 
-保留的阶段 66 证据包括平台完整 **782/782**、专项 **34/34**；二者重叠，不相加。当前客户端检查 **13/13**、真实打包 Desktop/原生 Side Panel 旅程 **32/32**。本次媒体回执绑定截图、录制时间、摘要、源码及自建浏览器清理。各数量只适用于对应回执记录的源码版本。
+当前平台完整回归 **802/802**、统一任务专项 **52/52**，保留原 782 项命名测试；二者重叠，不相加。六仓库类型/构建/既有客户端测试 **13 项**、实际打包 Desktop/原生 Side Panel 旅程 **32 项**通过。另有独立本机 Codex supervisor **9 项**原生测试通过，尚未接入完整客户端授权/费用流程。四端媒体记录既有云端/文件桥接界面，绑定真实捕获时间、摘要及清理结果。
 
-[Stage 66](technical/66-paid-native-input-checkpoints.md) · [Current source-bound evidence](quality/paid-input-checkpoint.json) · [Media](quality/workmate-media-06.json) · [Requirement progress](quality/requirements-alignment-progress.json)
+[统一任务证据](quality/canonical-task-checkpoint.json) · [本机内核证据](quality/local-codex-supervisor-checkpoint.json) · [候选包字节](quality/client-direction-package.json) · [媒体](quality/workmate-media-10.json) · [原需求进度](quality/requirements-alignment-progress.json)
 
-UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独立集成测试通过模拟内部网关运行真实 Codex 子进程。Admin 媒体展示受权限约束的 VIP/费用表单，不代表财务提交。SQL001–091 保持不可改写。全部 102 项需求、TC/NFR/G01–G10 及 81 局部验证/21 未证明完成/0 完整验收基线保留；规范 TaskDTO/任务创建、任意执行中暂停、未知结果恢复、全角色工作流、GEO、真实供应商、生产、签名与商店资格继续跟踪。
+UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独立集成测试通过模拟内部网关运行真实 Codex 子进程。Admin 媒体展示受权限约束的 VIP/费用表单，不代表财务提交。SQL001–091 保持不可改写。全部 102 项需求、TC/NFR/G01–G10 及 81 局部验证/21 未证明完成/0 完整验收基线保留；统一任务的专用输入及历史身份迁移、任意执行中暂停、未知结果恢复、完整本机 Desktop 与扩展对话附件、全角色工作流、GEO、真实供应商、生产、签名与商店资格继续跟踪。
 
 ## 实际客户端展示
 
@@ -84,35 +103,35 @@ UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独�
 
 ### Web
 
-![web](design/implementation/workmate/web-workmate-06-input-ready-en.png)
+![web](design/implementation/workmate/web-workmate-10-input-ready-en.png)
 
-![web interaction](design/implementation/workmate/web-workmate-06-interaction.gif)
+![web interaction](design/implementation/workmate/web-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/web-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/web-workmate-10-interaction.mp4)
 
 ### Desktop
 
-![desktop](design/implementation/workmate/desktop-workmate-06-input-ready-en.png)
+![desktop](design/implementation/workmate/desktop-workmate-10-input-ready-en.png)
 
-![desktop interaction](design/implementation/workmate/desktop-workmate-06-interaction.gif)
+![desktop interaction](design/implementation/workmate/desktop-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/desktop-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/desktop-workmate-10-interaction.mp4)
 
 ### Extension
 
-![extension](design/implementation/workmate/extension-workmate-06-sidepanel-native-en.png)
+![extension](design/implementation/workmate/extension-workmate-10-sidepanel-native-en.png)
 
-![extension interaction](design/implementation/workmate/extension-workmate-06-interaction.gif)
+![extension interaction](design/implementation/workmate/extension-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/extension-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/extension-workmate-10-interaction.mp4)
 
 ### Admin
 
-![admin](design/implementation/workmate/admin-workmate-06-user-usage-en.png)
+![admin](design/implementation/workmate/admin-workmate-10-user-usage-en.png)
 
-![admin interaction](design/implementation/workmate/admin-workmate-06-interaction.gif)
+![admin interaction](design/implementation/workmate/admin-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/admin-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/admin-workmate-10-interaction.mp4)
 
 ## 文档导航
 
@@ -210,11 +229,15 @@ UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独�
 - [会话历史、实际读取与产物来源链](technical/65-conversation-content-source-lineage.md)
 - [付费用量、补充资料与原任务续接](technical/66-paid-native-input-checkpoints.md)
 - [仓库整理、实际交互媒体与分支交付](technical/67-repository-delivery-and-media.md)
+- [统一任务接口与原任务输入事务](technical/68-canonical-task-contracts-and-input-transactions.md)
+- [Desktop 本机 Codex 与 Extension 方向检查](technical/69-desktop-local-codex-and-extension-direction.md)
+- [本机 Codex supervisor：原生实测与剩余接入](technical/70-desktop-native-codex-supervisor.md)
 
 ### Requirements
 
 - [软件需求规格说明 SRS](requirements/01-srs.md)
 - [非功能要求与服务指标](requirements/02-nonfunctional-and-service-levels.md)
+- [CLIENT01：Desktop 本机执行及 Extension 对话附件](requirements/03-client-execution-amendment.md)
 
 ### Governance
 
@@ -224,6 +247,8 @@ UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独�
 - [Workmate 仓库、分支与同步规则 / Repository and publication policy](governance/04-git-branches-and-publication.md)
 
 ## 更新与发布
+
+本次更新：[统一任务修复](changes/2026-10-22-canonical-task-repair.md) · [CLIENT01 方向](changes/2026-10-22-client-execution-direction.md) · [本机 Codex 内核](changes/2026-10-22-native-codex-supervisor.md)。
 
 [2026-10-22 release notes](changes/2026-10-22-workmate-publication.md) · [Branch and synchronization policy](governance/04-git-branches-and-publication.md) · [Exact prior README archive](quality/history/stage66-before-workmate-readmes/manifest.json)
 

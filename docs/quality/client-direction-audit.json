@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "checked_at": "2026-10-22T11:31:02.216390+00:00",
+  "status": "direction_misalignment_confirmed",
+  "scope": "bounded_source_and_document_review_only",
+  "amendment": "docs/quality/client-execution-amendment.json",
+  "findings": [
+    {
+      "id": "DIR-01",
+      "area": "desktop_kernel",
+      "status": "not_implemented",
+      "finding": "Desktop uses cloud APIs and local file-command polling; no Desktop-owned local Codex app-server lifecycle was found in the reviewed entry point."
+    },
+    {
+      "id": "DIR-02",
+      "area": "desktop_full_local_access",
+      "status": "not_implemented",
+      "finding": "One-hour directory read/create grants do not provide a user-selectable full local filesystem and terminal mode."
+    },
+    {
+      "id": "DIR-03",
+      "area": "cloud_profile_reuse",
+      "status": "desktop_reuse_would_be_incompatible",
+      "finding": "Current cloud Codex uses read-only sandbox with shell disabled; this profile cannot represent Desktop full access."
+    },
+    {
+      "id": "DIR-04",
+      "area": "extension_surface",
+      "status": "already_has_native_side_panel",
+      "finding": "Existing MV3 side panel appearance can be retained."
+    },
+    {
+      "id": "DIR-05",
+      "area": "extension_conversation",
+      "status": "restructure_required",
+      "finding": "Primary UI is a task brief/title/budget form, rather than conversation history, a message stream and a bottom composer."
+    },
+    {
+      "id": "DIR-06",
+      "area": "extension_files",
+      "status": "basic_upload_exists_full_flow_unproven",
+      "finding": "Single-file 5 MiB browser reads and project uploads exist; explicit message/version binding and complete conversational recovery need implementation and verification."
+    },
+    {
+      "id": "DIR-07",
+      "area": "local_execution_api",
+      "status": "not_implemented",
+      "finding": "The current canonical task adapter rejects unsupported device_id semantics and must not be described as a local-agent API."
+    }
+  ],
+  "source_hashes": {
+    "dev/copypaste-desktop/src/main.ts": {
+      "sha256": "2983ae02ef6406f5f61560cd5cf359c1fb45abf1a82705f8202277c3dbb5223d"
+    },
+    "dev/copypaste-desktop/src/files.ts": {
+      "sha256": "f024392889236f93a598421c9480a7773fb531603f4d08e0c13abcf7676218c3"
+    },
+    "dev/copypaste-desktop/renderer/src/api.ts": {
+      "sha256": "872e98f19e67d045be074ba3e1ebb9956aa22f02c4ea4e9bc29029afc0083b96"
+    },
+    "dev/copypaste-desktop/package.json": {
+      "sha256": "c838af2d5bc50c2afd3e58afb760a993abdda896637cb8261dcf6e05225b2abe"
+    },
+    "dev/copypaste-extension/public/sidepanel.html": {
+      "sha256": "26d09da55b93465fa764461b28d8fe1f6ccbfccc10148939af0a4ade85359a2d"
+    },
+    "dev/copypaste-extension/src/panel.ts": {
+      "sha256": "5038cf94d9c7455e79d7ebc17ef2bb5320cba62e1558dd5afc5e9378867c55a5"
+    },
+    "dev/copypaste-extension/src/background.ts": {
+      "sha256": "fc40cdb0c4ecae26d23615e940a73a3ebd3b279732d9ea9dbaf4e33654bb2b25"
+    },
+    "dev/copypaste-extension/scripts/build.mjs": {
+      "sha256": "31ba0e5b00aeddc7a8bf39ea6e4a0d091a62924e8d3e89bf867fe430b88696a9"
+    },
+    "dev/copypaste-platform/src/runtime.ts": {
+      "sha256": "74c44e1de4aa9a732a339c6794da4e9b3a4daf8935b4be96432bd8367ebca73a"
+    },
+    "dev/copypaste-platform/src/canonical-tasks.ts": {
+      "sha256": "fa40204d533c777d6b47445082d8c7706e40c624b0e09253225216a1ded705c6"
+    },
+    "dev/copypaste-platform/contracts/codex/v2/ThreadStartParams.json": {
+      "sha256": "80a40a7fac15b4bf70efb7f893fb353acc0a0d30c68f54aee4f01923deca85de"
+    }
+  },
+  "additional_runtime_acceptance": "not_run",
+  "new_ui_or_local_agent_screenshots": "not_created_because_the_revised_capabilities_are_not_yet_implemented",
+  "existing_ui_and_native_receipts": "retain_original_versions_and_cloud_agent_file_bridge_scope",
+  "not_proven": [
+    "desktop_local_codex_in_packaged_application",
+    "desktop_full_permission_tools_and_revocation",
+    "complete_extension_conversation_attachment_flow",
+    "production_deployment_or_entire_product_acceptance"
+  ],
+  "verifier_sha256": "43753da4bd0bed8bea2db246165e5c02b6cac6b28ef3799ad17a913b176af0e2"
+}

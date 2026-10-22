@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "id": "CLIENT01",
+  "recorded_at": "2026-10-22T11:31:02.216390+00:00",
+  "source": "Explicit human direction in this project conversation on 2026-10-22",
+  "instructions": [
+    "Desktop 版本的内容，agent必须要在本地运行，并且允许客户向其提供 fully permission。要求最终的操作能力对标 codex desktop",
+    "Extension版本的内容，核心内容应该是一个对标 chatgpt extension的样式和结构。但是承载了文件获取、读取并上传给云端的职能。"
+  ],
+  "normative_document": "docs/requirements/03-client-execution-amendment.md",
+  "development_document": "docs/technical/69-desktop-local-codex-and-extension-direction.md",
+  "supersedes": "A01 and all older design defaults that make Desktop a cloud agent with a local file bridge",
+  "desktop": {
+    "execution_location": "customer_device",
+    "kernel": "codex",
+    "user_opt_in_full_local_access": true,
+    "operation_benchmark": "Codex Desktop"
+  },
+  "extension": {
+    "execution_location": "company_cloud",
+    "kernel": "codex",
+    "interaction": "ChatGPT-style conversation and attachments in Chrome native right Side Panel",
+    "file_duties": [
+      "acquire_user_selected_files",
+      "read",
+      "upload_to_company_cloud",
+      "bind_explicit_versions_to_message"
+    ],
+    "desktop_required_for_basic_upload": false
+  },
+  "ai_route": "company_internal_openai_compatible_gateway_for_all_product_ai_calls",
+  "existing_102_requirement_table_preserved": true,
+  "existing_102_requirement_table_lf_sha256": "9eb819d75352b0ae314d22c2d0027b8147dedae75e8c49d1a2b6d69a8477a8ed",
+  "existing_tc_and_historical_evidence_reclassified_as_passed": false,
+  "additional_acceptance": {
+    "desktop": [
+      "DESK-L01",
+      "DESK-L02",
+      "DESK-L03",
+      "DESK-L04",
+      "DESK-L05",
+      "DESK-L06",
+      "DESK-L07",
+      "DESK-L08"
+    ],
+    "extension": [
+      "EXT-C01",
+      "EXT-C02",
+      "EXT-C03",
+      "EXT-C04",
+      "EXT-C05",
+      "EXT-C06"
+    ]
+  }
+}

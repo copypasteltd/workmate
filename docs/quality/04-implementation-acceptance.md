@@ -1,5 +1,7 @@
 # 产品实现验收与交付记录
 
+2026-10-22 的 [CLIENT01](../requirements/03-client-execution-amendment.md) 已增加 Desktop 本机 Codex/完整权限与 Extension 对话附件体验的明确条件。当前代码未完整达到，详见 [方向审计](client-direction-audit.json)；本页及既有录屏只证明其原执行架构与版本，不代表这些补充条件已经验收。
+
 版本：1.6 · 2026-10-18 · 范围：0.1.0 本机原生实现的历史留存；当前版本见 [0.2.0 验收](05-persistent-work-acceptance.md)。原始具体结果随 [历史机器汇总](versions/0.1.0/implementation-evidence.json) 记录；六仓库、启动与详细边界见 [实施清单](../technical/12-implementation-and-repositories.md)。
 
 ## 1. 完成的检查类别

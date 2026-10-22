@@ -3,7 +3,7 @@
 实施状态：本分册保留长期设计约束；本轮锁定版本、实际 API/工具、各端实现与差异，以 [实际开发清单](12-implementation-and-repositories.md) 和 [运行验收](../quality/04-implementation-acceptance.md) 为准，未实现项没有删除。
 
 
-版本：1.5 · 2026-10-18。以下为可落地的设计默认，尚未搭建运行环境。
+版本：1.5 基础设计；2026-10-22 按 [CLIENT01](../requirements/03-client-execution-amendment.md) 修订客户端执行位置。下图为目标架构；本机 Codex/full permission 仍待实现，历史运行证据不因此升级。
 
 ## 1. 架构选择
 
@@ -20,8 +20,9 @@
 | 内核 | Codex，锁定 CLI/app-server 与协议版本 | 用户已确定的唯一内核；受控 stdio 集成，产品层负责权限、状态、计费和工具 |
 | 图像排版 | 受控 SVG/HTML 描述 + 原生 Chromium 渲染 | 文字与图像分层，字体和输出尺寸可确定 |
 | 视频 | 原生 FFmpeg + 固定模板 | 真实成片、输入输出可检查；AI 生成走内部服务 |
-| 扩展 | Chrome Manifest V3 + side panel | 当前页面协作，与云端任务分离 |
-| Desktop / host | Electron + TypeScript 原生设备核心 | 共享客户端代码和执行器，系统权限留在核心层 |
+| 扩展 | Chrome Manifest V3 + side panel | ChatGPT 式对话及文件获取/读取/上传，Agent 在云端运行 |
+| Desktop | 无边框 Electron + 本机 Codex app-server | 本机会话、文件、终端、Skill；支持客户主动授予完整本机权限 |
+| 可选 Native Host | TypeScript 文件桥接 | 扩展的增强目录能力，不代替 Desktop 的本机 Agent |
 
 版本在初始化时按兼容矩阵锁定；不使用漂移的 latest 依赖。选型是本轮建议，精确版本与生产云供应商仍需工程验证。参考来源集中于 [来源登记](../governance/02-glossary-and-sources.md)。
 
@@ -33,12 +34,15 @@
 flowchart LR
     W[Web] --> A[产品 API / 会话]
     X[Chrome 扩展] --> A
-    D[Desktop] --> A
+    D[无边框 Desktop] --> A
+    D --> C[客户本机 Codex app-server]
+    C --> N[本机文件 / 终端 / Skill / 工具]
+    C --> G[公司内部 AI 服务]
     A --> P[(PostgreSQL 业务状态)]
     P --> O[Outbox dispatcher]
     O --> Q[pg-boss 作业队列]
     Q --> R[任务 worker / Codex 适配器]
-    R --> G[公司内部 AI 服务]
+    R --> G
     R --> T[受控工具服务]
     T --> G
     T --> B[Google / Meta 业务连接器]
@@ -56,7 +60,9 @@ Codex 是 CORE01 的固定架构约束。默认助手、预设/定制角色、�
 
 ## 3. 任务提交时序
 
-客户端提交幂等请求 → API 核验身份和输入 → 数据库事务创建任务/预算/outbox → 返回 task_id → dispatcher 投队列 → worker 校验租约和授权 → 内核运行与工具执行 → 结果转存及事件提交 → SSE 通知。
+Web/Extension 云端流程：客户端提交幂等请求 → API 核验身份和输入 → 数据库事务创建任务/预算/outbox → 返回 task_id → dispatcher 投队列 → worker 校验租约和授权 → 云端 Codex 与工具执行 → 结果转存及事件提交 → SSE 通知。
+
+Desktop 本机流程：公司登录及业务授权 → 本机用户选择权限模式 → main process 启动本机 Codex 并加载 Skill → 本机工具执行及流式交互 → 按约定同步事件/费用和选定产物。本机任务不投递到旧云端 Codex 队列；本机执行契约及恢复设计见 [方向检查](69-desktop-local-codex-and-extension-direction.md)，尚不能用现有云端任务 API 冒充已实现。
 
 进程在事务提交后、投递前崩溃时，dispatcher 可重新扫描 outbox；投递后崩溃可能重复消息，worker 依据任务版本和稳定 operation_id 去重。队列清空可从业务 outbox 重建，不能丢任务真相。
 

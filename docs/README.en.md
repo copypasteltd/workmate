@@ -4,6 +4,17 @@
 
 A Codex-based enterprise Agent platform for Hong Kong businesses, beginning with existing marketing teams. Cloud Web, a Chrome native Side Panel and a full frameless Desktop share company identity, business controls and an internal OpenAI-compatible AI gateway. Admin manages users, scoped content, usage, fees and VIP access.
 
+<!-- client01-direction -->
+## Current client direction — implementation gap
+
+CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
+
+**Current implementation:** The Desktop product entry point still uses cloud Codex and a restricted file bridge. An independent native Codex supervisor passes nine real-native integration tests; Electron consent and billing integration remain pending. The Extension has the native Side Panel and basic uploads, while its task-form-first UI needs restructuring. Existing screenshots and recordings show that implementation and do not prove the amended capabilities. [Requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md) · [Direction audit and development plan](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/69-desktop-local-codex-and-extension-direction.md).
+
+Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
+
+<!-- /client01-direction -->
+
 ## Repositories and branches
 
 Each component retains its independent Git history and root layout. Clone different branches into separate directories when running them together. The same documentation commit is published to `main` and `docs`.
@@ -20,13 +31,19 @@ Each component retains its independent Git history and root layout. Clone differ
 
 ## Architecture and usage
 
+Target execution split; local Codex and full local access are not implemented in the current Desktop package.
+
 ```mermaid
 flowchart TB
   User[Customer] --> Web[Cloud Web]
   User --> Side[Chrome native Side Panel]
   User --> Desktop[Frameless Desktop]
   Operator[Administrator + MFA] --> Admin[Admin Dashboard]
-  Web & Side & Desktop & Admin --> API[Company Backend]
+  Web & Side & Admin --> API[Company Backend]
+  Desktop --> API
+  Desktop --> LocalCodex[Customer-device Codex / pending implementation]
+  LocalCodex --> LocalTools[Local files / terminal / skills]
+  LocalCodex --> Gateway[Internal OpenAI-compatible API]
   API --> Access[Identity / tenant / project / private ownership]
   Access --> Input[Explicit sources / role / skills / version]
   Input --> Budget[Plan / permission / budget hold]
@@ -36,6 +53,8 @@ flowchart TB
   Tools --> Results[Immutable outputs / usage / settlement]
   Results --> Clients[Governed client reads and downloads]
 ```
+
+The following describes the implemented cloud/file-bridge baseline. Desktop local Codex and full local access require separate implementation and acceptance under CLIENT01.
 
 1. Sign in with an email code, choose a workspace/project and confirm the current funding and permission context. Desktop and extension authorize through the company webpage using PKCE; Admin uses a separate email OTP/TOTP identity.
 2. Select the default assistant, a preset among eighteen roles, or a personal specialist. Tasks freeze role, Skills, model and price versions. Select files, brand resources and authorized connections explicitly.
@@ -72,11 +91,11 @@ Open Web `http://localhost:4317` and Admin `http://localhost:4318`; Backend uses
 
 ## Evidence and limits
 
-Retained Stage 66 evidence includes **782/782** full Platform tests and **34/34** focused tests; suites overlap and are not added together. Current client checks pass **13/13**; the actual packaged Desktop/native Side Panel journey passes **32/32**. The current media report binds screenshots, recording timing, hashes, source and owned-browser cleanup. These counts apply to their recorded source versions.
+The current Platform regression passes **802/802** tests, retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. Separately, **9** real-native Codex supervisor checks pass; complete Electron consent and billing integration remain pending. Four-client media records the existing cloud/file-bridge UI with actual capture timing, hashes and owned-client cleanup.
 
-[Stage 66](technical/66-paid-native-input-checkpoints.md) · [Current source-bound evidence](quality/paid-input-checkpoint.json) · [Media](quality/workmate-media-06.json) · [Requirement progress](quality/requirements-alignment-progress.json)
+[Canonical task evidence](quality/canonical-task-checkpoint.json) · [Native supervisor evidence](quality/local-codex-supervisor-checkpoint.json) · [Candidate package bytes](quality/client-direction-package.json) · [Media](quality/workmate-media-10.json) · [Requirement progress](quality/requirements-alignment-progress.json)
 
-AI turns and provider/business facts in UI demos are explicitly synthetic, as authorized. Separate integration tests run actual Codex processes against a synthetic internal gateway. Admin media shows permission-gated VIP/credit forms and does not claim a financial posting. Applied SQL001–091 remain immutable. All 102 requirements, TC/NFR/G01–G10 and the 81 partial /21 unproven /0 fully accepted baseline remain intact. Canonical TaskDTO/task creation, arbitrary in-flight pause, unknown-effect recovery, full role workflows, GEO, real suppliers, production, signing and store qualification remain outstanding.
+AI turns and provider/business facts in UI demos are explicitly synthetic, as authorized. Separate integration tests run actual Codex processes against a synthetic internal gateway. Admin media shows permission-gated VIP/credit forms and does not claim a financial posting. Applied SQL001–091 remain immutable. All 102 requirements, TC/NFR/G01–G10 and the 81 partial /21 unproven /0 fully accepted baseline remain intact. Dedicated canonical task inputs and historical identity migration, arbitrary in-flight pause, unknown-effect recovery, complete local Desktop and Extension conversation/attachments, full role workflows, GEO, real suppliers, production, signing and store qualification remain outstanding.
 
 ## Actual client gallery
 
@@ -84,35 +103,35 @@ Screenshots and GIFs show actual running clients; synthetic data is scoped above
 
 ### Web
 
-![web](design/implementation/workmate/web-workmate-06-input-ready-en.png)
+![web](design/implementation/workmate/web-workmate-10-input-ready-en.png)
 
-![web interaction](design/implementation/workmate/web-workmate-06-interaction.gif)
+![web interaction](design/implementation/workmate/web-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/web-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/web-workmate-10-interaction.mp4)
 
 ### Desktop
 
-![desktop](design/implementation/workmate/desktop-workmate-06-input-ready-en.png)
+![desktop](design/implementation/workmate/desktop-workmate-10-input-ready-en.png)
 
-![desktop interaction](design/implementation/workmate/desktop-workmate-06-interaction.gif)
+![desktop interaction](design/implementation/workmate/desktop-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/desktop-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/desktop-workmate-10-interaction.mp4)
 
 ### Extension
 
-![extension](design/implementation/workmate/extension-workmate-06-sidepanel-native-en.png)
+![extension](design/implementation/workmate/extension-workmate-10-sidepanel-native-en.png)
 
-![extension interaction](design/implementation/workmate/extension-workmate-06-interaction.gif)
+![extension interaction](design/implementation/workmate/extension-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/extension-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/extension-workmate-10-interaction.mp4)
 
 ### Admin
 
-![admin](design/implementation/workmate/admin-workmate-06-user-usage-en.png)
+![admin](design/implementation/workmate/admin-workmate-10-user-usage-en.png)
 
-![admin interaction](design/implementation/workmate/admin-workmate-06-interaction.gif)
+![admin interaction](design/implementation/workmate/admin-workmate-10-interaction.gif)
 
-[MP4](design/implementation/workmate/admin-workmate-06-interaction.mp4)
+[MP4](design/implementation/workmate/admin-workmate-10-interaction.mp4)
 
 ## Documentation map
 
@@ -210,11 +229,15 @@ Screenshots and GIFs show actual running clients; synthetic data is scoped above
 - [65 conversation content source lineage](technical/65-conversation-content-source-lineage.md)
 - [66 paid native input checkpoints](technical/66-paid-native-input-checkpoints.md)
 - [67 repository delivery and media](technical/67-repository-delivery-and-media.md)
+- [68 canonical task APIs and original-task input transactions](technical/68-canonical-task-contracts-and-input-transactions.md)
+- [69 Desktop local Codex and Extension direction audit](technical/69-desktop-local-codex-and-extension-direction.md)
+- [70 native Codex supervisor: actual checks and remaining integration](technical/70-desktop-native-codex-supervisor.md)
 
 ### Requirements
 
 - [01 srs](requirements/01-srs.md)
 - [02 nonfunctional and service levels](requirements/02-nonfunctional-and-service-levels.md)
+- [CLIENT01: local Desktop execution and Extension conversation attachments](requirements/03-client-execution-amendment.md)
 
 ### Governance
 
@@ -224,6 +247,8 @@ Screenshots and GIFs show actual running clients; synthetic data is scoped above
 - [04 git branches and publication](governance/04-git-branches-and-publication.md)
 
 ## Updates and publication
+
+Current updates: [canonical task repair](changes/2026-10-22-canonical-task-repair.en.md) · [CLIENT01 direction](changes/2026-10-22-client-execution-direction.en.md) · [native Codex supervisor](changes/2026-10-22-native-codex-supervisor.en.md).
 
 [2026-10-22 release notes](changes/2026-10-22-workmate-publication.en.md) · [Branch and synchronization policy](governance/04-git-branches-and-publication.md) · [Exact prior README archive](quality/history/stage66-before-workmate-readmes/manifest.json)
 

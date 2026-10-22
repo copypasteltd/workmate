@@ -7,7 +7,9 @@
 
 ## 1. 进程和传输
 
-设备核心管理配对、授权、命令账本和子进程；Native Messaging host 将扩展消息交给核心；Desktop main process 通过窄 IPC 调用核心。渲染页面与 content script 不直接执行命令。
+2026-10-22 起按 [CLIENT01](../requirements/03-client-execution-amendment.md) 区分两条执行路径：Desktop main process 直接管理本机 Codex app-server、会话、工具和用户可授予的完整本机权限；扩展可选 Native Messaging host 仅承接获准文件操作。下文云端签名命令、目录 grant、白名单程序和文件冲突约束适用于文件桥接/受限模式，不能作为 Desktop 完整本机操作能力的上限。实现偏差及新进程设计见 [方向检查](69-desktop-local-codex-and-extension-direction.md)。
+
+设备核心管理配对、授权、命令账本和桥接子进程；Native Messaging host 将扩展消息交给核心。Desktop 的本机 Codex 管理通过独立、类型明确的 IPC 实现，渲染页面与 content script 不直接拥有通用系统命令入口。扩展不能借 Host 开启 Desktop 的完整权限。
 
 Chrome Native Messaging 使用其规定的长度封包和 stdio，不等同产品 JSON REST 或 Codex app-server 通道。仅传控制与对象引用，大文件使用短期上传下载 session。扩展 ID/来源必须匹配正式安装注册。
 

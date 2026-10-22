@@ -1,5 +1,7 @@
 # 需求追踪矩阵
 
+当前客户端执行方向补充 [CLIENT01](../requirements/03-client-execution-amendment.md) 关联 REQ-036–044、075、078、100、102；新增 DESK-L01–L08 与 EXT-C01–C06，见 [方向审计](client-direction-audit.json)。原 102 项及 TC 保留；Desktop 本机 Codex/完整权限和 Extension 完整对话附件流程尚未验收，旧窗口/侧栏证据不能替代。
+
 <!-- stage66-current-paid-inputs:start -->
 阶段 66 为 REQ-009/044/069 记录已完成且用量明确的原生回合补资料续接，见[绑定回执](paid-input-checkpoint.json)和[实现说明](../technical/66-paid-native-input-checkpoints.md)。原 102 项需求、全部 TC/NFR/G01–G10、原验收字段与发现保持，完整产品验收数仍为 0。
 <!-- stage66-current-paid-inputs:end -->

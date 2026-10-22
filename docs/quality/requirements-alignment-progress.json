@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-22T08:16:50.919651+00:00",
+  "at": "2026-10-22T12:43:42.718609+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -9326,8 +9326,8 @@
   ],
   "contract_alignment": {
     "contract_operations": 225,
-    "implemented_operations": 341,
-    "unmatched_contract_method_paths": 119,
+    "implemented_operations": 415,
+    "unmatched_contract_method_paths": 105,
     "limit": "Method/path inventory only; mismatches can be nesting differences, matching routes still require full payload/status/authorization/event acceptance.",
     "operations": [
       {
@@ -9523,35 +9523,35 @@
         "method": "GET",
         "path": "/v1/tasks",
         "operation_id": "listTasks",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/tasks",
         "operation_id": "createTask",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "GET",
         "path": "/v1/tasks/{task_id}",
         "operation_id": "getTask",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/tasks/{task_id}/inputs",
         "operation_id": "provideTaskInput",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/tasks/{task_id}/controls",
         "operation_id": "controlTask",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -9775,49 +9775,49 @@
         "method": "GET",
         "path": "/v1/connections",
         "operation_id": "listConnections",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/connections",
         "operation_id": "createConnection",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "GET",
         "path": "/v1/connections/callback",
         "operation_id": "completeConnectionAuth",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "PATCH",
         "path": "/v1/connections/{connection_id}",
         "operation_id": "updateConnectionResources",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "DELETE",
         "path": "/v1/connections/{connection_id}",
         "operation_id": "revokeConnection",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "POST",
         "path": "/v1/connections/{connection_id}/syncs",
         "operation_id": "createSync",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
         "method": "GET",
         "path": "/v1/syncs/{sync_id}",
         "operation_id": "getSync",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -9936,7 +9936,7 @@
         "method": "GET",
         "path": "/v1/capabilities",
         "operation_id": "listCapabilities",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -10699,7 +10699,7 @@
         "method": "POST",
         "path": "/v1/admin/connections/{connection_id}/revocations",
         "operation_id": "revokeAdminConnection",
-        "method_path_matches": false,
+        "method_path_matches": true,
         "full_conformance": "not_proven"
       },
       {
@@ -10906,7 +10906,11 @@
         "full_conformance": "not_proven"
       }
     ],
-    "inventory_currentness": "Historical method/path inventory; the current connector supplement and executed response samples are recorded under marketing_connector_verification. This inventory does not establish current whole-API conformance."
+    "inventory_currentness": {
+      "path": "dev/copypaste-platform/contracts/implemented-routes.json",
+      "sha256": "54b5df2c4d19b9e73979cb90af3c935b55b2130072c8f47a937c00d4b7b4d7ec",
+      "limit": "Actual isolated-app method/path inventory, not full schema, semantics or whole-operation acceptance."
+    }
   },
   "gates": [
     {
@@ -12054,7 +12058,8 @@
         "task_controls",
         "task_dependencies",
         "web_admin",
-        "paid_input_verification"
+        "paid_input_verification",
+        "canonical_task_verification"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少规范的暂停检查点、未完成步骤重试及自动恢复；租约到期主要进入对账。",
@@ -12118,10 +12123,21 @@
           "implementation_docs": [
             "technical/66-paid-native-input-checkpoints.md"
           ]
+        },
+        {
+          "cluster": "canonical_task_contracts",
+          "verified_subflow": "原合同任务委派、精确 HKD、真实专家/Skill/预算绑定、并发幂等、白名单 Task、当前权限及来源复查、签名分页、版本控制和原任务输入批次事务；专用业务、历史无身份任务及完整运行恢复未完成。",
+          "evidence": [
+            "canonical_task_verification"
+          ],
+          "implementation_docs": [
+            "technical/68-canonical-task-contracts-and-input-transactions.md"
+          ]
         }
       ],
       "remaining_complete_acceptance_conditions": "首次模型调用前的排队暂停、原任务/原预算恢复与领取竞争已有验证；运行中安全暂停、已付费步骤检查点/同任务累计费用和未知外部动作闭环仍未完成。",
-      "acceptance_case_execution": "not_completed"
+      "acceptance_case_execution": "not_completed",
+      "current_task_contract_note": "本轮为局部修复。完整专用输入、历史身份迁移、运行中暂停、未知动作核对恢复及原 TC 全部条件仍保留，未完成整项验收。"
     },
     {
       "requirement_id": "REQ-010",
@@ -14506,7 +14522,8 @@
         "task_dependencies",
         "web_admin",
         "workbook_interop",
-        "paid_input_verification"
+        "paid_input_verification",
+        "canonical_task_verification"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有真实 Codex 工具回合；会话继续、检查点、事件恢复尚不完整。",
@@ -14731,10 +14748,21 @@
           "implementation_docs": [
             "technical/66-paid-native-input-checkpoints.md"
           ]
+        },
+        {
+          "cluster": "canonical_task_contracts",
+          "verified_subflow": "原合同任务委派、精确 HKD、真实专家/Skill/预算绑定、并发幂等、白名单 Task、当前权限及来源复查、签名分页、版本控制和原任务输入批次事务；专用业务、历史无身份任务及完整运行恢复未完成。",
+          "evidence": [
+            "canonical_task_verification"
+          ],
+          "implementation_docs": [
+            "technical/68-canonical-task-contracts-and-input-transactions.md"
+          ]
         }
       ],
       "remaining_complete_acceptance_conditions": "锁定真实 Codex 的跨进程原线程/工具续聊、配置回执、增量用量、中断与 I/O 故障已有原语验证；Worker 已付费步骤续做、全故障/多节点与完整恢复仍待完成。",
-      "acceptance_case_execution": "not_completed"
+      "acceptance_case_execution": "not_completed",
+      "current_task_contract_note": "本轮为局部修复。完整专用输入、历史身份迁移、运行中暂停、未知动作核对恢复及原 TC 全部条件仍保留，未完成整项验收。"
     },
     {
       "requirement_id": "REQ-045",
@@ -17134,7 +17162,8 @@
         "task_controls",
         "task_dependencies",
         "history_source_verification",
-        "paid_input_verification"
+        "paid_input_verification",
+        "canonical_task_verification"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少持久 DependencyRequest、原任务检查点续做及重复回调去重。",
@@ -17184,10 +17213,21 @@
           "implementation_docs": [
             "technical/66-paid-native-input-checkpoints.md"
           ]
+        },
+        {
+          "cluster": "canonical_task_contracts",
+          "verified_subflow": "原合同任务委派、精确 HKD、真实专家/Skill/预算绑定、并发幂等、白名单 Task、当前权限及来源复查、签名分页、版本控制和原任务输入批次事务；专用业务、历史无身份任务及完整运行恢复未完成。",
+          "evidence": [
+            "canonical_task_verification"
+          ],
+          "implementation_docs": [
+            "technical/68-canonical-task-contracts-and-input-transactions.md"
+          ]
         }
       ],
       "remaining_complete_acceptance_conditions": "已实现首次模型调用前的显式文件/连接检查点；已付费步骤恢复、自动识别、capability/device 和离线等待仍未完成。",
-      "acceptance_case_execution": "not_completed"
+      "acceptance_case_execution": "not_completed",
+      "current_task_contract_note": "本轮为局部修复。完整专用输入、历史身份迁移、运行中暂停、未知动作核对恢复及原 TC 全部条件仍保留，未完成整项验收。"
     },
     {
       "requirement_id": "REQ-070",
@@ -39054,5 +39094,105 @@
       "path": "docs/quality/paid-input-docs-final-02.json",
       "sha256": "3fd3f261af74adf41c953e27f1035a7bd622bbd1faee334c6775dd7deb2b5d23"
     }
+  },
+  "client_direction_amendment": {
+    "id": "CLIENT01",
+    "recorded_at": "2026-10-22",
+    "path": "docs/quality/client-execution-amendment.json",
+    "sha256": "57e5e7395caf36926a50fade770bc2c93e07ad2338f4cd39e4e76f33b4cee30a",
+    "scope": "Desktop local Codex and opt-in full access; Extension conversation and file upload",
+    "audit": "docs/quality/client-direction-audit.json",
+    "audit_sha256": "3b71d73df0a206ffe740bb9915785feb7fca77016fc53dabded6cc8b56f07dbe",
+    "priority": "implement_desktop_local_codex_full_access_and_extension_conversation_attachments",
+    "desktop_local_kernel_and_full_access": "not_implemented",
+    "extension_conversation_attachment_acceptance": "not_complete",
+    "additional_runtime_acceptance": "not_run",
+    "original_requirement_and_test_records": "preserved_without_promoting_acceptance"
+  },
+  "desktop_native_supervisor": {
+    "checkpoint": "local-codex-supervisor-checkpoint.json",
+    "sha256": "87b0dcebe65c7db8b6a67cfeb76cf02c63a00565921cff9f7cce45fa3b2addc5",
+    "status": "native_supervisor_verified_product_integration_pending",
+    "original_requirement_acceptance_unchanged": true
+  },
+  "canonical_task_verification": {
+    "at": "2026-10-22T12:43:42.718609+00:00",
+    "status": "local_increment_passed",
+    "scope": "Canonical specialist delegations, public Task DTOs, exact budgets, current visibility, idempotent controls and atomic original-task prerequisite selection. Current native/media checks verify existing UI compatibility. Does not establish complete product, live roles or production qualification.",
+    "full_platform_regression": {
+      "path": "canonical-task-regression-01.json",
+      "counts": {
+        "tests": 802,
+        "pass": 802,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "sha256": "a113a3a162e2d0d79bb61a3d6a37dff5ba90a7adbb4c105a6b97d0ebdb28d767"
+    },
+    "focused": {
+      "path": "canonical-task-integration-04.json",
+      "counts": {
+        "tests": 52,
+        "pass": 52,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "sha256": "ad4fef1563a4dcf76f96ea80848c3ad876d6354e026499cc4d8a4d2208e0a16d"
+    },
+    "previous_782_named_tests_retained": true,
+    "source_bindings_checked": {
+      "full_platform": 856,
+      "focused_platform": 852,
+      "client_checks": 1306,
+      "native_journey": 1206
+    },
+    "client_checks": {
+      "path": "paid-input-clients-09.json",
+      "checks": 13
+    },
+    "native_client_journey": {
+      "path": "paid-input-native-10.json",
+      "counts": {
+        "checks": 32,
+        "errors": 0
+      }
+    },
+    "media": {
+      "path": "workmate-media-10.json",
+      "recordings": 4,
+      "screenshots": 11
+    },
+    "preserved_failures": [
+      "canonical-task-integration-01.json",
+      "canonical-task-integration-02.json",
+      "paid-input-native-07.json",
+      "paid-input-native-08.json",
+      "workmate-media-07.json",
+      "workmate-media-08.json"
+    ],
+    "remaining": [
+      "Dedicated TaskCreate business inputs and optional contexts",
+      "Historical tasks without retained specialist identity",
+      "Arbitrary in-flight pause and full same-task retry",
+      "Recovery after uncertain external operations",
+      "Remaining original role/business/client/NFR/G01-G10 acceptance conditions"
+    ],
+    "baseline": {
+      "requirements": 102,
+      "acceptance_cases": 102,
+      "partial_verified": 81,
+      "completion_not_proven": 21,
+      "fully_accepted": 0
+    },
+    "verifier_sha256": "7fe1ba7d85d374e8c19a5b751e50a862b25c617c3ede86627a937ea3c75a7ad5"
+  },
+  "current_source_qualification": {
+    "stage": 68,
+    "checkpoint": "canonical-task-checkpoint.json",
+    "note": "Earlier stage receipts retain their original source scope. Only these new full/client/native receipts describe the current changed backend; no old result is relabeled as current."
   }
 }

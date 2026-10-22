@@ -20,7 +20,7 @@ interface CodexRuntimeAdapter {
 }
 ```
 
-RunContext 固定 tenant/project/task/attempt、agent_version、capability_version、input_refs、scope、budget_ref、workspace 和 fencing_token。适配器提供执行事件，不自行决定企业权限和账单金额；所有工具调用通过受控工具服务。
+RunContext 固定 tenant/project/task/attempt、agent_version、capability_version、input_refs、scope、budget_ref、workspace 和 fencing_token。适配器提供执行事件，不自行决定企业权限和账单金额；云端业务工具通过受控工具服务，Desktop 的本机文件、终端及工具按客户在本机选择的实际权限执行。
 
 适配器只承担产品与 Codex 协议/版本的转换；不建设多内核插件、内核选择器或自动切换机制。Codex 内核与底层推理模型分别配置，锁定内核不改变用户指定的内部模型与媒体能力。
 
@@ -28,7 +28,7 @@ RuntimeEvent 映射为状态、可见消息、工具开始/结束、检查点、
 
 ## 2. Codex 集成路径
 
-采用 Codex app-server 集成，由 worker 托管受控原生子进程，默认通过 stdio 双向消息管理初始化、会话、turn、事件及授权交互；原生控制接口不直接暴露公网。Codex 官方支持 app-server 与按运行版本生成的协议 schema，产品将这些原生消息映射到自己的任务与事件。[官方集成说明](https://learn.chatgpt.com/docs/app-server)
+采用 Codex app-server 集成：Web/Extension 由云端 worker 托管，Desktop 必须由客户本机 main process 托管。通过本机 stdio 双向消息管理初始化、会话、turn、事件及授权交互；原生控制接口不直接暴露公网。Codex 官方支持 app-server 与按运行版本生成的协议 schema，产品将这些原生消息映射到自己的任务与事件。[官方集成说明](https://learn.chatgpt.com/docs/app-server)
 
 内部 provider 指向公司网关，按官方当前配置使用 Responses。完整流式事件、历史输入、工具调用和调用结果必须端到端保留；健康检查和普通文本答复不能代替运行验证。[官方网关要求](https://learn.chatgpt.com/docs/enterprise/gateway-compatibility)
 
@@ -41,11 +41,11 @@ RuntimeEvent 映射为状态、可见消息、工具开始/结束、检查点、
 | 运行配置 | runtime_profiles.kernel 固定 codex，启用前固定 Codex 版本、包摘要、协议 schema 与验证状态 |
 | 角色和团队 | 默认助手、18 个预设、定制模板、团队成员和 Routine 只解析到获准 Codex 配置 |
 | 发布和调度 | 创建/发布模板、实例化、任务开始/恢复时校验内核、版本、依赖和当前权限；运行冻结对应版本 |
-| 客户输入 | 不接受自定义内核、任意运行程序或 provider 地址覆盖；Skill 和上传的配置文件不能改平台强制配置 |
+| 客户输入 | 不接受替换 Codex 内核程序或 provider 地址；Skill 和上传配置不能改平台强制配置。Desktop 完整模式允许在客户授权下运行本机终端命令与程序，这不等同替换 Agent 内核 |
 | 故障和升级 | Codex 缺失或未验证时阻止启动；运行故障按检查点和既有重试规则处理，禁用自动切换其他内核；回滚仅回到已验收的 Codex 版本 |
 | 内部 AI | 所有 Codex 推理、媒体工具和 Skill 中 AI 请求经过公司内部服务器；不使用客户个人模型登录代替内部路由 |
 
-默认云端托管 Codex；Web/扩展访问统一产品 API，客户不必安装 Codex CLI。Desktop 复用云端 Codex 和原生设备核心；如增加本地内核运行，也只能使用经过相同验证的 Codex 配置和内部网关。产品权限、任务持久状态、计费与平台连接由企业平台管理。
+按用户 2026-10-22 的 [CLIENT01](../requirements/03-client-execution-amendment.md)，Web/扩展使用云端 Codex，Desktop 必须使用客户本机 Codex。Desktop 由产品安装/管理锁定版本，提供受限与客户可授予的完整本机权限模式；不能沿用云端 read-only/禁 shell 配置来限制完整模式。所有推理和媒体 AI 仍经内部网关；产品权限、账单与平台连接仍由企业平台管理。当前 Desktop 只有文件桥接，本机 Codex 集成仍待实现，见 [方向检查](69-desktop-local-codex-and-extension-direction.md)。
 
 ## 4. 模型标识与能力协商
 

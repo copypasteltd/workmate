@@ -1,5 +1,7 @@
 # 文档体系与使用规则
 
+2026-10-22 当前客户端方向以 [CLIENT01 需求补充](requirements/03-client-execution-amendment.md) 和 [方向检查/开发调整](technical/69-desktop-local-codex-and-extension-direction.md) 为准：Desktop 必须本机运行 Codex 并支持客户授予完整本机权限；Extension 是 ChatGPT 式对话附件侧栏，负责文件获取、读取、上传，Agent 在云端执行。旧阶段窗口/侧栏证据不证明新能力完成。
+
 <!-- stage62-scoped-seo -->
 阶段 62 新增[有范围约束的网站诊断与复查](technical/62-scoped-seo-audits.md)：实际原生模拟 HTTP、逐 URL 问题/原文、Codex 内部模拟网关报告、不可变复查和来源治理。专项 **45/45**，完整平台 **716/716**，保留原全部 674 项命名测试；实际 Web/Admin **13 项**、新包原生 **20 项**。Desktop 无边框、无 Electron/Alt 菜单；扩展工具栏打开/收起真正 Chrome 原生 Side Panel，增加固定网站工作台入口。两库 077→079 保留 164 张原表全部行摘要及 SQL001–077，三张新表为空并强制 RLS。当前包在各端 `release/scoped-seo-62-02/`；见[当前回执](quality/scoped-seo-checkpoint.json)和[包清单](quality/scoped-seo-artifacts.json)。修改任务、GEO、正式站点/模型、安装发布及全部原 TC/NFR/G01–G10 继续保留，未宣称完整产品验收。下方较早阶段只代表当时的源码和包。
 
@@ -85,6 +87,8 @@ ADMIN01 的页面、用户/消耗、人工费用/VIP、内容与角色职责以 
 0.4.0 每日/每周、时区、明确执行授权、配置版本、漏跑/重叠、后台暂停恢复与删除见 [定时技术约束](technical/15-cloud-workflow-schedules.md)，实际时钟和跨端证据见 [0.4.0 验收](quality/07-cloud-schedule-acceptance.md)。早期版本原始验收保留，不用增量测试代替全量产品准入。
 
 ## 13. 全体系差异修复
+
+CLIENT01 的本机 Desktop 与对话附件 Extension 约束见 [需求补充](requirements/03-client-execution-amendment.md) 与 [方向检查](technical/69-desktop-local-codex-and-extension-direction.md)。独立本机内核的实测进度与剩余客户端接入见 [Codex supervisor](technical/70-desktop-native-codex-supervisor.md)，不能以模块测试替代完整客户端验收。
 
 当前范围与原始基线见 [完整复查](quality/09-implementation-alignment-audit.md)，逐项证据和剩余条件见 [102 条进度](quality/requirements-alignment-progress.json)。新增实现约束分别见 [删除/传输/事件](technical/17-erasure-transfer-retention-events.md)、[持久云文件](technical/18-persistent-cloud-files.md)、[项目技能](technical/19-project-skill-lifecycle.md)、[站内通知](technical/20-in-app-notifications.md) 和 [默认助手](technical/21-default-assistant-and-first-delegation.md)。历史发布与未发布源码分别记录，不批量关闭综合用例。
 

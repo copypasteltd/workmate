@@ -5,6 +5,7 @@
 - 所有项目文档、文档工具与核查报告统一存放在 `D:\dev\copypasted\自有agent\docs\`。路径维护规则见 [工作区规范](docs/governance/03-workspace-and-path-policy.md)。
 - 旧的 C 盘入口仅用于兼容当前会话；不得在旧入口或 `.migration-source-backup` 中建立第二套开发工作区。迁移备份只用于恢复。
 - Agent 内核唯一使用 Codex；全部 AI 请求经公司内部服务器，遵守当前开发文档的版本、权限与模型约束。
+- CLIENT01：Desktop 必须在客户本机运行 Codex Agent，并提供客户可主动授予的完整本机权限；不得以云端 Agent 加文件桥接替代。Extension 使用 ChatGPT 式对话和附件结构，承担获准文件获取、读取及上传，Agent 在云端运行；保留原生右侧 Side Panel。权威补充见 docs/requirements/03-client-execution-amendment.md。
 - 严禁调度任何本地 Docker、WSL 或其他虚拟化环境，使用原生工具开发和核查。
 - 使用浏览器后，关闭本次调用创建且不再需要的页面、上下文及独立浏览器实例，释放内存；保留用户原有页面。
 - 各端独立仓库按 [Git 分支与同步规则](docs/governance/04-git-branches-and-publication.md) 发布至 `git@github.com:copypasteltd/workmate.git` 的对应分支；后续代码修改需同步中英双语 README、相关实际截图/交互 GIF 和更新说明，再提交并推送。用户已经授权此持续同步，不重复询问常规推送权限；不得强推覆盖其他人的工作。

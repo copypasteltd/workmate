@@ -1,5 +1,7 @@
 # 全体系需求差异复查与修复
 
+**当前优先方向（2026-10-22）：** 用户的 [CLIENT01](../requirements/03-client-execution-amendment.md) 明确 Desktop 本机运行 Codex 并支持客户授予完整本机权限；Extension 为 ChatGPT 式对话/附件侧栏，读取获选文件并上传云端执行。检查确认 Desktop 云端加文件桥接及扩展任务表单主线存在方向偏差。[开发调整](../technical/69-desktop-local-codex-and-extension-direction.md) 已将其列为优先改造，代码尚未完整修复；原 102 项及下方历史证据保留原范围。
+
 <!-- stage66-current-paid-inputs:start -->
 阶段 66 的局部修复为同一付费任务/线程补资料续接、单笔预留、累计费用及有效已完成操作复用。平台 782/782、定向 34/34、原生旅程 32 项通过；模拟数据与 UI 回合夹具明确标注。见[绑定回执](paid-input-checkpoint.json)。原发现和全部验收门槛继续保留，不把本轮实现认作完整产品验收。
 <!-- stage66-current-paid-inputs:end -->
