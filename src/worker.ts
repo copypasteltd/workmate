@@ -87,6 +87,16 @@ import { expireFederationAttempts } from "./federation-session.js";
 import { ErasureService } from "./erasure.js";
 import { cleanUploadStaging } from "./uploads.js";
 import { RetentionService } from "./retention.js";
+import { lockTaskTools, reuseCompletedTaskTool } from "./task-tool-reuse.js";
+import {
+  paidInputRequest,
+  requestPaidInputs,
+  assertNoPendingInputRequest,
+  queuedPaidContinuation,
+  consumePaidContinuation,
+  completePaidInputCheckpoint,
+  settleIdleTask,
+} from "./paid-task-inputs.js";
 import { recoverQueuedClaims } from "./task-recovery.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
 import { authorizeExecutionPlan } from "./plans.js";
@@ -326,6 +336,7 @@ export class Worker {
           authVersion: t.actor_auth_version,
         };
         let currentPlan;
+        let continuation: any = null;
         try {
           await projectAccess(tx, actor, tenant, t.project_id, "write");
           if (t.content_state !== "active")
@@ -356,19 +367,24 @@ export class Worker {
             throw new Error("Role version changed");
           if (!(await checkInputDependencies(tx, t))) return null;
           await assertTaskContentSources(tx, t);
+          continuation = await queuedPaidContinuation(tx, t);
         } catch (error) {
           const code =
             error instanceof Problem && error.code.startsWith("TASK_")
               ? error.code
               : "AUTHORIZATION_CHANGED";
-          await settle(tx, tenant, id, 0, t.created_by);
+          const known = await settleIdleTask(tx, t);
           await tx.query(
-            "UPDATE tasks SET status='cancelled',error_code=$2,version=version+1 WHERE id=$1",
-            [id, code],
+            "UPDATE tasks SET status=$3,error_code=$2,version=version+1 WHERE id=$1",
+            [id, code, known ? "cancelled" : "reconciling"],
           );
-          await event(tx, tenant, id, "task.cancelled", {
-            reason: code,
-          });
+          if (known)
+            await event(tx, tenant, id, "task.cancelled", { reason: code });
+          else
+            await event(tx, tenant, id, "task.finished", {
+              status: "reconciling",
+              error_code: code,
+            });
           return null;
         }
         if (!(await seoCrawlReady(tx, t))) return null;
@@ -380,6 +396,8 @@ export class Worker {
           fencing,
         );
         if (!started) return null;
+        await consumePaidContinuation(tx, continuation, started);
+        if (continuation) started.resume_thread = continuation.runtime_thread;
         await event(tx, tenant, id, "task.started", {});
         return started;
       },
@@ -543,8 +561,9 @@ export class Worker {
       };
       const result = await this.runtime.start({
         taskId: id,
-        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}${task.input_context?.seo_audit_id ? "\n\n" + seoAuditInstructions : ""}${task.input_context?.seo_change_task_id ? "\n\n" + seoChangeInstructions : ""}`,
+        prompt: `${context.instructions}\n\nWork mode: ${task.mode ?? "execute"}. ${task.mode === "execute" ? "Perform the authorized work. If essential authorized files or connections are missing, use request_input and finish the turn. Never invent missing data or perform more tool operations after requesting inputs." : "Read-only investigation. Return a written answer or plan; do not create assets or perform business writes."}${task.resume_thread ? "\nContinue the same authorized task after the user supplied the requested inputs. Reuse completed tool results and artifacts from this thread; do not repeat completed operations." : ""}\n\nCurrent user request:\n${task.prompt}${task.input_context?.analysis_report_id ? "\n\n" + analysisReportInstructions : ""}${task.input_context?.seo_audit_id ? "\n\n" + seoAuditInstructions : ""}${task.input_context?.seo_change_task_id ? "\n\n" + seoChangeInstructions : ""}`,
         workspace: path.resolve(this.db.config.DATA_DIR, "runs", tenant, id),
+        thread: task.resume_thread,
         skills: bound,
         selection: runtimeSelection(context.capabilities),
         requestAuthority: {
@@ -577,6 +596,10 @@ export class Worker {
         result.inputTokens,
         result.outputTokens,
         !result.usageKnown && result.accepted,
+        undefined,
+        result.status === "completed" && result.usageKnown
+          ? { thread: result.thread, turn: result.turn }
+          : undefined,
       );
     } catch (e) {
       await stopHeartbeat();
@@ -609,6 +632,7 @@ export class Worker {
     output: number,
     uncertain: boolean,
     error?: string,
+    native?: { thread: string; turn: string },
   ) {
     await this.db.tx(
       async (tx) => {
@@ -619,6 +643,10 @@ export class Worker {
           )
         ).rows[0];
         if (!live || live.status !== "running") return;
+        // Adapter usage is per turn. Provider receipts, when present below,
+        // remain the authoritative cumulative task total across all attempts.
+        input += Number(live.input_tokens);
+        output += Number(live.output_tokens);
         if (live.cancel_requested) status = "cancelled";
         const erased = live.content_state === "deleted";
         if (live.content_state !== "active") {
@@ -725,6 +753,42 @@ export class Worker {
             error = "AI_REQUEST_BUDGET_VIOLATION";
           }
         }
+        const inputRequested = !!(
+          await tx.query(
+            "SELECT 1 FROM task_input_checkpoints WHERE task_id=$1 AND fencing_token=$2 AND state='requested'",
+            [t.id, fencing],
+          )
+        ).rowCount;
+        if (
+          inputRequested &&
+          status === "succeeded" &&
+          !uncertain &&
+          !ops.uncertain
+        ) {
+          try {
+            if (
+              await completePaidInputCheckpoint(
+                tx,
+                live,
+                text,
+                input,
+                output,
+                cost,
+                native,
+              )
+            )
+              return;
+          } catch (e) {
+            if (
+              !(e instanceof Problem) ||
+              e.code !== "INPUT_CHECKPOINT_UNAVAILABLE"
+            )
+              throw e;
+            status = "failed";
+            error = e.code;
+            text = "";
+          }
+        }
         if (
           status === "succeeded" &&
           !uncertain &&
@@ -787,8 +851,8 @@ export class Worker {
           }
         }
         await tx.query(
-          "UPDATE tasks SET status=$2,output=$3,input_tokens=$4,output_tokens=$5,error_code=$6,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
-          [t.id, status, text, input, output, error ?? null],
+          "UPDATE tasks SET status=$2,output=$3,input_tokens=$4,output_tokens=$5,error_code=$6,accrued_micros=$7,lease_until=NULL,updated_at=now(),version=version+1 WHERE id=$1",
+          [t.id, status, text, input, output, error ?? null, cost],
         );
         await settle(
           tx,
@@ -970,19 +1034,56 @@ export class Worker {
     role: any,
   ): RuntimeContext["tools"] {
     const authorize = async (tx: any) => {
+      await lockTaskTools(tx, t.id);
       await this.authorizeTaskRequest(tx, t, actor, fencing);
+      await assertNoPendingInputRequest(tx, t, fencing);
     };
     const txTool =
-      (fn: (tx: any, a: any) => Promise<unknown>, schema: z.ZodType) =>
+      (
+        fn: (tx: any, a: any) => Promise<unknown>,
+        schema: z.ZodType,
+        identity?: string,
+        sourceContext?: (tx: Tx, args: any) => Promise<unknown>,
+      ) =>
       (args: unknown, callId: string) =>
         this.db.tx(async (tx) => {
           await authorize(tx);
           const a = schema.parse(args);
-          return replay(tx, actor.id, `tool:${t.id}`, callId, a, () =>
-            fn(tx, a),
+          return replay(tx, actor.id, `tool:${t.id}`, callId, a, async () =>
+            identity
+              ? reuseCompletedTaskTool(
+                  tx,
+                  t,
+                  fencing,
+                  identity,
+                  callId,
+                  sourceContext
+                    ? {
+                        arguments: a,
+                        source_context: await sourceContext(tx, a),
+                      }
+                    : a,
+                  () => fn(tx, a),
+                )
+              : fn(tx, a),
           );
         }, t.tenant_id);
     const tools: RuntimeContext["tools"] = [
+      {
+        name: "request_input",
+        description:
+          "Request essential missing authorized files or a supported marketing connection. The user chooses the resources. Finish this turn immediately after this tool; the same paid task and native thread continue after all inputs are provided. Never request credentials or invent access.",
+        inputSchema: z.toJSONSchema(paidInputRequest),
+        run: (args: unknown, callId: string) =>
+          this.db.tx(async (tx) => {
+            await lockTaskTools(tx, t.id);
+            await this.authorizeTaskRequest(tx, t, actor, fencing);
+            const body = paidInputRequest.parse(args);
+            return replay(tx, actor.id, `tool:${t.id}`, callId, body, () =>
+              requestPaidInputs(tx, t, fencing, role, body, callId),
+            );
+          }, t.tenant_id),
+      },
       {
         name: "project_assets",
         description:
@@ -1094,6 +1195,7 @@ export class Worker {
               ]),
             })
             .strict(),
+          "deliver_text",
         ),
       },
       {
@@ -1243,6 +1345,7 @@ export class Worker {
                 .optional(),
             })
             .strict(),
+          "code_write",
         ),
       });
     if (
@@ -1283,6 +1386,13 @@ export class Worker {
           z
             .object({ filename: z.string().min(1).max(160).endsWith(".zip") })
             .strict(),
+          "code_package",
+          async (tx) =>
+            t.conversation_id && t.private_owner
+              ? (await bundleCloudSources(tx, this.storage, t)).files
+              : (await workspace.list()).sort((a, b) =>
+                  a.path.localeCompare(b.path),
+                ),
         ),
       });
     if (role.tool_ids.includes("video.render") && !t.private_owner) {
@@ -1291,33 +1401,37 @@ export class Worker {
         description:
           "Create a shared, versioned script/storyboard/subtitle video project and queue native composition. Use only fixed shared project PNG/WAV/MP3 versions and declared audio rights. Returns a queued render ID, not a finished file. Does not synthesize voice or generate video through another AI service.",
         inputSchema: z.toJSONSchema(videoCreate),
-        run: txTool(async (tx, a) => {
-          const profile = await videoRendererProfile();
-          const p = await createVideoProject(
-            tx,
-            this.db,
-            actor,
-            t.tenant_id,
-            t.project_id,
-            a,
-            profile,
-          );
-          const render = await enqueueVideoRender(
-            tx,
-            this.db,
-            actor,
-            t.tenant_id,
-            t.project_id,
-            p.id,
-            p.version,
-          );
-          return {
-            project: p,
-            render,
-            delivery_state: "queued",
-            requires_render_completion: true,
-          };
-        }, videoCreate),
+        run: txTool(
+          async (tx, a) => {
+            const profile = await videoRendererProfile();
+            const p = await createVideoProject(
+              tx,
+              this.db,
+              actor,
+              t.tenant_id,
+              t.project_id,
+              a,
+              profile,
+            );
+            const render = await enqueueVideoRender(
+              tx,
+              this.db,
+              actor,
+              t.tenant_id,
+              t.project_id,
+              p.id,
+              p.version,
+            );
+            return {
+              project: p,
+              render,
+              delivery_state: "queued",
+              requires_render_completion: true,
+            };
+          },
+          videoCreate,
+          "video_project_queue",
+        ),
       });
     }
     const allowedFormats = designFormatsForTools(role.tool_ids);
@@ -1341,69 +1455,73 @@ export class Worker {
         description:
           "Save an editable poster JSON source and render one permitted format. PDF is a single-page raster review copy; text and layers remain editable only in the source. MP4 is a bounded H.264/AAC motion creative.",
         inputSchema: z.toJSONSchema(renderInput),
-        run: txTool(async (tx, a) => {
-          const source = await saveAsset(tx, this.storage, {
-            tenant: t.tenant_id,
-            project: t.project_id,
-            user: actor.id,
-            name: a.filename + ".editable.json",
-            mime: "application/json",
-            bytes: Buffer.from(JSON.stringify(a.document, null, 2)),
-            kind: "editable_design",
-            metadata: { task_id: t.id },
-          });
-          const svg = await renderProjectPoster(
-            tx,
-            this.storage,
-            t.project_id,
-            a.document,
-          );
-          let bytes = Buffer.from(svg),
-            mime = "image/svg+xml",
-            probe: any = null;
-          if (a.format === "png") {
-            bytes = Buffer.from(pngFromSVG(svg));
-            mime = "image/png";
-          }
-          if (a.format === "pdf") {
-            const r = await pdfFromSVG(
-              svg,
-              a.document.width,
-              a.document.height,
-            );
-            bytes = r.bytes;
-            probe = r.probe;
-            mime = "application/pdf";
-          }
-          if (a.format === "mp4") {
-            const r = await motionFromSVG(
-              svg,
-              a.document.width,
-              a.document.height,
-              {
-                duration: a.duration ?? 6,
-                effect: a.effect ?? "fade",
-                dataDir: this.db.config.DATA_DIR,
-              },
-            );
-            bytes = r.bytes;
-            probe = r.probe;
-            mime = "video/mp4";
-          }
-          return {
-            source,
-            rendered: await saveAsset(tx, this.storage, {
+        run: txTool(
+          async (tx, a) => {
+            const source = await saveAsset(tx, this.storage, {
               tenant: t.tenant_id,
               project: t.project_id,
               user: actor.id,
-              name: a.filename + "." + a.format,
-              mime,
-              bytes,
-              kind: "design_render",
-              metadata: { task_id: t.id, source_asset_id: source.id, probe },
-            }),
-          };
-        }, renderInput),
+              name: a.filename + ".editable.json",
+              mime: "application/json",
+              bytes: Buffer.from(JSON.stringify(a.document, null, 2)),
+              kind: "editable_design",
+              metadata: { task_id: t.id },
+            });
+            const svg = await renderProjectPoster(
+              tx,
+              this.storage,
+              t.project_id,
+              a.document,
+            );
+            let bytes = Buffer.from(svg),
+              mime = "image/svg+xml",
+              probe: any = null;
+            if (a.format === "png") {
+              bytes = Buffer.from(pngFromSVG(svg));
+              mime = "image/png";
+            }
+            if (a.format === "pdf") {
+              const r = await pdfFromSVG(
+                svg,
+                a.document.width,
+                a.document.height,
+              );
+              bytes = r.bytes;
+              probe = r.probe;
+              mime = "application/pdf";
+            }
+            if (a.format === "mp4") {
+              const r = await motionFromSVG(
+                svg,
+                a.document.width,
+                a.document.height,
+                {
+                  duration: a.duration ?? 6,
+                  effect: a.effect ?? "fade",
+                  dataDir: this.db.config.DATA_DIR,
+                },
+              );
+              bytes = r.bytes;
+              probe = r.probe;
+              mime = "video/mp4";
+            }
+            return {
+              source,
+              rendered: await saveAsset(tx, this.storage, {
+                tenant: t.tenant_id,
+                project: t.project_id,
+                user: actor.id,
+                name: a.filename + "." + a.format,
+                mime,
+                bytes,
+                kind: "design_render",
+                metadata: { task_id: t.id, source_asset_id: source.id, probe },
+              }),
+            };
+          },
+          renderInput,
+          "design_render",
+        ),
       });
     }
     if (role.tool_ids.includes("font.inspect"))
@@ -1497,6 +1615,10 @@ export class Worker {
       (tool) =>
         (
           ({
+            request_input:
+              t.mode === "execute" &&
+              (role.tool_ids.includes("asset.read") ||
+                role.tool_ids.includes("connector.read")),
             project_assets: role.tool_ids.includes("asset.read"),
             asset_text_read: role.tool_ids.includes("asset.read"),
             cloud_files: role.tool_ids.includes("asset.read"),
@@ -1602,13 +1724,21 @@ export class Worker {
           !c.AI_API_KEY
         )
           throw new Error("Image 2 is not configured");
-        let source: { bytes: Buffer; mime: string; name: string } | undefined;
+        let source:
+          | {
+              bytes: Buffer;
+              mime: string;
+              name: string;
+              version: string;
+              sha256: string;
+            }
+          | undefined;
         if (edit)
           source = await this.db.tx(async (tx) => {
             await authorize(tx);
             const v = (
               await tx.query(
-                "SELECT a.name,v.mime_type,v.storage_key,v.bytes FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active'",
+                "SELECT a.name,v.id,v.sha256,v.mime_type,v.storage_key,v.bytes FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active'",
                 [(b as any).asset_id, t.project_id],
               )
             ).rows[0];
@@ -1622,12 +1752,34 @@ export class Worker {
               throw new Error(
                 "Choose a current project PNG, JPEG or WebP smaller than 10 MB",
               );
+            const bytes = await this.storage.get(v.storage_key);
+            await recordTaskSourceRead(
+              tx,
+              t,
+              "asset_version",
+              v.id,
+              v.id,
+              v.sha256,
+            );
             return {
-              bytes: await this.storage.get(v.storage_key),
+              bytes,
               mime: v.mime_type,
               name: v.name,
+              version: v.id,
+              sha256: v.sha256,
             };
           }, t.tenant_id);
+        const inputHash = hash(
+          canonical({
+            ...b,
+            ...(source
+              ? {
+                  source_asset_version_id: source.version,
+                  source_sha256: source.sha256,
+                }
+              : {}),
+          }),
+        );
         const op = await this.db.tx(async (tx) => {
           await authorize(tx);
           if (
@@ -1645,30 +1797,60 @@ export class Worker {
               "The source image is no longer authorized",
             );
           await tx.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [t.id]);
-          const old = (
+          let old = (
             await tx.query(
               "SELECT * FROM tool_operations WHERE task_id=$1 AND call_id=$2",
               [t.id, callId],
             )
           ).rows[0];
+          if (!old && t.attempt > 1)
+            old = (
+              await tx.query(
+                `SELECT * FROM tool_operations WHERE task_id=$1 AND action=$2 AND input_hash=$3
+              AND attempt_fencing IS NOT NULL AND attempt_fencing<>$4 AND state IN('succeeded','accepted','reconciling')
+              ORDER BY created_at DESC LIMIT 1`,
+                [
+                  t.id,
+                  edit ? "image2.edit" : "image2.generate",
+                  inputHash,
+                  fencing,
+                ],
+              )
+            ).rows[0];
           if (old) {
-            if (old.input_hash !== hash(canonical(b)))
+            if (old.input_hash !== inputHash)
               throw new Error("Tool request conflict");
-            if (old.state === "succeeded") return old;
+            if (old.state === "succeeded") {
+              if (
+                !(
+                  await tx.query(
+                    "SELECT 1 FROM assets WHERE id=$1 AND project_id=$2 AND state='active' AND retention_expires_at>clock_timestamp()",
+                    [old.result?.id, t.project_id],
+                  )
+                ).rowCount
+              )
+                throw new Problem(
+                  409,
+                  "COMPLETED_TOOL_OUTPUT_UNAVAILABLE",
+                  "The completed image is no longer available; do not generate it again automatically",
+                );
+              return old;
+            }
             throw new Error("Operation requires reconciliation; do not replay");
           }
           // Common durable gateway allocation checks all task text and images
           // against the original reservation immediately before dispatch.
           return (
             await tx.query(
-              "INSERT INTO tool_operations(tenant_id,task_id,call_id,action,state,input_hash,charge_micros) VALUES($1,$2,$3,$6,'accepted',$4,$5) RETURNING *",
+              "INSERT INTO tool_operations(tenant_id,task_id,call_id,action,state,input_hash,charge_micros,attempt_fencing) VALUES($1,$2,$3,$6,'accepted',$4,$5,$7) RETURNING *",
               [
                 t.tenant_id,
                 t.id,
                 callId,
-                hash(canonical(b)),
+                inputHash,
                 c.AI_IMAGE_HKD_MICROS_PER_IMAGE,
                 edit ? "image2.edit" : "image2.generate",
+                fencing,
               ],
             )
           ).rows[0];
@@ -1741,7 +1923,10 @@ export class Worker {
             httpStatus: response.status,
           });
           return this.db.tx(async (tx) => {
-            await authorize(tx);
+            // An operation accepted before an input request may still finish.
+            // Persist its measured result under the original fencing and source
+            // checks; the input request prevents new operations, not completion.
+            await this.authorizeTaskRequest(tx, t, actor, fencing);
             const a = await saveAsset(tx, this.storage, {
               tenant: t.tenant_id,
               project: t.project_id,

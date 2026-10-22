@@ -1027,7 +1027,7 @@ export function registerPersistentWork(
           ).rows,
           tasks: (
             await tx.query(
-              "SELECT id,title,status,mode,version,charged_micros,error_code,conversation_id,capacity_wait_reason FROM tasks WHERE conversation_id=$1 ORDER BY created_at",
+              "SELECT id,title,status,mode,version,attempt,charged_micros,accrued_micros,error_code,conversation_id,capacity_wait_reason FROM tasks WHERE conversation_id=$1 ORDER BY created_at",
               [id],
             )
           ).rows,

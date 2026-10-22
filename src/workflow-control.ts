@@ -1,7 +1,7 @@
 import type { Tx } from "./db.js";
 import type { Principal } from "./auth.js";
 import { audit } from "./auth.js";
-import { settle } from "./billing.js";
+import { settleIdleTask } from "./paid-task-inputs.js";
 import { event } from "./tasks.js";
 
 export async function cancelWorkflowRun(
@@ -28,10 +28,10 @@ export async function cancelWorkflowRun(
         task.status,
       )
     ) {
-      await settle(tx, run.tenant_id, task.id, 0, task.created_by);
+      const known = await settleIdleTask(tx, task);
       await tx.query(
-        "UPDATE tasks SET status='cancelled',cancel_requested=true,version=version+1 WHERE id=$1",
-        [task.id],
+        "UPDATE tasks SET status=$2,cancel_requested=true,version=version+1 WHERE id=$1",
+        [task.id, known ? "cancelled" : "reconciling"],
       );
     }
     if (task)

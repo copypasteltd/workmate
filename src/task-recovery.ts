@@ -1,6 +1,6 @@
 import type { Database } from "./db.js";
-import { settle } from "./billing.js";
 import { event } from "./tasks.js";
+import { settleIdleTask } from "./paid-task-inputs.js";
 
 /** Only an unclaimed task can be re-dispatched. A running/uncertain model or
  * external operation is never re-executed through this repair path. */
@@ -21,14 +21,14 @@ export async function recoverQueuedClaims(db: Database) {
         // This row lock serializes with claim: an already running task is
         // excluded and remains subject to cancellation/reconciliation.
         if (t.content_state !== "active" || t.cancel_requested) {
-          await settle(tx, t.tenant_id, t.id, 0, t.created_by);
+          const known = await settleIdleTask(tx, t);
           await tx.query(
-            "UPDATE tasks SET status='cancelled',error_code='CONTENT_UNAVAILABLE',version=version+1,updated_at=now() WHERE id=$1",
-            [t.id],
+            "UPDATE tasks SET status=$2,error_code='CONTENT_UNAVAILABLE',version=version+1,updated_at=now() WHERE id=$1",
+            [t.id, known ? "cancelled" : "reconciling"],
           );
           if (t.content_state === "active")
             await event(tx, t.tenant_id, t.id, "task.finished", {
-              status: "cancelled",
+              status: known ? "cancelled" : "reconciling",
               error_code: "CONTENT_UNAVAILABLE",
             });
           continue;
@@ -73,9 +73,10 @@ export async function recoverQueuedClaims(db: Database) {
           t.cancel_requested ||
           t.claim_retry_count >= 8
         ) {
-          await settle(tx, t.tenant_id, t.id, 0, t.created_by);
-          const status =
-            t.content_state !== "active" || t.cancel_requested
+          const known = await settleIdleTask(tx, t);
+          const status = !known
+            ? "reconciling"
+            : t.content_state !== "active" || t.cancel_requested
               ? "cancelled"
               : "failed";
           await tx.query(

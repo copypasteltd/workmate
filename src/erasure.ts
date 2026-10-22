@@ -234,6 +234,10 @@ export class ErasureService {
         );
         await tx.query("DELETE FROM task_events WHERE task_id=$1", [id]);
         await tx.query("DELETE FROM task_plans WHERE task_id=$1", [id]);
+        await tx.query("DELETE FROM task_input_checkpoints WHERE task_id=$1", [
+          id,
+        ]);
+        await tx.query("DELETE FROM task_tool_receipts WHERE task_id=$1", [id]);
         await tx.query(
           "UPDATE tool_operations SET result=NULL WHERE task_id=$1",
           [id],
@@ -278,26 +282,74 @@ export class ErasureService {
       case "brand_profiles":
       case "creative_projects":
         if (j.target_type === "creative_projects") {
-          const videoOutputs = (await tx.query("SELECT unnest(ARRAY[mp4_asset_id,project_asset_id,script_asset_id,storyboard_asset_id,subtitles_asset_id,probe_asset_id]) AS id FROM video_renders WHERE video_id=$1", [id])).rows.map((a) => a.id).filter(Boolean);
+          const videoOutputs = (
+            await tx.query(
+              "SELECT unnest(ARRAY[mp4_asset_id,project_asset_id,script_asset_id,storyboard_asset_id,subtitles_asset_id,probe_asset_id]) AS id FROM video_renders WHERE video_id=$1",
+              [id],
+            )
+          ).rows
+            .map((a) => a.id)
+            .filter(Boolean);
           if (videoOutputs.length) {
-            await tx.query("UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=ANY($1::uuid[]) AND state<>'deleted'", [videoOutputs]);
-            await tx.query("INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM deletion_jobs d WHERE d.target_type='assets' AND d.target_id=ANY($1::uuid[]) ON CONFLICT DO NOTHING", [videoOutputs,j.id]);
+            await tx.query(
+              "UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=ANY($1::uuid[]) AND state<>'deleted'",
+              [videoOutputs],
+            );
+            await tx.query(
+              "INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM deletion_jobs d WHERE d.target_type='assets' AND d.target_id=ANY($1::uuid[]) ON CONFLICT DO NOTHING",
+              [videoOutputs, j.id],
+            );
           }
-          await tx.query("SELECT set_config('app.erasing_content','true',true)");
-          await tx.query("UPDATE video_project_versions SET definition='{}' WHERE video_id=$1 AND definition<>'{}'", [id]);
-          await tx.query("UPDATE video_renders SET probe='{}' WHERE video_id=$1 AND probe<>'{}'", [id]);
-          await tx.query("SELECT set_config('app.erasing_content','false',true)");
-          const units = (await tx.query("SELECT id FROM creative_matrix_units WHERE batch_id=$1", [id])).rows.map((u) => u.id);
+          await tx.query(
+            "SELECT set_config('app.erasing_content','true',true)",
+          );
+          await tx.query(
+            "UPDATE video_project_versions SET definition='{}' WHERE video_id=$1 AND definition<>'{}'",
+            [id],
+          );
+          await tx.query(
+            "UPDATE video_renders SET probe='{}' WHERE video_id=$1 AND probe<>'{}'",
+            [id],
+          );
+          await tx.query(
+            "SELECT set_config('app.erasing_content','false',true)",
+          );
+          const units = (
+            await tx.query(
+              "SELECT id FROM creative_matrix_units WHERE batch_id=$1",
+              [id],
+            )
+          ).rows.map((u) => u.id);
           if (units.length) {
             await eraseReplayContent(tx, units);
-            const outputIds = (await tx.query("SELECT unnest(ARRAY[png_asset_id,svg_asset_id,source_asset_id]) AS id FROM creative_matrix_attempts WHERE unit_id=ANY($1::uuid[])", [units])).rows.map((a) => a.id).filter(Boolean);
+            const outputIds = (
+              await tx.query(
+                "SELECT unnest(ARRAY[png_asset_id,svg_asset_id,source_asset_id]) AS id FROM creative_matrix_attempts WHERE unit_id=ANY($1::uuid[])",
+                [units],
+              )
+            ).rows
+              .map((a) => a.id)
+              .filter(Boolean);
             if (outputIds.length) {
-              await tx.query("UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=ANY($1::uuid[]) AND state<>'deleted'", [outputIds]);
-              await tx.query("INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM deletion_jobs d WHERE d.target_type='assets' AND d.target_id=ANY($1::uuid[]) ON CONFLICT DO NOTHING", [outputIds,j.id]);
+              await tx.query(
+                "UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=ANY($1::uuid[]) AND state<>'deleted'",
+                [outputIds],
+              );
+              await tx.query(
+                "INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM deletion_jobs d WHERE d.target_type='assets' AND d.target_id=ANY($1::uuid[]) ON CONFLICT DO NOTHING",
+                [outputIds, j.id],
+              );
             }
-            await tx.query("SELECT set_config('app.erasing_content','true',true)");
-            await tx.query("UPDATE creative_matrix_revisions SET input='{}' WHERE unit_id=ANY($1::uuid[]) AND input<>'{}'", [units]);
-            await tx.query("SELECT set_config('app.erasing_content','false',true)");
+            await tx.query(
+              "SELECT set_config('app.erasing_content','true',true)",
+            );
+            await tx.query(
+              "UPDATE creative_matrix_revisions SET input='{}' WHERE unit_id=ANY($1::uuid[]) AND input<>'{}'",
+              [units],
+            );
+            await tx.query(
+              "SELECT set_config('app.erasing_content','false',true)",
+            );
           }
         }
         await tx.query(

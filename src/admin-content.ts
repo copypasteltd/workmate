@@ -6,7 +6,7 @@ import { requireAdmin, audit } from "./auth.js";
 import { permit } from "./admin-access.js";
 import { Problem, uuid, name } from "./lib.js";
 import { eraseReplayContent, key, replay } from "./access.js";
-import { settle } from "./billing.js";
+import { settleIdleTask } from "./paid-task-inputs.js";
 import { eraseConversation } from "./persistent-work.js";
 import { eraseSchedule } from "./schedules.js";
 import { cancelWorkflowRun } from "./workflow-control.js";
@@ -151,61 +151,61 @@ export function registerAdminContent(
             table === "creative_projects" && r.kind === "creative_matrix"
               ? await matrixContentBody(tx, r)
               : table === "creative_projects" && r.kind === "video"
-              ? await videoContentBody(tx, r)
-              : table === "workflow_schedules"
-              ? (
-                  await tx.query(
-                    "SELECT revision,body,created_at FROM workflow_schedule_versions WHERE schedule_id=$1 ORDER BY revision DESC LIMIT 100",
-                    [r.id],
-                  )
-                ).rows
-              : table === "tasks"
-                ? {
-                    title: r.title,
-                    prompt: r.prompt,
-                    output: r.output,
-                    status: r.status,
-                    dependencies: (
+                ? await videoContentBody(tx, r)
+                : table === "workflow_schedules"
+                  ? (
                       await tx.query(
-                        "SELECT id,step_key,kind,description,required_scope,provider,state,resource_ids,version FROM task_dependencies WHERE task_id=$1 ORDER BY step_key",
+                        "SELECT revision,body,created_at FROM workflow_schedule_versions WHERE schedule_id=$1 ORDER BY revision DESC LIMIT 100",
                         [r.id],
                       )
-                    ).rows,
-                  }
-                : table === "analytics_datasets"
-                  ? {
-                      currency: r.currency,
-                      timezone: r.timezone,
-                      rows: r.rows,
-                      import_spec: r.import_spec,
-                      import_metadata: r.import_metadata,
-                      source_sha256: r.source_sha256,
-                      source_filename: r.source_filename,
-                      source_available:
-                        !!r.source_asset_version_id || r.raw_csv !== null,
-                      source_asset_version_id: r.source_asset_version_id,
-                      source_state: r.source_state,
-                      supersedes_id: r.supersedes_id,
-                      raw_csv: r.raw_csv,
-                      metric_snapshot: r.metric_snapshot,
-                    }
-                  : table === "workflows"
-                    ? r.definition
-                    : table === "workflow_runs"
+                    ).rows
+                  : table === "tasks"
+                    ? {
+                        title: r.title,
+                        prompt: r.prompt,
+                        output: r.output,
+                        status: r.status,
+                        dependencies: (
+                          await tx.query(
+                            "SELECT id,step_key,kind,description,required_scope,provider,state,resource_ids,version FROM task_dependencies WHERE task_id=$1 ORDER BY step_key",
+                            [r.id],
+                          )
+                        ).rows,
+                      }
+                    : table === "analytics_datasets"
                       ? {
-                          definition: r.definition,
-                          results: r.results,
-                          state: r.state,
+                          currency: r.currency,
+                          timezone: r.timezone,
+                          rows: r.rows,
+                          import_spec: r.import_spec,
+                          import_metadata: r.import_metadata,
+                          source_sha256: r.source_sha256,
+                          source_filename: r.source_filename,
+                          source_available:
+                            !!r.source_asset_version_id || r.raw_csv !== null,
+                          source_asset_version_id: r.source_asset_version_id,
+                          source_state: r.source_state,
+                          supersedes_id: r.supersedes_id,
+                          raw_csv: r.raw_csv,
+                          metric_snapshot: r.metric_snapshot,
                         }
-                      : table === "workspace_nodes"
-                        ? {
-                            kind: r.kind,
-                            workspace_id: r.workspace_id,
-                            parent_id: r.parent_id,
-                            asset_version_id: r.asset_version_id,
-                            reference_state: r.reference_state,
-                          }
-                        : r.body;
+                      : table === "workflows"
+                        ? r.definition
+                        : table === "workflow_runs"
+                          ? {
+                              definition: r.definition,
+                              results: r.results,
+                              state: r.state,
+                            }
+                          : table === "workspace_nodes"
+                            ? {
+                                kind: r.kind,
+                                workspace_id: r.workspace_id,
+                                parent_id: r.parent_id,
+                                asset_version_id: r.asset_version_id,
+                                reference_state: r.reference_state,
+                              }
+                            : r.body;
           return {
             id: r.id,
             name: r.name ?? r.title ?? table,
@@ -326,10 +326,10 @@ export function registerAdminContent(
                         "needs_input",
                       ].includes(r.status)
                     ) {
-                      await settle(tx, r.tenant_id, id, 0, r.created_by);
+                      const known = await settleIdleTask(tx, r);
                       await tx.query(
-                        "UPDATE tasks SET status='cancelled',version=version+1 WHERE id=$1",
-                        [id],
+                        "UPDATE tasks SET status=$2,version=version+1 WHERE id=$1",
+                        [id, known ? "cancelled" : "reconciling"],
                       );
                     }
                   }

@@ -6,6 +6,8 @@ import { key, projectAccess, tenantAccess } from "./access.js";
 import { canonical, Problem, uuid } from "./lib.js";
 import { event } from "./tasks.js";
 import { settle } from "./billing.js";
+import { paidInputCheckpoint } from "./paid-task-inputs.js";
+import { assertTaskContentSources } from "./task-content-sources.js";
 
 const provider = z.enum(["google_ads", "ga4", "search_console", "meta"]);
 export const inputDependency = z.discriminatedUnion("kind", [
@@ -39,7 +41,7 @@ export const inputDependencies = z
   );
 export type InputDependency = z.infer<typeof inputDependency>;
 const fields =
-  "id,task_id,step_key,kind,description,required_scope,state,version";
+  "id,task_id,step_key,kind,description,required_scope,state,version,checkpoint_id";
 const tenantOf = (req: any) =>
   uuid.parse(req.params.tenant ?? req.headers["x-tenant-id"]);
 
@@ -345,6 +347,8 @@ export function registerTaskDependencies(app: FastifyInstance, db: Database) {
         )
       ).rows[0];
       const ids = [...b.resource_ids].sort();
+      const paid =
+        t.attempt > 0 ? await paidInputCheckpoint(tx, t, "waiting") : null;
       if (
         d.state === "resolved" &&
         d.version === b.expected_version + 1 &&
@@ -353,14 +357,14 @@ export function registerTaskDependencies(app: FastifyInstance, db: Database) {
         return t;
       if (
         t.status !== "needs_input" ||
-        t.attempt !== 0 ||
+        (t.attempt !== 0 && !paid) ||
         t.cancel_requested ||
         d.state !== "pending"
       )
         throw new Problem(
           409,
           "DEPENDENCY_NOT_WAITING",
-          "This task is no longer waiting at its initial input checkpoint",
+          "This task is no longer waiting at a completed input checkpoint",
         );
       if (d.version !== b.expected_version)
         throw new Problem(
@@ -380,6 +384,7 @@ export function registerTaskDependencies(app: FastifyInstance, db: Database) {
           "DEPENDENCY_RESOURCE_UNAVAILABLE",
           "The selected resources are unavailable in this project",
         );
+      if (paid) await assertTaskContentSources(tx, t);
       await tx.query(
         "UPDATE task_dependencies SET state='resolved',resource_ids=$2,resolved_at=now(),version=version+1 WHERE id=$1",
         [id, ids],
@@ -393,6 +398,11 @@ export function registerTaskDependencies(app: FastifyInstance, db: Database) {
       if (!pending) {
         // Recheck earlier selections before exposing work to a queue. No new reservation is created.
         if (await checkInputDependencies(tx, t)) {
+          if (paid)
+            await tx.query(
+              "UPDATE task_input_checkpoints SET state='queued' WHERE id=$1",
+              [paid.id],
+            );
           await tx.query(
             "UPDATE tasks SET status='queued',version=version+1,updated_at=now(),next_claim_retry_at=now()+interval '1 minute' WHERE id=$1",
             [t.id],
@@ -402,7 +412,9 @@ export function registerTaskDependencies(app: FastifyInstance, db: Database) {
             [tenant, { task_id: t.id }],
           );
           await event(tx, tenant, t.id, "task.inputs_ready", {
-            checkpoint: "before_first_model_turn",
+            checkpoint: paid
+              ? "completed_model_turn"
+              : "before_first_model_turn",
           });
         }
       } else

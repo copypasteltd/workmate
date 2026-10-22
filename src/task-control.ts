@@ -10,8 +10,8 @@ import { authorizeExecutionPlan } from "./plans.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { assertReportSources } from "./analysis-reports.js";
 import { checkInputDependencies } from "./task-dependencies.js";
-import { settle } from "./billing.js";
 import { boundTaskAvailability } from "./capability-bindings.js";
+import { settleIdleTask } from "./paid-task-inputs.js";
 
 /** Caller holds the task row lock. Cancellation is a request, never proof that
  * an accepted external operation was free or that its reservation can be freed. */
@@ -29,17 +29,8 @@ export async function requestTaskCancellation(tx: Tx, task: any) {
   )
     return task;
   if (task.status !== "running" && task.status !== "reconciling") {
-    const touched =
-      task.attempt > 0 ||
-      task.runtime_thread ||
-      (
-        await tx.query(
-          "SELECT 1 FROM tool_operations WHERE task_id=$1 LIMIT 1",
-          [task.id],
-        )
-      ).rowCount;
-    await settle(tx, task.tenant_id, task.id, 0, task.created_by, !!touched);
-    if (touched) {
+    const known = await settleIdleTask(tx, task);
+    if (!known) {
       await tx.query(
         "UPDATE tasks SET status='reconciling',error_code='CANCELLATION_REQUIRES_RECONCILIATION' WHERE id=$1",
         [task.id],
