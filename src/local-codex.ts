@@ -33,12 +33,16 @@ export interface LocalSessionBinding {
   stateRoot: string;
   grant: LocalPermissionGrant;
   skills: { key: string; content: string; sha256: string }[];
+  companyTools?: LocalCompanyTool[];
 }
+export interface LocalCompanyTool { name: string; description: string; inputSchema: Record<string, unknown> }
+export interface LocalCompanyToolCall { namespace: "copypaste"; tool: string; arguments: Record<string, unknown>; callId: string; threadId: string; turnId: string }
 export interface LocalCodexHooks {
   /** Main-process authority, not renderer input. Rechecked at every new turn. */
   authorize: () => Promise<void>;
   event: (kind: string, value: Record<string, unknown>) => Promise<void>;
   approval?: (kind: "command" | "file", value: Record<string, unknown>) => Promise<"accept" | "decline">;
+  companyTool?: (call: LocalCompanyToolCall, signal: AbortSignal) => Promise<unknown>;
 }
 export interface LocalTurnResult {
   threadId: string;
@@ -215,9 +219,16 @@ export class LocalCodexSession {
           throw new LocalCodexError("LOCAL_SKILL_INVALID");
         skills.push({ key: skill.key, sha256: skill.sha256 });
       }
+      const companyTools = this.binding.companyTools ?? [];
+      if (companyTools.length > 16 || new Set(companyTools.map(tool => tool.name)).size !== companyTools.length
+        || companyTools.some(tool => !/^[a-z][a-z0-9_]{0,63}$/.test(tool.name) || typeof tool.description !== "string"
+          || tool.description.length > 8000 || !tool.inputSchema || tool.inputSchema.type !== "object")
+        || Buffer.byteLength(JSON.stringify(companyTools)) > 512000 || (companyTools.length && !this.hooks.companyTool))
+        throw new LocalCodexError("LOCAL_COMPANY_TOOLS_INVALID");
       this.bindingHash = hash(JSON.stringify({ session: this.binding.sessionId, actor: this.binding.actorId, tenant: this.binding.tenantId,
         project: this.binding.projectId, cwd: this.binding.workspace, version: this.profile.version,
-        binary: this.profile.executableSha256, endpoint: this.profile.baseURL, model: this.profile.model, effort: this.profile.effort, skills }));
+        binary: this.profile.executableSha256, endpoint: this.profile.baseURL, model: this.profile.model, effort: this.profile.effort, skills,
+        ...(companyTools.length ? { companyTools } : {}) }));
       try {
         const checkpoint: Checkpoint = JSON.parse(await readFile(this.receiptFile, "utf8"));
         if (checkpoint?.schema !== 2 || checkpoint.binding !== this.bindingHash) throw new LocalCodexError("LOCAL_CHECKPOINT_BINDING_MISMATCH");
@@ -309,7 +320,9 @@ export class LocalCodexSession {
       await this.rpc("initialize", { clientInfo: { name: "copypaste_desktop", title: "CopyPaste Desktop", version: "0.5.0" }, capabilities: { experimentalApi: true } });
       this.notify("initialized", {});
       const thread = await this.rpc(this.threadId ? "thread/resume" : "thread/start", {
-        ...this.common(), ...(this.threadId ? { threadId: this.threadId, excludeTurns: true } : { allowProviderModelFallback: false }),
+        ...this.common(), ...(this.threadId ? { threadId: this.threadId, excludeTurns: true } : { allowProviderModelFallback: false,
+          ...(companyTools.length ? { dynamicTools: [{ type: "namespace", name: "copypaste", description: "Company project artifacts, approved design and Image 2 tools. These operations use company permissions and the original task budget.",
+            tools: companyTools.map(tool => ({ type: "function", ...tool })) }] } : {}) }),
       });
       this.checkThread(thread);
       this.threadId = thread.thread.id;
@@ -384,6 +397,48 @@ export class LocalCodexSession {
     }
     this.eventTail = this.eventTail.then(async () => {
       if (message.id !== undefined && message.method) {
+        if (message.method === "item/tool/call") {
+          const call = message.params;
+          let result: { success: boolean; contentItems: { type: "inputText"; text: string }[] };
+          let stop = false;
+          try {
+            if (this.closed || this.revoked || !this.active || call?.threadId !== this.threadId || call?.turnId !== this.active.id
+              || call?.namespace !== "copypaste" || !/^[A-Za-z0-9_.:-]{1,128}$/.test(call?.callId ?? "")
+              || !this.binding.companyTools?.some(tool => tool.name === call.tool) || !this.hooks.companyTool
+              || !call.arguments || typeof call.arguments !== "object" || Array.isArray(call.arguments))
+              throw new LocalCodexError("LOCAL_COMPANY_TOOL_SCOPE_INVALID");
+            this.validateGrant(); await this.hooks.authorize();
+            if (this.grant.mode === "read-only" && !["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog"].includes(call.tool))
+              throw new LocalCodexError("LOCAL_COMPANY_TOOL_READ_ONLY");
+            await this.emit("local.company-tool.started", { tool: call.tool, call_id: call.callId });
+            const output = await this.hooks.companyTool(call, this.shutdown.signal);
+            this.validateGrant();
+            if (this.closed || this.revoked || this.shutdown.signal.aborted) throw new LocalCodexError("LOCAL_COMPANY_TOOL_INTERRUPTED");
+            const encoded = JSON.stringify(output);
+            if (typeof encoded !== "string" || Buffer.byteLength(encoded) > 2_000_000) throw new LocalCodexError("LOCAL_COMPANY_TOOL_RESULT_INVALID");
+            const artifacts: Record<string, unknown>[] = [];
+            const inspect = (value: any, depth = 0) => {
+              if (!value || typeof value !== "object" || depth > 3 || artifacts.length >= 20) return;
+              if (uuid.test(value.id) && typeof value.name === "string" && uuid.test(value.version?.id)
+                && Number.isSafeInteger(value.version?.version)) artifacts.push({ id: value.id, name: value.name.slice(0, 160), version: value.version.version, asset_version_id: value.version.id });
+              else for (const key of ["source", "rendered", "artifact", "assets"]) {
+                if (Array.isArray(value[key])) value[key].slice(0, 20).forEach(item => inspect(item, depth + 1));
+                else inspect(value[key], depth + 1);
+              }
+            };
+            inspect(output);
+            await this.emit("local.company-tool.completed", { tool: call.tool, call_id: call.callId, artifacts });
+            result = { success: true, contentItems: [{ type: "inputText", text: encoded }] };
+          } catch (error: any) {
+            const code = error instanceof LocalCodexError ? error.code : "LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN";
+            stop = !["LOCAL_COMPANY_TOOL_INPUT_INVALID", "LOCAL_COMPANY_TOOL_READ_ONLY"].includes(code);
+            await this.emit("local.company-tool.failed", { code, tool: typeof call?.tool === "string" ? call.tool.slice(0, 64) : "unknown" });
+            result = { success: false, contentItems: [{ type: "inputText", text: code + ". Do not invent an output or automatically replay the operation." }] };
+          }
+          if (this.child && !this.hasExited && !this.child.stdin.destroyed) this.child.stdin.write(JSON.stringify({ id: message.id, result }) + "\n");
+          if (stop) { await this.markUncertain(); this.fail(new LocalCodexError("LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN")); this.stopInBackground(); }
+          return;
+        }
         const kind = approvalMethods.get(message.method);
         let decision: "accept" | "decline" = "decline";
         if (kind && !this.closed && !this.revoked) {

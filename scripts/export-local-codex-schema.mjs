@@ -16,7 +16,7 @@ const { stdout } = await execute(binary, ["--version"], { windowsHide: true, tim
 assert.equal(stdout.trim(), "codex-cli " + manifest.runtime_version);
 const scratch = path.resolve(".data/local-codex-schema", randomUUID());
 await execute(binary, ["app-server", "generate-json-schema", "--out", scratch, "--experimental"], { windowsHide: true, timeout: 30000 });
-const selected = ["v2/ThreadStartParams.json", "v2/ThreadStartResponse.json", "v2/ThreadResumeResponse.json", "v2/TurnStartParams.json", "CommandExecutionRequestApprovalResponse.json"];
+const selected = ["v2/ThreadStartParams.json", "v2/ThreadStartResponse.json", "v2/ThreadResumeParams.json", "v2/ThreadResumeResponse.json", "v2/TurnStartParams.json", "CommandExecutionRequestApprovalResponse.json", "DynamicToolCallParams.json", "DynamicToolCallResponse.json", "ToolRequestUserInputParams.json", "ToolRequestUserInputResponse.json"];
 const schemas = {};
 for (const name of selected) {
   const bytes = await readFile(path.join(scratch, name)), target = path.join("contracts/codex", name);

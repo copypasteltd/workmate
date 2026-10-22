@@ -4,14 +4,14 @@ import { createServer, type ServerResponse } from "node:http";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
-import { LocalCodexSession, type LocalCodexProfile, type LocalSessionBinding } from "../../src/local-codex.js";
+import { LocalCodexSession, type LocalCodexProfile, type LocalSessionBinding, type LocalCodexHooks } from "../../src/local-codex.js";
 
 const digest = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
 const lock = JSON.parse(await readFile(new URL("../../contracts/local-codex-runtime.json", import.meta.url), "utf8"));
 const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
 assert.ok(executable && path.isAbsolute(executable), "Set COPYPASTE_LOCAL_CODEX_TEST_BIN to the locked absolute native Codex binary. No PATH fallback.");
 const skill = "---\nname: native-fixture-method\ndescription: Verify a local fixture without fabricating results.\n---\nNATIVE_SKILL_FROM_DISK_73D6. Inspect actual tool results and preserve unrelated files.";
-type Action = { command?: string; stall?: () => void; stage?: number };
+type Action = { command?: string; company?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; stage?: number };
 
 function emit(res: ServerResponse, type: string, payload: Record<string, unknown>) {
   res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...payload })}\n\n`);
@@ -67,6 +67,12 @@ async function fixture() {
         actions.shift();
         emit(res, "response.created", { response: { id: "resp_stalled", object: "response", status: "in_progress", output: [] } });
         action.stall();
+      } else if (action.company && !action.stage) {
+        assert.ok(body.tools.some((tool: any) => tool.type === "namespace" && tool.name === "copypaste"
+          && tool.tools.some((child: any) => child.name === action.company!.tool)), "Exact company namespace must be declared by native Codex");
+        action.stage = 1;
+        completed(res, requests.length, { id: "fc_company_" + requests.length, type: "function_call", namespace: "copypaste",
+          name: action.company.tool, call_id: "call_company_" + requests.length, arguments: JSON.stringify(action.company.arguments) });
       } else if (action.command && !action.stage) {
         const tool = commandTool(body.tools);
         assert.ok(tool, "Codex must advertise its native terminal tool");
@@ -98,9 +104,9 @@ async function fixture() {
   const binding: LocalSessionBinding = { sessionId: randomUUID(), actorId: actor, tenantId: randomUUID(), projectId: randomUUID(), workspace, stateRoot,
     grant: { id: randomUUID(), actorId: actor, mode: "full-access", revision: 1, expiresAt: Date.now() + 300000 },
     skills: [{ key: "native-fixture-method", content: skill, sha256: digest(skill) }] };
-  const make = (p = profile, b = binding) => {
+  const make = (p = profile, b = binding, companyTool?: LocalCodexHooks["companyTool"]) => {
     const session = new LocalCodexSession(p, b, { authorize: async () => { if (!authority) throw new Error("Account revoked"); },
-      event: async (kind, value) => { events.push({ kind, value }); if (kind === "local.runtime.ready") readyPid = Number(value.pid); } });
+      companyTool, event: async (kind, value) => { events.push({ kind, value }); if (kind === "local.runtime.ready") readyPid = Number(value.pid); } });
     sessions.push(session); return session;
   };
   const start = (session: LocalCodexSession, expiresAt = Date.now() + 300000) => session.start({ token, expiresAt });
@@ -118,6 +124,74 @@ async function fixture() {
 }
 const quoted = (value: string) => "'" + value.replaceAll("'", "''") + "'";
 const writeCommand = (file: string, content: string) => `[IO.File]::WriteAllText(${quoted(file)}, ${quoted(content)}); Write-Output ('runtime-token-present=' + [bool][Environment]::GetEnvironmentVariable('COPYPASTE_LOCAL_INFERENCE_TOKEN'))`;
+
+test("native company tools use their exact namespace and persist across same-thread follow-ups", { timeout: 180000 }, async () => {
+  const f = await fixture();
+  const calls: any[] = [], artifact = { id: randomUUID(), name: "fixture-design.svg", version: { id: randomUUID(), version: 1 } };
+  const binding = { ...f.binding, companyTools: [{ name: "font_catalog", description: "Read the company font catalog.", inputSchema: { type: "object", properties: {}, additionalProperties: false } }] };
+  try {
+    const invoke: LocalCodexHooks["companyTool"] = async call => { calls.push(call); return { artifact, marker: "COMPANY_RESULT_FROM_REGISTERED_HANDLER" }; };
+    const first = f.make(f.profile, binding, invoke); await f.start(first);
+    f.actions.push({ company: { tool: "font_catalog", arguments: {} } });
+    const one = await first.turn("Use the registered company font catalog."); await first.close();
+    const second = f.make(f.profile, binding, invoke); await f.start(second);
+    f.actions.push({ company: { tool: "font_catalog", arguments: {} } });
+    const two = await second.turn("Read that same company tool in this follow-up.");
+    assert.equal(one.threadId, two.threadId); assert.notEqual(one.turnId, two.turnId);
+    assert.equal(calls.length, 2); assert.ok(calls.every(call => call.namespace === "copypaste" && call.tool === "font_catalog" && call.threadId === one.threadId));
+    assert.notEqual(calls[0].turnId, calls[1].turnId);
+    assert.ok(f.requests.some(request => JSON.stringify(request.body.input).includes("COMPANY_RESULT_FROM_REGISTERED_HANDLER")));
+    assert.equal(f.events.filter(event => event.kind === "local.company-tool.completed").length, 2);
+    assert.deepEqual(f.events.find(event => event.kind === "local.company-tool.completed").value.artifacts,
+      [{ id: artifact.id, name: artifact.name, version: 1, asset_version_id: artifact.version.id }]);
+    assert.equal(f.requests.length, 4);
+  } finally { await f.clean(); }
+});
+
+test("native company writes are denied in local read-only mode before dispatch", { timeout: 120000 }, async () => {
+  const f = await fixture(); let calls = 0;
+  try {
+    const b = { ...f.binding, grant: { ...f.binding.grant, mode: "read-only" as const },
+      companyTools: [{ name: "image2_generate", description: "Generate an image through the company.", inputSchema: { type: "object", properties: {}, additionalProperties: false } }] };
+    const native = f.make(f.profile, b, async () => { calls++; throw new Error("Must not dispatch"); }); await f.start(native);
+    f.actions.push({ company: { tool: "image2_generate", arguments: {} } });
+    await native.turn("Exercise the explicit read-only denial fixture.");
+    assert.equal(calls, 0);
+    assert.ok(f.events.some(event => event.kind === "local.company-tool.failed" && event.value.code === "LOCAL_COMPANY_TOOL_READ_ONLY"));
+    assert.ok(!f.events.some(event => event.kind === "local.company-tool.completed"));
+  } finally { await f.clean(); }
+});
+
+test("native company uncertainty stops the turn and never repeats an accepted operation", { timeout: 120000 }, async () => {
+  const f = await fixture(); let calls = 0;
+  try {
+    const b = { ...f.binding, companyTools: [{ name: "image2_generate", description: "Company uncertain-image fixture.", inputSchema: { type: "object", properties: {}, additionalProperties: false } }] };
+    const native = f.make(f.profile, b, async () => { calls++; throw new Error("Synthetic lost accepted company response"); }); await f.start(native);
+    f.actions.push({ company: { tool: "image2_generate", arguments: {} } });
+    await assert.rejects(native.turn("Exercise the lost accepted company response.")); await native.close();
+    assert.equal(calls, 1); assert.equal(f.requests.length, 1); assert.equal((await f.checkpoint()).phase, "uncertain");
+    assert.ok(!f.events.some(event => event.kind === "local.company-tool.completed"));
+  } finally { await f.clean(); }
+});
+
+test("native company work is aborted when the owning local runtime closes", { timeout: 120000 }, async () => {
+  const f = await fixture(); let entered!: () => void, aborted = false;
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  try {
+    const b = { ...f.binding, companyTools: [{ name: "font_catalog", description: "Company abort fixture.", inputSchema: { type: "object", properties: {}, additionalProperties: false } }] };
+    const native = f.make(f.profile, b, async (_call, signal) => { entered(); return new Promise((_resolve, reject) => {
+      const stop = () => { aborted = true; reject(new Error("Owned company call aborted")); };
+      signal.addEventListener("abort", stop, { once: true }); if (signal.aborted) stop();
+    }); });
+    await f.start(native); f.actions.push({ company: { tool: "font_catalog", arguments: {} } });
+    const turn = native.turn("Keep the company fixture waiting until Stop."); const rejected = assert.rejects(turn);
+    let entryTimer: ReturnType<typeof setTimeout> | undefined;
+    try { await Promise.race([started, new Promise((_resolve, reject) => { entryTimer = setTimeout(() => reject(new Error("Native tool did not enter")), 30000); })]); }
+    finally { if (entryTimer) clearTimeout(entryTimer); }
+    await native.close(); await rejected;
+    assert.equal(aborted, true); assert.equal(f.requests.length, 1); assert.ok(!f.events.some(event => event.kind === "local.company-tool.completed"));
+  } finally { await f.clean(); }
+});
 
 test("a clean local thread survives inference credential expiry and resumes only with a fresh credential", { timeout: 120000 }, async t => {
   const f = await fixture();

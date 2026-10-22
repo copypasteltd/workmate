@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X } from "lucide-react";
+import { ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X } from "lucide-react";
+import { download } from "./api";
 import { useWorkspace } from "./context";
 import { Money, useI18n } from "./ui";
 import "./local-agent.css";
@@ -16,6 +17,12 @@ const roleNames: Record<string, [string, string]> = {
   fullstack: ["全端工程師", "Full-stack developer"], frontend: ["前端工程師", "Frontend developer"],
   "backend-api": ["後端與 API 工程師", "Backend & API developer"], "software-qa": ["軟體測試工程師", "Software QA engineer"],
   "landing-page": ["落地頁設計師", "Landing page designer"],
+  "ui-ux": ["UI / UX 設計師", "UI / UX designer"], designer: ["平面設計師", "Graphic designer"],
+  "brand-visual": ["品牌視覺設計師", "Brand designer"], "ad-creative": ["廣告創意設計師", "Ad creative designer"],
+  ecommerce: ["電商設計師", "E-commerce designer"], "social-content": ["社群內容設計師", "Social content designer"],
+  "illustration-ip": ["插畫與角色設計師", "Illustration & character designer"],
+  "typography-layout": ["字體與排版設計師", "Typography & layout designer"], presentation: ["簡報設計師", "Presentation designer"],
+  "information-design": ["資訊與圖表設計師", "Information designer"], "marketing-analyst": ["營銷數據分析師", "Marketing analyst"],
 };
 async function native(action: string, payload: unknown) {
   const reply = await window.copyPasteBridge!.localAgent(action, payload);
@@ -58,6 +65,9 @@ export function LocalAgentWorkspace() {
   const session = sessions.find(s => s.id === selected);
   const lastStart = session?.events.map(e => e.kind).lastIndexOf("turn/started") ?? -1;
   const stream = session?.busy ? session.events.slice(Math.max(0, lastStart)).filter(e => e.kind === "item/agentMessage/delta").map(e => e.value.delta ?? "").join("") : "";
+  const artifacts = [...new Map((session?.events ?? []).filter(event => event.kind === "local.company-tool.completed")
+    .flatMap(event => event.value.artifacts ?? []).filter(artifact => artifact?.id && artifact?.asset_version_id && Number.isSafeInteger(artifact?.version))
+    .map(artifact => [artifact.asset_version_id, artifact] as const)).values()];
   useEffect(() => { end.current?.scrollIntoView({ block: "nearest" }); }, [session?.messages.length, stream]);
   const act = async (action: string, payload: unknown) => {
     setPending(true); setError("");
@@ -80,7 +90,7 @@ export function LocalAgentWorkspace() {
       <label>{t("專業角色", "Specialist")}<select aria-label={t("本機角色", "Local specialist")} value={role} onChange={e => setRole(e.target.value)}>
         {roles.map(key => <option key={key} value={key}>{roleNames[key] ? t(...roleNames[key]) : key}</option>)}</select></label>
       <button className="button primary" disabled={pending || !roles.includes(role)} onClick={() => void act("create", { tenant: w.tenant, project: w.project, role })}><Plus size={16}/>{t("選擇目錄開始", "Choose folder to start")}</button>
-      <p className="muted">{t("此處列出已支援本機工具的角色；更多創作角色可在雲端工作台使用。", "These specialists support local tools. More creative specialists are available in the cloud workspace.")}</p>
+      <p className="muted">{t("檔案與終端在此電腦處理；圖片與專案工具使用公司服務。", "Files and terminal run on this computer; image and project tools use company services.")}</p>
       <nav aria-label={t("本機會話", "Local sessions")}>{sessions.map(s => <button key={s.id} className={s.id === selected ? "selected" : ""} onClick={() => { setSelected(s.id); setError(""); }}>
         <FolderOpen size={16}/><span>{s.workspace.split(/[\\/]/).filter(Boolean).at(-1)}<small>{roleNames[s.role] ? t(...roleNames[s.role]) : s.role}{s.revoked ? t(" · 已撤權", " · Revoked") : ""}</small></span></button>)}</nav>
     </aside><section className="local-agent-conversation" aria-label={t("本機工作對話", "Local work conversation")}>
@@ -94,7 +104,9 @@ export function LocalAgentWorkspace() {
         <div className="local-agent-messages" aria-live="polite">{session.messages.length === 0 && <div className="local-agent-empty"><Terminal size={30}/><h2>{t("把想法變成檔案", "Turn an idea into files")}</h2><p>{t("先設定本機權限，再描述你想完成的工作。完整本機權限需要你在系統對話框中確認。", "Set local permission, then describe the work. Full local access requires your confirmation in a native dialog.")}</p></div>}
           {session.messages.map((m, i) => <article key={i} className={`local-agent-message ${m.role}`}><small>{m.role === "user" ? t("你", "You") : "COPYPASTE"}{m.status ? " · " + m.status : ""}</small><p>{m.text || t("本次未返回文字。請檢查工作記錄。", "No text was returned. Review the activity log.")}</p></article>)}
           {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {t("執行中", "Working")}</small><p>{stream || t("正在處理本機工作…", "Working on your computer…")}</p></article>}<div ref={end}/></div>
-        {session.events.length > 0 && <details className="local-agent-activity"><summary><Terminal size={14}/>{t("本機操作記錄", "Local activity")}</summary><pre>{session.events.slice(-40).filter(e => !e.kind.includes("agentMessage/delta")).map(e => `${e.kind}\n${JSON.stringify(e.value, null, 2)}`).join("\n\n")}</pre></details>}
+        {artifacts.length > 0 && <div className="local-agent-artifacts" aria-label={t("專案成果", "Project artifacts")}><span>{t("專案成果", "Project artifacts")}</span>{artifacts.map(artifact => <button className="button" key={artifact.asset_version_id}
+          onClick={() => void download(`${w.base}/assets/${artifact.id}/download?version=${artifact.version}`, artifact.name, w.tenant).catch(e => setError(e.message))}><Download size={14}/>{artifact.name} · v{artifact.version}</button>)}</div>}
+        {session.events.length > 0 && <details className="local-agent-activity"><summary><Terminal size={14}/>{t("本機與公司工具記錄", "Local and company tool activity")}</summary><pre>{session.events.slice(-40).filter(e => !e.kind.includes("agentMessage/delta")).map(e => `${e.kind}\n${JSON.stringify(e.value, null, 2)}`).join("\n\n")}</pre></details>}
         {session.uncertain && <div role="status" className="local-agent-alert">{t("上次本機操作的結果需要核對，系統不會重新執行。請檢查本機檔案與費用記錄。", "The last local outcome needs review and will not be replayed. Check local files and the billing record.")}</div>}
         <form className="local-agent-composer" onSubmit={e => { e.preventDefault(); send(); }}><textarea aria-label={t("本機工作要求", "Local task")} placeholder={t("描述你想完成的工作…", "What would you like to get done?")} maxLength={30000} value={prompt} onChange={e => setPrompt(e.target.value)} disabled={session.revoked || session.uncertain || session.busy || pending}/>
           <div><label>{t("本次預算上限 HK$", "Turn budget HK$")}<input type="number" aria-label="Turn budget HK$" min="0.01" max="10000" step="0.01" value={budget} onChange={e => setBudget(e.target.value)}/></label>

@@ -2,7 +2,7 @@
 
 [English](README.en.md) · [Documentation](https://github.com/copypasteltd/workmate/blob/docs/docs/README.en.md) · [Desktop branch](https://github.com/copypasteltd/workmate/tree/desktop)
 
-**当前实现：** Desktop 已接入本机 Codex、主进程授权、文件/终端、同线程继续、停止及公司网关费用通道；37 项客户端测试、10 项原生监督器测试、86 项服务端与云端兼容检查、7 项实际打包 Electron 旅程检查通过。模型回合及系统选目录/授权决定是明确测试夹具。首批 5 个本机角色可用，完整 18 角色/媒体、生产签名与全部客户端验收继续跟踪。Extension 保持原生右侧栏云端对话与文件上传。见 [实现和边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md)。
+**当前实现：** Desktop 在本机运行 Codex，支持客户完整授权、文件/终端、同线程继续、停止及公司费用通道；本次新增公司图片/设计/资料工具和私有产物下载。37 项客户端测试、14 项真实原生测试、818 项平台完整回归及 9 项实际打包 Electron 旅程检查通过。16 个角色已接通本机工具协议，不等同完整专业验收；视频与流程顾问本机集成、全 18 角色/29 Skill、生产签名及全部客户端验收继续跟踪。模型/图片响应和系统对话框决定明确使用假数据夹具。Extension 保持原生右侧栏云端对话与获选文件上传。见 [方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md)、[源码及媒体证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json)。
 
 ## 产品与执行位置
 
@@ -14,6 +14,8 @@ flowchart LR
   Main --> Native[Customer-device Codex and local tools]
   Main --> Control[Company identity / role / budget control]
   Native --> Gateway[Company scoped AI gateway]
+  Native --> CompanyTools[Company project and media tools via trusted main]
+  CompanyTools --> Artifacts[Private immutable artifacts and explicit native download]
   Web[Web] --> Cloud[Cloud Codex and business tools]
   Extension[Native right Side Panel and selected-file uploads] --> Cloud
   Cloud --> Gateway
@@ -26,7 +28,8 @@ flowchart LR
 2. 选择已支持本机工具的角色，通过系统目录窗口选择工作目录；选目录本身不授予执行权限。
 3. 选择唯读、目录内读写或完整本机权限，在系统对话框确认。完整权限默认取消，明确涵盖当前 OS 用户可访问的工作目录外资源。
 4. 输入要求和每轮预算。主进程预留一次预算，取得任务级凭据并启动随包锁定 Codex；查看消息、终端输出、文件变更及公司费用记录。
-5. 在同一本机线程继续追问。可停止运行、空闲时调整权限或随时撤权；退出账号撤销本机授权。网络重试不会盲目重跑已接受的本机动作。
+5. 公司生图、设计与资料工具按当前角色开放；产物显示明确版本，点击下载并在系统窗口选择保存位置。本机文件和命令仍在客户电脑执行。
+6. 在同一本机线程继续追问。可停止运行、空闲时调整权限或随时撤权；退出账号撤销本机授权。网络重试不会盲目重跑已接受的本机动作。
 
 公司 Admin 可管理服务、VIP 和费用，但不能代授本机 OS 权限。完整模式为 `danger-full-access` / `never`，授权后不逐命令重复确认，也不会提升系统账号权限。授权持续至撤权/登出，与可选旧文件桥的一小时、仅新建权限相互独立。
 
@@ -73,26 +76,36 @@ npm run package
 
 ## 当前实际页面与交互
 
-实际打包 Electron 与真实原生 Codex；身份、数据库、本机文件、沙箱和账本真实运行。模型响应、系统选目录和授权决定为明确测试夹具，不等同人工点击或正式供应商验收。
+实际打包 Electron 与真实原生 Codex；身份、数据库、本机文件、沙箱和账本真实运行。模型/图片响应、系统选目录/授权/保存决定为明确测试夹具，不等同人工点击或正式供应商验收。
 
-![Local full access](assets/screenshots/workmate-local-05-full-access-en.png)
+![Local full access](assets/screenshots/workmate-local-09-full-access-en.png)
 
-![Read-only downgrade](assets/screenshots/workmate-local-05-read-only-en.png)
+![Company image edit and private artifacts](assets/screenshots/workmate-local-09-company-artifacts-en.png)
 
-![Stopped task and reconciliation hold](assets/screenshots/workmate-local-05-stopped-en.png)
+![Read-only downgrade](assets/screenshots/workmate-local-09-read-only-en.png)
 
-![Chinese local workspace](assets/screenshots/workmate-local-05-workspace-zh.png)
+![Stopped task and reconciliation hold](assets/screenshots/workmate-local-09-stopped-en.png)
 
-![Actual local interaction](assets/screenshots/workmate-local-05-local-agent.gif)
+![Minimum native window](assets/screenshots/workmate-local-09-compact-en.png)
 
-[MP4](assets/screenshots/workmate-local-05-local-agent.mp4) · [Source and capture checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json) · [Design and recovery](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md)
+![Chinese local workspace](assets/screenshots/workmate-local-09-workspace-zh.png)
+
+![Actual local interaction](assets/screenshots/workmate-local-09-local-agent.gif)
+
+[MP4](assets/screenshots/workmate-local-09-local-agent.mp4) · [Source and capture checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json) · [Design and recovery](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md)
 
 ## 覆盖与剩余范围
 
-首批本机角色为 fullstack、frontend、backend-api、software-qa、landing-page。产品 18 角色及 29 Skill 目标全部保留；完整本机媒体/设计/营销、应用与浏览器自动化须分别接入验证。旧 802 项平台完整回归和云端/文件桥录屏只覆盖当时源码。原 102 REQ/102 TC、NFR、G01–G10 仍为 81 项局部验证、21 项未证明、0 项完整验收。
+16 个角色接通软件开发、页面、图像/品牌/电商/社交/插画/排版/简报/资讯设计及营销分析的本机协议；准入及 Skill 摘要验证不等同完整专业工作流验收。video-motion、workflow-consultant 的本机工具仍待接通。产品 18 角色及 29 Skill 目标全部保留；完整本机媒体/设计/营销、本机等待输入界面、应用与浏览器自动化须分别接入验证。旧 802 项平台完整回归和云端/文件桥录屏只覆盖当时源码。原 102 REQ/102 TC、NFR、G01–G10 仍为 81 项局部验证、21 项未证明、0 项完整验收。
 
 可选 Native Messaging 文件桥继续独立存在，不授予完整 Agent 权限，也不是 Extension 选文件上传/云端对话的前置。使用浏览器后关闭本任务不再需要的页面，保留用户标签页。
 
-[更新说明](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-desktop-local-execution.md) · [Repository and branch policy](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md) · [Requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md)
+[更新说明](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.md) · [Repository and branch policy](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md) · [Requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/03-client-execution-amendment.md)
 
 后续同步中英 README、受影响截图/GIF 和更新说明，提交并推送对应分支，核对远程 SHA，不强推。本地状态、依赖、原生二进制及安装器保持忽略。
+
+## 本机公司工具契约
+
+Agent 循环保持在客户电脑。主进程为锁定的原生运行时注册可信 `copypaste` 动态工具，绑定任务、调用、线程及回合，在效果前及返回前重验公司权限。本机唯读拒绝公司写入；原生 schema 投影不替代原始业务参数验证。同一调用重试复用持久结果，已接受而未知的图片操作阻断后续调用并保留费用核对。私有产物按明确版本下载，保存目标由系统窗口选择。
+
+本次公司工具更新：[更新说明](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.md) · [源码检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json)；较早回执和媒体保持原始源码范围。

@@ -175,6 +175,7 @@ async function request(
     body?: unknown;
     idempotencyKey?: string;
     tenantId?: string;
+    signal?: AbortSignal;
   } = {},
 ) {
   const method = options.method ?? "GET";
@@ -234,7 +235,7 @@ async function request(
           : "{}"
         : JSON.stringify(options.body),
     redirect: "error",
-    signal: AbortSignal.timeout(40000),
+    signal: AbortSignal.any([AbortSignal.timeout(/^\/v1\/tenants\/[\w-]+\/projects\/[\w-]+\/desktop-executions\/[\w-]+\/tools$/.test(url) ? 180000 : 40000), ...(options.signal ? [options.signal] : [])]),
   });
   const body = await r.json();
   if (

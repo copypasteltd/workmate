@@ -1,7 +1,7 @@
 import { randomUUID, createHash } from "node:crypto";
 import { realpath } from "node:fs/promises";
 import path from "node:path";
-import { LocalCodexSession, type LocalCodexHooks, type LocalSessionBinding, type LocalCodexProfile, type LocalPermissionGrant, type LocalPermissionMode, type LocalTurnResult } from "./local-codex.js";
+import { LocalCodexSession, LocalCodexError, type LocalCodexHooks, type LocalSessionBinding, type LocalCodexProfile, type LocalPermissionGrant, type LocalPermissionMode, type LocalTurnResult } from "./local-codex.js";
 
 export interface LocalAgentScope { tenant: string; project: string }
 interface Operation {
@@ -15,6 +15,7 @@ interface LocalRecord extends LocalAgentScope {
   id: string; actorId: string; epoch: string; workspace: string; workspaceHash: string; role: string;
   grant?: LocalPermissionGrant; revoked: boolean; operation?: Operation; lastTask?: any; error?: string;
   uncertain?: boolean;
+  companyToolsVersion?: 1;
   messages: { role: "user" | "assistant"; text: string; status?: string }[];
   events: { kind: string; value: Record<string, unknown> }[];
 }
@@ -25,7 +26,7 @@ export interface LocalAgentIO {
   identity(): Promise<{ actorId: string; epoch: string }>;
   /** Current encrypted local login epoch; must not refresh or call a server. */
   localEpoch(): Promise<string | null>;
-  request(url: string, options?: { method?: string; body?: unknown; idempotencyKey?: string; tenantId?: string }): Promise<{ status: number; body: any }>;
+  request(url: string, options?: { method?: string; body?: unknown; idempotencyKey?: string; tenantId?: string; signal?: AbortSignal }): Promise<{ status: number; body: any }>;
   chooseWorkspace(): Promise<string | null>;
   consent(mode: LocalPermissionMode, workspace: string): Promise<boolean>;
   approval(kind: "command" | "file", value: Record<string, unknown>): Promise<"accept" | "decline">;
@@ -132,7 +133,7 @@ export class LocalAgentController {
     const resolved = await realpath(workspace);
     if (!path.isAbsolute(resolved)) throw new LocalAgentError("LOCAL_WORKSPACE_INVALID");
     const r: LocalRecord = { ...scope, id: randomUUID(), actorId: actor.actorId, epoch: actor.epoch, workspace: resolved,
-      workspaceHash: hash(process.platform === "win32" ? resolved.toLowerCase() : resolved), role, revoked: false, messages: [], events: [] };
+      workspaceHash: hash(process.platform === "win32" ? resolved.toLowerCase() : resolved), role, revoked: false, companyToolsVersion: 1, messages: [], events: [] };
     (await this.state()).sessions.push(r); await this.persist(); return this.view(r);
   }
   async permission(id: string, mode: LocalPermissionMode) {
@@ -210,7 +211,7 @@ export class LocalAgentController {
         await assertOwner();
         if (started.runtime?.pinned_version !== this.io.runtime.version || started.runtime?.windows_x64_sha256 !== this.io.runtime.sha256
           || started.inference_path !== "/v1/desktop-inference/v1" || !Array.isArray(started.skills)) throw new LocalAgentError("LOCAL_RUNTIME_UPDATE_REQUIRED");
-        r.lastTask = { ...started, credential: undefined, skills: undefined, prompt: undefined };
+        r.lastTask = { ...started, credential: undefined, skills: undefined, prompt: undefined, company_tools: undefined };
         const authorize = async () => {
           await assertOwner();
           const live = await this.api(r, taskURL + "/heartbeat", "POST", {});
@@ -220,8 +221,19 @@ export class LocalAgentController {
         const profile: LocalCodexProfile = { executable: this.io.executable, version: this.io.runtime.version, executableSha256: this.io.runtime.sha256,
           companyOrigin: this.io.companyOrigin, baseURL: this.io.companyOrigin + started.inference_path, model: started.model, effort: started.effort };
         runtime = this.runtimeFactory(profile, { sessionId: r.id, actorId: r.actorId, tenantId: r.tenant, projectId: r.project,
-          workspace: r.workspace, stateRoot: this.io.stateRoot, grant: { ...this.grant(r) }, skills: started.skills }, {
+          workspace: r.workspace, stateRoot: this.io.stateRoot, grant: { ...this.grant(r) }, skills: started.skills,
+          ...(r.companyToolsVersion === 1 ? { companyTools: started.company_tools ?? [] } : {}) }, {
           authorize, approval: (kind, value) => this.io.approval(kind, value),
+          companyTool: async (call, signal) => {
+            await assertOwner(); if (abort.signal.aborted || signal.aborted) throw new LocalCodexError("LOCAL_COMPANY_TOOL_INTERRUPTED");
+            const response = await this.io.request(taskURL + "/tools", { method: "POST", tenantId: r.tenant,
+              idempotencyKey: hash(op.taskId + ":" + call.callId), signal: AbortSignal.any([signal, abort.signal]),
+              body: { tool: call.tool, arguments: call.arguments, call_id: call.callId, thread_id: call.threadId, turn_id: call.turnId } });
+            await assertOwner();
+            if (response.status === 400 && response.body?.error?.code === "VALIDATION_ERROR") throw new LocalCodexError("LOCAL_COMPANY_TOOL_INPUT_INVALID");
+            if (response.status !== 200 || !response.body || !("output" in response.body)) throw new LocalCodexError("LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN");
+            return response.body.output;
+          },
           event: async (kind, value) => {
             if (generation !== this.generation) return;
             r.events.push({ kind, value }); if (r.events.length > 500) r.events.shift(); this.io.changed();
