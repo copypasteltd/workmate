@@ -1,5 +1,37 @@
 # CopyPaste Delivery and Integration
 
+<!-- stage66-current-paid-inputs:start -->
+Delivery preserves pre-fix, intermediate failure and final receipts, binding source, raw reports, actual screenshots and owned resource cleanup.
+
+## Continue the original paid task after providing inputs (stage 66)
+
+A completed, fully measured Codex turn can now request authorized files or existing marketing connections. The model describes the gap and the user selects the resources. The same task retains its conversation, native thread, original budget hold and cumulative usage, then rechecks current permissions, sources and capacity before continuing. Input requests are bounded to eight rounds and thirty-two dependencies. Unknown external results remain subject to reconciliation.
+
+Completed transactional tools retain immutable receipts. A later turn reuses matching results only after current authorization, output and source checks. Source packages also compare the actual file manifest and hashes, so changed sources produce a new package. Cancellation during an input wait settles measured spend; unknown usage is never treated as free. Web, Desktop and Side Panel distinguish recorded usage from settled charges and initial input waits from waits after a paid turn.
+
+All three clients retain explicit input selections during refreshes of the same task. Native checks observe at least two actual task responses before confirmation. Workspace changes or denied current reads clear prior task content and input controls. The first failed form-remount journey and its packages remain intact; corrected packages use a separate directory.
+
+Validation: **782/782 Platform tests**, preserving all **765 prior named tests**; **34/34 focused tests** and **13 checks across six repositories**. Actual Codex child processes restore the original thread, tools and history and verify completed-file reuse and one cumulative settlement, using authorized synthetic API responses. **32 native journey checks** cover Web, packaged Desktop and the actual native Side Panel. Their input-selection journeys use explicitly identified synthetic model-turn fixtures.
+
+Desktop is frameless, with custom dragging and minimize/maximize/close buttons and no Electron default or Alt menu. Clicking the extension toolbar opens Chrome's native Side Panel, right by default while respecting browser preferences; there is no action popup. New Setup/Portable files and the Side Panel ZIP are unsigned localhost previews. Installation, signing, store publication and production model services remain unqualified.
+
+Native SQL087→091 preserves complete original-field row digests for all 169 prior public tables, migration bytes, ownership and RLS. Only the declared capacity claim changes; checkpoint/tool-receipt guards are added. New columns start at zero/null and both execution-fact tables start empty, without invented history. Code and scripts live in the D-drive dev directory; main documentation lives in docs. No local Docker, WSL or virtualization is used.
+
+Codex is the only kernel. All AI calls use the company internal OpenAI-compatible gateway. All 102 original requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 without proven completion, zero fully accepted. Canonical TaskDTO/task creation, arbitrary in-flight pause, unknown-effect recovery, complete independent role workflows and production acceptance remain open.
+
+[Implementation](../../docs/technical/66-paid-native-input-checkpoints.md) · [Evidence binding](../../docs/quality/paid-input-checkpoint.json) · [Current client artifacts](../../docs/quality/paid-input-artifacts.json)
+
+```mermaid
+flowchart LR
+  Run[Paid task] --> Gap[Completed measured input request]
+  Gap --> User[Human selects authorized inputs]
+  User --> Check[Same task / original hold / source and capacity checks]
+  Check --> Resume[Resume original Codex thread]
+  Resume --> Run
+  Run --> Settle[One cumulative settlement]
+```
+<!-- stage66-current-paid-inputs:end -->
+
 <!-- stage65-current-history-source-lineage:start -->
 This repository retains pre-fix and intermediate failures and adds source-lineage regression and native two-database upgrade verification.
 

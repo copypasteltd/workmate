@@ -1,0 +1,75 @@
+TAP version 13
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# Subtest: native preview admission binds a green report to the actual runtime, installers and extension bytes
+    # Subtest: reject a legacy green report without a byte binding
+    ok 1 - reject a legacy green report without a byte binding
+      ---
+      duration_ms: 5.9506
+      ...
+    # Subtest: bind new source bytes before staging and keep the same manifest after staging
+    ok 2 - bind new source bytes before staging and keep the same manifest after staging
+      ---
+      duration_ms: 932.2314
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+    ok 3 - reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+      ---
+      duration_ms: 216.787
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+    ok 4 - reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+      ---
+      duration_ms: 184.8836
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+    ok 5 - reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+      ---
+      duration_ms: 226.9072
+      ...
+    # Subtest: reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+    ok 6 - reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+      ---
+      duration_ms: 231.2411
+      ...
+    # Subtest: reject changed bytes: dist/background.js
+    ok 7 - reject changed bytes: dist/background.js
+      ---
+      duration_ms: 205.829
+      ...
+    # Subtest: reject changed bytes: src/main.ts
+    ok 8 - reject changed bytes: src/main.ts
+      ---
+      duration_ms: 223.0955
+      ...
+    # Subtest: reject added or missing extension files
+    ok 9 - reject added or missing extension files
+      ---
+      duration_ms: 528.1638
+      ...
+    # Subtest: reject incomplete cleanup and failures
+    ok 10 - reject incomplete cleanup and failures
+      ---
+      duration_ms: 1.3423
+      ...
+    # Subtest: allow documentation changes when all runtime bytes remain identical
+    ok 11 - allow documentation changes when all runtime bytes remain identical
+      ---
+      duration_ms: 241.1236
+      ...
+    1..11
+ok 1 - native preview admission binds a green report to the actual runtime, installers and extension bytes
+  ---
+  duration_ms: 4808.7798
+  ...
+1..1
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5442.1326

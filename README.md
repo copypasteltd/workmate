@@ -1,5 +1,37 @@
 # CopyPaste 交付与集成
 
+<!-- stage66-current-paid-inputs:start -->
+交付验证保留修复前、中间失败及最终回执，绑定源码、原始报告、实际截图和自有资源回收。
+
+## 补资料后继续原来的付费工作（阶段 66）
+
+已经完成且用量明确的 Codex 回合，现在可以请求用户补充获准文件或现有营销连接。模型只描述缺口，用户明确选择资料；同一任务保留原会话、原生线程、原预算预留及累计用量，重新检查权限、来源和容量后继续。不会因为补资料而另建一笔任务预留。最多八轮、三十二项资料依赖；未知外部结果保留核对状态。
+
+完成的事务工具保存不可改写回执，续接时先检查当前授权、输出及来源，再复用相同操作结果。代码包还比较实际源文件清单和摘要，源码变化后生成新包。等待补资料期间取消，仍结算已知用量；未知用量不当成免费。Web、Desktop 和 Side Panel 区分“已记录用量”和“已结算费用”，也区分首次调用前等待与已付费回合后的等待。
+
+三端在同一任务自动刷新时保留用户的资料选择；实际检查等待至少两次任务刷新响应后再确认。切换工作范围或当前读取被拒绝时，移除旧任务内容及输入控件。首轮发现表单重建问题的失败记录和当时包保留，新包在独立目录中构建。
+
+验证：平台 **782/782**，保留此前全部 **765 项**命名测试；定向 **34/34**，六仓库 **13 项**检查通过。实际 Codex 子进程恢复原线程、工具及历史，并验证完成文件复用和单次累计结算；模型 API 响应为用户授权的模拟数据。原生客户端旅程 **32 项**通过，Web、打包 Desktop 和真正原生 Side Panel 的补资料操作使用明确标注的模拟模型回合夹具。
+
+Desktop 采用无边框窗口、自绘拖动区及最小化/最大化/关闭按钮，无 Electron 默认或 Alt 菜单。扩展点击工具栏打开 Chrome 原生 Side Panel，默认右侧并遵循浏览器偏好；没有 action popup。新安装包、便携包及侧栏 ZIP 为未签名的 localhost 预览，尚未验收实际安装、签名、商店发布或正式模型服务。
+
+两库原生 SQL087→091 核对原 169 张公共表的完整旧字段行摘要、迁移字节、所有权及 RLS；只显式扩展容量领取函数并增加检查点/工具回执守卫。新列回填为零或空值，两张执行事实表为空，不补造历史。开发和脚本位于 D 盘 `dev/`，主文档位于 `docs/`；禁用本地 Docker/WSL/虚拟化。
+
+仅使用 Codex，全部 AI 请求经过公司内部 OpenAI 兼容服务器。原 102 项需求及全部 TC/NFR/G01–G10 继续保留：81 项局部验证、21 项未证明完成、0 项完整验收。完整规范 TaskDTO/任务创建接口、任意执行中暂停、未知副作用恢复、所有独立角色业务及生产验收继续跟踪。
+
+[实现说明](../../docs/technical/66-paid-native-input-checkpoints.md) · [执行绑定](../../docs/quality/paid-input-checkpoint.json) · [新客户端产物](../../docs/quality/paid-input-artifacts.json)
+
+```mermaid
+flowchart LR
+  Run[Paid task] --> Gap[Completed measured input request]
+  Gap --> User[Human selects authorized inputs]
+  User --> Check[Same task / original hold / source and capacity checks]
+  Check --> Resume[Resume original Codex thread]
+  Resume --> Run
+  Run --> Settle[One cumulative settlement]
+```
+<!-- stage66-current-paid-inputs:end -->
+
 <!-- stage65-current-history-source-lineage:start -->
 本仓库保留修复前和中间失败证据，新增来源回归和原生两库升级核查。
 

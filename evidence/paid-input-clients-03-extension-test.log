@@ -1,0 +1,115 @@
+TAP version 13
+# Subtest: financial amounts retain every micro across zero, fractional, negative and unsafe Number boundaries
+ok 1 - financial amounts retain every micro across zero, fractional, negative and unsafe Number boundaries
+  ---
+  duration_ms: 1.1769
+  ...
+# Subtest: noncanonical values cannot silently become zero, rounded or scientific monetary text
+ok 2 - noncanonical values cannot silently become zero, rounded or scientific monetary text
+  ---
+  duration_ms: 0.622
+  ...
+# Subtest: a committed code exchange with a lost first response retries the same private key and payload once
+ok 3 - a committed code exchange with a lost first response retries the same private key and payload once
+  ---
+  duration_ms: 21.0346
+  ...
+# Subtest: definitive code-exchange rejections, including rate limits and conflicts, do not retry
+ok 4 - definitive code-exchange rejections, including rate limits and conflicts, do not retry
+  ---
+  duration_ms: 1.3361
+  ...
+# Subtest: temporary code-exchange failures are bounded and do not expose remote error content
+ok 5 - temporary code-exchange failures are bounded and do not expose remote error content
+  ---
+  duration_ms: 1.2755
+  ...
+# Subtest: a complete canonical response is accepted once; an unreadable first body can safely recover
+ok 6 - a complete canonical response is accepted once; an unreadable first body can safely recover
+  ---
+  duration_ms: 1.7621
+  ...
+# Subtest: concurrent expired-token readers rotate once and use the same new credential
+ok 7 - concurrent expired-token readers rotate once and use the same new credential
+  ---
+  duration_ms: 3.147
+  ...
+# Subtest: sign-out fences a refresh already accepted remotely and revokes its late result
+ok 8 - sign-out fences a refresh already accepted remotely and revokes its late result
+  ---
+  duration_ms: 2.8387
+  ...
+# Subtest: late login after sign-out cannot replace a later account
+ok 9 - late login after sign-out cannot replace a later account
+  ---
+  duration_ms: 0.6238
+  ...
+# Subtest: a stale request's unauthorized response cannot clear a replacement account
+ok 10 - a stale request's unauthorized response cannot clear a replacement account
+  ---
+  duration_ms: 0.4468
+  ...
+# Subtest: transport/temporary failures preserve credentials; definitive rejection clears and revokes
+ok 11 - transport/temporary failures preserve credentials; definitive rejection clears and revokes
+  ---
+  duration_ms: 0.3835
+  ...
+# Subtest: logout during asynchronous credential persistence is serialized after the write
+ok 12 - logout during asynchronous credential persistence is serialized after the write
+  ---
+  duration_ms: 0.4179
+  ...
+# Subtest: malformed gateway credentials are rejected before persistence
+ok 13 - malformed gateway credentials are rejected before persistence
+  ---
+  duration_ms: 0.5931
+  ...
+# Subtest: offline sign-out removes local credentials and reports unconfirmed remote revocation
+ok 14 - offline sign-out removes local credentials and reports unconfirmed remote revocation
+  ---
+  duration_ms: 0.4025
+  ...
+# Subtest: credential persistence failure revokes the newly issued credential
+ok 15 - credential persistence failure revokes the newly issued credential
+  ---
+  duration_ms: 0.8495
+  ...
+# Subtest: a rejected obsolete refresh cannot sign out a later account
+ok 16 - a rejected obsolete refresh cannot sign out a later account
+  ---
+  duration_ms: 0.6568
+  ...
+# Subtest: a lost refresh response retains its private request key across controller restart
+ok 17 - a lost refresh response retains its private request key across controller restart
+  ---
+  duration_ms: 0.3706
+  ...
+# Subtest: legacy tokens must persist a new request key before attempting any refresh
+ok 18 - legacy tokens must persist a new request key before attempting any refresh
+  ---
+  duration_ms: 0.5065
+  ...
+# Subtest: sign-out during legacy request-key persistence prevents network refresh and clears storage
+ok 19 - sign-out during legacy request-key persistence prevents network refresh and clears storage
+  ---
+  duration_ms: 0.3504
+  ...
+# Subtest: only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+ok 20 - only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+  ---
+  duration_ms: 0.376
+  ...
+# Subtest: concurrent legacy readers persist one private request key and start a single rotation
+ok 21 - concurrent legacy readers persist one private request key and start a single rotation
+  ---
+  duration_ms: 1.2239
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 966.5425

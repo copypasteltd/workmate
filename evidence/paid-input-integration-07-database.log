@@ -1,0 +1,49 @@
+2026-10-22 13:22:26.451 CST [25496] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-22 13:22:26.458 CST [25496] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-22 13:22:26.459 CST [25496] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-22 13:22:26.659 CST [13336] LOG:  database system was shut down at 2026-10-22 13:21:39 CST
+
+2026-10-22 13:22:26.775 CST [25496] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+2026-10-22 13:22:38.637 CST [39648] ERROR:  Measured checkpoint costs are immutable
+2026-10-22 13:22:38.637 CST [39648] CONTEXT:  PL/pgSQL function guard_paid_input_checkpoint() line 33 at RAISE
+2026-10-22 13:22:38.637 CST [39648] STATEMENT:  UPDATE task_input_checkpoints SET accrued_micros=0 WHERE id=$1
+
+2026-10-22 13:22:38.640 CST [37524] ERROR:  Input checkpoints are immutable execution facts
+2026-10-22 13:22:38.640 CST [37524] CONTEXT:  PL/pgSQL function guard_paid_input_checkpoint() line 7 at RAISE
+2026-10-22 13:22:38.640 CST [37524] STATEMENT:  DELETE FROM task_input_checkpoints WHERE id=$1
+
+2026-10-22 13:22:38.729 CST [6900] ERROR:  permission denied for table task_input_checkpoints
+2026-10-22 13:22:38.729 CST [6900] STATEMENT:  SELECT * FROM task_input_checkpoints LIMIT 1
+
+2026-10-22 13:22:46.625 CST [33044] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 13:22:47.527 CST [33044] LOG:  checkpoint complete: wrote 31 buffers (0.2%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.732 s, total=0.902 s; sync files=12, longest=0.131 s, average=0.061 s; distance=16798 kB, estimate=16798 kB; lsn=C/38ACCE00, redo lsn=C/38ACCDA8
+
+2026-10-22 13:23:07.523 CST [33044] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 13:23:08.251 CST [33044] LOG:  checkpoint complete: wrote 22 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.475 s, total=0.729 s; sync files=10, longest=0.114 s, average=0.048 s; distance=15856 kB, estimate=16704 kB; lsn=C/39A48F68, redo lsn=C/39A48F10
+
+2026-10-22 13:23:18.222 CST [33044] LOG:  checkpoint starting: immediate force wait
+
+2026-10-22 13:23:19.267 CST [33044] LOG:  checkpoint complete: wrote 37 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.847 s, total=1.046 s; sync files=14, longest=0.175 s, average=0.061 s; distance=16349 kB, estimate=16668 kB; lsn=C/3AA404D8, redo lsn=C/3AA40480
+
+2026-10-22 13:23:20.211 CST [25496] LOG:  received fast shutdown request
+
+2026-10-22 13:23:20.261 CST [25496] LOG:  aborting any active transactions
+
+2026-10-22 13:23:20.266 CST [25496] LOG:  background worker "logical replication launcher" (PID 33868) exited with exit code 1
+
+2026-10-22 13:23:20.267 CST [33044] LOG:  shutting down
+
+2026-10-22 13:23:20.308 CST [33044] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-22 13:23:20.462 CST [33044] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.031 s, total=0.196 s; sync files=1, longest=0.031 s, average=0.031 s; distance=0 kB, estimate=15001 kB; lsn=C/3AA405F0, redo lsn=C/3AA405F0
+
+2026-10-22 13:23:20.550 CST [25496] LOG:  database system is shut down
+

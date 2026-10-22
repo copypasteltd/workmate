@@ -1,0 +1,61 @@
+{
+  "at": "2026-10-22T08:08:59.177Z",
+  "status": "passed",
+  "failure": null,
+  "scope": "Read-only post-upgrade verification against the original genuine SQL087 snapshot. The first probe compared a new nullable task_dependencies.checkpoint_id as if it were an old field; this probe excludes only that declared new column from old-field digests and independently requires it to remain NULL. No migration is rewritten or replayed, no historical row is edited, and the first failure is retained.",
+  "baseline": {
+    "path": "evidence/paid-input-migrations-01-before.json",
+    "sha256": "a4657f9f939811494547f5f389f90001f11079187e63e715ec771d9412db3bc5"
+  },
+  "initial_upgrade": {
+    "path": "evidence/paid-input-upgrade-01.json",
+    "sha256": "a9f2b6b4c52085b9d88b2fd15327e469f5a5e5a09b5f51ce7c03b54d20c8813b"
+  },
+  "original_verifier": {
+    "path": "scripts/qa-paid-input-migrations.mjs",
+    "sha256": "e26fe39a9bc97e0f8522d15a1c530f4ec664863db6078686cc4d031b67051e75"
+  },
+  "owned_database_shutdown": true,
+  "database_shutdown_exit_code": 0,
+  "inputs": [
+    {
+      "path": "evidence/paid-input-upgrade-01.json",
+      "sha256": "a9f2b6b4c52085b9d88b2fd15327e469f5a5e5a09b5f51ce7c03b54d20c8813b"
+    },
+    {
+      "path": "evidence/paid-input-migrations-01-before.json",
+      "sha256": "a4657f9f939811494547f5f389f90001f11079187e63e715ec771d9412db3bc5"
+    },
+    {
+      "path": "evidence/paid-input-regression-02.json",
+      "sha256": "06edb7c03f9bc4387e63ad6c311e4aece72efdb5eacf38290d2e4b21f9125d73"
+    },
+    {
+      "path": "evidence/paid-input-integration-10.json",
+      "sha256": "e79a57d9362467f0438af8f54ac84f51be932f32498c25ade522575917b3d536"
+    },
+    {
+      "path": "evidence/paid-input-clients-05.json",
+      "sha256": "95567665d11beee757e856c52f56f0f672ff6ad0119aa807c8fc8d09d04326a2"
+    }
+  ],
+  "raw_reports": [
+    {
+      "path": "evidence/paid-input-upgrade-02-database.log",
+      "sha256": "2b62e2b2329dceea619af31e26c80f874146d23a4c7dc3c28f9ed541e85f4e3e"
+    },
+    {
+      "path": "evidence/paid-input-upgrade-02-after.log",
+      "sha256": "2b794396a780a52a6c561a303dedcdb320e11fc956002289475785cbe1491459"
+    }
+  ],
+  "verifier": {
+    "path": "evidence/paid-input-upgrade-02-verifier.mjs",
+    "sha256": "82ecfcf71d126ba4cf88fb6ef0a20aed5489be1c0af2c95e04b4b78d535483a1"
+  },
+  "migration_proof": "evidence/paid-input-migrations-02.json",
+  "migration_verifier": {
+    "path": "scripts/qa-paid-input-upgrade-recovery.mjs",
+    "sha256": "cb9a4d70e3b7f17c9d090005d242b374bc68df41f25492757d270d215e8c0942"
+  }
+}
