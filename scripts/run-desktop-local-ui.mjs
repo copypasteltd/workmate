@@ -38,7 +38,7 @@ try {
     ["platform typecheck", ["node_modules/typescript/bin/tsc", "--noEmit"], platform],
     ["desktop typecheck main", ["node_modules/typescript/bin/tsc", "--noEmit"], desktop],
     ["desktop typecheck renderer", ["node_modules/typescript/bin/tsc", "--noEmit", "-p", "renderer/tsconfig.json"], desktop],
-    ["desktop unit tests", ["--import", "tsx", "--test", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
+    ["desktop unit tests", ["--import", "tsx", "--test", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/local-input.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
     ["prepare pinned native runtime", ["scripts/prepare-local-codex.mjs"], desktop],
     ["desktop build main", ["node_modules/typescript/bin/tsc"], desktop],
     ["desktop build native host", ["scripts/build-native-host.mjs"], desktop],
@@ -61,7 +61,16 @@ try {
   const env = { COPYPASTE_TEST_RECLAMATION_DIR: run, COPYPASTE_TEST_RECLAMATION_TOKEN: token,
     CHROME_BIN: process.env.CHROME_BIN ?? path.resolve(".data/browsers/chromium-1248/chrome-win64/chrome.exe"), COPYPASTE_LOCAL_DESKTOP_CANDIDATE: executable };
   console.log("Running actual packaged Desktop local execution and user-permission journey");
-  journeyCode = await launch(["--env-file=" + path.join(platform, ".env"), "--import", "tsx", "scripts/qa-desktop-local.ts", attempt], delivery, env).closed;
+  const journeyRun = launch(["--env-file=" + path.join(platform, ".env"), "--import", "tsx", "scripts/qa-desktop-local.ts", attempt], delivery, env);
+  // Only this isolated candidate/browser fixture belongs to the child. Bound
+  // its lifetime so an unresolved operation cannot prevent DB reclamation.
+  const journeyDeadline = setTimeout(() => {
+    if (journeyRun.child.exitCode !== null || !journeyRun.child.pid) return;
+    if (process.platform === "win32") {
+      try { execFileSync("taskkill.exe", ["/PID", String(journeyRun.child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore", timeout: 15000 }); } catch {}
+    } else journeyRun.child.kill("SIGKILL");
+  }, 360000);
+  try { journeyCode = await journeyRun.closed; } finally { clearTimeout(journeyDeadline); }
   const cleanupCode = await launch(["--import", "tsx", "scripts/reclaim-test-fixtures.ts"], platform, env).closed;
   const cleanupBytes = await readFile(path.join(run, "result.json")); await writeFile(prefix + "-fixture-cleanup.json", cleanupBytes, { flag: "wx" });
   cleanup = { path: prefix + "-fixture-cleanup.json", sha256: sha(cleanupBytes), exit_code: cleanupCode, ...JSON.parse(cleanupBytes) };
@@ -72,9 +81,12 @@ finally {
   if (database?.child.connected && database.child.exitCode === null) database.child.send({ action: "shutdown" }); if (database) shutdown = await database.closed;
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length >= 9 && journey.company_image_calls === 2
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length >= 12 && journey.company_image_calls === 2 && journey.native_input_completions === 1
     && journey.checks.some(check => check.includes("native save-dialog selection")) && journey.checks.some(check => check.includes("edits the authorized source image"))
     && journey.checks.some(check => check.includes("800x600"))
+    && journey.checks.some(check => check.includes("same task/thread/turn"))
+    && journey.checks.some(check => check.includes("Stop stays usable during a native question"))
+    && journey.checks.some(check => check.includes("Revoking full permission while waiting"))
     && journey.electron_closed && journey.browser_closed && journey.api_closed && journey.fixture_closed
     && cleanup?.exit_code === 0 && cleanup.status === "passed" && cleanup.results.every(r => r.reclaimed) && shutdown === 0 && unchanged;
   const report = { at: new Date().toISOString(), status: passed ? "passed" : "failed", error, checks, counts: { journey_checks: journey?.checks.length ?? 0, errors: journey?.errors.length ?? 1 },

@@ -11,11 +11,13 @@ const delivery = process.cwd(), platform = path.resolve("../copypaste-platform")
 assert.match(attempt ?? "", /^\d{2}$/);
 const owned = path.resolve(".data/desktop-local", randomUUID()), workspace = path.join(owned, "workspace"), outside = path.join(owned, "outside.txt");
 const downloaded = path.join(owned, "downloaded-native-design.png");
+const inputResult = path.join(workspace, "customer-input-result.json");
 const checks: string[] = [], screenshots: any[] = [], errors: string[] = [];
 const pass = (text: string) => { checks.push(text); console.log("PASS: " + text); };
 let isolated: any, system: any, electron: ElectronApplication | undefined, browser: Browser | undefined, recording: WorkmateRecording | undefined, media: any;
 let stage = 0, commandNext = true, readOnlyCheck = false, stall = false, stalled = false, providerCalls = 0, providerError: unknown, permissionDecision = 0;
 let imageBytes: Buffer, imageCalls = 0, imageNext: "generate" | "edit" | null = "generate", originalAsset = "";
+let questionNext = false, pendingQuestionCall = "", inputCompletions = 0;
 let electronClosed = false, browserClosed = false, apiClosed = false, fixtureClosed = false, deadline: ReturnType<typeof setTimeout> | undefined;
 const provider = createServer(async (req, res) => {
   try {
@@ -39,7 +41,30 @@ const provider = createServer(async (req, res) => {
     emit("response.created", { response });
     if (stall) { stalled = true; return; }
     let item: any;
-    if (commandNext) {
+    if (questionNext) {
+      questionNext = false;
+      const tools = (body.tools ?? []).flatMap((tool: any) => tool.type === "namespace" ? tool.tools.map((child: any) => ({ ...child, name: tool.name + "." + child.name })) : [tool]);
+      const tool = tools.find((tool: any) => /(?:^|\.)request_user_input$/.test(tool.name)); assert.ok(tool);
+      pendingQuestionCall = "call_ui_input_" + providerCalls;
+      item = { type: "function_call", id: "fc_ui_input_" + providerCalls, call_id: pendingQuestionCall, name: tool.name, arguments: JSON.stringify({ questions: [
+        { id: "palette", header: "Palette", question: "Which palette should the launch page use?", options: [
+          { label: "Company blue", description: "Follow the existing CopyPaste brand." }, { label: "Warm neutral", description: "Use a warm gray palette." },
+        ] }, { id: "format", header: "Format", question: "How should the result be delivered?", options: [
+          { label: "HTML", description: "An editable local page." }, { label: "PDF", description: "A portable document." },
+        ] },
+      ] }) };
+    } else if (pendingQuestionCall) {
+      const output = body.input.find((entry: any) => entry.type === "function_call_output" && entry.call_id === pendingQuestionCall); assert.ok(output, "Do not continue without an actual native answer");
+      const answers = JSON.parse(output.output).answers; pendingQuestionCall = ""; inputCompletions++;
+      assert.deepEqual(answers, { palette: { answers: ["Company blue"] }, format: { answers: ["Editable HTML with a launch checklist"] } });
+      const tools = (body.tools ?? []).flatMap((tool: any) => tool.type === "namespace" ? tool.tools.map((child: any) => ({ ...child, name: tool.name + "." + child.name })) : [tool]);
+      const tool = tools.find((tool: any) => /(?:^|\.)(exec_command|shell|shell_command)$/.test(tool.name)); assert.ok(tool);
+      const cmd = `[IO.File]::WriteAllText('${inputResult.replaceAll("'", "''")}', '${JSON.stringify(answers).replaceAll("'", "''")}')`;
+      const args = tool.parameters?.properties?.cmd ? { cmd, workdir: workspace, yield_time_ms: 1000, max_output_tokens: 1000 }
+        : tool.parameters?.properties?.command?.type === "array" ? { command: ["powershell.exe", "-NoProfile", "-Command", cmd], workdir: workspace, timeout_ms: 10000 }
+        : { command: cmd, workdir: workspace, timeout_ms: 10000 };
+      item = { type: "function_call", id: "fc_ui_answer_" + providerCalls, call_id: "call_ui_answer_" + providerCalls, name: tool.name, arguments: JSON.stringify(args) };
+    } else if (commandNext) {
       commandNext = false;
       const tools = (body.tools ?? []).flatMap((x: any) => x.type === "namespace" ? x.tools.map((y: any) => ({ ...y, name: x.name + "." + y.name })) : [x]);
       const tool = tools.find((x: any) => /(?:^|\.)(exec_command|shell|shell_command)$/.test(x.name)); assert.ok(tool);
@@ -76,6 +101,13 @@ async function until(read: () => Promise<any>, ok: (value: any) => boolean, labe
   do { const value = await read(); if (ok(value)) return value; await new Promise(resolve => setTimeout(resolve, 150)); } while (Date.now() < end);
   throw new Error("Timed out: " + label);
 }
+async function phase<T>(label: string, run: () => Promise<T>, ms = 40000): Promise<T> {
+  console.log("PHASE: " + label); let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const result = await Promise.race([run(), new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("Timed out phase: " + label)), ms); })]);
+    console.log("PHASE COMPLETE: " + label); return result;
+  } finally { if (timer) clearTimeout(timer); }
+}
 try {
   await mkdir(workspace, { recursive: true }); await writeFile(outside, "before-desktop-native");
   const { desktopImageFixture } = await import(pathToFileURL(path.join(platform, "tests/desktop-image-fixture.ts")).href); imageBytes = desktopImageFixture();
@@ -96,7 +128,7 @@ try {
   await system.app.listen({ host: "127.0.0.1", port: 4310 });
   electron = await _electron.launch({ executablePath: process.env.COPYPASTE_LOCAL_DESKTOP_CANDIDATE!, env: { ...process.env, COPYPASTE_USER_DATA: path.join(owned, "user-data") } });
   deadline = setTimeout(() => { errors.push("Owned Desktop journey deadline"); void electron?.close(); void browser?.close(); }, 240000);
-  const page = await electron.firstWindow(); page.on("pageerror", e => errors.push(e.message));
+  const page = await electron.firstWindow(); page.setDefaultTimeout(20000); page.setDefaultNavigationTimeout(20000); page.on("pageerror", e => errors.push(e.message));
   // firstWindow can arrive at about:blank before the main process loadFile.
   // A reload at that point races the real renderer navigation.
   await page.waitForURL(/^file:/); await page.waitForFunction(() => !!(window as any).copyPasteBridge);
@@ -191,11 +223,61 @@ try {
   await until(composerFits, Boolean, "visible composer after long conversation");
   try {
     await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(800, 600));
+    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 800 && size[1] === 600, "actual first minimum-window resize");
     await until(composerFits, Boolean, "visible composer at minimum window size");
     screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "compact-en", await page.screenshot(), "Actual 800x600 packaged Desktop; messages, composer, budget, receipt and first artifact button fit all ancestor clipping bounds with horizontal-only artifacts", delivery));
-  } finally { await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1440, 980)); }
+  } finally {
+    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1440, 980));
+    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 1440 && size[1] === 980, "actual restored full window");
+  }
   await until(composerFits, Boolean, "restored native workspace layout");
   pass("Long conversation scrolls inside messages while composer, budget, receipt and artifact downloads stay visible at 1440x980 and 800x600");
+  questionNext = true;
+  await page.getByLabel("Local task", { exact: true }).fill("Ask me about the launch page palette and delivery format, then save my explicit choices to the local workspace.");
+  await page.getByRole("button", { name: "Start work", exact: true }).click();
+  const awaiting = await until(list, state => state.busy && state.inputs?.length === 1, "real native customer question");
+  assert.equal(awaiting.inputs[0].threadId, first.runtime_thread);
+  await page.reload(); await page.getByRole("heading", { name: "Your local workmate" }).waitFor();
+  const restoredInput = await until(list, state => state.busy && state.inputs?.[0]?.requestId === awaiting.inputs[0].requestId, "same live question after renderer reload");
+  assert.equal(restoredInput.task.task_id, awaiting.task.task_id);
+  const inputCard = page.getByRole("form", { name: "Answer task questions", exact: true }); await inputCard.waitFor();
+  assert.equal(await page.getByLabel("Local permission", { exact: true }).inputValue(), "full-access");
+  await until(() => inputCard.evaluate(card => {
+    const scroller = card.closest('.local-agent-messages')!, question = card.querySelector('legend')!, box = question.getBoundingClientRect(), clip = scroller.getBoundingClientRect();
+    return box.top >= clip.top - 1 && box.bottom <= clip.bottom + 1;
+  }), Boolean, "first question initially visible after renderer reload");
+  assert.equal(await inputCard.getByRole("radio", { checked: true }).count(), 0);
+  assert.equal(await inputCard.getByRole("button", { name: "Answer and continue", exact: true }).isDisabled(), true);
+  screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "waiting-input-en", await page.screenshot(), "Actual native request_user_input in a packaged Desktop; explicit unselected choices survive a renderer reload on the original task", delivery));
+  await inputCard.getByRole("radio", { name: /Company blue/ }).check();
+  await inputCard.locator("fieldset").nth(1).getByRole("radio", { name: "Write your own", exact: true }).check();
+  await inputCard.getByLabel("Format: your answer", { exact: true }).fill("Editable HTML with a launch checklist");
+  const guessed = await page.evaluate(async data => (window as any).copyPasteBridge.localAgent("answer", data), { id: awaiting.id, requestId: randomUUID(), answers: {} });
+  assert.equal(guessed.ok, false); assert.equal(guessed.code, "LOCAL_INPUT_NOT_FOUND");
+  try {
+    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(800, 600));
+    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 800 && size[1] === 600, "actual question minimum-window resize");
+    await inputCard.getByRole("button", { name: "Answer and continue", exact: true }).scrollIntoViewIfNeeded();
+    assert.equal(await page.evaluate(() => {
+      const button = document.querySelector<HTMLButtonElement>('.local-agent-composer button')!, box = button.getBoundingClientRect(), root = document.getElementById("root")!;
+      const messages = document.querySelector('.local-agent-messages')!, textarea = document.querySelector('.local-agent-composer textarea')!;
+      return box.top >= 40 && box.bottom <= innerHeight && root.scrollHeight <= root.clientHeight + 1
+        && messages.getBoundingClientRect().height >= 160 && getComputedStyle(textarea).display === "none";
+    }), true);
+    screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "input-compact-en", await page.screenshot(), "Actual 800x600 native question card; customer-selected option and free text, answer and stop controls, scroll inside messages", delivery));
+  } finally {
+    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1440, 980));
+    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 1440 && size[1] === 980, "actual restored question window");
+  }
+  await inputCard.getByRole("button", { name: "Answer and continue", exact: true }).click();
+  const answered = await until(list, state => !state.busy && state.task?.task_id === awaiting.task.task_id && state.task?.status === "succeeded", "same native turn continues after answer", 90000);
+  assert.deepEqual(answered.inputs, []); assert.equal(inputCompletions, 1);
+  assert.deepEqual(JSON.parse(await readFile(inputResult, "utf8")), { palette: { answers: ["Company blue"] }, format: { answers: ["Editable HTML with a launch checklist"] } });
+  const answeredTask = (await system.db.control.query("SELECT * FROM tasks WHERE id=$1", [answered.task.task_id])).rows[0];
+  assert.equal(answeredTask.runtime_thread, awaiting.inputs[0].threadId); assert.equal(answeredTask.runtime_turn, awaiting.inputs[0].turnId); assert.equal(answeredTask.charged_micros, "90");
+  assert.equal((await system.db.control.query("SELECT count(*)::int AS n FROM reservations WHERE task_id=$1", [answered.task.task_id])).rows[0].n, 1);
+  screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "input-completed-en", await page.screenshot(), "Actual native answer reaches the company provider and local terminal; same task, same thread and turn, one reservation and 90 micros of observed usage", delivery));
+  pass("Native questions survive renderer reload, require explicit option or free text, reject guessed ids and continue the same task/thread/turn with one reservation and a real local result");
   await writeFile(outside, "must-remain-read-only"); commandNext = true; readOnlyCheck = true;
   await page.getByLabel("Local permission", { exact: true }).selectOption("read-only"); await page.getByRole("button", { name: "Set permission", exact: true }).click(); await until(list, s => s.permission === "read-only", "permission downgrade");
   await page.getByLabel("Local task", { exact: true }).fill("Verify that read-only mode prevents a write to the owned outside-cwd fixture."); await page.getByRole("button", { name: "Start work", exact: true }).click();
@@ -204,6 +286,15 @@ try {
   screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "read-only-en", await page.screenshot(), "Actual native read-only denial; synthetic model response does not establish a successful write", delivery));
   pass("User downgrade changes the real native sandbox; an outside-cwd write is denied and the file remains unchanged");
   await page.getByLabel("Local permission", { exact: true }).selectOption("full-access"); await page.getByRole("button", { name: "Set permission", exact: true }).click();
+  readOnlyCheck = false; questionNext = true;
+  await page.getByLabel("Local task", { exact: true }).fill("Ask the owned pending-question fixture so I can stop it without submitting an answer."); await page.getByRole("button", { name: "Start work", exact: true }).click();
+  const pendingStop = await until(list, state => state.busy && state.inputs?.length === 1, "pending question before stop");
+  await page.getByRole("button", { name: "Stop task", exact: true }).click();
+  const stoppedQuestion = await until(list, state => !state.busy && state.task?.task_id === pendingStop.task.task_id, "native question stop");
+  assert.deepEqual(stoppedQuestion.inputs, []); assert.equal(inputCompletions, 1); assert.equal(stoppedQuestion.uncertain, false);
+  const staleAnswer = await page.evaluate(async data => (window as any).copyPasteBridge.localAgent("answer", data), { id: pendingStop.id, requestId: pendingStop.inputs[0].requestId, answers: {} });
+  assert.equal(staleAnswer.ok, false); assert.equal(staleAnswer.code, "LOCAL_INPUT_NOT_FOUND"); pendingQuestionCall = "";
+  pass("Stop stays usable during a native question, clears the live prompt and rejects a stale answer without dispatching another model request");
   readOnlyCheck = false; stall = true; await page.getByLabel("Local task", { exact: true }).fill("Wait for the owned interruption fixture; do not perform further file changes."); await page.getByRole("button", { name: "Start work", exact: true }).click();
   await until(async () => stalled, Boolean, "active company stream"); await page.getByRole("button", { name: "Stop", exact: true }).click();
   const stopped = await until(list, s => !s.busy && s.task?.status === "reconciling", "stopped unknown-usage hold", 45000);
@@ -215,11 +306,26 @@ try {
   assert.ok(ownedPids.length >= 3);
   for (const pid of ownedPids) assert.throws(() => process.kill(pid, 0), "Owned native process must actually exit");
   pass("Stop interrupts only the owned native process; unknown usage stays reserved, replay is blocked and local permission can be revoked");
-  media = await recording.stop(); recording = undefined; assert.ok(media && media.skipped_capture_errors === 0);
-  await page.evaluate(() => { localStorage.setItem("cp_locale", "zh-HK"); }); await page.reload();
-  await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
+  stall = false; questionNext = true;
+  await page.getByRole("button", { name: "Choose folder to start", exact: true }).click(); await until(list, state => state.id !== stopped.id, "new owned session for pending revocation");
+  await page.getByLabel("Local permission", { exact: true }).selectOption("full-access"); await page.getByRole("button", { name: "Set permission", exact: true }).click();
+  await page.getByLabel("Local task", { exact: true }).fill("Ask the owned pending-question fixture so I can revoke local permission while it waits."); await page.getByRole("button", { name: "Start work", exact: true }).click();
+  const pendingRevoke = await until(list, state => state.busy && state.inputs?.length === 1, "pending question before revocation");
+  await page.getByRole("button", { name: "Revoke local permission", exact: true }).click();
+  const revokedInput = await until(list, state => !state.busy && state.revoked && state.permission === null, "pending native input revoked");
+  assert.deepEqual(revokedInput.inputs, []); assert.equal(inputCompletions, 1);
+  for (const event of revokedInput.events.filter((event: any) => event.kind === "local.runtime.ready")) assert.throws(() => process.kill(Number(event.value.pid), 0));
+  screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "input-revoked-en", await page.screenshot(), "Actual full local permission revoked while native Codex was waiting for a question; prompt cleared and its owned process exited", delivery));
+  pass("Revoking full permission while waiting clears the question and exits the actual owned Codex process");
+  const finishingRecording = recording; recording = undefined;
+  media = await phase("finish actual recording and encode", () => finishingRecording.stop(), 60000); assert.ok(media && media.skipped_capture_errors === 0);
+  await phase("switch Chinese through visible control and reload", async () => {
+    await page.getByTitle("切換至繁體中文", { exact: true }).click();
+    await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
+    await page.reload(); await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
+  });
   screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "workspace-zh", await page.screenshot(), "Actual Chinese local Agent workspace after reload; same-account local history retained", delivery));
-  await page.getByRole("button", { name: "登出", exact: true }).click();
+  await phase("native sign-out", () => page.getByRole("button", { name: "登出", exact: true }).click());
   await until(() => page.evaluate(async () => (await (window as any).copyPasteBridge.request("/v1/session/context", {})).status), v => v === 401, "native sign-out");
   assert.equal((await system.db.control.query("SELECT count(*)::int AS n FROM outbox WHERE topic='task.run' AND payload->>'task_id' IN (SELECT task_id::text FROM desktop_executions WHERE tenant_id=$1)", [tenant])).rows[0].n, 0);
   if (providerError) throw providerError;
@@ -244,7 +350,7 @@ finally {
   provider.closeAllConnections(); if (provider.listening) await new Promise<void>(resolve => provider.close(() => resolve()));
   if (isolated) { process.chdir(platform); await isolated.cleanup(); fixtureClosed = true; }
   process.chdir(delivery);
-  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls,
+  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions,
     scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company tools, private artifacts, download and billing; model/image responses and native chooser/consent/save decisions are explicit fixtures",
     fixture_native_dialog_confirmed: permissionDecision === 1, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };
   await writeFile(`evidence/desktop-local-ui-${attempt}-journey.json`, JSON.stringify(report, null, 2) + "\n", { flag: "wx" }); assert.equal(errors.length, 0, errors.join("\n"));
