@@ -9,7 +9,7 @@
 
 CLIENT01（2026-10-22）要求 **Desktop 在客户本机运行 Codex Agent**，提供客户可主动授予的 **完整本机权限**，操作能力对标 Codex Desktop。**Extension 在 Chrome 原生右侧栏采用 ChatGPT 式对话/附件结构**，获取、读取用户获选文件并上传，由云端 Codex 执行。全部产品 AI 请求仍走公司内部网关。
 
-**当前实现：** Desktop 已接入本机 Codex、主进程授权、文件/终端、同线程继续、停止及公司网关费用通道；37 项客户端测试、10 项原生监督器测试、86 项服务端与云端兼容检查、7 项实际打包 Electron 旅程检查通过。模型回合及系统选目录/授权决定是明确测试夹具。首批 5 个本机角色可用，完整 18 角色/媒体、生产签名与全部客户端验收继续跟踪。Extension 保持原生右侧栏云端对话与文件上传。见 [实现和边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md)。
+**当前实现：** Desktop 在本机运行 Codex，支持客户完整授权、文件/终端、同线程继续、停止及公司费用通道；本次新增公司图片/设计/资料工具和私有产物下载。37 项客户端测试、14 项真实原生测试、818 项平台完整回归及 9 项实际打包 Electron 旅程检查通过。16 个角色已接通本机工具协议，不等同完整专业验收；视频与流程顾问本机集成、全 18 角色/29 Skill、生产签名及全部客户端验收继续跟踪。模型/图片响应和系统对话框决定明确使用假数据夹具。Extension 保持原生右侧栏云端对话与获选文件上传。见 [方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md)、[源码及媒体证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json)。
 
 本机 supervisor 的实现及历史原生权限测试见 [技术说明](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md)。
 
@@ -44,22 +44,24 @@ flowchart TB
   Desktop --> LocalCodex[Customer-device Codex / native candidate]
   LocalCodex --> LocalTools[Local files / terminal / skills]
   LocalCodex --> Gateway[Internal OpenAI-compatible API]
+  LocalCodex --> MainTools[Company tools via trusted Desktop main]
+  MainTools --> API
   API --> Access[Identity / tenant / project / private ownership]
   Access --> Input[Explicit sources / role / skills / version]
   Input --> Budget[Plan / permission / budget hold]
-  Budget --> Codex[Version-pinned Codex]
+  Budget -->|Web / Extension cloud tasks only| Codex[Cloud version-pinned Codex]
   Codex --> Gateway[Internal OpenAI-compatible API]
   Codex --> Tools[Authorized tools]
   Tools --> Results[Immutable outputs / usage / settlement]
   Results --> Clients[Governed client reads and downloads]
 ```
 
-以下操作描述当前云端/文件桥接基线；Desktop 的本机 Codex 与完整权限按 CLIENT01 改造后另行验收。
+以下为平台通用流程；Desktop 的本机授权、持续线程及公司业务工具使用流程见阶段 73 方案和本次证据。
 
 1. 邮箱验证码登录后选择企业和项目，确认当前权限与费用来源。Desktop/Extension 经公司网页和 PKCE 授权；Admin 使用独立邮箱 OTP/TOTP 身份。
-2. 选择默认助手、18 个角色预设或私人专员；任务固定角色、Skill、模型和费率版本，明确选择文件、品牌资源和授权连接。
+2. Web/Extension 选择默认助手、18 个角色预设或私人专员；Desktop 当前选择 16 个已接通本机协议的预设。任务固定角色、Skill、模型和费率版本，明确选择文件、品牌资源和授权连接。
 3. 确认有界预算后执行；Codex 调用公司接口及受控工具。已记录用量、预算预留、最终扣费分别展示。
-4. 明确计量且已完成的回合需要资料时，选择当前获准版本，沿用原任务、线程与预留继续；限制八轮、三十二项依赖，未知结果进入核对。
+4. Web/Extension 明确计量且已完成的回合需要资料时，选择当前获准版本，沿用原任务、线程与预留继续；限制八轮、三十二项依赖。Desktop 支持同一本机线程继续，原生等待输入界面仍待接入；两类任务的未知结果均进入核对。
 5. 查看证据和产物，经认证下载或明确发布独立副本；当前来源治理继续生效。切换范围或读取失败会清空旧内容。
 6. 管理员按范围筛选用户和消耗，管理内容、费用与 VIP/额度；敏感操作预览影响，采用幂等命令及必要的独立审批。
 
@@ -91,11 +93,11 @@ npm run demo
 
 ## 验证与边界
 
-历史源码平台完整回归 **802/802**（后端已更新，此回执不作为新源码的完整回归）、统一任务专项 **52/52**，保留原 782 项命名测试；二者重叠，不相加。六仓库类型/构建/既有客户端测试 **13 项**、实际打包 Desktop/原生 Side Panel 旅程 **32 项**通过。本次另有 10 项原生监督器及 7 项打包 Electron 本机旅程检查，已接入客户授权和公司费用通道；完整资格仍按新检查点跟踪。四端媒体记录既有云端/文件桥接界面，绑定真实捕获时间、摘要及清理结果。
+历史源码平台完整回归 **802/802**（后端已更新，此回执不作为新源码的完整回归）、统一任务专项 **52/52**，保留原 782 项命名测试；二者重叠，不相加。六仓库类型/构建/既有客户端测试 **13 项**、实际打包 Desktop/原生 Side Panel 旅程 **32 项**通过。阶段 72 的 10 项原生监督器和 7 项 Electron 检查保留原源码范围；阶段 73 另绑定当前源码的 818 项平台完整回归、14 项真实原生、37 项客户端及 9 项打包旅程。完整资格仍按新检查点跟踪。较早的四端媒体仍记录原云端/文件桥接源码范围；本次另有本机公司工具媒体，分别绑定捕获时间、摘要及清理结果。
 
-[统一任务证据](quality/canonical-task-checkpoint.json) · [本机内核证据](quality/local-codex-supervisor-checkpoint.json) · [候选包字节](quality/client-direction-package.json) · [媒体](quality/workmate-media-10.json) · [原需求进度](quality/requirements-alignment-progress.json)
+[统一任务证据](quality/canonical-task-checkpoint.json) · [本机内核证据](quality/desktop-company-tools-checkpoint.json) · [本机候选包字节](quality/desktop-company-tools-checkpoint.json) · [媒体](quality/workmate-media-10.json) · [原需求进度](quality/requirements-alignment-progress.json)
 
-UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独立集成测试通过模拟内部网关运行真实 Codex 子进程。Admin 媒体展示受权限约束的 VIP/费用表单，不代表财务提交。SQL001–091 保持不可改写。全部 102 项需求、TC/NFR/G01–G10 及 81 局部验证/21 未证明完成/0 完整验收基线保留；统一任务的专用输入及历史身份迁移、任意执行中暂停、未知结果恢复、完整本机 Desktop 与扩展对话附件、全角色工作流、GEO、真实供应商、生产、签名与商店资格继续跟踪。
+UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独立集成测试通过模拟内部网关运行真实 Codex 子进程。Admin 媒体展示受权限约束的 VIP/费用表单，不代表财务提交。SQL001–092 保持不可改写。全部 102 项需求、TC/NFR/G01–G10 及 81 局部验证/21 未证明完成/0 完整验收基线保留；统一任务的专用输入及历史身份迁移、任意执行中暂停、未知结果恢复、完整本机 Desktop 与扩展对话附件、全角色工作流、GEO、真实供应商、生产、签名与商店资格继续跟踪。
 
 ## 实际客户端展示
 
@@ -111,11 +113,17 @@ UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独�
 
 ### Desktop
 
-![desktop](design/implementation/workmate/desktop-workmate-10-input-ready-en.png)
+阶段 73：实际打包本机 Codex、完整权限流程、公司图片与私有下载；模型/图片响应及系统窗口决定为明确夹具。其他客户端媒体保留历史源码范围。
 
-![desktop interaction](design/implementation/workmate/desktop-workmate-10-interaction.gif)
+![desktop](design/implementation/workmate/desktop-native-09-full-access-en.png)
 
-[MP4](design/implementation/workmate/desktop-workmate-10-interaction.mp4)
+![Company design artifacts](design/implementation/workmate/desktop-native-09-company-artifacts-en.png)
+
+![Minimum native window](design/implementation/workmate/desktop-native-09-compact-en.png)
+
+![desktop interaction](design/implementation/workmate/desktop-native-09-local-agent.gif)
+
+[MP4](design/implementation/workmate/desktop-native-09-local-agent.mp4)
 
 ### Extension
 
@@ -256,4 +264,6 @@ UI 演示中的 AI 回合、供应商与业务事实按授权明确模拟；独�
 
 本次扩展更新：[云端对话及消息附件](technical/71-extension-cloud-conversations.md) · [更新说明](changes/2026-10-22-extension-conversations.md)。
 
-本次 Desktop 本机执行：[具体方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md) · [源码与真实旅程证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json)；既有媒体保持原始源码范围。
+本次 Desktop 本机执行：[具体方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) · [源码与真实旅程证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json)；既有媒体保持原始源码范围。
+
+本次公司工具更新：[更新说明](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.md) · [源码检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json)；较早回执和媒体保持原始源码范围。

@@ -1,6 +1,8 @@
 # 文档体系与使用规则
 
-**最新实现（阶段 72）：** Desktop 已接入本机 Codex、客户授权、主进程 IPC、公司网关费用及实际打包旅程。原文保留其初始/历史范围，当前方案与证据见 [本机执行及控制面](technical/72-desktop-local-execution-and-control-plane.md)。下列旧回执不自动认定为新源码通过。
+**阶段 73 当前增量：** Desktop 保持本机 Codex，接通公司图片/设计/资料工具和私有成果下载；16 个角色的本机协议可准入。真实原生 14 项、平台完整回归 818 项、打包 Electron 9 项旅程通过，供应商/系统对话框决定明确为假数据夹具。全 18 角色/29 Skill 和完整产品验收仍保留。见 [本机公司工具](technical/73-desktop-native-company-tools.md)。下列阶段 72 及更早记录只证明原始源码范围。
+
+**历史实现（阶段 72）：** Desktop 已接入本机 Codex、客户授权、主进程 IPC、公司网关费用及实际打包旅程。原文保留其初始/历史范围，当前方案与证据见 [本机执行及控制面](technical/72-desktop-local-execution-and-control-plane.md)。下列旧回执不自动认定为新源码通过。
 
 2026-10-22 当前客户端方向以 [CLIENT01 需求补充](requirements/03-client-execution-amendment.md) 和 [方向检查/开发调整](technical/69-desktop-local-codex-and-extension-direction.md) 为准：Desktop 必须本机运行 Codex 并支持客户授予完整本机权限；Extension 是 ChatGPT 式对话附件侧栏，负责文件获取、读取、上传，Agent 在云端执行。旧阶段窗口/侧栏证据不证明新能力完成。
 

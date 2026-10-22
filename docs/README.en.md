@@ -5,11 +5,11 @@
 A Codex-based enterprise Agent platform for Hong Kong businesses, beginning with existing marketing teams. Cloud Web, a Chrome native Side Panel and a full frameless Desktop share company identity, business controls and an internal OpenAI-compatible AI gateway. Admin manages users, scoped content, usage, fees and VIP access.
 
 <!-- client01-direction -->
-## Current client direction — implementation gap
+## Current client direction and qualified scope
 
 CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
 
-**Current implementation:** Desktop integrates local Codex, main-process consent, file/terminal tools, same-thread follow-up, stop and company-gateway billing. Validation covers 37 client tests, 10 native-supervisor tests, 86 server/cloud-compatibility tests and seven actual packaged-Electron journey checks. Model turns and native chooser/consent decisions are explicit fixtures. Five local specialists are admitted; all eighteen roles/media tools, production signing and complete client acceptance remain open. The Extension keeps native Side Panel cloud conversations and file uploads. See [implementation and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md).
+**Current implementation:** Desktop runs Codex locally with user-granted full access, local files/terminal, same-thread follow-up, stop and company billing. Company image/design/data tools and private-artifact downloads are now connected. Validation passes 37 client tests, 14 real-native tests, 818 full Platform regression tests and nine actual packaged-Electron journey checks. Sixteen roles have the native tool protocol connected; this is not complete professional qualification. Native video/workflow integration, all eighteen roles/twenty-nine Skills, signing and full client acceptance remain open. Model/image responses and native dialog decisions are explicit synthetic fixtures. The Extension retains native Side Panel cloud conversations and selected-file uploads. See [design and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) and [source/media evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json).
 
 Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
 
@@ -44,22 +44,24 @@ flowchart TB
   Desktop --> LocalCodex[Customer-device Codex / native candidate]
   LocalCodex --> LocalTools[Local files / terminal / skills]
   LocalCodex --> Gateway[Internal OpenAI-compatible API]
+  LocalCodex --> MainTools[Company tools via trusted Desktop main]
+  MainTools --> API
   API --> Access[Identity / tenant / project / private ownership]
   Access --> Input[Explicit sources / role / skills / version]
   Input --> Budget[Plan / permission / budget hold]
-  Budget --> Codex[Version-pinned Codex]
+  Budget -->|Web / Extension cloud tasks only| Codex[Cloud version-pinned Codex]
   Codex --> Gateway[Internal OpenAI-compatible API]
   Codex --> Tools[Authorized tools]
   Tools --> Results[Immutable outputs / usage / settlement]
   Results --> Clients[Governed client reads and downloads]
 ```
 
-The following describes the implemented cloud/file-bridge baseline. Desktop local Codex and full local access require separate implementation and acceptance under CLIENT01.
+The following describes the shared company workflow. Desktop local permission, persistent threads and company tools follow the stage 73 design and source-bound checkpoint.
 
 1. Sign in with an email code, choose a workspace/project and confirm the current funding and permission context. Desktop and extension authorize through the company webpage using PKCE; Admin uses a separate email OTP/TOTP identity.
-2. Select the default assistant, a preset among eighteen roles, or a personal specialist. Tasks freeze role, Skills, model and price versions. Select files, brand resources and authorized connections explicitly.
+2. Web/Extension offer the default assistant, eighteen role presets and personal specialists. Desktop currently admits sixteen presets with the native protocol connected. Tasks freeze role, Skills, model and price versions. Select files, brand resources and authorized connections explicitly.
 3. Confirm a bounded budget before execution. Codex calls company-provided APIs and controlled tools. Recorded usage, budget holds and settled charges remain separate.
-4. When a measured completed turn requests inputs, select authorized current versions and continue the original task/thread/hold. There are eight-round and thirty-two-dependency bounds. Unknown effects require reconciliation.
+4. In Web/Extension, when a measured completed turn requests inputs, select authorized current versions and continue the original task/thread/hold, within eight-round and thirty-two-dependency bounds. Desktop supports same-local-thread follow-up; native waiting-input UI remains to be integrated. Unknown effects in either execution path require reconciliation.
 5. Read evidence and deliverables, download through authenticated company routes or explicitly publish an independent copy. Current source governance still applies. Workspace switches or failed reads clear prior client content.
 6. Operators filter users/usage, manage scoped content, review fees and grant VIP/credit under independent permissions. Sensitive writes preview impact and use idempotency and required independent approvals.
 
@@ -91,11 +93,11 @@ Open Web `http://localhost:4317` and Admin `http://localhost:4318`; Backend uses
 
 ## Evidence and limits
 
-The historical-source Platform regression passed **802/802** tests (the backend has since changed; this is not a full regression of the new source), retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. The new checkpoint adds ten real-native supervisor checks and seven packaged Electron journey checks, including consent and company billing; full qualification remains open. Four-client media records the existing cloud/file-bridge UI with actual capture timing, hashes and owned-client cleanup.
+The historical-source Platform regression passed **802/802** tests (the backend has since changed; this is not a full regression of the new source), retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. Stage 72 retained ten real-native supervisor and seven Electron checks for its historical source. Stage 73 binds current source to 818 full Platform regressions, fourteen real-native tests, thirty-seven client tests and nine packaged journey checks. Full qualification remains open. Earlier four-client media retains its original cloud/file-bridge source scope; new local company-tool media has its own timing, hashes and owned-client cleanup.
 
-[Canonical task evidence](quality/canonical-task-checkpoint.json) · [Native supervisor evidence](quality/local-codex-supervisor-checkpoint.json) · [Candidate package bytes](quality/client-direction-package.json) · [Media](quality/workmate-media-10.json) · [Requirement progress](quality/requirements-alignment-progress.json)
+[Canonical task evidence](quality/canonical-task-checkpoint.json) · [Native supervisor evidence](quality/desktop-company-tools-checkpoint.json) · [Current local candidate bytes](quality/desktop-company-tools-checkpoint.json) · [Media](quality/workmate-media-10.json) · [Requirement progress](quality/requirements-alignment-progress.json)
 
-AI turns and provider/business facts in UI demos are explicitly synthetic, as authorized. Separate integration tests run actual Codex processes against a synthetic internal gateway. Admin media shows permission-gated VIP/credit forms and does not claim a financial posting. Applied SQL001–091 remain immutable. All 102 requirements, TC/NFR/G01–G10 and the 81 partial /21 unproven /0 fully accepted baseline remain intact. Dedicated canonical task inputs and historical identity migration, arbitrary in-flight pause, unknown-effect recovery, complete local Desktop and Extension conversation/attachments, full role workflows, GEO, real suppliers, production, signing and store qualification remain outstanding.
+AI turns and provider/business facts in UI demos are explicitly synthetic, as authorized. Separate integration tests run actual Codex processes against a synthetic internal gateway. Admin media shows permission-gated VIP/credit forms and does not claim a financial posting. Applied SQL001–092 remain immutable. All 102 requirements, TC/NFR/G01–G10 and the 81 partial /21 unproven /0 fully accepted baseline remain intact. Dedicated canonical task inputs and historical identity migration, arbitrary in-flight pause, unknown-effect recovery, complete local Desktop and Extension conversation/attachments, full role workflows, GEO, real suppliers, production, signing and store qualification remain outstanding.
 
 ## Actual client gallery
 
@@ -111,11 +113,17 @@ Screenshots and GIFs show actual running clients; synthetic data is scoped above
 
 ### Desktop
 
-![desktop](design/implementation/workmate/desktop-workmate-10-input-ready-en.png)
+Stage 73: actual packaged local Codex, full-access flow, company images and private downloads; model/image responses and native dialog decisions are explicit fixtures. Other client media below retain their historical source scopes.
 
-![desktop interaction](design/implementation/workmate/desktop-workmate-10-interaction.gif)
+![desktop](design/implementation/workmate/desktop-native-09-full-access-en.png)
 
-[MP4](design/implementation/workmate/desktop-workmate-10-interaction.mp4)
+![Company design artifacts](design/implementation/workmate/desktop-native-09-company-artifacts-en.png)
+
+![Minimum native window](design/implementation/workmate/desktop-native-09-compact-en.png)
+
+![desktop interaction](design/implementation/workmate/desktop-native-09-local-agent.gif)
+
+[MP4](design/implementation/workmate/desktop-native-09-local-agent.mp4)
 
 ### Extension
 
@@ -256,4 +264,6 @@ Every later change must synchronize both READMEs, affected captures, bilingual r
 
 New: [Extension cloud conversations](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md) · [Release notes](changes/2026-10-22-extension-conversations.en.md).
 
-Latest Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json). Prior recordings below retain their original source scopes.
+Latest Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Prior recordings below retain their original source scopes.
+
+Latest company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.

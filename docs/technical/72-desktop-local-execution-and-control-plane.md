@@ -1,5 +1,7 @@
 # Desktop 本机执行、客户授权与公司控制面
 
+**阶段 73 当前增量：** Desktop 保持本机 Codex，接通公司图片/设计/资料工具和私有成果下载；16 个角色的本机协议可准入。真实原生 14 项、平台完整回归 818 项、打包 Electron 9 项旅程通过，供应商/系统对话框决定明确为假数据夹具。全 18 角色/29 Skill 和完整产品验收仍保留。见 [本机公司工具](73-desktop-native-company-tools.md)。下列阶段 72 及更早记录只证明原始源码范围。
+
 本次落实 [CLIENT01](../requirements/03-client-execution-amendment.md)。Desktop 的主入口调整为本机 Agent：Codex 进程、会话循环、文件和命令工具运行在客户电脑。公司平台管理身份、项目、角色、模型网关、预算与账本。Extension 保持 [右侧栏云端对话和文件上传](71-extension-cloud-conversations.md)。唯一 Agent 内核为 Codex。
 
 本文描述当前增量的代码契约。完整 Codex Desktop 能力仍按 DESK-L01–L08 逐项验收，不能把本机软件开发工具通过等同于所有设计、媒体、浏览器和系统应用工具已支持。验证结果与对应源码见 [本次检查点](../quality/desktop-local-execution-checkpoint.json)。

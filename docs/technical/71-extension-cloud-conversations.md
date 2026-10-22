@@ -1,5 +1,7 @@
 # Extension 云端对话与消息附件
 
+**阶段 73 当前增量：** Desktop 保持本机 Codex，接通公司图片/设计/资料工具和私有成果下载；16 个角色的本机协议可准入。真实原生 14 项、平台完整回归 818 项、打包 Electron 9 项旅程通过，供应商/系统对话框决定明确为假数据夹具。全 18 角色/29 Skill 和完整产品验收仍保留。见 [本机公司工具](73-desktop-native-company-tools.md)。下列阶段 72 及更早记录只证明原始源码范围。
+
 2026-10-22。承接 [CLIENT01](../requirements/03-client-execution-amendment.md)。Extension 的产品主线是原生右侧栏中的连续对话；浏览器读取用户选定的文件并上传公司云端，由云端 Codex 执行。Desktop 的本机 Agent 接入继续按 [本机内核说明](70-desktop-native-codex-supervisor.md) 跟踪。
 
 ## 产品与操作

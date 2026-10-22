@@ -1,5 +1,7 @@
 # 技术架构与技术栈
 
+**阶段 73 当前增量：** Desktop 保持本机 Codex，接通公司图片/设计/资料工具和私有成果下载；16 个角色的本机协议可准入。真实原生 14 项、平台完整回归 818 项、打包 Electron 9 项旅程通过，供应商/系统对话框决定明确为假数据夹具。全 18 角色/29 Skill 和完整产品验收仍保留。见 [本机公司工具](73-desktop-native-company-tools.md)。下列阶段 72 及更早记录只证明原始源码范围。
+
 实施状态：本分册保留长期设计约束；本轮锁定版本、实际 API/工具、各端实现与差异，以 [实际开发清单](12-implementation-and-repositories.md) 和 [运行验收](../quality/04-implementation-acceptance.md) 为准，未实现项没有删除。
 
 
@@ -37,9 +39,15 @@ flowchart LR
     D[无边框 Desktop] --> A
     D --> C[客户本机 Codex app-server]
     C --> N[本机文件 / 终端 / Skill / 工具]
-    C --> G[公司内部 AI 服务]
+    C --> I[公司任务级推理入口]
+    I --> G[公司内部 AI 服务]
+    C --> K[Desktop 主进程公司工具通道]
+    K --> A
+    A --> CT[本机任务的公司资料与媒体工具]
+    CT --> G
+    CT --> S
     A --> P[(PostgreSQL 业务状态)]
-    P --> O[Outbox dispatcher]
+    P -->|仅云端任务的 outbox| O[Outbox dispatcher]
     O --> Q[pg-boss 作业队列]
     Q --> R[任务 worker / Codex 适配器]
     R --> G
@@ -54,7 +62,7 @@ flowchart LR
     A --> S
 ```
 
-逻辑连线不意味着开放数据库或对象库给客户端。外部 AI 供应商凭证只出现在内部服务域，设备主动建立到产品服务的出站连接。
+Desktop 任务只保存本机执行归属与费用，不创建云端 Agent outbox；公司工具共享项目、产物和账本规则，不能接管本机执行循环。逻辑连线不意味着开放数据库或对象库给客户端。外部 AI 供应商凭证只出现在内部服务域，设备主动建立到产品服务的出站连接。
 
 Codex 是 CORE01 的固定架构约束。默认助手、预设/定制角色、团队及 Routine 共用 Codex 执行链；内核适配边界仅负责官方协议/版本转换。运行配置 kernel 固定 codex，版本启用、模板发布、任务启动/恢复均校验；Codex 故障不触发其他内核回退。具体边界及准入见 [Codex 与内部网关](02-runtime-and-ai-gateway.md)。
 
@@ -64,11 +72,11 @@ Web/Extension 云端流程：客户端提交幂等请求 → API 核验身份和
 
 Desktop 本机流程：公司登录及业务授权 → 本机用户选择权限模式 → main process 启动本机 Codex 并加载 Skill → 本机工具执行及流式交互 → 按约定同步事件/费用和选定产物。本机任务不投递到旧云端 Codex 队列；本机执行契约及恢复设计见 [方向检查](69-desktop-local-codex-and-extension-direction.md)，本机入口使用独立 desktop-executions 契约，旧云端任务 API 不承接 Desktop 原生登录的 Agent 请求。
 
-进程在事务提交后、投递前崩溃时，dispatcher 可重新扫描 outbox；投递后崩溃可能重复消息，worker 依据任务版本和稳定 operation_id 去重。队列清空可从业务 outbox 重建，不能丢任务真相。
+仅对 Web/Extension 云端任务，进程在事务提交后、投递前崩溃时，dispatcher 可重新扫描 outbox；投递后崩溃可能重复消息，worker 依据任务版本和稳定 operation_id 去重。队列清空可从业务 outbox 重建，不能丢任务真相。
 
 ## 4. 状态、事件与费用的一致性
 
-业务事务内同时写状态、事件和 outbox；费用变更同时写 reservation 与 ledger。对象先上传暂存并校验，再提交资产引用，失败的孤立对象由清理任务处理。
+云端任务在业务事务内同时写状态、事件和 outbox；Desktop 事务保存本机归属、控制事件与费用，不创建云端 Agent outbox。两类任务的费用变更均同时写 reservation 与 ledger。对象先上传暂存并校验，再提交资产引用，失败的孤立对象由清理任务处理。
 
 执行租约含 monotonically increasing fencing token，旧 worker 即使继续运行也不能提交数据库结果或新受控工具操作。对已经送达上游的动作只能查询实际结果，不能通过数据库租约撤销已发生副作用。
 
