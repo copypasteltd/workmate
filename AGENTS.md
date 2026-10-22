@@ -7,3 +7,4 @@
 - Agent 内核唯一使用 Codex；全部 AI 请求经公司内部服务器，遵守当前开发文档的版本、权限与模型约束。
 - 严禁调度任何本地 Docker、WSL 或其他虚拟化环境，使用原生工具开发和核查。
 - 使用浏览器后，关闭本次调用创建且不再需要的页面、上下文及独立浏览器实例，释放内存；保留用户原有页面。
+- 各端独立仓库按 [Git 分支与同步规则](docs/governance/04-git-branches-and-publication.md) 发布至 `git@github.com:copypasteltd/workmate.git` 的对应分支；后续代码修改需同步中英双语 README、相关实际截图/交互 GIF 和更新说明，再提交并推送。用户已经授权此持续同步，不重复询问常规推送权限；不得强推覆盖其他人的工作。

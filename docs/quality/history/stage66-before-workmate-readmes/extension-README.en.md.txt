@@ -1,0 +1,501 @@
+# CopyPaste Chrome Extension
+
+<!-- stage66-current-paid-inputs:start -->
+Chrome MV3 uses the actual native Side Panel to display and resolve paid input requests on the original task.
+
+## Continue the original paid task after providing inputs (stage 66)
+
+A completed, fully measured Codex turn can now request authorized files or existing marketing connections. The model describes the gap and the user selects the resources. The same task retains its conversation, native thread, original budget hold and cumulative usage, then rechecks current permissions, sources and capacity before continuing. Input requests are bounded to eight rounds and thirty-two dependencies. Unknown external results remain subject to reconciliation.
+
+Completed transactional tools retain immutable receipts. A later turn reuses matching results only after current authorization, output and source checks. Source packages also compare the actual file manifest and hashes, so changed sources produce a new package. Cancellation during an input wait settles measured spend; unknown usage is never treated as free. Web, Desktop and Side Panel distinguish recorded usage from settled charges and initial input waits from waits after a paid turn.
+
+All three clients retain explicit input selections during refreshes of the same task. Native checks observe at least two actual task responses before confirmation. Workspace changes or denied current reads clear prior task content and input controls. The first failed form-remount journey and its packages remain intact; corrected packages use a separate directory.
+
+Validation: **782/782 Platform tests**, preserving all **765 prior named tests**; **34/34 focused tests** and **13 checks across six repositories**. Actual Codex child processes restore the original thread, tools and history and verify completed-file reuse and one cumulative settlement, using authorized synthetic API responses. **32 native journey checks** cover Web, packaged Desktop and the actual native Side Panel. Their input-selection journeys use explicitly identified synthetic model-turn fixtures.
+
+Desktop is frameless, with custom dragging and minimize/maximize/close buttons and no Electron default or Alt menu. Clicking the extension toolbar opens Chrome's native Side Panel, right by default while respecting browser preferences; there is no action popup. New Setup/Portable files and the Side Panel ZIP are unsigned localhost previews. Installation, signing, store publication and production model services remain unqualified.
+
+Native SQL087→091 preserves complete original-field row digests for all 169 prior public tables, migration bytes, ownership and RLS. Only the declared capacity claim changes; checkpoint/tool-receipt guards are added. New columns start at zero/null and both execution-fact tables start empty, without invented history. Code and scripts live in the D-drive dev directory; main documentation lives in docs. No local Docker, WSL or virtualization is used.
+
+Codex is the only kernel. All AI calls use the company internal OpenAI-compatible gateway. All 102 original requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 without proven completion, zero fully accepted. Canonical TaskDTO/task creation, arbitrary in-flight pause, unknown-effect recovery, complete independent role workflows and production acceptance remain open.
+
+[Implementation](../../docs/technical/66-paid-native-input-checkpoints.md) · [Evidence binding](../../docs/quality/paid-input-checkpoint.json) · [Current client artifacts](../../docs/quality/paid-input-artifacts.json)
+
+```mermaid
+flowchart LR
+  Run[Paid task] --> Gap[Completed measured input request]
+  Gap --> User[Human selects authorized inputs]
+  User --> Check[Same task / original hold / source and capacity checks]
+  Check --> Resume[Resume original Codex thread]
+  Resume --> Run
+  Run --> Settle[One cumulative settlement]
+```
+
+![Chrome 原生右侧栏补资料 / Chrome native Side Panel input request](assets/screenshots/paid-input-native-03-paid-input-en.png)
+<!-- stage66-current-paid-inputs:end -->
+
+<!-- stage65-current-history-source-lineage:start -->
+This stage preserves the native browser Side Panel and existing ZIP bytes.
+
+## Sources of conversations and actual reads (stage 65)
+
+Actual model reads now retain immutable file-version, cloud-reference and marketing-dataset provenance. Historical assistant results, pinned memories and approved plans remain subject to current source checks before further model input, cached tools, events and artifact persistence. A new paid delegation rejects unavailable history before creating a task or reserving funds. Conversations show an unavailable placeholder; task lists and details retain state and cost metadata while fencing unavailable acceptance bodies. Existing PLAN_STALE / PLAN_INPUT_CHANGED and initial input-selection semantics remain intact. Controlled deletion explicitly scrubs provenance; a missing erasure flag never authorizes an ordinary provenance rewrite.
+
+Explicit publication creates an independent copy with a frozen set of known inputs. Removing the original private conversation preserves that published copy. Revocation of an input file, dataset or pinned memory still fences derived copies and public shares. Restoration preserves current project, user and private-scope authorization.
+
+Validation: **765/765 Platform tests**, retaining all **746** prior named tests; **51/51 focused tests** and **13 checks across six repositories**. Actual HTTP SSE, Worker tools, downloads, plans, holds and public shares run with authorized synthetic AI/business data. Native SQL081→087 preserves row digests for all 168 original public tables, prior migrations and original function definitions. The added provenance table starts empty; historical reads are never invented.
+
+Desktop remains frameless with custom window controls and no Electron default or Alt menu. The extension uses a real Chrome native Side Panel, right by default while respecting browser preferences. Existing packages receive a read-only byte check; screenshots and native journeys retain their historical Backend source scope. Current Backend UI qualification, signed installation, store release and production acceptance remain pending.
+
+Codex is the only kernel. All AI requests use the company internal OpenAI-compatible gateway. All 102 original requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 without proven completion, zero fully accepted.
+
+```mermaid
+flowchart LR
+  Input[Actual reads and fixed references] --> Origin[Immutable source provenance]
+  Origin --> Work[History and approved plans]
+  Origin --> Copy[Independent published copies]
+  Guard[Current scope and source lifecycle] --> Work
+  Guard --> Copy
+  Work --> Result[Authorized model input and output]
+  Copy --> Share[Authorized downloads and shares]
+```
+<!-- stage65-current-history-source-lineage:end -->
+
+<!-- stage64-current-report-task-source-fences:start -->
+The extension retains a real Chrome native Side Panel, right by default. This stage rechecks existing client and ZIP bytes only.
+
+## Current source fences for reports and task history (stage 64)
+
+Marketing analysis and original SEO audit task details, project lists, historical JSON messages and both SSE routes now share current source checks with their dedicated reports. When a source is quarantined or expires, an open stream stops emitting message bodies and closes at its next batch. Restoration still requires current workspace, project, private-owner and session authorization; retained reports and events remain immutable.
+
+Analysis dataset, original CSV, output artifact and terminal analysis-task retention applies before cleanup. Expired analysis inputs are rejected before task creation or budget reservation. Reads that wait for ordinary task updates recheck the actor's current authorization version before responding.
+
+Validation: **746/746 Platform tests**, retaining all **734** prior named tests; **12/12 focused tests** and **13 checks across six repositories**. Actual HTTP streams and Worker-persisted model messages run, including locked Codex through the internal synthetic gateway. AI and business data remain synthetic as authorized. Native SQL080→081 preserves every row digest in **168** prior public tables, old migrations and table ownership/RLS in both databases; only two report-access functions change.
+
+**Desktop remains frameless with no Electron application or Alt menu.** The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to browser preferences. Existing sources, ASAR, extension ZIP and stage 63 preview packages were rechecked read-only. The actual screenshots and native executions below retain their original Backend scope; this stage adds no browser/native journey qualification of the changed Backend. Installation, signing, store publication and production remain open.
+
+Codex remains the only kernel; every AI request uses the company's internal OpenAI-compatible server. All original 102 requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 not proven complete, zero fully accepted.
+
+```mermaid
+flowchart LR
+  Request[Task detail / list / JSON / SSE] --> Auth[Current tenant / project / private owner / session]
+  Auth --> Source[Current report and original-source lifecycle]
+  Source --> Locks[Source locks / identity recheck after waits]
+  Locks --> Read[Authorized immutable data or event batch]
+  Read --> Source
+  Source --> Closed[Unavailable source / no new body / close open stream]
+  Input[Analysis dataset / original CSV] --> Valid[Active and unexpired source]
+  Valid --> Reserve[Only then create task and reserve budget]
+```
+<!-- stage64-current-report-task-source-fences:end -->
+
+<!-- stage63-source-governed-website-changes:start -->
+This repository is the Chrome MV3 extension. Its toolbar toggles a native Side Panel; fixed links open the authorized company workspace. Local files continue to require explicit device/folder grants.
+
+## Source-governed website change tasks (stage 63)
+
+Open Marketing insights → Website audits & rechecks. Select 1–20 findings, confirm the frozen original evidence, change objective and separate AI budget, then save a private task. Pause/resume unclaimed work, cancel, inspect original evidence and download JSON/HTML drafts. Explicitly request a same-scope recheck after separately implementing and authorizing website changes. Drafts require human review; unchanged fixture pages correctly retain persistent findings.
+
+**Codex is the only kernel**, with every AI request sent through the company's internal OpenAI-compatible gateway. Business and AI data remain **synthetic as authorized**. Authentication, authorization, native HTTP fixtures, Codex processes, metering receipts and saved files actually run. Drafts must cover every selected, actually read finding; fabricated, unread, missing or duplicated references cannot publish artifacts. Original sources, cache ancestors, quarantine, retention, revocation and erasure govern private drafts and explicitly published copies. Admin metadata, private-body access and content actions retain separate permissions.
+
+**Desktop remains frameless**, with custom dragging and window controls, no Electron application or Alt menu. Downloads use the current tenant's restricted authenticated bridge and native save dialog. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to browser preferences; its fixed company link opens the website workspace.
+
+Validation: **734/734 Platform tests**, retaining all **716** prior named tests; **18 actual Web/Admin and 23 newly packaged native checks**, plus 13 checks across six repositories. Native SQL079→080 preserves every row digest in **167** prior public tables and SQL001–079 in both databases. The new table is empty with FORCE RLS. Desktop previews: `release/seo-changes-63-02/`; extension: `release/seo-changes-63-02/CopyPaste-0.5.0-sidepanel.zip`.
+
+The current unpacked Desktop and real Chrome Side Panel were exercised. Setup/Portable remain unsigned; installation, store publication, live websites/models and full product acceptance remain open. All original 102 requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 not proven complete and zero fully accepted. Earlier sections, screenshots and receipts retain their historical source/package scope.
+
+```mermaid
+flowchart LR
+  Login[Current identity and project] --> Select[Select frozen original findings]
+  Select --> Confirm[Confirm objective and separate AI budget]
+  Confirm --> Task[Private normal task / frozen skills and capabilities]
+  Task --> Facts[Codex / paginated selected facts / internal gateway]
+  Facts --> Draft[Read-bound JSON / escaped HTML / human review]
+  Draft --> Save[Web download / authenticated native save]
+  Draft --> Review[Separate manual implementation and authorization]
+  Review --> Recheck[Explicit same-scope recheck / persistent or observed repairs]
+  Admin[Scoped Admin / separate metadata and body permissions] --> Source[Quarantine / retention / revocation / erasure]
+  Source --> Task
+  Source --> Draft
+  Frame[Frameless Desktop] --> Confirm
+  Panel[Toolbar / Chrome native Side Panel] --> Select
+```
+
+![Actual product capture](assets/screenshots/seo-change-native-04-sidepanel-en.png)
+<!-- stage63-source-governed-website-changes:end -->
+
+This repository is the Chrome MV3 native Side Panel extension. Its toolbar icon opens/closes the panel. Choose the signed-in workspace/project or explicitly open the fixed company workspace. Files and Native Messaging retain explicit grants and existing scope controls.
+
+## Scoped website audits and rechecks (stage 62)
+
+Open Marketing insights → Website audits & rechecks. Confirm seed URLs, exact hosts, path prefixes, page-request and AI budgets, then explicitly authorize collection. Inspect progress, uncovered URLs, access limits and URL findings with original quotes, capture times, HTTP/charset facts and hashes. Download actual JSON/HTML attachments. An explicitly requested same-scope recheck creates immutable new history and confirms changes only for pages actually inspected.
+
+Business and AI data remain **synthetic as authorized**. The non-production fixture performs actual native HTTP; a real locked Codex process interprets retained facts through the company's internal OpenAI-compatible synthetic gateway. Public deployment and live model quality remain unqualified. Every DNS answer and redirect is scoped. Collection submits no credentials/forms and executes no scripts. Robots, login pages, errors, unvisited scope and sequential collection limits stay explicit. Storage exhaustion stops collection and releases the unused inference reservation.
+
+Private sources, cache ancestors, recheck history, reports and deliberately published copies retain current authorization, retention, quarantine and erasure controls. Identity is checked again after storage I/O. Admin tenant/project scope, metadata, body access and content operations remain separate. Quarantining a source fences derived customer evidence. Saved website change tasks, Search Console connection metrics, GEO observations, canonical TaskDTO and complete original acceptance remain tracked.
+
+**Desktop stays frameless**, with custom dragging and minimize/maximize/close controls, no Electron native frame, application menu or Alt menu. Email-code sessions use local test mailbox delivery, with actual PKCE identity and tenant-bound authenticated native saves. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to Chrome preferences. Its Website audits & rechecks action opens only the fixed company workspace. Owned temporary test tabs are closed.
+
+Validation: **45/45 focused checks, 716/716 Platform tests**, retaining all **674** previous named tests; **13 actual Web/Admin and 20 newly packaged native checks**. Both native databases upgrade SQL077→079 while retaining all rows in **164** prior public tables and SQL001–077. Three added tables are empty with FORCE RLS. Original product tracking remains 81 partially verified, 21 not proven complete and zero fully accepted requirements.
+
+Current localhost previews: Desktop `release/scoped-seo-62-02/`; Extension `release/scoped-seo-62-02/CopyPaste-0.5.0-sidepanel.zip`. The unpacked Desktop and actual native Side Panel were run. Setup/Portable remain unsigned and were not installed, published or production-qualified. Earlier sections retain historical source/package scope.
+
+```mermaid
+flowchart LR
+  Login[Email / PKCE and current project] --> Confirm[Confirm host / path / request and AI budgets]
+  Confirm --> Crawl[Durable bounded HTTP / robots / DNS pinning]
+  Crawl --> Evidence[Immutable URL findings and raw source versions]
+  Evidence --> Codex[Locked Codex / internal gateway / bound facts]
+  Codex --> Download[JSON and validated HTML downloads]
+  Evidence --> Recheck[Explicit same-scope immutable recheck]
+  Recheck --> Compare[Observed repairs / persistent / unknown]
+  Desktop[Frameless Desktop / native authenticated save] --> Download
+  Panel[Toolbar / Chrome native Side Panel] --> Confirm
+  Admin[Scoped Admin / separate metadata and body permissions] --> Govern[Quarantine / retention / erasure]
+  Govern --> Evidence
+```
+
+![Actual native Chrome Side Panel](assets/screenshots/seo-native-04-sidepanel-en.png)
+
+![Fixed authorized website workspace opened by the Side Panel](assets/screenshots/seo-native-04-seo-workspace-en.png)
+
+## Marketing accounts and native clients (stage 61)
+
+Connections supports Google Ads, Meta Ads, Google Analytics 4 and Search Console. Select a provider, complete the clearly labelled synthetic consent, wait for account/property/site discovery, then confirm discovered accounts and the projects allowed to use snapshots. Select dates and explicitly create a snapshot. The workbench shows durable pages, errors, rate-limit retry time and immutable history. Queued/running jobs can be cancelled; an explicit retry creates a new linked job.
+
+As requested, business data remains synthetic. The supplier fixture runs only in non-production loopback development mode, using actual HTTP, one-use OAuth state, Google S256 PKCE and pagination. UI, facts and snapshots identify this mode; no real marketing account was accessed. Live application approval, actual account permissions, versions and reporting definitions require separate verification. AI requests continue through the company's OpenAI-compatible server, with Codex as the only agent kernel.
+
+Only discovered authorized accounts can be bound. Google manager paths, GA4 reporting identity/timezone, GSC site permissions and Meta ad-read scope are retained. Snapshots distinguish capture time, source dates/grains, currencies, query digests and coverage limits. Missing cutoff times and metrics remain unknown. Overlapping Meta purchase types are not summed, GA4 traffic/event grains remain separate, and GSC pagination does not claim exhaustive detail. Inspect facts or download actual JSON/CSV. Normalized Google/Meta datasets retain immutable source-asset lineage.
+
+Connection and history directories use bounded pagination; scope changes check their expected version. Revocation clears credentials, cancels unfinished work and fences late publication. Existing snapshots retain original project permissions, retention and content governance. Admin metadata is scoped by tenant/project. Body reading and fresh-MFA revocation are separate permissions; revocation returns a durable audited operation without revealing tokens. Source quarantine, expiry and physical deletion constrain derived analysis, downloads and shares while retaining content-free historical receipts.
+
+Desktop is **frameless**, with a custom drag region and minimize/maximize/close controls, no native frame, Electron application menu or Alt menu. Provider authorization opens only a fixed company page in the browser and returns to the native workspace. Protected JSON passes through the current authenticated bridge into the native save dialog. The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to the user's Chrome preference. Its Marketing accounts & sync entry opens only the fixed company workspace.
+
+Validation: **39/39 focused checks within 674/674 Platform tests**, retaining all 638 prior named tests; **17 actual Web/Admin checks and 16 newly packaged native checks** passed. Independent suites: web 8, admin 3, desktop 27, extension 21, delivery 12. Both native databases upgraded SQL071→077 while retaining every row digest in 157 prior public tables and SQL001–071. Seven new tables force RLS; legacy connections receive directory-only profiles without invented account/project grants or business history.
+
+Current localhost previews: Desktop `release/connectors-61/`, Extension `release/connectors-61/CopyPaste-0.5.0-sidepanel.zip`. The unpacked executable was run. Setup/Portable remain unsigned and were not installed by these checks. All original 102 requirements and complete TC/NFR/G01–G10, professional-role and production acceptance remain tracked. Earlier receipts and screenshots below retain their original execution scope.
+
+```mermaid
+flowchart LR
+  Client[Web / frameless Desktop] --> Consent[Fixed company launch / supplier consent]
+  Consent --> Directory[Discovered authorized accounts]
+  Directory --> Scope[Confirm account and project scope]
+  Scope --> Queue[Freeze query / durable bounded pages]
+  Queue --> Recover[Cancel / bounded retry / immutable history]
+  Queue --> Snapshot[Immutable facts / cutoff / metric limits]
+  Snapshot --> Export[Actual JSON / CSV / normalized source lineage]
+  Panel[Chrome native Side Panel] --> Client
+  Admin[Scoped Admin / separate body and revoke rights] --> Queue
+  Admin --> Governance[Quarantine / expiry / physical erasure]
+  Governance --> Export
+```
+
+![Actual Chrome native right Side Panel](assets/screenshots/connector-native-02-sidepanel-en.png)
+
+![Marketing workspace opened from the native Side Panel](assets/screenshots/connector-native-02-marketing-facts-en.png)
+
+## Template video and current clients (stage 60)
+
+Open Design canvas → Video production. Save independent scripts, scene/storyboard tracks, branding, captions and fixed shared project PNG versions. Optionally select a fixed WAV/MP3, its in point/gain and an ownership or license statement. Save the project, explicitly render, then play or download six files: MP4, project JSON, script, storyboard, WebVTT and media probe. Edits append versions; failed receipts remain visible and retries are explicit. Queued and running renders can be cancelled.
+
+`campaign-cuts-1` supports 3–60 seconds, 24/25/30/30000÷1001 fps and even dimensions from 256 to 1920 px within a total pixel/frame budget. Integer-frame timelines are encoded by native FFmpeg as H.264/yuv420p and optional AAC/48 kHz. Actual frames, duration, complete decoding and post-encode audio volume are verified. The bundled Noto Sans TC font includes its OFL, pinned source commit and full SHA. Missing glyphs, overflowing text, missing/quarantined/expired sources and short audio fail explicitly. Encoder fingerprints hash version output. Exported projects reference fixed source media: rebuilding requires those original versions and the recorded environment; byte-identical cross-environment output is not claimed.
+
+The durable queue has immutable input versions, leases, bounded concurrency, cancellation and final authority/source checks. Admin scope, body reading and content actions remain independent permissions. Shared and authenticated downloads recheck derived source availability. Deletion physically erases objects and content copies. Composition makes no AI call; AI HK$0 excludes upstream source creation costs.
+
+New R16 video preset v1.1.0 exposes the implemented `video.render` composition tool. Controlled Codex execute-mode calls can idempotently create and queue a project. Ask/plan and private conversations do not expose this shared writer. The 29th preset skill, `template-video-composition`, preserves the earlier 28 packages and complete acceptance conditions of all 18 roles; earlier installed versions remain unchanged. Generated video, effects, TTS/ASR and complete professional-role qualification retain separate requirements.
+
+Validation: **34/34 focused checks within 638/638 full Platform tests**, retaining all 607 previous named tests; **10 actual Web checks and 17 newly packaged native checks** passed. Independent suites: Web 8, Desktop 25, Extension 21 and Delivery 12. Both native databases upgraded 069→071 while preserving all row digests in 154 prior public tables and SQL001–069; three new tables force RLS.
+
+Desktop remains frameless, with custom controls and no Electron or Alt menu. Protected video bytes pass through the existing authenticated bridge into the local player. The extension toolbar still toggles Chrome's native Side Panel, right by default and subject to the user's Chrome setting, with a new video workspace entry. Current previews: Desktop `release/video-60/`, Extension `release/video-60/CopyPaste-0.5.0-sidepanel.zip`. The unpacked runtime was executed. Setup/Portable remain unsigned localhost previews without installer execution acceptance. All original 102 requirements and TC/NFR/G01–G10 retain their complete acceptance conditions.
+
+```mermaid
+flowchart LR
+  Editor[Script / storyboard / captions / supplied audio] --> Version[Save immutable project revision]
+  Version --> Queue[Explicit render / bounded durable queue]
+  Codex[Controlled Codex execute tool] --> Queue
+  Queue --> Check[Current authority / fixed source SHA / expiry]
+  Check --> Encode[Native FFmpeg / integer frames]
+  Encode --> Probe[Full decode / media probe / audio volume]
+  Probe --> Publish[Recheck lease and sources / publish six files]
+  Publish --> Playback[Web and frameless Desktop playback]
+  Panel[Native Chrome Side Panel] --> Editor
+  Queue --> Cancel[Cancel / immutable failure / explicit retry]
+  Publish --> Policy[Admin isolation / source expiry / physical deletion]
+```
+
+![Actual right native Side Panel](assets/screenshots/video-native-01-sidepanel-en.png)
+
+![Video workspace opened from the native Side Panel](assets/screenshots/video-native-01-video-workspace-en.png)
+
+## Batch designs and current clients (stage 59)
+
+Design canvas now creates a creative × language × size matrix, capped at 60 independent delivery units. Supply Traditional Chinese/English copy, a fixed shared project PNG and preset or custom dimensions. Each size receives its own layout and actual PNG, SVG and editable JSON files. Edits, retries, failures and output history belong to individual units. Layout makes no AI calls: its recorded AI cost is HK$0 from local composition, excluding upstream source creation costs.
+
+Claims and publication recheck current authority, input revision and source access. Cancellation, revocation and expired leases fence late output. Existing scoped Admin body permissions apply. Source quarantine blocks derived downloads; deletion physically erases embedded copies. SVG references server fonts; custom font distribution and commercial font qualification remain separate work.
+
+Validation: **22/22 focused checks within 607/607 complete Platform tests**, retaining all original 588 named tests; **10 actual Web journeys and 13 new packaged/native journeys** passed. Independent unit suites passed Web 8, Desktop 25, Extension 21 and Delivery 12. Both native databases upgraded 068→069 while preserving every row digest in 151 prior public tables and SQL001–068; three new tables force RLS.
+
+Desktop remains frameless with custom controls and no default Electron menu. The extension toolbar opens the native Side Panel and toggles it closed; its batch-design entry opens the full company workspace. Current previews are Desktop `release/matrices-59-02/` and Extension `release/matrices-59-02/CopyPaste-0.5.0-sidepanel.zip`. Earlier packages remain intact. These unsigned localhost previews have not passed installer execution or store distribution acceptance. Other professional workflows, live services, all original 102 requirements and TC/NFR/G01–G10 remain independently tracked.
+
+```mermaid
+flowchart LR
+  Brief[Copy / fixed PNG / languages / sizes] --> Bound[Authorize / 60-unit bound]
+  Bound --> Units[Durable independent units]
+  Units --> Layout[Reflow text and image / lease]
+  Layout --> Recheck[Recheck current authority and sources]
+  Recheck --> Files[PNG / SVG / editable JSON]
+  Layout --> Failed[Keep failed receipt]
+  Failed --> Retry[Retry only this cell]
+  Files --> Edit[New input revision for this cell]
+  Retry --> Units
+  Edit --> Units
+```
+
+![Actual native Side Panel](assets/screenshots/matrix-native-04-sidepanel-en.png)
+
+![Workspace opened from the native Side Panel](assets/screenshots/matrix-native-04-batch-workspace-en.png)
+
+## Explicit adoption (stage 54)
+
+Default assistant updates, specialist settings and conversation adoption now compare the exact models, effort, unit rates and Skill versions before explicit consent. Five-minute comparisons bind the real session and current configuration; stale comparisons are rejected. Retries use one persistent operation key. Previously accepted tasks keep their original versions and prices.
+
+Current backend regression: **484/484**, including all 462 prior named tests; focused **93/93** overlaps that total. Actual built Web: **12/12**; new packaged frameless Desktop and real native Chrome Side Panel: **11/11**. AI/media use the authorized simulated dependencies; identity, PostgreSQL, permissions and version transactions execute normally. All 102 original requirements remain tracked. Earlier sections below retain their historical source and artifact scope.
+
+![Actual version review](assets/screenshots/adoption-native-05-sidepanel-en.png)
+
+Click the toolbar icon to open the actual native Side Panel (right side with default Chrome settings); click again to close. No action popup is configured. The new bilingual review button opens the company's fixed `/app/specialists` workspace; the panel uses its own compact renderer. Chrome controls left/right placement. New loadable ZIP: `release/adoption-54/CopyPaste-0.5.0-sidepanel.zip`; the previous `release/sidepanel/` bytes remain intact.
+
+```mermaid
+flowchart LR
+  Entry[Workspace / native entry] --> Compare[Freeze model and rate comparison]
+  Compare --> Consent[Explicit user consent]
+  Consent --> Save[Atomic version and receipt]
+  Save --> Future[Future tasks]
+  Existing[Already accepted tasks] --> Original[Original versions and prices]
+```
+
+## Controlled support update / 受控客服协助
+
+The toolbar action continues to open the native Chrome Side Panel on the right. Customers manage support grants in Web account settings; the panel does not acquire administrator support sessions or other customer login credentials.
+
+Stage 51 current regression: 424/424 with 711 source files; controlled-support browser workflows: 8/8 with 816 source files and 9 unedited captures. The 14 support tests, original contract checks, migration preservation and separate native checks are bounded evidence, not completion of all 102 acceptance cases. Current binaries are rebuilt; stage 50 binaries remain unchanged in their archive.
+
+```mermaid
+flowchart LR
+  Customer[Customer grant] --> Scope[Explicit projects and deadline]
+  Admin[Real administrator with MFA] --> Scope
+  Scope --> Read[Read-only support view]
+  Revoke[Expiry or revocation] --> Clear[Block reads and clear view]
+```
+
+
+[简体中文](README.md) · Chrome MV3 side panel and native bridge · 0.5.0
+
+An independent repository for project/specialist tasks, explicitly selected files and user-triggered current-page capture. Persistent folder operations use the installed Desktop native helper. Execution and billing stay on the platform; this extension contains no AI credentials.
+
+![Sign-in](assets/screenshots/01-login.png)
+![Authenticated side panel](assets/screenshots/02-workspace.png)
+
+The historical stage 49 recheck verified frameless Desktop, the native Chrome right Side Panel, live rights/notifications and sign-out while retaining that stage's installer bytes. Stage 50 below rebuilds the current previews with financial views. Complete installation, signing, SSO and system acceptance remain separate.
+
+## Durable financial notifications and three-client accounts (stage 50)
+
+The toolbar continues to open the real native Chrome Side Panel, normally on the right and subject to Chrome’s placement preference. It adds exact personal balances, the latest five account notices, unread filtering and read-state controls; Web provides full history/work events. Workspace changes, failed reads, revocation and sign-out clear stale content, and workspace/request revisions reject late results. Actual dark-theme hint contrast measures 11.59:1. Only owned browsers were used and closed.
+
+Stage 50 historical platform regression: 410/410; actual three-client financial workflows: 8/8. AI/media and payment evidence are authorized local simulations; authentication, database, authorization, ledger and notification paths execute for real. This does not complete the original 102 acceptance cases, production banking or the full installation/system matrix.
+
+```mermaid
+flowchart LR
+  Source[Canonical financial fact] --> Tx[Same-transaction outbox]
+  Tx --> Worker[Current eligible recipient]
+  Worker --> Access[Recheck current authority]
+  Access --> Clients[Web / frameless Desktop / native Side Panel]
+```
+
+![Native Side Panel accounts](assets/screenshots/17-financial-inbox.png)
+
+![Unknown refund in the native panel](assets/screenshots/18-financial-unknown.png)
+
+## Open in the browser side panel
+
+The entry follows the current MetaMask pattern: select CopyPaste from Chrome's extension menu or pin and click its icon to open the native global Side Panel, normally on the right. Clicking again closes it. It stays across page/tab navigation, and closing it does not cancel cloud tasks. Installation and browser startup do not open it automatically.
+
+The manifest uses `side_panel.default_path` without `action.default_popup`. Every worker start, install/update and browser startup restores `openPanelOnActionClick: true` and trusted storage access. The extension uses Chrome's panel rather than an overlay, popup or extra tab. Chrome controls the left/right preference; users with a left-side preference can change it in Chrome's appearance/side-panel settings. Chrome 120 remains supported; newer `getLayout()` is used only by QA.
+
+```mermaid
+flowchart LR
+  Icon[Extension icon] --> Action[Native Chrome action]
+  Action --> Panel[Global Side Panel / normally right]
+  Panel --> Work[Sign-in / project / task / files]
+  Action --> Close[Click again to close]
+```
+
+![Actual native side-panel content](assets/screenshots/09-native-sidepanel.png)
+
+The image captures the real SIDE_PANEL document through CDP, showing its content only. Delivery `qa:native-surfaces` invokes `Extensions.triggerAction` on the actual browser tab and verifies right alignment, SIDE_PANEL identity, reduced webpage width, no new normal tab, navigation persistence and toggle close. The 2026-10-20 rerun binds the current extension's entire dist tree and source bytes to that actual QA report. The previous eight `qa:extension` groups remain historical authentication/business evidence; the full authentication matrix has separate acceptance requirements. Owned browsers close in finally.
+
+The current loadable ZIP is `release/sidepanel/CopyPaste-0.5.0-sidepanel.zip`; extract it and load the directory from `chrome://extensions`. Earlier preview bytes are preserved in `release/sidepanel-stage30/`. Delivery records the new archive's SHA-256. This preview uses localhost origins; production configuration and store publication require a separate release.
+
+## Build and load
+
+Requires Node.js 22.14+ and Chrome 120+. Native Chromium was used for qualification. Start platform and Web first:
+
+```powershell
+npm ci
+npm run typecheck
+npm run build
+```
+
+Enable developer mode at `chrome://extensions`, load `dist/` unpacked and open the CopyPaste side panel. Stable unpacked ID: `fffkcnmfdhahlnifgdilabheppkgnlok`. `manifest-key.txt` is a public SPKI key, not an AI credential or store private key. Match platform `EXTENSION_ID` and Desktop `deployment.json`.
+
+Defaults are API `http://localhost:4310` and Web `http://localhost:4317`. For production:
+
+```powershell
+$env:COPYPASTE_API_ORIGIN='https://api.your-company.example'
+$env:COPYPASTE_WEB_ORIGIN='https://agent.your-company.example'
+npm run build
+```
+
+Only HTTPS company origins or localhost development origins are accepted, without embedded credentials, paths or queries. Host permissions contain only the API origin. The extension has not been published to the Chrome Web Store. Docker, WSL and virtualization are prohibited.
+
+## Authentication and use
+
+```mermaid
+flowchart LR
+  E[Open panel] --> I[chrome.identity window]
+  I --> W[Web email sign-in and consent]
+  W --> P[Single-use PKCE code]
+  P --> S[Trusted service worker session]
+  S --> T[Select project and specialist]
+  T --> A[Platform tasks, status and cancellation]
+  T --> F[Explicit picker or current page]
+  T --> N[Optional Native Messaging]
+  N --> D[Desktop folder grants]
+```
+
+The exact callback is registered to Chrome identity. Access/refresh tokens stay in trusted-context `chrome.storage.session`, not the panel, localStorage or `storage.local`. Closing the browser ends that session. Local extension storage only retains locale. The platform handles refresh rotation and logout.
+
+Uploads require a user picker and are limited to 5 MB by the extension; the server rechecks project rights. Current-page capture requires a click and activeTab/scripting, excludes forms/editable/hidden content and does not run continuous site-wide capture.
+
+## Web and Desktop integration
+
+Version 0.2.0 uses the same platform identity, permissions and task API. The build derives the manifest version from package.json. The panel provides lightweight tasks/materials; configure persistent specialists, full private conversations and memory in Web or Desktop. Private outputs require explicit publication before project sharing.
+
+## Native folders
+
+The extension cannot silently scan the local disk. Install Desktop using the Windows Setup package, explicitly connect the Chrome helper in its device page, then grant optional nativeMessaging permission in the extension. Registration is per Windows user and allowlists the official extension origin.
+
+Each folder needs separate native consent, expires after one hour and is read-only by default. Creating new files requires extra consent. List, preview, upload, create-only text output and revoke operations reject traversal, links/junctions, device names, ADS, overwrite and remote shell. Responses are capped at 900 KB; use the file picker for larger transfers.
+
+## Verification and source
+
+- `background.ts`: PKCE, token rotation, limited API/native messages and current-page capture.
+- `panel.ts`: workspaces/projects/roles/tasks, upload, folder tools and locale.
+- `build.mjs`: public deployment origins, manifest and stable ID.
+- Delivery `npm run qa:extension`: real MV3 loading, chrome.identity login, upload, token privacy and logout; browser contexts close in finally.
+- Delivery `npm run qa:desktop`: packaged native-host framing, allowlist, folder grants and local operations. QA does not overwrite the user's existing registry registration.
+
+Static interface text supports Chinese/English; some dynamic statuses remain Traditional Chinese. Without live internal AI qualification, executable AI tasks remain unavailable. New organizations are initialized on Web. Daily/weekly cloud schedules are managed in Web or Desktop; full AI video/speech remain outside this release. See [notices](THIRD_PARTY_NOTICES.md).
+
+## 0.5.0 company identity and unified sign-in
+
+OIDC uses code + PKCE S256, signature verification, state/nonce and a fixed callback. An existing registered account and active workspace membership are required. First binding requires a separate CopyPaste work-email code; domains never auto-enroll users. Configuration changes, disablement or unlinking revoke all linked users’ CopyPaste browser/native/refresh sessions and prior execution authorization. Administrator email and TOTP remain separate.
+
+Company identity reuses the system-browser authorization page: choose company sign-in, complete identity and any required email proof, then explicitly authorize the Chrome callback. Independent PKCE, short access tokens and rotating refresh credentials remain. Server codes bind to the issuing session and user revision; source logout or identity revocation invalidates outstanding codes. Local file and Native Messaging folder grants still require explicit actions.
+
+```mermaid
+flowchart LR
+  Member[Existing workspace member] --> IdP[Signed OIDC and PKCE]
+  IdP --> Proof[First-link email proof]
+  Proof --> Web[CopyPaste session]
+  Web --> Native[Explicit native consent and PKCE]
+  Revoke[Disable or unlink] --> All[Revoke browser and native credentials]
+```
+
+## Default assistant and inbox (current source)
+
+The panel offers a default text assistant alongside professional roles. Stable submission IDs preserve the original private conversation/task after an unknown response. Stale responses cannot overwrite lists/tasks after a workspace or project switch. Simulated workspaces display a persistent notice. The recipient inbox lists the latest 20 notifications, toggles read state and opens the original project/task; full pagination and conversation continuation remain in the workspace.
+
+Delivery qa:extension passes eight real MV3 groups: PKCE; retry after an accepted response is lost and real Codex text-file creation; notification navigation; 320/420/768 widths, both themes/languages; explicit upload; credential privacy/logout; project switching while an accepted response is delayed. Model dependencies are synthetic and do not qualify live roles. Historical ZIPs are unchanged.
+
+```mermaid
+flowchart LR
+  Brief[Default assistant / editable brief] --> Stable[Stable submission ID]
+  Stable --> API[Private conversation and one task]
+  API --> Notice[Recipient inbox]
+  Notice --> Scope[Original project and task]
+  Switch[Workspace or project switch] --> Ignore[Ignore stale UI responses]
+```
+
+![Text task and simulated result](assets/screenshots/03-default-task.png)
+![Work notifications](assets/screenshots/04-notifications.png)
+![Dark English panel](assets/screenshots/05-dark-en.png)
+
+## Initial input requests (current source)
+
+The side panel can declare a required file before the first model turn, then search and select a current project version explicitly. Existing connected-account requests are also selectable; the panel never creates OAuth authorization or synchronizes a report automatically. Workspace/project changes discard stale responses. Authorization errors clear candidates and prevent confirmation. Resolving the final request resumes the same task and its single reservation.
+
+The explicit local picker uploads shared project files up to 5 MiB. Use the full workspace for private uploads and connection authorization. The eighth real MV3 journey verifies a waiting task, an actual upload, no automatic selection, the original task’s result and three widths in both themes. This covers initial prerequisites only; historical ZIPs are unchanged.
+
+![Initial file request in the actual side panel](assets/screenshots/06-input-wait.png)
+![Result from the same task](assets/screenshots/07-input-result.png)
+
+## Shared-slot waits (current source)
+
+The panel explains server capacity waits: no model call yet, the original budget remains held and the same task resumes automatically. All clients share the server queue/database; the extension does not duplicate the task or reservation. Historical ZIPs are unchanged.
+
+## Relationship to the persisted template directory
+
+Web and Desktop now provide template preflight and instance creation. The extension retains its verified default text delegation, notifications and explicitly authorized file flow; this change does not add an extension template editor. Professional presets still require live business qualification. Connecting to the same API does not qualify those roles.
+
+The panel now supports initial queued pause/resume, keeping the original task/reservation and synchronizing recent-task status. Delivery `qa:task-controls` verifies the business flow in real MV3/PKCE; running pause remains unavailable. These are source changes; the previous `release/sidepanel/` ZIP is unchanged. Native right-side SIDE_PANEL appearance retains its separately verified behavior.
+
+![Paused task](assets/screenshots/10-task-paused.png)
+
+## Session expiry and sign-out
+
+The background coalesces refreshes and fences late login/refresh writes. A definitive 401 clears the matching credential and notifies open trusted panels; obsolete account requests cannot clear a later sign-in. Expiry clears account/task/file/notification views and stops polling. Sign-out clears session storage before revoking its family through refresh proof, including with expired access. Offline feedback explicitly reports unconfirmed remote revocation.
+
+![Panel business document after revocation](assets/screenshots/11-session-revoked.png)
+
+`npm test` has ten session race/fault groups. Delivery `qa:sessions` uses real MV3 and identity PKCE for remote revocation and expired-access sign-out. Its isolated MV3 document does not replace the native SIDE_PANEL appearance test. The previous sidebar preview ZIP retains its original manifest and does not include this repair.
+
+## Current MV3 session recovery (2026-10-20)
+
+Delivery `qa:sessions` now passes all 12 Web/source Electron/MV3 groups: actual identity S256 login, same-key recovery of committed exchange/refresh responses, real session-storage revocation, automatic sign-in/account replacement in two existing business pages, stale previous-account 401 isolation and expired-access sign-out. All 769 source/runtime files match; owned instances and credentials are cleared. Old failures remain unchanged and model calls are zero.
+
+![Private views cleared after revocation](assets/screenshots/13-session-revoked-current.png)
+![Existing page replaces its account](assets/screenshots/14-account-replacement-current.png)
+
+These are actual MV3 business documents. The separate 10/10 native SIDE_PANEL action evidence covers right-side appearance; these screenshots do not replace it. The recorded side-panel ZIP remains byte-identical. Complete packaged, identity, system and membership acceptance is still outstanding.
+
+After the refund increment, current-source Web membership passes 6/6 (169 sources), Admin membership 6/6 (196), and Web/source Electron/MV3 authentication 12/12 (775), with unchanged source hashes and owned credential/process cleanup. The initial Electron debugging connection timeout is retained; the same source passed the rerun. Frameless Desktop and native Side Panel preview bytes are unchanged. Full packaged authentication and system acceptance remain separate.
+
+Current-source verification after the immutable-plan increment (2026-10-20): Web membership 6/6 (172 source files), Admin membership 6/6 (200), and Web/source Electron/MV3 authentication 12/12 (779). Source digests match before and after each run; owned browsers, Electron and extension instances are closed and test credentials cleared. Immutable definitions and frozen legacy bindings do not change the native preview packages. Complete VIP/quota behavior, packaged authentication and system acceptance remain tracked in the main documentation.
+
+## Current native right Side Panel and entitlement sync
+
+Clicking the toolbar action opens a real browser `SIDE_PANEL` on the right and reduces the page width, without a popup or additional ordinary tab. Another click closes it. Navigation and tab changes retain the same panel document, and a browser restart restores its entry behavior. The rebuilt extension and frameless Desktop pass ten native-surface checks and six actual login/VIP integration groups.
+
+```mermaid
+flowchart LR
+  Action[Toolbar action] --> Panel[Native right Side Panel]
+  Panel --> Auth[Real browser PKCE sign-in]
+  Auth --> Background[Authenticated background and current tenant]
+  Background --> API[Current rights from company server]
+  API --> View[Features confirmation revision and five notices]
+  Logout[Sign out or account switch] --> Fence[Clear caches and fence late replies]
+```
+
+Manual and 15-second refresh show server-merged personal/current-workspace rights. Project/file authorization and budget still apply. Reading a notice does not grant capabilities. Actual integration verifies that a Desktop read action updates the same persistent notification observed from the panel, suspension restores the real free plan, and sign-out clears credentials. Nineteen unit checks pass; full Native Host large-file, installation/publication and production acceptance remain open.
+
+![Actual native SIDE_PANEL with granted rights](assets/screenshots/15-vip-effective-rights.png)
+![Actual server entitlement revision after suspension](assets/screenshots/16-vip-suspended-rights.png)
+
+Verification triggers the actual browser action and attaches CDP to the native panel; an ordinary `sidepanel.html` tab is not substituted. Build with `npm run build`, then load `dist/` from Chrome's extension manager. The adjacent Delivery repository records the current ZIP and byte digests with `package:surfaces`.
+
+## Enterprise seat and storage enforcement (stage 48)
+
+The actual native Side Panel entitlement summary now includes workspace seats, retained bytes, pending upload reservations, limits and over-limit state. Byte values use BigInt. Existing workspace/project/session guards remain active, and personal VIP does not change shared workspace capacity. Clicking the extension action still opens the browser side panel; owned QA pages and browsers are closed afterward.
+
+![Actual native Side Panel](assets/screenshots/15-vip-effective-rights.png)
