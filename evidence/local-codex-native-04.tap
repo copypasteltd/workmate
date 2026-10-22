@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+not ok 1 - native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+  ---
+  duration_ms: 4102.1638
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\integration\\local-codex.native.test.ts:4:7911'
+  failureType: 'testCodeFailure'
+  error: 'LOCAL_CODEX_RPC_REJECTED'
+  code: 'LOCAL_CODEX_RPC_REJECTED'
+  stack: |-
+    LocalCodexSession.message (D:\dev\copypasted\自有agent\dev\copypaste-desktop\src\local-codex.ts:361:40)
+    Socket.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-desktop\src\local-codex.ts:287:22)
+    Socket.emit (node:events:518:28)
+    addChunk (node:internal/streams/readable:561:12)
+    readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    Readable.push (node:internal/streams/readable:392:5)
+    Pipe.onStreamRead (node:internal/stream_base_commons:189:23)
+  ...
+# [{"kind":"local.runtime.rpc_rejected","value":{"method":"thread/resume","native_code":-32600,"detail":"no rollout found for thread id 01a16387-f24a-7863-b846-16950fdf3dd7"}}]
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4713.6045

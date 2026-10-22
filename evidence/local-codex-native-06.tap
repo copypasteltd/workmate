@@ -1,0 +1,56 @@
+TAP version 13
+# Subtest: native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+ok 1 - native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+  ---
+  duration_ms: 10125.9439
+  ...
+# {"version":"0.163.0-alpha.11","native_binary_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","outside_cwd_file_sha256":"205b67f30e170f01fa12b325555888f71d96fcaf25a0eb1cf4e249f895ffd36d","same_thread":true,"credential_excluded_from_shell":true}
+# Subtest: native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+ok 2 - native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+  ---
+  duration_ms: 12653.2474
+  ...
+# Subtest: local binary, provider, Skill and permission-owner mismatches dispatch no inference
+ok 3 - local binary, provider, Skill and permission-owner mismatches dispatch no inference
+  ---
+  duration_ms: 3262.642
+  ...
+# Subtest: native interruption and revocation stop only this owned process and reject further local turns
+ok 4 - native interruption and revocation stop only this owned process and reject further local turns
+  ---
+  duration_ms: 3765.8125
+  ...
+# Subtest: an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+ok 5 - an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+  ---
+  duration_ms: 4866.5698
+  ...
+# Subtest: current account authority is checked before each native turn
+ok 6 - current account authority is checked before each native turn
+  ---
+  duration_ms: 3404.1189
+  ...
+# Subtest: changing a materialized Skill is rejected before another provider request
+ok 7 - changing a materialized Skill is rejected before another provider request
+  ---
+  duration_ms: 3316.0079
+  ...
+# Subtest: a previous account or project checkpoint cannot be taken over or rewritten
+ok 8 - a previous account or project checkpoint cannot be taken over or rewritten
+  ---
+  duration_ms: 5694.1871
+  ...
+# Subtest: an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+ok 9 - an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+  ---
+  duration_ms: 5365.092
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 52834.2111

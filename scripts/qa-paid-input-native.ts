@@ -28,7 +28,7 @@ const owned = path.join(delivery, ".data/paid-input-native", randomUUID()),
     extension,
     executable: path.join(
       desktop,
-      "release/paid-input-66-03/win-unpacked/CopyPaste.exe",
+      "release/client-direction-70-01/win-unpacked/CopyPaste.exe",
     ),
     packaged: true,
   },
@@ -37,6 +37,7 @@ const owned = path.join(delivery, ".data/paid-input-native", randomUUID()),
   screenshots: any[] = [],
   inspection: any = {},
   hash = (b: Buffer) => createHash("sha256").update(b).digest("hex");
+let authPage: Page | undefined;
 let isolated: any,
   system: any,
   app: ElectronApplication | undefined,
@@ -289,6 +290,16 @@ try {
     localStorage.setItem("cp_locale", "en"),
   );
   const auth = await authContext.newPage();
+  authPage = auth;
+  inspection.desktop_authorization_responses = [];
+  auth.on("response", (response) => {
+    const parsed = new URL(response.url());
+    if (parsed.pathname === "/v1/auth/authorize" || parsed.pathname === "/callback")
+      inspection.desktop_authorization_responses.push({
+        // Authorization codes, state and PKCE material never enter evidence.
+        path: parsed.pathname, status: response.status(),
+      });
+  });
   await auth.goto("http://localhost:4317/login");
   const session = await mailLogin(auth, email),
     cookie = (await authContext.cookies()).find(
@@ -478,9 +489,14 @@ try {
     "desktop PKCE URL",
   );
   await auth.goto(url);
-  await auth
-    .getByRole("link", { name: /Authorize & return|授權並返回應用/ })
-    .click();
+  const authorizeLink = auth.getByRole("link", { name: /Authorize & return|授權並返回應用/ });
+  await authorizeLink.waitFor({ state: "visible" });
+  const authorizeHref = new URL((await authorizeLink.getAttribute("href"))!, auth.url());
+  assert.equal(authorizeHref.pathname, "/v1/auth/authorize");
+  await authorizeLink.focus();
+  await authorizeLink.press("Enter");
+  await auth.waitForURL((target) => target.hostname === "127.0.0.1" && target.pathname === "/callback", { waitUntil: "domcontentloaded" });
+  await auth.getByText("Signed in. You can close this tab.", { exact: false }).waitFor();
   await page.waitForURL("**#/app");
   await page.locator(".sidebar").waitFor();
   pass(
@@ -1891,6 +1907,11 @@ try {
   );
   artifactsUnchanged = true;
 } catch (e) {
+  if (authPage && !authPage.isClosed()) {
+    await shot(authPage, "copypaste-web", "authorization-failure").catch(() => {});
+    const current = new URL(authPage.url());
+    inspection.authorization_failure = { origin: current.origin, path: current.pathname };
+  }
   if (app) {
     const page = app.windows()[0];
     if (page && !page.isClosed()) {

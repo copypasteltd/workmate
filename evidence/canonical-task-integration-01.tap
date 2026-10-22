@@ -1,0 +1,1130 @@
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# Subtest: task schema copies retain the immutable original conditions, Money, statuses and strict response fields
+ok 1 - task schema copies retain the immutable original conditions, Money, statuses and strict response fields
+  ---
+  duration_ms: 18097.1788
+  ...
+# Subtest: canonical create accepts once under concurrent retries, reserves exact HKD once, and exposes the same nested task
+not ok 2 - canonical create accepts once under concurrent retries, reserves exact HKD once, and exposes the same nested task
+  ---
+  duration_ms: 3352.3441
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:5547'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + '1000000'
+    - 1000000
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1000000
+  actual: '1000000'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:270:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: strict canonical commands reject malformed Money, unsupported specialized semantics, invalid references and unknown fields before reservation
+not ok 3 - strict canonical commands reject malformed Money, unsupported specialized semantics, invalid references and unknown fields before reservation
+  ---
+  duration_ms: 521.5815
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:7012'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    '0' !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: '0'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:388:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: canonical create requires current authentication, CSRF, selected tenant and idempotency; explicit unsupported payer cannot slip through
+ok 4 - canonical create requires current authentication, CSRF, selected tenant and idempotency; explicit unsupported payer cannot slip through
+  ---
+  duration_ms: 140.9894
+  ...
+# Subtest: canonical ask, plan and execute preserve the selected mode without inferring a different business task type
+not ok 5 - canonical ask, plan and execute preserve the selected mode without inferring a different business task type
+  ---
+  duration_ms: 770.879
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:9618'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"ed854e59-47e2-4145-9df3-38bde93dcb75"}}
+    
+    409 !== 202
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 202
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    create (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:133:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:440:15)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: a canonical delegation executes through the real worker, returns actual artifact identities and one settled charge
+not ok 6 - a canonical delegation executes through the real worker, returns actual artifact identities and one settled charge
+  ---
+  duration_ms: 445.38
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:9990'
+  failureType: 'testCodeFailure'
+  error: '(intermediate value).process is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:453:57)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: canonical pause, resume and cancel are versioned, idempotent and preserve one original task and budget
+not ok 7 - canonical pause, resume and cancel are versioned, idempotent and preserve one original task and budget
+  ---
+  duration_ms: 1234.3928
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:11183'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'estimated'
+    - 'confirmed'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'confirmed'
+  actual: 'estimated'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:523:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: an unknown accepted operation remains reconciliable and cannot be retried or disguised as a completed task
+not ok 8 - an unknown accepted operation remains reconciliable and cannot be retried or disguised as a completed task
+  ---
+  duration_ms: 407.74
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:12638'
+  failureType: 'testCodeFailure'
+  error: '(intermediate value).process is not a function'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:553:57)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: canonical batched prerequisite answers validate all resources atomically and queue the original task once
+ok 9 - canonical batched prerequisite answers validate all resources atomically and queue the original task once
+  ---
+  duration_ms: 1283.7056
+  ...
+# Subtest: malformed or unknown answers never become ignored text, duplicate resources or partial input updates
+ok 10 - malformed or unknown answers never become ignored text, duplicate resources or partial input updates
+  ---
+  duration_ms: 637.4888
+  ...
+# Subtest: explicit delegation asset versions become authorized frozen prerequisites rather than ignored prompt references
+not ok 11 - explicit delegation asset versions become authorized frozen prerequisites rather than ignored prompt references
+  ---
+  duration_ms: 936.1869
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:16381'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    409 !== 404
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 404
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:740:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: signed keyset pagination is stable and revalidates account, tenant, project scope, filters and limits
+not ok 12 - signed keyset pagination is stable and revalidates account, tenant, project scope, filters and limits
+  ---
+  duration_ms: 795.0856
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:17243'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"ed3dd083-221f-4909-ab92-8bfcfa6f125b"}}
+    
+    409 !== 202
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 202
+  actual: 409
+  operator: 'strictEqual'
+  stack: |-
+    create (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:133:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Promise.all (index 2)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:754:19)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: canonical task access and saved receipts cannot cross private owners, project grants, tenants or quarantined content
+ok 13 - canonical task access and saved receipts cannot cross private owners, project grants, tenants or quarantined content
+  ---
+  duration_ms: 1474.189
+  ...
+# Subtest: conversation delegations serialize busy checks, retain the pinned specialist and append exactly one user message
+ok 14 - conversation delegations serialize busy checks, retain the pinned specialist and append exactly one user message
+  ---
+  duration_ms: 1059.7314
+  ...
+# Subtest: historical bound delegations project without fabricated identity, while unbound legacy rows retain their original interface
+not ok 15 - historical bound delegations project without fabricated identity, while unbound legacy rows retain their original interface
+  ---
+  duration_ms: 1135.1451
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\canonical-tasks.test.ts:1:20979'
+  failureType: 'testCodeFailure'
+  error: '409: {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"1552ff6e-112b-407e-b56c-5cd18789763c"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:68:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\canonical-tasks.test.ts:921:19)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# Subtest: a paid model input gap waits on the original task, resumes the same thread and settles one cumulative charge
+ok 16 - a paid model input gap waits on the original task, resumes the same thread and settles one cumulative charge
+  ---
+  duration_ms: 7402.4672
+  ...
+# Subtest: cancelling a paid input checkpoint settles its already measured work once
+ok 17 - cancelling a paid input checkpoint settles its already measured work once
+  ---
+  duration_ms: 922.2527
+  ...
+# Subtest: a failure before another provider dispatch retains the prior paid turn's cumulative usage
+ok 18 - a failure before another provider dispatch retains the prior paid turn's cumulative usage
+  ---
+  duration_ms: 1496.5
+  ...
+# Subtest: an accepted turn without complete usage never becomes an automatically resumable input checkpoint
+ok 19 - an accepted turn without complete usage never becomes an automatically resumable input checkpoint
+  ---
+  duration_ms: 576.7517
+  ...
+# Subtest: models cannot select inputs themselves or perform more tool writes after requesting human input
+ok 20 - models cannot select inputs themselves or perform more tool writes after requesting human input
+  ---
+  duration_ms: 1126.7495
+  ...
+# Subtest: revoking an actually consumed source prevents paid continuation while preserving measured cancellation cost
+ok 21 - revoking an actually consumed source prevents paid continuation while preserving measured cancellation cost
+  ---
+  duration_ms: 1160.1017
+  ...
+# Subtest: private and tenant boundaries still govern a paid input request and its immutable checkpoint facts
+ok 22 - private and tenant boundaries still govern a paid input request and its immutable checkpoint facts
+  ---
+  duration_ms: 2168.7133
+  ...
+# Subtest: a paid continuation waits for the same capacity limits without consuming another attempt or reservation
+ok 23 - a paid continuation waits for the same capacity limits without consuming another attempt or reservation
+  ---
+  duration_ms: 2946.0088
+  ...
+# Subtest: paid native checkpoints are bounded to eight rounds and retain one cumulative charge across them
+ok 24 - paid native checkpoints are bounded to eight rounds and retain one cumulative charge across them
+  ---
+  duration_ms: 6458.6551
+  ...
+# Subtest: the database rejects an input checkpoint without a live lease even with the correct native scope
+ok 25 - the database rejects an input checkpoint without a live lease even with the correct native scope
+  ---
+  duration_ms: 701.1465
+  ...
+# Subtest: a completed output revoked during an input wait is not recreated from its old tool receipt
+ok 26 - a completed output revoked during an input wait is not recreated from its old tool receipt
+  ---
+  duration_ms: 1551.4356
+  ...
+# Subtest: source packages reuse unchanged work but include a source edit made in the resumed turn
+ok 27 - source packages reuse unchanged work but include a source edit made in the resumed turn
+  ---
+  duration_ms: 4076.0356
+  ...
+# Subtest: an invalid paid checkpoint retains reconciliation in Worker and queued-recovery events
+ok 28 - an invalid paid checkpoint retains reconciliation in Worker and queued-recovery events
+  ---
+  duration_ms: 3442.3784
+  ...
+# Subtest: revoking an approved input cancels paid continuation before dispatch and preserves measured spend
+ok 29 - revoking an approved input cancels paid continuation before dispatch and preserves measured spend
+  ---
+  duration_ms: 1052.2911
+  ...
+# Subtest: completed paid images are reused across an input gap without another provider call or duplicate charge
+ok 30 - completed paid images are reused across an input gap without another provider call or duplicate charge
+  ---
+  duration_ms: 2447.1232
+  ...
+# Subtest: erasing a private paid input task removes checkpoint content and tool receipts while retaining its measured ledger
+ok 31 - erasing a private paid input task removes checkpoint content and tool receipts while retaining its measured ledger
+  ---
+  duration_ms: 1344.8842
+  ...
+# Subtest: real Codex resumes a paid Worker task, restores tools and reuses its completed artifact across native processes
+ok 32 - real Codex resumes a paid Worker task, restores tools and reuses its completed artifact across native processes
+  ---
+  duration_ms: 16476.7287
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# Subtest: initial pause/resume preserves one task and hold, is versioned/idempotent, hides paused outbox, then settles once
+ok 33 - initial pause/resume preserves one task and hold, is versioned/idempotent, hides paused outbox, then settles once
+  ---
+  duration_ms: 22589.0338
+  ...
+# Subtest: a worker claim winning the race prevents pause; completed and uncertain tasks never requeue
+ok 34 - a worker claim winning the race prevents pause; completed and uncertain tasks never requeue
+  ---
+  duration_ms: 1365.7724
+  ...
+# Subtest: cross-tenant, private and read-only controls are denied, including replay after access revocation
+ok 35 - cross-tenant, private and read-only controls are denied, including replay after access revocation
+  ---
+  duration_ms: 1819.9993
+  ...
+# Subtest: scoped MFA Admin shares pause guards; resume rechecks beneficiary authorization and original reservation
+ok 36 - scoped MFA Admin shares pause guards; resume rechecks beneficiary authorization and original reservation
+  ---
+  duration_ms: 2095.7906
+  ...
+# Subtest: a revoked input during pause reopens the original dependency instead of calling the model
+ok 37 - a revoked input during pause reopens the original dependency instead of calling the model
+  ---
+  duration_ms: 1149.2469
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# Subtest: input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once
+ok 38 - input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once
+  ---
+  duration_ms: 11967.2123
+  ...
+# Subtest: cancelled input waits dismiss requests and release the hold; forged, foreign and privately owned resources cannot resolve them
+not ok 39 - cancelled input waits dismiss requests and release the hold; forged, foreign and privately owned resources cannot resolve them
+  ---
+  duration_ms: 391.548
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:7386'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    404 !== 409
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 409
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:369:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: shared tasks cannot select even the creator's private input or disclose its name in candidate lists
+ok 40 - shared tasks cannot select even the creator's private input or disclose its name in candidate lists
+  ---
+  duration_ms: 484.9581
+  ...
+# Subtest: revocation after resolution returns an unstarted task to input wait without another reservation or model turn
+not ok 41 - revocation after resolution returns an unstarted task to input wait without another reservation or model turn
+  ---
+  duration_ms: 602.3996
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\task-dependencies.test.ts:1:10124'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    404 !== 409
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 409
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\task-dependencies.test.ts:521:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: all independent requested inputs must be resolved; racing different selections cannot replace the accepted resource
+ok 42 - all independent requested inputs must be resolved; racing different selections cannot replace the accepted resource
+  ---
+  duration_ms: 492.4302
+  ...
+# Subtest: connection selection checks the declared provider and current authorization without leaking credentials or granting report accounts
+ok 43 - connection selection checks the declared provider and current authorization without leaking credentials or granting report accounts
+  ---
+  duration_ms: 529.3079
+  ...
+# Subtest: parent inputs are inherited for new work, superseded versions need a fresh selection, and erasure removes input descriptions
+ok 44 - parent inputs are inherited for new work, superseded versions need a fresh selection, and erasure removes input descriptions
+  ---
+  duration_ms: 1007.4232
+  ...
+# Subtest: a follow-up requests a fresh input when its inherited source was already superseded
+ok 45 - a follow-up requests a fresh input when its inherited source was already superseded
+  ---
+  duration_ms: 1013.7047
+  ...
+# Subtest: plans bind selected inputs; changed inputs require a new plan before approval or cancel an unstarted approved execution
+ok 46 - plans bind selected inputs; changed inputs require a new plan before approval or cancel an unstarted approved execution
+  ---
+  duration_ms: 1360.079
+  ...
+# Subtest: revocation during a paid run blocks tools and result publication and never replays the model
+ok 47 - revocation during a paid run blocks tools and result publication and never replays the model
+  ---
+  duration_ms: 457.0291
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# {"case":"selected_source","conversation_canary":false,"download_status":404}
+# Subtest: selected source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+ok 48 - selected source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+  ---
+  duration_ms: 7041.2055
+  ...
+# {"case":"actual_read_source","conversation_canary":false,"download_status":404}
+# Subtest: dynamically read source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+ok 49 - dynamically read source quarantine hides retained assistant text and its generated artifact without rewriting the stored result
+  ---
+  duration_ms: 943.4039
+  ...
+# {"case":"expired_history_delegation","response":409,"before":{"tasks":1,"reservations":1,"reserved":"0"},"after":{"tasks":1,"reservations":1,"reserved":"0"}}
+# Subtest: expired historical source rejects a new paid conversation delegation before creating a task or reservation
+ok 50 - expired historical source rejects a new paid conversation delegation before creating a task or reservation
+  ---
+  duration_ms: 994.9429
+  ...
+# {"case":"queued_history","calls":0,"leaked_to_model":false}
+# Subtest: a queued continuation cannot send an earlier result to its model after the original source is quarantined
+ok 51 - a queued continuation cannot send an earlier result to its model after the original source is quarantined
+  ---
+  duration_ms: 1595.5973
+  ...
+# {"case":"historical_plan","plan_read":409,"approval":409}
+# Subtest: a plan produced from conversation history becomes unavailable and cannot be approved after its original source is quarantined
+ok 52 - a plan produced from conversation history becomes unavailable and cannot be approved after its original source is quarantined
+  ---
+  duration_ms: 1791.7739
+  ...
+# {"case":"mid_turn_read_revocation","status":"cancelled","persisted_canary":false}
+# Subtest: an actual unselected read revocation blocks the next model event and tool before publishing a copied result
+ok 53 - an actual unselected read revocation blocks the next model event and tool before publishing a copied result
+  ---
+  duration_ms: 1985.2765
+  ...
+# Subtest: quarantine restoration recovers the original bodies and artifacts while an independent user note remains usable
+ok 54 - quarantine restoration recovers the original bodies and artifacts while an independent user note remains usable
+  ---
+  duration_ms: 1138.1318
+  ...
+# Subtest: ordinary result sources fence detail, JSON, task lists and both real HTTP SSE routes, including an already open stream
+ok 55 - ordinary result sources fence detail, JSON, task lists and both real HTTP SSE routes, including an already open stream
+  ---
+  duration_ms: 1729.143
+  ...
+# Subtest: explicit publication, public shares and a second actual model read retain the original source ancestry
+ok 56 - explicit publication, public shares and a second actual model read retain the original source ancestry
+  ---
+  duration_ms: 2237.9721
+  ...
+# Subtest: a newer available file version does not substitute or invalidate the immutable version actually consumed by earlier history
+ok 57 - a newer available file version does not substitute or invalidate the immutable version actually consumed by earlier history
+  ---
+  duration_ms: 1695.2791
+  ...
+# Subtest: a pinned personal memory expiry invalidates prior result bodies and rejects paid history reuse even after it ceases to be a current memory
+ok 58 - a pinned personal memory expiry invalidates prior result bodies and rejects paid history reuse even after it ceases to be a current memory
+  ---
+  duration_ms: 778.3699
+  ...
+# Subtest: an actual cloud reference read is revoked when that exact file reference is quarantined
+ok 59 - an actual cloud reference read is revoked when that exact file reference is quarantined
+  ---
+  duration_ms: 1263.1639
+  ...
+# Subtest: a plan-approved queued execution retains the plan's own actual reads when the source is revoked after approval
+ok 60 - a plan-approved queued execution retains the plan's own actual reads when the source is revoked after approval
+  ---
+  duration_ms: 1499.9171
+  ...
+# Subtest: a cached tool response cannot replay an earlier actual file read after its source is revoked
+ok 61 - a cached tool response cannot replay an earlier actual file read after its source is revoked
+  ---
+  duration_ms: 1339.8088
+  ...
+# Subtest: a dynamically queried marketing dataset expiry prevents the next result event without waiting for cleanup
+ok 62 - a dynamically queried marketing dataset expiry prevents the next result event without waiting for cleanup
+  ---
+  duration_ms: 2166.7455
+  ...
+# Subtest: publishing a derivative flattens known inputs and survives removal of the original private conversation while still fencing the original file
+ok 63 - publishing a derivative flattens known inputs and survives removal of the original private conversation while still fencing the original file
+  ---
+  duration_ms: 1506.0788
+  ...
+# Subtest: revoked current memory keeps its context error and blocks the next actual tool call, with cancellation metadata still readable
+ok 64 - revoked current memory keeps its context error and blocks the next actual tool call, with cancellation metadata still readable
+  ---
+  duration_ms: 1362.0246
+  ...
+# Subtest: missing, empty and false erasure flags cannot rewrite publication or approved-plan provenance
+ok 65 - missing, empty and false erasure flags cannot rewrite publication or approved-plan provenance
+  ---
+  duration_ms: 952.8367
+  ...
+# Subtest: controlled erasure scrubs a published object's provenance and an approved task's source without leaving their bytes or copied body
+ok 66 - controlled erasure scrubs a published object's provenance and an approved task's source without leaving their bytes or copied body
+  ---
+  duration_ms: 2888.7487
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# Subtest: analysis source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+ok 67 - analysis source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+  ---
+  duration_ms: 12590.2226
+  ...
+# Subtest: analysis expired retained source fences historical task reads immediately without a cleanup worker
+ok 68 - analysis expired retained source fences historical task reads immediately without a cleanup worker
+  ---
+  duration_ms: 1618.2845
+  ...
+# Subtest: analysis already-open event stream closes after source quarantine and never emits a later model delta
+ok 69 - analysis already-open event stream closes after source quarantine and never emits a later model delta
+  ---
+  duration_ms: 2178.6421
+  ...
+# Subtest: seo source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+ok 70 - seo source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+  ---
+  duration_ms: 31547.2831
+  ...
+# Subtest: seo expired retained source fences historical task reads immediately without a cleanup worker
+ok 71 - seo expired retained source fences historical task reads immediately without a cleanup worker
+  ---
+  duration_ms: 29101.8803
+  ...
+# Subtest: seo already-open event stream closes after source quarantine and never emits a later model delta
+ok 72 - seo already-open event stream closes after source quarantine and never emits a later model delta
+  ---
+  duration_ms: 29535.1687
+  ...
+# Subtest: real locked Codex model deltas retain the same source fence as the immutable website report
+ok 73 - real locked Codex model deltas retain the same source fence as the immutable website report
+  ---
+  duration_ms: 42595.5161
+  ...
+# Subtest: analysis report artifact quarantine, artifact expiry and terminal-task expiry fence every report read without rewriting retained events
+ok 74 - analysis report artifact quarantine, artifact expiry and terminal-task expiry fence every report read without rewriting retained events
+  ---
+  duration_ms: 1904.0634
+  ...
+# Subtest: source locks wait for ordinary task updates, then recheck a revoked actor before detail, JSON events or SSE can respond
+ok 75 - source locks wait for ordinary task updates, then recheck a revoked actor before detail, JSON events or SSE can respond
+  ---
+  duration_ms: 18649.7245
+  ...
+# Subtest: unrelated normal tasks and other private reports retain their authorized visibility when one report source is quarantined
+ok 76 - unrelated normal tasks and other private reports retain their authorized visibility when one report source is quarantined
+  ---
+  duration_ms: 21032.9726
+  ...
+# Subtest: an expired original CSV file fences its otherwise active dataset and private report before new analysis or budget reservation
+ok 77 - an expired original CSV file fences its otherwise active dataset and private report before new analysis or budget reservation
+  ---
+  duration_ms: 1086.5947
+  ...
+# Subtest: report source functions retain current actor and tenant scope under cp_control, FORCE RLS and non-public execution grants
+ok 78 - report source functions retain current actor and tenant scope under cp_control, FORCE RLS and non-public execution grants
+  ---
+  duration_ms: 1018.5741
+  ...
+1..78
+# tests 78
+# suites 0
+# pass 67
+# fail 11
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 483829.7026
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/86d6ae06-5517-409f-8ff2-f30cc381f7a3/result.json","sha256":"4e807da262f4be8fc99f80c807436a215726873cac9abce4837697e97004058c","exit_code":0}
