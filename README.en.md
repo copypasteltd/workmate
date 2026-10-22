@@ -11,7 +11,7 @@ A cloud Agent product for Hong Kong enterprises. This repository owns **Admin Da
 
 CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
 
-**Current implementation:** The independent Desktop local Codex supervisor has passed nine native tests; product consent, billing and bundled distribution still need integration. The Extension now provides native Side Panel conversations, history, a bottom composer and immutable-version attachments. All 32 Extension tests and seven real Side Panel journey checks passed, with explicitly synthetic model turns. The original 102 requirements and full client acceptance remain open. [Extension implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md).
+**Current implementation:** Desktop integrates local Codex, main-process consent, file/terminal tools, same-thread follow-up, stop and company-gateway billing. Validation covers 37 client tests, 10 native-supervisor tests, 86 server/cloud-compatibility tests and seven actual packaged-Electron journey checks. Model turns and native chooser/consent decisions are explicit fixtures. Five local specialists are admitted; all eighteen roles/media tools, production signing and complete client acceptance remain open. The Extension keeps native Side Panel cloud conversations and file uploads. See [implementation and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md).
 
 The architecture diagram below describes the implemented cloud/file-bridge baseline; it is not the target Desktop local-agent architecture.
 
@@ -25,15 +25,14 @@ Codex is the only Agent kernel. All AI calls use the company's internal OpenAI-c
 
 ```mermaid
 flowchart LR
-  Web[Web workspace] --> API[Company Backend]
-  Side[Chrome native Side Panel] --> API
-  Desktop[Frameless Desktop] --> API
-  Admin[Scoped Admin] --> API
-  API --> Guard[Identity / sources / budget / queue]
-  Guard --> Codex[Version-pinned Codex and Skills]
-  Codex --> Gateway[Internal OpenAI-compatible gateway]
-  Codex --> Tools[Authorized tools and immutable deliverables]
-  Tools --> Ledger[Measured settlement / reconciliation]
+  Desktop[Frameless Desktop] --> Main[Trusted local permission and session control]
+  Main --> Native[Customer-device Codex and local tools]
+  Main --> Control[Company identity / role / budget control]
+  Native --> Gateway[Company scoped AI gateway]
+  Web[Web] --> Cloud[Cloud Codex and business tools]
+  Extension[Native right Side Panel and selected-file uploads] --> Cloud
+  Cloud --> Gateway
+  Gateway --> Ledger[Server-observed usage and ledger]
 ```
 
 ## Administration and operator flow
@@ -86,7 +85,7 @@ npm test
 npm run build
 ```
 
-**802/802** full Platform tests and **52/52** focused task tests pass, with **13 checks** across six repositories and **32** actual packaged Desktop/native Side Panel checks. All prior 782 named regression cases remain. Task checks exercise actual PostgreSQL, identity, ledger and Worker; separate real Codex child processes use a synthetic internal gateway. UI turns/business data are synthetic as authorized. The original 102 requirements remain: 81 partially verified, 21 without proven completion and zero fully accepted.
+Historical-source **802/802** full Platform tests and **52/52** focused task tests pass, with **13 checks** across six repositories and **32** actual packaged Desktop/native Side Panel checks. All prior 782 named regression cases remain. Task checks exercise actual PostgreSQL, identity, ledger and Worker; separate real Codex child processes use a synthetic internal gateway. UI turns/business data are synthetic as authorized. The original 102 requirements remain: 81 partially verified, 21 without proven completion and zero fully accepted.
 
 Canonical TaskDTO/task creation, arbitrary in-flight pause, unknown-effect recovery, independent complete role workflows, GEO, live suppliers and production/signing/store qualification remain tracked.
 
@@ -120,3 +119,5 @@ Actual recordings preserve capture timing. AI turns/business data are explicitly
 - [Local Codex update](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-native-codex-supervisor.en.md)
 
 Every later change updates both READMEs, affected actual captures/GIFs, release notes and its mapped branch. Verify remote SHAs through Delivery publishing; do not force-push collaborator history. Keep environment secrets, databases, sessions, dependencies and installers out of Git. Exact historical README bytes are retained in [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
+
+Latest Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/72-desktop-local-execution-and-control-plane.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-local-execution-checkpoint.json). Prior recordings below retain their original source scopes.
