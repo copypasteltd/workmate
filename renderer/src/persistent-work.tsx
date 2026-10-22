@@ -1035,7 +1035,16 @@ export function ConversationDetail() {
                       <strong>{task.title}</strong>
                       <Badge value={task.status} />
                       <span className="muted small-text">
-                        {task.mode} · <Money value={task.charged_micros} />
+                        {task.mode} · {t("已結算 ", "Settled ")}
+                        <Money value={task.charged_micros} />
+                        {Number(task.accrued_micros) >
+                          Number(task.charged_micros) && (
+                          <>
+                            {" "}
+                            · {t("已記錄用量 ", "Recorded usage ")}
+                            <Money value={task.accrued_micros} />
+                          </>
+                        )}
                       </span>
                     </Link>
                   ))

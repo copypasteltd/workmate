@@ -92,8 +92,11 @@ export function useData<T = any>(
   refresh = 0,
   interval = 0,
   tenant = "",
+  options: { retainOnRefresh?: boolean } = {},
 ) {
   const scopedUrl = tenant ? tenant + ":" + url : url;
+  const priorScope = useRef(scopedUrl);
+  const retainOnRefresh = options.retainOnRefresh === true;
   const [data, setData] = useState<T | null>(null),
     [loadedUrl, setLoadedUrl] = useState<string | null>(null),
     [error, setError] = useState<Error | null>(null),
@@ -102,7 +105,10 @@ export function useData<T = any>(
     let live = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const ctrl = new AbortController();
-    setData(null);
+    // Keep interactive children mounted only for a refresh of this same scope.
+    // Route/tenant changes and failed reads must still clear prior content.
+    if (!retainOnRefresh || priorScope.current !== scopedUrl) setData(null);
+    priorScope.current = scopedUrl;
     setError(null);
     if (!url)
       return () => {
@@ -136,7 +142,7 @@ export function useData<T = any>(
       ctrl.abort();
       if (timer) clearTimeout(timer);
     };
-  }, [url, refresh, interval, tenant]);
+  }, [url, refresh, interval, tenant, retainOnRefresh]);
   return { data: loadedUrl === scopedUrl ? data : null, error, loading };
 }
 export function ErrorNotice({ error }: { error: unknown }) {
