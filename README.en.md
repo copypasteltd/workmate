@@ -1,5 +1,33 @@
 # CopyPaste Web
 
+<!-- stage64-current-report-task-source-fences:start -->
+The customer workspace uses the shared Backend source and identity checks. Existing polling and event handling clear displayed content after access is denied.
+
+## Current source fences for reports and task history (stage 64)
+
+Marketing analysis and original SEO audit task details, project lists, historical JSON messages and both SSE routes now share current source checks with their dedicated reports. When a source is quarantined or expires, an open stream stops emitting message bodies and closes at its next batch. Restoration still requires current workspace, project, private-owner and session authorization; retained reports and events remain immutable.
+
+Analysis dataset, original CSV, output artifact and terminal analysis-task retention applies before cleanup. Expired analysis inputs are rejected before task creation or budget reservation. Reads that wait for ordinary task updates recheck the actor's current authorization version before responding.
+
+Validation: **746/746 Platform tests**, retaining all **734** prior named tests; **12/12 focused tests** and **13 checks across six repositories**. Actual HTTP streams and Worker-persisted model messages run, including locked Codex through the internal synthetic gateway. AI and business data remain synthetic as authorized. Native SQL080→081 preserves every row digest in **168** prior public tables, old migrations and table ownership/RLS in both databases; only two report-access functions change.
+
+**Desktop remains frameless with no Electron application or Alt menu.** The extension toolbar toggles **Chrome's native Side Panel**, right by default and subject to browser preferences. Existing sources, ASAR, extension ZIP and stage 63 preview packages were rechecked read-only. The actual screenshots and native executions below retain their original Backend scope; this stage adds no browser/native journey qualification of the changed Backend. Installation, signing, store publication and production remain open.
+
+Codex remains the only kernel; every AI request uses the company's internal OpenAI-compatible server. All original 102 requirements and TC/NFR/G01–G10 remain: 81 partially verified, 21 not proven complete, zero fully accepted.
+
+```mermaid
+flowchart LR
+  Request[Task detail / list / JSON / SSE] --> Auth[Current tenant / project / private owner / session]
+  Auth --> Source[Current report and original-source lifecycle]
+  Source --> Locks[Source locks / identity recheck after waits]
+  Locks --> Read[Authorized immutable data or event batch]
+  Read --> Source
+  Source --> Closed[Unavailable source / no new body / close open stream]
+  Input[Analysis dataset / original CSV] --> Valid[Active and unexpired source]
+  Valid --> Reserve[Only then create task and reserve budget]
+```
+<!-- stage64-current-report-task-source-fences:end -->
+
 <!-- stage63-source-governed-website-changes:start -->
 This repository is the customer cloud workspace. Sign in and select a workspace/project, then save change tasks from website findings, review drafts, download and explicitly recheck.
 
