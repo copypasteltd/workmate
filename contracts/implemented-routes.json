@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-23T12:13:21.433440+00:00",
+  "generated_at": "2026-10-23T14:58:48.425Z",
   "contract": "actual_fastify_route_inventory",
   "not_full_design_openapi": true,
   "routes": [
@@ -1296,6 +1296,22 @@
       "path": "/v1/tenants/:tenant/projects/:project/brand"
     },
     {
+      "method": "PUT",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/:id/versions"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/:id/versions/:version/check"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/definitions"
+    },
+    {
       "method": "DELETE",
       "path": "/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id"
     },
@@ -1738,6 +1754,14 @@
     {
       "method": "POST",
       "path": "/v1/workspaces/:workspace_id/nodes"
+    }
+  ],
+  "additive_inventory_validation": "brand-production.test.ts compares the complete array with the actual running Fastify registration",
+  "conditional_routes": [
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/demo-credit",
+      "when": "DEMO_MODE=true"
     }
   ]
 }

@@ -24,6 +24,7 @@ import { Problem } from "./lib.js";
 import { registerAuth, principal as sessionPrincipal } from "./auth.js";
 import { registerWorkspaces } from "./workspaces.js";
 import { registerAssets } from "./assets.js";
+import { registerBrandProduction } from "./brand-production.js";
 import { Storage } from "./storage.js";
 import { registerAnalytics } from "./analytics.js";
 import { registerFileImports } from "./analytics-file-routes.js";
@@ -367,6 +368,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerWorkspaces(app, db);
   registerDemo(app, db);
   registerAssets(app, db, storage);
+  registerBrandProduction(app, db, storage);
   registerUploads(app, db, storage);
   registerCloudFiles(app, db, storage);
   registerDeletions(app, db);

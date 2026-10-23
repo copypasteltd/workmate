@@ -4,6 +4,8 @@ import {
   motionFromSVG,
   designFormats,
 } from "./render.js";
+import { brandBinding, prepareBrandProduction } from "./brand-production.js";
+import { outlineBrandSVG } from "./brand-font.js";
 import { signCommand, commandPublicKey } from "./device-signing.js";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
@@ -35,6 +37,8 @@ const layer = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("text"),
     text: z.string().max(5000),
+    font_key: z.string().max(60).optional(),
+    fact_key: z.string().max(60).optional(),
     x: z.number().min(0).max(4096),
     y: z.number().min(0).max(4096),
     font_size: z.number().min(8).max(600),
@@ -58,6 +62,7 @@ export const poster = z
     height: z.number().int().min(256).max(4096),
     background: color,
     layers: z.array(layer).max(100),
+    brand: brandBinding.optional(),
   })
   .strict();
 const esc = (s: string) =>
@@ -75,10 +80,11 @@ const esc = (s: string) =>
 export function renderPoster(
   body: unknown,
   images: Record<string, string> = {},
+  textOverrides = new Map<number, { text: string; family: string }>(),
 ) {
   const b = poster.parse(body);
   const layers = b.layers
-    .map((l) =>
+    .map((l, index) =>
       l.type === "image"
         ? `<image x="${l.x}" y="${l.y}" width="${l.width}" height="${l.height}" preserveAspectRatio="xMidYMid meet" href="${
             images[l.asset_id + ":" + l.version] ??
@@ -90,7 +96,7 @@ export function renderPoster(
           }"/>`
         : l.type === "rect"
           ? `<rect x="${l.x}" y="${l.y}" width="${l.width}" height="${l.height}" rx="${l.radius}" fill="${l.color}"/>`
-          : `<text x="${l.x}" y="${l.y}" font-size="${l.font_size}" fill="${l.color}" font-family="${l.font_family === "serif" ? "Georgia, serif" : l.font_family === "mono" ? "monospace" : "Microsoft JhengHei, Noto Sans TC, sans-serif"}" font-weight="${l.weight}">${esc(l.text)}</text>`,
+          : `<text x="${l.x}" y="${l.y}" font-size="${l.font_size}" fill="${l.color}" font-family="${textOverrides.get(index)?.family ?? (l.font_family === "serif" ? "Georgia, serif" : l.font_family === "mono" ? "monospace" : "Microsoft JhengHei, Noto Sans TC, sans-serif")}" font-weight="${l.weight}">${esc(textOverrides.get(index)?.text ?? l.text)}</text>`,
     )
     .join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${b.width}" height="${b.height}" viewBox="0 0 ${b.width} ${b.height}"><rect width="100%" height="100%" fill="${b.background}"/>${layers}</svg>`;
@@ -133,7 +139,19 @@ export async function renderProjectPoster(
         );
       images[key] = "data:image/png;base64," + bytes.toString("base64");
     }
-  return renderPoster(parsed, images);
+  const texts = parsed.layers.filter(l => l.type === "text");
+  if (!parsed.brand) {
+    if (texts.some(l => l.font_key || l.fact_key)) throw new Problem(422, "BRAND_BINDING_REQUIRED", "Choose a fixed brand version before using font or fact keys");
+    return renderPoster(parsed, images);
+  }
+  const prepared = await prepareBrandProduction(tx, storage, project, parsed.brand, texts), overrides = new Map<number, { text: string; family: string }>();
+  for (const logo of prepared.row.body.logos) for (const layer of parsed.layers) {
+    if (layer.type !== "image" || layer.asset_id !== logo.asset_id || layer.version !== logo.version) continue;
+    if (layer.width < logo.min_width || layer.x < logo.clear_space || layer.y < logo.clear_space || layer.x + layer.width + logo.clear_space > parsed.width || layer.y + layer.height + logo.clear_space > parsed.height) throw new Problem(422, "BRAND_LOGO_LAYOUT_INVALID", "The Logo is smaller than its minimum size or has insufficient clear space", { logo_key: logo.key });
+  }
+  let next = 0;
+  parsed.layers.forEach((l, i) => { if (l.type === "text") overrides.set(i, prepared.resolved[next++]); });
+  return outlineBrandSVG(renderPoster(parsed, images, overrides), prepared.fonts);
 }
 const step = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("analytics.summary"), dataset_id: uuid }),
@@ -289,6 +307,7 @@ export function registerBusiness(
               probe = rendered.probe;
               mime = "video/mp4";
             }
+            if (p.body.brand) await prepareBrandProduction(tx, storage, project, p.body.brand, poster.parse(p.body).layers.filter(l => l.type === "text"));
             return saveAsset(tx, storage, {
               tenant,
               project,
@@ -303,6 +322,7 @@ export function registerBusiness(
                     ? "motion_creative"
                     : "rendered_design",
               metadata: {
+                ...(p.body.brand ? { brand_reference: p.body.brand } : {}),
                 creative_project: id,
                 version: p.version,
                 source: p.body,

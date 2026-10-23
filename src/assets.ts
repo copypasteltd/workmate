@@ -390,7 +390,7 @@ export function registerAssets(
       return {
         items: (
           await tx.query(
-            "SELECT * FROM brand_profiles WHERE project_id=$1 ORDER BY created_at DESC",
+            "SELECT * FROM brand_profiles WHERE project_id=$1 AND content_state='active' ORDER BY created_at DESC LIMIT 200",
             [project],
           )
         ).rows,

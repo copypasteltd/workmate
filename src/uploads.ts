@@ -124,7 +124,7 @@ function verifyType(mime: string, head: Buffer) {
   const h = head.toString("hex"),
     t = head.toString("ascii");
   const match =
-    mime === "image/png"
+    mime === "font/ttf" ? h.startsWith("00010000") : mime === "font/otf" ? t.startsWith("OTTO") : mime === "image/png"
       ? h.startsWith("89504e470d0a1a0a")
       : mime === "image/jpeg"
         ? h.startsWith("ffd8ff")
@@ -186,7 +186,7 @@ export function registerUploads(
     // Validate supported MIME before reserving disk; the actual bytes are
     // validated again at completion. SVG/HTML remain safe attachment downloads.
     if (
-      !/^(image\/(png|jpeg|webp|gif)|video\/(mp4|quicktime|webm)|audio\/(wav|mpeg|mp4|webm)|text\/[a-z0-9.+-]+|application\/(json|pdf|zip|octet-stream|vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet))$/.test(
+      !/^(font\/(ttf|otf)|image\/(png|jpeg|webp|gif)|video\/(mp4|quicktime|webm)|audio\/(wav|mpeg|mp4|webm)|text\/[a-z0-9.+-]+|application\/(json|pdf|zip|octet-stream|vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet))$/.test(
         b.content_type,
       )
     )

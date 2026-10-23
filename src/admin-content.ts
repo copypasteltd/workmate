@@ -148,7 +148,9 @@ export function registerAdminContent(
             };
           }
           const body =
-            table === "creative_projects" && r.kind === "creative_matrix"
+            table === "brand_profiles"
+              ? { current_version: r.version, versions: (await tx.query("SELECT version,name,body,sha256,created_at,created_by FROM brand_profile_versions WHERE brand_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100", [r.id])).rows }
+              : table === "creative_projects" && r.kind === "creative_matrix"
               ? await matrixContentBody(tx, r)
               : table === "creative_projects" && r.kind === "video"
                 ? await videoContentBody(tx, r)
@@ -281,7 +283,8 @@ export function registerAdminContent(
                     "NAME_REQUIRED",
                     "A content name is required",
                   );
-                await tx.query(
+                if (table === "brand_profiles") await tx.query("UPDATE brand_profiles SET name=$2,body=jsonb_set(body,'{name}',to_jsonb($2::text)),version=version+1,moderation_version=moderation_version+1 WHERE id=$1", [id, b.name]);
+                else await tx.query(
                   `UPDATE ${table} SET ${table === "tasks" ? "title" : "name"}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
                   [id, b.name],
                 );

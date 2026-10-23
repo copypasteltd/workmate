@@ -1,3 +1,4 @@
+import { prepareBrandProduction } from "./brand-production.js";
 import {
   assertTaskContentSources,
   recordTaskSourceRead,
@@ -579,10 +580,12 @@ export class TaskBusinessTools {
       tools.push({
         name: "design_render",
         description:
-          "Save an editable poster JSON source and render one permitted format. PDF is a single-page raster review copy; text and layers remain editable only in the source. MP4 is a bounded H.264/AAC motion creative.",
+          "Save an editable poster JSON source and render one permitted format. A brand-bound specialist must supply its exact brand id/version, authorized channel/locale, font_key and fact_key from context. Fixed brand fonts are outlined after glyph checks; fact_key text comes from the valid frozen fact, never a replacement price. PDF is a single-page raster review copy; text and layers remain editable only in the source. MP4 is a bounded H.264/AAC motion creative.",
         inputSchema: z.toJSONSchema(renderInput),
         run: txTool(
           async (tx, a) => {
+            const bound = t.input_context?.agent_id ? (await tx.query("SELECT body->'brand' AS brand FROM agent_versions WHERE agent_id=$1 AND version=$2", [t.input_context.agent_id, t.input_context.agent_version])).rows[0]?.brand : null;
+            if (bound && (a.document.brand?.id !== bound.id || a.document.brand?.version !== bound.version)) throw new Problem(422, "BRAND_BINDING_REQUIRED", "This specialist must render with its fixed brand version");
             const source = await saveAsset(tx, this.storage, {
               tenant: t.tenant_id,
               project: t.project_id,
@@ -591,7 +594,7 @@ export class TaskBusinessTools {
               mime: "application/json",
               bytes: Buffer.from(JSON.stringify(a.document, null, 2)),
               kind: "editable_design",
-              metadata: { task_id: t.id },
+              metadata: { task_id: t.id, ...(a.document.brand ? { brand_reference: a.document.brand } : {}) },
             });
             const svg = await renderProjectPoster(
               tx,
@@ -631,6 +634,7 @@ export class TaskBusinessTools {
               probe = r.probe;
               mime = "video/mp4";
             }
+            if (a.document.brand) await prepareBrandProduction(tx, this.storage, t.project_id, a.document.brand, a.document.layers.filter((l: any) => l.type === "text"));
             return {
               source,
               rendered: await saveAsset(tx, this.storage, {
@@ -641,7 +645,7 @@ export class TaskBusinessTools {
                 mime,
                 bytes,
                 kind: "design_render",
-                metadata: { task_id: t.id, source_asset_id: source.id, probe },
+                metadata: { task_id: t.id, source_asset_id: source.id, probe, ...(a.document.brand ? { brand_reference: a.document.brand } : {}) },
               }),
             };
           },

@@ -2,6 +2,7 @@ import { assertTaskContentSources } from "./task-content-sources.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
+import { brandContext } from "./brand-production.js";
 import type { Principal } from "./auth.js";
 import { audit, requireUser } from "./auth.js";
 import {
@@ -463,18 +464,7 @@ export async function resolveWorkContext(
     ),
   };
   if (agent.body.brand) {
-    const brand = (
-      await tx.query(
-        "SELECT id,version,body FROM brand_profiles WHERE id=$1 AND project_id=$2 AND content_state='active'",
-        [agent.body.brand.id, project],
-      )
-    ).rows[0];
-    if (!brand || brand.version !== agent.body.brand.version)
-      throw new Problem(
-        409,
-        "BRAND_VERSION_CHANGED",
-        "Update the specialist to the current brand version",
-      );
+    const brand = await brandContext(tx, project, agent.body.brand.id, agent.body.brand.version);
     data.brand = brand;
     current.brand = { id: brand.id, version: brand.version };
   }
