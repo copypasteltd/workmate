@@ -140,7 +140,7 @@ export async function canonicalTask(tx: Tx, t: any) {
     : (
         await tx.query(
           `SELECT DISTINCT a.id FROM assets a JOIN asset_versions v ON v.asset_id=a.id
-     WHERE a.tenant_id=$1 AND a.project_id=$2 AND a.state='active'
+     WHERE a.tenant_id=$1 AND a.project_id=$2 AND a.state='active' AND v.version=a.current_version
      AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
      AND v.metadata->>'task_id'=$3 ORDER BY a.id`,
           [t.tenant_id, t.project_id, t.id],
@@ -174,7 +174,7 @@ export async function canonicalTask(tx: Tx, t: any) {
     version: t.version,
     last_seq: lastSeq,
     created_at: new Date(t.created_at).toISOString(),
-    review_state: t.acceptance === "pending" ? "pending_review" : t.acceptance,
+    review_state: sourceError ? "pending_review" : (await tx.query("SELECT business_review_state($1) AS state", [t.id])).rows[0].state,
     artifact_ids: artifacts,
     confirmed_cost: {
       currency: "HKD",

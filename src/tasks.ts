@@ -1,4 +1,5 @@
 import { assertTaskContentSources } from "./task-content-sources.js";
+import { recordDeliveryReview } from "./business-quality.js";
 import { enqueueTask } from "./task-service.js";
 import {
   workMode,
@@ -67,7 +68,7 @@ export function registerTasks(
         items: (
           await tx.query(
             `SELECT id,title,role_key,status,mode,conversation_id,private_owner,
-             CASE WHEN task_content_sources_available(id) THEN acceptance ELSE NULL END AS acceptance,
+             CASE WHEN task_content_sources_available(id) THEN business_review_state(id) ELSE NULL END AS acceptance,
              NOT task_content_sources_available(id) AS source_unavailable,
              charged_micros,accrued_micros,budget_micros,attempt,created_at,updated_at,parent_id,version
              FROM tasks WHERE tenant_id=$1 AND project_id=$2
@@ -179,6 +180,7 @@ export function registerTasks(
         };
       }
       await projectAccess(tx, req.principal, tenant, project);
+      t.acceptance = (await tx.query("SELECT business_review_state($1) AS state", [t.id])).rows[0].state;
       return t;
     }, tenant);
   });
@@ -317,12 +319,13 @@ export function registerTasks(
       const { tenant, project, task } = taskParams.parse(req.params);
       const b = z
         .object({
-          decision: z.enum(["accepted", "changes_requested"]),
+          decision: z.enum(["accepted", "changes_requested", "discarded"]),
           comment: z.string().max(5000).default(""),
           version: z.number().int().positive(),
         })
         .strict()
         .parse(req.body);
+      const requestKey = key(req);
       return db.tx(async (tx) => {
         await projectAccess(tx, req.principal, tenant, project, "approve");
         const t = (
@@ -332,22 +335,12 @@ export function registerTasks(
           )
         ).rows[0];
         if (!t) throw new Problem(404, "NOT_FOUND", "Task not found");
-        if (t.status !== "succeeded" || t.version !== b.version)
-          throw new Problem(
-            409,
-            "VERSION_CONFLICT",
-            "Only the current completed deliverable can be reviewed",
-          );
-        await tx.query(
-          "UPDATE tasks SET acceptance=$2,version=version+1 WHERE id=$1",
-          [task, b.decision],
-        );
-        await event(tx, tenant, task, "delivery.reviewed", {
-          decision: b.decision,
-          comment: b.comment,
-          by: req.principal.id,
+        await assertReportSources(tx, t, false);
+        await assertTaskContentSources(tx, t);
+        return replay(tx, req.principal.id, "delivery.review:" + task, requestKey, b, async () => {
+          await recordDeliveryReview(tx, req.principal, t, { ...b, expected_version: b.version });
+          return { ok: true };
         });
-        return { ok: true };
       }, tenant);
     },
   );
