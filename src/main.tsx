@@ -1,3 +1,4 @@
+import { QualitySummary } from "./quality-summary";
 import "./support.css";
 import { AdminConnectionDetail } from "./connections";
 import { ApprovalReview } from "./approvals";
@@ -320,6 +321,7 @@ const nav = [
   ["users", Users, "用戶管理", "Users", "admin.users.read"],
   ["tenants", Building2, "企業管理", "Workspaces", "admin.tenants.read"],
   ["usage", ChartNoAxesCombined, "用量與消耗", "Usage", "admin.usage.read"],
+  ["quality", ListChecks, "交付品質", "Delivery quality", "admin.usage.read"],
   [
     "provider-control",
     Workflow,
@@ -509,7 +511,7 @@ function AdminShell() {
                     key={n[0]}
                     path={"/" + n[0]}
                     element={
-                      n[0] === "billing" ? (
+                      n[0] === "quality" ? (<QualitySummary url="/v1/admin/quality"/>) : n[0] === "billing" ? (
                         <BillingPage />
                       ) : n[0] === "provider-control" ? (
                         <AdminProviderControl access={a} />
