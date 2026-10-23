@@ -1,6 +1,7 @@
 import type { Tx } from "./db.js";
 import { Problem } from "./lib.js";
 import { validFederation } from "./federation-session.js";
+import { lockNativeWorkflowParent } from "./desktop-workflows.js";
 
 /** Call after user-authority locks and before project/render locks. The shared
  * task lock serializes publication with cancellation without reversing the
@@ -9,6 +10,8 @@ import { validFederation } from "./federation-session.js";
 export async function assertDesktopVideoOrigin(tx: Tx, render: any) {
   if (!render.origin_task_id) return;
   const unavailable = () => new Problem(409, "DESKTOP_VIDEO_ORIGIN_UNAVAILABLE", "The owning desktop execution is no longer authorized");
+  const hint = (await tx.query("SELECT * FROM tasks WHERE id=$1", [render.origin_task_id])).rows[0];
+  if (hint) await lockNativeWorkflowParent(tx, hint, true);
   const task = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR SHARE", [render.origin_task_id])).rows[0];
   const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR SHARE", [render.origin_task_id])).rows[0];
   if (!task || !execution || task.tenant_id !== render.tenant_id || task.project_id !== render.project_id

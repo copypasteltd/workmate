@@ -190,12 +190,17 @@ export function registerAdminContent(
                           metric_snapshot: r.metric_snapshot,
                         }
                       : table === "workflows"
-                        ? r.definition
+                        ? r.execution_location === "desktop" ? { definition: r.definition, execution_location: r.execution_location,
+                            versions: (await tx.query("SELECT version,definition,definition_hash,role_hashes,source_refs,published_at,created_at FROM workflow_versions WHERE workflow_id=$1 ORDER BY version DESC LIMIT 100", [r.id])).rows } : r.definition
                         : table === "workflow_runs"
                           ? {
                               definition: r.definition,
                               results: r.results,
                               state: r.state,
+                              ...(r.execution_location === "desktop" ? {
+                                execution_location: r.execution_location, workflow_version: r.workflow_version,
+                                cursor: r.cursor, revision: r.revision, origin_task_id: r.origin_task_id, active_task: r.active_task,
+                              } : {}),
                             }
                           : table === "workspace_nodes"
                             ? {

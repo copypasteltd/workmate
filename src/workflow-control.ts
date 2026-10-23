@@ -40,7 +40,7 @@ export async function cancelWorkflowRun(
       });
   }
   await tx.query(
-    "UPDATE workflow_runs SET state='cancelled',error_code=$2 WHERE id=$1",
+    "UPDATE workflow_runs SET state='cancelled',error_code=$2,revision=revision+CASE WHEN execution_location='desktop' THEN 1 ELSE 0 END WHERE id=$1",
     [run.id, code],
   );
   await audit(

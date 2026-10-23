@@ -827,6 +827,10 @@
       "path": "/v1/deletions/:id"
     },
     {
+      "method": "POST",
+      "path": "/v1/desktop-inference/v1/responses"
+    },
+    {
       "method": "GET",
       "path": "/v1/effective-entitlements"
     },
@@ -1411,6 +1415,50 @@
       "path": "/v1/tenants/:tenant/projects/:project/deletions"
     },
     {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/cancel"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/finish"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/heartbeat"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/start"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/tools"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/workflow-runs/:run"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/workflow-runs/:run/advance"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/workflow-runs/:run/decision"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/desktop-executions/runtime"
+    },
+    {
       "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/memories"
     },
@@ -1555,6 +1603,10 @@
       "path": "/v1/tenants/:tenant/projects/:project/video-projects/:video/renders/:render/preview"
     },
     {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/video-projects/:video/renders/:render/status"
+    },
+    {
       "method": "POST",
       "path": "/v1/tenants/:tenant/projects/:project/workflow-runs/:id/cancel"
     },
@@ -1661,17 +1713,6 @@
     {
       "method": "POST",
       "path": "/v1/workspaces/:workspace_id/nodes"
-    }
-  ],
-  "generated_at": "2026-10-22T10:48:00.890Z",
-  "previous_inventory_sha256": "20e190467075226a71b333159060ddf32f4064c86ba5c701f4246a2920cd26c2",
-  "source_receipt": "delivery:evidence/canonical-task-integration-03.json",
-  "superseded_implementation_paths": [
-    {
-      "method": "GET",
-      "path": "/v1/oauth/:provider/callback",
-      "replacement": "/v1/connections/callback",
-      "note": "The previous implementation inventory predates the state-bound connector flow. The normative OpenAPI is unchanged."
     }
   ]
 }

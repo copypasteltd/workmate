@@ -62,7 +62,7 @@ async function prepare(
 ) {
   const w = (
     await tx.query(
-      "SELECT * FROM workflows WHERE id=$1 AND tenant_id=$2 AND project_id=$3 AND state='published' AND content_state='active' FOR SHARE",
+      "SELECT * FROM workflows WHERE id=$1 AND tenant_id=$2 AND project_id=$3 AND state='published' AND content_state='active' AND execution_location='cloud' FOR SHARE",
       [b.workflow_id, tenant, project],
     )
   ).rows[0];

@@ -24,6 +24,7 @@ import { desktopToolNames, desktopCompanyToolSchema } from "./desktop-tool-polic
 import { requestTaskCancellation } from "./task-control.js";
 import type { Storage } from "./storage.js";
 import { TaskBusinessTools } from "./task-business-tools.js";
+import { DesktopWorkflows, lockNativeWorkflowParent } from "./desktop-workflows.js";
 
 const params = z.object({ tenant: uuid, project: uuid });
 const executionParams = params.extend({ execution: uuid });
@@ -33,10 +34,10 @@ const createBody = binding.extend({ title: name, prompt: z.string().trim().min(1
 const reportBody = z.object({ status: z.enum(["completed", "failed", "interrupted", "unknown"]), output: z.string().max(100000),
   thread_id: z.string().min(1).max(128), turn_id: z.string().min(1).max(128) }).strict();
 // Admission means the native tool protocol is connected, not full professional
-// qualification. Workflow execution still requires separate integration.
+// qualification. Native workflow steps have their own local execution contract.
 export const desktopLocalRoleKeys = ["fullstack", "frontend", "backend-api", "software-qa", "landing-page",
   "ui-ux", "designer", "brand-visual", "ad-creative", "ecommerce", "social-content", "illustration-ip",
-  "typography-layout", "presentation", "information-design", "marketing-analyst", "video-motion"];
+  "typography-layout", "presentation", "information-design", "marketing-analyst", "video-motion", "workflow-consultant"];
 const companyToolNames = new Set(["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "deliver_text",
   "marketing_metrics", "design_render", "font_catalog", "image2_generate", "image2_edit"]);
 // Existing native roles keep exactly their published tool bindings. The new
@@ -53,6 +54,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
   const gateways = new Map<string, Promise<Gateway>>(), shutdown = new AbortController();
   const companyCalls = new Map<string, { taskId: string; abort: AbortController; promise: Promise<unknown> }>();
   const base = "/v1/tenants/:tenant/projects/:project/desktop-executions";
+  const workflows = new DesktopWorkflows(db, catalog, storage, authorize, desktopLocalRoleKeys);
 
   async function desktopFamily(tx: Tx, actor: Principal) {
     if (actor.audience !== "native") throw new Problem(403, "DESKTOP_SIGN_IN_REQUIRED", "Sign in from the desktop application");
@@ -68,6 +70,10 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
     const p = executionParams.parse(req.params);
     await projectAccess(tx, req.principal, p.tenant, p.project, write ? "write" : "read");
     const family = await desktopFamily(tx, req.principal);
+    if (lock) {
+      const hint = (await tx.query("SELECT * FROM tasks WHERE id=$1 AND project_id=$2", [p.execution, p.project])).rows[0];
+      if (hint) await lockNativeWorkflowParent(tx, hint);
+    }
     const t = (await tx.query("SELECT * FROM tasks WHERE id=$1 AND project_id=$2" + (lock ? " FOR UPDATE" : ""), [p.execution, p.project])).rows[0];
     if (!t || t.execution_location !== "desktop") throw new Problem(404, "NOT_FOUND", "Local execution not found");
     const d = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1" + (lock ? " FOR UPDATE" : ""), [t.id])).rows[0];
@@ -76,6 +82,8 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
   }
 
   async function authorize(tx: Tx, d: any, t: any, active = true) {
+    const parent = await lockNativeWorkflowParent(tx, t, true);
+    if (parent) await authorize(tx, parent.d, parent.t);
     const actor: Principal = { id: t.created_by, authVersion: t.actor_auth_version, audience: "native", email: "", name: "", sessionId: "", sessionHash: "" };
     await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
     const sessions = (await tx.query(
@@ -101,6 +109,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
     const check = async (tx: Tx) => {
       // Lock the task before its execution row everywhere; dispatch, finish and
       // heartbeat use the same ordering and cannot admit behind finalization.
+      await lockNativeWorkflowParent(tx, t);
       const current = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [t.id])).rows[0];
       const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [t.id])).rows[0];
       if (!current || !execution || current.fencing_token !== t.fencing_token) throw denied();
@@ -122,8 +131,9 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
   }
 
   function businessTools(t: any, actor: Principal, signal?: AbortSignal) {
-    return new TaskBusinessTools(db, catalog, storage, {
+    const tools = new TaskBusinessTools(db, catalog, storage, {
       authorize: async tx => {
+        await lockNativeWorkflowParent(tx, t);
         const current = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [t.id])).rows[0];
         const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [t.id])).rows[0];
         if (!current || !execution || current.fencing_token !== t.fencing_token || current.created_by !== actor.id) throw denied();
@@ -132,6 +142,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
       inference: request => inferenceAuthority(null, t, request), signal,
     }).build(t, actor, t.fencing_token, catalog.role(t.role_key)).filter(tool => companyToolNames.has(tool.name)
       || t.role_key === "video-motion" && videoCompanyToolNames.has(tool.name));
+    return [...tools, ...workflows.build(t, actor)];
   }
   async function closeCompanyCalls(id?: string) {
     const calls = [...companyCalls.values()].filter(call => id === undefined || call.taskId === id);
@@ -144,6 +155,8 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
     budget_micros: t.budget_micros, charged_micros: t.charged_micros, accrued_micros: t.accrued_micros,
     lease_until: t.lease_until, credential_expires_at: d.credential_expires_at, output: t.output,
     result_origin: d.client_report ? "desktop_client_report" : null, error_code: t.error_code });
+
+  workflows.register(app, base, (tx, req) => own(tx, req, true, true));
 
   app.get(base + "/runtime", { preHandler: requireUser(db) }, async req => {
     const p = params.parse(req.params);
@@ -325,6 +338,8 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
     const d = secret ? (await db.control.query("SELECT * FROM desktop_executions WHERE credential_hash=$1", [hash(secret)])).rows[0] : null;
     if (!d) throw new Problem(401, "DESKTOP_CREDENTIAL_REQUIRED", "A current scoped desktop credential is required");
     const prepared = await db.tx(async tx => {
+      const hint = (await tx.query("SELECT * FROM tasks WHERE id=$1", [d.task_id])).rows[0];
+      if (hint) await lockNativeWorkflowParent(tx, hint);
       const t = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [d.task_id])).rows[0];
       const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [d.task_id])).rows[0];
       if (!t || !execution || execution.credential_hash !== hash(secret!)) throw denied();
@@ -354,12 +369,14 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
   async function recover() {
     const rows = (await db.control.query(
       `SELECT d.task_id FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE
-       (d.state='prepared' AND (d.created_at<now()-interval '5 minutes' OR t.status IN ('cancelled','failed','reconciling')))
+       (d.state='prepared' AND (d.created_at<now()-interval '5 minutes' OR t.cancel_requested OR t.status IN ('cancelled','failed','reconciling')))
        OR (d.state IN ('running','stopping') AND (t.status='reconciling' OR t.lease_until<=now() OR d.credential_expires_at<=now())) LIMIT 100`,
     )).rows;
     for (const row of rows) {
       await closeCompanyCalls(row.task_id); await closeGateway(row.task_id);
       await db.tx(async tx => {
+        const hint = (await tx.query("SELECT * FROM tasks WHERE id=$1", [row.task_id])).rows[0];
+        if (hint) await lockNativeWorkflowParent(tx, hint);
         const t = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [row.task_id])).rows[0];
         const d = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [row.task_id])).rows[0];
         if (!t || !d || ["finished", "reconciling"].includes(d.state)) return;

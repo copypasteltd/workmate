@@ -368,7 +368,7 @@ export function registerBusiness(
         await projectAccess(tx, req.principal, tenant, project, "manage");
         const w = (
           await tx.query(
-            "SELECT * FROM workflows WHERE id=$1 AND project_id=$2 FOR UPDATE",
+            "SELECT * FROM workflows WHERE id=$1 AND project_id=$2 AND execution_location='cloud' FOR UPDATE",
             [id, project],
           )
         ).rows[0];
@@ -399,7 +399,7 @@ export function registerBusiness(
           async () => {
             const w = (
               await tx.query(
-                "SELECT * FROM workflows WHERE id=$1 AND project_id=$2 AND state='published'",
+                "SELECT * FROM workflows WHERE id=$1 AND project_id=$2 AND state='published' AND execution_location='cloud'",
                 [id, project],
               )
             ).rows[0];
@@ -442,7 +442,7 @@ export function registerBusiness(
         await projectAccess(tx, req.principal, tenant, project, "approve");
         const r = (
           await tx.query(
-            "UPDATE workflow_runs SET state=$3,cursor=cursor+$4 WHERE id=$1 AND project_id=$2 AND state='awaiting_approval' RETURNING *",
+            "UPDATE workflow_runs SET state=$3,cursor=cursor+$4 WHERE id=$1 AND project_id=$2 AND state='awaiting_approval' AND execution_location='cloud' RETURNING *",
             [
               id,
               project,
@@ -842,7 +842,7 @@ export async function advanceWorkflows(
 ) {
   const candidates = (
     await db.control.query(
-      "SELECT id,tenant_id FROM workflow_runs WHERE state='running' ORDER BY created_at LIMIT 20",
+      "SELECT id,tenant_id FROM workflow_runs WHERE state='running' AND execution_location='cloud' ORDER BY created_at LIMIT 20",
     )
   ).rows;
   for (const run of candidates)
@@ -850,7 +850,7 @@ export async function advanceWorkflows(
       .tx(async (tx) => {
         const r = (
           await tx.query(
-            "SELECT * FROM workflow_runs WHERE id=$1 AND state='running' FOR UPDATE SKIP LOCKED",
+            "SELECT * FROM workflow_runs WHERE id=$1 AND state='running' AND execution_location='cloud' FOR UPDATE SKIP LOCKED",
             [run.id],
           )
         ).rows[0];

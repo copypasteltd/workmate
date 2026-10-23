@@ -366,6 +366,7 @@ export class ErasureService {
         await tx.query("SELECT set_config('app.erasing_content','false',true)");
         break;
       case "workflows":
+        await tx.query("UPDATE workflow_versions SET definition='{}',role_hashes='{}',source_refs='{}' WHERE workflow_id=$1", [id]);
         await tx.query(
           "UPDATE workflows SET name='[deleted]',definition='{}' WHERE id=$1",
           [id],
