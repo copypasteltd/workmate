@@ -2,7 +2,7 @@
 
 [中文](README.md) · [Documentation](https://github.com/copypasteltd/workmate/blob/docs/docs/README.en.md) · [Desktop branch](https://github.com/copypasteltd/workmate/tree/desktop)
 
-**Current implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads and company tools/billing. Native questions now support explicit options/free text, stop and revocation while waiting. Current source passes 47 client tests, 17 real-native tests and 12 actual packaged-Electron journey checks. Unchanged backend source retains its stage 73 complete 818-test regression scope. Sixteen admitted native role protocols are not full professional qualification; video/workflow tools, complete browser/application automation, all eighteen roles/twenty-nine Skills and production acceptance remain open. Provider responses and native-dialog decisions are explicit fixtures. Extension retains native right Side Panel cloud conversations and selected-file uploads. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/74-desktop-native-user-input.md) and [source/media evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-checkpoint.json).
+**Current implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads, native questions and company tools/billing. The video role now supports private projects, actual composition/playback, native saves, version edits and stop/revocation fencing. Qualification covers 830 platform tests, 58 overlapping focused tests, 17 real-native tests, 47 client tests and 18 actual packaged-journey checks; counts overlap and are not additive. Seventeen native role admissions are not full professional acceptance. Workflow tools, complete browser/application automation, all eighteen roles/twenty-nine Skills and production acceptance remain open. Model/image responses and native-dialog choices are explicit fixtures. Extension retains right Side Panel cloud conversations and selected-file uploads. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/75-desktop-private-video.md) and [source/media checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json).
 
 ## Product and execution location
 
@@ -78,29 +78,35 @@ The native renderer is maintained in this repository and builds independently. `
 
 Actual packaged Electron and native Codex; real auth, database, local files, sandbox and ledger. Model/image responses and native chooser/consent/save decisions are explicit fixtures, not human-click or live-provider acceptance.
 
-![Local full access](assets/screenshots/workmate-local-12-full-access-en.png)
+![Local full access](assets/screenshots/workmate-local-19-full-access-en.png)
 
-![Company image edit and private artifacts](assets/screenshots/workmate-local-12-company-artifacts-en.png)
+![Company image edit and private artifacts](assets/screenshots/workmate-local-19-company-artifacts-en.png)
 
-![Read-only downgrade](assets/screenshots/workmate-local-12-read-only-en.png)
+![Read-only downgrade](assets/screenshots/workmate-local-19-read-only-en.png)
 
-![Stopped task and reconciliation hold](assets/screenshots/workmate-local-12-stopped-en.png)
+![Stopped task and reconciliation hold](assets/screenshots/workmate-local-19-stopped-en.png)
 
-![Minimum native window](assets/screenshots/workmate-local-12-compact-en.png)
+![Minimum native window](assets/screenshots/workmate-local-19-compact-en.png)
 
-![Chinese local workspace](assets/screenshots/workmate-local-12-workspace-zh.png)
+![Chinese local workspace](assets/screenshots/workmate-local-19-workspace-zh.png)
 
-![Native customer question](assets/screenshots/workmate-local-12-waiting-input-en.png)
+![Native customer question](assets/screenshots/workmate-local-19-waiting-input-en.png)
 
-![Explicit answer at minimum window size](assets/screenshots/workmate-local-12-input-compact-en.png)
+![Explicit answer at minimum window size](assets/screenshots/workmate-local-19-input-compact-en.png)
 
-![Actual local interaction](assets/screenshots/workmate-local-12-local-agent.gif)
+![Actual private video playback](assets/screenshots/workmate-local-19-video-ready-en.png)
 
-[MP4](assets/screenshots/workmate-local-12-local-agent.mp4) · [Source and capture checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-checkpoint.json) · [Design and recovery](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/74-desktop-native-user-input.md)
+![Native video at 800x600](assets/screenshots/workmate-local-19-video-compact-en.png)
+
+![Revoked native video](assets/screenshots/workmate-local-19-video-revoke-en.png)
+
+![Actual local interaction](assets/screenshots/workmate-local-19-local-agent.gif)
+
+[MP4](assets/screenshots/workmate-local-19-local-agent.mp4) · [Source and capture checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json) · [Design and recovery](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/75-desktop-private-video.md)
 
 ## Coverage and remaining work
 
-Sixteen native role registrations cover software/page work, visual/brand/commerce/social/illustration/type/presentation/information design and marketing analysis. Admission and Skill hashes do not establish full professional qualification. Native video-motion and workflow-consultant tools remain to be integrated. All eighteen product roles and twenty-nine Skills remain in scope; complete native media/design/marketing integrations and app/browser automation need separate implementation and qualification. Native questions are verified for the current stage 74 source. The earlier 802-test full Platform regression and old cloud/file-bridge recordings retain their historical source scope. The original 102 REQ/102 TC, NFR and G01–G10 baseline remains 81 partial, 21 unproven and zero fully accepted.
+Seventeen native role registrations cover software/page work, visual design, marketing analysis and private template-video tools. Admission and Skill hashes do not establish full professional qualification. Native workflow-consultant tools remain to be integrated. All eighteen product roles and twenty-nine Skills remain in scope, including full professional outcomes and browser/application automation. Current qualification covers 830 Platform tests, 58 overlapping video checks, 17 real-native tests, 47 client tests and 18 packaged-journey checks. Earlier 802/818-test reports and old cloud/file-bridge recordings retain their historical source scopes. The original 102 REQ/102 TC, NFR and G01–G10 baseline remains 81 partial, 21 unproven and zero fully accepted.
 
 The optional Native Messaging file companion remains separate. It does not confer full local Agent access and is not required for the Extension's selected-file upload/cloud conversation flow. Close task-owned browser pages after use and preserve user tabs.
 
@@ -112,7 +118,7 @@ Keep bilingual README, affected captures and release notes in sync, commit and p
 
 The Agent loop stays on the customer device. Main registers trusted `copypaste` dynamic tools for the pinned native runtime, binds each call to its task/call/thread/turn, and rechecks company permissions before effects and disclosure. Local read-only denies company mutations. Original business validation remains enforced after the native schema projection. Same-call retries reuse durable results; unknown accepted image operations stop further calls and retain reconciliation holds. Private artifact downloads use exact versions and a native save selection.
 
-Latest company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.
+Stage 73 company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.
 
 ## Native questions and continuing work
 
@@ -122,4 +128,14 @@ The narrow `answer` IPC carries only the session id, one-time request id and val
 
 Stage 74 native-input update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-input.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-checkpoint.json). Earlier reports/media retain their original source scopes.
 
-The unbundled renderer hash index was refreshed after qualification; all other covered sources and the actual package are unchanged. See the [separate metadata check](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-renderer-manifest-01.json). This adds no native/UI test count.
+During stage 74, the unbundled renderer hash index was refreshed after qualification; all other covered sources and the actual package are unchanged. See the [separate metadata check](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-renderer-manifest-01.json). This adds no native/UI test count.
+
+## Private video projects
+
+Choose **Video & motion designer**, select a folder and grant the local access you want. Local Codex uses seven company tools: list, read, queue, status, edit, render and cancel. Queued means the composition is still pending; no download appears until all six private deliveries are available. The actual MP4 plays inline; authenticated MP4/timeline/script/storyboard/subtitle/check downloads use the native save chooser.
+
+Follow-up edits freeze a new expected version and preserve the earlier MP4. Explicit retries create a new render; status refresh never rerenders. Active task stop or revocation cancels only that task's pending origin jobs and fences late encoder publication. Revoking idle OS permission does not revoke an already accepted remote composition: its card can still cancel using current company project permissions. Same-project members cannot read the private definition or outputs.
+
+The company service uses actual FFmpeg composition with zero AI media charge in this flow. Native reasoning retains its original server-observed budget and usage. Renderer profile 2 fixes minimum-landscape CTA layout; frozen profile 1 remains readable and requires an explicit new version to change its renderer. `renderer/src/local-video.tsx` owns the bounded state cards; `src/local-codex.ts` projects only safe ids and versions from actual tool results.
+
+Stage 75 private-video update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-private-video.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json). Earlier reports retain their actual source scopes; platform/main-process qualification and later UI qualification are explicitly separated.

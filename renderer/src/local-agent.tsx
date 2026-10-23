@@ -5,6 +5,7 @@ import { useWorkspace } from "./context";
 import { Money, useI18n } from "./ui";
 import "./local-agent.css";
 import type { LocalPendingInput, LocalInputAnswers } from "../../src/local-input";
+import { LocalVideoJobs, type LocalVideoJob } from "./local-video";
 
 type Permission = "read-only" | "workspace-write" | "full-access";
 interface LocalSession {
@@ -25,6 +26,7 @@ const roleNames: Record<string, [string, string]> = {
   "illustration-ip": ["插畫與角色設計師", "Illustration & character designer"],
   "typography-layout": ["字體與排版設計師", "Typography & layout designer"], presentation: ["簡報設計師", "Presentation designer"],
   "information-design": ["資訊與圖表設計師", "Information designer"], "marketing-analyst": ["營銷數據分析師", "Marketing analyst"],
+  "video-motion": ["影片與動效設計師", "Video & motion designer"],
 };
 async function native(action: string, payload: unknown) {
   const reply = await window.copyPasteBridge!.localAgent(action, payload);
@@ -111,6 +113,11 @@ export function LocalAgentWorkspace() {
   const artifacts = [...new Map((session?.events ?? []).filter(event => event.kind === "local.company-tool.completed")
     .flatMap(event => event.value.artifacts ?? []).filter(artifact => artifact?.id && artifact?.asset_version_id && Number.isSafeInteger(artifact?.version))
     .map(artifact => [artifact.asset_version_id, artifact] as const)).values()];
+  const videos = [...(session?.events ?? []).reduce((found, event) => {
+    const video = event.kind === "local.company-tool.completed" && event.value.video;
+    if (video?.project_id && video?.render_id) found.set(video.render_id, { ...found.get(video.render_id), ...video });
+    return found;
+  }, new Map<string, LocalVideoJob>()).values()];
   useEffect(() => {
     const scroller = messages.current, card = scroller?.querySelector<HTMLElement>(".local-agent-input");
     if (session?.inputs?.length && scroller && card) {
@@ -138,7 +145,7 @@ export function LocalAgentWorkspace() {
       <label>{t("專業角色", "Specialist")}<select aria-label={t("本機角色", "Local specialist")} value={role} onChange={e => setRole(e.target.value)}>
         {roles.map(key => <option key={key} value={key}>{roleNames[key] ? t(...roleNames[key]) : key}</option>)}</select></label>
       <button className="button primary" disabled={pending || !roles.includes(role)} onClick={() => void act("create", { tenant: w.tenant, project: w.project, role })}><Plus size={16}/>{t("選擇目錄開始", "Choose folder to start")}</button>
-      <p className="muted">{t("檔案與終端在此電腦處理；圖片與專案工具使用公司服務。", "Files and terminal run on this computer; image and project tools use company services.")}</p>
+      <p className="muted">{t("檔案與終端在此電腦處理；圖片、影片與專案工具使用公司服務。", "Files and terminal run on this computer; image, video and project tools use company services.")}</p>
       <nav aria-label={t("本機會話", "Local sessions")}>{sessions.map(s => <button key={s.id} className={s.id === selected ? "selected" : ""} onClick={() => { setSelected(s.id); setError(""); }}>
         <FolderOpen size={16}/><span>{s.workspace.split(/[\\/]/).filter(Boolean).at(-1)}<small>{roleNames[s.role] ? t(...roleNames[s.role]) : s.role}{s.revoked ? t(" · 已撤權", " · Revoked") : ""}</small></span></button>)}</nav>
     </aside><section className="local-agent-conversation" aria-label={t("本機工作對話", "Local work conversation")}>
@@ -152,6 +159,7 @@ export function LocalAgentWorkspace() {
         <div ref={messages} className="local-agent-messages" aria-live="polite">{session.messages.length === 0 && <div className="local-agent-empty"><Terminal size={30}/><h2>{t("把想法變成檔案", "Turn an idea into files")}</h2><p>{t("先設定本機權限，再描述你想完成的工作。完整本機權限需要你在系統對話框中確認。", "Set local permission, then describe the work. Full local access requires your confirmation in a native dialog.")}</p></div>}
           {session.messages.map((m, i) => <article key={i} className={`local-agent-message ${m.role}`}><small>{m.role === "user" ? t("你", "You") : "COPYPASTE"}{m.status ? " · " + m.status : ""}</small><p>{m.text || t("本次未返回文字。請檢查工作記錄。", "No text was returned. Review the activity log.")}</p></article>)}
           {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
+          {videos.length > 0 && <LocalVideoJobs key={session.id} jobs={videos}/>}
           {session.inputs?.map(input => <LocalInputCard key={input.requestId} input={input} sessionId={session.id} onDone={() => refresh.current()} onStop={() => void native("stop", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}/>)}<div ref={end}/></div>
         {artifacts.length > 0 && <div className="local-agent-artifacts" aria-label={t("專案成果", "Project artifacts")}><span>{t("專案成果", "Project artifacts")}</span>{artifacts.map(artifact => <button className="button" key={artifact.asset_version_id}
           onClick={() => void download(`${w.base}/assets/${artifact.id}/download?version=${artifact.version}`, artifact.name, w.tenant).catch(e => setError(e.message))}><Download size={14}/>{artifact.name} · v{artifact.version}</button>)}</div>}

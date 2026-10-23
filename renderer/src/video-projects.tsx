@@ -716,7 +716,7 @@ function Editor({
     </AsyncForm>
   );
 }
-function Player({
+export function VideoPlayer({
   base,
   video,
   render,
@@ -1059,7 +1059,7 @@ export function VideoProjects({
                     ))}
                   </div>
                   {preview === r.id && (
-                    <Player key={r.id} base={base} video={p.id} render={r.id} />
+                    <VideoPlayer key={r.id} base={base} video={p.id} render={r.id} />
                   )}
                   <p className="muted">
                     {r.probe.duration_frames} {t("幀", "frames")} ·{" "}

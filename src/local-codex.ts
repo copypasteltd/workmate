@@ -456,7 +456,7 @@ export class LocalCodexSession {
               || !call.arguments || typeof call.arguments !== "object" || Array.isArray(call.arguments))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_SCOPE_INVALID");
             this.validateGrant(); await this.hooks.authorize();
-            if (this.grant.mode === "read-only" && !["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog"].includes(call.tool))
+            if (this.grant.mode === "read-only" && !["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog", "video_projects", "video_project_read", "video_project_status"].includes(call.tool))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_READ_ONLY");
             await this.emit("local.company-tool.started", { tool: call.tool, call_id: call.callId });
             const output = await this.hooks.companyTool(call, this.shutdown.signal);
@@ -475,7 +475,16 @@ export class LocalCodexSession {
               }
             };
             inspect(output);
-            await this.emit("local.company-tool.completed", { tool: call.tool, call_id: call.callId, artifacts });
+            const videoResult = output as any;
+            const video = /^video_project_(queue|edit|render|status|cancel)$/.test(call.tool)
+              && uuid.test(videoResult?.project?.id) && uuid.test(videoResult?.render?.id)
+              && ["queued", "rendering", "succeeded", "failed", "cancelled"].includes(videoResult.render.state)
+              && Number.isSafeInteger(videoResult.render.revision) && videoResult.render.revision > 0
+              ? { project_id: videoResult.project.id, render_id: videoResult.render.id,
+                  ...(Number.isSafeInteger(videoResult.render.version ?? videoResult.project.version)
+                    ? { version: videoResult.render.version ?? videoResult.project.version } : {}),
+                  revision: videoResult.render.revision, state: videoResult.render.state } : undefined;
+            await this.emit("local.company-tool.completed", { tool: call.tool, call_id: call.callId, artifacts, ...(video ? { video } : {}) });
             result = { success: true, contentItems: [{ type: "inputText", text: encoded }] };
           } catch (error: any) {
             const code = error instanceof LocalCodexError ? error.code : "LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN";
