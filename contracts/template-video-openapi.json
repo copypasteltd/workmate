@@ -2,12 +2,12 @@
   "openapi": "3.1.0",
   "info": {
     "title": "CopyPaste template video projects",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "description": "Additive versioned video project contract. Native composition, frozen sources, integer frame timeline, durable render queue, cancellation, scoped actual MP4/source/script/storyboard/VTT/probe delivery and bounded inline preview. No AI generation or whole-product qualification. Original OpenAPI remains unchanged."
   },
   "x-normative-source-sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
-  "x-model-source-sha256": "86249c62195be2ce4757be6335a299b9da74df1fbaeaaeea58c621458547ad6d",
-  "x-route-source-sha256": "7ab7954995f8990c3113d9e2ac7e0518476b90693561bffd7993a439d40224be",
+  "x-model-source-sha256": "f838cae227d5e56f8a639ebd49c18f61b033ae1db243876473b263dbbef58c69",
+  "x-route-source-sha256": "2613cd9829548053b62fc4cd08f8439db8e8415b662763c3da2e694a61def78d",
   "paths": {
     "/v1/tenants/{tenant}/projects/{project}/video-projects": {
       "get": {
@@ -15,6 +15,9 @@
         "security": [
           {
             "customerSession": []
+          },
+          {
+            "nativeAccess": []
           }
         ],
         "parameters": [
@@ -64,6 +67,9 @@
         "security": [
           {
             "customerSession": []
+          },
+          {
+            "nativeAccess": []
           }
         ],
         "parameters": [
@@ -136,6 +142,9 @@
         "security": [
           {
             "customerSession": []
+          },
+          {
+            "nativeAccess": []
           }
         ],
         "parameters": [
@@ -187,6 +196,9 @@
         "security": [
           {
             "customerSession": []
+          },
+          {
+            "nativeAccess": []
           }
         ],
         "parameters": [
@@ -268,6 +280,9 @@
         "security": [
           {
             "customerSession": []
+          },
+          {
+            "nativeAccess": []
           }
         ],
         "parameters": [
@@ -349,6 +364,9 @@
         "security": [
           {
             "customerSession": []
+          },
+          {
+            "nativeAccess": []
           }
         ],
         "parameters": [
@@ -439,6 +457,9 @@
         "security": [
           {
             "customerSession": []
+          },
+          {
+            "nativeAccess": []
           }
         ],
         "parameters": [
@@ -492,6 +513,69 @@
           }
         }
       }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/video-projects/{video}/renders/{render}/status": {
+      "get": {
+        "operationId": "videoRenderStatus",
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeAccess": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "video",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "render",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current project-authorized result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoStatus"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -500,6 +584,10 @@
         "type": "apiKey",
         "in": "cookie",
         "name": "cp_session"
+      },
+      "nativeAccess": {
+        "type": "http",
+        "scheme": "bearer"
       }
     },
     "schemas": {
@@ -842,7 +930,10 @@
         "properties": {
           "renderer": {
             "type": "string",
-            "const": "copypaste-campaign-cuts-1"
+            "enum": [
+              "copypaste-campaign-cuts-1",
+              "copypaste-campaign-cuts-2"
+            ]
           },
           "font_id": {
             "type": "string"
@@ -2119,7 +2210,10 @@
             "properties": {
               "renderer": {
                 "type": "string",
-                "const": "copypaste-campaign-cuts-1"
+                "enum": [
+                  "copypaste-campaign-cuts-1",
+                  "copypaste-campaign-cuts-2"
+                ]
               },
               "font_id": {
                 "type": "string"
@@ -2190,7 +2284,10 @@
                   "properties": {
                     "renderer": {
                       "type": "string",
-                      "const": "copypaste-campaign-cuts-1"
+                      "enum": [
+                        "copypaste-campaign-cuts-1",
+                        "copypaste-campaign-cuts-2"
+                      ]
                     },
                     "font_id": {
                       "type": "string"
@@ -2535,6 +2632,196 @@
           "base64",
           "bytes",
           "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "VideoStatus": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 160
+              },
+              "version": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "render": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "version": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "revision": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "queued",
+                  "rendering",
+                  "succeeded",
+                  "failed",
+                  "cancelled"
+                ]
+              },
+              "error_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "probe": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "id",
+              "version",
+              "revision",
+              "state",
+              "error_code",
+              "probe"
+            ],
+            "additionalProperties": false
+          },
+          "delivery_state": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "rendering",
+              "available",
+              "unavailable",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "requires_render_completion": {
+            "type": "boolean"
+          },
+          "retry_after_ms": {
+            "anyOf": [
+              {
+                "type": "number",
+                "const": 0
+              },
+              {
+                "type": "number",
+                "const": 1000
+              }
+            ]
+          },
+          "ai_cost_micros": {
+            "type": "string",
+            "const": "0"
+          },
+          "cost_source": {
+            "type": "string",
+            "const": "local_composition_no_ai"
+          },
+          "assets": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 240
+                },
+                "version": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "version": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "mime_type": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    "bytes": {
+                      "type": "string",
+                      "pattern": "^\\d+$"
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "version",
+                    "mime_type",
+                    "bytes",
+                    "sha256"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "project",
+          "render",
+          "delivery_state",
+          "requires_render_completion",
+          "retry_after_ms",
+          "ai_cost_micros",
+          "cost_source",
+          "assets"
         ],
         "additionalProperties": false
       }

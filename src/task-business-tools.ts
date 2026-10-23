@@ -17,8 +17,13 @@ import {
   advanceVideoProjects,
   createVideoProject,
   enqueueVideoRender,
+  editVideoProject,
+  cancelVideoRender,
+  videoRenderToolStatus,
+  listVideoToolProjects,
+  readVideoToolProject,
 } from "./video-projects.js";
-import { videoCreate } from "./video-project-model.js";
+import { videoCreate, videoEdit } from "./video-project-model.js";
 import { videoRendererProfile } from "./video-render.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import {
@@ -452,11 +457,13 @@ export class TaskBusinessTools {
                 ),
         ),
       });
-    if (role.tool_ids.includes("video.render") && !t.private_owner) {
+    const nativeVideo = t.execution_location === "desktop" && role.role_key === "video-motion";
+    if (role.tool_ids.includes("video.render") && (!t.private_owner || nativeVideo)) {
       tools.push({
         name: "video_project_queue",
-        description:
-          "Create a shared, versioned script/storyboard/subtitle video project and queue native composition. Use only fixed shared project PNG/WAV/MP3 versions and declared audio rights. Returns a queued render ID, not a finished file. Does not synthesize voice or generate video through another AI service.",
+        description: nativeVideo
+          ? "Create a private, versioned script/storyboard/subtitle video project owned by this user and queue company composition. Use fixed authorized shared or own private PNG/WAV/MP3 versions and declared audio rights. Returns a queued render ID, not a finished file. Read status before claiming delivery. Does not synthesize voice or use another AI video service."
+          : "Create a shared, versioned script/storyboard/subtitle video project and queue native composition. Use only fixed shared project PNG/WAV/MP3 versions and declared audio rights. Returns a queued render ID, not a finished file. Does not synthesize voice or generate video through another AI service.",
         inputSchema: z.toJSONSchema(videoCreate),
         run: txTool(
           async (tx, a) => {
@@ -469,6 +476,7 @@ export class TaskBusinessTools {
               t.project_id,
               a,
               profile,
+              nativeVideo ? t.id : undefined,
             );
             const render = await enqueueVideoRender(
               tx,
@@ -478,6 +486,7 @@ export class TaskBusinessTools {
               t.project_id,
               p.id,
               p.version,
+              t.execution_location === "desktop" ? t.id : undefined,
             );
             return {
               project: p,
@@ -490,6 +499,66 @@ export class TaskBusinessTools {
           "video_project_queue",
         ),
       });
+    }
+    if (nativeVideo) {
+      const renderRef = z.object({ video_id: uuid, render_id: uuid }).strict();
+      const projectRef = z.object({ video_id: uuid }).strict();
+      const revision = z.number().int().positive();
+      const edit = videoEdit.extend({ video_id: uuid }).strict();
+      const render = z.object({ video_id: uuid, expected_version: revision }).strict();
+      const cancel = renderRef.extend({ expected_revision: revision }).strict();
+      const list = z.object({ before: uuid.optional() }).strict();
+      tools.push(
+        {
+          name: "video_projects",
+          description: "List a bounded page of currently authorized own private or shared video projects. Follow next_cursor with before. Existing project IDs are real records, never invented.",
+          inputSchema: z.toJSONSchema(list),
+          run: txTool((tx, a) => listVideoToolProjects(tx, this.db, actor, t.tenant_id, t.project_id, a.before), list),
+        },
+        {
+          name: "video_project_read",
+          description: "Read an authorized own private or shared project's current editable timeline, immutable version history and bounded render records before revising it. Status and artifact availability must still be rechecked for the exact render before delivery.",
+          inputSchema: z.toJSONSchema(projectRef),
+          run: txTool((tx, a) => readVideoToolProject(tx, this.db, actor, t.tenant_id, t.project_id, a.video_id), projectRef),
+        },
+        {
+          name: "video_project_status",
+          description: "Read the actual state of one video render and the six immutable downloadable artifacts only when all remain available. Queued/rendering is not delivery. Wait at least retry_after_ms before a later status call; never automatically recreate an unavailable or failed render.",
+          inputSchema: z.toJSONSchema(renderRef),
+          run: txTool((tx, a) => videoRenderToolStatus(tx, this.db, actor, t.tenant_id, t.project_id, a.video_id, a.render_id), renderRef),
+        },
+        {
+          name: "video_project_edit",
+          description: "Revise an own private video's full editable timeline at its expected_version and atomically queue the new version. Prior versions and finished artifacts remain unchanged. Copy a shared timeline into a new private project before changing it. A conflict requires reloading; do not blindly apply the edit again.",
+          inputSchema: z.toJSONSchema(edit),
+          run: txTool(async (tx, a) => {
+            const profile = await videoRendererProfile();
+            const project = await editVideoProject(tx, this.db, actor, t.tenant_id, t.project_id, a.video_id, a, profile, true);
+            const render = await enqueueVideoRender(tx, this.db, actor, t.tenant_id, t.project_id, project.id, project.version, t.id);
+            return { project, render, delivery_state: "queued", requires_render_completion: true };
+          }, edit, "video_project_edit"),
+        },
+        {
+          name: "video_project_render",
+          description: "Explicitly queue the current saved own private video version. Use after a clear user request, such as retrying a known failed composition. A queued or rendering job must be observed or cancelled instead of duplicated.",
+          inputSchema: z.toJSONSchema(render),
+          run: txTool(async (tx, a) => ({
+            project: { id: a.video_id, version: a.expected_version },
+            render: await enqueueVideoRender(tx, this.db, actor, t.tenant_id, t.project_id, a.video_id, a.expected_version, t.id),
+            delivery_state: "queued", requires_render_completion: true,
+          }), render, "video_project_render"),
+        },
+        {
+          name: "video_project_cancel",
+          description: "Cancel the exact queued or rendering shared project job at its observed revision. A conflict requires a fresh status. This does not erase finished versions or their artifacts.",
+          inputSchema: z.toJSONSchema(cancel),
+          run: txTool(async (tx, a) => ({
+            project: { id: a.video_id },
+            render: await cancelVideoRender(tx, this.db, actor, t.tenant_id, t.project_id, a.video_id, a.render_id, a.expected_revision),
+            delivery_state: "cancelled", requires_render_completion: false,
+          }), cancel, "video_project_cancel"),
+        },
+      );
     }
     const allowedFormats = designFormatsForTools(role.tool_ids);
     if (allowedFormats.length) {
@@ -697,7 +766,13 @@ export class TaskBusinessTools {
             code_package: role.tool_ids.includes("delivery.package"),
             design_render: allowedFormats.length > 0,
             video_project_queue:
-              role.tool_ids.includes("video.render") && !t.private_owner,
+              role.tool_ids.includes("video.render") && (!t.private_owner || nativeVideo),
+            video_projects: nativeVideo,
+            video_project_status: nativeVideo,
+            video_project_read: nativeVideo,
+            video_project_edit: nativeVideo,
+            video_project_render: nativeVideo,
+            video_project_cancel: nativeVideo,
             font_catalog: role.tool_ids.includes("font.inspect"),
             image2_edit: role.tool_ids.includes("image.edit.internal"),
           }) as Record<string, boolean>
@@ -721,6 +796,9 @@ export class TaskBusinessTools {
             "analysis_report_facts",
             "code_read",
             "font_catalog",
+            "video_projects",
+            "video_project_read",
+            "video_project_status",
           ].includes(tool.name),
         )
       : permitted;

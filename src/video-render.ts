@@ -77,7 +77,7 @@ export async function videoRendererProfile(signal?: AbortSignal) {
   const encoder = await processFile(ffmpeg(), ["-version"], signal, 10000);
   const probe = await processFile(ffprobe(), ["-version"], signal, 10000);
   return {
-    renderer: "copypaste-campaign-cuts-1",
+    renderer: "copypaste-campaign-cuts-2",
     font_id: font.font_id,
     font_sha256: font.sha256,
     ffmpeg_sha256: hash(encoder.stdout),
@@ -266,7 +266,9 @@ function drawFrame(
     drawText(
       ctx,
       definition.script.call_to_action,
-      { x: pad, y: h * 0.72, width: w - 2 * pad, height: h * 0.05 },
+      // Even the supported 256px landscape height must fit one minimum-size
+      // line. End at 79%, before the caption band beginning at 80%.
+      { x: pad, y: h * 0.72, width: w - 2 * pad, height: h * 0.07 },
       family,
       Math.floor(unit * 0.031),
       min,

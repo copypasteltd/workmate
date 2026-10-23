@@ -150,7 +150,7 @@ export const videoCancelRequest = z
 const sha256 = z.string().regex(/^[a-f0-9]{64}$/);
 export const videoProfile = z
   .object({
-    renderer: z.literal("copypaste-campaign-cuts-1"),
+    renderer: z.enum(["copypaste-campaign-cuts-1", "copypaste-campaign-cuts-2"]),
     font_id: z.string(),
     font_sha256: sha256,
     ffmpeg_sha256: sha256,
@@ -251,6 +251,20 @@ export const videoPreview = z
     sha256,
   })
   .strict();
+
+export const videoStatus = z.object({
+  project: z.object({ id: uuid, name, version }).strict(),
+  render: videoRenderDto.pick({ id: true, version: true, revision: true, state: true, error_code: true, probe: true }),
+  delivery_state: z.enum(["queued", "rendering", "available", "unavailable", "failed", "cancelled"]),
+  requires_render_completion: z.boolean(),
+  retry_after_ms: z.union([z.literal(0), z.literal(1000)]),
+  ai_cost_micros: z.literal("0"),
+  cost_source: z.literal("local_composition_no_ai"),
+  assets: z.array(z.object({
+    id: uuid, name: z.string().min(1).max(240),
+    version: z.object({ id: uuid, version, mime_type: z.string().min(1).max(200), bytes: z.string().regex(/^\d+$/), sha256 }).strict(),
+  }).strict()).max(6),
+}).strict();
 
 export function videoSeconds(
   definition: VideoDefinition,

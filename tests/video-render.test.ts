@@ -11,7 +11,7 @@ import {
   videoSubtitlesVtt,
   type VideoDefinition,
 } from "../src/video-project-model.js";
-import { renderVideoProject, type VideoSource } from "../src/video-render.js";
+import { renderVideoProject, videoRendererProfile, type VideoSource } from "../src/video-render.js";
 
 const base = path.resolve(".data/video-render-tests"),
   directory = path.join(base, randomUUID());
@@ -228,6 +228,20 @@ test("video refuses unsupported glyphs, unreadable brand contrast, overflow and 
     { code: "VIDEO_RENDERER_CHANGED" },
   );
 });
+test("minimum landscape video fits its real CTA and preserves the frozen previous renderer boundary", async () => {
+  const d = fixtureDefinition();
+  d.width = 456; d.height = 256; d.duration_frames = 90;
+  d.script.call_to_action = "了解";
+  d.storyboard = [{ ...d.storyboard[0], headline: "開始", body: "固定時間線", end_frame: 90 }];
+  d.subtitles = [{ ...d.subtitles[0], text: "測試字幕", end_frame: 90 }];
+  const profile = await videoRendererProfile();
+  assert.equal(profile.renderer, "copypaste-campaign-cuts-2");
+  await assert.rejects(render(d, [], { expectedProfile: { ...profile, renderer: "copypaste-campaign-cuts-1" } }), { code: "VIDEO_RENDERER_CHANGED" });
+  const result = await render(d, [], { expectedProfile: profile });
+  assert.equal(result.probe.width, 456); assert.equal(result.probe.height, 256);
+  assert.equal(result.probe.duration_frames, 90); assert.equal(result.probe.fully_decoded, true);
+});
+
 test("video supports actual fractional frame rate and explicit absence of audio without silent voice synthesis", async () => {
   const d = fixtureDefinition();
   d.width = 256;

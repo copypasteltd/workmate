@@ -58,11 +58,13 @@ export async function reuseCompletedTaskTool(
         );
     }
     if (
-      name === "video_project_queue" &&
+      ["video_project_queue", "video_project_edit", "video_project_render"].includes(name) &&
       !(
         await tx.query(
-          "SELECT 1 FROM video_projects WHERE id=$1 AND project_id=$2 AND content_state='active'",
-          [old.result.project.id, task.project_id],
+          `SELECT 1 FROM creative_projects p JOIN video_renders r ON r.video_id=p.id
+           WHERE p.id=$1 AND p.project_id=$2 AND p.kind='video' AND p.content_state='active'
+           AND p.retention_expires_at>clock_timestamp() AND r.id=$3 AND r.version=$4`,
+          [old.result.project.id, task.project_id, old.result.render.id, old.result.project.version],
         )
       ).rowCount
     )

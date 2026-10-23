@@ -110,7 +110,7 @@ test("only actual desktop native authorization can reserve local execution; no A
   const extension = await native(f.web, "extension"); assert.equal((await call(extension, "POST", f.base, f.input)).status, 403);
   assert.equal((await call(f.c, "POST", f.base, { ...f.input, full_permission: true })).status, 400);
   assert.equal((await call(f.c, "POST", f.base, { ...f.input, runtime_sha256: "0".repeat(64) })).status, 400);
-  assert.equal((await call(f.c, "POST", f.base, { ...f.input, role_key: "video-motion" })).data.error.code, "DESKTOP_ROLE_NOT_READY");
+  assert.equal((await call(f.c, "POST", f.base, { ...f.input, role_key: "workflow-consultant" })).data.error.code, "DESKTOP_ROLE_NOT_READY");
   const cloudBody = { title: "Desktop must stay local", prompt: "Do not enqueue from a desktop sign-in", role_key: "fullstack", budget_micros: 1000000 };
   const cloudPath = `/v1/tenants/${f.tenant}/projects/${f.project}/tasks`;
   assert.equal((await call(f.c, "POST", cloudPath, cloudBody)).data.error.code, "DESKTOP_LOCAL_EXECUTION_REQUIRED");
@@ -213,14 +213,15 @@ test("a lost local outcome or expired lease cannot be reported as zero-cost succ
   }
 });
 
-test("all sixteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch", async () => {
-  const f = await fixture(); assert.equal(desktopLocalRoleKeys.length, 16);
+test("all seventeen connected native roles load their exact Skills and company tool descriptors without cloud dispatch", async () => {
+  const f = await fixture(); assert.equal(desktopLocalRoleKeys.length, 17);
   assert.deepEqual((await ok(f.c, "GET", f.base + "/runtime")).role_keys, desktopLocalRoleKeys);
   for (const role of desktopLocalRoleKeys) {
     const fields = { ...f.fields, local_session_id: randomUUID() };
     const r = await start({ ...f, fields, input: { ...f.input, ...fields, role_key: role } });
     assert.ok(r.begun.skills.length > 0); r.begun.skills.forEach((skill: any) => assert.equal(hash(skill.content), skill.sha256));
-    assert.ok(r.begun.company_tools.every((tool: any) => tool.inputSchema.type === "object" && !["code_write", "request_input", "video_project_queue"].includes(tool.name)));
+    assert.ok(r.begun.company_tools.every((tool: any) => tool.inputSchema.type === "object" && !["code_write", "request_input"].includes(tool.name)
+      && (role === "video-motion" || !tool.name.startsWith("video_project"))));
     if (role === "designer") assert.ok(r.begun.company_tools.some((tool: any) => tool.name === "image2_generate"));
     if (role === "marketing-analyst") assert.ok(r.begun.company_tools.some((tool: any) => tool.name === "marketing_metrics"));
     await ok(f.c, "POST", r.url + "/finish", { ...complete, status: "failed", output: "Admission fixture only; no native business qualification claimed" });

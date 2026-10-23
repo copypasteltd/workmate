@@ -33,12 +33,15 @@ const createBody = binding.extend({ title: name, prompt: z.string().trim().min(1
 const reportBody = z.object({ status: z.enum(["completed", "failed", "interrupted", "unknown"]), output: z.string().max(100000),
   thread_id: z.string().min(1).max(128), turn_id: z.string().min(1).max(128) }).strict();
 // Admission means the native tool protocol is connected, not full professional
-// qualification. Video and workflow tools still require separate integration.
+// qualification. Workflow execution still requires separate integration.
 export const desktopLocalRoleKeys = ["fullstack", "frontend", "backend-api", "software-qa", "landing-page",
   "ui-ux", "designer", "brand-visual", "ad-creative", "ecommerce", "social-content", "illustration-ip",
-  "typography-layout", "presentation", "information-design", "marketing-analyst"];
+  "typography-layout", "presentation", "information-design", "marketing-analyst", "video-motion"];
 const companyToolNames = new Set(["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "deliver_text",
   "marketing_metrics", "design_render", "font_catalog", "image2_generate", "image2_edit"]);
+// Existing native roles keep exactly their published tool bindings. The new
+// specialist has no old native thread and receives the video contract only.
+const videoCompanyToolNames = new Set(["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel"]);
 const companyCall = z.object({ tool: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/), arguments: z.record(z.string(), z.unknown()),
   call_id: z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/), thread_id: z.string().min(1).max(128), turn_id: z.string().min(1).max(128) }).strict();
 const denied = (code = "DESKTOP_EXECUTION_UNAVAILABLE") => new Problem(409, code, "This local execution needs to be stopped or reconciled on its owning desktop");
@@ -127,7 +130,8 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
         await authorize(tx, execution, current);
       },
       inference: request => inferenceAuthority(null, t, request), signal,
-    }).build(t, actor, t.fencing_token, catalog.role(t.role_key)).filter(tool => companyToolNames.has(tool.name));
+    }).build(t, actor, t.fencing_token, catalog.role(t.role_key)).filter(tool => companyToolNames.has(tool.name)
+      || t.role_key === "video-motion" && videoCompanyToolNames.has(tool.name));
   }
   async function closeCompanyCalls(id?: string) {
     const calls = [...companyCalls.values()].filter(call => id === undefined || call.taskId === id);
