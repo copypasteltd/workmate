@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { WorkmateRecording, saveWorkmateScreenshot } from "./record-workmate-media.js";
+import { checkDesktopDeliveryQuality } from "./desktop-quality-ui.js";
 import { DesktopVideoModelFixture, runDesktopVideoJourney } from "./qa-desktop-video.js";
 import { DesktopBrowserModelFixture } from "./desktop-browser-model-fixture.js";
 import { runDesktopBrowserJourney } from "./qa-desktop-browser.js";
@@ -247,6 +248,7 @@ try {
   await page.getByRole("button", { name: "native-original.png · v1", exact: true }).waitFor();
   screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "full-access-en", await page.screenshot(), "Actual packaged Electron; real native file/terminal and private company artifact; synthetic Image 2 PNG and native consent fixture", delivery));
   pass("Real local Codex modifies an outside-cwd file, calls company Image 2 and saves one private artifact; server ledger charges 1000090 micros");
+  await checkDesktopDeliveryQuality({ page, system, taskId: first.id, resize, until, screenshots, delivery, attempt, pass });
   await page.getByRole("button", { name: "native-original.png · v1", exact: true }).click();
   await until(async () => readFile(downloaded).catch(() => Buffer.alloc(0)), bytes => bytes.equals(imageBytes), "native chosen artifact download");
   const saveDialogs = await electron.evaluate(() => (globalThis as any).__saveDialogs); assert.equal(saveDialogs.length, 1); assert.equal(saveDialogs[0].defaultPath, "native-original.png");

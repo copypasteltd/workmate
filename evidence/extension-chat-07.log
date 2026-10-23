@@ -1,0 +1,322 @@
+TAP version 13
+# Subtest: HKD budgets convert exactly and reject exponent, negative, zero and over-limit amounts
+ok 1 - HKD budgets convert exactly and reject exponent, negative, zero and over-limit amounts
+  ---
+  duration_ms: 1.1496
+  ...
+# Subtest: messages bind uploaded immutable versions, never asset IDs or unsent unrelated files
+ok 2 - messages bind uploaded immutable versions, never asset IDs or unsent unrelated files
+  ---
+  duration_ms: 2.7409
+  ...
+# Subtest: in-flight or failed uploads block messages; removing an in-flight file does not reattach it
+ok 3 - in-flight or failed uploads block messages; removing an in-flight file does not reattach it
+  ---
+  duration_ms: 1.3824
+  ...
+# Subtest: lost conversation response replays its original creation key and creates only one conversation
+ok 4 - lost conversation response replays its original creation key and creates only one conversation
+  ---
+  duration_ms: 1.1251
+  ...
+# Subtest: panel reopening after lost task acceptance preserves body, file versions and key without a second task
+ok 5 - panel reopening after lost task acceptance preserves body, file versions and key without a second task
+  ---
+  duration_ms: 2.4112
+  ...
+# Subtest: account/project changes discard old upload completions and bind requests to their original scope
+ok 6 - account/project changes discard old upload completions and bind requests to their original scope
+  ---
+  duration_ms: 0.3811
+  ...
+# Subtest: old restored conversation cannot overwrite a newly opened account
+ok 7 - old restored conversation cannot overwrite a newly opened account
+  ---
+  duration_ms: 4.2849
+  ...
+# Subtest: known transactional source rejection preserves the draft and permits correction
+ok 8 - known transactional source rejection preserves the draft and permits correction
+  ---
+  duration_ms: 0.5495
+  ...
+# Subtest: active work prevents another paid turn; event batches deduplicate and denied reads clear prior text
+ok 9 - active work prevents another paid turn; event batches deduplicate and denied reads clear prior text
+  ---
+  duration_ms: 0.9876
+  ...
+# Subtest: double submit shares a single serialized acceptance flow
+ok 10 - double submit shares a single serialized acceptance flow
+  ---
+  duration_ms: 1.1318
+  ...
+# Subtest: an HTTP-successful quarantined task also clears retained conversation content
+ok 11 - an HTTP-successful quarantined task also clears retained conversation content
+  ---
+  duration_ms: 0.8753
+  ...
+# Subtest: financial amounts retain every micro across zero, fractional, negative and unsafe Number boundaries
+ok 12 - financial amounts retain every micro across zero, fractional, negative and unsafe Number boundaries
+  ---
+  duration_ms: 1.1562
+  ...
+# Subtest: noncanonical values cannot silently become zero, rounded or scientific monetary text
+ok 13 - noncanonical values cannot silently become zero, rounded or scientific monetary text
+  ---
+  duration_ms: 0.5788
+  ...
+# Subtest: a committed code exchange with a lost first response retries the same private key and payload once
+ok 14 - a committed code exchange with a lost first response retries the same private key and payload once
+  ---
+  duration_ms: 22.2189
+  ...
+# Subtest: definitive code-exchange rejections, including rate limits and conflicts, do not retry
+ok 15 - definitive code-exchange rejections, including rate limits and conflicts, do not retry
+  ---
+  duration_ms: 1.0734
+  ...
+# Subtest: temporary code-exchange failures are bounded and do not expose remote error content
+ok 16 - temporary code-exchange failures are bounded and do not expose remote error content
+  ---
+  duration_ms: 0.658
+  ...
+# Subtest: a complete canonical response is accepted once; an unreadable first body can safely recover
+ok 17 - a complete canonical response is accepted once; an unreadable first body can safely recover
+  ---
+  duration_ms: 1.6406
+  ...
+# Subtest: concurrent expired-token readers rotate once and use the same new credential
+ok 18 - concurrent expired-token readers rotate once and use the same new credential
+  ---
+  duration_ms: 2.1121
+  ...
+# Subtest: sign-out fences a refresh already accepted remotely and revokes its late result
+ok 19 - sign-out fences a refresh already accepted remotely and revokes its late result
+  ---
+  duration_ms: 1.3688
+  ...
+# Subtest: late login after sign-out cannot replace a later account
+ok 20 - late login after sign-out cannot replace a later account
+  ---
+  duration_ms: 0.4187
+  ...
+# Subtest: a stale request's unauthorized response cannot clear a replacement account
+ok 21 - a stale request's unauthorized response cannot clear a replacement account
+  ---
+  duration_ms: 0.4192
+  ...
+# Subtest: transport/temporary failures preserve credentials; definitive rejection clears and revokes
+ok 22 - transport/temporary failures preserve credentials; definitive rejection clears and revokes
+  ---
+  duration_ms: 0.4404
+  ...
+# Subtest: logout during asynchronous credential persistence is serialized after the write
+ok 23 - logout during asynchronous credential persistence is serialized after the write
+  ---
+  duration_ms: 0.2947
+  ...
+# Subtest: malformed gateway credentials are rejected before persistence
+ok 24 - malformed gateway credentials are rejected before persistence
+  ---
+  duration_ms: 0.3374
+  ...
+# Subtest: offline sign-out removes local credentials and reports unconfirmed remote revocation
+ok 25 - offline sign-out removes local credentials and reports unconfirmed remote revocation
+  ---
+  duration_ms: 0.2844
+  ...
+# Subtest: credential persistence failure revokes the newly issued credential
+ok 26 - credential persistence failure revokes the newly issued credential
+  ---
+  duration_ms: 0.5218
+  ...
+# Subtest: a rejected obsolete refresh cannot sign out a later account
+ok 27 - a rejected obsolete refresh cannot sign out a later account
+  ---
+  duration_ms: 0.5812
+  ...
+# Subtest: a lost refresh response retains its private request key across controller restart
+ok 28 - a lost refresh response retains its private request key across controller restart
+  ---
+  duration_ms: 0.4017
+  ...
+# Subtest: legacy tokens must persist a new request key before attempting any refresh
+ok 29 - legacy tokens must persist a new request key before attempting any refresh
+  ---
+  duration_ms: 0.5571
+  ...
+# Subtest: sign-out during legacy request-key persistence prevents network refresh and clears storage
+ok 30 - sign-out during legacy request-key persistence prevents network refresh and clears storage
+  ---
+  duration_ms: 0.3599
+  ...
+# Subtest: only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+ok 31 - only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+  ---
+  duration_ms: 0.2983
+  ...
+# Subtest: concurrent legacy readers persist one private request key and start a single rotation
+ok 32 - concurrent legacy readers persist one private request key and start a single rotation
+  ---
+  duration_ms: 1.197
+  ...
+1..32
+# tests 32
+# suites 0
+# pass 32
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 657.5086
+Built Chrome MV3 extension. Registered ID: fffkcnmfdhahlnifgdilabheppkgnlok
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1979 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.56 kB │ gzip:   0.34 kB
+dist/assets/index-BSqNnb_e.css   76.72 kB │ gzip:  15.03 kB
+dist/assets/index-UMt4_a_D.js   666.92 kB │ gzip: 210.65 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.21s
+2026-10-23 20:59:47.198 CST [40544] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 20:59:47.205 CST [40544] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 20:59:47.205 CST [40544] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 20:59:47.515 CST [27828] LOG:  database system was shut down at 2026-10-23 20:53:18 CST
+
+2026-10-23 20:59:47.650 CST [40544] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+  ➜  Local:   http://127.0.0.1:4317/
+isolated integration suite: applied migration 1
+isolated integration suite: applied migration 2
+isolated integration suite: applied migration 3
+isolated integration suite: applied migration 4
+isolated integration suite: applied migration 5
+isolated integration suite: applied migration 6
+isolated integration suite: applied migration 7
+isolated integration suite: applied migration 8
+isolated integration suite: applied migration 9
+isolated integration suite: applied migration 10
+isolated integration suite: applied migration 11
+isolated integration suite: applied migration 12
+isolated integration suite: applied migration 13
+isolated integration suite: applied migration 14
+isolated integration suite: applied migration 15
+isolated integration suite: applied migration 16
+isolated integration suite: applied migration 17
+isolated integration suite: applied migration 18
+isolated integration suite: applied migration 19
+isolated integration suite: applied migration 20
+isolated integration suite: applied migration 21
+isolated integration suite: applied migration 22
+isolated integration suite: applied migration 23
+isolated integration suite: applied migration 24
+isolated integration suite: applied migration 25
+isolated integration suite: applied migration 26
+isolated integration suite: applied migration 27
+isolated integration suite: applied migration 28
+isolated integration suite: applied migration 29
+isolated integration suite: applied migration 30
+isolated integration suite: applied migration 31
+isolated integration suite: applied migration 32
+isolated integration suite: applied migration 33
+isolated integration suite: applied migration 34
+isolated integration suite: applied migration 35
+isolated integration suite: applied migration 36
+isolated integration suite: applied migration 37
+isolated integration suite: applied migration 38
+isolated integration suite: applied migration 39
+isolated integration suite: applied migration 40
+isolated integration suite: applied migration 41
+isolated integration suite: applied migration 42
+isolated integration suite: applied migration 43
+isolated integration suite: applied migration 44
+isolated integration suite: applied migration 45
+isolated integration suite: applied migration 46
+isolated integration suite: applied migration 47
+isolated integration suite: applied migration 48
+isolated integration suite: applied migration 49
+isolated integration suite: applied migration 50
+isolated integration suite: applied migration 51
+isolated integration suite: applied migration 52
+isolated integration suite: applied migration 53
+isolated integration suite: applied migration 54
+isolated integration suite: applied migration 55
+isolated integration suite: applied migration 56
+isolated integration suite: applied migration 57
+isolated integration suite: applied migration 58
+isolated integration suite: applied migration 59
+isolated integration suite: applied migration 60
+isolated integration suite: applied migration 61
+isolated integration suite: applied migration 62
+isolated integration suite: applied migration 63
+isolated integration suite: applied migration 64
+isolated integration suite: applied migration 65
+isolated integration suite: applied migration 66
+isolated integration suite: applied migration 67
+isolated integration suite: applied migration 68
+isolated integration suite: applied migration 69
+isolated integration suite: applied migration 70
+isolated integration suite: applied migration 71
+isolated integration suite: applied migration 72
+isolated integration suite: applied migration 73
+isolated integration suite: applied migration 74
+isolated integration suite: applied migration 75
+isolated integration suite: applied migration 76
+isolated integration suite: applied migration 77
+isolated integration suite: applied migration 78
+isolated integration suite: applied migration 79
+isolated integration suite: applied migration 80
+isolated integration suite: applied migration 81
+isolated integration suite: applied migration 82
+isolated integration suite: applied migration 83
+isolated integration suite: applied migration 84
+isolated integration suite: applied migration 85
+isolated integration suite: applied migration 86
+isolated integration suite: applied migration 87
+isolated integration suite: applied migration 88
+isolated integration suite: applied migration 89
+isolated integration suite: applied migration 90
+isolated integration suite: applied migration 91
+isolated integration suite: applied migration 92
+isolated integration suite: applied migration 93
+isolated integration suite: applied migration 94
+isolated integration suite: applied migration 95
+Owned contexts [{"contextType":"SIDE_PANEL","documentUrl":"chrome-extension://fffkcnmfdhahlnifgdilabheppkgnlok/sidepanel.html"}]
+Owned targets [{"type":"service_worker","url":"chrome-extension://fffkcnmfdhahlnifgdilabheppkgnlok/background.js"},{"type":"browser_ui","url":"chrome://omnibox-popup.top-chrome/"},{"type":"browser_ui","url":"chrome://omnibox-popup.top-chrome/omnibox_popup_aim.html"},{"type":"page","url":"chrome-extension://fffkcnmfdhahlnifgdilabheppkgnlok/sidepanel.html"},{"type":"page","url":"http://localhost:4317/"},{"type":"tab","url":"chrome-extension://fffkcnmfdhahlnifgdilabheppkgnlok/sidepanel.html"},{"type":"tab","url":"http://localhost:4317/"}]
+PASS: Toolbar opens the actual native right Side Panel without a popup/tab
+PASS: Email OTP/PKCE enters a conversation-first UI; business forms start collapsed
+PASS: Browser-selected file uploads to the real API and remains explicitly unsent until a message is accepted
+PASS: Lost accepted response survives a panel reload and retries one immutable message/attachment with one task and one reservation
+PASS: Native right Side Panel records versioned cloud customer acceptance and human effort without a local Agent or extra usage charge
+PASS: Two user messages continue one private cloud conversation with real incremental events, saved deliverables and separate measured settlements; model turns explicitly synthetic
+PASS: Panel reload restores the saved conversation and its two replies without Desktop or Native Messaging
+PASS: Current source read denial clears previously rendered message/output content and disables sending
+2026-10-23 21:01:17.897 CST [12580] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 21:01:18.820 CST [12580] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.019 s, sync=0.645 s, total=0.923 s; sync files=12, longest=0.148 s, average=0.054 s; distance=16684 kB, estimate=16684 kB; lsn=10/61ABC0E8, redo lsn=10/61ABC090
+
+2026-10-23 21:01:20.515 CST [40544] LOG:  received fast shutdown request
+
+2026-10-23 21:01:20.547 CST [40544] LOG:  aborting any active transactions
+
+2026-10-23 21:01:20.558 CST [40544] LOG:  background worker "logical replication launcher" (PID 41332) exited with exit code 1
+
+2026-10-23 21:01:20.558 CST [12580] LOG:  shutting down
+
+2026-10-23 21:01:20.602 CST [12580] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 21:01:21.054 CST [12580] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.013 s, sync=0.311 s, total=0.496 s; sync files=5, longest=0.116 s, average=0.063 s; distance=112 kB, estimate=15027 kB; lsn=10/61AD8488, redo lsn=10/61AD8488
+
+2026-10-23 21:01:21.189 CST [40544] LOG:  database system is shut down
+

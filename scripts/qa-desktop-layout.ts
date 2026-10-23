@@ -33,8 +33,16 @@ export async function checkDesktopWorkLayout(j:any) {
     await messages.focus();await messages.press("Home");
     await until(()=>messages.evaluate((el:HTMLElement)=>el.scrollTop),(top:number)=>top<2,"keyboard reaches first message");
     const box=await messages.boundingBox();assert.ok(box&&box.height>=64);
-    await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.wheel(0,300);
-    await until(()=>messages.evaluate((el:HTMLElement)=>el.scrollTop),(top:number)=>top>10,"native wheel still scrolls with hidden rails");
+    // Wait for stable native hit testing after the real OS resize. Merely
+    // observing innerWidth does not acknowledge the compositor's new bounds.
+    await messages.hover({position:{x:32,y:32}});
+    await page.evaluate(()=>new Promise<void>(resolve=>setTimeout(resolve,50)));
+    const hit=await messages.evaluate((el:HTMLElement)=>{const b=el.getBoundingClientRect();return el.contains(document.elementFromPoint(b.left+32,b.top+32));});
+    assert.equal(hit,true,"The actual wheel position must hit the messages, not an overlay or stale resize surface");
+    await messages.evaluate((el:HTMLElement)=>{(el as any).__wheelDiagnostic=null;el.addEventListener("wheel",e=>{(el as any).__wheelDiagnostic={trusted:e.isTrusted,dy:e.deltaY,target:(e.target as HTMLElement).tagName,prevented:e.defaultPrevented};},{once:true});});
+    await page.mouse.wheel(0,300);
+    try{await until(()=>messages.evaluate((el:HTMLElement)=>el.scrollTop),(top:number)=>top>10,"native wheel still scrolls with hidden rails");}
+    catch(error){console.error("Native wheel diagnostic: "+JSON.stringify(await messages.evaluate((el:HTMLElement)=>({width:innerWidth,height:innerHeight,top:el.scrollTop,client:el.clientHeight,content:el.scrollHeight,active:document.activeElement?.className,wheel:(el as any).__wheelDiagnostic}))));throw error;}
     await messages.focus();await messages.press("End");
     await until(()=>messages.evaluate((el:HTMLElement)=>el.scrollTop+el.clientHeight>=el.scrollHeight-2),Boolean,"keyboard reaches final native message");
     const artifacts=page.getByRole("region",{name:"Project artifacts",exact:true});await artifacts.getByRole("button").last().focus();
