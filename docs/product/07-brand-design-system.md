@@ -1,5 +1,7 @@
 # CopyPaste 品牌与产品设计规范
 
+**Desktop 当前补充：** 用户已撤销上一项关于进度条的约束；真实执行进度继续显示。Desktop 隐藏侧边纵向滚动条和其他位置的横向滚动条，以换行、重排和可聚焦纵向滚动保持完整访问。窗口、主题、语言和实际交互检查见 [DESK-UI01](../requirements/04-desktop-layout-and-scroll.md)。本补充优先于较早的 Desktop 横向成果/宽表滚动方案。
+
 版本：1.3 · 2026-10-18 · 来源：BRAND01，用户要求最终产品风格、样式及色系贴合 [CopyPaste 官网](https://copypaste.hk/)。本规范替换旧交互文档的通用配色默认；适用于 Web、Chrome 扩展、Desktop 及产品管理页面。
 
 ## 1. 设计依据与目标

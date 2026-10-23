@@ -1,0 +1,45 @@
+# Desktop 本机浏览器 / Native Desktop browser
+
+状态：实现与核查中，不构成浏览器或完整 OS 操作验收。阶段 76 的已发布源码先行归档；SQL001–094 不可修改。原始 102 项需求、专业交付验收及 G01–G10 保持原定义。
+
+Desktop 在客户本机通过固定 Codex 内核调用主进程拥有的浏览器工具。页面访问、实际交互、截图和下载发生在客户设备；AI 推理仍经公司内部 OpenAI 兼容网关。Extension 保持独立的原生右侧 Side Panel，读取获准文件并上传给云端 Codex，不借用 Desktop。
+
+## 权限与生命周期
+
+- 浏览器主动操作要求客户的当前完整本机权限；公司服务、页面脚本、模型和管理员不能代替客户授予 OS 权限。公司原有租户、项目、内容、身份及费用控制继续逐次检查。
+- 本机浏览器使用独立页面与受隔离的登录存储，不接管客户原有 Chrome 页面，不在页面注入公司推理凭据。远程页面与可信地址栏分别使用独立渲染器。
+- 页面、弹出窗口、对话框及下载均登记到本次本机任务；结束、Stop、撤权、切换账号、失联和退出均回收任务拥有的活动资源。已完成的客户下载文件保留，未完成下载取消。
+- 每项副作用使用原生调用 ID 绑定工具及参数。重复调用不重复点击、提交或下载；结果未知不能自动重放。浏览器内容及截图属于不可信页面观察，不得提升为公司权限或执行指令。
+- 旧本机会话保留原工具绑定；新会话才启用版本化浏览器命名空间，避免破坏已有 Codex 检查点。
+
+## 功能与界面计划
+
+同时落实用户的 [Desktop 界面更正](../requirements/04-desktop-layout-and-scroll.md)：撤销此前进度条约束，保留真实进度；Desktop 及本机浏览器隐藏可见滚动条。产品成果、代码和表格在可用宽度内换行，长内容继续用滚轮、触控板、键盘及焦点定位访问。真实网页只隐藏滚动条外观，不改写其业务布局。
+
+提供页面列表、地址导航、前进后退、真实 DOM 快照、实际截图、点击、输入、选择、快捷键、滚动、拖动、文件上传、受隔离页面脚本、等待、网页对话框、真实下载和关闭。交互结果报告真实页面状态和文件摘要，不以模拟文本代替。
+
+采用 CopyPaste 蓝色 `#245BFF`、正文 `#16191F`、辅助字 `#6A7380`、底色 `#FAFAF8`、边线 `#E4E8EF` 与状态绿 `#187451`。Manrope 用于控件，Fraunces 用于品牌。无边框窗口保留自绘地址栏和明确的「本机浏览器」标识；键盘焦点和紧凑窗口均可使用。
+
+## Desktop 布局实现
+
+原生 preload 仅隐藏滚动条的呈现，工作根节点仍保留纵向滚动。独立的 [Desktop 布局样式](https://github.com/copypasteltd/workmate/blob/desktop/renderer/src/desktop-layout.css) 在基础样式之后加载：成果使用可换行网格，代码保留换行，表格使用固定列布局与单元格换行，重点控件设置可收缩宽度。消息、会话和成果分别保留有边界的纵向滚动，不把整个工作区域裁掉。
+
+实际工作区导航、会话列表、消息记录和成果区可通过键盘聚焦，并显示焦点环。聚焦最后一个成果按钮时，原生滚动应自动露出该按钮。小窗口收起占用高度的品牌大标题，保留输入、预算、权限、费用记录和下载操作。上传、任务、流程及视频进度继续使用真实状态。
+
+本机浏览器分别在可信控件和远程页面隐藏滚动条外观；不禁止网页原生滚动，也不为通过截图而重写网页的业务布局。真实网页的固定宽度内容按其原有交互访问，产品自己的成果、表格和代码则必须在窗口宽度内重排。
+
+## 验证计划
+
+使用真实 Electron 页面、表单、弹窗、下载及固定 Codex 二进制验证本机调用链；允许合成模型响应，浏览器动作、文件和资源退出必须真实发生。核查完整权限与较低权限、调用去重、跨任务隔离、停止/撤权/退出、下载取消、陈旧元素和页面导航。实际打包 UI 提供截图及交互录制，源码、运行证据和验证限制分别记录。完成后同步双语 README 与发布说明，按既有规则推送八个 Git 引用。
+
+## 浏览器实现边界
+
+页面使用 Electron 自带 Chromium，通过主进程 `webContents.debugger` 调用 CDP，不开放远程调试端口。新建 WebContents 必须先加载初始文档再启用 CDP 域；该顺序也由 [Electron 官方 Debugger 说明](https://www.electronjs.org/docs/latest/api/debugger/)明确。元素引用按文档版本校验，导航后旧引用失效。页面脚本只能在无 Node、无应用 IPC 的独立世界运行。
+
+Electron 44.5.1 默认将 `prompt()` 替换为抛错函数，见 [固定版本的官方实现](https://github.com/electron/electron/blob/v44.5.1/lib/renderer/window-setup.ts)。本机浏览器通过公开的隔离 preload / contextBridge 恢复这一项网页功能，仅转发有界提示文字及默认值；页面等待具体答案时，独立的可信控件仍可工作。主进程校验实际所属页面和当前完整权限，确认返回具体文字，取消返回 null；不暴露通用 IPC、文件或凭据接口。alert / confirm 保留真实 Chromium 对话路径，并由 CDP 接收及回复。没有替换 Electron 的内部事件监听器。
+
+浏览器窗口同时包含可信控件与独立页面，录制使用真实 OS 窗口捕获，以包含两个原生视图；只截图外层页面会遗漏嵌入内容，不作为浏览器界面证据。模型截图则直接捕获实际远程页面的 Chromium 视口。两种截图均不拼接或补画页面。
+
+## English
+
+Implementation and verification are in progress. The browser runs on the customer's device through Desktop-owned Electron renderers and the pinned native Codex process. Inference still uses the company gateway. Current full local access is required; it never expands company authorization. The trusted address bar and remote page are separate renderers. Task-owned pages, popups and pending downloads are reclaimed on completion, Stop, revocation, account change, loss of authority or application exit. Existing customer tabs are untouched. Original acceptance requirements and all published SQL remain unchanged.

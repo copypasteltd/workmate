@@ -1,6 +1,6 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
-GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmate)，SSH 地址为 `git@github.com:copypasteltd/workmate.git`。各端继续保留独立 Git 历史和独立构建入口，按下表发布到同一远程的不同分支。当前执行中的首次发布以最终远程分支核对为准。
+GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmate)，SSH 地址为 `git@github.com:copypasteltd/workmate.git`。各端继续保留独立 Git 历史和独立构建入口，按下表发布到同一远程的不同分支。每次发布以最终远程分支 SHA 核对及本次发布回执为准。
 
 | 本地目录 | 本地工作分支 | GitHub 分支 | 职责 |
 | --- | --- | --- | --- |
