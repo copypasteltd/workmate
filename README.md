@@ -2,7 +2,7 @@
 
 [English](README.en.md) · [Documentation](https://github.com/copypasteltd/workmate/blob/docs/docs/README.en.md) · [Desktop branch](https://github.com/copypasteltd/workmate/tree/desktop)
 
-**当前实现：** Desktop 在客户本机运行 Codex，提供明确完整授权、文件/终端、同线程继续、原生追问和公司工具/费用；视频角色现支持私有工程、实际合成、播放、原生保存、版本修改和停止/撤权拦截。当前验证为平台 830 项、视频定向 58 项、真实原生 17 项、客户端 47 项及实际打包旅程 18 项；定向与全量重叠，不相加。17 个本机角色准入不等于完整专业验收；流程顾问、完整浏览器/应用自动化、18 角色/29 Skill 和生产验收继续跟踪。模型/图片响应及系统窗口决定明确模拟。Extension 保持原生右侧栏云端对话和获选文件上传。见 [实现方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/75-desktop-private-video.md)、[源码与媒体检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json)。
+**当前实现：** Desktop 在客户本机运行 Codex，提供明确完整授权、本机文件/终端、同线程继续、原生追问及公司图片/设计/视频工具。流程顾问现可使用不可变私有流程、追加子步骤费用确认、人工逐步审批和真实本机角色子 Codex；支持真实 SOP/JSON/恢复说明下载、Stop/撤权及内容来源治理。当前验证为平台 848 项、重叠定向 75 项、真实父子流程 3 项、本机内核回归 17 项、客户端 56 项和实际打包旅程 19 项；这些范围分别报告，不相加。18 个角色已通过本机协议准入，全部 18 角色/29 Skill 的完整专业交付、浏览器/第三方应用操作与 Codex Desktop 全面能力对齐、真实模型及生产验收继续跟踪。模型响应与系统窗口决定明确模拟。Extension 保持 ChatGPT 式原生右侧栏、获选文件读取上传和云端 Agent，无需 Desktop；本轮未重新执行 Extension UI。见 [实现方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/76-desktop-native-workflows.md)、[源码与媒体检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-workflow-checkpoint.json)。
 
 ## 产品与执行位置
 
@@ -106,7 +106,7 @@ npm run package
 
 ## 覆盖与剩余范围
 
-17 个角色接通软件开发、页面、视觉设计、营销分析及私有模板视频的本机协议；准入及 Skill 摘要验证不等同完整专业工作流验收。workflow-consultant 本机工具仍待接通。产品 18 角色及 29 Skill 目标全部保留，包括完整专业效果及应用/浏览器自动化。当前限定验证为平台 830 项、重叠视频定向 58 项、真实原生 17 项、客户端 47 项及实际打包旅程 18 项。较早 802/818 项报告和云端/文件桥录屏保持当时源码范围。原 102 REQ/102 TC、NFR、G01–G10 仍为 81 项局部验证、21 项未证明、0 项完整验收。
+18 个角色现可在客户本机启动 Codex，流程顾问使用本机子角色执行。协议准入、Skill 摘要及本轮有界流程验证不等同全部专业成果验收。当前平台 848 项、重叠定向 75 项、真实父子流程 3 项、本机内核 17 项、客户端 56 项、打包旅程 19 项分别通过。18 角色/29 Skill、完整浏览器/应用操作及原 102 REQ/TC、NFR、G01–G10 保留；81 部分 / 21 未证明 / 0 完整验收。
 
 可选 Native Messaging 文件桥继续独立存在，不授予完整 Agent 权限，也不是 Extension 选文件上传/云端对话的前置。使用浏览器后关闭本任务不再需要的页面，保留用户标签页。
 
@@ -139,3 +139,37 @@ Agent 循环保持在客户电脑。主进程为锁定的原生运行时注册�
 公司服务实际运行 FFmpeg，本流程没有 AI 媒体费用；本机推理继续按原预算和服务端使用量结算。Renderer profile 2 修复最小横版 CTA 布局，旧 profile 1 可读取，升级渲染器需明确新版本。`renderer/src/local-video.tsx` 处理有界状态卡片；`src/local-codex.ts` 只从实际工具结果提取安全 id 与版本。
 
 阶段 75 私有视频更新：[更新说明](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-private-video.md) · [当前检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json)。旧报告保留原始源码范围，平台/本机主进程验证与后续界面验证明确记录。
+
+<!-- desktop-native-workflow-stage76 -->
+
+## 本机流程与核查
+
+选择「流程顾问」、本机目录并明确授予所需本机权限。描述要求并确认冻结的流程步骤；执行前另行查看每个子角色的预算和合计，批准具体版本后才预留费用、启动本机子 Codex。遇到人工审批步骤须再次明确批准，之后才运行下一角色。查看真实本机文件、私有 SOP/流程 JSON/恢复说明下载与公司用量记录；顾问对话及未完成步骤分别计费。Stop 或撤权会终止本机父子进程；已受理但结果未知的操作保留待对账状态，不会自动重放。
+
+首个子集支持最多八步的顺序本机 Codex、人工审批及广告汇总。每个子角色使用独立的 Skills、公司工具和推理凭据，沿用客户当前明确授予的目录及本机权限。完整本机权限不扩大公司的客户数据、项目权限或预算；云端 Worker 与定时任务不能接管本机流程。每个流程版本从真实读取账本冻结外部来源，复用到新会话及派生 SOP 时仍保留；旧创建任务删除不会替代外部来源的有效性判断。来源停用同时约束首次读取、缓存、子任务启动和私有或明确发布的衍生成果；管理员继续遵守权限、MFA、原因及审计控制。关闭应用也会阻止仍等待日志落盘的请求稍后启动。
+
+当前平台完整清单为 65 个实际测试文件、17 个完整批次、848 项通过，保留阶段 75 全部 830 项回归。SQL001–093 未改写；SQL094 增加本机流程来源与不可变版本。实际 428 条接口清单保留此前全部 415 条。原 102 REQ/102 TC、NFR 和 G01–G10 维持 81 项部分验证 / 21 项未证明 / 0 项完整验收；旧证据及媒体仅证明其原始源码。
+
+```mermaid
+flowchart LR
+    User[Customer] --> Consent[Desktop main: permission and fee consent]
+    Consent --> Local[Local consultant Codex]
+    Local --> API[Company identity, sources and usage]
+    API --> Consent
+    Consent --> Children[Local role Codex children]
+    Children --> API
+    Children --> Approval[Human step approval]
+    Approval --> Consent
+    Children --> Files[Real files and private deliveries]
+    Extension[Chrome right Side Panel and files] --> Cloud[Company cloud Codex]
+```
+
+![本机流程费用确认](assets/screenshots/workmate-local-21-workflow-fees-en.png)
+
+![本机流程完成](assets/screenshots/workmate-local-21-workflow-completed-zh.png)
+
+![实际打包客户端交互](assets/screenshots/workmate-local-21-local-agent.gif)
+
+[MP4](assets/screenshots/workmate-local-21-local-agent.mp4) · [800×600](assets/screenshots/workmate-local-21-workflow-compact-en.png)
+
+[设计与生命周期](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/76-desktop-native-workflows.md) · [绑定证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-workflow-checkpoint.json) · [更新说明](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-workflows.md)

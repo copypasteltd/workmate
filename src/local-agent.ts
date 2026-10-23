@@ -3,6 +3,7 @@ import { realpath } from "node:fs/promises";
 import path from "node:path";
 import { LocalCodexSession, LocalCodexError, type LocalCodexHooks, type LocalSessionBinding, type LocalCodexProfile, type LocalPermissionGrant, type LocalPermissionMode, type LocalTurnResult } from "./local-codex.js";
 import { parseLocalInput, parseLocalAnswers, type LocalInputRequest, type LocalInputAnswers, type LocalPendingInput } from "./local-input.js";
+import { executeLocalWorkflow, type NativeWorkflowChild } from "./local-workflow.js";
 
 export interface LocalAgentScope { tenant: string; project: string }
 interface Operation {
@@ -10,8 +11,12 @@ interface Operation {
   prompt: string; budget: number; taskId?: string;
   phase: "accepting" | "starting" | "native_running" | "settling" | "uncertain";
   stopped?: boolean;
+  workflowRunId?: string;
+  workflow?: { runId: string; cursor: number; taskId: string; phase: "prepared" | "native_running" | "settling" | "finished";
+    report?: Operation["report"] };
   report?: { status: "completed" | "failed" | "interrupted" | "unknown"; output: string; thread_id: string; turn_id: string };
 }
+interface ActiveLocalOperation { runtime?: LocalAgentRuntime; children: Set<LocalAgentRuntime>; abort: AbortController; done: Promise<void> }
 interface LocalRecord extends LocalAgentScope {
   id: string; actorId: string; epoch: string; workspace: string; workspaceHash: string; role: string;
   grant?: LocalPermissionGrant; revoked: boolean; operation?: Operation; lastTask?: any; error?: string;
@@ -51,9 +56,10 @@ export class LocalAgentController {
   private loading?: Promise<LocalAgentJournal>;
   private writeTail: Promise<void> = Promise.resolve();
   private generation = 0;
+  private closed = false;
   private busy = new Set<string>();
   private permissions = new Set<string>();
-  private running = new Map<string, { runtime?: LocalAgentRuntime; abort: AbortController; done: Promise<void> }>();
+  private running = new Map<string, ActiveLocalOperation>();
   // Questions and answers are live process state, never journal entries. A
   // renderer refresh can redisplay a question; an app restart cannot replay it.
   private inputs = new Map<string, Map<string, { view: LocalPendingInput; op: Operation; signal: AbortSignal;
@@ -84,6 +90,7 @@ export class LocalAgentController {
   }
   private async identity() {
     const generation = this.generation, actor = await this.io.identity();
+    if (this.closed) throw new LocalAgentError("LOCAL_APP_CLOSED");
     if (generation !== this.generation || !uuid.test(actor.actorId) || !actor.epoch) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
     return actor;
   }
@@ -210,6 +217,7 @@ export class LocalAgentController {
     return this.execute(r);
   }
   private async execute(r: LocalRecord) {
+    if (this.closed) throw new LocalAgentError("LOCAL_APP_CLOSED");
     const op = r.operation!; this.busy.add(r.id); this.io.changed();
     const generation = this.generation, base = this.base(r), journal = await this.state();
     const fields = { device_id: journal.deviceId, local_session_id: r.id, workspace_hash: r.workspaceHash, runtime_version: this.io.runtime.version, runtime_sha256: this.io.runtime.sha256 };
@@ -217,7 +225,7 @@ export class LocalAgentController {
     let admitted = false, nativeAccepted = false, stoppingHeartbeat = false;
     const abort = new AbortController();
     let resolveDone!: () => void; const done = new Promise<void>(resolve => { resolveDone = resolve; });
-    const active: { runtime?: LocalAgentRuntime; abort: AbortController; done: Promise<void> } = { abort, done };
+    const active: ActiveLocalOperation = { abort, done, children: new Set() };
     this.running.set(r.id, active);
     const assertOwner = async () => { const actor = await this.identity(); this.grant(r); if (generation !== this.generation || actor.actorId !== r.actorId || actor.epoch !== r.epoch) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED"); };
     const stopHeartbeat = async () => { stoppingHeartbeat = true; if (heartbeat) clearInterval(heartbeat); await heartbeatRun; };
@@ -228,6 +236,17 @@ export class LocalAgentController {
       // Reporting a terminal/unknown outcome is allowed after local permission
       // withdrawal; it never starts tools or another model request.
       r.lastTask = await this.api(r, base + "/" + op.taskId + "/finish", "POST", op.report, op.finishKey);
+      if (op.workflowRunId) {
+        try {
+          const { run } = await this.api(r, base + "/" + op.taskId + "/workflow-runs/" + op.workflowRunId);
+          if (run.id === op.workflowRunId && run.execution_location === "desktop") {
+            const previous = [...r.events].reverse().find(event => event.kind === "local.workflow.progress" && event.value.run_id === run.id)?.value ?? {};
+            r.events.push({ kind: "local.workflow.progress", value: { ...previous, run_id: run.id, workflow_id: run.workflow_id,
+              version: run.version, revision: run.revision, cursor: run.cursor, steps: run.definition.steps.length, authorized: run.authorized,
+              state: run.state, error_code: run.error_code } });
+          }
+        } catch { /* Root receipt remains authoritative; content withdrawal may hide the run. */ }
+      }
       r.messages.push({ role: "assistant", text: op.report!.output, status: r.lastTask.status });
       r.uncertain ||= op.report!.status === "unknown" || r.lastTask.status === "reconciling";
       r.operation = undefined; if (!r.uncertain) r.error = undefined; await this.persist();
@@ -280,7 +299,32 @@ export class LocalAgentController {
             await assertOwner();
             if (response.status === 400 && response.body?.error?.code === "VALIDATION_ERROR") throw new LocalCodexError("LOCAL_COMPANY_TOOL_INPUT_INVALID");
             if (response.status !== 200 || !response.body || !("output" in response.body)) throw new LocalCodexError("LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN");
-            return response.body.output;
+            const output = response.body.output;
+            if (call.tool !== "workflow_run") return output;
+            if (r.role !== "workflow-consultant") throw new LocalCodexError("LOCAL_COMPANY_TOOL_SCOPE_INVALID");
+            if (!uuid.test(output?.run?.id)) throw new LocalCodexError("LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN");
+            op.workflowRunId = output.run.id; await this.persist();
+            const workflowSignal = AbortSignal.any([signal, abort.signal]);
+            return executeLocalWorkflow({ base: taskURL, threadId: call.threadId, turnId: call.turnId, signal: workflowSignal,
+              authorize,
+              request: async (url, body, requestKey) => {
+                await assertOwner();
+                const reply = await this.io.request(url, { method: "POST", tenantId: r.tenant, body, idempotencyKey: requestKey, signal: workflowSignal });
+                await assertOwner();
+                if (reply.status !== 200) throw new LocalAgentError(reply.body?.error?.code ?? "LOCAL_WORKFLOW_OUTCOME_UNKNOWN");
+                return reply.body;
+              },
+              read: async url => {
+                await assertOwner();
+                const reply = await this.io.request(url, { tenantId: r.tenant, signal: workflowSignal });
+                await assertOwner();
+                if (reply.status !== 200) throw new LocalAgentError("LOCAL_WORKFLOW_APPROVAL_WITHDRAWN");
+                return reply.body;
+              },
+              ask: (request, inputSignal, confirm) => this.waitForInput(r, op, request, inputSignal, confirm),
+              child: (child, run) => this.executeWorkflowChild(r, op, active, child, run.id, run.cursor, workflowSignal, authorize, assertOwner),
+              event: async value => { r.events.push({ kind: "local.workflow.progress", value }); if (r.events.length > 500) r.events.shift(); await this.persist(); },
+            }, output);
           },
           event: async (kind, value) => {
             if (generation !== this.generation) return;
@@ -317,10 +361,90 @@ export class LocalAgentController {
       } else await this.persist();
       throw error;
     } finally {
+      abort.abort();
       await stopHeartbeat();
-      try { await runtime?.close(); this.running.delete(r.id); this.busy.delete(r.id); }
+      try { await Promise.all([runtime?.close(), ...[...active.children].map(child => child.close())]); this.running.delete(r.id); this.busy.delete(r.id); }
       catch (error) { r.error = "LOCAL_PROCESS_SHUTDOWN_FAILED"; r.uncertain = true; await this.persist(); throw error; }
       finally { resolveDone(); this.io.changed(); }
+    }
+  }
+  private async executeWorkflowChild(r: LocalRecord, op: Operation, active: ActiveLocalOperation, child: NativeWorkflowChild,
+    runId: string, cursor: number, signal: AbortSignal, authorizeParent: () => Promise<void>, assertOwner: () => Promise<void>) {
+    const fields = child.fields, journal = await this.state();
+    if (!uuid.test(child.task_id) || !uuid.test(fields.local_session_id) || fields.local_session_id === r.id
+      || fields.device_id !== journal.deviceId || fields.workspace_hash !== r.workspaceHash
+      || fields.runtime_version !== this.io.runtime.version || fields.runtime_sha256 !== this.io.runtime.sha256
+      || op.workflow?.taskId === child.task_id) throw new LocalAgentError("LOCAL_WORKFLOW_REPLAY_FORBIDDEN");
+    await assertOwner(); await authorizeParent();
+    if (signal.aborted) throw new LocalAgentError("LOCAL_WORKFLOW_INTERRUPTED");
+    const checkpoint: NonNullable<Operation["workflow"]> = { runId, cursor, taskId: child.task_id, phase: "prepared" };
+    op.workflow = checkpoint; await this.persist();
+    const taskURL = this.base(r) + "/" + child.task_id;
+    let runtime: LocalAgentRuntime | undefined, accepted = false, admitted = false;
+    let heartbeat: ReturnType<typeof setInterval> | undefined, heartbeatRun: Promise<unknown> | undefined;
+    const authorize = async () => {
+      await assertOwner(); await authorizeParent();
+      if (signal.aborted) throw new LocalAgentError("LOCAL_WORKFLOW_INTERRUPTED");
+      const live = await this.api(r, taskURL + "/heartbeat", "POST", {});
+      await assertOwner();
+      if (signal.aborted || live.cancel_requested || live.state !== "running" || live.status !== "running") throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+    };
+    const shutdownChild = () => { void runtime?.interrupt().catch(() => {}).then(() => runtime?.close()).catch(() => {}); };
+    const finish = async () => {
+      if (!checkpoint.report) return;
+      const result = await this.api(r, taskURL + "/finish", "POST", checkpoint.report, hash("workflow-finish:" + child.task_id));
+      checkpoint.phase = "finished"; await this.persist();
+      if (result.status === "reconciling") throw new LocalAgentError("LOCAL_WORKFLOW_RECONCILIATION_REQUIRED");
+    };
+    try {
+      const started = await this.api(r, taskURL + "/start", "POST", fields, hash("workflow-start:" + child.task_id)); admitted = true;
+      await assertOwner();
+      if (signal.aborted || started.runtime?.pinned_version !== this.io.runtime.version
+        || started.runtime?.windows_x64_sha256 !== this.io.runtime.sha256 || started.inference_path !== "/v1/desktop-inference/v1"
+        || !Array.isArray(started.skills)) throw new LocalAgentError("LOCAL_RUNTIME_UPDATE_REQUIRED");
+      runtime = this.runtimeFactory({ executable: this.io.executable, version: this.io.runtime.version, executableSha256: this.io.runtime.sha256,
+        companyOrigin: this.io.companyOrigin, baseURL: this.io.companyOrigin + started.inference_path, model: started.model, effort: started.effort },
+      { sessionId: fields.local_session_id, actorId: r.actorId, tenantId: r.tenant, projectId: r.project,
+        workspace: r.workspace, stateRoot: this.io.stateRoot, grant: { ...this.grant(r) }, skills: started.skills, companyTools: started.company_tools ?? [] }, {
+        authorize, approval: (kind, value) => this.io.approval(kind, value),
+        userInput: (request, inputSignal) => this.waitForInput(r, op, request, AbortSignal.any([inputSignal, signal]), authorize),
+        companyTool: async (call, inputSignal) => {
+          await authorize();
+          if (call.tool.startsWith("workflow_")) throw new LocalCodexError("LOCAL_COMPANY_TOOL_SCOPE_INVALID");
+          const response = await this.io.request(taskURL + "/tools", { method: "POST", tenantId: r.tenant,
+            idempotencyKey: hash(child.task_id + ":" + call.callId), signal: AbortSignal.any([signal, inputSignal]),
+            body: { tool: call.tool, arguments: call.arguments, call_id: call.callId, thread_id: call.threadId, turn_id: call.turnId } });
+          await assertOwner();
+          if (response.status === 400 && response.body?.error?.code === "VALIDATION_ERROR") throw new LocalCodexError("LOCAL_COMPANY_TOOL_INPUT_INVALID");
+          if (signal.aborted || inputSignal.aborted || response.status !== 200 || !("output" in (response.body ?? {}))) throw new LocalCodexError("LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN");
+          return response.body.output;
+        },
+        event: async (kind, value) => {
+          if (active.abort.signal.aborted) return;
+          r.events.push({ kind, value: { ...value, workflow_run_id: runId, workflow_cursor: cursor, workflow_task_id: child.task_id } });
+          if (r.events.length > 500) r.events.shift(); this.io.changed();
+        },
+      });
+      active.children.add(runtime); signal.addEventListener("abort", shutdownChild, { once: true });
+      if (signal.aborted) throw new LocalAgentError("LOCAL_WORKFLOW_INTERRUPTED");
+      await runtime.start({ token: started.credential.token, expiresAt: new Date(started.credential.expires_at).getTime() });
+      heartbeat = setInterval(() => {
+        if (heartbeatRun) return;
+        heartbeatRun = authorize().catch(() => { active.abort.abort(); shutdownChild(); }).finally(() => { heartbeatRun = undefined; });
+      }, 10000);
+      await authorize(); checkpoint.phase = "native_running"; await this.persist(); accepted = true;
+      const result = await runtime.turn(started.role_instructions + "\n\nCustomer workflow step:\n" + started.prompt, signal);
+      checkpoint.report = { status: result.status, output: result.text.slice(0, 100000), thread_id: result.threadId, turn_id: result.turnId };
+      checkpoint.phase = "settling"; await this.persist(); await runtime.close(); await finish();
+    } catch (error) {
+      if (admitted && !checkpoint.report) {
+        checkpoint.report = { status: accepted ? "unknown" : "failed", output: "", thread_id: "unknown", turn_id: "unknown" };
+        checkpoint.phase = "settling"; await this.persist(); await runtime?.close().catch(() => {}); await finish().catch(() => {});
+      }
+      throw error;
+    } finally {
+      if (heartbeat) clearInterval(heartbeat); signal.removeEventListener("abort", shutdownChild);
+      await heartbeatRun; await runtime?.close(); if (runtime) active.children.delete(runtime);
     }
   }
   async stop(id: string) {
@@ -329,12 +453,12 @@ export class LocalAgentController {
     active?.abort.abort();
     // Interrupt immediately, independently of the company's network health.
     const localStop = (async () => {
-      await active?.runtime?.interrupt().catch(() => {});
+      await Promise.all([active?.runtime?.interrupt().catch(() => {}), ...[...(active?.children ?? [])].map(child => child.interrupt().catch(() => {}))]);
       if (active) {
         let timer: ReturnType<typeof setTimeout> | undefined;
         try { await Promise.race([active.done, new Promise<void>(resolve => { timer = setTimeout(resolve, 3500); })]); }
         finally { if (timer) clearTimeout(timer); }
-        if (this.running.get(id) === active) await active.runtime?.close();
+        if (this.running.get(id) === active) await Promise.all([active.runtime?.close(), ...[...active.children].map(child => child.close())]);
       }
     })();
     let remoteError: unknown, cancelled: any;
@@ -365,17 +489,19 @@ export class LocalAgentController {
   async revoke(id: string) {
     const r = await this.withdrawalRecord(id); r.revoked = true;
     const active = this.running.get(id); active?.abort.abort();
-    await Promise.all([this.persist(), active?.runtime?.revoke()]);
+    await Promise.all([this.persist(), active?.runtime?.revoke(), ...[...(active?.children ?? [])].map(child => child.revoke())]);
     return this.view(await this.withdrawalRecord(id));
   }
   async invalidate() {
     ++this.generation;
     const journal = await this.state(); for (const r of journal.sessions) r.revoked = true;
     const active = [...this.running.values()]; for (const item of active) item.abort.abort();
-    await Promise.all(active.map(item => item.runtime?.revoke())); await this.persist();
+    await Promise.all(active.flatMap(item => [item.runtime?.revoke(), ...[...item.children].map(child => child.revoke())])); await this.persist();
   }
   async close() {
+    this.closed = true;
     for (const item of this.running.values()) item.abort.abort();
-    await Promise.all([...this.running.values()].map(item => item.runtime?.close())); await this.writeTail;
+    this.inputs.clear();
+    await Promise.all([...this.running.values()].flatMap(item => [item.runtime?.close(), ...[...item.children].map(child => child.close())])); await this.writeTail;
   }
 }

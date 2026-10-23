@@ -2,7 +2,7 @@
 
 [中文](README.md) · [Documentation](https://github.com/copypasteltd/workmate/blob/docs/docs/README.en.md) · [Desktop branch](https://github.com/copypasteltd/workmate/tree/desktop)
 
-**Current implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads, native questions and company tools/billing. The video role now supports private projects, actual composition/playback, native saves, version edits and stop/revocation fencing. Qualification covers 830 platform tests, 58 overlapping focused tests, 17 real-native tests, 47 client tests and 18 actual packaged-journey checks; counts overlap and are not additive. Seventeen native role admissions are not full professional acceptance. Workflow tools, complete browser/application automation, all eighteen roles/twenty-nine Skills and production acceptance remain open. Model/image responses and native-dialog choices are explicit fixtures. Extension retains right Side Panel cloud conversations and selected-file uploads. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/75-desktop-private-video.md) and [source/media checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json).
+**Current implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads, native questions and governed image/design/video tools. The workflow consultant now uses immutable private workflows, separate child-step fee consent, human step approvals and actual native specialist children, with real SOP/JSON/recovery downloads, Stop/revoke and source governance. Qualification covers 848 platform tests, 75 overlapping focused checks, 3 real parent/child workflow checks, 17 native-supervisor regressions, 56 client tests and 19 actual packaged-journey checks; scopes are separate and not additive. All 18 roles have native protocol admission. Full professional delivery across 18 roles/29 Skills, complete browser/third-party application operations and Codex Desktop parity, live models and production acceptance remain pending. Model responses and native-dialog choices are explicit fixtures. Extension retains ChatGPT-style right Side Panel cloud chat and selected-file reading/upload without Desktop; its UI was not rerun this stage. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/76-desktop-native-workflows.md) and [source/media checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-workflow-checkpoint.json).
 
 ## Product and execution location
 
@@ -106,7 +106,7 @@ Actual packaged Electron and native Codex; real auth, database, local files, san
 
 ## Coverage and remaining work
 
-Seventeen native role registrations cover software/page work, visual design, marketing analysis and private template-video tools. Admission and Skill hashes do not establish full professional qualification. Native workflow-consultant tools remain to be integrated. All eighteen product roles and twenty-nine Skills remain in scope, including full professional outcomes and browser/application automation. Current qualification covers 830 Platform tests, 58 overlapping video checks, 17 real-native tests, 47 client tests and 18 packaged-journey checks. Earlier 802/818-test reports and old cloud/file-bridge recordings retain their historical source scopes. The original 102 REQ/102 TC, NFR and G01–G10 baseline remains 81 partial, 21 unproven and zero fully accepted.
+All 18 roles now admit customer-device Codex; the workflow consultant uses actual native specialist children. Protocol admission and Skill hashes are not complete professional qualification. Current evidence covers 848 platform tests, 75 overlapping focused checks, 3 real workflow cases, 17 supervisor regressions, 56 client tests and 19 packaged checks. All 18 roles/29 Skills, full browser/application operation and the original 102 REQ/TC, NFR and G01–G10 remain in scope at 81 partial / 21 unproven / zero fully accepted.
 
 The optional Native Messaging file companion remains separate. It does not confer full local Agent access and is not required for the Extension's selected-file upload/cloud conversation flow. Close task-owned browser pages after use and preserve user tabs.
 
@@ -139,3 +139,37 @@ Follow-up edits freeze a new expected version and preserve the earlier MP4. Expl
 The company service uses actual FFmpeg composition with zero AI media charge in this flow. Native reasoning retains its original server-observed budget and usage. Renderer profile 2 fixes minimum-landscape CTA layout; frozen profile 1 remains readable and requires an explicit new version to change its renderer. `renderer/src/local-video.tsx` owns the bounded state cards; `src/local-codex.ts` projects only safe ids and versions from actual tool results.
 
 Stage 75 private-video update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-private-video.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json). Earlier reports retain their actual source scopes; platform/main-process qualification and later UI qualification are explicitly separated.
+
+<!-- desktop-native-workflow-stage76 -->
+
+## Native workflows and verification
+
+Choose Workflow consultant, select a folder and explicitly grant the desired local permission. Describe the work and agree its frozen steps. Review the separate per-child budgets and approve the exact version before a child can reserve money or run. Approve any concrete human step before the next specialist starts. Review real files, private SOP/workflow JSON/recovery downloads and company usage; this conversation and incomplete steps have separate charges. Stop or revoke to terminate local parent and child processes; unknown accepted actions retain reconciliation state and never replay automatically.
+
+The first workflow subset permits up to eight sequential native Codex, human approval or analytics-summary steps. Every child uses its own approved role Skills, company tools and scoped credentials while retaining the current explicit local grant. Local full access does not grant another customer's data, project rights or unlimited budget. Company cloud Workers and schedules cannot take over native workflows. Each immutable version freezes actual external input provenance across new sessions and derived SOPs, without depending on the creator task lifetime. Source withdrawal also governs first reads, cached calls, child admission and private or explicitly published derivatives; administrators use existing permission/MFA/reason/audit controls. Closing the app fences requests still waiting for their local journal write.
+
+Current platform inventory: 65 actual test files / 17 complete batches / 848 passing tests; all 830 stage-75 cases remain covered. SQL001–093 remain unchanged; SQL094 adds native workflow provenance and immutable versions. The actual 428-route inventory retains all prior 415 routes. Original 102 REQ/102 TC, NFR and G01–G10 remain open at 81 partial / 21 unproven / 0 fully accepted. Earlier evidence and media retain their original source scope.
+
+```mermaid
+flowchart LR
+    User[Customer] --> Consent[Desktop main: permission and fee consent]
+    Consent --> Local[Local consultant Codex]
+    Local --> API[Company identity, sources and usage]
+    API --> Consent
+    Consent --> Children[Local role Codex children]
+    Children --> API
+    Children --> Approval[Human step approval]
+    Approval --> Consent
+    Children --> Files[Real files and private deliveries]
+    Extension[Chrome right Side Panel and files] --> Cloud[Company cloud Codex]
+```
+
+![Native workflow fee confirmation](assets/screenshots/workmate-local-21-workflow-fees-en.png)
+
+![Native workflow complete](assets/screenshots/workmate-local-21-workflow-completed-zh.png)
+
+![Actual packaged interaction](assets/screenshots/workmate-local-21-local-agent.gif)
+
+[MP4](assets/screenshots/workmate-local-21-local-agent.mp4) · [800×600](assets/screenshots/workmate-local-21-workflow-compact-en.png)
+
+[Design and lifecycle](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/76-desktop-native-workflows.md) · [Bound evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-workflow-checkpoint.json) · [Change notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-workflows.md)

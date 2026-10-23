@@ -9,6 +9,22 @@ import { rendererApiOperation } from "../src/config.js";
 import type { LocalCodexHooks } from "../src/local-codex.js";
 import type { LocalInputRequest } from "../src/local-input.js";
 
+test("closing the app while a send is persisting prevents a later task reservation or native start", async () => {
+  const f = await fixture();
+  try {
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    let entered!: () => void, release!: () => void;
+    const pending = new Promise<void>(resolve => { entered = resolve; }), gate = new Promise<void>(resolve => { release = resolve; });
+    const original = f.io.write;
+    f.io.write = async journal => { entered(); await gate; await original(journal); };
+    const calls = f.calls.length, send = f.controller.send(session.id, "A task still waiting for its local journal write", 100000);
+    await pending; const closing = f.controller.close(); release();
+    await assert.rejects(send, /LOCAL_APP_CLOSED/); await closing;
+    assert.equal(f.calls.length, calls); assert.equal(f.turns(), 0); assert.equal(f.runtimes.length, 0);
+    await assert.rejects(f.controller.create(f.scope, "fullstack"), /LOCAL_APP_CLOSED/);
+  } finally { await f.clean(); }
+});
+
 async function fixture() {
   const parent = path.resolve(".data/controller-tests"); await mkdir(parent, { recursive: true });
   const directory = await mkdtemp(path.join(parent, "owned-"));
@@ -258,7 +274,9 @@ for (const action of ["stop", "revoke", "invalidate", "close"] as const) test(`w
   const f = await fixture(); try {
     const waiting = await awaitingInput(f);
     await f.controller[action](waiting.session.id); await assert.rejects(waiting.sent);
-    const state = (await f.controller.list(f.scope)).sessions[0]; assert.deepEqual(state.inputs, []); assert.equal(waiting.received(), undefined);
+    if (action === "close") await assert.rejects(f.controller.list(f.scope), /LOCAL_APP_CLOSED/);
+    else { const state = (await f.controller.list(f.scope)).sessions[0]; assert.deepEqual(state.inputs, []); }
+    assert.equal(waiting.received(), undefined);
     await assert.rejects(f.controller.answer(waiting.session.id, waiting.input.requestId, controllerAnswers));
     assert.equal(f.created(), 1); assert.equal(f.turns(), 1);
   } finally { await f.clean(); }

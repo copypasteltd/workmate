@@ -140,7 +140,7 @@ export class LocalCodexSession {
     const policy = localPermissionPolicy(this.grant.mode);
     return { model: this.profile.model, modelProvider: "copypaste_internal", cwd: this.binding.workspace,
       approvalPolicy: policy.approvalPolicy, sandbox: policy.sandbox, environments: [],
-      developerInstructions: "You are the customer's local CopyPaste Codex Agent. Use the selected Skills and local tools to deliver real files and verifiable results. Follow the locally granted permission mode. All product AI uses the company provider. Never launch Docker, WSL or virtual machines. Close only task-owned browser pages when no longer needed. Report what actually completed." };
+      developerInstructions: "You are the customer's local CopyPaste Codex Agent. Use the selected Skills and local tools to deliver real files and verifiable results. Follow the locally granted permission mode. Skill restrictions on cloud-worker shell execution apply to the company cloud; this native session's file and terminal tools are governed by the customer's current local grant. Skill tool IDs are capability labels: call only the exact tool names and schemas exposed by this session. Company tenant, project, content and budget controls remain mandatory in every local permission mode. Workflow fee and human-step decisions are made only through the trusted application's confirmation cards; no model tool may approve them. All product AI uses the company provider. Never launch Docker, WSL or virtual machines. Close only task-owned browser pages when no longer needed. Report what actually completed." };
   }
 
   private async save(phase: Checkpoint["phase"]) {
@@ -456,7 +456,7 @@ export class LocalCodexSession {
               || !call.arguments || typeof call.arguments !== "object" || Array.isArray(call.arguments))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_SCOPE_INVALID");
             this.validateGrant(); await this.hooks.authorize();
-            if (this.grant.mode === "read-only" && !["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog", "video_projects", "video_project_read", "video_project_status"].includes(call.tool))
+            if (this.grant.mode === "read-only" && !["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog", "video_projects", "video_project_read", "video_project_status", "workflow_list", "workflow_read", "workflow_validate", "workflow_status"].includes(call.tool))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_READ_ONLY");
             await this.emit("local.company-tool.started", { tool: call.tool, call_id: call.callId });
             const output = await this.hooks.companyTool(call, this.shutdown.signal);

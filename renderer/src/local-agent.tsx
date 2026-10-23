@@ -27,6 +27,7 @@ const roleNames: Record<string, [string, string]> = {
   "typography-layout": ["字體與排版設計師", "Typography & layout designer"], presentation: ["簡報設計師", "Presentation designer"],
   "information-design": ["資訊與圖表設計師", "Information designer"], "marketing-analyst": ["營銷數據分析師", "Marketing analyst"],
   "video-motion": ["影片與動效設計師", "Video & motion designer"],
+  "workflow-consultant": ["企業流程顧問", "Workflow consultant"],
 };
 async function native(action: string, payload: unknown) {
   const reply = await window.copyPasteBridge!.localAgent(action, payload);
@@ -118,6 +119,11 @@ export function LocalAgentWorkspace() {
     if (video?.project_id && video?.render_id) found.set(video.render_id, { ...found.get(video.render_id), ...video });
     return found;
   }, new Map<string, LocalVideoJob>()).values()];
+  const workflows = [...(session?.events ?? []).reduce((found, event) => {
+    const flow = event.kind === "local.workflow.progress" && event.value;
+    if (flow?.run_id && Number.isSafeInteger(flow.cursor) && Number.isSafeInteger(flow.steps)) found.set(flow.run_id, flow);
+    return found;
+  }, new Map<string, any>()).values()];
   useEffect(() => {
     const scroller = messages.current, card = scroller?.querySelector<HTMLElement>(".local-agent-input");
     if (session?.inputs?.length && scroller && card) {
@@ -160,6 +166,17 @@ export function LocalAgentWorkspace() {
           {session.messages.map((m, i) => <article key={i} className={`local-agent-message ${m.role}`}><small>{m.role === "user" ? t("你", "You") : "COPYPASTE"}{m.status ? " · " + m.status : ""}</small><p>{m.text || t("本次未返回文字。請檢查工作記錄。", "No text was returned. Review the activity log.")}</p></article>)}
           {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
           {videos.length > 0 && <LocalVideoJobs key={session.id} jobs={videos}/>}
+          {workflows.map(flow => <article className="local-agent-message assistant local-workflow-progress" key={flow.run_id}
+            aria-label={t("本機流程進度", "Local workflow progress")}>
+            <small>{t("本機流程", "Local workflow")} · v{flow.version}</small>
+            <strong>{["running", "awaiting_approval"].includes(flow.state) && (!session.busy || session.revoked) ? t("本機已停止，等待核對", "Local execution stopped; review pending")
+              : flow.state === "succeeded" ? t("流程已完成", "Workflow completed") : flow.state === "failed" ? t("流程未完成", "Workflow incomplete")
+              : flow.state === "cancelled" ? t("流程已停止", "Workflow stopped") : !flow.authorized ? t("等待費用確認", "Awaiting fee confirmation")
+              : flow.state === "awaiting_approval" ? t("等待審批", "Awaiting approval") : t("本機執行中", "Running locally")}</strong>
+            <p>{t("已完成步驟", "Completed steps")} {flow.cursor} / {flow.steps} · {t("已完成步驟費用", "Completed-step usage")} <Money value={flow.charged_micros ?? "0"}/></p>
+            <small>{t("顧問對話及未完成步驟的費用，請到用量記錄查看。", "See usage records for this conversation and any unfinished steps.")}</small>
+            {flow.error_code && <p role="status">{flow.error_code}</p>}
+          </article>)}
           {session.inputs?.map(input => <LocalInputCard key={input.requestId} input={input} sessionId={session.id} onDone={() => refresh.current()} onStop={() => void native("stop", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}/>)}<div ref={end}/></div>
         {artifacts.length > 0 && <div className="local-agent-artifacts" aria-label={t("專案成果", "Project artifacts")}><span>{t("專案成果", "Project artifacts")}</span>{artifacts.map(artifact => <button className="button" key={artifact.asset_version_id}
           onClick={() => void download(`${w.base}/assets/${artifact.id}/download?version=${artifact.version}`, artifact.name, w.tenant).catch(e => setError(e.message))}><Download size={14}/>{artifact.name} · v{artifact.version}</button>)}</div>}
