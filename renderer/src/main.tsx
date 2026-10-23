@@ -1,3 +1,4 @@
+import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
 import { QualitySummary } from "./quality-summary";
 import { Connections, ConnectorLaunch } from "./connections";
@@ -2632,100 +2633,8 @@ function Workflows() {
     </>
   );
 }
-function Brand() {
-  const { t } = useI18n(),
-    w = useWorkspace(),
-    [refresh, setRefresh] = useState(0),
-    [open, setOpen] = useState(false);
-  const { data, error } = useData(w.base + "/brand", refresh);
-  return (
-    <>
-      <PageHeader
-        eyebrow="CONSISTENCY, BY DESIGN."
-        title={t("品牌資料", "Brand library")}
-        description={t(
-          "把品牌色、語氣和已核准的文案，帶到每一份工作。",
-          "Bring your colors, tone and approved copy into every piece of work.",
-        )}
-        action={
-          <button className="button primary" onClick={() => setOpen(true)}>
-            <Plus size={17} />
-            {t("加入品牌", "Add brand")}
-          </button>
-        }
-      />
-      <ErrorNotice error={error} />
-      {data?.items.length ? (
-        <div className="project-grid">
-          {data.items.map((b: any) => (
-            <article key={b.id} className="card">
-              <div className="brand-colors">
-                {b.body.colors.map((c: string) => (
-                  <span key={c} style={{ background: c }} title={c} />
-                ))}
-              </div>
-              <h2>{b.name}</h2>
-              <p>{b.body.tone}</p>
-              <p className="muted preserve-text">{b.body.approved_copy}</p>
-              <span className="small-text">v{b.version}</span>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <Empty
-          icon={BookOpen}
-          title={t("讓品牌，每次都像你。", "Make every piece feel like you.")}
-          body={t(
-            "品牌資料可以隨時加入，不影響你先開始工作。",
-            "Add brand guidance whenever you’re ready. You can start working before it’s complete.",
-          )}
-        />
-      )}{" "}
-      {open && (
-        <Modal
-          title={t("加入品牌資料", "Add brand guidance")}
-          onClose={() => setOpen(false)}
-        >
-          <AsyncForm
-            submitLabel={t("儲存品牌", "Save brand")}
-            onSubmit={async (f) => {
-              await post(w.base + "/brand", {
-                name: String(f.get("name")),
-                colors: String(f.get("colors"))
-                  .split(",")
-                  .map((s) => s.trim()),
-                tone: String(f.get("tone")),
-                approved_copy: String(f.get("copy")),
-                fonts: [],
-              });
-              setOpen(false);
-              setRefresh((v) => v + 1);
-            }}
-          >
-            <Field label={t("品牌名稱", "Brand name")}>
-              <input name="name" required />
-            </Field>
-            <Field
-              label={t("品牌色（以逗號分隔）", "Colors (comma separated)")}
-            >
-              <input
-                name="colors"
-                defaultValue="#1F5EFF, #F6F6F4, #15171A"
-                required
-              />
-            </Field>
-            <Field label={t("語氣與風格", "Tone & style")}>
-              <textarea name="tone" rows={3} required />
-            </Field>
-            <Field label={t("已核准文案", "Approved copy")}>
-              <textarea name="copy" rows={3} />
-            </Field>
-          </AsyncForm>
-        </Modal>
-      )}
-    </>
-  );
-}
+function Brand() { return <BrandLibrary/>; }
+
 function Devices() {
   const { t } = useI18n(),
     w = useWorkspace(),
