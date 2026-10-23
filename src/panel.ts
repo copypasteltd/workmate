@@ -1,4 +1,5 @@
 import { ChatPanel } from "./chat-panel.js";
+import { mountDeliveryQuality } from "./delivery-quality.js";
 import {
   exactHKD,
   financialLabels,
@@ -56,6 +57,7 @@ function clearTask() {
   timer = undefined;
   $("task-view").hidden = true;
   $("task-output").textContent = "";
+  $("delivery-quality").replaceChildren();
 }
 async function send(type: string, body: Record<string, unknown> = {}) {
   const revision = workspaceRevision;
@@ -787,6 +789,10 @@ async function drawTask(t: any) {
   const area = $("input-requests"),
     endpoint = base(),
     revision = workspaceRevision;
+  if (["succeeded", "failed", "cancelled"].includes(t.status) && t.mode !== "plan")
+    mountDeliveryQuality($("delivery-quality"), { path: endpoint + "/tasks/" + t.id, request, tr,
+      live: () => drawing === taskDrawRevision && revision === workspaceRevision && endpoint === base() && task === t.id });
+  else $("delivery-quality").replaceChildren();
   if (t.status !== "needs_input") {
     dependencyRevision++;
     dependencyFingerprint = "";

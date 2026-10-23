@@ -22,6 +22,12 @@
   color-scheme: light;
   font-size: 14px;
 }
+.delivery-quality { margin:16px 0; border-top:1px solid var(--chat-line); padding:12px 0; overflow-wrap:anywhere; }
+.delivery-quality summary { cursor:pointer; font-weight:650; padding:8px 0; }
+.delivery-quality label { display:grid; gap:7px; margin:14px 0; }
+.delivery-quality input,.delivery-quality select,.delivery-quality textarea { width:100%; min-width:0; box-sizing:border-box; }
+.delivery-quality textarea { min-height:85px; resize:vertical; }
+.delivery-quality small,.delivery-quality p>span { display:block; margin-top:7px; white-space:pre-wrap; }
 
 /* CLIENT01: conversation first; existing business controls remain available. */
 .sr-only {
@@ -674,3 +680,17 @@ footer span {
 body > .brand { padding: 12px 18px; }
 #workspace .workspace-head { display: none; }
 #chat-shell { height: calc(100dvh - 310px); min-height: 360px; }
+
+/* Match the chat surface for review controls in the narrow native Side Panel. */
+#delivery-quality .delivery-quality { font-size:12px; line-height:1.65; }
+#delivery-quality input,#delivery-quality select,#delivery-quality textarea {
+  min-height:40px; padding:9px 11px; border:1px solid var(--chat-line); border-radius:10px;
+  background:var(--chat-paper); color:var(--chat-ink); font:inherit;
+}
+#delivery-quality button {
+  min-height:40px; padding:9px 16px; border:1px solid var(--chat-line); border-radius:22px;
+  background:var(--chat-wash); color:var(--chat-ink); font:inherit; font-weight:650;
+}
+#delivery-quality :is(input,select,textarea,button,summary):focus-visible {
+  outline:2px solid #79a2ff; outline-offset:3px;
+}
