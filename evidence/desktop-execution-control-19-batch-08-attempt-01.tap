@@ -1,0 +1,687 @@
+2026-10-23 17:23:13.830 CST [7776] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 17:23:13.839 CST [7776] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 17:23:13.840 CST [7776] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 17:23:14.070 CST [29100] LOG:  database system was shut down at 2026-10-23 17:23:10 CST
+
+2026-10-23 17:23:14.178 CST [7776] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: only actual desktop native authorization can reserve local execution; no API can grant local full permission
+ok 1 - only actual desktop native authorization can reserve local execution; no API can grant local full permission
+  ---
+  duration_ms: 8504.7578
+  ...
+2026-10-23 17:23:26.353 CST [10436] ERROR:  Cloud admission cannot own local work
+2026-10-23 17:23:26.353 CST [10436] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 4 at RAISE
+2026-10-23 17:23:26.353 CST [10436] STATEMENT:  SELECT claim_execution_capacity($1,'text',8,$2)
+
+2026-10-23 17:23:26.357 CST [22732] ERROR:  Local execution cannot enter the cloud queue
+2026-10-23 17:23:26.357 CST [22732] CONTEXT:  PL/pgSQL function reject_local_cloud_dispatch() line 4 at RAISE
+2026-10-23 17:23:26.357 CST [22732] STATEMENT:  INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)
+
+2026-10-23 17:23:26.477 CST [36712] ERROR:  Execution placement is immutable
+2026-10-23 17:23:26.477 CST [36712] CONTEXT:  PL/pgSQL function guard_task_execution_location() line 4 at RAISE
+2026-10-23 17:23:26.477 CST [36712] STATEMENT:  UPDATE tasks SET execution_location='cloud' WHERE id=$1
+
+# Subtest: one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it
+ok 2 - one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it
+  ---
+  duration_ms: 305.4365
+  ...
+# Subtest: lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage
+ok 3 - lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage
+  ---
+  duration_ms: 775.962
+  ...
+# Subtest: company gateway meters actual native Responses and settles once from server facts, excluding client usage
+ok 4 - company gateway meters actual native Responses and settles once from server facts, excluding client usage
+  ---
+  duration_ms: 997.2397
+  ...
+# Subtest: native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch
+ok 5 - native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch
+  ---
+  duration_ms: 1063.6392
+  ...
+# Subtest: unknown company response cannot be replaced by a client zero report or release its reservation
+ok 6 - unknown company response cannot be replaced by a client zero report or release its reservation
+  ---
+  duration_ms: 751.3453
+  ...
+# Subtest: unstarted cancellation releases only its original hold and a fresh task can continue the same local session
+ok 7 - unstarted cancellation releases only its original hold and a fresh task can continue the same local session
+  ---
+  duration_ms: 309.7606
+  ...
+# Subtest: an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation
+ok 8 - an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation
+  ---
+  duration_ms: 541.7882
+  ...
+# Subtest: revoking the desktop sign-in family fences already-issued model credentials
+ok 9 - revoking the desktop sign-in family fences already-issued model credentials
+  ---
+  duration_ms: 322.9228
+  ...
+# Subtest: a lost local outcome or expired lease cannot be reported as zero-cost successful completion
+ok 10 - a lost local outcome or expired lease cannot be reported as zero-cost successful completion
+  ---
+  duration_ms: 895.2694
+  ...
+# Subtest: all eighteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch
+ok 11 - all eighteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch
+  ---
+  duration_ms: 5702.0265
+  ...
+# Subtest: native company tools recheck owner, native family, role and the complete call binding before any effect
+ok 12 - native company tools recheck owner, native family, role and the complete call binding before any effect
+  ---
+  duration_ms: 1244.6816
+  ...
+# Subtest: native designer generation and editing share exact company prices and never duplicate accepted images
+ok 13 - native designer generation and editing share exact company prices and never duplicate accepted images
+  ---
+  duration_ms: 1820.2327
+  ...
+# Subtest: native company namespace rejects altered schemas and unregistered names before provider dispatch
+ok 14 - native company namespace rejects altered schemas and unregistered names before provider dispatch
+  ---
+  duration_ms: 1181.3669
+  ...
+# Subtest: an unknown native company image result fences further calls and keeps the original reconciliation hold
+ok 15 - an unknown native company image result fences further calls and keeps the original reconciliation hold
+  ---
+  duration_ms: 758.496
+  ...
+2026-10-23 17:23:43.031 CST [30808] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 17:23:43.972 CST [30808] LOG:  checkpoint complete: wrote 36 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.013 s, sync=0.559 s, total=0.942 s; sync files=10, longest=0.134 s, average=0.056 s; distance=17622 kB, estimate=17622 kB; lsn=F/E99A12E8, redo lsn=F/E99A1290
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+2026-10-23 17:24:15.931 CST [30808] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 17:24:17.771 CST [30808] LOG:  checkpoint complete: wrote 48 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.092 s, sync=1.381 s, total=1.841 s; sync files=12, longest=0.467 s, average=0.116 s; distance=16632 kB, estimate=17523 kB; lsn=F/EA9DF5C0, redo lsn=F/EA9DF568
+
+# Subtest: real native Codex edits local files, uses company Image 2 and same-thread edits with server-only settlement
+ok 16 - real native Codex edits local files, uses company Image 2 and same-thread edits with server-only settlement
+  ---
+  duration_ms: 31116.8265
+  ...
+# {"real_native_binary":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","native_file_changed":true,"same_local_thread":true,"company_provider_requests":5,"company_image_requests":2,"immutable_private_image_artifacts":2,"settled_micros":["1000090","1000060"],"cloud_dispatches":0,"model_responses":"synthetic","native_consent":"injected fixture callback; actual Electron dialog tested separately"}
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: native video specialist exposes seven scoped tools and no cloud Agent or private-to-shared fallback
+ok 17 - native video specialist exposes seven scoped tools and no cloud Agent or private-to-shared fallback
+  ---
+  duration_ms: 8402.2983
+  ...
+# Subtest: native private video really encodes and fully decodes six immutable private deliveries without AI media fees
+ok 18 - native private video really encodes and fully decodes six immutable private deliveries without AI media fees
+  ---
+  duration_ms: 3153.118
+  ...
+2026-10-23 17:24:35.966 CST [14444] ERROR:  Video privacy and origin are immutable
+2026-10-23 17:24:35.966 CST [14444] CONTEXT:  PL/pgSQL function check_private_video_project() line 5 at RAISE
+2026-10-23 17:24:35.966 CST [14444] STATEMENT:  UPDATE creative_projects SET private_owner=NULL,origin_task_id=NULL WHERE id=$1
+
+# Subtest: same-project members cannot see native private video definitions, source rows, renders or any delivery
+ok 19 - same-project members cannot see native private video definitions, source rows, renders or any delivery
+  ---
+  duration_ms: 2546.2115
+  ...
+# Subtest: native video create and revision reuse exact calls; a busy render or stale version rolls back the entire edit
+ok 20 - native video create and revision reuse exact calls; a busy render or stale version rolls back the entire edit
+  ---
+  duration_ms: 5244.2934
+  ...
+# Subtest: stopping a Desktop task cancels only its own pending video jobs and preserves an unrelated shared composition
+ok 21 - stopping a Desktop task cancels only its own pending video jobs and preserves an unrelated shared composition
+  ---
+  duration_ms: 2256.2041
+  ...
+# Subtest: a cancelled native origin cannot publish six deliveries even when the real encoder already finished
+ok 22 - a cancelled native origin cannot publish six deliveries even when the real encoder already finished
+  ---
+  duration_ms: 1862.5946
+  ...
+# Subtest: revoked native login families fail queued video admission before encoding
+ok 23 - revoked native login families fail queued video admission before encoding
+  ---
+  duration_ms: 898.9648
+  ...
+# Subtest: expired native owners leave no queued starvation and the next shared video can progress
+ok 24 - expired native owners leave no queued starvation and the next shared video can progress
+  ---
+  duration_ms: 2029.1161
+  ...
+# Subtest: expired native video sources withdraw every output and never automatically regenerate the video
+ok 25 - expired native video sources withdraw every output and never automatically regenerate the video
+  ---
+  duration_ms: 1990.7897
+  ...
+# Subtest: normally completed native turns may leave clearly queued zero-AI composition with private recoverable outputs
+ok 26 - normally completed native turns may leave clearly queued zero-AI composition with private recoverable outputs
+  ---
+  duration_ms: 1940.8865
+  ...
+# Subtest: completed video receipts revalidate actual project/render records on a later attempt without creating another composition
+ok 27 - completed video receipts revalidate actual project/render records on a later attempt without creating another composition
+  ---
+  duration_ms: 2122.0605
+  ...
+2026-10-23 17:24:54.408 CST [30808] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 17:24:55.687 CST [30808] LOG:  checkpoint complete: wrote 45 buffers (0.3%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.015 s, sync=1.041 s, total=1.280 s; sync files=14, longest=0.185 s, average=0.075 s; distance=17219 kB, estimate=17492 kB; lsn=F/EBAB03A8, redo lsn=F/EBAB0350
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: native workflow specialist exposes eight scoped tools and no model approval or cloud dispatch tool
+ok 28 - native workflow specialist exposes eight scoped tools and no model approval or cloud dispatch tool
+  ---
+  duration_ms: 7536.4367
+  ...
+# Subtest: native workflow drafts validate roles, bounded schemas and live dataset access before any child reservation
+ok 29 - native workflow drafts validate roles, bounded schemas and live dataset access before any child reservation
+  ---
+  duration_ms: 1892.8777
+  ...
+2026-10-23 17:25:10.157 CST [1716] ERROR:  Workflow version is immutable
+2026-10-23 17:25:10.157 CST [1716] CONTEXT:  PL/pgSQL function immutable_workflow_version() line 8 at RAISE
+2026-10-23 17:25:10.157 CST [1716] STATEMENT:  UPDATE workflow_versions SET definition='{}' WHERE workflow_id=$1
+
+2026-10-23 17:25:10.262 CST [17400] ERROR:  Workflow version is immutable
+2026-10-23 17:25:10.262 CST [17400] CONTEXT:  PL/pgSQL function immutable_workflow_version() line 8 at RAISE
+2026-10-23 17:25:10.262 CST [17400] STATEMENT:  UPDATE workflow_versions SET source_refs='{}' WHERE workflow_id=$1
+
+2026-10-23 17:25:10.329 CST [12456] ERROR:  Native workflow run definition is immutable
+2026-10-23 17:25:10.329 CST [12456] CONTEXT:  PL/pgSQL function check_native_workflow_scope() line 17 at RAISE
+2026-10-23 17:25:10.329 CST [12456] STATEMENT:  UPDATE workflow_runs SET definition='{}' WHERE id=$1
+
+2026-10-23 17:25:10.511 CST [35668] ERROR:  Workflow origin and privacy are immutable
+2026-10-23 17:25:10.511 CST [35668] CONTEXT:  PL/pgSQL function check_native_workflow_scope() line 4 at RAISE
+2026-10-23 17:25:10.511 CST [35668] STATEMENT:  UPDATE workflows SET private_owner=NULL,origin_task_id=NULL,execution_location='cloud' WHERE id=$1
+
+# Subtest: published native versions are immutable, revisions use compare-and-swap and historical runs retain their exact definition
+ok 30 - published native versions are immutable, revisions use compare-and-swap and historical runs retain their exact definition
+  ---
+  duration_ms: 2329.6714
+  ...
+# Subtest: native workflow launch waits for explicit fee confirmation, binds the exact revision and rejects cloud approval bypass
+ok 31 - native workflow launch waits for explicit fee confirmation, binds the exact revision and rejects cloud approval bypass
+  ---
+  duration_ms: 1826.3441
+  ...
+# Subtest: native workflow creates exactly one local child per cursor with its role Skills, private fee reservation and no cloud outbox
+ok 32 - native workflow creates exactly one local child per cursor with its role Skills, private fee reservation and no cloud outbox
+  ---
+  duration_ms: 2501.566
+  ...
+# Subtest: native workflow advances actual child receipts through explicit approval and succeeds only after its final local child
+ok 33 - native workflow advances actual child receipts through explicit approval and succeeds only after its final local child
+  ---
+  duration_ms: 3535.1416
+  ...
+# Subtest: same-project members and other native families cannot read or operate private native workflow definitions, versions or runs
+ok 34 - same-project members and other native families cannot read or operate private native workflow definitions, versions or runs
+  ---
+  duration_ms: 1900.9579
+  ...
+# Subtest: cloud workflow workers and schedules cannot take over native Codex steps
+ok 35 - cloud workflow workers and schedules cannot take over native Codex steps
+  ---
+  duration_ms: 1963.7156
+  ...
+# Subtest: stopping a native consultant cancels its run and prevents a prepared child from starting
+ok 36 - stopping a native consultant cancels its run and prevents a prepared child from starting
+  ---
+  duration_ms: 2448.745
+  ...
+# Subtest: native child unknown outcomes stop the workflow without automatically enqueueing a replacement
+ok 37 - native child unknown outcomes stop the workflow without automatically enqueueing a replacement
+  ---
+  duration_ms: 2591.6884
+  ...
+# Subtest: admin deletion scrubs immutable private workflow version content through the controlled erasure path
+ok 38 - admin deletion scrubs immutable private workflow version content through the controlled erasure path
+  ---
+  duration_ms: 1080.6167
+  ...
+# Subtest: unpublished native snapshots cannot run and a child budget above the current plan fails before consent
+ok 39 - unpublished native snapshots cannot run and a child budget above the current plan fails before consent
+  ---
+  duration_ms: 1057.3535
+  ...
+# Subtest: concurrent native advances share one charged child identity and reject the losing stale revision
+ok 40 - concurrent native advances share one charged child identity and reject the losing stale revision
+  ---
+  duration_ms: 2406.7602
+  ...
+# Subtest: native workflow content quarantine fences inference, cached reads, local child start and downstream private deliveries
+ok 41 - native workflow content quarantine fences inference, cached reads, local child start and downstream private deliveries
+  ---
+  duration_ms: 3546.4164
+  ...
+# Subtest: native workflow launch confirmation cannot be reused for a different definition hash
+ok 42 - native workflow launch confirmation cannot be reused for a different definition hash
+  ---
+  duration_ms: 1929.6669
+  ...
+# Subtest: explicitly published native SOPs retain workflow provenance and withdraw after the workflow is quarantined
+ok 43 - explicitly published native SOPs retain workflow provenance and withdraw after the workflow is quarantined
+  ---
+  duration_ms: 2192.5911
+  ...
+# Subtest: reused native workflows preserve original file lineage across fresh sessions, child admission, cached reads and published SOPs
+ok 44 - reused native workflows preserve original file lineage across fresh sessions, child admission, cached reads and published SOPs
+  ---
+  duration_ms: 4815.4682
+  ...
+# Subtest: reusable native source snapshots outlive the creator task while derived versions retain original external governance
+ok 45 - reusable native source snapshots outlive the creator task while derived versions retain original external governance
+  ---
+  duration_ms: 3853.9345
+  ...
+2026-10-23 17:25:48.448 CST [30808] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 17:25:49.643 CST [30808] LOG:  checkpoint complete: wrote 38 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.038 s, sync=0.950 s, total=1.195 s; sync files=14, longest=0.156 s, average=0.068 s; distance=17871 kB, estimate=17871 kB; lsn=F/ECC24098, redo lsn=F/ECC24040
+
+1..45
+# tests 45
+# suites 0
+# pass 45
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 155167.7451
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/a0ef2429-3b89-4881-84d6-e33c5c949b94/result.json","sha256":"1f90c613ca259a7a16bb0f2433b77702400131189a4279bb81262517edc3d4f3","exit_code":0}
+2026-10-23 17:25:50.827 CST [7776] LOG:  received fast shutdown request
+
+2026-10-23 17:25:50.874 CST [7776] LOG:  aborting any active transactions
+
+2026-10-23 17:25:50.887 CST [7776] LOG:  background worker "logical replication launcher" (PID 5552) exited with exit code 1
+
+2026-10-23 17:25:50.887 CST [30808] LOG:  shutting down
+
+2026-10-23 17:25:50.940 CST [30808] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 17:25:51.099 CST [30808] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.033 s, total=0.212 s; sync files=1, longest=0.033 s, average=0.033 s; distance=0 kB, estimate=16084 kB; lsn=F/ECC241B0, redo lsn=F/ECC241B0
+
+2026-10-23 17:25:51.210 CST [7776] LOG:  database system is shut down
+

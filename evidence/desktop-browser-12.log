@@ -1,0 +1,59 @@
+
+TOOL open 
+PASS A real browser page is never created before current customer full-access authority
+PHASE open actual page
+TOOL open 
+PHASE opened 306400e9-5586-40d1-8079-f4c114fbbc1a
+TOOL snapshot 
+PROMPT IMPLEMENTATION (message = "", initial = "") => window.__copypastePrompt(message, initial)
+TOOL evaluate 
+PASS Remote page renderer is separate from trusted frameless chrome and has no Node or application IPC
+TOOL interact fill
+TOOL interact select
+TOOL interact fill
+TOOL interact press
+TOOL interact type
+TOOL interact upload
+TOOL interact click
+PAGE CONSOLE CLICK 
+TOOL interact click
+TOOL wait 
+TOOL interact click
+PASS Real typing, keyboard selection, form select and exact local file upload produce one HTTP save for a repeated native call ID
+TOOL screenshot 
+PASS The model screenshot is actual visible Chromium PNG content
+TOOL interact click
+PAGE CONSOLE CLICK download
+TOOL wait 
+PASS Download waits for a real local file with exact byte count and SHA-256
+TOOL snapshot 
+TOOL interact click
+DIALOG CDP Page.javascriptDialogOpening {"defaultPrompt":"","frameId":"57DD2B67EA92D9726ABF3392CEDE72DD","hasBrowserHandler":true,"message":"Launch this campaign?","type":"confirm","url":"http://127.0.0.1:3312/"}
+DIALOG NATIVE {"type":"confirm","message":"Launch this campaign?"}
+TOOL tabs 
+TOOL dialog 
+DIALOG CDP Page.javascriptDialogClosed {"frameId":"57DD2B67EA92D9726ABF3392CEDE72DD","result":true,"userInput":""}
+PAGE CONSOLE CLICK confirm
+TOOL wait 
+TOOL snapshot 
+TOOL interact click
+TOOL tabs 
+PHASE prompt clicked {"tabs":[{"tab_id":"306400e9-5586-40d1-8079-f4c114fbbc1a","title":"Harbour Studio · Campaign desk","url":"http://127.0.0.1:3312/","loading":false,"dialog":{"type":"prompt","message":"Campaign reference","defaultPrompt":"HK-SUMMER"},"origin":"customer_device_untrusted_web_content"}]}
+TOOL tabs 
+TOOL dialog 
+PAGE CONSOLE CLICK prompt
+TOOL wait 
+PASS Real JavaScript confirm and prompt dialogs can be answered without blocking the native tool queue
+TOOL snapshot 
+TOOL interact click
+PAGE CONSOLE CLICK popup
+TOOL tabs 
+TOOL wait 
+Error: BROWSER_DOCUMENT_CHANGED
+    at NativeBrowserDriver.context (file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-desktop/dist/native-browser.js:336:19)
+    at async NativeBrowserDriver.evaluate (file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-desktop/dist/native-browser.js:340:27)
+    at async NativeBrowserDriver.execute (file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-desktop/dist/native-browser.js:555:39)
+    at async file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-desktop/dist/browser-session.js:62:28
+    at async GuardedBrowserSession.execute (file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-desktop/dist/browser-session.js:72:32)
+    at async GuardedBrowserSession.call (file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-desktop/dist/browser-session.js:29:20)
+    at async D:\dev\copypasted\自有agent\dev\copypaste-desktop\scripts\check-native-browser.cjs:94:3

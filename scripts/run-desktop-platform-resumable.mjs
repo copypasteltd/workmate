@@ -28,7 +28,7 @@ async function snapshot() {
   const source = {};
   for (const repo of [platform, desktop, delivery]) {
     const files = execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', 'ls-files', '--cached', '--others', '--exclude-standard', '-z', '--',
-      'src', 'renderer', 'renderer-source.json', 'vite.config.ts', 'tests', 'scripts', 'migrations', 'catalog', 'contracts', 'skills', 'package.json', 'package-lock.json', 'tsconfig.json'], { cwd: repo, encoding: 'utf8', windowsHide: true }).split('\0').filter(Boolean);
+      'src', 'renderer', 'renderer-source.json', 'vite.config.ts', 'tests', 'scripts', 'migrations', 'catalog', 'contracts', 'skills', 'package.json', 'package-lock.json', 'tsconfig.json', 'assets/browser-shell.html', 'assets/browser-shell.css', 'assets/browser-shell.js'], { cwd: repo, encoding: 'utf8', windowsHide: true }).split('\0').filter(Boolean);
     for (const file of [...new Set(files)].sort()) source[path.basename(repo) + '/' + file] = sha(await readFile(path.join(repo, file)));
   }
   for (const file of await inventory()) assert.equal(source['copypaste-platform/' + file], sha(await readFile(path.join(platform, file))), 'All actual test files must be source-bound');

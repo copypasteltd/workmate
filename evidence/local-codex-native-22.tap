@@ -1,0 +1,96 @@
+TAP version 13
+# Subtest: native user input resumes the original working turn with explicit answers
+ok 1 - native user input resumes the original working turn with explicit answers
+  ---
+  duration_ms: 3918.3725
+  ...
+# Subtest: native user input does not block interrupt or terminal processing
+ok 2 - native user input does not block interrupt or terminal processing
+  ---
+  duration_ms: 3850.2141
+  ...
+# Subtest: native user input does not block revoke or terminal processing
+ok 3 - native user input does not block revoke or terminal processing
+  ---
+  duration_ms: 3302.0944
+  ...
+# Subtest: native company tools use their exact namespace and persist across same-thread follow-ups
+ok 4 - native company tools use their exact namespace and persist across same-thread follow-ups
+  ---
+  duration_ms: 5270.166
+  ...
+# Subtest: native company writes are denied in local read-only mode before dispatch
+ok 5 - native company writes are denied in local read-only mode before dispatch
+  ---
+  duration_ms: 3794.4729
+  ...
+# Subtest: native company uncertainty stops the turn and never repeats an accepted operation
+ok 6 - native company uncertainty stops the turn and never repeats an accepted operation
+  ---
+  duration_ms: 4080.2435
+  ...
+# Subtest: native company work is aborted when the owning local runtime closes
+ok 7 - native company work is aborted when the owning local runtime closes
+  ---
+  duration_ms: 3548.3893
+  ...
+# Subtest: a clean local thread survives inference credential expiry and resumes only with a fresh credential
+ok 8 - a clean local thread survives inference credential expiry and resumes only with a fresh credential
+  ---
+  duration_ms: 32252.7033
+  ...
+# Subtest: native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+ok 9 - native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+  ---
+  duration_ms: 7783.339
+  ...
+# {"version":"0.163.0-alpha.11","native_binary_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","outside_cwd_file_sha256":"205b67f30e170f01fa12b325555888f71d96fcaf25a0eb1cf4e249f895ffd36d","same_thread":true,"credential_excluded_from_shell":true}
+# Subtest: native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+ok 10 - native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+  ---
+  duration_ms: 6108.3647
+  ...
+# Subtest: local binary, provider, Skill and permission-owner mismatches dispatch no inference
+ok 11 - local binary, provider, Skill and permission-owner mismatches dispatch no inference
+  ---
+  duration_ms: 3198.1472
+  ...
+# Subtest: native interruption and revocation stop only this owned process and reject further local turns
+ok 12 - native interruption and revocation stop only this owned process and reject further local turns
+  ---
+  duration_ms: 3802.676
+  ...
+# Subtest: an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+ok 13 - an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+  ---
+  duration_ms: 5717.4841
+  ...
+# Subtest: current account authority is checked before each native turn
+ok 14 - current account authority is checked before each native turn
+  ---
+  duration_ms: 3173.9793
+  ...
+# Subtest: changing a materialized Skill is rejected before another provider request
+ok 15 - changing a materialized Skill is rejected before another provider request
+  ---
+  duration_ms: 3300.0893
+  ...
+# Subtest: a previous account or project checkpoint cannot be taken over or rewritten
+ok 16 - a previous account or project checkpoint cannot be taken over or rewritten
+  ---
+  duration_ms: 5779.3535
+  ...
+# Subtest: an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+ok 17 - an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+  ---
+  duration_ms: 4945.0239
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 104266.5825

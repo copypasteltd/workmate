@@ -1,0 +1,79 @@
+
+TOOL open 
+PASS A real browser page is never created before current customer full-access authority
+PHASE open actual page
+TOOL open 
+PHASE opened a773f1fa-b24c-45fe-90ca-20fe4d133473
+TOOL snapshot 
+PROMPT IMPLEMENTATION (message = "", initial = "") => window.__copypastePrompt(message, initial)
+TOOL evaluate 
+PASS Remote page renderer is separate from trusted frameless chrome and has no Node or application IPC
+TOOL interact fill
+TOOL interact select
+TOOL interact fill
+TOOL interact press
+TOOL interact type
+TOOL interact upload
+TOOL interact click
+PAGE CONSOLE CLICK 
+TOOL interact click
+TOOL wait 
+TOOL interact click
+PASS Real typing, keyboard selection, form select and exact local file upload produce one HTTP save for a repeated native call ID
+TOOL screenshot 
+PASS The model screenshot is actual visible Chromium PNG content
+TOOL interact click
+PAGE CONSOLE CLICK download
+TOOL wait 
+PASS Download waits for a real local file with exact byte count and SHA-256
+TOOL snapshot 
+TOOL interact click
+DIALOG CDP Page.javascriptDialogOpening {"defaultPrompt":"","frameId":"2AC9D8122F4017178661DD11C63C00F0","hasBrowserHandler":true,"message":"Launch this campaign?","type":"confirm","url":"http://127.0.0.1:4951/"}
+DIALOG NATIVE {"type":"confirm","message":"Launch this campaign?"}
+TOOL tabs 
+TOOL dialog 
+DIALOG CDP Page.javascriptDialogClosed {"frameId":"2AC9D8122F4017178661DD11C63C00F0","result":true,"userInput":""}
+PAGE CONSOLE CLICK confirm
+TOOL wait 
+TOOL snapshot 
+TOOL interact click
+TOOL tabs 
+PHASE prompt clicked {"tabs":[{"tab_id":"a773f1fa-b24c-45fe-90ca-20fe4d133473","title":"Harbour Studio · Campaign desk","url":"http://127.0.0.1:4951/","loading":false,"dialog":{"type":"prompt","message":"Campaign reference","defaultPrompt":"HK-SUMMER"},"origin":"customer_device_untrusted_web_content"}]}
+TOOL tabs 
+TOOL dialog 
+PAGE CONSOLE CLICK prompt
+TOOL wait 
+PASS Real JavaScript confirm and prompt dialogs can be answered without blocking the native tool queue
+TOOL snapshot 
+TOOL interact click
+PAGE CONSOLE CLICK popup
+TOOL tabs 
+TOOL wait 
+TOOL evaluate 
+TOOL close 
+PASS Popup pages are registered to the same task, retain browser opener behavior and close independently
+TOOL navigate 
+PAGE CONSOLE %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.
+TOOL interact fill
+TOOL history back
+TOOL wait 
+PAGE CONSOLE %cElectron Security Warning (Insecure Content-Security-Policy) font-weight: bold; This renderer process has either no Content Security
+  Policy set or a policy with "unsafe-eval" enabled. This exposes users of
+  this app to unnecessary security risks.
+
+For more information and help, consult
+https://electronjs.org/docs/tutorial/security.
+This warning will not show up
+once the app is packaged.
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+false !== true
+
+    at D:\dev\copypasted\自有agent\dev\copypaste-desktop\scripts\check-native-browser.cjs:99:125

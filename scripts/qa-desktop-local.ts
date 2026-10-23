@@ -7,6 +7,9 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { WorkmateRecording, saveWorkmateScreenshot } from "./record-workmate-media.js";
 import { DesktopVideoModelFixture, runDesktopVideoJourney } from "./qa-desktop-video.js";
+import { DesktopBrowserModelFixture } from "./desktop-browser-model-fixture.js";
+import { runDesktopBrowserJourney } from "./qa-desktop-browser.js";
+import { checkDesktopWorkLayout, checkDesktopAccountLayout } from "./qa-desktop-layout.js";
 import { DesktopWorkflowModelFixture } from "./desktop-workflow-model-fixture.js";
 import { runDesktopWorkflowJourney } from "./qa-desktop-workflows.js";
 
@@ -17,6 +20,8 @@ const downloaded = path.join(owned, "downloaded-native-design.png");
 const inputResult = path.join(workspace, "customer-input-result.json");
 const videoModel = new DesktopVideoModelFixture();
 const workflowModel = new DesktopWorkflowModelFixture(workspace, outside);
+const browserModel = new DesktopBrowserModelFixture(desktop, workspace);
+let nativeBrowserMedia: any;
 const checks: string[] = [], screenshots: any[] = [], errors: string[] = [];
 const pass = (text: string) => { checks.push(text); console.log("PASS: " + text); };
 let isolated: any, system: any, electron: ElectronApplication | undefined, browser: Browser | undefined, recording: WorkmateRecording | undefined, media: any;
@@ -46,7 +51,7 @@ const provider = createServer(async (req, res) => {
     emit("response.created", { response });
     if (stall) { stalled = true; return; }
     let item: any;
-    const videoItem = workflowModel.next(body, providerCalls) ?? videoModel.next(body, providerCalls);
+    const videoItem = browserModel.next(body, providerCalls) ?? workflowModel.next(body, providerCalls) ?? videoModel.next(body, providerCalls);
     if (videoItem) item = videoItem;
     else if (questionNext) {
       questionNext = false;
@@ -116,7 +121,7 @@ async function phase<T>(label: string, run: () => Promise<T>, ms = 40000): Promi
   } finally { if (timer) clearTimeout(timer); }
 }
 try {
-  await mkdir(workspace, { recursive: true }); await writeFile(outside, "before-desktop-native");
+  await mkdir(workspace, { recursive: true }); await writeFile(outside, "before-desktop-native"); await browserModel.start();
   const { desktopImageFixture } = await import(pathToFileURL(path.join(platform, "tests/desktop-image-fixture.ts")).href); imageBytes = desktopImageFixture();
   await new Promise<void>(resolve => provider.listen(0, "127.0.0.1", resolve));
   const { isolatedTestEnvironment } = await import(pathToFileURL(path.join(platform, "tests/native-test-environment.ts")).href);
@@ -135,7 +140,7 @@ try {
   await system.app.listen({ host: "127.0.0.1", port: 4310 });
   electron = await _electron.launch({ executablePath: process.env.COPYPASTE_LOCAL_DESKTOP_CANDIDATE!, env: { ...process.env, COPYPASTE_USER_DATA: path.join(owned, "user-data") } });
   // Bounded extra time for six real native video turns and two real encodes.
-  deadline = setTimeout(() => { errors.push("Owned Desktop journey deadline"); void electron?.close(); void browser?.close(); }, 360000);
+  deadline = setTimeout(() => { errors.push("Owned Desktop journey deadline"); void electron?.close(); void browser?.close(); }, 540000);
   const page = await electron.firstWindow(); page.setDefaultTimeout(20000); page.setDefaultNavigationTimeout(20000); page.on("pageerror", e => errors.push(e.message));
   // Keep recording, navigation and real native resizes separate. Capture the
   // Electron surface without CDP screenshot styling or viewport intervention.
@@ -199,7 +204,17 @@ try {
   const projects = await page.evaluate(async id => (window as any).copyPasteBridge.request(`/v1/tenants/${id}/projects`, {}), tenant);
   assert.equal(projects.status, 200); const project = projects.body.items[0].id;
   await system.db.control.query("UPDATE wallets SET credit_limit_micros=100000000 WHERE tenant_id=$1", [tenant]);
-  await system.db.control.query("INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body) VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Owned native UI fixture',$2)", [tenant, defaults.business]);
+  // This serial journey intentionally retains many unknown-outcome holds from
+  // cancellation cases. Give only its isolated tenant enough configured slots;
+  // never delete holds or change production capacity/admission enforcement.
+  await system.db.control.query("INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body) VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Owned native UI fixture; 32 slots retain cancellation holds',$2)", [tenant, {...defaults.business,max_active_tasks:32}]);
+  await system.db.control.query("UPDATE execution_capacity_policy SET agent_slots=32,tenant_slots=32 WHERE data_mode='configured_services'");
+  // Retain unknown provider outcomes as well. Publish a new immutable policy
+  // only inside this UUID-owned database; do not mutate the bootstrap policy.
+  const fixtureProviderPolicy = (await system.db.control.query(`INSERT INTO ai_gateway_policy_versions
+    (data_mode,version,reason,global_slots,tenant_slots,actor_slots,text_slots,image_slots,verification_slots,global_rpm,tenant_rpm,actor_rpm,text_rpm,image_rpm,verification_rpm)
+    VALUES('configured_services',2,'Owned UI fixture retains unknown cancellation outcomes',32,32,32,32,32,32,10000,10000,10000,10000,10000,10000) RETURNING id`)).rows[0].id;
+  await system.db.control.query("UPDATE ai_gateway_policy_heads SET policy_version_id=$1 WHERE data_mode='configured_services'",[fixtureProviderPolicy]);
   await page.getByRole("heading", { name: "Your local workmate" }).waitFor();
   const appearance = await electron.evaluate(({ BrowserWindow, Menu }) => ({ menu: Menu.getApplicationMenu() === null, frame: BrowserWindow.getAllWindows()[0].isMenuBarVisible() === false, local: BrowserWindow.getAllWindows()[0].webContents.getURL().startsWith("file:") }));
   assert.ok(appearance.menu && appearance.frame && appearance.local); pass("Actual packaged Electron, frameless local renderer, no native menu and real email/browser PKCE");
@@ -258,18 +273,19 @@ try {
         if (/(auto|scroll|hidden|clip)/.test(style.overflowX) && (box.left < clip.left + parent.clientLeft - 1 || box.right > clip.left + parent.clientLeft + parent.clientWidth + 1)) return false;
       }
       return true;
-    }) && messages.getBoundingClientRect().height >= 64 && artifacts.scrollHeight <= artifacts.clientHeight + 1 && root.scrollHeight <= root.clientHeight + 1;
+    }) && messages.getBoundingClientRect().height >= 64 && artifacts.scrollWidth <= artifacts.clientWidth + 1 && root.scrollHeight <= root.clientHeight + 1;
   });
   await until(composerFits, Boolean, "visible composer after long conversation");
   try {
     await resize(800, 600, "actual first minimum-window resize");
     await until(composerFits, Boolean, "visible composer at minimum window size");
-    screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "compact-en", await page.screenshot(), "Actual 800x600 packaged Desktop; messages, composer, budget, receipt and first artifact button fit all ancestor clipping bounds with horizontal-only artifacts", delivery));
+    screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "compact-en", await page.screenshot(), "Actual 800x600 packaged Desktop; messages, composer, budget, receipt and first artifact fit ancestor bounds, with wrapping downloads and no scrollbar rails", delivery));
   } finally {
     await resize(1440, 980, "actual restored full window");
   }
   await until(composerFits, Boolean, "restored native workspace layout");
   pass("Long conversation scrolls inside messages while composer, budget, receipt and artifact downloads stay visible at 1440x980 and 800x600");
+  await checkDesktopWorkLayout({page,resize,until,screenshots,delivery,attempt,pass});
   questionNext = true;
   await page.getByLabel("Local task", { exact: true }).fill("Ask me about the launch page palette and delivery format, then save my explicit choices to the local workspace.");
   await page.getByRole("button", { name: "Start work", exact: true }).click();
@@ -359,6 +375,8 @@ try {
   pass("Revoking full permission while waiting clears the question and exits the actual owned Codex process");
   const finishingRecording = recording; recording = undefined;
   media = await phase("finish actual recording and encode", () => finishingRecording.stop(), 60000); assert.ok(media && media.skipped_capture_errors === 0);
+  nativeBrowserMedia = await runDesktopBrowserJourney({ page, electron, system, model: browserModel, delivery, attempt, list, until, pass, screenshots, providerCalls: () => providerCalls });
+  await checkDesktopAccountLayout({page,resize,until,screenshots,delivery,attempt,pass});
   await phase("switch Chinese through visible control and reload", async () => {
     await page.getByTitle("切換至繁體中文", { exact: true }).click();
     await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
@@ -372,12 +390,13 @@ try {
   pass("Chinese history survives renderer reload; sign-out revokes native authorization; no Desktop task enters the cloud queue");
 } catch (e) {
   errors.push(String(e)); console.error(String(e));
+  if (providerError) errors.push("Provider fixture: " + String(providerError));
   // Keep failure diagnostics in this attempt's ignored directory. Never turn
   // a failed page into a published product screenshot.
   const failedPage = electron?.windows()[0];
   if (failedPage && !failedPage.isClosed()) {
     await failedPage.screenshot({ path: path.join(owned, "failure.png") }).catch(() => {});
-    const diagnostic = await failedPage.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(0, 12000) })).catch(() => null);
+    const diagnostic = await failedPage.evaluate(() => ({ url: location.href, text: document.body.innerText.slice(0, 12000), activity:document.querySelector(".local-agent-activity pre")?.textContent?.slice(-24000) })).catch(() => null);
     await writeFile(path.join(owned, "failure.json"), JSON.stringify(diagnostic, null, 2), { flag: "wx" }).catch(() => {});
   }
 }
@@ -386,12 +405,13 @@ finally {
   if (recording) try { media = await recording.stop(); } catch (e) { errors.push("Recording: " + String(e)); }
   if (electron) { await electron.close().catch(e => errors.push("Electron close: " + e)); electronClosed = true; }
   if (browser) { await browser.close(); browserClosed = true; }
+  await browserModel.close();
   if (system) { await system.app.close(); apiClosed = true; }
   provider.closeAllConnections(); if (provider.listening) await new Promise<void>(resolve => provider.close(() => resolve()));
   if (isolated) { process.chdir(platform); await isolated.cleanup(); fixtureClosed = true; }
   process.chdir(delivery);
-  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_workflow_tool_results: workflowModel.observations,
+  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_workflow_tool_results: workflowModel.observations, native_browser_tool_results: browserModel.observations, native_browser_media: nativeBrowserMedia, native_browser_fixture_closed: browserModel.closed,
     scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company tools, local workflow children/approvals, private artifacts, download and billing; model/image responses and native chooser/consent/save decisions are explicit fixtures",
-    fixture_native_dialog_confirmed: permissionDecision === 1, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };
+    fixture_native_dialog_confirmed: permissionDecision === 1, fixture_company_max_active_tasks:32, fixture_isolated_capacity_policy:{agent_slots:32,tenant_slots:32}, fixture_isolated_provider_policy:{version:2,slots:32,rpm:10000}, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };
   await writeFile(`evidence/desktop-local-ui-${attempt}-journey.json`, JSON.stringify(report, null, 2) + "\n", { flag: "wx" }); assert.equal(errors.length, 0, errors.join("\n"));
 }

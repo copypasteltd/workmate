@@ -1,0 +1,203 @@
+{
+  "source": "docs/contracts/openapi.json",
+  "source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "schemas": {
+    "AuthChallengeCreate": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email"
+        }
+      },
+      "required": [
+        "email"
+      ],
+      "additionalProperties": false
+    },
+    "AuthChallenge": {
+      "type": "object",
+      "properties": {
+        "challenge_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "challenge_id",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "SessionCreate": {
+      "type": "object",
+      "properties": {
+        "challenge_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[0-9]{6}$"
+        }
+      },
+      "required": [
+        "challenge_id",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "UserSession": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/components/schemas/User"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "csrf_token": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "user",
+        "expires_at",
+        "csrf_token"
+      ],
+      "additionalProperties": false
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "display_name"
+      ],
+      "additionalProperties": false
+    },
+    "TokenExchange": {
+      "oneOf": [
+        {
+          "$ref": "#/components/schemas/CodeExchange"
+        },
+        {
+          "$ref": "#/components/schemas/RefreshExchange"
+        }
+      ]
+    },
+    "CodeExchange": {
+      "type": "object",
+      "properties": {
+        "grant_type": {
+          "const": "authorization_code"
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code_verifier": {
+          "type": "string",
+          "minLength": 1
+        },
+        "redirect_uri": {
+          "type": "string",
+          "format": "uri"
+        },
+        "client_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "grant_type",
+        "code",
+        "code_verifier",
+        "redirect_uri",
+        "client_id"
+      ],
+      "additionalProperties": false
+    },
+    "RefreshExchange": {
+      "type": "object",
+      "properties": {
+        "grant_type": {
+          "const": "refresh_token"
+        },
+        "refresh_token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "client_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "grant_type",
+        "refresh_token",
+        "client_id"
+      ],
+      "additionalProperties": false
+    },
+    "Tokens": {
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "refresh_token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "token_type": {
+          "const": "Bearer"
+        },
+        "expires_in": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "access_token",
+        "refresh_token",
+        "token_type",
+        "expires_in"
+      ],
+      "additionalProperties": false
+    },
+    "Ack": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,520 @@
+2026-10-23 17:41:39.761 CST [28992] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 17:41:39.773 CST [28992] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 17:41:39.774 CST [28992] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 17:41:40.460 CST [34820] LOG:  database system was shut down at 2026-10-23 17:41:35 CST
+
+2026-10-23 17:41:40.700 CST [28992] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# Subtest: SEO scope normalizes exact hosts and URL fragments, with segment-bound path prefixes
+ok 1 - SEO scope normalizes exact hosts and URL fragments, with segment-bound path prefixes
+  ---
+  duration_ms: 10.5191
+  ...
+# Subtest: SEO rejects ambiguous nested encodings, credentials, protocols, ports and unconfirmed seeds
+ok 2 - SEO rejects ambiguous nested encodings, credentials, protocols, ports and unconfirmed seeds
+  ---
+  duration_ms: 1.7719
+  ...
+# Subtest: SEO public address policy denies private, metadata, transition and reserved IPv4/IPv6 ranges
+ok 3 - SEO public address policy denies private, metadata, transition and reserved IPv4/IPv6 ranges
+  ---
+  duration_ms: 4.5122
+  ...
+# Subtest: SEO resolution rejects all mixed public/private answers and avoids DNS for literal addresses
+ok 4 - SEO resolution rejects all mixed public/private answers and avoids DNS for literal addresses
+  ---
+  duration_ms: 2.3858
+  ...
+# Subtest: simulated SEO transport requires private fixture configuration and is forbidden in production
+ok 5 - simulated SEO transport requires private fixture configuration and is forbidden in production
+  ---
+  duration_ms: 0.584
+  ...
+# Subtest: actual fixture HTTP requires its private key and preserves raw response hashes
+ok 6 - actual fixture HTTP requires its private key and preserves raw response hashes
+  ---
+  duration_ms: 40.1538
+  ...
+# Subtest: actual transport exposes one redirect hop and never follows an unconfirmed host or private literal
+ok 7 - actual transport exposes one redirect hop and never follows an unconfirmed host or private literal
+  ---
+  duration_ms: 3.4864
+  ...
+# Subtest: actual transport enforces response size, encoding and caller cancellation
+ok 8 - actual transport enforces response size, encoding and caller cancellation
+  ---
+  duration_ms: 10.5177
+  ...
+# Subtest: actual HTTP conditional read returns 304 with no fabricated content
+ok 9 - actual HTTP conditional read returns 304 with no fabricated content
+  ---
+  duration_ms: 4.4328
+  ...
+# Subtest: HTML decoding preserves BOM, legacy encoding, original hash and decoded hash
+ok 10 - HTML decoding preserves BOM, legacy encoding, original hash and decoded hash
+  ---
+  duration_ms: 3.4974
+  ...
+# Subtest: HTML parser ignores script/comment/template impostors and decodes title entities
+ok 11 - HTML parser ignores script/comment/template impostors and decodes title entities
+  ---
+  duration_ms: 4.6382
+  ...
+# Subtest: HTML page evidence captures canonical, JSON-LD, named directives and login limitations
+ok 12 - HTML page evidence captures canonical, JSON-LD, named directives and login limitations
+  ---
+  duration_ms: 1.2058
+  ...
+# Subtest: link discovery honors first base URL and reports a bounded frontier
+ok 13 - link discovery honors first base URL and reports a bounded frontier
+  ---
+  duration_ms: 41.6907
+  ...
+# Subtest: robots matching selects named groups, merges groups, uses longest match and favors allow on a tie
+ok 14 - robots matching selects named groups, merges groups, uses longest match and favors allow on a tie
+  ---
+  duration_ms: 1.7598
+  ...
+# Subtest: robots matching preserves reserved encoding, decodes unreserved octets and supports Unicode, wildcard and end markers
+ok 15 - robots matching preserves reserved encoding, decodes unreserved octets and supports Unicode, wildcard and end markers
+  ---
+  duration_ms: 0.6544
+  ...
+# Subtest: robots reads at least 500 KiB but blocks unsupported policy complexity instead of discarding rules
+ok 16 - robots reads at least 500 KiB but blocks unsupported policy complexity instead of discarding rules
+  ---
+  duration_ms: 8.8659
+  ...
+# Subtest: actual multi-page crawl records robots decisions, broken links and duplicate title evidence without leaving scope
+ok 17 - actual multi-page crawl records robots decisions, broken links and duplicate title evidence without leaving scope
+  ---
+  duration_ms: 49.6608
+  ...
+# Subtest: page budget counts redirects and leaves remaining URLs explicitly unvisited
+ok 18 - page budget counts redirects and leaves remaining URLs explicitly unvisited
+  ---
+  duration_ms: 11.2126
+  ...
+# Subtest: cross-host and private redirects terminate before an out-of-scope request
+ok 19 - cross-host and private redirects terminate before an out-of-scope request
+  ---
+  duration_ms: 15.5217
+  ...
+# Subtest: robots server failures retry within bounds and never fetch a protected page
+ok 20 - robots server failures retry within bounds and never fetch a protected page
+  ---
+  duration_ms: 25.1047
+  ...
+# Subtest: rate limits retain actual failed responses, respect retry time and consume page attempts
+ok 21 - rate limits retain actual failed responses, respect retry time and consume page attempts
+  ---
+  duration_ms: 86.1162
+  ...
+# Subtest: an interrupted committed intent is unknown, consumes its reservation and cannot exceed the page budget on recovery
+ok 22 - an interrupted committed intent is unknown, consumes its reservation and cannot exceed the page budget on recovery
+  ---
+  duration_ms: 23.4725
+  ...
+# Subtest: authorization loss stops collection without publishing a document or consuming another network request
+ok 23 - authorization loss stops collection without publishing a document or consuming another network request
+  ---
+  duration_ms: 12.5833
+  ...
+# Subtest: worker shutdown aborts actual HTTP while preserving the durable intent and budget for recovery
+ok 24 - worker shutdown aborts actual HTTP while preserving the durable intent and budget for recovery
+  ---
+  duration_ms: 26.2826
+  ...
+# Subtest: same-scope recheck resolves only observed repairs and retains both immutable sets of source evidence
+ok 25 - same-scope recheck resolves only observed repairs and retains both immutable sets of source evidence
+  ---
+  duration_ms: 42.9447
+  ...
+# Subtest: same-budget recheck does not report unvisited or inaccessible targets as repaired
+ok 26 - same-budget recheck does not report unvisited or inaccessible targets as repaired
+  ---
+  duration_ms: 30.21
+  ...
+# Subtest: conditional cache reuse preserves the empty 304 response and original content capture as separate facts
+ok 27 - conditional cache reuse preserves the empty 304 response and original content capture as separate facts
+  ---
+  duration_ms: 33.0599
+  ...
+# Subtest: resuming a modified specification or invalid checkpoint fails before I/O
+ok 28 - resuming a modified specification or invalid checkpoint fails before I/O
+  ---
+  duration_ms: 0.3914
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: saved website change tasks strictly bind actual selected findings, private ownership, normal task versions and budget
+ok 29 - saved website change tasks strictly bind actual selected findings, private ownership, normal task versions and budget
+  ---
+  duration_ms: 19536.9362
+  ...
+# Subtest: saved change retries survive later audit report revisions but retain current access and request conflicts
+ok 30 - saved change retries survive later audit report revisions but retain current access and request conflicts
+  ---
+  duration_ms: 14680.735
+  ...
+2026-10-23 17:42:34.501 CST [14204] ERROR:  Website change history is immutable
+2026-10-23 17:42:34.501 CST [14204] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 19 at RAISE
+2026-10-23 17:42:34.501 CST [14204] STATEMENT:  UPDATE seo_change_tasks SET spec='{}' WHERE id=$1
+
+2026-10-23 17:42:34.579 CST [2736] ERROR:  Website change history is immutable
+2026-10-23 17:42:34.579 CST [2736] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 19 at RAISE
+2026-10-23 17:42:34.579 CST [2736] STATEMENT:  UPDATE seo_change_tasks SET html_asset_version_id=NULL,json_asset_version_id=NULL WHERE id=$1
+
+2026-10-23 17:42:34.656 CST [14644] ERROR:  Saved website change task binding is immutable
+2026-10-23 17:42:34.656 CST [14644] CONTEXT:  PL/pgSQL function guard_seo_change_binding() line 9 at RAISE
+2026-10-23 17:42:34.656 CST [14644] STATEMENT:  UPDATE tasks SET prompt='Detach the evidence' WHERE id=$1
+
+# Subtest: a saved draft paginates actual selected evidence and creates immutable escaped JSON and HTML without any writeback tool
+ok 31 - a saved draft paginates actual selected evidence and creates immutable escaped JSON and HTML without any writeback tool
+  ---
+  duration_ms: 15352.8489
+  ...
+# Subtest: saved change rejects none evidence without publishing a draft
+ok 32 - saved change rejects none evidence without publishing a draft
+  ---
+  duration_ms: 11337.5001
+  ...
+# Subtest: saved change rejects unread evidence without publishing a draft
+ok 33 - saved change rejects unread evidence without publishing a draft
+  ---
+  duration_ms: 13089.9789
+  ...
+# Subtest: saved change rejects unknown evidence without publishing a draft
+ok 34 - saved change rejects unknown evidence without publishing a draft
+  ---
+  duration_ms: 23314.0172
+  ...
+# Subtest: saved change rejects duplicate evidence without publishing a draft
+ok 35 - saved change rejects duplicate evidence without publishing a draft
+  ---
+  duration_ms: 23785.0175
+  ...
+# Subtest: saved change rejects omitted evidence without publishing a draft
+ok 36 - saved change rejects omitted evidence without publishing a draft
+  ---
+  duration_ms: 21566.5035
+  ...
+# Subtest: saved change rejects schema evidence without publishing a draft
+ok 37 - saved change rejects schema evidence without publishing a draft
+  ---
+  duration_ms: 19943.8541
+  ...
+# Subtest: private change tasks reject same-project editors, other tenants and unrelated audit identifiers
+ok 38 - private change tasks reject same-project editors, other tenants and unrelated audit identifiers
+  ---
+  duration_ms: 17119.1504
+  ...
+2026-10-23 17:45:07.723 CST [30988] WARNING:  there is no transaction in progress
+
+# Subtest: source task transactions serialize ordinary updates and recheck committed moderation before serving audits or saved drafts
+ok 39 - source task transactions serialize ordinary updates and recheck committed moderation before serving audits or saved drafts
+  ---
+  duration_ms: 22894.639
+  ...
+# Subtest: quarantine fences queued and paused change tasks, normal task reads and events, releasing unclaimed reservations without a model call
+ok 40 - quarantine fences queued and paused change tasks, normal task reads and events, releasing unclaimed reservations without a model call
+  ---
+  duration_ms: 70083.7411
+  ...
+2026-10-23 17:46:40.430 CST [31880] LOG:  checkpoint starting: time
+
+# Subtest: source-task moderation after model facts fences final publication
+ok 41 - source-task moderation after model facts fences final publication
+  ---
+  duration_ms: 25125.2234
+  ...
+# Subtest: draft and published copies retain source fences and physically erase with a deleted original source
+ok 42 - draft and published copies retain source fences and physically erase with a deleted original source
+  ---
+  duration_ms: 30697.7429
+  ...
+# Subtest: quarantining or expiring either draft component fences its sibling and explicitly published copies
+ok 43 - quarantining or expiring either draft component fences its sibling and explicitly published copies
+  ---
+  duration_ms: 32780.3559
+  ...
+# Subtest: a change based on conditional cached evidence retains the earlier audit source fence
+ok 44 - a change based on conditional cached evidence retains the earlier audit source fence
+  ---
+  duration_ms: 79980.5995
+  ...
+# Subtest: identity revoked while a saved draft is read from storage cannot receive its body
+ok 45 - identity revoked while a saved draft is read from storage cannot receive its body
+  ---
+  duration_ms: 34300.2764
+  ...
+# Subtest: a real locked Codex process paginates selected findings through the internal synthetic gateway and saves a governed draft
+ok 46 - a real locked Codex process paginates selected findings through the internal synthetic gateway and saves a governed draft
+  ---
+  duration_ms: 52678.8787
+  ...
+2026-10-23 17:50:34.690 CST [31880] LOG:  checkpoint complete: wrote 2137 buffers (13.0%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=232.591 s, sync=0.873 s, total=234.260 s; sync files=12, longest=0.264 s, average=0.073 s; distance=19753 kB, estimate=19753 kB; lsn=10/1A893F60, redo lsn=10/1A5B1CB0
+
+2026-10-23 17:50:34.713 CST [31880] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 17:50:36.444 CST [31880] LOG:  checkpoint complete: wrote 9 buffers (0.1%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.827 s, total=1.732 s; sync files=5, longest=0.224 s, average=0.166 s; distance=2952 kB, estimate=18073 kB; lsn=10/1A894048, redo lsn=10/1A893FD8
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member
+ok 47 - preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member
+  ---
+  duration_ms: 8922.9007
+  ...
+# Subtest: ordinary disable blocks new work without changing the exact methods of an accepted task
+ok 48 - ordinary disable blocks new work without changing the exact methods of an accepted task
+  ---
+  duration_ms: 817.1934
+  ...
+2026-10-23 17:50:51.203 CST [14284] ERROR:  A security revocation is permanent for this package
+2026-10-23 17:50:51.203 CST [14284] CONTEXT:  PL/pgSQL function guard_skill_installation() line 4 at RAISE
+2026-10-23 17:50:51.203 CST [14284] STATEMENT:  UPDATE skill_installations SET state='installed' WHERE id=$1
+
+# Subtest: security revocation blocks the next tool and final output in an already running task, then permanently blocks reinstall
+ok 49 - security revocation blocks the next tool and final output in an already running task, then permanently blocks reinstall
+  ---
+  duration_ms: 603.7647
+  ...
+# Subtest: uninstall and explicit reinstall create a new identity without reviving queued work or silently rebinding an old specialist version
+ok 50 - uninstall and explicit reinstall create a new identity without reviving queued work or silently rebinding an old specialist version
+  ---
+  duration_ms: 1261.6507
+  ...
+# Subtest: an explicit immutable replacement plan is rechecked at the next tool and completion while the original reservation is settled once
+ok 51 - an explicit immutable replacement plan is rechecked at the next tool and completion while the original reservation is settled once
+  ---
+  duration_ms: 1311.4752
+  ...
+2026-10-23 17:50:53.874 CST [31880] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 17:50:58.063 CST [31880] LOG:  checkpoint complete: wrote 39 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.023 s, sync=2.271 s, total=4.189 s; sync files=12, longest=0.437 s, average=0.190 s; distance=16716 kB, estimate=17937 kB; lsn=10/1B8E70A8, redo lsn=10/1B8E7050
+
+# Subtest: orphan scan survives an actual unlink between enumeration and stat and still returns the other candidate
+ok 52 - orphan scan survives an actual unlink between enumeration and stat and still returns the other candidate
+  ---
+  duration_ms: 18.1889
+  ...
+# Subtest: orphan scan propagates permission and busy-storage failures instead of treating them as completed deletion
+ok 53 - orphan scan propagates permission and busy-storage failures instead of treating them as completed deletion
+  ---
+  duration_ms: 7.2105
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 557414.474
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/6623a9ba-fd5f-4553-a555-fe10da04aed0/result.json","sha256":"56614f3e885263563d3d1577b7b205e17b93650a71e3974de45f890ec2a68704","exit_code":0}
+2026-10-23 17:50:59.558 CST [28992] LOG:  received fast shutdown request
+
+2026-10-23 17:50:59.931 CST [28992] LOG:  aborting any active transactions
+
+2026-10-23 17:50:59.937 CST [28992] LOG:  background worker "logical replication launcher" (PID 11460) exited with exit code 1
+
+2026-10-23 17:50:59.955 CST [31880] LOG:  shutting down
+
+2026-10-23 17:51:00.028 CST [31880] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 17:51:00.372 CST [31880] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.048 s, total=0.417 s; sync files=1, longest=0.048 s, average=0.048 s; distance=0 kB, estimate=16144 kB; lsn=10/1B8E71C0, redo lsn=10/1B8E71C0
+
+2026-10-23 17:51:00.858 CST [28992] LOG:  database system is shut down
+

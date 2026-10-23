@@ -1,0 +1,21 @@
+
+PASS A real browser page is never created before current customer full-access authority
+PHASE open actual page
+PHASE opened 78440def-1e75-44bb-b804-f4eea0bffaca
+PROMPT IMPLEMENTATION function () { [native code] }
+PASS Remote page renderer is separate from trusted frameless chrome and has no Node or application IPC
+PAGE CONSOLE CLICK 
+PASS Real typing, keyboard selection, form select and exact local file upload produce one HTTP save for a repeated native call ID
+PASS The model screenshot is actual visible Chromium PNG content
+PAGE CONSOLE CLICK download
+PASS Download waits for a real local file with exact byte count and SHA-256
+DIALOG CDP Page.javascriptDialogOpening {"defaultPrompt":"","frameId":"6F4E494860270F5F16F82A7417FF20E0","hasBrowserHandler":true,"message":"Launch this campaign?","type":"confirm","url":"http://127.0.0.1:12536/"}
+DIALOG NATIVE {"type":"confirm","message":"Launch this campaign?"}
+DIALOG CDP Page.javascriptDialogClosed {"frameId":"6F4E494860270F5F16F82A7417FF20E0","result":true,"userInput":""}
+PAGE CONSOLE CLICK confirm
+PAGE CONSOLE Uncaught Error: prompt() is not supported.
+PHASE prompt clicked {"tabs":[{"tab_id":"78440def-1e75-44bb-b804-f4eea0bffaca","title":"Harbour Studio · Campaign desk","url":"http://127.0.0.1:12536/","loading":false,"origin":"customer_device_untrusted_web_content"}]}
+PAGE CONSOLE CLICK prompt
+Error: Browser check timed out
+    at until (D:\dev\copypasted\自有agent\dev\copypaste-desktop\scripts\check-native-browser.cjs:18:161)
+    at async D:\dev\copypasted\自有agent\dev\copypaste-desktop\scripts\check-native-browser.cjs:89:3

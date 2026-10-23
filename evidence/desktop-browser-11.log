@@ -1,0 +1,49 @@
+
+TOOL open 
+PASS A real browser page is never created before current customer full-access authority
+PHASE open actual page
+TOOL open 
+PHASE opened fd6d1891-892b-4eb0-a93e-b0bf0f6ce172
+TOOL snapshot 
+PROMPT IMPLEMENTATION (message = "", initial = "") => window.__copypastePrompt(message, initial)
+TOOL evaluate 
+PASS Remote page renderer is separate from trusted frameless chrome and has no Node or application IPC
+TOOL interact fill
+TOOL interact select
+TOOL interact fill
+TOOL interact press
+TOOL interact type
+TOOL interact upload
+TOOL interact click
+PAGE CONSOLE CLICK 
+TOOL interact click
+TOOL wait 
+TOOL interact click
+PASS Real typing, keyboard selection, form select and exact local file upload produce one HTTP save for a repeated native call ID
+TOOL screenshot 
+PASS The model screenshot is actual visible Chromium PNG content
+TOOL interact click
+PAGE CONSOLE CLICK download
+TOOL wait 
+PASS Download waits for a real local file with exact byte count and SHA-256
+TOOL snapshot 
+TOOL interact click
+DIALOG CDP Page.javascriptDialogOpening {"defaultPrompt":"","frameId":"4494BD016E50C6BB74610EF6BDAEA306","hasBrowserHandler":true,"message":"Launch this campaign?","type":"confirm","url":"http://127.0.0.1:10944/"}
+DIALOG NATIVE {"type":"confirm","message":"Launch this campaign?"}
+TOOL tabs 
+TOOL dialog 
+DIALOG CDP Page.javascriptDialogClosed {"frameId":"4494BD016E50C6BB74610EF6BDAEA306","result":true,"userInput":""}
+PAGE CONSOLE CLICK confirm
+TOOL wait 
+TOOL snapshot 
+TOOL interact click
+TOOL tabs 
+PHASE prompt clicked {"tabs":[{"tab_id":"fd6d1891-892b-4eb0-a93e-b0bf0f6ce172","title":"Harbour Studio · Campaign desk","url":"http://127.0.0.1:10944/","loading":false,"dialog":{"type":"prompt","message":"Campaign reference","defaultPrompt":"HK-SUMMER"},"origin":"customer_device_untrusted_web_content"}]}
+TOOL tabs 
+TOOL dialog 
+PAGE CONSOLE CLICK prompt
+TOOL wait 
+PASS Real JavaScript confirm and prompt dialogs can be answered without blocking the native tool queue
+TOOL snapshot 
+TOOL interact click
+PAGE CONSOLE CLICK popup
