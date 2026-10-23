@@ -8,6 +8,7 @@ import { localRuntimeLock } from "../src/local-runtime.js";
 import { rendererApiOperation } from "../src/config.js";
 import type { LocalCodexHooks } from "../src/local-codex.js";
 import type { LocalInputRequest } from "../src/local-input.js";
+import { GuardedBrowserSession } from "../src/browser-session.js";
 
 test("closing the app while a send is persisting prevents a later task reservation or native start", async () => {
   const f = await fixture();
@@ -23,6 +24,51 @@ test("closing the app while a send is persisting prevents a later task reservati
     assert.equal(f.calls.length, calls); assert.equal(f.turns(), 0); assert.equal(f.runtimes.length, 0);
     await assert.rejects(f.controller.create(f.scope, "fullstack"), /LOCAL_APP_CLOSED/);
   } finally { await f.clean(); }
+});
+
+test("existing native records retain their original tool set after the browser factory becomes available",async()=>{
+  const f=await fixture();let created=0;
+  try{
+    const session=await f.create();await f.controller.permission(session.id,"full-access");
+    f.io.browser=()=>{created++;throw new Error("Legacy thread must not acquire new dynamic tools");};
+    await f.controller.send(session.id,"Continue the original native thread",10000);
+    assert.equal(created,0);assert.equal(f.runtimeHooks[0].browserTool,undefined);
+  }finally{await f.clean();}
+});
+
+test("new native browser bindings retain actual actor/project/workspace ownership and cannot bypass a read-only grant",async()=>{
+  const f=await fixture();let driverCalls=0,owner:any;
+  try{
+    f.io.browser=(value,authorize)=>{owner=value;return new GuardedBrowserSession({execute:async()=>{driverCalls++;return {success:true,contentItems:[]};},close:async()=>{}},authorize);};
+    const session=await f.create();await f.controller.permission(session.id,"read-only");
+    f.pending(async()=>{
+      await assert.rejects(f.runtimeHooks.at(-1)!.browserTool!({namespace:"copypaste_browser",tool:"open",arguments:{url:"https://example.com"},callId:"browser_read_only",threadId:"native",turnId:"turn"},new AbortController().signal),{code:"BROWSER_FULL_ACCESS_REQUIRED"});
+      return {status:"completed",text:"No page opened",threadId:"native",turnId:"turn",nativeTokenUsage:null};
+    });
+    await f.controller.send(session.id,"Read-only browser attempt",10000);
+    assert.equal(driverCalls,0);assert.equal(owner.actorId,f.actor.actorId);assert.equal(owner.epoch,f.actor.epoch);
+    assert.equal(owner.tenantId,f.scope.tenant);assert.equal(owner.projectId,f.scope.project);assert.equal(owner.sessionId,session.id);assert.equal(owner.workspace,session.workspace);
+  }finally{await f.clean();}
+});
+
+for(const action of ["stop","revoke","logout","close"] as const)test(action+" closes the owned browser even while the native tool is waiting",async()=>{
+  const f=await fixture();let closed=0,entered!:()=>void;
+  const ready=new Promise<void>(resolve=>{entered=resolve;});
+  try{
+    f.io.browser=(_owner,authorize)=>new GuardedBrowserSession({execute:async(_tool,_args,signal)=>new Promise((_resolve,reject)=>{entered();signal.addEventListener("abort",()=>reject(new Error("browser wait interrupted")),{once:true});}),close:async()=>{closed++;}},authorize);
+    const session=await f.create();await f.controller.permission(session.id,"full-access");
+    f.pending(async()=>{
+      await f.runtimeHooks.at(-1)!.browserTool!({namespace:"copypaste_browser",tool:"wait",arguments:{tab_id:"11111111-1111-1111-1111-111111111111",state:"text",text:"never"},callId:"browser_wait",threadId:"native",turnId:"turn"},new AbortController().signal);
+      throw new Error("Interrupted browser wait cannot complete normally");
+    });
+    const pending=f.controller.send(session.id,"Wait in the local browser",10000);const failed=assert.rejects(pending,/browser wait interrupted/);
+    await ready;
+    if(action==="stop")await f.controller.stop(session.id);
+    else if(action==="revoke")await f.controller.revoke(session.id);
+    else if(action==="logout")await f.controller.invalidate();
+    else await f.controller.close();
+    await failed;assert.equal(closed,1);
+  }finally{await f.clean();}
 });
 
 async function fixture() {

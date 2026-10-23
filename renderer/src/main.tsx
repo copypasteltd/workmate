@@ -122,6 +122,7 @@ import {
 } from "./ui";
 import { WorkspaceProvider, useWorkspace } from "./context";
 import "./style.css";
+import "./desktop-layout.css";
 
 function Logo() {
   return (
@@ -733,7 +734,7 @@ function Shell() {
           {t("本機工作", "Local work")}
         </Link>
         <p className="nav-caption">WORKSPACE</p>
-        <nav>
+        <nav tabIndex={0} aria-label={t("主要導覽", "Main navigation")}>
           {[...navigation]
             .filter(([path]) => navConfig(path)?.enabled !== false)
             .sort(

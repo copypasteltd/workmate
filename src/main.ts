@@ -9,6 +9,7 @@ import { NativeSession, NativeSessionError, type NativeTokens } from "./native-s
 import { exchangeNativeCode } from "./native-code.js";
 import { LocalAgentController, type LocalAgentJournal } from "./local-agent.js";
 import { localRuntimeLock } from "./local-runtime.js";
+import { NativeBrowserPool } from "./native-browser.js";
 import {
   app,
   BrowserWindow,
@@ -131,6 +132,10 @@ const nativeSession = new NativeSession({
   },
 });
 const tokens = () => nativeSession.get();
+const nativeBrowsers = new NativeBrowserPool(async () => {
+  if(!window || window.isDestroyed())return "en";
+  return window.webContents.executeJavaScript("localStorage.getItem('cp_locale') === 'zh' ? 'zh' : 'en'");
+});
 const localAgent = new LocalAgentController({
   read: () => load<LocalAgentJournal | null>("local-agent", null),
   write: value => save("local-agent", value),
@@ -151,7 +156,7 @@ const localAgent = new LocalAgentController({
       type: mode === "full-access" ? "warning" : "question", title: "CopyPaste · 本機操作授權 / Local permission",
       message: labels[mode],
       detail: mode === "full-access"
-        ? `允許本機 Codex 讀寫此電腦上的檔案、執行命令及使用網路，超出工作目錄的操作也會生效。此權限不會提升 Windows 管理員權限。可隨時停止或撤銷；登出即失效。\nAllow local Codex to read/write files, run commands and use the network, including outside this workspace, under your current OS account. Stop or revoke at any time; signing out revokes access.\n\n${workspace}`
+        ? `允許本機 Codex 讀寫此電腦上的檔案、執行命令、操作本機瀏覽器及使用網路，超出工作目錄的操作也會生效。此權限不會提升 Windows 管理員權限。可隨時停止或撤銷；登出即失效。\nAllow local Codex to read/write files, run commands, operate a local browser and use the network, including outside this workspace, under your current OS account. Stop or revoke at any time; signing out revokes access.\n\n${workspace}`
         : `授權範圍：${workspace}\nPermission applies to this local session. You can change it while idle, stop execution, or revoke it at any time. Signing out revokes local access.`,
       buttons: ["取消 / Cancel", "授權 / Allow"], defaultId: 0, cancelId: 0, noLink: true,
     });
@@ -167,6 +172,7 @@ const localAgent = new LocalAgentController({
   stateRoot: userDir, companyOrigin: config.api,
   executable: app.isPackaged ? path.join(process.resourcesPath, "local-codex", "codex.exe") : process.env.COPYPASTE_LOCAL_CODEX_BIN ?? path.join(import.meta.dirname, "../.data/runtime/windows-x64/codex.exe"),
   runtime: localRuntimeLock,
+  browser: (owner, authorize) => nativeBrowsers.create(owner, authorize),
 });
 async function request(
   url: string,

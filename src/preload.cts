@@ -7,7 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
   style.id = "copypaste-window-style";
   style.textContent = `
     html, body { height:100%; overflow:hidden; }
-    #root { position:fixed; inset:40px 0 0; overflow:auto; transform:translateZ(0); }
+    #root { position:fixed; inset:40px 0 0; overflow-y:auto; overflow-x:clip; transform:translateZ(0); }
+    /* Keep native wheel, touchpad and keyboard scrolling without visible rails. */
+    html, body, #root, #root * { scrollbar-width:none !important; }
+    *::-webkit-scrollbar { display:none !important; width:0 !important; height:0 !important; }
     #root:has(.modal-backdrop) { overflow:hidden; }
     #root .modal-backdrop { top:var(--cp-root-scroll,0px); bottom:calc(0px - var(--cp-root-scroll,0px)); }
     #root .app-shell, #root .main-shell { min-height:calc(100vh - 40px); }
