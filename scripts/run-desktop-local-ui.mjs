@@ -38,7 +38,7 @@ try {
     ["platform typecheck", ["node_modules/typescript/bin/tsc", "--noEmit"], platform],
     ["desktop typecheck main", ["node_modules/typescript/bin/tsc", "--noEmit"], desktop],
     ["desktop typecheck renderer", ["node_modules/typescript/bin/tsc", "--noEmit", "-p", "renderer/tsconfig.json"], desktop],
-    ["desktop unit tests", ["--import", "tsx", "--test", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/local-input.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
+    ["desktop unit tests", ["--import", "tsx", "--test", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/local-input.test.ts", "tests/local-workflow.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
     ["prepare pinned native runtime", ["scripts/prepare-local-codex.mjs"], desktop],
     ["desktop build main", ["node_modules/typescript/bin/tsc"], desktop],
     ["desktop build native host", ["scripts/build-native-host.mjs"], desktop],
@@ -82,7 +82,9 @@ finally {
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
   const videoTools = new Set((journey?.native_video_tool_results ?? []).map(result => result.tool));
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 18 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 19 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+    && journey.checks.some(check => check.includes("two real local Codex children"))
+    && ["workflow_save", "workflow_publish", "workflow_run", "native_command_first", "native_command_qa", "deliver_text"].every(tool => journey.native_workflow_tool_results?.some(result => result.tool === tool && result.actual_output))
     && ["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel"].every(tool => videoTools.has(tool))
     && journey.checks.some(check => check.includes("exact native MP4/timeline downloads"))
     && journey.checks.some(check => check.includes("same-thread native video revision"))

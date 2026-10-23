@@ -1,0 +1,738 @@
+2026-10-23 13:50:05.452 CST [38088] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 13:50:05.459 CST [38088] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 13:50:05.460 CST [38088] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 13:50:05.816 CST [38220] LOG:  database system was shut down at 2026-10-23 13:50:00 CST
+
+2026-10-23 13:50:05.889 CST [38088] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: video project admission rejects invalid timelines, fabricated costs and missing source versions before persistence
+ok 1 - video project admission rejects invalid timelines, fabricated costs and missing source versions before persistence
+  ---
+  duration_ms: 6426.1869
+  ...
+# Subtest: video create and render idempotency returns one durable record and rejects conflicting reuse
+ok 2 - video create and render idempotency returns one durable record and rejects conflicting reuse
+  ---
+  duration_ms: 998.478
+  ...
+# Subtest: video creates six real scoped deliverables with a decoded MP4, editable source and zero fabricated AI charge
+ok 3 - video creates six real scoped deliverables with a decoded MP4, editable source and zero fabricated AI charge
+  ---
+  duration_ms: 1858.5868
+  ...
+# Subtest: video edit uses optimistic versions and an in-flight old revision remains frozen
+ok 4 - video edit uses optimistic versions and an in-flight old revision remains frozen
+  ---
+  duration_ms: 1604.3867
+  ...
+# Subtest: video rejects readers and other enterprises, while accessible viewers can read project metadata
+ok 5 - video rejects readers and other enterprises, while accessible viewers can read project metadata
+  ---
+  duration_ms: 731.1397
+  ...
+# Subtest: video queued cancellation is optimistic and cannot be silently restarted
+ok 6 - video queued cancellation is optimistic and cannot be silently restarted
+  ---
+  duration_ms: 335.5531
+  ...
+# Subtest: video cancellation during native rendering aborts and fences late completion without publishing outputs
+ok 7 - video cancellation during native rendering aborts and fences late completion without publishing outputs
+  ---
+  duration_ms: 1383.907
+  ...
+# Subtest: video current authorization is rechecked after rendering and explicit owner retry preserves the denial
+ok 8 - video current authorization is rechecked after rendering and explicit owner retry preserves the denial
+  ---
+  duration_ms: 1016.1846
+  ...
+# Subtest: video source quarantine immediately denies every derived download and restore keeps immutable fixed versions
+ok 9 - video source quarantine immediately denies every derived download and restore keeps immutable fixed versions
+  ---
+  duration_ms: 992.8527
+  ...
+# Subtest: video source expiry during preview I/O immediately blocks every output and a queued render without invoking the encoder
+ok 10 - video source expiry during preview I/O immediately blocks every output and a queued render without invoking the encoder
+  ---
+  duration_ms: 1119.1561
+  ...
+# Subtest: video project and output expiry enforce access immediately before physical retention cleanup and do not leave an immortal queued render
+ok 11 - video project and output expiry enforce access immediately before physical retention cleanup and do not leave an immortal queued render
+  ---
+  duration_ms: 1056.0905
+  ...
+# Subtest: video public shares enforce source quarantine and expiry before and after stream I/O, including all six deliverables
+ok 12 - video public shares enforce source quarantine and expiry before and after stream I/O, including all six deliverables
+  ---
+  duration_ms: 1774.4757
+  ...
+# Subtest: video source removal during rendering prevents publication
+ok 13 - video source removal during rendering prevents publication
+  ---
+  duration_ms: 886.2932
+  ...
+# Subtest: video expired leases become interrupted facts and late workers cannot replace them
+ok 14 - video expired leases become interrupted facts and late workers cannot replace them
+  ---
+  duration_ms: 1813.4296
+  ...
+# Subtest: video storage failure rolls back all six references and explicit retry retains the first failed record
+ok 15 - video storage failure rolls back all six references and explicit retry retains the first failed record
+  ---
+  duration_ms: 1603.5552
+  ...
+2026-10-23 13:50:33.788 CST [29232] ERROR:  Video project versions are immutable
+2026-10-23 13:50:33.788 CST [29232] CONTEXT:  PL/pgSQL function guard_video_history() line 7 at RAISE
+2026-10-23 13:50:33.788 CST [29232] STATEMENT:  UPDATE video_project_versions SET definition='{}' WHERE video_id=$1
+
+2026-10-23 13:50:33.789 CST [37308] ERROR:  Fixed video source references are immutable
+2026-10-23 13:50:33.789 CST [37308] CONTEXT:  PL/pgSQL function guard_video_history() line 9 at RAISE
+2026-10-23 13:50:33.789 CST [37308] STATEMENT:  UPDATE video_project_sources SET sha256=$2 WHERE video_id=$1
+
+2026-10-23 13:50:33.859 CST [34096] ERROR:  Finished video renders are immutable
+2026-10-23 13:50:33.859 CST [34096] CONTEXT:  PL/pgSQL function guard_video_history() line 14 at RAISE
+2026-10-23 13:50:33.859 CST [34096] STATEMENT:  UPDATE video_renders SET error_code='REPLACED' WHERE video_id=$1
+
+# Subtest: video finished receipts, source references and project versions remain immutable for the control identity
+ok 16 - video finished receipts, source references and project versions remain immutable for the control identity
+  ---
+  duration_ms: 1114.978
+  ...
+# Subtest: video deletion clears every script version, replay copy, probe body and all six physical objects
+ok 17 - video deletion clears every script version, replay copy, probe body and all six physical objects
+  ---
+  duration_ms: 1236.8311
+  ...
+# Subtest: video source erasure propagates to every embedded derived object through deletion dependencies
+ok 18 - video source erasure propagates to every embedded derived object through deletion dependencies
+  ---
+  duration_ms: 1024.6572
+  ...
+# Subtest: video workers enforce one tenant slot and two global slots without duplicate claims
+ok 19 - video workers enforce one tenant slot and two global slots without duplicate claims
+  ---
+  duration_ms: 1413.6854
+  ...
+# Subtest: video rejects private and other-project inputs and corrupt bytes cannot publish fallback outputs
+ok 20 - video rejects private and other-project inputs and corrupt bytes cannot publish fallback outputs
+  ---
+  duration_ms: 732.4299
+  ...
+# Subtest: video Admin body access is independent and tenant scoped, and content actions stop and erase actual outputs
+ok 21 - video Admin body access is independent and tenant scoped, and content actions stop and erase actual outputs
+  ---
+  duration_ms: 1444.7984
+  ...
+2026-10-23 13:50:40.068 CST [16400] ERROR:  permission denied for table video_project_versions
+2026-10-23 13:50:40.068 CST [16400] STATEMENT:  SELECT * FROM video_project_versions LIMIT 1
+
+2026-10-23 13:50:40.149 CST [38784] ERROR:  permission denied for table video_project_sources
+2026-10-23 13:50:40.149 CST [38784] STATEMENT:  SELECT * FROM video_project_sources LIMIT 1
+
+2026-10-23 13:50:40.225 CST [43708] ERROR:  permission denied for table video_renders
+2026-10-23 13:50:40.225 CST [43708] STATEMENT:  SELECT * FROM video_renders LIMIT 1
+
+# Subtest: video RLS hides all new tables across tenants and queue identity has no business access
+ok 22 - video RLS hides all new tables across tenants and queue identity has no business access
+  ---
+  duration_ms: 516.5739
+  ...
+# Subtest: Codex controlled video tool queues one idempotent shared project and never exposes a shared writer in private or read-only modes
+ok 23 - Codex controlled video tool queues one idempotent shared project and never exposes a shared writer in private or read-only modes
+  ---
+  duration_ms: 1687.408
+  ...
+2026-10-23 13:50:41.987 CST [27604] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 13:50:43.480 CST [27604] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.739 s, total=1.494 s; sync files=12, longest=0.179 s, average=0.062 s; distance=17303 kB, estimate=17303 kB; lsn=F/C379D590, redo lsn=F/C379D538
+
+# Subtest: video timeline rejects gaps, overlaps, fractional frames, unsafe bounds and duplicate cues
+ok 24 - video timeline rejects gaps, overlaps, fractional frames, unsafe bounds and duplicate cues
+  ---
+  duration_ms: 8.5977
+  ...
+# Subtest: video sidecar converts rational frames to escaped WebVTT timestamps
+ok 25 - video sidecar converts rational frames to escaped WebVTT timestamps
+  ---
+  duration_ms: 0.5199
+  ...
+# Subtest: TC018 15s portrait encodes all 450 frames, provided subtitles, non-silent owned audio and reproducible project
+ok 26 - TC018 15s portrait encodes all 450 frames, provided subtitles, non-silent owned audio and reproducible project
+  ---
+  duration_ms: 3479.0719
+  ...
+# Subtest: video refuses missing fixed source, changed source bytes and a short track without publishing fallback
+ok 27 - video refuses missing fixed source, changed source bytes and a short track without publishing fallback
+  ---
+  duration_ms: 1076.3142
+  ...
+# Subtest: video refuses unsupported glyphs, unreadable brand contrast, overflow and a changed renderer
+ok 28 - video refuses unsupported glyphs, unreadable brand contrast, overflow and a changed renderer
+  ---
+  duration_ms: 853.4649
+  ...
+# Subtest: minimum landscape video fits its real CTA and preserves the frozen previous renderer boundary
+ok 29 - minimum landscape video fits its real CTA and preserves the frozen previous renderer boundary
+  ---
+  duration_ms: 934.3377
+  ...
+# Subtest: video supports actual fractional frame rate and explicit absence of audio without silent voice synthesis
+ok 30 - video supports actual fractional frame rate and explicit absence of audio without silent voice synthesis
+  ---
+  duration_ms: 600.6624
+  ...
+# Subtest: video decodes fixed PNGs and rejects external or disguised image data
+ok 31 - video decodes fixed PNGs and rejects external or disguised image data
+  ---
+  duration_ms: 862.4055
+  ...
+# Subtest: video respects explicit cancellation and removes its owned intermediate directory
+ok 32 - video respects explicit cancellation and removes its owned intermediate directory
+  ---
+  duration_ms: 120.3381
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: personal and workspace commands freeze two versions without business effects, then commit exact canonical children
+ok 33 - personal and workspace commands freeze two versions without business effects, then commit exact canonical children
+  ---
+  duration_ms: 3972.3434
+  ...
+# Subtest: concurrent identical confirmation and later replay return the same parent and one gift reference
+ok 34 - concurrent identical confirmation and later replay return the same parent and one gift reference
+  ---
+  duration_ms: 335.4083
+  ...
+# Subtest: billing account must match the exact VIP subject, kind and current mode
+ok 35 - billing account must match the exact VIP subject, kind and current mode
+  ---
+  duration_ms: 295.3497
+  ...
+# Subtest: VIP-only, finance-only and project-scoped admins cannot create or read combined facts
+ok 36 - VIP-only, finance-only and project-scoped admins cannot create or read combined facts
+  ---
+  duration_ms: 348.515
+  ...
+# Subtest: either policy requests one independent approval; requester and partial reviewers cannot approve
+ok 37 - either policy requests one independent approval; requester and partial reviewers cannot approve
+  ---
+  duration_ms: 768.5094
+  ...
+# Subtest: shared approval lists do not leak combined requests to a reader of only one domain
+ok 38 - shared approval lists do not leak combined requests to a reader of only one domain
+  ---
+  duration_ms: 273.8454
+  ...
+# Subtest: version and payload changes after preview commit neither effect
+ok 39 - version and payload changes after preview commit neither effect
+  ---
+  duration_ms: 469.9415
+  ...
+# Subtest: original session, rights, billing facts and policy are rechecked on independent approval
+ok 40 - original session, rights, billing facts and policy are rechecked on independent approval
+  ---
+  duration_ms: 1214.1421
+  ...
+# Subtest: per-command amount, VIP duration and daily gift caps also apply to combined children
+ok 41 - per-command amount, VIP duration and daily gift caps also apply to combined children
+  ---
+  duration_ms: 385.8741
+  ...
+2026-10-23 13:51:03.437 CST [19324] ERROR:  controlled second-child failure
+2026-10-23 13:51:03.437 CST [19324] CONTEXT:  PL/pgSQL function vip_credit_fault() line 1 at RAISE
+2026-10-23 13:51:03.437 CST [19324] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+# isolated combined-command database diagnostic controlled second-child failure PL/pgSQL function vip_credit_fault() line 1 at RAISE
+# {"request_id":"c2397f93-652b-4646-b347-53aed9915e26","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: gift audit failure after VIP writes rolls back both projections, children, link and preview consumption
+ok 42 - gift audit failure after VIP writes rolls back both projections, children, link and preview consumption
+  ---
+  duration_ms: 634.8694
+  ...
+# Subtest: rejected combination has no child operations, credit or entitlements
+ok 43 - rejected combination has no child operations, credit or entitlements
+  ---
+  duration_ms: 262.0025
+  ...
+2026-10-23 13:51:03.982 CST [19324] ERROR:  A combination commits both effects and its link or commits neither
+2026-10-23 13:51:03.982 CST [19324] CONTEXT:  PL/pgSQL function assert_vip_credit_commit(uuid) line 17 at RAISE
+	SQL statement "SELECT assert_vip_credit_commit(NEW.id)"
+	PL/pgSQL function check_vip_credit_operation_commit() line 3 at PERFORM
+
+2026-10-23 13:51:03.984 CST [31728] ERROR:  Combined origin and completed result are immutable
+2026-10-23 13:51:03.984 CST [31728] CONTEXT:  PL/pgSQL function protect_vip_credit_intent() line 14 at RAISE
+2026-10-23 13:51:03.984 CST [31728] STATEMENT:  UPDATE admin_operations SET payload=payload-'vip_credit_command_version' WHERE id=$1
+
+2026-10-23 13:51:04.234 CST [10100] ERROR:  permission denied for table admin_vip_credit_combinations
+2026-10-23 13:51:04.234 CST [10100] STATEMENT:  UPDATE admin_vip_credit_combinations SET credit_journal_id=gen_random_uuid() WHERE parent_operation_id=$1
+
+2026-10-23 13:51:04.300 CST [37016] ERROR:  permission denied for table admin_vip_credit_combinations
+2026-10-23 13:51:04.300 CST [37016] STATEMENT:  DELETE FROM admin_vip_credit_combinations WHERE parent_operation_id=$1
+
+2026-10-23 13:51:04.368 CST [40420] ERROR:  Combined origin and completed result are immutable
+2026-10-23 13:51:04.368 CST [40420] CONTEXT:  PL/pgSQL function protect_vip_credit_intent() line 14 at RAISE
+2026-10-23 13:51:04.368 CST [40420] STATEMENT:  UPDATE admin_operations SET state='cancelled' WHERE id=$1
+
+2026-10-23 13:51:04.415 CST [33380] ERROR:  Combined origin and completed result are immutable
+2026-10-23 13:51:04.415 CST [33380] CONTEXT:  PL/pgSQL function protect_vip_credit_intent() line 14 at RAISE
+2026-10-23 13:51:04.415 CST [33380] STATEMENT:  UPDATE admin_operations SET result='{}' WHERE id=$1
+
+2026-10-23 13:51:04.488 CST [21440] ERROR:  Combined success must retain the exact two authorized effects, subjects, credit reference and provenance
+2026-10-23 13:51:04.488 CST [21440] CONTEXT:  PL/pgSQL function assert_vip_credit_commit(uuid) line 61 at RAISE
+	SQL statement "SELECT assert_vip_credit_commit((NEW.payload->>'combination_parent_id')::uuid)"
+	PL/pgSQL function check_vip_credit_operation_commit() line 4 at PERFORM
+
+# Subtest: database guards reject parent-only success, detached children, marker removal and mutable links
+ok 44 - database guards reject parent-only success, detached children, marker removal and mutable links
+  ---
+  duration_ms: 699.4909
+  ...
+# Subtest: later VIP suspension preserves the explicit gift and its historical parent link
+ok 45 - later VIP suspension preserves the explicit gift and its historical parent link
+  ---
+  duration_ms: 418.3367
+  ...
+# Subtest: expired gift input and unknown fields fail before creating effects
+ok 46 - expired gift input and unknown fields fail before creating effects
+  ---
+  duration_ms: 156.9481
+  ...
+# Subtest: same-plan renewal keeps the original grant while each explicit gift has one new parent-bound reference
+ok 47 - same-plan renewal keeps the original grant while each explicit gift has one new parent-bound reference
+  ---
+  duration_ms: 310.9847
+  ...
+# Subtest: overlapping explicit project denies and revoked gift access block replay and approval visibility
+ok 48 - overlapping explicit project denies and revoked gift access block replay and approval visibility
+  ---
+  duration_ms: 291.4489
+  ...
+2026-10-23 13:51:06.048 CST [33080] ERROR:  controlled final link failure
+2026-10-23 13:51:06.048 CST [33080] CONTEXT:  PL/pgSQL function combination_link_fault() line 1 at RAISE
+2026-10-23 13:51:06.048 CST [33080] STATEMENT:  INSERT INTO admin_vip_credit_combinations(parent_operation_id,vip_operation_id,gift_operation_id,grant_id,credit_journal_id) VALUES($1,$2,$3,$4,$5)
+
+# isolated combined-command database diagnostic controlled final link failure PL/pgSQL function combination_link_fault() line 1 at RAISE
+# {"request_id":"32ded129-ac20-4af9-ad56-b70458bb83fb","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: a lost second-child effect during approval leaves the parent pending and the decision unrecorded
+ok 49 - a lost second-child effect during approval leaves the parent pending and the decision unrecorded
+  ---
+  duration_ms: 497.5159
+  ...
+# Subtest: current MFA and gift authority are checked before successful replay can reveal a combined result
+ok 50 - current MFA and gift authority are checked before successful replay can reveal a combined result
+  ---
+  duration_ms: 246.0825
+  ...
+# Subtest: the supplement composes original schemas without changing the normative OpenAPI
+ok 51 - the supplement composes original schemas without changing the normative OpenAPI
+  ---
+  duration_ms: 31.3007
+  ...
+2026-10-23 13:51:06.513 CST [27604] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 13:51:07.456 CST [27604] LOG:  checkpoint complete: wrote 43 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.011 s, sync=0.711 s, total=0.943 s; sync files=12, longest=0.138 s, average=0.060 s; distance=17784 kB, estimate=17784 kB; lsn=F/C48FB808, redo lsn=F/C48FB7B0
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: VIP contract fixture is byte-source-bound to the unchanged original OpenAPI
+ok 52 - VIP contract fixture is byte-source-bound to the unchanged original OpenAPI
+  ---
+  duration_ms: 3361.9999
+  ...
+# Subtest: current Admin MFA, exact scopes, original strict requests and the closed legacy write path
+ok 53 - current Admin MFA, exact scopes, original strict requests and the closed legacy write path
+  ---
+  duration_ms: 447.835
+  ...
+# Subtest: preview has no entitlement or money effect; commit is durable, atomic and idempotent
+ok 54 - preview has no entitlement or money effect; commit is durable, atomic and idempotent
+  ---
+  duration_ms: 473.8249
+  ...
+# Subtest: personal and enterprise features merge, quotas take max, resources remain independent
+ok 55 - personal and enterprise features merge, quotas take max, resources remain independent
+  ---
+  duration_ms: 485.6662
+  ...
+2026-10-23 13:51:15.103 CST [6384] ERROR:  An issued VIP changes only through a new revision
+2026-10-23 13:51:15.103 CST [6384] CONTEXT:  PL/pgSQL function protect_vip_projection() line 31 at RAISE
+2026-10-23 13:51:15.103 CST [6384] STATEMENT:  UPDATE vip_grants SET ends_at=ends_at+interval '1 day' WHERE id=$1
+
+2026-10-23 13:51:15.104 CST [18680] ERROR:  permission denied for table vip_grant_events
+2026-10-23 13:51:15.104 CST [18680] STATEMENT:  DELETE FROM vip_grant_events WHERE grant_id=$1
+
+2026-10-23 13:51:15.161 CST [30148] ERROR:  VIP operation origin and policy are immutable
+2026-10-23 13:51:15.161 CST [30148] CONTEXT:  PL/pgSQL function protect_vip_intent() line 17 at RAISE
+2026-10-23 13:51:15.161 CST [30148] STATEMENT:  UPDATE admin_operations SET policy_version_id=gen_random_uuid() WHERE id=$1
+
+# Subtest: extension, suspension, resumption and revocation retain origin with consecutive immutable revisions
+ok 56 - extension, suspension, resumption and revocation retain origin with consecutive immutable revisions
+  ---
+  duration_ms: 570.0729
+  ...
+# Subtest: same-plan renewal requires the exact UUID and source; new publication cannot rebind a grant
+ok 57 - same-plan renewal requires the exact UUID and source; new publication cannot rebind a grant
+  ---
+  duration_ms: 461.9061
+  ...
+# Subtest: replacement needs independent review and stays scheduled until its real boundary; old grants never revive
+ok 58 - replacement needs independent review and stays scheduled until its real boundary; old grants never revive
+  ---
+  duration_ms: 7403.5604
+  ...
+# Subtest: expiry is authoritative without workers; notification outbox is bounded, mode-scoped and idempotent
+ok 59 - expiry is authoritative without workers; notification outbox is bounded, mode-scoped and idempotent
+  ---
+  duration_ms: 1506.8474
+  ...
+# Subtest: concurrent subject versions cannot overwrite each other and stale previews create no partial grants
+ok 60 - concurrent subject versions cannot overwrite each other and stale previews create no partial grants
+  ---
+  duration_ms: 395.904
+  ...
+# Subtest: approval rechecks original session and current permissions; cancelled requests have no grant effect
+ok 61 - approval rechecks original session and current permissions; cancelled requests have no grant effect
+  ---
+  duration_ms: 246.0162
+  ...
+# Subtest: legacy replacement preserves unknown historical facts and cannot cut another billing mode
+ok 62 - legacy replacement preserves unknown historical facts and cannot cut another billing mode
+  ---
+  duration_ms: 282.4222
+  ...
+2026-10-23 13:51:25.741 CST [32848] ERROR:  controlled VIP audit failure
+2026-10-23 13:51:25.741 CST [32848] CONTEXT:  PL/pgSQL function vip_audit_fault() line 1 at RAISE
+2026-10-23 13:51:25.741 CST [32848] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+# isolated VIP database diagnostic controlled VIP audit failure PL/pgSQL function vip_audit_fault() line 1 at RAISE
+# {"request_id":"9913db49-52b9-4252-b6df-5ff3db850bd8","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: audit failure rolls back subject revision, grant, operation, revision and outbox; original preview can retry
+ok 63 - audit failure rolls back subject revision, grant, operation, revision and outbox; original preview can retry
+  ---
+  duration_ms: 237.1212
+  ...
+2026-10-23 13:51:26.209 CST [32848] ERROR:  VIP preview identity, expiry and consumption are immutable
+2026-10-23 13:51:26.209 CST [32848] CONTEXT:  PL/pgSQL function protect_vip_intent() line 11 at RAISE
+2026-10-23 13:51:26.209 CST [32848] STATEMENT:  UPDATE admin_previews SET expires_at=expires_at+interval '1 day' WHERE id=$1
+
+# Subtest: current head, frozen command, duration limits and revoked permissions are rechecked
+ok 64 - current head, frozen command, duration limits and revoked permissions are rechecked
+  ---
+  duration_ms: 540.224
+  ...
+# Subtest: verified payment must match subject and mode, is linked once and never posts money by granting VIP
+ok 65 - verified payment must match subject and mode, is linked once and never posts money by granting VIP
+  ---
+  duration_ms: 479.5561
+  ...
+2026-10-23 13:51:26.868 CST [27604] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 13:51:27.697 CST [27604] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.607 s, total=0.830 s; sync files=10, longest=0.124 s, average=0.061 s; distance=17268 kB, estimate=17732 kB; lsn=F/C59D8810, redo lsn=F/C59D87B8
+
+1..65
+# tests 65
+# suites 0
+# pass 65
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 81626.4913
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/ee8c4046-54ce-46d3-af07-108e9b017493/result.json","sha256":"1fdfdc6ad2ac69a68a3bd6893434605633a396a431ab211052f8ebfd7ffa79a5","exit_code":0}
+2026-10-23 13:51:28.394 CST [38088] LOG:  received fast shutdown request
+
+2026-10-23 13:51:28.449 CST [38088] LOG:  aborting any active transactions
+
+2026-10-23 13:51:28.456 CST [38088] LOG:  background worker "logical replication launcher" (PID 31428) exited with exit code 1
+
+2026-10-23 13:51:28.456 CST [27604] LOG:  shutting down
+
+2026-10-23 13:51:28.512 CST [27604] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 13:51:28.677 CST [27604] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.030 s, total=0.221 s; sync files=1, longest=0.030 s, average=0.030 s; distance=0 kB, estimate=15959 kB; lsn=F/C59D8928, redo lsn=F/C59D8928
+
+2026-10-23 13:51:28.780 CST [38088] LOG:  database system is shut down
+

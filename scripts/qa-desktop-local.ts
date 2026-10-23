@@ -7,6 +7,8 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { WorkmateRecording, saveWorkmateScreenshot } from "./record-workmate-media.js";
 import { DesktopVideoModelFixture, runDesktopVideoJourney } from "./qa-desktop-video.js";
+import { DesktopWorkflowModelFixture } from "./desktop-workflow-model-fixture.js";
+import { runDesktopWorkflowJourney } from "./qa-desktop-workflows.js";
 
 const delivery = process.cwd(), platform = path.resolve("../copypaste-platform"), desktop = path.resolve("../copypaste-desktop"), attempt = process.argv[2];
 assert.match(attempt ?? "", /^\d{2}$/);
@@ -14,6 +16,7 @@ const owned = path.resolve(".data/desktop-local", randomUUID()), workspace = pat
 const downloaded = path.join(owned, "downloaded-native-design.png");
 const inputResult = path.join(workspace, "customer-input-result.json");
 const videoModel = new DesktopVideoModelFixture();
+const workflowModel = new DesktopWorkflowModelFixture(workspace, outside);
 const checks: string[] = [], screenshots: any[] = [], errors: string[] = [];
 const pass = (text: string) => { checks.push(text); console.log("PASS: " + text); };
 let isolated: any, system: any, electron: ElectronApplication | undefined, browser: Browser | undefined, recording: WorkmateRecording | undefined, media: any;
@@ -43,7 +46,7 @@ const provider = createServer(async (req, res) => {
     emit("response.created", { response });
     if (stall) { stalled = true; return; }
     let item: any;
-    const videoItem = videoModel.next(body, providerCalls);
+    const videoItem = workflowModel.next(body, providerCalls) ?? videoModel.next(body, providerCalls);
     if (videoItem) item = videoItem;
     else if (questionNext) {
       questionNext = false;
@@ -217,7 +220,7 @@ try {
   recording = new WorkmateRecording("desktop", "local-agent", "local-" + attempt, () => serializeCapture(async () => {
     const base64 = await electron!.evaluate(async ({ BrowserWindow }) => (await BrowserWindow.getAllWindows()[0].webContents.capturePage()).toJPEG(82).toString("base64"));
     return Buffer.from(base64, "base64");
-  }), "Actual packaged Electron surface with real native Codex, local files, company image/video tools, real FFmpeg composition/playback, private artifacts, native downloads and ledger; model/image responses and native dialog decisions explicitly synthetic", delivery);
+  }), "Actual packaged Electron surface with real native Codex, local files, company image/video tools, real FFmpeg composition/playback, native workflow children and approvals, private SOP/JSON/recovery downloads and ledger; model/image responses and native dialog decisions explicitly synthetic", delivery);
   await recording.start();
   await page.getByLabel("Local task", { exact: true }).fill("Update the approved existing file outside this workspace using the local terminal, then create the synthetic design through the company Image 2 tool.");
   await page.getByRole("button", { name: "Start work", exact: true }).click(); const firstState = await until(list, s => !s.busy && s.task?.status === "succeeded", "first native completion", 90000);
@@ -313,6 +316,8 @@ try {
   pass("Native questions survive renderer reload, require explicit option or free text, reject guessed ids and continue the same task/thread/turn with one reservation and a real local result");
   await runDesktopVideoJourney({ page, electron, system, model: videoModel, tenant, project, originalAsset, platform, owned, delivery, attempt,
     list, until, resize, reload, pass, screenshots, providerCalls: () => providerCalls });
+  await runDesktopWorkflowJourney({ page, electron, system, model: workflowModel, tenant, project, workspace, outside, owned, delivery, attempt,
+    list, until, resize, reload, pass, screenshots, providerCalls: () => providerCalls });
   await writeFile(outside, "must-remain-read-only"); commandNext = true; readOnlyCheck = true;
   await page.getByLabel("Local permission", { exact: true }).selectOption("read-only"); await page.getByRole("button", { name: "Set permission", exact: true }).click(); await until(list, s => s.permission === "read-only", "permission downgrade");
   await page.getByLabel("Local task", { exact: true }).fill("Verify that read-only mode prevents a write to the owned outside-cwd fixture."); await page.getByRole("button", { name: "Start work", exact: true }).click();
@@ -385,8 +390,8 @@ finally {
   provider.closeAllConnections(); if (provider.listening) await new Promise<void>(resolve => provider.close(() => resolve()));
   if (isolated) { process.chdir(platform); await isolated.cleanup(); fixtureClosed = true; }
   process.chdir(delivery);
-  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations,
-    scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company tools, private artifacts, download and billing; model/image responses and native chooser/consent/save decisions are explicit fixtures",
+  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_workflow_tool_results: workflowModel.observations,
+    scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company tools, local workflow children/approvals, private artifacts, download and billing; model/image responses and native chooser/consent/save decisions are explicit fixtures",
     fixture_native_dialog_confirmed: permissionDecision === 1, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };
   await writeFile(`evidence/desktop-local-ui-${attempt}-journey.json`, JSON.stringify(report, null, 2) + "\n", { flag: "wx" }); assert.equal(errors.length, 0, errors.join("\n"));
 }

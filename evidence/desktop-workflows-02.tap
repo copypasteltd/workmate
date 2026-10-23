@@ -1,0 +1,684 @@
+2026-10-23 11:12:54.430 CST [36356] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 11:12:54.446 CST [36356] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 11:12:54.447 CST [36356] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 11:12:54.961 CST [34692] LOG:  database system was shut down at 2026-10-23 10:57:58 CST
+
+2026-10-23 11:12:55.039 CST [36356] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: only actual desktop native authorization can reserve local execution; no API can grant local full permission
+ok 1 - only actual desktop native authorization can reserve local execution; no API can grant local full permission
+  ---
+  duration_ms: 8374.811
+  ...
+2026-10-23 11:13:08.445 CST [2664] ERROR:  Cloud admission cannot own local work
+2026-10-23 11:13:08.445 CST [2664] CONTEXT:  PL/pgSQL function claim_execution_capacity(uuid,text,integer,uuid) line 4 at RAISE
+2026-10-23 11:13:08.445 CST [2664] STATEMENT:  SELECT claim_execution_capacity($1,'text',8,$2)
+
+2026-10-23 11:13:08.447 CST [16316] ERROR:  Local execution cannot enter the cloud queue
+2026-10-23 11:13:08.447 CST [16316] CONTEXT:  PL/pgSQL function reject_local_cloud_dispatch() line 4 at RAISE
+2026-10-23 11:13:08.447 CST [16316] STATEMENT:  INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)
+
+2026-10-23 11:13:08.590 CST [39340] ERROR:  Execution placement is immutable
+2026-10-23 11:13:08.590 CST [39340] CONTEXT:  PL/pgSQL function guard_task_execution_location() line 4 at RAISE
+2026-10-23 11:13:08.590 CST [39340] STATEMENT:  UPDATE tasks SET execution_location='cloud' WHERE id=$1
+
+# Subtest: one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it
+ok 2 - one immutable local owner and hold survive duplicate create; queue, cloud claims and recovery cannot run it
+  ---
+  duration_ms: 465.8272
+  ...
+# Subtest: lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage
+ok 3 - lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage
+  ---
+  duration_ms: 981.4073
+  ...
+# Subtest: company gateway meters actual native Responses and settles once from server facts, excluding client usage
+ok 4 - company gateway meters actual native Responses and settles once from server facts, excluding client usage
+  ---
+  duration_ms: 1489.1171
+  ...
+# Subtest: native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch
+ok 5 - native tool declarations are explicit; hosted tools, model changes and arbitrary namespaces never dispatch
+  ---
+  duration_ms: 1606.106
+  ...
+# Subtest: unknown company response cannot be replaced by a client zero report or release its reservation
+ok 6 - unknown company response cannot be replaced by a client zero report or release its reservation
+  ---
+  duration_ms: 1106.3742
+  ...
+# Subtest: unstarted cancellation releases only its original hold and a fresh task can continue the same local session
+ok 7 - unstarted cancellation releases only its original hold and a fresh task can continue the same local session
+  ---
+  duration_ms: 320.142
+  ...
+# Subtest: an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation
+ok 8 - an expired owner lease cannot revive through heartbeat or cloud recovery; its hold requires reconciliation
+  ---
+  duration_ms: 607.0023
+  ...
+# Subtest: revoking the desktop sign-in family fences already-issued model credentials
+ok 9 - revoking the desktop sign-in family fences already-issued model credentials
+  ---
+  duration_ms: 519.1313
+  ...
+# Subtest: a lost local outcome or expired lease cannot be reported as zero-cost successful completion
+ok 10 - a lost local outcome or expired lease cannot be reported as zero-cost successful completion
+  ---
+  duration_ms: 1084.8986
+  ...
+# Subtest: all eighteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch
+ok 11 - all eighteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch
+  ---
+  duration_ms: 7979.2494
+  ...
+# Subtest: native company tools recheck owner, native family, role and the complete call binding before any effect
+ok 12 - native company tools recheck owner, native family, role and the complete call binding before any effect
+  ---
+  duration_ms: 1674.4547
+  ...
+# Subtest: native designer generation and editing share exact company prices and never duplicate accepted images
+ok 13 - native designer generation and editing share exact company prices and never duplicate accepted images
+  ---
+  duration_ms: 2576.428
+  ...
+# Subtest: native company namespace rejects altered schemas and unregistered names before provider dispatch
+ok 14 - native company namespace rejects altered schemas and unregistered names before provider dispatch
+  ---
+  duration_ms: 1572.8253
+  ...
+# Subtest: an unknown native company image result fences further calls and keeps the original reconciliation hold
+ok 15 - an unknown native company image result fences further calls and keeps the original reconciliation hold
+  ---
+  duration_ms: 1026.2523
+  ...
+2026-10-23 11:13:31.276 CST [40236] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 11:13:32.770 CST [40236] LOG:  checkpoint complete: wrote 46 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.010 s, sync=1.130 s, total=1.495 s; sync files=12, longest=0.248 s, average=0.095 s; distance=17588 kB, estimate=17588 kB; lsn=E/E53F1868, redo lsn=E/E53F1810
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: native video specialist exposes seven scoped tools and no cloud Agent or private-to-shared fallback
+ok 16 - native video specialist exposes seven scoped tools and no cloud Agent or private-to-shared fallback
+  ---
+  duration_ms: 11746.3418
+  ...
+# Subtest: native private video really encodes and fully decodes six immutable private deliveries without AI media fees
+ok 17 - native private video really encodes and fully decodes six immutable private deliveries without AI media fees
+  ---
+  duration_ms: 4078.2573
+  ...
+2026-10-23 11:13:55.693 CST [23788] ERROR:  Video privacy and origin are immutable
+2026-10-23 11:13:55.693 CST [23788] CONTEXT:  PL/pgSQL function check_private_video_project() line 5 at RAISE
+2026-10-23 11:13:55.693 CST [23788] STATEMENT:  UPDATE creative_projects SET private_owner=NULL,origin_task_id=NULL WHERE id=$1
+
+# Subtest: same-project members cannot see native private video definitions, source rows, renders or any delivery
+ok 18 - same-project members cannot see native private video definitions, source rows, renders or any delivery
+  ---
+  duration_ms: 2787.0835
+  ...
+# Subtest: native video create and revision reuse exact calls; a busy render or stale version rolls back the entire edit
+ok 19 - native video create and revision reuse exact calls; a busy render or stale version rolls back the entire edit
+  ---
+  duration_ms: 6141.84
+  ...
+# Subtest: stopping a Desktop task cancels only its own pending video jobs and preserves an unrelated shared composition
+ok 20 - stopping a Desktop task cancels only its own pending video jobs and preserves an unrelated shared composition
+  ---
+  duration_ms: 2528.0901
+  ...
+# Subtest: a cancelled native origin cannot publish six deliveries even when the real encoder already finished
+ok 21 - a cancelled native origin cannot publish six deliveries even when the real encoder already finished
+  ---
+  duration_ms: 2743.445
+  ...
+# Subtest: revoked native login families fail queued video admission before encoding
+ok 22 - revoked native login families fail queued video admission before encoding
+  ---
+  duration_ms: 1132.1251
+  ...
+# Subtest: expired native owners leave no queued starvation and the next shared video can progress
+ok 23 - expired native owners leave no queued starvation and the next shared video can progress
+  ---
+  duration_ms: 3039.6759
+  ...
+# Subtest: expired native video sources withdraw every output and never automatically regenerate the video
+ok 24 - expired native video sources withdraw every output and never automatically regenerate the video
+  ---
+  duration_ms: 2527.8398
+  ...
+# Subtest: normally completed native turns may leave clearly queued zero-AI composition with private recoverable outputs
+ok 25 - normally completed native turns may leave clearly queued zero-AI composition with private recoverable outputs
+  ---
+  duration_ms: 3235.4971
+  ...
+# Subtest: completed video receipts revalidate actual project/render records on a later attempt without creating another composition
+ok 26 - completed video receipts revalidate actual project/render records on a later attempt without creating another composition
+  ---
+  duration_ms: 2567.0997
+  ...
+2026-10-23 11:14:19.752 CST [40236] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 11:14:21.759 CST [40236] LOG:  checkpoint complete: wrote 40 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.182 s, sync=1.162 s, total=2.007 s; sync files=14, longest=0.218 s, average=0.083 s; distance=17093 kB, estimate=17538 kB; lsn=E/E64A2FD8, redo lsn=E/E64A2F80
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: native workflow specialist exposes eight scoped tools and no model approval or cloud dispatch tool
+ok 27 - native workflow specialist exposes eight scoped tools and no model approval or cloud dispatch tool
+  ---
+  duration_ms: 10244.2811
+  ...
+# Subtest: native workflow drafts validate roles, bounded schemas and live dataset access before any child reservation
+ok 28 - native workflow drafts validate roles, bounded schemas and live dataset access before any child reservation
+  ---
+  duration_ms: 2399.8179
+  ...
+2026-10-23 11:14:41.926 CST [10352] ERROR:  Workflow version is immutable
+2026-10-23 11:14:41.926 CST [10352] CONTEXT:  PL/pgSQL function immutable_workflow_version() line 8 at RAISE
+2026-10-23 11:14:41.926 CST [10352] STATEMENT:  UPDATE workflow_versions SET definition='{}' WHERE workflow_id=$1
+
+2026-10-23 11:14:42.139 CST [43176] ERROR:  Native workflow run definition is immutable
+2026-10-23 11:14:42.139 CST [43176] CONTEXT:  PL/pgSQL function check_native_workflow_scope() line 17 at RAISE
+2026-10-23 11:14:42.139 CST [43176] STATEMENT:  UPDATE workflow_runs SET definition='{}' WHERE id=$1
+
+2026-10-23 11:14:42.247 CST [41704] ERROR:  Workflow origin and privacy are immutable
+2026-10-23 11:14:42.247 CST [41704] CONTEXT:  PL/pgSQL function check_native_workflow_scope() line 4 at RAISE
+2026-10-23 11:14:42.247 CST [41704] STATEMENT:  UPDATE workflows SET private_owner=NULL,origin_task_id=NULL,execution_location='cloud' WHERE id=$1
+
+# Subtest: published native versions are immutable, revisions use compare-and-swap and historical runs retain their exact definition
+ok 29 - published native versions are immutable, revisions use compare-and-swap and historical runs retain their exact definition
+  ---
+  duration_ms: 3585.4072
+  ...
+# Subtest: native workflow launch waits for explicit fee confirmation, binds the exact revision and rejects cloud approval bypass
+ok 30 - native workflow launch waits for explicit fee confirmation, binds the exact revision and rejects cloud approval bypass
+  ---
+  duration_ms: 2336.9757
+  ...
+# Subtest: native workflow creates exactly one local child per cursor with its role Skills, private fee reservation and no cloud outbox
+ok 31 - native workflow creates exactly one local child per cursor with its role Skills, private fee reservation and no cloud outbox
+  ---
+  duration_ms: 2742.2898
+  ...
+# Subtest: native workflow advances actual child receipts through explicit approval and succeeds only after its final local child
+ok 32 - native workflow advances actual child receipts through explicit approval and succeeds only after its final local child
+  ---
+  duration_ms: 4241.2599
+  ...
+# Subtest: same-project members and other native families cannot read or operate private native workflow definitions, versions or runs
+ok 33 - same-project members and other native families cannot read or operate private native workflow definitions, versions or runs
+  ---
+  duration_ms: 2421.0555
+  ...
+# Subtest: cloud workflow workers and schedules cannot take over native Codex steps
+ok 34 - cloud workflow workers and schedules cannot take over native Codex steps
+  ---
+  duration_ms: 2728.9536
+  ...
+# Subtest: stopping a native consultant cancels its run and prevents a prepared child from starting
+ok 35 - stopping a native consultant cancels its run and prevents a prepared child from starting
+  ---
+  duration_ms: 2645.8918
+  ...
+# Subtest: native child unknown outcomes stop the workflow without automatically enqueueing a replacement
+not ok 36 - native child unknown outcomes stop the workflow without automatically enqueueing a replacement
+  ---
+  duration_ms: 315.6993
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-workflows.test.ts:1:12965'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_CAPACITY_WAIT","message":"Execution capacity is occupied; retry this request","request_id":"d5ee402e-4789-4290-adaa-9799d99be706"}}
+    
+    429 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 429
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async startNativeVideo (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:54:19)
+    async fixture (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:37:49)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:167:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: admin deletion scrubs immutable private workflow version content through the controlled erasure path
+not ok 37 - admin deletion scrubs immutable private workflow version content through the controlled erasure path
+  ---
+  duration_ms: 324.0573
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-workflows.test.ts:1:13812'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_CAPACITY_WAIT","message":"Execution capacity is occupied; retry this request","request_id":"c91c31d4-c9d0-452c-ab69-159ed02b87f8"}}
+    
+    429 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 429
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async startNativeVideo (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:54:19)
+    async fixture (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:37:49)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:177:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: unpublished native snapshots cannot run and a child budget above the current plan fails before consent
+not ok 38 - unpublished native snapshots cannot run and a child budget above the current plan fails before consent
+  ---
+  duration_ms: 338.6732
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-workflows.test.ts:1:14366'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_CAPACITY_WAIT","message":"Execution capacity is occupied; retry this request","request_id":"2581bc06-180c-4317-8c2a-918691e5e355"}}
+    
+    429 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 429
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async startNativeVideo (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:54:19)
+    async fixture (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:37:49)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:185:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: concurrent native advances share one charged child identity and reject the losing stale revision
+not ok 39 - concurrent native advances share one charged child identity and reject the losing stale revision
+  ---
+  duration_ms: 377.3526
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-workflows.test.ts:1:15022'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_CAPACITY_WAIT","message":"Execution capacity is occupied; retry this request","request_id":"007ad500-bc4b-4060-85ca-29c0cb587ddf"}}
+    
+    429 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 429
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async startNativeVideo (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:54:19)
+    async fixture (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:37:49)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:192:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: native workflow content quarantine fences inference, cached reads, local child start and downstream private deliveries
+not ok 40 - native workflow content quarantine fences inference, cached reads, local child start and downstream private deliveries
+  ---
+  duration_ms: 343.5331
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-workflows.test.ts:1:15679'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_CAPACITY_WAIT","message":"Execution capacity is occupied; retry this request","request_id":"37889af2-968f-4c70-a9ef-9e6b06366653"}}
+    
+    429 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 429
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async startNativeVideo (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:54:19)
+    async fixture (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:37:49)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:200:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: native workflow launch confirmation cannot be reused for a different definition hash
+not ok 41 - native workflow launch confirmation cannot be reused for a different definition hash
+  ---
+  duration_ms: 245.6764
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\desktop-workflows.test.ts:1:16934'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"DESKTOP_CAPACITY_WAIT","message":"Execution capacity is occupied; retry this request","request_id":"90904691-66a7-4e92-b987-a6ff67d01e57"}}
+    
+    429 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 429
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async startNativeVideo (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:54:19)
+    async fixture (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:37:49)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-workflows.test.ts:214:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-23 11:15:01.823 CST [40236] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 11:15:04.131 CST [40236] LOG:  checkpoint complete: wrote 43 buffers (0.3%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.098 s, sync=1.790 s, total=2.309 s; sync files=14, longest=0.359 s, average=0.128 s; distance=17224 kB, estimate=17507 kB; lsn=E/E75753C0, redo lsn=E/E7575368
+
+1..41
+# tests 41
+# suites 0
+# pass 35
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 128649.028
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/d30e72b1-d547-4658-b712-8d6fef3f356f/result.json","sha256":"37020c8bc01d7fe3283db2a5fddd1a260142b3b0f0940d32d35280fe3cb6861e","exit_code":0}
+2026-10-23 11:15:05.360 CST [36356] LOG:  received fast shutdown request
+
+2026-10-23 11:15:06.120 CST [36356] LOG:  aborting any active transactions
+
+2026-10-23 11:15:06.192 CST [36356] LOG:  background worker "logical replication launcher" (PID 35064) exited with exit code 1
+
+2026-10-23 11:15:06.207 CST [40236] LOG:  shutting down
+
+2026-10-23 11:15:06.488 CST [40236] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 11:15:07.329 CST [40236] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.189 s, total=1.122 s; sync files=1, longest=0.189 s, average=0.189 s; distance=0 kB, estimate=15756 kB; lsn=E/E75754D8, redo lsn=E/E75754D8
+
+2026-10-23 11:15:07.482 CST [36356] LOG:  database system is shut down
+

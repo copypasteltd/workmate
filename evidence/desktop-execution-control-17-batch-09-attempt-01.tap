@@ -1,0 +1,817 @@
+2026-10-23 12:46:39.739 CST [4192] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 12:46:39.748 CST [4192] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 12:46:39.748 CST [4192] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 12:46:39.937 CST [228] LOG:  database system was shut down at 2026-10-23 12:46:34 CST
+
+2026-10-23 12:46:40.027 CST [4192] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: SSO configuration has global permission, current MFA, CAS, secret redaction and a probe-before-enable gate
+ok 1 - SSO configuration has global permission, current MFA, CAS, secret redaction and a probe-before-enable gate
+  ---
+  duration_ms: 5616.5248
+  ...
+# {"request_id":"880a6f9a-3901-4ef0-9d78-cb8823731919","code":"SSO_PROBE_FAILED","error_type":"Problem"}
+# Subtest: discovery enforces origins, redirects and advertised PKCE without changing an unverified connection
+ok 2 - discovery enforces origins, redirects and advertised PKCE without changing an unverified connection
+  ---
+  duration_ms: 116.1641
+  ...
+# Subtest: first binding requires independent email proof, scoped OTP purpose and single atomic consumption
+ok 3 - first binding requires independent email proof, scoped OTP purpose and single atomic consumption
+  ---
+  duration_ms: 364.2424
+  ...
+# Subtest: a known issuer/subject signs in again without re-linking and client_secret_basic also completes
+ok 4 - a known issuer/subject signs in again without re-linking and client_secret_basic also completes
+  ---
+  duration_ms: 292.0747
+  ...
+# Subtest: wrong signature, audience, issuer, nonce, expiry or email claims never create a binding
+ok 5 - wrong signature, audience, issuer, nonce, expiry or email claims never create a binding
+  ---
+  duration_ms: 270.9952
+  ...
+# Subtest: state and browser capability must match; callbacks exchange exactly once
+ok 6 - state and browser capability must match; callbacks exchange exactly once
+  ---
+  duration_ms: 116.2093
+  ...
+# Subtest: domain equality cannot enroll a stranger or bypass a removed membership
+ok 7 - domain equality cannot enroll a stranger or bypass a removed membership
+  ---
+  duration_ms: 110.2513
+  ...
+# Subtest: subject-with-proof accepts no email claim only after the independent work mailbox is proved
+ok 8 - subject-with-proof accepts no email claim only after the independent work mailbox is proved
+  ---
+  duration_ms: 118.205
+  ...
+# Subtest: five incorrect link codes exhaust that proof; another browser cannot consume it
+ok 9 - five incorrect link codes exhaust that proof; another browser cannot consume it
+  ---
+  duration_ms: 136.0282
+  ...
+# Subtest: disabling a connection revokes linked browser/native/refresh credentials and outstanding native grants
+ok 10 - disabling a connection revokes linked browser/native/refresh credentials and outstanding native grants
+  ---
+  duration_ms: 206.3821
+  ...
+# Subtest: configuration changes revoke old attempts and require metadata validation and fresh identity binding
+ok 11 - configuration changes revoke old attempts and require metadata validation and fresh identity binding
+  ---
+  duration_ms: 96.7901
+  ...
+# Subtest: unlink is owner-only, checks CAS, invalidates all sessions and never exposes external subjects
+ok 12 - unlink is owner-only, checks CAS, invalidates all sessions and never exposes external subjects
+  ---
+  duration_ms: 317.872
+  ...
+# Subtest: email login logout and account revision changes invalidate unexchanged native authorization codes
+ok 13 - email login logout and account revision changes invalidate unexchanged native authorization codes
+  ---
+  duration_ms: 175.2383
+  ...
+2026-10-23 12:46:51.243 CST [40952] ERROR:  permission denied for table sso_connections
+2026-10-23 12:46:51.243 CST [40952] STATEMENT:  SELECT * FROM sso_connections
+
+2026-10-23 12:46:51.402 CST [29556] ERROR:  permission denied for table federated_identities
+2026-10-23 12:46:51.402 CST [29556] STATEMENT:  SELECT * FROM federated_identities
+
+2026-10-23 12:46:51.452 CST [26968] ERROR:  permission denied for table federation_attempts
+2026-10-23 12:46:51.452 CST [26968] STATEMENT:  SELECT * FROM federation_attempts
+
+# Subtest: expired attempts scrub PKCE secrets and the app identity cannot read SSO control tables
+ok 14 - expired attempts scrub PKCE secrets and the app identity cannot read SSO control tables
+  ---
+  duration_ms: 308.1104
+  ...
+# Subtest: replacing an active external subject requires new proof and revokes prior browser/native sessions
+ok 15 - replacing an active external subject requires new proof and revokes prior browser/native sessions
+  ---
+  duration_ms: 355.2631
+  ...
+# Subtest: a replacement issuer may reuse a raw subject without inheriting or colliding with the old issuer's account
+ok 16 - a replacement issuer may reuse a raw subject without inheriting or colliding with the old issuer's account
+  ---
+  duration_ms: 527.2296
+  ...
+# Subtest: ES256 verifies a real P-256 signature and rejects a token signed by another EC key
+ok 17 - ES256 verifies a real P-256 signature and rejects a token signed by another EC key
+  ---
+  duration_ms: 322.7545
+  ...
+# Subtest: revoking a listed native session also revokes its rotated access token and refresh family
+ok 18 - revoking a listed native session also revokes its rotated access token and refresh family
+  ---
+  duration_ms: 100.6907
+  ...
+# Subtest: concurrent connection revocation and native exchange/rotation serialize without deadlock or surviving credentials
+ok 19 - concurrent connection revocation and native exchange/rotation serialize without deadlock or surviving credentials
+  ---
+  duration_ms: 248.395
+  ...
+2026-10-23 12:46:53.076 CST [9832] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 12:46:54.191 CST [9832] LOG:  checkpoint complete: wrote 49 buffers (0.3%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.011 s, sync=0.858 s, total=1.115 s; sync files=12, longest=0.170 s, average=0.072 s; distance=16975 kB, estimate=16975 kB; lsn=F/3E06AF90, redo lsn=F/3E06AF38
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: canonical gifts commit one durable financial intent, preserve exact money and never notify a preview or an idempotent replay twice
+ok 20 - canonical gifts commit one durable financial intent, preserve exact money and never notify a preview or an idempotent replay twice
+  ---
+  duration_ms: 4980.4094
+  ...
+# Subtest: a high-value gift remains silent while pending and rejected, while independent approval emits only the real committed gift
+ok 21 - a high-value gift remains silent while pending and rejected, while independent approval emits only the real committed gift
+  ---
+  duration_ms: 365.2864
+  ...
+# Subtest: payment recording and confirmation remain neutral; posting, refund commitments, unknown outcomes and partial payouts retain their distinct source facts
+ok 22 - payment recording and confirmation remain neutral; posting, refund commitments, unknown outcomes and partial payouts retain their distinct source facts
+  ---
+  duration_ms: 440.0241
+  ...
+# Subtest: mismatched external evidence remains an observation without turning its amount into a successful payment
+ok 23 - mismatched external evidence remains an observation without turning its amount into a successful payment
+  ---
+  duration_ms: 321.2013
+  ...
+# Subtest: real reservations, settlement, original-source compensation, gift expiry and zero credit limits all retain truthful journal semantics
+ok 24 - real reservations, settlement, original-source compensation, gift expiry and zero credit limits all retain truthful journal semantics
+  ---
+  duration_ms: 292.038
+  ...
+# Subtest: ordinary members see only their own funds; current workspace owners and admins receive enterprise events and demotion blocks old reads and receipt replay
+ok 25 - ordinary members see only their own funds; current workspace owners and admins receive enterprise events and demotion blocks old reads and receipt replay
+  ---
+  duration_ms: 256.6669
+  ...
+# Subtest: personal, tenant, user and execution-mode boundaries cannot be crossed with a notification UUID or account filter
+ok 26 - personal, tenant, user and execution-mode boundaries cannot be crossed with a notification UUID or account filter
+  ---
+  duration_ms: 98.2798
+  ...
+# Subtest: signed keyset cursors preserve every row, bind filters and session authority, reject tampering and exclude normally later deliveries
+ok 27 - signed keyset cursors preserve every row, bind filters and session authority, reject tampering and exclude normally later deliveries
+  ---
+  duration_ms: 153.3981
+  ...
+# Subtest: mark-read uses strict CSRF and durable idempotency; another user's receipt or unauthorized account cannot be replayed
+ok 28 - mark-read uses strict CSRF and durable idempotency; another user's receipt or unauthorized account cannot be replayed
+  ---
+  duration_ms: 118.0211
+  ...
+# Subtest: administratively suspended memberships cannot use the control transaction to read personal or enterprise notifications
+ok 29 - administratively suspended memberships cannot use the control transaction to read personal or enterprise notifications
+  ---
+  duration_ms: 56.6749
+  ...
+2026-10-23 12:47:04.037 CST [14136] ERROR:  controlled intent failure
+2026-10-23 12:47:04.037 CST [14136] CONTEXT:  PL/pgSQL function reject_financial_test_intent() line 1 at RAISE
+	SQL statement "INSERT INTO financial_outbox(billing_account_id,kind,journal_id) VALUES(NEW.billing_account_id,'journal',NEW.id)"
+	PL/pgSQL function capture_financial_delivery() line 5 at SQL statement
+	SQL statement "INSERT INTO billing_journal(id,billing_account_id,operation_id,actor_id,kind,direction,bucket,amount_micros,reason,source_entry_id,raw_entry_id,task_id,created_at)
+	 VALUES(NEW.id,NEW.billing_account_id,NEW.operation_id,NEW.actor_id,CASE WHEN NEW.kind='charge' THEN 'consume' ELSE NEW.kind END,
+	 CASE WHEN NEW.amount_micros>0 THEN 'credit' ELSE 'debit' END,
+	 CASE WHEN NEW.kind='charge' THEN 'reserved' WHEN NEW.kind IN ('gift','gift_expiry') OR sourcekind='gift' THEN 'promotional' ELSE 'paid' END,
+	 abs(NEW.amount_micros),NEW.reason,CASE WHEN NEW.kind='charge' THEN (SELECT journal_entry_id FROM reservations WHERE task_id=NEW.task_id) ELSE NEW.source_id END,NEW.id,NEW.task_id,NEW.created_at)"
+	PL/pgSQL function journal_ledger_entry() line 6 at SQL statement
+2026-10-23 12:47:04.037 CST [14136] STATEMENT:  INSERT INTO ledger(tenant_id,billing_account_id,kind,amount_micros,reference,source_id,expires_at,idempotency_key,reason) VALUES($1,$9,$2,$3,$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"3a4ccec1-8574-435c-9e44-392c2e3a96f4","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: a financial intent insertion failure rolls back canonical gift, wallet, audit, operation and preview consumption together
+ok 30 - a financial intent insertion failure rolls back canonical gift, wallet, audit, operation and preview consumption together
+  ---
+  duration_ms: 153.7742
+  ...
+2026-10-23 12:47:04.148 CST [14136] ERROR:  controlled delivery failure
+2026-10-23 12:47:04.148 CST [14136] CONTEXT:  PL/pgSQL function reject_financial_test_notice() line 1 at RAISE
+2026-10-23 12:47:04.148 CST [14136] STATEMENT:  INSERT INTO financial_notifications(outbox_id,recipient_id)
+	        SELECT $1,u.id FROM users u WHERE
+	        (u.id=$2 OR EXISTS(SELECT 1 FROM memberships m WHERE m.user_id=u.id AND m.tenant_id=$3 AND m.role IN ('owner','admin')))
+	        AND financial_recipient_allowed((SELECT billing_account_id FROM financial_outbox WHERE id=$1),u.id)
+	        ON CONFLICT(outbox_id,recipient_id) DO NOTHING
+
+# Subtest: a dispatcher failure retains the pending intent, creates no partial delivery, then retries once without changing money
+ok 31 - a dispatcher failure retains the pending intent, creates no partial delivery, then retries once without changing money
+  ---
+  duration_ms: 121.0113
+  ...
+2026-10-23 12:47:04.269 CST [27340] ERROR:  permission denied for table financial_outbox
+2026-10-23 12:47:04.269 CST [27340] STATEMENT:  SELECT * FROM financial_outbox
+
+2026-10-23 12:47:04.335 CST [17716] ERROR:  permission denied for table financial_notifications
+2026-10-23 12:47:04.335 CST [17716] STATEMENT:  SELECT * FROM financial_notifications
+
+2026-10-23 12:47:04.409 CST [11332] ERROR:  Financial delivery must retain its real unconsumed source
+2026-10-23 12:47:04.409 CST [11332] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 24 at RAISE
+2026-10-23 12:47:04.409 CST [11332] STATEMENT:  INSERT INTO financial_outbox(billing_account_id,kind,journal_id) VALUES($1,'journal',$2)
+
+2026-10-23 12:47:04.419 CST [11332] ERROR:  Financial notification requires an authorized account recipient
+2026-10-23 12:47:04.419 CST [11332] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 35 at RAISE
+2026-10-23 12:47:04.419 CST [11332] STATEMENT:  INSERT INTO financial_notifications(outbox_id,recipient_id) VALUES($1,$2)
+
+2026-10-23 12:47:04.422 CST [11332] ERROR:  Financial notification identity and delivery time are immutable
+2026-10-23 12:47:04.422 CST [11332] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 29 at RAISE
+2026-10-23 12:47:04.422 CST [11332] STATEMENT:  UPDATE financial_notifications SET recipient_id=$2 WHERE id=$1
+
+2026-10-23 12:47:04.422 CST [11332] ERROR:  Financial delivery history cannot be removed
+2026-10-23 12:47:04.422 CST [11332] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 4 at RAISE
+2026-10-23 12:47:04.422 CST [11332] STATEMENT:  DELETE FROM financial_notifications WHERE id=$1
+
+2026-10-23 12:47:04.423 CST [11332] ERROR:  Financial delivery intent and completed delivery are immutable
+2026-10-23 12:47:04.423 CST [11332] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 11 at RAISE
+2026-10-23 12:47:04.423 CST [11332] STATEMENT:  UPDATE financial_outbox SET dispatched_at=NULL WHERE id=$1
+
+2026-10-23 12:47:04.424 CST [11332] ERROR:  Financial delivery intent and completed delivery are immutable
+2026-10-23 12:47:04.424 CST [11332] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 11 at RAISE
+2026-10-23 12:47:04.424 CST [11332] STATEMENT:  UPDATE financial_outbox SET journal_id=$2 WHERE id=$1
+
+2026-10-23 12:47:04.424 CST [11332] ERROR:  Financial delivery history cannot be removed
+2026-10-23 12:47:04.424 CST [11332] CONTEXT:  PL/pgSQL function guard_financial_delivery() line 4 at RAISE
+2026-10-23 12:47:04.424 CST [11332] STATEMENT:  DELETE FROM financial_outbox WHERE id=$1
+
+# Subtest: database guards reject forged subjects, mutable delivery facts and low-privilege access independently of HTTP
+ok 32 - database guards reject forged subjects, mutable delivery facts and low-privilege access independently of HTTP
+  ---
+  duration_ms: 237.5733
+  ...
+# Subtest: bounded concurrent delivery drains more than one page with one recipient row per source and preserves values beyond Number precision
+ok 33 - bounded concurrent delivery drains more than one page with one recipient row per source and preserves values beyond Number precision
+  ---
+  duration_ms: 1216.8614
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# populated financial delivery upgrade: applied migration 61
+2026-10-23 12:47:08.625 CST [9832] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 12:47:21.092 CST [9832] LOG:  checkpoint complete: wrote 2281 buffers (13.9%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.302 s, sync=11.943 s, total=12.468 s; sync files=1321, longest=0.347 s, average=0.010 s; distance=29039 kB, estimate=29039 kB; lsn=F/3FD44750, redo lsn=F/3FCC6B38
+
+# Subtest: an actual populated 060 upgrade preserves every original public row and does not fabricate old financial notifications
+ok 34 - an actual populated 060 upgrade preserves every original public row and does not fabricate old financial notifications
+  ---
+  duration_ms: 15693.7027
+  ...
+# Subtest: strict supplementary schema retains original Money bytes and rejects unknown amounts, extra sensitive fields and malformed commands
+ok 35 - strict supplementary schema retains original Money bytes and rejects unknown amounts, extra sensitive fields and malformed commands
+  ---
+  duration_ms: 324.9428
+  ...
+2026-10-23 12:47:21.713 CST [9832] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 12:47:22.043 CST [9832] LOG:  checkpoint complete: wrote 13 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.183 s, total=0.330 s; sync files=4, longest=0.093 s, average=0.046 s; distance=838 kB, estimate=26218 kB; lsn=F/3FD98648, redo lsn=F/3FD985F0
+
+# Subtest: unread aborts, cancelled media and rejected response protocols release all owned process resources
+    # Subtest: abort-unread-image
+    ok 1 - abort-unread-image
+      ---
+      duration_ms: 468.8215
+      ...
+    # Subtest: cancel-image
+    ok 2 - cancel-image
+      ---
+      duration_ms: 468.5322
+      ...
+    # Subtest: invalid-response-protocol
+    ok 3 - invalid-response-protocol
+      ---
+      duration_ms: 489.3396
+      ...
+    1..3
+ok 36 - unread aborts, cancelled media and rejected response protocols release all owned process resources
+  ---
+  duration_ms: 1428.0295
+  ...
+# Subtest: scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+ok 37 - scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+  ---
+  duration_ms: 100.5999
+  ...
+# Subtest: authority revocation between responses blocks the next provider call and does not expose callback errors
+ok 38 - authority revocation between responses blocks the next provider call and does not expose callback errors
+  ---
+  duration_ms: 21.4126
+  ...
+# Subtest: credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+ok 39 - credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+  ---
+  duration_ms: 28.5165
+  ...
+# Subtest: model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+ok 40 - model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+  ---
+  duration_ms: 45.0611
+  ...
+# Subtest: declared and streamed oversized request bodies never reach the provider
+ok 41 - declared and streamed oversized request bodies never reach the provider
+  ---
+  duration_ms: 11.1339
+  ...
+# Subtest: a run has one in-flight request and a hard forwarded-request ceiling
+ok 42 - a run has one in-flight request and a hard forwarded-request ceiling
+  ---
+  duration_ms: 13.341
+  ...
+# Subtest: expiry and explicit cancellation revoke a scoped credential without a provider request
+ok 43 - expiry and explicit cancellation revoke a scoped credential without a provider request
+  ---
+  duration_ms: 81.7154
+  ...
+# Subtest: redirects are not followed and an uncertain dispatched request cannot be replayed
+ok 44 - redirects are not followed and an uncertain dispatched request cannot be replayed
+  ---
+  duration_ms: 11.5031
+  ...
+# Subtest: truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+ok 45 - truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+  ---
+  duration_ms: 37.0125
+  ...
+# Subtest: split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+ok 46 - split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+  ---
+  duration_ms: 3250.4628
+  ...
+# Subtest: an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+ok 47 - an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+  ---
+  duration_ms: 11.2909
+  ...
+# Subtest: the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+ok 48 - the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+  ---
+  duration_ms: 163.3251
+  ...
+# Subtest: registered function-call frames and arguments are streamed unchanged after validation
+ok 49 - registered function-call frames and arguments are streamed unchanged after validation
+  ---
+  duration_ms: 15.3645
+  ...
+# Subtest: malformed or oversized SSE frames are rejected before forwarding an event
+ok 50 - malformed or oversized SSE frames are rejected before forwarding an event
+  ---
+  duration_ms: 26.0867
+  ...
+# Subtest: stream idle timeout aborts an accepted provider request and prevents another dispatch
+ok 51 - stream idle timeout aborts an accepted provider request and prevents another dispatch
+  ---
+  duration_ms: 55.2568
+  ...
+# Subtest: request deadline aborts even a non-idle stream and a response with no first byte
+ok 52 - request deadline aborts even a non-idle stream and a response with no first byte
+  ---
+  duration_ms: 153.2418
+  ...
+# Subtest: declared and chunked oversized responses are bounded and never automatically replayed
+ok 53 - declared and chunked oversized responses are bounded and never automatically replayed
+  ---
+  duration_ms: 45.4616
+  ...
+# Subtest: image generation and multipart editing use the same trusted authorization and exact frozen specification
+ok 54 - image generation and multipart editing use the same trusted authorization and exact frozen specification
+  ---
+  duration_ms: 11.4747
+  ...
+# Subtest: invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+ok 55 - invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+  ---
+  duration_ms: 3.7273
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# Subtest: original strict invitation contract, required matching tenant header, stable retry and no delivery secrets
+ok 56 - original strict invitation contract, required matching tenant header, stable retry and no delivery secrets
+  ---
+  duration_ms: 5213.167
+  ...
+# Subtest: acceptance is email-bound, concurrent same-key retries recover one original Member, other keys cannot reuse it
+ok 57 - acceptance is email-bound, concurrent same-key retries recover one original Member, other keys cannot reuse it
+  ---
+  duration_ms: 324.5021
+  ...
+# Subtest: stable MemberList pagination exposes no directory fields and rejects foreign cursors and headers
+ok 58 - stable MemberList pagination exposes no directory fields and rejects foreign cursors and headers
+  ---
+  duration_ms: 118.3772
+  ...
+# Subtest: removed membership immediately denies access and stale acceptance cannot restore it; old removal replay cannot delete a fresh grant
+ok 59 - removed membership immediately denies access and stale acceptance cannot restore it; old removal replay cannot delete a fresh grant
+  ---
+  duration_ms: 144.1393
+  ...
+# Subtest: a changed issuer membership revision invalidates pending permissions and cancels queued mail
+ok 60 - a changed issuer membership revision invalidates pending permissions and cancels queued mail
+  ---
+  duration_ms: 152.9837
+  ...
+# Subtest: owner invitations work; admins cannot grant or remove privileged roles; cross-workspace projects are rejected
+ok 61 - owner invitations work; admins cannot grant or remove privileged roles; cross-workspace projects are rejected
+  ---
+  duration_ms: 133.8461
+  ...
+# Subtest: concurrent owners cannot remove each other to leave an ownerless workspace
+ok 62 - concurrent owners cannot remove each other to leave an ownerless workspace
+  ---
+  duration_ms: 87.5741
+  ...
+# Subtest: delivery failure is durable and retryable; queued secrets are encrypted and erased after actual mailbox delivery
+ok 63 - delivery failure is durable and retryable; queued secrets are encrypted and erased after actual mailbox delivery
+  ---
+  duration_ms: 100.5362
+  ...
+# Subtest: resend rotates the single-use secret; stale delivery completion cannot overwrite its newer generation
+ok 64 - resend rotates the single-use secret; stale delivery completion cannot overwrite its newer generation
+  ---
+  duration_ms: 125.111
+  ...
+# Subtest: revoke and expiry erase queued credentials and never grant membership
+ok 65 - revoke and expiry erase queued credentials and never grant membership
+  ---
+  duration_ms: 118.3837
+  ...
+# Subtest: archived projects invalidate pending invitations and active membership is never silently overwritten
+ok 66 - archived projects invalidate pending invitations and active membership is never silently overwritten
+  ---
+  duration_ms: 101.137
+  ...
+# Subtest: an exhausted abandoned delivery lease becomes a visible failure; explicit resend starts a new bounded generation
+ok 67 - an exhausted abandoned delivery lease becomes a visible failure; explicit resend starts a new bounded generation
+  ---
+  duration_ms: 66.6453
+  ...
+# Subtest: unused older invitations cannot bypass member removal through either member-management endpoint
+ok 68 - unused older invitations cannot bypass member removal through either member-management endpoint
+  ---
+  duration_ms: 289.8266
+  ...
+2026-10-23 12:47:37.615 CST [9832] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 12:47:38.658 CST [9832] LOG:  checkpoint complete: wrote 54 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.839 s, total=1.044 s; sync files=15, longest=0.180 s, average=0.056 s; distance=16667 kB, estimate=25263 kB; lsn=F/40DDF370, redo lsn=F/40DDF318
+
+1..68
+# tests 71
+# suites 0
+# pass 71
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 58515.0072
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/9a63a738-2f60-4417-b9a7-13fc49efd2e8/result.json","sha256":"82266bbdb9eb7aff8f2186dad79a83e752c0631923418359243ef0dbca2b8041","exit_code":0}
+2026-10-23 12:47:39.528 CST [4192] LOG:  received fast shutdown request
+
+2026-10-23 12:47:39.567 CST [4192] LOG:  aborting any active transactions
+
+2026-10-23 12:47:39.574 CST [4192] LOG:  background worker "logical replication launcher" (PID 37324) exited with exit code 1
+
+2026-10-23 12:47:39.575 CST [9832] LOG:  shutting down
+
+2026-10-23 12:47:39.624 CST [9832] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 12:47:39.788 CST [9832] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.039 s, total=0.214 s; sync files=1, longest=0.039 s, average=0.039 s; distance=0 kB, estimate=22737 kB; lsn=F/40DDF488, redo lsn=F/40DDF488
+
+2026-10-23 12:47:39.931 CST [4192] LOG:  database system is shut down
+

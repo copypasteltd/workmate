@@ -168,7 +168,7 @@ async function finish(setup, batches) {
     const bytes = await readFile(value.fixture_cleanup.path); assert.equal(sha(bytes), value.fixture_cleanup.sha256);
     const cleanup = JSON.parse(bytes); assert.equal(cleanup.status, 'passed'); assert.ok(cleanup.results.every(item => item.reclaimed));
   }
-  const required = ['all seventeen connected native roles', 'native company tools recheck owner', 'native designer generation and editing', 'native company namespace rejects altered schemas',
+  const required = ['all eighteen connected native roles', 'native workflow specialist exposes eight scoped tools', 'explicitly published native SOPs retain workflow provenance', 'reused native workflows preserve original file lineage', 'reusable native source snapshots outlive the creator task', 'native company tools recheck owner', 'native designer generation and editing', 'native company namespace rejects altered schemas',
     'an unknown native company image result fences', 'real native Codex edits local files, uses company Image 2 and same-thread edits'];
   required.forEach(name => assert.ok(combined.split(/\r?\n/).some(line => /^ok \d+ - /.test(line) && line.includes(name)), name));
   const chosen = [...selected.values()].map(data => { const row = batches.find(item => item.data === data); return { path: row.file, sha256: null, batch: data.batch, files: data.files, counts: data.counts }; });
