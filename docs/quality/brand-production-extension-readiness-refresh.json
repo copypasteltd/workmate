@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-23T15:40:10.999264+00:00",
+  "path": "copypaste-delivery/scripts/qa-extension-chat.ts",
+  "archive": "docs/quality/history/stage79-before-extension-readiness/qa-extension-chat.ts.txt",
+  "before_sha256": "11f98fc51e34c10f09d2b4a8439b3f544630b077e1a38b005563029e77e8c4da",
+  "after_sha256": "fd3d3e3613f2e0604d144aade5fd90daad1c2193382c1c386ecefd839ab400d4",
+  "unchanged_prefix_and_suffix": true,
+  "before_lines": 1,
+  "after_lines": 11,
+  "replacement": "  await until(() => evaluate(\"document.readyState==='complete' && document.querySelector('#sign-in') && !document.querySelector('#sign-in').disabled\"), Boolean, \"loaded native sign-in control\");\n  let popup;\n  try {\n    const popupEvent = context.waitForEvent(\"page\");\n    await evaluate(\"document.querySelector('#sign-in').click()\");\n    popup = await popupEvent;\n  } catch (error) {\n    const state = await evaluate(\"({ready:document.readyState,disabled:document.querySelector('#sign-in')?.disabled,error:document.querySelector('#error')?.textContent})\");\n    console.error(\"Native sign-in diagnostic \" + JSON.stringify(state));\n    throw error;\n  }",
+  "scope": "Only the extension journey harness waits for its actual document/control and records sign-in failures. Web, Admin and Desktop journeys do not import or execute this file. Their application/UI/verifier sources are unchanged; this one broadly snapshotted unused file is a reviewed later difference. Current extension execution and full platform qualification use the new bytes. No runtime, schema, migration or product UI change.",
+  "historical_failed_extension": "evidence/extension-chat-08.json",
+  "earlier_platform_setup_only": "evidence/desktop-execution-control-22-plan.json"
+}

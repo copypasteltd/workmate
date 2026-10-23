@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-22T12:43:42.718609+00:00",
+  "at": "2026-10-23T16:52:08.548678+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -972,8 +972,8 @@
     "original_acceptance_baseline_preserved": true
   },
   "summary": {
-    "partial_verified": 81,
-    "completion_not_proven": 21
+    "partial_verified": 82,
+    "completion_not_proven": 20
   },
   "fully_accepted_requirements": 0,
   "qualified_live_roles": 0,
@@ -12524,19 +12524,38 @@
       "requirement": "品牌资料：管理 Logo、颜色、字体、文案规则、产品信息和使用范围；生成任务引用固定版本。",
       "acceptance_case": "TC-013",
       "acceptance_conditions": "原任务可追溯固定品牌版本；缺字/过期事实被定位，不静默替换价格或声称字体已授权。",
-      "assessment": "completion_not_proven",
-      "finding": "已有品牌记录；字体、范围、固定资料版本的完整生产链需验证。",
+      "assessment": "partial_verified",
+      "finding": "已验证不可变品牌版本、固定专家/云端设计任务、真实字体覆盖/使用声明与促销期限检查、来源治理，以及 Web/打包 Desktop 品牌表单；全设计业务与真实客户验收仍未证明。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/assets.ts",
         "dev/copypaste-platform/src/storage.ts",
         "dev/copypaste-platform/src/render.ts",
-        "dev/copypaste-platform/src/admin-content.ts"
+        "dev/copypaste-platform/src/admin-content.ts",
+        "dev/copypaste-platform/src/brand-production.ts",
+        "dev/copypaste-platform/src/brand-font.ts",
+        "dev/copypaste-platform/migrations/096-versioned-brand-production.sql",
+        "dev/copypaste-platform/tests/brand-production.test.ts",
+        "dev/copypaste-web/src/brand-library.tsx",
+        "dev/copypaste-desktop/renderer/src/brand-library.tsx"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        "brand_production_repair"
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有品牌记录；字体、范围、固定资料版本的完整生产链需验证。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "已有品牌记录；字体、范围、固定资料版本的完整生产链需验证。",
+      "verified_repairs": [
+        {
+          "cluster": "fixed_brand_production",
+          "verified_subflow": "不可变连续版本、并发/幂等、固定旧版专家与真实云端设计工具任务、TTF/OTF cmap4/12 与实际路径/PNG/PDF、价格/促销/渠道/语言/声明期限检查、跨租户/项目与 Admin 支持边界、源文件隔离删除传播、Web 与无可见滚动条打包 Desktop 表单。客户/模型内容为明确夹具。",
+          "evidence": [
+            "brand_production_repair"
+          ],
+          "implementation_docs": [
+            "technical/79-versioned-brand-production.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "完整品牌历史分页/管理、其他设计及媒体格式逐项端到端接入、所有本机专业角色的品牌生产约束、自然语言语义事实遵循、全部字体排版及使用范围、真实客户任务接受尚未证明。字体权利记录仅为客户声明。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -39226,9 +39245,9 @@
     "verifier_sha256": "7fe1ba7d85d374e8c19a5b751e50a862b25c617c3ede86627a937ea3c75a7ad5"
   },
   "current_source_qualification": {
-    "stage": 78,
-    "checkpoint": "business-quality-checkpoint.json",
-    "note": "Versioned customer review and scoped quality subflow, with actual native/Desktop/Web/Admin interfaces and explicit model/business fixtures. Full original acceptance remains unproven."
+    "stage": 79,
+    "checkpoint": "brand-production-checkpoint.json",
+    "note": "Fixed brand production subflow with actual native Desktop/Web forms and explicit model/customer fixtures. Checkpoint identifies the reviewed later difference in one unrelated extension harness, fresh current extension execution and full platform23. Original complete acceptance remains unproven."
   },
   "extension_conversation_repair": {
     "at": "2026-10-22T14:06:48.456750+00:00",
@@ -39386,5 +39405,17 @@
     "web_admin_checks": 4,
     "extension_checks": 8,
     "TC_056_real_business_acceptance": "not_run"
+  },
+  "brand_production_repair": {
+    "stage": 79,
+    "checkpoint": "brand-production-checkpoint.json",
+    "status": "verified_fixed_brand_production_subflow",
+    "platform_tests": 874,
+    "client_tests": 68,
+    "packaged_ui_checks": 30,
+    "brand_web_checks": 4,
+    "web_admin_checks": 4,
+    "extension_checks": 8,
+    "original_full_acceptance": "not_proven"
   }
 }

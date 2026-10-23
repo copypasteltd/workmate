@@ -1084,3 +1084,9 @@ G10 验证 [完整 Admin Dashboard](../product/08-admin-dashboard.md) 与 [控�
 ## 8. 本轮验证边界
 
 本轮执行文档/契约静态验证，复用此前已记录的官网取样和离线样板证据；未重跑浏览器。实际结果见 [文档审查](03-documentation-review.md)。没有启动产品服务、模型付费请求、正式平台授权或原生客户端；不会把样板或算例签名验证扩大解释为真实产品、安全或完整可访问性验收。
+
+## 阶段 79 局部执行证据 / Bounded execution
+
+原 TC 编号、步骤和完整验收条件保持。REQ-013/TC-013 已取得固定版本/字体/事实的局部链路证据，仍为 `not_completed`；874 项代码测试不替代 102 项完整产品验收。实际 Web、打包 Desktop、Admin、原生 Side Panel 及精确源码/媒体边界见 [新检查点](brand-production-checkpoint.json)。字体使用记录仅为客户声明，其他格式、全本机角色、真实客户任务及 G01–G10 另行验证。
+
+Original TC definitions are preserved. This bounded brand-production chain does not complete TC-013 or all product acceptance; real customers, complete formats, every local role, and production gates remain unproven.

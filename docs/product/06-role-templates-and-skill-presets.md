@@ -1,5 +1,7 @@
 # 预设角色与 Skill 模板需求
 
+**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
+
 版本：1.5 · 2026-10-19 · 来源：ROLE01，用户要求预先配置至少 12 个客户可直接选用的角色，覆盖软件开发至完整设计业务，并明确举例「设计师 = Codex + 设计类 Skill + Image 2」。本文件展开为 18 个角色。当前源码已有持久模板目录、依赖预检和实例化，详见 [实际实现与限制](../technical/25-role-template-registry-and-runtime-binding.md)；全部专业角色仍待完整真实业务验收。
 
 当前设计师工具增加实际单页 PDF 审阅稿与独立可编辑 JSON，Web 和源码 Desktop 可导出并下载，细则见 [设计 PDF 交付](../technical/26-design-pdf-review-delivery.md)。PDF 为图片审阅稿；真实 Image 2、完整专业交付和至少 12 个合格角色的要求保持不变。

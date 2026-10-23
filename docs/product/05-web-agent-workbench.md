@@ -1,5 +1,7 @@
 # Web Agent 工作台需求
 
+**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
+
 版本：1.5 · 2026-10-18。承接用户指定的 WorkBuddy 与 Accio 产品逻辑对标，证据和推导见 [研究报告](../research/01-web-benchmark-workbuddy-accio.md)。最终视觉以公司官网及 [CopyPaste 品牌规范](07-brand-design-system.md) 为准。本文件是 Web 产品形态的权威说明；通用业务与三端要求仍见 [PRD](01-prd.md) 和 [SRS](../requirements/01-srs.md)。
 
 ## 1. 产品形态与核心承诺

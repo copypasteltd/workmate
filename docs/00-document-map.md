@@ -1,6 +1,8 @@
 # 文档体系与使用规则
 
-**阶段 78 当前增量：** 补齐固定交付版本的接受/修改/弃用、独立人工投入、实际读取复用及带范围的后台品质汇总，修正控制端来源检查。Desktop 保留本机 Codex、无边框、真实进度和隐藏滚动条；紧凑窗口实际聚焦输入、输入区及回执可用。平台 861、客户端 68、打包 26、Web/Admin 4、原生侧栏 8 项分别验证。新增 SQL095 和六项接口（434 总计），SQL001–094 与原规范不变。102 REQ/102 TC、81/21/0、G01–G10 及 TC-056 真实业务验收边界保留。见 [方案与当前证据](technical/78-business-delivery-quality.md)。
+**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](technical/79-versioned-brand-production.md)。
+
+**阶段 78 历史基线：** 补齐固定交付版本的接受/修改/弃用、独立人工投入、实际读取复用及带范围的后台品质汇总，修正控制端来源检查。Desktop 保留本机 Codex、无边框、真实进度和隐藏滚动条；紧凑窗口实际聚焦输入、输入区及回执可用。平台 861、客户端 68、打包 26、Web/Admin 4、原生侧栏 8 项分别验证。新增 SQL095 和六项接口（434 总计），SQL001–094 与原规范不变。102 REQ/102 TC、81/21/0、G01–G10 及 TC-056 真实业务验收边界保留。见 [方案与当前证据](technical/78-business-delivery-quality.md)。
 
 **阶段 77 历史基线：** Desktop 新会话接入十二项客户本机浏览器工具，真实操作/上传/截图/下载经本机 Codex 与公司网关；Stop/撤权回收页面。Desktop 取消旧进度条约束，保留真实进度，隐藏滚动条并重排成果/代码/表格，验证三种实际窗口、滚轮/键盘及双语浅深主题。平台 851、客户端 68、内核 17、独立浏览器 10、打包旅程 25 项分别通过；SQL001–094、428 条接口、102 REQ/102 TC 与 81/21/0 保留。Extension 仍为原生右侧栏获准文件上传与云端 Codex，无新 UI 计数。见 [当前方案与限定证据](technical/77-desktop-native-browser.md)。
 
@@ -117,3 +119,11 @@ CLIENT01 的本机 Desktop 与对话附件 Extension 约束见 [需求补充](re
 - [企业席位、存储与实际容量约束](technical/48-enterprise-seat-and-storage-enforcement.md)。
 - [VIP 与显式赠额的同事务组合开通](technical/49-atomic-vip-and-explicit-credit.md)。
 - [事务费用通知及 Web／无边框 Desktop／原生 Side Panel 账户视图](technical/50-durable-financial-notifications.md)。
+
+## Stage79 品牌生产导航 / Brand production navigation
+
+- [固定品牌实现 / Implementation](technical/79-versioned-brand-production.md)
+- [增量接口 / Additive API](contracts/brand-production-openapi.json)
+- [精确运行证据 / Source and execution proof](quality/brand-production-checkpoint.json)
+- [实际界面复核 / Actual visual review](quality/brand-production-visual-review.md)
+- [更新说明 / Changes](changes/2026-10-24-versioned-brand-production.md)

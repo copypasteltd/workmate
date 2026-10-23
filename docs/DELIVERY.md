@@ -1,6 +1,8 @@
 # CopyPaste 0.5.0 代码交付入口
 
-**阶段 78 当前增量：** 补齐固定交付版本的接受/修改/弃用、独立人工投入、实际读取复用及带范围的后台品质汇总，修正控制端来源检查。Desktop 保留本机 Codex、无边框、真实进度和隐藏滚动条；紧凑窗口实际聚焦输入、输入区及回执可用。平台 861、客户端 68、打包 26、Web/Admin 4、原生侧栏 8 项分别验证。新增 SQL095 和六项接口（434 总计），SQL001–094 与原规范不变。102 REQ/102 TC、81/21/0、G01–G10 及 TC-056 真实业务验收边界保留。见 [方案与当前证据](technical/78-business-delivery-quality.md)。
+**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](technical/79-versioned-brand-production.md)。
+
+**阶段 78 历史基线：** 补齐固定交付版本的接受/修改/弃用、独立人工投入、实际读取复用及带范围的后台品质汇总，修正控制端来源检查。Desktop 保留本机 Codex、无边框、真实进度和隐藏滚动条；紧凑窗口实际聚焦输入、输入区及回执可用。平台 861、客户端 68、打包 26、Web/Admin 4、原生侧栏 8 项分别验证。新增 SQL095 和六项接口（434 总计），SQL001–094 与原规范不变。102 REQ/102 TC、81/21/0、G01–G10 及 TC-056 真实业务验收边界保留。见 [方案与当前证据](technical/78-business-delivery-quality.md)。
 
 **阶段 77 历史基线：** Desktop 新会话接入十二项客户本机浏览器工具，真实操作/上传/截图/下载经本机 Codex 与公司网关；Stop/撤权回收页面。Desktop 取消旧进度条约束，保留真实进度，隐藏滚动条并重排成果/代码/表格，验证三种实际窗口、滚轮/键盘及双语浅深主题。平台 851、客户端 68、内核 17、独立浏览器 10、打包旅程 25 项分别通过；SQL001–094、428 条接口、102 REQ/102 TC 与 81/21/0 保留。Extension 仍为原生右侧栏获准文件上传与云端 Codex，无新 UI 计数。见 [当前方案与限定证据](technical/77-desktop-native-browser.md)。
 
@@ -137,3 +139,13 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 
 
 本轮新增 [排队控制与 Codex 续聊原语](technical/31-task-controls-and-native-continuation.md)：三端初始排队暂停/同任务恢复、Admin 共用守卫、原生线程增量用量和回执故障处理；五组跨端流程通过。业务 Worker 的已付费步骤恢复仍未实现，上一轮安装包/ZIP 保留原清单。
+
+## Stage79 当前本机候选 / Current local candidate
+
+实际执行候选位于此工作区 Delivery 目录相对路径 `../copypaste-desktop/.data/local-candidates/09278df5-f58d-48f7-bd6f-3c5065f430d0/win-unpacked/CopyPaste.exe`。该目录由打包器生成，不纳入 Git 源码；其他设备按 Desktop 双语 README 配置公司接口与固定本机 Codex 后执行 `npm run package:dir` 重建。部署客户端前先在后端应用 SQL096。
+
+`app.asar` SHA-256: `9f9d4180fdbe8f47059af310b97767861a96e22397e70a9f5fa7778e5353dc6d`。
+
+Codex SHA-256: `00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c`。
+
+Actual unsigned candidate, 30 packaged checks and 68 unit cases; authenticated company services are required. This local candidate and explicit model/business fixtures do not establish signed installation or production qualification. See the [exact checkpoint](quality/brand-production-checkpoint.json) and [current changes](changes/2026-10-24-versioned-brand-production.md).

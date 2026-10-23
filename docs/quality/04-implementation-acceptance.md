@@ -1,5 +1,7 @@
 # 产品实现验收与交付记录
 
+**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
+
 2026-10-22 的 [CLIENT01](../requirements/03-client-execution-amendment.md) 已增加 Desktop 本机 Codex/完整权限与 Extension 对话附件体验的明确条件。当前代码未完整达到，详见 [方向审计](client-direction-audit.json)；本页及既有录屏只证明其原执行架构与版本，不代表这些补充条件已经验收。
 
 版本：1.6 · 2026-10-18 · 范围：0.1.0 本机原生实现的历史留存；当前版本见 [0.2.0 验收](05-persistent-work-acceptance.md)。原始具体结果随 [历史机器汇总](versions/0.1.0/implementation-evidence.json) 记录；六仓库、启动与详细边界见 [实施清单](../technical/12-implementation-and-repositories.md)。
