@@ -1,0 +1,88 @@
+# 交付评价与业务质量 / Delivery review and business quality
+
+本补充落实 REQ-012、REQ-022、REQ-056。任务技术状态与客户评价分离；SQL001–094 保持原样，通过 SQL095 增量安装。模型与业务素材仍可使用明确标记的模拟数据，客户接受、人工投入和收益不得由模型自动虚构。
+
+状态：实现和最终源码验证中。原 102 项需求、102 项测试及 G01–G10 不变。本增量不将 TC-056 的真实客户业务验收改成模拟页面验收。
+
+## 交付与评价
+
+审阅使用当前任务输出摘要及当前有效交付物的版本 ID、SHA-256 组成固定交付快照。审阅记录只追加，不覆盖。支持接受、需修改、弃用；未覆盖当前交付的评价为待审阅。只审阅部分交付物时，其余交付物仍待审阅。交付物增删、换版、隔离、删除或来源失效后，旧评价不能证明新交付被接受。
+
+保留原规范 POST `/v1/tasks/{task_id}/reviews` 的 ReviewCreate 与 Review 响应。项目接口供 Web、Extension 云端任务及 Desktop 本机任务使用；本机任务可以评价没有上传到云端的文本交付，不扫描或上传本机文件。版本检查、幂等回执和授权检查均在服务端执行，重试不得重复增加评价或费用。
+
+产品表单必须同时提交 `expected_version` 和 GET 返回的 `expected_delivery_hash`。任务版本变化，或在任务版本未变化时交付物换版，都会返回 409，要求重新载入交付后再审阅。原规范接口保持原请求结构，可选使用 `If-Match` 与 `X-Delivery-SHA256`；省略时审阅提交时的当前交付。意见最多 5,000 字符；该运行限制不改写原规范的 ReviewCreate。当前客户端使用带强制前提条件的项目接口。
+
+旧版本任务上的单一 `acceptance` 字段未保留明确交付版本，不能迁移为客户已接受当前交付的证据。升级后需重新审阅；原字段仅为兼容缓存，新列表、规范任务响应和汇总均计算版本化评价状态。原 `/acceptance` 入口兼容已有调用，但写入相同追加记录，不再只是切换状态。
+
+```mermaid
+flowchart LR
+  Cloud[Web / native Chrome Side Panel] --> CloudTask[Company cloud Codex task]
+  Desktop[Frameless Desktop] --> LocalTask[Customer-device Codex task]
+  CloudTask --> Delivery[Current output and fixed artifact versions]
+  LocalTask --> Delivery
+  Delivery --> Preconditions[Task version and delivery digest]
+  Preconditions --> Review[Customer review / immutable history]
+  Review --> Summary[Authorized quality and service-cost aggregates]
+  Human[Customer-reported cumulative human effort] --> Summary
+  Reads[Actual fixed-version reads by other tasks] --> Summary
+  Admin[Scoped admin.usage.read / explicit denies] --> Summary
+```
+
+## 接口与界面
+
+以下 `{base}` 为 `/v1/tenants/{tenant}/projects/{project}`。完整增量规范见 [business-quality-openapi.json](../contracts/business-quality-openapi.json)，后端随附副本必须相同；原 [openapi.json](../contracts/openapi.json) 保持原样。
+
+主文档的原始契约与后端 `catalog/openapi.json` 是此前已经不同的权威版本和运行派生副本。本轮分别核对它们各自已发布提交的原始字节，均未改写，不宣称这两份历史文件相同；新增的业务品质契约在主文档和后端之间逐字节一致。
+
+| 方法与路径 | 行为与权限 |
+| --- | --- |
+| GET `{base}/tasks/{task}/quality` | 项目读取与任务私有范围；当前交付摘要、版本、最新人工投入及最近 50 条评价 |
+| POST `{base}/tasks/{task}/reviews` | 项目 approve 权限；成功且非 plan 的有效交付；强制双前提条件；201 |
+| POST `/v1/tasks/{task_id}/reviews` | 保留原 ReviewCreate / Review；`X-Tenant-ID` 与相同客户权限；201 |
+| POST `{base}/tasks/{task}/quality/measurements` | 项目 approve 权限；成功、失败或取消任务；任务版本前提；201 |
+| GET `{base}/quality` | 项目读取；私有任务继续受 RLS 约束 |
+| GET `/v1/admin/quality` | Admin 身份、`admin.usage.read`、租户/项目范围与显式拒绝；只读汇总 |
+
+写入均需要幂等键；Cookie 请求沿用 CSRF，原生请求沿用已有受限身份。授权、来源和当前范围在幂等回执读取前重新检查，权限撤销后不能靠旧键读取结果。失败重试复用原键；同键不同正文冲突，过期版本不会覆盖其他客户刚提交的记录。
+
+Web 在任务详情显示评价，项目用量页显示统计；Admin 提供独立「交付品质」页面。Desktop 在本机结果的「审阅交付」折叠区显示评价，表单处于可纵向访问的消息容器内，保留无边框和无可见滚动条设计；展开后不能挤出输入区。Extension 仍为原生右 Side Panel 的聊天与附件，任务详情中的评价写入云端，不启动本机 Agent，也不要求安装 Desktop。
+
+## 人工投入与复用
+
+用户可以独立记录人工基线分钟数、累计人工投入分钟数及累计人工修改次数；空值表示未提供，0 表示用户明确填写为零。所有这些值均标为客户填报，不以运行耗时推断节省时间、工资、ROI 或续费。修改这些记录同样保留历史与操作者。
+
+可验证的复用依据为其他任务实际读取了本任务生成的固定资产版本，来源为已有 `task_source_reads`；仅选择附件、预览或下载不算模型复用。显示已观察到的复用及其中技术成功的任务数量。本机未登记资产的外部复用与客户续用仍需单独的真实业务证据，不以推测补齐。
+
+## 统计口径与权限
+
+项目统计使用同一创建时间区间内有权访问的任务，分别显示技术成功、当前完整交付接受率、待审阅、需修改、弃用、人工记录覆盖率、修改次数和复用。默认最近 30 天，可选至多 366 天的 `[from,to)` 创建时间区间及模拟/已配置服务模式。接受率分母为有有效交付的非 plan 成功任务，不用所有任务或仅已评任务替代。当前需修改状态与客户累计要求修改次数分列。
+
+时间筛选限定的是来源任务的建立时间，不是重建某个历史时点。评价与人工投入取查询时的当前/最新状态，复用取该组来源任务至查询时已记录的其他任务读取；后续发生的评价或复用会改变同一建立时间区间的结果。不能把这些当前状态指标当成已冻结的历史报表。
+
+失败、取消和费用待核对任务的已知费用也进入费用总额；已知费用为每个任务 `max(charged_micros,accrued_micros)`，不重复相加。待核对或未结算数量不为零时，均摊成本为空；无已接受交付时同样为空。显示的「服务成本」为公司任务用量口径，不含退款抵减、外部服务和人工费用，不称作完整经营成本或 ROI。币种为 HKD，整数微元保持精确，不用预算上限当实际支出。
+
+用户端沿用项目读、写、审阅权限及私有任务 RLS；后台沿用 `admin.usage.read` 的租户/项目范围与显式拒绝，仅返回汇总元数据。后台不能代客户写入接受评价；正文及意见不通过汇总接口泄露。删除任务内容时清除意见和交付快照等正文派生内容，保留必要的不含正文的审计事实。
+
+后台聚合没有客户会话的租户/操作者上下文。仅在 `cp_control` 分支依据每个任务的原租户、项目和完整来源清单检查有效性，不能套用用户会话函数把全部任务误判为来源不可用。`cp_app` 继续使用原有客户上下文检查；后台范围谓词仍先限定可统计任务，不通过模拟客户登录获得正文访问。数据库触发器限制当前交付、操作者、版本、有效目标与去重，阻止直接 SQL 写入伪造目标或覆盖历史。
+
+升级时先按现有原生迁移流程应用 SQL095，再发布依赖这些表/函数的后端和界面。禁止跳过迁移仅上线 UI；SQL001–094 不改写。回退界面与 API 必须保留追加评价记录，不能执行删除表来回退客户事实。
+
+## 验收边界
+
+功能验证必须覆盖换版、部分接受、丢弃、未知费用、失败成本、空值与零、权限撤销、私有任务、后台显式拒绝、幂等并发、内容删除及本机任务。实际截图和交互录制只能来自已运行的页面。TC-056 的三类各 10 个真实代表任务、人工基线及盲审不由自动化夹具替代，不能因接口测试通过宣布业务质量已经完成验收。
+
+## English
+
+This additive implementation separates technical execution from customer acceptance. SQL095 adds append-only delivery reviews and cumulative, customer-reported human measurements; published SQL001–094 and the original task contract remain unchanged. Reviews bind the current output digest and current active artifact version IDs and hashes. Partial reviews leave other targets pending. A changed delivery cannot inherit previous acceptance. Unversioned legacy acceptance is not promoted to proof of acceptance; customers review the current delivery again.
+
+Product forms require both a task version and the delivery digest returned by GET. Conflicts require reload and review; idempotent retries do not duplicate customer facts or charges. The original canonical review operation retains its body and response with optional `If-Match` and `X-Delivery-SHA256`; feedback has an operational 5,000-character bound. Customer/project authority and source validity are checked before replaying saved receipts. Admin uses its existing MFA identity and scoped usage permission; it cannot submit acceptance on behalf of a customer or read feedback through aggregates.
+
+Web and the native Chrome Side Panel review cloud tasks. Frameless Desktop reviews actual customer-device Codex results inside the scrollable conversation; it preserves the composer, keyboard access and hidden scrollbar rails. Text-only Desktop review neither scans nor uploads local files. Human baseline, effort and revision counts are independent facts: blank means unknown, zero means explicitly none. Actual reuse counts distinct source/destination task pairs with recorded fixed-version reads, excluding simple selection, preview or download.
+
+Metrics use one authorized task-created cohort, defaulting to 30 days with a maximum 366-day `[from,to)` range and explicit data mode. Failure and cancellation service costs remain included. Any incomplete settlement suppresses cost per accepted delivery. Company task-usage costs exclude refund offsets, external services and labor; no financial return is inferred. Control aggregates validate each task's original tenant/project lineage without borrowing a customer session; app callers retain existing actor and row-level restrictions. Task/asset erasure scrubs the corresponding comments and delivery snapshots.
+
+The interval selects source tasks by creation time; it does not reconstruct a frozen historical state. Reviews, human figures and observed downstream reuse reflect information available at query time, including later reviews and reads of those source tasks.
+
+Apply SQL095 before the dependent backend/UI release and retain customer records during rollback. Exact-source API and actual-interface verification do not substitute for TC-056's three groups of ten real representative tasks, manual baselines and blind review, or the original production gates.
+
+The original authoritative documentation contract and the backend runtime catalog already differ. Each retains its own published bytes; they are not claimed to be identical. The new additive business-quality contract is byte-identical in documentation and the backend.

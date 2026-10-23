@@ -12364,7 +12364,8 @@
         "scoped_seo_verification",
         "seo_change_verification",
         "task_source_verification",
-        "history_source_verification"
+        "history_source_verification",
+        "business_quality_repair"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "已有不可变素材版本；部分成功、统一修改与下载包状态尚不完整。",
@@ -12501,6 +12502,16 @@
           ],
           "implementation_docs": [
             "technical/65-conversation-content-source-lineage.md"
+          ]
+        },
+        {
+          "cluster": "versioned_customer_review_and_quality",
+          "verified_subflow": "固定当前文本/资产版本的接受、修改、弃用与历史；双版本前提、幂等并发、私有范围、后台显式拒绝、空值/零人工记录、失败/未知费用及实际读取复用；真实 Web/Admin、打包 Desktop 与原生 Side Panel。",
+          "evidence": [
+            "business_quality_repair"
+          ],
+          "implementation_docs": [
+            "technical/78-business-delivery-quality.md"
           ]
         }
       ],
@@ -12851,7 +12862,8 @@
       ],
       "acceptance_evidence": [
         "design_pdf",
-        "platform_regression"
+        "platform_regression",
+        "business_quality_repair"
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少统一评论、接受/修改审阅和可恢复交付包。",
@@ -12885,6 +12897,16 @@
           ],
           "implementation_docs": [
             "technical/60-template-video-production.md"
+          ]
+        },
+        {
+          "cluster": "versioned_customer_review_and_quality",
+          "verified_subflow": "固定当前文本/资产版本的接受、修改、弃用与历史；双版本前提、幂等并发、私有范围、后台显式拒绝、空值/零人工记录、失败/未知费用及实际读取复用；真实 Web/Admin、打包 Desktop 与原生 Side Panel。",
+          "evidence": [
+            "business_quality_repair"
+          ],
+          "implementation_docs": [
+            "technical/78-business-delivery-quality.md"
           ]
         }
       ],
@@ -16274,7 +16296,7 @@
       "acceptance_case": "TC-056",
       "acceptance_conditions": "区分技术成功与客户接受；包含失败成本和人工修订；以真实接受/续用证据判断，不以消息量或无对照 ROI 取代。",
       "assessment": "completion_not_proven",
-      "finding": "缺少业务接受、返工、人工时间、成本和复用率的独立记录/统计。",
+      "finding": "版本化业务评价、人工投入、服务成本与实际读取复用的独立记录及有范围汇总已验证；三类各十个真实任务、人工基线、盲审及续用证据未执行，不证明完整业务质量验收。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/admin.ts",
         "dev/copypaste-platform/src/admin-operations.ts",
@@ -16282,11 +16304,24 @@
         "dev/copypaste-platform/src/admin-jobs.ts",
         "dev/copypaste-platform/src/plans.ts"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        "business_quality_repair"
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少业务接受、返工、人工时间、成本和复用率的独立记录/统计。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "缺少业务接受、返工、人工时间、成本和复用率的独立记录/统计。",
+      "verified_repairs": [
+        {
+          "cluster": "versioned_customer_review_and_quality",
+          "verified_subflow": "固定当前文本/资产版本的接受、修改、弃用与历史；双版本前提、幂等并发、私有范围、后台显式拒绝、空值/零人工记录、失败/未知费用及实际读取复用；真实 Web/Admin、打包 Desktop 与原生 Side Panel。",
+          "evidence": [
+            "business_quality_repair"
+          ],
+          "implementation_docs": [
+            "technical/78-business-delivery-quality.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "按原 TC-056 完成三类各十个真实代表任务、人工基线与盲审；提供真实可用性交付、人工返工和持续使用证据。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -39191,9 +39226,9 @@
     "verifier_sha256": "7fe1ba7d85d374e8c19a5b751e50a862b25c617c3ede86627a937ea3c75a7ad5"
   },
   "current_source_qualification": {
-    "stage": 77,
-    "checkpoint": "desktop-browser-checkpoint.json",
-    "note": "Bounded native browser and Desktop layout subset. Original acceptance unchanged; exact source and explicit fixtures recorded."
+    "stage": 78,
+    "checkpoint": "business-quality-checkpoint.json",
+    "note": "Versioned customer review and scoped quality subflow, with actual native/Desktop/Web/Admin interfaces and explicit model/business fixtures. Full original acceptance remains unproven."
   },
   "extension_conversation_repair": {
     "at": "2026-10-22T14:06:48.456750+00:00",
@@ -39340,5 +39375,16 @@
     "progress_bar_constraint": "withdrawn",
     "scrollbar_requirement": "DESK-UI01",
     "full_professional_acceptance": "pending"
+  },
+  "business_quality_repair": {
+    "stage": 78,
+    "checkpoint": "business-quality-checkpoint.json",
+    "status": "verified_versioned_customer_review_and_scoped_quality_subflow",
+    "platform_tests": 861,
+    "client_tests": 68,
+    "packaged_ui_checks": 26,
+    "web_admin_checks": 4,
+    "extension_checks": 8,
+    "TC_056_real_business_acceptance": "not_run"
   }
 }
