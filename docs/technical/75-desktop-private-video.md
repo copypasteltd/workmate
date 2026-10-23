@@ -1,5 +1,7 @@
 # Desktop 本机视频角色与私有制作流程
 
+**阶段 76 当前增量：** Desktop 流程由本机父子 Codex 执行，新增不可变私有版本、独立子费用确认、人工审批、真实成果下载、Stop/撤权与来源治理；平台 848 项、重叠定向 75 项、真实父子流程 3 项、原生内核 17 项、客户端 56 项、实际打包旅程 19 项通过。18 个本机角色协议准入不代表完整专业验收；102 REQ/102 TC、NFR、G01–G10 和 81/21/0 保留。Extension 继续原生右侧栏获选文件上传与云端 Agent，本轮按相同产品及验证器字节复核，未增加其 UI 计数。见 [实现与证据](76-desktop-native-workflows.md)。
+
 本增量继续执行 [CLIENT01](../requirements/03-client-execution-amendment.md)：Desktop 的 Codex 进程、Agent 循环、线程、文件和终端在客户电脑运行；推理与公司媒体服务通过公司服务器访问。Web 和 Extension 的 Agent 在云端，Extension 保持原生右侧栏的对话、附件及获选文件上传。实际运行、源码与媒体见 [当前检查点](../quality/desktop-video-checkpoint.json)。
 
 此前本机入口开放 16 个角色，视频角色只有云端制作工具，不能在 Desktop 中完成相同业务。本次把 `video-motion` 接入本机 Codex，并为它提供七项公司视频工具。流程顾问仍未开放本机专属工具。17 个角色能够加载既定 Skill 和工具描述，不代表 18 个角色、29 个 Skill 的全部专业效果已经通过验收。

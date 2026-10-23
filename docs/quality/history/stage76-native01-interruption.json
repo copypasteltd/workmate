@@ -1,0 +1,16 @@
+{
+  "attempt": "desktop-workflows-native-01",
+  "qualification": "failed_incomplete_never_accept",
+  "source_changed_during_run": false,
+  "reason": "The synthetic model fixture searched only the last native user message and did not identify the child task behind appended skill/environment messages. Subsequent failure cleanup exposed a close-before-send-persistence race, and the test after hook attempted to end the pool twice and skipped later cleanup.",
+  "manual_intervention": {
+    "action": "Cancel running tasks only in this failed check's UUID-isolated database; drop only that database and remove its corresponding owned fixture directory; terminate only the verified native integration probe process tree so its outer verifier can gracefully shut down its database service.",
+    "owned_database": "copypaste_suite_b4ea5ae1a5c446a5bb030fb93873daa8",
+    "owned_fixture_directory": "dev/copypaste-platform/.data/test-runs/b4ea5ae1a5c446a5bb030fb93873daa8",
+    "verified_probe_pid": 30848,
+    "database_and_directory_reclaimed": true,
+    "outer_verifier_database_shutdown": true,
+    "unrelated_database_55439_touched": false
+  },
+  "evidence_policy": "Retain the original TAP, hashes, preserved source changes and failed JSON. Incomplete TAP counts are -1 and cannot qualify any feature. This externally cancelled attempt proves no Stop or revoke behavior. Re-run with a fresh attempt after corrections."
+}
