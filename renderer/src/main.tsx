@@ -1,3 +1,5 @@
+import { DeliveryQuality } from "./delivery-quality";
+import { QualitySummary } from "./quality-summary";
 import { Connections, ConnectorLaunch } from "./connections";
 import "./support.css";
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
@@ -1663,40 +1665,7 @@ function TaskDetail() {
               {data.error_code && (
                 <div className="notice error">{data.error_code}</div>
               )}
-              {data.status === "succeeded" && data.mode !== "plan" && (
-                <div className="review-actions">
-                  <button
-                    className="button primary"
-                    onClick={() =>
-                      void act(() =>
-                        post(w.base + "/tasks/" + id + "/acceptance", {
-                          decision: "accepted",
-                          version: data.version,
-                          comment: "",
-                        }),
-                      )
-                    }
-                  >
-                    <Check size={16} />
-                    {t("接受交付", "Accept deliverable")}
-                  </button>
-                  <button
-                    className="button secondary"
-                    onClick={() =>
-                      void act(() =>
-                        post(w.base + "/tasks/" + id + "/acceptance", {
-                          decision: "changes_requested",
-                          version: data.version,
-                          comment: "Revisions requested",
-                        }),
-                      )
-                    }
-                  >
-                    {t("要求修改", "Request changes")}
-                  </button>
-                  <Badge value={data.acceptance} />
-                </div>
-              )}
+              {["succeeded", "failed", "cancelled"].includes(data.status) && data.mode !== "plan" && <DeliveryQuality key={w.base + id} base={w.base} taskId={id!} changed={() => setVersion(v => v + 1)}/>}
             </section>
             <aside>
               <div className="card">
@@ -2923,6 +2892,7 @@ function Usage() {
         )}
       />
       <ErrorNotice error={usage.error} />
+      <QualitySummary url={w.base + "/quality"}/>
       <div className="metrics-grid">
         <div className="metric-card">
           <span>{t("累計用量", "Measured usage")}</span>
