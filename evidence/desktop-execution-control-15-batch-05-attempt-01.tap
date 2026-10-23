@@ -1,0 +1,733 @@
+2026-10-23 08:55:17.454 CST [15312] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-23 08:55:17.460 CST [15312] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-23 08:55:17.461 CST [15312] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-23 08:55:17.646 CST [22056] LOG:  database system was shut down at 2026-10-23 08:55:13 CST
+
+2026-10-23 08:55:17.707 CST [15312] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# Subtest: canonical current-user response matches the original User schema for browser and native credentials
+ok 1 - canonical current-user response matches the original User schema for browser and native credentials
+  ---
+  duration_ms: 5139.7531
+  ...
+# Subtest: private workspace context binds identity and CSRF to the selected credential and does not leak another account's memberships
+ok 2 - private workspace context binds identity and CSRF to the selected credential and does not leak another account's memberships
+  ---
+  duration_ms: 125.4112
+  ...
+# Subtest: canonical challenge is strict 202/UTC, deduplicates concurrent requests and binds its HTTP-only browser flow
+ok 3 - canonical challenge is strict 202/UTC, deduplicates concurrent requests and binds its HTTP-only browser flow
+  ---
+  duration_ms: 245.8361
+  ...
+# Subtest: canonical session strictly returns 201/UserSession and only its original browser can retry the consumed OTP
+ok 4 - canonical session strictly returns 201/UserSession and only its original browser can retry the consumed OTP
+  ---
+  duration_ms: 97.6589
+  ...
+# Subtest: a canonical challenge cannot bypass flow binding through legacy verify; failed attempts and expiry remain one-use
+ok 5 - a canonical challenge cannot bypass flow binding through legacy verify; failed attempts and expiry remain one-use
+  ---
+  duration_ms: 75.5828
+  ...
+# Subtest: canonical logout enforces CSRF for a live cookie, clears flow/session cookies and remains safe to repeat
+ok 6 - canonical logout enforces CSRF for a live cookie, clears flow/session cookies and remains safe to repeat
+  ---
+  duration_ms: 57.1521
+  ...
+# Subtest: canonical authorize requires explicit S256, a browser session and consent proof before minting any code
+ok 7 - canonical authorize requires explicit S256, a browser session and consent proof before minting any code
+  ---
+  duration_ms: 53.5607
+  ...
+# Subtest: canonical code exchange commits one family under concurrent retries; a different key cannot replay the code
+ok 8 - canonical code exchange commits one family under concurrent retries; a different key cannot replay the code
+  ---
+  duration_ms: 152.0772
+  ...
+# Subtest: canonical refresh deduplicates response loss; rotated-family reuse with another key still revokes every credential
+ok 9 - canonical refresh deduplicates response loss; rotated-family reuse with another key still revokes every credential
+  ---
+  duration_ms: 116.4883
+  ...
+# Subtest: expired refresh receipts cannot reissue or revoke a later rotation when an old request is retried
+ok 10 - expired refresh receipts cannot reissue or revoke a later rotation when an old request is retried
+  ---
+  duration_ms: 41.2298
+  ...
+# Subtest: encrypted receipts are non-readable at rest and freezing/revocation prevents retrieving their secrets again
+ok 11 - encrypted receipts are non-readable at rest and freezing/revocation prevents retrieving their secrets again
+  ---
+  duration_ms: 45.2661
+  ...
+# {"request_id":"1c273256-8874-44b7-9656-a2f3df3576c5","code":"MAIL_UNAVAILABLE","error_type":"Problem"}
+# Subtest: a temporary mail failure retries the same encrypted challenge without spending another rate-limit slot
+ok 12 - a temporary mail failure retries the same encrypted challenge without spending another rate-limit slot
+  ---
+  duration_ms: 30.1055
+  ...
+# Subtest: legacy clients still share the same one-use codes, rotation family and user-session boundaries
+ok 13 - legacy clients still share the same one-use codes, rotation family and user-session boundaries
+  ---
+  duration_ms: 35.6782
+  ...
+# Subtest: receipt retention removes at most 100 expired rows per sweep and preserves active receipts and live sessions
+ok 14 - receipt retention removes at most 100 expired rows per sweep and preserves active receipts and live sessions
+  ---
+  duration_ms: 57.2133
+  ...
+2026-10-23 08:55:27.258 CST [19280] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 08:55:28.060 CST [19280] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.609 s, total=0.803 s; sync files=12, longest=0.160 s, average=0.051 s; distance=16025 kB, estimate=16025 kB; lsn=E/98460998, redo lsn=E/98460940
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# Subtest: session inventory distinguishes all clients/current session, retains refreshable expired access, and exposes no credentials
+ok 15 - session inventory distinguishes all clients/current session, retains refreshable expired access, and exposes no credentials
+  ---
+  duration_ms: 3738.4291
+  ...
+# Subtest: native sign-out revokes an expired access token's family without rotation; repeat/unknown/client mismatch are non-enumerating
+ok 16 - native sign-out revokes an expired access token's family without rotation; repeat/unknown/client mismatch are non-enumerating
+  ---
+  duration_ms: 121.4245
+  ...
+# Subtest: actual concurrent refresh/revocation always ends the whole family and cannot mint surviving rotated access
+ok 17 - actual concurrent refresh/revocation always ends the whole family and cannot mint surviving rotated access
+  ---
+  duration_ms: 449.2143
+  ...
+# Subtest: device revocation is owner-scoped, CSRF-protected and follows an older listed ID across refresh rotation
+ok 18 - device revocation is owner-scoped, CSRF-protected and follows an older listed ID across refresh rotation
+  ---
+  duration_ms: 69.4522
+  ...
+# Subtest: email and PKCE codes reject expiration/replay; browser logout invalidates outstanding native authorization
+ok 19 - email and PKCE codes reject expiration/replay; browser logout invalidates outstanding native authorization
+  ---
+  duration_ms: 83.0319
+  ...
+# Subtest: expired/wrong-email/replayed invitations fail and removed members cannot use browser, rotated native, or device ingress
+ok 20 - expired/wrong-email/replayed invitations fail and removed members cannot use browser, rotated native, or device ingress
+  ---
+  duration_ms: 274.5402
+  ...
+2026-10-23 08:55:35.397 CST [19280] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 08:55:36.419 CST [19280] LOG:  checkpoint complete: wrote 39 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.750 s, total=1.022 s; sync files=12, longest=0.131 s, average=0.063 s; distance=16028 kB, estimate=16028 kB; lsn=E/99407D58, redo lsn=E/99407D00
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# Subtest: a credit hold predating a top-up consumes its real paid source exactly once
+ok 21 - a credit hold predating a top-up consumes its real paid source exactly once
+  ---
+  duration_ms: 4785.6664
+  ...
+# Subtest: another task's funded hold survives credit consumption; incoming credit repays gross debt
+ok 22 - another task's funded hold survives credit consumption; incoming credit repays gross debt
+  ---
+  duration_ms: 225.2695
+  ...
+# Subtest: released funds from the same original lot merge into one immutable source
+ok 23 - released funds from the same original lot merge into one immutable source
+  ---
+  duration_ms: 115.6722
+  ...
+# Subtest: expired gifts retain held funds and expire only the unused remainder after settlement
+ok 24 - expired gifts retain held funds and expire only the unused remainder after settlement
+  ---
+  duration_ms: 2222.5065
+  ...
+# Subtest: late gifts are consumed before credit, with paid funds and expiry kept separate
+ok 25 - late gifts are consumed before credit, with paid funds and expiry kept separate
+  ---
+  duration_ms: 56.7728
+  ...
+# Subtest: uncertain and over-budget usage keep the original hold without inventing charge sources
+ok 26 - uncertain and over-budget usage keep the original hold without inventing charge sources
+  ---
+  duration_ms: 69.8069
+  ...
+# Subtest: concurrent settlement, top-up and source refund serialize without spending another hold
+ok 27 - concurrent settlement, top-up and source refund serialize without spending another hold
+  ---
+  duration_ms: 212.8825
+  ...
+# Subtest: accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+ok 28 - accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+  ---
+  duration_ms: 159.1031
+  ...
+2026-10-23 08:55:45.046 CST [32900] ERROR:  Refund ledger writes require independently verified refund evidence
+2026-10-23 08:55:45.046 CST [32900] CONTEXT:  PL/pgSQL function verified_cash_refund_ledger() line 5 at RAISE
+2026-10-23 08:55:45.046 CST [32900] STATEMENT:  COMMIT
+
+2026-10-23 08:55:45.047 CST [32900] WARNING:  there is no transaction in progress
+
+# Subtest: repayment cannot be refunded without independently verified evidence and credit cannot drop below actual debt
+ok 29 - repayment cannot be refunded without independently verified evidence and credit cannot drop below actual debt
+  ---
+  duration_ms: 199.1645
+  ...
+# Subtest: invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+ok 30 - invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+  ---
+  duration_ms: 147.2737
+  ...
+2026-10-23 08:55:45.373 CST [32900] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-23 08:55:45.373 CST [32900] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-23 08:55:45.373 CST [32900] STATEMENT:  COMMIT
+
+2026-10-23 08:55:45.373 CST [32900] WARNING:  there is no transaction in progress
+
+2026-10-23 08:55:45.376 CST [32900] ERROR:  Invalid settlement charge
+2026-10-23 08:55:45.376 CST [32900] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-23 08:55:45.376 CST [32900] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-23 08:55:45.377 CST [32900] ERROR:  Invalid settlement funding bucket
+2026-10-23 08:55:45.377 CST [32900] CONTEXT:  PL/pgSQL function validate_billing_source() line 12 at RAISE
+2026-10-23 08:55:45.377 CST [32900] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-23 08:55:45.380 CST [32900] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-23 08:55:45.380 CST [32900] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-23 08:55:45.380 CST [32900] STATEMENT:  COMMIT
+
+2026-10-23 08:55:45.380 CST [32900] WARNING:  there is no transaction in progress
+
+2026-10-23 08:55:45.452 CST [40468] ERROR:  Billing source history is immutable
+2026-10-23 08:55:45.452 CST [40468] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-23 08:55:45.452 CST [40468] STATEMENT:  UPDATE billing_settlement_sources SET amount_micros=1 WHERE id=$1
+
+2026-10-23 08:55:45.453 CST [40468] ERROR:  Billing source history is immutable
+2026-10-23 08:55:45.453 CST [40468] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-23 08:55:45.453 CST [40468] STATEMENT:  DELETE FROM billing_settlement_sources WHERE id=$1
+
+# Subtest: database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+ok 31 - database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+  ---
+  duration_ms: 134.9519
+  ...
+2026-10-23 08:55:45.642 CST [32900] ERROR:  Invalid settlement charge
+2026-10-23 08:55:45.642 CST [32900] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-23 08:55:45.642 CST [32900] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,amount_micros) VALUES($1,$2,$3,'credit',1)
+
+2026-10-23 08:55:45.718 CST [12968] ERROR:  Billing source history is immutable
+2026-10-23 08:55:45.718 CST [12968] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-23 08:55:45.718 CST [12968] STATEMENT:  UPDATE billing_credit_repayments SET amount_micros=1 WHERE funding_entry_id=$1
+
+2026-10-23 08:55:45.720 CST [12968] ERROR:  Billing source history is immutable
+2026-10-23 08:55:45.720 CST [12968] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-23 08:55:45.720 CST [12968] STATEMENT:  DELETE FROM billing_credit_repayments WHERE funding_entry_id=$1
+
+# Subtest: source and credit repayment records retain tenant isolation and immutable repayment provenance
+ok 32 - source and credit repayment records retain tenant isolation and immutable repayment provenance
+  ---
+  duration_ms: 264.3895
+  ...
+2026-10-23 08:55:45.816 CST [19280] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 08:55:46.651 CST [19280] LOG:  checkpoint complete: wrote 48 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.649 s, total=0.836 s; sync files=10, longest=0.151 s, average=0.065 s; distance=16438 kB, estimate=16438 kB; lsn=E/9A415830, redo lsn=E/9A4157D8
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# Subtest: task schema copies retain the immutable original conditions, Money, statuses and strict response fields
+ok 33 - task schema copies retain the immutable original conditions, Money, statuses and strict response fields
+  ---
+  duration_ms: 4596.7512
+  ...
+# Subtest: canonical create accepts once under concurrent retries, reserves exact HKD once, and exposes the same nested task
+ok 34 - canonical create accepts once under concurrent retries, reserves exact HKD once, and exposes the same nested task
+  ---
+  duration_ms: 684.8487
+  ...
+# Subtest: strict canonical commands reject malformed Money, unsupported specialized semantics, invalid references and unknown fields before reservation
+ok 35 - strict canonical commands reject malformed Money, unsupported specialized semantics, invalid references and unknown fields before reservation
+  ---
+  duration_ms: 136.6668
+  ...
+# Subtest: canonical create requires current authentication, CSRF, selected tenant and idempotency; explicit unsupported payer cannot slip through
+ok 36 - canonical create requires current authentication, CSRF, selected tenant and idempotency; explicit unsupported payer cannot slip through
+  ---
+  duration_ms: 49.6979
+  ...
+# Subtest: canonical ask, plan and execute preserve the selected mode without inferring a different business task type
+ok 37 - canonical ask, plan and execute preserve the selected mode without inferring a different business task type
+  ---
+  duration_ms: 360.0414
+  ...
+# Subtest: a canonical delegation executes through the real worker, returns actual artifact identities and one settled charge
+ok 38 - a canonical delegation executes through the real worker, returns actual artifact identities and one settled charge
+  ---
+  duration_ms: 555.6239
+  ...
+# Subtest: canonical pause, resume and cancel are versioned, idempotent and preserve one original task and budget
+ok 39 - canonical pause, resume and cancel are versioned, idempotent and preserve one original task and budget
+  ---
+  duration_ms: 390.8849
+  ...
+# Subtest: an unknown accepted operation remains reconciliable and cannot be retried or disguised as a completed task
+ok 40 - an unknown accepted operation remains reconciliable and cannot be retried or disguised as a completed task
+  ---
+  duration_ms: 302.5999
+  ...
+# Subtest: canonical batched prerequisite answers validate all resources atomically and queue the original task once
+ok 41 - canonical batched prerequisite answers validate all resources atomically and queue the original task once
+  ---
+  duration_ms: 423.8794
+  ...
+# Subtest: malformed or unknown answers never become ignored text, duplicate resources or partial input updates
+ok 42 - malformed or unknown answers never become ignored text, duplicate resources or partial input updates
+  ---
+  duration_ms: 178.0855
+  ...
+# Subtest: explicit delegation asset versions become authorized frozen prerequisites rather than ignored prompt references
+ok 43 - explicit delegation asset versions become authorized frozen prerequisites rather than ignored prompt references
+  ---
+  duration_ms: 302.1921
+  ...
+# Subtest: signed keyset pagination is stable and revalidates account, tenant, project scope, filters and limits
+ok 44 - signed keyset pagination is stable and revalidates account, tenant, project scope, filters and limits
+  ---
+  duration_ms: 936.1735
+  ...
+# Subtest: canonical task access and saved receipts cannot cross private owners, project grants, tenants or quarantined content
+ok 45 - canonical task access and saved receipts cannot cross private owners, project grants, tenants or quarantined content
+  ---
+  duration_ms: 259.9009
+  ...
+# Subtest: conversation delegations serialize busy checks, retain the pinned specialist and append exactly one user message
+ok 46 - conversation delegations serialize busy checks, retain the pinned specialist and append exactly one user message
+  ---
+  duration_ms: 210.5467
+  ...
+# Subtest: historical bound delegations project without fabricated identity, while unbound legacy rows retain their original interface
+ok 47 - historical bound delegations project without fabricated identity, while unbound legacy rows retain their original interface
+  ---
+  duration_ms: 287.3518
+  ...
+# Subtest: canonical task creation retains Starter quotas and rejects plan budgets without creating another hold
+ok 48 - canonical task creation retains Starter quotas and rejects plan budgets without creating another hold
+  ---
+  duration_ms: 238.3348
+  ...
+# Subtest: source revocation hides canonical inputs and artifacts on detail, list and successful control replay
+ok 49 - source revocation hides canonical inputs and artifacts on detail, list and successful control replay
+  ---
+  duration_ms: 353.878
+  ...
+# Subtest: canonical answers resume a measured paid checkpoint on the same thread and settle cumulative usage once
+ok 50 - canonical answers resume a measured paid checkpoint on the same thread and settle cumulative usage once
+  ---
+  duration_ms: 712.9208
+  ...
+# Subtest: canonical pause cannot race a claimed turn into a second execution or release its pending budget
+ok 51 - canonical pause cannot race a claimed turn into a second execution or release its pending budget
+  ---
+  duration_ms: 287.6053
+  ...
+# \# canonical_task_route_inventory {"contract":"actual_fastify_route_inventory","not_full_design_openapi":true,"routes":[{"method":"GET","path":"/health/live"},{"method":"GET","path":"/health/ready"},{"method":"GET","path":"/v1/admin/access"},{"method":"POST","path":"/v1/admin/access/bindings"},{"method":"DELETE","path":"/v1/admin/access/bindings/:id"},{"method":"GET","path":"/v1/admin/access/principals"},{"method":"POST","path":"/v1/admin/access/principals"},{"method":"GET","path":"/v1/admin/access/principals/:id"},{"method":"PATCH","path":"/v1/admin/access/principals/:id"},{"method":"POST","path":"/v1/admin/access/principals/:id/enrollment"},{"method":"POST","path":"/v1/admin/access/principals/:id/reset-mfa"},{"method":"POST","path":"/v1/admin/access/principals/:id/revoke-sessions"},{"method":"POST","path":"/v1/admin/access/principals/:id/session-revocations"},{"method":"POST","path":"/v1/admin/access/principals/:id/status"},{"method":"POST","path":"/v1/admin/access/roles"},{"method":"GET","path":"/v1/admin/ai/evidence/:evidence_id"},{"method":"POST","path":"/v1/admin/ai/operations"},{"method":"GET","path":"/v1/admin/ai/policies"},{"method":"POST","path":"/v1/admin/ai/policies/drafts"},{"method":"GET","path":"/v1/admin/ai/policy"},{"method":"POST","path":"/v1/admin/ai/previews"},{"method":"GET","path":"/v1/admin/ai/requests"},{"method":"GET","path":"/v1/admin/ai/requests/:channel/:request_id"},{"method":"POST","path":"/v1/admin/ai/requests/:channel/:request_id/evidence"},{"method":"GET","path":"/v1/admin/ai/tasks/:task_id/settlement"},{"method":"GET","path":"/v1/admin/approvals"},{"method":"POST","path":"/v1/admin/approvals/:approval_id/decisions"},{"method":"GET","path":"/v1/admin/approvals/:approval/review"},{"method":"GET","path":"/v1/admin/approvals/summary"},{"method":"GET","path":"/v1/admin/audit"},{"method":"POST","path":"/v1/admin/auth/challenge"},{"method":"POST","path":"/v1/admin/auth/enrollment/complete"},{"method":"POST","path":"/v1/admin/auth/enrollment/inspect"},{"method":"POST","path":"/v1/admin/auth/enrollment/setup"},{"method":"POST","path":"/v1/admin/auth/logout"},{"method":"POST","path":"/v1/admin/auth/mfa/complete"},{"method":"POST","path":"/v1/admin/auth/mfa/setup"},{"method":"POST","path":"/v1/admin/auth/verify"},{"method":"GET","path":"/v1/admin/billing"},{"method":"GET","path":"/v1/admin/billing/accounts"},{"method":"GET","path":"/v1/admin/billing/accounts/:account"},{"method":"POST","path":"/v1/admin/billing/accounts/:account/credit-limit"},{"method":"POST","path":"/v1/admin/billing/accounts/:account/debit"},{"method":"POST","path":"/v1/admin/billing/accounts/:account/gift"},{"method":"GET","path":"/v1/admin/billing/accounts/:account/ledger"},{"method":"POST","path":"/v1/admin/billing/accounts/:account/previews"},{"method":"POST","path":"/v1/admin/billing/accounts/:account/refund"},{"method":"POST","path":"/v1/admin/billing/accounts/:account/top-up"},{"method":"POST","path":"/v1/admin/billing/operations/:operation/decision"},{"method":"GET","path":"/v1/admin/billing/operations/:operation/review"},{"method":"GET","path":"/v1/admin/billing/payments"},{"method":"POST","path":"/v1/admin/billing/payments"},{"method":"GET","path":"/v1/admin/billing/payments/:payment"},{"method":"POST","path":"/v1/admin/billing/payments/:payment/confirmations"},{"method":"GET","path":"/v1/admin/billing/refunds"},{"method":"GET","path":"/v1/admin/billing/refunds/:refund"},{"method":"POST","path":"/v1/admin/billing/refunds/:refund/outcomes"},{"method":"GET","path":"/v1/admin/capability-releases"},{"method":"GET","path":"/v1/admin/capability-releases/:id"},{"method":"POST","path":"/v1/admin/capability-releases/:id/publications"},{"method":"POST","path":"/v1/admin/capability-releases/:id/publications-previews"},{"method":"POST","path":"/v1/admin/capability-releases/:id/rollbacks"},{"method":"POST","path":"/v1/admin/capability-releases/:id/rollbacks-previews"},{"method":"POST","path":"/v1/admin/capability-releases/:id/validations"},{"method":"POST","path":"/v1/admin/capability-releases/drafts"},{"method":"GET","path":"/v1/admin/capability-releases/validations/:validation"},{"method":"POST","path":"/v1/admin/capability-releases/validations/:validation/workspace-purge-retries"},{"method":"GET","path":"/v1/admin/catalog"},{"method":"POST","path":"/v1/admin/catalog"},{"method":"POST","path":"/v1/admin/catalog/:id/publish"},{"method":"POST","path":"/v1/admin/catalog/:id/rollback"},{"method":"GET","path":"/v1/admin/connections"},{"method":"GET","path":"/v1/admin/connections/:id/detail"},{"method":"POST","path":"/v1/admin/connections/:id/revocations"},{"method":"POST","path":"/v1/admin/connections/:id/revoke"},{"method":"GET","path":"/v1/admin/content"},{"method":"POST","path":"/v1/admin/content/:id/action"},{"method":"GET","path":"/v1/admin/content/:id/body"},{"method":"GET","path":"/v1/admin/content/:id/download"},{"method":"POST","path":"/v1/admin/content/:id/versions"},{"method":"GET","path":"/v1/admin/deletions"},{"method":"POST","path":"/v1/admin/deletions/:id/retry"},{"method":"GET","path":"/v1/admin/devices"},{"method":"POST","path":"/v1/admin/devices/:id/revoke"},{"method":"GET","path":"/v1/admin/entitlement-grants"},{"method":"POST","path":"/v1/admin/entitlement-grants"},{"method":"GET","path":"/v1/admin/entitlement-grants/:grant_id"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/extensions"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/extensions/previews"},{"method":"GET","path":"/v1/admin/entitlement-grants/:grant_id/history"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/resumptions"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/resumptions/previews"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/revocations"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/revocations/previews"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/suspensions"},{"method":"POST","path":"/v1/admin/entitlement-grants/:grant_id/suspensions/previews"},{"method":"GET","path":"/v1/admin/entitlement-grants/legacy"},{"method":"GET","path":"/v1/admin/entitlement-grants/plan-options"},{"method":"GET","path":"/v1/admin/entitlement-grants/subjects/:kind/:id"},{"method":"POST","path":"/v1/admin/entitlement-previews"},{"method":"GET","path":"/v1/admin/entitlement-previews/:preview_id"},{"method":"GET","path":"/v1/admin/entitlements"},{"method":"GET","path":"/v1/admin/execution"},{"method":"POST","path":"/v1/admin/execution/:id/action"},{"method":"POST","path":"/v1/admin/exports"},{"method":"GET","path":"/v1/admin/exports/:id/download"},{"method":"GET","path":"/v1/admin/jobs"},{"method":"POST","path":"/v1/admin/jobs"},{"method":"POST","path":"/v1/admin/jobs/preview"},{"method":"GET","path":"/v1/admin/me"},{"method":"GET","path":"/v1/admin/operations/:id/account-review"},{"method":"POST","path":"/v1/admin/operations/:id/decision"},{"method":"GET","path":"/v1/admin/operations/:operation"},{"method":"GET","path":"/v1/admin/operations/:operation/approval"},{"method":"GET","path":"/v1/admin/operations/:operation/membership-review"},{"method":"POST","path":"/v1/admin/operations/commit"},{"method":"POST","path":"/v1/admin/operations/preview"},{"method":"GET","path":"/v1/admin/overview"},{"method":"GET","path":"/v1/admin/plans"},{"method":"GET","path":"/v1/admin/plans/:plan_version_id"},{"method":"POST","path":"/v1/admin/plans/:plan_version_id/publication-previews"},{"method":"POST","path":"/v1/admin/plans/:plan_version_id/publications"},{"method":"POST","path":"/v1/admin/plans/drafts"},{"method":"GET","path":"/v1/admin/plans/options"},{"method":"GET","path":"/v1/admin/plans/publication-previews/:preview_id"},{"method":"GET","path":"/v1/admin/policy"},{"method":"GET","path":"/v1/admin/support"},{"method":"POST","path":"/v1/admin/support"},{"method":"POST","path":"/v1/admin/support/:id/revoke"},{"method":"GET","path":"/v1/admin/support/sessions"},{"method":"POST","path":"/v1/admin/support/sessions"},{"method":"POST","path":"/v1/admin/support/sessions/:id/revocations"},{"method":"GET","path":"/v1/admin/support/sessions/:id/view"},{"method":"GET","path":"/v1/admin/support/sessions/:id/view/tasks/:task"},{"method":"GET","path":"/v1/admin/tenants"},{"method":"GET","path":"/v1/admin/tenants/:id/account-control"},{"method":"POST","path":"/v1/admin/tenants/:id/status"},{"method":"POST","path":"/v1/admin/tenants/:id/status/preview"},{"method":"GET","path":"/v1/admin/tenants/:tenant/membership-options"},{"method":"POST","path":"/v1/admin/tenants/:tenant/memberships"},{"method":"POST","path":"/v1/admin/tenants/:tenant/memberships/preview"},{"method":"GET","path":"/v1/admin/tenants/:tenant/resource-usage"},{"method":"GET","path":"/v1/admin/tenants/:tenant/sso"},{"method":"POST","path":"/v1/admin/tenants/:tenant/sso"},{"method":"POST","path":"/v1/admin/tenants/:tenant/sso/probe"},{"method":"POST","path":"/v1/admin/tenants/:tenant/sso/status"},{"method":"GET","path":"/v1/admin/usage"},{"method":"GET","path":"/v1/admin/users"},{"method":"GET","path":"/v1/admin/users/:id/account-control"},{"method":"POST","path":"/v1/admin/users/:id/profile"},{"method":"POST","path":"/v1/admin/users/:id/profile/preview"},{"method":"POST","path":"/v1/admin/users/:id/session-revocations"},{"method":"POST","path":"/v1/admin/users/:id/session-revocations/preview"},{"method":"POST","path":"/v1/admin/users/:id/status"},{"method":"POST","path":"/v1/admin/users/:id/status/preview"},{"method":"GET","path":"/v1/admin/users/:user_id"},{"method":"GET","path":"/v1/admin/users/:user_id/management-context"},{"method":"POST","path":"/v1/admin/vip-credit-combinations"},{"method":"GET","path":"/v1/admin/vip-credit-combinations/:id"},{"method":"POST","path":"/v1/admin/vip-credit-previews"},{"method":"GET","path":"/v1/admin/vip-credit-previews/:id"},{"method":"GET","path":"/v1/admin/workflow-schedules"},{"method":"POST","path":"/v1/admin/workflow-schedules/:id/pause"},{"method":"POST","path":"/v1/admin/workflow-schedules/:id/resume"},{"method":"GET","path":"/v1/agent-templates"},{"method":"GET","path":"/v1/agent-templates/:id"},{"method":"POST","path":"/v1/agent-templates/:id/instances"},{"method":"POST","path":"/v1/agent-templates/:id/preflights"},{"method":"GET","path":"/v1/agents/:agent_id/effective-capabilities"},{"method":"POST","path":"/v1/artifacts/:artifact_id/promotions"},{"method":"GET","path":"/v1/auth/authorize"},{"method":"POST","path":"/v1/auth/challenge"},{"method":"POST","path":"/v1/auth/challenges"},{"method":"POST","path":"/v1/auth/logout"},{"method":"POST","path":"/v1/auth/native/authorize"},{"method":"POST","path":"/v1/auth/native/refresh"},{"method":"POST","path":"/v1/auth/native/revoke"},{"method":"POST","path":"/v1/auth/native/token"},{"method":"DELETE","path":"/v1/auth/session"},{"method":"POST","path":"/v1/auth/sessions"},{"method":"GET","path":"/v1/auth/sso/callback"},{"method":"POST","path":"/v1/auth/sso/link"},{"method":"POST","path":"/v1/auth/sso/link/challenge"},{"method":"GET","path":"/v1/auth/sso/pending"},{"method":"POST","path":"/v1/auth/sso/start"},{"method":"POST","path":"/v1/auth/token"},{"method":"POST","path":"/v1/auth/verify"},{"method":"GET","path":"/v1/capabilities"},{"method":"GET","path":"/v1/capabilities/details"},{"method":"GET","path":"/v1/catalog/default-assistant"},{"method":"GET","path":"/v1/catalog/roles"},{"method":"GET","path":"/v1/connections"},{"method":"POST","path":"/v1/connections"},{"method":"DELETE","path":"/v1/connections/:id"},{"method":"PATCH","path":"/v1/connections/:id"},{"method":"GET","path":"/v1/connections/:id/detail"},{"method":"POST","path":"/v1/connections/:id/discovery"},{"method":"GET","path":"/v1/connections/:id/history"},{"method":"POST","path":"/v1/connections/:id/syncs"},{"method":"GET","path":"/v1/connections/callback"},{"method":"GET","path":"/v1/connections/launch/:state"},{"method":"GET","path":"/v1/connector-providers"},{"method":"GET","path":"/v1/connector-snapshots/:id"},{"method":"POST","path":"/v1/dataset-imports"},{"method":"POST","path":"/v1/deletions"},{"method":"GET","path":"/v1/deletions/:id"},{"method":"POST","path":"/v1/desktop-inference/v1/responses"},{"method":"GET","path":"/v1/effective-entitlements"},{"method":"GET","path":"/v1/entitlement-notifications"},{"method":"PATCH","path":"/v1/entitlement-notifications/:notification_id"},{"method":"GET","path":"/v1/evidence/:evidence"},{"method":"GET","path":"/v1/financial-notifications"},{"method":"PATCH","path":"/v1/financial-notifications/:notification_id"},{"method":"POST","path":"/v1/invites/accept"},{"method":"GET","path":"/v1/me"},{"method":"PATCH","path":"/v1/me"},{"method":"GET","path":"/v1/me/billing-accounts"},{"method":"GET","path":"/v1/me/sessions"},{"method":"DELETE","path":"/v1/me/sessions/:id"},{"method":"GET","path":"/v1/me/sso-identities"},{"method":"POST","path":"/v1/me/sso-identities/:id/revoke"},{"method":"DELETE","path":"/v1/members/:member"},{"method":"GET","path":"/v1/notifications"},{"method":"PATCH","path":"/v1/notifications/:notification_id"},{"method":"GET","path":"/v1/plans"},{"method":"GET","path":"/v1/public/config"},{"method":"GET","path":"/v1/public/content"},{"method":"POST","path":"/v1/reports"},{"method":"GET","path":"/v1/reports/:report"},{"method":"GET","path":"/v1/seo/audits"},{"method":"POST","path":"/v1/seo/audits"},{"method":"GET","path":"/v1/seo/audits/:run"},{"method":"GET","path":"/v1/seo/audits/:run/change-tasks"},{"method":"POST","path":"/v1/seo/audits/:run/change-tasks"},{"method":"GET","path":"/v1/seo/audits/:run/change-tasks/:change"},{"method":"GET","path":"/v1/seo/audits/:run/change-tasks/:change/download"},{"method":"GET","path":"/v1/seo/audits/:run/documents/:document"},{"method":"GET","path":"/v1/seo/audits/:run/download"},{"method":"GET","path":"/v1/seo/audits/:run/findings"},{"method":"GET","path":"/v1/seo/audits/:run/pages"},{"method":"POST","path":"/v1/seo/audits/:run/recheck"},{"method":"GET","path":"/v1/session/context"},{"method":"GET","path":"/v1/shares/:token"},{"method":"GET","path":"/v1/skill-installations"},{"method":"POST","path":"/v1/skill-installations"},{"method":"DELETE","path":"/v1/skill-installations/:installation_id"},{"method":"PATCH","path":"/v1/skill-installations/:installation_id"},{"method":"GET","path":"/v1/skill-versions"},{"method":"GET","path":"/v1/snapshots/:snapshot"},{"method":"GET","path":"/v1/support-grants"},{"method":"POST","path":"/v1/support-grants"},{"method":"POST","path":"/v1/support-grants/:id/revoke"},{"method":"GET","path":"/v1/syncs/:id"},{"method":"POST","path":"/v1/syncs/:id/cancel"},{"method":"GET","path":"/v1/syncs/:id/detail"},{"method":"POST","path":"/v1/syncs/:id/retry"},{"method":"POST","path":"/v1/task-dependencies/:dependency_id/resolutions"},{"method":"GET","path":"/v1/task-dependencies/:dependency_id/resources"},{"method":"GET","path":"/v1/tasks"},{"method":"POST","path":"/v1/tasks"},{"method":"GET","path":"/v1/tasks/:task_id"},{"method":"POST","path":"/v1/tasks/:task_id/controls"},{"method":"GET","path":"/v1/tasks/:task_id/dependencies"},{"method":"GET","path":"/v1/tasks/:task_id/events"},{"method":"POST","path":"/v1/tasks/:task_id/inputs"},{"method":"POST","path":"/v1/tenants"},{"method":"GET","path":"/v1/tenants/:tenant/billing"},{"method":"GET","path":"/v1/tenants/:tenant/devices"},{"method":"POST","path":"/v1/tenants/:tenant/devices"},{"method":"DELETE","path":"/v1/tenants/:tenant/devices/:id"},{"method":"GET","path":"/v1/tenants/:tenant/devices/:id/commands"},{"method":"POST","path":"/v1/tenants/:tenant/devices/:id/commands"},{"method":"GET","path":"/v1/tenants/:tenant/devices/:id/commands/:command"},{"method":"POST","path":"/v1/tenants/:tenant/devices/:id/commands/:command/result"},{"method":"GET","path":"/v1/tenants/:tenant/invites"},{"method":"POST","path":"/v1/tenants/:tenant/invites"},{"method":"POST","path":"/v1/tenants/:tenant/invites/:invite/resend"},{"method":"POST","path":"/v1/tenants/:tenant/invites/:invite/revoke"},{"method":"GET","path":"/v1/tenants/:tenant/member-directory"},{"method":"GET","path":"/v1/tenants/:tenant/members"},{"method":"PATCH","path":"/v1/tenants/:tenant/members/:user"},{"method":"GET","path":"/v1/tenants/:tenant/notifications"},{"method":"PATCH","path":"/v1/tenants/:tenant/notifications/:notification_id"},{"method":"GET","path":"/v1/tenants/:tenant/plan"},{"method":"GET","path":"/v1/tenants/:tenant/projects"},{"method":"POST","path":"/v1/tenants/:tenant/projects"},{"method":"PATCH","path":"/v1/tenants/:tenant/projects/:project"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/agents"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/agents"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/agents/:agent_id/effective-capabilities"},{"method":"PATCH","path":"/v1/tenants/:tenant/projects/:project/agents/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/agents/:id/version-previews"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/agents/:id/versions"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analysis/assistant"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analysis/preview"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analysis/reports"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analysis/reports/:report"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analysis/reports/:report/download"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analytics"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analytics/:dataset"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analytics/:dataset/chart"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analytics/:dataset/export"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analytics/:dataset/report"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/analytics/:dataset/source"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analytics/file-import"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analytics/file-inspect"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analytics/file-preview"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analytics/import"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analytics/inspect"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/analytics/preview"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/assets"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/assets"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/assets/:artifact_id/promotions"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/assets/:asset/download"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/assets/:asset/publish"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/assets/:asset/shares"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/assets/:asset/thumbnail"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/assets/:asset/versions"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/assets/:asset/versions"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/brand"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/brand"},{"method":"DELETE","path":"/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id"},{"method":"PATCH","path":"/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id/reference"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/cloud-workspaces"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/cloud-workspaces/:workspace_id/nodes"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/cloud-workspaces/:workspace_id/nodes"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/connections"},{"method":"DELETE","path":"/v1/tenants/:tenant/projects/:project/connections/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/connections/:id/report"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/connections/authorize"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/connector-snapshots/:id"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/conversations"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/conversations"},{"method":"DELETE","path":"/v1/tenants/:tenant/projects/:project/conversations/:id"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/conversations/:id"},{"method":"PATCH","path":"/v1/tenants/:tenant/projects/:project/conversations/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/conversations/:id/adoption-previews"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/conversations/:id/messages"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/creative"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/creative"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/creative-batches"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/creative-batches"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/creative-batches/:batch"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/creative-batches/:batch/cancel"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/creative-batches/:batch/units/:unit/edit"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/creative-batches/:batch/units/:unit/retry"},{"method":"PUT","path":"/v1/tenants/:tenant/projects/:project/creative/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/creative/:id/render"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/default-assistant/versions"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/delegations"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/deletions"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/deletions"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/desktop-executions"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/desktop-executions/:execution"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/cancel"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/finish"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/heartbeat"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/start"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/desktop-executions/:execution/tools"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/desktop-executions/runtime"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/memories"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/memories"},{"method":"DELETE","path":"/v1/tenants/:tenant/projects/:project/memories/:id"},{"method":"PATCH","path":"/v1/tenants/:tenant/projects/:project/memories/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/seo/audit"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/skill-installations"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/skill-installations"},{"method":"DELETE","path":"/v1/tenants/:tenant/projects/:project/skill-installations/:installation_id"},{"method":"PATCH","path":"/v1/tenants/:tenant/projects/:project/skill-installations/:installation_id"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/skill-versions"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/skill-versions/:skill_version_id"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/tasks"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:id/plan"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/tasks/:id/plan/approve"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/acceptance"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/cancel"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/controls"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/dependencies"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/events"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/tasks/:task/events/stream"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/uploads"},{"method":"DELETE","path":"/v1/tenants/:tenant/projects/:project/uploads/:id"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/uploads/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/uploads/:id/complete"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/uploads/:id/parts/:index"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/version-adoption-previews/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/version-adoption-previews/:id/confirmations"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/video-projects"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/video-projects"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/video-projects/:video"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/video-projects/:video/edit"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/video-projects/:video/renders"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/video-projects/:video/renders/:render/cancel"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/video-projects/:video/renders/:render/preview"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/video-projects/:video/renders/:render/status"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflow-runs/:id/cancel"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflow-runs/:id/decision"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/workflow-schedules"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflow-schedules"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/workflow-schedules/:id"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflow-schedules/:id/status"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflow-schedules/:id/versions"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflow-schedules/preview"},{"method":"GET","path":"/v1/tenants/:tenant/projects/:project/workflows"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflows"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflows/:id/publish"},{"method":"POST","path":"/v1/tenants/:tenant/projects/:project/workflows/:id/run"},{"method":"GET","path":"/v1/tenants/:tenant/resource-usage"},{"method":"POST","path":"/v1/tenants/:tenant/task-dependencies/:dependency/resolutions"},{"method":"GET","path":"/v1/tenants/:tenant/task-dependencies/:dependency/resources"},{"method":"GET","path":"/v1/tenants/:tenant/usage"},{"method":"POST","path":"/v1/uploads"},{"method":"DELETE","path":"/v1/uploads/:id"},{"method":"GET","path":"/v1/uploads/:id"},{"method":"POST","path":"/v1/uploads/:id/complete"},{"method":"POST","path":"/v1/uploads/:id/parts/:index"},{"method":"DELETE","path":"/v1/workspace-nodes/:node_id"},{"method":"PATCH","path":"/v1/workspace-nodes/:node_id"},{"method":"GET","path":"/v1/workspace-nodes/:node_id/reference"},{"method":"GET","path":"/v1/workspaces"},{"method":"GET","path":"/v1/workspaces/:workspace_id/nodes"},{"method":"POST","path":"/v1/workspaces/:workspace_id/nodes"}]}
+# Subtest: actual Fastify inventory retains declared routes and the five canonical task method/path pairs
+ok 52 - actual Fastify inventory retains declared routes and the five canonical task method/path pairs
+  ---
+  duration_ms: 5.1574
+  ...
+2026-10-23 08:56:00.435 CST [19280] LOG:  checkpoint starting: immediate force wait
+
+2026-10-23 08:56:01.493 CST [19280] LOG:  checkpoint complete: wrote 35 buffers (0.2%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.651 s, total=1.058 s; sync files=10, longest=0.140 s, average=0.066 s; distance=16872 kB, estimate=16872 kB; lsn=E/9B48F9D0, redo lsn=E/9B48F978
+
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43611.2666
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/4ce6b75f-7081-4d7a-876c-ba1f516d3448/result.json","sha256":"bcc6921949e1234c32f2604da23382f4a9134150b6d5e384fcb6fbd30a3499dc","exit_code":0}
+2026-10-23 08:56:02.500 CST [15312] LOG:  received fast shutdown request
+
+2026-10-23 08:56:02.549 CST [15312] LOG:  aborting any active transactions
+
+2026-10-23 08:56:02.557 CST [15312] LOG:  background worker "logical replication launcher" (PID 10840) exited with exit code 1
+
+2026-10-23 08:56:02.558 CST [19280] LOG:  shutting down
+
+2026-10-23 08:56:02.599 CST [19280] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-23 08:56:02.816 CST [19280] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.074 s, total=0.258 s; sync files=2, longest=0.048 s, average=0.037 s; distance=3 kB, estimate=15185 kB; lsn=E/9B490650, redo lsn=E/9B490650
+
+2026-10-23 08:56:02.924 CST [15312] LOG:  database system is shut down
+

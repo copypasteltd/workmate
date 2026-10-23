@@ -54,7 +54,7 @@ finally {
   const bytes = await readFile(prefix + ".tap"), raw = bytes.toString();
   const counts = Object.fromEntries(["tests", "pass", "fail", "cancelled", "skipped", "todo"].map(key => [key, Number(raw.match(new RegExp("^# " + key + " (\\d+)\\r?$", "m"))?.[1] ?? -1)]));
   const unchanged = JSON.stringify(source) === JSON.stringify(await snapshot());
-  const required = ["all sixteen connected native roles", "native company tools recheck owner", "native designer generation and editing", "native company namespace rejects altered schemas", "an unknown native company image result fences",
+  const required = ["all seventeen connected native roles", "native company tools recheck owner", "native designer generation and editing", "native company namespace rejects altered schemas", "an unknown native company image result fences",
     ...(process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN ? ["real native Codex edits local files, uses company Image 2 and same-thread edits"] : [])];
   const scenarioPassed = name => raw.split(/\r?\n/).some(line => /^ok \d+ - /.test(line) && line.includes(name));
   const passed = !error && testExit === 0 && shutdown === 0 && unchanged && counts.tests >= (process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN ? 16 : 15) && counts.pass === counts.tests && ["fail", "cancelled", "skipped", "todo"].every(k => counts[k] === 0) && raw.includes("# owned_fixture_cleanup") && required.every(scenarioPassed);

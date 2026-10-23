@@ -69,7 +69,7 @@ try {
     if (process.platform === "win32") {
       try { execFileSync("taskkill.exe", ["/PID", String(journeyRun.child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore", timeout: 15000 }); } catch {}
     } else journeyRun.child.kill("SIGKILL");
-  }, 360000);
+  }, 480000);
   try { journeyCode = await journeyRun.closed; } finally { clearTimeout(journeyDeadline); }
   const cleanupCode = await launch(["--import", "tsx", "scripts/reclaim-test-fixtures.ts"], platform, env).closed;
   const cleanupBytes = await readFile(path.join(run, "result.json")); await writeFile(prefix + "-fixture-cleanup.json", cleanupBytes, { flag: "wx" });
@@ -81,7 +81,12 @@ finally {
   if (database?.child.connected && database.child.exitCode === null) database.child.send({ action: "shutdown" }); if (database) shutdown = await database.closed;
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length >= 12 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+  const videoTools = new Set((journey?.native_video_tool_results ?? []).map(result => result.tool));
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 18 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+    && ["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel"].every(tool => videoTools.has(tool))
+    && journey.checks.some(check => check.includes("exact native MP4/timeline downloads"))
+    && journey.checks.some(check => check.includes("same-thread native video revision"))
+    && journey.checks.some(check => check.includes("Revoking full local permission during an actual video question"))
     && journey.checks.some(check => check.includes("native save-dialog selection")) && journey.checks.some(check => check.includes("edits the authorized source image"))
     && journey.checks.some(check => check.includes("800x600"))
     && journey.checks.some(check => check.includes("same task/thread/turn"))

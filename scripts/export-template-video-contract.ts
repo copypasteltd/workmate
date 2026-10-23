@@ -21,7 +21,7 @@ assert.equal(
 const entries = {
   VideoDefinition: "videoDefinition", VideoProfile: "videoProfile", VideoCreate: "videoCreate", VideoEdit: "videoEdit",
   VideoRenderRequest: "videoRenderRequest", VideoCancelRequest: "videoCancelRequest", VideoCreated: "videoCreated",
-  VideoQueued: "videoQueued", VideoCancelled: "videoCancelled", VideoList: "videoList", VideoDetail: "videoDetail", VideoPreview: "videoPreview",
+  VideoQueued: "videoQueued", VideoCancelled: "videoCancelled", VideoList: "videoList", VideoDetail: "videoDetail", VideoPreview: "videoPreview", VideoStatus: "videoStatus",
 };
 const schemas = Object.fromEntries(
   Object.entries(entries).map(([name, key]) => [
@@ -41,7 +41,7 @@ function op(
 ) {
   return {
     operationId: id,
-    security: [{ customerSession: [] }],
+    security: [{ customerSession: [] }, { nativeAccess: [] }],
     parameters: [
       ...params.map((name) => ({
         name,
@@ -89,7 +89,7 @@ const document = {
   openapi: "3.1.0",
   info: {
     title: "CopyPaste template video projects",
-    version: "0.5.0",
+    version: "0.6.0",
     description:
       "Additive versioned video project contract. Native composition, frozen sources, integer frame timeline, durable render queue, cancellation, scoped actual MP4/source/script/storyboard/VTT/probe delivery and bounded inline preview. No AI generation or whole-product qualification. Original OpenAPI remains unchanged.",
   },
@@ -107,10 +107,12 @@ const document = {
     [base + "/{video}/renders"]: { post: op("queueVideoRender", video, "VideoRenderRequest", "VideoQueued") },
     [base + "/{video}/renders/{render}/cancel"]: { post: op("cancelVideoRender", render, "VideoCancelRequest", "VideoCancelled") },
     [base + "/{video}/renders/{render}/preview"]: { get: op("previewVideoRender", render, null, "VideoPreview") },
+    [base + "/{video}/renders/{render}/status"]: { get: op("videoRenderStatus", render, null, "VideoStatus") },
   },
   components: {
     securitySchemes: {
       customerSession: { type: "apiKey", in: "cookie", name: "cp_session" },
+      nativeAccess: { type: "http", scheme: "bearer" },
     },
     schemas,
   },
@@ -126,7 +128,7 @@ await writeFile(
 );
 console.log(
   JSON.stringify({
-    operations: 7,
+    operations: 8,
     schemas: Object.keys(schemas).length,
     sha256: sha(Buffer.from(bytes)),
     original_unchanged: true,

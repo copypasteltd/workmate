@@ -6,12 +6,14 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { WorkmateRecording, saveWorkmateScreenshot } from "./record-workmate-media.js";
+import { DesktopVideoModelFixture, runDesktopVideoJourney } from "./qa-desktop-video.js";
 
 const delivery = process.cwd(), platform = path.resolve("../copypaste-platform"), desktop = path.resolve("../copypaste-desktop"), attempt = process.argv[2];
 assert.match(attempt ?? "", /^\d{2}$/);
 const owned = path.resolve(".data/desktop-local", randomUUID()), workspace = path.join(owned, "workspace"), outside = path.join(owned, "outside.txt");
 const downloaded = path.join(owned, "downloaded-native-design.png");
 const inputResult = path.join(workspace, "customer-input-result.json");
+const videoModel = new DesktopVideoModelFixture();
 const checks: string[] = [], screenshots: any[] = [], errors: string[] = [];
 const pass = (text: string) => { checks.push(text); console.log("PASS: " + text); };
 let isolated: any, system: any, electron: ElectronApplication | undefined, browser: Browser | undefined, recording: WorkmateRecording | undefined, media: any;
@@ -41,7 +43,9 @@ const provider = createServer(async (req, res) => {
     emit("response.created", { response });
     if (stall) { stalled = true; return; }
     let item: any;
-    if (questionNext) {
+    const videoItem = videoModel.next(body, providerCalls);
+    if (videoItem) item = videoItem;
+    else if (questionNext) {
       questionNext = false;
       const tools = (body.tools ?? []).flatMap((tool: any) => tool.type === "namespace" ? tool.tools.map((child: any) => ({ ...child, name: tool.name + "." + child.name })) : [tool]);
       const tool = tools.find((tool: any) => /(?:^|\.)request_user_input$/.test(tool.name)); assert.ok(tool);
@@ -127,21 +131,51 @@ try {
   });
   await system.app.listen({ host: "127.0.0.1", port: 4310 });
   electron = await _electron.launch({ executablePath: process.env.COPYPASTE_LOCAL_DESKTOP_CANDIDATE!, env: { ...process.env, COPYPASTE_USER_DATA: path.join(owned, "user-data") } });
-  deadline = setTimeout(() => { errors.push("Owned Desktop journey deadline"); void electron?.close(); void browser?.close(); }, 240000);
+  // Bounded extra time for six real native video turns and two real encodes.
+  deadline = setTimeout(() => { errors.push("Owned Desktop journey deadline"); void electron?.close(); void browser?.close(); }, 360000);
   const page = await electron.firstWindow(); page.setDefaultTimeout(20000); page.setDefaultNavigationTimeout(20000); page.on("pageerror", e => errors.push(e.message));
+  // Keep recording, navigation and real native resizes separate. Capture the
+  // Electron surface without CDP screenshot styling or viewport intervention.
+  // The layout assertion still uses actual OS and renderer dimensions.
+  let captureTail: Promise<void> = Promise.resolve();
+  const serializeCapture = <T>(run: () => Promise<T>): Promise<T> => {
+    const operation = captureTail.then(run);
+    captureTail = operation.then(() => {}, () => {});
+    return operation;
+  };
+  const reload = () => serializeCapture(async () => { await page.reload(); });
+  const resize = (width: number, height: number, label: string) => serializeCapture(async () => {
+    await page.bringToFront();
+    await electron!.evaluate(({ BrowserWindow }, size) => {
+      const win = BrowserWindow.getAllWindows()[0];
+      if (win.isMinimized()) win.restore();
+      win.show(); win.focus(); win.setSize(size[0], size[1]);
+    }, [width, height]);
+    try {
+      await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === width && size[1] === height, label);
+    } catch (error) {
+      const native = await electron!.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().map((win: any) => ({ bounds: win.getBounds(), content: win.getContentBounds(), zoom: win.webContents.getZoomFactor() })));
+      const renderer = await page.evaluate(() => ({ width: innerWidth, height: innerHeight, outer: [outerWidth, outerHeight], dpr: devicePixelRatio }));
+      console.error("Native resize diagnostic: " + JSON.stringify({ requested: [width, height], native, renderer }));
+      throw error;
+    }
+  });
   // firstWindow can arrive at about:blank before the main process loadFile.
   // A reload at that point races the real renderer navigation.
   await page.waitForURL(/^file:/); await page.waitForFunction(() => !!(window as any).copyPasteBridge);
-  await page.evaluate(() => { localStorage.setItem("cp_locale", "en"); localStorage.setItem("cp_theme", "light"); }); await page.reload();
+  await page.evaluate(() => { localStorage.setItem("cp_locale", "en"); localStorage.setItem("cp_theme", "light"); }); await reload();
   const chrome = process.env.CHROME_BIN; assert.ok(chrome && path.isAbsolute(chrome));
   browser = await chromium.launch({ executablePath: chrome, headless: true }); const context = await browser.newContext();
   await electron.evaluate(({ shell, dialog }, paths) => {
     const state = globalThis as any; state.__localDialogs = []; state.__localDecision = 0;
     shell.openExternal = async (url: string) => { state.__authURL = url; };
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [paths.workspace] }) as any;
-    dialog.showSaveDialog = async (...args: any[]) => { state.__saveDialogs = [...(state.__saveDialogs ?? []), args.at(-1)]; return { canceled: false, filePath: paths.downloaded }; };
+    dialog.showSaveDialog = async (...args: any[]) => {
+      const options = args.at(-1); state.__saveDialogs = [...(state.__saveDialogs ?? []), options];
+      return { canceled: false, filePath: options.defaultPath.endsWith(".mp4") ? paths.video : options.defaultPath.endsWith(".project.json") ? paths.timeline : paths.downloaded };
+    };
     dialog.showMessageBox = async (...args: any[]) => { state.__localDialogs.push(args.at(-1)); return { response: state.__localDecision, checkboxChecked: false }; };
-  }, { workspace, downloaded });
+  }, { workspace, downloaded, video: path.join(owned, "native-video.mp4"), timeline: path.join(owned, "native-video.project.json") });
   await page.getByRole("button", { name: "Sign in securely in your browser" }).click();
   const authURL = await until(() => electron!.evaluate(() => (globalThis as any).__authURL ?? ""), Boolean, "system browser PKCE URL");
   const auth = await context.newPage(); await auth.addInitScript(() => localStorage.setItem("cp_locale", "en")); await auth.goto(authURL);
@@ -180,7 +214,10 @@ try {
   permissionDecision = 1; await electron.evaluate(() => { (globalThis as any).__localDecision = 1; });
   await page.getByRole("button", { name: "Set permission", exact: true }).click(); await until(list, s => s.permission === "full-access", "explicit local full permission");
   pass("Main-process native consent is required; default decline grants nothing; fixture confirmation grants real full access");
-  recording = new WorkmateRecording("desktop", "local-agent", "local-" + attempt, () => page.screenshot({ type: "jpeg", quality: 82 }), "Actual packaged Electron with real native Codex, local file changes, company image tools, private artifacts, native download and ledger; model/image responses and native dialog decisions explicitly synthetic", delivery);
+  recording = new WorkmateRecording("desktop", "local-agent", "local-" + attempt, () => serializeCapture(async () => {
+    const base64 = await electron!.evaluate(async ({ BrowserWindow }) => (await BrowserWindow.getAllWindows()[0].webContents.capturePage()).toJPEG(82).toString("base64"));
+    return Buffer.from(base64, "base64");
+  }), "Actual packaged Electron surface with real native Codex, local files, company image/video tools, real FFmpeg composition/playback, private artifacts, native downloads and ledger; model/image responses and native dialog decisions explicitly synthetic", delivery);
   await recording.start();
   await page.getByLabel("Local task", { exact: true }).fill("Update the approved existing file outside this workspace using the local terminal, then create the synthetic design through the company Image 2 tool.");
   await page.getByRole("button", { name: "Start work", exact: true }).click(); const firstState = await until(list, s => !s.busy && s.task?.status === "succeeded", "first native completion", 90000);
@@ -222,13 +259,11 @@ try {
   });
   await until(composerFits, Boolean, "visible composer after long conversation");
   try {
-    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(800, 600));
-    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 800 && size[1] === 600, "actual first minimum-window resize");
+    await resize(800, 600, "actual first minimum-window resize");
     await until(composerFits, Boolean, "visible composer at minimum window size");
     screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "compact-en", await page.screenshot(), "Actual 800x600 packaged Desktop; messages, composer, budget, receipt and first artifact button fit all ancestor clipping bounds with horizontal-only artifacts", delivery));
   } finally {
-    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1440, 980));
-    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 1440 && size[1] === 980, "actual restored full window");
+    await resize(1440, 980, "actual restored full window");
   }
   await until(composerFits, Boolean, "restored native workspace layout");
   pass("Long conversation scrolls inside messages while composer, budget, receipt and artifact downloads stay visible at 1440x980 and 800x600");
@@ -237,7 +272,7 @@ try {
   await page.getByRole("button", { name: "Start work", exact: true }).click();
   const awaiting = await until(list, state => state.busy && state.inputs?.length === 1, "real native customer question");
   assert.equal(awaiting.inputs[0].threadId, first.runtime_thread);
-  await page.reload(); await page.getByRole("heading", { name: "Your local workmate" }).waitFor();
+  await reload(); await page.getByRole("heading", { name: "Your local workmate" }).waitFor();
   const restoredInput = await until(list, state => state.busy && state.inputs?.[0]?.requestId === awaiting.inputs[0].requestId, "same live question after renderer reload");
   assert.equal(restoredInput.task.task_id, awaiting.task.task_id);
   const inputCard = page.getByRole("form", { name: "Answer task questions", exact: true }); await inputCard.waitFor();
@@ -255,8 +290,7 @@ try {
   const guessed = await page.evaluate(async data => (window as any).copyPasteBridge.localAgent("answer", data), { id: awaiting.id, requestId: randomUUID(), answers: {} });
   assert.equal(guessed.ok, false); assert.equal(guessed.code, "LOCAL_INPUT_NOT_FOUND");
   try {
-    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(800, 600));
-    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 800 && size[1] === 600, "actual question minimum-window resize");
+    await resize(800, 600, "actual question minimum-window resize");
     await inputCard.getByRole("button", { name: "Answer and continue", exact: true }).scrollIntoViewIfNeeded();
     assert.equal(await page.evaluate(() => {
       const button = document.querySelector<HTMLButtonElement>('.local-agent-composer button')!, box = button.getBoundingClientRect(), root = document.getElementById("root")!;
@@ -266,8 +300,7 @@ try {
     }), true);
     screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "input-compact-en", await page.screenshot(), "Actual 800x600 native question card; customer-selected option and free text, answer and stop controls, scroll inside messages", delivery));
   } finally {
-    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1440, 980));
-    await until(() => page.evaluate(() => [innerWidth, innerHeight]), size => size[0] === 1440 && size[1] === 980, "actual restored question window");
+    await resize(1440, 980, "actual restored question window");
   }
   await inputCard.getByRole("button", { name: "Answer and continue", exact: true }).click();
   const answered = await until(list, state => !state.busy && state.task?.task_id === awaiting.task.task_id && state.task?.status === "succeeded", "same native turn continues after answer", 90000);
@@ -278,6 +311,8 @@ try {
   assert.equal((await system.db.control.query("SELECT count(*)::int AS n FROM reservations WHERE task_id=$1", [answered.task.task_id])).rows[0].n, 1);
   screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "input-completed-en", await page.screenshot(), "Actual native answer reaches the company provider and local terminal; same task, same thread and turn, one reservation and 90 micros of observed usage", delivery));
   pass("Native questions survive renderer reload, require explicit option or free text, reject guessed ids and continue the same task/thread/turn with one reservation and a real local result");
+  await runDesktopVideoJourney({ page, electron, system, model: videoModel, tenant, project, originalAsset, platform, owned, delivery, attempt,
+    list, until, resize, reload, pass, screenshots, providerCalls: () => providerCalls });
   await writeFile(outside, "must-remain-read-only"); commandNext = true; readOnlyCheck = true;
   await page.getByLabel("Local permission", { exact: true }).selectOption("read-only"); await page.getByRole("button", { name: "Set permission", exact: true }).click(); await until(list, s => s.permission === "read-only", "permission downgrade");
   await page.getByLabel("Local task", { exact: true }).fill("Verify that read-only mode prevents a write to the owned outside-cwd fixture."); await page.getByRole("button", { name: "Start work", exact: true }).click();
@@ -322,7 +357,7 @@ try {
   await phase("switch Chinese through visible control and reload", async () => {
     await page.getByTitle("切換至繁體中文", { exact: true }).click();
     await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
-    await page.reload(); await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
+    await reload(); await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
   });
   screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + attempt, "workspace-zh", await page.screenshot(), "Actual Chinese local Agent workspace after reload; same-account local history retained", delivery));
   await phase("native sign-out", () => page.getByRole("button", { name: "登出", exact: true }).click());
@@ -350,7 +385,7 @@ finally {
   provider.closeAllConnections(); if (provider.listening) await new Promise<void>(resolve => provider.close(() => resolve()));
   if (isolated) { process.chdir(platform); await isolated.cleanup(); fixtureClosed = true; }
   process.chdir(delivery);
-  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions,
+  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations,
     scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company tools, private artifacts, download and billing; model/image responses and native chooser/consent/save decisions are explicit fixtures",
     fixture_native_dialog_confirmed: permissionDecision === 1, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };
   await writeFile(`evidence/desktop-local-ui-${attempt}-journey.json`, JSON.stringify(report, null, 2) + "\n", { flag: "wx" }); assert.equal(errors.length, 0, errors.join("\n"));
