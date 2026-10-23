@@ -9,7 +9,7 @@ A Codex-based enterprise Agent platform for Hong Kong businesses, beginning with
 
 CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
 
-**Current implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads and company tools/billing. Native questions now support explicit options/free text, stop and revocation while waiting. Current source passes 47 client tests, 17 real-native tests and 12 actual packaged-Electron journey checks. Unchanged backend source retains its stage 73 complete 818-test regression scope. Sixteen admitted native role protocols are not full professional qualification; video/workflow tools, complete browser/application automation, all eighteen roles/twenty-nine Skills and production acceptance remain open. Provider responses and native-dialog decisions are explicit fixtures. Extension retains native right Side Panel cloud conversations and selected-file uploads. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/74-desktop-native-user-input.md) and [source/media evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-checkpoint.json).
+**Current implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads, native questions and company tools/billing. The video role now supports private projects, actual composition/playback, native saves, version edits and stop/revocation fencing. Qualification covers 830 platform tests, 58 overlapping focused tests, 17 real-native tests, 47 client tests and 18 actual packaged-journey checks; counts overlap and are not additive. Seventeen native role admissions are not full professional acceptance. Workflow tools, complete browser/application automation, all eighteen roles/twenty-nine Skills and production acceptance remain open. Model/image responses and native-dialog choices are explicit fixtures. Extension retains right Side Panel cloud conversations and selected-file uploads. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/75-desktop-private-video.md) and [source/media checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json).
 
 Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
 
@@ -59,7 +59,7 @@ flowchart TB
 The following describes the shared company workflow. Desktop local permission, persistent threads and company tools follow the stage 73 design and source-bound checkpoint.
 
 1. Sign in with an email code, choose a workspace/project and confirm the current funding and permission context. Desktop and extension authorize through the company webpage using PKCE; Admin uses a separate email OTP/TOTP identity.
-2. Web/Extension offer the default assistant, eighteen role presets and personal specialists. Desktop currently admits sixteen presets with the native protocol connected. Tasks freeze role, Skills, model and price versions. Select files, brand resources and authorized connections explicitly.
+2. Web/Extension offer the default assistant, eighteen role presets and personal specialists. Desktop currently admits seventeen presets with the native protocol connected. Tasks freeze role, Skills, model and price versions. Select files, brand resources and authorized connections explicitly.
 3. Confirm a bounded budget before execution. Codex calls company-provided APIs and controlled tools. Recorded usage, budget holds and settled charges remain separate.
 4. In Web/Extension, when a measured completed turn requests inputs, select authorized current versions and continue the original task/thread/hold, within eight-round and thirty-two-dependency bounds. Desktop supports same-thread follow-up and answering native questions in the original task and turn. Unknown effects in either execution path require reconciliation.
 5. Read evidence and deliverables, download through authenticated company routes or explicitly publish an independent copy. Current source governance still applies. Workspace switches or failed reads clear prior client content.
@@ -93,9 +93,9 @@ Open Web `http://localhost:4317` and Admin `http://localhost:4318`; Backend uses
 
 ## Evidence and limits
 
-The historical-source Platform regression passed **802/802** tests (the backend has since changed; this is not a full regression of the new source), retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. Stage 72 retained ten real-native supervisor and seven Electron checks for its historical source. Stage 73 retains its original source scope for 818 Platform regressions, fourteen real-native tests, thirty-seven client tests and nine packaged journeys; its backend source is unchanged. Stage 74 separately verifies current Desktop with 47 client tests, 17 real-native tests and 12 packaged journeys. Full qualification remains open. Earlier four-client media retains its original cloud/file-bridge source scope; new local company-tool media has its own timing, hashes and owned-client cleanup.
+The historical-source Platform regression passed **802/802** tests (the backend has since changed; this is not a full regression of the new source), retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. Stage 72 retained ten real-native supervisor and seven Electron checks for its historical source. Stage 73 retains its original source scope for 818 Platform regressions, fourteen real-native tests, thirty-seven client tests and nine packaged journeys; backend source remained unchanged through stage 74. Stage 74 separately verifies its original Desktop source with 47 client tests, 17 real-native tests and 12 packaged journeys. Full qualification remains open. Earlier four-client media retains its original cloud/file-bridge source scope; new local company-tool media has its own timing, hashes and owned-client cleanup.
 
-[Canonical task evidence](quality/canonical-task-checkpoint.json) · [Native supervisor evidence](quality/desktop-native-input-checkpoint.json) · [Current local candidate bytes](quality/desktop-native-input-checkpoint.json) · [Media](quality/workmate-media-10.json) · [Requirement progress](quality/requirements-alignment-progress.json)
+[Canonical task evidence](quality/canonical-task-checkpoint.json) · [Native supervisor evidence](quality/desktop-video-checkpoint.json) · [Current local candidate bytes](quality/desktop-video-checkpoint.json) · [Media](quality/workmate-media-10.json) · [Requirement progress](quality/requirements-alignment-progress.json)
 
 AI turns and provider/business facts in UI demos are explicitly synthetic, as authorized. Separate integration tests run actual Codex processes against a synthetic internal gateway. Admin media shows permission-gated VIP/credit forms and does not claim a financial posting. Applied SQL001–092 remain immutable. All 102 requirements, TC/NFR/G01–G10 and the 81 partial /21 unproven /0 fully accepted baseline remain intact. Dedicated canonical task inputs and historical identity migration, arbitrary in-flight pause, unknown-effect recovery, complete local Desktop and Extension conversation/attachments, full role workflows, GEO, real suppliers, production, signing and store qualification remain outstanding.
 
@@ -113,21 +113,27 @@ Screenshots and GIFs show actual running clients; synthetic data is scoped above
 
 ### Desktop
 
-Stage 74: actual native questions, answers, waiting cancellation/revocation and existing local file/company tools; model/image responses and native-dialog choices are explicit fixtures. Other client media below retain their historical source scopes.
+Stage 75: actual native video, revisions, playback/native saves, stop and revocation, plus native questions, files and company image tools; model/image responses and native-dialog choices are explicit fixtures. Other client media below retain their historical source scopes.
 
-![desktop](design/implementation/workmate/desktop-native-12-full-access-en.png)
+![desktop](design/implementation/workmate-local-19-full-access-en.png)
 
-![Company design artifacts](design/implementation/workmate/desktop-native-12-company-artifacts-en.png)
+![Company design artifacts](design/implementation/workmate-local-19-company-artifacts-en.png)
 
-![Minimum native window](design/implementation/workmate/desktop-native-12-compact-en.png)
+![Minimum native window](design/implementation/workmate-local-19-compact-en.png)
 
-![Native customer question](design/implementation/workmate/desktop-native-12-waiting-input-en.png)
+![Native customer question](design/implementation/workmate-local-19-waiting-input-en.png)
 
-![Explicit answer at minimum window size](design/implementation/workmate/desktop-native-12-input-compact-en.png)
+![Explicit answer at minimum window size](design/implementation/workmate-local-19-input-compact-en.png)
 
-![desktop interaction](design/implementation/workmate/desktop-native-12-local-agent.gif)
+![Actual private video playback](design/implementation/workmate-local-19-video-ready-en.png)
 
-[MP4](design/implementation/workmate/desktop-native-12-local-agent.mp4)
+![Native video at 800x600](design/implementation/workmate-local-19-video-compact-en.png)
+
+![Revoked native video](design/implementation/workmate-local-19-video-revoke-en.png)
+
+![desktop interaction](design/implementation/workmate-local-19-local-agent.gif)
+
+[MP4](design/implementation/workmate-local-19-local-agent.mp4)
 
 ### Extension
 
@@ -268,10 +274,12 @@ Every later change must synchronize both READMEs, affected captures, bilingual r
 
 New: [Extension cloud conversations](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md) · [Release notes](changes/2026-10-22-extension-conversations.en.md).
 
-Latest Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Prior recordings below retain their original source scopes.
+Stage 73 Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Prior recordings below retain their original source scopes.
 
-Latest company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.
+Stage 73 company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.
 
 Stage 74 native-input update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-input.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-checkpoint.json). Earlier reports/media retain their original source scopes.
 
-The unbundled renderer hash index was refreshed after qualification; all other covered sources and the actual package are unchanged. See the [separate metadata check](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-renderer-manifest-01.json). This adds no native/UI test count.
+During stage 74, the unbundled renderer hash index was refreshed after qualification; all other covered sources and the actual package are unchanged. See the [separate metadata check](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-renderer-manifest-01.json). This adds no native/UI test count.
+
+Stage 75 private-video update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-private-video.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json). Earlier reports retain their actual source scopes; platform/main-process qualification and later UI qualification are explicitly separated.

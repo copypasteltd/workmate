@@ -1,5 +1,7 @@
 # Desktop 本机 Codex 的用户追问与继续执行
 
+**阶段 75 当前增量：** Desktop 保持本机 Codex，视频角色接通七项公司工具、私有工程、真实合成、播放/保存、版本修改及停止/撤权控制。平台 830 项、重叠定向 58 项、原生 17 项、客户端 47 项和实际打包旅程 18 项通过；当前 17 个本机角色准入不等于全专业验收。见 [实现与源码证据](75-desktop-private-video.md)。原 102 REQ/102 TC、NFR、G01–G10 和 81/21/0 状态保留；较早记录沿用其原始源码范围。
+
 本增量落实 [CLIENT01 的 DESK-L05](../requirements/03-client-execution-amendment.md)：本机 Codex 需要客户补充信息时，Desktop 在当前对话内显示问题，让客户明确回答后继续当前工作。Desktop 的文件、终端、线程及 Agent 循环继续运行在客户电脑；Extension 保持 Chrome 原生右侧栏中的云端对话和获选文件上传。沿用 [阶段 73 的公司工具、角色和费用职责](73-desktop-native-company-tools.md)。
 
 ## 用户流程与界面

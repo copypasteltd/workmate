@@ -1,0 +1,242 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import type { Page, ElectronApplication } from "playwright";
+import { saveWorkmateScreenshot } from "./record-workmate-media.js";
+
+type Mode = "create" | "edit" | "render" | "cancel" | "stop" | "revoke";
+/** Explicit model fixture. The native executable must return each real tool
+ * result before the fixture can construct the next call. It never inserts
+ * business results or substitutes video bytes. */
+export class DesktopVideoModelFixture {
+  private actions: string[] = [];
+  private pending: { name: string; call: string } | null = null;
+  private mode: Mode | null = null;
+  definition: any;
+  project = "";
+  render: any;
+  observations: { tool: string; output_format: string }[] = [];
+  begin(mode: Mode) {
+    assert.equal(this.mode, null); assert.equal(this.pending, null);
+    this.mode = mode;
+    this.actions = mode === "create" ? ["video_projects", "video_project_queue", "video_project_read", "video_project_status"]
+      : mode === "edit" ? ["video_project_read", "video_project_edit", "video_project_status"]
+      : mode === "cancel" ? ["video_project_render", "video_project_cancel"] : ["video_project_render"];
+  }
+  next(body: any, serial: number): any | null {
+    if (!this.mode) return null;
+    if (this.pending) {
+      const result = body.input.find((entry: any) => entry.type === "function_call_output" && entry.call_id === this.pending!.call);
+      assert.ok(result, "The actual native company tool result must reach the company Responses request");
+      let value: any, format: string;
+      if (typeof result.output === "string") { value = JSON.parse(result.output); format = "json_string"; }
+      else {
+        assert.ok(Array.isArray(result.output) && result.output.length === 1);
+        const item = result.output[0]; assert.ok(["input_text", "text"].includes(item.type) && typeof item.text === "string");
+        value = JSON.parse(item.text); format = "single_text_item";
+      }
+      const name = this.pending.name;
+      if (name === "video_projects") assert.ok(Array.isArray(value.items));
+      else if (name === "video_project_read") {
+        assert.equal(value.id, this.project); assert.deepEqual(value.definition, this.definition);
+      } else if (name === "video_project_status") {
+        assert.equal(value.project.id, this.project); assert.equal(value.render.id, this.render.id);
+        assert.equal(value.delivery_state, "queued"); assert.equal(value.assets.length, 0);
+      } else if (name === "video_project_cancel") {
+        assert.equal(value.render.id, this.render.id); assert.equal(value.render.state, "cancelled");
+      } else {
+        assert.match(value.project.id, /^[a-f0-9-]{36}$/); assert.equal(value.render.state, "queued");
+        if (this.project) assert.equal(value.project.id, this.project);
+        this.project = value.project.id; this.render = value.render;
+      }
+      this.observations.push({ tool: name, output_format: format }); this.pending = null;
+    }
+    const tools = (body.tools ?? []).flatMap((tool: any) => tool.type === "namespace"
+      ? tool.tools.map((child: any) => ({ ...child, name: tool.name + "." + child.name })) : [tool]);
+    const action = this.actions.shift();
+    if (action) {
+      assert.ok(tools.some((tool: any) => tool.name === "copypaste." + action));
+      let args: any;
+      if (action === "video_projects") args = {};
+      else if (action === "video_project_queue") args = { name: "Harbour launch", definition: this.definition };
+      else if (action === "video_project_read") args = { video_id: this.project };
+      else if (action === "video_project_status") args = { video_id: this.project, render_id: this.render.id };
+      else if (action === "video_project_edit") {
+        this.definition = structuredClone(this.definition);
+        this.definition.storyboard[1].headline = "HK$ 199";
+        args = { video_id: this.project, expected_version: 1, name: "Harbour launch revised", definition: this.definition };
+      } else if (action === "video_project_cancel") args = { video_id: this.project, render_id: this.render.id, expected_revision: this.render.revision };
+      else args = { video_id: this.project, expected_version: 2 };
+      const call = "call_ui_video_" + serial; this.pending = { name: action, call };
+      return { type: "function_call", id: "fc_ui_video_" + serial, call_id: call, namespace: "copypaste", name: action, arguments: JSON.stringify(args) };
+    }
+    const mode = this.mode; this.mode = null;
+    if (mode === "stop" || mode === "revoke") {
+      const tool = tools.find((tool: any) => /(?:^|\.)request_user_input$/.test(tool.name)); assert.ok(tool);
+      return { type: "function_call", id: "fc_ui_video_wait_" + serial, call_id: "call_ui_video_wait_" + serial, name: tool.name,
+        arguments: JSON.stringify({ questions: [{ id: "render", header: "Render", question: "Should this explicitly queued video continue?",
+          options: [{ label: "Continue", description: "Keep composing the accepted video." }, { label: "Cancel", description: "Stop the queued video." }] }] }) };
+    }
+    return { type: "message", id: "msg_ui_video_" + serial, role: "assistant", status: "completed", content: [{ type: "output_text", annotations: [],
+      text: mode === "cancel" ? "This explicitly requested render is cancelled. The earlier delivered versions remain available."
+        : "The video is queued with company composition services. This local Codex turn is complete; use the video card for its actual status and downloads when ready." }] };
+  }
+}
+
+interface Journey {
+  page: Page; electron: ElectronApplication; system: any; model: DesktopVideoModelFixture;
+  tenant: string; project: string; originalAsset: string; platform: string; owned: string; delivery: string; attempt: string;
+  list: () => Promise<any>; until: (read: () => Promise<any>, ok: (value: any) => boolean, label: string, ms?: number) => Promise<any>;
+  pass: (label: string) => void; screenshots: any[]; providerCalls: () => number;
+}
+export async function runDesktopVideoJourney(j: Journey) {
+  const { page, electron, system, model, tenant, project, list, until } = j;
+  const { videoDefinitionFixture } = await import(pathToFileURL(path.join(j.platform, "tests/desktop-video-fixture.ts")).href);
+  const { advanceVideoProjects } = await import(pathToFileURL(path.join(j.platform, "src/video-projects.ts")).href);
+  const { renderVideoProject } = await import(pathToFileURL(path.join(j.platform, "src/video-render.ts")).href);
+  model.definition = videoDefinitionFixture({ asset_id: j.originalAsset, version: 1 });
+  const base = `/v1/tenants/${tenant}/projects/${project}`;
+  const request = async (suffix: string) => {
+    const r = await page.evaluate(async url => (window as any).copyPasteBridge.request(url, {}), base + suffix);
+    assert.equal(r.status, 200, JSON.stringify(r)); return r.body;
+  };
+  const screenshot = async (name: string, note: string) => j.screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + j.attempt, name, await page.screenshot(), note, j.delivery));
+  const card = (id: string) => page.locator(`[data-local-video-render="${id}"]`);
+  const task = async (id: string) => (await system.db.control.query("SELECT * FROM tasks WHERE id=$1", [id])).rows[0];
+  const begin = async (mode: Mode, prompt: string, waiting = false) => {
+    const old = await list(), calls = j.providerCalls(); model.begin(mode);
+    await page.getByLabel("Local task", { exact: true }).fill(prompt);
+    await page.getByRole("button", { name: "Start work", exact: true }).click();
+    const result = await until(list, state => state.task?.task_id !== old.task?.task_id && (waiting ? state.busy && state.inputs?.length === 1 : !state.busy && state.task?.status === "succeeded"), "actual native video " + mode, 90000);
+    if (!waiting) assert.equal((await task(result.task.task_id)).charged_micros, String((j.providerCalls() - calls) * 30));
+    return result;
+  };
+  const waitState = async (id: string, state: string) => {
+    await card(id).waitFor(); await card(id).getByRole("button", { name: "Refresh video status", exact: true }).click();
+    await until(() => card(id).getByRole("status").innerText(), text => text === state, "visible video state " + state);
+    await card(id).scrollIntoViewIfNeeded();
+  };
+  const ready = async (id: string) => {
+    await waitState(id, "Rendered"); const c = card(id);
+    await c.getByRole("button", { name: "Play video", exact: true }).click();
+    const video = c.locator("video"); await video.waitFor();
+    await until(() => video.evaluate((v: HTMLVideoElement) => v.readyState), n => n >= 2, "actual native video decode");
+    await video.evaluate((v: HTMLVideoElement) => v.play());
+    await until(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), n => n > 0, "actual native playback progress");
+    await video.evaluate((v: HTMLVideoElement) => v.pause());
+    await video.scrollIntoViewIfNeeded();
+    const status = await request(`/video-projects/${model.project}/renders/${id}/status`);
+    assert.equal(status.assets.length, 6); assert.equal(status.render.probe.fully_decoded, true); assert.equal(status.ai_cost_micros, "0");
+    return status;
+  };
+  await page.getByLabel("Local specialist", { exact: true }).selectOption("video-motion");
+  const prior = await list(); await page.getByRole("button", { name: "Choose folder to start", exact: true }).click();
+  await until(list, state => state.id !== prior.id, "native video specialist session");
+  await page.getByLabel("Local permission", { exact: true }).selectOption("full-access");
+  await page.getByRole("button", { name: "Set permission", exact: true }).click();
+  const first = await begin("create", "Make a short campaign video using my private design, with a fixed editable timeline. Tell me its real queued status.");
+  const firstTask = await task(first.task.task_id), firstRender = model.render.id;
+  assert.equal(firstTask.role_key, "video-motion"); assert.equal(firstTask.execution_location, "desktop");
+  const p = (await system.db.control.query("SELECT private_owner,origin_task_id FROM creative_projects WHERE id=$1", [model.project])).rows[0];
+  assert.equal(p.private_owner, firstTask.created_by); assert.equal(p.origin_task_id, firstTask.id);
+  await waitState(firstRender, "Queued"); assert.equal(await card(firstRender).getByRole("button", { name: "Download video", exact: true }).count(), 0);
+  await screenshot("video-queued-en", "Actual local Codex called four company video tools through its native protocol; completed local turn leaves an explicitly queued private video, with no download. Model text and source PNG are explicit fixtures.");
+  let release!: () => void, entered!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; }), started = new Promise<void>(resolve => { entered = resolve; });
+  const work = advanceVideoProjects(system.db, system.storage, async (...args: any[]) => { entered(); await gate; return renderVideoProject(...args); });
+  try {
+    await Promise.race([started, work.then((result: any) => { throw new Error("Composition did not start: " + JSON.stringify(result)); })]);
+    await waitState(firstRender, "Rendering");
+    await screenshot("video-rendering-en", "Actual durable company job is rendering while the local Codex task is already completed. A controlled test gate holds the real encoder; no output is substituted.");
+  } finally { release(); }
+  assert.equal((await work)?.state, "succeeded");
+  const original = await ready(firstRender);
+  await screenshot("video-ready-en", "Actual Electron decodes and plays the real FFmpeg-composed MP4; six immutable private deliveries are ready. Source design and model responses are explicit fixtures.");
+  await card(firstRender).getByRole("button", { name: "Download video", exact: true }).click();
+  await card(firstRender).getByRole("button", { name: "Timeline", exact: true }).click();
+  const mp4 = original.assets.find((a: any) => a.version.mime_type === "video/mp4"), timeline = original.assets.find((a: any) => a.name.endsWith(".project.json"));
+  const storage = async (id: string) => system.storage.get((await system.db.control.query("SELECT storage_key FROM asset_versions WHERE asset_id=$1 AND version=1", [id])).rows[0].storage_key);
+  await until(() => readFile(path.join(j.owned, "native-video.mp4")).catch(() => Buffer.alloc(0)), bytes => bytes.length > 0, "native MP4 save dialog download");
+  await until(() => readFile(path.join(j.owned, "native-video.project.json")).catch(() => Buffer.alloc(0)), bytes => bytes.length > 0, "native timeline save dialog download");
+  assert.deepEqual(await readFile(path.join(j.owned, "native-video.mp4")), await storage(mp4.id));
+  assert.deepEqual(await readFile(path.join(j.owned, "native-video.project.json")), await storage(timeline.id));
+  await page.reload(); await page.getByRole("heading", { name: "Your local workmate" }).waitFor(); await waitState(firstRender, "Rendered");
+  j.pass("Actual native video tools return real private project/status results; queued and rendering cards lead to decoded playback, exact native MP4/timeline downloads and reload restoration with zero media AI charge");
+
+  const revision = await begin("edit", "Continue the same local video session. Change the closing price from HK$ 299 to HK$ 199, preserving the first delivery.");
+  const revisedTask = await task(revision.task.task_id); assert.equal(revisedTask.runtime_thread, firstTask.runtime_thread); assert.notEqual(revisedTask.runtime_turn, firstTask.runtime_turn);
+  assert.equal((await advanceVideoProjects(system.db, system.storage))?.state, "succeeded"); const secondRender = model.render.id, revised = await ready(secondRender);
+  assert.equal(revised.render.version, 2);
+  const latest = await request(`/video-projects/${model.project}`); assert.equal(latest.definition.storyboard[1].headline, "HK$ 199");
+  assert.deepEqual(latest.versions.map((v: any) => v.version), [2, 1]);
+  assert.deepEqual((await request(`/video-projects/${model.project}/renders/${firstRender}/status`)).assets, original.assets);
+  await screenshot("video-version2-en", "Actual native same-thread edit creates version 2 with HK$ 199, a new MP4 and preserved version 1 hashes; private sources remain fixed.");
+  try {
+    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(800, 600));
+    await until(() => page.evaluate(() => [innerWidth, innerHeight]), s => s[0] === 800 && s[1] === 600, "actual video minimum window");
+    const compactVideo = card(secondRender).locator("video");
+    await compactVideo.scrollIntoViewIfNeeded();
+    assert.equal(await compactVideo.evaluate(element => {
+      const box = element.getBoundingClientRect(), scroller = element.closest('.local-agent-messages')!, clip = scroller.getBoundingClientRect();
+      return box.height >= 100 && box.top >= clip.top + scroller.clientTop - 1 && box.bottom <= clip.top + scroller.clientTop + scroller.clientHeight + 1;
+    }), true, "The complete playing frame must fit the conversation, not only its download button");
+    assert.equal(await page.evaluate(() => {
+      const root = document.getElementById("root")!, messages = document.querySelector('.local-agent-messages')!;
+      const button = document.querySelector('.local-agent-composer button')!, b = button.getBoundingClientRect();
+      return root.scrollHeight <= root.clientHeight + 1 && messages.clientHeight >= 64 && b.top >= 40 && b.bottom <= innerHeight;
+    }), true);
+    await screenshot("video-compact-en", "Actual 800x600 native video session: production cards scroll inside the conversation and the task composer stays visible.");
+  } finally {
+    await electron.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(1440, 980));
+    await until(() => page.evaluate(() => [innerWidth, innerHeight]), s => s[0] === 1440 && s[1] === 980, "restore video full window");
+  }
+  j.pass("Actual same-thread native video revision preserves version 1, delivers version 2 and keeps video actions and the composer usable at 800x600");
+
+  await begin("render", "Explicitly request one more render of version 2, so I can cancel it from its video card.");
+  const cancelledFromCard = model.render.id; await waitState(cancelledFromCard, "Queued");
+  const beforeIdleRevoke = await list(), beforeIdleCalls = j.providerCalls();
+  assert.equal(beforeIdleRevoke.busy, false); assert.equal(beforeIdleRevoke.task.status, "succeeded");
+  await page.getByRole("button", { name: "Revoke local permission", exact: true }).click();
+  await until(list, state => state.revoked && state.permission === null, "idle OS grant revoked without changing company login");
+  assert.equal((await request(`/video-projects/${model.project}/renders/${cancelledFromCard}/status`)).render.state, "queued");
+  assert.equal(await card(cancelledFromCard).getByRole("button", { name: "Cancel render", exact: true }).isEnabled(), true);
+  await card(cancelledFromCard).getByRole("button", { name: "Cancel render", exact: true }).click(); await waitState(cancelledFromCard, "Cancelled");
+  assert.equal((await request(`/video-projects/${model.project}/renders/${cancelledFromCard}/status`)).assets.length, 0);
+  assert.equal(j.providerCalls(), beforeIdleCalls);
+  j.pass("The visible native video card cancels an exact queued render after idle OS permission revocation using current company permission, without model replay or deleting earlier deliveries");
+
+  // A revoked local session stays revoked. A new explicit session/grant may
+  // continue the same private company project without reviving the old grant.
+  await page.getByLabel("Local specialist", { exact: true }).selectOption("video-motion");
+  await page.getByRole("button", { name: "Choose folder to start", exact: true }).click();
+  await until(list, state => state.id !== beforeIdleRevoke.id, "independent native video session after idle revocation");
+  await page.getByLabel("Local permission", { exact: true }).selectOption("full-access");
+  await page.getByRole("button", { name: "Set permission", exact: true }).click();
+
+  await begin("cancel", "Explicitly queue a new render and cancel that exact render using the company tool.");
+  assert.equal((await request(`/video-projects/${model.project}/renders/${model.render.id}/status`)).render.state, "cancelled");
+  j.pass("Actual native video_project_render and video_project_cancel results travel back through the company model protocol with no duplicate output");
+
+  for (const mode of ["stop", "revoke"] as const) {
+    const pending = await begin(mode, "Queue one explicit video render, then ask me to confirm before doing more local work.", true), renderId = model.render.id, calls = j.providerCalls();
+    if (mode === "stop") await page.getByRole("button", { name: "Stop task", exact: true }).click();
+    else await page.getByRole("button", { name: "Revoke local permission", exact: true }).click();
+    const ended = await until(list, state => !state.busy && state.task?.task_id === pending.task.task_id && (mode !== "revoke" || state.revoked), "native video " + mode + " completion");
+    assert.equal(j.providerCalls(), calls); assert.deepEqual(ended.inputs, []); assert.equal(ended.uncertain, false);
+    const stopped = (await system.db.control.query("SELECT state,error_code FROM video_renders WHERE id=$1", [renderId])).rows[0];
+    assert.equal(stopped.state, "cancelled"); assert.equal(stopped.error_code, "DESKTOP_ORIGIN_STOPPED");
+    assert.equal((await system.db.control.query("SELECT count(*)::int AS n FROM asset_versions WHERE metadata->>'render_id'=$1", [renderId])).rows[0].n, 0);
+    const stale = await page.evaluate(async data => (window as any).copyPasteBridge.localAgent("answer", data), { id: pending.id, requestId: pending.inputs[0].requestId, answers: {} });
+    assert.equal(stale.ok, false); assert.equal(stale.code, mode === "revoke" ? "LOCAL_PERMISSION_REQUIRED" : "LOCAL_INPUT_NOT_FOUND");
+    if (mode === "revoke") for (const event of ended.events.filter((e: any) => e.kind === "local.runtime.ready")) assert.throws(() => process.kill(Number(event.value.pid), 0));
+    await waitState(renderId, "Cancelled");
+    await screenshot("video-" + mode + "-en", "Actual native pending question and its origin video are stopped by " + mode + "; no late artifact or model replay. Earlier private deliveries remain intact.");
+    j.pass(mode === "stop" ? "Stopping an actual native video turn while it waits cancels only its origin render, rejects stale answers and makes no further model request"
+      : "Revoking full local permission during an actual video question exits owned Codex processes and cancels the pending origin render without late deliveries");
+  }
+  assert.deepEqual([...new Set(model.observations.map(o => o.tool))].sort(), ["video_projects", "video_project_queue", "video_project_read", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel"].sort());
+  const last = await list(); await page.getByLabel("Local specialist", { exact: true }).selectOption("designer");
+  await page.getByRole("button", { name: "Choose folder to start", exact: true }).click(); await until(list, state => state.id !== last.id, "restore independent designer sandbox fixture");
+  await page.getByLabel("Local permission", { exact: true }).selectOption("full-access"); await page.getByRole("button", { name: "Set permission", exact: true }).click();
+}

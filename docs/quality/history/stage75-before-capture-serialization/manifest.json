@@ -1,0 +1,30 @@
+{
+  "reason": "Two failed actual UI attempts timed out on different native resizes while continuous Playwright screenshots were active. Diagnostic native bounds were correct while a renderer viewport could remain at the previous size; serializing capture and native resize produced sixteen exact transitions. Serialize these operations in the QA driver, keep strict 800x600 checks, and retain failures. This does not change product code or establish full product acceptance.",
+  "sources": [
+    {
+      "source": "dev/copypaste-delivery/scripts/qa-desktop-local.ts",
+      "archive": "docs/quality/history/stage75-before-capture-serialization/copypaste-delivery__scripts__qa-desktop-local.ts.txt",
+      "sha256": "7b6611c14dde057da312975ba3473c51224a6c4975f65f358cb864d063500cf4"
+    },
+    {
+      "source": "dev/copypaste-delivery/scripts/qa-desktop-video.ts",
+      "archive": "docs/quality/history/stage75-before-capture-serialization/copypaste-delivery__scripts__qa-desktop-video.ts.txt",
+      "sha256": "55cd5d7d0770cf082ab075633f3671e7f41ca7657f5a01d472467e8419aada76"
+    }
+  ],
+  "diagnostics": [
+    {
+      "path": "docs/quality/history/stage75-before-capture-serialization/concurrent-window-diagnostic.json",
+      "sha256": "1f8afb1f15735aa2730924642139f9c0e779fb55fcbbc32359720fce7fc1848c"
+    },
+    {
+      "path": "docs/quality/history/stage75-before-capture-serialization/serialized-window-diagnostic.json",
+      "sha256": "d3101a2754621d6b85f1d5c1fdcd09e1dc17bb5e480f5541189eaf5cfc6ee9ab"
+    }
+  ],
+  "failed_attempts": [
+    "15",
+    "16"
+  ],
+  "verifier_sha256": "2be4116c19aec64bd98bc85c6eb20f13d63d9c341ddadb93f23e1d97241aeb28"
+}
