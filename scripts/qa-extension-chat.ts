@@ -86,7 +86,17 @@ try {
   console.log("Owned targets " + JSON.stringify((await cdp.send("Target.getTargets", { filter: [{}] })).targetInfos.map(t => ({ type: t.type, url: t.url.split("?")[0] }))));
   const pt = await until(async () => (await cdp.send("Target.getTargets", { filter: [{}] })).targetInfos.find(t => t.type === "page" && t.url === native[0].documentUrl), Boolean, "panel target");
   panel = await attachTarget(cdp, pt.targetId); pass("Toolbar opens the actual native right Side Panel without a popup/tab");
-  const popupEvent = context.waitForEvent("page"); await evaluate("document.querySelector('#sign-in').click()"); const popup = await popupEvent;
+  await until(() => evaluate("document.readyState==='complete' && document.querySelector('#sign-in') && !document.querySelector('#sign-in').disabled"), Boolean, "loaded native sign-in control");
+  let popup;
+  try {
+    const popupEvent = context.waitForEvent("page");
+    await evaluate("document.querySelector('#sign-in').click()");
+    popup = await popupEvent;
+  } catch (error) {
+    const state = await evaluate("({ready:document.readyState,disabled:document.querySelector('#sign-in')?.disabled,error:document.querySelector('#error')?.textContent})");
+    console.error("Native sign-in diagnostic " + JSON.stringify(state));
+    throw error;
+  }
   await popup.waitForLoadState(); const email = `extension-chat-${randomUUID()}@example.invalid`;
   await popup.locator('input[name="email"]').fill(email);
   const [ch] = await Promise.all([popup.waitForResponse(r => new URL(r.url()).pathname === "/v1/auth/challenges"), popup.locator('form button[type="submit"]').click()]);

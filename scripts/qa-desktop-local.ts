@@ -1,3 +1,4 @@
+import { exerciseBrandLibrary } from "./brand-library-ui.js";
 import assert from "node:assert/strict";
 import { _electron, chromium, type ElectronApplication, type Browser } from "playwright";
 import { createServer } from "node:http";
@@ -22,7 +23,7 @@ const inputResult = path.join(workspace, "customer-input-result.json");
 const videoModel = new DesktopVideoModelFixture();
 const workflowModel = new DesktopWorkflowModelFixture(workspace, outside);
 const browserModel = new DesktopBrowserModelFixture(desktop, workspace);
-let nativeBrowserMedia: any;
+let nativeBrowserMedia: any, brandLibraryMedia: any;
 const checks: string[] = [], screenshots: any[] = [], errors: string[] = [];
 const pass = (text: string) => { checks.push(text); console.log("PASS: " + text); };
 let isolated: any, system: any, electron: ElectronApplication | undefined, browser: Browser | undefined, recording: WorkmateRecording | undefined, media: any;
@@ -379,6 +380,7 @@ try {
   media = await phase("finish actual recording and encode", () => finishingRecording.stop(), 60000); assert.ok(media && media.skipped_capture_errors === 0);
   nativeBrowserMedia = await runDesktopBrowserJourney({ page, electron, system, model: browserModel, delivery, attempt, list, until, pass, screenshots, providerCalls: () => providerCalls });
   await checkDesktopAccountLayout({page,resize,until,screenshots,delivery,attempt,pass});
+  brandLibraryMedia = await exerciseBrandLibrary({page,repo:"desktop",delivery,attempt,pass,screenshots,resize});
   await phase("switch Chinese through visible control and reload", async () => {
     await page.getByTitle("切換至繁體中文", { exact: true }).click();
     await page.getByRole("heading", { name: "你的本機工作夥伴" }).waitFor();
@@ -412,7 +414,7 @@ finally {
   provider.closeAllConnections(); if (provider.listening) await new Promise<void>(resolve => provider.close(() => resolve()));
   if (isolated) { process.chdir(platform); await isolated.cleanup(); fixtureClosed = true; }
   process.chdir(delivery);
-  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_workflow_tool_results: workflowModel.observations, native_browser_tool_results: browserModel.observations, native_browser_media: nativeBrowserMedia, native_browser_fixture_closed: browserModel.closed,
+  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_workflow_tool_results: workflowModel.observations, native_browser_tool_results: browserModel.observations, native_browser_media: nativeBrowserMedia, brand_library_media: brandLibraryMedia, native_browser_fixture_closed: browserModel.closed,
     scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company tools, local workflow children/approvals, private artifacts, download and billing; model/image responses and native chooser/consent/save decisions are explicit fixtures",
     fixture_native_dialog_confirmed: permissionDecision === 1, fixture_company_max_active_tasks:32, fixture_isolated_capacity_policy:{agent_slots:32,tenant_slots:32}, fixture_isolated_provider_policy:{version:2,slots:32,rpm:10000}, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };
   await writeFile(`evidence/desktop-local-ui-${attempt}-journey.json`, JSON.stringify(report, null, 2) + "\n", { flag: "wx" }); assert.equal(errors.length, 0, errors.join("\n"));
