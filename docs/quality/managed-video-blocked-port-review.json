@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-24T02:20:55.990512+00:00",
+  "status": "confirmed_test_fixture_failure",
+  "process_id": 23004,
+  "parent_process_id": 42664,
+  "owned_ancestor_ids": [
+    23004,
+    42664,
+    41680,
+    34112,
+    11572,
+    30124,
+    15852
+  ],
+  "batch_owner_pid": 34112,
+  "owned_command_sha256": "3c1eb3c18931e95bfe74181a70e420874628f5baa24cbd5c7acadcffc8eb69df",
+  "owned_listening_sockets": [
+    {
+      "LocalAddress": "127.0.0.1",
+      "LocalPort": 2049,
+      "OwningProcess": 23004
+    }
+  ],
+  "actual_node_fetch_probe": {
+    "name": "TypeError",
+    "message": "fetch failed",
+    "cause": "bad port"
+  },
+  "observed_tap_prefix": {
+    "path": "docs/quality/history/stage81-blocked-port-observed.tap",
+    "sha256": "b19f3940601da74106ac45ece5d00e445a49554c7b7a584f7592585f32452964",
+    "bytes": 19572
+  },
+  "raw_attempt": "dev/copypaste-delivery/evidence/desktop-execution-control-29-batch-07-attempt-01.tap",
+  "fixture_sha256": "8f7fd28d06b3db8f0db17dd79e492756f24e3101e97a1857c6511d0d44ec0755",
+  "existing_safe_loopback_helper_sha256": "e8f027e64e226ed6fd5101d16468acfcdf5f1727ceedb064f5b20617a95b568c",
+  "cause": "The new synthetic provider used direct ephemeral listen and received port 2049. Node Fetch rejects that port before HTTP, leaving truthful unknown results. The existing owned loopback helper already handles blocked ephemeral ports.",
+  "required_repair": "Use the existing loopback helper in the fixture and bound its takeover-test arrival wait. Preserve failed attempt and rerun qualification with changed test bytes. No failed test is relabeled as passed.",
+  "verifier_sha256": "641e7b885ef4e82f7c4d8a296f5a40484d13a6512dfbee28b200548f6dfd8844"
+}

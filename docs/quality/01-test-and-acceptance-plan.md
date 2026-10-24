@@ -1096,3 +1096,7 @@ Original TC definitions are preserved. This bounded brand-production chain does 
 原 TC 编号、步骤、完整条件均保持。REQ-019 的提交/查询/取消/对账、真实 MP4 与各端界面已部分验证；TC-019 仍为 `not_completed`。912 项代码测试不代替原 102 项产品验收。真实供应商、全格式/角色、客户成果、TC-056 及 G01–G10 另行证明。见 [精确检查点](generated-video-checkpoint.json)。
 
 The original acceptance definitions remain; explicit model/video/customer fixtures do not qualify a live provider or complete TC-019.
+
+## 阶段 81 局部证据 / Managed-video subflow evidence
+
+原编号、步骤、完整条件及 TC 状态保持。929 项平台代码检查保留原 912 项；后台视频模型异步验证、原操作恢复、服务退出暂停、实际解码、独立发布／回滚及当前费用已局部验证。7 项真实后台页面和 7 项契约检查不等同于 102 项原产品验收。真实供应商、专业成果、完整 TC-019／TC-056 与全部 G01–G10 保留。见[精确检查点](managed-video-checkpoint.json)。

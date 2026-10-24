@@ -105,3 +105,7 @@ CORE01 将全部运行配置的 kernel 固定为 codex；目录 schema 使用 co
 ## Stage80 生成式视频 / Generated video
 
 [增量契约](generated-video-openapi.json) 从运行时 Zod 模型导出七项操作、十项模式，并以实际响应验证。公司自有 `company-video-jobs-v1` 扩展不是已停用的公开 Videos API。公开 `revision` 不随无变化轮询/续租递增，实际控制仍进行并发校验。当前 [实际路由清单](implemented-routes.json) 为 445 项配置服务操作及一项仅 DEMO_MODE 的既有声明；不作为完整设计 OpenAPI。两份原 OpenAPI 各自原样保留。
+
+## Stage81 后台视频模型 / Managed video models
+
+[能力发布增量契约](capability-releases.openapi.json) 现在含文字／图片／视频定义、异步逐案例回执及两个原作业停止／重查命令，13 条路径／23 个严格模式；原 OpenAPI 不修改。[真实配置服务路由](implemented-routes.json) 为 447 项，加一项保留的演示条件声明；路由清单不代替完整产品设计 API。见[执行与权限](../technical/81-managed-video-capability-releases.md)。

@@ -1,0 +1,113 @@
+{
+  "at": "2026-10-24T00:14:48.920985+00:00",
+  "status": "passed",
+  "source_journey": {
+    "path": "evidence/desktop-local-ui-38-journey.json",
+    "sha256": "3f943ecf16559dd25453038c6e735ebd2974548e4c139934dc97c60553cdc98e"
+  },
+  "mp4": {
+    "path": "copypaste-desktop/assets/screenshots/workmate-local-38-native-browser.mp4",
+    "sha256": "3c31083aaa46b772efe6b81c624ab11cebdd4878fd966ee5b00494807a85b37e",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "nb_frames": "242",
+          "side_data_list": [
+            {}
+          ]
+        }
+      ],
+      "format": {
+        "duration": "24.200000"
+      }
+    }
+  },
+  "original_gif": {
+    "path": "copypaste-desktop/assets/screenshots/workmate-local-38-native-browser.gif",
+    "sha256": "ffe94f31a522c9b52f094eb3ee5169c285619acc6bd3595d5990801feae788ce",
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "gif",
+          "nb_frames": "159"
+        }
+      ],
+      "format": {
+        "duration": "26.500000"
+      }
+    }
+  },
+  "derived_gif": {
+    "path": "copypaste-desktop/assets/screenshots/workmate-local-38-native-browser-timing.gif",
+    "sha256": "f04a3333f5a9dd290093335ee921ce39a371025594cff27d8d6ad4b805456e3f",
+    "bytes": 973228,
+    "probe": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "gif",
+          "nb_frames": "145"
+        }
+      ],
+      "format": {
+        "duration": "24.170000"
+      }
+    }
+  },
+  "scope": "A separate GIF is encoded from the actual MP4 using unchanged source-frame timing, a reset zero origin and an explicit source-duration bound. It does not accelerate playback, introduce response frames, repaint screenshots or overwrite the original GIF, MP4, journey or raw capture. The source GIF has an extra encoder tail and remains archived with its original hash.",
+  "ffmpeg_arguments": [
+    [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-n",
+      "-i",
+      "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\assets\\screenshots\\workmate-local-38-native-browser.mp4",
+      "-an",
+      "-filter_threads",
+      "1",
+      "-vf",
+      "setpts=PTS-STARTPTS,fps=6,scale=w='trunc(min(1000,iw)/2)*2':h=-2:flags=lanczos,palettegen=max_colors=160:stats_mode=diff",
+      "-frames:v",
+      "1",
+      "-threads",
+      "2",
+      "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\.data\\generated-video-media-normalization-38\\palette.png"
+    ],
+    [
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-n",
+      "-i",
+      "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\assets\\screenshots\\workmate-local-38-native-browser.mp4",
+      "-i",
+      "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-delivery\\.data\\generated-video-media-normalization-38\\palette.png",
+      "-an",
+      "-filter_complex_threads",
+      "1",
+      "-filter_complex",
+      "[0:v]setpts=PTS-STARTPTS,fps=6,scale=w='trunc(min(1000,iw)/2)*2':h=-2:flags=lanczos[frames];[frames][1:v]paletteuse=dither=bayer:bayer_scale=3",
+      "-t",
+      "24.2",
+      "-fps_mode",
+      "passthrough",
+      "-threads",
+      "2",
+      "-loop",
+      "0",
+      "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\assets\\screenshots\\workmate-local-38-native-browser-timing.gif"
+    ]
+  ],
+  "raw_evidence_modified": false,
+  "verifier": {
+    "path": "docs/tools/normalize_generated_video_media.py",
+    "sha256": "f2ae57ff463d1677a3acd791b292a926546bff6b96146b97dd4186bf2d0a3eee"
+  }
+}

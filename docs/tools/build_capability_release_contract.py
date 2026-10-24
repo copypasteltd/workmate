@@ -34,7 +34,7 @@ def main():
     integer = {'type': 'integer', 'minimum': 0, 'maximum': 9007199254740991}
     positive = {'type': 'integer', 'minimum': 1, 'maximum': 2147483647}
     mode = {'type': 'string', 'enum': ['simulated', 'configured_services']}
-    profile = {'type': 'string', 'enum': ['internal-text-v1', 'internal-image2-v1']}
+    profile = {'type': 'string', 'enum': ['internal-text-v1', 'internal-image2-v1', 'internal-video-v1']}
     reason = {'type': 'string', 'minLength': 3, 'maxLength': 1000}
     rate = {'type': 'integer', 'minimum': 0, 'maximum': 1000000000000}
     common = {'kernel': {'const': 'codex'}, 'gateway_policy': {'const': 'company_internal_only'},
@@ -48,7 +48,10 @@ def main():
     schemas['ImageCapabilityDocument'] = obj({**common,
         'profile_key': {'const': 'internal-image2-v1'}, 'reasoning_effort': {'type': 'null'},
         'rates': {'type': 'array', 'prefixItems': [{**rate, 'minimum': 1}], 'minItems': 1, 'maxItems': 1}})
-    schemas['CapabilityDocument'] = {'oneOf': [ref('TextCapabilityDocument'), ref('ImageCapabilityDocument')]}
+    schemas['VideoCapabilityDocument'] = obj({**common,
+        'profile_key': {'const': 'internal-video-v1'}, 'reasoning_effort': {'type': 'null'},
+        'rates': {'type': 'array', 'prefixItems': [{**rate, 'minimum': 1}], 'minItems': 1, 'maxItems': 1}})
+    schemas['CapabilityDocument'] = {'oneOf': [ref('TextCapabilityDocument'), ref('ImageCapabilityDocument'), ref('VideoCapabilityDocument')]}
     schemas['CapabilityDraftCommand'] = obj({'document': ref('CapabilityDocument'), 'reason': reason})
     schemas['CapabilityVersionCommand'] = obj({'expected_version': positive, 'reason': reason})
     schemas['CapabilityRelease'] = obj({
@@ -77,11 +80,29 @@ def main():
         'validation_id': uuid, 'state': {'enum': ['queued', 'completed', 'failed']},
         'version': positive, 'attempts': {'type': 'integer', 'minimum': 0, 'maximum': 8},
         'next_attempt_at': date, 'completed_at': nullable(date), 'error_code': nullable({'type': 'string'})})
+    money = {'type': 'string', 'pattern': '^[0-9]+$'}
+    schemas['VideoVerificationMedia'] = obj({'container': {'const': 'mp4'}, 'video_codec': {'const': 'h264'},
+        'width': positive, 'height': positive, 'duration_seconds': {'type': 'number', 'exclusiveMinimum': 0},
+        'decoded_video_frames': positive, 'audio_codec': nullable({'const': 'aac'}),
+        'sha256': digest, 'bytes': positive, 'fully_decoded': {'const': True}})
+    schemas['VideoVerificationCase'] = obj({'id': uuid, 'ordinal': {'type': 'integer', 'minimum': 0, 'maximum': 15},
+        'operation_id': uuid, 'state': {'enum': ['prepared', 'submitting', 'queued', 'in_progress', 'completed', 'failed', 'cancelled', 'unknown']},
+        'size': {'enum': ['720x1280', '1280x720', '1024x1024']}, 'seconds': {'enum': [4, 8, 12, 16, 20]},
+        'progress': nullable({'type': 'integer', 'minimum': 0, 'maximum': 100}), 'usage_known': {'type': 'boolean'},
+        'actual_micros': nullable(money), 'verified': {'type': 'boolean'}, 'error_code': nullable({'type': 'string'}),
+        'operations': {'type': 'array', 'items': {'enum': ['videos.create', 'videos.retrieve', 'videos.lookup', 'videos.cancel', 'videos.content']}},
+        'media': nullable(ref('VideoVerificationMedia'))})
+    schemas['VideoVerificationSuite'] = obj({'plan_hash': digest, 'total_cases': {'const': 16},
+        'verified_cases': {'type': 'integer', 'minimum': 0, 'maximum': 16}, 'quoted_micros': money,
+        'known_cost_micros': money, 'usage_known': {'type': 'boolean'}, 'cancel_requested': {'type': 'boolean'},
+        'deadline_at': date, 'error_code': nullable({'type': 'string'}),
+        'cases': {'type': 'array', 'items': ref('VideoVerificationCase'), 'maxItems': 16}})
     schemas['CapabilityValidation'] = obj({
         'id': uuid, 'release_id': uuid, 'state': {'enum': ['running', 'passed', 'failed', 'reconciling', 'cancelled']},
         'capability_version_id': nullable(uuid), 'created_at': date, 'finished_at': nullable(date),
         'expires_at': nullable(date), 'result': ref('CapabilityVerificationEvidence'),
-        'workspace_cleanup': nullable(ref('CapabilityWorkspacePurge'))})
+        'workspace_cleanup': nullable(ref('CapabilityWorkspacePurge')), 'video_suite': nullable(ref('VideoVerificationSuite'))})
+    schemas['CapabilityValidation']['required'].remove('video_suite')
     compared = {'release_id': uuid, 'version': positive, 'document': ref('CapabilityDocument')}
     schemas['CapabilityComparison'] = obj({
         'profile_key': profile, 'data_mode': mode, 'head_revision': integer, 'publication_id': nullable(uuid),
@@ -138,14 +159,16 @@ def main():
     operation(root + '/{id}/validations', 'post', 'validateCapabilityRelease', 'CapabilityValidation', 'admin.catalog.publish', 'CapabilityVersionCommand', '202')
     operation(root + '/validations/{validation}', 'get', 'getCapabilityReleaseValidation', 'CapabilityValidation', 'admin.catalog.read')
     operation(root + '/validations/{validation}/workspace-purge-retries', 'post', 'retryCapabilityWorkspacePurge', 'CapabilityWorkspacePurge', 'admin.catalog.publish', 'CapabilityVersionCommand', '202')
+    for action, name in [('video-cancellations', 'cancelVideoCapabilityValidation'), ('video-rechecks', 'recheckVideoCapabilityValidation')]:
+        operation(root + '/validations/{validation}/' + action, 'post', name, 'CapabilityValidation', 'admin.catalog.publish', 'CapabilityVersionCommand', '202')
     for suffix, title, permission in [('publications', 'Publication', 'admin.catalog.publish'), ('rollbacks', 'Rollback', 'admin.catalog.rollback')]:
         operation(root + '/{id}/' + suffix + '-previews', 'post', 'previewCapability' + title, 'CapabilityPublicationPreview', permission, 'CapabilityVersionCommand')
         operation(root + '/{id}/' + suffix, 'post', 'requestCapability' + title, 'AdminOperation', permission, 'CapabilityVersionCommand', '202', preview=True)
     operation('/v1/capabilities/details', 'get', 'listCapabilityDetails', 'CapabilityDetailsList', 'tenant/project membership',
               parameters=page + [{'$ref': '#/components/parameters/TenantHeader'},
                 {'name': 'project_id', 'in': 'query', 'schema': uuid}], user=True)
-    contract = {'openapi': '3.1.0', 'info': {'title': 'CopyPaste additive controlled capability API', 'version': '0.1.0',
-        'description': 'Implementation contract for stage 53. Supplements the immutable normative API; it does not amend the six generic catalog kinds or qualify production capabilities.'},
+    contract = {'openapi': '3.1.0', 'info': {'title': 'CopyPaste additive controlled capability API', 'version': '0.2.0',
+        'description': 'Implementation contract for stages 53 and 81, including durable video verification. Supplements the immutable normative API; it does not amend the six generic catalog kinds or qualify production capabilities.'},
         'servers': [{'url': 'http://localhost:4310', 'description': 'Local simulated acceptance environment'}],
         'paths': paths, 'components': {'schemas': schemas,
             'securitySchemes': deepcopy(normative['components']['securitySchemes']),
@@ -153,6 +176,8 @@ def main():
             'responses': deepcopy(normative['components']['responses'])},
         'x-normative-source': {'path': './openapi.json', 'sha256': EXPECTED},
         'x-validation-policy': {'execution_lease_seconds': 240, 'publish_eligibility_seconds': 86400,
+            'video_execution_grant_seconds': 7200, 'video_processor_lease_seconds': 45,
+            'video_cases': 16, 'video_quoted_seconds': 184,
             'preview_seconds': 300, 'independent_approval': True, 'unknown_accepted_calls': 'reconciling; no automatic replay',
             'workspace_cleanup': 'Separate durable queue, up to 8 attempts; actual deletion required for completed state.'}}
     target = ROOT / 'docs/contracts/capability-releases.openapi.json'

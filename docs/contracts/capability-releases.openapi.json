@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "CopyPaste additive controlled capability API",
-    "version": "0.1.0",
-    "description": "Implementation contract for stage 53. Supplements the immutable normative API; it does not amend the six generic catalog kinds or qualify production capabilities."
+    "version": "0.2.0",
+    "description": "Implementation contract for stages 53 and 81, including durable video verification. Supplements the immutable normative API; it does not amend the six generic catalog kinds or qualify production capabilities."
   },
   "servers": [
     {
@@ -331,6 +331,136 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CapabilityWorkspacePurge"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/validations/{validation}/video-cancellations": {
+      "post": {
+        "operationId": "cancelVideoCapabilityValidation",
+        "summary": "cancelVideoCapabilityValidation",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "validation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityValidation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/validations/{validation}/video-rechecks": {
+      "post": {
+        "operationId": "recheckVideoCapabilityValidation",
+        "summary": "recheckVideoCapabilityValidation",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "validation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityValidation"
                 }
               }
             }
@@ -988,6 +1118,49 @@
         ],
         "additionalProperties": false
       },
+      "VideoCapabilityDocument": {
+        "type": "object",
+        "properties": {
+          "kernel": {
+            "const": "codex"
+          },
+          "gateway_policy": {
+            "const": "company_internal_only"
+          },
+          "model_alias": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "profile_key": {
+            "const": "internal-video-v1"
+          },
+          "reasoning_effort": {
+            "type": "null"
+          },
+          "rates": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              }
+            ],
+            "minItems": 1,
+            "maxItems": 1
+          }
+        },
+        "required": [
+          "kernel",
+          "gateway_policy",
+          "model_alias",
+          "profile_key",
+          "reasoning_effort",
+          "rates"
+        ],
+        "additionalProperties": false
+      },
       "CapabilityDocument": {
         "oneOf": [
           {
@@ -995,6 +1168,9 @@
           },
           {
             "$ref": "#/components/schemas/ImageCapabilityDocument"
+          },
+          {
+            "$ref": "#/components/schemas/VideoCapabilityDocument"
           }
         ]
       },
@@ -1050,7 +1226,8 @@
             "type": "string",
             "enum": [
               "internal-text-v1",
-              "internal-image2-v1"
+              "internal-image2-v1",
+              "internal-video-v1"
             ]
           },
           "data_mode": {
@@ -1336,6 +1513,259 @@
         ],
         "additionalProperties": false
       },
+      "VideoVerificationMedia": {
+        "type": "object",
+        "properties": {
+          "container": {
+            "const": "mp4"
+          },
+          "video_codec": {
+            "const": "h264"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "duration_seconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "decoded_video_frames": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "audio_codec": {
+            "anyOf": [
+              {
+                "const": "aac"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "fully_decoded": {
+            "const": true
+          }
+        },
+        "required": [
+          "container",
+          "video_codec",
+          "width",
+          "height",
+          "duration_seconds",
+          "decoded_video_frames",
+          "audio_codec",
+          "sha256",
+          "bytes",
+          "fully_decoded"
+        ],
+        "additionalProperties": false
+      },
+      "VideoVerificationCase": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 15
+          },
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "enum": [
+              "prepared",
+              "submitting",
+              "queued",
+              "in_progress",
+              "completed",
+              "failed",
+              "cancelled",
+              "unknown"
+            ]
+          },
+          "size": {
+            "enum": [
+              "720x1280",
+              "1280x720",
+              "1024x1024"
+            ]
+          },
+          "seconds": {
+            "enum": [
+              4,
+              8,
+              12,
+              16,
+              20
+            ]
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "usage_known": {
+            "type": "boolean"
+          },
+          "actual_micros": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "videos.create",
+                "videos.retrieve",
+                "videos.lookup",
+                "videos.cancel",
+                "videos.content"
+              ]
+            }
+          },
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VideoVerificationMedia"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "ordinal",
+          "operation_id",
+          "state",
+          "size",
+          "seconds",
+          "progress",
+          "usage_known",
+          "actual_micros",
+          "verified",
+          "error_code",
+          "operations",
+          "media"
+        ],
+        "additionalProperties": false
+      },
+      "VideoVerificationSuite": {
+        "type": "object",
+        "properties": {
+          "plan_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "total_cases": {
+            "const": 16
+          },
+          "verified_cases": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16
+          },
+          "quoted_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "known_cost_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "usage_known": {
+            "type": "boolean"
+          },
+          "cancel_requested": {
+            "type": "boolean"
+          },
+          "deadline_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoVerificationCase"
+            },
+            "maxItems": 16
+          }
+        },
+        "required": [
+          "plan_hash",
+          "total_cases",
+          "verified_cases",
+          "quoted_micros",
+          "known_cost_micros",
+          "usage_known",
+          "cancel_requested",
+          "deadline_at",
+          "error_code",
+          "cases"
+        ],
+        "additionalProperties": false
+      },
       "CapabilityValidation": {
         "type": "object",
         "properties": {
@@ -1405,6 +1835,16 @@
                 "type": "null"
               }
             ]
+          },
+          "video_suite": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VideoVerificationSuite"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1427,7 +1867,8 @@
             "type": "string",
             "enum": [
               "internal-text-v1",
-              "internal-image2-v1"
+              "internal-image2-v1",
+              "internal-video-v1"
             ]
           },
           "data_mode": {
@@ -1821,6 +2262,10 @@
   "x-validation-policy": {
     "execution_lease_seconds": 240,
     "publish_eligibility_seconds": 86400,
+    "video_execution_grant_seconds": 7200,
+    "video_processor_lease_seconds": 45,
+    "video_cases": 16,
+    "video_quoted_seconds": 184,
     "preview_seconds": 300,
     "independent_approval": true,
     "unknown_accepted_calls": "reconciling; no automatic replay",

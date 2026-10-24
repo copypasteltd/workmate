@@ -1,0 +1,2271 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste additive controlled capability API",
+    "version": "0.2.0",
+    "description": "Implementation contract for stages 53 and 81, including durable video verification. Supplements the immutable normative API; it does not amend the six generic catalog kinds or qualify production capabilities."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4310",
+      "description": "Local simulated acceptance environment"
+    }
+  ],
+  "paths": {
+    "/v1/admin/capability-releases": {
+      "get": {
+        "operationId": "listCapabilityReleases",
+        "summary": "listCapabilityReleases",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.read",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": false,
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current persisted data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityReleaseList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/admin/capability-releases/drafts": {
+      "post": {
+        "operationId": "createCapabilityReleaseDraft",
+        "summary": "createCapabilityReleaseDraft",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.draft",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOperation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityDraftCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/{id}": {
+      "get": {
+        "operationId": "getCapabilityRelease",
+        "summary": "getCapabilityRelease",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.read",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": false,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current persisted data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityRelease"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/admin/capability-releases/{id}/validations": {
+      "post": {
+        "operationId": "validateCapabilityRelease",
+        "summary": "validateCapabilityRelease",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityValidation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/validations/{validation}": {
+      "get": {
+        "operationId": "getCapabilityReleaseValidation",
+        "summary": "getCapabilityReleaseValidation",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.read",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": false,
+        "parameters": [
+          {
+            "name": "validation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current persisted data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityValidation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/v1/admin/capability-releases/validations/{validation}/workspace-purge-retries": {
+      "post": {
+        "operationId": "retryCapabilityWorkspacePurge",
+        "summary": "retryCapabilityWorkspacePurge",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "validation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityWorkspacePurge"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/validations/{validation}/video-cancellations": {
+      "post": {
+        "operationId": "cancelVideoCapabilityValidation",
+        "summary": "cancelVideoCapabilityValidation",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "validation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityValidation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/validations/{validation}/video-rechecks": {
+      "post": {
+        "operationId": "recheckVideoCapabilityValidation",
+        "summary": "recheckVideoCapabilityValidation",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "validation",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityValidation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/{id}/publications-previews": {
+      "post": {
+        "operationId": "previewCapabilityPublication",
+        "summary": "previewCapabilityPublication",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current persisted data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityPublicationPreview"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/{id}/publications": {
+      "post": {
+        "operationId": "requestCapabilityPublication",
+        "summary": "requestCapabilityPublication",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.publish",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          },
+          {
+            "name": "x-admin-preview-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOperation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/{id}/rollbacks-previews": {
+      "post": {
+        "operationId": "previewCapabilityRollback",
+        "summary": "previewCapabilityRollback",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.rollback",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current persisted data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityPublicationPreview"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/admin/capability-releases/{id}/rollbacks": {
+      "post": {
+        "operationId": "requestCapabilityRollback",
+        "summary": "requestCapabilityRollback",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "admin.catalog.rollback",
+        "x-scope": "global; any applicable explicit deny wins",
+        "x-recent-mfa": true,
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AdminCsrfHeader"
+          },
+          {
+            "name": "x-admin-preview-id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Persisted result. 202 does not mean published.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminOperation"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CapabilityVersionCommand"
+              }
+            }
+          }
+        },
+        "x-idempotency": "Replay the same key and body after an uncertain result; never silently repeat a model call."
+      }
+    },
+    "/v1/capabilities/details": {
+      "get": {
+        "operationId": "listCapabilityDetails",
+        "summary": "listCapabilityDetails",
+        "tags": [
+          "capability-releases"
+        ],
+        "security": [
+          {
+            "UserBearer": []
+          },
+          {
+            "WebSession": []
+          }
+        ],
+        "x-requirements": [
+          "REQ-045",
+          "REQ-093",
+          "REQ-099"
+        ],
+        "x-permission": "tenant/project membership",
+        "x-scope": "tenant/project read",
+        "x-recent-mfa": false,
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "$ref": "#/components/parameters/TenantHeader"
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current persisted data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CapabilityDetailsList"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdminOperation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending_approval",
+              "queued",
+              "running",
+              "succeeded",
+              "partially_succeeded",
+              "failed",
+              "cancelled",
+              "reconciling"
+            ]
+          },
+          "payload_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "policy_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "result_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 0
+          },
+          "error_code": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "target_ids",
+          "actor_id",
+          "state",
+          "payload_hash",
+          "policy_version_id",
+          "version",
+          "created_at",
+          "result_ids"
+        ],
+        "additionalProperties": false
+      },
+      "Capability": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "image",
+              "video",
+              "audio",
+              "embedding",
+              "other_ai"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "verified",
+              "degraded",
+              "disabled"
+            ]
+          },
+          "model_alias": {
+            "type": "string",
+            "minLength": 1
+          },
+          "wire_protocol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supported_operations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "parameter_schema": {
+            "type": "object"
+          },
+          "limits": {
+            "type": "object"
+          },
+          "verified_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "kind",
+          "state",
+          "supported_operations"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Capability"
+            },
+            "minItems": 0
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorDetail"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "TextCapabilityDocument": {
+        "type": "object",
+        "properties": {
+          "kernel": {
+            "const": "codex"
+          },
+          "gateway_policy": {
+            "const": "company_internal_only"
+          },
+          "model_alias": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "profile_key": {
+            "const": "internal-text-v1"
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ]
+          },
+          "rates": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              },
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000000000000
+              }
+            ],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "kernel",
+          "gateway_policy",
+          "model_alias",
+          "profile_key",
+          "reasoning_effort",
+          "rates"
+        ],
+        "additionalProperties": false
+      },
+      "ImageCapabilityDocument": {
+        "type": "object",
+        "properties": {
+          "kernel": {
+            "const": "codex"
+          },
+          "gateway_policy": {
+            "const": "company_internal_only"
+          },
+          "model_alias": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "profile_key": {
+            "const": "internal-image2-v1"
+          },
+          "reasoning_effort": {
+            "type": "null"
+          },
+          "rates": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              }
+            ],
+            "minItems": 1,
+            "maxItems": 1
+          }
+        },
+        "required": [
+          "kernel",
+          "gateway_policy",
+          "model_alias",
+          "profile_key",
+          "reasoning_effort",
+          "rates"
+        ],
+        "additionalProperties": false
+      },
+      "VideoCapabilityDocument": {
+        "type": "object",
+        "properties": {
+          "kernel": {
+            "const": "codex"
+          },
+          "gateway_policy": {
+            "const": "company_internal_only"
+          },
+          "model_alias": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "profile_key": {
+            "const": "internal-video-v1"
+          },
+          "reasoning_effort": {
+            "type": "null"
+          },
+          "rates": {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000000
+              }
+            ],
+            "minItems": 1,
+            "maxItems": 1
+          }
+        },
+        "required": [
+          "kernel",
+          "gateway_policy",
+          "model_alias",
+          "profile_key",
+          "reasoning_effort",
+          "rates"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityDocument": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/TextCapabilityDocument"
+          },
+          {
+            "$ref": "#/components/schemas/ImageCapabilityDocument"
+          },
+          {
+            "$ref": "#/components/schemas/VideoCapabilityDocument"
+          }
+        ]
+      },
+      "CapabilityDraftCommand": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/CapabilityDocument"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "document",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityVersionCommand": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "expected_version",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityRelease": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "const": "model_capability"
+          },
+          "profile_key": {
+            "type": "string",
+            "enum": [
+              "internal-text-v1",
+              "internal-image2-v1",
+              "internal-video-v1"
+            ]
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "document": {
+            "$ref": "#/components/schemas/CapabilityDocument"
+          },
+          "definition_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "runtime_profile_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "state": {
+            "enum": [
+              "draft",
+              "validated",
+              "rejected",
+              "published",
+              "superseded"
+            ]
+          },
+          "validation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validation_state": {
+            "anyOf": [
+              {
+                "enum": [
+                  "running",
+                  "passed",
+                  "failed",
+                  "reconciling",
+                  "cancelled"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validation_expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "validation_error_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "head_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "current_publication_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "profile_key",
+          "data_mode",
+          "version",
+          "document",
+          "definition_hash",
+          "runtime_profile_id",
+          "created_at",
+          "state",
+          "validation_id",
+          "validation_state",
+          "validation_expires_at",
+          "validation_error_codes",
+          "head_revision",
+          "current_publication_id"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityReleaseList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapabilityRelease"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityVerificationEvidence": {
+        "type": "object",
+        "properties": {
+          "definition_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "gateway_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "codex_version": {
+            "type": "string"
+          },
+          "codex_binary_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "model_alias": {
+            "type": "string"
+          },
+          "reasoning_effort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "supported_operations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "input_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "output_tokens": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "known_cost_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "usage_known": {
+            "type": "boolean"
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "workspace_cleanup_completed": {
+            "type": "boolean"
+          },
+          "workspace_cleanup_error_code": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "CapabilityWorkspacePurge": {
+        "type": "object",
+        "properties": {
+          "validation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "completed",
+              "failed"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "attempts": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8
+          },
+          "next_attempt_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "validation_id",
+          "state",
+          "version",
+          "attempts",
+          "next_attempt_at",
+          "completed_at",
+          "error_code"
+        ],
+        "additionalProperties": false
+      },
+      "VideoVerificationMedia": {
+        "type": "object",
+        "properties": {
+          "container": {
+            "const": "mp4"
+          },
+          "video_codec": {
+            "const": "h264"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "duration_seconds": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "decoded_video_frames": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "audio_codec": {
+            "anyOf": [
+              {
+                "const": "aac"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483647
+          },
+          "fully_decoded": {
+            "const": true
+          }
+        },
+        "required": [
+          "container",
+          "video_codec",
+          "width",
+          "height",
+          "duration_seconds",
+          "decoded_video_frames",
+          "audio_codec",
+          "sha256",
+          "bytes",
+          "fully_decoded"
+        ],
+        "additionalProperties": false
+      },
+      "VideoVerificationCase": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ordinal": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 15
+          },
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "enum": [
+              "prepared",
+              "submitting",
+              "queued",
+              "in_progress",
+              "completed",
+              "failed",
+              "cancelled",
+              "unknown"
+            ]
+          },
+          "size": {
+            "enum": [
+              "720x1280",
+              "1280x720",
+              "1024x1024"
+            ]
+          },
+          "seconds": {
+            "enum": [
+              4,
+              8,
+              12,
+              16,
+              20
+            ]
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "usage_known": {
+            "type": "boolean"
+          },
+          "actual_micros": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "videos.create",
+                "videos.retrieve",
+                "videos.lookup",
+                "videos.cancel",
+                "videos.content"
+              ]
+            }
+          },
+          "media": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VideoVerificationMedia"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "ordinal",
+          "operation_id",
+          "state",
+          "size",
+          "seconds",
+          "progress",
+          "usage_known",
+          "actual_micros",
+          "verified",
+          "error_code",
+          "operations",
+          "media"
+        ],
+        "additionalProperties": false
+      },
+      "VideoVerificationSuite": {
+        "type": "object",
+        "properties": {
+          "plan_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "total_cases": {
+            "const": 16
+          },
+          "verified_cases": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16
+          },
+          "quoted_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "known_cost_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "usage_known": {
+            "type": "boolean"
+          },
+          "cancel_requested": {
+            "type": "boolean"
+          },
+          "deadline_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoVerificationCase"
+            },
+            "maxItems": 16
+          }
+        },
+        "required": [
+          "plan_hash",
+          "total_cases",
+          "verified_cases",
+          "quoted_micros",
+          "known_cost_micros",
+          "usage_known",
+          "cancel_requested",
+          "deadline_at",
+          "error_code",
+          "cases"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityValidation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "release_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "state": {
+            "enum": [
+              "running",
+              "passed",
+              "failed",
+              "reconciling",
+              "cancelled"
+            ]
+          },
+          "capability_version_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result": {
+            "$ref": "#/components/schemas/CapabilityVerificationEvidence"
+          },
+          "workspace_cleanup": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CapabilityWorkspacePurge"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "video_suite": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VideoVerificationSuite"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "release_id",
+          "state",
+          "capability_version_id",
+          "created_at",
+          "finished_at",
+          "expires_at",
+          "result",
+          "workspace_cleanup",
+          "video_suite"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityComparison": {
+        "type": "object",
+        "properties": {
+          "profile_key": {
+            "type": "string",
+            "enum": [
+              "internal-text-v1",
+              "internal-image2-v1",
+              "internal-video-v1"
+            ]
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "head_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "publication_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "release_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483647
+                  },
+                  "document": {
+                    "$ref": "#/components/schemas/CapabilityDocument"
+                  }
+                },
+                "required": [
+                  "release_id",
+                  "version",
+                  "document"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "proposed": {
+            "type": "object",
+            "properties": {
+              "release_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "document": {
+                "$ref": "#/components/schemas/CapabilityDocument"
+              },
+              "validation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "capability_version_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "release_id",
+              "version",
+              "document",
+              "validation_id",
+              "capability_version_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "profile_key",
+          "data_mode",
+          "head_revision",
+          "publication_id",
+          "current",
+          "proposed"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityPublicationPreview": {
+        "type": "object",
+        "properties": {
+          "preview_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "payload_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "before": {
+            "$ref": "#/components/schemas/CapabilityComparison"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decision": {
+            "const": "independent_approval"
+          },
+          "creates_business_effect": {
+            "const": false
+          }
+        },
+        "required": [
+          "preview_id",
+          "payload_hash",
+          "before",
+          "expires_at",
+          "decision",
+          "creates_business_effect"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityDetails": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "image",
+              "video",
+              "audio",
+              "embedding",
+              "other_ai"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "verified",
+              "degraded",
+              "disabled"
+            ]
+          },
+          "model_alias": {
+            "type": "string",
+            "minLength": 1
+          },
+          "wire_protocol": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "minLength": 1
+          },
+          "supported_operations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 0
+          },
+          "parameter_schema": {
+            "type": "object"
+          },
+          "limits": {
+            "type": "object"
+          },
+          "verified_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "rates": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "publication_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "release_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "head_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "kind",
+          "state",
+          "supported_operations",
+          "data_mode",
+          "rates",
+          "publication_id",
+          "release_id",
+          "head_revision"
+        ],
+        "additionalProperties": false
+      },
+      "CapabilityDetailsList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CapabilityDetails"
+            }
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "request_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id",
+          "retryable"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "UserBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Product user token scoped by server-side membership."
+      },
+      "DeviceBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Device-only token; not interchangeable with user credentials."
+      },
+      "WebSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "AdminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session",
+        "description": "Independent Admin-only audience, MFA and server-side authorization version. Never accepts cp_session or user/device bearer tokens."
+      }
+    },
+    "parameters": {
+      "TenantHeader": {
+        "name": "X-Tenant-ID",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "description": "Selected tenant; server must validate membership and resource ownership."
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        }
+      },
+      "CsrfHeader": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": "Required for cookie-authenticated mutations; bearer clients use token/origin policy."
+      },
+      "AdminCsrfHeader": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": "Admin-context csrf_admin plus strict Origin verification; normal user CSRF tokens are invalid."
+      }
+    },
+    "responses": {
+      "ErrorResponse": {
+        "description": "Structured error; status-specific semantics are documented in API guide.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-normative-source": {
+    "path": "./openapi.json",
+    "sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4"
+  },
+  "x-validation-policy": {
+    "execution_lease_seconds": 240,
+    "publish_eligibility_seconds": 86400,
+    "preview_seconds": 300,
+    "independent_approval": true,
+    "unknown_accepted_calls": "reconciling; no automatic replay",
+    "workspace_cleanup": "Separate durable queue, up to 8 attempts; actual deletion required for completed state."
+  }
+}

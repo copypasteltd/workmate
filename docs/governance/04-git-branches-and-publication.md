@@ -14,7 +14,7 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 
 `main` 和 `docs` 发布相同的主文档提交。各分支根目录直接包含对应仓库内容，不把各端代码混放在一个分支中。`docs/README.md` 提供总导航；各端 `README.md` 为中文、`README.en.md` 为英文。GitHub 上的跨端和主文档链接使用明确分支 URL，避免依赖不存在的上级目录。
 
-表中 `codex/*` 是当前工作分支。按 README 新检出的本地同名分支（例如 `backend`、`docs`）也可直接执行发布器，无须额外重命名；其他功能分支应先审阅并整合到对应工作分支。后续使用 `python docs/tools/finalize_workmate_manifest.py --update` 明确刷新已提交组件清单，再提交主文档；旧清单保留于 Git 历史。
+表中 `codex/*` 是当前工作分支。按 README 新检出的本地同名分支（例如 `backend`、`docs`）也可直接执行发布器，无须额外重命名；其他功能分支应先审阅并整合到对应工作分支。后续使用 `python docs/tools/finalize_managed_video_manifest.py` 明确刷新已提交组件清单，再提交主文档；旧清单保留于 Git 历史。
 
 ## 每次更新必须同步
 
@@ -31,8 +31,14 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 
 Each component remains an independent local Git repository and publishes its root content to the branch shown above. The primary documentation repository publishes the same commit to `main` and `docs`. Every component has a complete Chinese `README.md` and English `README.en.md`, with architecture, setup, identity and usage flows, configuration, verification, screenshots and actual interaction media.
 
-The table records current `codex/*` working branches. Fresh README checkouts using the published local branch names, such as `backend` and `docs`, can also run the publisher directly. Integrate reviewed feature work into the mapped branch first. Refresh committed component versions explicitly with `python docs/tools/finalize_workmate_manifest.py --update`, then commit docs; Git history preserves the prior plan.
+The table records current `codex/*` working branches. Fresh README checkouts using the published local branch names, such as `backend` and `docs`, can also run the publisher directly. Integrate reviewed feature work into the mapped branch first. Refresh committed component versions explicitly with `python docs/tools/finalize_managed_video_manifest.py`, then commit docs; Git history preserves the prior plan.
 
 Every subsequent change must update the corresponding documentation and bilingual release notes, refresh relevant real captures when UI behavior changes, run checks appropriate to the change, commit, push the explicitly mapped branch and compare remote commit IDs. The user has authorized ongoing synchronization to this remote. Preserve collaborator history; do not force-push or delete unrelated branches. Keep credentials, local sessions, databases, dependencies and generated installers out of Git. Synthetic demonstrations and production qualification must remain clearly distinguished.
 
 All work remains under `D:\dev\copypasted\自有agent\`; native processes only, with no Docker/WSL/virtualization. Close owned browser tabs and instances after capture while preserving the user's windows.
+
+## 当前版本清单 / Current publication manifest
+
+阶段 81 使用上方 `finalize_managed_video_manifest.py`：先完成当前检查点、文档核对及七仓库暂存检查，再提交六个组件，由此工具绑定已提交组件与当前证据，最后提交主文档并运行 Delivery 发布器。旧阶段工具保留用于解释各自历史回执，不能直接套用于新的源码。以后更新须使用与当次检查点匹配的清单工具，并保留其真实验证范围。
+
+For stage 81, complete the current checkpoint, documentation audit and staged checks, commit the six components, run the manifest tool shown above, then commit documentation and invoke the Delivery publisher. Earlier tools explain their own historical receipts. Subsequent updates must bind their own current sources and qualification rather than reuse stale source assumptions.
