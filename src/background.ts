@@ -282,6 +282,8 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
               ? "/app/analytics?view=seo"
               : message.section === "creative-feedback"
                 ? "/app/analytics?view=creative-feedback"
+              : message.section === "geo"
+                ? "/app/analytics?view=geo"
               : ["creative", "video"].includes(message.section)
                 ? "/app/creative"
                 : "/app";
