@@ -21,10 +21,15 @@ const sha = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 function trackResponses(page: Page) {
   page.on("response", response => {
     const url = new URL(response.url()), p = url.pathname;
-    if (response.status() !== 200 || !p.includes("/audio-jobs")) return;
-    const schema = p.endsWith("/content") ? "AdminBody" : p.endsWith("/preview") ? "Preview"
+    if (response.status() !== 200 || !/\/audio-(?:jobs|authorizations)/.test(p)) return;
+    const authorization = p.includes("/audio-authorizations");
+    const schema = authorization ? p.endsWith("/content") ? "AdminAuthorizationBody"
+      : p === "/v1/admin/ai/audio-authorizations" ? "AdminAuthorizationList"
+        : p.endsWith("/audio-authorizations") ? "AuthorizationList" : "Authorization"
+      : p.endsWith("/content") ? "AdminBody" : p.endsWith("/preview") ? "Preview"
       : p === "/v1/admin/ai/audio-jobs" ? "AdminJobList" : p.endsWith("/audio-jobs") ? "JobList" : "Job";
-    sampleReads.push(response.json().then(body => { responseSamples.push({ method: response.request().method(), path: p, query: url.search, schema, body }); }).catch(e => { errors.push("Actual audio response capture: " + String(e)); }));
+    sampleReads.push(response.json().then(body => { responseSamples.push({ method: response.request().method(), path: p, query: url.search, schema, body,
+      ...(response.request().method() === "POST" ? { request_body: response.request().postDataJSON() } : {}) }); }).catch(e => { errors.push("Actual audio response capture: " + String(e)); }));
   });
 }
 async function signIn(page: Page, email: string, secret?: any, currentUrl = false) {
@@ -96,14 +101,35 @@ try {
     return { type: "function_call", id: "fc_audio_ui_" + serial, call_id: pending, ...(group ? { namespace: group.name } : {}), name: "audio_produce", arguments: JSON.stringify(input) };
   };
   const task = await api("POST", base + "/tasks", { title: "Customer-approved audio and subtitles", prompt: "Create explicitly approved synthetic speech and transcribe the customer-owned source. Preserve exact versions and actual timing.", role_key: "video-motion", budget_micros: 1000000 }); assert.equal(task.status, 200, JSON.stringify(task.body));
-  await system.worker.run(tenant, task.body.id);
-  const persisted = (await system.db.control.query("SELECT * FROM tasks WHERE id=$1", [task.body.id])).rows[0]; assert.equal(persisted.status, "succeeded"); assert.equal(persisted.execution_location, "cloud"); assert.equal(nativeResults.length, 2);
+  const running = system.worker.run(tenant, task.body.id); void running.catch(() => {});
   await page.evaluate(w => { localStorage.setItem("cp_tenant", w.tenant.id); localStorage.setItem("cp_project", w.project.id); }, created.body);
   await page.goto("http://localhost:4317/app/tasks/" + task.body.id);
+  recording = new WorkmateRecording("web", "audio-production", "audio-" + attempt, () => page.screenshot(),
+    "Actual independent customer confirmation, protected WAV and versioned subtitles with real cloud Codex and explicit synthetic company services.", delivery); await recording.start();
+  for (let i = 0; i < 2; i++) {
+    const candidate = page.locator("[data-audio-authorization]").filter({ has: page.locator("form.audio-consent-form") }).first();
+    await candidate.locator("form").waitFor();
+    const consent = page.locator(`[data-audio-authorization="${await candidate.getAttribute("data-audio-authorization")}"]`);
+    assert.equal(await consent.locator('input[name="audio_authorized"]').isChecked(), false);
+    assert.equal(await consent.locator('textarea[name="audio_rights_reference"]').inputValue(), "");
+    assert.equal(await consent.locator('textarea[name="audio_purpose"]').inputValue(), "");
+    assert.equal(provider.calls.length, i, "The tool declaration alone cannot submit the next audio request");
+    if (!i) await shot(page, "web", "customer-confirmation-unchecked");
+    await consent.locator('textarea[name="audio_rights_reference"]').fill("Customer-owned synthetic campaign, script and audio");
+    await consent.locator('textarea[name="audio_purpose"]').fill("This independent customer approves the exact synthetic campaign use");
+    await consent.locator('input[name="audio_authorized"]').check();
+    await consent.getByRole("button", { name: "Confirm and continue", exact: true }).focus();
+    if (!i) await shot(page, "web", "customer-confirmation-ready");
+    const [confirmed] = await Promise.all([page.waitForResponse(r => new URL(r.url()).pathname.endsWith("/confirm") && r.request().method() === "POST"),
+      consent.getByRole("button", { name: "Confirm and continue", exact: true }).click()]);
+    assert.equal(confirmed.status(), 200); await consent.locator("form").waitFor({ state: "detached" });
+  }
+  await running;
+  pass("Actual Web UI starts with unchecked consent and blank rights/use fields; real cloud Codex waits until the logged-in customer separately approves each exact audio proposal and quote");
+  const persisted = (await system.db.control.query("SELECT * FROM tasks WHERE id=$1", [task.body.id])).rows[0]; assert.equal(persisted.status, "succeeded"); assert.equal(persisted.execution_location, "cloud"); assert.equal(nativeResults.length, 2);
   const speech = nativeResults.find(v => v.kind === "speech"), transcript = nativeResults.find(v => v.kind === "transcription");
   const speechCard = page.locator(`[data-audio-job="${speech.id}"]`), textCard = page.locator(`[data-audio-job="${transcript.id}"]`); await speechCard.waitFor();
   pass("Web authenticates with actual email OTP and creates a real cloud Codex audio task; both tool outputs are retained through the company fixture gateway");
-  recording = new WorkmateRecording("web", "audio-production", "audio-" + attempt, () => page.screenshot(), "Actual protected WAV playback/download, original transcript and CAS subtitle revision; synthetic company media only.", delivery); await recording.start();
   await speechCard.getByRole("button", { name: "Review audio and subtitles", exact: true }).click();
   await speechCard.locator("audio").waitFor(); await speechCard.locator("audio").evaluate(async (a: HTMLAudioElement) => { if (a.readyState < 1) await new Promise<void>(r => a.addEventListener("loadedmetadata", () => r(), { once: true })); });
   const downloaded = page.waitForEvent("download"); await speechCard.getByRole("button", { name: "AI speech WAV", exact: true }).click();
@@ -151,9 +177,22 @@ try {
   await admin.setViewportSize({ width: 1440, height: 980 });
   assert.ok((await system.db.control.query("SELECT count(*)::int AS n FROM audit_log WHERE principal_id=$1 AND actor_kind='admin' AND action='admin.audio.content.read' AND target=$2", [principal, speech.id])).rows[0].n > 0);
   await shot(admin, "admin", "audio-rights-body-audit"); await dialog.getByRole("button", { name: /close/i }).click(); pass("Independent Admin body permission reads the exact original audio request and rights attestation with a persisted sensitive-access audit");
-  media.push(await recording.stop()); recording = undefined; await Promise.all(sampleReads); await ac.close(); await context.close();
-  sidePanel = await exerciseAudioSidePanel({ delivery, attempt, taskId: task.body.id, speechId: speech.id, transcriptId: transcript.id, expectedSHA: sha(provider.bytes), login: (p: Page) => signIn(p, userEmail, undefined, true), screenshots, media, pass });
-  assert.deepEqual(provider.errors, []); assert.equal(provider.calls.length, count);
+  await admin.getByText("Customer audio authorizations", { exact: true }).click();
+  const consentRecord = admin.locator("[data-audio-authorization]").first();
+  await consentRecord.getByRole("button", { name: "Read customer confirmation and audit", exact: true }).click();
+  const consentDialog = admin.getByRole("dialog"); await consentDialog.locator("pre").waitFor();
+  const consentBody = JSON.parse((await consentDialog.locator("pre").textContent())!);
+  assert.equal(consentBody.confirmation.rights_reference, "Customer-owned synthetic campaign, script and audio");
+  assert.ok(consentBody.events.some((row: any) => row.state === "confirmed"));
+  await shot(admin, "admin", "independent-customer-confirmation-audit"); await consentDialog.getByRole("button", { name: /close/i }).click();
+  pass("Scoped Admin reads the actual independent customer confirmation and immutable events with sensitive-access audit; no administrator confirmation action exists");
+  media.push(await recording.stop()); recording = undefined; await Promise.all(sampleReads); await ac.close();
+  sidePanel = await exerciseAudioSidePanel({ delivery, attempt, taskId: task.body.id, speechId: speech.id, transcriptId: transcript.id, expectedSHA: sha(provider.bytes), login: (p: Page) => signIn(p, userEmail, undefined, true), screenshots, media, pass,
+    armAudio: () => actions.push({ kind: "speech", text: "A separately approved native panel voice.", locale: "en", voice: "alloy", speed: 1, rights } as any),
+    runTask: (id: string) => system.worker.run(tenant, id), audioCount: () => provider.calls.length,
+  });
+  await context.close();
+  assert.deepEqual(provider.errors, []); assert.equal(provider.calls.length, count + 1);
 } catch (e) { errors.push(String(e)); console.error(e); }
 finally {
   clearTimeout(deadline); if (recording) await recording.stop().catch(e => errors.push(String(e))); await Promise.all(sampleReads);

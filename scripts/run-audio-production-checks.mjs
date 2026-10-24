@@ -16,7 +16,7 @@ assert.ok(binary && path.isAbsolute(binary));
 const pin = JSON.parse(await readFile("../copypaste-desktop/contracts/local-codex-runtime.json", "utf8"));
 assert.equal(sha(await readFile(binary)), pin.windows_x64_sha256);
 await assert.rejects(readFile(prefix + ".json"), e => e.code === "ENOENT");
-const files = phase === "core" ? ["tests/audio-production.test.ts", "tests/internal-ai-gateway.test.ts"] : ["tests/generated-video-jobs.test.ts", "tests/task-history-sources.test.ts", "tests/migrations.test.ts", "tests/capability-releases.test.ts"];
+const files = phase === "core" ? ["tests/audio-production.test.ts", "tests/audio-authorization-upgrade.test.ts", "tests/internal-ai-gateway.test.ts"] : ["tests/generated-video-jobs.test.ts", "tests/task-history-sources.test.ts", "tests/migrations.test.ts", "tests/capability-releases.test.ts"];
 async function snapshot() {
   const result = {};
   for (const name of ["copypaste-platform", "copypaste-admin", "copypaste-web", "copypaste-desktop", "copypaste-extension", "copypaste-delivery"]) {

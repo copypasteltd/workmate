@@ -82,7 +82,7 @@ finally {
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
   const videoTools = new Set((journey?.native_video_tool_results ?? []).map(result => result.tool));
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 40 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 41 && journey.company_image_calls === 2 && journey.native_input_completions === 1
     && journey.native_audio_tool_results?.length === 2 && journey.native_audio_tool_results.every(result => result.actual_output)
     && journey.audio_media?.skipped_capture_errors === 0 && journey.audio_media?.distinct_frames > 1
     && journey.checks.some(check => check.includes("Native Desktop GEO entry explicitly hands off"))
@@ -100,6 +100,7 @@ finally {
     && journey.checks.some(check => check.includes("Revoking full local permission during an actual video question"))
     && journey.checks.some(check => check.includes("native save-dialog selection")) && journey.checks.some(check => check.includes("edits the authorized source image"))
     && journey.checks.some(check => check.includes("800x600"))
+    && journey.checks.some(check => check.includes("requires actual customer confirmation before each company audio POST"))
     && journey.checks.some(check => check.includes("same task/thread/turn"))
     && journey.checks.some(check => check.includes("Stop stays usable during a native question"))
     && journey.checks.some(check => check.includes("Revoking full permission while waiting"))

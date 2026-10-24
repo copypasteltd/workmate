@@ -1,5 +1,72 @@
 # Workmate · CopyPaste Delivery
 
+<!-- audio-authorizations-stage85 -->
+
+独立交付工具保留实际窗口、完整回归、精确源码与资源关闭回执。
+
+### 本地启动
+
+以下命令在已检出的对应仓库内执行。完整工作区将六个独立仓库并列放在 `dev/`，见[分支与检出布局](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md)。使用 Windows x64、Node.js >=22.14、npm/Git，以及文档约束的原生 PostgreSQL、FFmpeg/FFprobe 与固定 Codex 资源；保留已有本地配置和数据，不使用 Docker/WSL/虚拟机。
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-delivery'
+npm ci
+npm run bootstrap
+npm run demo
+```
+
+Web 为 `http://localhost:4317`，Admin 为 `http://localhost:4318`；API 端口 4310、控制器 4319、原生 PostgreSQL 55432。结束时使用 `npm run stop`，仅关闭控制器自建进程并正常停止数据库。内置示范模拟文本/图片并可使用剪辑/模板影片；生成式影片须配置公司契约，当前生成验收使用明确的媒体夹具。本机 Desktop 另需独立固定的原生内核。
+
+### 当前使用流程
+
+1. 邮箱/验证码登录，选择企业/项目和「**影片与动效设计师**」预设（1.4.0，加载 speech-production 1.2.0），描述脚本或附加获准的固定版本 WAV/MP3。Web/Extension 使用云端 Codex；Desktop 先选本机目录并主动授予所需本机权限，完整权限经原生确认，可随时撤回。
+2. 原 Codex 任务提出精确文案或音源版本/摘要/时长、语言/已核验声音/速度、用途及固定公司报价。「**确认配音或转写**」卡片初始不勾选，权利依据和用途初始为空。客户核对内容及费用，亲自填写依据与用途、勾选并「确认并继续」，也可以拒绝。模型参数的权利声明及完整本机权限不能代替具体客户确认。
+3. 原工具最多等待五分钟；等待不提交音频 POST、不增加音频作业预留、服务容量或第二轮 AI。原任务已有推理用量仍真实计费。客户确认后再次检查当前会话、来源、角色/Skill、任务租约、权限、能力、共享预算和容量，再派发唯一音频操作。停止、过期、拒绝及失权阻断派发；撤回阻断后续交付/下载，但已提交的未知或真实费用保留，未知 POST 不自动重发。
+4. 在「配音与字幕 → 查看音讯与字幕」播放/保存受保护 WAV，检查原始转写和实际时间；接口核对字节数与 SHA-256。人工字幕修订另存不可覆盖版本，替换时间需客户明确提供，保留旧版本且无 AI 调用。服务未返回时间时不造时间；并发冲突保留编辑。
+5. Admin 独立登录并通过 MFA，在「调用管理」查看音频作业及客户授权记录。请求读取控制范围元数据，费用读取独立控制金额，正文读取加近期 MFA 才能审计读取敏感确认/原始正文；后台没有替客户确认操作。原任务删除会擦除正文，仅保留最小摘要、状态与费用事实。
+
+升级客户端前，后端执行 npm run db:migrate 应用 **SQL102**。SQL001–101 及四份已发布原始/音频 OpenAPI 字节保留，audio-authorizations-openapi.json 为增量当前契约。升级取消尚未派发的旧音频并确认零音频费；已派发未知结果保留费用预留。历史完成文件保留原始字节，明确标记旧模型声明，不补造客户确认。
+
+公司网关地址、密钥、精确配音/转写别名、已核验声音/语言、正数字符/毫秒费率和时间戳能力仅配置在后端。音频容量初始为零，按已有独立审批策略发布。普通 demo 不自动启用本轮明确音频夹具。全部 AI 经公司 OpenAI 兼容服务器，文本/图片/影片/音频共享任务预算。
+
+Desktop 保留 CopyPaste 蓝/米白色、字体与明暗主题，**无 Electron 自带边框菜单，无任何可见纵向或横向滚动条**。长内容换行，真实滚轮/Home/End/Tab、末项焦点和任务/上传/媒体真实进度保留。已在实际打包 OS 窗口 1440×980、1280×800、800×600 检查，包括新客户确认表单。Extension 保持真实原生右侧 SIDE_PANEL、ChatGPT 式对话/附件及获准文件上传，无 Desktop 依赖。
+
+实际核查：平台 **1001**（保留原 **988** 用例，78 文件/20 独立原生数据库批次）、音频/网关/升级 **56**、兼容 **80**、客户端 **124**、真实 Web/Admin/侧栏 **13**、打包本机 Desktop **41**。选定回执与全部当前记录源码摘要精确相符，实际媒体与自建资源关闭均保留。目录为 32 个包版本/29 类 Skill，已发布 31 个包及旧角色 1.3.0 完整保留；失败回执不覆盖。
+
+本轮使用合成音调、固定转写/推理及明确原生对话框决策，只证明该局部流程。独立登录声明不等于法律权属审核。真实声音/粤语质量、后台音频能力核验/发布/回滚、未知 POST 外部证据/独立结算/恢复交付、签名安装、全部专业角色及完整 Codex Desktop 对齐仍保留。原 **102 REQ/102 TC：83 部分、19 未证明、0 完整验收；G01–G10 保留**。
+
+
+[方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/85-audio-rights-and-administration.md) · [精确版本证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/audio-authorizations-checkpoint.json) · [当前增量接口](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/audio-authorizations-openapi.json)
+
+~~~mermaid
+flowchart LR
+    Login[Email / company / project] --> Role[Versioned role and Skill]
+    Role --> Cloud[Web / Side Panel cloud Codex]
+    Role --> Local[Desktop local Codex]
+    Cloud --> Proposal[Immutable proposal / exact quote]
+    Local --> Proposal
+    Proposal --> Customer[Current customer session / explicit confirmation]
+    Customer --> Gate[Current source / permission / budget / capacity]
+    Gate --> Company[Company audio API / one submission]
+    Company --> Assets[Private original / actual timing / versions]
+    Customer --> Withdraw[Decline / Stop / withdraw]
+    Withdraw --> Block[Block dispatch or delivery / retain real fees]
+    Admin[Scoped Admin / audited content / separate costs] --> Proposal
+~~~
+
+真实打包无边框本机 Codex Desktop；截图未经改图，交互按观察时间录制。公司模型/媒体及原生对话框决策为明确夹具。
+
+![实际客户控制](assets/workmate-current/copypaste-desktop__workmate-local-54-audio-consent-800.png)
+
+![实际保留状态](assets/workmate-current/copypaste-desktop__workmate-local-54-audio-zh-dark.png)
+
+![真实交互录制](assets/workmate-current/copypaste-desktop__workmate-local-54-audio-production.gif)
+
+[原始 MP4](assets/workmate-current/copypaste-desktop__workmate-local-54-audio-production.mp4)
+
+<details>
+<summary>以前交付细节与历史证据</summary>
+
 <!-- audio-production-stage84 -->
 
 交付脚本保存真实客户端交互、完整测试清单与自建资源清理回执。
@@ -635,6 +702,8 @@ flowchart LR
 
 </details>
 
+
+</details>
 
 </details>
 

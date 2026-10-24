@@ -249,7 +249,9 @@ try {
     stable &&
     buildStable &&
     journey?.status === "passed" &&
-    journey.checks.length === 10 &&
+    journey.checks.length === 13 &&
+    journey.checks.some(check => check.includes("Actual Web UI starts with unchecked consent")) &&
+    journey.checks.some(check => check.includes("actual new task from the native Side Panel")) &&
     journey.media.length === 3 &&
     journey.side_panel?.context_type === "SIDE_PANEL" &&
     journey.side_panel?.side === "right" &&
@@ -259,7 +261,7 @@ try {
     journey.api_closed &&
     journey.fixture_closed &&
     journey.provider_closed &&
-    journey.native_tool_results.length === 2 &&
+    journey.native_tool_results.length === 3 &&
     journey.native_tool_results.every(r => r.actual_tool_output === true) &&
     cleanup?.exit_code === 0 &&
     cleanup.status === "passed" &&

@@ -1,0 +1,666 @@
+2026-10-25 03:26:04.632 CST [24416] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-25 03:26:04.637 CST [24416] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-25 03:26:04.637 CST [24416] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-25 03:26:04.800 CST [18144] LOG:  database system was shut down at 2026-10-25 03:25:59 CST
+
+2026-10-25 03:26:04.858 CST [24416] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# Subtest: GEO literal matching preserves UTF-16 positions, escapes regex and respects Latin word boundaries
+ok 1 - GEO literal matching preserves UTF-16 positions, escapes regex and respects Latin word boundaries
+  ---
+  duration_ms: 3.2743
+  ...
+# Subtest: GEO answer links are retained unverified, not fetched or manufactured, and hashes cover exact original bytes
+ok 2 - GEO answer links are retained unverified, not fetched or manufactured, and hashes cover exact original bytes
+  ---
+  duration_ms: 0.6023
+  ...
+# Subtest: GEO comparison separates surfaces and configurations and leaves absent or failed answers unknown
+ok 3 - GEO comparison separates surfaces and configurations and leaves absent or failed answers unknown
+  ---
+  duration_ms: 0.5017
+  ...
+# Subtest: GEO fixed questions are unique and measured aliases are absent from the observation prompt
+ok 4 - GEO fixed questions are unique and measured aliases are absent from the observation prompt
+  ---
+  duration_ms: 3.9673
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+2026-10-25 03:26:17.455 CST [29664] ERROR:  GEO configuration must use a new version
+2026-10-25 03:26:17.455 CST [29664] CONTEXT:  PL/pgSQL function guard_geo_history() line 16 at RAISE
+2026-10-25 03:26:17.455 CST [29664] STATEMENT:  UPDATE geo_experiments SET body=jsonb_set(body,'{spec,region}','"Changed"') WHERE id=$1
+
+# Subtest: GEO freezes actual harness, question versions and optimistic revisions without rewriting the previous configuration
+ok 5 - GEO freezes actual harness, question versions and optimistic revisions without rewriting the previous configuration
+  ---
+  duration_ms: 8802.066
+  ...
+# Subtest: GEO reserves every independent question atomically and transport retries return only the same run receipt
+ok 6 - GEO reserves every independent question atomically and transport retries return only the same run receipt
+  ---
+  duration_ms: 916.8563
+  ...
+# Subtest: insufficient multi-question budget leaves no GEO run, sample, task or reservation
+ok 7 - insufficient multi-question budget leaves no GEO run, sample, task or reservation
+  ---
+  duration_ms: 205.1322
+  ...
+# Subtest: GEO displays the real active-task quota and cannot bypass a Starter slot limit for a multi-question run
+ok 8 - GEO displays the real active-task quota and cannot bypass a Starter slot limit for a multi-question run
+  ---
+  duration_ms: 144.0795
+  ...
+2026-10-25 03:26:19.793 CST [9364] ERROR:  Captured GEO answer is immutable
+2026-10-25 03:26:19.793 CST [9364] CONTEXT:  PL/pgSQL function guard_geo_history() line 12 at RAISE
+2026-10-25 03:26:19.793 CST [9364] STATEMENT:  UPDATE geo_samples SET analysis='{}' WHERE id=$1
+
+2026-10-25 03:26:19.796 CST [15664] ERROR:  Captured GEO answer is immutable
+2026-10-25 03:26:19.796 CST [15664] CONTEXT:  PL/pgSQL function guard_geo_history() line 12 at RAISE
+2026-10-25 03:26:19.796 CST [15664] STATEMENT:  UPDATE geo_samples SET analysis='{}' WHERE id=$1
+
+# Subtest: completed API capture uses actual task bytes, is immutable and repeat capture does not call or charge a model
+ok 9 - completed API capture uses actual task bytes, is immutable and repeat capture does not call or charge a model
+  ---
+  duration_ms: 1072.1232
+  ...
+# Subtest: manual answers preserve exact original text and user provenance without API tasks, billing or invented missing answers
+ok 10 - manual answers preserve exact original text and user provenance without API tasks, billing or invented missing answers
+  ---
+  duration_ms: 394.2973
+  ...
+# Subtest: unknown API usage remains unreconciled and cannot become a zero-cost captured observation
+ok 11 - unknown API usage remains unreconciled and cannot become a zero-cost captured observation
+  ---
+  duration_ms: 894.6333
+  ...
+# Subtest: an explicitly published GEO answer keeps the sample provenance and cannot outlive its quarantined source
+ok 12 - an explicitly published GEO answer keeps the sample provenance and cannot outlive its quarantined source
+  ---
+  duration_ms: 412.9254
+  ...
+# Subtest: repeat runs compare under the same hash, different revisions and consumer surfaces stay explicitly separate
+ok 13 - repeat runs compare under the same hash, different revisions and consumer surfaces stay explicitly separate
+  ---
+  duration_ms: 1022.9619
+  ...
+# Subtest: GEO private reads, exports, comparison and RLS deny a second user and unrelated project
+ok 14 - GEO private reads, exports, comparison and RLS deny a second user and unrelated project
+  ---
+  duration_ms: 189.0054
+  ...
+2026-10-25 03:26:22.861 CST [26852] ERROR:  GEO source locator is immutable
+2026-10-25 03:26:22.861 CST [26852] CONTEXT:  PL/pgSQL function guard_geo_locator() line 8 at RAISE
+2026-10-25 03:26:22.861 CST [26852] STATEMENT:  UPDATE tasks SET input_context=input_context-'geo_sample_id' WHERE id=$1
+
+2026-10-25 03:26:22.862 CST [3984] ERROR:  GEO task binding is immutable
+2026-10-25 03:26:22.862 CST [3984] CONTEXT:  PL/pgSQL function guard_geo_history() line 8 at RAISE
+2026-10-25 03:26:22.862 CST [3984] STATEMENT:  UPDATE geo_samples SET task_id=$2 WHERE id=$1
+
+# Subtest: GEO fake source locators, swapped task bindings and continuation cannot bypass the reviewed observation protocol
+ok 15 - GEO fake source locators, swapped task bindings and continuation cannot bypass the reviewed observation protocol
+  ---
+  duration_ms: 164.2241
+  ...
+# Subtest: configuration quarantine fences API work, raw answer downloads and existing sample exports; no zero replacement
+ok 16 - configuration quarantine fences API work, raw answer downloads and existing sample exports; no zero replacement
+  ---
+  duration_ms: 656.6782
+  ...
+# Subtest: an actual managed read and next-generation task retain the manual GEO source and are fenced when its experiment is quarantined
+ok 17 - an actual managed read and next-generation task retain the manual GEO source and are fenced when its experiment is quarantined
+  ---
+  duration_ms: 985.5042
+  ...
+# Subtest: GEO Admin metadata, independent body permission and quarantine remain project-scoped and audited
+ok 18 - GEO Admin metadata, independent body permission and quarantine remain project-scoped and audited
+  ---
+  duration_ms: 243.6801
+  ...
+# Subtest: GEO expiry and permanent deletion journal and physically erase private raw answer files and task copies
+ok 19 - GEO expiry and permanent deletion journal and physically erase private raw answer files and task copies
+  ---
+  duration_ms: 603.4283
+  ...
+# Subtest: owner deletion uses the current moderation version and revokes an existing original-answer export
+ok 20 - owner deletion uses the current moderation version and revokes an existing original-answer export
+  ---
+  duration_ms: 63.8057
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# GEO 099 to 100: applied migration 100
+# GEO 099 to 100: applied migration 101
+# GEO 099 to 100: applied migration 102
+2026-10-25 03:26:30.488 CST [2876] LOG:  checkpoint starting: immediate force wait
+
+2026-10-25 03:26:44.767 CST [2876] LOG:  checkpoint complete: wrote 2543 buffers (15.5%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 3 recycled; write=0.424 s, sync=12.786 s, total=14.279 s; sync files=1456, longest=0.505 s, average=0.009 s; distance=37347 kB, estimate=37347 kB; lsn=15/534EE710, redo lsn=15/5344BA40
+
+# Subtest: SQL099 upgrade preserves original source-function OIDs, a prepared query and all applied historical checksums
+ok 21 - SQL099 upgrade preserves original source-function OIDs, a prepared query and all applied historical checksums
+  ---
+  duration_ms: 19594.6064
+  ...
+# Subtest: real pinned Codex processes repeat independent GEO questions through the synthetic company gateway with no business tools
+ok 22 - real pinned Codex processes repeat independent GEO questions through the synthetic company gateway with no business tools
+  ---
+  duration_ms: 15334.5952
+  ...
+2026-10-25 03:27:00.422 CST [2876] LOG:  checkpoint starting: immediate force wait
+
+2026-10-25 03:27:01.123 CST [2876] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.385 s, total=0.701 s; sync files=11, longest=0.074 s, average=0.035 s; distance=1408 kB, estimate=33753 kB; lsn=15/535ABD98, redo lsn=15/535ABD40
+
+# Subtest: unread aborts, cancelled media and rejected response protocols release all owned process resources
+    # Subtest: abort-unread-image
+    ok 1 - abort-unread-image
+      ---
+      duration_ms: 778.6949
+      ...
+    # Subtest: cancel-image
+    ok 2 - cancel-image
+      ---
+      duration_ms: 976.0365
+      ...
+    # Subtest: invalid-response-protocol
+    ok 3 - invalid-response-protocol
+      ---
+      duration_ms: 670.0845
+      ...
+    1..3
+ok 23 - unread aborts, cancelled media and rejected response protocols release all owned process resources
+  ---
+  duration_ms: 2426.8453
+  ...
+# Subtest: scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+ok 24 - scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+  ---
+  duration_ms: 183.2618
+  ...
+# Subtest: authority revocation between responses blocks the next provider call and does not expose callback errors
+ok 25 - authority revocation between responses blocks the next provider call and does not expose callback errors
+  ---
+  duration_ms: 42.4523
+  ...
+# Subtest: credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+ok 26 - credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+  ---
+  duration_ms: 48.5037
+  ...
+# Subtest: model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+ok 27 - model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+  ---
+  duration_ms: 84.7179
+  ...
+# Subtest: declared and streamed oversized request bodies never reach the provider
+ok 28 - declared and streamed oversized request bodies never reach the provider
+  ---
+  duration_ms: 24.6767
+  ...
+# Subtest: a run has one in-flight request and a hard forwarded-request ceiling
+ok 29 - a run has one in-flight request and a hard forwarded-request ceiling
+  ---
+  duration_ms: 26.4801
+  ...
+# Subtest: expiry and explicit cancellation revoke a scoped credential without a provider request
+ok 30 - expiry and explicit cancellation revoke a scoped credential without a provider request
+  ---
+  duration_ms: 99.1291
+  ...
+# Subtest: redirects are not followed and an uncertain dispatched request cannot be replayed
+ok 31 - redirects are not followed and an uncertain dispatched request cannot be replayed
+  ---
+  duration_ms: 34.6627
+  ...
+# Subtest: truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+ok 32 - truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+  ---
+  duration_ms: 115.3978
+  ...
+# Subtest: split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+ok 33 - split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+  ---
+  duration_ms: 1849.9447
+  ...
+# Subtest: an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+ok 34 - an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+  ---
+  duration_ms: 25.811
+  ...
+# Subtest: the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+ok 35 - the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+  ---
+  duration_ms: 258.4129
+  ...
+# Subtest: registered function-call frames and arguments are streamed unchanged after validation
+ok 36 - registered function-call frames and arguments are streamed unchanged after validation
+  ---
+  duration_ms: 33.3577
+  ...
+# Subtest: malformed or oversized SSE frames are rejected before forwarding an event
+ok 37 - malformed or oversized SSE frames are rejected before forwarding an event
+  ---
+  duration_ms: 34.4431
+  ...
+# Subtest: stream idle timeout aborts an accepted provider request and prevents another dispatch
+ok 38 - stream idle timeout aborts an accepted provider request and prevents another dispatch
+  ---
+  duration_ms: 75.8236
+  ...
+# Subtest: request deadline aborts even a non-idle stream and a response with no first byte
+ok 39 - request deadline aborts even a non-idle stream and a response with no first byte
+  ---
+  duration_ms: 175.1128
+  ...
+# Subtest: declared and chunked oversized responses are bounded and never automatically replayed
+ok 40 - declared and chunked oversized responses are bounded and never automatically replayed
+  ---
+  duration_ms: 115.1359
+  ...
+# Subtest: image generation and multipart editing use the same trusted authorization and exact frozen specification
+ok 41 - image generation and multipart editing use the same trusted authorization and exact frozen specification
+  ---
+  duration_ms: 35.4078
+  ...
+# Subtest: invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+ok 42 - invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+  ---
+  duration_ms: 9.0541
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# Subtest: original strict invitation contract, required matching tenant header, stable retry and no delivery secrets
+ok 43 - original strict invitation contract, required matching tenant header, stable retry and no delivery secrets
+  ---
+  duration_ms: 8921.0813
+  ...
+# Subtest: acceptance is email-bound, concurrent same-key retries recover one original Member, other keys cannot reuse it
+ok 44 - acceptance is email-bound, concurrent same-key retries recover one original Member, other keys cannot reuse it
+  ---
+  duration_ms: 476.9957
+  ...
+# Subtest: stable MemberList pagination exposes no directory fields and rejects foreign cursors and headers
+ok 45 - stable MemberList pagination exposes no directory fields and rejects foreign cursors and headers
+  ---
+  duration_ms: 217.2302
+  ...
+# Subtest: removed membership immediately denies access and stale acceptance cannot restore it; old removal replay cannot delete a fresh grant
+ok 46 - removed membership immediately denies access and stale acceptance cannot restore it; old removal replay cannot delete a fresh grant
+  ---
+  duration_ms: 495.6545
+  ...
+# Subtest: a changed issuer membership revision invalidates pending permissions and cancels queued mail
+ok 47 - a changed issuer membership revision invalidates pending permissions and cancels queued mail
+  ---
+  duration_ms: 309.6779
+  ...
+# Subtest: owner invitations work; admins cannot grant or remove privileged roles; cross-workspace projects are rejected
+ok 48 - owner invitations work; admins cannot grant or remove privileged roles; cross-workspace projects are rejected
+  ---
+  duration_ms: 443.7545
+  ...
+# Subtest: concurrent owners cannot remove each other to leave an ownerless workspace
+ok 49 - concurrent owners cannot remove each other to leave an ownerless workspace
+  ---
+  duration_ms: 368.5091
+  ...
+# Subtest: delivery failure is durable and retryable; queued secrets are encrypted and erased after actual mailbox delivery
+ok 50 - delivery failure is durable and retryable; queued secrets are encrypted and erased after actual mailbox delivery
+  ---
+  duration_ms: 236.5403
+  ...
+# Subtest: resend rotates the single-use secret; stale delivery completion cannot overwrite its newer generation
+ok 51 - resend rotates the single-use secret; stale delivery completion cannot overwrite its newer generation
+  ---
+  duration_ms: 236.4232
+  ...
+# Subtest: revoke and expiry erase queued credentials and never grant membership
+ok 52 - revoke and expiry erase queued credentials and never grant membership
+  ---
+  duration_ms: 183.9314
+  ...
+# Subtest: archived projects invalidate pending invitations and active membership is never silently overwritten
+ok 53 - archived projects invalidate pending invitations and active membership is never silently overwritten
+  ---
+  duration_ms: 251.3803
+  ...
+# Subtest: an exhausted abandoned delivery lease becomes a visible failure; explicit resend starts a new bounded generation
+ok 54 - an exhausted abandoned delivery lease becomes a visible failure; explicit resend starts a new bounded generation
+  ---
+  duration_ms: 86.2769
+  ...
+# Subtest: unused older invitations cannot bypass member removal through either member-management endpoint
+ok 55 - unused older invitations cannot bypass member removal through either member-management endpoint
+  ---
+  duration_ms: 248.147
+  ...
+2026-10-25 03:27:28.054 CST [2876] LOG:  checkpoint starting: immediate force wait
+
+2026-10-25 03:27:28.623 CST [2876] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.355 s, total=0.569 s; sync files=10, longest=0.086 s, average=0.036 s; distance=18559 kB, estimate=32234 kB; lsn=15/547CBC68, redo lsn=15/547CBC10
+
+1..55
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 83568.6223
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/8083d4f8-63c8-426c-a293-d59ebcb7f87c/result.json","sha256":"b7259c3774240ff3a8fea055e2d987f8b3d8cd927966c30ff935a130ffa8cc9f","exit_code":0}
+2026-10-25 03:27:29.394 CST [24416] LOG:  received fast shutdown request
+
+2026-10-25 03:27:29.433 CST [24416] LOG:  aborting any active transactions
+
+2026-10-25 03:27:29.440 CST [24416] LOG:  background worker "logical replication launcher" (PID 11612) exited with exit code 1
+
+2026-10-25 03:27:29.440 CST [2876] LOG:  shutting down
+
+2026-10-25 03:27:29.479 CST [2876] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-25 03:27:29.629 CST [2876] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.028 s, total=0.190 s; sync files=1, longest=0.028 s, average=0.028 s; distance=0 kB, estimate=29010 kB; lsn=15/547CBD80, redo lsn=15/547CBD80
+
+2026-10-25 03:27:29.722 CST [24416] LOG:  database system is shut down
+

@@ -51,6 +51,32 @@ export async function runNativeAudioJourney(j: any) {
   try {
     await page.getByLabel("Local task", { exact: true }).fill("Create the explicitly customer-approved synthetic speech and transcribe the owned synthetic source. Source/script rights are confirmed for this test; preserve the original audio and exact subtitle timing.");
     await page.getByRole("button", { name: "Start work", exact: true }).click();
+    const initialCalls = provider.calls.length;
+    for (let i = 0; i < 2; i++) {
+      const candidate = page.locator("[data-audio-authorization]").filter({ has: page.locator("form.audio-consent-form") }).first();
+      await candidate.locator("form").waitFor();
+      const consent = page.locator(`[data-audio-authorization="${await candidate.getAttribute("data-audio-authorization")}"]`);
+      assert.equal(await consent.locator('input[name="audio_authorized"]').isChecked(), false);
+      assert.equal(await consent.locator('textarea[name="audio_rights_reference"]').inputValue(), "");
+      assert.equal(await consent.locator('textarea[name="audio_purpose"]').inputValue(), "");
+      assert.equal(provider.calls.length, initialCalls + i);
+      if (!i) for (const [width, height] of [[1440, 980], [1280, 800], [800, 600]]) {
+        await resize(width, height, "independent native audio consent " + width); await assertDesktopLayout(page);
+        await consent.locator('textarea[name="audio_purpose"]').focus();
+        await until(() => consent.locator('textarea[name="audio_purpose"]').evaluate((el: HTMLElement) => {
+          const b = el.getBoundingClientRect(), p = el.closest(".local-agent-messages")!.getBoundingClientRect();
+          return b.left >= p.left && b.right <= p.right + 1 && b.top >= p.top && b.bottom <= p.bottom + 1;
+        }), Boolean, "native consent purpose remains focus reachable at " + width);
+        j.screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + j.attempt, "audio-consent-" + width,
+          await j.captureSurface(), "Actual frameless local Codex waits for independent customer audio consent. Unchecked and blank fields; no rails/horizontal overflow; focus reaches the form in the actual OS window.", j.delivery));
+      }
+      await consent.locator('textarea[name="audio_rights_reference"]').fill("Customer-owned synthetic native source and script");
+      await consent.locator('textarea[name="audio_purpose"]').fill("The customer independently confirms this exact local campaign operation");
+      await consent.locator('input[name="audio_authorized"]').check();
+      await consent.getByRole("button", { name: "Confirm and continue", exact: true }).click();
+      await consent.locator("form").waitFor({ state: "detached" });
+    }
+    j.pass("The real packaged frameless Desktop keeps local Codex waiting, defaults consent to unchecked/blank, and requires actual customer confirmation before each company audio POST; the form remains reachable at all three real window sizes without rails");
     const state = await until(list, (s: any) => !s.busy && s.task?.status === "succeeded" && model.results.length === 2, "actual native TTS and transcription");
     assert.equal((await system.db.control.query("SELECT execution_location FROM tasks WHERE id=$1", [state.task.task_id])).rows[0].execution_location, "desktop");
     const speech = model.results.find((r: any) => r.kind === "speech"), transcript = model.results.find((r: any) => r.kind === "transcription");

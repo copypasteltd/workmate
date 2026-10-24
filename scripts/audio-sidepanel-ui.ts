@@ -38,8 +38,9 @@ async function attach(parent: CDPSession, targetId: string) {
   };
 }
 
-export async function exerciseAudioSidePanel({ delivery, attempt, taskId, speechId, transcriptId, expectedSHA, login, screenshots, media, pass }: {
+export async function exerciseAudioSidePanel({ delivery, attempt, taskId, speechId, transcriptId, expectedSHA, login, screenshots, media, pass, armAudio, runTask, audioCount }: {
   delivery: string; attempt: string; taskId: string; speechId: string; transcriptId: string; expectedSHA: string; login: (page: Page) => Promise<void>; screenshots: any[]; media: any[]; pass: (s: string) => void;
+  armAudio: () => unknown; runTask: (id: string) => Promise<unknown>; audioCount: () => number;
 }) {
   const extension = path.resolve(delivery, "../copypaste-extension"), id = (await readFile(path.join(extension, "extension-id.txt"), "utf8")).trim();
   const manifest = JSON.parse(await readFile(path.join(extension, "dist/manifest.json"), "utf8"));
@@ -108,7 +109,39 @@ export async function exerciseAudioSidePanel({ delivery, attempt, taskId, speech
     pass("The actual native Side Panel removes a cue, requires manually supplied replacement times and saves cloud subtitle version four through protected CAS without another AI request");
     await evaluate("document.querySelector('#locale').click()");
     await until(() => evaluate(`document.querySelector(${JSON.stringify(transcript)})?.textContent.includes('音訊轉寫與字幕')`), Boolean, "Traditional Chinese audio layout");
-    await shot("native-audio-zh", transcript); media.push(await recording.stop()); recording = undefined;
+    await shot("native-audio-zh", transcript);
+    await evaluate("document.querySelector('#locale').click()");
+    armAudio(); const before = audioCount();
+    await evaluate(`(() => {
+      const form=document.querySelector('#brief-form');
+      form.querySelector('#role').value='video-motion';
+      form.querySelector('[name=title]').value='Independent native Side Panel audio confirmation';
+      form.querySelector('#prompt').value='Propose synthetic speech and wait for my independent customer confirmation.';
+      form.querySelector('[name=budget]').value='1';
+      form.requestSubmit(); return true;
+    })()`);
+    const newTask = await until<string>(() => evaluate(`[...document.querySelectorAll('#task-list .task-row[data-task]')].find(el=>el.dataset.task!==${JSON.stringify(taskId)})?.dataset.task`),
+      Boolean, "new task created through actual native panel form");
+    const running = runTask(newTask); void running.catch(() => {});
+    const authorizationId = await until(() => evaluate("document.querySelector('[data-audio-authorization] form input[name=audio_authorized]')?.closest('[data-audio-authorization]').dataset.audioAuthorization"),
+      Boolean, "pending actual cloud audio proposal");
+    const consent = `[data-audio-authorization="${authorizationId}"]`;
+    assert.equal(await evaluate(`(() => {const f=document.querySelector(${JSON.stringify(consent)});return !f.querySelector('[name=audio_authorized]').checked && f.querySelector('[name=audio_rights_reference]').value==='' && f.querySelector('[name=audio_purpose]').value==='';})()`), true);
+    assert.equal(audioCount(), before, "No company audio POST before independent native panel confirmation");
+    await shot("native-customer-consent-unchecked", consent);
+    await evaluate(`(() => {const f=document.querySelector(${JSON.stringify(consent)});
+      f.querySelector('[name=audio_rights_reference]').value='Customer-owned synthetic native panel script';
+      f.querySelector('[name=audio_purpose]').value='The signed-in customer approves this exact native panel campaign';
+      f.querySelector('[name=audio_authorized]').click();return true;})()`);
+    await click(consent + " button", "Confirm and continue"); await running;
+    await until(() => evaluate(`document.querySelector(${JSON.stringify(consent)})?.textContent.includes('Confirmed by you')`), Boolean, "current customer confirmation shown");
+    assert.equal(audioCount(), before + 1);
+    await shot("native-customer-consent-confirmed", consent);
+    await click(consent + " button", "Withdraw this authorization");
+    await until(() => evaluate(`document.querySelector(${JSON.stringify(consent)})?.textContent.includes('Authorization withdrawn')`), Boolean, "native panel withdrawal retained");
+    assert.equal(audioCount(), before + 1); await shot("native-customer-consent-withdrawn", consent);
+    pass("An actual new task from the native Side Panel waits for an unchecked, blank customer form; explicit confirmation permits one cloud audio POST and withdrawal blocks later delivery without a retry or Desktop dependency");
+    media.push(await recording.stop()); recording = undefined;
     await main.goto("http://localhost:4317/login"); assert.equal((await worker.evaluate(() => chrome.runtime.getContexts({ contextTypes: ["SIDE_PANEL"] })))[0].contextId, native.contextId);
     pass("Native audio layouts fit the actual narrow panel in both languages and the cloud-task panel survives active-page navigation");
     return { context_type: native.contextType, side: layout.side, toolbar_action: true, width_before: width, width_after: narrowed,
