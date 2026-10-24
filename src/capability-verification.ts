@@ -9,6 +9,7 @@ import { CodexRuntimeAdapter, RuntimeFailure } from "./runtime.js";
 import { tokenCharge } from "./billing.js";
 import { removeOwnedUUIDDirectory } from "./owned-directory-cleanup.js";
 import { validateVerificationPNG } from "./png-validation.js";
+import { videoJobLimits, videoJobOperations, videoJobProtocol } from "./video-job-protocol.js";
 import {
   internalAIRequest,
   finishInternalAIRequest,
@@ -39,12 +40,21 @@ export const capabilityDocument = z.discriminatedUnion("profile_key", [
       rates: z.tuple([rate.positive()]),
     })
     .strict(),
+  z.object({ ...common, profile_key: z.literal("internal-video-v1"),
+    reasoning_effort: z.null(), rates: z.tuple([rate.positive()]) }).strict(),
 ]);
 export function capabilityBody(
   c: Config,
   document: z.infer<typeof capabilityDocument>,
 ) {
   const text = document.profile_key === "internal-text-v1";
+  if (document.profile_key === "internal-video-v1") return {
+    profile_key: document.profile_key, model_alias: document.model_alias, ready: true,
+    rates: document.rates, schema_version: 2, wire_protocol: videoJobProtocol,
+    reasoning_effort: null, supported_operations: [...videoJobOperations], limits: { ...videoJobLimits },
+    gateway_policy: "company_internal_only", gateway_fingerprint: gatewayFingerprint(c),
+    data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
+  };
   return {
     profile_key: document.profile_key,
     model_alias: document.model_alias,
@@ -85,6 +95,8 @@ export async function verifyCapability(
   signal: AbortSignal,
   requestAuthority: AIRequestAuthority,
 ) {
+  if (document.profile_key === "internal-video-v1")
+    throw new Problem(409, "ASYNC_VIDEO_VERIFICATION_REQUIRED", "Video verification uses its durable worker suite");
   if (!c.AI_BASE_URL || !c.AI_API_KEY)
     throw new Problem(
       409,

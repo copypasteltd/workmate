@@ -14,6 +14,7 @@ import {
 } from "./provider-request-control.js";
 import { activeRuntimeProfile } from "./runtime-profiles.js";
 import { validationProviderBudgetReceipt } from "./provider-budgets.js";
+import { prepareCapabilityVideoSuite, capabilityVideoDTO } from "./capability-video-verification.js";
 import { globalPlanAuthority } from "./admin-plans.js";
 import {
   currentAdminControl,
@@ -154,6 +155,7 @@ async function release(tx: Tx, db: Database, id: string) {
   return row;
 }
 async function validationDTO(tx: Tx, v: any) {
+  const video = await capabilityVideoDTO(tx, v.id);
   const purge = (
     await tx.query(
       "SELECT * FROM capability_workspace_purges WHERE validation_id=$1",
@@ -170,11 +172,12 @@ async function validationDTO(tx: Tx, v: any) {
     expires_at: v.expires_at ? new Date(v.expires_at).toISOString() : null,
     result: v.result,
     workspace_cleanup: purge ? capabilityWorkspacePurgeDTO(purge) : null,
+    ...(video ? { video_suite: video } : {}),
   };
 }
 async function expireVerifications(tx: Tx) {
   await tx.query(
-    "UPDATE capability_validations SET state='reconciling',finished_at=now(),result=jsonb_build_object('error_code','VERIFICATION_LEASE_EXPIRED','accepted',true,'usage_known',false) WHERE state='running' AND lease_until<now()",
+    "UPDATE capability_validations v SET state='reconciling',finished_at=now(),result=jsonb_build_object('error_code','VERIFICATION_LEASE_EXPIRED','accepted',true,'usage_known',false) WHERE state='running' AND lease_until<now() AND NOT EXISTS(SELECT 1 FROM capability_video_suites s WHERE s.validation_id=v.id)",
   );
 }
 async function inspect(
@@ -643,7 +646,7 @@ export function registerCapabilityReleases(
           );
         v = (
           await tx.query(
-            "INSERT INTO capability_validations(release_id,principal_id,session_id,idempotency_hash,payload_hash,execution_nonce) VALUES($1,$2,$3,$4,$5,$6) RETURNING *",
+            "INSERT INTO capability_validations(release_id,principal_id,session_id,idempotency_hash,payload_hash,execution_nonce,lease_until) VALUES($1,$2,$3,$4,$5,$6,now()+CASE WHEN $7 THEN interval '2 hours' ELSE interval '4 minutes' END) RETURNING *",
             [
               id,
               req.principal.id,
@@ -651,6 +654,7 @@ export function registerCapabilityReleases(
               k,
               payloadHash,
               nonce,
+              row.profile_key === "internal-video-v1",
             ],
           )
         ).rows[0];
@@ -667,13 +671,15 @@ export function registerCapabilityReleases(
           },
         );
         await tx.query("SELECT register_validation_ai_budget($1)", [v.id]);
+        if (row.profile_key === "internal-video-v1")
+          await prepareCapabilityVideoSuite(tx, db, v, row, req.principal);
         return { row, v };
       },
       undefined,
       true,
       req.principal.id,
     );
-    if (prepared.v.execution_nonce !== nonce)
+    if (prepared.v.execution_nonce !== nonce || prepared.row.profile_key === "internal-video-v1")
       return db.tx(
         async (tx) => {
           await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
@@ -727,10 +733,10 @@ export function registerCapabilityReleases(
                 request.taskId !== current.id ||
                 request.actorId !== req.principal.id ||
                 request.model !== document.model_alias ||
-                !capabilityBody(
+                !(capabilityBody(
                   db.config,
                   document,
-                ).supported_operations.includes(
+                ).supported_operations as readonly string[]).includes(
                   request.operation === "responses.input_tokens"
                     ? "responses"
                     : request.operation,
@@ -898,6 +904,34 @@ export function registerCapabilityReleases(
     if (denied) throw denied;
     return result;
   });
+  for (const action of ["video-cancellations", "video-rechecks"] as const) {
+    app.post(root + "/validations/:validation/" + action, auth, async (req, reply) => {
+      const id = uuid.parse((req.params as any).validation), b = command.parse(req.body);
+      reply.code(202);
+      return db.tx(async tx => {
+        await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
+        const v = (await tx.query(`SELECT v.* FROM capability_validations v JOIN capability_releases r ON r.id=v.release_id
+          JOIN capability_video_suites s ON s.validation_id=v.id WHERE v.id=$1 AND r.data_mode=$2 FOR UPDATE OF v`, [id, mode(db)])).rows[0];
+        if (!v) throw new Problem(404, "NOT_FOUND", "Video validation not found");
+        const r = await release(tx, db, v.release_id);
+        if (r.version !== b.expected_version) throw new Problem(409, "VERSION_CONFLICT", "Reload the exact capability document");
+        return replay(tx, req.principal.id, "capability." + action + ":" + id, key(req), b, async () => {
+          if (action === "video-cancellations") {
+            if (v.state !== "running") throw new Problem(409, "CAPABILITY_VERIFICATION_TERMINAL", "A completed eligibility receipt cannot be cancelled or reopened");
+            await tx.query(`UPDATE capability_video_suites SET cancel_requested_at=coalesce(cancel_requested_at,clock_timestamp()),
+              next_poll_at=clock_timestamp() WHERE validation_id=$1`, [id]);
+          } else {
+            // An explicit recheck only wakes the original resource poll; it
+            // never creates another probe or reopens immutable eligibility.
+            await tx.query("UPDATE capability_video_suites SET next_poll_at=clock_timestamp() WHERE validation_id=$1", [id]);
+          }
+          await audit(tx, req.principal, "admin.catalog.publish", v.release_id, action,
+            { validation_id: id, reason: b.reason });
+          return validationDTO(tx, v);
+        });
+      }, undefined, true, req.principal.id);
+    });
+  }
   app.get(root + "/validations/:validation", auth, async (req, reply) => {
     reply.header("Cache-Control", "no-store");
     z.object({}).strict().parse(req.query);

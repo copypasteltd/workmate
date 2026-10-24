@@ -1,5 +1,6 @@
 import { TaskBusinessTools } from "./task-business-tools.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
+import { CapabilityVideoVerification } from "./capability-video-verification.js";
 import {
   assertTaskContentSources,
   recordTaskSourceRead,
@@ -120,6 +121,8 @@ export class Worker {
   private videoAbort = new AbortController();
   private generatedVideoRun: Promise<unknown> | null = null;
   private generatedVideoAbort = new AbortController();
+  private capabilityVideoRun: Promise<unknown> | null = null;
+  private capabilityVideoAbort = new AbortController();
   private connectorRun: Promise<unknown> | null = null;
   private connectorAbort = new AbortController();
   private seoRun: Promise<unknown> | null = null;
@@ -235,6 +238,12 @@ export class Worker {
         this.generatedVideoRun = new GeneratedVideoJobs(this.db, this.catalog, this.storage).advance(this.generatedVideoAbort.signal)
           .catch(() => console.error(JSON.stringify({ component: "worker.generated_video", error_code: "VIDEO_JOB_MAINTENANCE_FAILED" })))
           .finally(() => { this.generatedVideoRun = null; });
+      }
+      if (!this.stopping && !this.capabilityVideoRun) {
+        this.capabilityVideoRun = new CapabilityVideoVerification(this.db, this.catalog)
+          .advance(this.capabilityVideoAbort.signal)
+          .catch(() => console.error(JSON.stringify({ component: "worker.capability_video", error_code: "VIDEO_VERIFICATION_MAINTENANCE_FAILED" })))
+          .finally(() => { this.capabilityVideoRun = null; });
       }
       if (!this.stopping && !this.connectorRun) {
         this.connectorRun = advanceConnectors(this.db, this.storage, {
@@ -1051,10 +1060,12 @@ export class Worker {
     await this.boss.stop({ graceful: true, timeout: 20000 });
     this.videoAbort.abort();
     this.generatedVideoAbort.abort();
+    this.capabilityVideoAbort.abort();
     this.connectorAbort.abort();
     this.seoAbort.abort();
     await this.videoRun;
     await this.generatedVideoRun;
+    await this.capabilityVideoRun;
     await this.connectorRun;
     await this.seoRun;
     await this.matrixRun;
