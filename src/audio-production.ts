@@ -1,10 +1,14 @@
 import { exactHKD } from "./financial-notice.js";
+import { mountAudioAuthorizations } from "./audio-authorizations.js";
 
-type IO = { base: string; taskId: string; live: () => boolean; tr: (zh: string, en: string) => string;
+export type IO = { base: string; taskId: string; live: () => boolean; tr: (zh: string, en: string) => string;
   request: (path: string, method?: string, body?: unknown, key?: string) => Promise<any> };
 
 /** Authorized cloud task review. The extension never runs or requires a local Agent. */
-export function mountAudioProductions(container: HTMLElement, io: IO) {
+export function mountAudioProductions(root: HTMLElement, io: IO) {
+  const authorizationHost = document.createElement("section"), container = document.createElement("section");
+  root.replaceChildren(authorizationHost, container);
+  const disposeAuthorizations = mountAudioAuthorizations(authorizationHost, io);
   let disposed = false, loading = false, pending = false, editing = false, signature = "", cursor: string | null = null;
   const owned = new Set<string>(), attempts = new Map<string, { body: string; key: string }>();
   const active = () => !disposed && io.live();
@@ -128,5 +132,5 @@ export function mountAudioProductions(container: HTMLElement, io: IO) {
     finally { loading = false; }
   };
   const timer = setInterval(() => { if (!document.hidden) void load(); }, 5000); void load();
-  return () => { disposed = true; clearInterval(timer); clear(); attempts.clear(); };
+  return () => { disposed = true; clearInterval(timer); disposeAuthorizations(); clear(); attempts.clear(); root.replaceChildren(); };
 }
