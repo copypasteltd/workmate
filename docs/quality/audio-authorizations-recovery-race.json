@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-24T17:37:01.021869+00:00",
+  "status": "verified_real_row_lock_renewal_race_fix",
+  "failure": {
+    "path": "dev/copypaste-delivery/evidence/audio-production-checks-18.json",
+    "sha256": "467a29683c188a8b807de884b0b427ad95d92e4df47b481f6527571e3192ff77",
+    "counts": {
+      "tests": 56,
+      "pass": 55,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "corrected": {
+    "path": "dev/copypaste-delivery/evidence/audio-production-checks-19.json",
+    "sha256": "773ede8b62469e04712b334e85ba1728d5281391d2c8d42e2b89ff6b49c9afe0",
+    "counts": {
+      "tests": 56,
+      "pass": 56,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    }
+  },
+  "unchanged_test_source": {
+    "path": "dev/copypaste-platform/tests/audio-production.test.ts",
+    "sha256": "76f543359540267b5ca6220c995d661215ae1767cb96a9e7f77fcc812383903c"
+  },
+  "only_product_source_changed": [
+    "copypaste-platform/src/audio-authorizations.ts"
+  ],
+  "fix": "Recheck deadline and current origin under the acquired task row lock before cancelling. No authority, cost, reservation or delivery gate removed.",
+  "reproduction": "Real concurrent renewal transaction holds the task lock. Recovery observes the committed expired lease, waits on that actual lock (observed via pg_blocking_pids), then reads the committed live renewal. The same test requires confirmed/prepared state and one successful original audio dispatch.",
+  "historical_partial_qualification_37": [
+    {
+      "path": "dev/copypaste-delivery/evidence/desktop-execution-control-37-batch-01-attempt-01.json",
+      "sha256": "c79666e7699c955738be86b165d95f1e180e6d94f9004a94c71dab196a96c7df",
+      "historical_tests": 42
+    },
+    {
+      "path": "dev/copypaste-delivery/evidence/desktop-execution-control-37-batch-02-attempt-01.json",
+      "sha256": "6bf18a727e0e7f134791b733c001c2713fa26c2baa86570ea5bfe7f49bf7fdc8",
+      "historical_tests": 75
+    }
+  ],
+  "partial_scope": "The owning loop was stopped without killing its active batch. Both completed batches shut down their owned DB and preserved exact source checks. No aggregate full pass exists or is claimed; a new complete current qualification is required.",
+  "verifier_sha256": "0c85f203990ef6459e807c8533f0b867e8d243ba572443237a7514141663ba8b"
+}

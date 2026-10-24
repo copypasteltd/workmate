@@ -1,5 +1,9 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+**阶段 85 当前增量：** 原任务中的音频提案需原客户以当前登录会话独立确认精确内容和公司报价；默认不勾选，权利依据/用途为空。模型与 Admin 不能代签。拒绝、截止、停止及撤权阻断派发，撤回阻断交付但保留真实或未知费用。新增 SQL102，保留 SQL001–101、四份已发布契约及旧角色/Skill。平台 1001（全部原 988 用例保留）、核心 56、兼容 80、客户端 124、真实 Web/Admin/原生侧栏 13、打包 Desktop 41 分别通过；全部选定源码摘要精确相符。Desktop 保持客户本机 Codex、主动可撤销全权限、无边框/菜单，无可见纵横滚动条，保留滚轮/键盘/末项焦点及真实进度。原生右侧栏保持云端 Codex 和获准文件上传。真实声音/粤语质量、后台音频发行和未知 POST 外部证据结算仍保留；原 102 REQ/102 TC 为 83 部分／19 未证明／0 完整验收，G01–G10 不变。见[当前方案与限定证据](../technical/85-audio-rights-and-administration.md)。
+
+本次先提交六个组件，再执行 python -X utf8 docs/tools/finalize_audio_authorizations_manifest.py，最后提交主文档。随后在 Delivery 执行 node scripts/publish-workmate.mjs --push，按发布回执核对 backend/web/admin/desktop/extension/delivery/docs/main 八个远程 SHA；docs 与 main 必须相同。历史工具/回执保持原阶段范围，常规同步沿用既有授权，禁止强推。
+
 GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmate)，SSH 地址为 `git@github.com:copypasteltd/workmate.git`。各端继续保留独立 Git 历史和独立构建入口，按下表发布到同一远程的不同分支。每次发布以最终远程分支 SHA 核对及本次发布回执为准。
 
 | 本地目录 | 本地工作分支 | GitHub 分支 | 职责 |
@@ -14,7 +18,7 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 
 `main` 和 `docs` 发布相同的主文档提交。各分支根目录直接包含对应仓库内容，不把各端代码混放在一个分支中。`docs/README.md` 提供总导航；各端 `README.md` 为中文、`README.en.md` 为英文。GitHub 上的跨端和主文档链接使用明确分支 URL，避免依赖不存在的上级目录。
 
-表中 `codex/*` 是当前工作分支。按 README 新检出的本地同名分支（例如 `backend`、`docs`）也可直接执行发布器，无须额外重命名；其他功能分支应先审阅并整合到对应工作分支。本次使用 `python docs/tools/finalize_audio_manifest.py` 明确刷新已提交组件清单，再提交主文档；旧清单保留于 Git 历史。
+表中 `codex/*` 是当前工作分支。按 README 新检出的本地同名分支（例如 `backend`、`docs`）也可直接执行发布器，无须额外重命名；其他功能分支应先审阅并整合到对应工作分支。本次使用 `python docs/tools/finalize_audio_authorizations_manifest.py` 明确刷新已提交组件清单，再提交主文档；旧清单保留于 Git 历史。
 
 ## 每次更新必须同步
 
@@ -31,7 +35,7 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 
 Each component remains an independent local Git repository and publishes its root content to the branch shown above. The primary documentation repository publishes the same commit to `main` and `docs`. Every component has a complete Chinese `README.md` and English `README.en.md`, with architecture, setup, identity and usage flows, configuration, verification, screenshots and actual interaction media.
 
-The table records current `codex/*` working branches. Fresh README checkouts using the published local branch names, such as `backend` and `docs`, can also run the publisher directly. Integrate reviewed feature work into the mapped branch first. Refresh this delivery's committed component versions explicitly with `python docs/tools/finalize_audio_manifest.py`, then commit docs; Git history preserves the prior plan.
+The table records current `codex/*` working branches. Fresh README checkouts using the published local branch names, such as `backend` and `docs`, can also run the publisher directly. Integrate reviewed feature work into the mapped branch first. Refresh this delivery's committed component versions explicitly with `python docs/tools/finalize_audio_authorizations_manifest.py`, then commit docs; Git history preserves the prior plan.
 
 Every subsequent change must update the corresponding documentation and bilingual release notes, refresh relevant real captures when UI behavior changes, run checks appropriate to the change, commit, push the explicitly mapped branch and compare remote commit IDs. The user has authorized ongoing synchronization to this remote. Preserve collaborator history; do not force-push or delete unrelated branches. Keep credentials, local sessions, databases, dependencies and generated installers out of Git. Synthetic demonstrations and production qualification must remain clearly distinguished.
 
@@ -47,6 +51,6 @@ For stage 82, complete the current checkpoint, documentation audit and staged ch
 
 阶段 83 使用 `finalize_geo_observation_manifest.py` 绑定已提交的六个组件、当前 GEO/原生布局回执、双语说明、实际媒体及暂存核查，再按既有授权非强制推送。旧阶段工具和回执仅保留其历史范围。Stage 83 binds exact committed components and current evidence before the authorized ordinary push.
 
-阶段 84 使用 `finalize_audio_manifest.py` 绑定已提交六组件、当前音频/字幕、原生布局、完整回归、实际媒体与双语文档。先完成实际检查和暂存核查，再提交六组件、刷新清单、提交主文档，最后运行 Delivery 发布器并核对八个远程分支 SHA；不复用旧阶段源码假设，不强推。
+阶段 84 使用 `finalize_audio_authorizations_manifest.py` 绑定已提交六组件、当前音频/字幕、原生布局、完整回归、实际媒体与双语文档。先完成实际检查和暂存核查，再提交六组件、刷新清单、提交主文档，最后运行 Delivery 发布器并核对八个远程分支 SHA；不复用旧阶段源码假设，不强推。
 
-Stage 84 binds committed components to its current audio/native-layout, full-regression, media and bilingual documentation evidence with `finalize_audio_manifest.py`. Complete checks and staged review, commit the six components, refresh the manifest, commit docs, then run the publisher and verify all eight remote refs without force.
+Stage 84 binds committed components to its current audio/native-layout, full-regression, media and bilingual documentation evidence with `finalize_audio_authorizations_manifest.py`. Complete checks and staged review, commit the six components, refresh the manifest, commit docs, then run the publisher and verify all eight remote refs without force.

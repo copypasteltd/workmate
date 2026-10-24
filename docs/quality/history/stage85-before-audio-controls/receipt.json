@@ -1,0 +1,623 @@
+{
+  "at": "2026-10-24T16:12:34.973410+00:00",
+  "status": "published_audio_control_preimages_preserved",
+  "repositories": [
+    {
+      "component": "docs",
+      "head": "b365182bb320fa8680a3c88b6a71cd98963248e7",
+      "branch": "codex/docs"
+    },
+    {
+      "component": "platform",
+      "head": "a55c77a7686b84a2b23c0c971cc57cd272954456",
+      "branch": "codex/backend"
+    },
+    {
+      "component": "web",
+      "head": "360caa8e34e0336ac1d8822f2ef838118c8b0c1f",
+      "branch": "codex/web"
+    },
+    {
+      "component": "admin",
+      "head": "e5449616226cc4087d4eae1e02c41adadfedc851",
+      "branch": "codex/admin"
+    },
+    {
+      "component": "desktop",
+      "head": "f2455462b26298513c85c3fccd66fc7efe9bf432",
+      "branch": "codex/desktop"
+    },
+    {
+      "component": "extension",
+      "head": "6c3d1c685843e283ef8b82f28b8e865b175d110c",
+      "branch": "codex/extension"
+    },
+    {
+      "component": "delivery",
+      "head": "730ba3d771b5cc2e36fd376a0af20ac04fef54d9",
+      "branch": "codex/delivery"
+    }
+  ],
+  "published_migrations": {
+    "001-foundation.sql": "4f07eeceebe0c1fb87e236c6700f6aa7d628f31c5c4eb33a90bc16de925d9fe5",
+    "002-content-and-financial-guards.sql": "5ec0fa6e2a1705f3b530cf25316014df0004c896927ff6b7c80e118c3210aa0d",
+    "003-entitlement-policies.sql": "15f7172063f305348f6feb56267b58cb008de648056d5dbb4f855b90085f1b31",
+    "004-asset-moderation-version.sql": "3004a5e191952c5048ed330ed74e73bc1eb615eeb6c062c8ab6d304717bc123b",
+    "005-persistent-work.sql": "88ed834bc4fe28b851cf1f86476b6df79b22c6790d763cffc3880df10ee83040",
+    "006-private-context-guards.sql": "d027e84cf22814bfcd69b2a9ff38fe58bd809a73aff1bef9e3f52db412007355",
+    "007-erasure-replay-tombstones.sql": "aba542bb403471e5361119c632b1437d3f0fd2360e78868694a3ee3a83e2bb8e",
+    "008-admin-identity-lifecycle.sql": "b12690a7c5072d8f8a9664f4bba546a25e2f4b2df7d10438668190d0916bea57",
+    "009-workflow-schedules.sql": "22829d4d1a895da52a98b481db65b7f5dbb6166369782c970ac1559503cf19cc",
+    "010-enterprise-federation.sql": "8a5e800ded93d5d79212544dae075762765ae6e0d66bdf78fc16da17101e399a",
+    "011-content-erasure.sql": "40f989745ccc5cc65328e4e1ba95d9fe6a054da3138cdcbc9643ed95fea99fd8",
+    "012-erasure-visibility.sql": "d1a93c2cd860e96a4a996002cb66b94614bbec462adf986b1c5a432dc71cf435",
+    "013-simulated-data.sql": "5572e761acc6bf36010ebe8e7ea9800087ea61e0fc8806a17d2a688dceb751f8",
+    "014-erasure-dependency-expansion.sql": "43d8fb09d9b7f530870be9d8c28acb5560976e6a03da48e229e3fd55433015de",
+    "015-erasure-journal-expansion.sql": "fb4579f08afd632112182b68e41cab8613e050f946f99d2f63faa41cd60372d6",
+    "016-resumable-uploads.sql": "81326b8724807fdef99eada45af8fa8f7f265a7eb16ab276128c0976c41be298",
+    "017-upload-quota-guard.sql": "2108260cec5fd020e5960392113360e7f43dcbf7b5b58befef7bcc9607d429cd",
+    "018-upload-erasure.sql": "0150871fdad1386ba80daff741d6f7bab3c0bb073806c02a4aa5be881713f90e",
+    "019-retention-enforcement.sql": "fa0348dcd308b782e3c10d80ba36a26c48fa7f4fb2c1ed0c6ff2526361ec5b37",
+    "020-durable-event-sequences.sql": "d2839c9cc97cbc064ca2a12b8f162fbc64595fe8f6016b78c26f74a3523dfb3b",
+    "021-retention-trigger-record-shapes.sql": "68131a076138dc21f3d4083a8ce4f3eca0c28f7530d66eb0c7eecff344d50415",
+    "022-queued-claim-recovery.sql": "fb6b56deab0cccb9a26fa8b2210b92fe6432544b4d9ba6df4dc479449e5fbf38",
+    "023-cloud-file-workspaces.sql": "0dda6414962bcb7a1e19b711949a1ba1cdc232d9f84bf202e6d31aa48bd8d86a",
+    "024-private-cloud-uploads.sql": "59fb40bbc49c80d8d635d430a480e739aefac35df134b26e3221a08825ae86c7",
+    "025-project-skill-lifecycle.sql": "4942b98eb58c31e6d9f870ed06c190f2890c79d4bb52910a74ed456dbeeefc1b",
+    "026-in-app-notifications.sql": "49552d10fd34ebce24679c8435c516ef17c74ca7e6099b9b14c96dc9b4b4e8c4",
+    "027-default-assistant.sql": "1055b11a4af46b1d0c5f107612c26522c05304974cacf134362aff4c85cd8eea",
+    "028-task-input-dependencies.sql": "3be9d0e81f12e64723cfa0fd20d3cf976862c586856d8f43d1bfaaa35a3425b1",
+    "029-execution-capacity.sql": "6583c4b5416149f7ad140e5b2b2719c827cb55585d1492bfe810547ffe05db2b",
+    "030-admin-deletion-pages.sql": "c39328f7bc6c4e06a19d1771445b557b37d208fd84931a88a20f7157cbc9408a",
+    "031-agent-template-registry.sql": "ac933eb4bd13a8d7d940031487e96cbc1f3f57baca0d8ccda220ceaf46ca6c13",
+    "032-marketing-import-provenance.sql": "1bcf48ed9bdee5fa02e8e157b8c03dead48a9ba8c64c8a168b74b8ce7cb71d86",
+    "033-frozen-marketing-metrics.sql": "40f22a0e1ce4f69cc4fc49736c408045e434a1c2152d22e9f8e12948569bad6b",
+    "034-analysis-reports.sql": "794dec95a21d73d27a9750a6240e4cf1c81fa8a64b863ce318ddc19f9f1abfbd",
+    "035-file-backed-campaign-imports.sql": "a3b3c67d7406b4a8c02fc0ec27787fbe82e3fbfc115e32b0635210d877d82a4c",
+    "036-auth-request-receipts.sql": "f9197686b7dfb5eaabaf8490d7b362d5a592a7f49d2168db22d22ea7cadeca8a",
+    "037-membership-invitation-lifecycle.sql": "f35e8f9493a4fe1372dee98c8bcdcaeba2e8e492db3930ba1aace65f37160bc1",
+    "038-admin-membership-operations.sql": "2b809e4a415d255308bc52bb75ef9b58b968cf727653c26ae7e80f064c62cf3f",
+    "039-admin-account-lifecycle.sql": "6fcc732540bb833dbb4422e7988cf47eda9ececf1ac6ea302507500837e1fda9",
+    "040-admin-directory-identity.sql": "b4fd2a61dd5f4b1ee7cdc649349b3b05f7bd3f6612b18bfb76fbff43aca5fd26",
+    "041-billing-settlement-sources.sql": "9d3d24d9896d77280bf52daa065da1e3443c754963352da972c9f981bcd5f9fc",
+    "042-billing-account-subjects.sql": "dfaf2f1147b948c76af09a916323f4c7e4b22e6187207072fd671261152dca7a",
+    "043-billing-operation-provenance.sql": "bc7713661637bdd2dd0a56dd99a21da9a76b4ab4f4c07780f2d3c9f445dd2f6d",
+    "044-billing-subject-immutability.sql": "561a4d375950839c8477420f7a3e15cb4822c9aa489aa955e301d0f842ca48fc",
+    "045-frozen-financial-commands.sql": "2b139fe6b5ee14204bb5a407b8b1f9683d9aa6d69475f06f9ee6c0edf1922b50",
+    "046-financial-preview-intent-repair.sql": "90c811b5462444e54989dfb94b55d3bc34b5be67f2a55f9ab7a54e8b5a47de7d",
+    "047-financial-approval-requests.sql": "53c991c42ea0eb1cfb3ed444b0c05b63bd29ca88b287c4d9e55be3f25a51baef",
+    "048-unified-admin-approvals.sql": "722deb46f84619c2409f8e3e5b7b2c42d95817238bd8651b0a3f25cf3be5850b",
+    "049-payment-evidence-and-posting.sql": "9c3138a50fd369f9db3ff1629a1c516885addaeed75b3a92bc19c6b8130dc91f",
+    "050-frozen-payment-record-commands.sql": "92d0a90082bb98e6981f34ee364fb9d65dcb5bf22ab766bc3215c6eeddd7f8d4",
+    "051-payment-preview-table-specific-fields.sql": "39abb7a011cd782f032375b2fc4a7a8530efa28edcacc3cf401788582bc7cd83",
+    "052-payment-historical-reference-guard.sql": "fc7b4a923fc99f99dd9dc069d1307bfb31765ea3ddf51b078566cc49dc168fe3",
+    "053-credit-repayment-refund-lineage.sql": "c2c4b5be925adf7a10a06d4df1b31efeab117e327ffa580d1402bda9a725ca97",
+    "054-source-bound-refund-facts.sql": "df262502e8c637cb74c856803a402669d8a5bdd1b15740e009e1ff9ecd285755",
+    "055-independent-cash-refund-outcomes.sql": "276ace6dd3471227257efb6edc8c11d7b7dd7f83fe1c8366c290a0e3f3a1570e",
+    "056-immutable-commercial-plan-versions.sql": "32fb81254ff8bc899fd5a8ebb93f80c8d48f529e50e4ee1c491a6942e33e9734",
+    "057-canonical-vip-grant-lifecycle.sql": "fac5657e3801363070ce37a8f0890209e51d48b82318609e01ace8b1c1ff6769",
+    "058-enterprise-seat-and-storage-quotas.sql": "642978a0aab9354ec1d809867217b08e7572eeb4c9b2cedae3f77c896bd3b933",
+    "059-private-upload-erasure-terminal-state.sql": "0d25178ab43ae2618c44b5f4386d8dbe1a7e4fe6e042835729598bbbdce99a4f",
+    "060-atomic-vip-credit-combinations.sql": "0bbef79efc4e95719567058980259b6189cd669c488afd554966b42ca5bd0a61",
+    "061-durable-financial-notifications.sql": "bbab6937ed58cdbb5b3d77695fdcbae6fe3365f22b15ec5eb50b27ee5211a960",
+    "062-controlled-support-scopes.sql": "2421c4b252c84ae2cb54d2b3a84681af66dcdf247fc0ea1099a23144f02baed7",
+    "063-frozen-task-capabilities.sql": "5797c160d276c1010412d69952855a8f9d5d23b934f8846307cb88753cf4832e",
+    "064-controlled-capability-releases.sql": "2cd5a38482fb8a5f0039d4e3aa68e83864e6ee0f2adbf32d377ced8ddbd9283b",
+    "065-explicit-agent-adoption.sql": "9082ee772a68f254db3f3e8b74719077e462e6a1ca5c03b6e3603b23e73f930f",
+    "066-durable-provider-requests.sql": "95cdb0856f34d8847a6cad22e7f3f99cbfef6fab8c95d8e2263422c1e53a0631",
+    "067-per-request-budget-enforcement.sql": "88b8e78f1359556d901d2890016c0c7585e9628f1c95498a878f6042b21d3b4f",
+    "068-provider-admin-control.sql": "3b28b1e5cf6a654c0edbdeaa61c12231da78ac97260461173e9b546ae2fef856",
+    "069-creative-production-matrices.sql": "12fb073255a0e4edb7c3442dd6b668879b217d0657e83d0d94ba771c4664587e",
+    "070-template-video-projects.sql": "7d35249bf9a6901501588bdbedc49d2ce9364619d3aaaad2dee62facb605679e",
+    "071-video-retention-boundaries.sql": "840274138d7d58addbb5ea8808d82108dd146cc3a2ce4966a262cb543e30b74b",
+    "072-marketing-connector-sync.sql": "00f0c8fbfbca72e7e41420324778f3804000b57d582b74604251c57f48aac51e",
+    "073-connector-analysis-source-lineage.sql": "06a4377e5b1aa87907605f8f37e63aeb0adb2e40ef79d080f07cc9d6b909154d",
+    "074-connector-public-asset-fence.sql": "6ae1d7febec47567530c0ac34a7a1dad550680699032ab41d57a390c15611b5b",
+    "075-legacy-connector-read-directory.sql": "aca3c83cddca12ba5c3fa8bb70dba0b5bd9a8678e7353cbc30a1c6786e7ebd78",
+    "076-connector-definer-policy-context.sql": "06029b9c718122c695c2aad68630807a592205efe8c68adb540224c03881a7c6",
+    "077-connector-dataset-source-fence.sql": "7c342397c1b39bd13d164b19fa349f7ca795ca1c5c783a07141fdfd257575d8a",
+    "078-scoped-seo-audits.sql": "c626081155315ac388e60894832f91f41f63758df58d88de5d645b9c52fe8227",
+    "079-seo-task-binding-qualification.sql": "674610fa80b422f78e174707ab9c09c3b7641cdccb4fa73ccd50a540ada1b914",
+    "080-seo-change-tasks.sql": "e0487c03c95fe8ccae019ef805ead8add0d0322d174e86c4fb2b536d29be1d96",
+    "081-report-source-retention.sql": "c47cfd8751b104d099054c015c91c7c494437037f53a112d528a91bc91483540",
+    "082-task-content-source-lineage.sql": "47f3c6fb105d4e5748b94e2978d6a11f942b0fa135cce9cf80949474331b926d",
+    "083-content-source-insert-visibility.sql": "21c40f8c0ab77e6cdb161267c7ab88a816b8ffb31c11ab2ac900db33498aeae1",
+    "084-content-source-row-identifiers.sql": "8fed11823fe05a3fadcc761160e16c12c97475b27cc4c451364db222b9bc787a",
+    "085-publication-input-snapshots.sql": "e6ce5a33d99880afbf2697b2bf8f82dc8b79f11d59573e8cb987aad0b9764a66",
+    "086-nested-publication-sources.sql": "f51edfe3e93346aacb9077d7167cb6461cb03fae0bad219d606606c3e05a2bcd",
+    "087-controlled-source-erasure.sql": "0876ba91b0aec5e7785aa3a79458dd7f3c48315351db6d74fabddd4802fc9441",
+    "088-paid-input-checkpoints.sql": "b6e42dbdbdfb31d1a7ffdaf99afa76945d72ce766a4731176ccf62dc5f06e9f2",
+    "089-paid-checkpoint-capacity.sql": "866147bcd208d1fd03f399ab15ea92166e4c6977d5bf6fc4150b59ac5e5105a9",
+    "090-completed-task-tool-receipts.sql": "17888ea4b8a0f5ff686c718eb5d7d1db50e83f9db79cf645d1c3985c5a15e954",
+    "091-paid-checkpoint-turn-boundaries.sql": "ea73594cd7518b0c755c47011caf1e185e11c9561a98cb4436a2fb0bf5d6cbe5",
+    "092-desktop-execution-ownership.sql": "88315be0bd2d3867bea4b5f564d34f276680b0d64a39084c1099cd954dde3e82",
+    "093-desktop-video-origin.sql": "82c2b8bb06bf592a2c0178fdcfe7181c051f5f22ef2b77b266c68fccfc195cf6",
+    "094-desktop-workflow-origin.sql": "e51857b5d5c5364ce109756ca2836e72c650dbd7c16071925cad49992f5e7bb4",
+    "095-business-delivery-quality.sql": "8cdeee82094bc902f61fac94a45f04eebda177e3f4549d8f7686a2b6a6a4808d",
+    "096-versioned-brand-production.sql": "2dfaa6f278f35096e16c053cf45a154589f69f447988fc06edf76fb41efceefd",
+    "097-generated-video-jobs.sql": "e96665789f79030cbc3d72c011e20dcdfeb074ffefcbb265f33246170dba3ff1",
+    "098-managed-video-capabilities.sql": "81abcee65703db5145a4f6117a98a9770de79c97137029d5a4ec51adbdd580ab",
+    "099-confirmed-creative-feedback.sql": "d060e1c4a454b9d6b02e52f62a52f30e5ea56df1f1bf9ae3802ad1e509ffede8",
+    "100-reproducible-geo-observations.sql": "5d91932dc9683b59ff3904ad678a9797a58929d566ba8f59dbcda75c1879da3b",
+    "101-internal-audio-production.sql": "f5ff86a0fff217ee7cf5beba9a82b40c592af47c0cc09ae4baa02eaeb9f3dec6"
+  },
+  "published_contracts": {
+    "docs/contracts/openapi.json": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+    "dev/copypaste-platform/catalog/openapi.json": "7ce0b4cb170cdebc07aa4ee8f8810f24dbf996d95128519da184d7b2eb62156b",
+    "docs/contracts/audio-production-openapi.json": "f176fb42819639d1c6e5340d2dabbace38d7233bcaa3cbf17f075d3315620443",
+    "dev/copypaste-platform/contracts/audio-production-openapi.json": "f176fb42819639d1c6e5340d2dabbace38d7233bcaa3cbf17f075d3315620443"
+  },
+  "files": [
+    {
+      "source": "dev/copypaste-platform/src/audio-production.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__src__audio-production.ts.snapshot",
+      "sha256": "a4da561de3fdf8cfb891376034959bf4eecfc962675177dfb3a8b329eb99715e",
+      "baseline_git_blob_sha256": "a4da561de3fdf8cfb891376034959bf4eecfc962675177dfb3a8b329eb99715e",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/src/audio-production-routes.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__src__audio-production-routes.ts.snapshot",
+      "sha256": "8ccca3b56d23f8872d47f8596fc4fb5d2c9df467006b3b9d9893facffe141f47",
+      "baseline_git_blob_sha256": "8ccca3b56d23f8872d47f8596fc4fb5d2c9df467006b3b9d9893facffe141f47",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/src/task-business-tools.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__src__task-business-tools.ts.snapshot",
+      "sha256": "45de3cff8dbc0d21c74d733a899ec49e6fd2eec8eb116acf4d14caab774c3ab6",
+      "baseline_git_blob_sha256": "45de3cff8dbc0d21c74d733a899ec49e6fd2eec8eb116acf4d14caab774c3ab6",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/tests/audio-production.test.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__tests__audio-production.test.ts.snapshot",
+      "sha256": "d8fdb46ac5a7048741079f2b4a4d2fbf19345bc38bfefcca0f0cde3154b78ea6",
+      "baseline_git_blob_sha256": "d8fdb46ac5a7048741079f2b4a4d2fbf19345bc38bfefcca0f0cde3154b78ea6",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/tests/audio-production-fixture.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__tests__audio-production-fixture.ts.snapshot",
+      "sha256": "36602519bb6af12ab1d844dbd14e27055e13440acf31af571db7d46ecd5fd653",
+      "baseline_git_blob_sha256": "36602519bb6af12ab1d844dbd14e27055e13440acf31af571db7d46ecd5fd653",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/tests/migrations.test.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__tests__migrations.test.ts.snapshot",
+      "sha256": "e37c36ee07d2b5d83d7e18b7074e98d8b105ae7b6e89636eaf299676ed509730",
+      "baseline_git_blob_sha256": "e37c36ee07d2b5d83d7e18b7074e98d8b105ae7b6e89636eaf299676ed509730",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/tests/skill-lifecycle.test.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__tests__skill-lifecycle.test.ts.snapshot",
+      "sha256": "f25569528ae90d24afc99d3a01ed154f0b0729cd4c05c377209e473c6e23ff1a",
+      "baseline_git_blob_sha256": "f25569528ae90d24afc99d3a01ed154f0b0729cd4c05c377209e473c6e23ff1a",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/tests/generated-video-jobs.test.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__tests__generated-video-jobs.test.ts.snapshot",
+      "sha256": "bc5c5a562fbf4551c79c09f9ab483628f89035ef27fc7341b670449b39600399",
+      "baseline_git_blob_sha256": "bc5c5a562fbf4551c79c09f9ab483628f89035ef27fc7341b670449b39600399",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/catalog/role-preset-catalog.json",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__catalog__role-preset-catalog.json.snapshot",
+      "sha256": "81f87b1e9b5d7ca1b027e0df34fd695e7f51830aadad42b46e923adaea9c9fa9",
+      "baseline_git_blob_sha256": "81f87b1e9b5d7ca1b027e0df34fd695e7f51830aadad42b46e923adaea9c9fa9",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/catalog/role-preset-history.json",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__catalog__role-preset-history.json.snapshot",
+      "sha256": "91dfbf2faea1ba757e9bbfe5e1080cc73de6461b71ed80998eda47d90abb913a",
+      "baseline_git_blob_sha256": "91dfbf2faea1ba757e9bbfe5e1080cc73de6461b71ed80998eda47d90abb913a",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/catalog/skill-packages.json",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__catalog__skill-packages.json.snapshot",
+      "sha256": "ca7af05b6b62c834f4948c2c7b0af5814a31693f31138681390537fb57a26799",
+      "baseline_git_blob_sha256": "ca7af05b6b62c834f4948c2c7b0af5814a31693f31138681390537fb57a26799",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/contracts/implemented-routes.json",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__contracts__implemented-routes.json.snapshot",
+      "sha256": "98ef46bfc7bf9c6b555dec0bd678fff8f2453ddc34e7ea6abb0d37c9c6e77bcd",
+      "baseline_git_blob_sha256": "98ef46bfc7bf9c6b555dec0bd678fff8f2453ddc34e7ea6abb0d37c9c6e77bcd",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-desktop/src/main.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/desktop__src__main.ts.snapshot",
+      "sha256": "1684b680ec94c88c22785902ae7c699d2c2c8ff7b3b785f18b3e7c2989e59235",
+      "baseline_git_blob_sha256": "1684b680ec94c88c22785902ae7c699d2c2c8ff7b3b785f18b3e7c2989e59235",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-desktop/renderer/src/audio-production.tsx",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/desktop__renderer__src__audio-production.tsx.snapshot",
+      "sha256": "659bcdac675d0b277f25f37e30fb37f780ae189f7bf5c1ee8be2a11cd1df1af3",
+      "baseline_git_blob_sha256": "659bcdac675d0b277f25f37e30fb37f780ae189f7bf5c1ee8be2a11cd1df1af3",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-desktop/renderer/src/audio-production.css",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/desktop__renderer__src__audio-production.css.snapshot",
+      "sha256": "3c33762e4602988c74a0ccedc09b7f5f3d8e88c27d0471ffb2993558cbc65d87",
+      "baseline_git_blob_sha256": "3c33762e4602988c74a0ccedc09b7f5f3d8e88c27d0471ffb2993558cbc65d87",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-desktop/renderer-source.json",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/desktop__renderer-source.json.snapshot",
+      "sha256": "02620b983bf0bc21376df721bddb0d2849c808936e57851d4f163ae534b97805",
+      "baseline_git_blob_sha256": "02620b983bf0bc21376df721bddb0d2849c808936e57851d4f163ae534b97805",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-web/src/audio-production.tsx",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/web__src__audio-production.tsx.snapshot",
+      "sha256": "659bcdac675d0b277f25f37e30fb37f780ae189f7bf5c1ee8be2a11cd1df1af3",
+      "baseline_git_blob_sha256": "659bcdac675d0b277f25f37e30fb37f780ae189f7bf5c1ee8be2a11cd1df1af3",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-web/src/audio-production.css",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/web__src__audio-production.css.snapshot",
+      "sha256": "3c33762e4602988c74a0ccedc09b7f5f3d8e88c27d0471ffb2993558cbc65d87",
+      "baseline_git_blob_sha256": "3c33762e4602988c74a0ccedc09b7f5f3d8e88c27d0471ffb2993558cbc65d87",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-extension/src/audio-production.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/extension__src__audio-production.ts.snapshot",
+      "sha256": "ca41c5bef5a48af5900b0a467dd6b91f1b7004009b1b2dc17186253f20e33860",
+      "baseline_git_blob_sha256": "ca41c5bef5a48af5900b0a467dd6b91f1b7004009b1b2dc17186253f20e33860",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-extension/public/audio-production.css",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/extension__public__audio-production.css.snapshot",
+      "sha256": "38912510829bdbf5a0ef9692cbc9c53cdb91ae0951d873a9eadc4ebcc4a4203f",
+      "baseline_git_blob_sha256": "38912510829bdbf5a0ef9692cbc9c53cdb91ae0951d873a9eadc4ebcc4a4203f",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/84-internal-audio-production.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__84-internal-audio-production.md.snapshot",
+      "sha256": "78017968bfec4b125fd388b5dcd3935545a0c6c03fe27bbdd215a773fc8c2f38",
+      "baseline_git_blob_sha256": "78017968bfec4b125fd388b5dcd3935545a0c6c03fe27bbdd215a773fc8c2f38",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/quality/requirements-alignment-progress.json",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__quality__requirements-alignment-progress.json.snapshot",
+      "sha256": "e2f932306838345028a27521db6cce285a39d40a5307cd5a43e5d6e3247f62db",
+      "baseline_git_blob_sha256": "e2f932306838345028a27521db6cce285a39d40a5307cd5a43e5d6e3247f62db",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-admin/src/provider-control.tsx",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/admin__src__provider-control.tsx.snapshot",
+      "sha256": "cd331b89eb345f9fbd737d6d4269234c1b9b2cc7fc5e7347ee50a47e9ab27f25",
+      "baseline_git_blob_sha256": "cd331b89eb345f9fbd737d6d4269234c1b9b2cc7fc5e7347ee50a47e9ab27f25",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-delivery/scripts/qa-audio-native.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__scripts__qa-audio-native.ts.snapshot",
+      "sha256": "2b219c8b1a31d5b4a1eab39e993e8d0d6fc16ef6fe0b20580034a2ea7ef7c476",
+      "baseline_git_blob_sha256": "2b219c8b1a31d5b4a1eab39e993e8d0d6fc16ef6fe0b20580034a2ea7ef7c476",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-delivery/scripts/qa-audio-production-ui.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__scripts__qa-audio-production-ui.ts.snapshot",
+      "sha256": "6a534b086079edb756f89054b41fcc24c5321105662c7135e0a7c9b0b51e9237",
+      "baseline_git_blob_sha256": "6a534b086079edb756f89054b41fcc24c5321105662c7135e0a7c9b0b51e9237",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-delivery/scripts/audio-sidepanel-ui.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__scripts__audio-sidepanel-ui.ts.snapshot",
+      "sha256": "8367a5504fa6564df0785ecde72823c921d70f3c5d8710223d6b24699e6029cb",
+      "baseline_git_blob_sha256": "8367a5504fa6564df0785ecde72823c921d70f3c5d8710223d6b24699e6029cb",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/src/audio-production-model.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__src__audio-production-model.ts.snapshot",
+      "sha256": "4e07c067f5ebf07333a900ed824f234805c5670b93c551f221b6399663f44299",
+      "baseline_git_blob_sha256": "4e07c067f5ebf07333a900ed824f234805c5670b93c551f221b6399663f44299",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/contracts/implemented-routes.json",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__contracts__implemented-routes.json.snapshot",
+      "sha256": "98ef46bfc7bf9c6b555dec0bd678fff8f2453ddc34e7ea6abb0d37c9c6e77bcd",
+      "baseline_git_blob_sha256": "98ef46bfc7bf9c6b555dec0bd678fff8f2453ddc34e7ea6abb0d37c9c6e77bcd",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-delivery/scripts/run-audio-production-checks.mjs",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__scripts__run-audio-production-checks.mjs.snapshot",
+      "sha256": "390c2015a25cc96c58a488564bce90f14d1e2ca4277b5895d986c51ed633af48",
+      "baseline_git_blob_sha256": "390c2015a25cc96c58a488564bce90f14d1e2ca4277b5895d986c51ed633af48",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/src/desktop-executions.ts",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__src__desktop-executions.ts.snapshot",
+      "sha256": "13aa1efe5694ce96df02f072f9aa967af4b0427ad82b9bfd592f3028f39d52cf",
+      "baseline_git_blob_sha256": "13aa1efe5694ce96df02f072f9aa967af4b0427ad82b9bfd592f3028f39d52cf",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-delivery/scripts/run-desktop-local-ui.mjs",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__scripts__run-desktop-local-ui.mjs.snapshot",
+      "sha256": "c25a6bc901d252d0676cd5782fdd161491a05a38a402c0d95f94e3ac82078342",
+      "baseline_git_blob_sha256": "4b386c888f9a81cf4c03d8a1d83ba775e823f529124c7c577b708cd51a3f5ac2",
+      "declared_crlf_normalization_only": true
+    },
+    {
+      "source": "dev/copypaste-delivery/scripts/run-audio-production-ui.mjs",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__scripts__run-audio-production-ui.mjs.snapshot",
+      "sha256": "6e03e596cc440d6ba091966cea1136fa9b4d4b7d266f419270ea42963ec5721f",
+      "baseline_git_blob_sha256": "6e03e596cc440d6ba091966cea1136fa9b4d4b7d266f419270ea42963ec5721f",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/README.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__README.md.snapshot",
+      "sha256": "d26e6609787ca786091ba0284256bee8f8ea8654ad49d24b228d82d80a04ae2c",
+      "baseline_git_blob_sha256": "d26e6609787ca786091ba0284256bee8f8ea8654ad49d24b228d82d80a04ae2c",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/README.en.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__README.en.md.snapshot",
+      "sha256": "ea3d2b151ce30e0c10d3186f1568ec22c5ed1aa20ab382c4e04a491dbe78f2e1",
+      "baseline_git_blob_sha256": "ea3d2b151ce30e0c10d3186f1568ec22c5ed1aa20ab382c4e04a491dbe78f2e1",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/00-document-map.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__00-document-map.md.snapshot",
+      "sha256": "28ab2fe51c7b5fb08baa7a26491a874eee9fa10bf16a2d82fd733736b662fc8a",
+      "baseline_git_blob_sha256": "28ab2fe51c7b5fb08baa7a26491a874eee9fa10bf16a2d82fd733736b662fc8a",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/DELIVERY.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__DELIVERY.md.snapshot",
+      "sha256": "9ea9fab9146861b8995b31b87829c97cd8ffd0d7034975f304affa7d7d4d5153",
+      "baseline_git_blob_sha256": "9ea9fab9146861b8995b31b87829c97cd8ffd0d7034975f304affa7d7d4d5153",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/product/01-prd.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__product__01-prd.md.snapshot",
+      "sha256": "bfbee661d91fa8b999fde56041a22dff1fb066b564948eedc324f3017f1d3f69",
+      "baseline_git_blob_sha256": "bfbee661d91fa8b999fde56041a22dff1fb066b564948eedc324f3017f1d3f69",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/product/02-user-journeys.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__product__02-user-journeys.md.snapshot",
+      "sha256": "4ab28be834dbfc01acc347bf41b0692ab79b0d630092a966f1962a79c5e63bde",
+      "baseline_git_blob_sha256": "4ab28be834dbfc01acc347bf41b0692ab79b0d630092a966f1962a79c5e63bde",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/product/03-information-architecture-and-interactions.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__product__03-information-architecture-and-interactions.md.snapshot",
+      "sha256": "0037150355799768b43ae5e55c0ec80d7db7cf2ab22d01125009555a9ded4d50",
+      "baseline_git_blob_sha256": "0037150355799768b43ae5e55c0ec80d7db7cf2ab22d01125009555a9ded4d50",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/product/08-admin-dashboard.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__product__08-admin-dashboard.md.snapshot",
+      "sha256": "4033b677b4ff5c8d21dc9dffefb3169ecba6f96cef950231fef00c963f9f1c55",
+      "baseline_git_blob_sha256": "4033b677b4ff5c8d21dc9dffefb3169ecba6f96cef950231fef00c963f9f1c55",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/requirements/03-client-execution-amendment.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__requirements__03-client-execution-amendment.md.snapshot",
+      "sha256": "e40d41fe801ada85d9cd1b6be57994c6348d6aed4094c47e4ff7529fbf88f45b",
+      "baseline_git_blob_sha256": "e40d41fe801ada85d9cd1b6be57994c6348d6aed4094c47e4ff7529fbf88f45b",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/requirements/04-desktop-layout-and-scroll.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__requirements__04-desktop-layout-and-scroll.md.snapshot",
+      "sha256": "8e5dd2373ef6c6230d8960664fde2a2d55e15ed38ede33b24705e5ee63156a71",
+      "baseline_git_blob_sha256": "8e5dd2373ef6c6230d8960664fde2a2d55e15ed38ede33b24705e5ee63156a71",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/01-architecture-and-stack.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__01-architecture-and-stack.md.snapshot",
+      "sha256": "f5751d696a3fcbee4f8917a0a9d62d5993ebb9a9136135ff4f3658a6093df4f0",
+      "baseline_git_blob_sha256": "f5751d696a3fcbee4f8917a0a9d62d5993ebb9a9136135ff4f3658a6093df4f0",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/06-media-and-data-pipelines.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__06-media-and-data-pipelines.md.snapshot",
+      "sha256": "ef3c33a11b7b56a49e94c9e3c8c4b2a0dda70f8b403bb4922f0e24d767a084e0",
+      "baseline_git_blob_sha256": "ef3c33a11b7b56a49e94c9e3c8c4b2a0dda70f8b403bb4922f0e24d767a084e0",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/08-development-and-delivery.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__08-development-and-delivery.md.snapshot",
+      "sha256": "9a9428267c90fdb55268329b8b86ab8cc6057e5ca8ee11ad1870f9f7d541b92d",
+      "baseline_git_blob_sha256": "9a9428267c90fdb55268329b8b86ab8cc6057e5ca8ee11ad1870f9f7d541b92d",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/11-admin-control-plane.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__11-admin-control-plane.md.snapshot",
+      "sha256": "7027a8bef7ff14524fb5f5a814fb908ad6942990a7372fdffd26d7f301d894c8",
+      "baseline_git_blob_sha256": "7027a8bef7ff14524fb5f5a814fb908ad6942990a7372fdffd26d7f301d894c8",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/12-implementation-and-repositories.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__12-implementation-and-repositories.md.snapshot",
+      "sha256": "62eb7f14d2b462de4e7ee67b7868e098da0d66f20586c965b1e89adaa67afd5f",
+      "baseline_git_blob_sha256": "62eb7f14d2b462de4e7ee67b7868e098da0d66f20586c965b1e89adaa67afd5f",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/quality/02-requirements-traceability.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__quality__02-requirements-traceability.md.snapshot",
+      "sha256": "f1cd9740ab8a6c53e98a2dd08f67e4d0915c795bc79a7cb16c8c9845127fc1b9",
+      "baseline_git_blob_sha256": "f1cd9740ab8a6c53e98a2dd08f67e4d0915c795bc79a7cb16c8c9845127fc1b9",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/quality/04-implementation-acceptance.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__quality__04-implementation-acceptance.md.snapshot",
+      "sha256": "d3e71748e0e8882944232caf9d6c551efcf2e5464eedd9f6f715b7a52a254bd1",
+      "baseline_git_blob_sha256": "d3e71748e0e8882944232caf9d6c551efcf2e5464eedd9f6f715b7a52a254bd1",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/quality/09-implementation-alignment-audit.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__quality__09-implementation-alignment-audit.md.snapshot",
+      "sha256": "c09145a607aa1c1ca546386674668ebe573c8faf4eaef154d6c3dac36ea52fc0",
+      "baseline_git_blob_sha256": "c09145a607aa1c1ca546386674668ebe573c8faf4eaef154d6c3dac36ea52fc0",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/governance/04-git-branches-and-publication.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__governance__04-git-branches-and-publication.md.snapshot",
+      "sha256": "2402270d0303d376f53c58953490e8e09cc0a4d4de91159e9e17df0dfbe70db7",
+      "baseline_git_blob_sha256": "2402270d0303d376f53c58953490e8e09cc0a4d4de91159e9e17df0dfbe70db7",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/README.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__README.md.snapshot",
+      "sha256": "681f77cd48efe6cd8328f063d13e5f615c12653a23a8f9e35aba9d0447c56191",
+      "baseline_git_blob_sha256": "681f77cd48efe6cd8328f063d13e5f615c12653a23a8f9e35aba9d0447c56191",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-platform/README.en.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/platform__README.en.md.snapshot",
+      "sha256": "81542d98ca6df302c65c59dcbc7f6f6a170070fc6a08bf10e591268860f89487",
+      "baseline_git_blob_sha256": "81542d98ca6df302c65c59dcbc7f6f6a170070fc6a08bf10e591268860f89487",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-web/README.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/web__README.md.snapshot",
+      "sha256": "a588e1e7914bc75487aa57069831d8cb377ce000aa867c5f7dce708e3404dfaa",
+      "baseline_git_blob_sha256": "a588e1e7914bc75487aa57069831d8cb377ce000aa867c5f7dce708e3404dfaa",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-web/README.en.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/web__README.en.md.snapshot",
+      "sha256": "fd929bcd88ef01189ddb16e314dc837e0ef324febc72e763896d2e4dd4968c79",
+      "baseline_git_blob_sha256": "fd929bcd88ef01189ddb16e314dc837e0ef324febc72e763896d2e4dd4968c79",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-admin/README.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/admin__README.md.snapshot",
+      "sha256": "151fdeaa4915b7ebf6c9a59ee808309354d532c73a9ed3688af6c95cf8aba158",
+      "baseline_git_blob_sha256": "151fdeaa4915b7ebf6c9a59ee808309354d532c73a9ed3688af6c95cf8aba158",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-admin/README.en.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/admin__README.en.md.snapshot",
+      "sha256": "2e63d275eb9681a468532242840e928db49e113de46dd6fa03a8a510df4ed50a",
+      "baseline_git_blob_sha256": "2e63d275eb9681a468532242840e928db49e113de46dd6fa03a8a510df4ed50a",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-desktop/README.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/desktop__README.md.snapshot",
+      "sha256": "08cb1cefbf0cad352604f5fe11d650ed477973fafa8e5636d39ef560cdd22e3e",
+      "baseline_git_blob_sha256": "08cb1cefbf0cad352604f5fe11d650ed477973fafa8e5636d39ef560cdd22e3e",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-desktop/README.en.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/desktop__README.en.md.snapshot",
+      "sha256": "9cfcc43ea2d13731a6fd44bf8687a599e7574ef9f911568727e2e2bd08a07597",
+      "baseline_git_blob_sha256": "9cfcc43ea2d13731a6fd44bf8687a599e7574ef9f911568727e2e2bd08a07597",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-extension/README.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/extension__README.md.snapshot",
+      "sha256": "925b64eb8f148c9ccb78c0fab79d3ea399c10f2cc8c276fd2eb79feea4461561",
+      "baseline_git_blob_sha256": "925b64eb8f148c9ccb78c0fab79d3ea399c10f2cc8c276fd2eb79feea4461561",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-extension/README.en.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/extension__README.en.md.snapshot",
+      "sha256": "07b2ec5adb0428e75418e067b5624862ab1022e4b4ddbcaf977f25029b46155b",
+      "baseline_git_blob_sha256": "07b2ec5adb0428e75418e067b5624862ab1022e4b4ddbcaf977f25029b46155b",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-delivery/README.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__README.md.snapshot",
+      "sha256": "ba65bbaf277e70bef41d4c600588f2120068504216c9729801b5333f695a5ccb",
+      "baseline_git_blob_sha256": "ba65bbaf277e70bef41d4c600588f2120068504216c9729801b5333f695a5ccb",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "dev/copypaste-delivery/README.en.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/delivery__README.en.md.snapshot",
+      "sha256": "a67fa560ea9762752ade66a35738d34d3cd49c1a71e9813b3f4e218f2556af58",
+      "baseline_git_blob_sha256": "a67fa560ea9762752ade66a35738d34d3cd49c1a71e9813b3f4e218f2556af58",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/product/06-role-templates-and-skill-presets.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__product__06-role-templates-and-skill-presets.md.snapshot",
+      "sha256": "b7fe18ccb6512fb61050daafb0d5b46cafd9949d3970612c58243b280aae99c6",
+      "baseline_git_blob_sha256": "b7fe18ccb6512fb61050daafb0d5b46cafd9949d3970612c58243b280aae99c6",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/19-project-skill-lifecycle.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__19-project-skill-lifecycle.md.snapshot",
+      "sha256": "8b50d83243b3b99cfccc167355c0d70524279744718d74769f523a1a830eccea",
+      "baseline_git_blob_sha256": "8b50d83243b3b99cfccc167355c0d70524279744718d74769f523a1a830eccea",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/technical/25-role-template-registry-and-runtime-binding.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__technical__25-role-template-registry-and-runtime-binding.md.snapshot",
+      "sha256": "f111bcc0b81ce88030224a3a4370cafadd504a03ca31373bfb21530eed52a14a",
+      "baseline_git_blob_sha256": "f111bcc0b81ce88030224a3a4370cafadd504a03ca31373bfb21530eed52a14a",
+      "declared_crlf_normalization_only": false
+    },
+    {
+      "source": "docs/modules/00-catalog.md",
+      "archive": "docs/quality/history/stage85-before-audio-controls/files/docs__docs__modules__00-catalog.md.snapshot",
+      "sha256": "576071bf12f778677b1a81e1459f4b496ca2b3012f487aa9b7ca5656fcb77a8c",
+      "baseline_git_blob_sha256": "576071bf12f778677b1a81e1459f4b496ca2b3012f487aa9b7ca5656fcb77a8c",
+      "declared_crlf_normalization_only": false
+    }
+  ],
+  "scope": "Published baseline bytes. Flat .snapshot files are inert, including any captured Git attributes. Old evidence is never rewritten.",
+  "verifier_sha256": "11f584f9ce3d1f7cea356c91daf40517365ed7d94238f057016419266005e1e7"
+}
