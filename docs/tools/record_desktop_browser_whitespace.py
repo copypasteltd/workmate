@@ -21,9 +21,9 @@ for report in (DEV/'copypaste-delivery/evidence').glob('desktop-browser-*.json')
     data=json.loads(report.read_text(encoding='utf-8'))
     for name,value in data.get('source_files',{}).items():
         archives[report.with_suffix('').relative_to(DEV/'copypaste-delivery').as_posix()+'-sources/'+name]=value
-for report in (DEV/'copypaste-delivery/evidence').glob('local-codex-native-22.json'):
+for report in (DEV/'copypaste-delivery/evidence').glob('local-codex-native-*.json'):
     data=json.loads(report.read_text(encoding='utf-8'))
-    archives.update({'evidence/local-codex-native-22-sources/'+name:value for name,value in data['source_files'].items()})
+    archives.update({'evidence/'+report.stem+'-sources/'+name:value for name,value in data.get('source_files',{}).items()})
 exceptions,raw_files=[],{}
 for component,repo in repositories.items():
     live=git(repo,'diff','--cached','--check','--','.',':(exclude)evidence/**',':(exclude)docs/quality/history/**')
@@ -31,7 +31,12 @@ for component,repo in repositories.items():
     raw=git(repo,'diff','--cached','--check')
     assert raw.returncode in [0,2] and not raw.stderr
     last=None
-    for line in raw.stdout.decode('utf-8').splitlines():
+    # Raw Windows logs can contain CRCRLF. Split Git diagnostics on LF only;
+    # str.splitlines() would turn a source CR into a fictitious empty record.
+    for line in raw.stdout.decode('utf-8').removesuffix('\n').split('\n'):
+        line=line.removesuffix('\r')
+        if not line and not raw.stdout:
+            continue
         match=re.fullmatch(r'(.+):(\d+): (trailing whitespace|new blank line at EOF)\.',line)
         if not match:
             assert last and line.startswith('+'),component

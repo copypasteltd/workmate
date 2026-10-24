@@ -1090,3 +1090,9 @@ G10 验证 [完整 Admin Dashboard](../product/08-admin-dashboard.md) 与 [控�
 原 TC 编号、步骤和完整验收条件保持。REQ-013/TC-013 已取得固定版本/字体/事实的局部链路证据，仍为 `not_completed`；874 项代码测试不替代 102 项完整产品验收。实际 Web、打包 Desktop、Admin、原生 Side Panel 及精确源码/媒体边界见 [新检查点](brand-production-checkpoint.json)。字体使用记录仅为客户声明，其他格式、全本机角色、真实客户任务及 G01–G10 另行验证。
 
 Original TC definitions are preserved. This bounded brand-production chain does not complete TC-013 or all product acceptance; real customers, complete formats, every local role, and production gates remain unproven.
+
+## 阶段 80 局部证据 / Bounded generated-video evidence
+
+原 TC 编号、步骤、完整条件均保持。REQ-019 的提交/查询/取消/对账、真实 MP4 与各端界面已部分验证；TC-019 仍为 `not_completed`。912 项代码测试不代替原 102 项产品验收。真实供应商、全格式/角色、客户成果、TC-056 及 G01–G10 另行证明。见 [精确检查点](generated-video-checkpoint.json)。
+
+The original acceptance definitions remain; explicit model/video/customer fixtures do not qualify a live provider or complete TC-019.

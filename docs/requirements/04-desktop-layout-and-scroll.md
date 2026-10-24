@@ -1,6 +1,8 @@
 # DESK-UI01：Desktop 布局与滚动呈现
 
-**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
+**阶段 80 当前增量：** 生成式视频原作业、共享预算与未知费用保留、取消/对账、真实 MP4 和三端预览；Desktop 设置紧凑、无边框、无可见纵横滚动条且保留滚动/键盘与真实进度。平台 912、专项 60、客户端 69、打包 32、Web/Admin 5、侧栏 9、本机监督进程 17 项分别通过，模型与媒体内容为明确夹具。SQL097 新增，SQL001–096 与各原 OpenAPI 字节保留。原 102 REQ/102 TC 为 83 部分/19 未证明/0 完整验收，G01–G10 保留。见 [方案和证据](../technical/80-generated-video-jobs.md)。
+
+**阶段 79 历史基线：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
 
 **阶段 78 历史基线：** 补齐固定交付版本的接受/修改/弃用、独立人工投入、实际读取复用及带范围的后台品质汇总，修正控制端来源检查。Desktop 保留本机 Codex、无边框、真实进度和隐藏滚动条；紧凑窗口实际聚焦输入、输入区及回执可用。平台 861、客户端 68、打包 26、Web/Admin 4、原生侧栏 8 项分别验证。新增 SQL095 和六项接口（434 总计），SQL001–094 与原规范不变。102 REQ/102 TC、81/21/0、G01–G10 及 TC-056 真实业务验收边界保留。见 [方案与当前证据](../technical/78-business-delivery-quality.md)。
 
@@ -26,3 +28,7 @@
 ## English
 
 The user withdrew the previous progress-bar constraint. Existing truthful upload, task, workflow and video progress feedback remains. Desktop must match the CopyPaste visual identity, show no vertical scrollbar rails in its sidebars or work areas, and show no horizontal scrollbar rails elsewhere. Content must wrap or reflow rather than become clipped or unreachable. Wheel, touchpad, keyboard navigation, focus reveal, last-item access and actual actions remain functional. Verify real packaged windows at 800×600, 1280×800 and 1440×980 in English/Traditional Chinese and light/dark themes. The owned local browser hides scrollbar presentation without rewriting third-party page layouts. This supplement does not change the original acceptance inventory or claim full product acceptance.
+
+## 当前实现与画面 / Current implementation evidence
+
+影片参数默认收起，展开在输入区上方，按可用高度限制面板并保持真实滚动；窄窗仍可访问需求、预算、开始/停止与成果。任务和影片进度继续反映真实服务状态。布局补充同时要求隐藏滚动条与实际操作可达，二者在最终打包客户端分别检查。见[实际截图与交互复核](../quality/generated-video-visual-review.md)和[精确版本检查点](../quality/generated-video-checkpoint.json)。

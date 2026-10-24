@@ -27,12 +27,14 @@ CHANNEL=enum('generation','input_count')
 DECIMAL={'type':'string','pattern':'^(0|[1-9][0-9]{0,39})$'}
 
 def build():
-    limits={k:{'type':'integer','minimum':1,'maximum':1000} for k in ['global_slots','tenant_slots','actor_slots','text_slots','image_slots','verification_slots']}
-    limits.update({k:{'type':'integer','minimum':1,'maximum':100000} for k in ['global_rpm','tenant_rpm','actor_rpm','text_rpm','image_rpm','verification_rpm']})
+    limits={k:{'type':'integer','minimum':1,'maximum':1000} for k in ['global_slots','tenant_slots','actor_slots','text_slots','image_slots','video_slots','verification_slots']}
+    limits.update({k:{'type':'integer','minimum':1,'maximum':100000} for k in ['global_rpm','tenant_rpm','actor_rpm','text_rpm','image_rpm','video_rpm','verification_rpm']})
+    limits['video_slots']['default']=2
+    limits['video_rpm']['default']=60
     limits['preparation_seconds']={'type':'integer','minimum':1,'maximum':300}
     budget=obj({'count_verified':BOOL,'count_price_micros':nullable(SAFE),'verification_run_micros':POS,'verification_daily_micros':POS,'counting_daily_micros':POS})
     contract=obj({'reference':string(3,300),'terms':string(10,16000),'service':enum('responses.input_tokens'),'fee_micros':SAFE,'effective_at':TIME})
-    definition=obj({'limits':obj(limits),'budget':budget,'count_contract':nullable(contract)})
+    definition=obj({'limits':obj(limits,[k for k in limits if k not in ['video_slots','video_rpm']]),'budget':budget,'count_contract':nullable(contract)})
     definition['description']='Verified counting additionally requires matching explicit fee/contract and an effective contract bound to the current company gateway. Publication never qualifies a live model.'
     policy=obj({'action':enum('ai.policy.publish'),'draft_id':UUID,'expected_revision':{**SAFE},'reason':REASON})
     request=obj({'action':enum('ai.cost.reconcile','ai.capacity.release'),'channel':CHANNEL,'request_id':UUID,'evidence_id':UUID,'reason':REASON})
@@ -43,7 +45,7 @@ def build():
         'terminated':{'const':True},'outcome':enum('completed','failed','cancelled','not_executed'),'currency':enum('HKD'),
         'billed_micros':{'type':'string','pattern':'^(0|[1-9][0-9]{0,33})$'},'usage':usage})
     evidence['description']='Human-submitted immutable source statement, not an authenticated gateway callback. Bound to the original unknown request, mode, hash, operation and dispatch time. Confirmation always needs an independent reviewer.'
-    schemas={'ProviderLimits':obj(limits),'ProviderBudgetDefinition':budget,'ProviderPolicyDefinition':definition,
+    schemas={'ProviderLimits':obj(limits,[k for k in limits if k not in ['video_slots','video_rpm']]),'ProviderBudgetDefinition':budget,'ProviderPolicyDefinition':definition,
         'ProviderPolicyDraft':obj({'definition':ref('ProviderPolicyDefinition'),'reason':REASON}),
         'ProviderPolicyPublication':policy,'ProviderRequestCommand':request,'ProviderTaskSettlement':task,
         'ProviderCommand':{'oneOf':[ref('ProviderPolicyPublication'),ref('ProviderRequestCommand'),ref('ProviderTaskSettlement')]},
@@ -79,8 +81,11 @@ def build():
     policy_before=obj({'scope':scope,'draft':obj(draft_props),'current':ref('ProviderCurrentPolicy'),'definition':ref('ProviderPolicyDefinition')})
     task_before=obj({'scope':scope,'task':obj({'id':UUID,'version':POS,'status':enum('reconciling'),'created_by':UUID}),
         'reservation':obj({'id':nullable(UUID),'status':enum('reserved','reconciling'),'amount_micros':DECIMAL}),
-        'receipt':receipt,'violations':array(violation),'facts':array(obj({'id':UUID,'channel':CHANNEL,
-            'state':request_props['state'],'cost_state':cost['properties']['state'],'numerator':nullable(DECIMAL),'cost_confirmation_id':nullable(UUID)})),
+        'receipt':receipt,'violations':array(violation),'facts':array({'oneOf':[obj({'id':UUID,'channel':CHANNEL,
+            'state':request_props['state'],'cost_state':cost['properties']['state'],'numerator':nullable(DECIMAL),'cost_confirmation_id':nullable(UUID)}),
+            obj({'id':UUID,'channel':enum('video'),'state':enum('prepared','submitting','queued','in_progress','completed','failed','cancelled','unknown'),
+                'cost_state':enum('known','unknown'),'numerator':nullable(DECIMAL),'operation_id':UUID,'capability_version_id':UUID,
+                'specification_hash':HASH,'rate_micros':DECIMAL,'billable_seconds':nullable(DECIMAL)})]}),
         'receipt_hash':HASH})
     schemas.update({
         'ProviderCurrentPolicy':obj({'data_mode':MODE,'gateway_fingerprint':HASH,'revision':SAFE,'publication_id':nullable(UUID),

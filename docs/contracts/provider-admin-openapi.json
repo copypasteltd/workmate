@@ -785,6 +785,12 @@
             "minimum": 1,
             "maximum": 1000
           },
+          "video_slots": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "default": 2
+          },
           "verification_slots": {
             "type": "integer",
             "minimum": 1,
@@ -814,6 +820,12 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 100000
+          },
+          "video_rpm": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000,
+            "default": 60
           },
           "verification_rpm": {
             "type": "integer",
@@ -917,6 +929,12 @@
                 "minimum": 1,
                 "maximum": 1000
               },
+              "video_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 2
+              },
               "verification_slots": {
                 "type": "integer",
                 "minimum": 1,
@@ -946,6 +964,12 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 100000
+              },
+              "video_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000,
+                "default": 60
               },
               "verification_rpm": {
                 "type": "integer",
@@ -1487,6 +1511,12 @@
                 "minimum": 1,
                 "maximum": 1000
               },
+              "video_slots": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 2
+              },
               "verification_slots": {
                 "type": "integer",
                 "minimum": 1,
@@ -1516,6 +1546,12 @@
                 "type": "integer",
                 "minimum": 1,
                 "maximum": 100000
+              },
+              "video_rpm": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000,
+                "default": 60
               },
               "verification_rpm": {
                 "type": "integer",
@@ -1557,12 +1593,14 @@
               "actor_slots",
               "text_slots",
               "image_slots",
+              "video_slots",
               "verification_slots",
               "global_rpm",
               "tenant_rpm",
               "actor_rpm",
               "text_rpm",
               "image_rpm",
+              "video_rpm",
               "verification_rpm",
               "preparation_seconds",
               "created_by",
@@ -3185,70 +3223,160 @@
           "facts": {
             "type": "array",
             "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                "channel": {
-                  "type": "string",
-                  "enum": [
-                    "generation",
-                    "input_count"
-                  ]
-                },
-                "state": {
-                  "type": "string",
-                  "enum": [
-                    "prepared",
-                    "dispatched",
-                    "completed",
-                    "unknown",
-                    "cancelled",
-                    "denied"
-                  ]
-                },
-                "cost_state": {
-                  "type": "string",
-                  "enum": [
-                    "known",
-                    "unknown",
-                    "manually_confirmed"
-                  ]
-                },
-                "numerator": {
-                  "anyOf": [
-                    {
-                      "type": "string",
-                      "pattern": "^(0|[1-9][0-9]{0,39})$"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "cost_confirmation_id": {
-                  "anyOf": [
-                    {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
                       "type": "string",
                       "format": "uuid"
                     },
-                    {
-                      "type": "null"
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "generation",
+                        "input_count"
+                      ]
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "prepared",
+                        "dispatched",
+                        "completed",
+                        "unknown",
+                        "cancelled",
+                        "denied"
+                      ]
+                    },
+                    "cost_state": {
+                      "type": "string",
+                      "enum": [
+                        "known",
+                        "unknown",
+                        "manually_confirmed"
+                      ]
+                    },
+                    "numerator": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,39})$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cost_confirmation_id": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
                     }
-                  ]
+                  },
+                  "required": [
+                    "id",
+                    "channel",
+                    "state",
+                    "cost_state",
+                    "numerator",
+                    "cost_confirmation_id"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "video"
+                      ]
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "prepared",
+                        "submitting",
+                        "queued",
+                        "in_progress",
+                        "completed",
+                        "failed",
+                        "cancelled",
+                        "unknown"
+                      ]
+                    },
+                    "cost_state": {
+                      "type": "string",
+                      "enum": [
+                        "known",
+                        "unknown"
+                      ]
+                    },
+                    "numerator": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,39})$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "operation_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "capability_version_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "specification_hash": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "rate_micros": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9][0-9]{0,39})$"
+                    },
+                    "billable_seconds": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "pattern": "^(0|[1-9][0-9]{0,39})$"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "channel",
+                    "state",
+                    "cost_state",
+                    "numerator",
+                    "operation_id",
+                    "capability_version_id",
+                    "specification_hash",
+                    "rate_micros",
+                    "billable_seconds"
+                  ],
+                  "additionalProperties": false
                 }
-              },
-              "required": [
-                "id",
-                "channel",
-                "state",
-                "cost_state",
-                "numerator",
-                "cost_confirmation_id"
-              ],
-              "additionalProperties": false
+              ]
             }
           },
           "receipt_hash": {

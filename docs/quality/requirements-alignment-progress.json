@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-23T16:52:08.548678+00:00",
+  "at": "2026-10-24T00:15:25.612398+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -972,8 +972,8 @@
     "original_acceptance_baseline_preserved": true
   },
   "summary": {
-    "partial_verified": 82,
-    "completion_not_proven": 20
+    "partial_verified": 83,
+    "completion_not_proven": 19
   },
   "fully_accepted_requirements": 0,
   "qualified_live_roles": 0,
@@ -12808,19 +12808,39 @@
       "requirement": "生成式视频：经内部服务提交、查询、取消或对账异步作业，保存真实媒体、费用和失败原因。",
       "acceptance_case": "TC-019",
       "acceptance_conditions": "供应商 operation 映射稳定；重复事件不重复记账；未知结果进入对账；最终保存真实媒体和状态。",
-      "assessment": "completion_not_proven",
-      "finding": "缺少生成式视频异步作业的完整提交/查询/取消/对账链路。",
+      "assessment": "partial_verified",
+      "finding": "已验证公司生成式视频原 operation 的持久提交/查询/取消/认证观察、未知费用保留、共享预算、真实 MP4 及费用结算，以及 Web/Admin/本机 Desktop/原生侧栏实际界面。模型与视频内容为明确夹具，完整真实业务验收未证明。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/assets.ts",
         "dev/copypaste-platform/src/storage.ts",
         "dev/copypaste-platform/src/render.ts",
-        "dev/copypaste-platform/src/admin-content.ts"
+        "dev/copypaste-platform/src/admin-content.ts",
+        "dev/copypaste-platform/src/video-jobs.ts",
+        "dev/copypaste-platform/src/video-job-routes.ts",
+        "dev/copypaste-platform/src/video-job-media.ts",
+        "dev/copypaste-platform/migrations/097-generated-video-jobs.sql",
+        "dev/copypaste-platform/tests/generated-video-jobs.test.ts",
+        "dev/copypaste-web/src/generated-videos.tsx",
+        "dev/copypaste-extension/src/generated-videos.ts"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        "generated_video_repair"
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少生成式视频异步作业的完整提交/查询/取消/对账链路。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "缺少生成式视频异步作业的完整提交/查询/取消/对账链路。",
+      "verified_repairs": [
+        {
+          "cluster": "company_generated_video_jobs",
+          "verified_subflow": "Durable company-video-jobs-v1 operation, shared task budget, authenticated observations, cancellation/reconciliation, actual MP4 validation and Web/Admin/native Desktop/native Side Panel review. Model, media content and customer data are explicit fixtures.",
+          "evidence": [
+            "generated_video_repair"
+          ],
+          "implementation_docs": [
+            "technical/80-generated-video-jobs.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "真实公司视频供应商能力验证、完整管理后台视频能力受控发布、全部影片规格/参考素材及角色端到端接入、真实客户成果接受与完整 TC-019 仍未证明；现有证据使用明确模拟模型/视频内容。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -39245,9 +39265,9 @@
     "verifier_sha256": "7fe1ba7d85d374e8c19a5b751e50a862b25c617c3ede86627a937ea3c75a7ad5"
   },
   "current_source_qualification": {
-    "stage": 79,
-    "checkpoint": "brand-production-checkpoint.json",
-    "note": "Fixed brand production subflow with actual native Desktop/Web forms and explicit model/customer fixtures. Checkpoint identifies the reviewed later difference in one unrelated extension harness, fresh current extension execution and full platform23. Original complete acceptance remains unproven."
+    "stage": 80,
+    "checkpoint": "generated-video-checkpoint.json",
+    "note": "Durable company-video-jobs-v1 operation, shared task budget, authenticated observations, cancellation/reconciliation, actual MP4 validation and Web/Admin/native Desktop/native Side Panel review. Model, media content and customer data are explicit fixtures."
   },
   "extension_conversation_repair": {
     "at": "2026-10-22T14:06:48.456750+00:00",
@@ -39416,6 +39436,18 @@
     "brand_web_checks": 4,
     "web_admin_checks": 4,
     "extension_checks": 8,
+    "original_full_acceptance": "not_proven"
+  },
+  "generated_video_repair": {
+    "stage": 80,
+    "checkpoint": "generated-video-checkpoint.json",
+    "status": "verified_generated_video_subflow",
+    "platform_tests": 912,
+    "focused_tests": 60,
+    "client_tests": 69,
+    "packaged_ui_checks": 32,
+    "web_admin_checks": 5,
+    "extension_checks": 9,
     "original_full_acceptance": "not_proven"
   }
 }

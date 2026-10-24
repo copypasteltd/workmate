@@ -1,6 +1,8 @@
 # CopyPaste 0.5.0 代码交付入口
 
-**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](technical/79-versioned-brand-production.md)。
+**阶段 80 当前增量：** 生成式视频原作业、共享预算与未知费用保留、取消/对账、真实 MP4 和三端预览；Desktop 设置紧凑、无边框、无可见纵横滚动条且保留滚动/键盘与真实进度。平台 912、专项 60、客户端 69、打包 32、Web/Admin 5、侧栏 9、本机监督进程 17 项分别通过，模型与媒体内容为明确夹具。SQL097 新增，SQL001–096 与各原 OpenAPI 字节保留。原 102 REQ/102 TC 为 83 部分/19 未证明/0 完整验收，G01–G10 保留。见 [方案和证据](technical/80-generated-video-jobs.md)。
+
+**阶段 79 历史基线：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](technical/79-versioned-brand-production.md)。
 
 **阶段 78 历史基线：** 补齐固定交付版本的接受/修改/弃用、独立人工投入、实际读取复用及带范围的后台品质汇总，修正控制端来源检查。Desktop 保留本机 Codex、无边框、真实进度和隐藏滚动条；紧凑窗口实际聚焦输入、输入区及回执可用。平台 861、客户端 68、打包 26、Web/Admin 4、原生侧栏 8 项分别验证。新增 SQL095 和六项接口（434 总计），SQL001–094 与原规范不变。102 REQ/102 TC、81/21/0、G01–G10 及 TC-056 真实业务验收边界保留。见 [方案与当前证据](technical/78-business-delivery-quality.md)。
 
@@ -149,3 +151,7 @@ Windows 安装版与便携版位于 `dev/copypaste-desktop/release/`，集中副
 Codex SHA-256: `00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c`。
 
 Actual unsigned candidate, 30 packaged checks and 68 unit cases; authenticated company services are required. This local candidate and explicit model/business fixtures do not establish signed installation or production qualification. See the [exact checkpoint](quality/brand-production-checkpoint.json) and [current changes](changes/2026-10-24-versioned-brand-production.md).
+
+## Stage80 当前本机候选 / Current local candidate
+
+Delivery 相对路径 `../copypaste-desktop/.data/local-candidates/5a22cbdc-522c-4047-9548-6f6da7b8aac7/win-unpacked/CopyPaste.exe`，实际执行 32 项打包检查。`app.asar` SHA-256 `c5ab98eaedb3551361b8b884c3d57a9bfea9dd2957101588db8dff9cc6f0a979`。候选包本地忽略，不代替签名安装验收；按 Desktop README 配置公司接口和固定 Codex 后重建。先应用 SQL097。

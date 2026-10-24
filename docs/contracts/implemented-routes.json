@@ -1,4 +1,5 @@
 {
+  "generated_at": "2026-10-23T19:45:49.326Z",
   "contract": "actual_fastify_route_inventory",
   "not_full_design_openapi": true,
   "routes": [
@@ -101,6 +102,14 @@
     {
       "method": "GET",
       "path": "/v1/admin/ai/tasks/:task_id/settlement"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/video-jobs"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/ai/video-jobs/:job/recheck"
     },
     {
       "method": "GET",
@@ -508,6 +517,10 @@
     },
     {
       "method": "GET",
+      "path": "/v1/admin/quality"
+    },
+    {
+      "method": "GET",
       "path": "/v1/admin/support"
     },
     {
@@ -856,6 +869,10 @@
     },
     {
       "method": "POST",
+      "path": "/v1/internal/video-operations/:operation/observations"
+    },
+    {
+      "method": "POST",
       "path": "/v1/invites/accept"
     },
     {
@@ -1061,6 +1078,10 @@
     {
       "method": "POST",
       "path": "/v1/tasks/:task_id/inputs"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tasks/:task_id/reviews"
     },
     {
       "method": "POST",
@@ -1287,6 +1308,22 @@
       "path": "/v1/tenants/:tenant/projects/:project/brand"
     },
     {
+      "method": "PUT",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/:id/versions"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/:id/versions/:version/check"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/brand/definitions"
+    },
+    {
       "method": "DELETE",
       "path": "/v1/tenants/:tenant/projects/:project/cloud-nodes/:node_id"
     },
@@ -1460,6 +1497,22 @@
     },
     {
       "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs/:job"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs/:job/cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs/:job/preview"
+    },
+    {
+      "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/memories"
     },
     {
@@ -1473,6 +1526,10 @@
     {
       "method": "PATCH",
       "path": "/v1/tenants/:tenant/projects/:project/memories/:id"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/quality"
     },
     {
       "method": "POST",
@@ -1545,6 +1602,18 @@
     {
       "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/events/stream"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/quality"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/quality/measurements"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/tasks/:task/reviews"
     },
     {
       "method": "POST",
@@ -1713,6 +1782,18 @@
     {
       "method": "POST",
       "path": "/v1/workspaces/:workspace_id/nodes"
+    }
+  ],
+  "additive_inventory_validation": {
+    "source": "dev/copypaste-delivery/evidence/generated-video-ui-05.json",
+    "sha256": "959178fbc7cc1747297350630a67a6c8513a61be2644391488129409f0ea3ea1",
+    "scope": "All configured-service method/path pairs observed in the actual passing isolated app; descriptive inventory only."
+  },
+  "conditional_routes": [
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/demo-credit",
+      "when": "DEMO_MODE=true"
     }
   ]
 }

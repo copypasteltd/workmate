@@ -1,6 +1,8 @@
 # 预设角色与 Skill 模板需求
 
-**阶段 79 当前增量：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
+**阶段 80 当前增量：** 生成式视频原作业、共享预算与未知费用保留、取消/对账、真实 MP4 和三端预览；Desktop 设置紧凑、无边框、无可见纵横滚动条且保留滚动/键盘与真实进度。平台 912、专项 60、客户端 69、打包 32、Web/Admin 5、侧栏 9、本机监督进程 17 项分别通过，模型与媒体内容为明确夹具。SQL097 新增，SQL001–096 与各原 OpenAPI 字节保留。原 102 REQ/102 TC 为 83 部分/19 未证明/0 完整验收，G01–G10 保留。见 [方案和证据](../technical/80-generated-video-jobs.md)。
+
+**阶段 79 历史基线：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
 
 版本：1.5 · 2026-10-19 · 来源：ROLE01，用户要求预先配置至少 12 个客户可直接选用的角色，覆盖软件开发至完整设计业务，并明确举例「设计师 = Codex + 设计类 Skill + Image 2」。本文件展开为 18 个角色。当前源码已有持久模板目录、依赖预检和实例化，详见 [实际实现与限制](../technical/25-role-template-registry-and-runtime-binding.md)；全部专业角色仍待完整真实业务验收。
 
@@ -176,3 +178,9 @@ Codex 的 Skill 包由 `SKILL.md` 及可选脚本/资源构成，支持按需读
 ### 营销分析模板的当前实现边界
 
 CSV 原文、映射和冻结精确指标已接入既有 `marketing_metrics` 及分析工作流，并提供真实 Web/源码 Desktop 图表和文件下载，见 [营销数据与证据](../technical/27-marketing-import-metrics-and-evidence.md)。后续新增受限 `marketing-analyst`、分页 `analysis_report_facts`、私人 AnalysisSpec 报告任务、数字引用校验与固定文件，见 [报告任务与证据](../technical/28-analysis-report-tasks-and-evidence.md)。网页 SVG 下载尚不等于角色 `chart.render` 工具；完整来源接入、专业语义质量、计算/图表工具及任务/修改/异常资格仍未完成，不能将此次局部增量计入 12 个正式合格角色。
+
+## R16 当前执行版本 / Current executable binding
+
+新任务使用 `video-motion` 1.2.0：固定 `video-storyboard` 1.0.0、`template-video-composition` 1.0.0、`video-generation` 1.1.0 和 `delivery-core` 1.0.0。模板/时间线制作与生成式影片分别执行；后者依赖明确启用的 `internal-video-v1` / `company-video-jobs-v1`。旧 R16 1.1.0 及其冻结任务保留原绑定，使用新生成能力时新建任务。其余十七个预设角色不随此次更新升级。此执行版本及局部工具证据不把 `design_only` 改称完整专业角色验收；配音、抠像及真实供应商仍按各自能力与证据启用。详见[作业、版本与权限方案](../technical/80-generated-video-jobs.md)。
+
+English: New R16 tasks bind the four exact Skill versions above. Frozen older tasks retain their original bindings; the other seventeen presets are unchanged. This is an executable, partially verified binding, without a complete professional-role or live-provider qualification claim.

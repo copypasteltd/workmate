@@ -101,3 +101,7 @@ CORE01 将全部运行配置的 kernel 固定为 codex；目录 schema 使用 co
 [支持 schema 快照](admin-support-schemas.json) 从原 OpenAPI 按原字节提取八个命名类型及递归依赖，平台副本逐字节相同。原 OpenAPI SHA-256 保持 `51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4`。原用户授权创建/撤销、Admin 支持会话列表/创建/撤销沿用严格规范 DTO；授权列表及只读 view 为明确补充路径。
 
 实际页面保留三个原规范端点响应和从补充 view 提取的一份原会话 DTO，单独严格验证，不计为四个规范操作，也不增加既有 125 份样本的数字。支持上下文头仅可访问绑定自己的只读 GET；费用、VIP、下载、凭证和其他读取/修改都拒绝。细则与原始回执见 [支持专册](../technical/51-controlled-read-only-support.md)。
+
+## Stage80 生成式视频 / Generated video
+
+[增量契约](generated-video-openapi.json) 从运行时 Zod 模型导出七项操作、十项模式，并以实际响应验证。公司自有 `company-video-jobs-v1` 扩展不是已停用的公开 Videos API。公开 `revision` 不随无变化轮询/续租递增，实际控制仍进行并发校验。当前 [实际路由清单](implemented-routes.json) 为 445 项配置服务操作及一项仅 DEMO_MODE 的既有声明；不作为完整设计 OpenAPI。两份原 OpenAPI 各自原样保留。
