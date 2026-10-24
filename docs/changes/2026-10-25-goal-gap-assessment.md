@@ -2,7 +2,19 @@
 
 日期 / Date：2026-10-25，Asia/Taipei。
 
-## 第四次工作区复核：当前 / Fourth working-tree review: current
+## 第五次工作区复核：当前 / Fifth working-tree review: current
+
+刷新[26 项编号差异表](../quality/2026-10-25-goal-gap-assessment.md)和[第五次复核记录](../quality/2026-10-25-goal-gap-review-05.json)。此前侧栏附件误入项目共享范围的问题已有修复和实际重跑通过证据：上传者下载原始字节，同项目另一位已登录编辑者不能列出附件，下载、版本和所属私有会话均返回 404。最新核心专项 24/24，实际 Web/Admin/原生侧栏 12 项通过，独立 Extension 单元原始日志为 47/47；各自范围不合并，也不外推为完整验收。
+
+最新打包 Desktop 增量整体失败：38 个限定观察后，隔离资料的预期失效提示在 20 秒内未出现。新本机配置 v3/v3/v4 的工具读取和续做场景未进入；失败原因仍待定位，不能登记通过或擅自当成纯测试问题。实际窄侧栏截图中输入/发送区未完整入镜，补列视口与末项触达差距。
+
+重算核心 1493、实际跨端 1460、Desktop 失败回执 1404 个选定源码，分别全部匹配当前字节；阶段 85 的 1494 项中 1471 相符、23 变化，新文件另计。八个实际远程分支匹配已提交输入，六组件仍有未提交开发，排除在本次文档同步外。评估未修改产品源码、未重跑产品测试、未启动浏览器/数据库/虚拟化；原始 102 项、全部完整验收条件及 G01–G10 不变，历史回执原样保留。
+
+The fifth review updates the numbered 26-gap assessment and its linked evidence record. The prior project-shared attachment defect now has actual passing private-conversation evidence: exact owner bytes succeed, while an independently logged-in same-project editor cannot list the asset and receives 404 for download, versions and conversation. Core checks pass 24/24; actual Web/Admin/native Side Panel checks pass 12; a separate raw Extension unit log passes 47/47. These scopes are not combined into complete product acceptance.
+
+The latest packaged Desktop increment fails after 38 bounded observations when the expected quarantined-source notice does not appear within 20 seconds. New native v3/v3/v4 tool and continuation scenarios were not reached; the failure's cause remains unresolved. A retained narrow Side Panel screenshot also leaves the full composer/Send action outside the viewport, adding a concrete action-reachability gap. All selected core (1493), cross-client UI (1460) and failed Desktop (1404) source entries match their receipts. The historical stage 85 snapshot has 1471 exact and 23 changed entries out of 1494. All eight remote refs match committed inputs; six unpublished component worktrees are excluded from this documentation-only synchronization. No product source or acceptance condition is changed, no product tests are rerun, and no browser/database or virtualization is started by the assessment.
+
+## 第四次工作区复核：历史 / Fourth working-tree review: historical
 
 更新 26 项编号差异表与[第四次复核记录](../quality/2026-10-25-goal-gap-review-04.json)，把实际已复现的侧栏附件范围错误列为 P0：聊天附件经项目文件接口保存，private_owner 为 NULL，未绑定私有会话。最新实际界面流程在完成 Admin 人工赠额/幂等、Web 配置五项及真实侧栏登录/摘要共七个限定检查后失败，不能标记整段通过；不将此问题推断成跨企业泄露。新 Desktop 本机配置场景和旧工作继承修复仍须运行验证。
 
