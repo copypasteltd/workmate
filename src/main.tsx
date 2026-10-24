@@ -7,6 +7,8 @@ import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
 import { CreativeMatrices } from "./creative-matrices";
 import { VideoProjects } from "./video-projects";
+import { GeneratedVideos } from "./generated-videos";
+import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { MarketingImport } from "./marketing-import";
 import { MarketingAnalysis } from "./marketing-analysis";
 import { MarketingReports } from "./marketing-reports";
@@ -922,7 +924,7 @@ function NewTask({
             requiredInput = String(f.get("required_input") ?? ""),
             body = {
               title: String(f.get("title")),
-              prompt: String(f.get("prompt")),
+              prompt: selectedRole === "video-motion" ? videoGenerationBrief(String(f.get("prompt")), f) : String(f.get("prompt")),
               mode: String(f.get("mode")),
               budget_micros: Math.round(Number(f.get("budget")) * 1e6),
               ...(requiredInput
@@ -1030,6 +1032,7 @@ function NewTask({
             required
           />
         </Field>
+        {selectedRole === "video-motion" && <VideoBriefFields />}
         <Field
           label={t("開始前需要補齊資料嗎？", "Inputs needed before starting?")}
           hint={t(
@@ -1655,6 +1658,7 @@ function TaskDetail() {
               {data.error_code && (
                 <div className="notice error">{data.error_code}</div>
               )}
+              {data.role_key === "video-motion" && <GeneratedVideos key={"generated-video:" + w.base + id} base={w.base} taskId={id!} />}
               {["succeeded", "failed", "cancelled"].includes(data.status) && data.mode !== "plan" && <DeliveryQuality key={w.base + id} base={w.base} taskId={id!} changed={() => setVersion(v => v + 1)}/>}
             </section>
             <aside>
