@@ -13,6 +13,7 @@ const hash = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 const pass = (s: string) => { checks.push(s); console.log("PASS: " + s); };
 let isolated: any, system: any, context: BrowserContext | undefined, panel: any, recording: WorkmateRecording | undefined, media: any;
 let browserClosed = false, apiClosed = false, fixtureClosed = false, deadline: ReturnType<typeof setTimeout>;
+let videoProvider: any, videoProviderClosed = false;
 async function until(read: () => Promise<any>, ok: (v: any) => boolean, what: string) {
   const end = Date.now() + 30000;
   do { const value = await read(); if (ok(value)) return value; await new Promise(r => setTimeout(r, 120)); } while (Date.now() < end);
@@ -64,7 +65,30 @@ try {
   const { Worker } = await import(pathToFileURL(path.join(platform, "src/worker.ts")).href);
   const { CodexRuntimeAdapter } = await import(pathToFileURL(path.join(platform, "src/runtime.ts")).href);
   process.chdir(platform); isolated = await isolatedTestEnvironment();
-  system = await buildApp(loadConfig({ ...isolated.env, NODE_ENV: "test", DEV_MAILBOX: "true", WORKER_ENABLED: "false", DEMO_MODE: "true" }), { worker: false });
+  const videoFixture = await import(pathToFileURL(path.join(platform, "tests/generated-video-fixture.ts")).href);
+  videoProvider = await videoFixture.generatedVideoProvider(owned);
+  system = await buildApp(loadConfig({ ...isolated.env, NODE_ENV: "test", DEV_MAILBOX: "true", WORKER_ENABLED: "false", DEMO_MODE: "false",
+    AI_BASE_URL: videoProvider.origin, AI_ALLOWED_HOSTS: "127.0.0.1", AI_API_KEY: "synthetic-video-provider-fixture", AI_MODEL: "synthetic-video-reasoning-v1", AI_VERIFIED: "true",
+    AI_INPUT_HKD_MICROS_PER_MILLION: "1000000", AI_OUTPUT_HKD_MICROS_PER_MILLION: "1000000", AI_INPUT_COUNT_VERIFIED: "true", AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "0",
+    AI_VIDEO_MODEL: "synthetic-video-async-v1", AI_VIDEO_VERIFIED: "true", AI_VIDEO_HKD_MICROS_PER_SECOND: "100000", AI_VIDEO_POLL_INTERVAL_MS: "250",
+  }), { worker: false });
+  const { internalAIRequest, finishInternalAIRequest } = await import(pathToFileURL(path.join(platform, "src/internal-ai-gateway.ts")).href);
+  const reasoningReceipt = async (ctx: any) => {
+    try {
+    const response: Response = await internalAIRequest(system.db.config, { operation: "responses", model: ctx.selection.model,
+      reasoningEffort: ctx.selection.reasoningEffort, body: { model: ctx.selection.model,
+        reasoning: { effort: ctx.selection.reasoningEffort },
+        input: [{ role: "user", content: ctx.prompt }], stream: true, max_output_tokens: 1000 },
+      authority: ctx.requestAuthority, signal: ctx.signal });
+    assert.equal(response.status, 200);
+    const events = (await response.text()).split(/\r?\n/).filter(line => line.startsWith("data: ")).map(line => JSON.parse(line.slice(6)));
+    const final = events.find(event => event.type === "response.completed");
+    assert.ok(final?.response?.usage); const usage = final.response.usage;
+    assert.ok(Number.isSafeInteger(usage.input_tokens) && Number.isSafeInteger(usage.output_tokens));
+    await finishInternalAIRequest(response, { state: "completed", inputTokens: usage.input_tokens, outputTokens: usage.output_tokens, httpStatus: 200 });
+    return { inputTokens: usage.input_tokens, outputTokens: usage.output_tokens };
+    } catch (error: any) { console.error("Synthetic reasoning receipt: " + JSON.stringify({ code: error.code ?? error.name, message: error.message })); throw error; }
+  };
   await system.app.listen({ host: "127.0.0.1", port: 4310 });
   deadline = setTimeout(() => { errors.push("Owned chat journey timed out"); void context?.close(); }, 240000);
   const id = (await readFile(path.join(extension, "extension-id.txt"), "utf8")).trim();
@@ -107,7 +131,7 @@ try {
   await until(() => evaluate("document.querySelector('#workspace').hidden"), v => v === false, "real PKCE login");
   const created = await api("/v1/tenants", "POST", { name: "Conversation studio", project_name: "Brand launch" });
   const tenant = created.tenant.id, project = (await api(`/v1/tenants/${tenant}/projects`)).items[0].id, base = `/v1/tenants/${tenant}/projects/${project}`;
-  await api(`/v1/tenants/${tenant}/demo-credit`, "POST", {});
+  await system.db.control.query("UPDATE wallets SET credit_limit_micros=100000000 WHERE tenant_id=$1", [tenant]);
   await panel.send("Page.reload");
   await until(() => evaluate("!document.querySelector('#workspace').hidden && !document.querySelector('#chat-send').disabled"), Boolean, "conversation ready");
   assert.equal(await evaluate("document.querySelector('#workspace-tools').open"), false);
@@ -151,13 +175,16 @@ try {
     constructor(config: any) { super(config); }
     async start(ctx: any) {
       assert.ok(ctx.prompt.includes("Current user request"));
+      const usage = await reasoningReceipt(ctx);
       const text = "Make room for your next idea.\n\nA concise headline for the approved Hong Kong launch brief.";
       for (const part of ["Make room for ", "your next idea.", "\n\nA concise headline for the approved Hong Kong launch brief."]) { await ctx.onEvent("message.delta", { text: part }); await new Promise(r => setTimeout(r, 900)); }
       await ctx.tools.find((t: any) => t.name === "deliver_text").run({ filename: "campaign-headline.txt", mime_type: "text/plain", content: text }, "chat-demo-delivery-" + randomUUID());
-      return { status: "completed", text, thread: "chat-demo-" + randomUUID(), turn: "chat-demo-turn-" + randomUUID(), inputTokens: 100, outputTokens: 50, usageKnown: true, accepted: true };
+      return { status: "completed", text, thread: "chat-demo-" + randomUUID(), turn: "chat-demo-turn-" + randomUUID(), ...usage, usageKnown: true, accepted: true };
     }
   }
   await new Worker(system.db, system.catalog, system.storage, new UiRuntime(system.db.config)).run(tenant, first.id);
+  const firstReceipt = (await system.db.control.query("SELECT status,error_code FROM tasks WHERE id=$1", [first.id])).rows[0];
+  assert.equal(firstReceipt.status, "succeeded", "Actual configured-service reasoning/first delivery: " + JSON.stringify(firstReceipt));
   await until(() => evaluate("document.querySelectorAll('.from-assistant:not([data-live-task])').length"), v => v === 1, "first completed answer");
   await shot("answer-en");
   await evaluate("document.querySelector('.chat-detail').click()");
@@ -189,6 +216,53 @@ try {
   await until(() => evaluate("!document.querySelector('#workspace').hidden && document.querySelectorAll('.from-assistant:not([data-live-task])').length===2"), Boolean, "visible saved conversation restored");
   await until(() => evaluate("(()=>{const f=document.querySelector('#chat-messages');return f.scrollHeight-f.scrollTop-f.clientHeight<5})()"), Boolean, "restored conversation scrolls to latest reply");
   await shot("continued-en"); pass("Panel reload restores the saved conversation and its two replies without Desktop or Native Messaging");
+  const { defaults } = await import(pathToFileURL(path.join(platform, "src/plans.ts")).href);
+  await system.db.control.query("INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body) VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Owned synthetic cloud video UI fixture',$2)", [tenant, defaults.business]);
+  const videoTask = await api(base + "/tasks", "POST", { title: "Synthetic cloud clip", prompt: "Generate an explicitly synthetic company video.", role_key: "video-motion", budget_micros: 1000000 });
+  class VideoUiRuntime extends CodexRuntimeAdapter {
+    constructor(config: any) { super(config); }
+    async start(ctx: any) {
+      const usage = await reasoningReceipt(ctx);
+      const result = await ctx.tools.find((tool: any) => tool.name === "generated_video_create").run({ prompt: "Explicit synthetic company four-second clip", seconds: 4, size: "1280x720" }, "extension_video_fixture");
+      assert.equal(result.delivery_state, "available"); assert.equal(result.assets[0].sha256, videoProvider.sha256);
+      return { status: "completed", text: "The synthetic clip is available for review.", thread: "extension-video-ui-fixture", turn: randomUUID(), ...usage, usageKnown: true, accepted: true };
+    }
+  }
+  assert.equal(system.db.config.AI_BASE_URL, videoProvider.origin);
+  const videoWork = new Worker(system.db, system.catalog, system.storage, new VideoUiRuntime(system.db.config)).run(tenant, videoTask.id);
+  try {
+    await until(async () => {
+      const job = (await system.db.control.query("SELECT state,error_code,usage_known,delivery_state FROM ai_video_jobs WHERE task_id=$1", [videoTask.id])).rows[0];
+      if (job?.state === "unknown" && job.error_code) throw new Error("Synthetic video fixture rejected the original operation: " + JSON.stringify({ job, calls: videoProvider.calls.map((call: any) => ({ method: call.method, path: call.path })), provider_errors: videoProvider.errors }));
+      return job;
+    }, job => job?.delivery_state === "available", "actual cloud video before Side Panel review");
+    await videoWork;
+  } catch (error) {
+    const { requestTaskCancellation } = await import(pathToFileURL(path.join(platform, "src/task-control.ts")).href);
+    await system.db.tx(async (tx: any) => {
+      const task = (await tx.query("SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2 FOR UPDATE", [videoTask.id, tenant])).rows[0];
+      assert.ok(task); await requestTaskCancellation(tx, task);
+    }, tenant, true);
+    await videoWork;
+    throw error;
+  }
+  await panel.send("Page.reload");
+  await until(() => evaluate(`!!document.querySelector('.task-row[data-task="${videoTask.id}"]')`), Boolean, "cloud generated-video task in native panel history");
+  await evaluate(`document.querySelector('#workspace-tools').open=true;document.querySelector('.task-row[data-task="${videoTask.id}"]').click()`);
+  await until(() => evaluate("!!document.querySelector('#generated-videos .generated-video-card button')"), Boolean, "cloud generated-video controls");
+  await evaluate("[...document.querySelectorAll('#generated-videos button')].find(button=>button.textContent==='Play and save video').click()");
+  await until(() => evaluate("document.querySelector('#generated-videos video')?.readyState??0"), value => value >= 2, "native panel actual MP4 decode");
+  await evaluate("document.querySelector('#generated-videos video').play()");
+  await until(() => evaluate("document.querySelector('#generated-videos video').currentTime"), value => value > 0, "native panel actual video playback");
+  await evaluate("document.querySelector('#generated-videos video').pause();document.querySelector('#generated-videos').scrollIntoView({block:'start'})");
+  const generated = (await api(base + "/generated-video-jobs?task_id=" + videoTask.id)).items[0];
+  await cdp.send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: owned, eventsEnabled: true });
+  await evaluate("document.querySelector('#generated-videos a[download]').click()");
+  await until(() => readFile(path.join(owned, generated.assets[0].name)).catch(() => null), bytes => !!bytes && hash(bytes) === videoProvider.sha256, "exact native Side Panel video download");
+  const videoCapture = await panel.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+  screenshots.push(await saveWorkmateScreenshot("extension", "chat-" + attempt, "generated-video-en", Buffer.from(videoCapture.data, "base64"), "Actual Chrome native right Side Panel plays and downloads the exact validated cloud MP4. Model and video content are explicit fixtures; no local Agent or Native Messaging.", delivery));
+  await evaluate("document.querySelector('#close-task').click()"); assert.equal(await evaluate("document.querySelector('#generated-videos').childElementCount"), 0);
+  pass("Native right Side Panel reviews a cloud generated-video job, plays and saves its exact validated MP4 and clears owned preview URLs on close without a local Agent");
   process.chdir(delivery); media = await recording.stop(); recording = undefined; process.chdir(platform);
   assert.equal(await worker.evaluate(() => chrome.permissions.contains({ permissions: ["nativeMessaging"] })), false);
   await system.db.control.query("UPDATE tasks SET content_state='quarantined',moderation_version=moderation_version+1 WHERE id=$1", [second.id]);
@@ -204,9 +278,13 @@ finally {
   if (panel) await panel.close().catch((e: any) => errors.push(String(e)));
   if (context) await context.close().then(() => { browserClosed = true; }).catch(e => errors.push(String(e)));
   if (system) await system.app.close().then(() => { apiClosed = true; }).catch((e: any) => errors.push(String(e)));
+  if (videoProvider) {
+    try { assert.deepEqual(videoProvider.errors, []); } catch (error) { errors.push(String(error)); }
+    await videoProvider.close().then(() => { videoProviderClosed = true; }).catch((error: any) => errors.push(String(error)));
+  }
   if (isolated) { process.chdir(platform); await isolated.cleanup().then(() => { fixtureClosed = true; }).catch((e: any) => errors.push(String(e))); }
   process.chdir(delivery);
-  const result = { status: !errors.length && browserClosed && apiClosed && fixtureClosed ? "passed" : "failed", checks, errors, screenshots, media, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed, model: "Explicit synthetic UI model turns; not a native Codex or live supplier qualification" };
+  const result = { status: !errors.length && browserClosed && apiClosed && fixtureClosed && videoProviderClosed ? "passed" : "failed", checks, errors, screenshots, media, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed, generated_video_provider_closed: videoProviderClosed, model: "Explicit synthetic UI model turns/video bytes; not a native Codex or live supplier qualification" };
   await writeFile(`evidence/extension-chat-${attempt}-journey.json`, JSON.stringify(result, null, 2) + "\n", { flag: "wx" });
   assert.equal(result.status, "passed", "Inspect preserved native conversation journey");
 }

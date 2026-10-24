@@ -1,0 +1,471 @@
+2026-10-24 07:37:32.163 CST [29208] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 07:37:32.176 CST [29208] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 07:37:32.179 CST [29208] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 07:37:32.507 CST [18076] LOG:  database system was shut down at 2026-10-24 07:37:21 CST
+
+2026-10-24 07:37:32.580 CST [29208] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# populated 052 credit provenance upgrade: applied migration 53
+# populated 052 credit provenance upgrade: applied migration 54
+# populated 052 credit provenance upgrade: applied migration 55
+# populated 052 credit provenance upgrade: applied migration 56
+# populated 052 credit provenance upgrade: applied migration 57
+# populated 052 credit provenance upgrade: applied migration 58
+# populated 052 credit provenance upgrade: applied migration 59
+# populated 052 credit provenance upgrade: applied migration 60
+# populated 052 credit provenance upgrade: applied migration 61
+# populated 052 credit provenance upgrade: applied migration 62
+# populated 052 credit provenance upgrade: applied migration 63
+# populated 052 credit provenance upgrade: applied migration 64
+# populated 052 credit provenance upgrade: applied migration 65
+# populated 052 credit provenance upgrade: applied migration 66
+# populated 052 credit provenance upgrade: applied migration 67
+# populated 052 credit provenance upgrade: applied migration 68
+# populated 052 credit provenance upgrade: applied migration 69
+# populated 052 credit provenance upgrade: applied migration 70
+# populated 052 credit provenance upgrade: applied migration 71
+# populated 052 credit provenance upgrade: applied migration 72
+# populated 052 credit provenance upgrade: applied migration 73
+# populated 052 credit provenance upgrade: applied migration 74
+# populated 052 credit provenance upgrade: applied migration 75
+# populated 052 credit provenance upgrade: applied migration 76
+# populated 052 credit provenance upgrade: applied migration 77
+# populated 052 credit provenance upgrade: applied migration 78
+# populated 052 credit provenance upgrade: applied migration 79
+# populated 052 credit provenance upgrade: applied migration 80
+# populated 052 credit provenance upgrade: applied migration 81
+# populated 052 credit provenance upgrade: applied migration 82
+# populated 052 credit provenance upgrade: applied migration 83
+# populated 052 credit provenance upgrade: applied migration 84
+# populated 052 credit provenance upgrade: applied migration 85
+# populated 052 credit provenance upgrade: applied migration 86
+# populated 052 credit provenance upgrade: applied migration 87
+# populated 052 credit provenance upgrade: applied migration 88
+# populated 052 credit provenance upgrade: applied migration 89
+# populated 052 credit provenance upgrade: applied migration 90
+# populated 052 credit provenance upgrade: applied migration 91
+# populated 052 credit provenance upgrade: applied migration 92
+# populated 052 credit provenance upgrade: applied migration 93
+# populated 052 credit provenance upgrade: applied migration 94
+# populated 052 credit provenance upgrade: applied migration 95
+# populated 052 credit provenance upgrade: applied migration 96
+# populated 052 credit provenance upgrade: applied migration 97
+2026-10-24 07:37:41.441 CST [12784] ERROR:  permission denied for table billing_credit_legacy_sources
+2026-10-24 07:37:41.441 CST [12784] STATEMENT:  INSERT INTO billing_credit_legacy_sources(billing_account_id,source_id) VALUES($1,$2)
+
+2026-10-24 07:37:41.653 CST [23264] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 07:37:43.834 CST [23264] LOG:  checkpoint complete: wrote 26 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.978 s, total=2.182 s; sync files=11, longest=0.474 s, average=0.089 s; distance=16581 kB, estimate=16581 kB; lsn=12/7ABD9FE0, redo lsn=12/7ABD9F88
+
+# Subtest: a populated 052 upgrade freezes actual opening credit and preserves missing legacy provenance without inventing repayment links
+ok 1 - a populated 052 upgrade freezes actual opening credit and preserves missing legacy provenance without inventing repayment links
+  ---
+  duration_ms: 9665.2647
+  ...
+# Subtest: PDF review copies have one bounded page with the canvas aspect ratio and distinct format permissions
+ok 2 - PDF review copies have one bounded page with the canvas aspect ratio and distinct format permissions
+  ---
+  duration_ms: 1330.0938
+  ...
+# Subtest: native design pipeline produces actual PNG and validated H.264/AAC motion output
+ok 3 - native design pipeline produces actual PNG and validated H.264/AAC motion output
+  ---
+  duration_ms: 1344.5725
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# Subtest: tenant resource totals retain fixed UUIDs and compatibility ceilings are explicitly labelled
+ok 4 - tenant resource totals retain fixed UUIDs and compatibility ceilings are explicitly labelled
+  ---
+  duration_ms: 6627.8205
+  ...
+2026-10-24 07:37:57.873 CST [26900] ERROR:  PLAN_SEAT_LIMIT
+2026-10-24 07:37:57.873 CST [26900] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-24 07:37:57.873 CST [26900] STATEMENT:  INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=EXCLUDED.role,status='active',version=memberships.version+1 RETURNING *
+
+# Subtest: two valid invitations race for one remaining seat; rejection retains the invitation and retry can succeed after a removal
+ok 5 - two valid invitations race for one remaining seat; rejection retains the invitation and retry can succeed after a removal
+  ---
+  duration_ms: 358.2682
+  ...
+2026-10-24 07:37:58.348 CST [26900] ERROR:  PLAN_SEAT_LIMIT
+2026-10-24 07:37:58.348 CST [26900] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-24 07:37:58.348 CST [26900] STATEMENT:  INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=EXCLUDED.role,status='active',version=memberships.version+1 RETURNING *
+
+# Subtest: personal VIP cannot enlarge tenant seats, and a global user freeze does not release an active seat
+ok 6 - personal VIP cannot enlarge tenant seats, and a global user freeze does not release an active seat
+  ---
+  duration_ms: 435.8931
+  ...
+2026-10-24 07:37:58.535 CST [41724] ERROR:  PLAN_SEAT_LIMIT
+2026-10-24 07:37:58.535 CST [41724] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-24 07:37:58.535 CST [41724] STATEMENT:  UPDATE memberships SET status='active',admin_suspended=false WHERE tenant_id=$1 AND user_id=$2
+
+# Subtest: an existing active seat can change role at capacity, while removed and administrator-suspended seats need current capacity
+ok 7 - an existing active seat can change role at capacity, while removed and administrator-suspended seats need current capacity
+  ---
+  duration_ms: 187.5919
+  ...
+2026-10-24 07:37:59.093 CST [26900] ERROR:  PLAN_SEAT_LIMIT
+2026-10-24 07:37:59.093 CST [26900] CONTEXT:  PL/pgSQL function guard_membership_resource_capacity() line 15 at RAISE
+2026-10-24 07:37:59.093 CST [26900] STATEMENT:  INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,$3) ON CONFLICT(tenant_id,user_id) DO UPDATE SET role=EXCLUDED.role,status='active',version=memberships.version+1 RETURNING *
+
+# Subtest: a new publication does not widen an existing grant, and explicit downgrade preserves existing seats
+ok 8 - a new publication does not widen an existing grant, and explicit downgrade preserves existing seats
+  ---
+  duration_ms: 558.3713
+  ...
+2026-10-24 07:37:59.221 CST [36436] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:37:59.221 CST [36436] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-24 07:37:59.221 CST [36436] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+# Subtest: concurrent upload reservations count across users and exact-key retries do not double reserve storage
+ok 9 - concurrent upload reservations count across users and exact-key retries do not double reserve storage
+  ---
+  duration_ms: 127.7602
+  ...
+# Subtest: a full storage reservation converts atomically to one version without double charging and completion can be replayed
+ok 10 - a full storage reservation converts atomically to one version without double charging and completion can be replayed
+  ---
+  duration_ms: 510.6421
+  ...
+2026-10-24 07:37:59.983 CST [2896] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-24 07:37:59.983 CST [2896] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-24 07:37:59.983 CST [2896] STATEMENT:  UPDATE upload_sessions SET expires_at=clock_timestamp()+interval '1 hour' WHERE id=$1
+
+# Subtest: cancellation and clock expiry release reservations without a worker; an expired commitment cannot be revived
+ok 11 - cancellation and clock expiry release reservations without a worker; an expired commitment cannot be revived
+  ---
+  duration_ms: 259.6165
+  ...
+2026-10-24 07:38:00.460 CST [36436] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:00.460 CST [36436] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-24 07:38:00.460 CST [36436] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+2026-10-24 07:38:00.465 CST [36436] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:00.465 CST [36436] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-24 07:38:00.465 CST [36436] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+# Subtest: all retained versions and independent copies are charged; rejected growth performs no object write
+ok 12 - all retained versions and independent copies are charged; rejected growth performs no object write
+  ---
+  duration_ms: 483.1089
+  ...
+2026-10-24 07:38:01.055 CST [36436] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:01.055 CST [36436] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-24 07:38:01.055 CST [36436] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+# Subtest: a quota downgrade preserves bytes and existing reservations can finish without additional capacity
+ok 13 - a quota downgrade preserves bytes and existing reservations can finish without additional capacity
+  ---
+  duration_ms: 580.6576
+  ...
+2026-10-24 07:38:01.291 CST [26900] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:01.291 CST [26900] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-24 07:38:01.291 CST [26900] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+# Subtest: independent asset transactions race for the same remaining bytes and the losing transaction leaves no version
+ok 14 - independent asset transactions race for the same remaining bytes and the losing transaction leaves no version
+  ---
+  duration_ms: 243.3537
+  ...
+2026-10-24 07:38:01.590 CST [26900] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:01.590 CST [26900] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-24 07:38:01.590 CST [26900] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+# Subtest: an aggregate includes other members' private versions without exposing private rows or filenames
+ok 15 - an aggregate includes other members' private versions without exposing private rows or filenames
+  ---
+  duration_ms: 290.9278
+  ...
+2026-10-24 07:38:01.979 CST [26900] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:01.979 CST [26900] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-24 07:38:01.979 CST [26900] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+# Subtest: quarantine and logical deletion retain charged bytes until successful physical cleanup
+ok 16 - quarantine and logical deletion retain charged bytes until successful physical cleanup
+  ---
+  duration_ms: 431.9668
+  ...
+2026-10-24 07:38:02.264 CST [9668] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:02.264 CST [9668] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.bytes,NEW.upload_session_id)"
+	PL/pgSQL function guard_asset_resource_capacity() line 20 at PERFORM
+2026-10-24 07:38:02.264 CST [9668] STATEMENT:  INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256,upload_session_id) VALUES($1,$2,1,$3,'text/plain',4,$4,$5)
+
+2026-10-24 07:38:02.339 CST [40808] ERROR:  UPLOAD_RESERVATION_INVALID
+2026-10-24 07:38:02.339 CST [40808] CONTEXT:  PL/pgSQL function guard_asset_resource_capacity() line 16 at RAISE
+2026-10-24 07:38:02.339 CST [40808] STATEMENT:  INSERT INTO asset_versions(tenant_id,asset_id,version,storage_key,mime_type,bytes,sha256,upload_session_id) VALUES($1,$2,1,$3,'text/plain',4,$4,$5)
+
+2026-10-24 07:38:02.454 CST [38396] ERROR:  UPLOAD_RESERVATION_INVALID
+2026-10-24 07:38:02.454 CST [38396] CONTEXT:  PL/pgSQL function check_upload_resource_commit() line 15 at RAISE
+
+2026-10-24 07:38:02.613 CST [26796] ERROR:  UPLOAD_RESERVATION_INVALID
+2026-10-24 07:38:02.613 CST [26796] CONTEXT:  PL/pgSQL function check_upload_resource_commit() line 15 at RAISE
+
+2026-10-24 07:38:02.668 CST [34384] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-24 07:38:02.668 CST [34384] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-24 07:38:02.668 CST [34384] STATEMENT:  UPDATE upload_sessions SET size_bytes=1 WHERE id=$1
+
+# Subtest: direct version INSERTs cannot bypass capacity or forge an uncommitted or mismatched upload conversion
+ok 17 - direct version INSERTs cannot bypass capacity or forge an uncommitted or mismatched upload conversion
+  ---
+  duration_ms: 734.9199
+  ...
+# Subtest: new versions uploaded by another authorized project member consume that uploader's reservation
+ok 18 - new versions uploaded by another authorized project member consume that uploader's reservation
+  ---
+  duration_ms: 388.9364
+  ...
+# Subtest: tenant quota reads reject foreign users, require both whole-tenant admin permissions, and respect overlapping project denies
+ok 19 - tenant quota reads reject foreign users, require both whole-tenant admin permissions, and respect overlapping project denies
+  ---
+  duration_ms: 323.8342
+  ...
+2026-10-24 07:38:03.757 CST [26900] ERROR:  Fixture audit unavailable
+2026-10-24 07:38:03.757 CST [26900] CONTEXT:  PL/pgSQL function fail_resource_audit() line 1 at RAISE
+2026-10-24 07:38:03.757 CST [26900] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+# {"request_id":"58285da0-583f-40a9-bd90-40ff891c5fcd","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: audit failure rolls back a new reservation and its replay; the same request can subsequently reserve once
+ok 20 - audit failure rolls back a new reservation and its replay; the same request can subsequently reserve once
+  ---
+  duration_ms: 310.3819
+  ...
+2026-10-24 07:38:03.968 CST [36436] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-24 07:38:03.968 CST [36436] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+	SQL statement "SELECT assert_tenant_storage_capacity(NEW.tenant_id,NEW.size_bytes)"
+	PL/pgSQL function guard_upload_resource_capacity() line 16 at PERFORM
+2026-10-24 07:38:03.968 CST [36436] STATEMENT:  INSERT INTO upload_sessions(tenant_id,project_id,created_by,filename,mime_type,size_bytes,sha256,asset_id,expected_version,conversation_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *
+
+# Subtest: separate users cannot reserve the same last bytes concurrently
+ok 21 - separate users cannot reserve the same last bytes concurrently
+  ---
+  duration_ms: 191.3557
+  ...
+# Subtest: a clock boundary is evaluated at resource admission even in a transaction opened before expiry
+ok 22 - a clock boundary is evaluated at resource admission even in a transaction opened before expiry
+  ---
+  duration_ms: 2001.3564
+  ...
+# Subtest: resource reads select only the current mode's tenant grants while retaining the same actual usage
+ok 23 - resource reads select only the current mode's tenant grants while retaining the same actual usage
+  ---
+  duration_ms: 158.7162
+  ...
+2026-10-24 07:38:06.529 CST [27772] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-24 07:38:06.529 CST [27772] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-24 07:38:06.529 CST [27772] STATEMENT:  UPDATE upload_sessions SET state='cancelled' WHERE id=$1
+
+2026-10-24 07:38:06.712 CST [35356] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-24 07:38:06.712 CST [35356] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-24 07:38:06.712 CST [35356] STATEMENT:  UPDATE upload_sessions SET state='pending' WHERE id=$1
+
+2026-10-24 07:38:06.781 CST [29080] ERROR:  RESOURCE_IDENTITY_IMMUTABLE
+2026-10-24 07:38:06.781 CST [29080] CONTEXT:  PL/pgSQL function guard_upload_resource_capacity() line 11 at RAISE
+2026-10-24 07:38:06.781 CST [29080] STATEMENT:  UPDATE upload_sessions SET state='pending' WHERE id=$1
+
+# Subtest: deleting a private conversation invalidates completed and pending uploads, releases only its reservation, and cannot reopen either transfer
+ok 24 - deleting a private conversation invalidates completed and pending uploads, releases only its reservation, and cannot reopen either transfer
+  ---
+  duration_ms: 861.0551
+  ...
+2026-10-24 07:38:07.065 CST [23264] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 07:38:08.101 CST [23264] LOG:  checkpoint complete: wrote 48 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.857 s, total=1.036 s; sync files=12, longest=0.173 s, average=0.072 s; distance=18469 kB, estimate=18469 kB; lsn=12/7BDE36D0, redo lsn=12/7BDE3678
+
+# Subtest: real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
+ok 25 - real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
+  ---
+  duration_ms: 15016.6138
+  ...
+# Subtest: cancelling an initializing real Codex process rejects the pending RPC and closes the child
+ok 26 - cancelling an initializing real Codex process rejects the pending RPC and closes the child
+  ---
+  duration_ms: 190.2357
+  ...
+1..26
+# tests 26
+# suites 0
+# pass 26
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 50699.9412
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/31385e93-489d-47da-a932-5f20fc878e12/result.json","sha256":"e6ba67e475d5b737f0553b5884766e7985db582c922c9c0dd6630696a68e7649","exit_code":0}
+2026-10-24 07:38:25.327 CST [29208] LOG:  received fast shutdown request
+
+2026-10-24 07:38:25.392 CST [29208] LOG:  aborting any active transactions
+
+2026-10-24 07:38:25.402 CST [29208] LOG:  background worker "logical replication launcher" (PID 23440) exited with exit code 1
+
+2026-10-24 07:38:25.403 CST [23264] LOG:  shutting down
+
+2026-10-24 07:38:25.465 CST [23264] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 07:38:25.710 CST [23264] LOG:  checkpoint complete: wrote 1 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.067 s, total=0.307 s; sync files=2, longest=0.040 s, average=0.034 s; distance=6 kB, estimate=16623 kB; lsn=12/7BDE5148, redo lsn=12/7BDE5148
+
+2026-10-24 07:38:25.828 CST [29208] LOG:  database system is shut down
+

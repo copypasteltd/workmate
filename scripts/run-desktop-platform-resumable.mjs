@@ -8,8 +8,9 @@ import path from 'node:path';
 import { partitionTests, parseCompleteTap, requirePassingCounts, qualifyBatchReceipts } from './platform-qualification-state.mjs';
 
 const attempt = process.argv[2], action = process.argv[3];
+const requestedBatch = /^--batch-(\d{2})$/.exec(action ?? '')?.[1];
 assert.match(attempt ?? '', /^\d{2}$/);
-assert.ok(['--init', '--next', '--finish'].includes(action) && process.argv.length === 4);
+assert.ok((['--init', '--next', '--finish'].includes(action) || requestedBatch) && process.argv.length === 4);
 const delivery = process.cwd(), platform = path.resolve('../copypaste-platform'), desktop = path.resolve('../copypaste-desktop');
 const prefix = 'evidence/desktop-execution-control-' + attempt, planPath = prefix + '-plan.json', lockPath = '.data/desktop-platform-' + attempt + '.lock';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -55,6 +56,7 @@ const plan = await json(planPath), planHash = sha(await readFile(planPath));
 assert.equal(plan.version, 1);
 assert.deepEqual(plan.files, await inventory());
 assert.deepEqual(plan.batches, partitionTests(plan.files, plan.batch_size));
+if (requestedBatch) assert.ok(plan.batches.some(batch => batch.id === requestedBatch), 'Requested batch must be planned');
 assert.equal(sha(await readFile(import.meta.filename)), plan.verifier.sha256, 'Resume with the exact verifier');
 assert.equal(process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN, plan.native_binary.path);
 assert.deepEqual(await snapshot(), plan.source_files, 'Covered source changed: use a new qualification');
@@ -190,7 +192,8 @@ try {
   if (!setup) { assert.notEqual(action, '--finish'); await runStep(null); }
   else {
     const batches = await receipts('batch-\\d{2}'), selected = qualifyBatchReceipts(plan, planHash, batches.map(row => row.data));
-    const next = plan.batches.find(batch => !selected.has(batch.id));
+    const next = requestedBatch ? plan.batches.find(batch => batch.id === requestedBatch) : plan.batches.find(batch => !selected.has(batch.id));
+    if (requestedBatch) assert.ok(next && !selected.has(next.id), 'A completed batch cannot be executed or counted twice');
     if (action === '--finish' || !next) await finish(setup, batches);
     else await runStep(next);
   }

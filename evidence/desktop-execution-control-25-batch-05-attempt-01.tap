@@ -1,0 +1,721 @@
+2026-10-24 05:33:01.636 CST [18708] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 05:33:01.642 CST [18708] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 05:33:01.642 CST [18708] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 05:33:01.879 CST [5864] LOG:  database system was shut down at 2026-10-24 05:32:58 CST
+
+2026-10-24 05:33:01.966 CST [18708] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# Subtest: canonical current-user response matches the original User schema for browser and native credentials
+ok 1 - canonical current-user response matches the original User schema for browser and native credentials
+  ---
+  duration_ms: 6356.3812
+  ...
+# Subtest: private workspace context binds identity and CSRF to the selected credential and does not leak another account's memberships
+ok 2 - private workspace context binds identity and CSRF to the selected credential and does not leak another account's memberships
+  ---
+  duration_ms: 90.9035
+  ...
+# Subtest: canonical challenge is strict 202/UTC, deduplicates concurrent requests and binds its HTTP-only browser flow
+ok 3 - canonical challenge is strict 202/UTC, deduplicates concurrent requests and binds its HTTP-only browser flow
+  ---
+  duration_ms: 190.2971
+  ...
+# Subtest: canonical session strictly returns 201/UserSession and only its original browser can retry the consumed OTP
+ok 4 - canonical session strictly returns 201/UserSession and only its original browser can retry the consumed OTP
+  ---
+  duration_ms: 346.3741
+  ...
+# Subtest: a canonical challenge cannot bypass flow binding through legacy verify; failed attempts and expiry remain one-use
+ok 5 - a canonical challenge cannot bypass flow binding through legacy verify; failed attempts and expiry remain one-use
+  ---
+  duration_ms: 68.0514
+  ...
+# Subtest: canonical logout enforces CSRF for a live cookie, clears flow/session cookies and remains safe to repeat
+ok 6 - canonical logout enforces CSRF for a live cookie, clears flow/session cookies and remains safe to repeat
+  ---
+  duration_ms: 38.945
+  ...
+# Subtest: canonical authorize requires explicit S256, a browser session and consent proof before minting any code
+ok 7 - canonical authorize requires explicit S256, a browser session and consent proof before minting any code
+  ---
+  duration_ms: 42.1573
+  ...
+# Subtest: canonical code exchange commits one family under concurrent retries; a different key cannot replay the code
+ok 8 - canonical code exchange commits one family under concurrent retries; a different key cannot replay the code
+  ---
+  duration_ms: 99.6266
+  ...
+# Subtest: canonical refresh deduplicates response loss; rotated-family reuse with another key still revokes every credential
+ok 9 - canonical refresh deduplicates response loss; rotated-family reuse with another key still revokes every credential
+  ---
+  duration_ms: 87.6411
+  ...
+# Subtest: expired refresh receipts cannot reissue or revoke a later rotation when an old request is retried
+ok 10 - expired refresh receipts cannot reissue or revoke a later rotation when an old request is retried
+  ---
+  duration_ms: 42.154
+  ...
+# Subtest: encrypted receipts are non-readable at rest and freezing/revocation prevents retrieving their secrets again
+ok 11 - encrypted receipts are non-readable at rest and freezing/revocation prevents retrieving their secrets again
+  ---
+  duration_ms: 34.9987
+  ...
+# {"request_id":"8d85d3b4-963d-4e41-83c4-1aee532f54fb","code":"MAIL_UNAVAILABLE","error_type":"Problem"}
+# Subtest: a temporary mail failure retries the same encrypted challenge without spending another rate-limit slot
+ok 12 - a temporary mail failure retries the same encrypted challenge without spending another rate-limit slot
+  ---
+  duration_ms: 15.3807
+  ...
+# Subtest: legacy clients still share the same one-use codes, rotation family and user-session boundaries
+ok 13 - legacy clients still share the same one-use codes, rotation family and user-session boundaries
+  ---
+  duration_ms: 42.4758
+  ...
+# Subtest: receipt retention removes at most 100 expired rows per sweep and preserves active receipts and live sessions
+ok 14 - receipt retention removes at most 100 expired rows per sweep and preserves active receipts and live sessions
+  ---
+  duration_ms: 20.552
+  ...
+2026-10-24 05:33:12.263 CST [33120] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 05:33:13.171 CST [33120] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.643 s, total=0.909 s; sync files=12, longest=0.125 s, average=0.054 s; distance=16861 kB, estimate=16861 kB; lsn=11/8DA7CBF0, redo lsn=11/8DA7CB98
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# Subtest: session inventory distinguishes all clients/current session, retains refreshable expired access, and exposes no credentials
+ok 15 - session inventory distinguishes all clients/current session, retains refreshable expired access, and exposes no credentials
+  ---
+  duration_ms: 5579.0133
+  ...
+# Subtest: native sign-out revokes an expired access token's family without rotation; repeat/unknown/client mismatch are non-enumerating
+ok 16 - native sign-out revokes an expired access token's family without rotation; repeat/unknown/client mismatch are non-enumerating
+  ---
+  duration_ms: 699.1329
+  ...
+# Subtest: actual concurrent refresh/revocation always ends the whole family and cannot mint surviving rotated access
+ok 17 - actual concurrent refresh/revocation always ends the whole family and cannot mint surviving rotated access
+  ---
+  duration_ms: 229.5557
+  ...
+# Subtest: device revocation is owner-scoped, CSRF-protected and follows an older listed ID across refresh rotation
+ok 18 - device revocation is owner-scoped, CSRF-protected and follows an older listed ID across refresh rotation
+  ---
+  duration_ms: 58.1619
+  ...
+# Subtest: email and PKCE codes reject expiration/replay; browser logout invalidates outstanding native authorization
+ok 19 - email and PKCE codes reject expiration/replay; browser logout invalidates outstanding native authorization
+  ---
+  duration_ms: 73.6826
+  ...
+# Subtest: expired/wrong-email/replayed invitations fail and removed members cannot use browser, rotated native, or device ingress
+ok 20 - expired/wrong-email/replayed invitations fail and removed members cannot use browser, rotated native, or device ingress
+  ---
+  duration_ms: 356.5762
+  ...
+2026-10-24 05:33:22.618 CST [33120] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 05:33:23.563 CST [33120] LOG:  checkpoint complete: wrote 52 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.622 s, total=0.945 s; sync files=10, longest=0.175 s, average=0.063 s; distance=16915 kB, estimate=16915 kB; lsn=11/8EB01868, redo lsn=11/8EB01810
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# Subtest: a credit hold predating a top-up consumes its real paid source exactly once
+ok 21 - a credit hold predating a top-up consumes its real paid source exactly once
+  ---
+  duration_ms: 4841.783
+  ...
+# Subtest: another task's funded hold survives credit consumption; incoming credit repays gross debt
+ok 22 - another task's funded hold survives credit consumption; incoming credit repays gross debt
+  ---
+  duration_ms: 831.2521
+  ...
+# Subtest: released funds from the same original lot merge into one immutable source
+ok 23 - released funds from the same original lot merge into one immutable source
+  ---
+  duration_ms: 125.6276
+  ...
+# Subtest: expired gifts retain held funds and expire only the unused remainder after settlement
+ok 24 - expired gifts retain held funds and expire only the unused remainder after settlement
+  ---
+  duration_ms: 2171.0362
+  ...
+# Subtest: late gifts are consumed before credit, with paid funds and expiry kept separate
+ok 25 - late gifts are consumed before credit, with paid funds and expiry kept separate
+  ---
+  duration_ms: 61.3263
+  ...
+# Subtest: uncertain and over-budget usage keep the original hold without inventing charge sources
+ok 26 - uncertain and over-budget usage keep the original hold without inventing charge sources
+  ---
+  duration_ms: 66.2379
+  ...
+# Subtest: concurrent settlement, top-up and source refund serialize without spending another hold
+ok 27 - concurrent settlement, top-up and source refund serialize without spending another hold
+  ---
+  duration_ms: 166.6413
+  ...
+# Subtest: accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+ok 28 - accumulated balances above Number.MAX_SAFE_INTEGER retain their last micros
+  ---
+  duration_ms: 185.081
+  ...
+2026-10-24 05:33:32.917 CST [3028] ERROR:  Refund ledger writes require independently verified refund evidence
+2026-10-24 05:33:32.917 CST [3028] CONTEXT:  PL/pgSQL function verified_cash_refund_ledger() line 5 at RAISE
+2026-10-24 05:33:32.917 CST [3028] STATEMENT:  COMMIT
+
+2026-10-24 05:33:32.918 CST [3028] WARNING:  there is no transaction in progress
+
+# Subtest: repayment cannot be refunded without independently verified evidence and credit cannot drop below actual debt
+ok 29 - repayment cannot be refunded without independently verified evidence and credit cannot drop below actual debt
+  ---
+  duration_ms: 229.6738
+  ...
+# Subtest: invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+ok 30 - invalid internal integer amounts and settlement rollback cannot leave partial financial effects
+  ---
+  duration_ms: 96.0497
+  ...
+2026-10-24 05:33:33.175 CST [3028] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-24 05:33:33.175 CST [3028] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-24 05:33:33.175 CST [3028] STATEMENT:  COMMIT
+
+2026-10-24 05:33:33.176 CST [3028] WARNING:  there is no transaction in progress
+
+2026-10-24 05:33:33.179 CST [3028] ERROR:  Invalid settlement charge
+2026-10-24 05:33:33.179 CST [3028] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-24 05:33:33.179 CST [3028] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-24 05:33:33.182 CST [3028] ERROR:  Invalid settlement funding bucket
+2026-10-24 05:33:33.182 CST [3028] CONTEXT:  PL/pgSQL function validate_billing_source() line 12 at RAISE
+2026-10-24 05:33:33.182 CST [3028] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,lot_id,amount_micros) VALUES($1,$2,$3,$4,$5,$6)
+
+2026-10-24 05:33:33.185 CST [3028] ERROR:  Settlement sources must equal the confirmed charge
+2026-10-24 05:33:33.185 CST [3028] CONTEXT:  PL/pgSQL function balance_settlement_sources() line 8 at RAISE
+2026-10-24 05:33:33.185 CST [3028] STATEMENT:  COMMIT
+
+2026-10-24 05:33:33.185 CST [3028] WARNING:  there is no transaction in progress
+
+2026-10-24 05:33:33.254 CST [37308] ERROR:  Billing source history is immutable
+2026-10-24 05:33:33.254 CST [37308] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-24 05:33:33.254 CST [37308] STATEMENT:  UPDATE billing_settlement_sources SET amount_micros=1 WHERE id=$1
+
+2026-10-24 05:33:33.256 CST [37308] ERROR:  Billing source history is immutable
+2026-10-24 05:33:33.256 CST [37308] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-24 05:33:33.256 CST [37308] STATEMENT:  DELETE FROM billing_settlement_sources WHERE id=$1
+
+# Subtest: database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+ok 31 - database guards reject incomplete charges, incorrect task/bucket sources and immutable history changes
+  ---
+  duration_ms: 237.5086
+  ...
+2026-10-24 05:33:33.406 CST [3028] ERROR:  Invalid settlement charge
+2026-10-24 05:33:33.406 CST [3028] CONTEXT:  PL/pgSQL function validate_billing_source() line 9 at RAISE
+2026-10-24 05:33:33.406 CST [3028] STATEMENT:  INSERT INTO billing_settlement_sources(tenant_id,task_id,charge_id,kind,amount_micros) VALUES($1,$2,$3,'credit',1)
+
+2026-10-24 05:33:33.451 CST [39532] ERROR:  Billing source history is immutable
+2026-10-24 05:33:33.451 CST [39532] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-24 05:33:33.451 CST [39532] STATEMENT:  UPDATE billing_credit_repayments SET amount_micros=1 WHERE funding_entry_id=$1
+
+2026-10-24 05:33:33.452 CST [39532] ERROR:  Billing source history is immutable
+2026-10-24 05:33:33.452 CST [39532] CONTEXT:  PL/pgSQL function immutable_billing_source() line 2 at RAISE
+2026-10-24 05:33:33.452 CST [39532] STATEMENT:  DELETE FROM billing_credit_repayments WHERE funding_entry_id=$1
+
+# Subtest: source and credit repayment records retain tenant isolation and immutable repayment provenance
+ok 32 - source and credit repayment records retain tenant isolation and immutable repayment provenance
+  ---
+  duration_ms: 84.4995
+  ...
+2026-10-24 05:33:33.613 CST [33120] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 05:33:34.362 CST [33120] LOG:  checkpoint complete: wrote 39 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.554 s, total=0.750 s; sync files=10, longest=0.134 s, average=0.056 s; distance=17232 kB, estimate=17232 kB; lsn=11/8FBD5BC0, redo lsn=11/8FBD5B68
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+2026-10-24 05:33:46.125 CST [29512] ERROR:  Brand versions and source bindings are immutable
+2026-10-24 05:33:46.125 CST [29512] CONTEXT:  PL/pgSQL function guard_brand_version() line 7 at RAISE
+2026-10-24 05:33:46.125 CST [29512] STATEMENT:  UPDATE brand_profile_versions SET body='{}' WHERE brand_id=$1
+
+2026-10-24 05:33:46.174 CST [40660] ERROR:  Publish a new brand version
+2026-10-24 05:33:46.174 CST [40660] CONTEXT:  PL/pgSQL function snapshot_brand_version() line 11 at RAISE
+2026-10-24 05:33:46.174 CST [40660] STATEMENT:  UPDATE brand_profiles SET body='{}' WHERE id=$1
+
+# Subtest: brand publications are immutable, consecutive, audited and retry safe
+ok 33 - brand publications are immutable, consecutive, audited and retry safe
+  ---
+  duration_ms: 6819.0334
+  ...
+# Subtest: fixed specialist context keeps the original body after a new publication and filters expired facts
+ok 34 - fixed specialist context keeps the original body after a new publication and filters expired facts
+  ---
+  duration_ms: 488.3257
+  ...
+# Subtest: actual branded SVG paths, PNG pixels and PDF pages use frozen facts and preserve source references
+ok 35 - actual branded SVG paths, PNG pixels and PDF pages use frozen facts and preserve source references
+  ---
+  duration_ms: 2622.0554
+  ...
+# Subtest: font coverage, usage, channel and language errors are explicit and create no deliverable
+ok 36 - font coverage, usage, channel and language errors are explicit and create no deliverable
+  ---
+  duration_ms: 562.3342
+  ...
+# Subtest: expired or future promotions cannot be substituted, while retained old outputs remain readable
+ok 37 - expired or future promotions cannot be substituted, while retained old outputs remain readable
+  ---
+  duration_ms: 1727.5831
+  ...
+# Subtest: uploaded fonts are pinned by real bytes and version, malformed font structures fail before rendering
+ok 38 - uploaded fonts are pinned by real bytes and version, malformed font structures fail before rendering
+  ---
+  duration_ms: 545.0124
+  ...
+# Subtest: cross-tenant, cross-project, private, viewer and Admin session boundaries remain enforced
+ok 39 - cross-tenant, cross-project, private, viewer and Admin session boundaries remain enforced
+  ---
+  duration_ms: 336.7339
+  ...
+# Subtest: quarantine and deletion revoke direct render derivatives and sanitize immutable brand history
+ok 40 - quarantine and deletion revoke direct render derivatives and sanitize immutable brand history
+  ---
+  duration_ms: 612.8125
+  ...
+# Subtest: Logo minimum size and clear space are checked against the fixed asset version
+ok 41 - Logo minimum size and clear space are checked against the fixed asset version
+  ---
+  duration_ms: 717.604
+  ...
+# Subtest: legacy brand create remains readable and explicit publication is required for constrained rendering
+ok 42 - legacy brand create remains readable and explicit publication is required for constrained rendering
+  ---
+  duration_ms: 117.1882
+  ...
+# Subtest: a real queued designer task and tool replay enforce the frozen brand and record actual font reads
+ok 43 - a real queued designer task and tool replay enforce the frozen brand and record actual font reads
+  ---
+  duration_ms: 1584.8857
+  ...
+# Subtest: additive brand contracts validate real responses and the complete running route inventory
+ok 44 - additive brand contracts validate real responses and the complete running route inventory
+  ---
+  duration_ms: 273.3114
+  ...
+# Subtest: Unicode coverage prefers full repertoire and never unions inconsistent glyph maps
+ok 45 - Unicode coverage prefers full repertoire and never unions inconsistent glyph maps
+  ---
+  duration_ms: 0.3958
+  ...
+2026-10-24 05:33:55.962 CST [33120] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 05:33:57.003 CST [33120] LOG:  checkpoint complete: wrote 34 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.801 s, total=1.042 s; sync files=10, longest=0.196 s, average=0.081 s; distance=17360 kB, estimate=17360 kB; lsn=11/90CC9BC0, redo lsn=11/90CC9B68
+
+1..45
+# tests 45
+# suites 0
+# pass 45
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 54709.0633
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/fd4c13f8-445a-40dd-ace6-1d1ac9e61aa4/result.json","sha256":"1f248cc9d811ea3430b32bbd1bf44c478a18c97826489c1cf4f17759c19b6f87","exit_code":0}
+2026-10-24 05:33:57.826 CST [18708] LOG:  received fast shutdown request
+
+2026-10-24 05:33:58.038 CST [18708] LOG:  aborting any active transactions
+
+2026-10-24 05:33:58.044 CST [18708] LOG:  background worker "logical replication launcher" (PID 41016) exited with exit code 1
+
+2026-10-24 05:33:58.092 CST [33120] LOG:  shutting down
+
+2026-10-24 05:33:58.125 CST [33120] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 05:33:58.345 CST [33120] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.012 s, sync=0.047 s, total=0.253 s; sync files=1, longest=0.047 s, average=0.047 s; distance=0 kB, estimate=15624 kB; lsn=11/90CC9CD8, redo lsn=11/90CC9CD8
+
+2026-10-24 05:33:58.411 CST [18708] LOG:  database system is shut down
+

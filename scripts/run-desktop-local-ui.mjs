@@ -82,7 +82,8 @@ finally {
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
   const videoTools = new Set((journey?.native_video_tool_results ?? []).map(result => result.tool));
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 30 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 32 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+    && journey.generated_video_fixture_closed && ["generated_video_create", "generated_video_status"].every(tool => journey.native_generated_video_tool_results?.some(result => result.tool === tool && result.actual_output))
     && journey.brand_library_media?.skipped_capture_errors === 0 && journey.brand_library_media?.distinct_frames > 1
     && journey.checks.some(check => check.includes("versioned customer changes/acceptance"))
     && journey.native_browser_fixture_closed && journey.native_browser_media?.skipped_capture_errors === 0 && journey.native_browser_media?.distinct_frames > 1

@@ -76,10 +76,20 @@ export class WorkmateRecording {
       "-pix_fmt", "yuv420p", "-movflags", "+faststart", video,
     ], { cwd: this.raw, windowsHide: true, maxBuffer: 2_000_000 });
     assert.equal(encode.stderr, "");
+    // Separate passes keep long real-time captures bounded: a single split
+    // graph would buffer every frame while waiting for the final palette.
+    const palette = path.join(this.raw, "palette.png");
+    const gifFrames = "fps=6,scale=w='trunc(min(1000,iw)/2)*2':h=-2:flags=lanczos";
     await exec("ffmpeg", [
-      "-hide_banner", "-loglevel", "error", "-n", "-i", video, "-an", "-vf",
-      "fps=6,scale=w='trunc(min(1000,iw)/2)*2':h=-2:flags=lanczos,split[a][b];[a]palettegen=max_colors=160:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=3",
-      "-loop", "0", gif,
+      "-hide_banner", "-loglevel", "error", "-n", "-i", video, "-an",
+      "-filter_threads", "1", "-vf", gifFrames + ",palettegen=max_colors=160:stats_mode=diff",
+      "-frames:v", "1", "-threads", "2", palette,
+    ], { windowsHide: true, maxBuffer: 2_000_000 });
+    await exec("ffmpeg", [
+      "-hide_banner", "-loglevel", "error", "-n", "-i", video, "-i", palette,
+      "-an", "-filter_complex_threads", "1", "-filter_complex",
+      "[0:v]" + gifFrames + "[frames];[frames][1:v]paletteuse=dither=bayer:bayer_scale=3",
+      "-threads", "2", "-loop", "0", gif,
     ], { windowsHide: true, maxBuffer: 2_000_000 });
     const probe = JSON.parse((await exec("ffprobe", [
       "-v", "error", "-show_streams", "-show_format", "-of", "json", video,
