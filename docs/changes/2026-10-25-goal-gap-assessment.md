@@ -22,7 +22,7 @@ The follow-up records uncommitted shared-project configuration development witho
 
 本次三份改动文档的 221 个本地链接、26 个差异编号及 102 项需求映射通过；全目录通用检查仍有 6199 条未修改历史归档的相对链接错误，已加入 GAP-25，未修改历史档案或伪报全局通过。All changed-document links and complete gap/requirement numbering pass; the generic global check retains 6199 untouched archive-relative link errors, now recorded under GAP-25. Historical files remain preserved.
 
-## 第二次工作区复核 / Second working-tree review
+## 第二次工作区复核（历史） / Second working-tree review (historical)
 
 更新 GAP-13 与当前状态说明：共享配置已存在后端、Web/Desktop 编辑与继承摘要、Extension 只读摘要和 Admin 内容治理的未提交代码。最新专项为 20 项中 19 通过、1 失败；第一次的数据库权限与两项断言问题在第二次对应检查已通过。当前唯一失败来自测试消息缺少 expected_version；测试源码虽已补齐，尚无重跑回执，不登记通过。两次原始失败报告全部保留。
 
@@ -31,3 +31,13 @@ The follow-up records uncommitted shared-project configuration development witho
 GAP-13 now records candidate Backend services, Web/Desktop editing and inheritance, Extension read-only summaries and Admin governance. The latest focused report is 19/20; the three original failures pass in the second report. Its remaining test omitted required expected_version. Source now supplies that field, but no rerun success is claimed. Both failed reports remain intact.
 
 Rehashing the 1494 selected stage 85 entries finds 1476 exact and 18 changed files, with new files additional to that baseline. All eight actual GitHub refs match the committed local input snapshots. All six component worktrees have unpublished changes, which this documentation-only publication excludes. The linked receipt records current scope, source differences, repository/ref inputs, retained report hashes and scoped document checks. Original requirement and release acceptance remains unchanged. No product source, tests, browser or database was run or changed by this review.
+
+## 第三次工作区复核 / Third working-tree review
+
+再次按当前 Goal 核对 26 个差异组及全部 102 项原需求。GAP-13 更新为限定专项 22/22 通过，包含 19 项共享配置检查和 3 项迁移检查；原私有任务测试缺少 expected_version 的失败已有通过回执，文件分页/字面搜索、撤销来源和 Admin 独立正文权限也在该专项范围内。两份原失败报告及第二次复核记录原样保留。多端实际界面脚本虽已新增，尚无执行回执，不能将其预期检查数计为通过。
+
+复核第三次专项的 1489 个选定源码，全部匹配当前字节，TAP 和验证器摘要均匹配；阶段 85 的 1494 个原选定文件则为 1473 个一致、21 个变化，新增文件另计。实时核对八个实际远程分支，与本次读取的已提交本地输入全部一致；六组件均仍有未提交开发。这次仅同步评估文档和[第三次复核记录](../quality/2026-10-25-goal-gap-review-03.json)，不将未提交功能标记为远程交付，保持原需求与十个发布门槛状态。
+
+The third review checks the current Goal against all 26 gap groups and 102 original requirements. GAP-13 now records a passing 22/22 focused receipt, comprising 19 shared-configuration and three migration checks. The missing-expected_version test failure has passing rerun evidence. File pagination/literal search, revoked-source handling and independent Admin body permissions are covered by this bounded suite. Both failed reports and the second review remain unchanged. Newly added actual-client UI scripts still have no execution receipt.
+
+All 1489 selected source entries and the TAP/verifier digests match the third receipt. The original stage 85 manifest has 1473 exact entries and 21 changes out of 1494, with new files additional. All eight actual remote refs match committed local input snapshots; all six component worktrees retain unpublished development. This documentation-only synchronization updates the assessment and third review receipt without publishing candidate product code, rerunning product tests, opening a browser/database or closing complete requirement/release acceptance.
