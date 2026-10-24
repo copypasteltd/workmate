@@ -837,6 +837,12 @@ function Value({ field, value }: { field: string; value: any }) {
     return <span>{t("創意身份映射", "Creative identity mapping")}</span>;
   if (field === "kind" && value === "creative_feedback_reports")
     return <span>{t("創意反饋", "Creative feedback")}</span>;
+  if (field === "kind" && value === "geo_experiments")
+    return <span>{t("GEO 配置版本", "GEO configuration version")}</span>;
+  if (field === "kind" && value === "geo_runs")
+    return <span>{t("GEO 觀測紀錄", "GEO observation run")}</span>;
+  if (field === "kind" && value === "geo_samples")
+    return <span>{t("GEO 回答樣本", "GEO answer sample")}</span>;
   if (field === "confirmed_customer_charges")
     return value ? (
       <Money value={value.amount_micros} currency={value.currency} />
