@@ -56,6 +56,9 @@ export class RetentionService {
           ["analytics_datasets", "content_state", "true"],
           ["creative_mappings", "content_state", "true"],
           ["creative_feedback_reports", "content_state", "true"],
+          ["geo_experiments", "content_state", "true"],
+          ["geo_runs", "content_state", "true"],
+          ["geo_samples", "content_state", "true"],
           [
             "tasks",
             "content_state",

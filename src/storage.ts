@@ -285,6 +285,8 @@ type AssetInput = {
   conversation?: string;
   metadata?: unknown;
   sourceUpload?: string;
+  /** Server-selected private artifact without an artificial conversation. */
+  privateOwner?: string;
 };
 export async function saveAsset(
   tx: Tx,
@@ -331,7 +333,9 @@ async function saveAssetContent(
     )
   ).rows[0].id;
   const sourceTask = running ?? metadata.task_id;
-  let privateOwner: string | null = null;
+  if (b.privateOwner && b.privateOwner !== b.user)
+    throw new Problem(403, "PRIVATE_ARTIFACT_OWNER", "Private artifacts must belong to the creating user");
+  let privateOwner: string | null = b.privateOwner ?? null;
   if (b.conversation) {
     const conversation = (
       await tx.query(
@@ -352,6 +356,8 @@ async function saveAssetContent(
       )
     ).rows[0];
     if (!task) throw new Problem(404, "NOT_FOUND", "Source task not found");
+    if (b.privateOwner && task.private_owner !== b.privateOwner)
+      throw new Problem(409, "PRIVATE_ARTIFACT_OWNER", "The source task and private artifact must have the same owner");
     privateOwner = task.private_owner;
     metadata.task_id = sourceTask;
     if (task.conversation_id) metadata.conversation_id = task.conversation_id;

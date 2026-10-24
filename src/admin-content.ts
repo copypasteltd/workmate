@@ -20,6 +20,9 @@ const tables = [
   "analytics_datasets",
   "creative_mappings",
   "creative_feedback_reports",
+  "geo_experiments",
+  "geo_runs",
+  "geo_samples",
   "workflows",
   "workflow_runs",
   "workflow_schedules",
@@ -154,7 +157,12 @@ export function registerAdminContent(
             };
           }
           const body =
-            table === "brand_profiles"
+            table === "geo_samples"
+              ? { question: r.body.question, run_id: r.run_id, task_id: r.task_id, asset_version_id: r.asset_version_id,
+                  answer_sha256: r.answer_sha256, observed_at: r.observed_at, captured_at: r.captured_at, analysis: r.analysis }
+              : table === "geo_runs"
+                ? { ...r.body, experiment_id: r.experiment_id, surface: r.surface, config_hash: r.config_hash }
+                : table === "brand_profiles"
               ? { current_version: r.version, versions: (await tx.query("SELECT version,name,body,sha256,created_at,created_by FROM brand_profile_versions WHERE brand_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100", [r.id])).rows }
               : table === "creative_projects" && r.kind === "creative_matrix"
               ? await matrixContentBody(tx, r)

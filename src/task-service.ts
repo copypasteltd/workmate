@@ -76,6 +76,8 @@ export async function enqueueTask(
       throw new Problem(409, "EXECUTION_LOCATION_CHANGED", "Continue the task in its original execution location");
     if (parent.private_owner && parent.private_owner !== actor.id)
       throw new Problem(404, "NOT_FOUND", "Original task not found");
+    if (parent.input_context?.geo_sample_id)
+      throw new Problem(409, "GEO_NEW_RUN_REQUIRED", "Repeat an observation through a new GEO run with the reviewed fixed configuration");
     if (parent.input_context?.seo_change_task_id)
       throw new Problem(
         409,

@@ -1,5 +1,67 @@
 # Workmate · CopyPaste Backend
 
+<!-- geo-observation-stage83 -->
+
+GEO now has reproducible question sets and retained original answers. An immutable configuration pins the complete Agent definition, skills, requested model alias, Codex runtime, language, requested region and protocol. Independent API repeats keep the same configuration; user-supplied consumer answers remain a separate surface.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-platform'
+npm ci
+npm run setup:local
+npm run db:local
+```
+
+Keep that database terminal open. In a second terminal in the same repository, run `npm run db:migrate` and then `npm run dev`. API: `http://localhost:4310`. SQL100 must be applied before upgrading clients. Create/enrol an administrator with the existing `admin:create` runbook and current MFA; no shared default Admin credentials are supplied.
+
+### Use the current workflow
+
+1. Sign in through the existing email flow and select your company/project. In **Marketing insights → GEO observations**, create an unbranded Agent in Specialists, then save fixed questions and measured brand aliases. Aliases are excluded from the observation question. Editing a question, region, language or Agent creates a new immutable version from the reviewed previous hash.
+2. **Run API observation** displays current active-task capacity and an exact per-question budget. Explicitly review the unchecked confirmation. Each question needs one available task slot; the backend checks and reserves the complete batch atomically. Starter's single slot cannot run a two-question batch. Each independent cloud Codex task uses the company Responses gateway with no memory/history, retrieval or business tools. Repeating creates another run.
+3. **Capture completed answers** stores actual successful task output once as a private UTF-8 asset with SHA-256 and observation time. Capture does not call the model again. Open the original answer, download its exact text, or export the full JSON. Missing answers stay absent; unknown usage remains under reconciliation with no invented zero charge. JSON timestamps remain ISO strings even for an unfinished export.
+4. **Record consumer sample** requires the product, observed region/language/time, optional displayed model, retrieval state and an initially unchecked attestation. The form records one selected question; the API accepts up to 20 known questions. Paste the complete original answer. Metadata is user supplied and unverified; no AI task or model fee is created.
+5. Choose comparison A/B, including across configuration versions. The actual downloadable JSON includes both original answers, hashes and effective configurations. Same-configuration repeats are distinguished from configuration changes; API and consumer/manual surfaces are not aggregated. Literal aliases and answer links do not establish entity identity, recommendation, rankings, independently retrieved evidence or causation. Requested region is prompt context; provider processing region and resolved underlying model are unknown.
+6. Records are private to their creator under current project authorization and forced RLS. Admin metadata, independent `admin.content.body.read`, project-scoped quarantine/restore/delete and audit cover configurations, runs and samples. An explicitly published answer copy preserves its GEO provenance. Isolation, expiry or deletion blocks current exports, managed reads and derived outputs. Default retention is 90 days; the erasure journal cancels/settles actual tasks and removes answer files and retained task copies. Files already saved outside the service cannot be recalled.
+
+Desktop keeps **local Codex**, revocable full-machine consent, its frameless native window and no Electron menu. Its clearly labelled **GEO observations · Browser** entry opens the configured company Web URL; it does not start a cloud substitute for a local Agent. A Desktop-local GEO protocol is still open. Native wheel/Home/End, whole-page Ctrl+Home, last-item focus and genuine progress remain usable without visible vertical/horizontal scrollbar rails. Extension keeps a ChatGPT-style conversation/attachment interface, authorized local-file uploads and cloud Codex in the actual right Chrome Side Panel; the GEO entry opens the company Web workspace, with no Desktop dependency.
+
+Validation is bounded: platform **968/968**, every previous **946** case retained; GEO core **22**, clients **124**, actual Web/Admin/native Side Panel **13**, packaged local Desktop **37**. SQL100 is additive; SQL001–099 and the original OpenAPI bytes are unchanged. Model, image and consumer/ad data are explicit synthetic fixtures. Real-provider quality/rankings, all professional roles, signing, full Codex Desktop parity, performance/capacity and complete original acceptance remain open. Original **102 REQ / 102 TC: 83 partial, 19 unproven, 0 fully accepted; G01–G10 not proven**.
+
+Interactive qualifications retain exact product/runtime sources. Later test-only edits update two latest-migration expectations from 99 to 100 and explicitly bound the historical 098-to-099 fixture to 99. Original data, source OID, prepared-reader and replay checks remain. Complete regression qualification spans 19 isolated batches: unchanged-source batches 01–07 from run 33 and fresh batches 08–19 from run 34. Both affected test files execute afresh; every current runtime and executed test/helper byte is checked. Original failed receipts remain failed.
+
+
+[Design and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/83-reproducible-geo-observations.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/geo-observation-checkpoint.json) · [Additive API contract](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/geo-observation-openapi.json)
+
+```mermaid
+flowchart LR
+    Login[Email / company / project] --> Version[Immutable questions and harness]
+    Version --> API[Independent Codex API runs]
+    Version --> Manual[User-attested consumer answers]
+    API --> Retained[Private original bytes and hashes]
+    Manual --> Retained
+    Retained --> Compare[Separate surfaces and configuration differences]
+    Compare --> Export[Actual JSON download]
+    Admin[Scoped Admin / expiry / deletion] --> Gate[Current source checks]
+    Gate --> Retained
+    Gate --> Export
+```
+
+Actual UI screenshots and observed-time interaction capture. All business/model content shown is synthetic; native Side Panel captures come from Chrome's real SIDE_PANEL context.
+
+![Actual current viewport](assets/screenshots/stage83-web-workmate-geo-05-original-api-answer.png)
+
+![Actual second locale/state](assets/screenshots/stage83-web-workmate-geo-05-compact-zh-dark.png)
+
+![Recorded interaction](assets/screenshots/stage83-web-workmate-geo-05-geo-observations.gif)
+
+[Original MP4](assets/screenshots/stage83-web-workmate-geo-05-geo-observations.mp4)
+
+<details>
+<summary>Earlier delivery details (historical evidence scopes)</summary>
+
 <!-- creative-feedback-stage82 -->
 ## Confirmed creative feedback and native layout
 
@@ -490,6 +552,8 @@ flowchart LR
 
 </details>
 
+
+</details>
 
 </details>
 

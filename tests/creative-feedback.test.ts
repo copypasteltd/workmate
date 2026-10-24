@@ -321,7 +321,7 @@ test("098 upgrade retains the source function OID, prepared reader and existing 
     const t = randomUUID(), p = randomUUID();
     assert.deepEqual((await client.query(`EXECUTE retained_source_reader('${t}','${p}')`)).rows[0].refs, []);
     const before = (await client.query("SELECT count(*)::int AS n FROM schema_migrations")).rows[0].n;
-    await runMigrations(client, "098 to confirmed creative feedback");
+    await runMigrations(client, "098 to confirmed creative feedback", { throughVersion: 99 });
     assert.equal((await client.query("SELECT 'content_source_manifest(uuid,uuid,uuid[],uuid[])'::regprocedure::oid AS id")).rows[0].id, oid);
     assert.deepEqual((await client.query(`EXECUTE retained_source_reader('${t}','${p}')`)).rows[0].refs, []);
     assert.equal((await client.query("SELECT count(*)::int AS n FROM schema_migrations")).rows[0].n, before + 1);

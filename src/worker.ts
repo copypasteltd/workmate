@@ -1046,6 +1046,9 @@ export class Worker {
     );
   }
   private tools(t: any, actor: Principal, fencing: string, role: any, videoReady = false): RuntimeContext["tools"] {
+    // A fixed GEO observation has no retrieval, file, connector or mutation
+    // tools, regardless of tools available to the selected specialist role.
+    if (t.input_context?.geo_sample_id) return [];
     return new TaskBusinessTools(this.db, this.catalog, this.storage, {
       authorize: tx => this.authorizeTaskRequest(tx, t, actor, fencing),
       inference: request => this.authorizeInference(t, actor, fencing, request),

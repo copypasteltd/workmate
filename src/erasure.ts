@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { Database, Tx } from "./db.js";
 import type { Storage } from "./storage.js";
 import { eraseReplayContent } from "./access.js";
+import { requestTaskCancellation } from "./task-control.js";
 
 const targets = new Set([
   "assets",
@@ -13,6 +14,9 @@ const targets = new Set([
   "analytics_datasets",
   "creative_mappings",
   "creative_feedback_reports",
+  "geo_experiments",
+  "geo_runs",
+  "geo_samples",
   "workflows",
   "workflow_runs",
   "workflow_schedules",
@@ -209,6 +213,29 @@ export class ErasureService {
     const id = j.target_id;
     await eraseReplayContent(tx, [id]);
     switch (j.target_type) {
+      case "geo_experiments":
+      case "geo_runs": {
+        const childTable = j.target_type === "geo_experiments" ? "geo_runs" : "geo_samples";
+        const parentColumn = j.target_type === "geo_experiments" ? "experiment_id" : "run_id";
+        await tx.query(`INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM ${childTable} c
+          JOIN deletion_jobs d ON d.target_type=$3 AND d.target_id=c.id WHERE c.${parentColumn}=$1 ON CONFLICT DO NOTHING`, [id, j.id, childTable]);
+        await tx.query(`UPDATE ${j.target_type} SET name='[deleted]',body='{}' WHERE id=$1`, [id]);
+        break;
+      }
+      case "geo_samples": {
+        const sample = (await tx.query("SELECT * FROM geo_samples WHERE id=$1", [id])).rows[0];
+        if (sample.task_id) {
+          const task = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [sample.task_id])).rows[0];
+          await requestTaskCancellation(tx, task);
+          await tx.query("UPDATE tasks SET content_state='deleted',version=version+1 WHERE id=$1 AND content_state<>'deleted'", [sample.task_id]);
+        }
+        if (sample.asset_version_id) await tx.query("UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=(SELECT asset_id FROM asset_versions WHERE id=$1) AND state<>'deleted'", [sample.asset_version_id]);
+        await tx.query(`INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $1,d.id FROM deletion_jobs d WHERE
+          (d.target_type='tasks' AND d.target_id=$2) OR (d.target_type='assets' AND d.target_id=(SELECT asset_id FROM asset_versions WHERE id=$3)) ON CONFLICT DO NOTHING`,
+        [j.id, sample.task_id, sample.asset_version_id]);
+        await tx.query("UPDATE geo_samples SET name='[deleted]',body='{}',analysis=NULL WHERE id=$1", [id]);
+        break;
+      }
       case "workspace_nodes":
         await tx.query(
           "UPDATE workspace_nodes SET name='[deleted]',asset_version_id=NULL WHERE id=$1",
