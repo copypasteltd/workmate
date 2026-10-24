@@ -1,0 +1,386 @@
+2026-10-24 10:02:27.423 CST [18148] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 10:02:27.429 CST [18148] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 10:02:27.429 CST [18148] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 10:02:28.193 CST [32352] LOG:  database system was shut down at 2026-10-24 10:02:20 CST
+
+2026-10-24 10:02:28.546 CST [18148] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+2026-10-24 10:02:49.975 CST [15612] ERROR:  Campaign source and correction bindings are immutable
+2026-10-24 10:02:49.975 CST [15612] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 7 at RAISE
+2026-10-24 10:02:49.975 CST [15612] STATEMENT:  UPDATE analytics_datasets SET source_asset_version_id=NULL WHERE id=$1
+
+2026-10-24 10:02:50.021 CST [28072] ERROR:  Source state follows the original asset lifecycle
+2026-10-24 10:02:50.021 CST [28072] CONTEXT:  PL/pgSQL function guard_campaign_file_binding() line 11 at RAISE
+2026-10-24 10:02:50.021 CST [28072] STATEMENT:  UPDATE analytics_datasets SET source_state='quarantined' WHERE id=$1
+
+# Subtest: canonical file imports deduplicate concurrent requests and legacy CSV; pinned versions survive later uploads
+ok 1 - canonical file imports deduplicate concurrent requests and legacy CSV; pinned versions survive later uploads
+  ---
+  duration_ms: 18566.2094
+  ...
+# Subtest: canonical XLSX freezes mapping and file bytes; malformed cells and formula exports never write a snapshot
+ok 2 - canonical XLSX freezes mapping and file bytes; malformed cells and formula exports never write a snapshot
+  ---
+  duration_ms: 616.4352
+  ...
+# Subtest: corrections retain immutable history and prohibit direct or transitive double counting before task creation
+ok 3 - corrections retain immutable history and prohibit direct or transitive double counting before task creation
+  ---
+  duration_ms: 785.0985
+  ...
+# Subtest: source quarantine and deletion revoke dataset, evidence and report access; independent dataset quarantine is preserved
+ok 4 - source quarantine and deletion revoke dataset, evidence and report access; independent dataset quarantine is preserved
+  ---
+  duration_ms: 1293.7601
+  ...
+# Subtest: project and tenant boundaries, private files, viewers and CSRF are checked on imports and replay
+ok 5 - project and tenant boundaries, private files, viewers and CSRF are checked on imports and replay
+  ---
+  duration_ms: 183.6229
+  ...
+2026-10-24 10:02:53.333 CST [42096] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 10:02:55.653 CST [42096] LOG:  checkpoint complete: wrote 38 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.025 s, sync=1.317 s, total=2.321 s; sync files=12, longest=0.430 s, average=0.110 s; distance=17671 kB, estimate=17671 kB; lsn=12/B4D1C680, redo lsn=12/B4D1C628
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+2026-10-24 10:03:17.251 CST [41884] ERROR:  Analytics snapshots are immutable; import a new snapshot
+2026-10-24 10:03:17.251 CST [41884] CONTEXT:  PL/pgSQL function guard_analytics_snapshot() line 15 at RAISE
+2026-10-24 10:03:17.251 CST [41884] STATEMENT:  UPDATE analytics_datasets SET rows='[]' WHERE id=$1
+
+2026-10-24 10:03:17.255 CST [41884] ERROR:  Analytics snapshots are immutable; import a new snapshot
+2026-10-24 10:03:17.255 CST [41884] CONTEXT:  PL/pgSQL function guard_analytics_snapshot() line 15 at RAISE
+2026-10-24 10:03:17.255 CST [41884] STATEMENT:  UPDATE analytics_datasets SET metric_snapshot='{}' WHERE id=$1
+
+2026-10-24 10:03:17.258 CST [41884] ERROR:  Analytics snapshots use content erasure, not physical deletion
+2026-10-24 10:03:17.258 CST [41884] CONTEXT:  PL/pgSQL function guard_analytics_snapshot() line 4 at RAISE
+2026-10-24 10:03:17.258 CST [41884] STATEMENT:  DELETE FROM analytics_datasets WHERE id=$1
+
+# Subtest: preview does not write; concurrent identical imports return one immutable project snapshot
+ok 6 - preview does not write; concurrent identical imports return one immutable project snapshot
+  ---
+  duration_ms: 19240.5432
+  ...
+# Subtest: source downloads are byte-exact; reports and charts retain stable evidence and scope
+ok 7 - source downloads are byte-exact; reports and charts retain stable evidence and scope
+  ---
+  duration_ms: 359.4704
+  ...
+# Subtest: quarantined source cannot be reimported; deletion clears retained CSV and mappings before a new snapshot
+ok 8 - quarantined source cannot be reimported; deletion clears retained CSV and mappings before a new snapshot
+  ---
+  duration_ms: 770.8243
+  ...
+# Subtest: membership and project revocation apply to every derivative; unknown values survive source/export
+ok 9 - membership and project revocation apply to every derivative; unknown values survive source/export
+  ---
+  duration_ms: 319.9364
+  ...
+2026-10-24 10:03:18.857 CST [42096] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 10:03:21.489 CST [42096] LOG:  checkpoint complete: wrote 45 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.221 s, sync=1.147 s, total=2.632 s; sync files=10, longest=0.183 s, average=0.115 s; distance=17417 kB, estimate=17646 kB; lsn=12/B5E1EDE8, redo lsn=12/B5E1ED90
+
+# Subtest: authoritative Decimal vector: weighted-ratios
+ok 10 - authoritative Decimal vector: weighted-ratios
+  ---
+  duration_ms: 5.2579
+  ...
+# Subtest: authoritative Decimal vector: zero-denominators
+ok 11 - authoritative Decimal vector: zero-denominators
+  ---
+  duration_ms: 0.4288
+  ...
+# Subtest: authoritative Decimal vector: unknown-conversions
+ok 12 - authoritative Decimal vector: unknown-conversions
+  ---
+  duration_ms: 0.2074
+  ...
+# Subtest: authoritative Decimal vector: currency-separation
+ok 13 - authoritative Decimal vector: currency-separation
+  ---
+  duration_ms: 0.3751
+  ...
+# Subtest: decimal conversion sums retain eight fractional places; unknown rows do not become zero
+ok 14 - decimal conversion sums retain eight fractional places; unknown rows do not become zero
+  ---
+  duration_ms: 22.353
+  ...
+# Subtest: CSV fact identity skips identical rows, rejects conflicts and retains source and mappings
+ok 15 - CSV fact identity skips identical rows, rejects conflicts and retains source and mappings
+  ---
+  duration_ms: 3.5693
+  ...
+# Subtest: official-style Google/Meta headers require explicit daily account, grain and attribution scope
+ok 16 - official-style Google/Meta headers require explicit daily account, grain and attribution scope
+  ---
+  duration_ms: 4.1754
+  ...
+# Subtest: bad CSV fields report physical lines; ambiguous and duplicate mappings cannot silently choose a metric
+ok 17 - bad CSV fields report physical lines; ambiguous and duplicate mappings cannot silently choose a metric
+  ---
+  duration_ms: 6.4594
+  ...
+# Subtest: XLSX sparse rows, multiline strings and stored decimals retain exact money and actual file identity
+ok 18 - XLSX sparse rows, multiline strings and stored decimals retain exact money and actual file identity
+  ---
+  duration_ms: 37.9702
+  ...
+# Subtest: XML numeric references preserve Unicode and attributes without recursive decoding or invalid-codepoint removal
+ok 19 - XML numeric references preserve Unicode and attributes without recursive decoding or invalid-codepoint removal
+  ---
+  duration_ms: 35.9257
+  ...
+# Subtest: shared rich strings preserve labels and worksheet choices are explicit
+ok 20 - shared rich strings preserve labels and worksheet choices are explicit
+  ---
+  duration_ms: 15.2267
+  ...
+# Subtest: 1900 and 1904 dates have explicit calendar behavior and invalid date serials are rejected
+ok 21 - 1900 and 1904 dates have explicit calendar behavior and invalid date serials are rejected
+  ---
+  duration_ms: 8.401
+  ...
+# Subtest: header selection and hidden rows are retained; row errors refer to the original cell after multiline records
+ok 22 - header selection and hidden rows are retained; row errors refer to the original cell after multiline records
+  ---
+  duration_ms: 9.1844
+  ...
+# Subtest: formula cells never use cached results; external links, macros, DTD and bad styles fail closed
+ok 23 - formula cells never use cached results; external links, macros, DTD and bad styles fail closed
+  ---
+  duration_ms: 9.2097
+  ...
+# Subtest: ZIP integrity, traversal and expansion limits are validated before interpreting workbook XML
+ok 24 - ZIP integrity, traversal and expansion limits are validated before interpreting workbook XML
+  ---
+  duration_ms: 3.5153
+  ...
+# Subtest: CSV file and legacy text imports share a snapshot identity; plain formula-like labels stay literal
+ok 25 - CSV file and legacy text imports share a snapshot identity; plain formula-like labels stay literal
+  ---
+  duration_ms: 3.036
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 25
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 54114.214
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/f48c41ce-6cc9-4f5e-800e-aa3c4085536c/result.json","sha256":"5a518344d841883484aaf2cfe049e2c4ed4e32a1cbb20dca3b3f0b0e330dae9d","exit_code":0}
+2026-10-24 10:03:24.444 CST [18148] LOG:  received fast shutdown request
+
+2026-10-24 10:03:24.636 CST [18148] LOG:  aborting any active transactions
+
+2026-10-24 10:03:24.647 CST [18148] LOG:  background worker "logical replication launcher" (PID 42692) exited with exit code 1
+
+2026-10-24 10:03:24.665 CST [42096] LOG:  shutting down
+
+2026-10-24 10:03:24.772 CST [42096] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 10:03:27.699 CST [42096] LOG:  checkpoint complete: wrote 7 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.006 s, sync=1.413 s, total=3.034 s; sync files=5, longest=0.645 s, average=0.283 s; distance=47 kB, estimate=15886 kB; lsn=12/B5E2ABF0, redo lsn=12/B5E2ABF0
+
+2026-10-24 10:03:28.772 CST [18148] LOG:  database system is shut down
+

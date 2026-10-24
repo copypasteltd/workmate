@@ -63,9 +63,9 @@ try {
     validators: any = {};
   for (const name of Object.keys(defs))
     validators[name] = ajv.compile({ $defs: defs, $ref: "#/$defs/" + name });
-  assert.equal(Object.keys(contract.paths).length, 11);
+  assert.equal(Object.keys(contract.paths).length, 13);
   checks.push(
-    `all ${Object.keys(defs).length} supplemental schemas compile with resolved references across 11 operations`,
+    `all ${Object.keys(defs).length} supplemental schemas compile with resolved references across 13 paths`,
   );
   const { capabilityDraft, rateInput } = await import(
       pathToFileURL(path.join(admin, "src/capability-model.ts")).href
@@ -103,12 +103,21 @@ try {
   checks.push(
     "actual Admin image serialization agrees with the server and contract for a positive single-image rate and null effort",
   );
+  const videoForm = form(true);
+  videoForm.set("profile", "internal-video-v1"); videoForm.set("video_rate", "0.000001");
+  const video = capabilityDraft(videoForm);
+  assert.deepEqual(video.document.rates, [1]); assert.equal(video.document.reasoning_effort, null);
+  assert.ok(validators.CapabilityDraftCommand(video));
+  assert.deepEqual(capabilityDocument.parse(video.document), video.document);
+  videoForm.set("video_rate", "0"); assert.throws(() => capabilityDraft(videoForm));
+  checks.push("actual Admin video serialization agrees with the server and contract for a positive per-second rate and refuses zero");
   const invalid = [
     { ...text.document, kernel: "dsh" },
     { ...text.document, gateway_policy: "external" },
     { ...text.document, api_key: "synthetic-forbidden-value" },
     { ...text.document, endpoint: "https://example.invalid" },
     { ...text.document, profile_key: "internal-video-v1" },
+    { ...text.document, profile_key: "internal-speech-v1" },
     { ...text.document, rates: [1.5, 2] },
     { ...text.document, rates: [1] },
     { ...image.document, reasoning_effort: "max" },
