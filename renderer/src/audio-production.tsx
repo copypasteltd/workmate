@@ -11,8 +11,62 @@ interface AudioJob { id: string; task_id: string; kind: string; state: string; r
   delivery_state: string; assets: AudioAsset[] }
 interface Cue { start_ms: number; end_ms: number; text: string }
 interface Transcript { text: string; cues: Cue[]; timing_source: string; duration_ms: number; revision: number }
+interface AudioAuthorization { id: string; task_id: string; state: string; revision: number; specification_hash: string;
+  quoted_micros: string; quoted_units: string; pricing_unit: string; expires_at: string; confirmed_at: string | null;
+  proposal: { kind: string; text?: string; voice?: string; locale: string; speed?: number; timestamps?: boolean;
+    rights: { reference: string; purpose: string } };
+  source: { asset_id: string; version: number; sha256: string; duration_ms: number } | null }
 const states: Record<string, [string, string]> = { prepared: ["準備音訊", "Preparing audio"], dispatched: ["正在處理", "Processing"],
   completed: ["處理完成", "Completed"], cancelled: ["已停止", "Stopped"], unknown: ["結果與費用待核對", "Outcome and cost unconfirmed"] };
+
+function AudioConsent({ base, request, onChanged }: { base: string; request: AudioAuthorization; onChanged: () => void }) {
+  const { t } = useI18n(), [checked, setChecked] = useState(false), [reference, setReference] = useState(""), [purpose, setPurpose] = useState("");
+  const [busy, setBusy] = useState(false), [error, setError] = useState<unknown>(null), [now, setNow] = useState(Date.now());
+  const intent = useRef<{ body: string; action: string; key: string } | null>(null), spec = request.proposal;
+  useEffect(() => { if (request.state !== "pending") return; const timer = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(timer); }, [request.state]);
+  const expired = now >= new Date(request.expires_at).getTime(), pending = request.state === "pending";
+  const act = async (action: "confirm" | "decline" | "withdraw") => {
+    setBusy(true); setError(null);
+    const body = { expected_revision: request.revision, specification_hash: request.specification_hash, quoted_micros: request.quoted_micros,
+      ...(action === "confirm" ? { confirm_authorized_use: checked, rights_reference: reference, purpose } : {}) };
+    const frozen = JSON.stringify(body);
+    if (intent.current?.body !== frozen || intent.current.action !== action) intent.current = { body: frozen, action, key: crypto.randomUUID() };
+    try { await post(`${base}/audio-authorizations/${request.id}/${action}`, body, intent.current.key); intent.current = null; onChanged(); }
+    catch (failure) { setError(failure); onChanged(); } finally { setBusy(false); }
+  };
+  const stateNames: Record<string, [string, string]> = { confirmed: ["已由你確認", "Confirmed by you"], declined: ["你已拒絕", "Declined by you"],
+    withdrawn: ["你已撤回授權", "Authorization withdrawn"], expired: ["確認已逾時", "Confirmation expired"], cancelled: ["此操作已停止", "Operation stopped"] };
+  return <article className="audio-card audio-consent" data-audio-authorization={request.id}>
+    <header><span className="audio-icon">{spec.kind === "speech" ? <Mic2 size={20} /> : <FileAudio size={20} />}</span><div>
+      <strong>{pending ? t("確認配音或轉寫", "Confirm speech or transcription") : t(...(stateNames[request.state] ?? ["此操作已停止", "Operation stopped"]))}</strong>
+      <p>{spec.kind === "speech" ? t("將以下文案製作成 AI 配音", "Create AI speech from this exact script") : t("轉寫你選定的音訊版本", "Transcribe your selected audio version")}</p></div></header>
+    <dl><div><dt>{t("本次公司費用上限", "Company charge limit for this operation")}</dt><dd><Money value={request.quoted_micros} /></dd></div>
+      <div><dt>{t("語言與聲音", "Language and voice")}</dt><dd>{spec.locale}{spec.voice ? ` · ${spec.voice} · ×${spec.speed}` : ""}</dd></div>
+      <div><dt>{t("計費量", "Billable quantity")}</dt><dd>{request.quoted_units} {request.pricing_unit === "unicode_scalar" ? t("字元", "characters") : t("音訊毫秒", "audio milliseconds")}</dd></div></dl>
+    <details className="audio-consent-proposal" open={pending}><summary>{t("核對文案、音源與用途", "Review script, source and intended use")}</summary>
+      {spec.kind === "speech" ? <p className="audio-transcript-text">{spec.text}</p> : request.source && <dl>
+        <div><dt>{t("音源版本", "Source version")}</dt><dd>{request.source.asset_id} · v{request.source.version}</dd></div>
+        <div><dt>SHA-256</dt><dd>{request.source.sha256}</dd></div><div><dt>{t("實際時長", "Actual duration")}</dt><dd>{request.source.duration_ms / 1000} {t("秒", "seconds")}</dd></div>
+        <div><dt>{t("字幕時間", "Subtitle timing")}</dt><dd>{spec.timestamps ? t("服務實際分段", "Actual service segments") : t("只有文字", "Text only")}</dd></div></dl>}
+      <p>{t("擬定用途：", "Proposed use: ")}{spec.rights.purpose}</p><p className="muted">{t("提案引用：", "Proposal reference: ")}{spec.rights.reference}</p>
+    </details>
+    <ErrorNotice error={error} />
+    {pending && <form className="audio-consent-form" onSubmit={e => { e.preventDefault(); if (!busy && checked && !expired) void act("confirm"); }}>
+      <p className="muted" role="status">{expired ? t("確認已逾時，不會派發音訊請求。", "Confirmation expired. No audio request will be submitted.")
+        : t("請在五分鐘內核對並確認。等待確認不會派發音訊請求；原任務已產生的用量仍按實際計費。", "Review and confirm within five minutes. Waiting submits no audio request; usage already incurred by the original task remains chargeable.")}</p>
+      <label className="field">{t("你的授權或權利依據", "Your rights or authorization reference")}<textarea name="audio_rights_reference" rows={2} minLength={3} maxLength={300} required
+        value={reference} disabled={busy || expired} onChange={e => setReference(e.target.value)} /></label>
+      <label className="field">{t("你確認的具體用途", "The specific use you approve")}<textarea name="audio_purpose" rows={2} minLength={3} maxLength={1000} required
+        value={purpose} disabled={busy || expired} onChange={e => setPurpose(e.target.value)} /></label>
+      <label className="audio-consent-check"><input type="checkbox" name="audio_authorized" required checked={checked} disabled={busy || expired} onChange={e => setChecked(e.target.checked)} />
+        <span>{t("我有權使用上述文案、音源及聲音，並確認此用途與本次費用上限。", "I have the rights to use this script, audio and voice, and approve this use and charge limit.")}</span></label>
+      <div className="audio-actions"><button className="button primary" disabled={busy || !checked || expired}>{busy ? t("正在提交…", "Submitting…") : t("確認並繼續", "Confirm and continue")}</button>
+        <button type="button" className="button secondary" disabled={busy} onClick={() => void act("decline")}>{t("拒絕此操作", "Decline this operation")}</button></div>
+    </form>}
+    {request.state === "confirmed" && <div className="audio-consent-after"><p className="muted">{t("可隨時撤回。撤回會阻止後續派發與交付；已發送請求的實際或待確認費用會保留。", "You can withdraw at any time. Withdrawal blocks later dispatch and delivery; actual or unconfirmed charges for submitted requests remain.")}</p>
+      <button className="button secondary" disabled={busy} onClick={() => void act("withdraw")}>{t("撤回此授權", "Withdraw this authorization")}</button></div>}
+  </article>;
+}
 
 function AudioPreview({ base, job }: { base: string; job: AudioJob }) {
   const { t } = useI18n(), [url, setURL] = useState(""), [error, setError] = useState<unknown>(null);
@@ -97,11 +151,14 @@ export function AudioProductions({ base, taskId }: { base: string; taskId: strin
   const cancelIntent = useRef<{ job: string; revision: number; key: string } | null>(null);
   const query = new URLSearchParams({ task_id: taskId, limit: "20", ...(cursor ? { cursor } : {}) });
   const result = useData<{ items: AudioJob[]; next_cursor: string | null }>(`${base}/audio-jobs?${query}`, refresh, 5000);
-  if (!result.data?.items.length && !result.error && !error) return null;
+  const consents = useData<{ items: AudioAuthorization[] }>(`${base}/audio-authorizations?task_id=${encodeURIComponent(taskId)}&limit=8`, refresh, 3000);
+  if (!result.data?.items.length && !consents.data?.items.length && !result.error && !consents.error && !error) return null;
   return <section className="audio-productions" aria-label={t("配音與字幕", "Speech and subtitles")}>
     <header className="audio-heading"><span className="eyebrow">WORDS, WITH A VOICE.</span><h3>{t("配音與字幕", "Speech and subtitles")}</h3>
       <button className="text-button" aria-label={t("重新整理音訊", "Refresh audio")} onClick={() => setRefresh(v => v + 1)}><RefreshCw size={16} /></button></header>
-    <ErrorNotice error={result.error ?? error} />
+    <ErrorNotice error={result.error ?? consents.error ?? error} />
+    {consents.data?.items.slice().sort((a, b) => Number(b.state === "pending") - Number(a.state === "pending")).map(request =>
+      <AudioConsent key={request.id} base={base} request={request} onChanged={() => setRefresh(v => v + 1)} />)}
     {result.data?.items.map(job => <article className="audio-card" key={job.id} data-audio-job={job.id}>
       <header><span className="audio-icon">{job.kind === "speech" ? <Mic2 size={20} /> : <FileAudio size={20} />}</span><div><strong>{job.kind === "speech" ? t("AI 配音", "AI speech") : t("音訊轉寫與字幕", "Transcription and subtitles")}</strong>
         <p>{job.duration_ms ? `${job.duration_ms / 1000} ${t("秒", "seconds")}` : t("尚無已確認音訊", "Audio not yet confirmed")}</p></div><span className="badge" role="status">{t(...(states[job.state] ?? [job.state, job.state]))}</span></header>
