@@ -2,6 +2,18 @@
 
 日期 / Date：2026-10-25，Asia/Taipei。
 
+## 第四次工作区复核：当前 / Fourth working-tree review: current
+
+更新 26 项编号差异表与[第四次复核记录](../quality/2026-10-25-goal-gap-review-04.json)，把实际已复现的侧栏附件范围错误列为 P0：聊天附件经项目文件接口保存，private_owner 为 NULL，未绑定私有会话。最新实际界面流程在完成 Admin 人工赠额/幂等、Web 配置五项及真实侧栏登录/摘要共七个限定检查后失败，不能标记整段通过；不将此问题推断成跨企业泄露。新 Desktop 本机配置场景和旧工作继承修复仍须运行验证。
+
+重新核对历史 22/22 回执的 1489 个选定源码：1476 一致、13 变化、0 缺失；最新失败 UI 回执的 1457 项全部匹配当前源码。阶段 85 原选定 1494 项为 1473 一致、21 变化，新文件另计。实际八个远程分支匹配当前已提交输入，六组件仍有未提交开发，均排除在此次文档发布之外。保留所有原始回执和前三次记录；原 102 项需求、83 部分/19 未证明/0 完整验收及十个发布门槛不变。本次不修改产品代码，不重跑产品测试，不启动浏览器、数据库或虚拟化环境。
+
+The fourth review updates the numbered 26-gap table and its linked receipt. A reproduced P0 defect saves Side Panel chat attachments as project assets with private_owner NULL instead of binding them to the private conversation. The latest actual UI flow fails after seven bounded observations: Admin funding/idempotency, five Web configuration checks and native Side Panel login/read-only guidance. These observations do not qualify the complete journey or establish cross-tenant exposure. New native Desktop configuration scenarios and the continuation-inheritance fix still need execution.
+
+Of 1489 entries in the historical 22/22 source snapshot, 1476 match and 13 changed; none are missing. All 1457 entries in the latest failed UI report match current bytes. The stage 85 snapshot has 1473 exact and 21 changed entries out of 1494, with additional new files outside that baseline. All eight actual remote branches match committed local input heads, while all six component working trees contain unpublished development excluded from this documentation-only push. Original receipts, review history, requirements and complete acceptance gates remain unchanged. No product source, product tests, browsers, databases or virtualization were started or changed by this assessment.
+
+以下为前三次评估的历史说明，数字及「当前」用语仅对应各自记录时间。The following retained notes describe the first three reviews at their original times.
+
 新增[编号差异评估](../quality/2026-10-25-goal-gap-assessment.md)，按 26 个组列出当前实现、具体差异、完成标准和建议优先级，并映射全部 102 项原需求。重新读取七个独立仓库的提交及干净状态、当前需求追踪、阶段 85 精确检查点和相关代码；检查文档本地链接、需求覆盖及 Markdown 差异。
 
 区分仍需开发的功能、未贯通的完整流程、业务接受和正式发布验收。明确 Desktop 本机 Codex/完整权限/无边框/无可见滚动条、Extension 原生右侧栏云端聊天和文件上传已有局部实际证据；区分视频后台已实现的发行与音频尚缺流程。另列本机浏览器资源默认值与 NFR 的口径差异，以及历史文档总述与后续实现记录混用的问题。
