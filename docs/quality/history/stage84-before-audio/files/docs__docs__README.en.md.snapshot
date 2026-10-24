@@ -1,0 +1,694 @@
+# Workmate · CopyPaste Enterprise Agent
+
+<!-- geo-observation-stage83 -->
+
+GEO now has reproducible question sets and retained original answers. An immutable configuration pins the complete Agent definition, skills, requested model alias, Codex runtime, language, requested region and protocol. Independent API repeats keep the same configuration; user-supplied consumer answers remain a separate surface.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-delivery'
+npm ci
+npm run bootstrap
+npm run demo
+```
+
+Open Web `http://localhost:4317` and Admin `http://localhost:4318`; API is `4310`, controller `4319`, native PostgreSQL `55432`. Stop with `npm run stop`, which closes only controller-owned processes and checkpoints its database. The built-in demo simulates text/images and supports editing/template video; generated video requires the configured company contract. Current generation acceptance uses an explicit media fixture. Local Desktop additionally requires its independently pinned native runtime.
+
+### Use the current workflow
+
+1. Sign in through the existing email flow and select your company/project. In **Marketing insights → GEO observations**, create an unbranded Agent in Specialists, then save fixed questions and measured brand aliases. Aliases are excluded from the observation question. Editing a question, region, language or Agent creates a new immutable version from the reviewed previous hash.
+2. **Run API observation** displays current active-task capacity and an exact per-question budget. Explicitly review the unchecked confirmation. Each question needs one available task slot; the backend checks and reserves the complete batch atomically. Starter's single slot cannot run a two-question batch. Each independent cloud Codex task uses the company Responses gateway with no memory/history, retrieval or business tools. Repeating creates another run.
+3. **Capture completed answers** stores actual successful task output once as a private UTF-8 asset with SHA-256 and observation time. Capture does not call the model again. Open the original answer, download its exact text, or export the full JSON. Missing answers stay absent; unknown usage remains under reconciliation with no invented zero charge. JSON timestamps remain ISO strings even for an unfinished export.
+4. **Record consumer sample** requires the product, observed region/language/time, optional displayed model, retrieval state and an initially unchecked attestation. The form records one selected question; the API accepts up to 20 known questions. Paste the complete original answer. Metadata is user supplied and unverified; no AI task or model fee is created.
+5. Choose comparison A/B, including across configuration versions. The actual downloadable JSON includes both original answers, hashes and effective configurations. Same-configuration repeats are distinguished from configuration changes; API and consumer/manual surfaces are not aggregated. Literal aliases and answer links do not establish entity identity, recommendation, rankings, independently retrieved evidence or causation. Requested region is prompt context; provider processing region and resolved underlying model are unknown.
+6. Records are private to their creator under current project authorization and forced RLS. Admin metadata, independent `admin.content.body.read`, project-scoped quarantine/restore/delete and audit cover configurations, runs and samples. An explicitly published answer copy preserves its GEO provenance. Isolation, expiry or deletion blocks current exports, managed reads and derived outputs. Default retention is 90 days; the erasure journal cancels/settles actual tasks and removes answer files and retained task copies. Files already saved outside the service cannot be recalled.
+
+Desktop keeps **local Codex**, revocable full-machine consent, its frameless native window and no Electron menu. Its clearly labelled **GEO observations · Browser** entry opens the configured company Web URL; it does not start a cloud substitute for a local Agent. A Desktop-local GEO protocol is still open. Native wheel/Home/End, whole-page Ctrl+Home, last-item focus and genuine progress remain usable without visible vertical/horizontal scrollbar rails. Extension keeps a ChatGPT-style conversation/attachment interface, authorized local-file uploads and cloud Codex in the actual right Chrome Side Panel; the GEO entry opens the company Web workspace, with no Desktop dependency.
+
+Validation is bounded: platform **968/968**, every previous **946** case retained; GEO core **22**, clients **124**, actual Web/Admin/native Side Panel **13**, packaged local Desktop **37**. SQL100 is additive; SQL001–099 and the original OpenAPI bytes are unchanged. Model, image and consumer/ad data are explicit synthetic fixtures. Real-provider quality/rankings, all professional roles, signing, full Codex Desktop parity, performance/capacity and complete original acceptance remain open. Original **102 REQ / 102 TC: 83 partial, 19 unproven, 0 fully accepted; G01–G10 not proven**.
+
+Interactive qualifications retain exact product/runtime sources. Later test-only edits update two latest-migration expectations from 99 to 100 and explicitly bound the historical 098-to-099 fixture to 99. Original data, source OID, prepared-reader and replay checks remain. Complete regression qualification spans 19 isolated batches: unchanged-source batches 01–07 from run 33 and fresh batches 08–19 from run 34. Both affected test files execute afresh; every current runtime and executed test/helper byte is checked. Original failed receipts remain failed.
+
+
+[Design and limits](technical/83-reproducible-geo-observations.md) · [Exact-source evidence](quality/geo-observation-checkpoint.json) · [Additive API contract](contracts/geo-observation-openapi.json)
+
+```mermaid
+flowchart LR
+    Login[Email / company / project] --> Version[Immutable questions and harness]
+    Version --> API[Independent Codex API runs]
+    Version --> Manual[User-attested consumer answers]
+    API --> Retained[Private original bytes and hashes]
+    Manual --> Retained
+    Retained --> Compare[Separate surfaces and configuration differences]
+    Compare --> Export[Actual JSON download]
+    Admin[Scoped Admin / expiry / deletion] --> Gate[Current source checks]
+    Gate --> Retained
+    Gate --> Export
+```
+
+Actual UI screenshots and observed-time interaction capture. All business/model content shown is synthetic; native Side Panel captures come from Chrome's real SIDE_PANEL context.
+
+![Actual current viewport](design/implementation/copypaste-web__workmate-geo-05-original-api-answer.png)
+
+![Actual second locale/state](design/implementation/copypaste-web__workmate-geo-05-compact-zh-dark.png)
+
+![Recorded interaction](design/implementation/copypaste-web__workmate-geo-05-geo-observations.gif)
+
+[Original MP4](design/implementation/copypaste-web__workmate-geo-05-geo-observations.mp4)
+
+<details>
+<summary>Earlier delivery details (historical evidence scopes)</summary>
+
+<!-- creative-feedback-stage82 -->
+## Confirmed creative feedback and native layout
+
+Creative assets now have an explicit feedback loop: a user confirms the exact asset version, ad identity and date range before any advertising facts contribute. Same-name creatives in different accounts remain separate. Identity is user-attested; the current official connectors provide campaign-level facts and cannot establish creative performance automatically.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-delivery'
+npm ci
+npm run bootstrap
+npm run demo
+```
+
+Open Web `http://localhost:4317` and Admin `http://localhost:4318`; API is `4310`, controller `4319`, native PostgreSQL `55432`. Stop with `npm run stop`, which closes only controller-owned processes and checkpoints its database. The built-in demo simulates text/images and supports editing/template video; generated video requires the configured company contract. Current generation acceptance uses an explicit media fixture. Local Desktop additionally requires its independently pinned native runtime.
+
+### Use the current workflow
+
+1. Sign in using the existing email flow and choose the enterprise/project. In **Marketing insights → Creative & ad feedback**, upload a shared creative first and import an ad-level Google/Meta CSV with an explicit account, currency, timezone, attribution and conversion definition. Campaign-only or incomplete sources are not selectable. Source choices show at most 100 recent eligible items; mappings and reports have explicit pagination.
+2. **New candidate** pins one shared asset version, dataset, exact ad/channel/campaign, creative ID, date range and review note. A similar name or user-supplied provider metadata is a candidate basis only. Review the frozen hashes and scope, then explicitly check the initially unchecked single-creative attestation and give a reason. Incorrect identity requires withdrawal and a new candidate; confirmed history is immutable.
+3. Select up to 40 confirmed mappings and create a dated feedback report. BigInt-derived decimal strings preserve exact amounts. Account/platform/currency/timezone/attribution/conversion/creative/version scopes stay separate. Identical ad-days are deduplicated; conflicting facts, competing allocations and overlapping correction snapshots reject. Missing conversions stay unknown and unobserved days are not zero. No cross-scope total or causal uplift is inferred.
+4. Download the actual frozen JSON or select its shared file as an explicit input to the next Codex task. Actual model reads and downstream managed outputs retain source lineage. Withdrawal, quarantine, source expiry or lost authorization stop managed reads/downloads and queued reuse. Copies already exported outside the service remain the customer's responsibility.
+5. Admin content metadata, independent `admin.content.body.read`, scoped quarantine/restore/delete and auditable actions cover mappings and feedback reports. Metadata access does not grant body access. Restoring a mapping does not silently republish an old quarantined report. Retention defaults to 90 days; the existing erasure journal orders report-file cleanup before clearing parent bodies. Admin cannot rewrite frozen identity or the original confirmation through metadata controls.
+
+Desktop runs Codex locally with explicit, revocable full local permission. It stays frameless with no Electron menu or visible vertical/horizontal scrollbar rails. Wrapping tables/code and compact layouts preserve wheel, Home/End, focus and actual task/video progress. Native packaged windows at 800×600, 1280×800 and 1440×980 were exercised. Extension remains ChatGPT-style chat/attachments in Chrome's native right Side Panel, uploading authorized files to cloud Codex; its new feedback entry opens the full cloud workspace without depending on Desktop.
+
+Apply **SQL099** through backend `npm run db:migrate` before deployment. Published SQL001–098 and both original OpenAPI files retain their bytes. Seven additive feedback operations have their own contract; the observed inventory is 454 configured operations plus the retained conditional demo operation. Company gateway secrets stay server-side.
+
+Current bounded qualification: platform **946/946**, all previous **929** cases retained; feedback core **17/17**, separate legacy analytics/source compatibility **43/43**, client checks **124**, actual Web journey **4** and actual packaged Desktop journey **36**. Each count has its own scope. Screenshots and GIF/MP4 below are **Desktop** captures, including copies in other component repositories. Advertising identities/facts and model content are explicit fixtures; native execution, files, identity, database, arithmetic and media capture are actual.
+
+Original **102 REQ/102 TC remain 83 partial, 19 unproven, 0 fully accepted**; NFR and G01–G10 remain open. Live provider creative verification, professional marketing quality, signed installers and complete Codex Desktop operation parity require further evidence. Owned browsers, previews and native databases are closed; no Docker/WSL/VM is used.
+
+All selected core, compatibility, client, Web/native UI and complete-platform receipts execute the current exact source bytes. A separate review binds the native sidebar/preferences repair, capture serialization, settled-theme report framing and Windows whole-page Ctrl+Home. Focused native-log Home/End and existing reachability conditions remain; additional end-of-page checks require navigation and preferences to remain visible. Earlier and failed attempts keep their original scopes and do not supply current-source coverage.
+
+[Design and permissions](technical/82-confirmed-creative-feedback.md) · [Exact evidence](quality/creative-feedback-checkpoint.json) · [Additive API](contracts/creative-feedback-openapi.json)
+
+```mermaid
+flowchart LR
+    Version[Shared exact asset version] --> Candidate[Ad identity and dated source]
+    Candidate --> Review[Explicit user attestation]
+    Review --> Metrics[Independent exact scopes]
+    Metrics --> JSON[Frozen managed JSON]
+    JSON --> Codex[Explicit next Codex task]
+    Withdraw[Withdraw / quarantine / expiry] --> Fence[Recheck actual reads and outputs]
+    Fence --> JSON
+    Fence --> Codex
+```
+
+![Actual feedback](design/implementation/copypaste-desktop__workmate-feedback-44-report-en.png)
+
+![Compact Chinese/dark](design/implementation/copypaste-desktop__workmate-feedback-44-report-zh-dark-compact.png)
+
+![Actual interaction GIF](design/implementation/copypaste-desktop__workmate-feedback-44-creative-feedback.gif)
+
+[Recorded MP4](design/implementation/copypaste-desktop__workmate-feedback-44-creative-feedback.mp4)
+
+![Actual 800×600 native conversation](design/implementation/copypaste-desktop__workmate-local-44-layout-800-en.png)
+
+![Provider-reported progress retained](design/implementation/copypaste-desktop__workmate-local-44-generated-progress-en.png)
+
+<details>
+<summary>Historical stage 81 usage and complete setup reference; original scopes retained</summary>
+
+<!-- managed-video-stage81 -->
+## Managed video capabilities and current delivery
+
+This repository is one independently versioned part of Workmate. Admin can now manage video models through the same immutable draft, actual verification, independent approval, publication and rollback flow as text and images. Web, local Desktop and the native Chrome Side Panel consume published versions; existing tasks keep their frozen model and rates.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-delivery'
+npm ci
+npm run bootstrap
+npm run demo
+```
+
+Open Web `http://localhost:4317` and Admin `http://localhost:4318`; API is `4310`, controller `4319`, native PostgreSQL `55432`. Stop with `npm run stop`, which closes only controller-owned processes and checkpoints its database. The built-in demo simulates text/images and supports editing/template video; generated video requires the configured company contract. Current generation acceptance uses an explicit media fixture. Local Desktop additionally requires its independently pinned native runtime.
+
+### Use the current workflow
+
+1. Sign in to Admin using its separate email/TOTP identity. Open **Catalog → Model capabilities → Create configuration**, select **Video generation**, enter the company model alias, a positive HKD price per billable second and an operation reason. Codex and the company internal gateway are fixed; a draft cannot add an endpoint, secret or another kernel.
+2. Open **Configuration & validation**, enter the reason and run validation. The API immediately saves a durable receipt. Its 16 cases quote up to 184 seconds from the **platform verification budget**. Closing this view does not stop execution. Progress counts actually verified cases, with actual size/duration, full MP4/H264 decoding and observed cancellation; no simulated percentage represents real service progress.
+3. **Recheck original job** queries the existing operation. **Stop this validation suite** stops new calls and checks already-dispatched usage. An unknown result keeps its budget/capacity hold and blocks another validation in this view. Once expense is known, an explicitly new validation creates a new receipt and new billable calls. The live cost and the receipt at the immutable eligibility decision remain distinct.
+4. After all cases pass, **Preview publication** compares the model and price. Current permission, recent MFA, exact version and reason are checked again; another administrator must approve. Requesters cannot approve themselves. Rollback appends a new publication fact. Scoped access and explicit denies retain priority; read-only administrators cannot mutate configurations.
+5. A stopped worker resumes original operations and confirmed content, without another generation POST. SQL098 preserves the old budget functions' identities and all prior shared accounting. Apply SQL098 using backend `npm run db:migrate` before deployment. SQL001–097 and both original OpenAPI files retain their own bytes. Company gateway credentials remain server-side. Managed publication can provide a verified video capability while the legacy environment switch is false; a live supplier still requires its own qualification.
+
+Desktop remains frameless, runs Codex on the customer's own device and supports explicit revocable full local permission. No visible vertical/horizontal scrollbar rails appear; wheel, keyboard, focus and truthful task/video progress remain available. Extension opens in Chrome's native right Side Panel, uses ChatGPT-style chat/attachments, reads/uploads authorized files and runs its Agent in the cloud without a Desktop dependency.
+
+Current platform qualification: **929/929** cases, all previous 912 retained, 71 files/18 batches. Separate checks: **106/106** legacy capability/gateway/customer-video compatibility, **7** contract checks and **7** actual Admin browser checks. Captures below show the **Admin** component, including when copied into a client repository for the shared setup workflow. Historical stage-80 client sources/captures retain their original scope; they are not relabeled as a new full-stack browser run. The new Admin journey uses real authentication, PostgreSQL, native pinned Codex version checks and actual MP4 decoding with an explicit synthetic company service/video fixture.
+
+Original **102 REQ/102 TC remain 83 partially verified, 19 unproven and zero fully accepted**; G01–G10 remain open. Live company service, all professional roles, full original video acceptance, signed installers and complete Codex Desktop operation parity are still unproven. All owned browser contexts/instances, previews and native databases close; no Docker/WSL/VM is used.
+
+The first combined qualification failed because its synthetic HTTP fixture received port 2049, which this Node Fetch runtime rejects before HTTP. That failed TAP, live port witness and owned-worker/fixture cleanup remain retained. The fixture now uses the existing safe loopback listener and a bounded test-arrival wait; no product source, assertion or test name changed for this repair. The complete platform run and 17-case core run execute the repaired harness afresh. Earlier compatibility/UI recordings retain their exact product and verifier bytes, with the two later harness-only changes explicitly reviewed rather than presented as a fresh browser recording.
+
+[Design and authority](technical/81-managed-video-capability-releases.md) · [Exact evidence](quality/managed-video-checkpoint.json) · [Supplemental API](contracts/capability-releases.openapi.json)
+
+```mermaid
+flowchart LR
+    Draft[Immutable video model and rate] --> Grant[Permission / MFA / frozen plan]
+    Grant --> Intent[Original durable operation and quote]
+    Intent --> Company[Company internal service]
+    Company --> Observe[Original lookup / retrieve / cancel]
+    Observe --> Decode[Actual MP4 hash and full decode]
+    Observe --> Cost[Confirmed expense or retained unknown]
+    Decode --> Approval[Independent preview and approval]
+    Approval --> Publish[Versioned publication / rollback]
+    Publish --> Clients[New Web / local Desktop / cloud Side Panel tasks]
+```
+
+![Actual Admin screenshot](design/implementation/copypaste-admin__workmate-managed-video-02-video-resumed-en.png)
+
+[Admin interaction GIF](design/implementation/copypaste-admin__workmate-managed-video-02-video-cancellation-and-cost-recovery.gif) · [Actual recorded MP4](design/implementation/copypaste-admin__workmate-managed-video-02-video-cancellation-and-cost-recovery.mp4)
+
+<details>
+<summary>Historical stage-80 usage and installation reference; counts keep their original scope</summary>
+
+<!-- generated-video-stage80 -->
+## Generated video, scoped costs and compact Desktop
+
+The primary documentation covers the complete requirements, three customer clients and independent backend/Admin.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-delivery'
+npm ci
+npm run bootstrap
+npm run demo
+```
+
+Open Web `http://localhost:4317` and Admin `http://localhost:4318`; API is `4310`, controller `4319`, native PostgreSQL `55432`. Stop with `npm run stop`, which closes only controller-owned processes and checkpoints its database. The built-in demo simulates text/images and supports editing/template video; generated video requires the configured company contract. Current generation acceptance uses an explicit media fixture. Local Desktop additionally requires its independently pinned native runtime.
+
+### Use the current workflow
+
+1. Sign in using the existing email/OTP flow, select a workspace/project and start a **Video and motion** task. New tasks use the versioned R16 1.2.0 role and its `video-generation` Skill. Frozen older tasks retain their original role/Skill; start a new task to use generation.
+2. In Web or Desktop select **Generate a video**, a supported duration (4/8/12/16/20 seconds) and format (landscape, portrait or square), then supply the brief and confirm the task budget. Template/FFmpeg composition remains a separate option. Desktop settings start collapsed so the conversation and composer retain space. In Extension, open the existing cloud video task from the same workspace/project's task history to review its status, play it and save the result.
+3. Codex uses the company's internal service. The server persists an immutable original operation and a quote before HTTP, sharing the same budget with reasoning/image requests. Input counting, reasoning, image and video also share admission limits; completed calls retain their rolling-minute rate charge after concurrency slots release. Independently reviewed termination facts affect slot usage while preserving the original requests. Only service-reported progress is shown. Pending or unknown usage retains the original hold; missing usage is never free.
+4. **Stop this generation** requests cancellation of that same operation. A later confirmed usage observation can still report a charge. Retries/recovery query the original operation and do not submit another generation. A real state change rejects a stale control revision; leases and unchanged polls do not invalidate it.
+5. A completed status becomes a deliverable only after real SHA/size, format, dimensions, duration and full native decode checks. Play and save the actual MP4. Withdrawal, source quarantine or lost authority removes the current preview/download; no fabricated success file is supplied. Inline preview is bounded to 20 MB.
+6. Admin opens **Provider controls → Generated video jobs**. Metadata, cost reads and original-job rechecks require separate scoped permissions; recheck requires current MFA and an audited reason. It cannot create a replacement video or grant access to the prompt/reference/media. Original task settlement retains independent approval and immutable provider facts.
+
+Apply the additive **SQL097** with backend `npm run db:migrate` before upgrading clients. Existing SQL001–096 and each original OpenAPI file keep their own published bytes. Set the company's `AI_BASE_URL`, allowed hosts/key, exact `AI_VIDEO_MODEL`, explicit `AI_VIDEO_VERIFIED`, positive `AI_VIDEO_HKD_MICROS_PER_SECOND` and optional signed-callback secret. Until a company capability is explicitly configured/verified, generation remains unavailable. No vendor key belongs in a renderer or Extension. Public Sora 2/Videos API retired on 2026-09-24; `company-video-jobs-v1` is an internal contract, with no silent public-provider fallback. Complete managed video capability verification/publication is still outstanding.
+
+Desktop is frameless with no native Electron menu. No visible vertical or horizontal scrollbar rails appear in the product; content still scrolls and reflows, with wheel, Home/End, keyboard focus and actual last-action access. Actual 800×600, 1280×800 and 1440×980 windows, English/Traditional Chinese and light/dark themes are exercised. Truthful task/video progress remains. Desktop Codex runs locally with explicit revocable full local permission. Extension keeps the native right Side Panel and cloud Codex; it requires no Desktop/local-Agent dependency.
+
+Validation: **912/912** platform cases, all previous 874 retained; **60/60** focused video/gateway cases; **69** client unit cases; **32** packaged Desktop, **5** Web/Admin and **9** native Side Panel checks; **17/17** native supervisor cases. These are separate scopes, not an additive acceptance count. Native Codex, identity, database, storage, media decode and ledger are real; reasoning, video content, customer data and selected native consent decisions are explicit fixtures. All owned browsers/databases close; no Docker/WSL/VM is used. The original **102 REQ/102 TC remain 83 partially verified, 19 unproven, zero fully accepted**. Live company media, full TC-019/TC-056, all professional roles and G01–G10 remain open.
+
+The complete 70-file/18-batch platform inventory uses a reviewed same-source re-execution: Windows error 1455 interrupted one batch; all four files passed on a fresh owned database, while the other seventeen complete passing batches retain exactly the same source, tests, harness and native binary. The original failed attempt stays failed and contributes no passing coverage. Each selected receipt retains its own plan hash; raw TAP files are neither combined nor relabeled.
+
+[Design and protocol](technical/80-generated-video-jobs.md) · [Exact evidence](quality/generated-video-checkpoint.json) · [Additive API](contracts/generated-video-openapi.json)
+
+```mermaid
+flowchart LR
+    SignIn[Sign in and select workspace] --> Client[Web / local Desktop / Side Panel]
+    Client --> Codex[Cloud or customer-device Codex]
+    Codex --> Intent[Original durable operation]
+    Intent --> Budget[Shared task budget]
+    Budget --> Company[Company internal video service]
+    Company --> Observe[Query / signed observation / cancel]
+    Observe --> Validate[Actual MP4 decode and immutable file]
+    Observe --> Cost[Confirmed cost or retained unknown hold]
+    Validate --> Review[Authorized playback and save]
+```
+
+![Actual screenshot](design/implementation/copypaste-desktop__workmate-local-38-generated-form-1440-en.png)
+
+[Interaction GIF](design/implementation/copypaste-desktop__workmate-local-38-local-agent.gif) · [Recorded MP4](design/implementation/copypaste-desktop__workmate-local-38-local-agent.mp4)
+
+<details>
+<summary>Previous stage-79 documentation and full installation reference; historical counts retain their original scope</summary>
+
+[中文](README.md) · [GitHub](https://github.com/copypasteltd/workmate)
+
+<!-- brand-production-stage79 -->
+
+## Fixed brand versions and production checks
+
+Requirements, architecture, independent repositories and acceptance navigation.
+
+1. Sign in, select the tenant/project, and open **Brand library** in Web or Desktop. Add identity, colors, fonts and declared usage rights, approved product facts/prices, promotion expiry, channels/locales and optional fixed Logo files. Uploaded fonts must be shared in the selected project.
+2. Publish an immutable version. Further edits publish a new version; stale concurrent edits conflict. Existing specialists and tasks retain their pinned version. Explicitly adopt a newer specialist version when desired.
+3. Select a historical version and check sample text or a fixed fact. Missing glyphs identify their Unicode codepoint; expired offers or font declarations block new production. Price facts supply the stored text and amount; no silent font or price substitution.
+4. Brand-bound cloud design tasks must carry the matching brand/version and channel/locale. Text uses the fixed declared font configuration; explicit fact keys produce the stored statement and price. Outputs retain source dependencies and editable JSON; SVG text is outlined, PNG and the limited single-page PDF review output are actual renders. Font declarations do not prove copyright ownership.
+
+Apply **SQL096** with `npm run db:migrate` in the configured backend before starting dependent clients. Published SQL001–095 and each original OpenAPI file retain their own bytes. The additive brand contract documents four operations; the configured service inventory has 438 operations plus one demo-credit operation only when `DEMO_MODE=true`. Legacy brand bodies remain readable under current access rules, without invented history or rights. Publish explicit schema-v2 guidance and adopt a new specialist version before fixed-font production; existing tasks stay pinned.
+
+Desktop runs Codex on the customer's machine with explicit revocable full local permission, no native frame/menu, and no visible vertical or horizontal scrollbar rails. Wheel, keyboard and focus access remain functional, including actual 800×600, 1280×800 and 1440×980 windows. Truthful progress feedback remains. Extension runs cloud Codex through the native right Side Panel. All AI requests use the company gateway. Testing creates and closes only owned browser instances; no Docker/WSL/VM is used.
+
+Current separate results: **874/874 platform cases** in 68 files/17 batches (all prior 861 retained, 13 new), 68 client unit cases, 30 packaged Desktop checks, four brand Web checks, four Web/Admin quality checks and eight native Side Panel checks. Retained native supervisor evidence has 17 cases and all 57 bound sources unchanged. Real database/auth/files/ledger/local Codex run with explicit model/customer/business fixtures. Original 102 REQ/102 TC remain: 82 partially verified, 20 not proven, zero fully accepted; G01–G10 and real TC-056 blind review remain unproven. Desktop brand UI evidence does not establish every local professional role's brand enforcement.
+
+Desktop33, brand Web02 and Web/Admin08 retain their actual receipts with one explicitly reviewed later difference: an unrelated extension test file now waits for document readiness and logs login failures. Their application/UI and executing journey/verifier bytes are unchanged. The selected fresh extension run and full platform23 use the updated harness. Exact before/after bytes and scope are recorded in the checkpoint.
+
+```mermaid
+flowchart LR
+    Library[Brand library] --> Version[Immutable brand version]
+    Version --> Task[Frozen specialist and cloud task]
+    Task --> Check[Actual font, fact, expiry and scope checks]
+    Check --> Output[Source document and rendered output]
+    Output --> Review[Versioned customer review]
+    Sources[Current source permissions] --> Check
+    Sources --> Output
+```
+
+![Actual desktop client; explicit customer/model fixtures, real controls and API writes](design/implementation/copypaste-desktop__workmate-local-33-layout-1440-en.png)
+
+![Actual interaction / 实际交互](design/implementation/copypaste-desktop__workmate-brand-33-brand-library.gif)
+
+[MP4](design/implementation/copypaste-desktop__workmate-brand-33-brand-library.mp4) · [Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/79-versioned-brand-production.md) · [Contract / 契约](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/brand-production-openapi.json) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/brand-production-checkpoint.json) · [Changes / 更新](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-24-versioned-brand-production.md)
+
+<details>
+<summary>Previous stage-78 delivery and installation reference; older counts retain their original scope</summary>
+
+<!-- business-quality-stage78 -->
+
+## Current delivery review and usage
+
+Primary requirements, architecture, independent repositories and acceptance navigation. Reviews now retain the exact current delivery version, with accept, changes requested and discard decisions. Customers can report baseline minutes, cumulative human effort and revisions independently. Project usage and the scoped Admin quality dashboard distinguish technical success, customer acceptance, recorded reuse and company service costs.
+
+Desktop remains customer-local Codex with explicit revocable full local access, no Electron menu/frame, no visible vertical or horizontal scrollbar rails, and real wheel/keyboard access. Content reflows, focused inputs remain visible at 800×600, and the composer and receipt stay accessible. The previous progress-bar constraint is withdrawn; truthful progress remains. Extension remains independent native right Side Panel chat/file upload to cloud Codex. Every AI request uses the company gateway.
+
+1. Sign in, choose a tenant/project and create a task in its correct execution location. Desktop needs an explicit folder and local permission; the Extension needs no Desktop installation.
+2. Inspect the actual result and open “Review this delivery” (Desktop) or the task review form. Save acceptance, requested changes or discard with optional feedback. Task/version or delivery changes return a conflict requiring reload.
+3. Optionally record cumulative human figures. Blank means unknown; zero means explicitly none. Refresh preserves the open effort form and visible input access.
+4. Inspect project usage or Admin → Delivery quality within your permission scope. Incomplete costs stay incomplete; service costs exclude refund offsets, outside services and labor. No ROI or retention is inferred.
+
+Apply additive SQL095 before publishing the dependent API/UI; published SQL001–094 and the original task OpenAPI are unchanged. Legacy acceptance without a delivery snapshot requires a new customer review. The original review endpoint remains compatible; current forms require both task version and delivery digest plus idempotency. Customer review requires project approval authority. Admin can read scoped aggregates under `admin.usage.read` but cannot accept for a customer, read feedback through aggregates or grant OS access.
+
+```mermaid
+flowchart LR
+    Web[Web and native Chrome Side Panel] --> Cloud[Company cloud Codex]
+    Desktop[Frameless Desktop] --> Local[Customer-device Codex and local tools]
+    Cloud --> AI[Company OpenAI-compatible AI gateway]
+    Local --> AI
+    Cloud --> Delivery[Output and fixed artifact versions]
+    Local --> Delivery
+    Delivery --> Review[Customer review and human-effort records]
+    Review --> Metrics[Scoped quality and service costs]
+    Admin[Admin usage permission and explicit denies] --> Metrics
+```
+
+Current source qualification: 861/861 platform cases across 67 files/17 batches, 68 client units, 26 actual packaged-Desktop checks, four Web/Admin checks and 8 native Side Panel checks. The retained 17-case native-supervisor proof has all 57 bound files unchanged. These scopes are separate and not additive. Actual auth, database, files, billing and local Codex run; model/business/customer inputs and native-dialog decisions are explicit fixtures. TC-056 real-task baselines/blind review, all 18 roles/29 Skills, complete OS/Codex Desktop parity and production gates remain unproven. Original 102 requirements/102 cases and 81 partial / 21 unproven / 0 fully accepted remain.
+
+The Desktop31 and Web/Admin07 journeys retain their original bytes. Their only later bound-file difference is two migration-test expectations updated from 94 to 95, archived and checked exactly; all runtime, UI and journey sources remain unchanged. Platform21 freshly reruns the updated tests. See the checkpoint for this explicit qualification.
+
+![Actual frameless Desktop at 1440 by 980](design/implementation/workmate-local-31-layout-1440-en.png)
+
+![Actual desktop interface](design/implementation/workmate-local-31-delivery-review-compact-en.png)
+
+![Actual desktop interaction](design/implementation/workmate-local-31-local-agent.gif)
+
+[MP4](design/implementation/workmate-local-31-local-agent.mp4)
+
+[Design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/78-business-delivery-quality.md) · [Contract](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/business-quality-openapi.json) · [Exact source and media evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/business-quality-checkpoint.json) · [Changes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-business-delivery-quality.md)
+
+<details>
+<summary>Full setup, architecture and historical verification records (earlier counts/captures retain their original scope)</summary>
+
+A Codex-based enterprise Agent platform for Hong Kong businesses, beginning with existing marketing teams. Cloud Web, a Chrome native Side Panel and a full frameless Desktop share company identity, business controls and an internal OpenAI-compatible AI gateway. Admin manages users, scoped content, usage, fees and VIP access.
+
+<!-- client01-direction -->
+## Current client direction and qualified scope
+
+CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
+
+**Historical stage-77 implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads, native questions, company design/video tools and native workflow children. Twelve local browser tools now perform actual navigation, interaction, upload, screenshots and downloads; Stop/revoke reclaim owned pages. Desktop hides scrollbar rails and reflows artifacts, code and tables while preserving vertical scrolling and keyboard access. The previous progress-bar constraint is withdrawn; truthful progress feedback remains. Separate qualification covers 851 platform, 68 client, 17 native-supervisor, 10 standalone Electron-browser and 25 packaged-journey checks; counts are not additive. Full professional delivery across 18 roles/29 Skills, complete OS-application/Codex Desktop parity, live models and production remain pending. Extension retains independent ChatGPT-style native right Side Panel cloud chat and authorized-file upload; its UI was not rerun. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/77-desktop-native-browser.md), [layout requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/04-desktop-layout-and-scroll.md) and [source/media checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-browser-checkpoint.json).
+
+Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
+
+<!-- /client01-direction -->
+
+## Repositories and branches
+
+Each component retains its independent Git history and root layout. Clone different branches into separate directories when running them together. The same documentation commit is published to `main` and `docs`.
+
+| Branch | Directory under `dev/` | Responsibility | README |
+| --- | --- | --- | --- |
+| [backend](https://github.com/copypasteltd/workmate/tree/backend) | `copypaste-platform` | Backend / API, Codex, data and metering | [中文](https://github.com/copypasteltd/workmate/blob/backend/README.md) / [English](https://github.com/copypasteltd/workmate/blob/backend/README.en.md) |
+| [web](https://github.com/copypasteltd/workmate/tree/web) | `copypaste-web` | Cloud customer workspace | [中文](https://github.com/copypasteltd/workmate/blob/web/README.md) / [English](https://github.com/copypasteltd/workmate/blob/web/README.en.md) |
+| [admin](https://github.com/copypasteltd/workmate/tree/admin) | `copypaste-admin` | Administration and operations | [中文](https://github.com/copypasteltd/workmate/blob/admin/README.md) / [English](https://github.com/copypasteltd/workmate/blob/admin/README.en.md) |
+| [desktop](https://github.com/copypasteltd/workmate/tree/desktop) | `copypaste-desktop` | Frameless native desktop | [中文](https://github.com/copypasteltd/workmate/blob/desktop/README.md) / [English](https://github.com/copypasteltd/workmate/blob/desktop/README.en.md) |
+| [extension](https://github.com/copypasteltd/workmate/tree/extension) | `copypaste-extension` | Chrome native Side Panel | [中文](https://github.com/copypasteltd/workmate/blob/extension/README.md) / [English](https://github.com/copypasteltd/workmate/blob/extension/README.en.md) |
+| [delivery](https://github.com/copypasteltd/workmate/tree/delivery) | `copypaste-delivery` | Startup, verification, recording and publishing | [中文](https://github.com/copypasteltd/workmate/blob/delivery/README.md) / [English](https://github.com/copypasteltd/workmate/blob/delivery/README.en.md) |
+| [docs / main](https://github.com/copypasteltd/workmate/tree/docs) | Project root · `docs/` | Requirements, architecture, delivery and release notes | [中文](README.md) / [English](README.en.md) |
+
+## Architecture and usage
+
+Current execution split. The new Desktop candidate integrates local Codex and full local access within the linked qualification scope; earlier packages retain their original scope.
+
+```mermaid
+flowchart TB
+  User[Customer] --> Web[Cloud Web]
+  User --> Side[Chrome native Side Panel]
+  User --> Desktop[Frameless Desktop]
+  Operator[Administrator + MFA] --> Admin[Admin Dashboard]
+  Web & Side & Admin --> API[Company Backend]
+  Desktop --> API
+  Desktop --> LocalCodex[Customer-device Codex / native candidate]
+  LocalCodex --> LocalTools[Local files / terminal / skills]
+  LocalCodex --> Gateway[Internal OpenAI-compatible API]
+  LocalCodex --> MainTools[Company tools via trusted Desktop main]
+  MainTools --> API
+  API --> Access[Identity / tenant / project / private ownership]
+  Access --> Input[Explicit sources / role / skills / version]
+  Input --> Budget[Plan / permission / budget hold]
+  Budget -->|Web / Extension cloud tasks only| Codex[Cloud version-pinned Codex]
+  Codex --> Gateway[Internal OpenAI-compatible API]
+  Codex --> Tools[Authorized tools]
+  Tools --> Results[Immutable outputs / usage / settlement]
+  Results --> Clients[Governed client reads and downloads]
+```
+
+The following describes the shared company workflow. Desktop local permission, persistent threads and company tools follow the stage 73 design and source-bound checkpoint.
+
+1. Sign in with an email code, choose a workspace/project and confirm the current funding and permission context. Desktop and extension authorize through the company webpage using PKCE; Admin uses a separate email OTP/TOTP identity.
+2. Web/Extension offer the default assistant, eighteen role presets and personal specialists. Desktop currently admits seventeen presets with the native protocol connected. Tasks freeze role, Skills, model and price versions. Select files, brand resources and authorized connections explicitly.
+3. Confirm a bounded budget before execution. Codex calls company-provided APIs and controlled tools. Recorded usage, budget holds and settled charges remain separate.
+4. In Web/Extension, when a measured completed turn requests inputs, select authorized current versions and continue the original task/thread/hold, within eight-round and thirty-two-dependency bounds. Desktop supports same-thread follow-up and answering native questions in the original task and turn. Unknown effects in either execution path require reconciliation.
+5. Read evidence and deliverables, download through authenticated company routes or explicitly publish an independent copy. Current source governance still applies. Workspace switches or failed reads clear prior client content.
+6. Operators filter users/usage, manage scoped content, review fees and grant VIP/credit under independent permissions. Sensitive writes preview impact and use idempotency and required independent approvals.
+
+## Business scope
+
+Marketing creation includes images, brand layouts, typography, ad/ecommerce/social assets, presentations, editable deliverables and template videos. Analytics includes CSV/XLSX imports, advertising metrics, Google/Meta connection workflows and scoped website audit, evidence, change drafts and rechecks. Enterprise workflows cover assistants, conversations, memory, schedules, files and notifications. The role catalog contains eighteen presets; planned Skills and full professional qualification are tracked separately.
+
+## First checkout and local run
+
+The authoritative existing workspace is `D:\dev\copypasted\自有agent`. Do not clone over existing repositories. For a new machine, clone `docs` at a fresh root and clone component branches under `dev/` as shown above. Native Windows tools only; no Docker, WSL or virtualization.
+
+```powershell
+git clone --single-branch --branch docs git@github.com:copypasteltd/workmate.git workmate
+cd workmate
+New-Item -ItemType Directory -Path dev
+git clone --single-branch --branch backend git@github.com:copypasteltd/workmate.git dev/copypaste-platform
+git clone --single-branch --branch web git@github.com:copypasteltd/workmate.git dev/copypaste-web
+git clone --single-branch --branch admin git@github.com:copypasteltd/workmate.git dev/copypaste-admin
+git clone --single-branch --branch desktop git@github.com:copypasteltd/workmate.git dev/copypaste-desktop
+git clone --single-branch --branch extension git@github.com:copypasteltd/workmate.git dev/copypaste-extension
+git clone --single-branch --branch delivery git@github.com:copypasteltd/workmate.git dev/copypaste-delivery
+cd dev/copypaste-delivery
+npm ci
+npm run bootstrap
+npm run demo
+```
+
+Open Web `http://localhost:4317` and Admin `http://localhost:4318`; Backend uses `4310`, the owned controller `4319` and native PostgreSQL `55432`. Stop owned demo services with `npm run stop`. See each component README for standalone startup, administrator enrollment, Desktop packaging and extension loading. Node.js ≥22.14 and locked dependencies are required; native verification also needs pinned Codex and FFmpeg/FFprobe.
+
+## Evidence and limits
+
+The historical-source Platform regression passed **802/802** tests (the backend has since changed; this is not a full regression of the new source), retaining all prior 782 named cases; the **52/52** canonical-task checks overlap with the full suite. There are **13** successful type/build/existing-client-suite checks and **32** actual packaged Desktop/native Side Panel checks. Stage 72 retained ten real-native supervisor and seven Electron checks for its historical source. Stage 73 retains its original source scope for 818 Platform regressions, fourteen real-native tests, thirty-seven client tests and nine packaged journeys; backend source remained unchanged through stage 74. Stage 74 separately verifies its original Desktop source with 47 client tests, 17 real-native tests and 12 packaged journeys. Full qualification remains open. Earlier four-client media retains its original cloud/file-bridge source scope; new local company-tool media has its own timing, hashes and owned-client cleanup.
+
+[Canonical task evidence](quality/canonical-task-checkpoint.json) · [Native supervisor evidence](quality/desktop-video-checkpoint.json) · [Current local candidate bytes](quality/desktop-video-checkpoint.json) · [Media](quality/workmate-media-10.json) · [Requirement progress](quality/requirements-alignment-progress.json)
+
+AI turns and provider/business facts in UI demos are explicitly synthetic, as authorized. Separate integration tests run actual Codex processes against a synthetic internal gateway. Admin media shows permission-gated VIP/credit forms and does not claim a financial posting. Applied SQL001–092 remain immutable. All 102 requirements, TC/NFR/G01–G10 and the 81 partial /21 unproven /0 fully accepted baseline remain intact. Dedicated canonical task inputs and historical identity migration, arbitrary in-flight pause, unknown-effect recovery, complete local Desktop and Extension conversation/attachments, full role workflows, GEO, real suppliers, production, signing and store qualification remain outstanding.
+
+## Actual client gallery
+
+Screenshots and GIFs show actual running clients; synthetic data is scoped above. The extension capture is the confirmed native Side Panel document viewport and excludes the browser toolbar. Actual recordings preserve observed capture timing.
+
+### Web
+
+![web](design/implementation/workmate/web-workmate-10-input-ready-en.png)
+
+![web interaction](design/implementation/workmate/web-workmate-10-interaction.gif)
+
+[MP4](design/implementation/workmate/web-workmate-10-interaction.mp4)
+
+### Desktop
+
+Stage 75: actual native video, revisions, playback/native saves, stop and revocation, plus native questions, files and company image tools; model/image responses and native-dialog choices are explicit fixtures. Other client media below retain their historical source scopes.
+
+![desktop](design/implementation/workmate-local-19-full-access-en.png)
+
+![Company design artifacts](design/implementation/workmate-local-19-company-artifacts-en.png)
+
+![Minimum native window](design/implementation/workmate-local-19-compact-en.png)
+
+![Native customer question](design/implementation/workmate-local-19-waiting-input-en.png)
+
+![Explicit answer at minimum window size](design/implementation/workmate-local-19-input-compact-en.png)
+
+![Actual private video playback](design/implementation/workmate-local-19-video-ready-en.png)
+
+![Native video at 800x600](design/implementation/workmate-local-19-video-compact-en.png)
+
+![Revoked native video](design/implementation/workmate-local-19-video-revoke-en.png)
+
+![desktop interaction](design/implementation/workmate-local-19-local-agent.gif)
+
+[MP4](design/implementation/workmate-local-19-local-agent.mp4)
+
+### Extension
+
+![extension](design/implementation/workmate/extension-workmate-10-sidepanel-native-en.png)
+
+![extension interaction](design/implementation/workmate/extension-workmate-10-interaction.gif)
+
+[MP4](design/implementation/workmate/extension-workmate-10-interaction.mp4)
+
+### Admin
+
+![admin](design/implementation/workmate/admin-workmate-10-user-usage-en.png)
+
+![admin interaction](design/implementation/workmate/admin-workmate-10-interaction.gif)
+
+[MP4](design/implementation/workmate/admin-workmate-10-interaction.mp4)
+
+## Documentation map
+
+[Reading order](00-document-map.md) · [PRD](product/01-prd.md) · [Roles/Skills](product/06-role-templates-and-skill-presets.md) · [Brand](product/07-brand-design-system.md) · [Admin](product/08-admin-dashboard.md) · [API contracts](contracts/README.md) · [Delivery](DELIVERY.md)
+
+### Product
+
+- [01 prd](product/01-prd.md)
+- [02 user journeys](product/02-user-journeys.md)
+- [03 information architecture and interactions](product/03-information-architecture-and-interactions.md)
+- [04 release and commercial model](product/04-release-and-commercial-model.md)
+- [05 web agent workbench](product/05-web-agent-workbench.md)
+- [06 role templates and skill presets](product/06-role-templates-and-skill-presets.md)
+- [07 brand design system](product/07-brand-design-system.md)
+- [08 admin dashboard](product/08-admin-dashboard.md)
+
+### Modules
+
+- [00 catalog](modules/00-catalog.md)
+- [01 identity workspaces permissions](modules/01-identity-workspaces-permissions.md)
+- [02 agents tasks memory](modules/02-agents-tasks-memory.md)
+- [03 brand assets and deliverables](modules/03-brand-assets-and-deliverables.md)
+- [04 marketing production](modules/04-marketing-production.md)
+- [05 analytics seo geo](modules/05-analytics-seo-geo.md)
+- [06 connectors workflows](modules/06-connectors-workflows.md)
+- [07 web extension desktop](modules/07-web-extension-desktop.md)
+- [08 usage billing admin](modules/08-usage-billing-admin.md)
+
+### Technical
+
+- [01 architecture and stack](technical/01-architecture-and-stack.md)
+- [02 runtime and ai gateway](technical/02-runtime-and-ai-gateway.md)
+- [03 data model and lifecycle](technical/03-data-model-and-lifecycle.md)
+- [04 api and event contracts](technical/04-api-and-event-contracts.md)
+- [05 local executor and browser](technical/05-local-executor-and-browser.md)
+- [06 media and data pipelines](technical/06-media-and-data-pipelines.md)
+- [07 security and permissions](technical/07-security-and-permissions.md)
+- [08 development and delivery](technical/08-development-and-delivery.md)
+- [09 operations runbooks](technical/09-operations-runbooks.md)
+- [10 frontend design system](technical/10-frontend-design-system.md)
+- [11 admin control plane](technical/11-admin-control-plane.md)
+- [12 implementation and repositories](technical/12-implementation-and-repositories.md)
+- [13 persistent agents conversations memory](technical/13-persistent-agents-conversations-memory.md)
+- [14 admin identity lifecycle](technical/14-admin-identity-lifecycle.md)
+- [15 cloud workflow schedules](technical/15-cloud-workflow-schedules.md)
+- [16 enterprise federation and native auth](technical/16-enterprise-federation-and-native-auth.md)
+- [17 erasure transfer retention events](technical/17-erasure-transfer-retention-events.md)
+- [18 persistent cloud files](technical/18-persistent-cloud-files.md)
+- [19 project skill lifecycle](technical/19-project-skill-lifecycle.md)
+- [20 in app notifications](technical/20-in-app-notifications.md)
+- [21 default assistant and first delegation](technical/21-default-assistant-and-first-delegation.md)
+- [22 pre execution input checkpoint](technical/22-pre-execution-input-checkpoint.md)
+- [23 execution capacity and fair dispatch](technical/23-execution-capacity-and-fair-dispatch.md)
+- [24 admin record pages and test isolation](technical/24-admin-record-pages-and-test-isolation.md)
+- [25 role template registry and runtime binding](technical/25-role-template-registry-and-runtime-binding.md)
+- [26 design pdf review delivery](technical/26-design-pdf-review-delivery.md)
+- [27 marketing import metrics and evidence](technical/27-marketing-import-metrics-and-evidence.md)
+- [28 analysis report tasks and evidence](technical/28-analysis-report-tasks-and-evidence.md)
+- [29 file imports and correction lineage](technical/29-file-imports-and-correction-lineage.md)
+- [30 native window and browser sidepanel](technical/30-native-window-and-browser-sidepanel.md)
+- [31 task controls and native continuation](technical/31-task-controls-and-native-continuation.md)
+- [32 cross client sessions and revocation](technical/32-cross-client-sessions-and-revocation.md)
+- [33 canonical authentication and retry recovery](technical/33-canonical-authentication-and-retry-recovery.md)
+- [34 user profile context and orphan scan races](technical/34-user-profile-context-and-orphan-scan-races.md)
+- [35 invitations and membership authority](technical/35-invitations-and-membership-authority.md)
+- [36 admin membership control and policy snapshots](technical/36-admin-membership-control-and-policy-snapshots.md)
+- [37 admin account lifecycle and inflight control](technical/37-admin-account-lifecycle-and-inflight-control.md)
+- [38 admin canonical directories and scoped usage](technical/38-admin-canonical-directories-and-scoped-usage.md)
+- [39 billing credit and settlement provenance](technical/39-billing-credit-and-settlement-provenance.md)
+- [40 billing subjects and financial event provenance](technical/40-billing-subjects-and-financial-event-provenance.md)
+- [41 canonical fee commands and independent approvals](technical/41-canonical-fee-commands-and-independent-approvals.md)
+- [42 current membership ui and native auth recovery](technical/42-current-membership-ui-and-native-auth-recovery.md)
+- [43 shared admin approval requests](technical/43-shared-admin-approval-requests.md)
+- [44 manual payment evidence and exact posting](technical/44-manual-payment-evidence-and-exact-posting.md)
+- [45 source bound refunds and cash reconciliation](technical/45-source-bound-refunds-and-cash-reconciliation.md)
+- [46 immutable plans and legacy grant bindings](technical/46-immutable-plans-and-legacy-grant-bindings.md)
+- [47 canonical vip lifecycle and effective entitlements](technical/47-canonical-vip-lifecycle-and-effective-entitlements.md)
+- [48 enterprise seat and storage enforcement](technical/48-enterprise-seat-and-storage-enforcement.md)
+- [49 atomic vip and explicit credit](technical/49-atomic-vip-and-explicit-credit.md)
+- [50 durable financial notifications](technical/50-durable-financial-notifications.md)
+- [51 controlled read only support](technical/51-controlled-read-only-support.md)
+- [52 capability versions and frozen task pricing](technical/52-capability-versions-and-frozen-task-pricing.md)
+- [53 controlled capability releases](technical/53-controlled-capability-releases.md)
+- [54 explicit agent version adoption](technical/54-explicit-agent-version-adoption.md)
+- [55 scoped internal inference requests](technical/55-scoped-internal-inference-requests.md)
+- [56 durable provider request control](technical/56-durable-provider-request-control.md)
+- [57 per request budget enforcement](technical/57-per-request-budget-enforcement.md)
+- [58 provider admin control and reconciliation](technical/58-provider-admin-control-and-reconciliation.md)
+- [59 creative production matrices](technical/59-creative-production-matrices.md)
+- [60 template video production](technical/60-template-video-production.md)
+- [61 marketing connector synchronization](technical/61-marketing-connector-synchronization.md)
+- [62 scoped seo audits](technical/62-scoped-seo-audits.md)
+- [63 source governed website change tasks](technical/63-source-governed-website-change-tasks.md)
+- [64 task source visibility](technical/64-task-source-visibility.md)
+- [65 conversation content source lineage](technical/65-conversation-content-source-lineage.md)
+- [66 paid native input checkpoints](technical/66-paid-native-input-checkpoints.md)
+- [67 repository delivery and media](technical/67-repository-delivery-and-media.md)
+- [68 canonical task APIs and original-task input transactions](technical/68-canonical-task-contracts-and-input-transactions.md)
+- [69 Desktop local Codex and Extension direction audit](technical/69-desktop-local-codex-and-extension-direction.md)
+- [70 native Codex supervisor: actual checks and remaining integration](technical/70-desktop-native-codex-supervisor.md)
+
+### Requirements
+
+- [01 srs](requirements/01-srs.md)
+- [02 nonfunctional and service levels](requirements/02-nonfunctional-and-service-levels.md)
+- [CLIENT01: local Desktop execution and Extension conversation attachments](requirements/03-client-execution-amendment.md)
+
+### Governance
+
+- [01 decisions assumptions and questions](governance/01-decisions-assumptions-and-questions.md)
+- [02 glossary and sources](governance/02-glossary-and-sources.md)
+- [03 workspace and path policy](governance/03-workspace-and-path-policy.md)
+- [04 git branches and publication](governance/04-git-branches-and-publication.md)
+
+## Updates and publication
+
+Current updates: [canonical task repair](changes/2026-10-22-canonical-task-repair.en.md) · [CLIENT01 direction](changes/2026-10-22-client-execution-direction.en.md) · [native Codex supervisor](changes/2026-10-22-native-codex-supervisor.en.md).
+
+[2026-10-22 release notes](changes/2026-10-22-workmate-publication.en.md) · [Branch and synchronization policy](governance/04-git-branches-and-publication.md) · [Exact prior README archive](quality/history/stage66-before-workmate-readmes/manifest.json)
+
+Every later change must synchronize both READMEs, affected captures, bilingual release notes and the mapped remote branch. Publishing uses explicit refs, remote SHA checks and no force-push. Credentials, sessions, databases, dependencies and installers stay out of Git. Browser runs close owned pages/contexts/instances after use.
+
+New: [Extension cloud conversations](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md) · [Release notes](changes/2026-10-22-extension-conversations.en.md).
+
+Stage 73 Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Prior recordings below retain their original source scopes.
+
+Stage 73 company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.
+
+Stage 74 native-input update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-input.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-checkpoint.json). Earlier reports/media retain their original source scopes.
+
+During stage 74, the unbundled renderer hash index was refreshed after qualification; all other covered sources and the actual package are unchanged. See the [separate metadata check](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-renderer-manifest-01.json). This adds no native/UI test count.
+
+Stage 75 private-video update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-private-video.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json). Earlier reports retain their actual source scopes; platform/main-process qualification and later UI qualification are explicitly separated.
+
+<!-- desktop-native-browser-stage77 -->
+
+## Native browser and scrollbar-free Desktop
+
+Start a new local session, select a folder and explicitly grant Full local access. Ask the local Codex to work in a browser. The trusted frameless address bar and remote page run in separate customer-device renderers. The tool namespace `copypaste_browser` v1 includes tabs/open/navigate/history/snapshot/screenshot/interact/evaluate/wait/dialog/downloads/close; interact supports real click, fill/type/select, keys, scroll/drag and exact local-file upload. Completed downloads remain in the selected workspace’s browser-downloads directory. Model screenshots capture the actual page; README browser media uses actual OS window capture, with no compositing.
+
+Current local permission, company identity, project access, origin and budget are rechecked. Web content cannot grant OS access or acquire company inference credentials. Call IDs bind exact operations; unknown accepted actions never replay automatically. Stop, revoke, sign-out or exit close owned pages and pending downloads, preserving completed files and the customer’s original windows. Existing threads retain their original tool binding; create a new session for browser tools.
+
+The previous progress-bar constraint is withdrawn. Truthful upload/task/workflow/video feedback remains. Hidden scrollbar rails do not disable native scrolling. Artifacts wrap into rows, code and tables reflow, scroll areas have keyboard focus, and the composer/receipt remain usable in actual 800×600, 1280×800 and 1440×980 windows. Real wheel/Home/End and last-download focus are verified, alongside compact billing/devices/account pages and English/Traditional Chinese light/dark controls. Physical touchpad hardware and every display-scaling configuration are not claimed by these automated checks.
+
+Current complete inventory: 66 test files / 17 batches / 851 passing cases, retaining all 848 prior cases. SQL001–094 and all 428 HTTP routes remain unchanged. The isolated UI fixture alone allocates 32 user/platform/tenant slots and appends immutable provider-policy version 2 with 32 slots and 10,000 requests/minute, retaining intentional unknown cancellation holds. Bootstrap policy and production defaults/enforcement remain unchanged. Synthetic Responses, campaign content and native-dialog choices are explicit. Original 102 REQ/102 TC, NFR and G01–G10 remain at 81 partial / 21 unproven / 0 fully accepted. Extension product/verifier bytes are unchanged; no new Extension UI claim.
+
+```mermaid
+flowchart LR
+    Customer --> Permission[Explicit local permission]
+    Permission --> Native[Customer-device Codex]
+    Native --> Gateway[Company identity, budget and AI gateway]
+    Native --> Browser[Owned local browser and real websites]
+    Browser --> Files[Actual uploads, screenshots and downloads]
+    Stop[Stop, revoke, sign-out, exit] --> Cleanup[Close task-owned pages]
+    Extension[Native Chrome right Side Panel and selected files] --> Cloud[Company cloud Codex]
+```
+
+![Actual compact Desktop](design/implementation/workmate-local-28-layout-800-en.png)
+
+![Actual local browser](design/implementation/workmate-local-28-browser-saved-en.png)
+
+![Actual native interaction](design/implementation/workmate-local-28-local-agent.gif)
+
+[MP4](design/implementation/workmate-local-28-local-agent.mp4) · [Browser GIF](design/implementation/workmate-local-28-native-browser.gif) · [Browser MP4](design/implementation/workmate-local-28-native-browser.mp4) · [繁中深色](design/implementation/workmate-local-28-layout-compact-zh-dark.png)
+
+[Design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/77-desktop-native-browser.md) · [Requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/04-desktop-layout-and-scroll.md) · [Evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-browser-checkpoint.json) · [Changes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-browser.md)
+
+<details>
+<summary>Stage 76 historical implementation and captures (previous scrollbar layout)</summary>
+
+<!-- desktop-native-workflow-stage76 -->
+
+## Native workflows and verification
+
+Choose Workflow consultant, select a folder and explicitly grant the desired local permission. Describe the work and agree its frozen steps. Review the separate per-child budgets and approve the exact version before a child can reserve money or run. Approve any concrete human step before the next specialist starts. Review real files, private SOP/workflow JSON/recovery downloads and company usage; this conversation and incomplete steps have separate charges. Stop or revoke to terminate local parent and child processes; unknown accepted actions retain reconciliation state and never replay automatically.
+
+The first workflow subset permits up to eight sequential native Codex, human approval or analytics-summary steps. Every child uses its own approved role Skills, company tools and scoped credentials while retaining the current explicit local grant. Local full access does not grant another customer's data, project rights or unlimited budget. Company cloud Workers and schedules cannot take over native workflows. Each immutable version freezes actual external input provenance across new sessions and derived SOPs, without depending on the creator task lifetime. Source withdrawal also governs first reads, cached calls, child admission and private or explicitly published derivatives; administrators use existing permission/MFA/reason/audit controls. Closing the app fences requests still waiting for their local journal write.
+
+Historical stage-76 inventory: 65 actual test files / 17 complete batches / 848 passing tests; all 830 stage-75 cases remain covered. SQL001–093 remain unchanged; SQL094 adds native workflow provenance and immutable versions. The actual 428-route inventory retains all prior 415 routes. Original 102 REQ/102 TC, NFR and G01–G10 remain open at 81 partial / 21 unproven / 0 fully accepted. Earlier evidence and media retain their original source scope.
+
+```mermaid
+flowchart LR
+    User[Customer] --> Consent[Desktop main: permission and fee consent]
+    Consent --> Local[Local consultant Codex]
+    Local --> API[Company identity, sources and usage]
+    API --> Consent
+    Consent --> Children[Local role Codex children]
+    Children --> API
+    Children --> Approval[Human step approval]
+    Approval --> Consent
+    Children --> Files[Real files and private deliveries]
+    Extension[Chrome right Side Panel and files] --> Cloud[Company cloud Codex]
+```
+
+![Native workflow fee confirmation](design/implementation/workmate-local-21-workflow-fees-en.png)
+
+![Native workflow complete](design/implementation/workmate-local-21-workflow-completed-zh.png)
+
+![Actual packaged interaction](design/implementation/workmate-local-21-local-agent.gif)
+
+[MP4](design/implementation/workmate-local-21-local-agent.mp4) · [800×600](design/implementation/workmate-local-21-workflow-compact-en.png)
+
+[Design and lifecycle](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/76-desktop-native-workflows.md) · [Bound evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-workflow-checkpoint.json) · [Change notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-workflows.md)
+
+</details>
+
+</details>
+
+
+</details>
+
+</details>
+
+</details>
+
+</details>
+
+</details>

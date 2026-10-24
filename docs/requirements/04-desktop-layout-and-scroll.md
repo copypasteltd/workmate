@@ -1,6 +1,8 @@
 # DESK-UI01：Desktop 布局与滚动呈现
 
-**阶段 83 当前增量：** 固定 GEO 问句和完整 Agent/skills 配置、独立 Codex 重复运行、私有原始回答与真实 JSON、人工消费者样本单独声明及后台来源治理已局部核对。平台 968 项保留原 946 项，专项 22、客户端 124、真实 Web/Admin/原生右侧栏 13、打包本机 Desktop 37 项分别通过。SQL100 新增，SQL001–099 与原 OpenAPI 保持。Desktop 本机 Codex、主动可撤销全权限、无边框/菜单、无可见纵横滚动条，保留滚动/键盘/真实进度；GEO 明确在浏览器打开，本机 GEO 协议仍待实现。原 102 REQ/102 TC 保持 83 部分／19 未证明／0 完整验收，G01–G10 保留。见[当前方案及证据](../technical/83-reproducible-geo-observations.md)。
+**阶段 84 当前增量：** 公司内部配音/文件转写、原始音讯和真实字幕时间、无 AI 的版本修订、共享预算与未知费用保留、来源门控及独立后台正文/费用权限已在明确假数据下局部核对。平台 988 项保留原 968 项，音频/网关 43、兼容 80、客户端 124、真实 Web/Admin/原生侧栏 10、打包本机 Desktop 40 项分别通过。新增 SQL101，SQL001–100 和两份原 OpenAPI 保持。Desktop 本机 Codex、可撤销全权限、无边框/菜单、无可见纵横滚动条，保留真实滚动、键盘、缩放后焦点与真实进度。原生侧栏继续云端 Codex 与获准文件上传。真实音质、独立人工声音授权、音频能力后台发行及未知 POST 专属对账仍待补齐；原 102 REQ/102 TC 保持 83 部分／19 未证明／0 完整验收，G01–G10 保留。见[方案与限定证据](../technical/84-internal-audio-production.md)。
+
+**阶段 83 历史基线：** 固定 GEO 问句和完整 Agent/skills 配置、独立 Codex 重复运行、私有原始回答与真实 JSON、人工消费者样本单独声明及后台来源治理已局部核对。平台 968 项保留原 946 项，专项 22、客户端 124、真实 Web/Admin/原生右侧栏 13、打包本机 Desktop 37 项分别通过。SQL100 新增，SQL001–099 与原 OpenAPI 保持。Desktop 本机 Codex、主动可撤销全权限、无边框/菜单、无可见纵横滚动条，保留滚动/键盘/真实进度；GEO 明确在浏览器打开，本机 GEO 协议仍待实现。原 102 REQ/102 TC 保持 83 部分／19 未证明／0 完整验收，G01–G10 保留。见[当前方案及证据](../technical/83-reproducible-geo-observations.md)。
 
 **阶段 82 历史基线：** 精确素材版本与用户明确确认的广告级身份、独立口径反馈、实际 JSON 下载／模型读取继承来源、撤销和保留期清理已局部核对。平台 946 项保留原 929 项，专项 17、兼容 43、真实 Web 4、打包 Desktop 36 项分别通过；SQL099 新增，SQL001–098 及原 OpenAPI 保持。Desktop 本机 Codex、无边框、无可见纵横滚动条，保留实际滚动／键盘／真实进度；原生 Side Panel 为云端 Codex 和文件上传。102 REQ/102 TC 保持 83 部分／19 未证明／0 完整验收，G01–G10 保留。见[当前方案及证据](../technical/82-confirmed-creative-feedback.md)。
 
@@ -35,10 +37,13 @@ The user withdrew the previous progress-bar constraint. Existing truthful upload
 
 ## 当前实现与画面 / Current implementation evidence
 
-影片参数默认收起，展开在输入区上方，按可用高度限制面板并保持真实滚动；窄窗仍可访问需求、预算、开始/停止与成果。任务和影片进度继续反映真实服务状态。布局补充同时要求隐藏滚动条与实际操作可达，二者在最终打包客户端分别检查。见[当前实际截图与交互复核](../quality/geo-observation-visual-review.md)和[当前精确版本检查点](../quality/geo-observation-checkpoint.json)。
+影片参数默认收起，展开在输入区上方，按可用高度限制面板并保持真实滚动；窄窗仍可访问需求、预算、开始/停止与成果。任务和影片进度继续反映真实服务状态。布局补充同时要求隐藏滚动条与实际操作可达，二者在最终打包客户端分别检查。见[当前实际截图与交互复核](../quality/audio-production-visual-review.md)和[当前精确版本检查点](../quality/audio-production-checkpoint.json)。
 
 ## 实际键盘访问 / Actual keyboard access
 
 长会话等已聚焦的局部滚动区域以 Home/End 核对首末项；Windows 外层整页返回顶部以 Ctrl+Home 核对，End 核对页面末端。两种范围各自验证真实 scrollTop，不能用自动定位、截断内容或脚本伪造按键通过。截图等待实际绘制，并直接捕获 Electron 原生窗口表面；录制与 OS 尺寸调整串行，避免 CDP 截图更改视口。
 
 Focused native conversation regions retain Home/End checks. Windows whole-page navigation independently verifies Ctrl+Home and End against actual scroll positions. Static captures wait for paint; native surface capture shares serialization with real OS resizing. Content reachability and overflow checks remain independent of scrollbar styling.
+
+
+字幕编辑器在实际 OS 窗口缩放后保留当前控件的焦点可见性；较矮窗口采用紧凑标题与布局，避免消息区被固定区域挤占。实际字幕末项保存、滚轮和键盘按新回执分别核对，不能只隐藏滚动条。
