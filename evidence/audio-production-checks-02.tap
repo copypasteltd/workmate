@@ -1,0 +1,386 @@
+2026-10-24 20:41:53.892 CST [38496] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 20:41:53.900 CST [38496] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 20:41:53.901 CST [38496] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 20:41:55.143 CST [35276] LOG:  database system was shut down at 2026-10-24 20:39:55 CST
+
+2026-10-24 20:41:55.880 CST [38496] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# Subtest: audio speech persists before network, delivers decoded WAV and settles its company tariff exactly once
+ok 1 - audio speech persists before network, delivers decoded WAV and settles its company tariff exactly once
+  ---
+  duration_ms: 8769.0328
+  ...
+# Subtest: transcription pins actual source bytes, retains exact raw JSON and exports provider timed SRT and VTT
+ok 2 - transcription pins actual source bytes, retains exact raw JSON and exports provider timed SRT and VTT
+  ---
+  duration_ms: 795.7484
+  ...
+# Subtest: text-only transcription never fabricates subtitle times or empty timed exports
+ok 3 - text-only transcription never fabricates subtitle times or empty timed exports
+  ---
+  duration_ms: 722.1373
+  ...
+# Subtest: subtitle edits preserve original response and audio, enforce exact revisions, and make no new AI request
+ok 4 - subtitle edits preserve original response and audio, enforce exact revisions, and make no new AI request
+  ---
+  duration_ms: 1073.3187
+  ...
+# Subtest: audio rights, verified voices, malformed Unicode and cross-project sources reject before provider dispatch
+ok 5 - audio rights, verified voices, malformed Unicode and cross-project sources reject before provider dispatch
+  ---
+  duration_ms: 782.1529
+  ...
+# Subtest: audio same-call and same-specification replays retain one operation and changed input conflicts
+ok 6 - audio same-call and same-specification replays retain one operation and changed input conflicts
+  ---
+  duration_ms: 750.3144
+  ...
+2026-10-24 20:42:13.510 CST [10984] ERROR:  Audio task budget unavailable
+2026-10-24 20:42:13.510 CST [10984] CONTEXT:  PL/pgSQL function prepare_ai_audio_job(uuid,uuid,text,jsonb,text,uuid,uuid,integer,text,jsonb,bigint) line 43 at RAISE
+2026-10-24 20:42:13.510 CST [10984] STATEMENT:  SELECT prepare_ai_audio_job($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) AS id
+
+# Subtest: concurrent audio quotes share the original budget and cannot reserve three unaffordable operations
+ok 7 - concurrent audio quotes share the original budget and cannot reserve three unaffordable operations
+  ---
+  duration_ms: 587.3988
+  ...
+# Subtest: audio capacity is a separate explicit policy and shares global slots with text image and video
+ok 8 - audio capacity is a separate explicit policy and shares global slots with text image and video
+  ---
+  duration_ms: 397.9422
+  ...
+# Subtest: lost audio POST remains unknown, holds the original funds and never resubmits on replay or recovery
+ok 9 - lost audio POST remains unknown, holds the original funds and never resubmits on replay or recovery
+  ---
+  duration_ms: 459.4988
+  ...
+# Subtest: corrupt speech bytes and incomplete transcription retain uncertainty without claiming delivery or zero cost
+ok 10 - corrupt speech bytes and incomplete transcription retain uncertainty without claiming delivery or zero cost
+  ---
+  duration_ms: 1230.4971
+  ...
+# Subtest: cancelling prepared audio proves zero and cannot later start HTTP
+ok 11 - cancelling prepared audio proves zero and cannot later start HTTP
+  ---
+  duration_ms: 292.6095
+  ...
+# Subtest: cancel racing a validated audio response preserves actual charge and blocks late content delivery
+ok 12 - cancel racing a validated audio response preserves actual charge and blocks late content delivery
+  ---
+  duration_ms: 553.9648
+  ...
+# Subtest: source quarantine while transcription is in flight blocks delivery and generated files inherit exact sources
+ok 13 - source quarantine while transcription is in flight blocks delivery and generated files inherit exact sources
+  ---
+  duration_ms: 603.9866
+  ...
+2026-10-24 20:42:18.111 CST [30916] ERROR:  permission denied for table ai_audio_jobs
+2026-10-24 20:42:18.111 CST [30916] STATEMENT:  SELECT specification FROM ai_audio_jobs
+
+# Subtest: private audio list, source and transcript previews are isolated from same-project peers
+ok 14 - private audio list, source and transcript previews are isolated from same-project peers
+  ---
+  duration_ms: 1057.9928
+  ...
+# Subtest: Admin audio metadata uses distinct request and cost scopes and returns no prompt rights or transcript bodies
+ok 15 - Admin audio metadata uses distinct request and cost scopes and returns no prompt rights or transcript bodies
+  ---
+  duration_ms: 678.7479
+  ...
+2026-10-24 20:42:19.358 CST [10984] ERROR:  Immutable audio intent
+2026-10-24 20:42:19.358 CST [10984] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 9 at RAISE
+2026-10-24 20:42:19.358 CST [10984] STATEMENT:  UPDATE ai_audio_jobs SET model_alias='rewritten',revision=revision+1 WHERE id=$1
+
+2026-10-24 20:42:19.361 CST [35000] ERROR:  Audio intent can only be erased with its task
+2026-10-24 20:42:19.361 CST [35000] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 12 at RAISE
+2026-10-24 20:42:19.361 CST [35000] STATEMENT:  UPDATE ai_audio_jobs SET specification='{}',revision=revision+1 WHERE id=$1
+
+2026-10-24 20:42:19.365 CST [43660] ERROR:  Immutable audio identity or outcome
+2026-10-24 20:42:19.365 CST [43660] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 21 at RAISE
+2026-10-24 20:42:19.365 CST [43660] STATEMENT:  UPDATE ai_audio_jobs SET billable_units=0,revision=revision+1 WHERE id=$1
+
+2026-10-24 20:42:19.444 CST [4572] ERROR:  Invalid audio transition; unknown submissions cannot be retried
+2026-10-24 20:42:19.444 CST [4572] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 26 at RAISE
+2026-10-24 20:42:19.444 CST [4572] STATEMENT:  UPDATE ai_audio_jobs SET state='prepared',revision=revision+1 WHERE id=$1
+
+# Subtest: audio immutable operation and usage facts reject direct intent rewrites
+ok 16 - audio immutable operation and usage facts reject direct intent rewrites
+  ---
+  duration_ms: 654.1905
+  ...
+# Subtest: real local Codex calls audio through company tools, keeps its native task and settles one charge
+not ok 17 - real local Codex calls audio through company tools, keeps its native task and settles one charge
+  ---
+  duration_ms: 4721.8097
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:15907'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'failed'
+    - 'succeeded'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'succeeded'
+  actual: 'failed'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:263:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"native_state":{"id":"aa6ffc89-06f3-47b9-989a-5c25568e0a1a","tenant":"130aba99-f13b-4a16-906a-ad52156d5415","project":"4d8dd6f0-5f12-4b99-b94e-34b15c68f4c7","workspace":"D:\\\\dev\\\\copypasted\\\\自有agent\\\\dev\\\\copypaste-platform\\\\.data\\\\test-runs\\\\a2333e2f6ef2427c96f75dfc3dfd522b\\\\audio-native-95722f1f-a9d7-49a1-8961-2eb09b6497cb","role":"video-motion","revoked":false,"permission":"full-access","busy":false,"phase":"idle","uncertain":false,"task":{"task_id":"da5d8e7a-ef12-40b3-ab93-3ab09461e29a","local_session_id":"aa6ffc89-06f3-47b9-989a-5c25568e0a1a","device_id":"55428d87-4620-4cbb-9ab2-6581a8038eaa","execution_location":"desktop","state":"finished","status":"failed","cancel_requested":false,"budget_micros":"1000000","charged_micros":"0","accrued_micros":"0","lease_until":null,"credential_expires_at":"2026-10-24T12:57:19.805Z","output":"","result_origin":"desktop_client_report","error_code":null},"messages":[{"role":"user","text":"Use the explicit customer-approved synthetic speech request."},{"role":"assistant","text":"","status":"failed"}],"events":[{"kind":"local.runtime.ready","value":{"pid":40216,"version":"0.163.0-alpha.11","executable_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","thread_id":"01a16def-0265-7382-9885-6b107f5498c0","permission_mode":"full-access","grant_revision":1}},{"kind":"turn/started","value":{"threadId":"01a16def-0265-7382-9885-6b107f5498c0","turn":{"id":"01a16def-035b-7f92-83be-08a2b4b4e3e9","rootTurnId":"01a16def-035b-7f92-83be-08a2b4b4e3e9","items":[],"itemsView":"notLoaded","status":"inProgress","error":null,"startedAt":1792845742,"completedAt":null,"durationMs":null}}},{"kind":"turn/completed","value":{"threadId":"01a16def-0265-7382-9885-6b107f5498c0","turn":{"id":"01a16def-035b-7f92-83be-08a2b4b4e3e9","rootTurnId":"01a16def-035b-7f92-83be-08a2b4b4e3e9","items":[],"itemsView":"notLoaded","status":"failed","error":{"message":"{\\"error\\":{\\"code\\":\\"AI_DESKTOP_TOOL_NOT_ALLOWED\\",\\"message\\":\\"AI_DESKTOP_TOOL_NOT_ALLOWED\\"}}","codexErrorInfo":"other","additionalDetails":null,"misalignment":null},"startedAt":1792845742,"completedAt":1792845743,"durationMs":970}}}],"inputs":[],"retryable":false},"errors":[]}
+2026-10-24 20:42:24.267 CST [12528] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 20:42:24.892 CST [12528] LOG:  checkpoint complete: wrote 34 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.369 s, total=0.626 s; sync files=12, longest=0.076 s, average=0.031 s; distance=19079 kB, estimate=19079 kB; lsn=14/51AAE3F0, redo lsn=14/51AAE398
+
+# Subtest: unread aborts, cancelled media and rejected response protocols release all owned process resources
+    # Subtest: abort-unread-image
+    ok 1 - abort-unread-image
+      ---
+      duration_ms: 565.4813
+      ...
+    # Subtest: cancel-image
+    ok 2 - cancel-image
+      ---
+      duration_ms: 557.7666
+      ...
+    # Subtest: invalid-response-protocol
+    ok 3 - invalid-response-protocol
+      ---
+      duration_ms: 555.6142
+      ...
+    1..3
+ok 18 - unread aborts, cancelled media and rejected response protocols release all owned process resources
+  ---
+  duration_ms: 1680.7504
+  ...
+# Subtest: scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+ok 19 - scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+  ---
+  duration_ms: 108.2964
+  ...
+# Subtest: authority revocation between responses blocks the next provider call and does not expose callback errors
+ok 20 - authority revocation between responses blocks the next provider call and does not expose callback errors
+  ---
+  duration_ms: 24.8729
+  ...
+# Subtest: credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+ok 21 - credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+  ---
+  duration_ms: 29.0398
+  ...
+# Subtest: model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+ok 22 - model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+  ---
+  duration_ms: 47.6421
+  ...
+# Subtest: declared and streamed oversized request bodies never reach the provider
+ok 23 - declared and streamed oversized request bodies never reach the provider
+  ---
+  duration_ms: 9.1569
+  ...
+# Subtest: a run has one in-flight request and a hard forwarded-request ceiling
+ok 24 - a run has one in-flight request and a hard forwarded-request ceiling
+  ---
+  duration_ms: 17.5769
+  ...
+# Subtest: expiry and explicit cancellation revoke a scoped credential without a provider request
+ok 25 - expiry and explicit cancellation revoke a scoped credential without a provider request
+  ---
+  duration_ms: 79.9237
+  ...
+# Subtest: redirects are not followed and an uncertain dispatched request cannot be replayed
+ok 26 - redirects are not followed and an uncertain dispatched request cannot be replayed
+  ---
+  duration_ms: 12.8174
+  ...
+# Subtest: truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+ok 27 - truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+  ---
+  duration_ms: 36.4231
+  ...
+# Subtest: split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+ok 28 - split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+  ---
+  duration_ms: 2538.4392
+  ...
+# Subtest: an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+ok 29 - an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+  ---
+  duration_ms: 9.5847
+  ...
+# Subtest: the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+ok 30 - the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+  ---
+  duration_ms: 196.3627
+  ...
+# Subtest: registered function-call frames and arguments are streamed unchanged after validation
+ok 31 - registered function-call frames and arguments are streamed unchanged after validation
+  ---
+  duration_ms: 13.5092
+  ...
+# Subtest: malformed or oversized SSE frames are rejected before forwarding an event
+ok 32 - malformed or oversized SSE frames are rejected before forwarding an event
+  ---
+  duration_ms: 17.8261
+  ...
+# Subtest: stream idle timeout aborts an accepted provider request and prevents another dispatch
+ok 33 - stream idle timeout aborts an accepted provider request and prevents another dispatch
+  ---
+  duration_ms: 53.4008
+  ...
+# Subtest: request deadline aborts even a non-idle stream and a response with no first byte
+ok 34 - request deadline aborts even a non-idle stream and a response with no first byte
+  ---
+  duration_ms: 165.0409
+  ...
+# Subtest: declared and chunked oversized responses are bounded and never automatically replayed
+ok 35 - declared and chunked oversized responses are bounded and never automatically replayed
+  ---
+  duration_ms: 44.5739
+  ...
+# Subtest: image generation and multipart editing use the same trusted authorization and exact frozen specification
+ok 36 - image generation and multipart editing use the same trusted authorization and exact frozen specification
+  ---
+  duration_ms: 11.9398
+  ...
+# Subtest: invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+ok 37 - invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+  ---
+  duration_ms: 3.2906
+  ...
+1..37
+# tests 40
+# suites 0
+# pass 39
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33686.7793
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/506c50ce-b3e0-45cf-a3e8-1e895ff48cbd/result.json","sha256":"df8b15cf31ee370008cdfddb30ff0e310817a6ad827b9fa9a9f248410c74f600","exit_code":0}
+2026-10-24 20:42:31.600 CST [38496] LOG:  received fast shutdown request
+
+2026-10-24 20:42:31.660 CST [38496] LOG:  aborting any active transactions
+
+2026-10-24 20:42:31.670 CST [38496] LOG:  background worker "logical replication launcher" (PID 12924) exited with exit code 1
+
+2026-10-24 20:42:31.670 CST [12528] LOG:  shutting down
+
+2026-10-24 20:42:31.708 CST [12528] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 20:42:31.882 CST [12528] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.036 s, total=0.212 s; sync files=1, longest=0.036 s, average=0.036 s; distance=0 kB, estimate=17171 kB; lsn=14/51AAE540, redo lsn=14/51AAE540
+
+2026-10-24 20:42:32.014 CST [38496] LOG:  database system is shut down
+

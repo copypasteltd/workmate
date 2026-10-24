@@ -1,0 +1,535 @@
+2026-10-24 20:28:01.397 CST [18672] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 20:28:01.403 CST [18672] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 20:28:01.403 CST [18672] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 20:28:02.109 CST [11400] LOG:  database system was shut down at 2026-10-24 19:02:10 CST
+
+2026-10-24 20:28:02.289 CST [18672] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# Subtest: audio speech persists before network, delivers decoded WAV and settles its company tariff exactly once
+ok 1 - audio speech persists before network, delivers decoded WAV and settles its company tariff exactly once
+  ---
+  duration_ms: 14280.2201
+  ...
+2026-10-24 20:28:41.403 CST [39676] ERROR:  new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"
+2026-10-24 20:28:41.403 CST [39676] STATEMENT:  INSERT INTO task_source_reads(tenant_id,project_id,task_id,kind,resource_id,asset_version_id,sha256) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING
+
+# Subtest: transcription pins actual source bytes, retains exact raw JSON and exports provider timed SRT and VTT
+not ok 2 - transcription pins actual source bytes, retains exact raw JSON and exports provider timed SRT and VTT
+  ---
+  duration_ms: 633.9551
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:4458'
+  failureType: 'testCodeFailure'
+  error: 'new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"'
+  code: '23514'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async recordTaskSourceRead (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\task-content-sources.ts:55:3)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\audio-production.ts:90:9)
+    async Database.tx (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\db.ts:50:22)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:96:92)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-24 20:28:41.886 CST [39676] ERROR:  new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"
+2026-10-24 20:28:41.886 CST [39676] STATEMENT:  INSERT INTO task_source_reads(tenant_id,project_id,task_id,kind,resource_id,asset_version_id,sha256) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING
+
+# Subtest: text-only transcription never fabricates subtitle times or empty timed exports
+not ok 3 - text-only transcription never fabricates subtitle times or empty timed exports
+  ---
+  duration_ms: 480.0792
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:5636'
+  failureType: 'testCodeFailure'
+  error: 'new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"'
+  code: '23514'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async recordTaskSourceRead (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\task-content-sources.ts:55:3)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\audio-production.ts:90:9)
+    async Database.tx (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\db.ts:50:22)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:108:15)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-24 20:28:42.311 CST [39676] ERROR:  new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"
+2026-10-24 20:28:42.311 CST [39676] STATEMENT:  INSERT INTO task_source_reads(tenant_id,project_id,task_id,kind,resource_id,asset_version_id,sha256) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING
+
+# Subtest: subtitle edits preserve original response and audio, enforce exact revisions, and make no new AI request
+not ok 4 - subtitle edits preserve original response and audio, enforce exact revisions, and make no new AI request
+  ---
+  duration_ms: 425.2641
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:6172'
+  failureType: 'testCodeFailure'
+  error: 'new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"'
+  code: '23514'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async recordTaskSourceRead (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\task-content-sources.ts:55:3)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\audio-production.ts:90:9)
+    async Database.tx (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\db.ts:50:22)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:114:61)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: audio rights, verified voices, malformed Unicode and cross-project sources reject before provider dispatch
+ok 5 - audio rights, verified voices, malformed Unicode and cross-project sources reject before provider dispatch
+  ---
+  duration_ms: 565.589
+  ...
+# Subtest: audio same-call and same-specification replays retain one operation and changed input conflicts
+ok 6 - audio same-call and same-specification replays retain one operation and changed input conflicts
+  ---
+  duration_ms: 504.371
+  ...
+2026-10-24 20:28:43.934 CST [39368] ERROR:  Audio task budget unavailable
+2026-10-24 20:28:43.934 CST [39368] CONTEXT:  PL/pgSQL function prepare_ai_audio_job(uuid,uuid,text,jsonb,text,uuid,uuid,integer,text,jsonb,bigint) line 43 at RAISE
+2026-10-24 20:28:43.934 CST [39368] STATEMENT:  SELECT prepare_ai_audio_job($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) AS id
+
+# Subtest: concurrent audio quotes share the original budget and cannot reserve three unaffordable operations
+ok 7 - concurrent audio quotes share the original budget and cannot reserve three unaffordable operations
+  ---
+  duration_ms: 554.3318
+  ...
+# Subtest: audio capacity is a separate explicit policy and shares global slots with text image and video
+not ok 8 - audio capacity is a separate explicit policy and shares global slots with text image and video
+  ---
+  duration_ms: 279.3719
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:9054'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + 'GLOBAL_CAPACITY'
+    - null
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: ~
+  actual: 'GLOBAL_CAPACITY'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:151:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: lost audio POST remains unknown, holds the original funds and never resubmits on replay or recovery
+ok 9 - lost audio POST remains unknown, holds the original funds and never resubmits on replay or recovery
+  ---
+  duration_ms: 379.694
+  ...
+2026-10-24 20:28:45.444 CST [39368] ERROR:  new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"
+2026-10-24 20:28:45.444 CST [39368] STATEMENT:  INSERT INTO task_source_reads(tenant_id,project_id,task_id,kind,resource_id,asset_version_id,sha256) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING
+
+# Subtest: corrupt speech bytes and incomplete transcription retain uncertainty without claiming delivery or zero cost
+not ok 10 - corrupt speech bytes and incomplete transcription retain uncertainty without claiming delivery or zero cost
+  ---
+  duration_ms: 849.1666
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:11311'
+  failureType: 'testCodeFailure'
+  error: 'new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"'
+  code: '23514'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async recordTaskSourceRead (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\task-content-sources.ts:55:3)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\audio-production.ts:90:9)
+    async Database.tx (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\db.ts:50:22)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:171:17)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: cancelling prepared audio proves zero and cannot later start HTTP
+ok 11 - cancelling prepared audio proves zero and cannot later start HTTP
+  ---
+  duration_ms: 286.4753
+  ...
+# Subtest: cancel racing a validated audio response preserves actual charge and blocks late content delivery
+ok 12 - cancel racing a validated audio response preserves actual charge and blocks late content delivery
+  ---
+  duration_ms: 501.0158
+  ...
+2026-10-24 20:28:46.628 CST [39368] ERROR:  new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"
+2026-10-24 20:28:46.628 CST [39368] STATEMENT:  INSERT INTO task_source_reads(tenant_id,project_id,task_id,kind,resource_id,asset_version_id,sha256) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING
+
+# Subtest: source quarantine while transcription is in flight blocks delivery and generated files inherit exact sources
+not ok 13 - source quarantine while transcription is in flight blocks delivery and generated files inherit exact sources
+  ---
+  duration_ms: 395.6459
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:13156'
+  failureType: 'testCodeFailure'
+  error: 'new row for relation "task_source_reads" violates check constraint "task_source_reads_check1"'
+  code: '23514'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async recordTaskSourceRead (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\task-content-sources.ts:55:3)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\audio-production.ts:90:9)
+    async Database.tx (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\db.ts:50:22)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:193:61)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-24 20:28:47.364 CST [39368] ERROR:  null value in column "tenant_id" of relation "project_members" violates not-null constraint
+2026-10-24 20:28:47.364 CST [39368] STATEMENT:  INSERT INTO project_members(project_id,user_id,role) VALUES($1,$2,'editor')
+
+# Subtest: private audio list, source and transcript previews are isolated from same-project peers
+not ok 14 - private audio list, source and transcript previews are isolated from same-project peers
+  ---
+  duration_ms: 736.6141
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:13876'
+  failureType: 'testCodeFailure'
+  error: 'null value in column "tenant_id" of relation "project_members" violates not-null constraint'
+  code: '23502'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg-pool\index.js:45:11
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:205:3)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: Admin audio metadata uses distinct request and cost scopes and returns no prompt rights or transcript bodies
+ok 15 - Admin audio metadata uses distinct request and cost scopes and returns no prompt rights or transcript bodies
+  ---
+  duration_ms: 703.541
+  ...
+2026-10-24 20:28:48.571 CST [3436] ERROR:  Immutable audio intent
+2026-10-24 20:28:48.571 CST [3436] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 9 at RAISE
+2026-10-24 20:28:48.571 CST [3436] STATEMENT:  UPDATE ai_audio_jobs SET model_alias='rewritten',revision=revision+1 WHERE id=$1
+
+2026-10-24 20:28:48.572 CST [39676] ERROR:  Audio intent can only be erased with its task
+2026-10-24 20:28:48.572 CST [39676] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 12 at RAISE
+2026-10-24 20:28:48.572 CST [39676] STATEMENT:  UPDATE ai_audio_jobs SET specification='{}',revision=revision+1 WHERE id=$1
+
+2026-10-24 20:28:48.640 CST [35552] ERROR:  Immutable audio identity or outcome
+2026-10-24 20:28:48.640 CST [35552] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 21 at RAISE
+2026-10-24 20:28:48.640 CST [35552] STATEMENT:  UPDATE ai_audio_jobs SET billable_units=0,revision=revision+1 WHERE id=$1
+
+2026-10-24 20:28:48.806 CST [20796] ERROR:  Invalid audio transition; unknown submissions cannot be retried
+2026-10-24 20:28:48.806 CST [20796] CONTEXT:  PL/pgSQL function guard_ai_audio_job() line 26 at RAISE
+2026-10-24 20:28:48.806 CST [20796] STATEMENT:  UPDATE ai_audio_jobs SET state='prepared',revision=revision+1 WHERE id=$1
+
+# Subtest: audio immutable operation and usage facts reject direct intent rewrites
+ok 16 - audio immutable operation and usage facts reject direct intent rewrites
+  ---
+  duration_ms: 737.6843
+  ...
+2026-10-24 20:33:02.101 CST [29636] LOG:  checkpoint starting: time
+
+2026-10-24 20:37:32.187 CST [29636] LOG:  checkpoint complete: wrote 2432 buffers (14.8%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=264.927 s, sync=4.923 s, total=270.086 s; sync files=1443, longest=0.130 s, average=0.004 s; distance=19254 kB, estimate=19254 kB; lsn=14/50797E10, redo lsn=14/50797D80
+
+2026-10-24 20:38:02.210 CST [29636] LOG:  checkpoint starting: time
+
+2026-10-24 20:38:02.826 CST [29636] LOG:  checkpoint complete: wrote 3 buffers (0.0%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.317 s, sync=0.034 s, total=0.617 s; sync files=1, longest=0.034 s, average=0.034 s; distance=22 kB, estimate=17331 kB; lsn=14/5079D768, redo lsn=14/5079D710
+
+# Subtest: real local Codex calls audio through company tools, keeps its native task and settles one charge
+not ok 17 - real local Codex calls audio through company tools, keeps its native task and settles one charge
+  ---
+  duration_ms: 574753.1385
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:15857'
+  failureType: 'testTimeoutFailure'
+  error: 'test timed out after 180000ms'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# {"request_id":"9368924d-16af-469b-b99d-487624c89f91","code":"INTERNAL_ERROR","error_type":"DOMException"}
+2026-10-24 20:38:23.660 CST [22056] FATAL:  terminating connection due to administrator command
+
+2026-10-24 20:38:23.799 CST [29636] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 20:38:24.078 CST [29636] LOG:  checkpoint complete: wrote 17 buffers (0.1%), wrote 0 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.106 s, total=0.280 s; sync files=3, longest=0.057 s, average=0.036 s; distance=156 kB, estimate=15613 kB; lsn=14/507C47F8, redo lsn=14/507C47A0
+
+2026-10-24 20:38:24.253 CST [19748] FATAL:  database "copypaste_suite_6aa0205d1d29451dbadf0389f28be4b8" does not exist
+2026-10-24 20:38:24.253 CST [19748] DETAIL:  It seems to have just been dropped or renamed.
+
+2026-10-24 20:38:24.253 CST [38192] FATAL:  database "copypaste_suite_6aa0205d1d29451dbadf0389f28be4b8" does not exist
+2026-10-24 20:38:24.253 CST [38192] DETAIL:  It seems to have just been dropped or renamed.
+
+# {"request_id":"5165c008-c0cc-4237-9304-43f1d00e42fa","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+not ok 18 - D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts
+  ---
+  duration_ms: 736.7674
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-production.test.ts:4:424'
+  failureType: 'hookFailed'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + [
+    +   'AssertionError [ERR_ASSERTION]: false == true'
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: 'AssertionError [ERR_ASSERTION]: false == true'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-production.test.ts:44:62)
+    TestHook.runInAsyncScope (node:async_hooks:211:14)
+    TestHook.run (node:internal/test_runner/test:979:25)
+    TestHook.run (node:internal/test_runner/test:1270:18)
+    TestHook.run (node:internal/util:544:20)
+    Test.runHook (node:internal/test_runner/test:898:20)
+    after (node:internal/test_runner/test:938:20)
+    Test.run (node:internal/test_runner/test:987:13)
+    runNextTicks (node:internal/process/task_queues:65:5)
+    listOnTimeout (node:internal/timers:555:9)
+  ...
+# Subtest: unread aborts, cancelled media and rejected response protocols release all owned process resources
+    # Subtest: abort-unread-image
+    ok 1 - abort-unread-image
+      ---
+      duration_ms: 490.7433
+      ...
+    # Subtest: cancel-image
+    ok 2 - cancel-image
+      ---
+      duration_ms: 479.775
+      ...
+    # Subtest: invalid-response-protocol
+    ok 3 - invalid-response-protocol
+      ---
+      duration_ms: 465.9182
+      ...
+    1..3
+ok 19 - unread aborts, cancelled media and rejected response protocols release all owned process resources
+  ---
+  duration_ms: 1437.6742
+  ...
+# Subtest: scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+ok 20 - scoped Responses forwards only trusted attribution, uses a separate opaque key and reauthorizes each request
+  ---
+  duration_ms: 88.8855
+  ...
+# Subtest: authority revocation between responses blocks the next provider call and does not expose callback errors
+ok 21 - authority revocation between responses blocks the next provider call and does not expose callback errors
+  ---
+  duration_ms: 15.7384
+  ...
+# Subtest: credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+ok 22 - credentials cannot cross runs and cannot authorize other paths, origins, methods or query endpoints
+  ---
+  duration_ms: 18.5132
+  ...
+# Subtest: model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+ok 23 - model, effort, hosted state, unregistered tools and output-limit overrides are rejected before authorization or dispatch
+  ---
+  duration_ms: 33.0836
+  ...
+# Subtest: declared and streamed oversized request bodies never reach the provider
+ok 24 - declared and streamed oversized request bodies never reach the provider
+  ---
+  duration_ms: 8.4453
+  ...
+# Subtest: a run has one in-flight request and a hard forwarded-request ceiling
+ok 25 - a run has one in-flight request and a hard forwarded-request ceiling
+  ---
+  duration_ms: 9.2102
+  ...
+# Subtest: expiry and explicit cancellation revoke a scoped credential without a provider request
+ok 26 - expiry and explicit cancellation revoke a scoped credential without a provider request
+  ---
+  duration_ms: 82.5252
+  ...
+# Subtest: redirects are not followed and an uncertain dispatched request cannot be replayed
+ok 27 - redirects are not followed and an uncertain dispatched request cannot be replayed
+  ---
+  duration_ms: 9.1137
+  ...
+# Subtest: truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+ok 28 - truncated streams, absent terminal usage and upstream failures keep the grant unusable for replay
+  ---
+  duration_ms: 26.9947
+  ...
+# Subtest: split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+ok 29 - split UTF-8, CRLF and multiline SSE data preserve raw bytes and legitimate terminal usage
+  ---
+  duration_ms: 3185.8275
+  ...
+# Subtest: an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+ok 30 - an unterminated SSE tool frame is never forwarded or treated as a known terminal result
+  ---
+  duration_ms: 17.8965
+  ...
+# Subtest: the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+ok 31 - the kernel question declaration is suppressed and unregistered response calls are blocked before Codex receives them
+  ---
+  duration_ms: 154.0685
+  ...
+# Subtest: registered function-call frames and arguments are streamed unchanged after validation
+ok 32 - registered function-call frames and arguments are streamed unchanged after validation
+  ---
+  duration_ms: 11.6837
+  ...
+# Subtest: malformed or oversized SSE frames are rejected before forwarding an event
+ok 33 - malformed or oversized SSE frames are rejected before forwarding an event
+  ---
+  duration_ms: 18.1694
+  ...
+# Subtest: stream idle timeout aborts an accepted provider request and prevents another dispatch
+ok 34 - stream idle timeout aborts an accepted provider request and prevents another dispatch
+  ---
+  duration_ms: 50.4586
+  ...
+# Subtest: request deadline aborts even a non-idle stream and a response with no first byte
+ok 35 - request deadline aborts even a non-idle stream and a response with no first byte
+  ---
+  duration_ms: 152.7176
+  ...
+# Subtest: declared and chunked oversized responses are bounded and never automatically replayed
+ok 36 - declared and chunked oversized responses are bounded and never automatically replayed
+  ---
+  duration_ms: 31.0387
+  ...
+# Subtest: image generation and multipart editing use the same trusted authorization and exact frozen specification
+ok 37 - image generation and multipart editing use the same trusted authorization and exact frozen specification
+  ---
+  duration_ms: 8.8808
+  ...
+# Subtest: invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+ok 38 - invalid gateway settings, malformed scope and pre-dispatch denial fail closed without a provider call
+  ---
+  duration_ms: 2.7487
+  ...
+1..38
+# tests 41
+# suites 0
+# pass 32
+# fail 8
+# cancelled 1
+# skipped 0
+# todo 0
+# duration_ms 711787.7784
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/33bbb0a6-0db7-40e4-84e3-fc2108cb6139/result.json","sha256":"0da11eb50237f3d4e50f349af9ff59239fa10689132f99e4767325b102dbae85","exit_code":0}
+2026-10-24 20:39:55.404 CST [18672] LOG:  received fast shutdown request
+
+2026-10-24 20:39:55.483 CST [18672] LOG:  aborting any active transactions
+
+2026-10-24 20:39:55.507 CST [18672] LOG:  background worker "logical replication launcher" (PID 21736) exited with exit code 1
+
+2026-10-24 20:39:55.507 CST [29636] LOG:  shutting down
+
+2026-10-24 20:39:55.556 CST [29636] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 20:39:55.982 CST [29636] LOG:  checkpoint complete: wrote 53 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.293 s, total=0.474 s; sync files=11, longest=0.040 s, average=0.027 s; distance=287 kB, estimate=14081 kB; lsn=14/5080C4C8, redo lsn=14/5080C4C8
+
+2026-10-24 20:39:56.113 CST [18672] LOG:  database system is shut down
+

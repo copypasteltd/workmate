@@ -16,6 +16,7 @@ import { checkDesktopWorkLayout, checkDesktopAccountLayout, assertDesktopLayout 
 import { DesktopWorkflowModelFixture } from "./desktop-workflow-model-fixture.js";
 import { runDesktopWorkflowJourney } from "./qa-desktop-workflows.js";
 import { GeneratedVideoNativeModel, runGeneratedVideoNativeJourney } from "./qa-generated-video-native.js";
+import { NativeAudioModel, runNativeAudioJourney } from "./qa-audio-native.js";
 
 const delivery = process.cwd(), platform = path.resolve("../copypaste-platform"), desktop = path.resolve("../copypaste-desktop"), attempt = process.argv[2];
 assert.match(attempt ?? "", /^\d{2}$/);
@@ -25,6 +26,8 @@ const inputResult = path.join(workspace, "customer-input-result.json");
 const videoModel = new DesktopVideoModelFixture();
 const generatedVideoModel = new GeneratedVideoNativeModel();
 let generatedVideoProvider: any;
+let audioProvider: any, audioMedia: any;
+const audioModel = new NativeAudioModel();
 let generatedVideoFixtureClosed = false;
 const workflowModel = new DesktopWorkflowModelFixture(workspace, outside);
 const browserModel = new DesktopBrowserModelFixture(desktop, workspace);
@@ -40,10 +43,10 @@ const provider = createServer(async (req, res) => {
   try {
     const chunks = []; for await (const b of req) chunks.push(Buffer.from(b));
     assert.equal(req.headers.authorization, "Bearer desktop-ui-fixture");
-    if (req.url?.startsWith("/v1/videos")) {
+    if (req.url?.startsWith("/v1/videos") || req.url?.startsWith("/v1/audio/")) {
       const headers = Object.fromEntries(Object.entries(req.headers).filter(([name]) => !["host", "connection", "content-length", "authorization"].includes(name))) as Record<string, string>;
       headers.authorization = "Bearer synthetic-video-provider-fixture";
-      const result = await fetch(generatedVideoProvider.origin + req.url.slice(3), { method: req.method, headers,
+      const result = await fetch((req.url.startsWith("/v1/audio/") ? audioProvider.origin : generatedVideoProvider.origin) + req.url.slice(3), { method: req.method, headers,
         ...(chunks.length ? { body: Buffer.concat(chunks) } : {}), redirect: "error", signal: AbortSignal.timeout(10000) });
       res.writeHead(result.status, { "Content-Type": result.headers.get("Content-Type")! }).end(Buffer.from(await result.arrayBuffer())); return;
     }
@@ -65,7 +68,7 @@ const provider = createServer(async (req, res) => {
     emit("response.created", { response });
     if (stall) { stalled = true; return; }
     let item: any;
-    const videoItem = generatedVideoModel.next(body, providerCalls) ?? browserModel.next(body, providerCalls) ?? workflowModel.next(body, providerCalls) ?? videoModel.next(body, providerCalls);
+    const videoItem = audioModel.next(body, providerCalls) ?? generatedVideoModel.next(body, providerCalls) ?? browserModel.next(body, providerCalls) ?? workflowModel.next(body, providerCalls) ?? videoModel.next(body, providerCalls);
     if (videoItem) item = videoItem;
     else if (questionNext) {
       questionNext = false;
@@ -136,8 +139,8 @@ async function phase<T>(label: string, run: () => Promise<T>, ms = 40000): Promi
 }
 try {
   await mkdir(workspace, { recursive: true }); await writeFile(outside, "before-desktop-native"); await browserModel.start();
-  const generatedFixture = await import(pathToFileURL(path.join(platform, "tests/generated-video-fixture.ts")).href);
-  generatedVideoProvider = await generatedFixture.generatedVideoProvider(owned);
+  const audioFixture = await import(pathToFileURL(path.join(platform, "tests/audio-production-fixture.ts")).href);
+  audioProvider = await audioFixture.audioProviderFixture(owned); generatedVideoProvider = audioProvider.text;
   const { desktopImageFixture } = await import(pathToFileURL(path.join(platform, "tests/desktop-image-fixture.ts")).href); imageBytes = desktopImageFixture();
   await new Promise<void>(resolve => provider.listen(0, "127.0.0.1", resolve));
   const { isolatedTestEnvironment } = await import(pathToFileURL(path.join(platform, "tests/native-test-environment.ts")).href);
@@ -150,6 +153,8 @@ try {
     AI_INPUT_HKD_MICROS_PER_MILLION: "1000000", AI_OUTPUT_HKD_MICROS_PER_MILLION: "1000000", AI_INPUT_COUNT_VERIFIED: "true", AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "0", AI_SCOPE_TTL_MS: "300000",
     AI_IMAGE_MODEL: "desktop-ui-image-fixture", AI_IMAGE_VERIFIED: "true", AI_IMAGE_HKD_MICROS_PER_IMAGE: "1000000",
     AI_VIDEO_MODEL: "synthetic-video-async-v1", AI_VIDEO_VERIFIED: "true", AI_VIDEO_HKD_MICROS_PER_SECOND: "100000", AI_VIDEO_POLL_INTERVAL_MS: "250",
+    AI_SPEECH_MODEL: "synthetic-speech-v1", AI_SPEECH_VERIFIED: "true", AI_SPEECH_VOICES: "alloy", AI_SPEECH_LOCALES: "en,zh-HK", AI_SPEECH_HKD_MICROS_PER_CHARACTER: "100",
+    AI_TRANSCRIPTION_MODEL: "synthetic-transcription-v1", AI_TRANSCRIPTION_VERIFIED: "true", AI_TRANSCRIPTION_LOCALES: "en,zh-HK", AI_TRANSCRIPTION_TIMESTAMPS: "true", AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND: "5",
   }), { worker: false });
   system.app.addHook("onError", async (req: any, _reply: any, error: Error) => {
     await writeFile(path.join(owned, "api-error.json"), JSON.stringify({ method: req.method, url: req.url, stack: error.stack }), { flag: "wx" }).catch(() => {});
@@ -200,10 +205,11 @@ try {
     dialog.showSaveDialog = async (...args: any[]) => {
       const options = args.at(-1); state.__saveDialogs = [...(state.__saveDialogs ?? []), options];
       return { canceled: false, filePath: options.defaultPath.startsWith("generated-video-") && options.defaultPath.endsWith(".mp4") ? paths.generated
-        : options.defaultPath.endsWith(".mp4") ? paths.video : options.defaultPath.endsWith(".project.json") ? paths.timeline : paths.downloaded };
+        : options.defaultPath.endsWith(".mp4") ? paths.video : options.defaultPath.endsWith(".project.json") ? paths.timeline
+        : options.defaultPath.endsWith(".wav") ? paths.audio : paths.downloaded };
     };
     dialog.showMessageBox = async (...args: any[]) => { state.__localDialogs.push(args.at(-1)); return { response: state.__localDecision, checkboxChecked: false }; };
-  }, { workspace, downloaded, video: path.join(owned, "native-video.mp4"), generated: path.join(owned, "native-generated-video.mp4"), timeline: path.join(owned, "native-video.project.json") });
+  }, { workspace, downloaded, audio: path.join(owned, "downloaded-native-speech.wav"), video: path.join(owned, "native-video.mp4"), generated: path.join(owned, "native-generated-video.mp4"), timeline: path.join(owned, "native-video.project.json") });
   await page.getByRole("button", { name: "Sign in securely in your browser" }).click();
   const authURL = await until(() => electron!.evaluate(() => (globalThis as any).__authURL ?? ""), Boolean, "system browser PKCE URL");
   const auth = await context.newPage(); await auth.addInitScript(() => localStorage.setItem("cp_locale", "en")); await auth.goto(authURL);
@@ -232,8 +238,8 @@ try {
   // Retain unknown provider outcomes as well. Publish a new immutable policy
   // only inside this UUID-owned database; do not mutate the bootstrap policy.
   const fixtureProviderPolicy = (await system.db.control.query(`INSERT INTO ai_gateway_policy_versions
-    (data_mode,version,reason,global_slots,tenant_slots,actor_slots,text_slots,image_slots,verification_slots,global_rpm,tenant_rpm,actor_rpm,text_rpm,image_rpm,verification_rpm)
-    VALUES('configured_services',2,'Owned UI fixture retains unknown cancellation outcomes',32,32,32,32,32,32,10000,10000,10000,10000,10000,10000) RETURNING id`)).rows[0].id;
+    (data_mode,version,reason,global_slots,tenant_slots,actor_slots,text_slots,image_slots,verification_slots,audio_slots,global_rpm,tenant_rpm,actor_rpm,text_rpm,image_rpm,verification_rpm,audio_rpm)
+    VALUES('configured_services',2,'Owned UI fixture retains unknown cancellation outcomes',32,32,32,32,32,32,32,10000,10000,10000,10000,10000,10000,10000) RETURNING id`)).rows[0].id;
   await system.db.control.query("UPDATE ai_gateway_policy_heads SET policy_version_id=$1 WHERE data_mode='configured_services'",[fixtureProviderPolicy]);
   await page.getByRole("heading", { name: "Your local workmate" }).waitFor();
   const appearance = await electron.evaluate(({ BrowserWindow, Menu }) => ({ menu: Menu.getApplicationMenu() === null, frame: BrowserWindow.getAllWindows()[0].isMenuBarVisible() === false, local: BrowserWindow.getAllWindows()[0].webContents.getURL().startsWith("file:") }));
@@ -355,6 +361,8 @@ try {
     list, until, resize, reload, pass, screenshots, providerCalls: () => providerCalls });
   await runGeneratedVideoNativeJourney({ page, captureSurface, system, model: generatedVideoModel, provider: generatedVideoProvider, owned, delivery, attempt,
     list, until, resize, reload, pass, screenshots, providerCalls: () => providerCalls });
+  audioMedia = await runNativeAudioJourney({ page, captureSurface, system, model: audioModel, provider: audioProvider, tenant, project, platform, downloaded: path.join(owned, "downloaded-native-speech.wav"), owned, delivery, attempt,
+    list, until, resize, reload, pass, screenshots });
   await runDesktopWorkflowJourney({ page, captureSurface, electron, system, model: workflowModel, tenant, project, workspace, outside, owned, delivery, attempt,
     list, until, resize, reload, pass, screenshots, providerCalls: () => providerCalls });
   await writeFile(outside, "must-remain-read-only"); commandNext = true; readOnlyCheck = true;
@@ -449,12 +457,13 @@ finally {
   provider.closeAllConnections(); if (provider.listening) await new Promise<void>(resolve => provider.close(() => resolve()));
   if (generatedVideoProvider) {
     try { assert.deepEqual(generatedVideoProvider.errors, []); } catch (error) { errors.push("Generated video fixture: " + String(error)); }
-    try { await generatedVideoProvider.close(); generatedVideoFixtureClosed = true; } catch (error) { errors.push("Generated video fixture close: " + String(error)); }
+    try { assert.deepEqual(audioProvider.errors, []); await audioProvider.close(); generatedVideoFixtureClosed = true; } catch (error) { errors.push("Audio/video fixture close: " + String(error)); }
   }
   if (isolated) { process.chdir(platform); await isolated.cleanup(); fixtureClosed = true; }
   process.chdir(delivery);
   const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_generated_video_tool_results: generatedVideoModel.observations, generated_video_fixture_closed: generatedVideoFixtureClosed, native_workflow_tool_results: workflowModel.observations, native_browser_tool_results: browserModel.observations, native_browser_media: nativeBrowserMedia, brand_library_media: brandLibraryMedia, creative_feedback_media: creativeFeedbackMedia, native_browser_fixture_closed: browserModel.closed,
-    scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company tools, local workflow children/approvals, private artifacts, download and billing; model/image responses and native chooser/consent/save decisions are explicit fixtures",
+    native_audio_tool_results: audioModel.results, audio_media: audioMedia,
+    scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company audio/video/design tools, local workflow children/approvals, private artifacts, download and billing; model/image/audio responses and native chooser/consent/save decisions are explicit fixtures",
     fixture_native_dialog_confirmed: permissionDecision === 1, fixture_company_max_active_tasks:32, fixture_isolated_capacity_policy:{agent_slots:32,tenant_slots:32}, fixture_isolated_provider_policy:{version:2,slots:32,rpm:10000}, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };
   await writeFile(`evidence/desktop-local-ui-${attempt}-journey.json`, JSON.stringify(report, null, 2) + "\n", { flag: "wx" }); assert.equal(errors.length, 0, errors.join("\n"));
 }
