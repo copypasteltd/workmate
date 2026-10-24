@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
   style.id = "copypaste-window-style";
   style.textContent = `
     html, body { height:100%; overflow:hidden; }
-    #root { position:fixed; inset:40px 0 0; overflow-y:auto; overflow-x:clip; transform:translateZ(0); }
+    #root { position:fixed; inset:40px 0 0; overflow-y:auto; overflow-x:clip; transform:translateZ(0); scroll-padding-top:64px; }
+    #root :is(.sidebar,.preference-controls) { translate:0 var(--cp-root-scroll,0px); }
     /* Keep native wheel, touchpad and keyboard scrolling without visible rails. */
     html, body, #root, #root * { scrollbar-width:none !important; }
     *::-webkit-scrollbar { display:none !important; width:0 !important; height:0 !important; }
@@ -41,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   document.head.append(style);
   // A transformed root contains fixed overlays. Offset its existing scroll so
-  // dialogs stay below the native title bar without resetting the user's page.
+  // navigation/preferences remain in view and dialogs stay below the title bar.
   const root = document.getElementById("root");
   const syncOverlayOffset = () => {
     root?.style.setProperty("--cp-root-scroll", `${root.scrollTop}px`);
