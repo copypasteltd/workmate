@@ -8,6 +8,7 @@ import { DesignExports } from "./design-exports";
 import { CreativeMatrices } from "./creative-matrices";
 import { VideoProjects } from "./video-projects";
 import { GeneratedVideos } from "./generated-videos";
+import { AudioProductions } from "./audio-production";
 import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { MarketingImport } from "./marketing-import";
 import { MarketingAnalysis } from "./marketing-analysis";
@@ -1661,6 +1662,7 @@ function TaskDetail() {
                 <div className="notice error">{data.error_code}</div>
               )}
               {data.role_key === "video-motion" && <GeneratedVideos key={"generated-video:" + w.base + id} base={w.base} taskId={id!} />}
+              {data.role_key === "video-motion" && <AudioProductions key={"audio:" + w.base + id} base={w.base} taskId={id!} />}
               {["succeeded", "failed", "cancelled"].includes(data.status) && data.mode !== "plan" && <DeliveryQuality key={w.base + id} base={w.base} taskId={id!} changed={() => setVersion(v => v + 1)}/>}
             </section>
             <aside>

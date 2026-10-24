@@ -1,5 +1,67 @@
 # Workmate · CopyPaste Web
 
+<!-- audio-production-stage84 -->
+
+在云端 Codex 任务中查看、播放及下载配音，直接修订字幕。
+
+### 本地启动
+
+以下命令在已检出的对应仓库内执行。完整工作区将六个独立仓库并列放在 `dev/`，见[分支与检出布局](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md)。使用 Windows x64、Node.js >=22.14、npm/Git，以及文档约束的原生 PostgreSQL、FFmpeg/FFprobe 与固定 Codex 资源；保留已有本地配置和数据，不使用 Docker/WSL/虚拟机。
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-web'
+npm ci
+npm run dev
+```
+
+先启动后端，再打开 `http://localhost:4317`；静态构建使用 `npm run build`。通过邮箱/验证码登录并选择企业/项目。
+
+### 当前使用流程
+
+1. 邮箱/验证码登录并选择企业/项目，选用「**影片与动效设计师**」预设（1.3.0，加载 `speech-production` 1.1.0），描述获准脚本或附加获准 WAV/MP3 素材。Desktop 先选本机目录并主动设置本机权限；完整权限由原生确认授予，可随时撤回。Web/Extension 使用云端 Codex，Desktop 编排保持在本机。
+2. 在任务中要求配音或文件转写。服务端检查当前角色、可选已核验音频能力、语言/声音白名单、精确源文件版本、预算及已发布容量。全部 AI 经公司 OpenAI 兼容网关；推理、图片和音频共享任务预算。未配置音频不会阻断已有视频剪辑。
+3. 打开「配音与字幕 → 查看音讯与字幕」，播放/保存实际 WAV；保护接口核对字节数与 SHA-256。转写保留原始 JSON、文字及服务实际返回的时间。没有时间戳时只显示文字，不编造字幕时间。
+4. 选择当前版本后「修订字幕」，修改文字/时间、删除或新增字幕，填写原因并另存新版本。新增人工时间初始为空；旧版本只读，原文保留。发生并发修改时拒绝旧版本覆盖并保留编辑。人工修订不调用 AI，不新增生成收费。
+5. Admin 使用独立邮箱/验证码/TOTP 身份。在「调用管理 → 配音与转写作业」中，`admin.ai.requests.read` 控制范围内元数据，`admin.ai.cost.read` 独立控制费用，`admin.content.body.read` 加近期 MFA 控制并审计原始正文读取。原始要求不可覆盖；来源隔离、删除或失权阻断当前预览/下载。确认费用沿用独立审批账本；已派发但结果未知时保留原预留，禁止自动重发。
+
+升级前在后端执行 `npm run db:migrate` 应用新增 **SQL101**。公司 `AI_BASE_URL`、`AI_ALLOWED_HOSTS`、密钥、精确配音/转写别名、正数字符/毫秒费率及已核验声音/语言列表仅配置在服务端。协议核验后才能开启 `AI_SPEECH_VERIFIED` / `AI_TRANSCRIPTION_VERIFIED`；时间戳能力另行声明。音频 slots/RPM 初始为 **0**，需按已有独立审批发布容量策略。普通 `npm run demo` 不自动启用本音频夹具；本轮检查使用隔离、明确声明的假服务。
+
+Desktop 沿用 CopyPaste 字体、蓝/米白色与浅深主题，**无 Electron 自带边框菜单，无可见纵向或横向滚动条**。内容换行，保留真实滚轮/Home/End、末项焦点及真实进度；字幕控件聚焦后缩放真实 OS 窗口，仍在 1440×980、1280×800、800×600 中可见。Extension 保持真实 Chrome 右侧栏、ChatGPT 式对话/附件及获准文件上传，无 Desktop 依赖。
+
+实际核查：平台 **988** 项（保留原 **968** 项）、音频/网关 **43**、兼容 **80**、客户端测试 **124**、真实 Web/Admin/侧栏 **10**、打包本机 Desktop **40**。已检查三种桌面尺寸、实际 WAV 解码/保存、人工修订和自建资源清理。SQL001–100 与两份原 OpenAPI 保持各自已发布字节，七项音频接口为增量；当前运行时及实际执行的测试源码与选定回执一致。唯一无关快照差异是版本目录总数 30→31 的已复核测试更新；其完整四文件批次与剩余批次重新运行。以前通过及失败回执保持原范围与字节。
+
+音频假服务使用可解码合成音调与固定转写。真实声线/粤语质量、独立人工授权确认、音频能力后台核验/发布/回滚、未知 POST 外部账单证据与恢复交付仍待补齐。保存的权利字段来自工具参数并绑定用户/任务，不是独立核实的人工同意。全部专业角色质量、签名安装及完整 Codex Desktop 对齐尚未完整验收。原 **102 REQ/102 TC：83 部分、19 未证明、0 完整验收；G01–G10 保留**。
+
+
+[方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/84-internal-audio-production.md) · [精确版本证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/audio-production-checkpoint.json) · [新增接口契约](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/audio-production-openapi.json)
+
+```mermaid
+flowchart LR
+    Login[Email / company / project] --> Role[Versioned role and speech skill]
+    Role --> Cloud[Web / Side Panel cloud Codex]
+    Role --> Local[Desktop local Codex]
+    Cloud --> Gate[Current source / budget / audio capacity]
+    Local --> Gate
+    Gate --> Company[Company speech / transcription API]
+    Company --> Assets[Retained private originals and actual timing]
+    Assets --> Revision[Manual versioned subtitles / no AI call]
+    Assets --> Preview[Authenticated playback and save]
+    Admin[Scoped Admin / independent body and cost permissions] --> Gate
+```
+
+实际已登录页面；原始截图未经改图，交互按观察时间录制。音频、模型、业务内容及原生对话框决策均为明确夹具。
+
+![实际编辑器](assets/screenshots/workmate-audio-06-subtitle-edit-original-timing.png)
+
+![实际第二语言/状态](assets/screenshots/workmate-audio-06-audio-compact-zh-dark.png)
+
+![真实交互录制](assets/screenshots/workmate-audio-06-audio-production.gif)
+
+[原始 MP4](assets/screenshots/workmate-audio-06-audio-production.mp4)
+
+<details>
+<summary>以前交付细节与历史证据</summary>
+
 <!-- geo-observation-stage83 -->
 
 GEO 现已支持固定问句、可复现配置和原始回答留存。不可改写的配置固定完整 Agent 定义、skills、请求模型别名、Codex 内核、语言、请求地区及协议。独立 API 重复执行保持同一配置；消费者产品人工样本使用单独来源口径。
@@ -503,6 +565,8 @@ flowchart LR
 
 </details>
 
+
+</details>
 
 </details>
 
