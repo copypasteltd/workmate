@@ -1471,6 +1471,38 @@ function GeneratedVideoRequests({ access, revision, onDone }: { access: Capabili
   </>;
 }
 
+function AudioAuthorizationRequests({ access, revision, filters }: { access: CapabilityAccess; revision: number; filters: Record<string, string> }) {
+  const { t } = useI18n(), [cursor, setCursor] = useState<string | null>(null), [content, setContent] = useState<any>(null);
+  const [error, setError] = useState<unknown>(null), query = new URLSearchParams({ ...filters, limit: "20", ...(cursor ? { cursor } : {}) });
+  const result = useData(root + "/audio-authorizations?" + query, revision);
+  const labels: Record<string, [string, string]> = { pending: ["等待客戶確認", "Awaiting customer confirmation"],
+    confirmed: ["客戶已確認", "Customer confirmed"], declined: ["客戶已拒絕", "Customer declined"],
+    withdrawn: ["客戶已撤回", "Customer withdrew"], expired: ["已逾時", "Expired"], cancelled: ["已停止", "Stopped"] };
+  return <details className="provider-card"><summary>{t("客戶音訊授權記錄", "Customer audio authorizations")}</summary>
+    <p className="muted">{t("客戶須自行確認。管理員可按獨立權限檢查費用、正文及審計記錄。", "Customers confirm for themselves. Administrators can inspect costs, content and audit records under separate permissions.")}</p>
+    <ErrorNotice error={result.error ?? error} />{result.loading && <Loading />}
+    {result.data?.items.map((row: any) => <article className="provider-card" key={row.id} data-audio-authorization={row.id}>
+      <strong>{t(...(labels[row.state] ?? [row.state, row.state]))}</strong>
+      <dl className="key-value"><dt>{t("授權記錄", "Authorization record")}</dt><dd><code>{row.id}</code></dd>
+        <dt>{t("原工作／用戶", "Original task / user")}</dt><dd><code>{row.task_id}<br />{row.actor_id}</code></dd>
+        <dt>{t("服務／能力版本", "Service / capability")}</dt><dd>{row.model_alias}<br /><code>{row.capability_version_id}</code></dd>
+        <dt>{t("確認時間", "Confirmed")}</dt><dd>{row.confirmed_at ? <DateText value={row.confirmed_at} /> : "—"}</dd>
+        <dt>{t("派發截止", "Dispatch deadline")}</dt><dd><DateText value={row.expires_at} /></dd>
+        <dt>{t("確認摘要", "Confirmation digest")}</dt><dd><code>{row.confirmation_hash ?? "—"}</code></dd>
+        {row.cost && <><dt>{t("公司費用上限", "Company charge limit")}</dt><dd><Money value={row.cost.quoted_micros} /></dd></>}
+      </dl>
+      {access.has("admin.content.body.read") && <button className="button secondary" onClick={() => {
+        setError(null); void api(`${root}/audio-authorizations/${row.id}/content`).then(setContent).catch(setError);
+      }}>{t("讀取客戶確認與審計", "Read customer confirmation and audit")}</button>}
+    </article>)}
+    {result.data && <div className="provider-pagination"><button className="button secondary" disabled={!cursor} onClick={() => setCursor(null)}>{t("回到最新", "Back to latest")}</button>
+      <button className="button secondary" disabled={!result.data.next_cursor} onClick={() => setCursor(result.data.next_cursor)}>{t("下一頁", "Next")}</button></div>}
+    {content && <Modal title={t("客戶確認與審計", "Customer confirmation and audit")} onClose={() => setContent(null)}>
+      <p className="muted">{t("此次敏感讀取已記錄審計。", "This sensitive read is audited.")}</p>
+      <pre className="provider-audio-body">{JSON.stringify(content, null, 2)}</pre></Modal>}
+  </details>;
+}
+
 function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess; revision: number; onDone: () => void }) {
   const { t } = useI18n(), [filters, setFilters] = useState<Record<string, string>>({}), [cursors, setCursors] = useState<string[]>([]);
   const [command, setCommand] = useState<any>(null);
@@ -1486,6 +1518,7 @@ function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess;
       {[["tenant_id", t("企業 ID", "Workspace ID")], ["project_id", t("項目 ID", "Project ID")], ["task_id", t("工作 ID", "Task ID")]].map(([name, label]) =>
         <Field key={name} label={label}><input name={name} defaultValue={filters[name] ?? ""} pattern="[a-fA-F0-9-]{36}" /></Field>)}
     </div><button className="button secondary">{t("篩選音訊作業", "Filter audio jobs")}</button></form>
+    <AudioAuthorizationRequests key={JSON.stringify(filters)} access={access} revision={revision} filters={filters} />
     <ErrorNotice error={result.error ?? contentError} />{result.loading && <Loading />}
     {result.data && <>
       {!result.data.items.length && <p className="provider-card muted">{t("此授權範圍沒有音訊作業。", "No audio jobs in this authorized scope.")}</p>}
@@ -1499,6 +1532,7 @@ function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess;
           <dt>{t("原用戶", "Original user")}</dt><dd><code>{job.actor_id}</code></dd>
           <dt>{t("服務／能力版本", "Service / capability")}</dt><dd>{job.model_alias}<br /><code>{job.capability_version_id}</code></dd>
           <dt>{t("原操作識別", "Original operation")}</dt><dd><code>{job.operation_id}</code></dd>
+          <dt>{t("獨立客戶授權", "Independent customer authorization")}</dt><dd><code>{job.authorization_id ?? t("舊記錄，只有工具聲明", "Legacy record: tool declaration only")}</code></dd>
           <dt>{t("字幕版本", "Transcript version")}</dt><dd>{job.subtitle_revision ? `v${job.subtitle_revision}` : "—"}</dd>
           <dt>{t("建立時間", "Created")}</dt><dd><DateText value={job.created_at} /></dd>
         </dl>
