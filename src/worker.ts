@@ -1,4 +1,5 @@
 import { TaskBusinessTools } from "./task-business-tools.js";
+import { GeneratedVideoJobs } from "./video-jobs.js";
 import {
   assertTaskContentSources,
   recordTaskSourceRead,
@@ -117,6 +118,8 @@ export class Worker {
   private matrixRun: Promise<unknown> | null = null;
   private videoRun: Promise<unknown> | null = null;
   private videoAbort = new AbortController();
+  private generatedVideoRun: Promise<unknown> | null = null;
+  private generatedVideoAbort = new AbortController();
   private connectorRun: Promise<unknown> | null = null;
   private connectorAbort = new AbortController();
   private seoRun: Promise<unknown> | null = null;
@@ -227,6 +230,11 @@ export class Worker {
           .finally(() => {
             this.videoRun = null;
           });
+      }
+      if (!this.stopping && !this.generatedVideoRun) {
+        this.generatedVideoRun = new GeneratedVideoJobs(this.db, this.catalog, this.storage).advance(this.generatedVideoAbort.signal)
+          .catch(() => console.error(JSON.stringify({ component: "worker.generated_video", error_code: "VIDEO_JOB_MAINTENANCE_FAILED" })))
+          .finally(() => { this.generatedVideoRun = null; });
       }
       if (!this.stopping && !this.connectorRun) {
         this.connectorRun = advanceConnectors(this.db, this.storage, {
@@ -342,14 +350,14 @@ export class Worker {
           await projectAccess(tx, actor, tenant, t.project_id, "write");
           if (t.content_state !== "active")
             throw new Error("Content is unavailable");
-          await this.catalog.ensureEnabled(tx, t.role_key);
+          await this.catalog.ensureEnabled(tx, t.role_key, t.role_hash);
           await assertTaskSkills(tx, this.catalog, t);
           await assertReportSources(tx, t);
           currentPlan = await authorizeExecutionPlan(
             tx,
             tenant,
             t.created_by,
-            this.catalog.role(t.role_key),
+            this.catalog.forTask(t),
             t.mode,
           );
           await resolveWorkContext(
@@ -363,7 +371,7 @@ export class Worker {
               .versionIds,
           );
           if (
-            this.catalog.digest(this.catalog.role(t.role_key)) !== t.role_hash
+            this.catalog.digest(this.catalog.forTask(t)) !== t.role_hash
           )
             throw new Error("Role version changed");
           if (!(await checkInputDependencies(tx, t))) return null;
@@ -392,7 +400,7 @@ export class Worker {
         const started = await claimCapacity(
           tx,
           t,
-          this.catalog.role(t.role_key),
+          this.catalog.forTask(t),
           currentPlan.body.max_active_tasks,
           fencing,
         );
@@ -429,7 +437,7 @@ export class Worker {
             }
             try {
               await projectAccess(tx, actor, tenant, task.project_id, "write");
-              await this.catalog.ensureEnabled(tx, task.role_key);
+              await this.catalog.ensureEnabled(tx, task.role_key, task.role_hash);
               await assertTaskSkills(tx, this.catalog, task);
               await assertInputDependencies(tx, t);
               await assertReportSources(tx, t);
@@ -437,7 +445,7 @@ export class Worker {
                 tx,
                 tenant,
                 task.created_by,
-                this.catalog.role(task.role_key),
+                this.catalog.forTask(task),
                 task.mode,
               );
               await resolveWorkContext(
@@ -513,7 +521,7 @@ export class Worker {
         }
       | undefined;
     try {
-      const role = this.catalog.role(task.role_key);
+      const role = this.catalog.forTask(task);
       const bound = await this.catalog.boundSkills(role);
       await emit("skills.loaded", {
         packages: bound.map((s) => ({
@@ -581,7 +589,7 @@ export class Worker {
         },
         signal: controller.signal,
         onEvent: emit,
-        tools: this.tools(task, actor!, fencing, effectiveRole),
+        tools: this.tools(task, actor!, fencing, effectiveRole, !!context.capabilities.video),
       });
       completedUsage = result;
       await stopHeartbeat();
@@ -673,7 +681,7 @@ export class Worker {
             sessionHash: "",
           };
           await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
-          await this.catalog.ensureEnabled(tx, t.role_key);
+          await this.catalog.ensureEnabled(tx, t.role_key, t.role_hash);
           await assertTaskSkills(tx, this.catalog, t);
           await assertInputDependencies(tx, live);
           await assertReportSources(tx, live);
@@ -681,7 +689,7 @@ export class Worker {
             tx,
             t.tenant_id,
             t.created_by,
-            this.catalog.role(t.role_key),
+            this.catalog.forTask(t),
             t.mode,
           );
           const context = await resolveWorkContext(
@@ -926,7 +934,7 @@ export class Worker {
     fencing: string,
   ) {
     await projectAccess(tx, actor, t.tenant_id, t.project_id, "write");
-    await this.catalog.ensureEnabled(tx, t.role_key);
+    await this.catalog.ensureEnabled(tx, t.role_key, t.role_hash);
     await assertTaskSkills(tx, this.catalog, t);
     await assertInputDependencies(tx, t);
     await assertReportSources(tx, t);
@@ -934,7 +942,7 @@ export class Worker {
       tx,
       t.tenant_id,
       t.created_by,
-      this.catalog.role(t.role_key),
+      this.catalog.forTask(t),
       t.mode,
     );
     const capabilities = await taskCapabilities(
@@ -1028,11 +1036,12 @@ export class Worker {
       request,
     );
   }
-  private tools(t: any, actor: Principal, fencing: string, role: any): RuntimeContext["tools"] {
+  private tools(t: any, actor: Principal, fencing: string, role: any, videoReady = false): RuntimeContext["tools"] {
     return new TaskBusinessTools(this.db, this.catalog, this.storage, {
       authorize: tx => this.authorizeTaskRequest(tx, t, actor, fencing),
       inference: request => this.authorizeInference(t, actor, fencing, request),
       signal: this.active.get(t.id)?.signal,
+      videoReady,
     }).build(t, actor, fencing, role);
   }
   async stop() {
@@ -1041,9 +1050,11 @@ export class Worker {
     for (const c of this.active.values()) c.abort();
     await this.boss.stop({ graceful: true, timeout: 20000 });
     this.videoAbort.abort();
+    this.generatedVideoAbort.abort();
     this.connectorAbort.abort();
     this.seoAbort.abort();
     await this.videoRun;
+    await this.generatedVideoRun;
     await this.connectorRun;
     await this.seoRun;
     await this.matrixRun;

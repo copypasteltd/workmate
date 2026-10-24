@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-23T14:58:48.425Z",
+  "generated_at": "2026-10-23T19:45:49.326Z",
   "contract": "actual_fastify_route_inventory",
   "not_full_design_openapi": true,
   "routes": [
@@ -102,6 +102,14 @@
     {
       "method": "GET",
       "path": "/v1/admin/ai/tasks/:task_id/settlement"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/video-jobs"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/ai/video-jobs/:job/recheck"
     },
     {
       "method": "GET",
@@ -861,6 +869,10 @@
     },
     {
       "method": "POST",
+      "path": "/v1/internal/video-operations/:operation/observations"
+    },
+    {
+      "method": "POST",
       "path": "/v1/invites/accept"
     },
     {
@@ -1485,6 +1497,22 @@
     },
     {
       "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs/:job"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs/:job/cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/generated-video-jobs/:job/preview"
+    },
+    {
+      "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/memories"
     },
     {
@@ -1756,7 +1784,11 @@
       "path": "/v1/workspaces/:workspace_id/nodes"
     }
   ],
-  "additive_inventory_validation": "brand-production.test.ts compares the complete array with the actual running Fastify registration",
+  "additive_inventory_validation": {
+    "source": "dev/copypaste-delivery/evidence/generated-video-ui-05.json",
+    "sha256": "959178fbc7cc1747297350630a67a6c8513a61be2644391488129409f0ea3ea1",
+    "scope": "All configured-service method/path pairs observed in the actual passing isolated app; descriptive inventory only."
+  },
   "conditional_routes": [
     {
       "method": "POST",

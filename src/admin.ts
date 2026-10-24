@@ -588,8 +588,8 @@ export function registerAdmin(
                   t.project_id,
                   "write",
                 );
-                await catalog.ensureEnabled(tx, t.role_key);
-                const role = catalog.role(t.role_key);
+                await catalog.ensureEnabled(tx, t.role_key, t.role_hash);
+                const role = catalog.forTask(t);
                 const { availability: ready, binding } =
                   await boundTaskAvailability(tx, db.config, catalog, t);
                 if (!ready.available)

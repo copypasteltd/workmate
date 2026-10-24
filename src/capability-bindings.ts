@@ -5,6 +5,7 @@ import type { Catalog } from "./catalog.js";
 import type { RuntimeSelection } from "./runtime.js";
 import { canonical, hash, Problem } from "./lib.js";
 import { desktopRuntime, desktopRuntimeFingerprint, desktopRuntimeId } from "./desktop-runtime.js";
+import { videoJobLimits, videoJobOperations, videoJobProtocol } from "./video-job-protocol.js";
 
 const effort = z.enum(["low", "medium", "high", "xhigh", "max"]);
 const rate = z.number().int().nonnegative().safe();
@@ -23,11 +24,11 @@ const definition = z
     gateway_policy: z.literal("company_internal_only"),
     gateway_fingerprint: z.string().regex(/^[a-f0-9]{64}$/),
     data_mode: z.enum(["simulated", "configured_services"]),
-    wire_protocol: z.enum(["responses", "images", "unimplemented"]),
+    wire_protocol: z.enum(["responses", "images", "unimplemented", videoJobProtocol]),
     reasoning_effort: effort.nullable(),
     supported_operations: z
-      .array(z.enum(["responses", "images.generate", "images.edit"]))
-      .max(3),
+      .array(z.enum(["responses", "images.generate", "images.edit", ...videoJobOperations]))
+      .max(8),
     limits: z.record(z.string(), z.unknown()),
   })
   .strict();
@@ -51,6 +52,9 @@ export type TaskCapabilities = {
     };
   };
   image?: Capability & {
+    body: Definition & { model_alias: string; rates: number[] };
+  };
+  video?: Capability & {
     body: Definition & { model_alias: string; rates: number[] };
   };
 };
@@ -153,11 +157,16 @@ async function resolve(
   )
     throw invalid();
   const image = capabilities.get("internal-image2-v1");
+  const video = capabilities.get("internal-video-v1");
+  if (video?.ready && (!video.body.model_alias || video.body.wire_protocol !== videoJobProtocol
+    || video.body.reasoning_effort !== null || video.body.rates.length !== 1 || !video.body.rates[0]
+    || canonical(video.body.supported_operations) !== canonical(videoJobOperations)
+    || canonical(video.body.limits) !== canonical(videoJobLimits))) throw invalid();
   const usesImage =
     usable &&
     task.mode === "execute" &&
     catalog
-      .role(task.role_key)
+      .forTask(task)
       .model_bindings.some(
         (binding: any) => binding.profile_key === "internal-image2-v1",
       );
@@ -180,7 +189,7 @@ async function resolve(
   )
     throw invalid();
   const published =
-    usable && (!c.AI_VERIFIED || (usesImage && !c.AI_IMAGE_VERIFIED))
+    usable && (!c.AI_VERIFIED || (usesImage && !c.AI_IMAGE_VERIFIED) || (video?.ready && !c.AI_VIDEO_VERIFIED))
       ? new Set(
           (
             await tx.query(
@@ -205,6 +214,7 @@ async function resolve(
     versionIds: [...ids],
     text: text as TaskCapabilities["text"],
     ...(image?.ready ? { image: image as TaskCapabilities["image"] } : {}),
+    ...(video?.ready && (!usable || c.AI_VIDEO_VERIFIED || published.has(video.id)) ? { video: video as TaskCapabilities["video"] } : {}),
   };
 }
 
@@ -221,6 +231,7 @@ export async function confirmedAgentCapabilities(
     {
       mode: "ask",
       role_key: body.role_key,
+      role_hash: body.role_hash,
       data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
     },
     catalog,
@@ -297,7 +308,7 @@ export async function freezeTaskCapabilities(
   } else {
     const current = await catalog.currentCapabilities(tx);
     ids = catalog
-      .role(task.role_key)
+      .forTask(task)
       .model_bindings.map((b: any) => current.get(b.profile_key)?.id)
       .filter((id: unknown): id is string => typeof id === "string");
   }
@@ -335,11 +346,12 @@ export async function boundTaskAvailability(
   const binding = await taskCapabilities(tx, c, catalog, task);
   const versions = new Map<string, any>([["internal-text-v1", binding.text]]);
   if (binding.image) versions.set("internal-image2-v1", binding.image);
+  if (binding.video) versions.set("internal-video-v1", binding.video);
   return {
     binding,
     availability: catalog.available(
       { ...c, AI_VERIFIED: true, AI_IMAGE_VERIFIED: !!binding.image },
-      catalog.role(task.role_key),
+      catalog.forTask(task),
       task.mode,
       versions,
     ),

@@ -307,7 +307,8 @@ export async function inspectProviderTaskSettlement(
     );
   const violations = (
     await tx.query(
-      "SELECT x.id,x.code FROM ai_request_budget_violations x JOIN ai_gateway_requests r ON r.id=x.provider_request_id WHERE r.task_id=$1 ORDER BY x.id",
+      `SELECT x.id,x.code FROM ai_request_budget_violations x JOIN ai_gateway_requests r ON r.id=x.provider_request_id WHERE r.task_id=$1
+       UNION ALL SELECT x.id,x.code FROM ai_video_budget_violations x JOIN ai_video_jobs j ON j.id=x.job_id WHERE j.task_id=$1 ORDER BY id`,
       [t.id],
     )
   ).rows;
@@ -334,6 +335,11 @@ export async function inspectProviderTaskSettlement(
     numerator: r.effective_numerator,
     cost_confirmation_id: r.cost_confirmation_id,
   }));
+  const videoFacts = (await tx.query(`SELECT id,'video' AS channel,state,
+    CASE WHEN usage_known THEN 'known' ELSE 'unknown' END AS cost_state,
+    (actual_micros*1000000)::text AS numerator,operation_id,capability_version_id,specification_hash,
+    rate_micros::text,billable_seconds::text FROM ai_video_jobs WHERE task_id=$1 ORDER BY created_at,id`, [t.id])).rows;
+  facts.push(...videoFacts);
   return {
     scope: { data_mode: t.data_mode, tenant_id: t.tenant_id, project_id: null },
     task: {

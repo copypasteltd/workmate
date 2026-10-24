@@ -85,11 +85,12 @@ export async function agentDefinition(
   tenant: string,
   user: string,
   preview = false,
+  frozenRoleHash?: string,
 ) {
-  const role = catalog.role(b.role_key);
+  const role = catalog.role(b.role_key, frozenRoleHash);
   const currentCapabilities = await catalog.currentCapabilities(tx);
   const runtime = await activeRuntimeProfile(tx, catalog);
-  await catalog.ensureEnabled(tx, b.role_key);
+  await catalog.ensureEnabled(tx, b.role_key, frozenRoleHash);
   const skills = await provisionRoleSkills(
     tx,
     catalog,
@@ -845,6 +846,7 @@ export function registerPersistentWork(
             "VERSION_CONFLICT",
             "Refresh the specialist before saving changes",
           );
+        const previous = await getAgentVersion(tx, project, id);
         const proposed = await agentDefinition(
           tx,
           catalog,
@@ -853,6 +855,7 @@ export function registerPersistentWork(
           tenant,
           req.principal.id,
           true,
+          previous.body.role_hash,
         );
         if (a.role_key !== b.role_key)
           throw new Problem(
@@ -860,7 +863,6 @@ export function registerPersistentWork(
             "ROLE_IMMUTABLE",
             "Copy a specialist to choose a different installed role",
           );
-        const previous = await getAgentVersion(tx, project, id);
         if (
           canonical(agentBindings(previous.body)) !==
           canonical(agentBindings(proposed))

@@ -1,6 +1,7 @@
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import { canonical, hash, Problem } from "./lib.js";
+import { videoJobLimits, videoJobOperations, videoJobProtocol } from "./video-job-protocol.js";
 
 export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
   const definition = {
@@ -53,8 +54,9 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
         {
           profile_key: "internal-video-v1",
           model_alias: db.config.AI_VIDEO_MODEL ?? null,
-          ready: false,
-          rates: [],
+          ready: !!(db.config.AI_BASE_URL && db.config.AI_API_KEY && db.config.AI_VIDEO_MODEL
+            && db.config.AI_VIDEO_VERIFIED && db.config.AI_VIDEO_HKD_MICROS_PER_SECOND !== undefined),
+          rates: db.config.AI_VIDEO_HKD_MICROS_PER_SECOND === undefined ? [] : [db.config.AI_VIDEO_HKD_MICROS_PER_SECOND],
         },
         {
           profile_key: "internal-speech-v1",
@@ -72,6 +74,8 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
                 ? "responses"
                 : capability.profile_key === "internal-image2-v1"
                   ? "images"
+                  : capability.profile_key === "internal-video-v1" && capability.ready
+                    ? videoJobProtocol
                   : "unimplemented",
             reasoning_effort:
               capability.profile_key === "internal-text-v1"
@@ -82,6 +86,8 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
                 ? ["responses"]
                 : capability.profile_key === "internal-image2-v1"
                   ? ["images.generate", "images.edit"]
+                  : capability.profile_key === "internal-video-v1" && capability.ready
+                    ? [...videoJobOperations]
                   : [],
             limits:
               capability.profile_key === "internal-text-v1"
@@ -93,6 +99,8 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
                       quality: "high",
                       output_format: "png",
                     }
+                  : capability.profile_key === "internal-video-v1" && capability.ready
+                    ? videoJobLimits
                   : {},
             gateway_policy: "company_internal_only",
             gateway_fingerprint: hash(

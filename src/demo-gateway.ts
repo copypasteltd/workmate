@@ -356,6 +356,9 @@ export async function startDemoGateway(c: Config) {
       AI_IMAGE_MODEL: "copypaste-demo-image",
       AI_VERIFIED: true,
       AI_IMAGE_VERIFIED: true,
+      // This local synthetic gateway implements text/images only. An inherited
+      // live-video flag must not advertise an unsupported generation endpoint.
+      AI_VIDEO_VERIFIED: false,
       AI_INPUT_COUNT_VERIFIED: true,
       AI_INPUT_COUNT_HKD_MICROS_PER_CALL: 0,
       AI_INPUT_HKD_MICROS_PER_MILLION: 1000000,

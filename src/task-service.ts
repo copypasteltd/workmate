@@ -41,6 +41,7 @@ export async function enqueueTask(
     billing_account_id?: string;
     content_source_task_id?: string;
     execution_location?: "cloud" | "desktop";
+    role_hash?: string;
   } = {},
 ) {
   if (b.prompt.length > 60000)
@@ -61,15 +62,6 @@ export async function enqueueTask(
       409,
       "DATA_MODE_MISMATCH",
       "Simulated workspaces and configured-service workspaces use separate execution modes. Create a workspace in the current mode.",
-    );
-  const role = catalog.role(b.role_key);
-  await catalog.boundSkills(role);
-  await catalog.ensureEnabled(tx, b.role_key);
-  if (options.context && options.context.role_hash !== catalog.digest(role))
-    throw new Problem(
-      409,
-      "ROLE_VERSION_CHANGED",
-      "Update the specialist to the installed role version",
     );
   let parent: any;
   if (b.parent_id) {
@@ -100,6 +92,11 @@ export async function enqueueTask(
         "Continue this private task from its original conversation",
       );
   }
+  if (parent?.role_key === b.role_key && options.context && options.context.role_hash !== parent.role_hash)
+    throw new Problem(409, "ROLE_ADOPTION_NEW_TASK_REQUIRED", "Start a new task to adopt a different role/tool version");
+  const role = catalog.role(b.role_key, options.context?.role_hash ?? options.role_hash ?? (parent?.role_key === b.role_key ? parent.role_hash : undefined));
+  await catalog.boundSkills(role);
+  await catalog.ensureEnabled(tx, b.role_key, catalog.digest(role));
   const ready = parent
     ? (
         await boundTaskAvailability(tx, db.config, catalog, {

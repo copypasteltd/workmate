@@ -693,7 +693,8 @@ export function registerProviderAdmin(app: FastifyInstance, db: Database) {
             );
           const violations = (
             await tx.query(
-              "SELECT x.id,x.code FROM ai_request_budget_violations x JOIN ai_gateway_requests r ON r.id=x.provider_request_id WHERE r.task_id=$1 ORDER BY x.id",
+              `SELECT x.id,x.code FROM ai_request_budget_violations x JOIN ai_gateway_requests r ON r.id=x.provider_request_id WHERE r.task_id=$1
+               UNION ALL SELECT x.id,x.code FROM ai_video_budget_violations x JOIN ai_video_jobs j ON j.id=x.job_id WHERE j.task_id=$1 ORDER BY id`,
               [t.id],
             )
           ).rows;

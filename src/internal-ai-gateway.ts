@@ -10,7 +10,16 @@ export type AIOperation =
   | "responses"
   | "responses.input_tokens"
   | "images.generate"
-  | "images.edit";
+  | "images.edit"
+  | "videos.create"
+  | "videos.retrieve"
+  | "videos.lookup"
+  | "videos.cancel"
+  | "videos.content";
+export interface VideoRequestResource {
+  videoId?: string;
+  operationId?: string;
+}
 export interface AIRequestIdentity {
   taskId: string;
   tenantId?: string;
@@ -78,7 +87,7 @@ export class AIRequestFailure extends Error {
 const denied = (code: string, status = 400) =>
   new AIRequestFailure(code, status);
 
-function endpoint(c: Config, operation: AIOperation) {
+function endpoint(c: Config, operation: AIOperation, resource?: VideoRequestResource) {
   if (!c.AI_BASE_URL || !c.AI_API_KEY) throw denied("AI_SETUP_REQUIRED", 503);
   const u = new URL(c.AI_BASE_URL);
   if (
@@ -93,14 +102,43 @@ function endpoint(c: Config, operation: AIOperation) {
       .includes(u.hostname)
   )
     throw denied("AI_GATEWAY_NOT_ALLOWED", 403);
-  const suffix = {
+  const suffixes: Partial<Record<AIOperation, string>> = {
     responses: "/responses",
     "responses.input_tokens": "/responses/input_tokens",
     "images.generate": "/images/generations",
     "images.edit": "/images/edits",
-  }[operation];
+    "videos.create": "/videos",
+  };
+  let suffix = suffixes[operation];
+  if (operation.startsWith("videos.")) {
+    if (!["videos.create", "videos.retrieve", "videos.lookup", "videos.cancel", "videos.content"].includes(operation))
+      throw denied("AI_OPERATION_NOT_ALLOWED", 403);
+    if (operation === "videos.create") {
+      if (resource && Object.keys(resource).length) throw denied("AI_VIDEO_SCOPE_INVALID");
+    } else if (operation === "videos.lookup") {
+      if (!resource || Object.keys(resource).some((key) => key !== "operationId")
+        || !/^[a-zA-Z0-9_:-]{16,128}$/.test(resource.operationId ?? ""))
+        throw denied("AI_VIDEO_SCOPE_INVALID");
+      // This route is a versioned company extension, not a public OpenAI API.
+      suffix = "/videos/operations/" + encodeURIComponent(resource.operationId!);
+    } else {
+      if (!resource || Object.keys(resource).some((key) => key !== "videoId")
+        || !/^[a-zA-Z0-9_-]{1,160}$/.test(resource.videoId ?? ""))
+        throw denied("AI_VIDEO_SCOPE_INVALID");
+      suffix = "/videos/" + encodeURIComponent(resource.videoId!)
+        + (operation === "videos.content" ? "/content" : operation === "videos.cancel" ? "/cancel" : "");
+    }
+  } else if (resource !== undefined) throw denied("AI_VIDEO_SCOPE_INVALID");
   if (!suffix) throw denied("AI_OPERATION_NOT_ALLOWED", 403);
   return c.AI_BASE_URL.replace(/\/$/, "") + suffix;
+}
+
+function videoFields(body: Record<string, unknown>, model: string) {
+  if (Object.keys(body).some((key) => !["model", "prompt", "size", "seconds"].includes(key))
+    || body.model !== model || typeof body.prompt !== "string" || !body.prompt.trim()
+    || body.prompt.length > 12000 || !["720x1280", "1280x720", "1024x1024"].includes(String(body.size))
+    || !["4", "8", "12", "16", "20"].includes(String(body.seconds)))
+    throw denied("AI_VIDEO_SPECIFICATION_CHANGED");
 }
 
 function imageFields(body: Record<string, unknown>, model: string) {
@@ -214,6 +252,8 @@ export interface InternalAIRequest {
   reasoningEffort?: string;
   tools?: readonly string[];
   body: Record<string, unknown> | FormData;
+  /** Validated resource identifiers only; callers cannot supply an endpoint. */
+  videoResource?: VideoRequestResource;
   authority: AIRequestAuthority;
   signal: AbortSignal;
   operationId?: string;
@@ -228,33 +268,37 @@ export interface InternalAIRequest {
 
 /** The only provider fetch entry point: no caller-supplied URL or headers. */
 export async function internalAIRequest(c: Config, request: InternalAIRequest) {
-  const url = endpoint(c, request.operation);
+  const url = endpoint(c, request.operation, request.videoResource);
+  const video = request.operation.startsWith("videos.");
+  if (video && (!request.model.trim() || request.model.length > 200)) throw denied("AI_VIDEO_SPECIFICATION_CHANGED");
+  const method = ["videos.retrieve", "videos.lookup", "videos.content"].includes(request.operation) ? "GET" : "POST";
   let normalized: Record<string, unknown> | undefined;
   let bytes: Buffer, contentType: string;
   if (request.body instanceof FormData) {
-    if (request.operation !== "images.edit")
+    if (request.operation !== "images.edit" && request.operation !== "videos.create")
       throw denied("AI_PROTOCOL_NOT_ALLOWED");
     const fields: Record<string, unknown> = {};
     let image: Blob | undefined;
     for (const [name, value] of request.body.entries()) {
-      if (name === "image" && value instanceof Blob && !image) image = value;
+      if (name === (video ? "input_reference" : "image") && value instanceof Blob && !image) image = value;
       else if (typeof value === "string" && !(name in fields))
         fields[name] = name === "n" && value === "1" ? 1 : value;
       else throw denied("AI_IMAGE_SPECIFICATION_CHANGED");
     }
-    imageFields(fields, request.model);
+    if (video) videoFields(fields, request.model);
+    else imageFields(fields, request.model);
     if (
-      !image ||
-      image.size > 10_000_000 ||
-      !["image/png", "image/jpeg", "image/webp"].includes(image.type)
+      (!video && !image) || (image && ((video && !image.size) || image.size > 10_000_000 ||
+      !(video ? ["image/png", "image/jpeg"] : ["image/png", "image/jpeg", "image/webp"]).includes(image.type)))
     )
-      throw denied("AI_IMAGE_SPECIFICATION_CHANGED");
+      throw denied(video ? "AI_VIDEO_SPECIFICATION_CHANGED" : "AI_IMAGE_SPECIFICATION_CHANGED");
     const encoded = new Response(request.body);
     contentType = encoded.headers.get("content-type")!;
     bytes = Buffer.from(await encoded.arrayBuffer());
   } else {
-    if (request.operation === "images.edit")
+    if (request.operation === "images.edit" || request.operation === "videos.create")
       throw denied("AI_PROTOCOL_NOT_ALLOWED");
+    if (video && Object.keys(request.body).length) throw denied("AI_VIDEO_SPECIFICATION_CHANGED");
     const body =
       request.operation === "responses"
         ? responseFields(
@@ -269,7 +313,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
           )
         : request.operation === "responses.input_tokens"
           ? request.body
-          : (imageFields(request.body, request.model), request.body);
+          : video ? request.body : (imageFields(request.body, request.model), request.body);
     normalized = body;
     bytes = Buffer.from(JSON.stringify(body));
     contentType = "application/json";
@@ -283,7 +327,7 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
     operation: request.operation,
     model: request.model,
     requestBytes: bytes.length,
-    requestHash: hash(bytes),
+    requestHash: video ? hash(Buffer.concat([Buffer.from(JSON.stringify({ operation: request.operation, resource: request.videoResource ?? {} })), bytes])) : hash(bytes),
     generationOperationId: request.generationOperationId,
     generationHash: request.generationHash,
   };
@@ -455,9 +499,9 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
     fetchInvoked = true;
     request.onDispatch?.();
     const response = await fetch(url, {
-      method: "POST",
+      method,
       headers,
-      body: new Uint8Array(bytes),
+      ...(method === "POST" ? { body: new Uint8Array(bytes) } : {}),
       redirect: "error",
       signal,
     });

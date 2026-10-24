@@ -46,6 +46,7 @@ const implementedTools = new Set([
   "layout.render",
   "document.render",
   "video.render",
+  "video.generate.internal",
   "font.inspect",
   "image.generate.internal",
   "image.edit.internal",

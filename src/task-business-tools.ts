@@ -1,4 +1,6 @@
 import { prepareBrandProduction } from "./brand-production.js";
+import { GeneratedVideoJobs } from "./video-jobs.js";
+import { videoJobSpecification } from "./video-job-protocol.js";
 import {
   assertTaskContentSources,
   recordTaskSourceRead,
@@ -85,6 +87,7 @@ export interface TaskBusinessAuthority {
   authorize(tx: Tx): Promise<unknown>;
   inference: AIRequestAuthority["authorize"];
   signal?: AbortSignal;
+  videoReady?: boolean;
 }
 
 /** Company business operations shared by cloud and customer-owned Codex runtimes. */
@@ -291,6 +294,30 @@ export class TaskBusinessTools {
         ),
       },
     ];
+    if (role.tool_ids.includes("video.generate.internal") && this.authority.videoReady) {
+      const jobs = new GeneratedVideoJobs(this.db, this.catalog, this.storage);
+      const jobRef = z.object({ job_id: uuid }).strict();
+      const ownJob = async (id: string) => {
+        const current = await jobs.read(actor, t.tenant_id, t.project_id, id);
+        if (current.task_id !== t.id) throw new Problem(404, "NOT_FOUND", "Video operation not found in this task");
+        return current;
+      };
+      tools.push({ name: "generated_video_create",
+        description: "Generate an explicitly requested clip through the task's frozen company video capability within its shared budget. Waits for this durable operation's measured usage and actual validated MP4. Never retry creation after an unknown outcome; query the same job id instead. Template composition is a separate service.",
+        inputSchema: z.toJSONSchema(videoJobSpecification),
+        run: async (args: unknown, callId: string) => {
+          const job = await jobs.prepare(t, fencing, args, callId, authorize);
+          return jobs.wait(actor, t.tenant_id, t.project_id, job.id, this.authority.signal);
+        } }, { name: "generated_video_status",
+        description: "Read this task's original generated-video operation, confirmed or unknown usage and actual artifact availability. This does not create, retry or bill another generation.",
+        inputSchema: z.toJSONSchema(jobRef),
+        run: async args => { const { job_id } = jobRef.parse(args); return ownJob(job_id); } },
+      { name: "generated_video_cancel",
+        description: "Request cancellation of this task's original operation. Cancellation is not confirmation of zero cost; final usage may require reconciliation.",
+        inputSchema: z.toJSONSchema(jobRef),
+        run: async (args, callId) => { const { job_id } = jobRef.parse(args), job = await ownJob(job_id);
+          return jobs.cancel(actor, t.tenant_id, t.project_id, job.id, null, hash("generated_video_cancel:" + t.id + ":" + callId)); } });
+    }
     if (role.tool_ids.includes("asset.read"))
       tools.push(
         {
@@ -765,6 +792,9 @@ export class TaskBusinessTools {
               !!t.input_context?.seo_change_task_id &&
               role.tool_ids.includes("asset.read"),
             image2_generate: role.tool_ids.includes("image.generate.internal"),
+            generated_video_create: role.tool_ids.includes("video.generate.internal"),
+            generated_video_status: role.tool_ids.includes("video.generate.internal"),
+            generated_video_cancel: role.tool_ids.includes("video.generate.internal"),
             code_read: role.tool_ids.includes("code.read"),
             code_write: role.tool_ids.includes("code.patch"),
             code_package: role.tool_ids.includes("delivery.package"),
@@ -803,6 +833,7 @@ export class TaskBusinessTools {
             "video_projects",
             "video_project_read",
             "video_project_status",
+            "generated_video_status",
           ].includes(tool.name),
         )
       : permitted;

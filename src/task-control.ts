@@ -126,8 +126,8 @@ export async function controlUnclaimedTask(
         "DATA_MODE_MISMATCH",
         "Resume in the task's execution environment",
       );
-    const role = catalog.role(task.role_key);
-    await catalog.ensureEnabled(tx, task.role_key);
+    const role = catalog.forTask(task);
+    await catalog.ensureEnabled(tx, task.role_key, task.role_hash);
     await assertTaskSkills(tx, catalog, task);
     if (catalog.digest(role) !== task.role_hash)
       throw new Problem(

@@ -998,8 +998,8 @@ export async function advanceWorkflows(
           );
           return;
         }
-        await catalog.ensureEnabled(tx, s.role_key);
-        const role = catalog.role(s.role_key);
+        await catalog.ensureEnabled(tx, s.role_key, r.role_hashes[s.role_key]);
+        const role = catalog.role(s.role_key, r.role_hashes[s.role_key]);
         if (
           r.role_hashes[s.role_key] &&
           r.role_hashes[s.role_key] !== catalog.digest(role)
@@ -1031,6 +1031,7 @@ export async function advanceWorkflows(
             budget_micros: s.budget_micros,
           },
           `workflow:${r.id}:${cursor}`,
+          { role_hash: r.role_hashes[s.role_key] },
         );
         await tx.query("UPDATE workflow_runs SET active_task=$2 WHERE id=$1", [
           r.id,

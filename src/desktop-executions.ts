@@ -42,7 +42,8 @@ const companyToolNames = new Set(["project_assets", "asset_text_read", "cloud_fi
   "marketing_metrics", "design_render", "font_catalog", "image2_generate", "image2_edit"]);
 // Existing native roles keep exactly their published tool bindings. The new
 // specialist has no old native thread and receives the video contract only.
-const videoCompanyToolNames = new Set(["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel"]);
+const videoCompanyToolNames = new Set(["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel",
+  "generated_video_create", "generated_video_status", "generated_video_cancel"]);
 const companyCall = z.object({ tool: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/), arguments: z.record(z.string(), z.unknown()),
   call_id: z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/), thread_id: z.string().min(1).max(128), turn_id: z.string().min(1).max(128) }).strict();
 const denied = (code = "DESKTOP_EXECUTION_UNAVAILABLE") => new Problem(409, code, "This local execution needs to be stopped or reconciled on its owning desktop");
@@ -92,10 +93,10 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
        AND s.auth_version=$3 ORDER BY s.created_at DESC LIMIT 1`, [d.native_family_id, actor.id, actor.authVersion],
     )).rows;
     if (!sessions[0] || !(await validFederation(tx, sessions[0]))) throw denied("DESKTOP_AUTHORIZATION_REVOKED");
-    await catalog.ensureEnabled(tx, t.role_key);
-    if (catalog.digest(catalog.role(t.role_key)) !== t.role_hash) throw denied("DESKTOP_ROLE_VERSION_CHANGED");
+    await catalog.ensureEnabled(tx, t.role_key, t.role_hash);
+    if (catalog.digest(catalog.forTask(t)) !== t.role_hash) throw denied("DESKTOP_ROLE_VERSION_CHANGED");
     await assertTaskSkills(tx, catalog, t);
-    await authorizeExecutionPlan(tx, t.tenant_id, t.created_by, catalog.role(t.role_key), t.mode);
+    await authorizeExecutionPlan(tx, t.tenant_id, t.created_by, catalog.forTask(t), t.mode);
     await assertTaskContentSources(tx, t);
     const capabilities = await taskCapabilities(tx, db.config, catalog, t);
     if (active && (d.state !== "running" || t.status !== "running" || t.cancel_requested || t.content_state !== "active"
@@ -114,8 +115,10 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
       const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [t.id])).rows[0];
       if (!current || !execution || current.fencing_token !== t.fencing_token) throw denied();
       const { capabilities } = await authorize(tx, execution, current);
-      const capability = request.operation.startsWith("responses") ? capabilities.text : capabilities.image;
-      if (!capability || !capability.body.supported_operations.includes(request.operation === "responses.input_tokens" ? "responses" : request.operation)
+      const operation = request.operation === "responses.input_tokens" ? "responses" : request.operation;
+      if (operation !== "responses" && operation !== "images.generate" && operation !== "images.edit") throw denied("AI_REQUEST_SCOPE_INVALID");
+      const capability = operation === "responses" ? capabilities.text : capabilities.image;
+      if (!capability || !capability.body.supported_operations.includes(operation)
         || request.taskId !== t.id || request.tenantId !== t.tenant_id || request.projectId !== t.project_id || request.actorId !== t.created_by
         || request.attempt !== t.attempt || request.fencingToken !== t.fencing_token || request.capabilityVersionId !== capability.id
         || request.model !== capability.body.model_alias) throw denied("AI_REQUEST_SCOPE_INVALID");
@@ -130,7 +133,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
     try { await (await gateway).close(); } finally { if (gateways.get(id) === gateway) gateways.delete(id); }
   }
 
-  function businessTools(t: any, actor: Principal, signal?: AbortSignal) {
+  function businessTools(t: any, actor: Principal, signal?: AbortSignal, videoReady = false) {
     const tools = new TaskBusinessTools(db, catalog, storage, {
       authorize: async tx => {
         await lockNativeWorkflowParent(tx, t);
@@ -139,8 +142,8 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
         if (!current || !execution || current.fencing_token !== t.fencing_token || current.created_by !== actor.id) throw denied();
         await authorize(tx, execution, current);
       },
-      inference: request => inferenceAuthority(null, t, request), signal,
-    }).build(t, actor, t.fencing_token, catalog.role(t.role_key)).filter(tool => companyToolNames.has(tool.name)
+      inference: request => inferenceAuthority(null, t, request), signal, videoReady,
+    }).build(t, actor, t.fencing_token, catalog.forTask(t)).filter(tool => companyToolNames.has(tool.name)
       || t.role_key === "video-motion" && videoCompanyToolNames.has(tool.name));
     return [...tools, ...workflows.build(t, actor)];
   }
@@ -175,7 +178,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
         const previous = (await tx.query("SELECT d.*,t.role_key,t.role_hash FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE local_session_id=$1 ORDER BY d.created_at DESC LIMIT 1", [b.local_session_id])).rows[0];
         if (previous && (previous.tenant_id !== p.tenant || previous.project_id !== p.project || previous.actor_id !== req.principal.id
           || previous.device_id !== b.device_id || previous.native_family_id !== family || previous.workspace_hash !== b.workspace_hash
-          || previous.runtime_sha256 !== b.runtime_sha256 || previous.role_key !== b.role_key || previous.role_hash !== catalog.digest(catalog.role(b.role_key))
+          || previous.runtime_sha256 !== b.runtime_sha256 || previous.role_key !== b.role_key || previous.role_hash !== catalog.digest(catalog.role(b.role_key, previous.role_hash))
           || previous.state !== "finished")) throw denied("DESKTOP_SESSION_BINDING_CHANGED");
         const t = await enqueueTask(tx, db, catalog, req.principal, p.tenant, p.project, {
           title: b.title, prompt: b.prompt, role_key: b.role_key, budget_micros: b.budget_micros,
@@ -205,7 +208,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
       await authorize(tx, d, t, false);
       const receipt = await replay(tx, req.principal.id, "desktop.start:" + t.id, key(req), b, async () => {
         if (d.state !== "prepared" || t.status !== "queued" || t.cancel_requested || t.attempt !== 0) throw denied();
-        const plan = await authorizeExecutionPlan(tx, p.tenant, req.principal.id, catalog.role(t.role_key));
+        const plan = await authorizeExecutionPlan(tx, p.tenant, req.principal.id, catalog.forTask(t));
         const reason = (await tx.query("SELECT claim_desktop_capacity($1,$2,$3,$4) AS reason", [t.id, b.device_id, plan.body.max_active_tasks, randomUUID()])).rows[0].reason;
         if (reason) throw new Problem(429, "DESKTOP_CAPACITY_WAIT", "Execution capacity is occupied; retry this request");
         const secret = token(), expiresAt = new Date(Date.now() + db.config.AI_SCOPE_TTL_MS);
@@ -217,28 +220,28 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
       const live = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1", [receipt.task_id])).rows[0];
       const task = (await tx.query("SELECT * FROM tasks WHERE id=$1", [receipt.task_id])).rows[0];
       const { capabilities } = await authorize(tx, live, task);
-      const skills = await Promise.all((await catalog.boundSkills(catalog.role(task.role_key))).map(async skill => ({ key: skill.key, sha256: skill.sha256, content: await catalog.verifySkill(skill) })));
-      const companyTools = businessTools(task, req.principal).map(({ name, description, inputSchema }) => ({ name, description, inputSchema: desktopCompanyToolSchema(inputSchema) }));
+      const skills = await Promise.all((await catalog.boundSkills(catalog.forTask(task))).map(async skill => ({ key: skill.key, sha256: skill.sha256, content: await catalog.verifySkill(skill) })));
+      const companyTools = businessTools(task, req.principal, undefined, !!capabilities.video).map(({ name, description, inputSchema }) => ({ name, description, inputSchema: desktopCompanyToolSchema(inputSchema) }));
       return { ...publicExecution(live, task), credential: { token: unseal(db.config.MASTER_KEY!, live.credential_cipher), expires_at: live.credential_expires_at },
         inference_path: "/v1/desktop-inference/v1", model: capabilities.text.body.model_alias, effort: capabilities.text.body.reasoning_effort,
         company_tools: companyTools,
         runtime: desktopRuntime, skills, prompt: task.prompt,
-        role_instructions: catalog.role(task.role_key).workflow.map((step: any) => step.instruction).join("\n") };
+        role_instructions: catalog.forTask(task).workflow.map((step: any) => step.instruction).join("\n") };
     }, p.tenant);
   });
 
   app.post(base + "/:execution/tools", { preHandler: requireUser(db), bodyLimit: 2_100_000 }, async (req, reply) => {
     const p = executionParams.parse(req.params), body = companyCall.parse(req.body); key(req);
-    const { task: prepared, expiresAt } = await db.tx(async tx => {
-      const { d, t } = await own(tx, req, true, true); await authorize(tx, d, t);
-      if (!businessTools(t, req.principal).some(tool => tool.name === body.tool)) throw new Problem(403, "DESKTOP_TOOL_NOT_ALLOWED", "This specialist cannot use that company tool");
+    const { task: prepared, expiresAt, videoReady } = await db.tx(async tx => {
+      const { d, t } = await own(tx, req, true, true); const { capabilities } = await authorize(tx, d, t);
+      if (!businessTools(t, req.principal, undefined, !!capabilities.video).some(tool => tool.name === body.tool)) throw new Problem(403, "DESKTOP_TOOL_NOT_ALLOWED", "This specialist cannot use that company tool");
       // Commit the native call binding BEFORE effects. A different HTTP key,
       // tool, turn or payload cannot reuse this call id after a lost response.
       await replay(tx, req.principal.id, "desktop.tool:" + t.id, body.call_id, body, async () => {
         await event(tx, t.tenant_id, t.id, "desktop.company_tool.requested", { tool: body.tool, call_id: body.call_id });
         return { bound: true };
       });
-      return { task: t, expiresAt: new Date(d.credential_expires_at).getTime() };
+      return { task: t, expiresAt: new Date(d.credential_expires_at).getTime(), videoReady: !!capabilities.video };
     }, p.tenant);
     const callKey = prepared.id + ":" + body.call_id, existing = companyCalls.get(callKey);
     if (existing) return existing.promise;
@@ -246,10 +249,10 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
     const closed = () => { if (!reply.raw.writableFinished) abort.abort(); };
     req.raw.once("aborted", closed); reply.raw.once("close", closed);
     const signal = AbortSignal.any([shutdown.signal, abort.signal,
-      AbortSignal.timeout(Math.max(1, Math.min(db.config.AI_REQUEST_TIMEOUT_MS, expiresAt - Date.now())))]);
+      AbortSignal.timeout(Math.max(1, Math.min(body.tool === "generated_video_create" ? 850000 : db.config.AI_REQUEST_TIMEOUT_MS, expiresAt - Date.now())))]);
     const promise = Promise.resolve().then(async () => {
       if (signal.aborted) throw denied();
-      const tool = businessTools(prepared, req.principal, signal).find(item => item.name === body.tool)!;
+      const tool = businessTools(prepared, req.principal, signal, videoReady).find(item => item.name === body.tool)!;
       const output = await tool.run(body.arguments, body.call_id);
       if (Buffer.byteLength(JSON.stringify(output)) > 2_000_000) throw new Problem(413, "DESKTOP_TOOL_RESULT_TOO_LARGE", "Company tool result is too large");
       // An artifact may complete while permission is withdrawn. Keep its
@@ -262,7 +265,8 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
       const uncertain = await db.tx(async tx => {
         const current = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [prepared.id])).rows[0];
         if (!current || current.fencing_token !== prepared.fencing_token) return true;
-        const pending = (await tx.query("SELECT 1 FROM tool_operations WHERE task_id=$1 AND call_id=$2 AND state IN ('accepted','reconciling')", [prepared.id, body.call_id])).rowCount;
+        const pending = (await tx.query(`SELECT 1 FROM tool_operations WHERE task_id=$1 AND call_id=$2 AND state IN ('accepted','reconciling')
+          UNION ALL SELECT 1 FROM ai_video_jobs WHERE task_id=$1 AND call_id=$2 AND NOT usage_known`, [prepared.id, body.call_id])).rowCount;
         if (pending) { await requestTaskCancellation(tx, current); return true; }
         return false;
       }, p.tenant, true, prepared.created_by);
@@ -344,7 +348,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
       const execution = (await tx.query("SELECT * FROM desktop_executions WHERE task_id=$1 FOR UPDATE", [d.task_id])).rows[0];
       if (!t || !execution || execution.credential_hash !== hash(secret!)) throw denied();
       const { capabilities, actor } = await authorize(tx, execution, t);
-      return { t, execution, capabilities, companyTools: businessTools(t, actor).map(({ name, inputSchema }) => ({ name, inputSchema: desktopCompanyToolSchema(inputSchema) })) };
+      return { t, execution, capabilities, companyTools: businessTools(t, actor, undefined, !!capabilities.video).map(({ name, inputSchema }) => ({ name, inputSchema: desktopCompanyToolSchema(inputSchema) })) };
     }, d.tenant_id, false, d.actor_id);
     let gateway = gateways.get(d.task_id);
     if (!gateway) {

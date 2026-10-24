@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { buildApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
+import { startDemoGateway } from "../src/demo-gateway.js";
 let system: Awaited<ReturnType<typeof buildApp>>;
 interface Client {
   cookie: string;
@@ -56,6 +57,17 @@ after(async () => {
   } finally {
     await isolated?.cleanup();
   }
+});
+test("the built-in demo gateway withdraws inherited video verification without changing the source configuration", async () => {
+  const config = loadConfig({ ...isolated.env, NODE_ENV: "test", DEMO_MODE: "true", AI_VIDEO_MODEL: "inherited-live-video",
+    AI_VIDEO_VERIFIED: "true", AI_VIDEO_HKD_MICROS_PER_SECOND: "100000" });
+  const demo = await startDemoGateway(config);
+  try {
+    assert.equal(config.AI_VIDEO_VERIFIED, true);
+    assert.equal(demo.config.AI_VIDEO_VERIFIED, false);
+    assert.equal(demo.config.AI_VERIFIED, true);
+    assert.notEqual(demo.config.AI_BASE_URL, config.AI_BASE_URL);
+  } finally { await demo.close(); }
 });
 test("simulated mode is loopback-only and forbidden in production", () => {
   assert.throws(

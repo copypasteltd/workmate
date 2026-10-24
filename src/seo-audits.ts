@@ -639,13 +639,13 @@ async function crawlAuthority(
       "SEO_RUN_FENCED",
       "The source collection lease is no longer active",
     );
-  await catalog.ensureEnabled(tx, task.role_key);
+  await catalog.ensureEnabled(tx, task.role_key, task.role_hash);
   await assertTaskSkills(tx, catalog, task);
   await authorizeExecutionPlan(
     tx,
     task.tenant_id,
     task.created_by,
-    catalog.role(task.role_key),
+    catalog.forTask(task),
     task.mode,
   );
   const capabilities = await taskCapabilities(tx, db.config, catalog, task);

@@ -299,7 +299,7 @@ async function describe(
       new Set(ids).size !== ids.length
     )
       throw stale();
-    for (const binding of catalog.role(body.role_key).model_bindings) {
+    for (const binding of catalog.role(body.role_key, body.role_hash).model_bindings) {
       const selected = capabilities.find(
         (c) => c.profile_key === binding.profile_key,
       );
@@ -333,7 +333,7 @@ async function lockReferences(tx: Tx, catalog: Catalog, body: any) {
     body.runtime_profile_id,
     body.capability_version_ids,
   ]);
-  const packages = await catalog.boundSkills(catalog.role(body.role_key));
+  const packages = await catalog.boundSkills(catalog.role(body.role_key, body.role_hash));
   await tx.query("SELECT lock_adoption_skill_versions($1::uuid[])", [
     packages.map((s) => skillVersionId(s.key, s.version, s.sha256)),
   ]);

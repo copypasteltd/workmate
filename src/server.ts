@@ -46,6 +46,7 @@ import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
 import { registerCreativeMatrices } from "./creative-matrices.js";
 import { registerVideoProjects } from "./video-projects.js";
+import { registerGeneratedVideoJobs } from "./video-job-routes.js";
 import { registerPersistentWork } from "./persistent-work.js";
 import { registerAgentAdoption } from "./agent-adoption.js";
 import { registerAdminIdentities } from "./admin-identities.js";
@@ -340,7 +341,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     services: {
       text: !!(c.AI_VERIFIED && c.AI_BASE_URL && c.AI_MODEL),
       image: !!(c.AI_IMAGE_VERIFIED && c.AI_IMAGE_MODEL),
-      video: false,
+      video: !!(c.AI_VIDEO_VERIFIED && c.AI_BASE_URL && c.AI_API_KEY && c.AI_VIDEO_MODEL && c.AI_VIDEO_HKD_MICROS_PER_SECOND),
     },
     device_command_public_key: commandPublicKey(c.MASTER_KEY!),
     mail_mode:
@@ -394,6 +395,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerBusiness(app, db, storage, catalog);
   registerCreativeMatrices(app, db, storage);
   registerVideoProjects(app, db, storage);
+  registerGeneratedVideoJobs(app, db, catalog, storage);
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminPlans(app, db, catalog);

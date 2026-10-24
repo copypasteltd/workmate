@@ -170,7 +170,7 @@ export async function freezeTaskSkills(
   const packages = await provisionRoleSkills(
     tx,
     catalog,
-    catalog.role(task.role_key),
+    catalog.forTask(task),
     task.tenant_id,
     task.project_id,
     task.created_by,
@@ -228,7 +228,7 @@ export async function assertTaskSkills(tx: Tx, catalog: Catalog, task: any) {
     await freezeTaskSkills(tx, catalog, task, false);
     return assertTaskSkills(tx, catalog, task);
   }
-  const expected = await catalog.boundSkills(catalog.role(task.role_key));
+  const expected = await catalog.boundSkills(catalog.forTask(task));
   if (
     rows.length !== expected.length ||
     rows.some(
@@ -547,7 +547,7 @@ export function registerSkillLifecycle(
       )
         throw new Problem(404, "NOT_FOUND", "Specialist not found");
       await projectAccess(tx, req.principal, tenant, agent.project_id);
-      const role = catalog.role(agent.role_key),
+      const role = catalog.role(agent.role_key, agent.body.role_hash),
         missing: string[] = [],
         ids: string[] = [];
       const rows = (
@@ -568,7 +568,7 @@ export function registerSkillLifecycle(
         else ids.push(s.skill_version_id);
       }
       try {
-        await catalog.ensureEnabled(tx, agent.role_key);
+        await catalog.ensureEnabled(tx, agent.role_key, agent.body.role_hash);
       } catch {
         missing.push("platform_method_disabled");
       }
@@ -589,6 +589,7 @@ export function registerSkillLifecycle(
         "delivery.package",
         "layout.render",
         "video.render",
+        "video.generate.internal",
         "font.inspect",
         "image.generate.internal",
         "image.edit.internal",

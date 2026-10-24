@@ -42,6 +42,13 @@ const schema = z.object({
     .default("max"),
   AI_IMAGE_MODEL: z.string().optional(),
   AI_VIDEO_MODEL: z.string().optional(),
+  AI_VIDEO_VERIFIED: bool.default(false),
+  AI_VIDEO_HKD_MICROS_PER_SECOND: z.preprocess(
+    (value) => value === "" ? undefined : value,
+    z.coerce.number().int().positive().max(Number.MAX_SAFE_INTEGER).optional(),
+  ),
+  AI_VIDEO_POLL_INTERVAL_MS: z.coerce.number().int().min(250).max(60000).default(5000),
+  AI_VIDEO_WEBHOOK_SECRET: z.string().min(32).max(256).optional(),
   AI_ALLOWED_HOSTS: z.string().default(""),
   AI_VERIFIED: bool.default(false),
   AI_IMAGE_VERIFIED: bool.default(false),
