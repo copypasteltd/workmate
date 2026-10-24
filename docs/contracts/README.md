@@ -109,3 +109,7 @@ CORE01 将全部运行配置的 kernel 固定为 codex；目录 schema 使用 co
 ## Stage81 后台视频模型 / Managed video models
 
 [能力发布增量契约](capability-releases.openapi.json) 现在含文字／图片／视频定义、异步逐案例回执及两个原作业停止／重查命令，13 条路径／23 个严格模式；原 OpenAPI 不修改。[真实配置服务路由](implemented-routes.json) 为 447 项，加一项保留的演示条件声明；路由清单不代替完整产品设计 API。见[执行与权限](../technical/81-managed-video-capability-releases.md)。
+
+## Stage82 已确认广告反馈 / Confirmed creative feedback
+
+[新增契约](creative-feedback-openapi.json) 描述 7 项操作，严格映射／决定／回执模式实际由 HTTP 响应进行 AJV 核对；options 和报告列表的结构描述不冒充全面严格响应验证。[实际路由](implemented-routes.json) 为 454 项配置服务，另保留一项条件演示声明。原 OpenAPI 不替换。见[流程和边界](../technical/82-confirmed-creative-feedback.md)。

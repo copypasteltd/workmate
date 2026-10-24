@@ -1,6 +1,8 @@
 # DESK-UI01：Desktop 布局与滚动呈现
 
-**阶段 80 当前增量：** 生成式视频原作业、共享预算与未知费用保留、取消/对账、真实 MP4 和三端预览；Desktop 设置紧凑、无边框、无可见纵横滚动条且保留滚动/键盘与真实进度。平台 912、专项 60、客户端 69、打包 32、Web/Admin 5、侧栏 9、本机监督进程 17 项分别通过，模型与媒体内容为明确夹具。SQL097 新增，SQL001–096 与各原 OpenAPI 字节保留。原 102 REQ/102 TC 为 83 部分/19 未证明/0 完整验收，G01–G10 保留。见 [方案和证据](../technical/80-generated-video-jobs.md)。
+**阶段 82 当前增量：** 精确素材版本与用户明确确认的广告级身份、独立口径反馈、实际 JSON 下载／模型读取继承来源、撤销和保留期清理已局部核对。平台 946 项保留原 929 项，专项 17、兼容 43、真实 Web 4、打包 Desktop 36 项分别通过；SQL099 新增，SQL001–098 及原 OpenAPI 保持。Desktop 本机 Codex、无边框、无可见纵横滚动条，保留实际滚动／键盘／真实进度；原生 Side Panel 为云端 Codex 和文件上传。102 REQ/102 TC 保持 83 部分／19 未证明／0 完整验收，G01–G10 保留。见[当前方案及证据](../technical/82-confirmed-creative-feedback.md)。
+
+**阶段 80 历史基线：** 生成式视频原作业、共享预算与未知费用保留、取消/对账、真实 MP4 和三端预览；Desktop 设置紧凑、无边框、无可见纵横滚动条且保留滚动/键盘与真实进度。平台 912、专项 60、客户端 69、打包 32、Web/Admin 5、侧栏 9、本机监督进程 17 项分别通过，模型与媒体内容为明确夹具。SQL097 新增，SQL001–096 与各原 OpenAPI 字节保留。原 102 REQ/102 TC 为 83 部分/19 未证明/0 完整验收，G01–G10 保留。见 [方案和证据](../technical/80-generated-video-jobs.md)。
 
 **阶段 79 历史基线：** 不可变品牌版本、固定专家/云端设计任务、真实字体/价格/渠道/期限检查与来源治理；Web/打包 Desktop 品牌表单已实际执行。平台 874、客户端 68、打包 30、品牌 Web 4、Web/Admin 4、原生侧栏 8 项分别通过。SQL096 为新增迁移，SQL001–095 与原规范各自字节保留。原 102 REQ/102 TC 为 82 部分/20 未证明/0 完整验收，G01–G10 与 TC-056 仍未证明。Desktop 保留本机 Codex、无边框、真实进度及无可见纵横滚动条、可滚动和键盘访问。见 [方案与限定证据](../technical/79-versioned-brand-production.md)。
 
@@ -31,4 +33,10 @@ The user withdrew the previous progress-bar constraint. Existing truthful upload
 
 ## 当前实现与画面 / Current implementation evidence
 
-影片参数默认收起，展开在输入区上方，按可用高度限制面板并保持真实滚动；窄窗仍可访问需求、预算、开始/停止与成果。任务和影片进度继续反映真实服务状态。布局补充同时要求隐藏滚动条与实际操作可达，二者在最终打包客户端分别检查。见[实际截图与交互复核](../quality/generated-video-visual-review.md)和[精确版本检查点](../quality/generated-video-checkpoint.json)。
+影片参数默认收起，展开在输入区上方，按可用高度限制面板并保持真实滚动；窄窗仍可访问需求、预算、开始/停止与成果。任务和影片进度继续反映真实服务状态。布局补充同时要求隐藏滚动条与实际操作可达，二者在最终打包客户端分别检查。见[当前实际截图与交互复核](../quality/creative-feedback-visual-review.md)和[当前精确版本检查点](../quality/creative-feedback-checkpoint.json)。
+
+## 实际键盘访问 / Actual keyboard access
+
+长会话等已聚焦的局部滚动区域以 Home/End 核对首末项；Windows 外层整页返回顶部以 Ctrl+Home 核对，End 核对页面末端。两种范围各自验证真实 scrollTop，不能用自动定位、截断内容或脚本伪造按键通过。截图等待实际绘制，并直接捕获 Electron 原生窗口表面；录制与 OS 尺寸调整串行，避免 CDP 截图更改视口。
+
+Focused native conversation regions retain Home/End checks. Windows whole-page navigation independently verifies Ctrl+Home and End against actual scroll positions. Static captures wait for paint; native surface capture shares serialization with real OS resizing. Content reachability and overflow checks remain independent of scrollbar styling.

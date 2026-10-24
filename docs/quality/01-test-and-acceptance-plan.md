@@ -1100,3 +1100,7 @@ The original acceptance definitions remain; explicit model/video/customer fixtur
 ## 阶段 81 局部证据 / Managed-video subflow evidence
 
 原编号、步骤、完整条件及 TC 状态保持。929 项平台代码检查保留原 912 项；后台视频模型异步验证、原操作恢复、服务退出暂停、实际解码、独立发布／回滚及当前费用已局部验证。7 项真实后台页面和 7 项契约检查不等同于 102 项原产品验收。真实供应商、专业成果、完整 TC-019／TC-056 与全部 G01–G10 保留。见[精确检查点](managed-video-checkpoint.json)。
+
+## 阶段 82 局部证据 / Confirmed creative feedback
+
+原 102 REQ/102 TC、完整条件、NFR 与 G01–G10 不变。946 项平台代码检查保留全部原 929 项；实际 Web 4、打包 Desktop 36 和精确广告级反馈专项各有独立范围。默认不从活动级数据、名称相似或相关性推导 creative 效果。真实提供方身份／专业成果／完整 TC 仍未证明。见[当前检查点](creative-feedback-checkpoint.json)。

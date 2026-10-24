@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-24T03:22:42.951676+00:00",
+  "at": "2026-10-24T07:06:01.543753+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -13374,11 +13374,24 @@
         "dev/copypaste-platform/src/analytics.ts",
         "dev/copypaste-platform/src/business.ts"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        "confirmed_creative_feedback_repair"
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少素材、活动、creative ID 与分析反馈的显式确认关联。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "缺少素材、活动、creative ID 与分析反馈的显式确认关联。",
+      "verified_repairs": [
+        {
+          "cluster": "confirmed_ad_creative_feedback",
+          "verified_subflow": "Explicit user-confirmed ad-level creative identity, exact independent feedback, retained and erased source lineage, and actual native presentation without visible scrollbar rails. Advertising facts/model content remain synthetic.",
+          "evidence": [
+            "confirmed_creative_feedback_repair"
+          ],
+          "implementation_docs": [
+            "technical/82-confirmed-creative-feedback.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "用户明确确认的广告级身份、精确反馈及来源治理已在假数据下局部验证；真实提供方身份核实、专业营销判断、真实客户成果闭环与完整 TC-031 仍未证明。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -39276,9 +39289,9 @@
     "verifier_sha256": "7fe1ba7d85d374e8c19a5b751e50a862b25c617c3ede86627a937ea3c75a7ad5"
   },
   "current_source_qualification": {
-    "stage": 81,
-    "checkpoint": "managed-video-checkpoint.json",
-    "note": "Immutable video capability drafts, bounded platform-funded asynchronous verification, original-operation recovery, current costs, independent publication and rollback. Internal service and video content are explicit synthetic fixtures."
+    "stage": 82,
+    "checkpoint": "creative-feedback-checkpoint.json",
+    "note": "Explicit user-confirmed ad-level creative identity, exact independent feedback, retained and erased source lineage, and actual native presentation without visible scrollbar rails. Advertising facts/model content remain synthetic."
   },
   "extension_conversation_repair": {
     "at": "2026-10-22T14:06:48.456750+00:00",
@@ -39469,6 +39482,12 @@
     "compatibility_tests": 106,
     "admin_browser_checks": 7,
     "contract_checks": 7,
+    "original_full_acceptance": "not_proven"
+  },
+  "confirmed_creative_feedback_repair": {
+    "checkpoint": "creative-feedback-checkpoint.json",
+    "stage": 82,
+    "status": "verified_confirmed_creative_feedback_subflow",
     "original_full_acceptance": "not_proven"
   }
 }
