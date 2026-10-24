@@ -1,5 +1,6 @@
 import { ChatPanel } from "./chat-panel.js";
 import { mountDeliveryQuality } from "./delivery-quality.js";
+import { mountGeneratedVideos } from "./generated-videos.js";
 import {
   exactHKD,
   financialLabels,
@@ -42,10 +43,12 @@ let dependencyRevision = 0,
   dependencyFingerprint = "";
 let taskDrawRevision = 0;
 let taskVersion = 0;
+let generatedVideos: { key: string; dispose: () => void } | undefined;
 let startFlow: Promise<void> | null = null;
 class WorkspaceChanged extends Error {}
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
 function clearTask() {
+  generatedVideos?.dispose(); generatedVideos = undefined;
   taskDrawRevision++;
   dependencyRevision++;
   dependencyFingerprint = "";
@@ -789,6 +792,14 @@ async function drawTask(t: any) {
   const area = $("input-requests"),
     endpoint = base(),
     revision = workspaceRevision;
+  const videoKey = [revision, endpoint, t.id, locale].join(":");
+  if (t.role_key === "video-motion" && !t.source_unavailable && t.content_state === "active") {
+    if (generatedVideos?.key !== videoKey) {
+      generatedVideos?.dispose();
+      generatedVideos = { key: videoKey, dispose: mountGeneratedVideos($("generated-videos"), { base: endpoint, taskId: t.id, request, tr,
+        live: () => revision === workspaceRevision && endpoint === base() && task === t.id }) };
+    }
+  } else { generatedVideos?.dispose(); generatedVideos = undefined; }
   if (["succeeded", "failed", "cancelled"].includes(t.status) && t.mode !== "plan")
     mountDeliveryQuality($("delivery-quality"), { path: endpoint + "/tasks/" + t.id, request, tr,
       live: () => drawing === taskDrawRevision && revision === workspaceRevision && endpoint === base() && task === t.id });
@@ -1093,9 +1104,7 @@ $("tenant").addEventListener(
       $("notification-list").replaceChildren();
       $("task-list").replaceChildren();
       pending = null;
-      task = "";
-      if (timer) clearInterval(timer);
-      $("task-view").hidden = true;
+      clearTask();
       await projects();
     }),
 );
@@ -1107,9 +1116,7 @@ $("project").addEventListener(
       chat.reset();
       workspaceRevision++;
       pending = null;
-      task = "";
-      if (timer) clearInterval(timer);
-      $("task-view").hidden = true;
+      clearTask();
       if (project) await chat.open({ actor, tenant, project });
       await tasks();
       await notifications();
@@ -1219,10 +1226,9 @@ $("cancel-task").addEventListener(
     }),
 );
 $("close-task").addEventListener("click", () => {
-  task = "";
-  if (timer) clearInterval(timer);
-  $("task-view").hidden = true;
+  clearTask();
 });
+window.addEventListener("pagehide", () => { generatedVideos?.dispose(); generatedVideos = undefined; });
 $("capture-page").addEventListener(
   "click",
   () =>
