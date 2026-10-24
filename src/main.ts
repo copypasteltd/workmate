@@ -241,7 +241,9 @@ async function request(
           : "{}"
         : JSON.stringify(options.body),
     redirect: "error",
-    signal: AbortSignal.any([AbortSignal.timeout(/^\/v1\/tenants\/[\w-]+\/projects\/[\w-]+\/desktop-executions\/[\w-]+\/tools$/.test(url) ? 180000 : 40000), ...(options.signal ? [options.signal] : [])]),
+    signal: AbortSignal.any([AbortSignal.timeout(/^\/v1\/tenants\/[\w-]+\/projects\/[\w-]+\/desktop-executions\/[\w-]+\/tools$/.test(url)
+      ? options.body && typeof options.body === "object" && "tool" in options.body && options.body.tool === "generated_video_create" ? 855000 : 180000
+      : 40000), ...(options.signal ? [options.signal] : [])]),
   });
   const body = await r.json();
   if (

@@ -490,7 +490,7 @@ export class LocalCodexSession {
               || !call.arguments || typeof call.arguments !== "object" || Array.isArray(call.arguments))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_SCOPE_INVALID");
             this.validateGrant(); await this.hooks.authorize();
-            if (this.grant.mode === "read-only" && !["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog", "video_projects", "video_project_read", "video_project_status", "workflow_list", "workflow_read", "workflow_validate", "workflow_status"].includes(call.tool))
+            if (this.grant.mode === "read-only" && !["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "marketing_metrics", "font_catalog", "video_projects", "video_project_read", "video_project_status", "generated_video_status", "workflow_list", "workflow_read", "workflow_validate", "workflow_status"].includes(call.tool))
               throw new LocalCodexError("LOCAL_COMPANY_TOOL_READ_ONLY");
             await this.emit("local.company-tool.started", { tool: call.tool, call_id: call.callId });
             const output = await this.hooks.companyTool(call, this.shutdown.signal);
@@ -518,7 +518,10 @@ export class LocalCodexSession {
                   ...(Number.isSafeInteger(videoResult.render.version ?? videoResult.project.version)
                     ? { version: videoResult.render.version ?? videoResult.project.version } : {}),
                   revision: videoResult.render.revision, state: videoResult.render.state } : undefined;
-            await this.emit("local.company-tool.completed", { tool: call.tool, call_id: call.callId, artifacts, ...(video ? { video } : {}) });
+            const generatedVideo = /^generated_video_(create|status|cancel)$/.test(call.tool)
+              && uuid.test(videoResult?.id) && uuid.test(videoResult?.task_id)
+              ? { job_id: videoResult.id, task_id: videoResult.task_id } : undefined;
+            await this.emit("local.company-tool.completed", { tool: call.tool, call_id: call.callId, artifacts, ...(video ? { video } : {}), ...(generatedVideo ? { generated_video: generatedVideo } : {}) });
             result = { success: true, contentItems: [{ type: "inputText", text: encoded }] };
           } catch (error: any) {
             const code = error instanceof LocalCodexError ? error.code : "LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN";

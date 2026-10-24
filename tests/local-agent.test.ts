@@ -197,6 +197,49 @@ test("a native start failure reports definite failure before any turn and clears
     assert.equal(lostCreate.calls.filter(c => c.url.endsWith("/start")).length, 0);
   } finally { await lostCreate.clean(); }
 });
+test("a completed workflow child stops its heartbeat before native shutdown and terminal settlement", async t => {
+  const f = await fixture();
+  t.mock.timers.enable({ apis: ["setInterval"] });
+  try {
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    const controller = f.controller as any, journal = await controller.state(), record = journal.sessions[0];
+    const childId = randomUUID(), childSession = randomUUID(), runId = randomUUID();
+    const active = { abort: new AbortController(), done: Promise.resolve(), children: new Set(), browsers: new Set() };
+    let closing = false, lateChecks = 0, finishes = 0;
+    const request = f.io.request;
+    f.io.request = async (url, options) => {
+      if (!url.includes("/" + childId + "/")) return request(url, options);
+      if (url.endsWith("/start")) return { status: 200, body: {
+        runtime: { pinned_version: localRuntimeLock.version, windows_x64_sha256: localRuntimeLock.sha256 },
+        inference_path: "/v1/desktop-inference/v1", skills: [], model: "synthetic-native", effort: "max",
+        prompt: "Verify the completed native child", role_instructions: "Read the actual local checklist",
+        credential: { token: "ONLY_THE_TRUSTED_NATIVE_RUNTIME_CAN_RECEIVE_THIS_TOKEN", expires_at: new Date(Date.now() + 300000).toISOString() },
+      } };
+      if (url.endsWith("/heartbeat")) {
+        if (closing) lateChecks++;
+        return { status: 200, body: { state: closing ? "finished" : "running", status: closing ? "succeeded" : "running" } };
+      }
+      assert.ok(url.endsWith("/finish")); finishes++;
+      assert.equal(active.abort.signal.aborted, false, "Completed child must not revoke the parent workflow");
+      assert.equal((options!.body as any).status, "completed");
+      return { status: 200, body: { status: "succeeded" } };
+    };
+    f.pending(async () => {
+      f.runtimes.at(-1)!.close = async () => {
+        closing = true; t.mock.timers.tick(10000);
+        await new Promise<void>(resolve => setImmediate(resolve));
+      };
+      return { status: "completed", text: "Verified child", threadId: "native", turnId: "turn", nativeTokenUsage: null };
+    });
+    const operation = { prompt: "Parent workflow", budget: 100000, phase: "native_running" };
+    await controller.executeWorkflowChild(record, operation, active, { task_id: childId, role_key: "fullstack", fields: {
+      device_id: journal.deviceId, local_session_id: childSession, workspace_hash: record.workspaceHash,
+      runtime_version: localRuntimeLock.version, runtime_sha256: localRuntimeLock.sha256,
+    } }, runId, 0, active.abort.signal, async () => {}, async () => {});
+    assert.equal(lateChecks, 0); assert.equal(finishes, 1); assert.equal(active.abort.signal.aborted, false);
+    assert.equal(active.children.size, 0);
+  } finally { t.mock.timers.reset(); await f.clean(); }
+});
 test("an uncertain native result reports unknown and cannot be silently replayed or followed by another local turn", async () => {
   const f = await fixture(); try {
     const s = await f.create(); await f.controller.permission(s.id, "full-access"); f.pending(async () => { throw new Error("Native process lost after command accepted"); });

@@ -1,4 +1,6 @@
 import { DeliveryQuality } from "./delivery-quality";
+import { GeneratedVideos } from "./generated-videos";
+import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X } from "lucide-react";
 import { download } from "./api";
@@ -84,6 +86,7 @@ export function LocalAgentWorkspace() {
   const [sessions, setSessions] = useState<LocalSession[]>([]), [roles, setRoles] = useState<string[]>([]);
   const [selected, setSelected] = useState(""), [role, setRole] = useState("fullstack"), [mode, setMode] = useState<Permission>("workspace-write");
   const [prompt, setPrompt] = useState(""), [budget, setBudget] = useState("5"), [pending, setPending] = useState(false), [error, setError] = useState("");
+  const [videoTask, setVideoTask] = useState("");
   const refresh = useRef<() => Promise<void>>(async () => {}), end = useRef<HTMLDivElement>(null), messages = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let alive = true, timer: ReturnType<typeof setTimeout> | undefined, loading = false;
@@ -109,6 +112,11 @@ export function LocalAgentWorkspace() {
     return () => { alive = false; off(); clearInterval(poll); if (timer) clearTimeout(timer); };
   }, [w.tenant, w.project]);
   const session = sessions.find(s => s.id === selected);
+  const videoTaskIds = [...new Set([session?.task?.task_id, ...(session?.events ?? []).slice().reverse()
+    .filter(event => event.kind === "local.company-tool.completed").map(event => event.value.generated_video?.task_id)]
+    .filter((id): id is string => typeof id === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)))];
+  const currentVideoTask = videoTaskIds.includes(videoTask) ? videoTask : videoTaskIds[0];
+  useEffect(() => { setVideoTask(""); }, [session?.id, session?.task?.task_id]);
   useEffect(() => { if (session?.permission) setMode(session.permission); }, [session?.id, session?.permission]);
   const lastStart = session?.events.map(e => e.kind).lastIndexOf("turn/started") ?? -1;
   const stream = session?.busy ? session.events.slice(Math.max(0, lastStart)).filter(e => e.kind === "item/agentMessage/delta").map(e => e.value.delta ?? "").join("") : "";
@@ -137,11 +145,13 @@ export function LocalAgentWorkspace() {
     catch (e) { setError((e as Error).message); }
     finally { setPending(false); await refresh.current(); }
   };
-  const send = () => {
+  const send = (form: FormData) => {
     const amount = Number(budget), micros = Math.round(amount * 1_000_000);
     if (!session || !prompt.trim() || !Number.isFinite(amount) || micros < 10000 || micros > 10000000000) return;
-    const text = prompt.trim(); setPrompt("");
-    void act("send", { id: session.id, prompt: text, budget: micros });
+    try {
+      const text = session.role === "video-motion" ? videoGenerationBrief(prompt.trim(), form) : prompt.trim(); setPrompt("");
+      void act("send", { id: session.id, prompt: text, budget: micros });
+    } catch (failure) { setError((failure as Error).message); }
   };
   return <div className="local-agent-workspace">
     <header className="local-agent-heading"><div><div className="eyebrow">COPYPASTE · ON YOUR COMPUTER</div>
@@ -167,6 +177,12 @@ export function LocalAgentWorkspace() {
           {session.messages.map((m, i) => <article key={i} className={`local-agent-message ${m.role}`}><small>{m.role === "user" ? t("你", "You") : "COPYPASTE"}{m.status ? " · " + m.status : ""}</small><p>{m.text || t("本次未返回文字。請檢查工作記錄。", "No text was returned. Review the activity log.")}</p></article>)}
           {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
           {videos.length > 0 && <LocalVideoJobs key={session.id} jobs={videos}/>}
+          {session.role === "video-motion" && currentVideoTask && <>
+            {videoTaskIds.length > 1 && <label className="local-agent-video-history">{t("影片工作記錄", "Video task history")}<select value={currentVideoTask} onChange={e => setVideoTask(e.target.value)}>
+              {videoTaskIds.map((id, index) => <option key={id} value={id}>{index === 0 ? t("目前工作", "Current task") : t("較早工作", "Earlier task")} · {id.slice(0, 8)}</option>)}
+            </select></label>}
+            <GeneratedVideos key={w.base + currentVideoTask} base={w.base} taskId={currentVideoTask} />
+          </>}
           {workflows.map(flow => <article className="local-agent-message assistant local-workflow-progress" key={flow.run_id}
             aria-label={t("本機流程進度", "Local workflow progress")}>
             <small>{t("本機流程", "Local workflow")} · v{flow.version}</small>
@@ -184,7 +200,8 @@ export function LocalAgentWorkspace() {
           onClick={() => void download(`${w.base}/assets/${artifact.id}/download?version=${artifact.version}`, artifact.name, w.tenant).catch(e => setError(e.message))}><Download size={14}/><span>{artifact.name} · v{artifact.version}</span></button>)}</div>}
         {session.events.length > 0 && <details className="local-agent-activity"><summary><Terminal size={14}/>{t("本機與公司工具記錄", "Local and company tool activity")}</summary><pre>{session.events.slice(-40).filter(e => !e.kind.includes("agentMessage/delta")).map(e => `${e.kind}\n${JSON.stringify(e.value, null, 2)}`).join("\n\n")}</pre></details>}
         {session.uncertain && <div role="status" className="local-agent-alert">{t("上次本機操作的結果需要核對，系統不會重新執行。請檢查本機檔案與費用記錄。", "The last local outcome needs review and will not be replayed. Check local files and the billing record.")}</div>}
-        <form className="local-agent-composer" onSubmit={e => { e.preventDefault(); send(); }}><textarea aria-label={t("本機工作要求", "Local task")} placeholder={t("描述你想完成的工作…", "What would you like to get done?")} maxLength={30000} value={prompt} onChange={e => setPrompt(e.target.value)} disabled={session.revoked || session.uncertain || session.busy || pending}/>
+        <form className="local-agent-composer" onSubmit={e => { e.preventDefault(); send(new FormData(e.currentTarget)); }}><textarea aria-label={t("本機工作要求", "Local task")} placeholder={t("描述你想完成的工作…", "What would you like to get done?")} maxLength={30000} value={prompt} onChange={e => setPrompt(e.target.value)} disabled={session.revoked || session.uncertain || session.busy || pending}/>
+          {session.role === "video-motion" && <VideoBriefFields compact disabled={session.revoked || session.uncertain || session.busy || pending} />}
           <div><label>{t("本次預算上限 HK$", "Turn budget HK$")}<input type="number" aria-label="Turn budget HK$" min="0.01" max="10000" step="0.01" value={budget} onChange={e => setBudget(e.target.value)}/></label>
             {session.busy ? <button type="button" className="button" onClick={() => void native("stop", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><Square size={14}/>{t("停止", "Stop")}</button>
               : session.retryable ? <><button type="button" className="button" disabled={pending} onClick={() => void act("retry", { id: session.id })}>{session.phase === "settling" ? t("同步執行結果", "Sync result") : t("重試連線", "Retry connection")}</button>{session.phase !== "settling" && <button type="button" className="button" disabled={pending} onClick={() => void act("stop", { id: session.id })}>{t("取消待處理工作", "Cancel pending work")}</button>}</>

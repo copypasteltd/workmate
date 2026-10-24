@@ -404,6 +404,12 @@ export class LocalAgentController {
     let runtime: LocalAgentRuntime | undefined, accepted = false, admitted = false;
     let browser: LocalBrowserSession | undefined;
     let heartbeat: ReturnType<typeof setInterval> | undefined, heartbeatRun: Promise<unknown> | undefined;
+    let stoppingHeartbeat = false;
+    const stopHeartbeat = async () => {
+      stoppingHeartbeat = true;
+      if (heartbeat) clearInterval(heartbeat);
+      await heartbeatRun;
+    };
     const authorize = async () => {
       await assertOwner(); await authorizeParent();
       if (signal.aborted) throw new LocalAgentError("LOCAL_WORKFLOW_INTERRUPTED");
@@ -454,22 +460,26 @@ export class LocalAgentController {
       if (signal.aborted) throw new LocalAgentError("LOCAL_WORKFLOW_INTERRUPTED");
       await runtime.start({ token: started.credential.token, expiresAt: new Date(started.credential.expires_at).getTime() });
       heartbeat = setInterval(() => {
-        if (heartbeatRun) return;
+        if (heartbeatRun || stoppingHeartbeat) return;
         heartbeatRun = authorize().catch(() => { active.abort.abort(); shutdownChild(); }).finally(() => { heartbeatRun = undefined; });
       }, 10000);
       await authorize(); checkpoint.phase = "native_running"; await this.persist(); accepted = true;
       const result = await runtime.turn(started.role_instructions + "\n\nCustomer workflow step:\n" + started.prompt, signal);
+      // A completed child must no longer authorize as a running execution.
+      // Drain any in-flight check before its company receipt becomes terminal.
+      await stopHeartbeat();
       checkpoint.report = { status: result.status, output: result.text.slice(0, 100000), thread_id: result.threadId, turn_id: result.turnId };
       checkpoint.phase = "settling"; await this.persist(); await runtime.close(); await finish();
     } catch (error) {
+      await stopHeartbeat();
       if (admitted && !checkpoint.report) {
         checkpoint.report = { status: accepted ? "unknown" : "failed", output: "", thread_id: "unknown", turn_id: "unknown" };
         checkpoint.phase = "settling"; await this.persist(); await runtime?.close().catch(() => {}); await finish().catch(() => {});
       }
       throw error;
     } finally {
-      if (heartbeat) clearInterval(heartbeat); signal.removeEventListener("abort", shutdownChild);
-      await heartbeatRun; await runtime?.close(); if (runtime) active.children.delete(runtime);
+      await stopHeartbeat(); signal.removeEventListener("abort", shutdownChild);
+      await runtime?.close(); if (runtime) active.children.delete(runtime);
       await browser?.close(); if (browser) active.browsers.delete(browser);
     }
   }
