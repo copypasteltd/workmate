@@ -1,5 +1,71 @@
 # Workmate · CopyPaste Web
 
+<!-- audio-authorizations-stage85 -->
+
+Review proposals, approve use and inspect results inside the original cloud Codex task.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-web'
+npm ci
+npm run dev
+```
+
+Start the backend first, then open `http://localhost:4317`. Use `npm run build` for the static build. Sign in with email/OTP and select a workspace/project.
+
+### Use the current workflow
+
+1. Sign in with email/OTP, select a workspace/project and the **Video & motion designer** preset (1.4.0 with speech-production 1.2.0). Describe the requested script or attach an authorized immutable WAV/MP3 source. Web and Extension run cloud Codex. In Desktop, select a local folder and explicitly grant the desired native permission; full access requires native confirmation and can be revoked.
+2. The original Codex task proposes exact copy or source version/hash/duration, language/verified voice/speed, intended use and a frozen company quote. The **Confirm speech or transcription** card starts unchecked, with blank rights-reference and use fields. Review the exact proposal and price, enter your own authorization reference and use, check the box and choose **Confirm and continue**, or decline. Neither model-supplied rights fields nor full local permission signs this operation for you.
+3. The original tool waits for at most five minutes without an audio POST, an audio-job reserve, extra provider capacity or a second AI turn. Original task reasoning already used remains chargeable. After customer confirmation, current session, source, role/skill, task lease, permission, capability, shared budget and capacity are rechecked before the one audio operation. Stop, expiry, decline and lost authority block dispatch. Withdrawal blocks later delivery/downloads; a submitted unknown or actual fee remains recorded. An unknown POST is never automatically replayed.
+4. Open **Speech and subtitles → Review audio and subtitles** to play/save the retained authenticated WAV or the original transcript/timing. Byte size and SHA-256 are checked. Manual subtitle edits create immutable versions, require explicit replacement times and preserve old versions without an AI call. Missing service timestamps remain missing. A stale version conflicts while keeping the edit.
+5. In separately authenticated Admin with MFA, **Provider control** shows audio operations and customer-authorization records. The request-read permission controls scoped metadata, cost-read separately controls fees, and content-body-read plus recent MFA permits audited sensitive confirmation/original-body access. Admin has no action to confirm for a customer. Body erasure on original-task deletion preserves minimal hashes/status/fee facts.
+
+Before upgrading clients, apply **SQL102** with backend npm run db:migrate. SQL001–101 and all four published original/audio OpenAPI files remain unchanged; audio-authorizations-openapi.json is an additive current contract. Upgrade cancels old unsubmitted audio at zero and retains dispatched unknown cost holds. Completed legacy files keep their exact bytes and are labelled as legacy model declarations; migration never invents a human confirmation.
+
+Keep company gateway origins, credentials, exact speech/transcription aliases, verified voice/locale lists, positive character/millisecond tariffs and timestamp support on the backend. Audio capacity begins at zero and needs the existing independently approved policy. Normal demo does not automatically enable this explicit synthetic audio fixture. All AI requests use the company OpenAI-compatible server; text, image, video and audio share the task budget.
+
+Desktop preserves CopyPaste blue/cream, typography and both themes. It has **no Electron frame/menu and no visible vertical or horizontal scrollbar rails**. Long content wraps; real wheel/Home/End/Tab, last-action focus and truthful task/upload/media progress remain. The actual packaged OS window was checked at 1440×980, 1280×800 and 800×600, including the new customer form. Extension remains an actual native right SIDE_PANEL with chat, attachments and authorized uploads, without requiring Desktop.
+
+Observed checks: platform **1001**, preserving all **988** prior cases across 78 files/20 isolated native database batches; audio/gateway/upgrade **56**; compatibility **80**; client tests **124**; actual Web/Admin/Side Panel **13**; packaged local Desktop **41**. All selected source hashes match exactly; actual media and owned-process cleanup are retained. The current catalog has 32 package versions/29 Skill kinds; all 31 published packages and the previous role 1.3.0 remain intact. Failed attempts keep their original outcomes.
+
+Synthetic tone, fixed ASR/reasoning and native-dialog decisions prove this bounded flow only. Independent logged-in attestation is not proof of copyright ownership. Live voice/Cantonese quality, managed audio verification/publication/rollback, unknown-POST external evidence/independent settlement/recovery, signed installers, all professional roles and complete Codex Desktop parity remain open. Original **102 REQ / 102 TC: 83 partial, 19 unproven, 0 fully accepted; G01–G10 open**.
+
+
+[Design and boundaries](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/85-audio-rights-and-administration.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/audio-authorizations-checkpoint.json) · [Current additive API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/audio-authorizations-openapi.json)
+
+~~~mermaid
+flowchart LR
+    Login[Email / company / project] --> Role[Versioned role and Skill]
+    Role --> Cloud[Web / Side Panel cloud Codex]
+    Role --> Local[Desktop local Codex]
+    Cloud --> Proposal[Immutable proposal / exact quote]
+    Local --> Proposal
+    Proposal --> Customer[Current customer session / explicit confirmation]
+    Customer --> Gate[Current source / permission / budget / capacity]
+    Gate --> Company[Company audio API / one submission]
+    Company --> Assets[Private original / actual timing / versions]
+    Customer --> Withdraw[Decline / Stop / withdraw]
+    Withdraw --> Block[Block dispatch or delivery / retain real fees]
+    Admin[Scoped Admin / audited content / separate costs] --> Proposal
+~~~
+
+Actual authenticated UI; unedited screenshots and observed-time recordings. Company models/media and native dialog decisions are explicit fixtures.
+
+![Actual customer control](assets/screenshots/workmate-audio-08-customer-confirmation-ready.png)
+
+![Actual retained state](assets/screenshots/workmate-audio-08-audio-compact-zh-dark.png)
+
+![Recorded interaction](assets/screenshots/workmate-audio-08-audio-production.gif)
+
+[Original MP4](assets/screenshots/workmate-audio-08-audio-production.mp4)
+
+<details>
+<summary>Previous delivery details and historical evidence</summary>
+
 <!-- audio-production-stage84 -->
 
 Review, play and save speech and revise subtitles inside cloud Codex tasks.
@@ -565,6 +631,8 @@ flowchart LR
 
 </details>
 
+
+</details>
 
 </details>
 
