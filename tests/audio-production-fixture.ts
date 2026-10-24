@@ -6,6 +6,30 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import { generatedVideoProvider } from "./generated-video-fixture.js";
 import { hash } from "../src/lib.js";
+import { videoOK, type VideoClient, type VideoSystem } from "./desktop-video-fixture.js";
+import { setTimeout as delay } from "node:timers/promises";
+
+/** Test-only customer. It uses the public authenticated, CSRF/PKCE-protected
+ * HTTP action; no product auto-confirm option or privileged consent insert. */
+export async function withAudioCustomerConfirmation<T>(s: VideoSystem, client: VideoClient, base: string,
+  taskId: string | undefined, operation: () => Promise<T>, specificationHash?: string) {
+  let settled: { value: T } | { error: unknown } | undefined;
+  const running = operation().then(value => { settled = { value }; }, error => { settled = { error }; });
+  const deadline = Date.now() + 90000;
+  for (;;) {
+    if (settled) { if ("error" in settled) throw settled.error; return settled.value; }
+    assert.ok(Date.now() < deadline, "Explicit test customer confirmation deadline");
+    const result = await videoOK(s, client, "GET", base + "/audio-authorizations?" +
+      new URLSearchParams({ limit: "100", ...(taskId ? { task_id: taskId } : {}) }));
+    for (const row of result.items) if (row.state === "pending" && (!specificationHash || row.specification_hash === specificationHash))
+      await videoOK(s, client, "POST", base + "/audio-authorizations/" + row.id + "/confirm", {
+        expected_revision: row.revision, specification_hash: row.specification_hash, quoted_micros: row.quoted_micros,
+        confirm_authorized_use: true, rights_reference: "Owned explicit synthetic test fixture",
+        purpose: "A separate logged-in test customer explicitly approves this exact operation",
+      }, "explicit-test-customer-" + row.id);
+    await Promise.race([running, delay(30)]);
+  }
+}
 
 export async function audioProviderFixture(directory: string) {
   const text = await generatedVideoProvider(directory);

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-24T13:50:30.381389+00:00",
+  "generated_at": "2026-10-24T16:44:27.613036+00:00",
   "contract": "actual_fastify_route_inventory",
   "not_full_design_openapi": true,
   "routes": [
@@ -62,6 +62,14 @@
     {
       "method": "POST",
       "path": "/v1/admin/access/roles"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/audio-authorizations"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/audio-authorizations/:authorization/content"
     },
     {
       "method": "GET",
@@ -1317,6 +1325,26 @@
     },
     {
       "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-authorizations"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-authorizations/:authorization"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-authorizations/:authorization/confirm"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-authorizations/:authorization/decline"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-authorizations/:authorization/withdraw"
+    },
+    {
+      "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/audio-jobs"
     },
     {
@@ -1899,9 +1927,9 @@
       "when": "DEMO_MODE=true"
     }
   ],
-  "additive_inventory_validation": {
-    "source": "dev/copypaste-delivery/evidence/audio-production-ui-03.json",
-    "sha256": "21e1d5590a84045e78d2b94283a60e7b140933a93ac35dd59d295782d29d7a74",
-    "scope": "Actual configured-services app before this descriptive refresh. All old configured and conditional routes are retained. Full platform qualification remains separate."
+  "candidate_extension": {
+    "operations": 7,
+    "source": "src/audio-production-routes.ts",
+    "scope": "Retains all previously observed routes; new declarations require actual current-app validation in the stage 85 checkpoint."
   }
 }

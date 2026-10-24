@@ -39,7 +39,7 @@ export const audioProductionToolSchema = {
     locale: { type: "string", enum: ["en", "zh-HK", "yue-HK"] },
     rights: { type: "object", properties: { authorized: { type: "boolean", enum: [true] },
       reference: { type: "string" }, purpose: { type: "string" } }, required: ["authorized", "reference", "purpose"], additionalProperties: false },
-    text: { type: "string", description: "Speech only: exact customer-approved copy, at most 4096 characters." },
+    text: { type: "string", description: "Speech only: exact proposed copy, at most 4096 characters. The customer must separately confirm in the client before dispatch." },
     voice: { type: "string", description: "Speech only: explicitly selected verified company voice." },
     speed: { type: "number", description: "Speech only: rate between 0.25 and 4." },
     source: { type: "object", properties: { asset_id: { type: "string" }, version: { type: "integer" } },

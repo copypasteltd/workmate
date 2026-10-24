@@ -1,10 +1,11 @@
 import { before, beforeEach, after, test } from "node:test";
 import assert from "node:assert/strict";
+import pg from "pg";
 import { randomUUID } from "node:crypto";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { isolatedTestEnvironment } from "./native-test-environment.js";
-import { audioProviderFixture } from "./audio-production-fixture.js";
+import { audioProviderFixture, withAudioCustomerConfirmation } from "./audio-production-fixture.js";
 import { nativeVideoFixture, startNativeVideo, videoOK, videoCall, videoFinish } from "./desktop-video-fixture.js";
 import { buildApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
@@ -12,9 +13,10 @@ import { AudioProduction } from "../src/audio-production.js";
 import { taskProviderBudgetReceipt } from "../src/provider-budgets.js";
 import { projectAccess } from "../src/access.js";
 import { saveAsset } from "../src/storage.js";
-import { hash } from "../src/lib.js";
+import { canonical, hash } from "../src/lib.js";
 import { desktopRuntime } from "../src/desktop-runtime.js";
 import { videoAdmin, videoAdminCall } from "./generated-video-admin-fixture.js";
+import { setTimeout as delay } from "node:timers/promises";
 
 let owned: Awaited<ReturnType<typeof isolatedTestEnvironment>>, provider: Awaited<ReturnType<typeof audioProviderFixture>>,
   s: Awaited<ReturnType<typeof buildApp>>, audio: AudioProduction;
@@ -54,10 +56,13 @@ async function fixture() {
     const current = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [task.id])).rows[0];
     assert.equal(current.fencing_token, task.fencing_token); assert.equal(current.status, "running");
   };
-  const prepare = (input: unknown = speech, call = "audio_" + randomUUID()) => audio.prepare(task, task.fencing_token, input, call, authorize);
+  const prepareUnconfirmed = (input: unknown = speech, call = "audio_" + randomUUID(), signal?: AbortSignal) =>
+    audio.prepare(task, task.fencing_token, input, call, authorize, signal);
+  const prepare = (input: unknown = speech, call = "audio_" + randomUUID()) =>
+    withAudioCustomerConfirmation(s, f.web, f.base, task.id, () => prepareUnconfirmed(input, call), hash(canonical(input)));
   const execute = (id: string, signal?: AbortSignal) => audio.execute(task, id, authorize, signal);
   const read = (id: string) => audio.read(actor, f.tenant, f.project, id);
-  return { ...f, ...start, task, actor, authorize, prepare, execute, read };
+  return { ...f, ...start, task, actor, authorize, prepare, prepareUnconfirmed, execute, read };
 }
 async function source(f: Awaited<ReturnType<typeof fixture>>, options: { bytes?: Buffer; task?: boolean } = {}) {
   return s.db.tx(async tx => {
@@ -75,6 +80,223 @@ async function assetBytes(asset: any) {
   const v = (await s.db.control.query("SELECT storage_key FROM asset_versions WHERE asset_id=$1 AND version=$2", [asset.id, asset.version])).rows[0];
   return s.storage.get(v.storage_key);
 }
+async function pendingAuthorization(f: Awaited<ReturnType<typeof fixture>>, input: unknown = speech, signal?: AbortSignal) {
+  const result = f.prepareUnconfirmed(input, "pending_" + randomUUID(), signal).then(value => ({ value }), error => ({ error }));
+  const deadline = Date.now() + 10000;
+  for (;;) {
+    const rows = await videoOK(s, f.web, "GET", f.base + "/audio-authorizations?task_id=" + f.task.id);
+    const request = rows.items.find((row: any) => row.state === "pending" && row.specification_hash === hash(canonical(input)));
+    if (request) return { request, result };
+    assert.ok(Date.now() < deadline, "A current explicit customer proposal is visible"); await delay(20);
+  }
+}
+const decision = (row: any) => ({ expected_revision: row.revision, specification_hash: row.specification_hash, quoted_micros: row.quoted_micros });
+const humanConfirmation = (row: any) => ({ ...decision(row), confirm_authorized_use: true,
+  rights_reference: "Customer-owned campaign and explicitly synthetic source", purpose: "This customer's exact independent campaign use" });
+async function confirmedResult(result: Promise<any>) {
+  const outcome = await result; if ("error" in outcome) throw outcome.error; return outcome.value;
+}
+
+test("model audio declarations cannot dispatch or reserve audio before an independent customer confirms exact contents and quote", async () => {
+  const f = await fixture(), count = provider.calls.length, pending = await pendingAuthorization(f), row = pending.request;
+  assert.equal((await receipt(f.task)).requests, 0); assert.equal(provider.calls.length, count);
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM ai_audio_jobs WHERE task_id=$1", [f.task.id])).rows[0].n, 0);
+  await assert.rejects(audio.authorizations.decide(f.actor, f.tenant, f.project, row.id, "confirm", humanConfirmation(row), randomUUID()), /customer session/);
+  for (const [patch, status] of [
+    [{ confirm_authorized_use: false }, 400], [{ rights_reference: "" }, 400],
+    [{ purpose: "\u0000invalid" }, 400], [{ quoted_micros: "1" }, 409], [{ specification_hash: "f".repeat(64) }, 409],
+  ] as const) assert.equal((await videoCall(s, f.web, "POST", `${f.base}/audio-authorizations/${row.id}/confirm`, { ...humanConfirmation(row), ...patch })).status, status);
+  const confirmed = await videoOK(s, f.web, "POST", `${f.base}/audio-authorizations/${row.id}/confirm`, humanConfirmation(row));
+  assert.equal(confirmed.state, "confirmed"); assert.equal(confirmed.confirmation.rights_reference, humanConfirmation(row).rights_reference);
+  const job = await confirmedResult(pending.result); assert.equal(job.authorization_id, row.id);
+  assert.equal(job.authorization_basis, "independent_customer_session"); assert.equal(provider.calls.length, count);
+  await f.execute(job.id); assert.equal(provider.calls.length, count + 1);
+});
+
+test("customer confirmation requires CSRF/current session and cannot be forged by a privileged model-style update", async () => {
+  const f = await fixture(), abort = new AbortController(), p = await pendingAuthorization(f, speech, abort.signal);
+  try {
+    const forged = await s.app.inject({ method: "POST", url: `${f.base}/audio-authorizations/${p.request.id}/confirm`,
+      headers: { cookie: f.web.cookie!, "Idempotency-Key": randomUUID() }, payload: humanConfirmation(p.request) });
+    assert.equal(forged.statusCode, 403);
+    await assert.rejects(s.db.tx(async tx => {
+      await tx.query("SELECT set_config('app.task_id',$1,true)", [f.task.id]);
+      await tx.query(`UPDATE audio_authorizations SET state='confirmed',confirmed_by=actor_id,
+        confirmed_session_id=(SELECT id FROM sessions WHERE user_id=actor_id AND audience='user' LIMIT 1),
+        confirmed_at=clock_timestamp(),confirmation=$2,confirmation_hash=$3,revision=revision+1 WHERE id=$1`,
+      [p.request.id, { confirm_authorized_use: true, rights_reference: "Forged model claim", purpose: "This is not an independent session action" }, "a".repeat(64)]);
+    }, f.tenant, true, f.c.id), /independent current customer session/);
+  } finally { abort.abort(); assert.ok("error" in await p.result); }
+  assert.equal((await audio.authorizations.read(f.actor, f.tenant, f.project, p.request.id)).state, "cancelled");
+});
+
+test("customer decline terminates the waiting tool without audio spend and cannot be revived by model replay", async () => {
+  const f = await fixture(), count = provider.calls.length, p = await pendingAuthorization(f);
+  const denied = await videoOK(s, f.web, "POST", `${f.base}/audio-authorizations/${p.request.id}/decline`, decision(p.request));
+  assert.equal(denied.state, "declined"); assert.ok("error" in await p.result); await assert.rejects(f.prepareUnconfirmed());
+  assert.equal(provider.calls.length, count); assert.equal((await receipt(f.task)).requests, 0);
+  await assert.rejects(s.db.control.query("UPDATE audio_authorizations SET state='pending',revision=revision+1 WHERE id=$1", [p.request.id]), /cannot be restored/);
+});
+
+test("confirmation retries retain one immutable decision and return current withdrawn state instead of stale success", async () => {
+  const f = await fixture(), p = await pendingAuthorization(f), b = humanConfirmation(p.request), key = randomUUID(), count = provider.calls.length;
+  const first = await videoOK(s, f.web, "POST", `${f.base}/audio-authorizations/${p.request.id}/confirm`, b, key);
+  const job = await confirmedResult(p.result);
+  const same = await videoOK(s, f.web, "POST", `${f.base}/audio-authorizations/${p.request.id}/confirm`, b, key);
+  assert.equal(same.confirmation_hash, first.confirmation_hash); assert.equal(same.revision, first.revision);
+  const withdrawn = await videoOK(s, f.c, "POST", `${f.base}/audio-authorizations/${p.request.id}/withdraw`, decision(first));
+  const replayed = await videoOK(s, f.web, "POST", `${f.base}/audio-authorizations/${p.request.id}/confirm`, b, key);
+  assert.equal(withdrawn.state, "withdrawn"); assert.equal(replayed.state, "withdrawn");
+  const stopped = await f.execute(job.id); assert.equal(stopped.state, "cancelled"); assert.equal(stopped.actual_micros, "0");
+  assert.equal(provider.calls.length, count); assert.equal((await receipt(f.task)).uncertain, false);
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audio_authorization_events WHERE authorization_id=$1 AND state='confirmed'", [p.request.id])).rows[0].n, 1);
+});
+
+test("withdrawing during an audio POST retains the actual late charge and blocks every delivery", async () => {
+  const f = await fixture(), job = await f.prepare();
+  let arrived!: () => void, release!: () => void;
+  const waiting = new Promise<void>(r => arrived = r), barrier = new Promise<void>(r => release = r);
+  provider.state.beforeReply = async () => { arrived(); await barrier; };
+  const executing = f.execute(job.id);
+  try {
+    await waiting;
+    const row = await videoOK(s, f.web, "GET", f.base + "/audio-authorizations/" + job.authorization_id);
+    await videoOK(s, f.web, "POST", `${f.base}/audio-authorizations/${row.id}/withdraw`, decision(row));
+    assert.equal((await f.read(job.id)).state, "unknown");
+  } finally { release(); }
+  const done = await executing; assert.equal(done.state, "completed"); assert.equal(done.actual_micros, job.quoted_micros);
+  assert.equal(done.delivery_state, "blocked"); assert.deepEqual(done.assets, []); assert.equal((await receipt(f.task)).uncertain, false);
+});
+
+test("withdrawal after task completion blocks original previews/downloads without rewriting original cost or bytes", async () => {
+  const f = await fixture(), job = await f.prepare(), done = await f.execute(job.id);
+  await videoOK(s, f.c, "POST", f.url + "/finish", videoFinish);
+  const row = await videoOK(s, f.web, "GET", f.base + "/audio-authorizations/" + job.authorization_id);
+  await videoOK(s, f.web, "POST", `${f.base}/audio-authorizations/${row.id}/withdraw`, decision(row));
+  assert.equal((await f.read(job.id)).actual_micros, done.actual_micros); assert.deepEqual((await f.read(job.id)).assets, []);
+  assert.notEqual((await videoCall(s, f.c, "GET", `${f.base}/audio-jobs/${job.id}/preview?kind=audio`)).status, 200);
+  assert.notEqual((await videoCall(s, f.c, "GET", `${f.base}/assets/${done.assets[0].id}/download?version=1`)).status, 200);
+  assert.deepEqual(await assetBytes(done.assets[0]), provider.bytes);
+});
+
+test("revoked confirming session blocks dispatch even while another current native session still owns the task", async () => {
+  const f = await fixture(), job = await f.prepare(), count = provider.calls.length;
+  const row = (await s.db.control.query("SELECT * FROM audio_authorizations WHERE id=$1", [job.authorization_id])).rows[0];
+  await s.db.control.query("UPDATE sessions SET revoked_at=clock_timestamp() WHERE id=$1", [row.confirmed_session_id]);
+  await assert.rejects(f.execute(job.id), /current authority/); assert.equal(provider.calls.length, count);
+  const stopped = await f.read(job.id); assert.equal(stopped.state, "cancelled"); assert.equal(stopped.actual_micros, "0");
+});
+
+test("source quarantine before human confirmation rejects approval and terminates waiting without dispatch", async () => {
+  const f = await fixture(), input = await source(f), count = provider.calls.length, p = await pendingAuthorization(f, transcription(input));
+  await s.db.control.query("UPDATE assets SET state='quarantined' WHERE id=$1", [input.id]);
+  assert.equal((await videoCall(s, f.web, "POST", `${f.base}/audio-authorizations/${p.request.id}/confirm`, humanConfirmation(p.request))).status, 409);
+  assert.ok("error" in await p.result); assert.equal(provider.calls.length, count); assert.equal((await receipt(f.task)).requests, 0);
+});
+
+test("audio authorization metadata, customer action and independently audited Admin bodies respect separate owner/project/cost scopes", async () => {
+  const f = await fixture(), other = await fixture(), abort = new AbortController(), p = await pendingAuthorization(f, speech, abort.signal);
+  try {
+    await s.db.control.query("INSERT INTO memberships(tenant_id,user_id,role,status) VALUES($1,$2,'member','active')", [f.tenant, other.c.id]);
+    await s.db.control.query("INSERT INTO project_members(tenant_id,project_id,user_id,role) VALUES($1,$2,$3,'editor')", [f.tenant, f.project, other.c.id]);
+    assert.deepEqual((await videoOK(s, other.c, "GET", f.base + "/audio-authorizations")).items, []);
+    assert.equal((await videoCall(s, other.c, "POST", `${f.base}/audio-authorizations/${p.request.id}/confirm`, humanConfirmation(p.request))).status, 404);
+    const reader = await videoAdmin(s, ["admin.ai.requests.read"], "project", f.project);
+    const list = await videoAdminCall(s, reader, "GET", "/v1/admin/ai/audio-authorizations?task_id=" + f.task.id);
+    assert.equal(list.status, 200); assert.equal(list.data.items[0].cost, null);
+    for (const body of ["proposal", "confirmation", "specification", "source_probe"]) assert.equal(body in list.data.items[0], false);
+    assert.equal((await videoAdminCall(s, reader, "GET", `/v1/admin/ai/audio-authorizations/${p.request.id}/content`)).status, 403);
+    const bodyReader = await videoAdmin(s, ["admin.ai.requests.read", "admin.content.body.read"], "project", f.project);
+    const body = await videoAdminCall(s, bodyReader, "GET", `/v1/admin/ai/audio-authorizations/${p.request.id}/content`);
+    assert.equal(body.status, 200); assert.deepEqual(body.data.proposal, speech); assert.deepEqual(body.data.confirmation, {});
+    assert.equal("quoted_micros" in body.data, false);
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audit_log WHERE action='admin.audio.authorization.content.read' AND target=$1", [p.request.id])).rows[0].n, 1);
+  } finally { abort.abort(); assert.ok("error" in await p.result); }
+});
+
+test("an elapsed immutable proposal expires without an audio job and cannot be approved after its real database deadline", async () => {
+  const template = await fixture(), original = await template.prepare(), f = await fixture(), count = provider.calls.length;
+  // Represent a genuinely old persisted proposal at INSERT; no trigger is
+  // disabled, published fact updated, fake clock or product timeout bypass.
+  const expired = await s.db.tx(async tx => {
+    await tx.query("SELECT set_config('app.task_id',$1,true)", [f.task.id]);
+    return (await tx.query(`INSERT INTO audio_authorizations(tenant_id,project_id,task_id,actor_id,actor_auth_version,
+      private_owner,origin_fencing,origin_attempt,data_mode,call_id,capability_version_id,model_alias,gateway_fingerprint,
+      specification,specification_hash,quoted_units,rate_micros,quoted_micros,created_at,expires_at)
+      SELECT $2,$3,$4,$5,$6,$5,$7,$8,data_mode,'explicit_elapsed_fixture',capability_version_id,model_alias,gateway_fingerprint,
+      specification,specification_hash,quoted_units,rate_micros,quoted_micros,clock_timestamp()-interval '5 minutes',
+      clock_timestamp()-interval '1 second' FROM audio_authorizations WHERE id=$1 RETURNING *`,
+    [original.authorization_id, f.tenant, f.project, f.task.id, f.c.id, f.task.actor_auth_version, f.task.fencing_token, f.task.attempt])).rows[0];
+  }, f.tenant, true, f.c.id);
+  await assert.rejects(f.prepareUnconfirmed(), (error: any) => error.code === "AUDIO_AUTHORIZATION_EXPIRED");
+  const row = await videoOK(s, f.web, "GET", f.base + "/audio-authorizations/" + expired.id);
+  assert.equal(row.state, "expired");
+  assert.equal((await videoCall(s, f.web, "POST", `${f.base}/audio-authorizations/${row.id}/confirm`, humanConfirmation(row))).status, 409);
+  assert.equal(provider.calls.length, count); assert.equal((await receipt(f.task)).requests, 0);
+});
+
+test("actual native Stop cancels a waiting authorization without audio fees and task deletion erases confirmed rights bodies but retains hashes", async () => {
+  const f = await fixture(), count = provider.calls.length, p = await pendingAuthorization(f);
+  await videoOK(s, f.c, "POST", f.url + "/cancel", {});
+  assert.ok("error" in await p.result); assert.equal(provider.calls.length, count);
+  const stopped = await videoOK(s, f.web, "GET", f.base + "/audio-authorizations/" + p.request.id);
+  assert.equal(stopped.state, "cancelled"); assert.equal((await receipt(f.task)).requests, 0);
+  const other = await fixture(), job = await other.prepare(); await other.execute(job.id);
+  const before = (await s.db.control.query("SELECT * FROM audio_authorizations WHERE id=$1", [job.authorization_id])).rows[0];
+  await s.db.control.query("UPDATE tasks SET content_state='deleted' WHERE id=$1", [other.task.id]);
+  const after = (await s.db.control.query("SELECT * FROM audio_authorizations WHERE id=$1", [job.authorization_id])).rows[0];
+  assert.deepEqual(after.specification, {}); assert.deepEqual(after.confirmation, {}); assert.ok(after.erased_at);
+  assert.equal(after.confirmation_hash, before.confirmation_hash); assert.equal(after.specification_hash, before.specification_hash);
+  assert.equal((await videoCall(s, other.web, "GET", other.base + "/audio-authorizations/" + job.authorization_id)).status, 404);
+  const eventRows = (await s.db.control.query("SELECT * FROM audio_authorization_events WHERE authorization_id=$1 ORDER BY revision", [job.authorization_id])).rows;
+  await assert.rejects(s.db.control.query("UPDATE audio_authorization_events SET state='confirmed' WHERE authorization_id=$1", [job.authorization_id]), { code: "42501" });
+  const owner = new pg.Client({ connectionString: owned.env.OWNER_DATABASE_URL });
+  try {
+    await owner.connect();
+    await assert.rejects(owner.query("UPDATE audio_authorization_events SET state='confirmed' WHERE authorization_id=$1", [job.authorization_id]), /immutable/i);
+  } finally { await owner.end(); }
+  assert.deepEqual((await s.db.control.query("SELECT * FROM audio_authorization_events WHERE authorization_id=$1 ORDER BY revision", [job.authorization_id])).rows, eventRows);
+});
+
+test("recovery rechecks a renewed task lease after the actual row-lock wait and preserves its confirmed unsubmitted audio", async () => {
+  const f = await fixture(), job = await f.prepare(), count = provider.calls.length;
+  const owner = new pg.Client({ connectionString: owned.env.OWNER_DATABASE_URL });
+  let recovery: Promise<number> | undefined;
+  try {
+    await owner.connect();
+    await s.db.control.query("UPDATE tasks SET lease_until=clock_timestamp()-interval '1 second' WHERE id=$1", [f.task.id]);
+    await owner.query("BEGIN");
+    await owner.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [f.task.id]);
+    // A real concurrent heartbeat renews the lease but has not committed. The
+    // recovery scan observes the previous committed expiry, then waits on it.
+    await owner.query("UPDATE tasks SET lease_until=clock_timestamp()+interval '10 minutes' WHERE id=$1", [f.task.id]);
+    const pid = (await owner.query("SELECT pg_backend_pid() AS pid")).rows[0].pid;
+    recovery = audio.authorizations.recover();
+    void recovery.catch(() => {});
+    const deadline = Date.now() + 10000;
+    for (;;) {
+      const waiting = (await owner.query(`SELECT EXISTS(SELECT 1 FROM pg_stat_activity
+        WHERE wait_event_type='Lock' AND $1::int=ANY(pg_blocking_pids(pid))
+        AND query='SELECT id FROM tasks WHERE id=$1 FOR UPDATE') AS waiting`, [pid])).rows[0].waiting;
+      if (waiting) break;
+      assert.ok(Date.now() < deadline, "Observe the actual recovery row-lock wait before committing the heartbeat");
+      await delay(10);
+    }
+    await owner.query("COMMIT");
+    await recovery;
+    const current = (await s.db.control.query("SELECT * FROM audio_authorizations WHERE id=$1", [job.authorization_id])).rows[0];
+    assert.equal(current.state, "confirmed", "A stale pre-lock expiry cannot cancel a current confirmed operation");
+    assert.equal((await f.read(job.id)).state, "prepared");
+    assert.equal(provider.calls.length, count);
+    const done = await f.execute(job.id);
+    assert.equal(done.state, "completed"); assert.equal(done.delivery_state, "available");
+    assert.equal(provider.calls.length, count + 1);
+  } finally {
+    await owner.query("ROLLBACK").catch(() => {});
+    await owner.end().catch(() => {});
+    await recovery?.catch(() => {});
+  }
+});
 
 test("audio speech persists before network, delivers decoded WAV and settles its company tariff exactly once", async () => {
   const f = await fixture(), count = provider.calls.length, job = await f.prepare();
@@ -307,7 +529,9 @@ test("real local Codex calls audio through company tools, keeps its native task 
   try {
     const session = await controller.create({ tenant: f.tenant, project: f.project }, "video-motion");
     deadline = setTimeout(() => { t.diagnostic("Stopping only this owned native audio session after its 60 second verification deadline"); void controller.stop(session.id).catch(() => {}); }, 60000);
-    await controller.permission(session.id, "full-access"); await controller.send(session.id, "Use the explicit customer-approved synthetic speech request.", 1000000);
+    await controller.permission(session.id, "full-access");
+    await withAudioCustomerConfirmation(s, f.web, f.base, undefined,
+      () => controller.send(session.id, "Propose the explicit synthetic speech request; wait for separate customer confirmation.", 1000000));
     const state = (await controller.list({ tenant: f.tenant, project: f.project })).sessions[0];
     if (state.task?.status !== "succeeded") t.diagnostic(JSON.stringify({ native_state: state, errors: provider.errors }));
     assert.equal(state.task?.status, "succeeded"); assert.ok(doneJob?.id);

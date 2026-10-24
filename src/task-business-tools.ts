@@ -299,7 +299,7 @@ export class TaskBusinessTools {
     if (role.tool_ids.includes("speech.generate.internal")) {
       const audio = new AudioProduction(this.db, this.catalog, this.storage);
       tools.push({ name: "audio_produce",
-        description: "Produce explicitly requested speech or transcribe an authorized exact WAV/MP3 version through independently verified company capabilities and the shared task budget. Rights must be explicitly supplied by the customer. Returns actual audio/transcript/subtitle assets. Never invent timestamps, consent or supplier cost. The same operation is reused; unknown submissions must not be retried. Regeneration requires a new explicitly authorized task.",
+        description: "Propose exact speech or transcription of an authorized fixed WAV/MP3 version. This call waits for the original customer to review exact content and frozen company charge in their authenticated client. Tool rights fields are proposals, not customer confirmation. Do not sign or bypass confirmation; decline, timeout or withdrawal blocks dispatch. The original task budget is shared. Returns real audio/transcript/subtitle assets. Never invent timestamps or supplier cost, retry unknown submissions or change a proposal silently. Regeneration requires a fresh explicitly authorized task.",
         inputSchema: audioProductionToolSchema,
         run: async (args, callId) => {
           const job = await audio.prepare(t, fencing, args, callId, authorize, this.authority.signal);

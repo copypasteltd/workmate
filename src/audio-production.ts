@@ -13,6 +13,7 @@ import { canonical, hash, Problem } from "./lib.js";
 import { internalAIRequest, AIRequestFailure, finishInternalAIRequest, type AIRequestInfo, type AIRequestPermit } from "./internal-ai-gateway.js";
 import { audioProductionRequest, parseAudioTranscription, audioSubtitles, subtitleEdit, validateAudioCues } from "./audio-production-model.js";
 import { validateProductionAudio } from "./audio-production-media.js";
+import { AudioAuthorizations } from "./audio-authorizations.js";
 
 const unavailable = (code = "AUDIO_OPERATION_UNAVAILABLE") => new Problem(409, code, "The audio operation is unavailable under its current authority");
 type Authorize = (tx: Tx) => Promise<unknown>;
@@ -21,7 +22,11 @@ const currentMode = (db: Database) => db.config.DEMO_MODE ? "simulated" : "confi
 /** One original HTTP submission. Unknown OpenAI audio POSTs have no invented
  * lookup/retry protocol. They retain their capacity and original budget hold. */
 export class AudioProduction {
-  constructor(private db: Database, private catalog: Catalog, private storage: Storage) {}
+  readonly authorizations: AudioAuthorizations;
+  constructor(private db: Database, private catalog: Catalog, private storage: Storage) {
+    this.authorizations = new AudioAuthorizations(db, (tx, row, active) =>
+      this.origin(tx, { ...row, kind: row.specification.kind }, active));
+  }
 
   private async source(tx: Tx, job: any) {
     if (!job.source_asset_id) return null;
@@ -37,6 +42,8 @@ export class AudioProduction {
   }
 
   private async origin(tx: Tx, job: any, active = true) {
+    if (job.authorization_id && !(await tx.query("SELECT audio_authorization_available($1,$2) AS ok",
+      [job.authorization_id, active])).rows[0].ok) throw unavailable("AUDIO_AUTHORIZATION_UNAVAILABLE");
     const task = (await tx.query("SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2 AND project_id=$3", [job.task_id, job.tenant_id, job.project_id])).rows[0];
     if (!task || task.created_by !== job.actor_id || task.private_owner !== job.private_owner || task.content_state !== "active"
       || task.cancel_requested || !["running", "succeeded"].includes(task.status)
@@ -62,6 +69,25 @@ export class AudioProduction {
 
   async prepare(task: any, fencing: string, args: unknown, callId: string, authorize: Authorize, signal?: AbortSignal) {
     const spec = audioProductionRequest.parse(args);
+    signal?.throwIfAborted();
+    if (fencing !== task.fencing_token) throw unavailable("AUDIO_ORIGIN_UNAVAILABLE");
+    let pending: string | undefined;
+    try {
+      for (;;) {
+        signal?.throwIfAborted();
+        const next = await this.prepareOnce(task, fencing, spec, callId, authorize, signal);
+        if ("job" in next) return next.job!;
+        pending = next.authorization.id;
+        await this.authorizations.wait(task, pending!, authorize, signal);
+      }
+    } catch (error) {
+      if (pending) await this.authorizations.cancel(pending, "AUDIO_PREPARATION_ENDED");
+      throw error;
+    }
+  }
+
+  private async prepareOnce(task: any, fencing: string, spec: ReturnType<typeof audioProductionRequest.parse>,
+    callId: string, authorize: Authorize, signal?: AbortSignal) {
     return this.db.tx(async tx => {
       await authorize(tx);
       await tx.query("SELECT set_config('app.task_id',$1,true)", [task.id]);
@@ -78,7 +104,7 @@ export class AudioProduction {
         [task.id, callId, digest])).rows[0];
       if (existing) {
         if (existing.specification_hash !== digest || existing.capability_version_id !== cap.id) throw unavailable("AUDIO_REPLAY_CHANGED");
-        return this.metadata(tx, existing);
+        return { job: await this.metadata(tx, existing) };
       }
       let source: any = null, probe: any = null;
       if (spec.kind === "transcription") {
@@ -91,10 +117,14 @@ export class AudioProduction {
         await recordTaskSourceRead(tx, task, "asset_version", source.id, source.id, source.sha256);
       }
       const units = spec.kind === "speech" ? [...spec.text].length : probe.duration_ms;
+      const authorization = await this.authorizations.proposal(tx, task, spec, callId, cap,
+        gatewayFingerprint(this.db.config), source, probe, units);
+      if (authorization.state !== "confirmed") return { authorization };
+      signal?.throwIfAborted();
       const id = (await tx.query("SELECT prepare_ai_audio_job($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) AS id", [task.id, fencing, callId,
         spec, digest, cap.id, source?.asset_id ?? null, spec.kind === "transcription" ? spec.source.version : null,
         source?.sha256 ?? null, probe, units])).rows[0].id;
-      return this.metadata(tx, (await tx.query("SELECT * FROM ai_audio_jobs WHERE id=$1", [id])).rows[0]);
+      return { job: await this.metadata(tx, (await tx.query("SELECT * FROM ai_audio_jobs WHERE id=$1", [id])).rows[0]) };
     }, task.tenant_id, true, task.created_by);
   }
 
@@ -105,6 +135,8 @@ export class AudioProduction {
       AND video_asset_available(a.id) AND task_asset_version_sources_available(v.id) ORDER BY x.revision,x.kind`, [job.id])).rows;
     return { id: job.id, task_id: job.task_id, operation_id: job.operation_id, kind: job.kind, state: job.state, revision: job.revision,
       subtitle_revision: job.subtitle_revision, model_alias: job.model_alias, capability_version_id: job.capability_version_id,
+      authorization_id: job.authorization_id ?? null,
+      authorization_basis: job.authorization_id ? "independent_customer_session" : "legacy_model_declaration",
       data_mode: job.data_mode, quoted_micros: String(job.quoted_micros), actual_micros: job.usage_known ? String(job.actual_micros) : null,
       pricing_unit: job.pricing_unit, quoted_units: String(job.quoted_units), billable_units: job.usage_known ? String(job.billable_units) : null,
       usage_state: job.usage_known ? "confirmed_company_tariff" : "awaiting_confirmation", supplier_cost_micros: null,
@@ -319,6 +351,7 @@ export class AudioProduction {
   }
   async recover() {
     // No restart replays a potentially dispatched synthesis/transcription POST.
+    await this.authorizations.recover();
     return this.db.tx(async tx => {
       const changed = await tx.query(`WITH changed AS (UPDATE ai_audio_jobs j SET state=CASE WHEN j.state='prepared' THEN 'cancelled' ELSE 'unknown' END,
         usage_known=(j.state='prepared'),billable_units=CASE WHEN j.state='prepared' THEN 0 ELSE NULL END,

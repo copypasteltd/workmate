@@ -249,7 +249,7 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
     const closed = () => { if (!reply.raw.writableFinished) abort.abort(); };
     req.raw.once("aborted", closed); reply.raw.once("close", closed);
     const signal = AbortSignal.any([shutdown.signal, abort.signal,
-      AbortSignal.timeout(Math.max(1, Math.min(body.tool === "generated_video_create" ? 850000 : db.config.AI_REQUEST_TIMEOUT_MS, expiresAt - Date.now())))]);
+      AbortSignal.timeout(Math.max(1, Math.min(["generated_video_create", "audio_produce"].includes(body.tool) ? 850000 : db.config.AI_REQUEST_TIMEOUT_MS, expiresAt - Date.now())))]);
     const promise = Promise.resolve().then(async () => {
       if (signal.aborted) throw denied();
       const tool = businessTools(prepared, req.principal, signal, videoReady).find(item => item.name === body.tool)!;
