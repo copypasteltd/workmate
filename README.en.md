@@ -1,5 +1,60 @@
 # Workmate · CopyPaste Admin Dashboard
 
+<!-- managed-video-stage81 -->
+## Managed video capabilities and current delivery
+
+This repository is one independently versioned part of Workmate. Admin can now manage video models through the same immutable draft, actual verification, independent approval, publication and rollback flow as text and images. Web, local Desktop and the native Chrome Side Panel consume published versions; existing tasks keep their frozen model and rates.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-admin'
+npm ci
+npm run dev
+```
+
+Start the backend first, then open `http://localhost:4318`. Use `npm run build` for the static build. Use a separately enrolled Admin account with MFA and assigned permissions.
+
+### Use the current workflow
+
+1. Sign in to Admin using its separate email/TOTP identity. Open **Catalog → Model capabilities → Create configuration**, select **Video generation**, enter the company model alias, a positive HKD price per billable second and an operation reason. Codex and the company internal gateway are fixed; a draft cannot add an endpoint, secret or another kernel.
+2. Open **Configuration & validation**, enter the reason and run validation. The API immediately saves a durable receipt. Its 16 cases quote up to 184 seconds from the **platform verification budget**. Closing this view does not stop execution. Progress counts actually verified cases, with actual size/duration, full MP4/H264 decoding and observed cancellation; no simulated percentage represents real service progress.
+3. **Recheck original job** queries the existing operation. **Stop this validation suite** stops new calls and checks already-dispatched usage. An unknown result keeps its budget/capacity hold and blocks another validation in this view. Once expense is known, an explicitly new validation creates a new receipt and new billable calls. The live cost and the receipt at the immutable eligibility decision remain distinct.
+4. After all cases pass, **Preview publication** compares the model and price. Current permission, recent MFA, exact version and reason are checked again; another administrator must approve. Requesters cannot approve themselves. Rollback appends a new publication fact. Scoped access and explicit denies retain priority; read-only administrators cannot mutate configurations.
+5. A stopped worker resumes original operations and confirmed content, without another generation POST. SQL098 preserves the old budget functions' identities and all prior shared accounting. Apply SQL098 using backend `npm run db:migrate` before deployment. SQL001–097 and both original OpenAPI files retain their own bytes. Company gateway credentials remain server-side. Managed publication can provide a verified video capability while the legacy environment switch is false; a live supplier still requires its own qualification.
+
+Desktop remains frameless, runs Codex on the customer's own device and supports explicit revocable full local permission. No visible vertical/horizontal scrollbar rails appear; wheel, keyboard, focus and truthful task/video progress remain available. Extension opens in Chrome's native right Side Panel, uses ChatGPT-style chat/attachments, reads/uploads authorized files and runs its Agent in the cloud without a Desktop dependency.
+
+Current platform qualification: **929/929** cases, all previous 912 retained, 71 files/18 batches. Separate checks: **106/106** legacy capability/gateway/customer-video compatibility, **7** contract checks and **7** actual Admin browser checks. Captures below show the **Admin** component, including when copied into a client repository for the shared setup workflow. Historical stage-80 client sources/captures retain their original scope; they are not relabeled as a new full-stack browser run. The new Admin journey uses real authentication, PostgreSQL, native pinned Codex version checks and actual MP4 decoding with an explicit synthetic company service/video fixture.
+
+Original **102 REQ/102 TC remain 83 partially verified, 19 unproven and zero fully accepted**; G01–G10 remain open. Live company service, all professional roles, full original video acceptance, signed installers and complete Codex Desktop operation parity are still unproven. All owned browser contexts/instances, previews and native databases close; no Docker/WSL/VM is used.
+
+The first combined qualification failed because its synthetic HTTP fixture received port 2049, which this Node Fetch runtime rejects before HTTP. That failed TAP, live port witness and owned-worker/fixture cleanup remain retained. The fixture now uses the existing safe loopback listener and a bounded test-arrival wait; no product source, assertion or test name changed for this repair. The complete platform run and 17-case core run execute the repaired harness afresh. Earlier compatibility/UI recordings retain their exact product and verifier bytes, with the two later harness-only changes explicitly reviewed rather than presented as a fresh browser recording.
+
+[Design and authority](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/81-managed-video-capability-releases.md) · [Exact evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/managed-video-checkpoint.json) · [Supplemental API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/capability-releases.openapi.json)
+
+```mermaid
+flowchart LR
+    Draft[Immutable video model and rate] --> Grant[Permission / MFA / frozen plan]
+    Grant --> Intent[Original durable operation and quote]
+    Intent --> Company[Company internal service]
+    Company --> Observe[Original lookup / retrieve / cancel]
+    Observe --> Decode[Actual MP4 hash and full decode]
+    Observe --> Cost[Confirmed expense or retained unknown]
+    Decode --> Approval[Independent preview and approval]
+    Approval --> Publish[Versioned publication / rollback]
+    Publish --> Clients[New Web / local Desktop / cloud Side Panel tasks]
+```
+
+![Actual Admin screenshot](assets/screenshots/workmate-managed-video-02-video-resumed-en.png)
+
+[Admin interaction GIF](assets/screenshots/workmate-managed-video-02-video-cancellation-and-cost-recovery.gif) · [Actual recorded MP4](assets/screenshots/workmate-managed-video-02-video-cancellation-and-cost-recovery.mp4)
+
+<details>
+<summary>Historical stage-80 usage and installation reference; counts keep their original scope</summary>
+
 <!-- generated-video-stage80 -->
 ## Generated video, scoped costs and compact Desktop
 
@@ -334,6 +389,8 @@ flowchart LR
 
 </details>
 
+
+</details>
 
 </details>
 

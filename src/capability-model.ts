@@ -11,7 +11,7 @@ export type CapabilityDocument = {
       rates: [number, number];
     }
   | {
-      profile_key: "internal-image2-v1";
+      profile_key: "internal-image2-v1" | "internal-video-v1";
       reasoning_effort: null;
       rates: [number];
     }
@@ -64,6 +64,13 @@ export type CapabilityValidation = {
     workspace_cleanup_error_code?: string;
   };
   workspace_cleanup: WorkspacePurge | null;
+  video_suite?: {
+    plan_hash: string; total_cases: number; verified_cases: number; quoted_micros: string;
+    known_cost_micros: string; usage_known: boolean; cancel_requested: boolean; deadline_at: string; error_code: string | null;
+    cases: { id: string; ordinal: number; operation_id: string; state: string; size: string; seconds: number;
+      progress: number | null; usage_known: boolean; actual_micros: string | null; verified: boolean; error_code: string | null;
+      operations: string[]; media: { fully_decoded: boolean; sha256: string; bytes: number; width: number; height: number; duration_seconds: number } | null }[];
+  } | null;
 };
 type ComparedRelease = Pick<CapabilityRelease, "version" | "document"> & {
   release_id: string;
@@ -133,12 +140,12 @@ export function capabilityDraft(form: FormData) {
         rate(form.get("output_rate"), true),
       ],
     };
-  } else if (profile === "internal-image2-v1") {
+  } else if (profile === "internal-image2-v1" || profile === "internal-video-v1") {
     document = {
       ...common,
       profile_key: profile,
       reasoning_effort: null,
-      rates: [rate(form.get("image_rate"), false)],
+      rates: [rate(form.get(profile === "internal-video-v1" ? "video_rate" : "image_rate"), false)],
     };
   } else throw new Error("請選擇支援的能力 / Choose a supported capability");
   return { document, reason };
