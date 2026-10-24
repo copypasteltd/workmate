@@ -1,10 +1,26 @@
 # 当前产品与完整目标的差异评估 / Goal gap assessment
 
-评估日期：2026-10-25，Asia/Taipei。评估基线为阶段 85 已提交并推送的产品；本次重新读取需求、当前代码、检查点和仓库状态，没有重新运行产品测试，也没有修改产品代码。
+评估日期：2026-10-25，Asia/Taipei。已发布基线为阶段 85；本次复核同时读取后续项目共享配置的未提交工作区和失败报告。以下已通过检查数仍属于阶段 85，不能外推为新增源码已通过。评估操作没有重新运行产品测试或修改产品代码。
 
 当前产品已有可运行的多端实现和大量局部验证，但尚未达到「全部业务模块完整可用、至少十二个专业角色合格、三端完整交付并通过业务验收」的目标。主要差距包括功能缺口、已有功能未贯通的完整流程，以及业务与正式发布验收。
 
 本评估继续遵守「暂时先用假数据」的用户指令。内部 API 密钥和真实客户账号未提供，不作为当前代码开发的阻塞条件；真实服务质量、正式平台授权和客户接受另列为后续验收，不把模拟接口通过写成已经正式接通。
+
+## 同日工作区复核：开发中增量
+
+首次评估发布后，项目共享配置已经开始开发。当前 backend 有七个已跟踪文件修改和三个新增文件，Delivery 有专项执行器及三份新增报告/验证器文件；这些内容尚未提交或发布。Web、Admin、Desktop、Extension 仓库保持表中已发布提交，尚无共享配置编辑页或继承摘要界面。GAP-13 应更新为「后端开发中，专项失败，跨端流程未交付」，不能继续笼统写成完全没有代码，也不能计入可用功能。
+
+| 复核编号 | 当前证据 | 对完成状态的影响 |
+| --- | --- | --- |
+| REVIEW-01 | 新增 SQL103 和项目配置草稿、预览、发布、版本固定、指定资料读取及来源门控代码 | 已开始实现；保留原 REQ-065 未证明完整的状态 |
+| REVIEW-02 | 项目配置专项报告共 15 项，12 通过、3 失败；平台类型、Admin 类型和平台构建分别通过 | 新增功能尚未通过专项，更未取得跨端与完整回归证据；构建通过不能代替业务通过 |
+| REVIEW-03 | 默认专业角色的精确版本发布预览返回 HTTP 500，数据库错误码 42501 | 存在需要修复的真实权限/查询错误；修复后需重跑，不能降低数据库权限隔离来绕过 |
+| REVIEW-04 | 另外两项失败分别为迁移数预期仍为 102、执行前来源失效后的余额预留状态期望 settled 而实际 released | 需要分别核对并修正断言预期，不把三个失败一概当作三项业务故障；不得掩盖失败或据此推断全部费用正确 |
+| REVIEW-05 | 阶段 85 的 1494 个选定源码摘要重新核对：1487 一致、7 个 backend 文件变化；专项原始 TAP 与验证器 SHA-256 均匹配其回执 | 阶段 85 的 1001 项通过仍是历史基线；对当前 backend 的新增改动需要新验证，未覆盖的新增文件另计 |
+
+专项原始材料保留在本地 `dev/copypaste-delivery/evidence/project-configuration-checks-01.json`、同名 `.tap` 及 `-verifier.mjs`，报告状态为 `failed`；回执记录 `source_unchanged=true`、`owned_database_shutdown=true`。此轮通过的是实际原生 PostgreSQL 下的 HTTP/资料字节等局部检查，模型运行使用受控夹具，不能视为真实供应商、真实客户或真实 Codex 角色业务质量验收。此次复核没有启动数据库或浏览器。
+
+本次修改的三份文档共 221 个本地链接和全部 26 个差异编号、102 项需求映射检查通过。全目录通用文档链接检查另记录 6199 条历史归档链接错误，全部位于未修改的 `quality/history/`：原样保存的旧 README 相对图片路径被按归档目录解析。GAP-25 因此还需明确归档来源位置及校验范围；保留原档案，不把这一全目录失败写成通过。
 
 ## 评估口径
 
@@ -39,7 +55,7 @@
 | GAP-10 | 配音、转写和声音授权；功能、流程、验收待补 | 内部音频/转写、真实时间字幕、版本修订、客户独立确认精确提案、撤回及未知费用保留 | 后台音频能力验证/独立发布/回滚未齐；未知音频 POST 的外部证据、独立审核、原任务结算与恢复交付闭环缺失；真实语音/香港粤语专业质量及权属审核未验收 | 补齐音频后台发行与未知费用恢复；验证语言/音质/字幕和授权引用。当前登录确认只记录客户声明，不能当作权属证明 | P1 |
 | GAP-11 | Google/Meta/GA4/GSC 与广告分析；流程、验收待补 | 四平台模拟授权、真实 HTTP/PKCE、账户项目绑定、分页/限流恢复、固定快照、CSV/XLSX 导入、确定性指标和引用校验 | 正式账户权限/字段/新鲜度尚未验收；官方导出语言数字矩阵、多维归因与完整专业解读仍不齐；Meta 当前接入范围为广告读取 | 先用假数据完成完整业务与异常矩阵；后续对正式账户逐字段核对，报告每个数字可回溯，不混币种、归因或未知值 | P0 |
 | GAP-12 | SEO、GEO 与创意反馈；功能、流程、验收待补 | 受限 SEO 抓取/逐 URL 证据/复查、固定 GEO 问句配置与重复观察、原始回答、显式广告素材映射和反馈 | Desktop GEO 仍通过浏览器入口，本机 GEO 工具协议未齐；正式网站/提供方/消费者产品观察、真实 creative 身份及客户成果未验收；CMS 写回需单独实现授权链 | 诊断和反馈可复核、可重跑；API 与消费者产品样本分列，素材映射经用户确认，不将观察当全网排名或因果保证 | P1 |
-| GAP-13 | 项目共享、记忆与云文件；功能、流程待补 | 持续 Agent、分层记忆、会话生命周期、云文件树/搜索/版本/移动及源码引用 | 项目共享配置版本、继承摘要和固定资料/方法快照仍缺；长会话与多任务消息、Office/PDF 分页和大目录选择、历史/备份删除重放未齐 | 项目发布可追溯共享配置，新工作显示继承摘要并固定版本；仅共享获准资料，私有内容和凭据不外泄 | P1 |
+| GAP-13 | 项目共享、记忆与云文件；开发中、流程待补 | 已发布：持续 Agent、分层记忆、会话生命周期、云文件树/搜索/版本/移动及源码引用；未发布：共享配置后端草稿/预览/发布/版本固定代码 | 新增后端专项 15 项中 3 项失败，四端共享配置编辑与继承摘要尚未接入；长会话与多任务消息、Office/PDF 分页和大目录选择、历史/备份删除重放未齐 | 修复专项并完成跨端及回归；项目发布可追溯共享配置，新工作显示继承摘要并固定版本；仅共享获准资料，私有内容和凭据不外泄 | P1 |
 | GAP-14 | 持久专业团队 Agent Group；功能缺口 | 已有临时子任务和本机父子 SOP，每步可记录角色、费用及结果 | 缺少持久团队实体、协调者、依赖图、受控并行、成员进展和统一总预算/交付；现有独立子预算不等于团队统一预留 | 能保存并复用团队，依赖失败和冲突可定位；总预算、并发和递归派单有界，父任务不把缺项报为全部成功 | P1 |
 | GAP-15 | 企业工作流与云端计划；功能、流程待补 | 版本化工作流、每日/每周日历、时区、错过合并和去重基础逻辑、暂停未来触发 | 自然语言/既有成果→计划提案→确认→固定依赖→激活未完整贯通；正式事件触发、运行中恢复及全部失败策略/版本/停用矩阵待补 | 用户从对话保存重复工作，确认后才激活；关掉客户端仍运行，每次独立可追踪，无重复触发或补跑风暴 | P1 |
 | GAP-16 | 可复用业务方案包；功能缺口 | 已有角色、Skill 和工作流等组成要素 | 缺少方案的预览、试运行、发布、复制以及目标项目依赖重新绑定 | 能把获验的方法组合为方案包；复制只带方法与依赖声明，不带源客户内容或密钥；缺口可见并重新授权 | P1 |
@@ -51,7 +67,7 @@
 | GAP-22 | 性能、资源和灾备；流程、验收待补 | 企业/用户/能力槽位、租约、部分多 Worker 和本机浏览器资源归属/退出已实现 | 未完成设计负载下压测、媒体队列隔离、真实备份恢复及 RPO/RTO 演练；本机浏览器每驱动 4 页的硬上限与文档每任务默认 3 页未对齐，池内 8 页也不等于上下文配额 | 对齐并验证资源口径；用原生环境验证 P95、错误率、资源回收及用户/后台并发负载；恢复任务、对象、账本并重放删除记录 | P0 |
 | GAP-23 | 安装、更新与正式交付；流程、发布验收待补 | 七个独立 Git 仓库、八个远程分支、中英 README、截图/GIF/视频、构建命令及打包预览已有交付 | 签名安装、升级回滚、卸载、旧客户端兼容、目标系统/DPI 和扩展正式发布矩阵未完成；源码同步不等于正式上线 | 在声明的系统进行实际安装→登录→使用→升级/回滚→卸载，并形成可复现发布和兼容证据；扩展按声明渠道验证安装发布 | P0 |
 | GAP-24 | 客户业务价值；业务验收待补 | 已有客户接受/修改/弃用、人工时间、成本、真实读取复用及后台质量记录机制 | 尚未执行原计划的三类各 10 个代表任务、人工基线、盲审、真实返工与续用观察 | 现有 marketing 团队对素材、分析、流程三类交付进行实际评价；以可用成果、人工投入、完整成本和复用衡量，不以消息量代替 | P0 |
-| GAP-25 | 文档与验收登记；文档待补 | 主文档在 docs，各端独立双语说明与实际媒体，原始需求和历史证据均保留 | SRS/测试计划仍有「当前仅文档/全部 not_run」的历史总述，后续实现证据以阶段附录增补；当前状态容易混读，完整逐项验收仍未关闭 | 形成唯一当前状态入口，区分原测试设计、最新实现、复用证据和正式完整验收；保持原条件及历史事实，不靠改状态掩盖缺口 | P1 |
+| GAP-25 | 文档与验收登记；文档待补 | 主文档在 docs，各端独立双语说明与实际媒体，原始需求和历史证据均保留；已新增当前差异入口 | SRS/测试计划历史总述与后续实现状态易混读，完整逐项验收仍未关闭；通用链接检查对历史归档相对路径报错，需明确来源位置和校验范围 | 形成唯一当前状态入口，区分原测试设计、最新实现、复用证据和正式完整验收；补齐归档校验口径，保持原条件及历史事实 | P1 |
 | GAP-26 | 可选专属云电脑；功能缺口 | 基础云文件、云任务和后台计划已有独立实现 | 独占电脑、长期进程、实时可视操作的资源/会话/费用生命周期未实现 | 原 REQ-059 的 P2 扩展；仅在决定启用时建设并验证，不作为基础 Web 云 Agent 或云文件的前置条件，也不在本地使用 Docker/WSL | P2 |
 
 ## 已有实现的边界与直接源码证据
@@ -84,7 +100,7 @@ CLIENT01 对 Desktop 完整本机权限的明确要求优先于早期 NFR 中受
 
 ## 快照与可复核性
 
-本次读取时七仓库均干净，组件与当前发布清单一致。下表记录评估输入版本；新增本评估文档后，docs/main 的后续文档提交会变化，六个产品组件版本保持不变。
+首次评估读取时七仓库均干净，组件与当前发布清单一致。下表保留首次评估输入版本；同日后续复核时主文档 HEAD 为 0ea0c71b91913c5d0324dd1d6e60bcf9be506a4c，六个产品组件 HEAD 未变，backend 和 Delivery 另有上文明确列出的未提交增量。docs/main 的后续文档提交会变化；不得将已提交组件与未提交工作区混称为同一通过版本。
 
 | 仓库 | 输入分支 | 输入提交 |
 | --- | --- | --- |
@@ -107,6 +123,10 @@ The 26 numbered groups distinguish missing features, incomplete end-to-end flows
 Major remaining features include local directory scheduling, the independent effects catalog, managed audio publication and unknown-request recovery, shared project configurations, persistent professional teams, reusable solution packages, conversational schedules, and complete Admin content/batch coverage. The 18-role catalog does not prove the required 12 fully qualified professional roles. Real business deliverables, fault recovery, fee/entitlement consistency, full visual accessibility, performance, disaster recovery and signed release installation remain to be completed and accepted.
 
 Synthetic data remains authorized for current development. Missing live credentials do not block further implementation and are not counted as code defects. This assessment reuses the stated test receipts without rerunning tests, changing product source, relaxing original acceptance conditions or claiming production readiness.
+
+The same-day follow-up also reviews uncommitted shared-project configuration work. Backend draft/preview/publication, pinned versions and source controls now exist in candidate code; all four client repositories still retain their published snapshots without this editor or inheritance summary. The first native PostgreSQL check records 12 passing and three failing tests, including a real database-permission error during specialist-version publication and two assertion mismatches requiring review. Type checks and build success do not qualify the feature. All original requirement and gate statuses remain unchanged; stage 85 receipts continue to describe their original source bytes, rather than the uncommitted candidate.
+
+All 221 local links in the three changed documents and the complete 26-group/102-requirement mapping pass the scoped review. The generic whole-directory link check still reports 6199 errors confined to untouched historical archives, whose preserved README-relative image paths resolve against their archive location. Archive-aware source resolution and validation scope remain part of GAP-25; this global check is not reported as passing.
 
 ## 全部原需求映射
 

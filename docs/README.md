@@ -4,6 +4,8 @@
 
 完整产品文档、当前交付范围和三端使用入口。
 
+当前完成状态见[编号目标差异评估](quality/2026-10-25-goal-gap-assessment.md)：26 组差异覆盖全部 102 项原需求，区分已发布能力、未提交开发、流程缺口和验收边界。Current status: the linked assessment separates published implementation, uncommitted work, incomplete journeys and acceptance across all 102 requirements.
+
 ### 本地启动
 
 以下命令在已检出的对应仓库内执行。完整工作区将六个独立仓库并列放在 `dev/`，见[分支与检出布局](governance/04-git-branches-and-publication.md)。使用 Windows x64、Node.js >=22.14、npm/Git，以及文档约束的原生 PostgreSQL、FFmpeg/FFprobe 与固定 Codex 资源；保留已有本地配置和数据，不使用 Docker/WSL/虚拟机。
