@@ -207,7 +207,7 @@ contextBridge.exposeInMainWorld(
   "copyPasteBridge",
   Object.freeze({
     version: "0.1.0",
-    openCloudWorkspace: () => ipcRenderer.invoke("workspace:cloud"),
+    openCloudWorkspace: (section?: "geo") => ipcRenderer.invoke("workspace:cloud", section),
     localAgent: (action: string, payload: unknown) => ipcRenderer.invoke("local-agent", action, payload),
     onLocalAgentChanged: (fn: () => void) => {
       ipcRenderer.on("local-agent:changed", fn);

@@ -542,7 +542,7 @@ async function createWindow() {
     }
   });
   ipcMain.handle("auth:signin", () => signIn());
-  ipcMain.handle("workspace:cloud", () => shell.openExternal(config.web + "/app"));
+  ipcMain.handle("workspace:cloud", (_e, section?: string) => shell.openExternal(config.web + (section === "geo" ? "/app/analytics?view=geo" : "/app")));
   ipcMain.handle("auth:signout", async () => {
     const result = await nativeSession.signOut();
     await localAccessReset;

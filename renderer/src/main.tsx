@@ -2298,6 +2298,9 @@ function Analytics() {
             <button className="button secondary" onClick={() => setAnalysisParams({ view: "creative-feedback" })}>
               {t("創意反饋", "Creative feedback")}
             </button>
+            <button className="button secondary" onClick={() => void window.copyPasteBridge!.openCloudWorkspace("geo")}>
+              {t("GEO 觀測 · 瀏覽器", "GEO observations · Browser")}
+            </button>
             <button className="button primary" onClick={() => setOpen(true)}>
               <Upload size={17} />
               {t("匯入數據", "Import data")}

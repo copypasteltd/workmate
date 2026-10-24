@@ -30,7 +30,7 @@ export class ApiError extends Error {
 declare global {
   interface Window {
     copyPasteBridge?: {
-      openCloudWorkspace: () => Promise<void>;
+      openCloudWorkspace: (section?: "geo") => Promise<void>;
       localAgent: (action: string, payload: unknown) => Promise<{ ok: boolean; value?: any; code?: string }>;
       onLocalAgentChanged: (fn: () => void) => () => void;
       request: (
