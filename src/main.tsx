@@ -12,6 +12,7 @@ import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { MarketingImport } from "./marketing-import";
 import { MarketingAnalysis } from "./marketing-analysis";
 import { MarketingReports } from "./marketing-reports";
+import { CreativeFeedback } from "./creative-feedback";
 import { SeoAudits } from "./seo-audits";
 import { NativeFiles } from "./native-files";
 import { DeleteAsset, DeletionProgress } from "./deletions";
@@ -2271,6 +2272,8 @@ function Analytics() {
   };
   if (analysisParams.get("view") === "seo")
     return <SeoAudits key={w.base} onBack={() => setSeo(false)} />;
+  if (analysisParams.get("view") === "creative-feedback")
+    return <CreativeFeedback key={w.base} onBack={() => setSeo(false)} />;
   return (
     <>
       <PageHeader
@@ -2284,6 +2287,9 @@ function Analytics() {
           <div className="row-actions">
             <button className="button secondary" onClick={() => setSeo(true)}>
               {t("網站診斷", "Website audit")}
+            </button>
+            <button className="button secondary" onClick={() => setAnalysisParams({ view: "creative-feedback" })}>
+              {t("創意反饋", "Creative feedback")}
             </button>
             <button className="button primary" onClick={() => setOpen(true)}>
               <Upload size={17} />
