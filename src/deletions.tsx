@@ -22,6 +22,8 @@ const types: Record<string, [string, string]> = {
   memories: ["記憶", "Memories"],
   brand_profiles: ["品牌資料", "Brand profiles"],
   analytics_datasets: ["分析資料", "Analytics datasets"],
+  creative_mappings: ["創意身份映射", "Creative identity mappings"],
+  creative_feedback_reports: ["創意反饋", "Creative feedback"],
   workflows: ["工作流", "Workflows"],
   workflow_runs: ["工作流執行", "Workflow runs"],
   workflow_schedules: ["雲端定時", "Cloud schedules"],

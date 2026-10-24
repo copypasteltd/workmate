@@ -833,6 +833,10 @@ function Value({ field, value }: { field: string; value: any }) {
       </span>
     );
   }
+  if (field === "kind" && value === "creative_mappings")
+    return <span>{t("創意身份映射", "Creative identity mapping")}</span>;
+  if (field === "kind" && value === "creative_feedback_reports")
+    return <span>{t("創意反饋", "Creative feedback")}</span>;
   if (field === "confirmed_customer_charges")
     return value ? (
       <Money value={value.amount_micros} currency={value.currency} />

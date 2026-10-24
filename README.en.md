@@ -1,5 +1,67 @@
 # Workmate · CopyPaste Admin Dashboard
 
+<!-- creative-feedback-stage82 -->
+## Confirmed creative feedback and native layout
+
+Creative assets now have an explicit feedback loop: a user confirms the exact asset version, ad identity and date range before any advertising facts contribute. Same-name creatives in different accounts remain separate. Identity is user-attested; the current official connectors provide campaign-level facts and cannot establish creative performance automatically.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-admin'
+npm ci
+npm run dev
+```
+
+Start the backend first, then open `http://localhost:4318`. Use `npm run build` for the static build. Use a separately enrolled Admin account with MFA and assigned permissions.
+
+### Use the current workflow
+
+1. Sign in using the existing email flow and choose the enterprise/project. In **Marketing insights → Creative & ad feedback**, upload a shared creative first and import an ad-level Google/Meta CSV with an explicit account, currency, timezone, attribution and conversion definition. Campaign-only or incomplete sources are not selectable. Source choices show at most 100 recent eligible items; mappings and reports have explicit pagination.
+2. **New candidate** pins one shared asset version, dataset, exact ad/channel/campaign, creative ID, date range and review note. A similar name or user-supplied provider metadata is a candidate basis only. Review the frozen hashes and scope, then explicitly check the initially unchecked single-creative attestation and give a reason. Incorrect identity requires withdrawal and a new candidate; confirmed history is immutable.
+3. Select up to 40 confirmed mappings and create a dated feedback report. BigInt-derived decimal strings preserve exact amounts. Account/platform/currency/timezone/attribution/conversion/creative/version scopes stay separate. Identical ad-days are deduplicated; conflicting facts, competing allocations and overlapping correction snapshots reject. Missing conversions stay unknown and unobserved days are not zero. No cross-scope total or causal uplift is inferred.
+4. Download the actual frozen JSON or select its shared file as an explicit input to the next Codex task. Actual model reads and downstream managed outputs retain source lineage. Withdrawal, quarantine, source expiry or lost authorization stop managed reads/downloads and queued reuse. Copies already exported outside the service remain the customer's responsibility.
+5. Admin content metadata, independent `admin.content.body.read`, scoped quarantine/restore/delete and auditable actions cover mappings and feedback reports. Metadata access does not grant body access. Restoring a mapping does not silently republish an old quarantined report. Retention defaults to 90 days; the existing erasure journal orders report-file cleanup before clearing parent bodies. Admin cannot rewrite frozen identity or the original confirmation through metadata controls.
+
+Desktop runs Codex locally with explicit, revocable full local permission. It stays frameless with no Electron menu or visible vertical/horizontal scrollbar rails. Wrapping tables/code and compact layouts preserve wheel, Home/End, focus and actual task/video progress. Native packaged windows at 800×600, 1280×800 and 1440×980 were exercised. Extension remains ChatGPT-style chat/attachments in Chrome's native right Side Panel, uploading authorized files to cloud Codex; its new feedback entry opens the full cloud workspace without depending on Desktop.
+
+Apply **SQL099** through backend `npm run db:migrate` before deployment. Published SQL001–098 and both original OpenAPI files retain their bytes. Seven additive feedback operations have their own contract; the observed inventory is 454 configured operations plus the retained conditional demo operation. Company gateway secrets stay server-side.
+
+Current bounded qualification: platform **946/946**, all previous **929** cases retained; feedback core **17/17**, separate legacy analytics/source compatibility **43/43**, client checks **124**, actual Web journey **4** and actual packaged Desktop journey **36**. Each count has its own scope. Screenshots and GIF/MP4 below are **Desktop** captures, including copies in other component repositories. Advertising identities/facts and model content are explicit fixtures; native execution, files, identity, database, arithmetic and media capture are actual.
+
+Original **102 REQ/102 TC remain 83 partial, 19 unproven, 0 fully accepted**; NFR and G01–G10 remain open. Live provider creative verification, professional marketing quality, signed installers and complete Codex Desktop operation parity require further evidence. Owned browsers, previews and native databases are closed; no Docker/WSL/VM is used.
+
+All selected core, compatibility, client, Web/native UI and complete-platform receipts execute the current exact source bytes. A separate review binds the native sidebar/preferences repair, capture serialization, settled-theme report framing and Windows whole-page Ctrl+Home. Focused native-log Home/End and existing reachability conditions remain; additional end-of-page checks require navigation and preferences to remain visible. Earlier and failed attempts keep their original scopes and do not supply current-source coverage.
+
+[Design and permissions](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/82-confirmed-creative-feedback.md) · [Exact evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/creative-feedback-checkpoint.json) · [Additive API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/creative-feedback-openapi.json)
+
+```mermaid
+flowchart LR
+    Version[Shared exact asset version] --> Candidate[Ad identity and dated source]
+    Candidate --> Review[Explicit user attestation]
+    Review --> Metrics[Independent exact scopes]
+    Metrics --> JSON[Frozen managed JSON]
+    JSON --> Codex[Explicit next Codex task]
+    Withdraw[Withdraw / quarantine / expiry] --> Fence[Recheck actual reads and outputs]
+    Fence --> JSON
+    Fence --> Codex
+```
+
+![Actual feedback](assets/screenshots/stage82-desktop-workmate-feedback-44-report-en.png)
+
+![Compact Chinese/dark](assets/screenshots/stage82-desktop-workmate-feedback-44-report-zh-dark-compact.png)
+
+![Actual interaction GIF](assets/screenshots/stage82-desktop-workmate-feedback-44-creative-feedback.gif)
+
+[Recorded MP4](assets/screenshots/stage82-desktop-workmate-feedback-44-creative-feedback.mp4)
+
+
+
+<details>
+<summary>Historical stage 81 usage and complete setup reference; original scopes retained</summary>
+
 <!-- managed-video-stage81 -->
 ## Managed video capabilities and current delivery
 
@@ -389,6 +451,8 @@ flowchart LR
 
 </details>
 
+
+</details>
 
 </details>
 
