@@ -14,10 +14,20 @@ The assessment separates missing implementation from incomplete journeys, busine
 
 This is a documentation-only update. No product source, component commit, original acceptance status or retained test receipt was changed. No product tests, browser, database, Docker or WSL were started. Synthetic data remains authorized for development; live qualification and complete acceptance remain open. Publish the reviewed documentation through the existing ordinary non-force synchronization policy.
 
-## 同日复核 / Same-day follow-up
+## 首次同日复核（历史） / First same-day review (historical)
 
 后续复核补记项目共享配置的未提交开发，不改动已发布基线或产品代码。GAP-13 更新为后端开发中、专项失败、四端编辑/继承摘要尚未交付；记录专项 15 项中 12 通过、3 失败，区分真实 HTTP 500/SQL42501 与迁移数、余额预留状态的断言差异。对阶段 85 的 1494 个选定源码重新计算摘要，1487 相符、7 个 backend 文件发生变化；复核专项原始 TAP 和验证器摘要匹配。当前原 102 项需求的 83 部分／19 未证明／0 完整验收及十个发布门槛保持。
 
 The follow-up records uncommitted shared-project configuration development without changing product source or the published baseline. GAP-13 now distinguishes candidate backend implementation, failed focused checks, and missing client editing/inheritance surfaces. It preserves the first run's 12 passes and three failures, including HTTP 500/SQL42501 and separate assertion mismatches. Rehashing the 1494 selected stage 85 source files finds 1487 exact matches and seven changed Backend files; retained candidate TAP and verifier hashes match their receipt. Original requirement and release-gate acceptance stays open. This review reruns no product tests and starts no browser or database.
 
 本次三份改动文档的 221 个本地链接、26 个差异编号及 102 项需求映射通过；全目录通用检查仍有 6199 条未修改历史归档的相对链接错误，已加入 GAP-25，未修改历史档案或伪报全局通过。All changed-document links and complete gap/requirement numbering pass; the generic global check retains 6199 untouched archive-relative link errors, now recorded under GAP-25. Historical files remain preserved.
+
+## 第二次工作区复核 / Second working-tree review
+
+更新 GAP-13 与当前状态说明：共享配置已存在后端、Web/Desktop 编辑与继承摘要、Extension 只读摘要和 Admin 内容治理的未提交代码。最新专项为 20 项中 19 通过、1 失败；第一次的数据库权限与两项断言问题在第二次对应检查已通过。当前唯一失败来自测试消息缺少 expected_version；测试源码虽已补齐，尚无重跑回执，不登记通过。两次原始失败报告全部保留。
+
+重新计算阶段 85 的 1494 个选定源码摘要，1476 个一致、18 个变化；新增文件不包含在原基线数中。实时核对八个 GitHub 分支，均匹配本次读取的已提交本地 HEAD；六组件另有未提交增量，不随此次文档更新发布。新增[复核记录](../quality/2026-10-25-goal-gap-review-02.json)，记录源码差异、仓库/远程输入、回执摘要及局部文档检查。原 102 项需求状态、全部原验收条件和发布门槛保持。本次未改产品代码，未重跑产品测试，未启动数据库或浏览器。
+
+GAP-13 now records candidate Backend services, Web/Desktop editing and inheritance, Extension read-only summaries and Admin governance. The latest focused report is 19/20; the three original failures pass in the second report. Its remaining test omitted required expected_version. Source now supplies that field, but no rerun success is claimed. Both failed reports remain intact.
+
+Rehashing the 1494 selected stage 85 entries finds 1476 exact and 18 changed files, with new files additional to that baseline. All eight actual GitHub refs match the committed local input snapshots. All six component worktrees have unpublished changes, which this documentation-only publication excludes. The linked receipt records current scope, source differences, repository/ref inputs, retained report hashes and scoped document checks. Original requirement and release acceptance remains unchanged. No product source, tests, browser or database was run or changed by this review.
