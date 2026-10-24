@@ -1,0 +1,10 @@
+{
+  "status": "failed_test_expectation_with_owned_worker_terminated",
+  "reason": "The new test expected declared but not yet model-read attachments to appear in the task read manifest. The observed next task was queued and its manifest contained only its assistant/conversation. The first actual feedback read and first task had succeeded; mapping remained confirmed.",
+  "owned_process_chain": [2648, 31684, 24372, 35000],
+  "action": "Terminate only the verified test worker 35000; keep launcher, reclamation and owned database IPC shutdown running.",
+  "diagnostic": "A temporary inspector attached to that worker showed Node assertion source inference consuming CPU in Parser/parseExpressionAt/parseCode/findColumn. Inspector was enabled only after verifying port 9229 was free. The worker exit closes that owned inspector.",
+  "repair": "Exercise a second actual model read before asserting nested lineage; add explicit assertion messages so a failed assertion does not invoke expensive source-expression inference.",
+  "source_changed_during_execution": false,
+  "partial_tap_counts_toward_qualification": false
+}

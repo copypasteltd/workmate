@@ -13,6 +13,7 @@ export async function exerciseBrandLibrary({
   pass,
   screenshots,
   resize,
+  captureSurface,
 }: {
   page: Page;
   repo: "web" | "desktop";
@@ -21,6 +22,7 @@ export async function exerciseBrandLibrary({
   pass: (s: string) => void;
   screenshots: any[];
   resize: (w: number, h: number, label: string) => Promise<any>;
+  captureSurface?: () => Promise<Buffer>;
 }) {
   const previous = await page.evaluate(() => ({
     url: location.href,
@@ -59,7 +61,7 @@ export async function exerciseBrandLibrary({
         repo,
         "brand-" + attempt,
         name,
-        await page.screenshot(),
+        await (captureSurface ?? (() => page.screenshot()))(),
         "Actual brand library, immutable publication and preflight. Customer brand facts are explicit fixtures; font validation and API writes are real.",
         delivery,
       ),
@@ -69,7 +71,7 @@ export async function exerciseBrandLibrary({
     repo,
     "brand-library",
     "brand-" + attempt,
-    () => page.screenshot({ type: "jpeg", quality: 85 }),
+    captureSurface ?? (() => page.screenshot({ type: "jpeg", quality: 85 })),
     "Actual brand publication, old-version fact lookup, font coverage and expiry checks with real database and bundled font; fixture brand content",
     delivery,
   );

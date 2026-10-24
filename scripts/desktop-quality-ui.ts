@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { saveWorkmateScreenshot } from "./record-workmate-media.js";
-export async function checkDesktopDeliveryQuality({ page, system, taskId, resize, until, screenshots, delivery, attempt, pass }: any) {
+export async function checkDesktopDeliveryQuality({ page, captureSurface, system, taskId, resize, until, screenshots, delivery, attempt, pass }: any) {
   const before=(await system.db.control.query("SELECT charged_micros FROM tasks WHERE id=$1",[taskId])).rows[0];
   await page.getByText("Review this delivery",{exact:true}).click();
   const card=page.locator(".local-agent-messages .delivery-quality");
@@ -24,7 +24,7 @@ export async function checkDesktopDeliveryQuality({ page, system, taskId, resize
   assert.deepEqual(rows.map((r:any)=>r.decision),["changes_requested","accepted"]);
   assert.equal((await system.db.control.query("SELECT charged_micros FROM tasks WHERE id=$1",[taskId])).rows[0].charged_micros,before.charged_micros);
   await card.scrollIntoViewIfNeeded();
-  screenshots.push(await saveWorkmateScreenshot("desktop","local-"+attempt,"delivery-review-en",await page.screenshot(),"Actual packaged local Codex result; real versioned review and human-effort records. Model, image and customer feedback are explicit fixtures.",delivery));
+  screenshots.push(await saveWorkmateScreenshot("desktop","local-"+attempt,"delivery-review-en",await captureSurface(),"Actual packaged local Codex result; real versioned review and human-effort records. Model, image and customer feedback are explicit fixtures.",delivery));
   await resize(800,600,"compact native delivery review");
   const effort=card.getByLabel("Actual human effort (minutes)",{exact:true});
   assert.equal(await effort.isVisible(),true);await effort.scrollIntoViewIfNeeded();await effort.focus();
@@ -33,7 +33,7 @@ export async function checkDesktopDeliveryQuality({ page, system, taskId, resize
     bars:[...document.querySelectorAll<HTMLElement>(".local-agent-messages,.local-agent-conversation,.sidebar")].map(e=>getComputedStyle(e).scrollbarWidth)}));
   assert.equal(layout.overflow,false);assert.ok(layout.bars.every((x:string)=>x==="none"));
   const composer=await page.locator(".local-agent-composer").boundingBox();assert.ok(composer&&composer.y>=0&&composer.y+composer.height<=600);
-  screenshots.push(await saveWorkmateScreenshot("desktop","local-"+attempt,"delivery-review-compact-en",await page.screenshot(),"Actual 800x600 Desktop review; keyboard-accessible human inputs inside scrolling conversation, hidden scrollbar rails and no horizontal document overflow.",delivery));
+  screenshots.push(await saveWorkmateScreenshot("desktop","local-"+attempt,"delivery-review-compact-en",await captureSurface(),"Actual 800x600 Desktop review; keyboard-accessible human inputs inside scrolling conversation, hidden scrollbar rails and no horizontal document overflow.",delivery));
   await resize(1280,800,"restore native workspace after review");
   await page.getByText("Review this delivery",{exact:true}).click();
   pass("Native completed deliveries retain versioned customer changes/acceptance and human effort without extra billing; 800x600 review keeps content accessible with no scrollbar rails");

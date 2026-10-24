@@ -38,7 +38,7 @@ export async function runDesktopBrowserJourney(j:any){
     const task=(await j.system.db.control.query("SELECT * FROM tasks WHERE id=$1",[done.task.task_id])).rows[0];
     assert.equal(task.execution_location,"desktop");assert.equal(Number(task.charged_micros),(j.providerCalls()-before)*30);
     assert.equal((await j.system.db.control.query("SELECT count(*)::int AS n FROM reservations WHERE task_id=$1",[task.id])).rows[0].n,1);
-    j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"browser-completed-en",await page.screenshot(),"Actual native browser completion, one company reservation and receipt; the task-owned browser has closed",j.delivery));
+    j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"browser-completed-en",await j.captureSurface(),"Actual native browser completion, one company reservation and receipt; the task-owned browser has closed",j.delivery));
     j.pass("Packaged Desktop's real Codex uses registered local browser tools for exact form/upload/screenshot/download results, customer answers and one company receipt, then closes its page");
   }finally{if(recording)await recording.stop();}
   await create("read-only");model.begin("denied");await send("Open the campaign browser with this read-only session.");

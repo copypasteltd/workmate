@@ -89,7 +89,7 @@ interface Journey {
   tenant: string; project: string; originalAsset: string; platform: string; owned: string; delivery: string; attempt: string;
   list: () => Promise<any>; until: (read: () => Promise<any>, ok: (value: any) => boolean, label: string, ms?: number) => Promise<any>;
   resize: (width: number, height: number, label: string) => Promise<void>;
-  reload: () => Promise<void>;
+  reload: () => Promise<void>; captureSurface: () => Promise<Buffer>;
   pass: (label: string) => void; screenshots: any[]; providerCalls: () => number;
 }
 export async function runDesktopVideoJourney(j: Journey) {
@@ -103,7 +103,7 @@ export async function runDesktopVideoJourney(j: Journey) {
     const r = await page.evaluate(async url => (window as any).copyPasteBridge.request(url, {}), base + suffix);
     assert.equal(r.status, 200, JSON.stringify(r)); return r.body;
   };
-  const screenshot = async (name: string, note: string) => j.screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + j.attempt, name, await page.screenshot(), note, j.delivery));
+  const screenshot = async (name: string, note: string) => j.screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + j.attempt, name, await j.captureSurface(), note, j.delivery));
   const card = (id: string) => page.locator(`[data-local-video-render="${id}"]`);
   const task = async (id: string) => (await system.db.control.query("SELECT * FROM tasks WHERE id=$1", [id])).rows[0];
   const begin = async (mode: Mode, prompt: string, waiting = false) => {

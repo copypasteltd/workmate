@@ -36,7 +36,7 @@ export class GeneratedVideoNativeModel {
 export async function runGeneratedVideoNativeJourney(j: any) {
   const { page, system, model, provider, list, until, resize } = j;
   const screenshot = async (name: string) => j.screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + j.attempt, name,
-    await page.screenshot(), "Actual frameless packaged Electron and native Codex generated-video tools; real shared budget, reported progress, decoded MP4, local save and immutable ledger. Reasoning/video content and native dialogs are explicit fixtures.", j.delivery));
+    await j.captureSurface(), "Actual frameless packaged Electron and native Codex generated-video tools; real shared budget, reported progress, decoded MP4, local save and immutable ledger. Reasoning/video content and native dialogs are explicit fixtures.", j.delivery));
   const prior = await list(); await page.getByLabel("Local specialist", { exact: true }).selectOption("video-motion");
   await page.getByRole("button", { name: "Choose folder to start", exact: true }).click();
   await until(list, (state: any) => state.id !== prior.id, "independent generated-video native session");

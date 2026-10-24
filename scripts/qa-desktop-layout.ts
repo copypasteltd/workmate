@@ -50,7 +50,7 @@ export async function checkDesktopWorkLayout(j:any) {
       const b=el.getBoundingClientRect(),p=el.parentElement!.getBoundingClientRect();return b.left>=p.left&&b.right<=p.right+1&&b.top>=p.top&&b.bottom<=p.bottom+1;
     }),true,"The last actual download action remains reachable by focus");
     await page.getByLabel("Local task",{exact:true}).focus();
-    j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"layout-"+width+"-en",await page.screenshot(),"Actual frameless packaged Desktop: real long native history, wheel/Home/End, last artifact focus, wrapping content and no scrollbar rails; model text is an explicit fixture",j.delivery));
+    j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"layout-"+width+"-en",await j.captureSurface(),"Actual frameless packaged Desktop: real long native history, wheel/Home/End, last artifact focus, wrapping content and no scrollbar rails; model text is an explicit fixture",j.delivery));
   }
   await resize(1440,980,"restore full native workspace after layout checks");
   j.pass("Actual 1440x980, 1280x800 and 800x600 Desktop has no visible scrollbar rails or horizontal overflow, while wheel/Home/End reaches the long history and focus reaches the last real download");
@@ -67,7 +67,7 @@ export async function checkDesktopAccountLayout(j:any) {
   for(const name of ["Usage & plan","Devices & files","Account settings"]){
     await page.locator(".sidebar-bottom").getByRole("link",{name,exact:true}).click();await page.getByRole("heading",{name,exact:true}).waitFor();
     await assertDesktopLayout(page);
-    j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"layout-"+name.split(" ")[0].toLowerCase()+"-en",await page.screenshot(),"Actual compact Desktop account page with current company identity and data; no horizontal layout or visible scrollbar rails",j.delivery));
+    j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"layout-"+name.split(" ")[0].toLowerCase()+"-en",await j.captureSurface(),"Actual compact Desktop account page with current company identity and data; no horizontal layout or visible scrollbar rails",j.delivery));
   }
   await page.locator(".sidebar nav").getByRole("link",{name:"Local Agent",exact:true}).click();await page.getByLabel("Local specialist",{exact:true}).waitFor();
   const navigation=page.getByRole("navigation",{name:"Main navigation",exact:true});
@@ -79,7 +79,7 @@ export async function checkDesktopAccountLayout(j:any) {
     if(locale==="zh")await page.getByTitle("切換至繁體中文",{exact:true}).click();
     for(const value of ["light","dark"]){
       await setTheme(value);await assertDesktopLayout(page);
-      j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"layout-compact-"+locale+"-"+value,await page.screenshot(),"Actual compact Desktop language/theme controls and native history; no visible rails, no horizontal layout overflow, real company permissions retained",j.delivery));
+      j.screenshots.push(await saveWorkmateScreenshot("desktop","local-"+j.attempt,"layout-compact-"+locale+"-"+value,await j.captureSurface(),"Actual compact Desktop language/theme controls and native history; no visible rails, no horizontal layout overflow, real company permissions retained",j.delivery));
     }
   }
   await page.getByTitle("Switch to English",{exact:true}).click();await setTheme("light");await resize(1440,980,"restore native workspace before final locale and sign-out checks");

@@ -10,10 +10,11 @@ export async function runDesktopWorkflowJourney(j: {
   tenant: string; project: string; workspace: string; outside: string; owned: string; delivery: string; attempt: string;
   list(): Promise<any>; until(read: () => Promise<any>, ok: (value: any) => boolean, label: string, ms?: number): Promise<any>;
   resize(width: number, height: number, label: string): Promise<void>; reload(): Promise<void>;
+  captureSurface(): Promise<Buffer>;
   pass(text: string): void; screenshots: any[]; providerCalls(): number;
 }) {
   const { page, model, system } = j;
-  const screenshot = async (name: string, note: string) => j.screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + j.attempt, name, await page.screenshot(), note, j.delivery));
+  const screenshot = async (name: string, note: string) => j.screenshots.push(await saveWorkmateScreenshot("desktop", "local-" + j.attempt, name, await j.captureSurface(), note, j.delivery));
   await page.getByLabel("Local specialist", { exact: true }).selectOption("workflow-consultant");
   const previous = await j.list(); await page.getByRole("button", { name: "Choose folder to start", exact: true }).click();
   await j.until(j.list, state => state.id !== previous.id, "native workflow specialist session");
