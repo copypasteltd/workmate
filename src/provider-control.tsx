@@ -31,6 +31,7 @@ const labels: Record<string, [string, string]> = {
   text_slots: ["文字同時請求", "Concurrent text requests"],
   image_slots: ["圖片同時請求", "Concurrent image requests"],
   video_slots: ["影片同時作業", "Concurrent video jobs"],
+  audio_slots: ["音訊同時作業（0 為停用）", "Concurrent audio jobs (0 disables)"],
   verification_slots: ["後台驗證同時請求", "Concurrent verification requests"],
   global_rpm: ["全平台每分鐘請求", "Platform requests / minute"],
   tenant_rpm: ["每企業每分鐘請求", "Requests / minute / workspace"],
@@ -38,6 +39,7 @@ const labels: Record<string, [string, string]> = {
   text_rpm: ["文字每分鐘請求", "Text requests / minute"],
   image_rpm: ["圖片每分鐘請求", "Image requests / minute"],
   video_rpm: ["影片每分鐘提交", "Video submissions / minute"],
+  audio_rpm: ["音訊每分鐘提交（0 為停用）", "Audio submissions / minute (0 disables)"],
   verification_rpm: ["後台驗證每分鐘請求", "Verification requests / minute"],
   preparation_seconds: ["準備時限（秒）", "Preparation timeout (seconds)"],
   count_price_micros: [
@@ -455,7 +457,7 @@ function PolicyEditor({
                 name={k}
                 type="number"
                 step="1"
-                min="1"
+                min={k.startsWith("audio_") ? 0 : 1}
                 max={
                   k === "preparation_seconds"
                     ? 300
@@ -463,7 +465,7 @@ function PolicyEditor({
                       ? 100000
                       : 1000
                 }
-                defaultValue={current.limits[k]}
+                defaultValue={current.limits[k] ?? (k.startsWith("audio_") ? 0 : undefined)}
                 required
               />
             </Field>
@@ -1469,6 +1471,70 @@ function GeneratedVideoRequests({ access, revision, onDone }: { access: Capabili
   </>;
 }
 
+function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess; revision: number; onDone: () => void }) {
+  const { t } = useI18n(), [filters, setFilters] = useState<Record<string, string>>({}), [cursors, setCursors] = useState<string[]>([]);
+  const [command, setCommand] = useState<any>(null);
+  const [content, setContent] = useState<any>(null), [contentError, setContentError] = useState<unknown>(null);
+  const query = new URLSearchParams({ ...filters, limit: "20", ...(cursors.length ? { cursor: cursors.at(-1)! } : {}) });
+  const result = useData(root + "/audio-jobs?" + query, revision);
+  return <>
+    <form className="provider-card" onSubmit={event => {
+      event.preventDefault(); const data = new FormData(event.currentTarget), next: Record<string, string> = {};
+      for (const name of ["tenant_id", "project_id", "task_id"]) if (String(data.get(name) ?? "").trim()) next[name] = String(data.get(name)).trim();
+      setFilters(next); setCursors([]);
+    }}><div className="provider-form-grid">
+      {[["tenant_id", t("企業 ID", "Workspace ID")], ["project_id", t("項目 ID", "Project ID")], ["task_id", t("工作 ID", "Task ID")]].map(([name, label]) =>
+        <Field key={name} label={label}><input name={name} defaultValue={filters[name] ?? ""} pattern="[a-fA-F0-9-]{36}" /></Field>)}
+    </div><button className="button secondary">{t("篩選音訊作業", "Filter audio jobs")}</button></form>
+    <ErrorNotice error={result.error ?? contentError} />{result.loading && <Loading />}
+    {result.data && <>
+      {!result.data.items.length && <p className="provider-card muted">{t("此授權範圍沒有音訊作業。", "No audio jobs in this authorized scope.")}</p>}
+      <div className="provider-history">{result.data.items.map((job: any) => <article className="provider-card" key={job.id} data-audio-job={job.id}>
+        <div className="provider-toolbar"><Mode value={job.data_mode} /><State value={job.state} /><State value={job.delivery_state} /></div>
+        <h3>{job.kind === "speech" ? t("AI 配音", "AI speech") : t("轉寫與字幕", "Transcription and subtitles")}</h3>
+        <dl className="key-value">
+          <dt>{t("作業", "Job")}</dt><dd><code>{job.id}</code></dd>
+          <dt>{t("原工作", "Original task")}</dt><dd><code>{job.task_id}</code></dd>
+          <dt>{t("企業／項目", "Workspace / project")}</dt><dd><code>{job.tenant_id}<br />{job.project_id}</code></dd>
+          <dt>{t("原用戶", "Original user")}</dt><dd><code>{job.actor_id}</code></dd>
+          <dt>{t("服務／能力版本", "Service / capability")}</dt><dd>{job.model_alias}<br /><code>{job.capability_version_id}</code></dd>
+          <dt>{t("原操作識別", "Original operation")}</dt><dd><code>{job.operation_id}</code></dd>
+          <dt>{t("字幕版本", "Transcript version")}</dt><dd>{job.subtitle_revision ? `v${job.subtitle_revision}` : "—"}</dd>
+          <dt>{t("建立時間", "Created")}</dt><dd><DateText value={job.created_at} /></dd>
+        </dl>
+        {job.cost && <section className="provider-video-cost"><dl className="key-value">
+          <dt>{t("公司收費上限", "Company tariff limit")}</dt><dd><Money value={job.cost.quoted_micros} /></dd>
+          <dt>{t("已確認公司費用", "Confirmed company charge")}</dt><dd>{job.cost.actual_micros === null ? t("待確認；保留原預留", "Unconfirmed; original hold retained") : <Money value={job.cost.actual_micros} />}</dd>
+          <dt>{t("已確認計費量", "Confirmed billable units")}</dt><dd>{job.cost.billable_units ?? "—"} · {job.cost.pricing_unit === "unicode_scalar" ? t("字元", "characters") : t("音訊毫秒", "audio milliseconds")}</dd>
+          <dt>{t("供應商成本", "Supplier cost")}</dt><dd>{t("未獨立確認", "Not independently confirmed")}</dd>
+        </dl></section>}
+        {!job.usage_known && <p className="notice">{t("原請求結果尚待核對，保留費用與容量，不自動重新提交或按零結算。", "The original request remains unconfirmed. Cost and capacity holds remain; no automatic resubmission or zero settlement.")}</p>}
+        {job.error_code && <p className="muted"><code>{job.error_code}</code></p>}
+        <p className="muted">{t("文字、授權聲明與原音訊由獨立的內容權限管理；此處只展示作業記錄。", "Text, rights attestations and source audio use separate content permissions. This view shows operation records.")}</p>
+        {access.has("admin.content.body.read") && <button className="button secondary" onClick={() => {
+          setContentError(null); void api(`${root}/audio-jobs/${job.id}/content`).then(setContent).catch(setContentError);
+        }}>{t("讀取原始要求與授權", "Read original request and rights")}</button>}
+        {job.cost && job.usage_known && access.has("admin.ai.tasks.settle") && <details><summary>{t("結算原任務費用", "Settle original task costs")}</summary>
+          <AsyncForm submitLabel={t("預覽結算", "Preview settlement")} onSubmit={async form => {
+            const facts = await api(`${root}/tasks/${job.task_id}/settlement`);
+            if (facts.violations.length && form.get("acknowledge") !== "on") throw new Error(t("請明確確認歷史預算違規。", "Explicitly acknowledge the historical budget violations."));
+            setCommand({ action: "ai.tasks.settle", task_id: job.task_id, expected_task_version: facts.task.version,
+              acknowledge_violation_ids: facts.violations.map((value: any) => value.id), reason: String(form.get("reason")) });
+          }}><Field label={t("結算原因", "Settlement reason")}><textarea name="reason" minLength={3} maxLength={1000} required /></Field>
+            <label className="checkbox"><input type="checkbox" name="acknowledge" />{t("確認歷史預算違規（如有）", "Acknowledge historical budget violations, if any")}</label>
+          </AsyncForm></details>}
+      </article>)}</div>
+      <div className="provider-pagination"><button className="button secondary" disabled={!cursors.length} onClick={() => setCursors(values => values.slice(0, -1))}><ChevronLeft size={16} />{t("上一頁", "Previous")}</button>
+        <button className="button secondary" disabled={!result.data.next_cursor} onClick={() => setCursors(values => [...values, result.data.next_cursor])}>{t("下一頁", "Next")}<ChevronRight size={16} /></button></div>
+    </>}
+    {command && <Command command={command} access={access} onClose={() => setCommand(null)} onDone={() => { setCommand(null); onDone(); }} />}
+    {content && <Modal title={t("原始要求與授權", "Original request and rights")} onClose={() => setContent(null)}>
+      <p className="muted">{t("此次敏感讀取已記錄審計。原始要求不可覆寫；新要求需建立獨立工作。", "This sensitive read is audited. The original request is immutable; a new request requires a separate task.")}</p>
+      <pre className="provider-audio-body">{JSON.stringify(content, null, 2)}</pre>
+    </Modal>}
+  </>;
+}
+
 export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
   const { t } = useI18n(),
     [view, setView] = useState(
@@ -1508,6 +1574,11 @@ export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
             t("生成式影片作業", "Generated video jobs"),
           ],
           [
+            "audio",
+            "admin.ai.requests.read",
+            t("配音與轉寫作業", "Speech & transcription jobs"),
+          ],
+          [
             "policies",
             "admin.ai.policy.read",
             t("策略版本", "Policy versions"),
@@ -1528,6 +1599,8 @@ export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
         <PolicyPanel access={access} revision={revision} onDone={refresh} />
       ) : view === "videos" ? (
         <GeneratedVideoRequests access={access} revision={revision} onDone={refresh} />
+      ) : view === "audio" ? (
+        <AudioRequests access={access} revision={revision} onDone={refresh} />
       ) : (
         <Requests access={access} revision={revision} onDone={refresh} />
       )}

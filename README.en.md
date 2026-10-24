@@ -1,5 +1,67 @@
 # Workmate · CopyPaste Admin Dashboard
 
+<!-- audio-production-stage84 -->
+
+Admin independently controls audio-job metadata, costs and sensitive original bodies.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-admin'
+npm ci
+npm run dev
+```
+
+Start the backend first, then open `http://localhost:4318`. Use `npm run build` for the static build. Use a separately enrolled Admin account with MFA and assigned permissions.
+
+### Use the current workflow
+
+1. Sign in with email/OTP and choose a company/project. Select the **Video & motion designer** preset (version 1.3.0, `speech-production` 1.1.0) and describe the approved script or attach an authorized WAV/MP3 asset. In Desktop, choose a local folder and explicitly set the local permission; full access requires native confirmation and can be revoked. Web/Extension run cloud Codex; Desktop orchestration stays local.
+2. Ask for speech or file transcription in the task. The server checks the current role, optional verified audio capability, language/voice allowlists, exact source version, budget and published provider capacity. All AI requests use the company's OpenAI-compatible gateway. Reasoning, images and audio share one task budget. Unconfigured audio does not disable existing video editing.
+3. Open **Speech and subtitles → Review audio and subtitles**. WAV playback and save use authenticated bytes with size/SHA-256 checks. Transcription retains the original raw JSON, text and actual service timing. Without returned timestamps, it shows text only; it does not invent caption times.
+4. Select the current transcript version and **Revise subtitles**. Edit text/time or remove/add captions, supply a reason and save a new version. New manual time fields start blank. Earlier versions remain read only; the original remains available. A concurrent change rejects the stale version and retains your edits. Manual revisions make no AI call or new generation charge.
+5. Admin uses its separate email/OTP/TOTP identity. In **Provider control → Speech & transcription jobs**, `admin.ai.requests.read` allows scoped metadata, `admin.ai.cost.read` independently permits costs, and `admin.content.body.read` plus recent MFA permits an audited original-body read. The original request cannot be overwritten. Source isolation, deletion or permission loss blocks current previews/downloads. Confirmed costs use the existing independent-review ledger; a dispatched operation with unknown outcome holds its reservation and is not automatically retried.
+
+Before upgrading clients, apply additive **SQL101** with backend `npm run db:migrate`. Keep `AI_BASE_URL`, `AI_ALLOWED_HOSTS`, credentials, exact speech/transcription aliases, positive character/millisecond tariffs and verified voice/locale lists on the server. Set `AI_SPEECH_VERIFIED` / `AI_TRANSCRIPTION_VERIFIED` only after protocol verification; timestamp support is separately declared. Audio slots/RPM start at **0** and need the existing separately approved policy publication. Ordinary `npm run demo` does not automatically enable this audio fixture. The observed checks use isolated explicit synthetic services.
+
+Desktop uses CopyPaste typography/blue/cream and light/dark themes, with **no Electron frame/menu and no visible vertical or horizontal scrollbar rails**. Content wraps; real wheel/Home/End, last-action focus and truthful progress remain. A focused subtitle control stays visible after a real OS resize at 1440×980, 1280×800 and 800×600. Extension stays in the actual right Chrome Side Panel with ChatGPT-style chat/attachments, authorized uploads and no Desktop dependency.
+
+Validation: platform **988** (all previous **968** cases retained), audio/gateway **43**, compatibility **80**, client tests **124**, actual Web/Admin/Side Panel **10**, packaged local Desktop **40**. All three desktop sizes, real WAV decoding/saves, manual revisions and owned-resource cleanup were checked. SQL001–100 and both original OpenAPI files keep their published bytes; the seven audio operations are additive. Current runtime and executed test sources match the selected receipts. The only unrelated snapshot difference is a reviewed catalog-count test update from 30 to 31 versions; its entire four-file batch and the remaining batches ran afresh. Earlier passing results and the failed count assertion retain their original scope and bytes.
+
+The audio fixture is a decoded synthetic tone with fixed ASR text. Live voices/Cantonese quality, independent human rights confirmation, managed audio validation/publication/rollback, unknown-POST external-bill evidence and recovery delivery remain open. Stored rights fields are tool parameters linked to the actor/task, not independently authenticated human consent. This bounded repair does not establish complete professional-role quality, signed installation or full Codex Desktop parity. Original **102 REQ / 102 TC: 83 partial, 19 unproven, 0 fully accepted; G01–G10 open**.
+
+
+[Design and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/84-internal-audio-production.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/audio-production-checkpoint.json) · [Additive API contract](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/audio-production-openapi.json)
+
+```mermaid
+flowchart LR
+    Login[Email / company / project] --> Role[Versioned role and speech skill]
+    Role --> Cloud[Web / Side Panel cloud Codex]
+    Role --> Local[Desktop local Codex]
+    Cloud --> Gate[Current source / budget / audio capacity]
+    Local --> Gate
+    Gate --> Company[Company speech / transcription API]
+    Company --> Assets[Retained private originals and actual timing]
+    Assets --> Revision[Manual versioned subtitles / no AI call]
+    Assets --> Preview[Authenticated playback and save]
+    Admin[Scoped Admin / independent body and cost permissions] --> Gate
+```
+
+Actual authenticated UI; original unedited screenshots and observed-time recordings. Audio/model/business content and native dialog decisions are explicit fixtures.
+
+![Actual editor](assets/screenshots/workmate-audio-06-audio-scope-costs.png)
+
+![Actual second locale/state](assets/screenshots/workmate-audio-06-audio-rights-body-compact.png)
+
+![Recorded interaction](assets/screenshots/workmate-audio-06-audio-governance.gif)
+
+[Original MP4](assets/screenshots/workmate-audio-06-audio-governance.mp4)
+
+<details>
+<summary>Previous delivery details and historical evidence</summary>
+
 <!-- geo-observation-stage83 -->
 
 GEO now has reproducible question sets and retained original answers. An immutable configuration pins the complete Agent definition, skills, requested model alias, Codex runtime, language, requested region and protocol. Independent API repeats keep the same configuration; user-supplied consumer answers remain a separate surface.
@@ -512,6 +574,8 @@ flowchart LR
 
 </details>
 
+
+</details>
 
 </details>
 
