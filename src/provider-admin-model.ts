@@ -15,6 +15,7 @@ export const providerLimits = z
     text_slots: bounded(1000),
     image_slots: bounded(1000),
     video_slots: bounded(1000).default(2),
+    audio_slots: z.number().int().min(0).max(1000).default(0),
     verification_slots: bounded(1000),
     global_rpm: bounded(100000),
     tenant_rpm: bounded(100000),
@@ -22,6 +23,7 @@ export const providerLimits = z
     text_rpm: bounded(100000),
     image_rpm: bounded(100000),
     video_rpm: bounded(100000).default(60),
+    audio_rpm: z.number().int().min(0).max(100000).default(0),
     verification_rpm: bounded(100000),
     preparation_seconds: bounded(300),
   })

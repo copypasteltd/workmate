@@ -41,6 +41,18 @@ const schema = z.object({
     .enum(["low", "medium", "high", "xhigh", "max"])
     .default("max"),
   AI_IMAGE_MODEL: z.string().optional(),
+  AI_SPEECH_MODEL: z.string().min(1).max(200).optional(),
+  AI_SPEECH_VERIFIED: bool.default(false),
+  AI_SPEECH_LOCALES: z.string().regex(/^(?:en|zh-HK|yue-HK)(?:,(?:en|zh-HK|yue-HK)){0,2}$/).default("en"),
+  AI_SPEECH_VOICES: z.string().regex(/^(?:[a-zA-Z0-9_-]{1,80})(?:,[a-zA-Z0-9_-]{1,80}){0,31}$/).default("alloy"),
+  AI_SPEECH_HKD_MICROS_PER_CHARACTER: z.preprocess(value => value === "" ? undefined : value,
+    z.coerce.number().int().positive().max(1000000000).optional()),
+  AI_TRANSCRIPTION_MODEL: z.string().min(1).max(200).optional(),
+  AI_TRANSCRIPTION_VERIFIED: bool.default(false),
+  AI_TRANSCRIPTION_LOCALES: z.string().regex(/^(?:en|zh-HK|yue-HK)(?:,(?:en|zh-HK|yue-HK)){0,2}$/).default("en"),
+  AI_TRANSCRIPTION_TIMESTAMPS: bool.default(false),
+  AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND: z.preprocess(value => value === "" ? undefined : value,
+    z.coerce.number().int().positive().max(1000000000).optional()),
   AI_VIDEO_MODEL: z.string().optional(),
   AI_VIDEO_VERIFIED: bool.default(false),
   AI_VIDEO_HKD_MICROS_PER_SECOND: z.preprocess(

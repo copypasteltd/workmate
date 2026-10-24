@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-24T09:41:07.822716+00:00",
+  "generated_at": "2026-10-24T13:50:30.381389+00:00",
   "contract": "actual_fastify_route_inventory",
   "not_full_design_openapi": true,
   "routes": [
@@ -62,6 +62,14 @@
     {
       "method": "POST",
       "path": "/v1/admin/access/roles"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/audio-jobs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/ai/audio-jobs/:job/content"
     },
     {
       "method": "GET",
@@ -1309,6 +1317,26 @@
     },
     {
       "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-jobs"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-jobs/:job"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-jobs/:job/cancel"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-jobs/:job/preview"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/tenants/:tenant/projects/:project/audio-jobs/:job/subtitles"
+    },
+    {
+      "method": "GET",
       "path": "/v1/tenants/:tenant/projects/:project/brand"
     },
     {
@@ -1864,16 +1892,16 @@
       "path": "/v1/workspaces/:workspace_id/nodes"
     }
   ],
-  "additive_inventory_validation": {
-    "source": "dev/copypaste-delivery/evidence/geo-observation-ui-04.json",
-    "sha256": "245e9407256a8b13137d28549a85d5ab92917316a48703c652f34943872944ea",
-    "scope": "Actual unchanged routing code observed before this descriptive inventory refresh. The complete inventory is independently checked against the registered app in the new full backend qualification."
-  },
   "conditional_routes": [
     {
       "method": "POST",
       "path": "/v1/tenants/:tenant/demo-credit",
       "when": "DEMO_MODE=true"
     }
-  ]
+  ],
+  "additive_inventory_validation": {
+    "source": "dev/copypaste-delivery/evidence/audio-production-ui-03.json",
+    "sha256": "21e1d5590a84045e78d2b94283a60e7b140933a93ac35dd59d295782d29d7a74",
+    "scope": "Actual configured-services app before this descriptive refresh. All old configured and conditional routes are retained. Full platform qualification remains separate."
+  }
 }

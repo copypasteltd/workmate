@@ -174,10 +174,11 @@ after(async () => {
 
 test("preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member", async () => {
   const f = await fixture();
-  assert.equal(f.versions.length, 30);
+  assert.equal(f.versions.length, 31);
   assert.equal(new Set(f.versions.map((v: any) => v.skill_key)).size, 29);
-  assert.equal(new Set(f.versions.map((v: any) => v.id)).size, 30);
+  assert.equal(new Set(f.versions.map((v: any) => v.id)).size, 31);
   assert.deepEqual(f.versions.filter((v: any) => v.skill_key === "video-generation").map((v: any) => v.package_version).sort(), ["1.0.0", "1.1.0"]);
+  assert.deepEqual(f.versions.filter((v: any) => v.skill_key === "speech-production").map((v: any) => v.package_version).sort(), ["1.0.0", "1.1.0"]);
   assert.equal(f.installed.length, 5);
   const effective = await ok(
     f.owner,

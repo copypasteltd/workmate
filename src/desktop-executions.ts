@@ -43,7 +43,7 @@ const companyToolNames = new Set(["project_assets", "asset_text_read", "cloud_fi
 // Existing native roles keep exactly their published tool bindings. The new
 // specialist has no old native thread and receives the video contract only.
 const videoCompanyToolNames = new Set(["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel",
-  "generated_video_create", "generated_video_status", "generated_video_cancel"]);
+  "generated_video_create", "generated_video_status", "generated_video_cancel", "audio_produce"]);
 const companyCall = z.object({ tool: z.string().regex(/^[a-z][a-z0-9_]{0,63}$/), arguments: z.record(z.string(), z.unknown()),
   call_id: z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/), thread_id: z.string().min(1).max(128), turn_id: z.string().min(1).max(128) }).strict();
 const denied = (code = "DESKTOP_EXECUTION_UNAVAILABLE") => new Problem(409, code, "This local execution needs to be stopped or reconciled on its owning desktop");
@@ -266,7 +266,8 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
         const current = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [prepared.id])).rows[0];
         if (!current || current.fencing_token !== prepared.fencing_token) return true;
         const pending = (await tx.query(`SELECT 1 FROM tool_operations WHERE task_id=$1 AND call_id=$2 AND state IN ('accepted','reconciling')
-          UNION ALL SELECT 1 FROM ai_video_jobs WHERE task_id=$1 AND call_id=$2 AND NOT usage_known`, [prepared.id, body.call_id])).rowCount;
+          UNION ALL SELECT 1 FROM ai_video_jobs WHERE task_id=$1 AND call_id=$2 AND NOT usage_known
+          UNION ALL SELECT 1 FROM ai_audio_jobs WHERE task_id=$1 AND call_id=$2 AND NOT usage_known`, [prepared.id, body.call_id])).rowCount;
         if (pending) { await requestTaskCancellation(tx, current); return true; }
         return false;
       }, p.tenant, true, prepared.created_by);

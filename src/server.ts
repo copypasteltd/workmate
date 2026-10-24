@@ -49,6 +49,7 @@ import { registerBusiness } from "./business.js";
 import { registerCreativeMatrices } from "./creative-matrices.js";
 import { registerVideoProjects } from "./video-projects.js";
 import { registerGeneratedVideoJobs } from "./video-job-routes.js";
+import { registerAudioProduction } from "./audio-production-routes.js";
 import { registerPersistentWork } from "./persistent-work.js";
 import { registerAgentAdoption } from "./agent-adoption.js";
 import { registerAdminIdentities } from "./admin-identities.js";
@@ -400,6 +401,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerCreativeMatrices(app, db, storage);
   registerVideoProjects(app, db, storage);
   registerGeneratedVideoJobs(app, db, catalog, storage);
+  registerAudioProduction(app, db, catalog, storage);
   registerSchedules(app, db, catalog);
   registerAdmin(app, db, catalog, storage);
   registerAdminPlans(app, db, catalog);

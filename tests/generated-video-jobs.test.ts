@@ -344,7 +344,11 @@ test("a pre-upgrade native video task keeps its frozen role, Skills and seven te
   assert.ok(started.company_tools.every((tool: any) => !tool.name.startsWith("generated_video_")));
   assert.ok(started.skills.every((skill: any) => skill.key !== "video-generation"));
   assert.equal((await videoCall(s, f.c, "POST", url + "/tools", videoToolRequest("generated_video_create", spec))).status, 403);
-  assert.equal(s.catalog.role("video-motion").version, "1.2.0");
+  assert.equal(s.catalog.role("video-motion").version, "1.3.0");
+  const retainedVideo = s.catalog.historicalRoles.find(role => role.role_key === "video-motion" && role.version === "1.2.0");
+  assert.ok(retainedVideo, "The published video-generation role remains addressable after audio is added");
+  assert.ok(retainedVideo.tool_ids.includes("video.generate.internal"));
+  assert.ok(!retainedVideo.tool_ids.includes("speech.generate.internal"));
   await videoOK(s, f.c, "POST", url + "/finish", videoFinish);
 });
 

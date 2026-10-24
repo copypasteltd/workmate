@@ -1,4 +1,5 @@
 import { TaskBusinessTools } from "./task-business-tools.js";
+import { AudioProduction } from "./audio-production.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
 import { CapabilityVideoVerification } from "./capability-video-verification.js";
 import {
@@ -195,6 +196,7 @@ export class Worker {
         c.release();
       }
       // Unknown abandoned execution is retained for reconciliation; it is never blindly replayed.
+      await new AudioProduction(this.db, this.catalog, this.storage).recover();
       await this.db.control.query(
         "UPDATE tasks SET status='reconciling',error_code='WORKER_LEASE_EXPIRED',version=version+1 WHERE status='running' AND lease_until<now()",
       );

@@ -215,7 +215,8 @@ export class Catalog {
     if (capabilities) {
       const text = capabilities.get("internal-text-v1"),
         image = capabilities.get("internal-image2-v1"),
-        video = capabilities.get("internal-video-v1");
+        video = capabilities.get("internal-video-v1"), speech = capabilities.get("internal-speech-v1"),
+        transcription = capabilities.get("internal-transcription-v1");
       const usable = (v: any) =>
         v?.ready &&
         !v.revoked &&
@@ -247,12 +248,20 @@ export class Catalog {
         AI_VIDEO_VERIFIED: !!(usable(video) && (video.publication_id || c.AI_VIDEO_VERIFIED)
           && video.body.wire_protocol === "company-video-jobs-v1" && video.body.rates.length === 1 && video.body.rates[0] > 0),
         AI_VIDEO_HKD_MICROS_PER_SECOND: video?.body.rates[0] ?? undefined,
+        AI_SPEECH_MODEL: speech?.body.model_alias ?? undefined,
+        AI_SPEECH_VERIFIED: !!(usable(speech) && (speech.publication_id || c.AI_SPEECH_VERIFIED)),
+        AI_SPEECH_HKD_MICROS_PER_CHARACTER: speech?.body.rates[0] ?? undefined,
+        AI_TRANSCRIPTION_MODEL: transcription?.body.model_alias ?? undefined,
+        AI_TRANSCRIPTION_VERIFIED: !!(usable(transcription) && (transcription.publication_id || c.AI_TRANSCRIPTION_VERIFIED)),
+        AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND: transcription?.body.rates[0] ?? undefined,
       };
     }
     if (
       mode === "execute" &&
       role.model_bindings.some((binding: any) => binding.required &&
-        (binding.profile_key === "internal-speech-v1" || binding.profile_key === "internal-video-v1"
+        (binding.profile_key === "internal-speech-v1" && (!c.AI_SPEECH_MODEL || !c.AI_SPEECH_VERIFIED || !c.AI_SPEECH_HKD_MICROS_PER_CHARACTER)
+          || binding.profile_key === "internal-transcription-v1" && (!c.AI_TRANSCRIPTION_MODEL || !c.AI_TRANSCRIPTION_VERIFIED || !c.AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND)
+          || binding.profile_key === "internal-video-v1"
           && (!c.AI_VIDEO_MODEL || !c.AI_VIDEO_VERIFIED || !c.AI_VIDEO_HKD_MICROS_PER_SECOND)))
     )
       return { available: false, reason: "MEDIA_CAPABILITY_SETUP_REQUIRED" };

@@ -1,5 +1,7 @@
 import { prepareBrandProduction } from "./brand-production.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
+import { AudioProduction } from "./audio-production.js";
+import { audioProductionToolSchema } from "./audio-production-model.js";
 import { videoJobSpecification } from "./video-job-protocol.js";
 import {
   assertTaskContentSources,
@@ -294,6 +296,16 @@ export class TaskBusinessTools {
         ),
       },
     ];
+    if (role.tool_ids.includes("speech.generate.internal")) {
+      const audio = new AudioProduction(this.db, this.catalog, this.storage);
+      tools.push({ name: "audio_produce",
+        description: "Produce explicitly requested speech or transcribe an authorized exact WAV/MP3 version through independently verified company capabilities and the shared task budget. Rights must be explicitly supplied by the customer. Returns actual audio/transcript/subtitle assets. Never invent timestamps, consent or supplier cost. The same operation is reused; unknown submissions must not be retried. Regeneration requires a new explicitly authorized task.",
+        inputSchema: audioProductionToolSchema,
+        run: async (args, callId) => {
+          const job = await audio.prepare(t, fencing, args, callId, authorize, this.authority.signal);
+          return audio.execute(t, job.id, authorize, this.authority.signal);
+        } });
+    }
     if (role.tool_ids.includes("video.generate.internal") && this.authority.videoReady) {
       const jobs = new GeneratedVideoJobs(this.db, this.catalog, this.storage);
       const jobRef = z.object({ job_id: uuid }).strict();
@@ -792,6 +804,7 @@ export class TaskBusinessTools {
               !!t.input_context?.seo_change_task_id &&
               role.tool_ids.includes("asset.read"),
             image2_generate: role.tool_ids.includes("image.generate.internal"),
+            audio_produce: role.tool_ids.includes("speech.generate.internal"),
             generated_video_create: role.tool_ids.includes("video.generate.internal"),
             generated_video_status: role.tool_ids.includes("video.generate.internal"),
             generated_video_cancel: role.tool_ids.includes("video.generate.internal"),

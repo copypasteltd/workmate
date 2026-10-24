@@ -2,6 +2,7 @@ import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import { canonical, hash, Problem } from "./lib.js";
 import { videoJobLimits, videoJobOperations, videoJobProtocol } from "./video-job-protocol.js";
+import { speechProtocol, transcriptionProtocol, speechLimits, transcriptionLimits } from "./audio-production-model.js";
 
 export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
   const definition = {
@@ -60,9 +61,17 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
         },
         {
           profile_key: "internal-speech-v1",
-          model_alias: null,
-          ready: false,
-          rates: [],
+          model_alias: db.config.AI_SPEECH_MODEL ?? null,
+          ready: !!(db.config.AI_BASE_URL && db.config.AI_API_KEY && db.config.AI_SPEECH_MODEL
+            && db.config.AI_SPEECH_VERIFIED && db.config.AI_SPEECH_HKD_MICROS_PER_CHARACTER !== undefined),
+          rates: db.config.AI_SPEECH_HKD_MICROS_PER_CHARACTER === undefined ? [] : [db.config.AI_SPEECH_HKD_MICROS_PER_CHARACTER],
+        },
+        {
+          profile_key: "internal-transcription-v1",
+          model_alias: db.config.AI_TRANSCRIPTION_MODEL ?? null,
+          ready: !!(db.config.AI_BASE_URL && db.config.AI_API_KEY && db.config.AI_TRANSCRIPTION_MODEL
+            && db.config.AI_TRANSCRIPTION_VERIFIED && db.config.AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND !== undefined),
+          rates: db.config.AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND === undefined ? [] : [db.config.AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND],
         },
       ];
       for (const capability of capabilities) {
@@ -76,6 +85,8 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
                   ? "images"
                   : capability.profile_key === "internal-video-v1" && capability.ready
                     ? videoJobProtocol
+                  : capability.profile_key === "internal-speech-v1" && capability.ready ? speechProtocol
+                  : capability.profile_key === "internal-transcription-v1" && capability.ready ? transcriptionProtocol
                   : "unimplemented",
             reasoning_effort:
               capability.profile_key === "internal-text-v1"
@@ -88,6 +99,8 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
                   ? ["images.generate", "images.edit"]
                   : capability.profile_key === "internal-video-v1" && capability.ready
                     ? [...videoJobOperations]
+                  : capability.profile_key === "internal-speech-v1" && capability.ready ? ["audio.speech"]
+                  : capability.profile_key === "internal-transcription-v1" && capability.ready ? ["audio.transcriptions"]
                   : [],
             limits:
               capability.profile_key === "internal-text-v1"
@@ -101,6 +114,8 @@ export async function seedRuntimeProfile(db: Database, catalog: Catalog) {
                     }
                   : capability.profile_key === "internal-video-v1" && capability.ready
                     ? videoJobLimits
+                  : capability.profile_key === "internal-speech-v1" && capability.ready ? speechLimits(db.config)
+                  : capability.profile_key === "internal-transcription-v1" && capability.ready ? transcriptionLimits(db.config)
                   : {},
             gateway_policy: "company_internal_only",
             gateway_fingerprint: hash(

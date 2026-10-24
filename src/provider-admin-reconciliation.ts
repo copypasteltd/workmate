@@ -340,6 +340,11 @@ export async function inspectProviderTaskSettlement(
     (actual_micros*1000000)::text AS numerator,operation_id,capability_version_id,specification_hash,
     rate_micros::text,billable_seconds::text FROM ai_video_jobs WHERE task_id=$1 ORDER BY created_at,id`, [t.id])).rows;
   facts.push(...videoFacts);
+  const audioFacts = (await tx.query(`SELECT id,'audio' AS channel,state,
+    CASE WHEN usage_known THEN 'known_company_tariff' ELSE 'unknown' END AS cost_state,
+    (actual_micros*1000000)::text AS numerator,operation_id,capability_version_id,specification_hash,
+    response_sha256,rate_micros::text,billable_units::text,pricing_unit FROM ai_audio_jobs WHERE task_id=$1 ORDER BY created_at,id`, [t.id])).rows;
+  facts.push(...audioFacts);
   return {
     scope: { data_mode: t.data_mode, tenant_id: t.tenant_id, project_id: null },
     task: {

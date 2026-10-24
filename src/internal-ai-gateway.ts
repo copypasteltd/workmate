@@ -5,12 +5,15 @@ import type { Config } from "./config.js";
 import { hash } from "./lib.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
 import { desktopToolDeclarations, desktopCustomTool, type DesktopCompanyToolSchema } from "./desktop-tool-policy.js";
+import { speechLimits, wellFormedAudioText } from "./audio-production-model.js";
 
 export type AIOperation =
   | "responses"
   | "responses.input_tokens"
   | "images.generate"
   | "images.edit"
+  | "audio.speech"
+  | "audio.transcriptions"
   | "videos.create"
   | "videos.retrieve"
   | "videos.lookup"
@@ -107,6 +110,8 @@ function endpoint(c: Config, operation: AIOperation, resource?: VideoRequestReso
     "responses.input_tokens": "/responses/input_tokens",
     "images.generate": "/images/generations",
     "images.edit": "/images/edits",
+    "audio.speech": "/audio/speech",
+    "audio.transcriptions": "/audio/transcriptions",
     "videos.create": "/videos",
   };
   let suffix = suffixes[operation];
@@ -139,6 +144,14 @@ function videoFields(body: Record<string, unknown>, model: string) {
     || body.prompt.length > 12000 || !["720x1280", "1280x720", "1024x1024"].includes(String(body.size))
     || !["4", "8", "12", "16", "20"].includes(String(body.seconds)))
     throw denied("AI_VIDEO_SPECIFICATION_CHANGED");
+}
+
+function speechFields(c: Config, body: Record<string, unknown>, model: string, limits?: Record<string, unknown>) {
+  if (Object.keys(body).some(key => !["model", "input", "voice", "speed", "response_format"].includes(key))
+    || body.model !== model || typeof body.input !== "string" || !body.input.trim() || body.input.length > 4096
+    || !wellFormedAudioText(body.input) || !(Array.isArray(limits?.voices) ? limits.voices : speechLimits(c).voices).includes(String(body.voice))
+    || typeof body.speed !== "number" || !Number.isFinite(body.speed) || body.speed < 0.25 || body.speed > 4 || body.response_format !== "wav")
+    throw denied("AI_AUDIO_SPECIFICATION_CHANGED");
 }
 
 function imageFields(body: Record<string, unknown>, model: string) {
@@ -252,6 +265,8 @@ export interface InternalAIRequest {
   reasoningEffort?: string;
   tools?: readonly string[];
   body: Record<string, unknown> | FormData;
+  /** Trusted frozen audio capability, never accepted from a model request body. */
+  audioLimits?: Record<string, unknown>;
   /** Validated resource identifiers only; callers cannot supply an endpoint. */
   videoResource?: VideoRequestResource;
   authority: AIRequestAuthority;
@@ -270,33 +285,43 @@ export interface InternalAIRequest {
 export async function internalAIRequest(c: Config, request: InternalAIRequest) {
   const url = endpoint(c, request.operation, request.videoResource);
   const video = request.operation.startsWith("videos.");
+  const transcription = request.operation === "audio.transcriptions";
   if (video && (!request.model.trim() || request.model.length > 200)) throw denied("AI_VIDEO_SPECIFICATION_CHANGED");
   const method = ["videos.retrieve", "videos.lookup", "videos.content"].includes(request.operation) ? "GET" : "POST";
   let normalized: Record<string, unknown> | undefined;
   let bytes: Buffer, contentType: string;
   if (request.body instanceof FormData) {
-    if (request.operation !== "images.edit" && request.operation !== "videos.create")
+    if (request.operation !== "images.edit" && request.operation !== "videos.create" && !transcription)
       throw denied("AI_PROTOCOL_NOT_ALLOWED");
     const fields: Record<string, unknown> = {};
     let image: Blob | undefined;
     for (const [name, value] of request.body.entries()) {
-      if (name === (video ? "input_reference" : "image") && value instanceof Blob && !image) image = value;
+      if (name === (transcription ? "file" : video ? "input_reference" : "image") && value instanceof Blob && !image) image = value;
       else if (typeof value === "string" && !(name in fields))
         fields[name] = name === "n" && value === "1" ? 1 : value;
       else throw denied("AI_IMAGE_SPECIFICATION_CHANGED");
     }
-    if (video) videoFields(fields, request.model);
+    if (transcription) {
+      if (Object.keys(fields).some(key => !["model", "language", "response_format", "timestamp_granularities[]"].includes(key))
+        || fields.model !== request.model || !["en", "zh"].includes(String(fields.language))
+        || !["json", "verbose_json"].includes(String(fields.response_format))
+        || (fields.response_format === "verbose_json" ? !(Array.isArray(request.audioLimits?.response_formats)
+          ? request.audioLimits.response_formats.includes("verbose_json") : c.AI_TRANSCRIPTION_TIMESTAMPS) || fields["timestamp_granularities[]"] !== "segment"
+          : fields["timestamp_granularities[]"] !== undefined)
+        || !image || !image.size || image.size > 25_000_000 || !["audio/wav", "audio/mpeg"].includes(image.type))
+        throw denied("AI_AUDIO_SPECIFICATION_CHANGED");
+    } else if (video) videoFields(fields, request.model);
     else imageFields(fields, request.model);
     if (
-      (!video && !image) || (image && ((video && !image.size) || image.size > 10_000_000 ||
-      !(video ? ["image/png", "image/jpeg"] : ["image/png", "image/jpeg", "image/webp"]).includes(image.type)))
+      !transcription && ((!video && !image) || (image && ((video && !image.size) || image.size > 10_000_000 ||
+      !(video ? ["image/png", "image/jpeg"] : ["image/png", "image/jpeg", "image/webp"]).includes(image.type))))
     )
       throw denied(video ? "AI_VIDEO_SPECIFICATION_CHANGED" : "AI_IMAGE_SPECIFICATION_CHANGED");
     const encoded = new Response(request.body);
     contentType = encoded.headers.get("content-type")!;
     bytes = Buffer.from(await encoded.arrayBuffer());
   } else {
-    if (request.operation === "images.edit" || request.operation === "videos.create")
+    if (request.operation === "images.edit" || request.operation === "videos.create" || transcription)
       throw denied("AI_PROTOCOL_NOT_ALLOWED");
     if (video && Object.keys(request.body).length) throw denied("AI_VIDEO_SPECIFICATION_CHANGED");
     const body =
@@ -313,7 +338,9 @@ export async function internalAIRequest(c: Config, request: InternalAIRequest) {
           )
         : request.operation === "responses.input_tokens"
           ? request.body
-          : video ? request.body : (imageFields(request.body, request.model), request.body);
+          : video ? request.body : request.operation === "audio.speech"
+            ? (speechFields(c, request.body, request.model, request.audioLimits), request.body)
+            : (imageFields(request.body, request.model), request.body);
     normalized = body;
     bytes = Buffer.from(JSON.stringify(body));
     contentType = "application/json";
