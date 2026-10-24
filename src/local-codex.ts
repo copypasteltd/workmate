@@ -229,7 +229,9 @@ export class LocalCodexSession {
       const companyTools = this.binding.companyTools ?? [];
       if (this.binding.browserToolsVersion !== undefined && (this.binding.browserToolsVersion !== 1 || !this.hooks.browserTool))
         throw new LocalCodexError("LOCAL_BROWSER_TOOLS_INVALID");
-      if (companyTools.length > 16 || new Set(companyTools.map(tool => tool.name)).size !== companyTools.length
+      // A complete media role includes project, video, audio and workflow tools.
+      // Keep a bounded list while admitting that complete, frozen capability set.
+      if (companyTools.length > 32 || new Set(companyTools.map(tool => tool.name)).size !== companyTools.length
         || companyTools.some(tool => !/^[a-z][a-z0-9_]{0,63}$/.test(tool.name) || typeof tool.description !== "string"
           || tool.description.length > 8000 || !tool.inputSchema || tool.inputSchema.type !== "object")
         || Buffer.byteLength(JSON.stringify(companyTools)) > 512000 || (companyTools.length && !this.hooks.companyTool))
@@ -521,7 +523,14 @@ export class LocalCodexSession {
             const generatedVideo = /^generated_video_(create|status|cancel)$/.test(call.tool)
               && uuid.test(videoResult?.id) && uuid.test(videoResult?.task_id)
               ? { job_id: videoResult.id, task_id: videoResult.task_id } : undefined;
-            await this.emit("local.company-tool.completed", { tool: call.tool, call_id: call.callId, artifacts, ...(video ? { video } : {}), ...(generatedVideo ? { generated_video: generatedVideo } : {}) });
+            const audio = call.tool === "audio_produce" && uuid.test(videoResult?.id) && uuid.test(videoResult?.task_id)
+              ? { job_id: videoResult.id, task_id: videoResult.task_id } : undefined;
+            if (audio && Array.isArray(videoResult.assets)) for (const item of videoResult.assets.slice(0, 20)) {
+              if (uuid.test(item?.id) && uuid.test(item?.asset_version_id) && typeof item.name === "string"
+                && Number.isSafeInteger(item.version) && item.version > 0 && artifacts.length < 20)
+                artifacts.push({ id: item.id, name: item.name.slice(0, 160), version: item.version, asset_version_id: item.asset_version_id });
+            }
+            await this.emit("local.company-tool.completed", { tool: call.tool, call_id: call.callId, artifacts, ...(video ? { video } : {}), ...(generatedVideo ? { generated_video: generatedVideo } : {}), ...(audio ? { audio } : {}) });
             result = { success: true, contentItems: [{ type: "inputText", text: encoded }] };
           } catch (error: any) {
             const code = error instanceof LocalCodexError ? error.code : "LOCAL_COMPANY_TOOL_OUTCOME_UNKNOWN";

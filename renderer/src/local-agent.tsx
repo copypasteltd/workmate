@@ -1,5 +1,6 @@
 import { DeliveryQuality } from "./delivery-quality";
 import { GeneratedVideos } from "./generated-videos";
+import { AudioProductions } from "./audio-production";
 import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X } from "lucide-react";
@@ -113,11 +114,24 @@ export function LocalAgentWorkspace() {
   }, [w.tenant, w.project]);
   const session = sessions.find(s => s.id === selected);
   const videoTaskIds = [...new Set([session?.task?.task_id, ...(session?.events ?? []).slice().reverse()
-    .filter(event => event.kind === "local.company-tool.completed").map(event => event.value.generated_video?.task_id)]
+    .filter(event => event.kind === "local.company-tool.completed").map(event => event.value.generated_video?.task_id ?? event.value.audio?.task_id)]
     .filter((id): id is string => typeof id === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)))];
   const currentVideoTask = videoTaskIds.includes(videoTask) ? videoTask : videoTaskIds[0];
   useEffect(() => { setVideoTask(""); }, [session?.id, session?.task?.task_id]);
   useEffect(() => { if (session?.permission) setMode(session.permission); }, [session?.id, session?.permission]);
+  useEffect(() => {
+    const scroller = messages.current;
+    if (!scroller) return;
+    // A focused control can move out of view after a native window resize;
+    // focusing the same element again does not make Chromium reveal it.
+    const observer = new ResizeObserver(() => {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && active !== scroller && scroller.contains(active))
+        active.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    observer.observe(scroller);
+    return () => observer.disconnect();
+  }, [session?.id]);
   const lastStart = session?.events.map(e => e.kind).lastIndexOf("turn/started") ?? -1;
   const stream = session?.busy ? session.events.slice(Math.max(0, lastStart)).filter(e => e.kind === "item/agentMessage/delta").map(e => e.value.delta ?? "").join("") : "";
   const artifacts = [...new Map((session?.events ?? []).filter(event => event.kind === "local.company-tool.completed")
@@ -178,10 +192,11 @@ export function LocalAgentWorkspace() {
           {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
           {videos.length > 0 && <LocalVideoJobs key={session.id} jobs={videos}/>}
           {session.role === "video-motion" && currentVideoTask && <>
-            {videoTaskIds.length > 1 && <label className="local-agent-video-history">{t("影片工作記錄", "Video task history")}<select value={currentVideoTask} onChange={e => setVideoTask(e.target.value)}>
+            {videoTaskIds.length > 1 && <label className="local-agent-video-history">{t("影音工作記錄", "Media task history")}<select value={currentVideoTask} onChange={e => setVideoTask(e.target.value)}>
               {videoTaskIds.map((id, index) => <option key={id} value={id}>{index === 0 ? t("目前工作", "Current task") : t("較早工作", "Earlier task")} · {id.slice(0, 8)}</option>)}
             </select></label>}
             <GeneratedVideos key={w.base + currentVideoTask} base={w.base} taskId={currentVideoTask} />
+            <AudioProductions key={"audio:" + w.base + currentVideoTask} base={w.base} taskId={currentVideoTask} />
           </>}
           {workflows.map(flow => <article className="local-agent-message assistant local-workflow-progress" key={flow.run_id}
             aria-label={t("本機流程進度", "Local workflow progress")}>
