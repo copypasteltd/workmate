@@ -1,6 +1,7 @@
 import { ChatPanel } from "./chat-panel.js";
 import { mountDeliveryQuality } from "./delivery-quality.js";
 import { mountGeneratedVideos } from "./generated-videos.js";
+import { mountAudioProductions } from "./audio-production.js";
 import {
   exactHKD,
   financialLabels,
@@ -44,11 +45,13 @@ let dependencyRevision = 0,
 let taskDrawRevision = 0;
 let taskVersion = 0;
 let generatedVideos: { key: string; dispose: () => void } | undefined;
+let audioProductions: { key: string; dispose: () => void } | undefined;
 let startFlow: Promise<void> | null = null;
 class WorkspaceChanged extends Error {}
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
 function clearTask() {
   generatedVideos?.dispose(); generatedVideos = undefined;
+  audioProductions?.dispose(); audioProductions = undefined;
   taskDrawRevision++;
   dependencyRevision++;
   dependencyFingerprint = "";
@@ -799,7 +802,12 @@ async function drawTask(t: any) {
       generatedVideos = { key: videoKey, dispose: mountGeneratedVideos($("generated-videos"), { base: endpoint, taskId: t.id, request, tr,
         live: () => revision === workspaceRevision && endpoint === base() && task === t.id }) };
     }
-  } else { generatedVideos?.dispose(); generatedVideos = undefined; }
+    if (audioProductions?.key !== videoKey) {
+      audioProductions?.dispose();
+      audioProductions = { key: videoKey, dispose: mountAudioProductions($("audio-productions"), { base: endpoint, taskId: t.id, request, tr,
+        live: () => revision === workspaceRevision && endpoint === base() && task === t.id }) };
+    }
+  } else { generatedVideos?.dispose(); generatedVideos = undefined; audioProductions?.dispose(); audioProductions = undefined; }
   if (["succeeded", "failed", "cancelled"].includes(t.status) && t.mode !== "plan")
     mountDeliveryQuality($("delivery-quality"), { path: endpoint + "/tasks/" + t.id, request, tr,
       live: () => drawing === taskDrawRevision && revision === workspaceRevision && endpoint === base() && task === t.id });
@@ -1234,7 +1242,7 @@ $("cancel-task").addEventListener(
 $("close-task").addEventListener("click", () => {
   clearTask();
 });
-window.addEventListener("pagehide", () => { generatedVideos?.dispose(); generatedVideos = undefined; });
+window.addEventListener("pagehide", () => { generatedVideos?.dispose(); generatedVideos = undefined; audioProductions?.dispose(); audioProductions = undefined; });
 $("capture-page").addEventListener(
   "click",
   () =>
