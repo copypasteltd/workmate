@@ -113,3 +113,7 @@ CORE01 将全部运行配置的 kernel 固定为 codex；目录 schema 使用 co
 ## Stage82 已确认广告反馈 / Confirmed creative feedback
 
 [新增契约](creative-feedback-openapi.json) 描述 7 项操作，严格映射／决定／回执模式实际由 HTTP 响应进行 AJV 核对；options 和报告列表的结构描述不冒充全面严格响应验证。[实际路由](implemented-routes.json) 为 454 项配置服务，另保留一项条件演示声明。原 OpenAPI 不替换。见[流程和边界](../technical/82-confirmed-creative-feedback.md)。
+
+## Stage83 GEO 观测 / Reproducible observations
+
+[新增 GEO 契约](geo-observation-openapi.json) 覆盖 11 项操作、14 个输入/回执/列表/原文/比较结构；所有操作的真实成功请求与响应均由 AJV 核对。时间序列化、缺失答案、配额、幂等、不可变版本及来源门控另外通过业务测试。[实际模拟模式路由](../quality/geo-observation-route-inventory.json) 保留完整运行时声明。原设计 OpenAPI 不替换。见[方案和限制](../technical/83-reproducible-geo-observations.md)。

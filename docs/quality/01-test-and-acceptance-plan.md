@@ -1104,3 +1104,7 @@ The original acceptance definitions remain; explicit model/video/customer fixtur
 ## 阶段 82 局部证据 / Confirmed creative feedback
 
 原 102 REQ/102 TC、完整条件、NFR 与 G01–G10 不变。946 项平台代码检查保留全部原 929 项；实际 Web 4、打包 Desktop 36 和精确广告级反馈专项各有独立范围。默认不从活动级数据、名称相似或相关性推导 creative 效果。真实提供方身份／专业成果／完整 TC 仍未证明。见[当前检查点](creative-feedback-checkpoint.json)。
+
+## 阶段 83 局部证据 / Reproducible GEO observations
+
+原 102 REQ/102 TC、完整条件、NFR 与 G01–G10 不变。平台 968 项保留原 946 项；GEO 专项 22、客户端 124、真实 Web/Admin/Side Panel 13 和打包本机 Desktop 37 分别保留实际来源范围。原始回答与配置、消费者样本分离和无滚动轨道下的内容可访问性均有具体检查；真实提供方观测、专业/客户成果、性能容量与原始完整验收仍未证明。见[检查点](geo-observation-checkpoint.json)。

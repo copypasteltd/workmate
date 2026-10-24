@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-24T07:06:01.543753+00:00",
+  "at": "2026-10-24T11:03:12.140788+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -13350,16 +13350,32 @@
       "acceptance_case": "TC-030",
       "acceptance_conditions": "可区分同配置波动及配置差异；API 与消费产品样本分列；不输出全网排名或因果保证。",
       "assessment": "completion_not_proven",
-      "finding": "缺少固定问句集、观测配置和可复核 GEO 观察记录。",
+      "finding": "固定问句/完整配置、独立 Codex 重复观察、原始回答留存与来源治理已有明确假数据下的局部证据；原始完整 TC-030、真实提供方/消费者产品观察及业务验收仍未完成。",
       "source_inspection_candidates": [
         "dev/copypaste-platform/src/analytics.ts",
-        "dev/copypaste-platform/src/business.ts"
+        "dev/copypaste-platform/src/business.ts",
+        "dev/copypaste-platform/src/geo-model.ts",
+        "dev/copypaste-platform/src/geo-observations.ts",
+        "dev/copypaste-web/src/geo-observations.tsx"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        "reproducible_geo_observations"
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少固定问句集、观测配置和可复核 GEO 观察记录。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "缺少固定问句集、观测配置和可复核 GEO 观察记录。",
+      "verified_repairs": [
+        {
+          "cluster": "reproducible_geo_observations",
+          "verified_subflow": "Immutable question/harness versions, real Codex repeats through a synthetic company gateway, exact retained answers and comparisons, separately attested consumer samples, scoped Admin/source governance, actual native right Side Panel and frameless local Desktop without scrollbar rails. Interactive/runtime sources match exactly; two later historical migration test fixtures are separately reviewed, with both affected whole batches freshly executed. Every current test file is covered. Synthetic model/business data; original complete acceptance remains open.",
+          "evidence": [
+            "reproducible_geo_observations"
+          ],
+          "implementation_docs": [
+            "technical/83-reproducible-geo-observations.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "固定问句/配置、重复运行、原始回答、人工样本分离和权限来源治理已在明确假数据下局部验证；真实提供方/消费者产品观测、专业判断、客户价值、本机 GEO 协议及完整 TC-030 仍未证明。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -39289,9 +39305,9 @@
     "verifier_sha256": "7fe1ba7d85d374e8c19a5b751e50a862b25c617c3ede86627a937ea3c75a7ad5"
   },
   "current_source_qualification": {
-    "stage": 82,
-    "checkpoint": "creative-feedback-checkpoint.json",
-    "note": "Explicit user-confirmed ad-level creative identity, exact independent feedback, retained and erased source lineage, and actual native presentation without visible scrollbar rails. Advertising facts/model content remain synthetic."
+    "stage": 83,
+    "checkpoint": "geo-observation-checkpoint.json",
+    "note": "Immutable question/harness versions, real Codex repeats through a synthetic company gateway, exact retained answers and comparisons, separately attested consumer samples, scoped Admin/source governance, actual native right Side Panel and frameless local Desktop without scrollbar rails. Interactive/runtime sources match exactly; two later historical migration test fixtures are separately reviewed, with both affected whole batches freshly executed. Every current test file is covered. Synthetic model/business data; original complete acceptance remains open."
   },
   "extension_conversation_repair": {
     "at": "2026-10-22T14:06:48.456750+00:00",
@@ -39488,6 +39504,12 @@
     "checkpoint": "creative-feedback-checkpoint.json",
     "stage": 82,
     "status": "verified_confirmed_creative_feedback_subflow",
+    "original_full_acceptance": "not_proven"
+  },
+  "reproducible_geo_observations": {
+    "checkpoint": "geo-observation-checkpoint.json",
+    "stage": 83,
+    "status": "verified_reproducible_geo_observation_subflow",
     "original_full_acceptance": "not_proven"
   }
 }

@@ -14,7 +14,7 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 
 `main` 和 `docs` 发布相同的主文档提交。各分支根目录直接包含对应仓库内容，不把各端代码混放在一个分支中。`docs/README.md` 提供总导航；各端 `README.md` 为中文、`README.en.md` 为英文。GitHub 上的跨端和主文档链接使用明确分支 URL，避免依赖不存在的上级目录。
 
-表中 `codex/*` 是当前工作分支。按 README 新检出的本地同名分支（例如 `backend`、`docs`）也可直接执行发布器，无须额外重命名；其他功能分支应先审阅并整合到对应工作分支。后续使用 `python docs/tools/finalize_creative_feedback_manifest.py` 明确刷新已提交组件清单，再提交主文档；旧清单保留于 Git 历史。
+表中 `codex/*` 是当前工作分支。按 README 新检出的本地同名分支（例如 `backend`、`docs`）也可直接执行发布器，无须额外重命名；其他功能分支应先审阅并整合到对应工作分支。后续使用 `python docs/tools/finalize_geo_observation_manifest.py` 明确刷新已提交组件清单，再提交主文档；旧清单保留于 Git 历史。
 
 ## 每次更新必须同步
 
@@ -31,7 +31,7 @@ GitHub 目标为 [copypasteltd/workmate](https://github.com/copypasteltd/workmat
 
 Each component remains an independent local Git repository and publishes its root content to the branch shown above. The primary documentation repository publishes the same commit to `main` and `docs`. Every component has a complete Chinese `README.md` and English `README.en.md`, with architecture, setup, identity and usage flows, configuration, verification, screenshots and actual interaction media.
 
-The table records current `codex/*` working branches. Fresh README checkouts using the published local branch names, such as `backend` and `docs`, can also run the publisher directly. Integrate reviewed feature work into the mapped branch first. Refresh committed component versions explicitly with `python docs/tools/finalize_creative_feedback_manifest.py`, then commit docs; Git history preserves the prior plan.
+The table records current `codex/*` working branches. Fresh README checkouts using the published local branch names, such as `backend` and `docs`, can also run the publisher directly. Integrate reviewed feature work into the mapped branch first. Refresh committed component versions explicitly with `python docs/tools/finalize_geo_observation_manifest.py`, then commit docs; Git history preserves the prior plan.
 
 Every subsequent change must update the corresponding documentation and bilingual release notes, refresh relevant real captures when UI behavior changes, run checks appropriate to the change, commit, push the explicitly mapped branch and compare remote commit IDs. The user has authorized ongoing synchronization to this remote. Preserve collaborator history; do not force-push or delete unrelated branches. Keep credentials, local sessions, databases, dependencies and generated installers out of Git. Synthetic demonstrations and production qualification must remain clearly distinguished.
 
@@ -44,3 +44,5 @@ All work remains under `D:\dev\copypasted\自有agent\`; native processes only, 
 For stage 82, complete the current checkpoint, documentation audit and staged checks, commit the six components, run the manifest tool shown above, then commit documentation and invoke the Delivery publisher. Earlier tools explain their own historical receipts. Subsequent updates must bind their own current sources and qualification rather than reuse stale source assumptions.
 
 阶段 82 当前发布使用 `finalize_creative_feedback_manifest.py` 绑定已提交组件、当前回执、双语文档及暂存核查；旧阶段工具和回执保留自身历史范围。Stage 82 binds current receipts and committed components before non-force publication; earlier evidence is retained under its original scope.
+
+阶段 83 使用 `finalize_geo_observation_manifest.py` 绑定已提交的六个组件、当前 GEO/原生布局回执、双语说明、实际媒体及暂存核查，再按既有授权非强制推送。旧阶段工具和回执仅保留其历史范围。Stage 83 binds exact committed components and current evidence before the authorized ordinary push.
