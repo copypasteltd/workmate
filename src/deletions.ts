@@ -231,6 +231,8 @@ export function registerDeletions(app: FastifyInstance, db: Database) {
               "memories",
               "brand_profiles",
               "analytics_datasets",
+              "creative_mappings",
+              "creative_feedback_reports",
               "workflows",
               "workflow_runs",
               "workflow_schedules",

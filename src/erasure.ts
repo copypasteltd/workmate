@@ -11,6 +11,8 @@ const targets = new Set([
   "memories",
   "brand_profiles",
   "analytics_datasets",
+  "creative_mappings",
+  "creative_feedback_reports",
   "workflows",
   "workflow_runs",
   "workflow_schedules",
@@ -280,7 +282,16 @@ export class ErasureService {
         );
         break;
       case "brand_profiles":
+      case "creative_mappings":
+      case "creative_feedback_reports":
       case "creative_projects":
+        if (j.target_type === "creative_feedback_reports") {
+          await tx.query("UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id IN(SELECT v.asset_id FROM creative_feedback_reports r JOIN asset_versions v ON v.id=r.asset_version_id WHERE r.id=$1) AND state<>'deleted'", [id]);
+          await tx.query("INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM creative_feedback_reports r JOIN asset_versions v ON v.id=r.asset_version_id JOIN deletion_jobs d ON d.target_type='assets' AND d.target_id=v.asset_id WHERE r.id=$1 ON CONFLICT DO NOTHING", [id, j.id]);
+        }
+        if (j.target_type === "creative_mappings") {
+          await tx.query("INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM creative_feedback_mappings x JOIN deletion_jobs d ON d.target_type='creative_feedback_reports' AND d.target_id=x.report_id WHERE x.mapping_id=$1 ON CONFLICT DO NOTHING", [id, j.id]);
+        }
         if (j.target_type === "creative_projects") {
           const videoOutputs = (
             await tx.query(

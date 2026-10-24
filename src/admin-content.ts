@@ -18,6 +18,8 @@ const tables = [
   "tasks",
   "brand_profiles",
   "analytics_datasets",
+  "creative_mappings",
+  "creative_feedback_reports",
   "workflows",
   "workflow_runs",
   "workflow_schedules",
@@ -31,11 +33,15 @@ async function find(tx: Tx, id: string) {
   for (const table of tables) {
     const r = (
       await tx.query(
-        `SELECT * FROM ${table} WHERE id=$1${table === "workspace_nodes" ? "" : " FOR UPDATE"}`,
+        `SELECT * FROM ${table} WHERE id=$1${["workspace_nodes", "creative_mappings", "creative_feedback_reports"].includes(table) ? "" : " FOR UPDATE"}`,
         [id],
       )
     ).rows[0];
     if (r) {
+      if (["creative_mappings", "creative_feedback_reports"].includes(table)) {
+        await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", ["creative-feedback:" + r.project_id]);
+        return { table, row: (await tx.query(`SELECT * FROM ${table} WHERE id=$1 FOR UPDATE`, [id])).rows[0] };
+      }
       if (table === "workspace_nodes") {
         await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
           "cloudtree:" + r.project_id,

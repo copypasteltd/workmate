@@ -29,6 +29,7 @@ import { Storage } from "./storage.js";
 import { registerAnalytics } from "./analytics.js";
 import { registerFileImports } from "./analytics-file-routes.js";
 import { registerAnalysisReports } from "./analysis-reports.js";
+import { registerCreativeFeedback } from "./creative-feedback.js";
 import { registerTasks } from "./tasks.js";
 import { registerBusinessQuality } from "./business-quality.js";
 import { registerCanonicalTasks } from "./canonical-tasks.js";
@@ -376,6 +377,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAnalytics(app, db, storage);
   registerFileImports(app, db, storage);
   registerAnalysisReports(app, db, catalog, storage);
+  registerCreativeFeedback(app, db, storage);
   registerTasks(app, db, catalog);
   registerBusinessQuality(app, db);
   registerCanonicalTasks(app, db, catalog);

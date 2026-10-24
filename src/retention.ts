@@ -54,6 +54,8 @@ export class RetentionService {
           ["assets", "state", "true"],
           ["creative_projects", "content_state", "true"],
           ["analytics_datasets", "content_state", "true"],
+          ["creative_mappings", "content_state", "true"],
+          ["creative_feedback_reports", "content_state", "true"],
           [
             "tasks",
             "content_state",
