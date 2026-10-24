@@ -1,0 +1,526 @@
+2026-10-24 18:58:34.762 CST [28932] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 18:58:34.768 CST [28932] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 18:58:34.769 CST [28932] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 18:58:34.992 CST [40700] LOG:  database system was shut down at 2026-10-24 18:58:31 CST
+
+2026-10-24 18:58:35.051 CST [28932] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# Subtest: analysis source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+ok 1 - analysis source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+  ---
+  duration_ms: 7764.4788
+  ...
+# Subtest: analysis expired retained source fences historical task reads immediately without a cleanup worker
+ok 2 - analysis expired retained source fences historical task reads immediately without a cleanup worker
+  ---
+  duration_ms: 450.7138
+  ...
+# Subtest: analysis already-open event stream closes after source quarantine and never emits a later model delta
+ok 3 - analysis already-open event stream closes after source quarantine and never emits a later model delta
+  ---
+  duration_ms: 1136.7506
+  ...
+# Subtest: seo source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+ok 4 - seo source quarantine fences generic task detail, JSON history, both SSE routes and list; restore retains original events
+  ---
+  duration_ms: 5975.6842
+  ...
+# Subtest: seo expired retained source fences historical task reads immediately without a cleanup worker
+ok 5 - seo expired retained source fences historical task reads immediately without a cleanup worker
+  ---
+  duration_ms: 6705.3585
+  ...
+# Subtest: seo already-open event stream closes after source quarantine and never emits a later model delta
+ok 6 - seo already-open event stream closes after source quarantine and never emits a later model delta
+  ---
+  duration_ms: 7209.3956
+  ...
+# Subtest: real locked Codex model deltas retain the same source fence as the immutable website report
+ok 7 - real locked Codex model deltas retain the same source fence as the immutable website report
+  ---
+  duration_ms: 12842.8501
+  ...
+# Subtest: analysis report artifact quarantine, artifact expiry and terminal-task expiry fence every report read without rewriting retained events
+ok 8 - analysis report artifact quarantine, artifact expiry and terminal-task expiry fence every report read without rewriting retained events
+  ---
+  duration_ms: 703.2309
+  ...
+# Subtest: source locks wait for ordinary task updates, then recheck a revoked actor before detail, JSON events or SSE can respond
+ok 9 - source locks wait for ordinary task updates, then recheck a revoked actor before detail, JSON events or SSE can respond
+  ---
+  duration_ms: 15570.1345
+  ...
+# Subtest: unrelated normal tasks and other private reports retain their authorized visibility when one report source is quarantined
+ok 10 - unrelated normal tasks and other private reports retain their authorized visibility when one report source is quarantined
+  ---
+  duration_ms: 16705.0819
+  ...
+# Subtest: an expired original CSV file fences its otherwise active dataset and private report before new analysis or budget reservation
+ok 11 - an expired original CSV file fences its otherwise active dataset and private report before new analysis or budget reservation
+  ---
+  duration_ms: 1777.8544
+  ...
+# Subtest: report source functions retain current actor and tenant scope under cp_control, FORCE RLS and non-public execution grants
+ok 12 - report source functions retain current actor and tenant scope under cp_control, FORCE RLS and non-public execution grants
+  ---
+  duration_ms: 525.7341
+  ...
+2026-10-24 18:59:54.947 CST [26488] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 18:59:58.378 CST [26488] LOG:  checkpoint complete: wrote 53 buffers (0.3%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.023 s, sync=2.161 s, total=3.432 s; sync files=12, longest=0.332 s, average=0.180 s; distance=19913 kB, estimate=19913 kB; lsn=14/4BCC9BA0, redo lsn=14/4BCC9B48
+
+# Subtest: fixture reclamation rejects a live worker and confirms actual removal after that worker exits
+ok 13 - fixture reclamation rejects a live worker and confirms actual removal after that worker exits
+  ---
+  duration_ms: 683.838
+  ...
+# Subtest: fixture reclamation refuses a record whose target differs from its owned UUID child
+ok 14 - fixture reclamation refuses a record whose target differs from its owned UUID child
+  ---
+  duration_ms: 288.0888
+  ...
+# Subtest: video specification rejects client-selected providers, models, URLs and unsupported duration
+ok 15 - video specification rejects client-selected providers, models, URLs and unsupported duration
+  ---
+  duration_ms: 4.006
+  ...
+# Subtest: video observations preserve unknown progress and unknown terminal cost
+ok 16 - video observations preserve unknown progress and unknown terminal cost
+  ---
+  duration_ms: 12.0208
+  ...
+# Subtest: video observations bind the exact operation, model, specification and provider object
+ok 17 - video observations bind the exact operation, model, specification and provider object
+  ---
+  duration_ms: 1.3289
+  ...
+# Subtest: video observations cannot replace content with an external URL or omit a completed content identity
+ok 18 - video observations cannot replace content with an external URL or omit a completed content identity
+  ---
+  duration_ms: 1.7651
+  ...
+# Subtest: video charges use exact frozen integer rates and retain legitimate zero usage
+ok 19 - video charges use exact frozen integer rates and retain legitimate zero usage
+  ---
+  duration_ms: 0.2376
+  ...
+# Subtest: video create sends real multipart bytes and trusted company identity to the fixed internal endpoint
+ok 20 - video create sends real multipart bytes and trusted company identity to the fixed internal endpoint
+  ---
+  duration_ms: 121.0265
+  ...
+# Subtest: video reads, lookup, cancellation and content use explicit methods and hash their resource identity
+ok 21 - video reads, lookup, cancellation and content use explicit methods and hash their resource identity
+  ---
+  duration_ms: 45.9241
+  ...
+# Subtest: video gateway rejects traversal, arbitrary URLs, mixed scopes and unknown operations before dispatch
+ok 22 - video gateway rejects traversal, arbitrary URLs, mixed scopes and unknown operations before dispatch
+  ---
+  duration_ms: 5.7962
+  ...
+# Subtest: video gateway rejects unsupported multipart and JSON mutation before dispatch
+ok 23 - video gateway rejects unsupported multipart and JSON mutation before dispatch
+  ---
+  duration_ms: 7.0363
+  ...
+# Subtest: video requests share the existing internal host and production HTTPS restrictions
+ok 24 - video requests share the existing internal host and production HTTPS restrictions
+  ---
+  duration_ms: 7.2419
+  ...
+# Subtest: video redirects are rejected and a dispatched request retains an unknown outcome
+ok 25 - video redirects are rejected and a dispatched request retains an unknown outcome
+  ---
+  duration_ms: 19.5647
+  ...
+# Subtest: declared oversized video responses are bounded before exposing content
+ok 26 - declared oversized video responses are bounded before exposing content
+  ---
+  duration_ms: 15.4786
+  ...
+# Subtest: streamed oversized video data is bounded even without Content-Length
+ok 27 - streamed oversized video data is bounded even without Content-Length
+  ---
+  duration_ms: 36.2589
+  ...
+# Subtest: aborting a submitted video request does not turn uncertain usage into a free cancellation
+ok 28 - aborting a submitted video request does not turn uncertain usage into a free cancellation
+  ---
+  duration_ms: 17.7026
+  ...
+# Subtest: video errors retain their HTTP status for the durable caller and never confirm zero cost
+ok 29 - video errors retain their HTTP status for the durable caller and never confirm zero cost
+  ---
+  duration_ms: 11.6507
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# Subtest: video project admission rejects invalid timelines, fabricated costs and missing source versions before persistence
+ok 30 - video project admission rejects invalid timelines, fabricated costs and missing source versions before persistence
+  ---
+  duration_ms: 17484.0203
+  ...
+# Subtest: video create and render idempotency returns one durable record and rejects conflicting reuse
+ok 31 - video create and render idempotency returns one durable record and rejects conflicting reuse
+  ---
+  duration_ms: 1955.3534
+  ...
+# Subtest: video creates six real scoped deliverables with a decoded MP4, editable source and zero fabricated AI charge
+ok 32 - video creates six real scoped deliverables with a decoded MP4, editable source and zero fabricated AI charge
+  ---
+  duration_ms: 3639.3895
+  ...
+# Subtest: video edit uses optimistic versions and an in-flight old revision remains frozen
+ok 33 - video edit uses optimistic versions and an in-flight old revision remains frozen
+  ---
+  duration_ms: 2352.9927
+  ...
+# Subtest: video rejects readers and other enterprises, while accessible viewers can read project metadata
+ok 34 - video rejects readers and other enterprises, while accessible viewers can read project metadata
+  ---
+  duration_ms: 309.8889
+  ...
+# Subtest: video queued cancellation is optimistic and cannot be silently restarted
+ok 35 - video queued cancellation is optimistic and cannot be silently restarted
+  ---
+  duration_ms: 902.6311
+  ...
+# Subtest: video cancellation during native rendering aborts and fences late completion without publishing outputs
+ok 36 - video cancellation during native rendering aborts and fences late completion without publishing outputs
+  ---
+  duration_ms: 1973.7226
+  ...
+# Subtest: video current authorization is rechecked after rendering and explicit owner retry preserves the denial
+ok 37 - video current authorization is rechecked after rendering and explicit owner retry preserves the denial
+  ---
+  duration_ms: 1609.8349
+  ...
+# Subtest: video source quarantine immediately denies every derived download and restore keeps immutable fixed versions
+ok 38 - video source quarantine immediately denies every derived download and restore keeps immutable fixed versions
+  ---
+  duration_ms: 1555.0364
+  ...
+# Subtest: video source expiry during preview I/O immediately blocks every output and a queued render without invoking the encoder
+ok 39 - video source expiry during preview I/O immediately blocks every output and a queued render without invoking the encoder
+  ---
+  duration_ms: 3299.0883
+  ...
+# Subtest: video project and output expiry enforce access immediately before physical retention cleanup and do not leave an immortal queued render
+ok 40 - video project and output expiry enforce access immediately before physical retention cleanup and do not leave an immortal queued render
+  ---
+  duration_ms: 2273.7331
+  ...
+# Subtest: video public shares enforce source quarantine and expiry before and after stream I/O, including all six deliverables
+ok 41 - video public shares enforce source quarantine and expiry before and after stream I/O, including all six deliverables
+  ---
+  duration_ms: 2662.265
+  ...
+# Subtest: video source removal during rendering prevents publication
+ok 42 - video source removal during rendering prevents publication
+  ---
+  duration_ms: 1120.9715
+  ...
+# Subtest: video expired leases become interrupted facts and late workers cannot replace them
+ok 43 - video expired leases become interrupted facts and late workers cannot replace them
+  ---
+  duration_ms: 1982.4411
+  ...
+# Subtest: video storage failure rolls back all six references and explicit retry retains the first failed record
+ok 44 - video storage failure rolls back all six references and explicit retry retains the first failed record
+  ---
+  duration_ms: 2462.7016
+  ...
+2026-10-24 19:00:50.342 CST [39460] ERROR:  Video project versions are immutable
+2026-10-24 19:00:50.342 CST [39460] CONTEXT:  PL/pgSQL function guard_video_history() line 7 at RAISE
+2026-10-24 19:00:50.342 CST [39460] STATEMENT:  UPDATE video_project_versions SET definition='{}' WHERE video_id=$1
+
+2026-10-24 19:00:50.346 CST [20032] ERROR:  Fixed video source references are immutable
+2026-10-24 19:00:50.346 CST [20032] CONTEXT:  PL/pgSQL function guard_video_history() line 9 at RAISE
+2026-10-24 19:00:50.346 CST [20032] STATEMENT:  UPDATE video_project_sources SET sha256=$2 WHERE video_id=$1
+
+2026-10-24 19:00:50.425 CST [15140] ERROR:  Finished video renders are immutable
+2026-10-24 19:00:50.425 CST [15140] CONTEXT:  PL/pgSQL function guard_video_history() line 14 at RAISE
+2026-10-24 19:00:50.425 CST [15140] STATEMENT:  UPDATE video_renders SET error_code='REPLACED' WHERE video_id=$1
+
+# Subtest: video finished receipts, source references and project versions remain immutable for the control identity
+ok 45 - video finished receipts, source references and project versions remain immutable for the control identity
+  ---
+  duration_ms: 1697.2434
+  ...
+# Subtest: video deletion clears every script version, replay copy, probe body and all six physical objects
+ok 46 - video deletion clears every script version, replay copy, probe body and all six physical objects
+  ---
+  duration_ms: 2653.2478
+  ...
+# Subtest: video source erasure propagates to every embedded derived object through deletion dependencies
+ok 47 - video source erasure propagates to every embedded derived object through deletion dependencies
+  ---
+  duration_ms: 1926.8373
+  ...
+# Subtest: video workers enforce one tenant slot and two global slots without duplicate claims
+ok 48 - video workers enforce one tenant slot and two global slots without duplicate claims
+  ---
+  duration_ms: 1696.3403
+  ...
+# Subtest: video rejects private and other-project inputs and corrupt bytes cannot publish fallback outputs
+ok 49 - video rejects private and other-project inputs and corrupt bytes cannot publish fallback outputs
+  ---
+  duration_ms: 671.431
+  ...
+# Subtest: video Admin body access is independent and tenant scoped, and content actions stop and erase actual outputs
+ok 50 - video Admin body access is independent and tenant scoped, and content actions stop and erase actual outputs
+  ---
+  duration_ms: 1529.551
+  ...
+2026-10-24 19:00:59.344 CST [20112] ERROR:  permission denied for table video_project_versions
+2026-10-24 19:00:59.344 CST [20112] STATEMENT:  SELECT * FROM video_project_versions LIMIT 1
+
+2026-10-24 19:00:59.418 CST [15688] ERROR:  permission denied for table video_project_sources
+2026-10-24 19:00:59.418 CST [15688] STATEMENT:  SELECT * FROM video_project_sources LIMIT 1
+
+2026-10-24 19:00:59.472 CST [10920] ERROR:  permission denied for table video_renders
+2026-10-24 19:00:59.472 CST [10920] STATEMENT:  SELECT * FROM video_renders LIMIT 1
+
+# Subtest: video RLS hides all new tables across tenants and queue identity has no business access
+ok 51 - video RLS hides all new tables across tenants and queue identity has no business access
+  ---
+  duration_ms: 571.7783
+  ...
+# Subtest: Codex controlled video tool queues one idempotent shared project and never exposes a shared writer in private or read-only modes
+ok 52 - Codex controlled video tool queues one idempotent shared project and never exposes a shared writer in private or read-only modes
+  ---
+  duration_ms: 1603.6046
+  ...
+2026-10-24 19:01:01.247 CST [26488] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 19:01:01.974 CST [26488] LOG:  checkpoint complete: wrote 47 buffers (0.3%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.010 s, sync=0.483 s, total=0.728 s; sync files=14, longest=0.126 s, average=0.035 s; distance=19012 kB, estimate=19823 kB; lsn=14/4CF5ABA8, redo lsn=14/4CF5AB50
+
+1..52
+# tests 52
+# suites 0
+# pass 52
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 146937.8512
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/e27ced54-c0f0-47cc-be87-9cb35d87ebd7/result.json","sha256":"039feb26b9d831a3cbc690d5f6581bfdbc327ddc1ca310039bac4a58fea2e198","exit_code":0}
+2026-10-24 19:01:02.943 CST [28932] LOG:  received fast shutdown request
+
+2026-10-24 19:01:02.993 CST [28932] LOG:  aborting any active transactions
+
+2026-10-24 19:01:02.999 CST [28932] LOG:  background worker "logical replication launcher" (PID 11024) exited with exit code 1
+
+2026-10-24 19:01:03.000 CST [26488] LOG:  shutting down
+
+2026-10-24 19:01:03.040 CST [26488] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 19:01:03.906 CST [26488] LOG:  checkpoint complete: wrote 47 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.535 s, total=0.907 s; sync files=10, longest=0.165 s, average=0.054 s; distance=278 kB, estimate=17868 kB; lsn=14/4CFA0720, redo lsn=14/4CFA0720
+
+2026-10-24 19:01:04.041 CST [28932] LOG:  database system is shut down
+

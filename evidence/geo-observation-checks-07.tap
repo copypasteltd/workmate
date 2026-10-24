@@ -1,0 +1,375 @@
+2026-10-24 17:41:36.174 CST [39808] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 17:41:36.181 CST [39808] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 17:41:36.181 CST [39808] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 17:41:37.935 CST [37228] LOG:  database system was shut down at 2026-10-24 17:35:48 CST
+
+2026-10-24 17:41:38.067 CST [39808] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# Subtest: GEO literal matching preserves UTF-16 positions, escapes regex and respects Latin word boundaries
+ok 1 - GEO literal matching preserves UTF-16 positions, escapes regex and respects Latin word boundaries
+  ---
+  duration_ms: 3.8426
+  ...
+# Subtest: GEO answer links are retained unverified, not fetched or manufactured, and hashes cover exact original bytes
+ok 2 - GEO answer links are retained unverified, not fetched or manufactured, and hashes cover exact original bytes
+  ---
+  duration_ms: 0.641
+  ...
+# Subtest: GEO comparison separates surfaces and configurations and leaves absent or failed answers unknown
+ok 3 - GEO comparison separates surfaces and configurations and leaves absent or failed answers unknown
+  ---
+  duration_ms: 0.5775
+  ...
+# Subtest: GEO fixed questions are unique and measured aliases are absent from the observation prompt
+ok 4 - GEO fixed questions are unique and measured aliases are absent from the observation prompt
+  ---
+  duration_ms: 4.252
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+2026-10-24 17:41:50.662 CST [30928] ERROR:  GEO configuration must use a new version
+2026-10-24 17:41:50.662 CST [30928] CONTEXT:  PL/pgSQL function guard_geo_history() line 16 at RAISE
+2026-10-24 17:41:50.662 CST [30928] STATEMENT:  UPDATE geo_experiments SET body=jsonb_set(body,'{spec,region}','"Changed"') WHERE id=$1
+
+# Subtest: GEO freezes actual harness, question versions and optimistic revisions without rewriting the previous configuration
+ok 5 - GEO freezes actual harness, question versions and optimistic revisions without rewriting the previous configuration
+  ---
+  duration_ms: 8345.9331
+  ...
+# Subtest: GEO reserves every independent question atomically and transport retries return only the same run receipt
+ok 6 - GEO reserves every independent question atomically and transport retries return only the same run receipt
+  ---
+  duration_ms: 634.7555
+  ...
+# Subtest: insufficient multi-question budget leaves no GEO run, sample, task or reservation
+ok 7 - insufficient multi-question budget leaves no GEO run, sample, task or reservation
+  ---
+  duration_ms: 314.7635
+  ...
+# Subtest: GEO displays the real active-task quota and cannot bypass a Starter slot limit for a multi-question run
+ok 8 - GEO displays the real active-task quota and cannot bypass a Starter slot limit for a multi-question run
+  ---
+  duration_ms: 131.1586
+  ...
+2026-10-24 17:41:52.495 CST [17156] ERROR:  Captured GEO answer is immutable
+2026-10-24 17:41:52.495 CST [17156] CONTEXT:  PL/pgSQL function guard_geo_history() line 12 at RAISE
+2026-10-24 17:41:52.495 CST [17156] STATEMENT:  UPDATE geo_samples SET analysis='{}' WHERE id=$1
+
+2026-10-24 17:41:52.497 CST [26632] ERROR:  Captured GEO answer is immutable
+2026-10-24 17:41:52.497 CST [26632] CONTEXT:  PL/pgSQL function guard_geo_history() line 12 at RAISE
+2026-10-24 17:41:52.497 CST [26632] STATEMENT:  UPDATE geo_samples SET analysis='{}' WHERE id=$1
+
+# Subtest: completed API capture uses actual task bytes, is immutable and repeat capture does not call or charge a model
+ok 9 - completed API capture uses actual task bytes, is immutable and repeat capture does not call or charge a model
+  ---
+  duration_ms: 753.0797
+  ...
+# Subtest: manual answers preserve exact original text and user provenance without API tasks, billing or invented missing answers
+ok 10 - manual answers preserve exact original text and user provenance without API tasks, billing or invented missing answers
+  ---
+  duration_ms: 451.0881
+  ...
+# Subtest: unknown API usage remains unreconciled and cannot become a zero-cost captured observation
+ok 11 - unknown API usage remains unreconciled and cannot become a zero-cost captured observation
+  ---
+  duration_ms: 636.9004
+  ...
+# Subtest: an explicitly published GEO answer keeps the sample provenance and cannot outlive its quarantined source
+ok 12 - an explicitly published GEO answer keeps the sample provenance and cannot outlive its quarantined source
+  ---
+  duration_ms: 313.8142
+  ...
+# Subtest: repeat runs compare under the same hash, different revisions and consumer surfaces stay explicitly separate
+ok 13 - repeat runs compare under the same hash, different revisions and consumer surfaces stay explicitly separate
+  ---
+  duration_ms: 2290.8705
+  ...
+# Subtest: GEO private reads, exports, comparison and RLS deny a second user and unrelated project
+ok 14 - GEO private reads, exports, comparison and RLS deny a second user and unrelated project
+  ---
+  duration_ms: 395.6704
+  ...
+2026-10-24 17:41:56.930 CST [39048] ERROR:  GEO source locator is immutable
+2026-10-24 17:41:56.930 CST [39048] CONTEXT:  PL/pgSQL function guard_geo_locator() line 8 at RAISE
+2026-10-24 17:41:56.930 CST [39048] STATEMENT:  UPDATE tasks SET input_context=input_context-'geo_sample_id' WHERE id=$1
+
+2026-10-24 17:41:56.933 CST [41660] ERROR:  GEO task binding is immutable
+2026-10-24 17:41:56.933 CST [41660] CONTEXT:  PL/pgSQL function guard_geo_history() line 8 at RAISE
+2026-10-24 17:41:56.933 CST [41660] STATEMENT:  UPDATE geo_samples SET task_id=$2 WHERE id=$1
+
+# Subtest: GEO fake source locators, swapped task bindings and continuation cannot bypass the reviewed observation protocol
+ok 15 - GEO fake source locators, swapped task bindings and continuation cannot bypass the reviewed observation protocol
+  ---
+  duration_ms: 367.8198
+  ...
+# Subtest: configuration quarantine fences API work, raw answer downloads and existing sample exports; no zero replacement
+ok 16 - configuration quarantine fences API work, raw answer downloads and existing sample exports; no zero replacement
+  ---
+  duration_ms: 711.4791
+  ...
+# Subtest: an actual managed read and next-generation task retain the manual GEO source and are fenced when its experiment is quarantined
+ok 17 - an actual managed read and next-generation task retain the manual GEO source and are fenced when its experiment is quarantined
+  ---
+  duration_ms: 1307.1896
+  ...
+# Subtest: GEO Admin metadata, independent body permission and quarantine remain project-scoped and audited
+ok 18 - GEO Admin metadata, independent body permission and quarantine remain project-scoped and audited
+  ---
+  duration_ms: 269.4605
+  ...
+# Subtest: GEO expiry and permanent deletion journal and physically erase private raw answer files and task copies
+ok 19 - GEO expiry and permanent deletion journal and physically erase private raw answer files and task copies
+  ---
+  duration_ms: 893.2423
+  ...
+# Subtest: owner deletion uses the current moderation version and revokes an existing original-answer export
+ok 20 - owner deletion uses the current moderation version and revokes an existing original-answer export
+  ---
+  duration_ms: 102.6738
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# GEO 099 to 100: applied migration 100
+2026-10-24 17:42:06.144 CST [13916] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 17:42:35.876 CST [13916] LOG:  checkpoint complete: wrote 2486 buffers (15.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.422 s, sync=29.084 s, total=29.733 s; sync files=1426, longest=0.456 s, average=0.021 s; distance=36764 kB, estimate=36764 kB; lsn=13/E08E22D0, redo lsn=13/E08E2240
+
+# Subtest: SQL099 upgrade preserves original source-function OIDs, a prepared query and all applied historical checksums
+ok 21 - SQL099 upgrade preserves original source-function OIDs, a prepared query and all applied historical checksums
+  ---
+  duration_ms: 35834.1284
+  ...
+# Subtest: real pinned Codex processes repeat independent GEO questions through the synthetic company gateway with no business tools
+ok 22 - real pinned Codex processes repeat independent GEO questions through the synthetic company gateway with no business tools
+  ---
+  duration_ms: 16760.6161
+  ...
+2026-10-24 17:42:52.898 CST [13916] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 17:42:53.441 CST [13916] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.007 s, sync=0.351 s, total=0.543 s; sync files=9, longest=0.091 s, average=0.039 s; distance=823 kB, estimate=33170 kB; lsn=13/E09AFFF0, redo lsn=13/E09AFF98
+
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75198.6439
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/b1121a5a-c19e-44cd-8595-412894f86b67/result.json","sha256":"e1ceda262683071e01c0a7fd8415f9e451e64f6b877861c386cd0b089d9579a2","exit_code":0}
+2026-10-24 17:42:54.559 CST [39808] LOG:  received fast shutdown request
+
+2026-10-24 17:42:54.958 CST [39808] LOG:  aborting any active transactions
+
+2026-10-24 17:42:54.966 CST [39808] LOG:  background worker "logical replication launcher" (PID 6300) exited with exit code 1
+
+2026-10-24 17:42:54.966 CST [13916] LOG:  shutting down
+
+2026-10-24 17:42:55.050 CST [13916] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 17:42:55.274 CST [13916] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.033 s, total=0.308 s; sync files=1, longest=0.033 s, average=0.033 s; distance=0 kB, estimate=29853 kB; lsn=13/E09B0120, redo lsn=13/E09B0120
+
+2026-10-24 17:42:55.389 CST [39808] LOG:  database system is shut down
+

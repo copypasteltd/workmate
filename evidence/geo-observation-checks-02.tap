@@ -1,0 +1,427 @@
+2026-10-24 16:07:04.544 CST [37800] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-24 16:07:04.557 CST [37800] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-24 16:07:04.558 CST [37800] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-24 16:07:04.836 CST [33572] LOG:  database system was shut down at 2026-10-24 16:05:36 CST
+
+2026-10-24 16:07:04.909 CST [37800] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# Subtest: GEO literal matching preserves UTF-16 positions, escapes regex and respects Latin word boundaries
+ok 1 - GEO literal matching preserves UTF-16 positions, escapes regex and respects Latin word boundaries
+  ---
+  duration_ms: 6.171
+  ...
+# Subtest: GEO answer links are retained unverified, not fetched or manufactured, and hashes cover exact original bytes
+ok 2 - GEO answer links are retained unverified, not fetched or manufactured, and hashes cover exact original bytes
+  ---
+  duration_ms: 1.7026
+  ...
+# Subtest: GEO comparison separates surfaces and configurations and leaves absent or failed answers unknown
+ok 3 - GEO comparison separates surfaces and configurations and leaves absent or failed answers unknown
+  ---
+  duration_ms: 0.896
+  ...
+# Subtest: GEO fixed questions are unique and measured aliases are absent from the observation prompt
+ok 4 - GEO fixed questions are unique and measured aliases are absent from the observation prompt
+  ---
+  duration_ms: 5.3933
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+2026-10-24 16:07:26.735 CST [9320] ERROR:  GEO configuration must use a new version
+2026-10-24 16:07:26.735 CST [9320] CONTEXT:  PL/pgSQL function guard_geo_history() line 16 at RAISE
+2026-10-24 16:07:26.735 CST [9320] STATEMENT:  UPDATE geo_experiments SET body=jsonb_set(body,'{spec,region}','"Changed"') WHERE id=$1
+
+# Subtest: GEO freezes actual harness, question versions and optimistic revisions without rewriting the previous configuration
+ok 5 - GEO freezes actual harness, question versions and optimistic revisions without rewriting the previous configuration
+  ---
+  duration_ms: 15838.4026
+  ...
+# Subtest: GEO reserves every independent question atomically and transport retries return only the same run receipt
+not ok 6 - GEO reserves every independent question atomically and transport retries return only the same run receipt
+  ---
+  duration_ms: 1332.4773
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\geo-observations.test.ts:1:5690'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/tenants/b22b82c1-c7c6-4681-bbfc-29b836eae6d1/projects/62ca7801-c6e9-4d59-b840-fdf5203b11f4/geo/experiments/a6ecb756-c161-4f3b-bc19-2ca1cdfcc20b/runs: 409 {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"16599eb5-aaa9-4c2b-9cfe-330affc6d816"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:29:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:81:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: insufficient multi-question budget leaves no GEO run, sample, task or reservation
+ok 7 - insufficient multi-question budget leaves no GEO run, sample, task or reservation
+  ---
+  duration_ms: 174.9251
+  ...
+# Subtest: completed API capture uses actual task bytes, is immutable and repeat capture does not call or charge a model
+not ok 8 - completed API capture uses actual task bytes, is immutable and repeat capture does not call or charge a model
+  ---
+  duration_ms: 153.325
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\geo-observations.test.ts:1:7619'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/tenants/05f6e7e9-9ee4-43b5-ad0f-60eff202656c/projects/30a488b9-747b-47e9-b60d-918a41cbe676/geo/experiments/71e95735-65bb-42ec-b661-540d4f1abb4b/runs: 409 {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"ea34cfcc-1776-4b11-8e4c-22e68ad207c5"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:29:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:99:36)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: manual answers preserve exact original text and user provenance without API tasks, billing or invented missing answers
+ok 9 - manual answers preserve exact original text and user provenance without API tasks, billing or invented missing answers
+  ---
+  duration_ms: 446.6
+  ...
+# Subtest: repeat runs compare under the same hash, different revisions and consumer surfaces stay explicitly separate
+not ok 10 - repeat runs compare under the same hash, different revisions and consumer surfaces stay explicitly separate
+  ---
+  duration_ms: 358.4357
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\geo-observations.test.ts:1:9615'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/tenants/8d87df08-3089-45b0-9867-55b13fe21cc4/projects/626ce228-7f48-4888-a6e6-afd48aa0874e/geo/experiments/16e866be-21ed-41f1-bdb1-13f9fca36d0f/runs: 409 {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"6c03086b-e621-4e48-8673-dd26c4286dc7"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:29:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:125:34)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: GEO private reads, exports, comparison and RLS deny a second user and unrelated project
+ok 11 - GEO private reads, exports, comparison and RLS deny a second user and unrelated project
+  ---
+  duration_ms: 268.8094
+  ...
+# Subtest: GEO fake source locators, swapped task bindings and continuation cannot bypass the reviewed observation protocol
+not ok 12 - GEO fake source locators, swapped task bindings and continuation cannot bypass the reviewed observation protocol
+  ---
+  duration_ms: 207.1711
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\geo-observations.test.ts:1:11655'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/tenants/14ff0285-830b-4df3-8302-504fb3a6a100/projects/e7485f34-e519-4929-b6ca-1dc8fb21be32/geo/experiments/9cb768f2-e96f-4722-a6b7-45bff0728bba/runs: 409 {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"37f6c622-59ab-45a3-87f4-d639b76cb67e"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:29:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:146:36)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: configuration quarantine fences API work, raw answer downloads and existing sample exports; no zero replacement
+not ok 13 - configuration quarantine fences API work, raw answer downloads and existing sample exports; no zero replacement
+  ---
+  duration_ms: 460.7376
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\geo-observations.test.ts:1:12386'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/tenants/d94ba3d5-78cf-4c95-9874-378399fe13ba/projects/00fbdb3f-2d56-400f-beaa-177ee9e6fd5c/geo/experiments/8537b8c9-ca36-4016-8b43-018ce96d1a76/runs: 409 {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"69c6a2fe-8859-4195-9ba0-414c25514e1e"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:29:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:153:34)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: GEO expiry and permanent deletion journal and physically erase private raw answer files and task copies
+not ok 14 - GEO expiry and permanent deletion journal and physically erase private raw answer files and task copies
+  ---
+  duration_ms: 255.5077
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\geo-observations.test.ts:1:13258'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/tenants/8f564f68-a6e3-4069-8e2b-2efd2a3e26b5/projects/3d42d158-80e4-4ffe-8f36-77b5bc7aaaed/geo/experiments/f8fa3eea-c953-4c40-a43d-7be0d5d3ed4f/runs: 409 {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"a1f6022d-b264-4031-8b1a-dc46608b0bc3"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:29:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:161:34)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# GEO 099 to 100: applied migration 100
+2026-10-24 16:07:37.509 CST [30684] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 16:07:49.997 CST [30684] LOG:  checkpoint complete: wrote 2321 buffers (14.2%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 3 recycled; write=0.391 s, sync=11.821 s, total=12.489 s; sync files=1419, longest=0.350 s, average=0.009 s; distance=35620 kB, estimate=35620 kB; lsn=13/B908A838, redo lsn=13/B9069C08
+
+# Subtest: SQL099 upgrade preserves original source-function OIDs, a prepared query and all applied historical checksums
+ok 15 - SQL099 upgrade preserves original source-function OIDs, a prepared query and all applied historical checksums
+  ---
+  duration_ms: 19867.0939
+  ...
+# Subtest: real pinned Codex processes repeat independent GEO questions through the synthetic company gateway with no business tools
+not ok 16 - real pinned Codex processes repeat independent GEO questions through the synthetic company gateway with no business tools
+  ---
+  duration_ms: 504.3288
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\geo-observations.test.ts:1:16142'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/tenants/0f0b7bda-b76f-4fe9-be5c-f28aa845393e/projects/922b576d-ad63-433a-8bea-9e1153a078ee/geo/experiments/8c422717-f70b-49a1-b70b-f4c220e3af8d/runs: 409 {"error":{"code":"PLAN_TASK_LIMIT","message":"Finish or reconcile existing tasks before starting another","request_id":"65dd4dd9-27ea-4396-8191-ce48aabf2192"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:29:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\geo-observations.test.ts:188:34)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-24 16:07:50.829 CST [30684] LOG:  checkpoint starting: immediate force wait
+
+2026-10-24 16:07:51.338 CST [30684] LOG:  checkpoint complete: wrote 21 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.357 s, total=0.509 s; sync files=6, longest=0.122 s, average=0.060 s; distance=365 kB, estimate=32095 kB; lsn=13/B90C50B8, redo lsn=13/B90C5060
+
+1..16
+# tests 16
+# suites 0
+# pass 9
+# fail 7
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45870.0848
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/7ac8a75b-d14e-48c3-b3a4-e9f3db7e719d/result.json","sha256":"81e2177cd1bded8604b08bd7354b0a0aa34211856baf83fe397a11b241a0779e","exit_code":0}
+2026-10-24 16:07:52.132 CST [37800] LOG:  received fast shutdown request
+
+2026-10-24 16:07:52.316 CST [37800] LOG:  aborting any active transactions
+
+2026-10-24 16:07:52.327 CST [37800] LOG:  background worker "logical replication launcher" (PID 28544) exited with exit code 1
+
+2026-10-24 16:07:52.366 CST [30684] LOG:  shutting down
+
+2026-10-24 16:07:52.395 CST [30684] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-24 16:07:52.579 CST [30684] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.043 s, total=0.214 s; sync files=1, longest=0.043 s, average=0.043 s; distance=0 kB, estimate=28885 kB; lsn=13/B90C51D0, redo lsn=13/B90C51D0
+
+2026-10-24 16:07:52.689 CST [37800] LOG:  database system is shut down
+
