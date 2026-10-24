@@ -1,5 +1,8 @@
 .provider-control {
   min-width: 0;
+  width: 100%;
+  container-type: inline-size;
+  overflow-wrap: anywhere;
 }
 .provider-tabs {
   display: flex;
@@ -52,6 +55,25 @@
 .provider-form-grid .field {
   min-width: 0;
   margin: 0 0 14px;
+}
+.provider-form-grid .field :is(input, select, textarea) {
+  min-width: 0;
+  width: 100%;
+}
+.provider-card .key-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+.provider-card .key-value dt {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 10px;
+}
+.provider-card .key-value dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 .provider-comparison {
   margin: 20px 0;
@@ -141,6 +163,7 @@
   padding: 24px;
   color: var(--muted);
 }
+.provider-video-cost { margin: 18px 0; padding: 14px 0; border-top: 1px solid var(--line); }
 .provider-footnote {
   display: flex;
   align-items: flex-start;
@@ -178,5 +201,15 @@
   }
   .provider-fact {
     gap: 10px;
+  }
+}
+@container (max-width: 650px) {
+  .provider-form-grid,
+  .provider-comparison,
+  .provider-history {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .provider-card {
+    padding: 18px;
   }
 }

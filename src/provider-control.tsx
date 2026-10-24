@@ -30,12 +30,14 @@ const labels: Record<string, [string, string]> = {
   actor_slots: ["每用戶同時請求", "Concurrent requests / user"],
   text_slots: ["文字同時請求", "Concurrent text requests"],
   image_slots: ["圖片同時請求", "Concurrent image requests"],
+  video_slots: ["影片同時作業", "Concurrent video jobs"],
   verification_slots: ["後台驗證同時請求", "Concurrent verification requests"],
   global_rpm: ["全平台每分鐘請求", "Platform requests / minute"],
   tenant_rpm: ["每企業每分鐘請求", "Requests / minute / workspace"],
   actor_rpm: ["每用戶每分鐘請求", "Requests / minute / user"],
   text_rpm: ["文字每分鐘請求", "Text requests / minute"],
   image_rpm: ["圖片每分鐘請求", "Image requests / minute"],
+  video_rpm: ["影片每分鐘提交", "Video submissions / minute"],
   verification_rpm: ["後台驗證每分鐘請求", "Verification requests / minute"],
   preparation_seconds: ["準備時限（秒）", "Preparation timeout (seconds)"],
   count_price_micros: [
@@ -78,6 +80,14 @@ function State({ value }: { value: string }) {
   const names: Record<string, [string, string]> = {
     unknown: ["結果未知", "Unknown outcome"],
     prepared: ["準備中", "Prepared"],
+    submitting: ["正在提交", "Submitting"],
+    queued: ["等待生成", "Queued"],
+    in_progress: ["生成中", "Generating"],
+    failed: ["已失敗", "Failed"],
+    pending: ["等待交付", "Awaiting delivery"],
+    available: ["可供下載", "Available"],
+    blocked: ["已停止交付", "Delivery blocked"],
+    invalid: ["未通過媒體檢查", "Media check failed"],
     dispatched: ["已發送", "Dispatched"],
     completed: ["已完成", "Completed"],
     cancelled: ["已取消", "Cancelled"],
@@ -1392,6 +1402,73 @@ function Requests({
     </>
   );
 }
+function GeneratedVideoRequests({ access, revision, onDone }: { access: CapabilityAccess; revision: number; onDone: () => void }) {
+  const { t } = useI18n();
+  const [filters, setFilters] = useState<Record<string, string>>({}), [cursors, setCursors] = useState<string[]>([]);
+  const [recheck, setRecheck] = useState<any>(null), [command, setCommand] = useState<any>(null);
+  const query = new URLSearchParams({ ...filters, limit: "20", ...(cursors.length ? { cursor: cursors.at(-1)! } : {}) });
+  const result = useData(root + "/video-jobs?" + query, revision);
+  return <>
+    <form className="provider-card" onSubmit={event => {
+      event.preventDefault(); const data = new FormData(event.currentTarget), next: Record<string, string> = {};
+      for (const name of ["tenant_id", "project_id", "task_id"]) if (String(data.get(name) ?? "").trim()) next[name] = String(data.get(name)).trim();
+      setFilters(next); setCursors([]);
+    }}>
+      <div className="provider-form-grid">
+        {[["tenant_id", t("企業 ID", "Workspace ID")], ["project_id", t("項目 ID", "Project ID")], ["task_id", t("工作 ID", "Task ID")]].map(([name, label]) =>
+          <Field key={name} label={label}><input name={name} defaultValue={filters[name] ?? ""} pattern="[a-fA-F0-9-]{36}" /></Field>)}
+      </div>
+      <button type="submit" className="button secondary">{t("篩選影片作業", "Filter video jobs")}</button>
+    </form>
+    <ErrorNotice error={result.error} />{result.loading && <Loading />}
+    {result.data && <>
+      {!result.data.items.length && <p className="provider-card muted">{t("此授權範圍沒有影片作業。", "No video jobs in this authorized scope.")}</p>}
+      <div className="provider-history">
+        {result.data.items.map((job: any) => <article className="provider-card" key={job.id} data-generated-video-job={job.id}>
+          <div className="provider-toolbar"><Mode value={job.data_mode} /><State value={job.state} /><State value={job.delivery_state} /></div>
+          <h3>{t("生成式影片", "Generated video")}</h3>
+          <dl className="key-value">
+            <dt>{t("作業", "Job")}</dt><dd><code>{job.id}</code></dd>
+            <dt>{t("原工作", "Original task")}</dt><dd><code>{job.task_id}</code></dd>
+            <dt>{t("企業／項目", "Workspace / project")}</dt><dd><code>{job.tenant_id}<br />{job.project_id}</code></dd>
+            <dt>{t("原用戶", "Original user")}</dt><dd><code>{job.actor_id}</code></dd>
+            <dt>{t("服務／能力版本", "Service / capability")}</dt><dd>{job.model_alias}<br /><code>{job.capability_version_id}</code></dd>
+            <dt>{t("服務回報進度", "Reported progress")}</dt><dd>{job.progress === null ? t("尚未回報", "Not yet reported") : job.progress + "%"}</dd>
+            <dt>{t("最近觀測", "Last observation")}</dt><dd>{job.observed_at ? <DateText value={job.observed_at} /> : "—"}</dd>
+          </dl>
+          {job.cost && <section className="provider-video-cost">
+            <dl className="key-value"><dt>{t("原估算上限", "Original quote")}</dt><dd><Money value={job.cost.quoted_micros} /></dd>
+              <dt>{t("已確認費用", "Confirmed cost")}</dt><dd>{job.cost.actual_micros === null ? t("待服務確認", "Awaiting service confirmation") : <Money value={job.cost.actual_micros} />}</dd>
+              <dt>{t("計費秒數", "Billable seconds")}</dt><dd>{job.cost.billable_seconds ?? "—"}</dd></dl>
+            {job.cost.budget_violation && <p className="notice">{t("實際費用超過原估算，交付已停止。結算需獨立核對預算違規。", "Actual cost exceeds the quote. Delivery is stopped and settlement requires independent review of the budget violation.")}</p>}
+          </section>}
+          {(job.error_code || job.delivery_error) && <p className="muted"><code>{job.error_code ?? job.delivery_error}</code></p>}
+          {access.has("admin.ai.cost.reconcile") && <button className="button secondary" onClick={() => setRecheck(job)}>{t("重新核對原作業", "Recheck original job")}</button>}
+          {job.cost && access.has("admin.ai.tasks.settle") && <details><summary>{t("結算原任務費用", "Settle original task costs")}</summary>
+            <AsyncForm submitLabel={t("預覽結算", "Preview settlement")} onSubmit={async form => {
+              const facts = await api(`${root}/tasks/${job.task_id}/settlement`);
+              if (facts.violations.length && form.get("acknowledge") !== "on") throw new Error(t("請明確確認歷史預算違規。", "Explicitly acknowledge the historical budget violations."));
+              setCommand({ action: "ai.tasks.settle", task_id: job.task_id, expected_task_version: facts.task.version,
+                acknowledge_violation_ids: facts.violations.map((value: any) => value.id), reason: String(form.get("reason")) });
+            }}><Field label={t("結算原因", "Settlement reason")}><textarea name="reason" minLength={3} maxLength={1000} required /></Field>
+              <label className="checkbox"><input type="checkbox" name="acknowledge" />{t("明確確認此工作的歷史預算違規（如有）", "Acknowledge this task's historical budget violations, if any")}</label>
+            </AsyncForm></details>}
+        </article>)}
+      </div>
+      <div className="provider-pagination"><button className="button secondary" disabled={!cursors.length} onClick={() => setCursors(values => values.slice(0, -1))}><ChevronLeft size={16} />{t("上一頁", "Previous")}</button>
+        <button className="button secondary" disabled={!result.data.next_cursor} onClick={() => setCursors(values => [...values, result.data.next_cursor])}>{t("下一頁", "Next")}<ChevronRight size={16} /></button></div>
+    </>}
+    {recheck && <Modal title={t("重新核對原作業", "Recheck original job")} onClose={() => setRecheck(null)}>
+      <p className="muted">{t("查詢同一作業的最新狀態。費用未知時會保留原預留。", "Query the latest state of the same operation. Its original hold remains while cost is unknown.")}</p>
+      <AsyncForm submitLabel={t("要求重新核對", "Request recheck")} onSubmit={async form => {
+        await write(access, `/video-jobs/${recheck.id}/recheck`, { expected_revision: recheck.revision, reason: String(form.get("reason")) });
+        setRecheck(null); onDone();
+      }}><Field label={t("核對原因", "Reason for recheck")}><textarea name="reason" minLength={3} maxLength={1000} required /></Field></AsyncForm>
+    </Modal>}
+    {command && <Command command={command} access={access} onClose={() => setCommand(null)} onDone={() => { setCommand(null); onDone(); }} />}
+  </>;
+}
+
 export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
   const { t } = useI18n(),
     [view, setView] = useState(
@@ -1426,6 +1503,11 @@ export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
             t("逐次請求與核對", "Requests & reconciliation"),
           ],
           [
+            "videos",
+            "admin.ai.requests.read",
+            t("生成式影片作業", "Generated video jobs"),
+          ],
+          [
             "policies",
             "admin.ai.policy.read",
             t("策略版本", "Policy versions"),
@@ -1444,14 +1526,16 @@ export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
       </nav>
       {view === "policies" ? (
         <PolicyPanel access={access} revision={revision} onDone={refresh} />
+      ) : view === "videos" ? (
+        <GeneratedVideoRequests access={access} revision={revision} onDone={refresh} />
       ) : (
         <Requests access={access} revision={revision} onDone={refresh} />
       )}
       <p className="provider-footnote">
         <ShieldCheck size={15} />
         {t(
-          "所有變更均受精確授權、近期 MFA、獨立審批和審計保護。",
-          "Changes require scoped authority, recent MFA, independent approval and an audit record.",
+          "費用與策略變更需精確授權、近期 MFA、獨立審批和審計；狀態復查同樣受授權、MFA 與審計保護。",
+          "Cost and policy changes require scoped authority, recent MFA, independent approval and audit. Status rechecks require scoped authority, recent MFA and audit.",
         )}
       </p>
     </div>
