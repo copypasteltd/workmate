@@ -1,5 +1,20 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+
+## 阶段 96 方案实现补充 / Stage 96 method implementation
+
+阶段 96 补齐业务方案的不可变版本、免费依赖预览、私有付费试运行、逐项验收、发布和跨项目安装重绑定。122 项相关集成检查、45 项 Desktop 单元检查、2 项真实本机 Codex 检查及 8 项实际浏览器检查通过。模型与账号数据按当前要求使用假数据；文件、进程、授权、费用和审计走实际流程。
+
+Stage 96 implements immutable business-method versions, free dependency previews, private paid trials, exact-delivery acceptance, publication and fresh cross-project rebinding. 122 related integration checks, 45 Desktop unit checks, two actual local Codex checks and eight actual browser checks pass. Model/account data remain explicitly synthetic; files, processes, authorization, accounting and audit execute normally.
+
+[方案及约束 / Implementation](../technical/96-versioned-business-solutions.md) · [专项证据 / Scoped evidence](../quality/solution-packages-checkpoint.json)
+
+SQL112 新增严格版本、实际试运行与来源控制，既有 OpenAPI、迁移、Skill 及原始需求、验收用例和 G01–G10 判定保持历史依据。发布使用 `finalize_solution_packages_manifest.py` 绑定各仓库实际提交，再运行现有 Delivery 发布器，普通推送并核对八个远端引用；既有授权持续有效。
+
+以下保留原始规格与此前阶段的实现记录；最新源码范围以上方阶段 96 补充及检查点为准。原始完整验收判定未因本次增量改变。
+
+Original specifications and earlier implementation records follow. The stage 96 supplement and checkpoint above define this increment; original complete acceptance is unchanged.
+
 阶段 88 当前增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 见[方案及边界](../technical/88-approved-local-programs.md)。当前源码和已发布版本分别以本阶段检查点、最终提交及远程回执为准；下文保留历史阶段原范围。
 
 

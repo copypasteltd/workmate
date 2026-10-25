@@ -1,0 +1,1078 @@
+import { before, after, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { Ajv2020 } from "ajv/dist/2020.js";
+import * as OTPAuth from "otpauth";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { saveAsset } from "../src/storage.js";
+import { Worker } from "../src/worker.js";
+import {
+  CodexRuntimeAdapter,
+  type RuntimeContext,
+  type RuntimeResult,
+} from "../src/runtime.js";
+import { advanceConnectors } from "../src/connectors.js";
+import { seal, hash } from "../src/lib.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
+  s: Awaited<ReturnType<typeof buildApp>>;
+type Client = {
+  id: string;
+  cookie: string;
+  csrf: string;
+  tenant?: string;
+  admin?: boolean;
+};
+const contract = JSON.parse(
+  await readFile(
+    new URL("../contracts/solution-packages-v1.schema.json", import.meta.url),
+    "utf8",
+  ),
+);
+const ajv = new Ajv2020({ strict: false, allErrors: true });
+ajv.addFormat(
+  "uuid",
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+);
+const validators = Object.fromEntries(
+  Object.keys(contract.$defs).map((name) => [
+    name,
+    ajv.compile({
+      ...contract,
+      $id: contract.$id + "/" + name,
+      $ref: "#/$defs/" + name,
+    }),
+  ]),
+);
+function conforms(name: string, value: any) {
+  assert.ok(validators[name](value), JSON.stringify(validators[name].errors));
+}
+async function call(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: unknown,
+  requestKey: string = randomUUID(),
+) {
+  const raw = await s.app.inject({
+    method: method as any,
+    url,
+    headers: {
+      origin: c?.admin ? s.db.config.ADMIN_ORIGIN : s.db.config.WEB_ORIGIN,
+      ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
+      ...(c?.tenant ? { "x-tenant-id": c.tenant } : {}),
+      "idempotency-key": requestKey,
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+    },
+    ...(body === undefined ? {} : { payload: JSON.stringify(body) }),
+  });
+  return { status: raw.statusCode, data: raw.json(), raw };
+}
+async function ok(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: unknown,
+  requestKey?: string,
+) {
+  const r = await call(c, method, url, body, requestKey);
+  assert.ok(
+    r.status >= 200 && r.status < 300,
+    `${method} ${url}: ${r.status} ${JSON.stringify(r.data)}`,
+  );
+  return r.data;
+}
+async function login(
+  secret?: OTPAuth.Secret,
+  email = `solution-${randomUUID()}@example.invalid`,
+): Promise<Client> {
+  const prefix = secret ? "/v1/admin/auth" : "/v1/auth";
+  const challenge = await ok(undefined, "POST", prefix + "/challenge", {
+    email,
+  });
+  const mail = JSON.parse(
+    await readFile(
+      `${s.db.config.DATA_DIR}/mailbox/${challenge.challenge_id}.json`,
+      "utf8",
+    ),
+  );
+  const result = await call(undefined, "POST", prefix + "/verify", {
+    challenge_id: challenge.challenge_id,
+    code: mail.text.match(/\b\d{6}\b/)[0],
+    ...(secret
+      ? {
+          totp: new OTPAuth.TOTP({
+            secret,
+            digits: 6,
+            period: 30,
+            algorithm: "SHA1",
+          }).generate(),
+        }
+      : {}),
+  });
+  assert.equal(result.status, 200, JSON.stringify(result.data));
+  const cookie = result.raw.cookies.find(
+    (c) => c.name === (secret ? "cp_admin_session" : "cp_session"),
+  )!;
+  return {
+    id: result.data.user?.id ?? result.data.admin?.id,
+    csrf: result.data.csrf_token,
+    cookie: cookie.name + "=" + cookie.value,
+    admin: !!secret,
+  };
+}
+async function fixture(overrides: any = {}) {
+  const owner = await login();
+  const w = await ok(owner, "POST", "/v1/tenants", {
+    name: "Method reuse tests",
+    project_name: "Original customer",
+  });
+  const tenant = w.tenant.id,
+    project = w.project.id;
+  owner.tenant = tenant;
+  await ok(owner, "POST", `/v1/tenants/${tenant}/demo-credit`, {});
+  const templates = (await ok(owner, "GET", "/v1/agent-templates")).items;
+  const assistant = templates.find((v: any) => v.role_key === "assistant");
+  const consultant = templates.find(
+    (v: any) => v.role_key === "workflow-consultant",
+  );
+  const definition = {
+    project_id: project,
+    name: "Reusable evidence check",
+    instructions:
+      "Read the approved materials and deliver a concise grounded result. Keep missing facts explicit.",
+    agent_template_ids: [assistant.id],
+    skill_version_ids: [],
+    required_assets: [],
+    required_connectors: [],
+    ...overrides,
+  };
+  return { owner, tenant, project, definition, assistant, consultant };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+const create = (f: Fixture, body = f.definition, requestKey?: string) =>
+  ok(f.owner, "POST", "/v1/solution-versions", body, requestKey);
+const blank = () => ({ assets: [], connectors: [] });
+async function preview(
+  f: Fixture,
+  method: any,
+  bindings: any = blank(),
+  project = f.project,
+  installation_id?: string,
+) {
+  return ok(f.owner, "POST", `/v1/solution-versions/${method.id}/previews`, {
+    project_id: project,
+    bindings,
+    ...(installation_id ? { installation_id } : {}),
+  });
+}
+async function start(
+  f: Fixture,
+  method: any,
+  bindings: any = blank(),
+  options: any = {},
+  requestKey?: string,
+) {
+  const project = options.project_id ?? f.project,
+    installation = options.installation_id;
+  const checked = await preview(f, method, bindings, project, installation);
+  const body = {
+    project_id: project,
+    bindings,
+    expected_preview_hash: checked.preview_hash,
+    budget_micros: 10000,
+    brief: "Deliver one concrete result from this project's approved evidence.",
+    approval: true,
+    ...(installation ? { installation_id: installation } : {}),
+    ...options,
+  };
+  return {
+    body,
+    run: await ok(
+      f.owner,
+      "POST",
+      `/v1/solution-versions/${method.id}/trials`,
+      body,
+      requestKey,
+    ),
+  };
+}
+class FixtureRuntime extends CodexRuntimeAdapter {
+  calls = 0;
+  failure: unknown;
+  constructor(private perform?: (ctx: RuntimeContext) => Promise<void>) {
+    super(s.db.config);
+  }
+  override async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+    this.calls++;
+    try {
+      await this.perform?.(ctx);
+    } catch (e) {
+      this.failure = e;
+      throw e;
+    }
+    return {
+      status: "completed",
+      text: "Fixture answer based on actual authorized source operations; model reasoning is synthetic.",
+      inputTokens: 20,
+      outputTokens: 10,
+      usageKnown: true,
+      accepted: true,
+      thread: "solution-unit-fixture",
+      turn: randomUUID(),
+    };
+  }
+}
+async function finish(
+  f: Fixture,
+  run: any,
+  perform?: (ctx: RuntimeContext) => Promise<void>,
+) {
+  for (const item of run.tasks) {
+    const runtime = new FixtureRuntime(perform);
+    await new Worker(s.db, s.catalog, s.storage, runtime).run(
+      f.tenant,
+      item.task_id,
+    );
+    if (runtime.failure) throw runtime.failure;
+    assert.equal(runtime.calls, 1);
+  }
+  return ok(f.owner, "GET", "/v1/solution-trials/" + run.id);
+}
+async function accept(f: Fixture, detail: any) {
+  return ok(f.owner, "POST", `/v1/solution-trials/${detail.id}/reviews`, {
+    approval: true,
+    tasks: detail.tasks.map((v: any) => ({
+      task_id: v.task_id,
+      expected_version: v.task_version,
+      expected_delivery_hash: v.delivery_hash,
+    })),
+    comment: "Customer explicitly reviewed each synthetic fixture delivery.",
+  });
+}
+async function published(f: Fixture) {
+  const method = await create(f),
+    { run } = await start(f, method),
+    detail = await finish(f, run),
+    accepted = await accept(f, detail);
+  const result = await ok(
+    f.owner,
+    "POST",
+    `/v1/solution-versions/${method.id}/publications`,
+    {
+      expected_version: method.version,
+      validation_task_id: accepted.validation_task_id,
+    },
+  );
+  return { method: result, run, detail: accepted };
+}
+async function asset(f: Fixture, privateOwner?: string) {
+  return s.db.tx(
+    (tx) =>
+      saveAsset(tx, s.storage, {
+        tenant: f.tenant,
+        project: f.project,
+        user: privateOwner ?? f.owner.id,
+        name: "private-customer-evidence.txt",
+        mime: "text/plain",
+        bytes: Buffer.from("PRIVATE_SOURCE_" + randomUUID()),
+        ...(privateOwner ? { privateOwner } : {}),
+      }),
+    f.tenant,
+    false,
+    privateOwner ?? f.owner.id,
+  );
+}
+async function editor(f: Fixture) {
+  const member = await login();
+  member.tenant = f.tenant;
+  await s.db.control.query(
+    "INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,'member')",
+    [f.tenant, member.id],
+  );
+  await s.db.control.query(
+    "INSERT INTO project_members(tenant_id,project_id,user_id,role) VALUES($1,$2,$3,'editor')",
+    [f.tenant, f.project, member.id],
+  );
+  return member;
+}
+async function connected(f: Fixture) {
+  const c = await ok(f.owner, "POST", "/v1/connections", {
+    project_id: f.project,
+    provider: "google_ads",
+  });
+  const consent = new URL(c.authorization_url);
+  consent.pathname = consent.pathname.replace("/consent/", "/approve/");
+  const redirect = await fetch(consent, { redirect: "manual" });
+  assert.equal(redirect.status, 302);
+  const back = new URL(redirect.headers.get("location")!);
+  await ok(undefined, "GET", back.pathname + back.search);
+  async function drain() {
+    for (let i = 0; i < 30; i++) {
+      const detail = await ok(f.owner, "GET", `/v1/connections/${c.id}/detail`);
+      if (
+        !detail.jobs.some((v: any) => ["queued", "running"].includes(v.status))
+      )
+        return detail;
+      await advanceConnectors(s.db, s.storage);
+    }
+    throw new Error("Connector fixture did not drain");
+  }
+  const detail = await drain(),
+    account = detail.accounts.find(
+      (v: any) => v.readable && v.kind !== "manager",
+    );
+  const selected = await ok(f.owner, "PATCH", `/v1/connections/${c.id}`, {
+    expected_version: detail.connection.version,
+    account_ids: [account.account_id],
+    project_ids: [f.project],
+  });
+  await ok(f.owner, "POST", `/v1/connections/${c.id}/syncs`, {
+    date_from: "2026-10-01",
+    date_to: "2026-10-07",
+  });
+  await drain();
+  return {
+    provider: "google_ads",
+    connection_id: c.id,
+    version: selected.version,
+    auth_version: selected.auth_version,
+    account_id: account.account_id,
+  };
+}
+before(async () => {
+  isolated = await isolatedTestEnvironment();
+  s = await buildApp(
+    loadConfig({
+      ...isolated.env,
+      NODE_ENV: "test",
+      DEMO_MODE: "true",
+      WORKER_ENABLED: "false",
+    }),
+    { worker: false },
+  );
+});
+after(async () => {
+  try {
+    await s?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
+});
+
+test("original strict solution schemas are met; definitions freeze only packaged method references", async () => {
+  const f = await fixture(),
+    hidden = await asset(f, f.owner.id),
+    method = await create(f);
+  conforms("SolutionCreate", f.definition);
+  conforms("SolutionVersion", method);
+  const detail = await ok(
+    f.owner,
+    "GET",
+    `/v1/solution-versions/${method.id}/details`,
+  );
+  assert.equal(
+    detail.templates[0].template_version_id,
+    f.assistant.template_version_id,
+  );
+  assert.equal(
+    detail.templates[0].role_hash,
+    s.catalog.digest(s.catalog.role("assistant")),
+  );
+  assert.equal(JSON.stringify(detail).includes(hidden.id), false);
+  assert.equal(JSON.stringify(detail).includes("PRIVATE_SOURCE_"), false);
+  assert.equal(
+    (
+      await call(f.owner, "POST", "/v1/solution-versions", {
+        ...f.definition,
+        access_token: "not accepted",
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await call(f.owner, "POST", "/v1/solution-versions", {
+        ...f.definition,
+        instructions: "Bearer " + "x".repeat(30),
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await call(f.owner, "POST", "/v1/solution-versions", {
+        ...f.definition,
+        skill_version_ids: [randomUUID()],
+      })
+    ).status,
+    422,
+  );
+});
+test("creation retries are atomic; changed inputs conflict and current project authority is rechecked", async () => {
+  const f = await fixture(),
+    k = randomUUID(),
+    a = await create(f, f.definition, k),
+    b = await create(f, f.definition, k);
+  assert.equal(a.id, b.id);
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        "/v1/solution-versions",
+        { ...f.definition, name: "Changed" },
+        k,
+      )
+    ).status,
+    409,
+  );
+  const member = await editor(f);
+  assert.equal(
+    (await call(member, "POST", "/v1/solution-versions", f.definition)).status,
+    403,
+  );
+  const stranger = await fixture();
+  assert.equal(
+    (
+      await call(
+        { ...stranger.owner, tenant: f.tenant },
+        "GET",
+        `/v1/solution-versions/${a.id}`,
+      )
+    ).status,
+    404,
+  );
+  await s.db.control.query("UPDATE projects SET archived=true WHERE id=$1", [
+    f.project,
+  ]);
+  assert.equal(
+    (await call(f.owner, "POST", "/v1/solution-versions", f.definition, k))
+      .status,
+    404,
+  );
+});
+test("revisions retain old definitions and concurrent revisions allocate distinct family versions", async () => {
+  const f = await fixture(),
+    a = await create(f);
+  const b = await ok(
+    f.owner,
+    "POST",
+    `/v1/solution-versions/${a.id}/revisions`,
+    { ...f.definition, name: "Second method" },
+  );
+  const results = await Promise.all(
+    [a, b].map((v, index) =>
+      ok(f.owner, "POST", `/v1/solution-versions/${v.id}/revisions`, {
+        ...f.definition,
+        name: "Parallel revision " + index,
+      }),
+    ),
+  );
+  assert.deepEqual(results.map((v) => v.version).sort(), [3, 4]);
+  assert.equal(
+    (await ok(f.owner, "GET", `/v1/solution-versions/${a.id}`)).definition.name,
+    a.definition.name,
+  );
+  await assert.rejects(
+    s.db.control.query(
+      "UPDATE solution_versions SET definition=$2 WHERE id=$1",
+      [a.id, { ...f.definition, name: "Silent overwrite" }],
+    ),
+    (e: any) => e.code === "23514",
+  );
+});
+test("previews show missing requirements without tasks, credentials or automatic authorization", async () => {
+  const f = await fixture({
+      required_assets: ["Brand brief"],
+      required_connectors: ["google_ads"],
+    }),
+    m = await create(f);
+  const p = await preview(f, m);
+  assert.equal(p.state, "needs_configuration");
+  assert.ok(
+    p.missing_requirements.includes("asset:Brand brief") &&
+      p.missing_requirements.includes("connector:google_ads"),
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int n FROM tasks WHERE project_id=$1",
+        [f.project],
+      )
+    ).rows[0].n,
+    0,
+  );
+  const attempt = await call(
+    f.owner,
+    "POST",
+    `/v1/solution-versions/${m.id}/trials`,
+    {
+      project_id: f.project,
+      bindings: blank(),
+      expected_preview_hash: p.preview_hash,
+      budget_micros: 10000,
+      brief: "Actual input required",
+      approval: true,
+    },
+  );
+  assert.equal(attempt.status, 409);
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int n FROM reservations WHERE tenant_id=$1",
+        [f.tenant],
+      )
+    ).rows[0].n,
+    0,
+  );
+});
+test("a multi-template trial freezes every role and reserves its exact total once under retry", async () => {
+  const f = await fixture();
+  f.definition.agent_template_ids = [f.assistant.id, f.consultant.id];
+  const m = await create(f),
+    k = randomUUID(),
+    started = await start(f, m, blank(), { budget_micros: 10001 }, k);
+  assert.equal(started.run.tasks.length, 2);
+  assert.equal(
+    (
+      await ok(
+        f.owner,
+        "POST",
+        `/v1/solution-versions/${m.id}/trials`,
+        started.body,
+        k,
+      )
+    ).id,
+    started.run.id,
+  );
+  const rows = (
+    await s.db.control.query(
+      "SELECT budget_micros,private_owner,input_context FROM tasks WHERE id=ANY($1::uuid[]) ORDER BY budget_micros",
+      [started.run.tasks.map((v: any) => v.task_id)],
+    )
+  ).rows;
+  assert.deepEqual(
+    rows.map((v) => Number(v.budget_micros)),
+    [5000, 5001],
+  );
+  assert.ok(
+    rows.every(
+      (v) =>
+        v.private_owner === f.owner.id &&
+        v.input_context.solution_trial.solution_version_id === m.id,
+    ),
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int n FROM reservations WHERE task_id=ANY($1::uuid[])",
+        [started.run.tasks.map((v: any) => v.task_id)],
+      )
+    ).rows[0].n,
+    2,
+  );
+  const detail = await finish(f, started.run);
+  assert.ok(
+    detail.tasks.every(
+      (v: any) => v.status === "succeeded" && v.charged_micros > 0,
+    ),
+  );
+  const accepted = await accept(f, detail),
+    published = await ok(
+      f.owner,
+      "POST",
+      `/v1/solution-versions/${m.id}/publications`,
+      {
+        expected_version: m.version,
+        validation_task_id: accepted.validation_task_id,
+      },
+    );
+  conforms("SolutionVersion", published);
+  assert.equal(published.state, "published");
+});
+test("unapproved, stale and underfunded trial submissions cannot create paid work", async () => {
+  const f = await fixture();
+  f.definition.agent_template_ids = [f.assistant.id, f.consultant.id];
+  const m = await create(f),
+    p = await preview(f, m),
+    body = {
+      project_id: f.project,
+      bindings: blank(),
+      expected_preview_hash: p.preview_hash,
+      budget_micros: 10000,
+      brief: "Reviewed request",
+      approval: true,
+    };
+  assert.equal(
+    (
+      await call(f.owner, "POST", `/v1/solution-versions/${m.id}/trials`, {
+        ...body,
+        approval: false,
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await call(f.owner, "POST", `/v1/solution-versions/${m.id}/trials`, {
+        ...body,
+        expected_preview_hash: "0".repeat(64),
+      })
+    ).status,
+    409,
+  );
+  assert.equal(
+    (
+      await call(f.owner, "POST", `/v1/solution-versions/${m.id}/trials`, {
+        ...body,
+        budget_micros: 1000,
+      })
+    ).status,
+    422,
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int n FROM solution_trials WHERE tenant_id=$1",
+        [f.tenant],
+      )
+    ).rows[0].n,
+    0,
+  );
+});
+test("private approved source versions can be read exactly without exposing sibling files or another user's attachments", async () => {
+  const f = await fixture({ required_assets: ["Brief"] }),
+    original = await asset(f, f.owner.id),
+    sibling = await asset(f, f.owner.id),
+    member = await editor(f),
+    otherPrivate = await asset(f, member.id);
+  const m = await create(f),
+    binding = {
+      assets: [
+        {
+          requirement: "Brief",
+          asset_version_id: original.version.id,
+          sha256: original.version.sha256,
+        },
+      ],
+      connectors: [],
+    };
+  const sources = await ok(
+    f.owner,
+    "GET",
+    `/v1/solution-targets?project_id=${f.project}&kind=assets`,
+  );
+  assert.ok(
+    sources.items.some((v: any) => v.asset_version_id === original.version.id),
+  );
+  assert.equal(
+    sources.items.some(
+      (v: any) => v.asset_version_id === otherPrivate.version.id,
+    ),
+    false,
+  );
+  const { run } = await start(f, m, binding);
+  const detail = await finish(f, run, async (ctx) => {
+    const read = ctx.tools.find((v) => v.name === "solution_source_read")!;
+    const result: any = await read.run(
+      { asset_version_id: original.version.id },
+      randomUUID(),
+    );
+    assert.equal(hash(Buffer.from(result.text)), original.version.sha256);
+    await assert.rejects(
+      read.run({ asset_version_id: sibling.version.id }, randomUUID()),
+      (e: any) => e.code === "NOT_FOUND",
+    );
+  });
+  assert.equal(detail.unread_required_sources.length, 0);
+  await accept(f, detail);
+  const denied = await call(
+    f.owner,
+    "POST",
+    `/v1/solution-versions/${m.id}/previews`,
+    {
+      project_id: f.project,
+      bindings: {
+        assets: [
+          {
+            requirement: "Brief",
+            asset_version_id: otherPrivate.version.id,
+            sha256: otherPrivate.version.sha256,
+          },
+        ],
+        connectors: [],
+      },
+    },
+  );
+  assert.equal(denied.status, 404);
+});
+test("a successful answer that omitted required evidence cannot qualify a method", async () => {
+  const f = await fixture({ required_assets: ["Brief"] }),
+    source = await asset(f),
+    m = await create(f);
+  const { run } = await start(f, m, {
+    assets: [
+      {
+        requirement: "Brief",
+        asset_version_id: source.version.id,
+        sha256: source.version.sha256,
+      },
+    ],
+    connectors: [],
+  });
+  const result = await finish(f, run);
+  assert.deepEqual(result.unread_required_sources, [source.version.id]);
+  const review = await call(
+    f.owner,
+    "POST",
+    `/v1/solution-trials/${run.id}/reviews`,
+    {
+      approval: true,
+      tasks: result.tasks.map((v: any) => ({
+        task_id: v.task_id,
+        expected_version: v.task_version,
+        expected_delivery_hash: v.delivery_hash,
+      })),
+    },
+  );
+  assert.equal(review.status, 409);
+  assert.equal(review.data.error.code, "SOLUTION_INPUT_NOT_READ");
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        `/v1/solution-versions/${m.id}/publications`,
+        { expected_version: 1, validation_task_id: result.validation_task_id },
+      )
+    ).status,
+    409,
+  );
+});
+test("publishing rejects unrelated, unfinished, partially reviewed and subsequently changed deliveries", async () => {
+  const f = await fixture(),
+    m = await create(f),
+    other = await create(f, { ...f.definition, name: "Unrelated method" }),
+    { run } = await start(f, m);
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        `/v1/solution-versions/${m.id}/publications`,
+        { expected_version: 1, validation_task_id: run.tasks[0].task_id },
+      )
+    ).status,
+    409,
+  );
+  const detail = await finish(f, run);
+  assert.equal(
+    (
+      await call(f.owner, "POST", `/v1/solution-trials/${run.id}/reviews`, {
+        approval: true,
+        tasks: detail.tasks.map((v: any) => ({
+          task_id: v.task_id,
+          expected_version: v.task_version,
+          expected_delivery_hash: "0".repeat(64),
+        })),
+      })
+    ).status,
+    409,
+  );
+  await accept(f, detail);
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        `/v1/solution-versions/${other.id}/publications`,
+        { expected_version: 1, validation_task_id: detail.validation_task_id },
+      )
+    ).status,
+    409,
+  );
+  await s.db.control.query(
+    "UPDATE tasks SET output=output||' changed',version=version+1 WHERE id=$1",
+    [detail.validation_task_id],
+  );
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        `/v1/solution-versions/${m.id}/publications`,
+        { expected_version: 1, validation_task_id: detail.validation_task_id },
+      )
+    ).status,
+    409,
+  );
+});
+test("installations copy only method references; a new project starts with missing bindings and no customer content", async () => {
+  const f = await fixture(),
+    p = await published(f),
+    target = await ok(f.owner, "POST", `/v1/tenants/${f.tenant}/projects`, {
+      name: "Other customer",
+    });
+  const installed = await ok(
+    f.owner,
+    "POST",
+    `/v1/solution-versions/${p.method.id}/installations`,
+    { project_id: target.id },
+  );
+  conforms("SolutionInstallation", installed);
+  const detail = await ok(
+    f.owner,
+    "GET",
+    `/v1/solution-installations/${installed.id}`,
+  );
+  assert.deepEqual(detail.bindings, blank());
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int n FROM assets WHERE project_id=$1",
+        [target.id],
+      )
+    ).rows[0].n,
+    0,
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int n FROM connections WHERE project_id=$1",
+        [target.id],
+      )
+    ).rows[0].n,
+    0,
+  );
+  const member = await editor(f);
+  assert.equal(
+    (await call(member, "GET", `/v1/solution-installations/${installed.id}`))
+      .status,
+    404,
+  );
+  const draft = await create(f);
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        `/v1/solution-versions/${draft.id}/installations`,
+        { project_id: f.project },
+      )
+    ).status,
+    409,
+  );
+});
+test("connector requirements bind a fresh account and captured data, never credentials; revoked accounts fence existing results", async () => {
+  const f = await fixture({
+    required_connectors: ["google_ads"],
+    agent_template_ids: [],
+  });
+  f.definition.agent_template_ids = [
+    (
+      await ok(f.owner, "GET", "/v1/agent-templates?category=marketing")
+    ).items.find((v: any) => v.role_key === "marketing-analyst").id,
+  ];
+  const connection = await connected(f),
+    m = await create(f),
+    bindings = { assets: [], connectors: [connection] },
+    checked = await preview(f, m, bindings);
+  assert.equal(checked.state, "ready", JSON.stringify(checked));
+  assert.equal(checked.resolved_sources.length, 1);
+  assert.equal(JSON.stringify(checked).includes("access_token"), false);
+  const { run } = await start(f, m, bindings),
+    detail = await finish(f, run, async (ctx) => {
+      const tool = ctx.tools.find((v) => v.name === "connector_read")!;
+      const actual: any = await tool.run(
+        {
+          snapshot_id: checked.resolved_sources[0].snapshot_id,
+          offset: 0,
+          limit: 2,
+        },
+        randomUUID(),
+      );
+      assert.ok(actual.facts.length > 0);
+    });
+  assert.equal(detail.unread_required_sources.length, 0);
+  await accept(f, detail);
+  await ok(f.owner, "POST", `/v1/solution-versions/${m.id}/publications`, {
+    expected_version: 1,
+    validation_task_id: detail.validation_task_id,
+  });
+  await s.db.control.query(
+    "UPDATE connections SET state='revoked',encrypted_secret=NULL WHERE id=$1",
+    [connection.connection_id],
+  );
+  assert.equal(
+    (await call(f.owner, "GET", `/v1/solution-trials/${run.id}`)).status,
+    409,
+  );
+  assert.equal(
+    (
+      await call(f.owner, "POST", `/v1/solution-versions/${m.id}/previews`, {
+        project_id: f.project,
+        bindings,
+      })
+    ).status,
+    409,
+  );
+});
+test("withdrawal fences a trial before worker execution and after delivery without renewing a reservation", async () => {
+  const f = await fixture({ required_assets: ["Brief"] }),
+    source = await asset(f),
+    m = await create(f);
+  const started = await start(f, m, {
+    assets: [
+      {
+        requirement: "Brief",
+        asset_version_id: source.version.id,
+        sha256: source.version.sha256,
+      },
+    ],
+    connectors: [],
+  });
+  await s.db.control.query(
+    "UPDATE assets SET state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",
+    [source.id],
+  );
+  const runtime = new FixtureRuntime();
+  await new Worker(s.db, s.catalog, s.storage, runtime).run(
+    f.tenant,
+    started.run.tasks[0].task_id,
+  );
+  assert.equal(runtime.calls, 0);
+  assert.equal(
+    (await call(f.owner, "GET", `/v1/solution-trials/${started.run.id}`))
+      .status,
+    409,
+  );
+  const row = (
+    await s.db.control.query(
+      "SELECT charged_micros,status FROM tasks WHERE id=$1",
+      [started.run.tasks[0].task_id],
+    )
+  ).rows[0];
+  assert.equal(Number(row.charged_micros), 0);
+  assert.equal(row.status, "failed");
+});
+test("a local task can read a pinned installed method and disablement fences its source lineage", async () => {
+  const f = await fixture(),
+    p = await published(f);
+  const i = await ok(
+    f.owner,
+    "POST",
+    `/v1/solution-versions/${p.method.id}/installations`,
+    { project_id: f.project },
+  );
+  const read = (await import("../src/solution-tools.js")).readTaskSolution;
+  const task = (
+    await s.db.control.query("SELECT * FROM tasks WHERE id=$1", [
+      p.detail.validation_task_id,
+    ])
+  ).rows[0];
+  // Inspect the same server primitive used by native company-tool transactions;
+  // actual native declarations/process execution is qualified separately.
+  const source = await s.db.tx(
+    async (tx) =>
+      read(
+        tx,
+        s.catalog,
+        { ...task, execution_location: "desktop" },
+        { installation_id: i.id },
+      ),
+    f.tenant,
+    false,
+    f.owner.id,
+  );
+  assert.equal(source.execution_location, "desktop");
+  assert.equal(source.definition_hash.length, 64);
+  assert.equal(JSON.stringify(source).includes("Fixture answer"), false);
+  await ok(f.owner, "POST", `/v1/solution-versions/${p.method.id}/disable`, {
+    expected_version: 1,
+    reason: "Withdraw this reviewed method",
+  });
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        `/v1/solution-versions/${p.method.id}/installations`,
+        { project_id: f.project },
+      )
+    ).status,
+    409,
+  );
+  assert.equal(
+    (await call(f.owner, "GET", `/v1/solution-trials/${p.run.id}`)).status,
+    409,
+  );
+});
+test("Admin metadata, body access and disablement keep separate scopes, current MFA and an audit trail", async () => {
+  const f = await fixture(),
+    other = await fixture(),
+    a = await create(f),
+    b = await create(other);
+  const secret = new OTPAuth.Secret({ size: 20 }),
+    email = `solution-admin-${randomUUID()}@example.invalid`;
+  const id = (
+    await s.db.control.query(
+      "INSERT INTO admin_principals(email,name,totp_secret) VALUES($1,'Method operator',$2) RETURNING id",
+      [email, seal(s.db.config.MASTER_KEY!, secret.base32)],
+    )
+  ).rows[0].id;
+  async function grant(permissions: string[]) {
+    const role = "solution_" + randomUUID();
+    await s.db.control.query(
+      "INSERT INTO admin_roles(key,name,permissions) VALUES($1,'Scoped method operations',$2)",
+      [role, JSON.stringify(permissions)],
+    );
+    await s.db.control.query(
+      "INSERT INTO admin_bindings(principal_id,role_key,scope_kind,scope_id) VALUES($1,$2,'project',$3)",
+      [id, role, f.project],
+    );
+  }
+  await grant(["admin.content.read"]);
+  const admin = await login(secret, email);
+  const list = await ok(admin, "GET", "/v1/admin/solutions");
+  assert.ok(list.items.some((v: any) => v.id === a.id));
+  assert.equal(
+    list.items.some((v: any) => v.id === b.id),
+    false,
+  );
+  assert.equal(JSON.stringify(list).includes(f.definition.instructions), false);
+  assert.equal(
+    (await call(admin, "GET", `/v1/admin/solutions/${a.id}/body`)).status,
+    403,
+  );
+  await grant(["admin.content.body.read", "admin.content.quarantine"]);
+  assert.equal(
+    (await ok(admin, "GET", `/v1/admin/solutions/${a.id}/body`)).definition
+      .name,
+    a.definition.name,
+  );
+  assert.equal(
+    (await call(admin, "GET", `/v1/admin/solutions/${b.id}/body`)).status,
+    403,
+  );
+  await ok(admin, "POST", `/v1/admin/solutions/${a.id}/disable`, {
+    expected_version: 1,
+    reason: "Remove an invalid reusable method",
+  });
+  assert.equal(
+    (await ok(f.owner, "GET", `/v1/solution-versions/${a.id}`)).state,
+    "disabled",
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int n FROM audit_log WHERE principal_id=$1 AND target=$2 AND action IN('admin.solution.body.read','admin.solution.disable') AND outcome='succeeded'",
+        [id, a.id],
+      )
+    ).rows[0].n,
+    2,
+  );
+});
