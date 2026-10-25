@@ -12,8 +12,13 @@ import {
 const delivery = process.cwd(),
   platform = path.resolve("../copypaste-platform"),
   attempt = process.argv[2];
+const historyMode = process.env.COPYPASTE_TEAM_HISTORY === "true",
+  qualification = historyMode ? "agent-group-history" : "agent-groups";
 assert.match(attempt ?? "", /^\d{2}$/);
-const prefix = path.join(delivery, "evidence/agent-groups-ui-" + attempt);
+const prefix = path.join(
+  delivery,
+  "evidence/" + qualification + "-ui-" + attempt,
+);
 const sha = (b: Buffer) => createHash("sha256").update(b).digest("hex");
 const checks: string[] = [],
   errors: string[] = [],
@@ -28,7 +33,8 @@ let isolated: any,
 let browserClosed = false,
   apiClosed = false,
   fixtureClosed = false,
-  funding: any;
+  funding: any,
+  history: any;
 const pass = (name: string) => {
   checks.push(name);
   console.log("PASS: " + name);
@@ -119,7 +125,7 @@ async function shot(page: Page, name: string) {
   screenshots.push(
     await saveWorkmateScreenshot(
       "web",
-      "agent-groups-" + attempt,
+      qualification + "-" + attempt,
       name,
       await coordinateCapture(() =>
         page.screenshot({ fullPage: false, animations: "disabled" }),
@@ -251,7 +257,7 @@ try {
   recording = new WorkmateRecording(
     "web",
     "team-authoring",
-    "agent-groups-" + attempt,
+    qualification + "-" + attempt,
     frame,
     "Actual Web team creation, dependency editing, free review and explicit budget approval",
     delivery,
@@ -389,7 +395,7 @@ try {
   recording = new WorkmateRecording(
     "web",
     "team-delivery",
-    "agent-groups-" + attempt,
+    qualification + "-" + attempt,
     frame,
     "Actual native Codex performs two approved cloud member steps and a final coordinator with a synthetic company gateway",
     delivery,
@@ -547,6 +553,29 @@ try {
   pass(
     "TEAM-06 actual team settings and plan controls remain keyboard accessible at 375px and 800px with English and Chinese layouts and no horizontal overflow",
   );
+  if (historyMode) {
+    const { qualifyTeamHistory } = await import(
+      "./qa-agent-group-history-journey.js"
+    );
+    history = await qualifyTeamHistory({
+      page,
+      system,
+      group,
+      agents,
+      tenant,
+      project,
+      base,
+      url,
+      attempt,
+      call,
+      go,
+      shot,
+      pass,
+      frame,
+      media,
+      delivery,
+    });
+  }
   await page.setViewportSize({ width: 1440, height: 980 });
   await system.db.control.query(
     "UPDATE tasks SET content_state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",
@@ -613,12 +642,13 @@ try {
       browserClosed &&
       apiClosed &&
       fixtureClosed &&
-      checks.length === 7
+      checks.length === (historyMode ? 11 : 7)
         ? "passed"
         : "failed",
     checks,
     errors,
     funding,
+    ...(historyMode ? { history } : {}),
     executions,
     output_files: outputFiles,
     screenshots,
