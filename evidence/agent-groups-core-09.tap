@@ -1,0 +1,274 @@
+2026-10-26 00:56:06.844 CST [20636] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-26 00:56:06.860 CST [20636] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-26 00:56:06.861 CST [20636] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-26 00:56:07.198 CST [18732] LOG:  database system was shut down at 2026-10-26 00:55:03 CST
+
+2026-10-26 00:56:07.282 CST [20636] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+# isolated integration suite: applied migration 104
+# isolated integration suite: applied migration 105
+# isolated integration suite: applied migration 106
+# isolated integration suite: applied migration 107
+# isolated integration suite: applied migration 108
+2026-10-26 00:56:21.101 CST [34208] ERROR:  Team versions and review receipts are immutable
+2026-10-26 00:56:21.101 CST [34208] CONTEXT:  PL/pgSQL function guard_agent_group_history() line 7 at RAISE
+2026-10-26 00:56:21.101 CST [34208] STATEMENT:  UPDATE agent_group_versions SET body='{}' WHERE group_id=$1
+
+# Subtest: canonical team CRUD keeps original response shape, immutable member versions and project boundaries
+ok 1 - canonical team CRUD keeps original response shape, immutable member versions and project boundaries
+  ---
+  duration_ms: 9500.0748
+  ...
+# Subtest: cycles, duplicate keys, invalid dependencies, nonmembers and aggregate budgets fail before tasks or funds
+ok 2 - cycles, duplicate keys, invalid dependencies, nonmembers and aggregate budgets fail before tasks or funds
+  ---
+  duration_ms: 320.4578
+  ...
+# Subtest: review is free, exact approval and retries create one paused coordinator and one reservation
+ok 3 - review is free, exact approval and retries create one paused coordinator and one reservation
+  ---
+  duration_ms: 1440.9775
+  ...
+# Subtest: concurrent dispatch executes a dependency graph once, reads real predecessor files and settles exact member fees
+not ok 4 - concurrent dispatch executes a dependency graph once, reads real predecessor files and settles exact member fees
+  ---
+  duration_ms: 3663.2133
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\agent-groups.test.ts:1:9407'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      test("review is free, exact approval and retries create one paused coordinator and one reservation", async () => {
+      const f = await fixture(),
+      p = await review(f);
+      assert.equal(p.funds_reserved_micros, 0);
+      assert.equal(p.approved_budget_micros, 300000);
+      assert.equal(
+      (
+      await s.db.control.query(
+      "SELECT count(*) FROM tasks WHERE project_id=$1",
+      [f.project],
+      )
+      ).rows[0].count,
+      "0",
+      );
+      assert.equal(
+      (
+      await call(
+      f.owner,
+      "POST",
+      f.url + "/runs",
+      { ...approval(p), approved_budget_micros: 299999 },
+      f.tenant,
+      )
+      ).status,
+      409,
+      );
+      const k = randomUUID(),
+      [a, b] = await Promise.all([
+      ok(f.owner, "POST", f.url + "/runs", approval(p), f.tenant, k),
+      ok(f.owner, "POST", f.url + "/runs", approval(p), f.tenant, k),
+      ]);
+      assert.equal(a.id, b.id);
+      assert.equal(a.tasks.length, 1);
+      assert.equal(a.tasks[0].status, "paused");
+      assert.equal(a.reserved_micros, 100000);
+      const paused = await call(
+      f.owner,
+      "POST",
+      f.base + `/tasks/${a.coordinator_task_id}/controls`,
+      { action: "resume", expected_version: 1 },
+      );
+      assert.equal(paused.status, 409, JSON.stringify(paused.data));
+      assert.equal(
+      (await call(f.owner, "POST", f.url + "/runs", approval(p), f.tenant))
+      .status,
+      409,
+      );
+      await ok(
+      f.owner,
+      "POST",
+      f.url + `/runs/${a.id}/cancel`,
+      { expected_revision: a.revision },
+      f.tenant,
+      );
+      })
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: ~
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\agent-groups.test.ts:494:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: parallel admission respects approved slots while a dependent step waits for its own predecessors
+ok 5 - parallel admission respects approved slots while a dependent step waits for its own predecessors
+  ---
+  duration_ms: 1800.8682
+  ...
+# Subtest: cancellation releases unused holds, never dispatches pending members and keeps an idempotent stop
+ok 6 - cancellation releases unused holds, never dispatches pending members and keeps an idempotent stop
+  ---
+  duration_ms: 662.3847
+  ...
+# Subtest: an archived or changed version cannot start a stale review; already approved work retains its version
+ok 7 - an archived or changed version cannot start a stale review; already approved work retains its version
+  ---
+  duration_ms: 1446.2966
+  ...
+# Subtest: disabled members and revoked actor permission stop queued work and release known unused reservations
+ok 8 - disabled members and revoked actor permission stop queued work and release known unused reservations
+  ---
+  duration_ms: 1591.2041
+  ...
+# Subtest: private runs remain invisible to other project members at API and application SQL boundaries
+ok 9 - private runs remain invisible to other project members at API and application SQL boundaries
+  ---
+  duration_ms: 969.7727
+  ...
+# Subtest: team source withdrawal immediately fences private deliverables and erases group context without erasing financial facts
+ok 10 - team source withdrawal immediately fences private deliverables and erases group context without erasing financial facts
+  ---
+  duration_ms: 1962.8151
+  ...
+2026-10-26 00:56:35.186 CST [26180] LOG:  checkpoint starting: immediate force wait
+
+2026-10-26 00:56:36.110 CST [26180] LOG:  checkpoint complete: wrote 38 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.012 s, sync=0.482 s, total=0.924 s; sync files=12, longest=0.139 s, average=0.041 s; distance=20308 kB, estimate=20308 kB; lsn=17/189B9508, redo lsn=17/189B94B0
+
+1..10
+# tests 10
+# suites 0
+# pass 9
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 28346.5282
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/b68b4e0e-f437-4a94-82ea-c35016020e50/result.json","sha256":"a8900df1ce3abbf56fbb1b6a1c41b9e153e5ad5281135bd61de711fe0db40e34","exit_code":0}
+2026-10-26 00:56:36.987 CST [20636] LOG:  received fast shutdown request
+
+2026-10-26 00:56:37.040 CST [20636] LOG:  aborting any active transactions
+
+2026-10-26 00:56:37.050 CST [20636] LOG:  background worker "logical replication launcher" (PID 13120) exited with exit code 1
+
+2026-10-26 00:56:37.051 CST [26180] LOG:  shutting down
+
+2026-10-26 00:56:37.092 CST [26180] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-26 00:56:37.428 CST [26180] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.162 s, total=0.378 s; sync files=1, longest=0.162 s, average=0.162 s; distance=0 kB, estimate=18277 kB; lsn=17/189B9620, redo lsn=17/189B9620
+
+2026-10-26 00:56:37.581 CST [20636] LOG:  database system is shut down
+

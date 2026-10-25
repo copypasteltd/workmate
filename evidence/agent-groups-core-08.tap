@@ -1,0 +1,337 @@
+2026-10-26 00:54:34.237 CST [25616] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-26 00:54:34.247 CST [25616] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-26 00:54:34.249 CST [25616] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-26 00:54:34.493 CST [2848] LOG:  database system was shut down at 2026-10-26 00:52:45 CST
+
+2026-10-26 00:54:34.620 CST [25616] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+# isolated integration suite: applied migration 104
+# isolated integration suite: applied migration 105
+# isolated integration suite: applied migration 106
+# isolated integration suite: applied migration 107
+# isolated integration suite: applied migration 108
+2026-10-26 00:54:48.189 CST [18156] ERROR:  Team versions and review receipts are immutable
+2026-10-26 00:54:48.189 CST [18156] CONTEXT:  PL/pgSQL function guard_agent_group_history() line 7 at RAISE
+2026-10-26 00:54:48.189 CST [18156] STATEMENT:  UPDATE agent_group_versions SET body='{}' WHERE group_id=$1
+
+# Subtest: canonical team CRUD keeps original response shape, immutable member versions and project boundaries
+ok 1 - canonical team CRUD keeps original response shape, immutable member versions and project boundaries
+  ---
+  duration_ms: 9377.8828
+  ...
+# Subtest: cycles, duplicate keys, invalid dependencies, nonmembers and aggregate budgets fail before tasks or funds
+ok 2 - cycles, duplicate keys, invalid dependencies, nonmembers and aggregate budgets fail before tasks or funds
+  ---
+  duration_ms: 385.2354
+  ...
+# Subtest: review is free, exact approval and retries create one paused coordinator and one reservation
+ok 3 - review is free, exact approval and retries create one paused coordinator and one reservation
+  ---
+  duration_ms: 1216.5701
+  ...
+2026-10-26 00:54:50.991 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:50.991 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+# Subtest: concurrent dispatch executes a dependency graph once, reads real predecessor files and settles exact member fees
+not ok 4 - concurrent dispatch executes a dependency graph once, reads real predecessor files and settles exact member fees
+  ---
+  duration_ms: 1200.0804
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\agent-groups.test.ts:1:9407'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\agent-groups.test.ts:453:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 00:54:52.010 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:52.010 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:52.175 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:52.175 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+# Subtest: parallel admission respects approved slots while a dependent step waits for its own predecessors
+not ok 5 - parallel admission respects approved slots while a dependent step waits for its own predecessors
+  ---
+  duration_ms: 1175.1766
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\agent-groups.test.ts:1:11059'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\agent-groups.test.ts:513:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 00:54:53.158 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:53.158 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:53.324 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:53.324 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+# Subtest: cancellation releases unused holds, never dispatches pending members and keeps an idempotent stop
+ok 6 - cancellation releases unused holds, never dispatches pending members and keeps an idempotent stop
+  ---
+  duration_ms: 1150.2992
+  ...
+2026-10-26 00:54:54.576 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:54.576 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:54.757 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:54.757 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:54.908 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:54.908 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+# Subtest: an archived or changed version cannot start a stale review; already approved work retains its version
+not ok 7 - an archived or changed version cannot start a stale review; already approved work retains its version
+  ---
+  duration_ms: 1584.307
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\agent-groups.test.ts:1:12464'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\agent-groups.test.ts:584:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 00:54:55.793 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:55.793 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:56.034 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:56.034 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:56.193 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:56.193 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:57.212 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:57.212 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:57.386 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:57.386 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:57.535 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:57.535 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+# Subtest: disabled members and revoked actor permission stop queued work and release known unused reservations
+ok 8 - disabled members and revoked actor permission stop queued work and release known unused reservations
+  ---
+  duration_ms: 2657.6056
+  ...
+# Subtest: private runs remain invisible to other project members at API and application SQL boundaries
+ok 9 - private runs remain invisible to other project members at API and application SQL boundaries
+  ---
+  duration_ms: 854.9575
+  ...
+2026-10-26 00:54:59.193 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:59.193 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:59.352 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:59.352 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:59.492 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:59.492 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+2026-10-26 00:54:59.654 CST [10224] ERROR:  duplicate key value violates unique constraint "conversation_one_active_task"
+2026-10-26 00:54:59.654 CST [10224] STATEMENT:  INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+	    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *
+
+# Subtest: team source withdrawal immediately fences private deliverables and erases group context without erasing financial facts
+not ok 10 - team source withdrawal immediately fences private deliverables and erases group context without erasing financial facts
+  ---
+  duration_ms: 1229.6198
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\agent-groups.test.ts:1:15095'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'status')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    execute (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\agent-groups.test.ts:233:23)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\agent-groups.test.ts:695:3)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 00:54:59.866 CST [13556] LOG:  checkpoint starting: immediate force wait
+
+2026-10-26 00:55:00.773 CST [13556] LOG:  checkpoint complete: wrote 39 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.079 s, sync=0.565 s, total=0.907 s; sync files=12, longest=0.198 s, average=0.047 s; distance=20047 kB, estimate=20047 kB; lsn=17/175E4058, redo lsn=17/175E3FE8
+
+1..10
+# tests 10
+# suites 0
+# pass 6
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 25920.0634
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/a36ff364-cfca-4c6c-8ec2-8cd6f0c6cde0/result.json","sha256":"d1ccecc680f85052a84a500de220db2ee641b3244e6fc0971f69ad525830013e","exit_code":0}
+2026-10-26 00:55:02.756 CST [25616] LOG:  received fast shutdown request
+
+2026-10-26 00:55:02.821 CST [25616] LOG:  aborting any active transactions
+
+2026-10-26 00:55:02.851 CST [25616] LOG:  background worker "logical replication launcher" (PID 34772) exited with exit code 1
+
+2026-10-26 00:55:02.851 CST [13556] LOG:  shutting down
+
+2026-10-26 00:55:02.899 CST [13556] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-26 00:55:03.238 CST [13556] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.122 s, total=0.387 s; sync files=1, longest=0.122 s, average=0.122 s; distance=0 kB, estimate=18043 kB; lsn=17/175E4170, redo lsn=17/175E4170
+
+2026-10-26 00:55:03.433 CST [25616] LOG:  database system is shut down
+
