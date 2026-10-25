@@ -511,7 +511,9 @@ function AdminShell() {
                     key={n[0]}
                     path={"/" + n[0]}
                     element={
-                      n[0] === "quality" ? (<QualitySummary url="/v1/admin/quality"/>) : n[0] === "billing" ? (
+                      n[0] === "quality" ? (
+                        <QualitySummary url="/v1/admin/quality" />
+                      ) : n[0] === "billing" ? (
                         <BillingPage />
                       ) : n[0] === "provider-control" ? (
                         <AdminProviderControl access={a} />
@@ -2466,7 +2468,14 @@ function AdminDialog({
                   </option>
                   <option
                     value="metadata"
-                    disabled={["agents", "project_configurations"].includes(row.kind) || row.state === "deleted"}
+                    disabled={
+                      [
+                        "agents",
+                        "project_configurations",
+                        "agent_groups",
+                        "agent_group_runs",
+                      ].includes(row.kind) || row.state === "deleted"
+                    }
                   >
                     {t("更新名稱", "Update name")}
                   </option>
@@ -2483,7 +2492,9 @@ function AdminDialog({
                   "Quarantine or deletion revokes shares. Restore does not re-enable old links.",
                 )}
               </p>
-              {["conversations", "memories", "project_configurations"].includes(row.kind) && (
+              {["conversations", "memories", "project_configurations"].includes(
+                row.kind,
+              ) && (
                 <p className="notice">
                   {t(
                     "刪除會永久清除相關正文；專案共享設定包括全部歷史版本。進行中的會話須先取消工作或完成對帳。",

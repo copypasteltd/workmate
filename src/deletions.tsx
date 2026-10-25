@@ -29,6 +29,8 @@ const types: Record<string, [string, string]> = {
   geo_samples: ["GEO 回答樣本", "GEO answer samples"],
   workflows: ["工作流", "Workflows"],
   workflow_runs: ["工作流執行", "Workflow runs"],
+  agent_groups: ["專業團隊", "Specialist teams"],
+  agent_group_runs: ["私有團隊執行", "Private team runs"],
   workflow_schedules: ["雲端定時", "Cloud schedules"],
   creative_projects: ["創意專案", "Creative projects"],
   workspace_nodes: ["雲端檔案條目", "Cloud file entries"],
