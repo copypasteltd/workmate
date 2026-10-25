@@ -74,3 +74,10 @@ Stage 84 binds committed components to its current audio/native-layout, full-reg
 使用 `finalize_agent_groups_manifest.py` 绑定实际已提交的六个组件、当前团队执行检查点、双语文档和媒体。先完成相关回归、实际浏览器检查、媒体解码和七仓库暂存核查，再提交组件，刷新主清单，提交主文档，最后在 Delivery 执行 `node scripts/publish-workmate.mjs --push`，核对八个远程分支 SHA，docs 与 main 相同。既有常规同步授权持续有效，禁止强推。
 
 Stage 93 binds committed components with `finalize_agent_groups_manifest.py` after current scoped tests, browser evidence, complete media decoding and staged review. Commit components, refresh the manifest, commit docs, then run the Delivery publisher and verify all eight remote refs without force. Earlier stage tools retain historical scope. SQL108 is additive; original migrations, contracts, Skills and 102 requirement records remain unchanged.
+
+
+## 阶段 94 当前发布 / Current stage 94 publication
+
+先完成本次精确源码团队回归、实际翻页及原生 Codex 检查、媒体完整解码、双语文档和七仓库暂存核查，再提交各组件。使用 `finalize_agent_group_history_manifest.py` 绑定实际提交、检查点与证据，提交主文档后在 Delivery 执行 `node scripts/publish-workmate.mjs --push`，核对八个远端 SHA。SQL109 只新增索引；既有用户授权持续有效，禁止强推。
+
+Stage 94 binds actual committed components with `finalize_agent_group_history_manifest.py` after current scoped regression, real browser/native Codex, full media decoding, bilingual documentation and staged review. Commit documentation and run the Delivery publisher to verify all eight remote refs. SQL109 adds only an index. Existing ordinary publication authorization persists; no force push. Earlier receipts retain historical scope.

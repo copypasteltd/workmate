@@ -1,8 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- team-history-stage94 -->
+
+## Team history and complete pagination
+
+Stage 94 completes independent team, version and private run pages and fixes newest-run ordering previously based on random UUIDs. History browsing preserves the draft, approval returns to the newest run, and a saved team outside the directory page remains selected. Withdrawn cursors and project switches fence stale bodies. All 18 team cases and 11 real browser checks pass, including three native Codex processes, private files and actual accounting with explicitly synthetic model/account capacity.
+
+1. Select a project and team. Use Previous/Next teams to traverse the directory; saving and refreshing keep the current team even when it falls outside that page.
+2. Browse fixed versions and private runs independently. Pages contain at most 20 versions or eight actual runs, newest first by creation time with an exact database tie-breaker. Draft fields survive page changes and polling.
+3. Review and explicitly approve new work. Starting from an older page returns to the newest run; stopping releases known unused funds. History navigation creates no task, retry or charge.
+4. Withdrawn/expired/private cursor anchors return 404 and clear stale run bodies. Changing user, tenant or project discards late responses. SQL109 only adds a history index and preserves published migrations, contracts and Skills.
+
+```mermaid
+flowchart LR
+  A[Current project] --> B[Team directory pages]
+  B --> C[Fresh selected team]
+  C --> D[Independent version and private run pages]
+  D --> E[Preserved customer draft]
+  E --> F[Review and explicit approval]
+  F --> G[Newest actual run and original accounting]
+```
+
+Desktop remains local Codex with customer-controlled permission; Extension remains a cloud-agent native side panel. These captures show Web cloud teams. Earlier source-wide qualification retains its original stage; this scoped regression is not a full product or live professional-quality acceptance.
+
+[Implementation and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/94-agent-group-history.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/agent-group-history-checkpoint.json)
+
+![Actual independent history pages / 实际历史翻页](design/implementation/workmate-agent-group-history-02-history-pages.png)
+
+![Actual saved team outside the page / 实际页外团队](design/implementation/workmate-agent-group-history-02-history-directory.png)
+
+![Actual history, approval and selection / 实际翻页、批准与选择](design/implementation/workmate-agent-group-history-02-team-history.gif)
+
+[375px](design/implementation/workmate-agent-group-history-02-history-responsive-375.png) · [Newest run](design/implementation/workmate-agent-group-history-02-history-newest.png) · [History MP4](design/implementation/workmate-agent-group-history-02-team-history.mp4) · [Actual Codex delivery GIF](design/implementation/workmate-agent-group-history-02-team-delivery.gif) · [Delivery MP4](design/implementation/workmate-agent-group-history-02-team-delivery.mp4)
+
 <!-- agent-groups-stage93 -->
 
-## Persistent professional teams
+## Earlier persistent team implementation (stage 93)
 
 Stage 93 implements persistent Web teams with a coordinator, distinct specialists, frozen versions, customer-reviewed briefs/dependencies/budgets, bounded actual Codex execution and unified delivery. All 115 relevant backend cases and seven actual browser checks pass. Model/account capacity is explicitly synthetic; authentication, native Codex processes, company tools, private files, budgets and accounting actually run.
 
