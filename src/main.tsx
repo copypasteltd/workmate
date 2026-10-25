@@ -5,6 +5,7 @@ import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
 import { AdminCapabilities } from "./capabilities";
 import { AdminProviderControl } from "./provider-control";
+import { AdminSolutions } from "./solutions";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
 import {
@@ -338,6 +339,7 @@ const nav = [
     "admin.entitlements.read",
   ],
   ["content", Files, "用戶端內容", "User content", "admin.content.read"],
+  ["solutions", BookOpen, "業務方案", "Business methods", "admin.content.read"],
   [
     "execution",
     Workflow,
@@ -517,6 +519,8 @@ function AdminShell() {
                         <BillingPage />
                       ) : n[0] === "provider-control" ? (
                         <AdminProviderControl access={a} />
+                      ) : n[0] === "solutions" ? (
+                        <AdminSolutions access={a} />
                       ) : n[0] === "plans" ? (
                         <AdminPlans access={a} />
                       ) : n[0] === "catalog" ? (
