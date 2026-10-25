@@ -4,9 +4,13 @@ import { WorkmateRecording, saveWorkmateScreenshot } from "./record-workmate-med
 
 export async function runDesktopBrowserJourney(j:any){
   const {page,electron,model}=j;
-  const windows=()=>electron.evaluate(({BrowserWindow}:any)=>BrowserWindow.getAllWindows().filter((win:any)=>win.webContents.getURL().includes("/assets/browser-shell.html")).map((win:any)=>({id:win.id,url:win.webContents.getURL()})));
+  const windows=()=>electron.evaluate(({BrowserWindow}:any)=>BrowserWindow.getAllWindows().flatMap((win:any)=>{
+    const contents=win.isDestroyed()?null:win.webContents;if(!contents||contents.isDestroyed())return[];
+    const url=contents.getURL();return url.includes("/assets/browser-shell.html")?[{id:win.id,url}]:[];
+  }));
+  const remaining=(ids:number[])=>electron.evaluate(({BrowserWindow}:any,owned:number[])=>BrowserWindow.getAllWindows().filter((win:any)=>owned.includes(win.id)&&!win.isDestroyed()).map((win:any)=>win.id),ids);
   const surface=async(png=false)=>Buffer.from(await electron.evaluate(async({BrowserWindow,desktopCapturer}:any,png:boolean)=>{
-    const win=BrowserWindow.getAllWindows().find((win:any)=>win.webContents.getURL().includes("/assets/browser-shell.html"));if(!win)throw new Error("Owned browser window missing");
+    const win=BrowserWindow.getAllWindows().find((win:any)=>!win.isDestroyed()&&win.webContents&&!win.webContents.isDestroyed()&&win.webContents.getURL().includes("/assets/browser-shell.html"));if(!win)throw new Error("Owned browser window missing");
     const [width,height]=win.getSize();const sources=await desktopCapturer.getSources({types:["window"],thumbnailSize:{width,height},fetchWindowIcons:false});
     const source=sources.find((item:any)=>item.id===win.getMediaSourceId());if(!source||source.thumbnail.isEmpty())throw new Error("Native browser OS capture missing");
     return (png?source.thumbnail.toPNG():source.thumbnail.toJPEG(82)).toString("base64");
@@ -22,18 +26,19 @@ export async function runDesktopBrowserJourney(j:any){
   await create("full-access");model.begin("execute");const before=j.providerCalls();
   await send("Open the local campaign desk, prepare the campaign with my actual reference file, save it and download its brief. Ask before continuing and before closing the page.");
   await j.until(j.list,(s:any)=>s.busy&&s.inputs?.some((q:any)=>q.questions[0]?.id==="question_before"),"native browser open and real customer question",90000);
-  assert.equal((await windows()).length,1);await capture("browser-open-en");
+  const firstWindows=await windows();assert.equal(firstWindows.length,1);await capture("browser-open-en");
   let recording:any=new WorkmateRecording("desktop","native-browser","local-"+j.attempt,()=>surface(),"Actual OS-captured packaged browser; real customer-device Codex and company gateway; explicit synthetic Responses and local campaign content",j.delivery),media;
   try{
     await recording.start();await answer();
     const review=await j.until(j.list,(s:any)=>s.busy&&s.inputs?.some((q:any)=>q.questions[0]?.id==="question_after"),"actual browser save, screenshot and download",90000);
     assert.equal(model.saves.length,1);assert.equal(model.saves[0].attachment.text,"Actual native browser reference bytes");assert.equal(model.screenshotObserved,true);
     assert.deepEqual(await readFile(model.download.path),model.bytes);await capture("browser-saved-en");
-    await electron.evaluate(({BrowserWindow}:any)=>{const win=BrowserWindow.getAllWindows().find((win:any)=>win.webContents.getURL().includes("/assets/browser-shell.html"));win.setSize(800,600);});
+    await electron.evaluate(({BrowserWindow}:any)=>{const win=BrowserWindow.getAllWindows().find((win:any)=>!win.isDestroyed()&&win.webContents&&!win.webContents.isDestroyed()&&win.webContents.getURL().includes("/assets/browser-shell.html"));if(!win)throw new Error("Owned browser window missing");win.setSize(800,600);});
     await new Promise(resolve=>setTimeout(resolve,250));await capture("browser-compact-en");
-    await electron.evaluate(({BrowserWindow}:any)=>{const win=BrowserWindow.getAllWindows().find((win:any)=>win.webContents.getURL().includes("/assets/browser-shell.html"));win.setSize(1180,820);});
+    await electron.evaluate(({BrowserWindow}:any)=>{const win=BrowserWindow.getAllWindows().find((win:any)=>!win.isDestroyed()&&win.webContents&&!win.webContents.isDestroyed()&&win.webContents.getURL().includes("/assets/browser-shell.html"));if(!win)throw new Error("Owned browser window missing");win.setSize(1180,820);});
     media=await recording.stop();recording=undefined;await answer();
     const done=await j.until(j.list,(s:any)=>!s.busy&&s.task?.task_id===review.task.task_id&&s.task.status==="succeeded","native browser final result",90000);
+    await j.until(()=>remaining(firstWindows.map((item:any)=>item.id)),(ids:number[])=>ids.length===0,"original browser window fully destroyed after success",5000);
     assert.equal((await windows()).length,0);
     const task=(await j.system.db.control.query("SELECT * FROM tasks WHERE id=$1",[done.task.task_id])).rows[0];
     assert.equal(task.execution_location,"desktop");assert.equal(Number(task.charged_micros),(j.providerCalls()-before)*30);
@@ -47,9 +52,9 @@ export async function runDesktopBrowserJourney(j:any){
   for(const mode of ["stop","revoke"] as const){
     await create("full-access");model.begin(mode);await send("Open the owned campaign browser and wait so I can "+mode+" this task.");
     const running=await j.until(j.list,(s:any)=>s.busy&&s.events.some((e:any)=>e.kind==="local.browser-tool.started"&&e.value.tool==="wait"),"pending actual browser wait before "+mode,90000);
-    assert.equal((await windows()).length,1);const called=j.providerCalls();await new Promise(resolve=>setTimeout(resolve,120));
+    const owned=await windows();assert.equal(owned.length,1);const ownedIds=owned.map((item:any)=>item.id),called=j.providerCalls();await new Promise(resolve=>setTimeout(resolve,120));
     await (mode==="stop"?page.locator(".local-agent-composer").getByRole("button",{name:"Stop",exact:true}):page.getByRole("button",{name:"Revoke local permission",exact:true})).click();
-    await j.until(windows,(items:any[])=>items.length===0,"immediate owned browser cleanup on "+mode,5000);
+    await j.until(()=>remaining(ownedIds),(ids:number[])=>ids.length===0,"original owned window IDs fully destroyed on "+mode,5000);
     const done=await j.until(j.list,(s:any)=>!s.busy&&s.task?.task_id===running.task.task_id,"actual native process stopped by "+mode,30000);
     for(const e of done.events.filter((e:any)=>e.kind==="local.runtime.ready"))assert.throws(()=>process.kill(Number(e.value.pid),0));
     assert.equal(j.providerCalls(),called);assert.notEqual(done.task.status,"succeeded");if(mode==="revoke")assert.equal(done.permission,null);model.end();

@@ -130,6 +130,9 @@ export async function exerciseCreativeFeedback({page,repo,delivery,attempt,syste
       // Windows whole-page navigation uses Ctrl+Home. Bare Home remains
       // separately checked inside the focused native conversation log.
       await page.keyboard.press("Control+Home"); await page.waitForFunction(()=>document.getElementById("root")!.scrollTop<3).catch(error=>{throw new Error("Creative feedback: focused page Ctrl+Home must return to the first content",{cause:error});});
+      await page.keyboard.press("Control+End"); await page.waitForFunction(()=>{const r=document.getElementById("root")!;return r.scrollTop+r.clientHeight>=r.scrollHeight-3;});
+      await page.keyboard.press("Home"); await page.waitForFunction(()=>document.getElementById("root")!.scrollTop<3);
+      assert.equal(await rootEl.evaluate(el=>document.activeElement===el),true,"Whole-page navigation retains its reachable keyboard focus");
       await assertDesktopLayout(page);
     } else assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
     await page.getByTitle("Switch to English",{exact:true}).click();
@@ -138,7 +141,14 @@ export async function exerciseCreativeFeedback({page,repo,delivery,attempt,syste
     pass(repo+" reflows actual compact Chinese/dark feedback; Desktop assertions additionally require no rails, no horizontal overflow and real wheel/End/Ctrl+Home access");
     const north=page.locator(".feedback-mapping").filter({has:page.getByRole("heading",{name:"Harbour poster / north",exact:true})});
     await north.getByRole("button",{name:"Withdraw mapping",exact:true}).click();
-    await page.getByRole("dialog").getByLabel("Decision reason",{exact:true}).fill("Synthetic identity correction; retain the original confirmation and stop managed reuse.");
+    const decisionReason=page.getByRole("dialog").getByLabel("Decision reason",{exact:true});
+    await decisionReason.fill("Synthetic identity correction; retain the original confirmation and stop managed reuse.");
+    if(repo==="desktop") {
+      await decisionReason.press("Control+Home");
+      assert.equal(await decisionReason.evaluate((el:HTMLTextAreaElement)=>el.selectionStart),0,"Page navigation must not hijack a focused text field");
+      await decisionReason.press("Control+End");
+      assert.equal(await decisionReason.evaluate((el:HTMLTextAreaElement)=>el.selectionStart===el.value.length),true);
+    }
     await page.getByRole("dialog").getByRole("button",{name:"Withdraw mapping",exact:true}).click();
     await north.getByText("Withdrawn",{exact:true}).first().waitFor(); await report.waitFor({state:"detached"});
     const download=await system.app.inject({method:"GET",url:`${base}/assets/${r.asset_id}/download?version=1`});

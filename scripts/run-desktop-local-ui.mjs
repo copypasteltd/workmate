@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { spawn, execFileSync } from "node:child_process";
 import { createWriteStream } from "node:fs";
-import { access, readFile, writeFile, mkdir, readdir } from "node:fs/promises";
+import { access, readFile, writeFile, mkdir, readdir, stat } from "node:fs/promises";
+import { createRequire } from "node:module";
 import { createHash, randomUUID } from "node:crypto";
 import { createConnection } from "node:net";
 import path from "node:path";
@@ -16,7 +17,7 @@ async function snapshot() {
   const result = {};
   for (const repo of ["platform", "desktop", "web", "delivery"]) {
     const folder = path.resolve("../copypaste-" + repo);
-    const files = execFileSync("git", ["-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "src", "renderer", "scripts", "tests", "catalog", "contracts", "migrations", "skills", "public", "package.json", "package-lock.json", "tsconfig.json", "vite.config.ts", "renderer-source.json", "deployment.json", "assets/browser-shell.html", "assets/browser-shell.css", "assets/browser-shell.js"], { cwd: folder, encoding: "utf8", windowsHide: true }).split("\0").filter(Boolean);
+    const files = execFileSync("git", ["-c", "core.fsmonitor=false", "-c", "core.untrackedCache=false", "ls-files", "--cached", "--others", "--exclude-standard", "-z", "--", "src", "renderer", "scripts", "tests", "catalog", "contracts", "migrations", "skills", "public", "package.json", "package-lock.json", "tsconfig.json", "vite.config.ts", "renderer-source.json", "deployment.json", "assets/browser-shell.html", "assets/browser-shell.css", "assets/browser-shell.js", ":(glob)assets/*.png", ":(glob)assets/*.ico", ":(glob)assets/*.cmd", "assets/licenses"], { cwd: folder, encoding: "utf8", windowsHide: true }).split("\0").filter(Boolean);
     for (const file of [...new Set(files)].sort()) result["copypaste-" + repo + "/" + file] = sha(await readFile(path.join(folder, file)));
   }
   return result;
@@ -38,7 +39,7 @@ try {
     ["platform typecheck", ["node_modules/typescript/bin/tsc", "--noEmit"], platform],
     ["desktop typecheck main", ["node_modules/typescript/bin/tsc", "--noEmit"], desktop],
     ["desktop typecheck renderer", ["node_modules/typescript/bin/tsc", "--noEmit", "-p", "renderer/tsconfig.json"], desktop],
-    ["desktop unit tests", ["--import", "tsx", "--test", "tests/browser-session.test.ts", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/local-input.test.ts", "tests/local-workflow.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
+    ["desktop unit tests", ["--import", "tsx", "--test", "tests/browser-session.test.ts", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/local-input.test.ts", "tests/local-workflow.test.ts", "tests/local-schedule.test.ts", "tests/local-schedule-files.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
     ["prepare pinned native runtime", ["scripts/prepare-local-codex.mjs"], desktop],
     ["desktop build main", ["node_modules/typescript/bin/tsc"], desktop],
     ["desktop build native host", ["scripts/build-native-host.mjs"], desktop],
@@ -51,7 +52,22 @@ try {
   const executable = path.join(candidate, "win-unpacked/CopyPaste.exe"); await access(executable);
   const resources = path.join(candidate, "win-unpacked/resources"), lock = JSON.parse(await readFile(path.join(desktop, "contracts/local-codex-runtime.json")));
   assert.equal(sha(await readFile(path.join(resources, "local-codex/codex.exe"))), lock.windows_x64_sha256);
+  const archive = path.join(resources, "app.asar"), asar = createRequire(path.join(desktop, "package.json"))("@electron/asar");
+  const entries = asar.listPackage(archive).map(name => name.replaceAll("\\", "/").replace(/^\/+/, ""));
+  // ASAR's directory lookup splits on the host separator. Keep portable names
+  // in receipts, but pass native paths to its Windows archive APIs.
+  const assets = entries.filter(name => name.startsWith("assets/") && !asar.statFile(archive, path.normalize(name)).files);
+  assert.ok(assets.length > 0);
+  assert.ok(assets.every(name => /^assets\/(?:[^/]+\.(?:png|ico|cmd)|browser-shell\.(?:html|css|js)|licenses\/.+)$/.test(name)), "Repository media and test recordings must not ship inside the application");
+  const required = ["assets/icon-256.png", "assets/browser-shell.html", "assets/browser-shell.css", "assets/browser-shell.js", "assets/native-host.cmd"];
+  for (const name of required) assert.ok(assets.includes(name), "Required runtime asset: " + name);
+  const sourceAssets = Object.keys(before).filter(name => name.startsWith("copypaste-desktop/assets/")).map(name => name.slice("copypaste-desktop/".length));
+  assert.deepEqual([...assets].sort(), sourceAssets.sort(), "Every declared runtime asset and license must be packaged");
+  for (const name of assets) {
+    assert.equal(sha(asar.extractFile(archive, path.normalize(name))), sha(await readFile(path.join(desktop, name))), name);
+  }
   built = { executable: path.relative(delivery, executable).replaceAll("\\", "/"), app_asar_sha256: sha(await readFile(path.join(resources, "app.asar"))), native_binary_sha256: lock.windows_x64_sha256,
+    app_asar_bytes: (await stat(archive)).size, runtime_asset_files: assets, runtime_assets_match_source: true, repository_media_excluded: !assets.some(name => /(?:screenshots|workmate-current)\//.test(name)),
     runtime_manifest_sha256: sha(await readFile(path.join(resources, "local-codex/runtime-manifest.json"))) };
   database = launch(["scripts/native-db-launch.mjs"], platform, { COPYPASTE_NATIVE_DATABASE_START_ONLY: "true" }, true); let output = "";
   database.child.stdout.on("data", b => { output = (output + b.toString()).slice(-16000); }); const until = Date.now() + 900000;
@@ -69,7 +85,7 @@ try {
     if (process.platform === "win32") {
       try { execFileSync("taskkill.exe", ["/PID", String(journeyRun.child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore", timeout: 15000 }); } catch {}
     } else journeyRun.child.kill("SIGKILL");
-  }, 660000);
+  }, 840000);
   try { journeyCode = await journeyRun.closed; } finally { clearTimeout(journeyDeadline); }
   const cleanupCode = await launch(["--import", "tsx", "scripts/reclaim-test-fixtures.ts"], platform, env).closed;
   const cleanupBytes = await readFile(path.join(run, "result.json")); await writeFile(prefix + "-fixture-cleanup.json", cleanupBytes, { flag: "wx" });
@@ -81,8 +97,20 @@ finally {
   if (database?.child.connected && database.child.exitCode === null) database.child.send({ action: "shutdown" }); if (database) shutdown = await database.closed;
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
+  let packagedUnchanged = false;
+  if (built) {
+    const root = path.join(path.dirname(path.resolve(delivery, built.executable)), "resources");
+    const finalArchive = await readFile(path.join(root, "app.asar")).catch(() => null), finalCodex = await readFile(path.join(root, "local-codex/codex.exe")).catch(() => null);
+    packagedUnchanged = !!finalArchive && !!finalCodex && sha(finalArchive) === built.app_asar_sha256 && sha(finalCodex) === built.native_binary_sha256;
+  }
   const videoTools = new Set((journey?.native_video_tool_results ?? []).map(result => result.tool));
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 50 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 57 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+    && journey.native_folder_work?.actual_tool_outputs?.length === 2 && journey.native_folder_work.actual_tool_outputs.every(value => value.actual_output)
+    && journey.native_folder_work.application_restart?.old_owned_process_exited && journey.native_folder_work.original_bytes_preserved
+    && journey.native_folder_work.same_native_thread && journey.native_folder_work.charged_micros.join(",") === "90,60"
+    && journey.native_folder_work.answered_questions?.length === 1 && journey.native_folder_work.answered_questions[0].original_preserved
+    && journey.native_folder_work.additional_cloud_tasks === 0 && built?.repository_media_excluded && built.runtime_assets_match_source
+    && journey.native_folder_work.recordings?.length === 2 && journey.native_folder_work.recordings.every(value => value.skipped_capture_errors === 0 && value.distinct_frames > 1)
     && journey.native_audio_tool_results?.length === 2 && journey.native_audio_tool_results.every(result => result.actual_output)
     && journey.audio_media?.skipped_capture_errors === 0 && journey.audio_media?.distinct_frames > 1
     && journey.checks.some(check => check.includes("Native Desktop GEO entry explicitly hands off"))
@@ -111,9 +139,9 @@ finally {
     && journey.checks.some(check => check.includes("Stop stays usable during a native question"))
     && journey.checks.some(check => check.includes("Revoking full permission while waiting"))
     && journey.electron_closed && journey.browser_closed && journey.api_closed && journey.fixture_closed
-    && cleanup?.exit_code === 0 && cleanup.status === "passed" && cleanup.results.every(r => r.reclaimed) && shutdown === 0 && unchanged;
+    && cleanup?.exit_code === 0 && cleanup.status === "passed" && cleanup.results.every(r => r.reclaimed) && shutdown === 0 && unchanged && packagedUnchanged;
   const report = { at: new Date().toISOString(), status: passed ? "passed" : "failed", error, checks, counts: { journey_checks: journey?.checks.length ?? 0, errors: journey?.errors.length ?? 1 },
-    source_files: before, source_unchanged: unchanged, packaged: built, owned_database_shutdown: shutdown === 0, owned_preview_closed: !preview || preview.child.exitCode !== null || preview.child.signalCode !== null,
+    source_files: before, source_unchanged: unchanged, packaged: built, packaged_unchanged: packagedUnchanged, owned_database_shutdown: shutdown === 0, owned_preview_closed: !preview || preview.child.exitCode !== null || preview.child.signalCode !== null,
     journey_exit_code: journeyCode, fixture_cleanup: cleanup, raw_report: { path: prefix + ".tap", sha256: sha(raw) }, verifier: { path: prefix + "-verifier.mjs", sha256: sha(verifier) },
     journey_verifier: { path: prefix + "-journey-verifier.ts", sha256: sha(journeyBytes) }, journey: journeyRaw ? { path: prefix + "-journey.json", sha256: sha(journeyRaw) } : null,
     not_validated: ["human_native_dialog_clicks", "live_model_provider", "signed_production_installer", "all_18_native_role_and_media_tools", "entire_product_acceptance"] };
