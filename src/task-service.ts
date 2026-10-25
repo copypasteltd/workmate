@@ -54,6 +54,15 @@ export async function enqueueTask(
       catalog_sha256: string;
       renderer_profile: unknown;
     };
+    /** A customer-reviewed method trial and its exact target inputs. */
+    solution_trial?: {
+      trial_id: string;
+      solution_version_id: string;
+      definition_hash: string;
+      template_version_id: string;
+      bindings: unknown;
+      resolved_sources: unknown;
+    };
   } = {},
 ) {
   if (b.prompt.length > 60000)
@@ -143,6 +152,12 @@ export async function enqueueTask(
         409,
         "EFFECT_NEW_REVIEW_REQUIRED",
         "Review exact parameters and sources in a new effect request before repeating this work",
+      );
+    if (parent.input_context?.solution_trial)
+      throw new Problem(
+        409,
+        "SOLUTION_NEW_REVIEW_REQUIRED",
+        "Review a new method trial and its target inputs before repeating this work",
       );
     if (
       parent.conversation_id &&
@@ -247,13 +262,17 @@ export async function enqueueTask(
         options.context ||
         options.execution_location === "desktop" ||
         options.cloud_workflow ||
-        options.media_effect
+        options.media_effect ||
+        options.solution_trial
           ? actor.id
           : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
           ...(options.media_effect
             ? { media_effect: options.media_effect }
+            : {}),
+          ...(options.solution_trial
+            ? { solution_trial: options.solution_trial }
             : {}),
           ...(projectConfiguration
             ? { project_configuration: projectConfiguration }

@@ -262,7 +262,7 @@ function present(
     availability_reason: reason,
   };
 }
-async function assess(
+export async function assessTemplate(
   tx: Tx,
   db: Database,
   catalog: Catalog,
@@ -514,7 +514,7 @@ export function registerAgentTemplates(
             const row = await templateVersion(tx, id, input.template_version),
               result = {
                 id: randomUUID(),
-                ...(await assess(
+                ...(await assessTemplate(
                   tx,
                   db,
                   catalog,
@@ -567,7 +567,7 @@ export function registerAgentTemplates(
           { tenant, ...input },
           async () => {
             const row = await templateVersion(tx, id, input.template_version),
-              check = await assess(
+              check = await assessTemplate(
                 tx,
                 db,
                 catalog,

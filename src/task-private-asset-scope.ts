@@ -14,6 +14,18 @@ export function taskPrivateAssetScopeSQL(
   return `(
     v.metadata->>'conversation_id'=$${conversationParameter}::text
     OR EXISTS (
+      SELECT 1 FROM tasks approved_task JOIN solution_trials approved_trial
+        ON approved_trial.id::text=approved_task.input_context->'solution_trial'->>'trial_id'
+       AND approved_trial.tenant_id=approved_task.tenant_id AND approved_trial.project_id=approved_task.project_id
+       AND approved_trial.private_owner=approved_task.created_by AND approved_task.private_owner=approved_task.created_by
+      JOIN assets approved_asset ON approved_asset.id=v.asset_id
+       AND approved_asset.tenant_id=approved_task.tenant_id AND approved_asset.project_id=approved_task.project_id
+       AND approved_asset.private_owner=approved_task.created_by
+      WHERE approved_task.id=$${taskParameter}::uuid
+       AND EXISTS(SELECT 1 FROM jsonb_to_recordset(approved_trial.bindings->'assets') AS approved_input(asset_version_id uuid,sha256 text)
+         WHERE approved_input.asset_version_id=v.id AND approved_input.sha256=v.sha256)
+    )
+    OR EXISTS (
       SELECT 1 FROM desktop_executions current_execution
       JOIN desktop_executions source_execution
         ON source_execution.task_id::text=v.metadata->>'task_id'

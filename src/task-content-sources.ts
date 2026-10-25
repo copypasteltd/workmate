@@ -29,8 +29,8 @@ export async function assertTaskContentSources(tx: Tx, task: { id: string }) {
   }
 }
 
-/** Only model-authorized tool transactions record reads. UI previews do not
- * pretend that a model consumed content. A duplicate replay keeps its first fact. */
+/** Record authorized source lineage, including directory metadata. This fact
+ * alone never qualifies a solution's required content as consumed. */
 export async function recordTaskSourceRead(
   tx: Tx,
   task: any,
@@ -39,13 +39,13 @@ export async function recordTaskSourceRead(
   version?: string,
   sha256?: string,
 ) {
-  if (task.status !== "running") return;
+  if (task.status !== "running") return false;
   const running = (
     await tx.query(
       "SELECT nullif(current_setting('app.task_id',true),'') AS id",
     )
   ).rows[0].id;
-  if (!running) return;
+  if (!running) return false;
   if (running !== task.id)
     throw new Problem(
       409,
@@ -65,4 +65,31 @@ export async function recordTaskSourceRead(
     ],
   );
   await assertTaskContentSources(tx, task);
+  return true;
+}
+
+/** Call only after an exact-version reader has verified and consumed bytes.
+ * Keep directory lineage separate so listing a file cannot qualify a method. */
+export async function recordTaskContentRead(
+  tx: Tx,
+  task: any,
+  kind: "asset_version" | "cloud_reference",
+  resource: string,
+  version: string,
+  sha256: string,
+) {
+  if (!(await recordTaskSourceRead(tx, task, kind, resource, version, sha256)))
+    return;
+  const trial = task.input_context?.solution_trial;
+  if (
+    !trial ||
+    ![...trial.bindings.assets, ...trial.resolved_sources].some(
+      (v: any) => v.asset_version_id === version && v.sha256 === sha256,
+    )
+  )
+    return;
+  await tx.query(
+    "INSERT INTO solution_content_reads(tenant_id,project_id,task_id,asset_version_id,sha256) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING",
+    [task.tenant_id, task.project_id, task.id, version, sha256],
+  );
 }

@@ -7,7 +7,7 @@ import { audit, requireUser } from "./auth.js";
 import { key, replay, projectAccess } from "./access.js";
 import { hash, name, Problem, uuid } from "./lib.js";
 import type { Storage } from "./storage.js";
-import { recordTaskSourceRead } from "./task-content-sources.js";
+import { recordTaskContentRead } from "./task-content-sources.js";
 import { inspectBrandFont, assertBrandGlyphs } from "./brand-font.js";
 import { loadVideoFont } from "./video-font.js";
 
@@ -280,7 +280,7 @@ async function fontBytes(
     )
   ).rows[0];
   if (running)
-    await recordTaskSourceRead(
+    await recordTaskContentRead(
       tx,
       running,
       "asset_version",

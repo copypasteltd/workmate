@@ -4,6 +4,7 @@ import { saveAsset, type Storage } from "./storage.js";
 import { canonical, hash, Problem } from "./lib.js";
 import {
   recordTaskSourceRead,
+  recordTaskContentRead,
   assertTaskContentSources,
 } from "./task-content-sources.js";
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
@@ -119,7 +120,7 @@ export async function loadEffectSources(
         "The source no longer matches its saved bytes",
       );
     if (t.id && v.metadata.task_id !== t.id)
-      await recordTaskSourceRead(tx, t, "asset_version", v.id, v.id, v.sha256);
+      await recordTaskContentRead(tx, t, "asset_version", v.id, v.id, v.sha256);
     result.push({ ...ref, mime_type: v.mime_type, bytes });
   }
   return result;

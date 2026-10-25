@@ -2,7 +2,10 @@ import { PNG } from "pngjs";
 import type { Tx } from "./db.js";
 import { saveAsset, type Storage } from "./storage.js";
 import { canonical, hash, Problem } from "./lib.js";
-import { recordTaskSourceRead } from "./task-content-sources.js";
+import {
+  recordTaskSourceRead,
+  recordTaskContentRead,
+} from "./task-content-sources.js";
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { readAnalysisSource } from "./analysis-role-tools.js";
 import { calculationDigest } from "./analysis-role-delivery.js";
@@ -75,7 +78,7 @@ async function version(
       "The source bytes no longer match their saved digest",
     );
   if (v.metadata.task_id !== t.id)
-    await recordTaskSourceRead(tx, t, "asset_version", v.id, v.id, v.sha256);
+    await recordTaskContentRead(tx, t, "asset_version", v.id, v.id, v.sha256);
   return { v, bytes };
 }
 export async function listDesignSources(

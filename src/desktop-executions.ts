@@ -142,6 +142,9 @@ const videoCompanyToolNames = new Set([
   "generated_video_cancel",
   "audio_produce",
   "effects_catalog",
+  "solution_list",
+  "solution_read",
+  "solution_source_read",
   "effects_sources",
   "effect_render",
 ]);

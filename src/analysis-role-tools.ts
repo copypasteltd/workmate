@@ -16,7 +16,10 @@ import {
   roleAnalysisSpec,
   type AnalysisRenderInput,
 } from "./analysis-role-delivery.js";
-import { recordTaskSourceRead } from "./task-content-sources.js";
+import {
+  recordTaskSourceRead,
+  recordTaskContentRead,
+} from "./task-content-sources.js";
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { connectorFact, connectorLimits } from "./connector-model.js";
 import { campaignFile, normalizeCampaignFile } from "./analytics-file.js";
@@ -196,7 +199,7 @@ async function analysisFileVersion(
       "ANALYSIS_SOURCE_INTEGRITY",
       "The analysis file failed its byte check",
     );
-  await recordTaskSourceRead(tx, t, "asset_version", v.id, v.id, v.sha256);
+  await recordTaskContentRead(tx, t, "asset_version", v.id, v.id, v.sha256);
   return { v, bytes };
 }
 export async function inspectAnalysisFile(
@@ -388,7 +391,7 @@ async function sourceVersion(
       "ANALYSIS_SOURCE_INTEGRITY",
       "The editable analysis source has an invalid schema or binding",
     );
-  await recordTaskSourceRead(tx, t, "asset_version", v.id, v.id, v.sha256);
+  await recordTaskContentRead(tx, t, "asset_version", v.id, v.id, v.sha256);
   return { v, body };
 }
 export async function readAnalysisSource(
@@ -616,7 +619,7 @@ export async function readFrozenConnector(
       "ANALYSIS_PAGE_RANGE",
       "The fact offset exceeds this snapshot",
     );
-  await recordTaskSourceRead(
+  await recordTaskContentRead(
     tx,
     t,
     "asset_version",

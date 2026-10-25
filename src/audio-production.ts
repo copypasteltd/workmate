@@ -6,7 +6,7 @@ import { projectAccess, replay } from "./access.js";
 import { taskCapabilities, gatewayFingerprint } from "./capability-bindings.js";
 import { authorizeExecutionPlan } from "./plans.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
-import { assertTaskContentSources, recordTaskSourceRead } from "./task-content-sources.js";
+import { assertTaskContentSources, recordTaskContentRead } from "./task-content-sources.js";
 import { assertDesktopVideoOrigin } from "./desktop-video-origin.js";
 import { Storage, saveAsset } from "./storage.js";
 import { canonical, hash, Problem } from "./lib.js";
@@ -114,7 +114,7 @@ export class AudioProduction {
         if (bytes.length !== Number(source.bytes) || hash(bytes) !== source.sha256) throw unavailable("AUDIO_SOURCE_INTEGRITY_FAILED");
         probe = await validateProductionAudio(this.db.config, bytes, source.mime_type, signal);
         // Saving output later inherits the exact source dependency, not just its filename.
-        await recordTaskSourceRead(tx, task, "asset_version", source.id, source.id, source.sha256);
+        await recordTaskContentRead(tx, task, "asset_version", source.id, source.id, source.sha256);
       }
       const units = spec.kind === "speech" ? [...spec.text].length : probe.duration_ms;
       const authorization = await this.authorizations.proposal(tx, task, spec, callId, cap,

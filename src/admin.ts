@@ -914,6 +914,7 @@ function registerAdminCatalog(
                 "assets",
                 "creative",
                 "effects",
+                "solutions",
                 "analytics",
                 "workflows",
                 "brand",

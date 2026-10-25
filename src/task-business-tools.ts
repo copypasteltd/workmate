@@ -1,4 +1,12 @@
 import { prepareBrandProduction } from "./brand-production.js";
+import {
+  listTaskSolutions,
+  readTaskSolution,
+  readSolutionSource,
+  solutionToolListInput,
+  solutionToolReadInput,
+  solutionSourceReadInput,
+} from "./solution-tools.js";
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { CloudWorkflows } from "./cloud-workflows.js";
 import { resolveProjectConfiguration } from "./project-configuration.js";
@@ -9,6 +17,7 @@ import { videoJobSpecification } from "./video-job-protocol.js";
 import {
   assertTaskContentSources,
   recordTaskSourceRead,
+  recordTaskContentRead,
 } from "./task-content-sources.js";
 import {
   seoChangeFacts,
@@ -457,6 +466,36 @@ export class TaskBusinessTools {
         ),
       },
       {
+        name: "solution_list",
+        description:
+          "List this customer's installed published method versions in the current project. No credentials, source files or role permissions are copied.",
+        inputSchema: z.toJSONSchema(solutionToolListInput),
+        run: readTool(
+          (tx, a) => listTaskSolutions(tx, t, a),
+          solutionToolListInput,
+        ),
+      },
+      {
+        name: "solution_read",
+        description:
+          "Read an installed reusable method with the exact current role and track its version. Does not authorize new local access, paid work or another role's tools.",
+        inputSchema: z.toJSONSchema(solutionToolReadInput),
+        run: readTool(
+          (tx, a) => readTaskSolution(tx, this.catalog, t, a),
+          solutionToolReadInput,
+        ),
+      },
+      {
+        name: "solution_source_read",
+        description:
+          "Read actual UTF-8 text from an exact approved method-trial input version, including a retained earlier version. Other file types require the role's specialized reader.",
+        inputSchema: z.toJSONSchema(solutionSourceReadInput),
+        run: readTool(
+          (tx, a) => readSolutionSource(tx, this.storage, t, a),
+          solutionSourceReadInput,
+        ),
+      },
+      {
         name: "asset_text_read",
         description:
           "Read an authorized text, JSON or CSV asset in the current project.",
@@ -505,7 +544,7 @@ export class TaskBusinessTools {
                 "The source bytes no longer match their fixed digest",
               );
             const text = bytes.toString("utf8");
-            await recordTaskSourceRead(
+            await recordTaskContentRead(
               tx,
               t,
               "asset_version",
@@ -1330,7 +1369,7 @@ export class TaskBusinessTools {
                 "PROJECT_REFERENCE_CORRUPT",
                 "The shared file bytes do not match their frozen version",
               );
-            await recordTaskSourceRead(
+            await recordTaskContentRead(
               tx,
               t,
               "asset_version",
@@ -1368,6 +1407,11 @@ export class TaskBusinessTools {
               (role.tool_ids.includes("asset.read") ||
                 role.tool_ids.includes("connector.read")),
             project_assets: role.tool_ids.includes("asset.read"),
+            solution_list: role.tool_ids.includes("asset.read"),
+            solution_read: role.tool_ids.includes("asset.read"),
+            solution_source_read:
+              !!t.input_context?.solution_trial &&
+              role.tool_ids.includes("asset.read"),
             project_reference_read:
               !!t.input_context?.project_configuration &&
               role.tool_ids.includes("asset.read"),
@@ -1500,6 +1544,9 @@ export class TaskBusinessTools {
       ? permitted.filter((tool) =>
           [
             "project_assets",
+            "solution_list",
+            "solution_read",
+            "solution_source_read",
             "asset_text_read",
             "project_reference_read",
             "cloud_files",
@@ -1637,7 +1684,7 @@ export class TaskBusinessTools {
                   "ASSET_SOURCE_INTEGRITY",
                   "The source bytes no longer match their fixed digest",
                 );
-              await recordTaskSourceRead(
+              await recordTaskContentRead(
                 tx,
                 t,
                 "asset_version",

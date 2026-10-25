@@ -1,4 +1,4 @@
-import { recordTaskSourceRead } from "./task-content-sources.js";
+import { recordTaskContentRead } from "./task-content-sources.js";
 import type { Tx } from "./db.js";
 import type { Storage } from "./storage.js";
 import { hash, Problem } from "./lib.js";
@@ -78,7 +78,7 @@ export async function readCloudReference(
     );
   const bytes = await storage.get(n.storage_key);
   if (hash(bytes) !== n.sha256) throw new Error("REFERENCE_INTEGRITY_FAILED");
-  await recordTaskSourceRead(
+  await recordTaskContentRead(
     tx,
     t,
     "cloud_reference",

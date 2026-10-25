@@ -259,8 +259,80 @@ export async function startDemoGateway(c: Config) {
         )
         .forEach((i) => collectChangePages(i.output));
       const lastChangePage = changePages.at(-1);
+      const latestUser = input.filter((i) => i.role === "user").at(-1);
+      const latestText =
+        typeof latestUser?.content === "string"
+          ? latestUser.content
+          : (latestUser?.content ?? [])
+              .map((v: any) => v.text ?? "")
+              .join("\n");
+      const methodWork = latestText.includes(
+        "Execute this exact reviewed reusable method",
+      );
+      let methodInputs: any = {},
+        reportingInputs: any[] = [];
+      if (methodWork) {
+        try {
+          methodInputs = JSON.parse(
+            latestText.match(/Approved fixed inputs:\s*(\{[^\n]+\})/)?.[1] ??
+              "{}",
+          );
+          reportingInputs = JSON.parse(
+            latestText.match(
+              /Fixed captured reporting sources:\s*(\[[^\n]*\])/,
+            )?.[1] ?? "[]",
+          );
+        } catch {
+          /* Malformed synthetic prompts cannot fabricate source reads. */
+        }
+      }
+      const methodSource = find("solution_source_read"),
+        methodReader = find("solution_read"),
+        capturedReader = find("connector_read");
+      const consumed = toolOutputs(
+        methodSource?.name,
+        (v) =>
+          typeof v.asset_version_id === "string" && typeof v.text === "string",
+      );
+      const nextMethodInput = methodInputs.assets?.find(
+        (v: any) =>
+          !consumed.some(
+            (r: any) =>
+              r.asset_version_id === v.asset_version_id &&
+              r.sha256 === v.sha256,
+          ),
+      );
+      const nextReportingInput = reportingInputs.find(
+        (v: any) =>
+          !current.some(
+            (i) =>
+              i.type === "function_call" &&
+              i.name === capturedReader?.name &&
+              JSON.parse(i.arguments || "{}").snapshot_id === v.snapshot_id,
+          ),
+      );
+      const installedMethod = latestText.match(
+        /solution_read tool with installation_id ([a-f\d-]{36})/i,
+      )?.[1];
       let tool: any, args: any;
-      if (effectWork && effectCatalog && !used(effectCatalog.name)) {
+      if (methodWork) {
+        // Only model decisions are synthetic. Actual Codex tools read the
+        // customer's approved versions and the normal worker records provenance.
+        if (nextMethodInput && methodSource) {
+          tool = methodSource;
+          args = { asset_version_id: nextMethodInput.asset_version_id };
+        } else if (nextReportingInput && capturedReader) {
+          tool = capturedReader;
+          args = {
+            snapshot_id: nextReportingInput.snapshot_id,
+            offset: 0,
+            limit: 12,
+          };
+        }
+      } else if (installedMethod && methodReader && !used(methodReader.name)) {
+        tool = methodReader;
+        args = { installation_id: installedMethod };
+      } else if (effectWork && effectCatalog && !used(effectCatalog.name)) {
         tool = effectCatalog;
         args = {};
       } else if (

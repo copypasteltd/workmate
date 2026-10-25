@@ -7,7 +7,7 @@ import { projectAccess, replay } from "./access.js";
 import { taskCapabilities, gatewayFingerprint } from "./capability-bindings.js";
 import { authorizeExecutionPlan } from "./plans.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
-import { assertTaskContentSources, recordTaskSourceRead } from "./task-content-sources.js";
+import { assertTaskContentSources, recordTaskContentRead } from "./task-content-sources.js";
 import { canonical, hash, Problem } from "./lib.js";
 import { Storage, saveAsset } from "./storage.js";
 import { callVideoGateway } from "./video-job-gateway.js";
@@ -275,7 +275,7 @@ export class GeneratedVideoJobs {
         throw unavailable("VIDEO_REFERENCE_INTEGRITY_FAILED");
       await validateVideoReference(bytes, source.mime_type);
       await this.origin(tx, current);
-      await recordTaskSourceRead(tx, task, "asset_version", source.id, source.id, source.sha256);
+      await recordTaskContentRead(tx, task, "asset_version", source.id, source.id, source.sha256);
       return { bytes, mime: source.mime_type };
     }, job.tenant_id, true, job.actor_id);
   }
