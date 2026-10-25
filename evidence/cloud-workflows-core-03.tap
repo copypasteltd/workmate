@@ -1,0 +1,223 @@
+2026-10-25 20:31:25.761 CST [2544] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-25 20:31:25.772 CST [2544] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-25 20:31:25.772 CST [2544] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-25 20:31:27.114 CST [14972] LOG:  database system was shut down at 2026-10-25 20:29:42 CST
+
+2026-10-25 20:31:27.278 CST [2544] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+# isolated integration suite: applied migration 104
+# isolated integration suite: applied migration 105
+# Subtest: private cloud consultant validates, versions and requests; only customer-approved fixed steps execute and settle once
+not ok 1 - private cloud consultant validates, versions and requests; only customer-approved fixed steps execute and settle once
+  ---
+  duration_ms: 6791.9243
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\cloud-workflows.test.ts:1:7148'
+  failureType: 'testCodeFailure'
+  error: "Cannot read properties of undefined (reading 'role_key')"
+  code: 'ERR_TEST_FAILURE'
+  name: 'TypeError'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:282:29)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+2026-10-25 20:31:39.293 CST [34164] ERROR:  Workflow source snapshot is unavailable
+2026-10-25 20:31:39.293 CST [34164] CONTEXT:  PL/pgSQL function guard_native_workflow_sources() line 5 at RAISE
+2026-10-25 20:31:39.293 CST [34164] STATEMENT:  INSERT INTO workflow_versions(workflow_id,version,tenant_id,project_id,private_owner,definition,definition_hash,role_hashes,source_refs)
+	          VALUES($1,$2,$3,$4,$5,$6,$7,$8,publication_input_sources(NULL,$9))
+
+# Subtest: cloud drafts retain immutable versions, reject stale edits and stay in their originating private conversation
+not ok 2 - cloud drafts retain immutable versions, reject stale edits and stay in their originating private conversation
+  ---
+  duration_ms: 1625.3605
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\cloud-workflows.test.ts:1:10785'
+  failureType: 'testCodeFailure'
+  error: 'Workflow source snapshot is unavailable'
+  code: '23514'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\cloud-workflows.ts:148:9)
+    async replay (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\access.ts:132:20)
+    async Database.tx (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\db.ts:50:22)
+    async FixtureRuntime.perform (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:262:13)
+    async FixtureRuntime.start (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:188:7)
+    async Worker.run (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\worker.ts:582:22)
+    async run (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:212:3)
+    async prepareWorkflow (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:260:19)
+  ...
+# Subtest: ask exposes workflow validation and current reads, without writers or fee approval
+ok 3 - ask exposes workflow validation and current reads, without writers or fee approval
+  ---
+  duration_ms: 1251.2201
+  ...
+# Subtest: plan exposes workflow validation and current reads, without writers or fee approval
+ok 4 - plan exposes workflow validation and current reads, without writers or fee approval
+  ---
+  duration_ms: 1013.7815
+  ...
+2026-10-25 20:31:42.735 CST [34164] ERROR:  Workflow source snapshot is unavailable
+2026-10-25 20:31:42.735 CST [34164] CONTEXT:  PL/pgSQL function guard_native_workflow_sources() line 5 at RAISE
+2026-10-25 20:31:42.735 CST [34164] STATEMENT:  INSERT INTO workflow_versions(workflow_id,version,tenant_id,project_id,private_owner,definition,definition_hash,role_hashes,source_refs)
+	          VALUES($1,$2,$3,$4,$5,$6,$7,$8,publication_input_sources(NULL,$9))
+
+# Subtest: source withdrawal blocks pending approval and cancellation releases a queued child without another fee
+not ok 5 - source withdrawal blocks pending approval and cancellation releases a queued child without another fee
+  ---
+  duration_ms: 944.4664
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\cloud-workflows.test.ts:1:13449'
+  failureType: 'testCodeFailure'
+  error: 'Workflow source snapshot is unavailable'
+  code: '23514'
+  name: 'error'
+  stack: |-
+    D:\dev\copypasted\自有agent\dev\copypaste-platform\node_modules\pg\lib\client.js:694:17
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\cloud-workflows.ts:148:9)
+    async replay (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\access.ts:132:20)
+    async Database.tx (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\db.ts:50:22)
+    async FixtureRuntime.perform (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:262:13)
+    async FixtureRuntime.start (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:188:7)
+    async Worker.run (D:\dev\copypasted\自有agent\dev\copypaste-platform\src\worker.ts:582:22)
+    async run (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:212:3)
+    async prepareWorkflow (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-workflows.test.ts:260:19)
+  ...
+2026-10-25 20:31:43.128 CST [23792] LOG:  checkpoint starting: immediate force wait
+
+2026-10-25 20:31:46.552 CST [23792] LOG:  checkpoint complete: wrote 36 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.099 s, sync=1.869 s, total=3.424 s; sync files=12, longest=0.282 s, average=0.156 s; distance=18959 kB, estimate=18959 kB; lsn=16/C5B6CDF8, redo lsn=16/C5B6CDA0
+
+1..5
+# tests 5
+# suites 0
+# pass 2
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18934.8966
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/5d95a831-a1ea-4fe1-a986-43773e54541d/result.json","sha256":"d48ce7077bdf467a6b67946063b06d00504191d290d377e71a3c530a8aac3011","exit_code":0}
+2026-10-25 20:31:47.466 CST [2544] LOG:  received fast shutdown request
+
+2026-10-25 20:31:47.663 CST [2544] LOG:  aborting any active transactions
+
+2026-10-25 20:31:47.673 CST [2544] LOG:  background worker "logical replication launcher" (PID 28956) exited with exit code 1
+
+2026-10-25 20:31:47.674 CST [23792] LOG:  shutting down
+
+2026-10-25 20:31:47.726 CST [23792] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-25 20:31:48.006 CST [23792] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.054 s, total=0.332 s; sync files=1, longest=0.054 s, average=0.054 s; distance=0 kB, estimate=17063 kB; lsn=16/C5B6CF10, redo lsn=16/C5B6CF10
+
+2026-10-25 20:31:48.140 CST [2544] LOG:  database system is shut down
+
