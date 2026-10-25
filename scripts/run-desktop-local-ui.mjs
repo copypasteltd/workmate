@@ -28,7 +28,7 @@ const run = path.join(platform, ".data/test-fixture-reclamation", randomUUID()),
 await mkdir(run, { recursive: true }); await writeFile(path.join(run, "manifest.json"), JSON.stringify({ owner_pid: process.pid, token }), { flag: "wx" });
 const log = createWriteStream(prefix + ".tap", { flags: "wx" });
 function launch(args, cwd, env = {}, ipc = false) {
-  const child = spawn(process.execPath, args, { cwd, env: { ...process.env, ...env }, windowsHide: true, stdio: ipc ? ["ignore", "pipe", "pipe", "ipc"] : ["ignore", "pipe", "pipe"] });
+  const child = spawn(process.execPath, args, { cwd, env: { ...process.env, COPYPASTE_LOCAL_CODEX_TEST_BIN: binary, ...env }, windowsHide: true, stdio: ipc ? ["ignore", "pipe", "pipe", "ipc"] : ["ignore", "pipe", "pipe"] });
   child.stdout.pipe(log, { end: false }); child.stderr.pipe(log, { end: false });
   const closed = new Promise(resolve => { child.once("close", c => resolve(c ?? 1)); child.once("error", () => resolve(1)); }); return { child, closed };
 }
@@ -39,8 +39,10 @@ try {
     ["platform typecheck", ["node_modules/typescript/bin/tsc", "--noEmit"], platform],
     ["desktop typecheck main", ["node_modules/typescript/bin/tsc", "--noEmit"], desktop],
     ["desktop typecheck renderer", ["node_modules/typescript/bin/tsc", "--noEmit", "-p", "renderer/tsconfig.json"], desktop],
-    ["desktop unit tests", ["--import", "tsx", "--test", "tests/browser-session.test.ts", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/local-input.test.ts", "tests/local-workflow.test.ts", "tests/local-schedule.test.ts", "tests/local-schedule-files.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
+    ["build native program guardian", ["scripts/build-program-host.mjs"], desktop],
+    ["desktop unit tests", ["--import", "tsx", "--test", "tests/browser-resources.test.ts", "tests/browser-session.test.ts", "tests/local-programs.test.ts", "tests/download.test.ts", "tests/files.test.ts", "tests/local-agent.test.ts", "tests/local-input.test.ts", "tests/local-workflow.test.ts", "tests/local-schedule.test.ts", "tests/local-schedule-files.test.ts", "tests/native-code.test.ts", "tests/native-session.test.ts", "tests/vault.test.ts"], desktop],
     ["prepare pinned native runtime", ["scripts/prepare-local-codex.mjs"], desktop],
+    ["real native Codex protocol tests", ["--import", "tsx", "--test", "--test-concurrency=1", "tests/integration/local-codex.native.test.ts"], desktop],
     ["desktop build main", ["node_modules/typescript/bin/tsc"], desktop],
     ["desktop build native host", ["scripts/build-native-host.mjs"], desktop],
     ["desktop build renderer", ["node_modules/vite/bin/vite.js", "build", "--config", "vite.config.ts"], desktop],
@@ -52,6 +54,12 @@ try {
   const executable = path.join(candidate, "win-unpacked/CopyPaste.exe"); await access(executable);
   const resources = path.join(candidate, "win-unpacked/resources"), lock = JSON.parse(await readFile(path.join(desktop, "contracts/local-codex-runtime.json")));
   assert.equal(sha(await readFile(path.join(resources, "local-codex/codex.exe"))), lock.windows_x64_sha256);
+  const guardianDir = path.join(resources, "local-program-host"), guardianManifest = JSON.parse(await readFile(path.join(guardianDir, "manifest.json")));
+  assert.deepEqual((await readdir(guardianDir)).sort(), ["local-program-host.exe", "manifest.json"]);
+  assert.equal(guardianManifest.schema, 1); assert.equal(guardianManifest.platform, "windows-x64");
+  assert.equal(guardianManifest.source_sha256, sha(await readFile(path.join(desktop, "src/local-program-host.cs"))));
+  assert.equal(guardianManifest.sha256, sha(await readFile(path.join(guardianDir, "local-program-host.exe"))));
+  assert.equal(guardianManifest.sha256, sha(await readFile(path.join(desktop, ".data/native-program-host/local-program-host.exe"))));
   const archive = path.join(resources, "app.asar"), asar = createRequire(path.join(desktop, "package.json"))("@electron/asar");
   const entries = asar.listPackage(archive).map(name => name.replaceAll("\\", "/").replace(/^\/+/, ""));
   // ASAR's directory lookup splits on the host separator. Keep portable names
@@ -68,7 +76,8 @@ try {
   }
   built = { executable: path.relative(delivery, executable).replaceAll("\\", "/"), app_asar_sha256: sha(await readFile(path.join(resources, "app.asar"))), native_binary_sha256: lock.windows_x64_sha256,
     app_asar_bytes: (await stat(archive)).size, runtime_asset_files: assets, runtime_assets_match_source: true, repository_media_excluded: !assets.some(name => /(?:screenshots|workmate-current)\//.test(name)),
-    runtime_manifest_sha256: sha(await readFile(path.join(resources, "local-codex/runtime-manifest.json"))) };
+    runtime_manifest_sha256: sha(await readFile(path.join(resources, "local-codex/runtime-manifest.json"))),
+    program_guardian: { sha256: guardianManifest.sha256, source_sha256: guardianManifest.source_sha256, manifest_sha256: sha(await readFile(path.join(guardianDir, "manifest.json"))) } };
   database = launch(["scripts/native-db-launch.mjs"], platform, { COPYPASTE_NATIVE_DATABASE_START_ONLY: "true" }, true); let output = "";
   database.child.stdout.on("data", b => { output = (output + b.toString()).slice(-16000); }); const until = Date.now() + 900000;
   while (!output.includes("Native PostgreSQL ready")) { assert.equal(database.child.exitCode, null); assert.ok(Date.now() < until); await new Promise(resolve => setTimeout(resolve, 200)); }
@@ -85,7 +94,7 @@ try {
     if (process.platform === "win32") {
       try { execFileSync("taskkill.exe", ["/PID", String(journeyRun.child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore", timeout: 15000 }); } catch {}
     } else journeyRun.child.kill("SIGKILL");
-  }, 840000);
+  }, 1140000);
   try { journeyCode = await journeyRun.closed; } finally { clearTimeout(journeyDeadline); }
   const cleanupCode = await launch(["--import", "tsx", "scripts/reclaim-test-fixtures.ts"], platform, env).closed;
   const cleanupBytes = await readFile(path.join(run, "result.json")); await writeFile(prefix + "-fixture-cleanup.json", cleanupBytes, { flag: "wx" });
@@ -101,10 +110,16 @@ finally {
   if (built) {
     const root = path.join(path.dirname(path.resolve(delivery, built.executable)), "resources");
     const finalArchive = await readFile(path.join(root, "app.asar")).catch(() => null), finalCodex = await readFile(path.join(root, "local-codex/codex.exe")).catch(() => null);
-    packagedUnchanged = !!finalArchive && !!finalCodex && sha(finalArchive) === built.app_asar_sha256 && sha(finalCodex) === built.native_binary_sha256;
+    const finalGuardian = await readFile(path.join(root, "local-program-host/local-program-host.exe")).catch(() => null), finalGuardianManifest = await readFile(path.join(root, "local-program-host/manifest.json")).catch(() => null);
+    packagedUnchanged = !!finalArchive && !!finalCodex && !!finalGuardian && !!finalGuardianManifest && sha(finalArchive) === built.app_asar_sha256 && sha(finalCodex) === built.native_binary_sha256
+      && sha(finalGuardian) === built.program_guardian.sha256 && sha(finalGuardianManifest) === built.program_guardian.manifest_sha256;
   }
   const videoTools = new Set((journey?.native_video_tool_results ?? []).map(result => result.tool));
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 57 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 68 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+    && journey.native_programs?.no_cloud_replacement_tasks && journey.native_programs.owned_programs_closed && journey.native_programs.receipts.length === 4
+    && journey.native_programs.receipts.map(receipt => receipt.state).join(",") === "succeeded,failed,cancelled,cancelled"
+    && journey.native_programs.media?.skipped_capture_errors === 0 && journey.native_programs.media.distinct_frames > 1
+    && journey.native_browser_resources?.actual_contexts_at_limit === 2 && journey.native_browser_resources.all_owned_pages_closed
     && journey.native_folder_work?.actual_tool_outputs?.length === 2 && journey.native_folder_work.actual_tool_outputs.every(value => value.actual_output)
     && journey.native_folder_work.application_restart?.old_owned_process_exited && journey.native_folder_work.original_bytes_preserved
     && journey.native_folder_work.same_native_thread && journey.native_folder_work.charged_micros.join(",") === "90,60"

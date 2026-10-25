@@ -1,6 +1,6 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
-<!-- folder-work-stage87 -->
+<!-- local-programs-stage88 -->
 
 并列独立仓库的原生启动、验证、真实截图/录制与非强制分支发布工具。
 
@@ -33,6 +33,14 @@ Web 为 `http://localhost:4317`，Admin 为 `http://localhost:4318`；API 端口
 4. 确认预算和必要的操作/媒体授权，查看真实状态、进度、文件与原费用回执。修改沿原工作谱系继续。未知用量保持原预留供对账，不能当作免费或盲目重新执行。
 5. Admin 可按独立权限管理用户/企业状态、查看获准消耗，预览并确认人工费用/赠额和 VIP 权益/到期。余额、实收记录、授信、预算和 VIP 分别保存；同一确认幂等，操作保留审计，不能因重放重复赠额。
 
+## Desktop 本机程序与浏览器
+
+登录并选择企业/项目→建立本机会话→主动授予完整本机权限→打开「本机程式」→选择实际程序并在默认取消的原生窗口确认→返回对话提出工作→查看参数、真实输出、PID/退出码和原任务费用。取消选择或拒绝确认不会批准程序。程序清单固定文件身份和 SHA-256；Agent 只传程序 ID 与参数数组，不临时指定 shell 或环境变量。
+
+停止原任务或撤销程序会结束该任务拥有的原生进程树；撤销某个程序不撤销客户另行授予的完整本机权限。成功、失败、停止及未知结果分别保留，原调用 ID 不重跑。重启后未确认结果保持未知，客户核对后只能允许后续新调用，不能把旧记录改为成功。完整 OS 权限允许客户程序以本机用户权限操作，不宣称额外受目录 OS 沙箱保护；Admin/云端不能代客户批准。
+
+当前 Windows x64 原生 Job Object 监督程序不继承公司推理凭据。每执行器最多两个活动程序，保留最多 100 个批准记录/200 个运行记录，每次至多 64 个参数、120 秒，stdout/stderr 各保留最多 32 KiB 并标记截断。新会话固定程序工具版本，旧会话工具集合保持原样。浏览器普通页面与弹窗共同计入每任务三页、每执行器两个活动上下文；第三个上下文拒绝，不挤掉他人任务，复用前清除 cookie/localStorage。
+
 ## Desktop 本机目录工作
 
 选择具备读写授权的本机会话，打开「目录工作」，选择工作目录内真实输入目录，配置扩展名、处理说明、稳定等待时间、每档/总授权上限和最多次数。已有文件默认不处理；客户明确勾选后才纳入。保存只建立**暂停**规则；「确认并启用」另行打开默认取消的原生自动收费确认。
@@ -41,7 +49,7 @@ Web 为 `http://localhost:4317`，Admin 为 `http://localhost:4318`；API 端口
 
 暂停停止新派发，已开始的一档可以完成；撤销只停止该规则拥有的工作，保留交付和费用。应用关闭后停止监听，真实重开保留加密账本及已分配上限，但必须再次确认。丢失回包复用原派发/创建/开始/结算键；未知本机动作阻断供核对。完整 OS 权限仍是客户主动授予的本机权限，目录规则没有额外创造一个 OS 沙箱。Web/Extension 保持云端执行，本机目录工作是 Desktop 能力。
 
-明确上限：20 条规则；每规则 1,000 项历史/200 项排队，每会话 1,000 项派发回执；每次扫描 2,000 个匹配文件/10,000 项条目/12 层深度；每档 20 MiB、单次新读取 64 MiB；最多授权 100 次，目录调度同一时间执行一档。暂停或重启不重置上限。输出位于 `.copypaste-local-jobs/<rule>/<job>/output/`。越界、路径遍历、symlink/junction、源文件替换和冲突阻断自动执行。批准程序/结构化 argv 和完整崩溃/休眠/离线矩阵仍待补齐。
+明确上限：20 条规则；每规则 1,000 项历史/200 项排队，每会话 1,000 项派发回执；每次扫描 2,000 个匹配文件/10,000 项条目/12 层深度；每档 20 MiB、单次新读取 64 MiB；最多授权 100 次，目录调度同一时间执行一档。暂停或重启不重置上限。输出位于 `.copypaste-local-jobs/<rule>/<job>/output/`。越界、路径遍历、symlink/junction、源文件替换和冲突阻断自动执行。本机程序见上节；完整应用操作及崩溃/休眠/离线矩阵仍待补齐。
 
 ## 配置、界面和验证
 
@@ -49,9 +57,9 @@ Web 为 `http://localhost:4317`，Admin 为 `http://localhost:4318`；API 端口
 
 保持 CopyPaste 蓝/奶白、Manrope/Fraunces、中英双语和浅深主题。Desktop 无 Electron 自带边框/菜单，不显示纵横滚动条轨道，仍保留真实滚轮、焦点、末项访问和进度。紧凑会话摘要将图标/版本和名称分行，保持可读；聚焦页面的 Home/End、Ctrl+Home/End 到达页面首末项，聚焦文本框时保留光标导航。
 
-本阶段新验证：**Desktop 单元 91、客户端单元 161、实际打包 Desktop 57 项**，保留原 50 项实际检查及 69 个 Desktop 单元用例。目录工作由客户本机真实 Codex 执行，核对显式回答原轮次、CSV 原字节及输出、实际新 PID 重启、90/60 港币微额分别结算、原线程/版本延续和零云端替代任务。全部 14 个运行资产/许可证与源码原字节相符；截图/录屏留在仓库、不进入运行 ASAR。归档由 837,577,925 降为 41,487,145 字节。
+阶段 88 当前增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 原 57 项实际 Desktop、91 项单元及 17 项原生用例均保留。目录工作仍核对真实新 PID 重启、原线程/固定版本及 90/60 港币微额结算。全部 14 个运行素材/许可证原字节保留，仓库截图/录屏不进入运行 ASAR。
 
-保留阶段 86 的**平台 1023、核心 25、兼容 36、实际 Web/Admin/原生侧栏 14 项**历史范围；Backend/Web/Admin/Extension 产品源仍精确一致，本阶段没有宣称重新执行这些完整套件。原生进程、文件、数据库及账本是真实运行；模型回复、广告/客户事实及部分原生对话框决定为明确夹具。自建浏览器、API、预览和测试数据库均关闭；没有使用 Docker/WSL/虚拟化。
+保留阶段 86 的平台 1023、核心 25、兼容 36、实际 Web/Admin/原生侧栏 14 项历史结果；本阶段没有重跑完整平台/跨端套件。Web/Admin/Extension 产品源未变化，后端工具声明改动另有当前相关检查。本机进程、文件、账本与数据库实际运行；假模型和对话框决定不证明真实专业质量。自建浏览器、API、预览及测试数据库均关闭，无 Docker/WSL/虚拟化。
 
 原 102 项需求登记为 **86 部分／16 未证明完整／0 完整验收**。REQ-040/042 获得限定证据，不关闭原完整条件。至少十二个专业角色、完整后台、团队/方案包、全部 marketing 流程、真实质量、签名安装/升级/卸载、负载/恢复演练和 G01–G10 继续开放，测试数不能换算产品完成率。详见完整编号差异表。
 
@@ -69,6 +77,8 @@ flowchart TD
   Role --> Local[Frameless Desktop: customer-local Codex]
   Files[Explicit private attachment selection] --> Cloud
   Local --> Grant[Customer OS grant / local files and tools]
+  Local --> Programs[Customer-pinned program and structured argv]
+  Programs --> Process[Owned native Job Object and exact receipt]
   Local --> Rules[Paused folder rule / explicit spend confirmation]
   Rules --> Queue[Stable snapshot / persistent serial queue]
   Queue --> Local
@@ -78,7 +88,7 @@ flowchart TD
   Admin[Separate Admin MFA and scoped permissions] --> Governance[Users / content / fees / VIP / audit]
 ```
 
-本阶段实际本机目录截图和按观察时间录制的交互，原像素保留；模型/原生对话框决定为明确夹具。
+保留阶段 87 实际本机目录截图和按观察时间录制的交互，原像素保留；模型/原生对话框决定为明确夹具。
 
 ![实际完整窗口](assets/workmate-current/copypaste-desktop__workmate-folders-69-history-1440x980-en.png)
 
@@ -91,3 +101,19 @@ flowchart TD
 [原始 MP4](assets/workmate-current/copypaste-desktop__workmate-folders-69-native-folder-restart.mp4)
 
 ![真实交互](assets/workmate-current/copypaste-desktop__workmate-folders-69-native-folder-restart.gif)
+
+[本机程序方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/88-approved-local-programs.md) · [Stage 88 checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/local-programs-checkpoint.json)
+
+本阶段实际打包程序操作；模型与原生选择/确认决定为明确夹具。
+
+![Actual native program interaction](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-72-programs-output-en.png)
+
+![Actual native program interaction](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-72-programs-1440x980-en.png)
+
+![Actual native program interaction](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-72-programs-800x600-en.png)
+
+![Actual native program interaction](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-72-programs-800x600-zh.png)
+
+[Original MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-72-local-programs.mp4)
+
+![Actual native program interaction](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-72-local-programs.gif)
