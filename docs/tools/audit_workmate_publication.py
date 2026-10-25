@@ -29,6 +29,27 @@ def git(repo, *args, data=None):
     )
 
 
+def readme_target_file(repo, readme, target):
+    """Resolve URL paths; display/download query parameters are not Git filenames."""
+    if target.startswith(BASE):
+        part = urlparse(target).path.removeprefix(urlparse(BASE).path)
+        if part.startswith("tree/"):
+            assert part[5:] in {*MAP, "main"}
+            return None
+        assert part.startswith("blob/"), target
+        target_branch, destination = part[5:].split("/", 1)
+        assert target_branch in {*MAP, "main"}
+        directory = MAP.get(target_branch, ROOT).resolve()
+        local = (directory / unquote(destination)).resolve()
+        assert local.is_relative_to(directory), "README target escapes its mapped repository"
+    elif re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+        return None
+    else:
+        local = (readme.parent / unquote(urlparse(target).path)).resolve()
+        assert local.is_relative_to(repo.resolve()), "Standalone README link escapes its repository"
+    return local
+
+
 def configured_credentials():
     # Literal local configuration is read only to recognize values which must
     # never be published. Neither needles nor matched bytes enter the report.
@@ -148,21 +169,9 @@ def main():
             stripped = re.sub(r"\x60{3}.*?\x60{3}", "", content, flags=re.S)
             for target in re.findall(r"!?\[[^\]]*\]\(([^)\n]+)\)", stripped):
                 target = target.strip("<>")
-                if target.startswith(BASE):
-                    part = target[len(BASE):]
-                    if part.startswith("tree/"):
-                        assert part[5:] in {*MAP, "main"}
-                        continue
-                    assert part.startswith("blob/"), target
-                    target_branch, destination = part[5:].split("/", 1)
-                    assert target_branch in {*MAP, "main"}
-                    directory = MAP.get(target_branch, ROOT)
-                    local = directory / unquote(destination.split("#")[0])
-                elif re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
+                local = readme_target_file(repo, readme, target)
+                if local is None:
                     continue
-                else:
-                    local = (readme.parent / unquote(target.split("#")[0])).resolve()
-                    assert local.is_relative_to(repo), "Standalone README link escapes its repository"
                 links.append({"from": str(readme.relative_to(ROOT)), "target": target})
                 if not local.is_file():
                     problems.append({"branch": branch, "readme": readme.name, "target": target, "kind": "missing_readme_target"})
