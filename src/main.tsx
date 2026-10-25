@@ -55,6 +55,8 @@ import {
   RecentConversations,
   TaskPlan,
 } from "./persistent-work";
+import { AgentGroups } from "./agent-groups";
+import { GitBranch } from "lucide-react";
 import React, {
   useEffect,
   useLayoutEffect,
@@ -661,6 +663,7 @@ const navigation = [
   ["", LayoutGrid, "工作台", "Workspace"],
   ["roles", Sparkles, "專業角色", "Specialists"],
   ["specialists", Users, "我的專家", "Your specialists"],
+  ["teams", GitBranch, "專業團隊", "Your teams"],
   ["skills", BookOpen, "專案技能", "Project methods"],
   ["notifications", Bell, "工作通知", "Work notifications"],
   ["conversations", MessageSquare, "我的會話", "Your conversations"],
@@ -767,6 +770,7 @@ function Shell() {
         <nav>
           {[...navigation]
             .filter(([path]) => navConfig(path)?.enabled !== false)
+            .filter(([path]) => path !== "teams" || !window.copyPasteBridge)
             .sort(
               (a, b) =>
                 (navConfig(a[0])?.order ?? 50) - (navConfig(b[0])?.order ?? 50),
@@ -857,6 +861,7 @@ function Shell() {
               <Route index element={<Workbench />} />
               <Route path="roles" element={<Roles />} />
               <Route path="specialists" element={<Specialists />} />
+              <Route path="teams" element={<AgentGroups />} />
               <Route path="skills" element={<ProjectSkills />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="conversations" element={<Conversations />} />

@@ -1,8 +1,42 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- agent-groups-stage93 -->
+
+## Persistent professional teams
+
+Stage 93 implements persistent Web teams with a coordinator, distinct specialists, frozen versions, customer-reviewed briefs/dependencies/budgets, bounded actual Codex execution and unified delivery. All 115 relevant backend cases and seven actual browser checks pass. Model/account capacity is explicitly synthetic; authentication, native Codex processes, company tools, private files, budgets and accounting actually run.
+
+1. Sign in and select a project. Create specialists in Your specialists, then save a coordinator and distinct members in Your teams. Team settings are project-shared; runs and files remain private to their customer.
+2. Add the brief, step instructions, dependencies, individual caps and parallelism. Review the exact fixed member versions and full plan for free. Only the current customer can explicitly approve the budget and start.
+3. Follow actual task links, member states, approved maximum, reserved funds and actual charges. The coordinator waits for all actual members to succeed, then reads their authorized outputs. Stop prevents new dispatch and preserves uncertain-cost reconciliation.
+4. Team edits create immutable versions. A repeated request reuses its original run; a new execution needs a new review. Withdrawing a source blocks private derivatives. Admin body access, quarantine, restore and erasure retain independent scoped permissions and audit.
+
+```mermaid
+flowchart LR
+  A[Saved team and fixed versions] --> B[Brief, steps and dependencies]
+  B --> C[Free review and customer budget approval]
+  C --> D[Bounded actual member tasks]
+  D --> E[Coordinator reads completed results]
+  E --> F[Private delivery and per-task accounting]
+```
+
+Apply **SQL108** after SQL001–107. A team has one coordinator and up to seven distinct members, with 1–16 acyclic steps and 1–3 concurrent member slots bounded by actual plan capacity. At least two active task slots are required. Reviews expire after 15 minutes; runs have a two-hour deadline. Only each actual task allocation is reserved; the displayed total is a maximum, not another charge. Existing single-task conversation admission remains enforced.
+
+Desktop keeps local Codex and customer-controlled full permission, frameless windows and no native Electron menus. This new team interface is cloud Web work; it is hidden in native Desktop. Extension remains a ChatGPT-style native right Side Panel for authorized uploads and cloud conversations. These recordings do not establish new native team interfaces, professional role quality, live providers or full product acceptance.
+
+[Implementation and API](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/93-persistent-agent-groups.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/agent-groups-checkpoint.json)
+
+![Actual team plan / 实际团队计划](assets/screenshots/workmate-agent-groups-04-plan.png)
+
+![Actual completed run / 实际完成状态](assets/screenshots/workmate-agent-groups-04-completed.png)
+
+![Actual team creation and approval / 实际建立与批准](assets/screenshots/workmate-agent-groups-04-team-authoring.gif)
+
+[375px](assets/screenshots/workmate-agent-groups-04-responsive-375.png) · [Delivery GIF](assets/screenshots/workmate-agent-groups-04-team-delivery.gif) · [Authoring MP4](assets/screenshots/workmate-agent-groups-04-team-authoring.mp4) · [Delivery MP4](assets/screenshots/workmate-agent-groups-04-team-delivery.mp4)
+
 <!-- editable-design-stage92 -->
 
-## Editable brand and presentation delivery
+## Earlier editable design verification (stage 92)
 
 Stage 92 connects actual brand-vector and presentation tools. Brand delivery includes editable and outlined SVG. Presentations include PPTX with native editable text, shapes, paths and evidence bars, plus per-page SVG/PNG, PDF/HTML reviews, exact evidence CSV, immutable source, manifest and a ZIP with the licensed font. Ninety-three relevant backend tests and eight actual browser checks pass. Codex, permissions, files and financial receipts are real; model/content are explicitly synthetic.
 
