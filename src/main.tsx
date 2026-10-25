@@ -57,6 +57,7 @@ import {
 } from "./persistent-work";
 import { AgentGroups } from "./agent-groups";
 import { MediaEffects, EffectDelivery } from "./media-effects";
+import { Solutions } from "./solutions";
 import { GitBranch } from "lucide-react";
 import React, {
   useEffect,
@@ -666,6 +667,7 @@ const navigation = [
   ["specialists", Users, "我的專家", "Your specialists"],
   ["teams", GitBranch, "專業團隊", "Your teams"],
   ["skills", BookOpen, "專案技能", "Project methods"],
+  ["solutions", Layers, "業務方案", "Business methods"],
   ["notifications", Bell, "工作通知", "Work notifications"],
   ["conversations", MessageSquare, "我的會話", "Your conversations"],
   ["memories", Brain, "記憶與偏好", "Memory & preferences"],
@@ -878,6 +880,7 @@ function Shell() {
               <Route path="files" element={<CloudFiles />} />
               <Route path="creative" element={<Creative />} />
               <Route path="effects" element={<MediaEffects />} />
+              <Route path="solutions" element={<Solutions />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="connections" element={<Connections />} />
               <Route path="workflows" element={<Workflows />} />
