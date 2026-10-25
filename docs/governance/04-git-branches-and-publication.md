@@ -81,3 +81,10 @@ Stage 93 binds committed components with `finalize_agent_groups_manifest.py` aft
 先完成本次精确源码团队回归、实际翻页及原生 Codex 检查、媒体完整解码、双语文档和七仓库暂存核查，再提交各组件。使用 `finalize_agent_group_history_manifest.py` 绑定实际提交、检查点与证据，提交主文档后在 Delivery 执行 `node scripts/publish-workmate.mjs --push`，核对八个远端 SHA。SQL109 只新增索引；既有用户授权持续有效，禁止强推。
 
 Stage 94 binds actual committed components with `finalize_agent_group_history_manifest.py` after current scoped regression, real browser/native Codex, full media decoding, bilingual documentation and staged review. Commit documentation and run the Delivery publisher to verify all eight remote refs. SQL109 adds only an index. Existing ordinary publication authorization persists; no force push. Earlier receipts retain historical scope.
+
+
+## 阶段 95 当前发布 / Current stage 95 publication
+
+先完成本次精确源码相关模块回归、实际特效交付及原生 Codex 检查、媒体完整解码、双语文档和七仓库暂存核查，再提交各组件。使用 `finalize_media_effects_manifest.py` 绑定实际提交、检查点与证据，提交主文档后在 Delivery 执行 `node scripts/publish-workmate.mjs --push`，核对八个远端 SHA。SQL110/111 增加审阅特效约束与回执；既有用户授权持续有效，禁止强推。
+
+Stage 95 binds actual committed components with `finalize_media_effects_manifest.py` after current media-effect regression, real browser/native Codex, full media decoding, bilingual documentation and staged review. Commit documentation and run the Delivery publisher to verify all eight remote refs. SQL110/111 add reviewed effects and receipts. Existing ordinary publication authorization persists; no force push. Earlier receipts retain historical scope.

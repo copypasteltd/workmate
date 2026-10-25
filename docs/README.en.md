@@ -1,8 +1,42 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- media-effects-stage95 -->
+
+## Reviewed native media effects
+
+Stage 95 connects ten versioned native effects: transitions, Chinese animated text, chroma key and cleanup. After reviewing exact source versions, parameters and budget, customers approve Codex to invoke native FFmpeg and deliver actual silent MP4, PNG, source JSON and ZIP. All 106 related regression cases and eight real browser checks pass, including two native Codex processes, eight private downloads and real accounting. Model responses and account capacity are explicitly synthetic.
+
+1. Sign in, select a project and open Motion studio. Inspect ten actual procedural examples and upload authorized PNG/H.264 MP4 inputs through Assets. Choose fixed source versions and hashes.
+2. Review output size, duration, text/filter settings and budget, then explicitly consent. Preflight checks actual media, licensed font layout and encoder availability before reserving funds. A lost network acknowledgement can replay the exact saved request and idempotency key after reload.
+3. Preview and download the actual silent MP4, PNG, immutable source JSON and ZIP. A revision needs a new approval; completed repeats retain original files. Source withdrawal or output quarantine fences access and prevents automatic regeneration. Normal Codex usage is charged; native rendering adds no extra AI call or fee.
+4. Role video-motion@1.5.0 loads media-effects@1.0.0; formal approval exposes only catalog and render tools. SQL110 freezes inputs and source lineage; SQL111 adds the receipt type. Published old migrations, contracts and Skills keep exact bytes. Admin can publish the effects navigation entry; disabled role/Skill admission is rejected before media inspection or budget holds. Existing asset controls apply.
+
+```mermaid
+flowchart LR
+  A[Login and project] --> B[Approved fixed source versions]
+  B --> C[Choose preset and review parameters and budget]
+  C --> D[Free preflight and immutable approval]
+  D --> E[One task and reservation]
+  E --> F[Codex and bounded native FFmpeg]
+  F --> G[Four actual private files]
+  G --> H[Preview or separately approve revision]
+```
+
+Desktop remains local Codex with customer-controlled permission; Extension remains a cloud-agent native side panel. These captures show Web effects. The native Desktop disables this cloud-only review form; company effect tools remain versioned. Earlier source-wide qualification retains its original stage; this scoped regression is not a full product or live professional-quality acceptance.
+
+[Implementation and usage](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/95-reviewed-media-effects.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/media-effects-checkpoint.json)
+
+![Actual ten-preset directory / 实际十种特效目录](design/implementation/workmate-media-effects-05-directory-en.png)
+
+![Actual private delivery / 实际私有交付](design/implementation/workmate-media-effects-05-first-delivery.png)
+
+![Actual review and original request retry / 实际审阅与原请求重放](design/implementation/workmate-media-effects-05-effect-review-retry.gif)
+
+[375px](design/implementation/workmate-media-effects-05-responsive-375.png) · [Reviewed input](design/implementation/workmate-media-effects-05-reviewed-en.png) · [Review MP4](design/implementation/workmate-media-effects-05-effect-review-retry.mp4) · [Actual revision GIF](design/implementation/workmate-media-effects-05-effect-delivery-revision.gif) · [Revision MP4](design/implementation/workmate-media-effects-05-effect-delivery-revision.mp4)
+
 <!-- team-history-stage94 -->
 
-## Team history and complete pagination
+## Earlier team history and pagination (stage 94)
 
 Stage 94 completes independent team, version and private run pages and fixes newest-run ordering previously based on random UUIDs. History browsing preserves the draft, approval returns to the newest run, and a saved team outside the directory page remains selected. Withdrawn cursors and project switches fence stale bodies. All 18 team cases and 11 real browser checks pass, including three native Codex processes, private files and actual accounting with explicitly synthetic model/account capacity.
 

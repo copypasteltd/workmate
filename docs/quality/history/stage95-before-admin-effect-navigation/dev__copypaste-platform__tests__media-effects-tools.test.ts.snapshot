@@ -1,0 +1,781 @@
+import { before, after, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { unzipSync } from "fflate";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { Worker } from "../src/worker.js";
+import {
+  CodexRuntimeAdapter,
+  type RuntimeContext,
+  type RuntimeResult,
+} from "../src/runtime.js";
+import { TaskBusinessTools } from "../src/task-business-tools.js";
+import { desktopCompanyToolSchema } from "../src/desktop-tool-policy.js";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+import { saveAsset } from "../src/storage.js";
+import { hash } from "../src/lib.js";
+import {
+  effectDemoSources,
+  demoEffectRequest,
+} from "../src/media-effects-demo.js";
+import { effectDigest } from "../src/media-effects-model.js";
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
+  s: Awaited<ReturnType<typeof buildApp>>;
+type Client = { id: string; cookie: string; csrf: string };
+async function call(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: unknown,
+  key: string = randomUUID(),
+) {
+  const raw = await s.app.inject({
+    method: method as any,
+    url,
+    headers: {
+      origin: "http://localhost:4317",
+      ...(c ? { cookie: c.cookie, "x-csrf-token": c.csrf } : {}),
+      "idempotency-key": key,
+      ...(body === undefined ? {} : { "content-type": "application/json" }),
+    },
+    ...(body === undefined ? {} : { payload: JSON.stringify(body) }),
+  });
+  return {
+    status: raw.statusCode,
+    data: raw.headers["content-type"]?.includes("application/json")
+      ? raw.json()
+      : raw.body,
+    raw,
+  };
+}
+async function ok(
+  c: Client | undefined,
+  method: string,
+  url: string,
+  body?: unknown,
+  key?: string,
+) {
+  const r = await call(c, method, url, body, key);
+  assert.ok(
+    r.status >= 200 && r.status < 300,
+    `${r.status} ${JSON.stringify(r.data)}`,
+  );
+  return r.data;
+}
+async function user(): Promise<Client> {
+  const challenge = await ok(undefined, "POST", "/v1/auth/challenge", {
+      email: `effects-${randomUUID()}@example.invalid`,
+    }),
+    mail = JSON.parse(
+      await readFile(
+        `${s.db.config.DATA_DIR}/mailbox/${challenge.challenge_id}.json`,
+        "utf8",
+      ),
+    );
+  const signed = await call(undefined, "POST", "/v1/auth/verify", {
+    challenge_id: challenge.challenge_id,
+    code: mail.text.match(/\b\d{6}\b/)[0],
+  });
+  assert.equal(signed.status, 200);
+  return {
+    id: signed.data.user.id,
+    csrf: signed.data.csrf_token,
+    cookie:
+      "cp_session=" +
+      signed.raw.cookies.find((c) => c.name === "cp_session")!.value,
+  };
+}
+async function fixture() {
+  const owner = await user(),
+    workspace = await ok(owner, "POST", "/v1/tenants", {
+      name: "Original synthetic effect artwork",
+      project_name: "Motion studio",
+    }),
+    tenant = workspace.tenant.id,
+    project = workspace.project.id,
+    base = `/v1/tenants/${tenant}/projects/${project}`;
+  await ok(owner, "POST", `/v1/tenants/${tenant}/demo-credit`, {});
+  const sources = [];
+  for (const [i, media] of effectDemoSources().slice(0, 2).entries()) {
+    const asset = await s.db.tx(
+      (tx) =>
+        saveAsset(tx, s.storage, {
+          tenant,
+          project,
+          user: owner.id,
+          name: `original-${i + 1}.png`,
+          mime: "image/png",
+          kind: "image",
+          bytes: media.bytes,
+        }),
+      tenant,
+      false,
+      owner.id,
+    );
+    sources.push({
+      ...media,
+      asset_id: asset.id,
+      asset_version_id: asset.version.id,
+      version: asset.version.version,
+    });
+  }
+  const request = {
+    ...demoEffectRequest("transition.crossfade"),
+    sources: sources.map(({ asset_version_id, sha256 }) => ({
+      asset_version_id,
+      sha256,
+    })),
+  };
+  return {
+    owner,
+    tenant,
+    project,
+    base,
+    sources,
+    request,
+    body: {
+      title: "Reviewed actual crossfade",
+      budget_micros: 1_000_000,
+      request,
+    },
+  };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+class FixtureRuntime extends CodexRuntimeAdapter {
+  failure: unknown;
+  calls = 0;
+  constructor(private perform: (ctx: RuntimeContext) => Promise<unknown>) {
+    super(s.db.config);
+  }
+  override async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+    this.calls++;
+    try {
+      await this.perform(ctx);
+    } catch (error) {
+      this.failure = error;
+      throw error;
+    }
+    return {
+      status: "completed",
+      text: "Synthetic model check with actual native effect media and storage.",
+      inputTokens: 20,
+      outputTokens: 10,
+      usageKnown: true,
+      accepted: true,
+      thread: "effects-fixture-thread",
+      turn: randomUUID(),
+    };
+  }
+}
+const tool = (ctx: RuntimeContext, name: string) => {
+  const t = ctx.tools.find((t) => t.name === name);
+  assert.ok(t, "Missing " + name);
+  return t;
+};
+async function run(
+  f: Fixture,
+  id: string,
+  perform: (ctx: RuntimeContext) => Promise<unknown>,
+) {
+  const runtime = new FixtureRuntime(perform);
+  await new Worker(s.db, s.catalog, s.storage, runtime).run(f.tenant, id);
+  if (runtime.failure) throw runtime.failure;
+  return runtime;
+}
+async function editor(f: Fixture) {
+  const member = await user();
+  await s.db.tx(
+    async (tx) => {
+      await tx.query(
+        "INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,'member')",
+        [f.tenant, member.id],
+      );
+      await tx.query(
+        "INSERT INTO project_members(tenant_id,project_id,user_id,role) VALUES($1,$2,$3,'editor')",
+        [f.tenant, f.project, member.id],
+      );
+    },
+    f.tenant,
+    true,
+    f.owner.id,
+  );
+  return member;
+}
+async function quarantine(f: Fixture, id: string) {
+  await s.db.tx(
+    (tx) =>
+      tx.query(
+        "UPDATE assets SET state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",
+        [id],
+      ),
+    f.tenant,
+    true,
+  );
+}
+before(async () => {
+  isolated = await isolatedTestEnvironment();
+  s = await buildApp(
+    loadConfig({
+      ...isolated.env,
+      NODE_ENV: "test",
+      DEMO_MODE: "true",
+      WORKER_ENABLED: "false",
+      DEV_MAILBOX: "true",
+    }),
+    { worker: false },
+  );
+});
+after(async () => {
+  try {
+    await s?.app.close();
+  } finally {
+    await isolated?.cleanup();
+  }
+});
+
+test("an authenticated reviewed effect freezes exact parameters, private ownership and source lineage before model reads, with one budget reservation across retries", async () => {
+  const f = await fixture(),
+    key = randomUUID();
+  assert.equal(
+    (await call(undefined, "GET", f.base + "/effects/catalog")).status,
+    401,
+  );
+  const catalog = await ok(f.owner, "GET", f.base + "/effects/catalog");
+  assert.equal(catalog.items.length, 10);
+  assert.equal(catalog.role_version, "1.5.0");
+  assert.equal(catalog.available, true);
+  const directory = await ok(f.owner, "GET", f.base + "/effects/sources");
+  assert.equal(directory.items.length, 2);
+  const a = await ok(f.owner, "POST", f.base + "/effects/tasks", f.body, key),
+    b = await ok(f.owner, "POST", f.base + "/effects/tasks", f.body, key);
+  assert.equal(a.id, b.id);
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        f.base + "/effects/tasks",
+        { ...f.body, budget_micros: 2_000_000 },
+        key,
+      )
+    ).status,
+    409,
+  );
+  await s.db.tx(
+    async (tx) => {
+      const task = (await tx.query("SELECT * FROM tasks WHERE id=$1", [a.id]))
+        .rows[0];
+      assert.equal(task.private_owner, f.owner.id);
+      assert.equal(task.execution_location, "cloud");
+      assert.equal(
+        task.input_context.media_effect.request_sha256,
+        effectDigest(f.request),
+      );
+      assert.equal(
+        (
+          await tx.query(
+            "SELECT count(*)::int AS n FROM task_source_reads WHERE task_id=$1",
+            [a.id],
+          )
+        ).rows[0].n,
+        0,
+        "approval is not fabricated as a model read",
+      );
+      const manifest = (
+        await tx.query("SELECT task_content_source_manifest($1) AS m", [a.id])
+      ).rows[0].m;
+      for (const input of f.sources)
+        assert.ok(
+          manifest.some(
+            (r: any) => r.kind === "assets" && r.id === input.asset_id,
+          ),
+        );
+      assert.equal(
+        (
+          await tx.query(
+            "SELECT count(*)::int AS n FROM reservations WHERE task_id=$1",
+            [a.id],
+          )
+        ).rows[0].n,
+        1,
+      );
+    },
+    f.tenant,
+    true,
+    f.owner.id,
+  );
+  await assert.rejects(
+    s.db.tx(
+      (tx) =>
+        tx.query(
+          "UPDATE tasks SET input_context=jsonb_set(input_context,'{media_effect,request,output,seconds}','8') WHERE id=$1",
+          [a.id],
+        ),
+      f.tenant,
+      false,
+      f.owner.id,
+    ),
+    (e: any) => e.code === "23514",
+  );
+});
+
+test("the Codex business tools enforce frozen approval and return four actual private files, exact ZIP contents and original same-input replay", async () => {
+  const f = await fixture(),
+    accepted = await ok(f.owner, "POST", f.base + "/effects/tasks", f.body);
+  let original: any;
+  await run(f, accepted.id, async (ctx) => {
+    assert.deepEqual(ctx.tools.map((t) => t.name).sort(), [
+      "effect_render",
+      "effects_catalog",
+    ]);
+    const catalog: any = await tool(ctx, "effects_catalog").run(
+      {},
+      randomUUID(),
+    );
+    assert.deepEqual(catalog.approved_request, f.request);
+    assert.ok(Buffer.byteLength(JSON.stringify(catalog)) < 4000);
+    assert.deepEqual(
+      catalog.items.map((i: any) => i.id),
+      [f.request.effect_id],
+    );
+    for (const declaration of ctx.tools)
+      if (declaration.name.startsWith("effect"))
+        assert.ok(desktopCompanyToolSchema(declaration.inputSchema));
+    await assert.rejects(
+      tool(ctx, "effect_render").run(
+        {
+          request: { ...f.request, parameters: { transition_seconds: "0.5" } },
+        },
+        randomUUID(),
+      ),
+      (e: any) => e.code === "EFFECT_APPROVAL_MISMATCH",
+    );
+    original = await tool(ctx, "effect_render").run(
+      { request: catalog.approved_request },
+      randomUUID(),
+    );
+    assert.deepEqual(
+      await tool(ctx, "effect_render").run(
+        { request: catalog.approved_request },
+        randomUUID(),
+      ),
+      original,
+    );
+  });
+  const result = await ok(
+    f.owner,
+    "GET",
+    f.base + "/effects/tasks/" + accepted.id,
+  );
+  assert.equal(result.status, "succeeded");
+  assert.equal(result.delivery.files.length, 4);
+  assert.equal(result.delivery.provider_calls, 0);
+  assert.equal(result.delivery.ai_generation, false);
+  const files = new Map<string, Buffer>();
+  for (const file of result.delivery.files) {
+    const r = await call(
+      f.owner,
+      "GET",
+      f.base + `/assets/${file.asset_id}/download?version=${file.version}`,
+    );
+    assert.equal(r.status, 200);
+    assert.equal(hash(r.raw.rawPayload), file.sha256);
+    files.set(file.name, r.raw.rawPayload);
+  }
+  const body = JSON.parse(files.get("effect.source.json")!.toString());
+  assert.deepEqual(body.request, f.request);
+  assert.equal(body.probe.full_decode, true);
+  assert.equal(body.audio, "omitted");
+  const zip = unzipSync(files.get("effect.delivery.zip")!);
+  for (const filename of ["effect.mp4", "preview.png", "effect.source.json"])
+    assert.deepEqual(Buffer.from(zip[filename]), files.get(filename));
+  const peer = await editor(f);
+  assert.equal(
+    (await call(peer, "GET", f.base + "/effects/tasks/" + accepted.id)).status,
+    404,
+  );
+  for (const file of result.delivery.files)
+    assert.equal(
+      (
+        await call(
+          peer,
+          "GET",
+          f.base + `/assets/${file.asset_id}/download?version=${file.version}`,
+        )
+      ).status,
+      404,
+    );
+  const task = (
+    await s.db.tx(
+      (tx) => tx.query("SELECT * FROM tasks WHERE id=$1", [accepted.id]),
+      f.tenant,
+      true,
+    )
+  ).rows[0];
+  assert.ok(Number(task.charged_micros) > 0);
+  assert.equal(Number(task.accrued_micros), Number(task.charged_micros));
+  assert.equal(
+    (
+      await s.db.tx(
+        (tx) =>
+          tx.query(
+            "SELECT count(*)::int AS n FROM assets a JOIN asset_versions v ON v.asset_id=a.id WHERE v.metadata->>'task_id'=$1",
+            [accepted.id],
+          ),
+        f.tenant,
+        true,
+      )
+    ).rows[0].n,
+    4,
+  );
+});
+
+test("unauthorized, private-conversation, wrong-project and changed-digest inputs are rejected before creating tasks or reserving budget", async () => {
+  const f = await fixture(),
+    stranger = await user();
+  assert.equal(
+    (await call(stranger, "GET", f.base + "/effects/sources")).status,
+    404,
+  );
+  const second = await ok(f.owner, "POST", `/v1/tenants/${f.tenant}/projects`, {
+    name: "Other project",
+  });
+  const other = second.id ?? second.project?.id;
+  assert.ok(other, JSON.stringify(second));
+  for (const request of [
+    {
+      ...f.request,
+      sources: f.request.sources.map((r, i) =>
+        i ? r : { ...r, sha256: "0".repeat(64) },
+      ),
+    },
+    {
+      ...f.request,
+      sources: f.request.sources.map((r, i) =>
+        i ? r : { ...r, asset_version_id: randomUUID() },
+      ),
+    },
+  ])
+    assert.ok(
+      [404, 409].includes(
+        (
+          await call(f.owner, "POST", f.base + "/effects/tasks", {
+            ...f.body,
+            request,
+          })
+        ).status,
+      ),
+    );
+  assert.equal(
+    (
+      await call(
+        f.owner,
+        "POST",
+        `/v1/tenants/${f.tenant}/projects/${other}/effects/tasks`,
+        f.body,
+      )
+    ).status,
+    404,
+  );
+  const privateFile = await s.db.tx(
+    (tx) =>
+      saveAsset(tx, s.storage, {
+        tenant: f.tenant,
+        project: f.project,
+        user: f.owner.id,
+        privateOwner: f.owner.id,
+        name: "Private source.png",
+        mime: "image/png",
+        bytes: f.sources[0].bytes,
+      }),
+    f.tenant,
+    false,
+    f.owner.id,
+  );
+  const request = {
+    ...f.request,
+    sources: [
+      { asset_version_id: privateFile.version.id, sha256: f.sources[0].sha256 },
+      f.request.sources[1],
+    ],
+  };
+  assert.equal(
+    (
+      await call(f.owner, "POST", f.base + "/effects/tasks", {
+        ...f.body,
+        request,
+      })
+    ).status,
+    404,
+  );
+  assert.equal(
+    (await ok(f.owner, "GET", f.base + "/effects/sources")).items.length,
+    2,
+  );
+  const broken = await s.db.tx(
+    (tx) =>
+      saveAsset(tx, s.storage, {
+        tenant: f.tenant,
+        project: f.project,
+        user: f.owner.id,
+        name: "Malformed declared PNG.png",
+        mime: "image/png",
+        bytes: Buffer.from("not a PNG"),
+      }),
+    f.tenant,
+    false,
+    f.owner.id,
+  );
+  const malformed = {
+    ...f.request,
+    sources: [
+      {
+        asset_version_id: broken.version.id,
+        sha256: hash(Buffer.from("not a PNG")),
+      },
+      f.request.sources[1],
+    ],
+  };
+  assert.equal(
+    (
+      await call(f.owner, "POST", f.base + "/effects/tasks", {
+        ...f.body,
+        request: malformed,
+      })
+    ).status,
+    422,
+  );
+  assert.equal(
+    (
+      await s.db.tx(
+        (tx) =>
+          tx.query("SELECT count(*)::int AS n FROM tasks WHERE project_id=$1", [
+            f.project,
+          ]),
+        f.tenant,
+        true,
+      )
+    ).rows[0].n,
+    0,
+  );
+});
+
+test("source withdrawal before dispatch fences the frozen request, excludes discovery and prevents model execution or charging", async () => {
+  const f = await fixture(),
+    accepted = await ok(f.owner, "POST", f.base + "/effects/tasks", f.body);
+  await quarantine(f, f.sources[0].asset_id);
+  assert.equal(
+    (await call(f.owner, "GET", f.base + "/effects/tasks/" + accepted.id))
+      .status,
+    409,
+  );
+  assert.equal(
+    (await ok(f.owner, "GET", f.base + "/effects/sources")).items.length,
+    1,
+  );
+  const runtime = await run(f, accepted.id, async () =>
+    assert.fail("Withdrawn media must never reach a model"),
+  );
+  assert.equal(runtime.calls, 0);
+  const task = (
+    await s.db.tx(
+      (tx) => tx.query("SELECT * FROM tasks WHERE id=$1", [accepted.id]),
+      f.tenant,
+      true,
+    )
+  ).rows[0];
+  assert.equal(Number(task.charged_micros), 0);
+  assert.equal(
+    (
+      await s.db.tx(
+        (tx) =>
+          tx.query(
+            "SELECT count(*)::int AS n FROM asset_versions WHERE metadata->>'task_id'=$1",
+            [accepted.id],
+          ),
+        f.tenant,
+        true,
+      )
+    ).rows[0].n,
+    0,
+  );
+});
+
+test("withdrawing an original source fences completed effect previews, downloads, create replay and independently published derivatives", async () => {
+  const f = await fixture(),
+    key = randomUUID(),
+    accepted = await ok(
+      f.owner,
+      "POST",
+      f.base + "/effects/tasks",
+      f.body,
+      key,
+    );
+  await run(f, accepted.id, (ctx) =>
+    tool(ctx, "effect_render").run({ request: f.request }, randomUUID()),
+  );
+  const delivered = await ok(
+      f.owner,
+      "GET",
+      f.base + "/effects/tasks/" + accepted.id,
+    ),
+    video = delivered.delivery.files.find(
+      (f: any) => f.mime_type === "video/mp4",
+    );
+  const published = await ok(
+    f.owner,
+    "POST",
+    f.base + `/assets/${video.asset_id}/publish`,
+    { expected_version: video.version, name: "Published original effect.mp4" },
+  );
+  const peer = await editor(f);
+  assert.equal(
+    (await call(peer, "GET", f.base + `/assets/${published.id}/download`))
+      .status,
+    200,
+  );
+  await quarantine(f, f.sources[0].asset_id);
+  assert.equal(
+    (await call(f.owner, "GET", f.base + "/effects/tasks/" + accepted.id))
+      .status,
+    409,
+  );
+  assert.equal(
+    (await call(f.owner, "POST", f.base + "/effects/tasks", f.body, key))
+      .status,
+    409,
+  );
+  for (const file of delivered.delivery.files)
+    assert.equal(
+      (
+        await call(
+          f.owner,
+          "GET",
+          f.base + `/assets/${file.asset_id}/download?version=${file.version}`,
+        )
+      ).status,
+      404,
+    );
+  assert.equal(
+    (await call(peer, "GET", f.base + `/assets/${published.id}/download`))
+      .status,
+    404,
+  );
+  const retry = await call(f.owner, "POST", f.base + "/tasks", {
+    title: "Repeat",
+    prompt: "Repeat the old reviewed effect",
+    role_key: "video-motion",
+    parent_id: accepted.id,
+    budget_micros: 1_000_000,
+  });
+  assert.equal(retry.status, 409);
+  assert.equal(retry.data.error.code, "EFFECT_NEW_REVIEW_REQUIRED");
+});
+
+test("a quarantined completed output cannot be silently regenerated by another effect tool call", async () => {
+  const f = await fixture(),
+    accepted = await ok(f.owner, "POST", f.base + "/effects/tasks", f.body);
+  await run(f, accepted.id, async (ctx) => {
+    const result: any = await tool(ctx, "effect_render").run(
+      { request: f.request },
+      randomUUID(),
+    );
+    await quarantine(f, result.files[0].asset_id);
+    await assert.rejects(
+      tool(ctx, "effect_render").run({ request: f.request }, randomUUID()),
+      (e: any) => e.code === "COMPLETED_TOOL_OUTPUT_UNAVAILABLE",
+    );
+  });
+  assert.equal(
+    (await call(f.owner, "GET", f.base + "/effects/tasks/" + accepted.id))
+      .status,
+    409,
+  );
+  assert.equal(
+    (
+      await s.db.tx(
+        (tx) =>
+          tx.query(
+            "SELECT count(*)::int AS n FROM asset_versions WHERE metadata->>'task_id'=$1",
+            [accepted.id],
+          ),
+        f.tenant,
+        true,
+      )
+    ).rows[0].n,
+    4,
+  );
+});
+
+test("ask/plan and retained role releases cannot acquire the new render permission; cancellation retains the original task and releases its hold", async () => {
+  const f = await fixture(),
+    actor: any = { id: f.owner.id },
+    authority: any = { authorize: async () => {}, inference: async () => {} };
+  const release = JSON.parse(
+      await readFile("catalog/media-effects-release-v1.json", "utf8"),
+    ),
+    current = s.catalog.role("video-motion"),
+    old = s.catalog.role("video-motion", release.previous_role_sha256),
+    business = new TaskBusinessTools(s.db, s.catalog, s.storage, authority);
+  for (const mode of ["ask", "plan"]) {
+    const tools = business.build(
+      { id: randomUUID(), tenant_id: f.tenant, mode },
+      actor,
+      randomUUID(),
+      current,
+    );
+    assert.ok(tools.some((t) => t.name === "effects_catalog"));
+    assert.ok(!tools.some((t) => t.name === "effect_render"));
+  }
+  assert.ok(
+    !business
+      .build(
+        { id: randomUUID(), tenant_id: f.tenant, mode: "execute" },
+        actor,
+        randomUUID(),
+        old,
+      )
+      .some((t) => t.name.startsWith("effect")),
+  );
+  const accepted = await ok(f.owner, "POST", f.base + "/effects/tasks", f.body);
+  await ok(f.owner, "POST", f.base + `/tasks/${accepted.id}/cancel`, {});
+  const runtime = await run(f, accepted.id, async () =>
+    assert.fail("Cancelled task must not dispatch"),
+  );
+  assert.equal(runtime.calls, 0);
+  const reservation = (
+    await s.db.tx(
+      (tx) =>
+        tx.query("SELECT status FROM reservations WHERE task_id=$1", [
+          accepted.id,
+        ]),
+      f.tenant,
+      true,
+    )
+  ).rows[0];
+  assert.notEqual(reservation.status, "reserved");
+});
+
+test("a model completion without the reviewed media operation cannot claim successful effect delivery", async () => {
+  const f = await fixture(),
+    accepted = await ok(f.owner, "POST", f.base + "/effects/tasks", f.body);
+  await run(f, accepted.id, async (ctx) => {
+    assert.deepEqual(ctx.tools.map((t) => t.name).sort(), [
+      "effect_render",
+      "effects_catalog",
+    ]);
+  });
+  const task = await ok(f.owner, "GET", f.base + "/tasks/" + accepted.id);
+  assert.equal(task.status, "failed");
+  assert.equal(task.error_code, "EFFECT_DELIVERY_INCOMPLETE");
+  assert.equal(task.output, "");
+  const read = await ok(
+    f.owner,
+    "GET",
+    f.base + "/effects/tasks/" + accepted.id,
+  );
+  assert.equal(read.delivery, null);
+  assert.equal(read.status, "failed");
+});
