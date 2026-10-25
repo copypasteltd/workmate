@@ -1,10 +1,42 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- analysis-roles-stage90 -->
+
+## Current analysis and infographic delivery
+
+Stage 90 connects versioned marketing-analyst and information-design presets to deterministic calculation and nine real deliverable files. Sixty-eight relevant backend checks and eleven actual browser checks pass. Both roles use the real pinned Codex process and authorized company tools. Model replies and account data are explicitly synthetic; the program, database, PNG/ZIP bytes, downloads, private isolation, source fences and ledger operations are real. This does not replace the requirement for twelve professionally qualified roles or complete product acceptance.
+
+1. Create the marketing analyst or information designer from the specialist directory. Existing specialists keep their old role/Skill versions.
+2. Confirm the dates, currency, account, attribution and conversion definition. Choose actual imported data or upload CSV/XLSX to this private conversation; inspect the real worksheet and headers.
+3. Select **Execute**, confirm the budget and delegate the work. Ask/Plan cannot write files. Download SVG, PNG, interactive HTML, metrics/source CSV, creative brief, editable JSON, manifest and ZIP.
+4. Request a correction using the original source version. Recalculation creates new immutable files; prior versions remain available while their sources are authorized. Identical render retries reuse the original files. Rendering makes no extra AI request; text inference follows the task ledger.
+
+```mermaid
+flowchart LR
+  A[Role and authorized sources] --> B[Exact calculation and evidence]
+  B --> C[Codex and fixed Skills]
+  C --> D[Private files and task receipt]
+  D --> E[Read source and confirm revision]
+  E --> B
+```
+
+Apply **SQL104** before starting the updated backend; SQL001–103 and all old Skill bytes remain intact.
+
+[Design and implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/90-analysis-role-delivery.md) · [Exact evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/analysis-roles-checkpoint.json)
+
+![Actual desktop report](design/implementation/workmate-analysis-04-report-en-desktop.png)
+
+![Actual Traditional Chinese mobile report](design/implementation/workmate-analysis-04-report-zh-375.png)
+
+![Actual report interaction](design/implementation/workmate-analysis-04-analysis-report-review.gif)
+
+[Creation and download GIF](design/implementation/workmate-analysis-04-analysis-role-work.gif) · [MP4](design/implementation/workmate-analysis-04-analysis-role-work.mp4) · [Report MP4](design/implementation/workmate-analysis-04-analysis-report-review.mp4)
+
 <!-- work-intake-stage89 -->
 
 A multi-client Codex Agent product and independent Admin for marketing teams in Hong Kong businesses.
 
-## Current first-work flow
+## Earlier first-work verification (stage 89)
 
 Stage 89 verifies Web first-work onboarding, design/analysis/development shortcuts and actor/tenant/project scoped tab drafts. Fourteen actual browser checks and 195 client unit tests pass, including offline handling, expired-session reauthentication, committed response loss, exact retries, receipts, late responses and removed results. Real Worker delivery/download bytes agree; the original request has one task, one reservation and a 30-micro-HKD settlement. Reply content is explicitly synthetic; this UI fixture does not launch native Codex. The full login/client matrix, twelve qualified professional roles, all 102 complete conditions and G01–G10 remain open.
 

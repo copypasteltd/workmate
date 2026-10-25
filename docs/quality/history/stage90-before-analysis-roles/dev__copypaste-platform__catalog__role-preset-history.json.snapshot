@@ -1,0 +1,350 @@
+[
+  {
+    "role_key": "video-motion",
+    "catalog_id": "R16",
+    "version": "1.1.0",
+    "display_name": "视频与动效设计师",
+    "category": "design",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "video-storyboard",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "template-video-composition",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "delivery.package",
+      "video.render"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "purpose",
+        "duration",
+        "aspect_ratio",
+        "source_assets"
+      ],
+      "optional_fields": [
+        "approved_copy",
+        "brand_assets",
+        "audio_rights"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "脚本分镜"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "素材与时间线"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "字幕片头转场"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "真实渲染和播放校验"
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "可播放成片",
+        "format": "mp4",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "可恢复时间线",
+        "format": "json",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "分镜与字幕",
+        "format": "md",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "用产品图做一条 15 秒竖版促销视频，有片头和价格动效。",
+    "acceptance_checks": [
+      "MP4 可播放且时长比例字幕音轨正确，时间线可恢复。",
+      "修改价格字幕和一个转场后只生成新版本，帧与字幕同步。",
+      "基础模板无需生成式视频；可选生成视频或配音缺失只阻塞相应步骤。"
+    ],
+    "qualification_cases": {
+      "normal": "MP4 可播放且时长比例字幕音轨正确，时间线可恢复。",
+      "revision": "修改价格字幕和一个转场后只生成新版本，帧与字幕同步。",
+      "dependency_or_permission_failure": "基础模板无需生成式视频；可选生成视频或配音缺失只阻塞相应步骤。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M1",
+    "readiness_evidence": []
+  },
+  {
+    "role_key": "video-motion",
+    "catalog_id": "R16",
+    "version": "1.2.0",
+    "display_name": "视频与动效设计师",
+    "category": "design",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "video-storyboard",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "template-video-composition",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "video-generation",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      },
+      {
+        "profile_key": "internal-video-v1",
+        "required": false
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "delivery.package",
+      "video.render",
+      "video.generate.internal"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "purpose",
+        "duration",
+        "aspect_ratio",
+        "source_assets"
+      ],
+      "optional_fields": [
+        "approved_copy",
+        "brand_assets",
+        "audio_rights"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "脚本分镜"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "素材与时间线"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "字幕片头转场"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "真实渲染和播放校验"
+      },
+      {
+        "step_key": "step-5",
+        "instruction": "用户明确要求生成式素材时，使用已冻结的内部视频作业；复用同一 operation，核对真实费用及解码结果，不以模板视频冒充生成式视频。"
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "可播放成片",
+        "format": "mp4",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "可恢复时间线",
+        "format": "json",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "分镜与字幕",
+        "format": "md",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "用产品图做一条 15 秒竖版促销视频，有片头和价格动效。",
+    "acceptance_checks": [
+      "MP4 可播放且时长比例字幕音轨正确，时间线可恢复。",
+      "修改价格字幕和一个转场后只生成新版本，帧与字幕同步。",
+      "基础模板无需生成式视频；可选生成视频或配音缺失只阻塞相应步骤。",
+      "生成式视频仅在已验证公司能力可用时执行，费用沿用本任务预算；未知状态查询原作业并保留预留。"
+    ],
+    "qualification_cases": {
+      "normal": "MP4 可播放且时长比例字幕音轨正确，时间线可恢复。",
+      "revision": "修改价格字幕和一个转场后只生成新版本，帧与字幕同步。",
+      "dependency_or_permission_failure": "基础模板无需生成式视频；可选生成视频或配音缺失只阻塞相应步骤。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M1",
+    "readiness_evidence": []
+  },
+  {
+    "role_key": "video-motion",
+    "catalog_id": "R16",
+    "version": "1.3.0",
+    "display_name": "视频与动效设计师",
+    "category": "design",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "video-storyboard",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "template-video-composition",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "video-generation",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "speech-production",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      },
+      {
+        "profile_key": "internal-video-v1",
+        "required": false
+      },
+      {
+        "profile_key": "internal-speech-v1",
+        "required": false
+      },
+      {
+        "profile_key": "internal-transcription-v1",
+        "required": false
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "delivery.package",
+      "video.render",
+      "video.generate.internal",
+      "speech.generate.internal"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "purpose",
+        "duration",
+        "aspect_ratio",
+        "source_assets"
+      ],
+      "optional_fields": [
+        "approved_copy",
+        "brand_assets",
+        "audio_rights"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "脚本分镜"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "素材与时间线"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "字幕片头转场"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "真实渲染和播放校验"
+      },
+      {
+        "step_key": "step-5",
+        "instruction": "用户明确要求生成式素材时，使用已冻结的内部视频作业；复用同一 operation，核对真实费用及解码结果，不以模板视频冒充生成式视频。"
+      },
+      {
+        "step_key": "step-6",
+        "instruction": "Use audio_produce only for explicitly authorized voice generation or transcription; retain original audio, verified timing provenance, editable subtitle versions and shared task billing."
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "可播放成片",
+        "format": "mp4",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "可恢复时间线",
+        "format": "json",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "分镜与字幕",
+        "format": "md",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "用产品图做一条 15 秒竖版促销视频，有片头和价格动效。",
+    "acceptance_checks": [
+      "MP4 可播放且时长比例字幕音轨正确，时间线可恢复。",
+      "修改价格字幕和一个转场后只生成新版本，帧与字幕同步。",
+      "基础模板无需生成式视频；可选生成视频或配音缺失只阻塞相应步骤。",
+      "生成式视频仅在已验证公司能力可用时执行，费用沿用本任务预算；未知状态查询原作业并保留预留。"
+    ],
+    "qualification_cases": {
+      "normal": "MP4 可播放且时长比例字幕音轨正确，时间线可恢复。",
+      "revision": "修改价格字幕和一个转场后只生成新版本，帧与字幕同步。",
+      "dependency_or_permission_failure": "基础模板无需生成式视频；可选生成视频或配音缺失只阻塞相应步骤。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M1",
+    "readiness_evidence": []
+  }
+]
