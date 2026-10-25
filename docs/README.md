@@ -1,8 +1,42 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- agent-groups-stage93 -->
+
+## 持久专业团队协作
+
+阶段 93 已实现 Web 持久专业团队：保存协调员及不同专业成员，固定版本，审阅完整 Brief、依赖与预算后由客户批准，真实 Codex 按受控并行执行，最后统一交付。115 项相关后端回归与 7 项实际浏览器检查通过。模型及账户容量为明确假数据；登录、原生 Codex 进程、公司工具、私有文件、预算和账本实际运行。
+
+1. 登录并选择项目，在「我的专家」建立实际助手，再在「我的团队」保存协调员和不同成员。设置在项目内共享，运行及文件对发起客户私有。
+2. 填写 Brief、各步要求、依赖、独立预算及并行上限；先免费核对完整计划与固定成员版本，再由当前客户主动批准预算并开始。
+3. 通过原任务链接查看成员状态、批准上限、当前预留和实际消耗。协调员等待全部成员真实成功后读取获准成果。停止阻断后续派发，未知费用继续对账。
+4. 编辑建立不可变新版本，相同请求复用原运行，新执行需要重新审阅。来源撤回阻断私有衍生文件；后台正文、隔离、恢复和删除保留独立范围权限与审计。
+
+```mermaid
+flowchart LR
+  A[Saved team and fixed versions] --> B[Brief, steps and dependencies]
+  B --> C[Free review and customer budget approval]
+  C --> D[Bounded actual member tasks]
+  D --> E[Coordinator reads completed results]
+  E --> F[Private delivery and per-task accounting]
+```
+
+在 SQL001–107 后应用 **SQL108**。一个团队含一名协调员及最多七个不同成员，每次 1–16 个无环步骤、1–3 个受套餐实际容量限制的并行成员。至少需要两个活跃任务槽。审阅 15 分钟有效，运行最多两小时。仅预留实际任务自己的额度，显示的总上限不是额外收费；普通对话仍限制单一活跃任务。
+
+Desktop 保持客户本机 Codex、客户主动授予的全权限、无边框和无 Electron 自带菜单。本次团队界面属于云端 Web，原生 Desktop 隐藏该入口。Extension 保持 ChatGPT 式原生右侧栏，负责获准文件上传与云端对话。下方录制不证明新增原生团队界面、角色专业质量、真实外部平台或完整产品验收。
+
+[方案与 API](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/93-persistent-agent-groups.md) · [源码绑定证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/agent-groups-checkpoint.json)
+
+![Actual team plan / 实际团队计划](design/implementation/workmate-agent-groups-04-plan.png)
+
+![Actual completed run / 实际完成状态](design/implementation/workmate-agent-groups-04-completed.png)
+
+![Actual team creation and approval / 实际建立与批准](design/implementation/workmate-agent-groups-04-team-authoring.gif)
+
+[375px](design/implementation/workmate-agent-groups-04-responsive-375.png) · [Delivery GIF](design/implementation/workmate-agent-groups-04-team-delivery.gif) · [Authoring MP4](design/implementation/workmate-agent-groups-04-team-authoring.mp4) · [Delivery MP4](design/implementation/workmate-agent-groups-04-team-delivery.mp4)
+
 <!-- editable-design-stage92 -->
 
-## 可编辑品牌稿与演示文稿交付
+## 历史验证：可编辑设计交付（阶段 92）
 
 阶段 92 已接通品牌视觉与演示文稿的真实交付工具。品牌稿提供可编辑及转曲 SVG；演示文稿提供原生可编辑文字、形状、路径及图表条形的 PPTX，并提供逐页 SVG/PNG、PDF/HTML 核对、证据 CSV、固定源稿、清单和含授权字体的 ZIP。93 项相关后端测试与 8 项真实浏览器检查通过；Codex 进程、权限、实际文件和账本均真实运行，模型及示例内容为明确假数据。
 
