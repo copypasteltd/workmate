@@ -1,8 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- team-history-stage94 -->
+
+## 团队历史与完整翻页
+
+阶段 94 补齐团队、版本与本人运行的独立翻页，并修正随机 UUID 导致的“最近运行”顺序。浏览历史保留工作草稿，从旧页批准后回到最新运行，页外保存的团队保持选中；撤回游标和切换项目会阻断旧正文。18 项团队回归及 11 项实际浏览器检查通过。三次原生 Codex、三个私有文件和费用结算实际运行；模型和账户容量按要求为明确假数据。
+
+1. 登录并选择项目与团队，通过前后按钮访问完整目录；保存及刷新会保留当前团队，即使其不在当前目录页。
+2. 分别翻阅固定版本和本人私有运行。每页最多 20 个版本或 8 次运行，运行按实际创建时间及数据库精确边界排序；草稿不受历史翻页或轮询影响。
+3. 审阅并主动批准新工作。从旧页开始会回到最新运行；明确停止会释放已知未用费用。浏览历史不会创建任务、重试或收费。
+4. 撤回、过期或不属于本人的游标返回 404 并清空旧运行正文；切换用户、企业、项目会丢弃迟到响应。SQL109 仅增加历史索引，已发布迁移、契约和 Skill 保持原字节。
+
+```mermaid
+flowchart LR
+  A[Current project] --> B[Team directory pages]
+  B --> C[Fresh selected team]
+  C --> D[Independent version and private run pages]
+  D --> E[Preserved customer draft]
+  E --> F[Review and explicit approval]
+  F --> G[Newest actual run and original accounting]
+```
+
+Desktop 保持本机 Codex 及客户主动权限，Extension 保持云端 Agent 与原生右侧栏。此处素材展示 Web 云端团队。旧阶段的整套源码核查保留历史范围，本次专项回归不代表完整产品或真实专业质量验收。
+
+[具体方案与使用](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/94-agent-group-history.md) · [精确源码证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/agent-group-history-checkpoint.json)
+
+![Actual independent history pages / 实际历史翻页](assets/screenshots/workmate-agent-group-history-02-history-pages.png)
+
+![Actual saved team outside the page / 实际页外团队](assets/screenshots/workmate-agent-group-history-02-history-directory.png)
+
+![Actual history, approval and selection / 实际翻页、批准与选择](assets/screenshots/workmate-agent-group-history-02-team-history.gif)
+
+[375px](assets/screenshots/workmate-agent-group-history-02-history-responsive-375.png) · [Newest run](assets/screenshots/workmate-agent-group-history-02-history-newest.png) · [History MP4](assets/screenshots/workmate-agent-group-history-02-team-history.mp4) · [Actual Codex delivery GIF](assets/screenshots/workmate-agent-group-history-02-team-delivery.gif) · [Delivery MP4](assets/screenshots/workmate-agent-group-history-02-team-delivery.mp4)
+
 <!-- agent-groups-stage93 -->
 
-## 持久专业团队协作
+## 历史实现：持久专业团队（阶段 93）
 
 阶段 93 已实现 Web 持久专业团队：保存协调员及不同专业成员，固定版本，审阅完整 Brief、依赖与预算后由客户批准，真实 Codex 按受控并行执行，最后统一交付。115 项相关后端回归与 7 项实际浏览器检查通过。模型及账户容量为明确假数据；登录、原生 Codex 进程、公司工具、私有文件、预算和账本实际运行。
 

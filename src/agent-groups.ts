@@ -920,9 +920,22 @@ export function registerAgentGroups(
         return db.tx(
           async (tx) => {
             await loadGroup(tx, req.principal, tenant, ids.group);
+            if (q.before) {
+              const anchor = await tx.query(
+                `SELECT id FROM agent_group_runs WHERE id=$1 AND group_id=$2 AND created_by=$3
+                 AND content_state='active' AND retention_expires_at>clock_timestamp() FOR SHARE`,
+                [q.before, ids.group, req.principal.id],
+              );
+              if (!anchor.rowCount) throw missing();
+            }
             const rows = (
               await tx.query(
-                "SELECT * FROM agent_group_runs WHERE group_id=$1 AND created_by=$2 AND content_state='active' AND retention_expires_at>clock_timestamp() AND ($3::uuid IS NULL OR id=$3) AND ($4::uuid IS NULL OR id<$4) ORDER BY id DESC LIMIT $5",
+                `SELECT * FROM agent_group_runs WHERE group_id=$1 AND created_by=$2
+                 AND content_state='active' AND retention_expires_at>clock_timestamp()
+                 AND ($3::uuid IS NULL OR id=$3)
+                 AND ($4::uuid IS NULL OR (created_at,id)<
+                   (SELECT created_at,id FROM agent_group_runs WHERE id=$4))
+                 ORDER BY created_at DESC,id DESC LIMIT $5`,
                 [
                   ids.group,
                   req.principal.id,

@@ -257,6 +257,254 @@ after(async () => {
   }
 });
 
+async function cancelledHistoryRun(f: Fixture) {
+  const r = await start(f);
+  const stopped = await ok(
+    f.owner,
+    "POST",
+    f.url + `/runs/${r.id}/cancel`,
+    { expected_revision: r.revision },
+    f.tenant,
+  );
+  assert.equal(stopped.state, "cancelled");
+  assert.equal(stopped.charged_micros, 0);
+  assert.equal(stopped.reserved_micros, 0);
+  return r;
+}
+
+test("private team history orders actual creation time and preserves exact PostgreSQL microseconds, ties and cursor stability", async () => {
+  const f = await fixture(),
+    runs = [];
+  for (let i = 0; i < 10; i++) runs.push(await cancelledHistoryRun(f));
+  const actual = await ok(
+    f.owner,
+    "GET",
+    f.url + "/runs?limit=8",
+    undefined,
+    f.tenant,
+  );
+  assert.deepEqual(
+    actual.items.map((r: any) => r.id),
+    runs
+      .slice(-8)
+      .reverse()
+      .map((r) => r.id),
+  );
+  assert.equal(actual.next_before, runs[2].id);
+  assert.deepEqual(
+    (
+      await ok(
+        f.owner,
+        "GET",
+        f.url + "/runs?limit=8&before=" + actual.next_before,
+        undefined,
+        f.tenant,
+      )
+    ).items.map((r: any) => r.id),
+    runs
+      .slice(0, 2)
+      .reverse()
+      .map((r) => r.id),
+  );
+  await assert.rejects(
+    s.db.control.query(
+      "UPDATE agent_group_runs SET created_at=now() WHERE id=$1",
+      [runs[0].id],
+    ),
+    (e: any) => e.code === "23514",
+  );
+  const ids = runs.map((r) => r.id).sort(),
+    fractions = [104, 101, 103, 102, 104, 102, 99, 98, 97, 96];
+  // Isolated control-only timestamp fixtures exercise sub-millisecond and exact
+  // ties. All runs above were really approved and cancelled, with released holds.
+  await s.db.tx(
+    async (tx) => {
+      await tx.query("SELECT set_config('app.erasing_content','true',true)");
+      for (const [i, id] of ids.entries())
+        await tx.query(
+          "UPDATE agent_group_runs SET created_at='2026-01-01T00:00:00Z'::timestamptz + $2::int * interval '1 microsecond' WHERE id=$1",
+          [id, fractions[i]],
+        );
+    },
+    undefined,
+    true,
+  );
+  const expected = [
+      ids[4],
+      ids[0],
+      ids[2],
+      ids[5],
+      ids[3],
+      ids[1],
+      ids[6],
+      ids[7],
+      ids[8],
+      ids[9],
+    ],
+    seen: string[] = [];
+  let before: string | null = null;
+  do {
+    const page: any = await ok(
+      f.owner,
+      "GET",
+      f.url + "/runs?limit=2" + (before ? "&before=" + before : ""),
+      undefined,
+      f.tenant,
+    );
+    seen.push(...page.items.map((r: any) => r.id));
+    before = page.next_before;
+    if (seen.length === 2) await cancelledHistoryRun(f);
+  } while (before);
+  assert.deepEqual(seen, expected);
+  assert.equal(new Set(seen).size, 10);
+  const rows = (
+    await s.db.control.query(
+      "SELECT status,count(*)::int AS n FROM reservations WHERE task_id IN(SELECT id FROM tasks WHERE agent_group_run_id=ANY($1::uuid[])) GROUP BY status",
+      [runs.map((r) => r.id)],
+    )
+  ).rows;
+  assert.deepEqual(rows, [{ status: "released", n: 10 }]);
+});
+
+test("team history cursor anchors cannot disclose another owner, project, withdrawn or expired run", async () => {
+  const f = await fixture(),
+    other = await fixture(),
+    peer = await user();
+  await s.db.control.query(
+    "INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,'member')",
+    [f.tenant, peer.id],
+  );
+  await s.db.control.query(
+    "INSERT INTO project_members(tenant_id,project_id,user_id,role) VALUES($1,$2,$3,'editor')",
+    [f.tenant, f.project, peer.id],
+  );
+  const peerFixture = { ...f, owner: peer },
+    peerRun = await cancelledHistoryRun(peerFixture),
+    otherRun = await cancelledHistoryRun(other),
+    hidden = await cancelledHistoryRun(f),
+    expired = await cancelledHistoryRun(f);
+  await s.db.control.query(
+    "UPDATE agent_group_runs SET content_state='quarantined',moderation_version=moderation_version+1 WHERE id=$1",
+    [hidden.id],
+  );
+  await s.db.tx(
+    async (tx) => {
+      await tx.query("SELECT set_config('app.erasing_content','true',true)");
+      await tx.query(
+        "UPDATE agent_group_runs SET retention_expires_at=now()-interval '1 minute' WHERE id=$1",
+        [expired.id],
+      );
+    },
+    undefined,
+    true,
+  );
+  for (const id of [
+    peerRun.id,
+    otherRun.id,
+    hidden.id,
+    expired.id,
+    randomUUID(),
+  ]) {
+    const r = await call(
+      f.owner,
+      "GET",
+      f.url + "/runs?before=" + id,
+      undefined,
+      f.tenant,
+    );
+    assert.equal(r.status, 404, JSON.stringify(r.data));
+  }
+  const visible = await cancelledHistoryRun(f);
+  assert.deepEqual(
+    (await ok(f.owner, "GET", f.url + "/runs", undefined, f.tenant)).items.map(
+      (r: any) => r.id,
+    ),
+    [visible.id],
+  );
+  assert.equal(
+    (
+      await call(
+        peer,
+        "GET",
+        f.url + "/runs?before=" + visible.id,
+        undefined,
+        f.tenant,
+      )
+    ).status,
+    404,
+  );
+});
+
+test("project team and immutable version cursors traverse beyond one hundred teams and twenty versions", async () => {
+  const f = await fixture(),
+    ids = [f.group.id];
+  for (let i = 0; i < 101; i++)
+    ids.push(
+      (
+        await ok(
+          f.owner,
+          "POST",
+          "/v1/agent-groups",
+          { ...f.input, name: "History directory " + i },
+          f.tenant,
+        )
+      ).id,
+    );
+  const first = await ok(
+      f.owner,
+      "GET",
+      `/v1/agent-groups?project_id=${f.project}&limit=100`,
+      undefined,
+      f.tenant,
+    ),
+    second = await ok(
+      f.owner,
+      "GET",
+      `/v1/agent-groups?project_id=${f.project}&limit=100&cursor=${first.next_cursor}`,
+      undefined,
+      f.tenant,
+    );
+  assert.equal(first.items.length, 100);
+  assert.equal(second.items.length, 2);
+  assert.equal(second.next_cursor, null);
+  assert.deepEqual(
+    [...first.items, ...second.items].map((g: any) => g.id),
+    ids.sort(),
+  );
+  for (let version = 1; version < 23; version++)
+    await ok(
+      f.owner,
+      "PATCH",
+      f.url,
+      { expected_version: version, name: "History version " + (version + 1) },
+      f.tenant,
+    );
+  const newest = await ok(
+      f.owner,
+      "GET",
+      f.url + "/versions?limit=20",
+      undefined,
+      f.tenant,
+    ),
+    oldest = await ok(
+      f.owner,
+      "GET",
+      f.url + "/versions?limit=20&before=" + newest.next_before,
+      undefined,
+      f.tenant,
+    );
+  assert.equal(newest.items.length, 20);
+  assert.equal(oldest.next_before, null);
+  assert.deepEqual(
+    [...newest.items, ...oldest.items].map((v: any) => v.version),
+    Array.from({ length: 23 }, (_, i) => 23 - i),
+  );
+  assert.deepEqual(
+    newest.items[0].body.bindings,
+    oldest.items[2].body.bindings,
+  );
+});
+
 test("canonical team CRUD keeps original response shape, immutable member versions and project boundaries", async () => {
   const f = await fixture(),
     other = await fixture();
