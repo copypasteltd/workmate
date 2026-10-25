@@ -6,13 +6,14 @@ import { mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { LocalCodexSession, type LocalCodexProfile, type LocalSessionBinding, type LocalCodexHooks } from "../../src/local-codex.js";
 import type { LocalInputRequest } from "../../src/local-input.js";
+import { LocalProgramController, type ProgramJournal } from "../../src/local-programs.js";
 
 const digest = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
 const lock = JSON.parse(await readFile(new URL("../../contracts/local-codex-runtime.json", import.meta.url), "utf8"));
 const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
 assert.ok(executable && path.isAbsolute(executable), "Set COPYPASTE_LOCAL_CODEX_TEST_BIN to the locked absolute native Codex binary. No PATH fallback.");
 const skill = "---\nname: native-fixture-method\ndescription: Verify a local fixture without fabricating results.\n---\nNATIVE_SKILL_FROM_DISK_73D6. Inspect actual tool results and preserve unrelated files.";
-type Action = { command?: string; input?: { questions: any[] }; company?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; stage?: number };
+type Action = { command?: string; input?: { questions: any[] }; company?: { tool: string; arguments: Record<string, unknown> }; program?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; stage?: number };
 
 function emit(res: ServerResponse, type: string, payload: Record<string, unknown>) {
   res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...payload })}\n\n`);
@@ -80,6 +81,12 @@ async function fixture() {
         action.stage = 1;
         completed(res, requests.length, { id: "fc_input_" + requests.length, type: "function_call", name: tool.name,
           call_id: "call_input_" + requests.length, arguments: JSON.stringify(action.input) });
+      } else if (action.program && !action.stage) {
+        assert.ok(body.tools.some((tool: any) => tool.type === "namespace" && tool.name === "copypaste_programs"
+          && tool.tools.some((child: any) => child.name === action.program!.tool)), "Native Codex must declare the exact approved-program namespace");
+        action.stage = 1;
+        completed(res, requests.length, { id: "fc_program_" + requests.length, type: "function_call", namespace: "copypaste_programs",
+          name: action.program.tool, call_id: "call_program_" + requests.length, arguments: JSON.stringify(action.program.arguments) });
       } else if (action.company && !action.stage) {
         assert.ok(body.tools.some((tool: any) => tool.type === "namespace" && tool.name === "copypaste"
           && tool.tools.some((child: any) => child.name === action.company!.tool)), "Exact company namespace must be declared by native Codex");
@@ -117,9 +124,9 @@ async function fixture() {
   const binding: LocalSessionBinding = { sessionId: randomUUID(), actorId: actor, tenantId: randomUUID(), projectId: randomUUID(), workspace, stateRoot,
     grant: { id: randomUUID(), actorId: actor, mode: "full-access", revision: 1, expiresAt: Date.now() + 300000 },
     skills: [{ key: "native-fixture-method", content: skill, sha256: digest(skill) }] };
-  const make = (p = profile, b = binding, companyTool?: LocalCodexHooks["companyTool"], userInput?: LocalCodexHooks["userInput"]) => {
+  const make = (p = profile, b = binding, companyTool?: LocalCodexHooks["companyTool"], userInput?: LocalCodexHooks["userInput"], programTool?: LocalCodexHooks["programTool"]) => {
     const session = new LocalCodexSession(p, b, { authorize: async () => { if (!authority) throw new Error("Account revoked"); },
-      companyTool, userInput, event: async (kind, value) => { events.push({ kind, value }); if (kind === "local.runtime.ready") readyPid = Number(value.pid); } });
+      companyTool, userInput, programTool, event: async (kind, value) => { events.push({ kind, value }); if (kind === "local.runtime.ready") readyPid = Number(value.pid); } });
     sessions.push(session); return session;
   };
   const start = (session: LocalCodexSession, expiresAt = Date.now() + 300000) => session.start({ token, expiresAt });
@@ -143,6 +150,41 @@ const inputQuestions = [{ id: "palette", header: "Palette", question: "Which pal
 ] }, { id: "format", header: "Format", question: "Choose the requested output format.", options: [
   { label: "HTML", description: "A locally editable HTML file." }, { label: "PDF", description: "A portable document." },
 ] }];
+
+test("real native Codex lists, runs and inspects a customer-approved program with exact argv and no shell or inference credential inheritance", { timeout: 120000 }, async () => {
+  const f = await fixture(); let journal: ProgramJournal | null = null, programs: LocalProgramController | undefined;
+  try {
+    const taskId = randomUUID(), binding = { ...f.binding, programToolsVersion: 1 as const }, owner = {
+      actorId: binding.actorId, epoch: randomUUID(), tenant: binding.tenantId, project: binding.projectId, workspace: f.workspace,
+      permission: "full-access", revoked: false, grantRevision: 1, expiresAt: binding.grant.expiresAt, programToolsVersion: 1 as const,
+    };
+    programs = new LocalProgramController({ read: async () => structuredClone(journal), write: async value => { journal = structuredClone(value); },
+      owner: async () => owner, context: async () => owner, choose: async () => process.execPath, confirm: async () => true, changed: () => {},
+      host: path.resolve(".data/native-program-host/local-program-host.exe") });
+    const approved = await programs.approve(binding.sessionId); assert.ok(approved);
+    const programSession = programs.session({ sessionId: binding.sessionId, taskId }, async () => {}), results: any[] = [];
+    const native = f.make(f.profile, binding, undefined, undefined, async (call, signal) => {
+      const result = await programSession.call(call, signal); results.push({ tool: call.tool, value: JSON.parse(result.contentItems[0].text) }); return result;
+    });
+    await f.start(native); f.actions.push({ program: { tool: "list", arguments: {} } });
+    const first = await native.turn("Inspect the customer-approved native program catalog."); assert.equal(first.status, "completed");
+    assert.equal(results[0].value.programs[0].id, approved.id);
+    const output = path.join(f.workspace, "native-argv.json"), script = path.join(f.workspace, "approved-native.cjs");
+    await writeFile(script, "require('fs').writeFileSync(process.argv[2],JSON.stringify({args:process.argv.slice(3),token:!!process.env.COPYPASTE_LOCAL_INFERENCE_TOKEN}));console.log('NATIVE_APPROVED_PROGRAM_OUTPUT');");
+    const argv = [script, output, "香港設計", "literal\"quote", "trailing\\", "", "$(no-shell);&|"];
+    f.actions.push({ program: { tool: "run", arguments: { program_id: approved.id, argv, timeout_ms: 10000 } } });
+    const second = await native.turn("Run the selected native program with the exact structured arguments."); assert.equal(second.status, "completed"); assert.equal(second.threadId, first.threadId);
+    assert.deepEqual(JSON.parse(await readFile(output, "utf8")), { args: argv.slice(2), token: false });
+    const receipt = results[1].value; assert.equal(receipt.state, "succeeded"); assert.equal(receipt.exitCode, 0); assert.equal(receipt.taskId, taskId);
+    assert.match(receipt.stdout, /NATIVE_APPROVED_PROGRAM_OUTPUT/); assert.deepEqual(receipt.argv, argv);
+    f.actions.push({ program: { tool: "status", arguments: { receipt_id: receipt.id } } });
+    const third = await native.turn("Read the original program receipt without executing it again."); assert.equal(third.threadId, first.threadId);
+    assert.deepEqual(results[2].value, receipt); assert.equal(journal!.receipts.length, 1);
+    assert.ok(f.requests.every(request => request.authorized));
+    assert.ok(f.requests.at(-1).body.input.some((item: any) => item.type === "function_call_output" && JSON.stringify(item.output).includes(receipt.id)));
+    assert.equal(f.events.filter(event => event.kind === "local.program-tool.completed").length, 3);
+  } finally { await programs?.close(); await f.clean(); }
+});
 test("native user input resumes the original working turn with explicit answers", { timeout: 120000 }, async () => {
   const f = await fixture(), inputs: LocalInputRequest[] = [];
   try {

@@ -5,6 +5,7 @@ import { LocalCodexSession, LocalCodexError, type LocalCodexHooks, type LocalSes
 import { parseLocalInput, parseLocalAnswers, type LocalInputRequest, type LocalInputAnswers, type LocalPendingInput } from "./local-input.js";
 import { executeLocalWorkflow, type NativeWorkflowChild } from "./local-workflow.js";
 import { BrowserToolError, type BrowserOwner, type LocalBrowserSession } from "./browser-contract.js";
+import { LocalProgramError, type LocalProgramSession } from "./program-contract.js";
 
 export interface LocalAgentScope { tenant: string; project: string }
 interface Operation {
@@ -18,13 +19,14 @@ interface Operation {
     report?: Operation["report"] };
   report?: { status: "completed" | "failed" | "interrupted" | "unknown"; output: string; thread_id: string; turn_id: string };
 }
-interface ActiveLocalOperation { runtime?: LocalAgentRuntime; children: Set<LocalAgentRuntime>; browsers: Set<LocalBrowserSession>; abort: AbortController; done: Promise<void> }
+interface ActiveLocalOperation { runtime?: LocalAgentRuntime; children: Set<LocalAgentRuntime>; browsers: Set<LocalBrowserSession>; programs: Set<LocalProgramSession>; abort: AbortController; done: Promise<void> }
 interface LocalRecord extends LocalAgentScope {
   id: string; actorId: string; epoch: string; workspace: string; workspaceHash: string; role: string;
   grant?: LocalPermissionGrant; revoked: boolean; operation?: Operation; lastTask?: any; error?: string;
   uncertain?: boolean;
   companyToolsVersion?: 1;
   browserToolsVersion?: 1;
+  programToolsVersion?: 1;
   dispatches?: LocalDispatchReceipt[];
   messages: { role: "user" | "assistant"; text: string; status?: string }[];
   events: { kind: string; value: Record<string, unknown> }[];
@@ -50,6 +52,7 @@ export interface LocalAgentIO {
   executable: string;
   runtime: { version: string; sha256: string };
   browser?(owner: BrowserOwner, authorize: () => Promise<void>): LocalBrowserSession;
+  program?(owner: BrowserOwner & { approvalSessionId: string }, authorize: () => Promise<void>): LocalProgramSession;
 }
 export type LocalAgentRuntime = Pick<LocalCodexSession, "start" | "turn" | "close" | "interrupt" | "revoke">;
 export type LocalRuntimeFactory = (profile: LocalCodexProfile, binding: LocalSessionBinding, hooks: LocalCodexHooks) => LocalAgentRuntime;
@@ -130,6 +133,7 @@ export class LocalAgentController {
   private view(r: LocalRecord) {
     return structuredClone({ id: r.id, tenant: r.tenant, project: r.project, workspace: r.workspace, role: r.role, revoked: r.revoked,
       permission: r.revoked ? null : r.grant?.mode ?? null, busy: this.busy.has(r.id), phase: r.operation?.phase ?? "idle", error: r.error,
+      programToolsVersion: r.programToolsVersion,
       uncertain: !!r.uncertain, task: r.lastTask, messages: r.messages, events: r.events,
       inputs: [...(this.inputs.get(r.id)?.values() ?? [])].map(input => input.view),
       retryable: !!r.operation && ["accepting", "starting", "settling"].includes(r.operation.phase) });
@@ -196,7 +200,7 @@ export class LocalAgentController {
     if (!path.isAbsolute(resolved)) throw new LocalAgentError("LOCAL_WORKSPACE_INVALID");
     const r: LocalRecord = { ...scope, id: randomUUID(), actorId: actor.actorId, epoch: actor.epoch, workspace: resolved,
       workspaceHash: hash(process.platform === "win32" ? resolved.toLowerCase() : resolved), role, revoked: false, companyToolsVersion: 1,
-      ...(this.io.browser ? { browserToolsVersion: 1 as const } : {}), messages: [], events: [] };
+      ...(this.io.browser ? { browserToolsVersion: 1 as const } : {}), ...(this.io.program ? { programToolsVersion: 1 as const } : {}), messages: [], events: [] };
     (await this.state()).sessions.push(r); await this.persist(); return this.view(r);
   }
   async permission(id: string, mode: LocalPermissionMode) {
@@ -239,6 +243,11 @@ export class LocalAgentController {
     if (await this.record(id) !== r) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
     return { ...await this.schedulingOwner(id), role: r.role, permission: r.revoked ? null : r.grant?.mode ?? null,
       grantRevision: r.grant?.revision, revoked: r.revoked, busy: this.busy.has(id), pending: !!r.operation, uncertain: !!r.uncertain };
+  }
+  async programOwner(id: string, online = false) {
+    const owner = online ? await this.schedulingContext(id) : await this.schedulingOwner(id);
+    const r = await this.withdrawalRecord(id);
+    return { ...owner, programToolsVersion: r.programToolsVersion };
   }
   /** A durable caller id is committed with the native operation and its terminal
    * receipt. A queue crash between these two journals cannot create a second task. */
@@ -285,8 +294,8 @@ export class LocalAgentController {
     let admitted = false, nativeAccepted = false, stoppingHeartbeat = false;
     const abort = new AbortController();
     let resolveDone!: () => void; const done = new Promise<void>(resolve => { resolveDone = resolve; });
-    const active: ActiveLocalOperation = { abort, done, children: new Set(), browsers: new Set() };
-    abort.signal.addEventListener("abort", () => { for (const browser of active.browsers) void browser.close().catch(() => {}); }, { once: true });
+    const active: ActiveLocalOperation = { abort, done, children: new Set(), browsers: new Set(), programs: new Set() };
+    abort.signal.addEventListener("abort", () => { for (const resource of [...active.browsers, ...active.programs]) void resource.close().catch(() => {}); }, { once: true });
     this.running.set(r.id, active);
     const assertOwner = async () => { const actor = await this.identity(); this.grant(r); if (generation !== this.generation || actor.actorId !== r.actorId || actor.epoch !== r.epoch) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED"); };
     const stopHeartbeat = async () => { stoppingHeartbeat = true; if (heartbeat) clearInterval(heartbeat); await heartbeatRun; };
@@ -351,12 +360,14 @@ export class LocalAgentController {
         const profile: LocalCodexProfile = { executable: this.io.executable, version: this.io.runtime.version, executableSha256: this.io.runtime.sha256,
           companyOrigin: this.io.companyOrigin, baseURL: this.io.companyOrigin + started.inference_path, model: started.model, effort: started.effort };
         const browser = r.browserToolsVersion === 1 ? this.createBrowser(r, active, op.taskId!, r.id, authorize) : undefined;
+        const programs = r.programToolsVersion === 1 ? this.createPrograms(r, active, op.taskId!, r.id, authorize) : undefined;
         runtime = this.runtimeFactory(profile, { sessionId: r.id, actorId: r.actorId, tenantId: r.tenant, projectId: r.project,
           workspace: r.workspace, stateRoot: this.io.stateRoot, grant: { ...this.grant(r) }, skills: started.skills,
           ...(r.companyToolsVersion === 1 ? { companyTools: started.company_tools ?? [] } : {}),
-          ...(browser ? { browserToolsVersion: 1 as const } : {}) }, {
+          ...(browser ? { browserToolsVersion: 1 as const } : {}), ...(programs ? { programToolsVersion: 1 as const } : {}) }, {
           authorize, approval: (kind, value) => this.io.approval(kind, value),
           ...(browser ? { browserTool: (call: Parameters<LocalBrowserSession["call"]>[0], signal: AbortSignal) => browser.call(call, AbortSignal.any([signal, abort.signal])) } : {}),
+          ...(programs ? { programTool: (call: Parameters<LocalProgramSession["call"]>[0], signal: AbortSignal) => programs.call(call, AbortSignal.any([signal, abort.signal])) } : {}),
           userInput: (request, signal) => this.waitForInput(r, op, request, AbortSignal.any([signal, abort.signal]), authorize),
           companyTool: async (call, signal) => {
             await assertOwner(); if (abort.signal.aborted || signal.aborted) throw new LocalCodexError("LOCAL_COMPANY_TOOL_INTERRUPTED");
@@ -412,6 +423,7 @@ export class LocalAgentController {
         await stopHeartbeat();
         await runtime.close();
         await browser?.close();
+        await programs?.close(); if (programs) active.programs.delete(programs);
         op.report = { status: result.status, output: result.text.slice(0, 100000), thread_id: result.threadId, turn_id: result.turnId };
         op.phase = "settling"; await this.persist();
       }
@@ -431,7 +443,7 @@ export class LocalAgentController {
     } finally {
       abort.abort();
       await stopHeartbeat();
-      try { await Promise.all([runtime?.close(), ...[...active.children].map(child => child.close()), ...[...active.browsers].map(browser => browser.close())]); this.running.delete(r.id); this.busy.delete(r.id); }
+      try { await Promise.all([runtime?.close(), ...[...active.children].map(child => child.close()), ...[...active.browsers, ...active.programs].map(resource => resource.close())]); this.running.delete(r.id); this.busy.delete(r.id); }
       catch (error) { r.error = "LOCAL_PROCESS_SHUTDOWN_FAILED"; r.uncertain = true; await this.persist(); throw error; }
       finally { resolveDone(); this.io.changed(); }
     }
@@ -448,6 +460,18 @@ export class LocalAgentController {
     });
     active.browsers.add(browser); return browser;
   }
+  private createPrograms(r: LocalRecord, active: ActiveLocalOperation, taskId: string, sessionId: string, authorize: () => Promise<void>) {
+    if (!this.io.program) throw new LocalAgentError("LOCAL_PROGRAM_UNAVAILABLE");
+    const programs = this.io.program({ actorId: r.actorId, epoch: r.epoch, tenantId: r.tenant, projectId: r.project, sessionId,
+      approvalSessionId: r.id, taskId, workspace: r.workspace }, async () => {
+      if (active.abort.signal.aborted || r.operation?.stopped) throw new LocalProgramError("LOCAL_PROGRAM_INTERRUPTED", false);
+      if (this.grant(r).mode !== "full-access") throw new LocalProgramError("LOCAL_PROGRAM_FULL_ACCESS_REQUIRED");
+      await authorize();
+      if (active.abort.signal.aborted || r.operation?.stopped) throw new LocalProgramError("LOCAL_PROGRAM_INTERRUPTED", false);
+      if (this.grant(r).mode !== "full-access") throw new LocalProgramError("LOCAL_PROGRAM_FULL_ACCESS_REQUIRED");
+    });
+    active.programs.add(programs); return programs;
+  }
   private async executeWorkflowChild(r: LocalRecord, op: Operation, active: ActiveLocalOperation, child: NativeWorkflowChild,
     runId: string, cursor: number, signal: AbortSignal, authorizeParent: () => Promise<void>, assertOwner: () => Promise<void>) {
     const fields = child.fields, journal = await this.state();
@@ -462,6 +486,7 @@ export class LocalAgentController {
     const taskURL = this.base(r) + "/" + child.task_id;
     let runtime: LocalAgentRuntime | undefined, accepted = false, admitted = false;
     let browser: LocalBrowserSession | undefined;
+    let programs: LocalProgramSession | undefined;
     let heartbeat: ReturnType<typeof setInterval> | undefined, heartbeatRun: Promise<unknown> | undefined;
     let stoppingHeartbeat = false;
     const stopHeartbeat = async () => {
@@ -490,13 +515,15 @@ export class LocalAgentController {
         || started.runtime?.windows_x64_sha256 !== this.io.runtime.sha256 || started.inference_path !== "/v1/desktop-inference/v1"
         || !Array.isArray(started.skills)) throw new LocalAgentError("LOCAL_RUNTIME_UPDATE_REQUIRED");
       browser = this.io.browser ? this.createBrowser(r, active, child.task_id, fields.local_session_id, authorize) : undefined;
+      programs = r.programToolsVersion === 1 ? this.createPrograms(r, active, child.task_id, fields.local_session_id, authorize) : undefined;
       runtime = this.runtimeFactory({ executable: this.io.executable, version: this.io.runtime.version, executableSha256: this.io.runtime.sha256,
         companyOrigin: this.io.companyOrigin, baseURL: this.io.companyOrigin + started.inference_path, model: started.model, effort: started.effort },
       { sessionId: fields.local_session_id, actorId: r.actorId, tenantId: r.tenant, projectId: r.project,
         workspace: r.workspace, stateRoot: this.io.stateRoot, grant: { ...this.grant(r) }, skills: started.skills, companyTools: started.company_tools ?? [],
-        ...(browser ? { browserToolsVersion: 1 as const } : {}) }, {
+        ...(browser ? { browserToolsVersion: 1 as const } : {}), ...(programs ? { programToolsVersion: 1 as const } : {}) }, {
         authorize, approval: (kind, value) => this.io.approval(kind, value),
         ...(browser ? { browserTool: (call: Parameters<LocalBrowserSession["call"]>[0], inputSignal: AbortSignal) => browser!.call(call, AbortSignal.any([inputSignal, signal])) } : {}),
+        ...(programs ? { programTool: (call: Parameters<LocalProgramSession["call"]>[0], inputSignal: AbortSignal) => programs!.call(call, AbortSignal.any([inputSignal, signal])) } : {}),
         userInput: (request, inputSignal) => this.waitForInput(r, op, request, AbortSignal.any([inputSignal, signal]), authorize),
         companyTool: async (call, inputSignal) => {
           await authorize();
@@ -528,7 +555,10 @@ export class LocalAgentController {
       // Drain any in-flight check before its company receipt becomes terminal.
       await stopHeartbeat();
       checkpoint.report = { status: result.status, output: result.text.slice(0, 100000), thread_id: result.threadId, turn_id: result.turnId };
-      checkpoint.phase = "settling"; await this.persist(); await runtime.close(); await finish();
+      checkpoint.phase = "settling"; await this.persist(); await runtime.close();
+      await browser?.close(); if (browser) active.browsers.delete(browser);
+      await programs?.close(); if (programs) active.programs.delete(programs);
+      await finish();
     } catch (error) {
       await stopHeartbeat();
       if (admitted && !checkpoint.report) {
@@ -540,6 +570,7 @@ export class LocalAgentController {
       await stopHeartbeat(); signal.removeEventListener("abort", shutdownChild);
       await runtime?.close(); if (runtime) active.children.delete(runtime);
       await browser?.close(); if (browser) active.browsers.delete(browser);
+      await programs?.close(); if (programs) active.programs.delete(programs);
     }
   }
   async stop(id: string) {

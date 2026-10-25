@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { browserURL, BrowserToolError, type BrowserOwner, type BrowserToolResult } from "./browser-contract.js";
 import { GuardedBrowserSession, type BrowserDriver } from "./browser-session.js";
+import { BrowserResources, type BrowserContextLease } from "./browser-resources.js";
 
 interface Download {
   id: string; name: string; state: string; bytes: number; path?: string; sha256?: string; item?: DownloadItem;
@@ -16,6 +17,8 @@ interface Page {
   answerDialog?: (accept: boolean, text: string) => void;
   dialogCommands: Set<Promise<unknown>>;
   initialized: boolean;
+  releasePage: () => void;
+  destroyed: Promise<void>;
 }
 const root = path.dirname(fileURLToPath(import.meta.url));
 const output = (value: unknown): BrowserToolResult => ({ success: true, contentItems: [{ type: "inputText", text: JSON.stringify(value) }] });
@@ -47,6 +50,10 @@ export class NativeBrowserPool {
   private pages = new Set<Page>();
   private sessions = new Set<NativeBrowserDriver>();
   private ipcInstalled = false;
+  private partition = randomUUID();
+  private resources = new BrowserResources<Session>(index => session.fromPartition("copypaste-browser-" + this.partition + "-" + index), async value => {
+    await value.closeAllConnections(); await value.clearStorageData(); await value.clearCache();
+  });
   constructor(private readLocale?: () => Promise<string>) {}
   create(owner: BrowserOwner, authorize: () => Promise<void>) {
     if (!this.ipcInstalled) {
@@ -68,7 +75,7 @@ export class NativeBrowserPool {
         void driver.prompt(event.sender,value as {message:string;defaultPrompt:string},reply).catch(()=>reply(null));
       });
     }
-    const driver = new NativeBrowserDriver(owner, authorize, this.pages, () => this.sessions.delete(driver), this.readLocale);
+    const driver = new NativeBrowserDriver(owner, authorize, this.pages, () => this.sessions.delete(driver), this.resources, this.readLocale);
     this.sessions.add(driver);
     return new GuardedBrowserSession(driver, authorize);
   }
@@ -80,11 +87,13 @@ class NativeBrowserDriver implements BrowserDriver {
   private closed = false;
   private shutdown = new AbortController();
   private browserSession?: Session;
+  private contextLease?: BrowserContextLease<Session>;
+  private loadingSession?: Promise<Session>;
   private downloadListener?: Parameters<Session["on"]>[1];
   private pending = new Set<Promise<unknown>>();
   private closing?: Promise<void>;
   private locale="en";
-  constructor(private owner: BrowserOwner, private authorize: () => Promise<void>, private allPages: Set<Page>, private dispose: () => void, private readLocale?: () => Promise<string>) {}
+  constructor(private owner: BrowserOwner, private authorize: () => Promise<void>, private allPages: Set<Page>, private dispose: () => void, private resources: BrowserResources<Session>, private readLocale?: () => Promise<string>) {}
 
   ownsChrome(contents: WebContents) { return [...this.pages.values()].some(page => !page.closed && page.window.webContents === contents); }
   ownsPage(contents: WebContents) { return [...this.pages.values()].some(page => !page.closed && page.view.webContents === contents); }
@@ -134,14 +143,17 @@ class NativeBrowserDriver implements BrowserDriver {
     const [width,height]=page.window.getContentSize(), top=page.dialog?210:94;
     page.view.setBounds({x:0,y:top,width,height:Math.max(1,height-top)});
   }
-  private async getSession() {
+  private getSession() {
+    return this.loadingSession ??= this.loadSession().catch(error => { this.loadingSession = undefined; throw error; });
+  }
+  private async loadSession() {
     if (this.browserSession) return this.browserSession;
     this.locale=(await this.readLocale?.().catch(()=>"en"))==="zh"?"zh":"en";
     this.alive();
-    // Separate from the app's auth session and from installed Chrome. A task's
-    // pages share cookies; unrelated local sessions and workflow children do not.
-    const partition = createHash("sha256").update([this.owner.actorId,this.owner.epoch,this.owner.tenantId,this.owner.projectId,this.owner.sessionId].join(":")).digest("hex");
-    const ses = session.fromPartition("persist:copypaste-browser-" + partition);
+    // Exactly two memory contexts are reused only after clearing all prior task
+    // storage/cache/connections. Never use app auth or installed Chrome cookies.
+    this.contextLease = await this.resources.acquire(this.owner.taskId);
+    const ses = this.contextLease.value; this.alive();
     ses.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
     ses.setPermissionCheckHandler(() => false);
     const listener = (_event: Electron.Event, item: DownloadItem, contents: WebContents) => {
@@ -178,17 +190,24 @@ class NativeBrowserDriver implements BrowserDriver {
   }
   private makePage(ses: Session, popupPreferences: Electron.WebPreferences = {}, guest?: WebContents) {
     this.alive();
-    if (this.pages.size >= 4 || this.allPages.size >= 8) throw new BrowserToolError("BROWSER_TAB_LIMIT");
+    if (!this.contextLease) throw new BrowserToolError("BROWSER_CONTEXT_UNAVAILABLE");
+    const releasePage = this.resources.page(this.contextLease);
+    let createdWindow: BrowserWindow | undefined, createdView: WebContentsView | undefined;
+    try {
     const window = new BrowserWindow({ width: 1180, height: 820, minWidth: 640, minHeight: 480,
       frame: false, thickFrame: false, autoHideMenuBar: true, backgroundColor: "#FAFAF8", show: false,
       webPreferences: { preload: path.join(root,"browser-preload.cjs"), contextIsolation: true, nodeIntegration: false, sandbox: true } });
+    createdWindow = window;
     window.setMenu(null); window.setMenuBarVisibility(false);
     const view = new WebContentsView({ ...(guest?{webContents:guest}:{}), webPreferences: { ...popupPreferences, session: ses,
       preload: path.join(root,"browser-page-preload.cjs"), nodeIntegration: false, nodeIntegrationInSubFrames: false,
       contextIsolation: true, sandbox: true, webSecurity: true, allowRunningInsecureContent: false,
       webviewTag: false, navigateOnDragDrop: false, backgroundThrottling: false } });
+    createdView = view;
     window.contentView.addChildView(view);
-    const page: Page = { id: randomUUID(), window, view, document: randomBytes(8).toString("hex"), closed: false, downloads: [], dialogCommands: new Set(), initialized: false };
+    const destroyed = new Promise<void>(resolve => view.webContents.once("destroyed", () => { releasePage(); resolve(); }));
+    const page: Page = { id: randomUUID(), window, view, document: randomBytes(8).toString("hex"), closed: false, downloads: [], dialogCommands: new Set(), initialized: false, releasePage, destroyed };
+    this.pending.add(destroyed); void destroyed.finally(() => this.pending.delete(destroyed));
     this.pages.set(page.id,page); this.allPages.add(page);
     const resize = () => this.layout(page);
     window.on("resize",resize); resize();
@@ -216,7 +235,7 @@ class NativeBrowserDriver implements BrowserDriver {
     view.webContents.on("render-process-gone",() => this.closePage(page));
     view.webContents.once("destroyed",() => this.closePage(page));
     view.webContents.setWindowOpenHandler(details => {
-      try { if(details.url!=="about:blank")browserURL(details.url); this.alive(); if(this.pages.size>=4 || this.allPages.size>=8) return { action: "deny" }; }
+      try { if(details.url!=="about:blank")browserURL(details.url); this.alive(); if(!this.contextLease || !this.resources.canOpen(this.contextLease)) return { action: "deny" }; }
       catch { return { action: "deny" }; }
       return { action: "allow", overrideBrowserWindowOptions: {webPreferences:{session:ses,preload:path.join(root,"browser-page-preload.cjs"),nodeIntegration:false,nodeIntegrationInSubFrames:false,sandbox:true,contextIsolation:true,webSecurity:true,webviewTag:false}}, createWindow: options => {
         // Electron passes opener/security preferences; preserve its internal
@@ -234,6 +253,13 @@ class NativeBrowserDriver implements BrowserDriver {
     });
     void window.loadFile(path.join(root,"../assets/browser-shell.html"),{query:{lang:this.locale}}).catch(() => this.closePage(page));
     return page;
+    } catch (error) {
+      if (createdView && !createdView.webContents.isDestroyed()) {
+        createdView.webContents.once("destroyed", releasePage); createdView.webContents.close({ waitForBeforeUnload: false });
+      } else releasePage();
+      if (createdWindow && !createdWindow.isDestroyed()) createdWindow.destroy();
+      throw error;
+    }
   }
   private async attach(page: Page) {
     const debuggerAPI=page.view.webContents.debugger;
@@ -377,7 +403,7 @@ class NativeBrowserDriver implements BrowserDriver {
         catch(error){this.closePage(page);throw error;}
       }
       const page=this.get(args.tab_id);
-      if(tool==="close"){this.closePage(page);return output({tab_id:page.id,closed:true});}
+      if(tool==="close"){this.closePage(page);await page.destroyed;return output({tab_id:page.id,closed:true});}
       const initializeEnd=Date.now()+10000;
       while(!page.initialized&&Date.now()<initializeEnd){this.get(page.id);await this.delay(40,signal);}
       if(!page.initialized)throw new BrowserToolError("BROWSER_PAGE_INITIALIZING");
@@ -448,7 +474,7 @@ class NativeBrowserDriver implements BrowserDriver {
   async chromeAction(sender: WebContents,action: unknown,value: unknown) {
     const page=[...this.pages.values()].find(p=>!p.closed&&p.window.webContents===sender);
     if(!page)throw new BrowserToolError("BROWSER_TAB_UNAVAILABLE");
-    if(action==="close"){this.closePage(page);return {closed:true};}
+    if(action==="close"){this.closePage(page);await page.destroyed;return {closed:true};}
     if(action==="minimize"){page.window.minimize();return {};}
     if(action==="maximize"){page.window.isMaximized()?page.window.unmaximize():page.window.maximize();return {};}
     await this.authority();
@@ -466,7 +492,8 @@ class NativeBrowserDriver implements BrowserDriver {
     if(page.closed)return;page.closed=true;
     page.answerDialog?.(false,"");
     for(const record of page.downloads)if(record.item)record.item.cancel();
-    if(!page.view.webContents.isDestroyed())page.view.webContents.close({waitForBeforeUnload:false});
+    const contents=page.view.webContents;
+    if(contents&&!contents.isDestroyed())contents.close({waitForBeforeUnload:false});
     if(!page.window.isDestroyed())page.window.destroy();
     this.pages.delete(page.id);this.allPages.delete(page);
   }
@@ -474,8 +501,13 @@ class NativeBrowserDriver implements BrowserDriver {
     if(this.closing)return this.closing;
     this.closed=true;this.shutdown.abort();
     for(const page of [...this.pages.values()])this.closePage(page);
-    if(this.browserSession&&this.downloadListener)this.browserSession.removeListener("will-download",this.downloadListener as any);
     this.dispose();
-    return this.closing=(async()=>{await Promise.allSettled([...this.pending]);})();
+    return this.closing=(async()=>{
+      await this.loadingSession?.catch(()=>{});
+      await Promise.allSettled([...this.pending]);
+      if(this.browserSession&&this.downloadListener)this.browserSession.removeListener("will-download",this.downloadListener as any);
+      if(this.contextLease)await this.resources.release(this.contextLease);
+      this.contextLease=undefined;this.browserSession=undefined;
+    })();
   }
 }

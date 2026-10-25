@@ -135,6 +135,54 @@ async function fixture() {
     pending: (fn: () => Promise<any>) => { pendingTurn = fn; }, journal: () => structuredClone(journal),
   };
 }
+
+test("legacy native records do not silently acquire approved-program tools", async () => {
+  const f = await fixture(); let created = 0;
+  try {
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    f.io.program = () => { created++; throw new Error("Legacy thread must keep its original tools"); };
+    await f.controller.send(session.id, "Continue the existing native work", 10000);
+    assert.equal(created, 0); assert.equal(f.runtimeHooks[0].programTool, undefined);
+  } finally { await f.clean(); }
+});
+
+test("approved-program tools retain original task and customer ownership and recheck the full local grant", async () => {
+  const f = await fixture(); let owner: any, executed = 0, closed = 0;
+  try {
+    f.io.program = (value, authorize) => { owner = value; let stopped = false; return { call: async () => { await authorize(); executed++; return { success: true, contentItems: [] }; }, close: async () => { if (!stopped) { stopped = true; closed++; } } }; };
+    const request = f.io.request; f.io.request = async (url, options) => { if (url.endsWith("/finish")) assert.equal(closed, 1, "Program session must drain before terminal company settlement"); return request(url, options); };
+    const session = await f.create(); await f.controller.permission(session.id, "read-only");
+    f.pending(async () => {
+      await assert.rejects(f.runtimeHooks.at(-1)!.programTool!({ namespace: "copypaste_programs", tool: "list", arguments: {}, callId: "program_read_only", threadId: "native", turnId: "turn" }, new AbortController().signal), { code: "LOCAL_PROGRAM_FULL_ACCESS_REQUIRED" });
+      return { status: "completed", text: "No program executed", threadId: "native", turnId: "turn", nativeTokenUsage: null };
+    });
+    await f.controller.send(session.id, "Read-only program attempt", 10000);
+    assert.equal(executed, 0); assert.equal(closed, 1); assert.equal(owner.actorId, f.actor.actorId); assert.equal(owner.epoch, f.actor.epoch);
+    assert.equal(owner.tenantId, f.scope.tenant); assert.equal(owner.projectId, f.scope.project); assert.equal(owner.sessionId, session.id); assert.equal(owner.approvalSessionId, session.id);
+    assert.equal(owner.workspace, session.workspace); assert.equal(owner.taskId, f.calls.find(c => c.url.endsWith("/finish"))?.url.split("/").at(-2));
+  } finally { await f.clean(); }
+});
+
+for (const action of ["stop", "revoke", "logout", "close"] as const) test(action + " closes an owned program tool while the native turn is waiting", async () => {
+  const f = await fixture(); let closed = 0, entered!: () => void;
+  const ready = new Promise<void>(resolve => { entered = resolve; });
+  try {
+    let stopped = false;
+    f.io.program = (_owner, authorize) => ({ call: async (_call, signal) => {
+      await authorize(); return new Promise((_resolve, reject) => { entered(); signal.addEventListener("abort", () => reject(new Error("program wait interrupted")), { once: true }); });
+    }, close: async () => { if (!stopped) { stopped = true; closed++; } } });
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    f.pending(async () => {
+      await f.runtimeHooks.at(-1)!.programTool!({ namespace: "copypaste_programs", tool: "run", arguments: { program_id: randomUUID(), argv: [] }, callId: "program_wait", threadId: "native", turnId: "turn" }, new AbortController().signal);
+      throw new Error("Interrupted program cannot complete normally");
+    });
+    const running = f.controller.send(session.id, "Wait for the actual program tool", 10000), rejected = assert.rejects(running, /program wait interrupted/);
+    await ready;
+    if (action === "stop") await f.controller.stop(session.id); else if (action === "revoke") await f.controller.revoke(session.id);
+    else if (action === "logout") await f.controller.invalidate(); else await f.controller.close();
+    await rejected; assert.equal(closed, 1);
+  } finally { await f.clean(); }
+});
 test("durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn", async () => {
   const f = await fixture(); let restored: LocalAgentController | undefined;
   try {

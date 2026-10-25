@@ -12,6 +12,7 @@ import "./local-agent.css";
 import type { LocalPendingInput, LocalInputAnswers } from "../../src/local-input";
 import { LocalVideoJobs, type LocalVideoJob } from "./local-video";
 import { LocalFolderSchedules } from "./local-schedules";
+import { LocalPrograms } from "./local-programs";
 
 type Permission = "read-only" | "workspace-write" | "full-access";
 interface LocalSession {
@@ -20,7 +21,7 @@ interface LocalSession {
   task?: { task_id: string; status: string; charged_micros: string; accrued_micros: string };
   messages: { role: "user" | "assistant"; text: string; status?: string }[];
   events: { kind: string; value: any }[];
-  inputs: LocalPendingInput[];
+  inputs: LocalPendingInput[]; programToolsVersion?: 1;
 }
 const roleNames: Record<string, [string, string]> = {
   fullstack: ["全端工程師", "Full-stack developer"], frontend: ["前端工程師", "Frontend developer"],
@@ -88,12 +89,19 @@ export function LocalAgentWorkspace() {
   const w = useWorkspace(), { t } = useI18n();
   const [sessions, setSessions] = useState<LocalSession[]>([]), [roles, setRoles] = useState<string[]>([]);
   const [selected, setSelected] = useState(""), [role, setRole] = useState("fullstack"), [mode, setMode] = useState<Permission>("workspace-write");
-  const [prompt, setPrompt] = useState(""), [budget, setBudget] = useState("5"), [pending, setPending] = useState(false), [error, setError] = useState("");
+  const [prompt, setPrompt] = useState(""), [budget, setBudget] = useState("5"), [workspaceError, setError] = useState("");
+  const inFlight = useRef(new Set<string>()), [pendingActions, setPendingActions] = useState(new Set<string>());
+  const [actionErrors, setActionErrors] = useState<Record<string, string>>({});
+  const workspaceKey = w.tenant + "/" + w.project, activeWorkspace = useRef(workspaceKey);
+  activeWorkspace.current = workspaceKey;
+  const createKey = workspaceKey + ":create", selectedKey = workspaceKey + ":" + selected;
+  const creating = pendingActions.has(createKey), pending = creating || pendingActions.has(selectedKey);
+  const error = workspaceError || actionErrors[createKey] || actionErrors[selectedKey];
   const [videoTask, setVideoTask] = useState("");
   const refresh = useRef<() => Promise<void>>(async () => {}), end = useRef<HTMLDivElement>(null), messages = useRef<HTMLDivElement>(null);
   useEffect(() => {
     let alive = true, timer: ReturnType<typeof setTimeout> | undefined, loading = false;
-    setSessions([]); setSelected(""); setError("");
+    setSessions([]); setSelected(""); setError(""); setActionErrors({});
     const load = async () => {
       if (loading || !alive) return; loading = true;
       try {
@@ -160,10 +168,18 @@ export function LocalAgentWorkspace() {
     } else end.current?.scrollIntoView({ block: "nearest" });
   }, [session?.id, session?.messages.length, session?.inputs?.[0]?.requestId, stream, panel]);
   const act = async (action: string, payload: unknown) => {
-    setPending(true); setError("");
-    try { const result = await native(action, payload); if (result?.id) setSelected(result.id); }
-    catch (e) { setError((e as Error).message); }
-    finally { setPending(false); await refresh.current(); }
+    const scope = workspaceKey, key = scope + ":" + (action === "create" ? "create" : (payload as { id: string }).id);
+    if (inFlight.current.has(key)) return;
+    inFlight.current.add(key); setPendingActions(new Set(inFlight.current)); setError("");
+    setActionErrors(current => { const next = { ...current }; delete next[key]; return next; });
+    try {
+      const result = await native(action, payload);
+      if (action === "create" && result?.id && activeWorkspace.current === scope) setSelected(result.id);
+    } catch (e) {
+      if (activeWorkspace.current === scope) setActionErrors(current => ({ ...current, [key]: (e as Error).message }));
+    } finally {
+      inFlight.current.delete(key); setPendingActions(new Set(inFlight.current)); await refresh.current();
+    }
   };
   const send = (form: FormData) => {
     const amount = Number(budget), micros = Math.round(amount * 1_000_000);
@@ -188,7 +204,7 @@ export function LocalAgentWorkspace() {
       <ProjectConfigurationSummary compact />
       <label>{t("專業角色", "Specialist")}<select aria-label={t("本機角色", "Local specialist")} value={role} onChange={e => setRole(e.target.value)}>
         {roles.map(key => <option key={key} value={key}>{roleNames[key] ? t(...roleNames[key]) : key}</option>)}</select></label>
-      <button className="button primary" disabled={pending || !roles.includes(role)} onClick={() => void act("create", { tenant: w.tenant, project: w.project, role })}><Plus size={16}/>{t("選擇目錄開始", "Choose folder to start")}</button>
+      <button className="button primary" disabled={creating || !roles.includes(role)} onClick={() => void act("create", { tenant: w.tenant, project: w.project, role })}><Plus size={16}/>{t("選擇目錄開始", "Choose folder to start")}</button>
       <p className="muted">{t("檔案與終端在此電腦處理；圖片、影片與專案工具使用公司服務。", "Files and terminal run on this computer; image, video and project tools use company services.")}</p>
       <nav aria-label={t("本機會話", "Local sessions")}>{sessions.map(s => <button key={s.id} title={s.workspace} aria-pressed={s.id === selected} className={s.id === selected ? "selected" : ""} onClick={() => { setSelected(s.id); setError(""); }}>
         <FolderOpen size={16}/><span>{s.workspace.split(/[\\/]/).filter(Boolean).at(-1)}<small>{roleNames[s.role] ? t(...roleNames[s.role]) : s.role}{s.revoked ? t(" · 已撤權", " · Revoked") : ""}</small></span></button>)}</nav>
@@ -198,7 +214,7 @@ export function LocalAgentWorkspace() {
           <option value="read-only">{t("唯讀", "Read only")}</option><option value="workspace-write">{t("目錄內讀寫", "Workspace write")}</option><option value="full-access">{t("完整本機權限", "Full local access")}</option></select>
           <button className="button" disabled={pending || session.busy || session.revoked} onClick={() => void act("permission", { id: session.id, mode })}>{t("設定授權", "Set permission")}</button>
           <button className="icon-button" aria-label={t("撤銷本機權限", "Revoke local permission")} disabled={session.revoked} onClick={() => void native("revoke", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><X size={17}/></button></div></div>
-        <div className="local-agent-navigation"><nav className="local-agent-tabs" aria-label={t("本機工作檢視", "Local work views")}><button aria-label={t("對話", "Conversation")} aria-pressed={panel === "chat"} onClick={() => setPanel("chat")}>{t("對話", "Conversation")}{!!session.inputs?.length && <span className="local-agent-question-count" aria-hidden="true">{session.inputs.length}</span>}</button><button aria-pressed={panel === "folders"} onClick={() => setPanel("folders")}><FolderOpen size={14}/>{t("目錄工作", "Folder work")}</button></nav>
+        <div className="local-agent-navigation"><nav className="local-agent-tabs" aria-label={t("本機工作檢視", "Local work views")}><button aria-label={t("對話", "Conversation")} aria-pressed={panel === "chat"} onClick={() => setPanel("chat")}>{t("對話", "Conversation")}{!!session.inputs?.length && <span className="local-agent-question-count" aria-hidden="true">{session.inputs.length}</span>}</button><button aria-pressed={panel === "folders"} onClick={() => setPanel("folders")}><FolderOpen size={14}/>{t("目錄工作", "Folder work")}</button><button aria-pressed={panel === "programs"} onClick={() => setPanel("programs")}><Terminal size={14}/>{t("本機程式", "Local programs")}</button></nav>
           <div className="local-agent-safety">{session.permission ? <>{t("已授權：", "Granted: ")}{t(...({ "read-only": ["唯讀", "Read only"], "workspace-write": ["目錄內讀寫", "Workspace write"], "full-access": ["完整本機權限", "Full local access"] } as Record<Permission, [string, string]>)[session.permission])}</> : t("尚未授權", "Not granted")}
             <span className="local-agent-service">{t("模型服務經公司伺服器", "Model service via company server")}</span></div></div>
         <div className="local-agent-chat" hidden={panel !== "chat"}><div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">
@@ -238,6 +254,7 @@ export function LocalAgentWorkspace() {
                 : <button className="button primary" type="submit" disabled={pending || !session.permission || session.revoked || session.uncertain || !prompt.trim()}><ArrowUp size={18}/>{t("開始工作", "Start work")}</button>}</div></form>
         {session.task && <div className="local-agent-receipt"><span>{t("公司費用記錄", "Company billing record")} · {session.task.status}</span><span>{t("已結算", "Charged")} <Money value={session.task.charged_micros}/> · {t("已觀測", "Observed")} <Money value={session.task.accrued_micros}/></span></div>}
         </div>{panel === "folders" && <LocalFolderSchedules key={session.id} sessionId={session.id} writable={!session.revoked && ["workspace-write", "full-access"].includes(session.permission ?? "")} pendingQuestions={session.inputs?.length ?? 0} onAnswer={() => setPanel("chat")}/>}
+        {panel === "programs" && <LocalPrograms key={session.id} sessionId={session.id} fullAccess={!session.revoked && session.permission === "full-access"}/>}
       </> : <div className="local-agent-empty"><FolderOpen size={36}/><h2>{t("選擇你的工作目錄", "Choose your workspace")}</h2><p>{t("本機會話保存在此電腦，並與你的帳戶和企業專案綁定。", "Local sessions stay on this computer and belong to your account and company project.")}</p></div>}
     </section></div>
   </div>;

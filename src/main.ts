@@ -9,6 +9,7 @@ import { NativeSession, NativeSessionError, type NativeTokens } from "./native-s
 import { exchangeNativeCode } from "./native-code.js";
 import { LocalAgentController, type LocalAgentJournal } from "./local-agent.js";
 import { LocalScheduleController, type ScheduleJournal } from "./local-schedule.js";
+import { LocalProgramController, type ProgramJournal } from "./local-programs.js";
 import { localRuntimeLock } from "./local-runtime.js";
 import { NativeBrowserPool } from "./native-browser.js";
 import {
@@ -124,7 +125,7 @@ const nativeSession = new NativeSession({
   },
   changed: () => {
     // Revoke all local grants before another account can use cached folder state.
-    localAccessReset = Promise.all([files.revokeAll(), localSchedules.withdraw(), localAgent.invalidate()]).then(async () => {
+    localAccessReset = Promise.all([files.revokeAll(), localSchedules.withdraw(), localPrograms.withdraw(), localAgent.invalidate()]).then(async () => {
       await save("devices", {});
       await save("command-keys", {});
     });
@@ -174,6 +175,31 @@ const localAgent = new LocalAgentController({
   executable: app.isPackaged ? path.join(process.resourcesPath, "local-codex", "codex.exe") : process.env.COPYPASTE_LOCAL_CODEX_BIN ?? path.join(import.meta.dirname, "../.data/runtime/windows-x64/codex.exe"),
   runtime: localRuntimeLock,
   browser: (owner, authorize) => nativeBrowsers.create(owner, authorize),
+  program: (owner, authorize) => localPrograms.session({ sessionId: owner.approvalSessionId, taskId: owner.taskId }, authorize),
+});
+const localPrograms = new LocalProgramController({
+  read: () => load<ProgramJournal | null>("local-programs", null), write: journal => save("local-programs", journal),
+  owner: id => localAgent.programOwner(id), context: id => localAgent.programOwner(id, true),
+  host: app.isPackaged ? path.join(process.resourcesPath, "local-program-host/local-program-host.exe") : path.join(import.meta.dirname, "../.data/native-program-host/local-program-host.exe"),
+  choose: async () => {
+    const result = await dialog.showOpenDialog(window!, { title: "選擇本機程式 / Choose local program", properties: ["openFile"], filters: [{ name: "Windows 程式 / Programs", extensions: ["exe", "com"] }] });
+    return result.canceled ? null : result.filePaths[0] ?? null;
+  },
+  confirm: async program => {
+    const result = await dialog.showMessageBox(window!, { type: "question", title: "CopyPaste · 批准本機程式 / Approve local program",
+      message: program.name,
+      detail: `允許目前會話的 Agent 使用參數陣列執行此程式。程式具有目前 Windows 帳戶的權限，並不只限於工作目錄。此批准綁定目前本機授權版本；可隨時撤銷。\nAllow this session's Agent to run this exact program with structured arguments, under your current Windows account. It can access beyond the workspace. Approval applies to the current local permission version and can be revoked.\n\n${program.path}\nSHA-256 ${program.sha256}\n\n工作目錄 / Workspace: ${program.workspace}`,
+      buttons: ["取消 / Cancel", "批准程式 / Approve program"], defaultId: 0, cancelId: 0, noLink: true });
+    return result.response === 1;
+  },
+  review: async receipt => {
+    const result = await dialog.showMessageBox(window!, { type: "question", title: "CopyPaste · 核對原程式工作 / Review original program run",
+      message: "已核對原工作和成果？ / Have you reviewed the original task and files?",
+      detail: `${receipt.programName}\n原工作 / Original task: ${receipt.taskId}\n${JSON.stringify(receipt.argv)}\n\n此操作只記錄你的核對聲明，允許之後的新執行。原項仍保持結果未知，不會重新執行、補造結束狀態或更改費用。\nThis records your review and allows future new invocations. The original outcome remains unknown; it is not rerun, marked completed or financially adjusted.`,
+      buttons: ["取消 / Cancel", "我已核對 / I have reviewed"], defaultId: 0, cancelId: 0, noLink: true });
+    return result.response === 1;
+  },
+  changed: () => { if (window && !window.isDestroyed()) window.webContents.send("local-agent:changed"); },
 });
 const localSchedules = new LocalScheduleController({
   read: () => load<ScheduleJournal | null>("local-schedules", null), write: journal => save("local-schedules", journal),
@@ -546,19 +572,24 @@ async function createWindow() {
       await localAccessReset;
       if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("LOCAL_REQUEST_INVALID");
       const keys: Record<string, string[]> = { list: ["tenant", "project"], create: ["tenant", "project", "role"], permission: ["id", "mode"], send: ["id", "prompt", "budget"], answer: ["id", "requestId", "answers"], retry: ["id"], stop: ["id"], revoke: ["id"],
-        "schedule.list": ["id"], "schedule.create": ["id", "settings"], "schedule.activate": ["id", "ruleId"], "schedule.pause": ["id", "ruleId"], "schedule.revoke": ["id", "ruleId"], "schedule.open-output": ["id", "ruleId", "jobId"] };
+        "schedule.list": ["id"], "schedule.create": ["id", "settings"], "schedule.activate": ["id", "ruleId"], "schedule.pause": ["id", "ruleId"], "schedule.revoke": ["id", "ruleId"], "schedule.open-output": ["id", "ruleId", "jobId"],
+        "program.list": ["id"], "program.approve": ["id"], "program.revoke": ["id", "programId"], "program.review": ["id", "receiptId"] };
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
       switch (action) {
         case "list": value = await localAgent.list(payload); break;
         case "create": value = await localAgent.create(payload, payload.role); break;
-        case "permission": await localSchedules.withdraw(payload.id); value = await localAgent.permission(payload.id, payload.mode); break;
+        case "permission": await localSchedules.withdraw(payload.id); await localPrograms.withdraw(payload.id); value = await localAgent.permission(payload.id, payload.mode); break;
         case "send": value = await localAgent.send(payload.id, payload.prompt, payload.budget); break;
         case "answer": value = await localAgent.answer(payload.id, payload.requestId, payload.answers); break;
         case "retry": value = await localAgent.retry(payload.id); break;
         case "stop": await localSchedules.withdraw(payload.id); value = await localAgent.stop(payload.id); break;
-        case "revoke": await localSchedules.withdraw(payload.id); value = await localAgent.revoke(payload.id); break;
+        case "revoke": await localSchedules.withdraw(payload.id); await localPrograms.withdraw(payload.id); value = await localAgent.revoke(payload.id); break;
+        case "program.list": value = await localPrograms.list(payload.id); break;
+        case "program.approve": value = await localPrograms.approve(payload.id); break;
+        case "program.revoke": await localPrograms.revoke(payload.id, payload.programId); value = true; break;
+        case "program.review": await localPrograms.review(payload.id, payload.receiptId); value = true; break;
         case "schedule.list": value = await localSchedules.list(payload.id); break;
         case "schedule.create": value = await localSchedules.create(payload.id, payload.settings); break;
         case "schedule.activate": value = await localSchedules.activate(payload.id, payload.ruleId); break;
@@ -769,5 +800,5 @@ app.on("before-quit", event => {
   if (deviceTimer) clearInterval(deviceTimer);
   if (shuttingDown) return;
   event.preventDefault(); shuttingDown = true;
-  void Promise.all([localSchedules.close(), localAgent.close()]).then(() => localSchedules.drain()).then(() => app.exit(0), () => app.exit(1));
+  void Promise.all([localSchedules.close(), localPrograms.close(), localAgent.close(), nativeBrowsers.close()]).then(() => localSchedules.drain()).then(() => app.exit(0), () => app.exit(1));
 });

@@ -7,9 +7,10 @@
     "node": ">=22.14.0"
   },
   "scripts": {
-    "build": "node scripts/configure-deployment.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts",
+    "build": "node scripts/configure-deployment.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p renderer/tsconfig.json",
     "start": "electron .",
+    "pretest": "node scripts/build-program-host.mjs",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:local": "node --import tsx --test --test-concurrency=1 tests/integration/local-codex.native.test.ts",
     "runtime:prepare": "node scripts/prepare-local-codex.mjs",
@@ -77,6 +78,10 @@
       "artifactName": "CopyPaste-${version}-${arch}-Portable.${ext}"
     },
     "extraResources": [
+      {
+        "from": ".data/native-program-host",
+        "to": "local-program-host"
+      },
       {
         "from": ".data/runtime/windows-x64",
         "to": "local-codex"
