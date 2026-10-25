@@ -20,6 +20,7 @@ import { analyticsEvidence } from "./analytics.js";
 import { enqueueTask } from "./task-service.js";
 import { cancelWorkflowRun } from "./workflow-control.js";
 import { advanceCloudWorkflows } from "./cloud-workflows.js";
+import { advanceAgentGroups } from "./agent-groups.js";
 
 const params = z.object({ tenant: uuid, project: uuid });
 const color = z.string().regex(/^#[a-f\d]{6}$/i);
@@ -904,6 +905,7 @@ export async function advanceWorkflows(
   storage: Storage,
 ) {
   await advanceCloudWorkflows(db, catalog, storage);
+  await advanceAgentGroups(db, catalog);
   const candidates = (
     await db.control.query(
       "SELECT id,tenant_id FROM workflow_runs WHERE state='running' AND execution_location='cloud' AND private_owner IS NULL ORDER BY created_at LIMIT 20",

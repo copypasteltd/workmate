@@ -13,6 +13,7 @@ import { cancelWorkflowRun } from "./workflow-control.js";
 import { eraseWorkspaceNode } from "./cloud-files.js";
 import { matrixContentBody } from "./creative-matrices.js";
 import { videoContentBody } from "./video-projects.js";
+import { stopAgentGroupRun } from "./agent-groups.js";
 const tables = [
   "assets",
   "tasks",
@@ -32,6 +33,8 @@ const tables = [
   "memories",
   "workspace_nodes",
   "project_configurations",
+  "agent_groups",
+  "agent_group_runs",
 ] as const;
 async function find(tx: Tx, id: string) {
   for (const table of tables) {
@@ -43,8 +46,17 @@ async function find(tx: Tx, id: string) {
     ).rows[0];
     if (r) {
       if (["creative_mappings", "creative_feedback_reports"].includes(table)) {
-        await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", ["creative-feedback:" + r.project_id]);
-        return { table, row: (await tx.query(`SELECT * FROM ${table} WHERE id=$1 FOR UPDATE`, [id])).rows[0] };
+        await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
+          "creative-feedback:" + r.project_id,
+        ]);
+        return {
+          table,
+          row: (
+            await tx.query(`SELECT * FROM ${table} WHERE id=$1 FOR UPDATE`, [
+              id,
+            ])
+          ).rows[0],
+        };
       }
       if (table === "workspace_nodes") {
         await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
@@ -158,79 +170,159 @@ export function registerAdminContent(
             };
           }
           const body =
-            table === "project_configurations"
-              ? { draft: r.draft, revision: r.version, current_version: r.current_version,
-                  versions: (await tx.query("SELECT version,body,sha256,created_at FROM project_configuration_versions WHERE configuration_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100", [r.id])).rows }
-              : table === "geo_samples"
-              ? { question: r.body.question, run_id: r.run_id, task_id: r.task_id, asset_version_id: r.asset_version_id,
-                  answer_sha256: r.answer_sha256, observed_at: r.observed_at, captured_at: r.captured_at, analysis: r.analysis }
-              : table === "geo_runs"
-                ? { ...r.body, experiment_id: r.experiment_id, surface: r.surface, config_hash: r.config_hash }
-                : table === "brand_profiles"
-              ? { current_version: r.version, versions: (await tx.query("SELECT version,name,body,sha256,created_at,created_by FROM brand_profile_versions WHERE brand_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100", [r.id])).rows }
-              : table === "creative_projects" && r.kind === "creative_matrix"
-              ? await matrixContentBody(tx, r)
-              : table === "creative_projects" && r.kind === "video"
-                ? await videoContentBody(tx, r)
-                : table === "workflow_schedules"
-                  ? (
+            table === "agent_groups"
+              ? {
+                  version: r.version,
+                  state: r.state,
+                  versions: (
+                    await tx.query(
+                      "SELECT version,body,sha256,created_at FROM agent_group_versions WHERE group_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100",
+                      [r.id],
+                    )
+                  ).rows,
+                }
+              : table === "agent_group_runs"
+                ? {
+                    state: r.state,
+                    revision: r.revision,
+                    definition: r.definition,
+                    definition_hash: r.definition_hash,
+                    approved_budget_micros: r.approved_budget_micros,
+                    coordinator_task_id: r.coordinator_task_id,
+                    nodes: (
                       await tx.query(
-                        "SELECT revision,body,created_at FROM workflow_schedule_versions WHERE schedule_id=$1 ORDER BY revision DESC LIMIT 100",
+                        "SELECT step_key,position,task_id,state,error_code FROM agent_group_nodes WHERE run_id=$1 ORDER BY position",
                         [r.id],
                       )
-                    ).rows
-                  : table === "tasks"
+                    ).rows,
+                  }
+                : table === "project_configurations"
+                  ? {
+                      draft: r.draft,
+                      revision: r.version,
+                      current_version: r.current_version,
+                      versions: (
+                        await tx.query(
+                          "SELECT version,body,sha256,created_at FROM project_configuration_versions WHERE configuration_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100",
+                          [r.id],
+                        )
+                      ).rows,
+                    }
+                  : table === "geo_samples"
                     ? {
-                        title: r.title,
-                        prompt: r.prompt,
-                        output: r.output,
-                        status: r.status,
-                        dependencies: (
-                          await tx.query(
-                            "SELECT id,step_key,kind,description,required_scope,provider,state,resource_ids,version FROM task_dependencies WHERE task_id=$1 ORDER BY step_key",
-                            [r.id],
-                          )
-                        ).rows,
+                        question: r.body.question,
+                        run_id: r.run_id,
+                        task_id: r.task_id,
+                        asset_version_id: r.asset_version_id,
+                        answer_sha256: r.answer_sha256,
+                        observed_at: r.observed_at,
+                        captured_at: r.captured_at,
+                        analysis: r.analysis,
                       }
-                    : table === "analytics_datasets"
+                    : table === "geo_runs"
                       ? {
-                          currency: r.currency,
-                          timezone: r.timezone,
-                          rows: r.rows,
-                          import_spec: r.import_spec,
-                          import_metadata: r.import_metadata,
-                          source_sha256: r.source_sha256,
-                          source_filename: r.source_filename,
-                          source_available:
-                            !!r.source_asset_version_id || r.raw_csv !== null,
-                          source_asset_version_id: r.source_asset_version_id,
-                          source_state: r.source_state,
-                          supersedes_id: r.supersedes_id,
-                          raw_csv: r.raw_csv,
-                          metric_snapshot: r.metric_snapshot,
+                          ...r.body,
+                          experiment_id: r.experiment_id,
+                          surface: r.surface,
+                          config_hash: r.config_hash,
                         }
-                      : table === "workflows"
-                        ? r.execution_location === "desktop" ? { definition: r.definition, execution_location: r.execution_location,
-                            versions: (await tx.query("SELECT version,definition,definition_hash,role_hashes,source_refs,published_at,created_at FROM workflow_versions WHERE workflow_id=$1 ORDER BY version DESC LIMIT 100", [r.id])).rows } : r.definition
-                        : table === "workflow_runs"
-                          ? {
-                              definition: r.definition,
-                              results: r.results,
-                              state: r.state,
-                              ...(r.execution_location === "desktop" ? {
-                                execution_location: r.execution_location, workflow_version: r.workflow_version,
-                                cursor: r.cursor, revision: r.revision, origin_task_id: r.origin_task_id, active_task: r.active_task,
-                              } : {}),
-                            }
-                          : table === "workspace_nodes"
-                            ? {
-                                kind: r.kind,
-                                workspace_id: r.workspace_id,
-                                parent_id: r.parent_id,
-                                asset_version_id: r.asset_version_id,
-                                reference_state: r.reference_state,
-                              }
-                            : r.body;
+                      : table === "brand_profiles"
+                        ? {
+                            current_version: r.version,
+                            versions: (
+                              await tx.query(
+                                "SELECT version,name,body,sha256,created_at,created_by FROM brand_profile_versions WHERE brand_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100",
+                                [r.id],
+                              )
+                            ).rows,
+                          }
+                        : table === "creative_projects" &&
+                            r.kind === "creative_matrix"
+                          ? await matrixContentBody(tx, r)
+                          : table === "creative_projects" && r.kind === "video"
+                            ? await videoContentBody(tx, r)
+                            : table === "workflow_schedules"
+                              ? (
+                                  await tx.query(
+                                    "SELECT revision,body,created_at FROM workflow_schedule_versions WHERE schedule_id=$1 ORDER BY revision DESC LIMIT 100",
+                                    [r.id],
+                                  )
+                                ).rows
+                              : table === "tasks"
+                                ? {
+                                    title: r.title,
+                                    prompt: r.prompt,
+                                    output: r.output,
+                                    status: r.status,
+                                    dependencies: (
+                                      await tx.query(
+                                        "SELECT id,step_key,kind,description,required_scope,provider,state,resource_ids,version FROM task_dependencies WHERE task_id=$1 ORDER BY step_key",
+                                        [r.id],
+                                      )
+                                    ).rows,
+                                  }
+                                : table === "analytics_datasets"
+                                  ? {
+                                      currency: r.currency,
+                                      timezone: r.timezone,
+                                      rows: r.rows,
+                                      import_spec: r.import_spec,
+                                      import_metadata: r.import_metadata,
+                                      source_sha256: r.source_sha256,
+                                      source_filename: r.source_filename,
+                                      source_available:
+                                        !!r.source_asset_version_id ||
+                                        r.raw_csv !== null,
+                                      source_asset_version_id:
+                                        r.source_asset_version_id,
+                                      source_state: r.source_state,
+                                      supersedes_id: r.supersedes_id,
+                                      raw_csv: r.raw_csv,
+                                      metric_snapshot: r.metric_snapshot,
+                                    }
+                                  : table === "workflows"
+                                    ? r.execution_location === "desktop"
+                                      ? {
+                                          definition: r.definition,
+                                          execution_location:
+                                            r.execution_location,
+                                          versions: (
+                                            await tx.query(
+                                              "SELECT version,definition,definition_hash,role_hashes,source_refs,published_at,created_at FROM workflow_versions WHERE workflow_id=$1 ORDER BY version DESC LIMIT 100",
+                                              [r.id],
+                                            )
+                                          ).rows,
+                                        }
+                                      : r.definition
+                                    : table === "workflow_runs"
+                                      ? {
+                                          definition: r.definition,
+                                          results: r.results,
+                                          state: r.state,
+                                          ...(r.execution_location === "desktop"
+                                            ? {
+                                                execution_location:
+                                                  r.execution_location,
+                                                workflow_version:
+                                                  r.workflow_version,
+                                                cursor: r.cursor,
+                                                revision: r.revision,
+                                                origin_task_id:
+                                                  r.origin_task_id,
+                                                active_task: r.active_task,
+                                              }
+                                            : {}),
+                                        }
+                                      : table === "workspace_nodes"
+                                        ? {
+                                            kind: r.kind,
+                                            workspace_id: r.workspace_id,
+                                            parent_id: r.parent_id,
+                                            asset_version_id:
+                                              r.asset_version_id,
+                                            reference_state: r.reference_state,
+                                          }
+                                        : r.body;
           return {
             id: r.id,
             name: r.name ?? r.title ?? table,
@@ -289,7 +381,12 @@ export function registerAdminContent(
                   "Permanently deleted content cannot be changed or restored",
                 );
               if (b.action === "metadata") {
-                if (table === "agents" || table === "project_configurations")
+                if (
+                  table === "agents" ||
+                  table === "project_configurations" ||
+                  table === "agent_groups" ||
+                  table === "agent_group_runs"
+                )
                   throw new Problem(
                     400,
                     "AGENT_VERSION_REQUIRED",
@@ -301,11 +398,16 @@ export function registerAdminContent(
                     "NAME_REQUIRED",
                     "A content name is required",
                   );
-                if (table === "brand_profiles") await tx.query("UPDATE brand_profiles SET name=$2,body=jsonb_set(body,'{name}',to_jsonb($2::text)),version=version+1,moderation_version=moderation_version+1 WHERE id=$1", [id, b.name]);
-                else await tx.query(
-                  `UPDATE ${table} SET ${table === "tasks" ? "title" : "name"}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
-                  [id, b.name],
-                );
+                if (table === "brand_profiles")
+                  await tx.query(
+                    "UPDATE brand_profiles SET name=$2,body=jsonb_set(body,'{name}',to_jsonb($2::text)),version=version+1,moderation_version=moderation_version+1 WHERE id=$1",
+                    [id, b.name],
+                  );
+                else
+                  await tx.query(
+                    `UPDATE ${table} SET ${table === "tasks" ? "title" : "name"}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
+                    [id, b.name],
+                  );
               } else {
                 if (b.action === "delete" && table === "conversations") {
                   await eraseConversation(tx, req.principal, r);
@@ -321,21 +423,49 @@ export function registerAdminContent(
                 }
                 if (table === "workflow_schedules" && b.action === "delete")
                   await eraseSchedule(tx, id);
-                if (b.action === "delete" && table === "project_configurations") {
+                if (
+                  b.action === "delete" &&
+                  table === "project_configurations"
+                ) {
                   await eraseReplayContent(tx, [id]);
-                  await tx.query("UPDATE project_configurations SET draft='{}',content_state='deleted',version=version+1,moderation_version=moderation_version+1 WHERE id=$1", [id]);
-                } else await tx.query(
-                  `UPDATE ${table} SET ${state}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
-                  [
-                    id,
-                    b.action === "restore"
-                      ? "active"
-                      : b.action === "delete"
-                        ? "deleted"
-                        : "quarantined",
-                  ],
-                );
+                  await tx.query(
+                    "UPDATE project_configurations SET draft='{}',content_state='deleted',version=version+1,moderation_version=moderation_version+1 WHERE id=$1",
+                    [id],
+                  );
+                } else
+                  await tx.query(
+                    `UPDATE ${table} SET ${state}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
+                    [
+                      id,
+                      b.action === "restore"
+                        ? "active"
+                        : b.action === "delete"
+                          ? "deleted"
+                          : "quarantined",
+                    ],
+                  );
                 if (b.action !== "restore") {
+                  if (
+                    table === "agent_groups" ||
+                    table === "agent_group_runs"
+                  ) {
+                    const runs =
+                      table === "agent_group_runs"
+                        ? [r]
+                        : (
+                            await tx.query(
+                              "SELECT * FROM agent_group_runs WHERE group_id=$1 AND state='running' ORDER BY id FOR UPDATE",
+                              [id],
+                            )
+                          ).rows;
+                    for (const run of runs)
+                      await stopAgentGroupRun(
+                        tx,
+                        run,
+                        "cancelled",
+                        "CONTENT_UNAVAILABLE",
+                      );
+                  }
                   if (table === "assets")
                     await tx.query(
                       "UPDATE shares SET revoked_at=now() WHERE asset_id=$1 AND revoked_at IS NULL",

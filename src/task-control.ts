@@ -61,8 +61,40 @@ export async function controlUnclaimedTask(
   action: "pause" | "resume",
 ) {
   const expected = action === "pause" ? "queued" : "paused";
+  if (task.agent_group_run_id && action === "resume") {
+    const run = (
+      await tx.query(
+        "SELECT state FROM agent_group_runs WHERE id=$1 AND content_state='active' AND deadline_at>clock_timestamp()",
+        [task.agent_group_run_id],
+      )
+    ).rows[0];
+    if (run?.state !== "running")
+      throw new Problem(
+        409,
+        "GROUP_EXECUTION_CLOSED",
+        "This team execution is closed; review a new run",
+      );
+    if (
+      task.agent_group_node_key === "coordinator" &&
+      (
+        await tx.query(
+          "SELECT 1 FROM agent_group_nodes n LEFT JOIN tasks t ON t.id=n.task_id WHERE n.run_id=$1 AND (n.state<>'succeeded' OR t.status IS DISTINCT FROM 'succeeded' OR t.content_state IS DISTINCT FROM 'active') LIMIT 1",
+          [task.agent_group_run_id],
+        )
+      ).rowCount
+    )
+      throw new Problem(
+        409,
+        "GROUP_MEMBERS_PENDING",
+        "The coordinator starts after the approved members finish",
+      );
+  }
   if (task.execution_location === "desktop")
-    throw new Problem(409, "LOCAL_EXECUTION_CONTROL_REQUIRED", "Control this execution from its local desktop session");
+    throw new Problem(
+      409,
+      "LOCAL_EXECUTION_CONTROL_REQUIRED",
+      "Control this execution from its local desktop session",
+    );
   if (
     task.status !== expected ||
     task.attempt !== 0 ||

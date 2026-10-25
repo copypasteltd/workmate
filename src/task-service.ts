@@ -45,6 +45,8 @@ export async function enqueueTask(
     role_hash?: string;
     /** Internal binding, set only by the authorized cloud workflow runner. */
     cloud_workflow?: { run_id: string; cursor: number };
+    /** Internal, exact reviewed team step. Never accepted from task API input. */
+    agent_group?: { run_id: string; node_key: string; deferred?: boolean };
   } = {},
 ) {
   if (b.prompt.length > 60000)
@@ -54,6 +56,21 @@ export async function enqueueTask(
       "The approved request and plan are too large; revise the plan before execution",
     );
   await projectAccess(tx, actor, tenant, project, "write");
+  if (
+    options.conversation &&
+    !options.agent_group &&
+    (
+      await tx.query(
+        "SELECT 1 FROM agent_group_runs WHERE conversation_id=$1",
+        [options.conversation.id],
+      )
+    ).rowCount
+  )
+    throw new Problem(
+      409,
+      "GROUP_CONVERSATION_READ_ONLY",
+      "Start or repeat team work from its reviewed team plan",
+    );
   if (
     (options.execution_location ?? "cloud") === "cloud" &&
     actor.audience === "native" &&
@@ -88,6 +105,12 @@ export async function enqueueTask(
       ])
     ).rows[0];
     if (!parent) throw new Problem(404, "NOT_FOUND", "Original task not found");
+    if (parent.agent_group_run_id && !options.agent_group)
+      throw new Problem(
+        409,
+        "GROUP_NEW_RUN_REQUIRED",
+        "Review a new team run to repeat this work under a new approved allocation",
+      );
     if (parent.execution_location !== (options.execution_location ?? "cloud"))
       throw new Problem(
         409,
@@ -184,12 +207,16 @@ export async function enqueueTask(
     tenant,
     project,
     b.budget_micros,
-    parent ? (parent.input_context?.project_configuration ?? null) : undefined,
+    options.agent_group
+      ? (options.context?.project_configuration ?? null)
+      : parent
+        ? (parent.input_context?.project_configuration ?? null)
+        : undefined,
   );
   const task = (
     await tx.query(
-      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING *`,
+      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *`,
       [
         tenant,
         project,
@@ -223,6 +250,9 @@ export async function enqueueTask(
         options.execution_location ?? "cloud",
         options.cloud_workflow?.run_id ?? null,
         options.cloud_workflow?.cursor ?? null,
+        options.agent_group?.run_id ?? null,
+        options.agent_group?.node_key ?? null,
+        options.agent_group?.deferred ? "paused" : "queued",
       ],
     )
   ).rows[0];
@@ -241,11 +271,19 @@ export async function enqueueTask(
     [
       tenant,
       task.id,
-      waiting ? "task.needs_input" : "task.queued",
+      waiting
+        ? "task.needs_input"
+        : options.agent_group?.deferred
+          ? "task.waiting_for_team"
+          : "task.queued",
       { role_key: b.role_key, mode: task.mode },
     ],
   );
-  if (!waiting && task.execution_location === "cloud")
+  if (
+    !waiting &&
+    !options.agent_group?.deferred &&
+    task.execution_location === "cloud"
+  )
     await tx.query(
       "INSERT INTO outbox(tenant_id,topic,payload) VALUES($1,'task.run',$2)",
       [tenant, { task_id: task.id }],

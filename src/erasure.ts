@@ -22,6 +22,8 @@ const targets = new Set([
   "workflow_schedules",
   "creative_projects",
   "workspace_nodes",
+  "agent_groups",
+  "agent_group_runs",
 ]);
 const activeStates = [
   "queued",
@@ -215,25 +217,51 @@ export class ErasureService {
     switch (j.target_type) {
       case "geo_experiments":
       case "geo_runs": {
-        const childTable = j.target_type === "geo_experiments" ? "geo_runs" : "geo_samples";
-        const parentColumn = j.target_type === "geo_experiments" ? "experiment_id" : "run_id";
-        await tx.query(`INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM ${childTable} c
-          JOIN deletion_jobs d ON d.target_type=$3 AND d.target_id=c.id WHERE c.${parentColumn}=$1 ON CONFLICT DO NOTHING`, [id, j.id, childTable]);
-        await tx.query(`UPDATE ${j.target_type} SET name='[deleted]',body='{}' WHERE id=$1`, [id]);
+        const childTable =
+          j.target_type === "geo_experiments" ? "geo_runs" : "geo_samples";
+        const parentColumn =
+          j.target_type === "geo_experiments" ? "experiment_id" : "run_id";
+        await tx.query(
+          `INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM ${childTable} c
+          JOIN deletion_jobs d ON d.target_type=$3 AND d.target_id=c.id WHERE c.${parentColumn}=$1 ON CONFLICT DO NOTHING`,
+          [id, j.id, childTable],
+        );
+        await tx.query(
+          `UPDATE ${j.target_type} SET name='[deleted]',body='{}' WHERE id=$1`,
+          [id],
+        );
         break;
       }
       case "geo_samples": {
-        const sample = (await tx.query("SELECT * FROM geo_samples WHERE id=$1", [id])).rows[0];
+        const sample = (
+          await tx.query("SELECT * FROM geo_samples WHERE id=$1", [id])
+        ).rows[0];
         if (sample.task_id) {
-          const task = (await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [sample.task_id])).rows[0];
+          const task = (
+            await tx.query("SELECT * FROM tasks WHERE id=$1 FOR UPDATE", [
+              sample.task_id,
+            ])
+          ).rows[0];
           await requestTaskCancellation(tx, task);
-          await tx.query("UPDATE tasks SET content_state='deleted',version=version+1 WHERE id=$1 AND content_state<>'deleted'", [sample.task_id]);
+          await tx.query(
+            "UPDATE tasks SET content_state='deleted',version=version+1 WHERE id=$1 AND content_state<>'deleted'",
+            [sample.task_id],
+          );
         }
-        if (sample.asset_version_id) await tx.query("UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=(SELECT asset_id FROM asset_versions WHERE id=$1) AND state<>'deleted'", [sample.asset_version_id]);
-        await tx.query(`INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $1,d.id FROM deletion_jobs d WHERE
+        if (sample.asset_version_id)
+          await tx.query(
+            "UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id=(SELECT asset_id FROM asset_versions WHERE id=$1) AND state<>'deleted'",
+            [sample.asset_version_id],
+          );
+        await tx.query(
+          `INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $1,d.id FROM deletion_jobs d WHERE
           (d.target_type='tasks' AND d.target_id=$2) OR (d.target_type='assets' AND d.target_id=(SELECT asset_id FROM asset_versions WHERE id=$3)) ON CONFLICT DO NOTHING`,
-        [j.id, sample.task_id, sample.asset_version_id]);
-        await tx.query("UPDATE geo_samples SET name='[deleted]',body='{}',analysis=NULL WHERE id=$1", [id]);
+          [j.id, sample.task_id, sample.asset_version_id],
+        );
+        await tx.query(
+          "UPDATE geo_samples SET name='[deleted]',body='{}',analysis=NULL WHERE id=$1",
+          [id],
+        );
         break;
       }
       case "workspace_nodes":
@@ -242,6 +270,66 @@ export class ErasureService {
           [id],
         );
         break;
+      case "agent_groups":
+        await tx.query(
+          "UPDATE agent_group_versions SET body='{}',erased_at=clock_timestamp() WHERE group_id=$1 AND erased_at IS NULL",
+          [id],
+        );
+        await tx.query(
+          "UPDATE agent_group_members SET role_description='[deleted]' WHERE group_id=$1",
+          [id],
+        );
+        await tx.query(
+          "UPDATE agent_group_preflights SET definition='{}',erased_at=clock_timestamp() WHERE group_id=$1 AND erased_at IS NULL",
+          [id],
+        );
+        await tx.query("UPDATE agent_groups SET name='[deleted]' WHERE id=$1", [
+          id,
+        ]);
+        await tx.query(
+          "INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM deletion_jobs d JOIN agent_group_runs r ON d.target_type='agent_group_runs' AND d.target_id=r.id WHERE r.group_id=$1 ON CONFLICT DO NOTHING",
+          [id, j.id],
+        );
+        break;
+      case "agent_group_runs": {
+        const run = (
+          await tx.query("SELECT * FROM agent_group_runs WHERE id=$1", [id])
+        ).rows[0];
+        const tasks = (
+          await tx.query(
+            "SELECT * FROM tasks WHERE agent_group_run_id=$1 ORDER BY id FOR UPDATE",
+            [id],
+          )
+        ).rows;
+        for (const task of tasks) {
+          await requestTaskCancellation(tx, task);
+          await tx.query(
+            "UPDATE tasks SET content_state='deleted',version=version+1 WHERE id=$1 AND content_state<>'deleted'",
+            [task.id],
+          );
+        }
+        await tx.query(
+          "UPDATE conversations SET content_state='deleted',version=version+1 WHERE id=$1 AND content_state<>'deleted'",
+          [run.conversation_id],
+        );
+        await tx.query(
+          "UPDATE agent_group_preflights SET definition='{}',erased_at=clock_timestamp() WHERE id=$1 AND erased_at IS NULL",
+          [run.preflight_id],
+        );
+        await tx.query(
+          "UPDATE agent_group_nodes SET body='{}' WHERE run_id=$1",
+          [id],
+        );
+        await tx.query(
+          "UPDATE agent_group_runs SET name='[deleted]',definition='{}' WHERE id=$1",
+          [id],
+        );
+        await tx.query(
+          "INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM deletion_jobs d WHERE (d.target_type='tasks' AND d.target_id IN(SELECT task_id FROM agent_group_nodes WHERE run_id=$1 UNION SELECT coordinator_task_id FROM agent_group_runs WHERE id=$1)) OR (d.target_type='conversations' AND d.target_id=$3) ON CONFLICT DO NOTHING",
+          [id, j.id, run.conversation_id],
+        );
+        break;
+      }
       case "assets":
         await tx.query("UPDATE assets SET name='[deleted]' WHERE id=$1", [id]);
         await tx.query(
@@ -313,11 +401,20 @@ export class ErasureService {
       case "creative_feedback_reports":
       case "creative_projects":
         if (j.target_type === "creative_feedback_reports") {
-          await tx.query("UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id IN(SELECT v.asset_id FROM creative_feedback_reports r JOIN asset_versions v ON v.id=r.asset_version_id WHERE r.id=$1) AND state<>'deleted'", [id]);
-          await tx.query("INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM creative_feedback_reports r JOIN asset_versions v ON v.id=r.asset_version_id JOIN deletion_jobs d ON d.target_type='assets' AND d.target_id=v.asset_id WHERE r.id=$1 ON CONFLICT DO NOTHING", [id, j.id]);
+          await tx.query(
+            "UPDATE assets SET state='deleted',moderation_version=moderation_version+1 WHERE id IN(SELECT v.asset_id FROM creative_feedback_reports r JOIN asset_versions v ON v.id=r.asset_version_id WHERE r.id=$1) AND state<>'deleted'",
+            [id],
+          );
+          await tx.query(
+            "INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM creative_feedback_reports r JOIN asset_versions v ON v.id=r.asset_version_id JOIN deletion_jobs d ON d.target_type='assets' AND d.target_id=v.asset_id WHERE r.id=$1 ON CONFLICT DO NOTHING",
+            [id, j.id],
+          );
         }
         if (j.target_type === "creative_mappings") {
-          await tx.query("INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM creative_feedback_mappings x JOIN deletion_jobs d ON d.target_type='creative_feedback_reports' AND d.target_id=x.report_id WHERE x.mapping_id=$1 ON CONFLICT DO NOTHING", [id, j.id]);
+          await tx.query(
+            "INSERT INTO deletion_dependencies(job_id,child_job_id) SELECT $2,d.id FROM creative_feedback_mappings x JOIN deletion_jobs d ON d.target_type='creative_feedback_reports' AND d.target_id=x.report_id WHERE x.mapping_id=$1 ON CONFLICT DO NOTHING",
+            [id, j.id],
+          );
         }
         if (j.target_type === "creative_projects") {
           const videoOutputs = (
@@ -404,7 +501,10 @@ export class ErasureService {
         await tx.query("SELECT set_config('app.erasing_content','false',true)");
         break;
       case "workflows":
-        await tx.query("UPDATE workflow_versions SET definition='{}',role_hashes='{}',source_refs='{}' WHERE workflow_id=$1", [id]);
+        await tx.query(
+          "UPDATE workflow_versions SET definition='{}',role_hashes='{}',source_refs='{}' WHERE workflow_id=$1",
+          [id],
+        );
         await tx.query(
           "UPDATE workflows SET name='[deleted]',definition='{}' WHERE id=$1",
           [id],

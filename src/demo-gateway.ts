@@ -511,6 +511,9 @@ export async function startDemoGateway(c: Config) {
       ) {
         tool = find("code_package");
         args = { filename: "demo-source.zip" };
+      } else if (find("group_results") && !used(find("group_results").name)) {
+        tool = find("group_results");
+        args = {};
       } else if (
         !sheetCalculate &&
         !workflowSave &&

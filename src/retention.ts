@@ -1,6 +1,7 @@
 import type { Database } from "./db.js";
 import type { Storage } from "./storage.js";
 import { purgeCapabilityWorkspaces } from "./capability-workspace-cleanup.js";
+import { eraseReplayContent } from "./access.js";
 
 export const retentionPolicy = {
   files_days: 90,
@@ -43,6 +44,29 @@ export class RetentionService {
         )
           return null;
         const counts: Record<string, number> = {};
+        const oldTeamReviews = (
+          await tx.query(
+            "SELECT id FROM agent_group_preflights p WHERE p.erased_at IS NULL AND p.expires_at<clock_timestamp()-interval '24 hours' AND NOT EXISTS(SELECT 1 FROM agent_group_runs r WHERE r.preflight_id=p.id) ORDER BY p.expires_at,p.id FOR UPDATE SKIP LOCKED LIMIT $1",
+            [limit],
+          )
+        ).rows;
+        if (oldTeamReviews.length) {
+          await tx.query(
+            "SELECT set_config('app.erasing_content','true',true)",
+          );
+          await tx.query(
+            "UPDATE agent_group_preflights SET definition='{}',erased_at=clock_timestamp() WHERE id=ANY($1::uuid[])",
+            [oldTeamReviews.map((r) => r.id)],
+          );
+          await eraseReplayContent(
+            tx,
+            oldTeamReviews.map((r) => r.id),
+          );
+          await tx.query(
+            "SELECT set_config('app.erasing_content','false',true)",
+          );
+        }
+        counts.agent_group_reviews = oldTeamReviews.length;
         counts.adoption_previews =
           (
             await tx.query(
@@ -59,6 +83,11 @@ export class RetentionService {
           ["geo_experiments", "content_state", "true"],
           ["geo_runs", "content_state", "true"],
           ["geo_samples", "content_state", "true"],
+          [
+            "agent_group_runs",
+            "content_state",
+            "state IN('succeeded','failed','cancelled')",
+          ],
           [
             "tasks",
             "content_state",
