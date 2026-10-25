@@ -56,6 +56,7 @@ import {
   TaskPlan,
 } from "./persistent-work";
 import { AgentGroups } from "./agent-groups";
+import { MediaEffects, EffectDelivery } from "./media-effects";
 import { GitBranch } from "lucide-react";
 import React, {
   useEffect,
@@ -672,6 +673,7 @@ const navigation = [
   ["assets", Image, "素材與交付", "Assets & deliverables"],
   ["files", FolderOpen, "雲端檔案", "Cloud files"],
   ["creative", Layers, "設計畫布", "Design canvas"],
+  ["effects", Sparkles, "特效工作室", "Motion studio"],
   ["analytics", ChartNoAxesCombined, "行銷分析", "Marketing insights"],
   ["workflows", Workflow, "工作流程", "Workflows"],
   ["connections", Plug, "連接應用", "Connections"],
@@ -875,6 +877,7 @@ function Shell() {
               <Route path="assets" element={<Assets />} />
               <Route path="files" element={<CloudFiles />} />
               <Route path="creative" element={<Creative />} />
+              <Route path="effects" element={<MediaEffects />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="connections" element={<Connections />} />
               <Route path="workflows" element={<Workflows />} />
@@ -1553,6 +1556,9 @@ function TaskDetail() {
               )}
               {data.error_code && (
                 <div className="notice error">{data.error_code}</div>
+              )}
+              {data.role_key === "video-motion" && (
+                <EffectDelivery key={"effects:" + w.base + id} taskId={id!} />
               )}
               {data.role_key === "video-motion" && (
                 <GeneratedVideos
