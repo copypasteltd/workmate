@@ -194,6 +194,13 @@ export async function startDemoGateway(c: Config) {
       const sourceRequest = requested.match(
         /revision_source_version\s*=\s*([a-f\d-]{36})/i,
       )?.[1];
+      const effectCatalog = find("effects_catalog"),
+        effectRender = find("effect_render");
+      const effectWork = requested.includes("copypaste-media-effect-1");
+      const approvedEffect = toolOutputs(
+        effectCatalog?.name,
+        (v) => v.approved_request?.schema === "copypaste-media-effect-1",
+      ).at(-1)?.approved_request;
       const designRevision = requested.match(
         /design_revision_source_version\s*=\s*([a-f\d-]{36})/i,
       )?.[1];
@@ -253,7 +260,24 @@ export async function startDemoGateway(c: Config) {
         .forEach((i) => collectChangePages(i.output));
       const lastChangePage = changePages.at(-1);
       let tool: any, args: any;
-      if (find("capability_probe") && !used(find("capability_probe").name)) {
+      if (effectWork && effectCatalog && !used(effectCatalog.name)) {
+        tool = effectCatalog;
+        args = {};
+      } else if (
+        effectWork &&
+        effectRender &&
+        approvedEffect &&
+        !used(effectRender.name)
+      ) {
+        tool = effectRender;
+        args = { request: approvedEffect };
+      } else if (effectWork && effectRender) {
+        // Synthetic model instructions only. Media, permissions, the actual
+        // Codex process and file/budget accounting still execute normally.
+      } else if (
+        find("capability_probe") &&
+        !used(find("capability_probe").name)
+      ) {
         tool = find("capability_probe");
         args = { nonce: tool.parameters?.properties?.nonce?.enum?.[0] };
       } else if (

@@ -64,7 +64,9 @@ export class Catalog {
       await readFile("catalog/role-preset-catalog.json", "utf8"),
     );
     this.roles = c.roles;
-    this.historicalRoles = JSON.parse(await readFile("catalog/role-preset-history.json", "utf8"));
+    this.historicalRoles = JSON.parse(
+      await readFile("catalog/role-preset-history.json", "utf8"),
+    );
     this.defaultAssistant = JSON.parse(
       await readFile("catalog/default-assistant.json", "utf8"),
     );
@@ -72,6 +74,35 @@ export class Catalog {
     this.skills = JSON.parse(
       await readFile("catalog/skill-packages.json", "utf8"),
     );
+    // Additive releases retain published catalog bytes and exact historical
+    // role digests so already approved tasks keep their original tools.
+    const effects = JSON.parse(
+      await readFile("catalog/media-effects-release-v1.json", "utf8"),
+    );
+    const prior = this.role("video-motion");
+    if (
+      effects.schema !== "copypaste-role-release-1" ||
+      prior.version !== "1.4.0" ||
+      this.digest(prior) !== effects.previous_role_sha256 ||
+      effects.role.role_key !== prior.role_key ||
+      effects.role.version !== "1.5.0" ||
+      this.skills.some(
+        (s) =>
+          s.key === effects.skill_package.key &&
+          s.version === effects.skill_package.version,
+      )
+    )
+      throw new Problem(
+        503,
+        "ROLE_RELEASE_INVALID",
+        "The media effect release does not match its retained base",
+      );
+    this.historicalRoles.push(prior);
+    this.roles = this.roles.map((r) =>
+      r.role_key === prior.role_key ? effects.role : r,
+    );
+    this.skills.push(effects.skill_package);
+    this.skillDefinitions.push(effects.skill_definition);
     this.admin = JSON.parse(
       await readFile("catalog/admin-permission-catalog.json", "utf8"),
     );
@@ -116,8 +147,15 @@ export class Catalog {
         : this.roles.find((r) => r.role_key === key);
     if (!r) throw new Problem(404, "ROLE_NOT_FOUND", "Role not found");
     if (definitionHash && this.digest(r) !== definitionHash) {
-      const retained = this.historicalRoles.find(old => old.role_key === key && this.digest(old) === definitionHash);
-      if (!retained) throw new Problem(409, "ROLE_VERSION_CHANGED", "The frozen role version is not installed");
+      const retained = this.historicalRoles.find(
+        (old) => old.role_key === key && this.digest(old) === definitionHash,
+      );
+      if (!retained)
+        throw new Problem(
+          409,
+          "ROLE_VERSION_CHANGED",
+          "The frozen role version is not installed",
+        );
       return retained;
     }
     return r;
@@ -184,7 +222,9 @@ export class Catalog {
         canonical({
           role,
           skills: this.skills.filter((s) =>
-            role.skill_bindings.some((b: any) => b.skill_key === s.key && b.version === s.version),
+            role.skill_bindings.some(
+              (b: any) => b.skill_key === s.key && b.version === s.version,
+            ),
           ),
         }),
       )
@@ -215,7 +255,8 @@ export class Catalog {
     if (capabilities) {
       const text = capabilities.get("internal-text-v1"),
         image = capabilities.get("internal-image2-v1"),
-        video = capabilities.get("internal-video-v1"), speech = capabilities.get("internal-speech-v1"),
+        video = capabilities.get("internal-video-v1"),
+        speech = capabilities.get("internal-speech-v1"),
         transcription = capabilities.get("internal-transcription-v1");
       const usable = (v: any) =>
         v?.ready &&
@@ -245,24 +286,47 @@ export class Catalog {
         ),
         AI_IMAGE_HKD_MICROS_PER_IMAGE: image?.body.rates[0] ?? undefined,
         AI_VIDEO_MODEL: video?.body.model_alias ?? undefined,
-        AI_VIDEO_VERIFIED: !!(usable(video) && (video.publication_id || c.AI_VIDEO_VERIFIED)
-          && video.body.wire_protocol === "company-video-jobs-v1" && video.body.rates.length === 1 && video.body.rates[0] > 0),
+        AI_VIDEO_VERIFIED: !!(
+          usable(video) &&
+          (video.publication_id || c.AI_VIDEO_VERIFIED) &&
+          video.body.wire_protocol === "company-video-jobs-v1" &&
+          video.body.rates.length === 1 &&
+          video.body.rates[0] > 0
+        ),
         AI_VIDEO_HKD_MICROS_PER_SECOND: video?.body.rates[0] ?? undefined,
         AI_SPEECH_MODEL: speech?.body.model_alias ?? undefined,
-        AI_SPEECH_VERIFIED: !!(usable(speech) && (speech.publication_id || c.AI_SPEECH_VERIFIED)),
+        AI_SPEECH_VERIFIED: !!(
+          usable(speech) &&
+          (speech.publication_id || c.AI_SPEECH_VERIFIED)
+        ),
         AI_SPEECH_HKD_MICROS_PER_CHARACTER: speech?.body.rates[0] ?? undefined,
         AI_TRANSCRIPTION_MODEL: transcription?.body.model_alias ?? undefined,
-        AI_TRANSCRIPTION_VERIFIED: !!(usable(transcription) && (transcription.publication_id || c.AI_TRANSCRIPTION_VERIFIED)),
-        AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND: transcription?.body.rates[0] ?? undefined,
+        AI_TRANSCRIPTION_VERIFIED: !!(
+          usable(transcription) &&
+          (transcription.publication_id || c.AI_TRANSCRIPTION_VERIFIED)
+        ),
+        AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND:
+          transcription?.body.rates[0] ?? undefined,
       };
     }
     if (
       mode === "execute" &&
-      role.model_bindings.some((binding: any) => binding.required &&
-        (binding.profile_key === "internal-speech-v1" && (!c.AI_SPEECH_MODEL || !c.AI_SPEECH_VERIFIED || !c.AI_SPEECH_HKD_MICROS_PER_CHARACTER)
-          || binding.profile_key === "internal-transcription-v1" && (!c.AI_TRANSCRIPTION_MODEL || !c.AI_TRANSCRIPTION_VERIFIED || !c.AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND)
-          || binding.profile_key === "internal-video-v1"
-          && (!c.AI_VIDEO_MODEL || !c.AI_VIDEO_VERIFIED || !c.AI_VIDEO_HKD_MICROS_PER_SECOND)))
+      role.model_bindings.some(
+        (binding: any) =>
+          binding.required &&
+          ((binding.profile_key === "internal-speech-v1" &&
+            (!c.AI_SPEECH_MODEL ||
+              !c.AI_SPEECH_VERIFIED ||
+              !c.AI_SPEECH_HKD_MICROS_PER_CHARACTER)) ||
+            (binding.profile_key === "internal-transcription-v1" &&
+              (!c.AI_TRANSCRIPTION_MODEL ||
+                !c.AI_TRANSCRIPTION_VERIFIED ||
+                !c.AI_TRANSCRIPTION_HKD_MICROS_PER_MILLISECOND)) ||
+            (binding.profile_key === "internal-video-v1" &&
+              (!c.AI_VIDEO_MODEL ||
+                !c.AI_VIDEO_VERIFIED ||
+                !c.AI_VIDEO_HKD_MICROS_PER_SECOND))),
+      )
     )
       return { available: false, reason: "MEDIA_CAPABILITY_SETUP_REQUIRED" };
     if (!c.AI_BASE_URL || !c.AI_API_KEY || !c.AI_MODEL || !c.AI_VERIFIED)

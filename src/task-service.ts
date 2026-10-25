@@ -47,6 +47,13 @@ export async function enqueueTask(
     cloud_workflow?: { run_id: string; cursor: number };
     /** Internal, exact reviewed team step. Never accepted from task API input. */
     agent_group?: { run_id: string; node_key: string; deferred?: boolean };
+    /** Validated server-owned media parameters; never accepted by the generic task API. */
+    media_effect?: {
+      request: unknown;
+      request_sha256: string;
+      catalog_sha256: string;
+      renderer_profile: unknown;
+    };
   } = {},
 ) {
   if (b.prompt.length > 60000)
@@ -130,6 +137,12 @@ export async function enqueueTask(
         409,
         "SEO_CHANGE_NEW_TASK_REQUIRED",
         "Save a new change task from the retained audit so evidence and budget remain bound",
+      );
+    if (parent.input_context?.media_effect)
+      throw new Problem(
+        409,
+        "EFFECT_NEW_REVIEW_REQUIRED",
+        "Review exact parameters and sources in a new effect request before repeating this work",
       );
     if (
       parent.conversation_id &&
@@ -233,11 +246,15 @@ export async function enqueueTask(
         options.conversation?.id ?? null,
         options.context ||
         options.execution_location === "desktop" ||
-        options.cloud_workflow
+        options.cloud_workflow ||
+        options.media_effect
           ? actor.id
           : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
+          ...(options.media_effect
+            ? { media_effect: options.media_effect }
+            : {}),
           ...(projectConfiguration
             ? { project_configuration: projectConfiguration }
             : {}),

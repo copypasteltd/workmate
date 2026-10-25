@@ -1,4 +1,5 @@
 import { TaskBusinessTools } from "./task-business-tools.js";
+import { finalizeReviewedEffect } from "./media-effects-tools.js";
 import { AudioProduction } from "./audio-production.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
 import { CapabilityVideoVerification } from "./capability-video-verification.js";
@@ -847,6 +848,28 @@ export class Worker {
               throw e;
             status = "failed";
             error = e.code;
+            text = "";
+          }
+        }
+        if (
+          status === "succeeded" &&
+          !uncertain &&
+          !ops.uncertain &&
+          live.input_context?.media_effect
+        ) {
+          try {
+            text = (await finalizeReviewedEffect(tx, live))!;
+          } catch (failure) {
+            if (
+              !(failure instanceof Problem) ||
+              ![
+                "EFFECT_DELIVERY_INCOMPLETE",
+                "COMPLETED_TOOL_OUTPUT_UNAVAILABLE",
+              ].includes(failure.code)
+            )
+              throw failure;
+            status = "failed";
+            error = failure.code;
             text = "";
           }
         }

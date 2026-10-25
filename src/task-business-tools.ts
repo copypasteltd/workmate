@@ -120,6 +120,13 @@ import {
   readDesignChart,
 } from "./editable-design-tools.js";
 import { groupResults } from "./agent-groups.js";
+import {
+  effectsCatalog,
+  effectSourcesInput,
+  effectRenderInput,
+  frozenEffect,
+} from "./media-effects-model.js";
+import { listEffectSources, renderTaskEffect } from "./media-effects-tools.js";
 
 export interface TaskBusinessAuthority {
   authorize(tx: Tx): Promise<unknown>;
@@ -152,6 +159,8 @@ export class TaskBusinessTools {
     const slidesTools =
       role.role_key === "presentation" && role.version === "1.1.0";
     const editableDesignTools = vectorTools || slidesTools;
+    const effectsTools =
+      role.role_key === "video-motion" && role.version === "1.5.0";
     const cloudWorkflowTools =
       role.role_key === "workflow-consultant" &&
       role.version === "1.1.0" &&
@@ -211,6 +220,55 @@ export class TaskBusinessTools {
           actor.id,
         );
     const tools: RuntimeContext["tools"] = [
+      {
+        name: "effects_catalog",
+        description:
+          "Read the installed versioned transition, text, chroma-key and cleanup presets, strict inputs and any exact customer-approved request. Use approved_request unchanged in effect_render. Outputs are silent H.264 MP4, preview, immutable source and ZIP; no generative media or extra AI call.",
+        inputSchema: z.toJSONSchema(z.object({}).strict()),
+        run: readTool(async () => {
+          const approved = frozenEffect(t),
+            catalog = effectsCatalog();
+          // The render declaration already carries the complete strict
+          // schema. Keep its read result small enough for native Codex to
+          // retain the exact approved input without truncating the JSON.
+          return {
+            approved_request: approved,
+            ...catalog,
+            items: catalog.items
+              .filter((item) => !approved || item.id === approved.effect_id)
+              .map(({ input_schema: _schema, ...item }) => item),
+          };
+        }, z.object({}).strict()),
+      },
+      {
+        name: "effects_sources",
+        description:
+          "Discover current authorized fixed PNG/H.264 MP4 source versions and SHA-256 in this private conversation or shared project. This does not grant access; dimensions, duration and actual bytes are checked on rendering. Do not fetch external media URLs.",
+        inputSchema: z.toJSONSchema(effectSourcesInput),
+        run: readTool(
+          (tx, a) => listEffectSources(tx, t, a),
+          effectSourcesInput,
+        ),
+      },
+      {
+        name: "effect_render",
+        description:
+          "Render an installed versioned effect from exact authorized source versions and hashes. For a reviewed request, every parameter and source must match approved_request from effects_catalog. Create actual silent MP4, PNG preview, immutable source JSON and ZIP. Same-input retries retain original files; removed completed outputs cannot be regenerated automatically. It does not publish externally or incur an extra AI fee.",
+        inputSchema: z.toJSONSchema(effectRenderInput),
+        run: txTool(
+          (tx, a) =>
+            renderTaskEffect(
+              tx,
+              this.storage,
+              t,
+              a.request,
+              this.db.config.DATA_DIR,
+              this.authority.signal,
+            ),
+          effectRenderInput,
+          "effect_render",
+        ),
+      },
       ...(t.agent_group_run_id
         ? [
             {
@@ -1369,6 +1427,15 @@ export class TaskBusinessTools {
             code_write: role.tool_ids.includes("code.patch"),
             code_package: role.tool_ids.includes("delivery.package"),
             design_render: allowedFormats.length > 0,
+            effects_catalog:
+              effectsTools && role.tool_ids.includes("video.render"),
+            effects_sources:
+              effectsTools && role.tool_ids.includes("asset.read"),
+            effect_render:
+              effectsTools &&
+              role.tool_ids.includes("video.render") &&
+              role.tool_ids.includes("asset.read") &&
+              role.tool_ids.includes("asset.write"),
             design_sources:
               editableDesignTools && role.tool_ids.includes("asset.read"),
             design_source_read:
@@ -1416,6 +1483,12 @@ export class TaskBusinessTools {
           }) as Record<string, boolean>
         )[tool.name],
     );
+    if (t.input_context?.media_effect)
+      return permitted.filter(
+        (tool) =>
+          tool.name === "effects_catalog" ||
+          (t.mode === "execute" && tool.name === "effect_render"),
+      );
     if (t.input_context?.seo_audit_id)
       return permitted.filter((tool) => tool.name === "seo_audit_facts");
     if (t.input_context?.seo_change_task_id)
@@ -1443,6 +1516,8 @@ export class TaskBusinessTools {
             "design_sources",
             "design_source_read",
             "design_chart_read",
+            "effects_catalog",
+            "effects_sources",
             "video_projects",
             "video_project_read",
             "video_project_status",

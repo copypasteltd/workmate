@@ -20,6 +20,7 @@ import { loadConfig, type Config } from "./config.js";
 import { retentionPolicy } from "./retention.js";
 import { Database } from "./db.js";
 import { Catalog } from "./catalog.js";
+import { registerMediaEffects } from "./media-effects.js";
 import { Problem } from "./lib.js";
 import { registerAuth, principal as sessionPrincipal } from "./auth.js";
 import { registerWorkspaces } from "./workspaces.js";
@@ -399,6 +400,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerCreativeFeedback(app, db, storage);
   registerGeoObservations(app, db, catalog, storage);
   registerTasks(app, db, catalog);
+  registerMediaEffects(app, db, catalog, storage);
   registerBusinessQuality(app, db);
   registerCanonicalTasks(app, db, catalog);
   const desktopExecutions = await registerDesktopExecutions(

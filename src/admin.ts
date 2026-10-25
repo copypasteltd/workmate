@@ -913,6 +913,7 @@ function registerAdminCatalog(
                 "tasks",
                 "assets",
                 "creative",
+                "effects",
                 "analytics",
                 "workflows",
                 "brand",
