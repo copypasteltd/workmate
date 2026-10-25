@@ -1,8 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- cloud-workflows-stage91 -->
+
+## 私有云端流程交付
+
+阶段 91 已接通流程顾问的私有云端执行：真实固定版 Codex 准备不可变流程，客户核对步骤、预算并主动确认后执行，遇人工审批再次暂停。55 项相关后端回归与 8 项真实浏览器检查通过，包含私有文件下载、子任务单次预留/结算、修改版本、取消、来源隔离和重复请求。模型回复与账户数据按要求使用假数据；工具、数据库、原生 Codex、文件及页面交互实际运行。
+
+1. 选用流程顾问，以 Execute 准备获准的私有流程；准备任务按其自身实际用量计费。
+2. 在 Workflows 核对固定版本、全部步骤及独立的子任务总预算，勾选同意并确认；此前不创建子任务或子任务预留。
+3. 下载实际私有数据摘要，明确批准下一人工审批点，跟踪子任务、交付文件和实际费用。未知费用会阻断替代执行。
+4. 向同一顾问提出修改，创建新版本和请求；旧版本及执行保留。取消仅影响该流程，来源撤权会阻断历史与下载。
+
+```mermaid
+flowchart LR
+  A[Consultant and fixed Skills] --> B[Private version and pending request]
+  B --> C[Customer reviews steps and budget]
+  C --> D[Actual ordered execution]
+  D --> E[Human approval when required]
+  E --> F[Private files and original receipts]
+  F --> G[New revision preserves old version]
+```
+
+SQL001–104 后应用 **SQL105**。顾问及两个流程 Skill 固定为 1.1.0；支持最多八个顺序的获准云端角色、数据摘要或人工审批步骤。这条链路尚未开放嵌套流程、任意云端 shell、外部账号写入及视频子任务。Desktop 继续使用独立的本机 Codex。
+
+[方案与使用逻辑](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/91-private-cloud-workflows.md) · [源码绑定检查](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-workflows-checkpoint.json)
+
+![实际待确认流程](assets/screenshots/workmate-cloud-workflow-04-pending-request.png)
+
+![实际繁中窄屏核对](assets/screenshots/workmate-cloud-workflow-04-review-zh-375.png)
+
+![实际执行与修改交互](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-review.gif)
+
+[Preparation GIF](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-prepare.gif) · [Preparation MP4](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-prepare.mp4) · [Review MP4](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-review.mp4)
+
 <!-- analysis-roles-stage90 -->
 
-## 当前分析与信息图交付
+## 历史验证：分析与信息图交付（阶段 90）
 
 阶段 90 已接通营销分析师与信息图设计师的确定性计算和九种实际交付文件，角色及相关 Skill 使用 1.1.0 固定版本。68 项相关后端回归、11 项真实浏览器检查通过；两个角色均通过真实固定版 Codex 进程调用获准工具。模型回复与账号数据为已授权假数据，程序、数据库、PNG/ZIP、下载、私有隔离、来源阻断及账本流程实际运行。这不替代至少十二个专业角色及全产品的完整验收。
 
@@ -85,7 +118,7 @@ npm run db:local
 
 ## 配置、界面和验证
 
-升级后端前应用 SQL104。本增量不新增 HTTP 路由或迁移，SQL001–103 与 532 个已记录契约保持原字节。公司网关、精确模型别名、已核验媒体能力和费率只配置在后端，详见后端 `.env.example` 和部署说明；不向渲染器/扩展写入公司供应商密钥。未配置的能力保持不可用，不静默改走其他提供方。普通示范不会自动启用全部专项媒体夹具。
+升级后端前应用 SQL105；新增私有流程读取和客户确认路由。SQL001–104 与 532 个已记录历史契约保持原字节。公司网关、精确模型别名、已核验媒体能力和费率只配置在后端，详见后端 `.env.example` 和部署说明；不向渲染器/扩展写入公司供应商密钥。未配置的能力保持不可用，不静默改走其他提供方。普通示范不会自动启用全部专项媒体夹具。
 
 保持 CopyPaste 蓝/奶白、Manrope/Fraunces、中英双语和浅深主题。Desktop 无 Electron 自带边框/菜单，不显示纵横滚动条轨道，仍保留真实滚轮、焦点、末项访问和进度。紧凑会话摘要将图标/版本和名称分行，保持可读；聚焦页面的 Home/End、Ctrl+Home/End 到达页面首末项，聚焦文本框时保留光标导航。
 

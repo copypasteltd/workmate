@@ -237,15 +237,41 @@ export class Worker {
           });
       }
       if (!this.stopping && !this.generatedVideoRun) {
-        this.generatedVideoRun = new GeneratedVideoJobs(this.db, this.catalog, this.storage).advance(this.generatedVideoAbort.signal)
-          .catch(() => console.error(JSON.stringify({ component: "worker.generated_video", error_code: "VIDEO_JOB_MAINTENANCE_FAILED" })))
-          .finally(() => { this.generatedVideoRun = null; });
+        this.generatedVideoRun = new GeneratedVideoJobs(
+          this.db,
+          this.catalog,
+          this.storage,
+        )
+          .advance(this.generatedVideoAbort.signal)
+          .catch(() =>
+            console.error(
+              JSON.stringify({
+                component: "worker.generated_video",
+                error_code: "VIDEO_JOB_MAINTENANCE_FAILED",
+              }),
+            ),
+          )
+          .finally(() => {
+            this.generatedVideoRun = null;
+          });
       }
       if (!this.stopping && !this.capabilityVideoRun) {
-        this.capabilityVideoRun = new CapabilityVideoVerification(this.db, this.catalog)
+        this.capabilityVideoRun = new CapabilityVideoVerification(
+          this.db,
+          this.catalog,
+        )
           .advance(this.capabilityVideoAbort.signal)
-          .catch(() => console.error(JSON.stringify({ component: "worker.capability_video", error_code: "VIDEO_VERIFICATION_MAINTENANCE_FAILED" })))
-          .finally(() => { this.capabilityVideoRun = null; });
+          .catch(() =>
+            console.error(
+              JSON.stringify({
+                component: "worker.capability_video",
+                error_code: "VIDEO_VERIFICATION_MAINTENANCE_FAILED",
+              }),
+            ),
+          )
+          .finally(() => {
+            this.capabilityVideoRun = null;
+          });
       }
       if (!this.stopping && !this.connectorRun) {
         this.connectorRun = advanceConnectors(this.db, this.storage, {
@@ -340,7 +366,8 @@ export class Worker {
             [id, tenant],
           )
         ).rows[0];
-        if (!t || t.execution_location !== "cloud" || t.status !== "queued") return null;
+        if (!t || t.execution_location !== "cloud" || t.status !== "queued")
+          return null;
         if ((t.data_mode === "simulated") !== this.db.config.DEMO_MODE)
           return null;
         const u = (
@@ -381,9 +408,7 @@ export class Worker {
             (await taskCapabilities(tx, this.db.config, this.catalog, t))
               .versionIds,
           );
-          if (
-            this.catalog.digest(this.catalog.forTask(t)) !== t.role_hash
-          )
+          if (this.catalog.digest(this.catalog.forTask(t)) !== t.role_hash)
             throw new Error("Role version changed");
           if (!(await checkInputDependencies(tx, t))) return null;
           await assertTaskContentSources(tx, t);
@@ -448,7 +473,11 @@ export class Worker {
             }
             try {
               await projectAccess(tx, actor, tenant, task.project_id, "write");
-              await this.catalog.ensureEnabled(tx, task.role_key, task.role_hash);
+              await this.catalog.ensureEnabled(
+                tx,
+                task.role_key,
+                task.role_hash,
+              );
               await assertTaskSkills(tx, this.catalog, task);
               await assertInputDependencies(tx, t);
               await assertReportSources(tx, t);
@@ -470,7 +499,13 @@ export class Worker {
                   .versionIds,
               );
               await assertTaskContentSources(tx, t);
-            } catch {
+            } catch (error) {
+              // A legitimate tool can briefly hold an update lock on an
+              // already-read source. NOWAIT is a retry signal, not revocation.
+              // Keep the existing lease and recheck next heartbeat; the fixed
+              // lease expiry still fences a sustained conflict.
+              if (error instanceof Problem && error.code === "TASK_SOURCE_BUSY")
+                return;
               controller.abort();
               return;
             }
@@ -600,7 +635,13 @@ export class Worker {
         },
         signal: controller.signal,
         onEvent: emit,
-        tools: this.tools(task, actor!, fencing, effectiveRole, !!context.capabilities.video),
+        tools: this.tools(
+          task,
+          actor!,
+          fencing,
+          effectiveRole,
+          !!context.capabilities.video,
+        ),
       });
       completedUsage = result;
       await stopHeartbeat();
@@ -1047,13 +1088,20 @@ export class Worker {
       request,
     );
   }
-  private tools(t: any, actor: Principal, fencing: string, role: any, videoReady = false): RuntimeContext["tools"] {
+  private tools(
+    t: any,
+    actor: Principal,
+    fencing: string,
+    role: any,
+    videoReady = false,
+  ): RuntimeContext["tools"] {
     // A fixed GEO observation has no retrieval, file, connector or mutation
     // tools, regardless of tools available to the selected specialist role.
     if (t.input_context?.geo_sample_id) return [];
     return new TaskBusinessTools(this.db, this.catalog, this.storage, {
-      authorize: tx => this.authorizeTaskRequest(tx, t, actor, fencing),
-      inference: request => this.authorizeInference(t, actor, fencing, request),
+      authorize: (tx) => this.authorizeTaskRequest(tx, t, actor, fencing),
+      inference: (request) =>
+        this.authorizeInference(t, actor, fencing, request),
       signal: this.active.get(t.id)?.signal,
       videoReady,
     }).build(t, actor, fencing, role);

@@ -46,6 +46,7 @@ import { registerAdminFees } from "./admin-fees.js";
 import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
+import { registerCloudWorkflows } from "./cloud-workflows.js";
 import { registerCreativeMatrices } from "./creative-matrices.js";
 import { registerVideoProjects } from "./video-projects.js";
 import { registerGeneratedVideoJobs } from "./video-job-routes.js";
@@ -271,10 +272,18 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       status = 409;
       code = "ALREADY_EXISTS";
       message = "A matching record or payment reference already exists";
-    } else if ((error as any).code === "23514" && ["Local session binding is immutable", "Invalid local task owner", "Immutable desktop execution ownership"].includes((error as any).message)) {
+    } else if (
+      (error as any).code === "23514" &&
+      [
+        "Local session binding is immutable",
+        "Invalid local task owner",
+        "Immutable desktop execution ownership",
+      ].includes((error as any).message)
+    ) {
       status = 409;
       code = "DESKTOP_BINDING_CONFLICT";
-      message = "The local session belongs to another account, device or project; create a new local session";
+      message =
+        "The local session belongs to another account, device or project; create a new local session";
     } else if ((error as any).code === "23503") {
       status = 409;
       code = "RELATED_RECORD_REQUIRED";
@@ -345,7 +354,13 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     services: {
       text: !!(c.AI_VERIFIED && c.AI_BASE_URL && c.AI_MODEL),
       image: !!(c.AI_IMAGE_VERIFIED && c.AI_IMAGE_MODEL),
-      video: !!(c.AI_VIDEO_VERIFIED && c.AI_BASE_URL && c.AI_API_KEY && c.AI_VIDEO_MODEL && c.AI_VIDEO_HKD_MICROS_PER_SECOND),
+      video: !!(
+        c.AI_VIDEO_VERIFIED &&
+        c.AI_BASE_URL &&
+        c.AI_API_KEY &&
+        c.AI_VIDEO_MODEL &&
+        c.AI_VIDEO_HKD_MICROS_PER_SECOND
+      ),
     },
     device_command_public_key: commandPublicKey(c.MASTER_KEY!),
     mail_mode:
@@ -385,7 +400,12 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTasks(app, db, catalog);
   registerBusinessQuality(app, db);
   registerCanonicalTasks(app, db, catalog);
-  const desktopExecutions = await registerDesktopExecutions(app, db, catalog, storage);
+  const desktopExecutions = await registerDesktopExecutions(
+    app,
+    db,
+    catalog,
+    storage,
+  );
   registerSeoAudits(app, db, catalog, storage);
   registerSeoChanges(app, db, catalog, storage);
   registerTaskEvents(app, db);
@@ -400,6 +420,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerSupport(app, db);
   registerTaskDependencies(app, db);
   registerBusiness(app, db, storage, catalog);
+  registerCloudWorkflows(app, db, catalog, storage);
   registerCreativeMatrices(app, db, storage);
   registerVideoProjects(app, db, storage);
   registerGeneratedVideoJobs(app, db, catalog, storage);

@@ -19,6 +19,7 @@ import type { Catalog } from "./catalog.js";
 import { analyticsEvidence } from "./analytics.js";
 import { enqueueTask } from "./task-service.js";
 import { cancelWorkflowRun } from "./workflow-control.js";
+import { advanceCloudWorkflows } from "./cloud-workflows.js";
 
 const params = z.object({ tenant: uuid, project: uuid });
 const color = z.string().regex(/^#[a-f\d]{6}$/i);
@@ -139,19 +140,54 @@ export async function renderProjectPoster(
         );
       images[key] = "data:image/png;base64," + bytes.toString("base64");
     }
-  const texts = parsed.layers.filter(l => l.type === "text");
+  const texts = parsed.layers.filter((l) => l.type === "text");
   if (!parsed.brand) {
-    if (texts.some(l => l.font_key || l.fact_key)) throw new Problem(422, "BRAND_BINDING_REQUIRED", "Choose a fixed brand version before using font or fact keys");
+    if (texts.some((l) => l.font_key || l.fact_key))
+      throw new Problem(
+        422,
+        "BRAND_BINDING_REQUIRED",
+        "Choose a fixed brand version before using font or fact keys",
+      );
     return renderPoster(parsed, images);
   }
-  const prepared = await prepareBrandProduction(tx, storage, project, parsed.brand, texts), overrides = new Map<number, { text: string; family: string }>();
-  for (const logo of prepared.row.body.logos) for (const layer of parsed.layers) {
-    if (layer.type !== "image" || layer.asset_id !== logo.asset_id || layer.version !== logo.version) continue;
-    if (layer.width < logo.min_width || layer.x < logo.clear_space || layer.y < logo.clear_space || layer.x + layer.width + logo.clear_space > parsed.width || layer.y + layer.height + logo.clear_space > parsed.height) throw new Problem(422, "BRAND_LOGO_LAYOUT_INVALID", "The Logo is smaller than its minimum size or has insufficient clear space", { logo_key: logo.key });
-  }
+  const prepared = await prepareBrandProduction(
+      tx,
+      storage,
+      project,
+      parsed.brand,
+      texts,
+    ),
+    overrides = new Map<number, { text: string; family: string }>();
+  for (const logo of prepared.row.body.logos)
+    for (const layer of parsed.layers) {
+      if (
+        layer.type !== "image" ||
+        layer.asset_id !== logo.asset_id ||
+        layer.version !== logo.version
+      )
+        continue;
+      if (
+        layer.width < logo.min_width ||
+        layer.x < logo.clear_space ||
+        layer.y < logo.clear_space ||
+        layer.x + layer.width + logo.clear_space > parsed.width ||
+        layer.y + layer.height + logo.clear_space > parsed.height
+      )
+        throw new Problem(
+          422,
+          "BRAND_LOGO_LAYOUT_INVALID",
+          "The Logo is smaller than its minimum size or has insufficient clear space",
+          { logo_key: logo.key },
+        );
+    }
   let next = 0;
-  parsed.layers.forEach((l, i) => { if (l.type === "text") overrides.set(i, prepared.resolved[next++]); });
-  return outlineBrandSVG(renderPoster(parsed, images, overrides), prepared.fonts);
+  parsed.layers.forEach((l, i) => {
+    if (l.type === "text") overrides.set(i, prepared.resolved[next++]);
+  });
+  return outlineBrandSVG(
+    renderPoster(parsed, images, overrides),
+    prepared.fonts,
+  );
 }
 const step = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("analytics.summary"), dataset_id: uuid }),
@@ -307,7 +343,14 @@ export function registerBusiness(
               probe = rendered.probe;
               mime = "video/mp4";
             }
-            if (p.body.brand) await prepareBrandProduction(tx, storage, project, p.body.brand, poster.parse(p.body).layers.filter(l => l.type === "text"));
+            if (p.body.brand)
+              await prepareBrandProduction(
+                tx,
+                storage,
+                project,
+                p.body.brand,
+                poster.parse(p.body).layers.filter((l) => l.type === "text"),
+              );
             return saveAsset(tx, storage, {
               tenant,
               project,
@@ -860,9 +903,10 @@ export async function advanceWorkflows(
   catalog: Catalog,
   storage: Storage,
 ) {
+  await advanceCloudWorkflows(db, catalog, storage);
   const candidates = (
     await db.control.query(
-      "SELECT id,tenant_id FROM workflow_runs WHERE state='running' AND execution_location='cloud' ORDER BY created_at LIMIT 20",
+      "SELECT id,tenant_id FROM workflow_runs WHERE state='running' AND execution_location='cloud' AND private_owner IS NULL ORDER BY created_at LIMIT 20",
     )
   ).rows;
   for (const run of candidates)

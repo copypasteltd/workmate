@@ -1,4 +1,5 @@
 import { prepareBrandProduction } from "./brand-production.js";
+import { CloudWorkflows } from "./cloud-workflows.js";
 import { resolveProjectConfiguration } from "./project-configuration.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
 import { AudioProduction } from "./audio-production.js";
@@ -127,6 +128,10 @@ export class TaskBusinessTools {
       "information-design@1.1.0",
       "marketing-analyst@1.1.0",
     ].includes(role.role_key + "@" + role.version);
+    const cloudWorkflowTools =
+      role.role_key === "workflow-consultant" &&
+      role.version === "1.1.0" &&
+      t.execution_location !== "desktop";
     const authorize = async (tx: any) => {
       await lockTaskTools(tx, t.id);
       await this.authority.authorize(tx);
@@ -1156,6 +1161,18 @@ export class TaskBusinessTools {
           z.object({ asset_version_id: uuid }).strict(),
         ),
       });
+    if (
+      cloudWorkflowTools &&
+      role.tool_ids.includes("workflow.validate") &&
+      role.tool_ids.includes("workflow.run")
+    )
+      tools.push(
+        ...new CloudWorkflows(this.db, this.catalog, this.storage).build(
+          t,
+          actor,
+          authorize,
+        ),
+      );
     const permitted = tools.filter(
       (tool) =>
         (
@@ -1174,13 +1191,15 @@ export class TaskBusinessTools {
             deliver_text: role.tool_ids.includes("asset.write"),
             marketing_metrics: role.tool_ids.includes("dataset.read"),
             analysis_sources:
-              analysisTools && role.tool_ids.includes("dataset.read"),
+              (analysisTools || cloudWorkflowTools) &&
+              role.tool_ids.includes("dataset.read"),
             analysis_file_inspect:
               analysisTools &&
               role.tool_ids.includes("dataset.read") &&
               role.tool_ids.includes("asset.read"),
             connector_read:
-              analysisTools && role.tool_ids.includes("connector.read"),
+              (analysisTools || cloudWorkflowTools) &&
+              role.tool_ids.includes("connector.read"),
             sheet_calculate:
               analysisTools &&
               role.tool_ids.includes("sheet.calculate") &&
@@ -1231,6 +1250,16 @@ export class TaskBusinessTools {
             video_project_cancel: nativeVideo,
             font_catalog: role.tool_ids.includes("font.inspect"),
             image2_edit: role.tool_ids.includes("image.edit.internal"),
+            workflow_list: cloudWorkflowTools,
+            workflow_read: cloudWorkflowTools,
+            workflow_validate: cloudWorkflowTools,
+            workflow_save:
+              cloudWorkflowTools && role.tool_ids.includes("asset.write"),
+            workflow_publish:
+              cloudWorkflowTools && role.tool_ids.includes("asset.write"),
+            workflow_run: cloudWorkflowTools,
+            workflow_status: cloudWorkflowTools,
+            workflow_cancel: cloudWorkflowTools,
           }) as Record<string, boolean>
         )[tool.name],
     );
@@ -1262,6 +1291,10 @@ export class TaskBusinessTools {
             "video_project_read",
             "video_project_status",
             "generated_video_status",
+            "workflow_list",
+            "workflow_read",
+            "workflow_validate",
+            "workflow_status",
           ].includes(tool.name),
         )
       : permitted;

@@ -53,6 +53,8 @@ const implementedTools = new Set([
   "sheet.calculate",
   "chart.render",
   "connector.read",
+  "workflow.validate",
+  "workflow.run",
 ]);
 
 export async function seedAgentTemplates(db: Database, catalog: Catalog) {

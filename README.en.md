@@ -1,8 +1,41 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- cloud-workflows-stage91 -->
+
+## Private cloud workflow delivery
+
+Stage 91 connects the workflow consultant to private cloud execution. Actual pinned Codex prepares an immutable procedure; the customer reviews its fixed steps and child budget before confirming execution, which pauses again at human approval steps. Fifty-five relevant backend cases and eight actual browser checks pass, including private downloads, single child reservations/settlements, versioned corrections, cancellation, source withdrawal and exact retries. Model replies/account data are synthetic; Codex, tools, database, files and UI interactions are real.
+
+1. Select the workflow consultant and use Execute to prepare an authorized private procedure. Preparation has its own actual task bill.
+2. Open Workflows, review the exact version, all steps and the separate total child budget, then explicitly check consent and confirm. No child task/reservation exists beforehand.
+3. Download the calculated private summary, approve the next human review, and follow the actual child task, delivered file and cost receipt. Unknown usage blocks replacement execution.
+4. Ask the same consultant for a correction. A new version/request keeps original versions and runs intact. Cancellation stops only this run; withdrawn sources block history/downloads.
+
+```mermaid
+flowchart LR
+  A[Consultant and fixed Skills] --> B[Private version and pending request]
+  B --> C[Customer reviews steps and budget]
+  C --> D[Actual ordered execution]
+  D --> E[Human approval when required]
+  E --> F[Private files and original receipts]
+  F --> G[New revision preserves old version]
+```
+
+Apply **SQL105** after SQL001–104. The consultant and its two fixed workflow Skills are 1.1.0. At most eight sequential authorized cloud-role, data-summary or human-review steps are supported; nested workflows, arbitrary cloud shell, external account writes and video child tasks are not enabled here. Desktop keeps its separate local Codex runtime.
+
+[Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/91-private-cloud-workflows.md) · [Source-bound evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-workflows-checkpoint.json)
+
+![Actual pending workflow](assets/screenshots/workmate-cloud-workflow-04-pending-request.png)
+
+![Actual narrow Traditional Chinese review](assets/screenshots/workmate-cloud-workflow-04-review-zh-375.png)
+
+![Actual execution and revision](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-review.gif)
+
+[Preparation GIF](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-prepare.gif) · [Preparation MP4](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-prepare.mp4) · [Review MP4](assets/screenshots/workmate-cloud-workflow-04-cloud-workflow-review.mp4)
+
 <!-- analysis-roles-stage90 -->
 
-## Current analysis and infographic delivery
+## Earlier analysis and infographic verification (stage 90)
 
 Stage 90 connects versioned marketing-analyst and information-design presets to deterministic calculation and nine real deliverable files. Sixty-eight relevant backend checks and eleven actual browser checks pass. Both roles use the real pinned Codex process and authorized company tools. Model replies and account data are explicitly synthetic; the program, database, PNG/ZIP bytes, downloads, private isolation, source fences and ledger operations are real. This does not replace the requirement for twelve professionally qualified roles or complete product acceptance.
 
@@ -85,7 +118,7 @@ Limits: 20 rules; 1,000 history/200 queued items per rule; 1,000 dispatch receip
 
 ## Configuration, UI and verification
 
-Apply SQL103 before client upgrades. This increment adds no HTTP route or migration; SQL001–103 and 532 recorded contracts remain byte-preserved. Set company gateways, exact model aliases, verified media capabilities and tariffs on the backend; consult its `.env.example` and the deployment runbook. Never embed company provider keys in a renderer/extension. Unconfigured capability is unavailable rather than silently redirected. Ordinary demo data does not activate every media fixture.
+Apply SQL105 before starting the updated backend. Private workflow listing and customer decisions are additive routes; SQL001–104 and 532 historical contracts remain byte-preserved. Set company gateways, exact model aliases, verified media capabilities and tariffs on the backend; consult its `.env.example` and the deployment runbook. Never embed company provider keys in a renderer/extension. Unconfigured capability is unavailable rather than silently redirected. Ordinary demo data does not activate every media fixture.
 
 CopyPaste blue/cream, Manrope/Fraunces, English/Traditional Chinese and light/dark themes remain. Desktop has no Electron frame/menu or visible scrollbar rails. Real wheel/focus/last-action access and truthful progress remain. The narrow session guidance card separates its icon/version from the readable name. Focused page Home/End and Ctrl+Home/End act on that page; focused text fields keep caret navigation.
 

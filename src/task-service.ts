@@ -43,6 +43,8 @@ export async function enqueueTask(
     content_source_task_id?: string;
     execution_location?: "cloud" | "desktop";
     role_hash?: string;
+    /** Internal binding, set only by the authorized cloud workflow runner. */
+    cloud_workflow?: { run_id: string; cursor: number };
   } = {},
 ) {
   if (b.prompt.length > 60000)
@@ -52,9 +54,22 @@ export async function enqueueTask(
       "The approved request and plan are too large; revise the plan before execution",
     );
   await projectAccess(tx, actor, tenant, project, "write");
-  if ((options.execution_location ?? "cloud") === "cloud" && actor.audience === "native" && actor.sessionId
-    && (await tx.query("SELECT 1 FROM refresh_tokens WHERE session_id=$1 AND client_id='desktop'", [actor.sessionId])).rowCount)
-    throw new Problem(409, "DESKTOP_LOCAL_EXECUTION_REQUIRED", "Start this work through the local Desktop Agent, or open the Web application for cloud work");
+  if (
+    (options.execution_location ?? "cloud") === "cloud" &&
+    actor.audience === "native" &&
+    actor.sessionId &&
+    (
+      await tx.query(
+        "SELECT 1 FROM refresh_tokens WHERE session_id=$1 AND client_id='desktop'",
+        [actor.sessionId],
+      )
+    ).rowCount
+  )
+    throw new Problem(
+      409,
+      "DESKTOP_LOCAL_EXECUTION_REQUIRED",
+      "Start this work through the local Desktop Agent, or open the Web application for cloud work",
+    );
   const dataMode = (
     await tx.query("SELECT data_mode FROM tenants WHERE id=$1", [tenant])
   ).rows[0]?.data_mode;
@@ -74,11 +89,19 @@ export async function enqueueTask(
     ).rows[0];
     if (!parent) throw new Problem(404, "NOT_FOUND", "Original task not found");
     if (parent.execution_location !== (options.execution_location ?? "cloud"))
-      throw new Problem(409, "EXECUTION_LOCATION_CHANGED", "Continue the task in its original execution location");
+      throw new Problem(
+        409,
+        "EXECUTION_LOCATION_CHANGED",
+        "Continue the task in its original execution location",
+      );
     if (parent.private_owner && parent.private_owner !== actor.id)
       throw new Problem(404, "NOT_FOUND", "Original task not found");
     if (parent.input_context?.geo_sample_id)
-      throw new Problem(409, "GEO_NEW_RUN_REQUIRED", "Repeat an observation through a new GEO run with the reviewed fixed configuration");
+      throw new Problem(
+        409,
+        "GEO_NEW_RUN_REQUIRED",
+        "Repeat an observation through a new GEO run with the reviewed fixed configuration",
+      );
     if (parent.input_context?.seo_change_task_id)
       throw new Problem(
         409,
@@ -95,9 +118,22 @@ export async function enqueueTask(
         "Continue this private task from its original conversation",
       );
   }
-  if (parent?.role_key === b.role_key && options.context && options.context.role_hash !== parent.role_hash)
-    throw new Problem(409, "ROLE_ADOPTION_NEW_TASK_REQUIRED", "Start a new task to adopt a different role/tool version");
-  const role = catalog.role(b.role_key, options.context?.role_hash ?? options.role_hash ?? (parent?.role_key === b.role_key ? parent.role_hash : undefined));
+  if (
+    parent?.role_key === b.role_key &&
+    options.context &&
+    options.context.role_hash !== parent.role_hash
+  )
+    throw new Problem(
+      409,
+      "ROLE_ADOPTION_NEW_TASK_REQUIRED",
+      "Start a new task to adopt a different role/tool version",
+    );
+  const role = catalog.role(
+    b.role_key,
+    options.context?.role_hash ??
+      options.role_hash ??
+      (parent?.role_key === b.role_key ? parent.role_hash : undefined),
+  );
   await catalog.boundSkills(role);
   await catalog.ensureEnabled(tx, b.role_key, catalog.digest(role));
   const ready = parent
@@ -144,12 +180,16 @@ export async function enqueueTask(
     b.mode,
   );
   const projectConfiguration = await freezeProjectConfiguration(
-    tx, tenant, project, b.budget_micros, parent ? parent.input_context?.project_configuration ?? null : undefined,
+    tx,
+    tenant,
+    project,
+    b.budget_micros,
+    parent ? (parent.input_context?.project_configuration ?? null) : undefined,
   );
   const task = (
     await tx.query(
-      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location)
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
+      `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor)
+    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20) RETURNING *`,
       [
         tenant,
         project,
@@ -164,10 +204,16 @@ export async function enqueueTask(
         b.parent_id ?? null,
         b.mode ?? "execute",
         options.conversation?.id ?? null,
-        options.context || options.execution_location === "desktop" ? actor.id : (parent?.private_owner ?? null),
+        options.context ||
+        options.execution_location === "desktop" ||
+        options.cloud_workflow
+          ? actor.id
+          : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
-          ...(projectConfiguration ? { project_configuration: projectConfiguration } : {}),
+          ...(projectConfiguration
+            ? { project_configuration: projectConfiguration }
+            : {}),
           ...(options.content_source_task_id
             ? { plan_source_task_id: options.content_source_task_id }
             : {}),
@@ -175,6 +221,8 @@ export async function enqueueTask(
         plan,
         options.billing_account_id ?? null,
         options.execution_location ?? "cloud",
+        options.cloud_workflow?.run_id ?? null,
+        options.cloud_workflow?.cursor ?? null,
       ],
     )
   ).rows[0];

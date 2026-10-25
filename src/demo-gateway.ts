@@ -112,6 +112,11 @@ export async function startDemoGateway(c: Config) {
       const sheetCalculate = find("sheet_calculate");
       const chartRender = find("chart_render");
       const analysisSourceRead = find("analysis_source_read");
+      const workflowValidate = find("workflow_validate"),
+        workflowSave = find("workflow_save"),
+        workflowRead = find("workflow_read"),
+        workflowPublish = find("workflow_publish"),
+        workflowRun = find("workflow_run");
       // Read only this turn's actual outputs. Synthetic requests must use real
       // source IDs, definitions, calculation hashes and revision identities.
       const toolOutputs = (
@@ -164,6 +169,23 @@ export async function startDemoGateway(c: Config) {
         (v) =>
           typeof v.source_version_id === "string" && v.render?.specification,
       ).at(-1);
+      const savedWorkflow = toolOutputs(
+        workflowSave?.name,
+        (v) => v.workflow?.id && typeof v.definition_hash === "string",
+      ).at(-1);
+      const publishedWorkflow = toolOutputs(
+        workflowPublish?.name,
+        (v) =>
+          v.workflow?.state === "published" &&
+          typeof v.definition_hash === "string",
+      ).at(-1);
+      const readWorkflow = toolOutputs(
+        workflowRead?.name,
+        (v) => v.workflow?.id && v.selected?.definition,
+      ).at(-1);
+      const workflowRevision = requested.match(
+        /workflow_revision_id\s*=\s*([a-f\d-]{36})/i,
+      )?.[1];
       const sourceRequest = requested.match(
         /revision_source_version\s*=\s*([a-f\d-]{36})/i,
       )?.[1];
@@ -212,6 +234,94 @@ export async function startDemoGateway(c: Config) {
       if (find("capability_probe") && !used(find("capability_probe").name)) {
         tool = find("capability_probe");
         args = { nonce: tool.parameters?.properties?.nonce?.enum?.[0] };
+      } else if (
+        workflowSave &&
+        workflowRevision &&
+        workflowRead &&
+        !used(workflowRead.name)
+      ) {
+        tool = workflowRead;
+        args = { workflow_id: workflowRevision };
+      } else if (
+        workflowSave &&
+        analysisSources &&
+        !used(analysisSources.name)
+      ) {
+        tool = analysisSources;
+        args = { kind: "datasets" };
+      } else if (
+        workflowSave &&
+        workflowValidate &&
+        !used(workflowValidate.name)
+      ) {
+        tool = workflowValidate;
+        const definition = readWorkflow
+          ? structuredClone(readWorkflow.selected.definition)
+          : {
+              steps: [
+                ...(analysisDirectory?.items?.length
+                  ? [
+                      {
+                        kind: "analytics.summary",
+                        dataset_id: analysisDirectory.items[0].id,
+                      },
+                    ]
+                  : []),
+                {
+                  kind: "approval",
+                  message:
+                    "Review the clearly simulated campaign evidence before creating the final note.",
+                },
+                {
+                  kind: "codex",
+                  role_key: "assistant",
+                  prompt:
+                    "Write a clearly simulated campaign review note using only actual authorized prior step receipts.",
+                  budget_micros: 100000,
+                },
+              ],
+            };
+        if (readWorkflow)
+          definition.steps.find((s: any) => s.kind === "approval").message =
+            "Review the revised campaign procedure and confirm the retained source before continuing.";
+        args = { definition };
+      } else if (workflowSave && !used(workflowSave.name)) {
+        const checked = toolOutputs(
+          workflowValidate?.name,
+          (v) => v.definition?.steps && typeof v.definition_hash === "string",
+        ).at(-1);
+        if (checked) {
+          tool = workflowSave;
+          args = {
+            name: readWorkflow
+              ? "Campaign review · revised procedure"
+              : "Campaign review · private workflow",
+            definition: checked.definition,
+            ...(readWorkflow
+              ? {
+                  workflow_id: readWorkflow.workflow.id,
+                  expected_version: readWorkflow.workflow.version,
+                }
+              : {}),
+          };
+        }
+      } else if (
+        workflowPublish &&
+        savedWorkflow &&
+        !used(workflowPublish.name)
+      ) {
+        tool = workflowPublish;
+        args = {
+          workflow_id: savedWorkflow.workflow.id,
+          expected_version: savedWorkflow.workflow.version,
+        };
+      } else if (workflowRun && publishedWorkflow && !used(workflowRun.name)) {
+        tool = workflowRun;
+        args = {
+          workflow_id: publishedWorkflow.workflow.id,
+          version: publishedWorkflow.workflow.version,
+          definition_hash: publishedWorkflow.definition_hash,
+        };
       } else if (
         sheetCalculate &&
         sourceRequest &&
@@ -293,6 +403,7 @@ export async function startDemoGateway(c: Config) {
       } else if (
         !reportTool &&
         !sheetCalculate &&
+        !workflowSave &&
         find("image2_generate") &&
         !used(find("image2_generate").name)
       ) {
@@ -340,6 +451,7 @@ export async function startDemoGateway(c: Config) {
         args = { filename: "demo-source.zip" };
       } else if (
         !sheetCalculate &&
+        !workflowSave &&
         find("design_render") &&
         !used(find("design_render").name)
       ) {
@@ -378,6 +490,7 @@ export async function startDemoGateway(c: Config) {
         };
       } else if (
         !sheetCalculate &&
+        !workflowSave &&
         find("deliver_text") &&
         !used(find("deliver_text").name)
       ) {
