@@ -1,8 +1,42 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- media-effects-stage95 -->
+
+## 经审阅的原生媒体特效
+
+阶段 95 接通十种版本化媒体特效：转场、中文动效字、抠像与画面清理。客户审阅固定素材版本、参数和费用上限后，Codex 调用原生 FFmpeg，交付真实无声 MP4、PNG、源 JSON 和 ZIP。106 项相关回归与 8 项实际浏览器检查通过；两次原生 Codex、八个私有文件及真实结算完成。模型和账户容量按要求为假数据。
+
+1. 登录并选择项目，进入 Motion studio；浏览十种实际示例，在文件中心上传获准的 PNG/H.264 MP4，选择固定素材版本及摘要。
+2. 审阅尺寸、时长、文字或滤镜参数与预算后主动确认。免费预检查会在预留费用前核验实际媒体、授权字体排版和编码器。网络回执未知时，刷新后按原请求与幂等键重放。
+3. 预览并下载真实无声 MP4、PNG、不可变源 JSON 和 ZIP。修改需要重新审阅，已完成的重复调用复用原文件；撤回素材或隔离输出会阻断访问和自动重新生成。Codex 按实际记录用量收费，原生特效没有额外 AI 调用和费用。
+4. video-motion@1.5.0 加载 media-effects@1.0.0，正式审批仅开放目录和渲染工具。SQL110 固定输入与来源，SQL111 扩展回执；旧迁移、契约和 Skill 保留原字节。Admin 可发布特效菜单；角色或 Skill 停用会在素材探测和费用预留前拒绝新任务，既有资产权限适用。
+
+```mermaid
+flowchart LR
+  A[Login and project] --> B[Approved fixed source versions]
+  B --> C[Choose preset and review parameters and budget]
+  C --> D[Free preflight and immutable approval]
+  D --> E[One task and reservation]
+  E --> F[Codex and bounded native FFmpeg]
+  F --> G[Four actual private files]
+  G --> H[Preview or separately approve revision]
+```
+
+Desktop 保持本机 Codex 及客户主动权限，Extension 保持云端 Agent 与原生右侧栏。此处素材展示 Web 特效；原生 Desktop 禁用这张云端专用审批表，版本化公司特效工具仍可使用。旧阶段的整套源码核查保留历史范围，本次专项回归不代表完整产品或真实专业质量验收。
+
+[具体方案与使用](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/95-reviewed-media-effects.md) · [精确源码证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/media-effects-checkpoint.json)
+
+![Actual ten-preset directory / 实际十种特效目录](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-directory-en.png)
+
+![Actual private delivery / 实际私有交付](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-first-delivery.png)
+
+![Actual review and original request retry / 实际审阅与原请求重放](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-effect-review-retry.gif)
+
+[375px](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-responsive-375.png) · [Reviewed input](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-reviewed-en.png) · [Review MP4](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-effect-review-retry.mp4) · [Actual revision GIF](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-effect-delivery-revision.gif) · [Revision MP4](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-media-effects-05-effect-delivery-revision.mp4)
+
 <!-- team-history-stage94 -->
 
-## 团队历史与完整翻页
+## 历史实现：团队历史与翻页（阶段 94）
 
 阶段 94 补齐团队、版本与本人运行的独立翻页，并修正随机 UUID 导致的“最近运行”顺序。浏览历史保留工作草稿，从旧页批准后回到最新运行，页外保存的团队保持选中；撤回游标和切换项目会阻断旧正文。18 项团队回归及 11 项实际浏览器检查通过。三次原生 Codex、三个私有文件和费用结算实际运行；模型和账户容量按要求为明确假数据。
 
