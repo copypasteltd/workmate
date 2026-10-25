@@ -1,8 +1,45 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- editable-design-stage92 -->
+
+## Editable brand and presentation delivery
+
+Stage 92 connects actual brand-vector and presentation tools. Brand delivery includes editable and outlined SVG. Presentations include PPTX with native editable text, shapes, paths and evidence bars, plus per-page SVG/PNG, PDF/HTML reviews, exact evidence CSV, immutable source, manifest and a ZIP with the licensed font. Ninety-three relevant backend tests and eight actual browser checks pass. Codex, permissions, files and financial receipts are real; model/content are explicitly synthetic.
+
+1. Create a brand/presentation specialist from the role directory, confirm the audience, exact copy, sources and brand, then explicitly select Execute and a budget. Ask/Plan cannot generate files.
+2. Download actual editable files and the ZIP from Assets & deliverables. Presentations require slides_build followed by slides_render on the exact returned source version/hash; a prepared source is not delivered work.
+3. Review all pages in the actual offline HTML or PDF. Request a correction against the saved source. New versions retain old files; retries reuse original tool receipts. Native rendering adds no AI charge.
+4. Chart layers select actual deterministic evidence IDs, keeping currency/account/metric/attribution/date scopes separate. A brand-bound specialist must retain its exact brand version and authorized channel/locale; omission or replacement is rejected. Private source permissions and quarantine apply to every derivative.
+
+```mermaid
+flowchart LR
+  A[Customer brief and fixed role] --> B[Authorized source versions]
+  B --> C[Codex and design Skill]
+  C --> D[Structured scene and validated layout]
+  D --> E[Editable SVG or native-object PPTX]
+  E --> F[Private downloads and page review]
+  F --> G[Read source and create immutable revision]
+```
+
+Desktop keeps Codex on the customer computer. The 1.1.0 specialists expose these company file tools through the authenticated native bridge; source revision access additionally requires the same device, native sign-in family, local session and workspace. Another local session cannot read its private source. Backend checks exercise actual native authorization, schema admission, tool delivery and source revisions; the new recordings below show the Web workflow and downloaded source-based reviews, not a new Desktop UI recording.
+
+Apply **SQL106** and **SQL107** after SQL001–105 and install the pinned dependencies. The second migration binds private design derivatives to exact sources without changing explicit publication authority. Brand/presentation roles and their production Skills are 1.1.0; the original 37 Skill packages remain byte-identical. The ZIP supplies checked CopyPaste Sans TC Regular/Bold static faces derived from Noto Sans TC under OFL, retaining the original variable font for provenance. Fonts are not embedded in PPTX. **PDF/PNG/HTML are fixed-source reviews, not PowerPoint renders**; inspect actual target-editor typography before publication. Charts are native editable bars/labels with exact CSV, not embedded Excel charts. Current brand-bound editable export requires Noto Sans TC; other licensed custom fonts use the existing brand layout renderer. Professional/customer role qualification remains unverified.
+
+[Implementation and use](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/92-editable-brand-and-presentation.md) · [Source-bound checks](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/editable-design-checkpoint.json)
+
+![Actual vector review / 实际矢量稿](assets/screenshots/workmate-editable-design-06-vector-review.png)
+
+![Actual slide review / 实际演示核对](assets/screenshots/workmate-editable-design-06-slide-review-2.png)
+
+![Actual 375px review / 实际窄屏核对](assets/screenshots/workmate-editable-design-06-review-375.png)
+
+![Actual navigation and revision / 实际浏览与修改](assets/screenshots/workmate-editable-design-06-editable-design-review.gif)
+
+[Work GIF](assets/screenshots/workmate-editable-design-06-editable-design-work.gif) · [Work MP4](assets/screenshots/workmate-editable-design-06-editable-design-work.mp4) · [Review MP4](assets/screenshots/workmate-editable-design-06-editable-design-review.mp4)
+
 <!-- cloud-workflows-stage91 -->
 
-## Private cloud workflow delivery
+## Earlier private cloud workflow verification (stage 91)
 
 Stage 91 connects the workflow consultant to private cloud execution. Actual pinned Codex prepares an immutable procedure; the customer reviews its fixed steps and child budget before confirming execution, which pauses again at human approval steps. Fifty-five relevant backend cases and eight actual browser checks pass, including private downloads, single child reservations/settlements, versioned corrections, cancellation, source withdrawal and exact retries. Model replies/account data are synthetic; Codex, tools, database, files and UI interactions are real.
 
