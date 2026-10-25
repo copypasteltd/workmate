@@ -2,7 +2,17 @@
 
 日期 / Date：2026-10-25，Asia/Taipei。
 
-## 第五次工作区复核：当前 / Fifth working-tree review: current
+## 第七次工作区复核：当前 / Seventh working-tree review: current
+
+更新[26 组编号差异与完成标准](../quality/2026-10-25-goal-gap-assessment.md)及主文档中英入口，区分已发布阶段 86 和未提交 Desktop/Delivery 候选。目录监听、去重和持久队列已有候选代码；最新 Desktop 单元 91/91、类型和打包通过，但第 65 次实际打包流程 failed，8 个观察后断言失败，新增目录调度未进入。原因仍需定位，不将单元通过写为端到端通过。保留阶段 86 的六份原回执；其 1510 个选定输入中 1503 相符、7 变化，新增源码另计。
+
+八个实际远程分支与读取时已提交输入一致；Desktop 22 个、Delivery 9 个工作树条目尚未发布。本次评估仅提交文档，产品候选不混入发布。失败报告、原 TAP 和验证器原字节归档，原 102 项需求、完整验收条件、84/18/0 登记、18 候选/0 合格角色及 G01–G10 均保持。本次未重跑产品测试、未启动浏览器或数据库。核对范围与摘要详见[第七次复核记录](../quality/2026-10-25-goal-gap-review-07.json)。
+
+Updated the 26 numbered gaps and bilingual documentation entry points, separating the published stage-86 baseline from unpublished Desktop/Delivery work. Folder watching, deduplication and durable queues have candidate implementations. The latest Desktop run passes 91 unit tests, type checks and packaging, but actual packaged attempt 65 fails after eight observations before folder-work checks are reached; its cause remains unresolved. Six retained stage-86 report digests match, while seven of 1510 selected inputs have changed and new sources are additional.
+
+All eight actual remote heads match committed inputs at inspection. Desktop/Delivery candidates remain unpublished and are excluded from this documentation-only synchronization. Failed reports, raw TAP and verifiers are archived byte-for-byte. Original requirements, complete conditions, 84/18/0 acceptance counts, 18 candidates/0 qualified roles and G01–G10 remain unchanged. This review reruns no product test and starts no browser/database.
+
+## 第五次工作区复核：历史 / Fifth working-tree review: historical
 
 刷新[26 项编号差异表](../quality/2026-10-25-goal-gap-assessment.md)和[第五次复核记录](../quality/2026-10-25-goal-gap-review-05.json)。此前侧栏附件误入项目共享范围的问题已有修复和实际重跑通过证据：上传者下载原始字节，同项目另一位已登录编辑者不能列出附件，下载、版本和所属私有会话均返回 404。最新核心专项 24/24，实际 Web/Admin/原生侧栏 12 项通过，独立 Extension 单元原始日志为 47/47；各自范围不合并，也不外推为完整验收。
 
