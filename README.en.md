@@ -1,8 +1,14 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
-<!-- local-programs-stage88 -->
+<!-- work-intake-stage89 -->
 
 Select specialists and use cloud Codex in a browser, with projects, references, tasks and deliverables.
+
+## Current first-work flow
+
+Stage 89 verifies Web first-work onboarding, design/analysis/development shortcuts and actor/tenant/project scoped tab drafts. Fourteen actual browser checks and 195 client unit tests pass, including offline handling, expired-session reauthentication, committed response loss, exact retries, receipts, late responses and removed results. Real Worker delivery/download bytes agree; the original request has one task, one reservation and a 30-micro-HKD settlement. Reply content is explicitly synthetic; this UI fixture does not launch native Codex. The full login/client matrix, twelve qualified professional roles, all 102 complete conditions and G01–G10 remain open.
+
+Select a role, edit the brief and confirm the budget. Drafts survive modal closure/reload and same-account reauthentication in this tab. Explicit sign-out clears text. While a submission is unknown, retry the original request; review the accepted receipt before explicitly starting another task. New work waits for authorized projects to finish loading. Browser/tab loss and full ongoing-conversation recovery remain unqualified.
 
 ## Product and boundaries
 
@@ -56,9 +62,9 @@ Apply SQL103 before client upgrades. This increment adds no HTTP route or migrat
 
 CopyPaste blue/cream, Manrope/Fraunces, English/Traditional Chinese and light/dark themes remain. Desktop has no Electron frame/menu or visible scrollbar rails. Real wheel/focus/last-action access and truthful progress remain. The narrow session guidance card separates its icon/version from the readable name. Focused page Home/End and Ctrl+Home/End act on that page; focused text fields keep caret navigation.
 
-Stage 88 verifies approved pinned customer-local programs, structured argv, owned native process lifecycle/parent loss and original billing; one browser ledger enforces three pages per task/two active contexts with actual destruction and cleared storage on reuse. Fresh scopes: 68 packaged Desktop checks, 114 Desktop unit cases, 18 native Codex cases, 184 client cases, 91 related backend cases and six strict-declaration cases. Synthetic providers/dialog decisions remain explicit. Full product acceptance, twelve qualified professional roles and G01–G10 remain open. All prior 57 Desktop checks, 91 unit and 17 native cases remain. Folder work still checks a real new-PID restart, pinned original thread/versions and separately settled 90/60-micro-HKD tasks. All 14 runtime assets/licenses remain exact and repository recordings stay outside ASAR.
+Historical stage 88 verified approved pinned customer-local programs, structured argv, owned native process lifecycle/parent loss and original billing; one browser ledger enforces three pages per task/two active contexts with actual destruction and cleared storage on reuse. Fresh scopes: 68 packaged Desktop checks, 114 Desktop unit cases, 18 native Codex cases, 184 client cases, 91 related backend cases and six strict-declaration cases. Synthetic providers/dialog decisions remain explicit. Full product acceptance, twelve qualified professional roles and G01–G10 remain open. All prior 57 Desktop checks, 91 unit and 17 native cases remain. Folder work still checks a real new-PID restart, pinned original thread/versions and separately settled 90/60-micro-HKD tasks. All 14 runtime assets/licenses remain exact and repository recordings stay outside ASAR.
 
-Retained historical stage-86 scopes: 1023 platform, 25 focused, 36 compatibility and 14 actual Web/Admin/native Side Panel checks. Complete platform/cross-client suites were not rerun. Web/Admin/Extension product sources are unchanged; changed backend tool declarations have fresh related checks. Native processes/files/ledgers/database are real; synthetic providers/dialog choices do not qualify live professional quality. Owned browsers/API/previews/test DB close; no Docker/WSL/virtualization.
+Historical stage-86 platform/core/compatibility suites were not rerun. Stage-88 packaged Desktop and native Codex results remain historical; Desktop, Admin, Extension and backend product sources are unchanged. Web and delivery now have separate stage-89 checks. Synthetic content does not qualify professional quality. Owned browser/API/previews/test databases are closed; no virtualization.
 
 The original 102 requirements remain **86 partial / 16 unproven / 0 fully accepted**. REQ-040/042 gain bounded evidence without closing their original conditions. At least twelve professional-role qualifications, complete Admin breadth, teams/solution packages, full marketing workflows, live quality, signed installation/update/uninstall, load/restore exercises and G01–G10 remain open. Test counts are not a product-completion percentage. See the complete numbered gap assessment.
 
@@ -98,3 +104,33 @@ Retained stage-86 media for unchanged product sources; this stage adds no fresh 
 ![Actual interaction](assets/screenshots/workmate-guidance-14-project-guidance.gif)
 
 [Local program plan](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/88-approved-local-programs.md) · [Stage 88 checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/local-programs-checkpoint.json)
+
+
+## Actual stage-89 interactions
+
+[Implementation and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/89-first-work-and-submission-recovery.md) · [Stage 89 checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/work-intake-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Login[Email sign in] --> Scope[Authorized project]
+  Scope --> Draft[Role and saved brief]
+  Draft --> Send[Original request identity]
+  Send -->|Unknown| Retry[Explicit exact retry]
+  Retry --> Send
+  Send --> Receipt[Original work receipt]
+  Receipt --> File[Review and download]
+```
+
+![Actual Web interaction](assets/screenshots/workmate-intake-05-restored-brief.png)
+
+![Actual Web interaction](assets/screenshots/workmate-intake-05-actual-output-download.png)
+
+![Actual Web interaction](assets/screenshots/workmate-intake-05-layout-800x600-zh-HK.png)
+
+[MP4: first-work](assets/screenshots/workmate-intake-05-first-work.mp4)
+
+![first-work](assets/screenshots/workmate-intake-05-first-work.gif)
+
+[MP4: submission-recovery](assets/screenshots/workmate-intake-05-submission-recovery.mp4)
+
+![submission-recovery](assets/screenshots/workmate-intake-05-submission-recovery.gif)

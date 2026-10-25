@@ -1,3 +1,5 @@
+import { NewWorkTask as NewTask } from "./new-work-task";
+import { loadWorkDraft, openWorkDraft, updateWorkDraft, type WorkSeed } from "./work-draft";
 import { ProjectConfigurationPanel, ProjectConfigurationSummary } from "./project-configuration";
 import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
@@ -44,7 +46,7 @@ import {
   RecentConversations,
   TaskPlan,
 } from "./persistent-work";
-import React, { useEffect, useState, useRef, type ReactNode } from "react";
+import React, { useEffect, useLayoutEffect, useState, useRef, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
@@ -731,6 +733,8 @@ function Shell() {
         </label>
         <button
           className="button primary new-task-side"
+          disabled={!w.base || !project}
+          title={!w.base || !project ? t("專案載入完成後即可開始", "Your project will be ready shortly") : undefined}
           onClick={() => document.dispatchEvent(new Event("cp:new-task"))}
         >
           <Plus size={17} />
@@ -823,7 +827,7 @@ function Shell() {
         <main
           id="main"
           className="main-content"
-          key={w.tenant + ":" + w.project}
+          key={w.me.user.id + ":" + w.tenant + ":" + w.project}
         >
           <ErrorNotice error={w.error} />
           {w.base ? (
@@ -874,14 +878,22 @@ function Shell() {
           <span>HONG KONG</span>
         </footer>
       </div>
-      <NewTaskListener />
+      <NewTaskListener key={w.me.user.id + ":" + w.tenant + ":" + w.project} />
     </div>
   );
 }
 function NewTaskListener() {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const show = () => setOpen(true);
+  const [open, setOpen] = useState(false), [seed, setSeed] = useState<WorkSeed>({});
+  const w = useWorkspace();
+  useLayoutEffect(() => {
+    const show = (event?: Event) => {
+      if (!w.base || !w.projects.some(project => project.id === w.project)) return;
+      const detail = (event as CustomEvent<WorkSeed> | undefined)?.detail;
+      const value: WorkSeed = {};
+      if (typeof detail?.role === "string" && /^[a-z0-9-]{1,80}$/.test(detail.role)) value.role = detail.role;
+      if (typeof detail?.prompt === "string" && detail.prompt.length <= 30000) value.prompt = detail.prompt;
+      setSeed(value); setOpen(true);
+    };
     const shortcut = (e: KeyboardEvent) => {
       if (
         e.key.toLowerCase() === "n" &&
@@ -902,194 +914,8 @@ function NewTaskListener() {
       document.removeEventListener("cp:new-task", show);
       document.removeEventListener("keydown", shortcut);
     };
-  }, []);
-  return open ? <NewTask onClose={() => setOpen(false)} /> : null;
-}
-function NewTask({
-  onClose,
-  role = "assistant",
-}: {
-  onClose: () => void;
-  role?: string;
-}) {
-  const { t, locale } = useI18n(),
-    w = useWorkspace(),
-    nav = useNavigate();
-  const { data } = useData("/v1/catalog/roles");
-  const pending = useRef<{ fingerprint: string; id: string } | null>(null);
-  const [selectedRole, setSelectedRole] = useState(role);
-  const [requiredInput, setRequiredInput] = useState("");
-  return (
-    <Modal title={t("開始一項新工作", "Start something new")} onClose={onClose}>
-      <ProjectConfigurationSummary compact />
-      <AsyncForm
-        submitLabel={t("開始工作", "Start task")}
-        onSubmit={async (f) => {
-          const selectedRole = String(f.get("role")),
-            requiredInput = String(f.get("required_input") ?? ""),
-            body = {
-              title: String(f.get("title")),
-              prompt: selectedRole === "video-motion" ? videoGenerationBrief(String(f.get("prompt")), f) : String(f.get("prompt")),
-              mode: String(f.get("mode")),
-              budget_micros: Math.round(Number(f.get("budget")) * 1e6),
-              ...(requiredInput
-                ? {
-                    dependencies: [
-                      requiredInput === "file"
-                        ? {
-                            kind: "file",
-                            description: t(
-                              "請提供已批准的工作素材，然後開始。",
-                              "Provide approved source materials before starting.",
-                            ),
-                          }
-                        : {
-                            kind: "connection",
-                            provider: requiredInput,
-                            description: t(
-                              "請選取此工作的獲准連接。",
-                              "Select the authorized connection for this work.",
-                            ),
-                          },
-                    ],
-                  }
-                : {}),
-            };
-          const fingerprint = JSON.stringify({
-            tenant: w.tenant,
-            project: w.project,
-            role: selectedRole,
-            ...body,
-          });
-          if (pending.current?.fingerprint !== fingerprint)
-            pending.current = { fingerprint, id: crypto.randomUUID() };
-          const result =
-            selectedRole === "assistant"
-              ? await post(w.base + "/delegations", {
-                  ...body,
-                  client_message_id: pending.current!.id,
-                })
-              : await api(w.base + "/tasks", {
-                  method: "POST",
-                  headers: { "Idempotency-Key": pending.current!.id },
-                  body: JSON.stringify({ ...body, role_key: selectedRole }),
-                });
-          sessionStorage.removeItem("cp_brief");
-          onClose();
-          nav(
-            selectedRole === "assistant"
-              ? "/app/conversations/" + result.conversation.id
-              : "/app/tasks/" + result.id,
-          );
-        }}
-      >
-        <Field label={t("專案", "Project")}>
-          <input
-            value={w.projects.find((p) => p.id === w.project)?.name ?? ""}
-            readOnly
-          />
-        </Field>
-        <Field label={t("專業角色", "Specialist")}>
-          <select
-            name="role"
-            value={selectedRole}
-            onChange={(e) => {
-              setSelectedRole(e.target.value);
-              setRequiredInput("");
-            }}
-          >
-            <option value="assistant">
-              {t(
-                "預設助手 — 答覆、計畫與文字交付",
-                "Default assistant — answers, plans and text deliverables",
-              )}
-            </option>
-            {data?.items.map((r: any) => (
-              <option key={r.role_key} value={r.role_key}>
-                {locale === "en" ? roleEnglish[r.role_key] : r.display_name}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <ModeField />
-        <Field label={t("工作名稱", "Task name")}>
-          <input
-            name="title"
-            placeholder={t(
-              "例如：秋季新品推廣海報",
-              "e.g. Autumn launch campaign",
-            )}
-            maxLength={160}
-            required
-          />
-        </Field>
-        <Field label={t("你想完成什麼？", "What would you like to make?")}>
-          <textarea
-            name="prompt"
-            defaultValue={sessionStorage.getItem("cp_brief") ?? ""}
-            rows={5}
-            minLength={5}
-            maxLength={30000}
-            placeholder={t(
-              "說明目標、對象、交付格式和需要保留的內容…",
-              "Describe your goal, audience, deliverables and anything to preserve…",
-            )}
-            required
-          />
-        </Field>
-        {selectedRole === "video-motion" && <VideoBriefFields />}
-        <Field
-          label={t("開始前需要補齊資料嗎？", "Inputs needed before starting?")}
-          hint={t(
-            "選擇後先保存同一項工作並預留預算，補齊資料前不呼叫模型。",
-            "Save the task and reserve its budget; the model waits until you provide these inputs.",
-          )}
-        >
-          <select
-            name="required_input"
-            value={requiredInput}
-            onChange={(e) => setRequiredInput(e.target.value)}
-          >
-            <option value="">{t("資料已齊，可開始", "Ready to start")}</option>
-            <option value="file">
-              {t("先等我提供檔案", "Wait for my file")}
-            </option>
-            {data?.items
-              .find((r: any) => r.role_key === selectedRole)
-              ?.tool_ids.includes("connector.read") &&
-              [
-                ["google_ads", "Google Ads"],
-                ["ga4", "Google Analytics"],
-                ["search_console", "Search Console"],
-                ["meta", "Meta"],
-              ].map(([key, label]) => (
-                <option value={key} key={key}>
-                  {t("先選取連接：", "Choose connection first: ")}
-                  {label}
-                </option>
-              ))}
-          </select>
-        </Field>
-        <Field
-          label={t("本次工作預算上限（HKD）", "Task budget limit (HKD)")}
-          hint={t(
-            "提交工作時預留額度，依實際用量結算；等待資料期間保持預留。",
-            "Credit is reserved on submission and settled against measured usage; it remains reserved while waiting for inputs.",
-          )}
-        >
-          <input
-            name="budget"
-            type="number"
-            min="1"
-            max="10000"
-            step="0.01"
-            defaultValue="20"
-            required
-          />
-        </Field>
-      </AsyncForm>
-    </Modal>
-  );
+  }, [w.base, w.project, w.projects]);
+  return open && w.base ? <NewTask seed={seed} onClose={() => setOpen(false)} /> : null;
 }
 function PublishedContent() {
   const { t, locale } = useI18n();
@@ -1137,8 +963,8 @@ function Workbench() {
   const { t } = useI18n(),
     w = useWorkspace();
   const { data, error, loading } = useData(w.base + "/tasks", 0, 10000);
-  const [brief, setBrief] = useState(""),
-    [newTask, setNewTask] = useState(false);
+  const scope = { user: String(w.me.user.id), tenant: w.tenant, project: w.project };
+  const [brief, setBrief] = useState(() => { try { return loadWorkDraft(scope)?.values.prompt ?? ""; } catch { return ""; } });
   return (
     <>
       <div className="workspace-intro">
@@ -1167,7 +993,10 @@ function Workbench() {
         <textarea
           aria-label={t("描述你的工作", "Describe your task")}
           value={brief}
-          onChange={(e) => setBrief(e.target.value)}
+          onChange={(e) => {
+            setBrief(e.target.value);
+            try { const draft = openWorkDraft(scope); if (!draft.pending && !draft.accepted) updateWorkDraft(draft, { prompt: e.target.value }); } catch { /* The composer presents recovery for an invalid saved submission. */ }
+          }}
           placeholder={t(
             "設計一組海報、整理廣告數據，或建立一個全新工具…",
             "A campaign to design, data to understand, something new to build…",
@@ -1185,8 +1014,7 @@ function Workbench() {
           <button
             className="button primary round"
             onClick={() => {
-              sessionStorage.setItem("cp_brief", brief);
-              setNewTask(true);
+              document.dispatchEvent(new CustomEvent("cp:new-task", { detail: { prompt: brief } }));
             }}
             aria-label={t("開始工作", "Start task")}
           >
@@ -1196,16 +1024,15 @@ function Workbench() {
       </section>
       <div className="quick-starts">
         {[
-          [Palette, t("製作品牌視覺", "Create campaign visuals")],
-          [ChartNoAxesCombined, t("分析廣告表現", "Understand ad performance")],
-          [Code2, t("建立網站與工具", "Build a site or tool")],
-        ].map(([Icon, label]: any) => (
+          [Palette, t("製作品牌視覺", "Create campaign visuals"), "designer"],
+          [ChartNoAxesCombined, t("分析廣告表現", "Understand ad performance"), "marketing-analyst"],
+          [Code2, t("建立網站與工具", "Build a site or tool"), "fullstack"],
+        ].map(([Icon, label, role]: any) => (
           <button
             key={label}
             onClick={() => {
-              setBrief(label);
-              sessionStorage.setItem("cp_brief", label);
-              document.dispatchEvent(new Event("cp:new-task"));
+              if (!brief) setBrief(label);
+              document.dispatchEvent(new CustomEvent("cp:new-task", { detail: { role, prompt: brief || label } }));
             }}
           >
             <Icon size={17} />
@@ -1260,7 +1087,7 @@ function Workbench() {
         )}
       </section>
       <RecentConversations />
-      {newTask && <NewTask onClose={() => setNewTask(false)} />}
+
     </>
   );
 }

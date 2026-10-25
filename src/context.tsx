@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { api, changeClientSession, endClientSession } from "./api";
+import { clearWorkDrafts, saveWorkSelection, workSelection } from "./work-draft";
 interface WorkspaceState {
   me: any;
   loading: boolean;
@@ -61,15 +62,17 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     try {
       const m = await api("/v1/session/context");
       if (revision !== loadRevision.current) return;
+      clearWorkDrafts(String(m.user.id));
       setMe(m);
       setError(null);
-      const saved = localStorage.getItem("cp_tenant");
+      const saved = localStorage.getItem("cp_tenant"), resume = workSelection(String(m.user.id));
       setTenantState((old) =>
         m.memberships.some((t: any) => t.id === old)
           ? old
           : m.memberships.some((t: any) => t.id === saved)
             ? saved
-            : (m.memberships[0]?.id ?? ""),
+            : m.memberships.some((t: any) => t.id === resume?.tenant)
+              ? resume!.tenant : (m.memberships[0]?.id ?? ""),
       );
     } catch (e) {
       if (
@@ -91,15 +94,16 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (tenantRef.current !== tenant || revision !== loadRevision.current)
       return;
     setProjects(d.items);
-    const saved = localStorage.getItem("cp_project");
+    const saved = localStorage.getItem("cp_project"), resume = workSelection(String(me?.user?.id));
     setProjectState((old) =>
       d.items.some((p: any) => p.id === old)
         ? old
         : d.items.some((p: any) => p.id === saved)
           ? saved
-          : (d.items[0]?.id ?? ""),
+          : resume?.tenant === tenant && d.items.some((p: any) => p.id === resume.project)
+            ? resume.project : (d.items[0]?.id ?? ""),
     );
-  }, [tenant]);
+  }, [tenant, me?.user?.id]);
   useEffect(() => {
     window.addEventListener("copypaste:session-ended", clear);
     void refresh();
@@ -140,11 +144,12 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       .then((d) => {
         if (!live) return;
         setProjects(d.items);
-        const saved = localStorage.getItem("cp_project");
+        const saved = localStorage.getItem("cp_project"), resume = workSelection(String(me?.user?.id));
         setProjectState(
           d.items.some((p: any) => p.id === saved)
             ? saved
-            : (d.items[0]?.id ?? ""),
+            : resume?.tenant === tenant && d.items.some((p: any) => p.id === resume.project)
+              ? resume.project : (d.items[0]?.id ?? ""),
         );
       })
       .catch((e) => {
@@ -153,7 +158,11 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     return () => {
       live = false;
     };
-  }, [tenant]);
+  }, [tenant, me?.user?.id]);
+  useEffect(() => {
+    if (me?.user?.id && tenant && project && projects.some(p => p.id === project))
+      saveWorkSelection({ user: String(me.user.id), tenant, project });
+  }, [me?.user?.id, tenant, project, projects]);
   return (
     <Context.Provider
       value={{

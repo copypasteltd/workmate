@@ -1,8 +1,10 @@
+import { clearWorkDrafts } from "./work-draft";
 export let csrfToken = "";
 let sessionRevision = 0;
-export function endClientSession(broadcast = true) {
+export function endClientSession(broadcast = true, reason: "sign_out" | "expired" = "sign_out") {
   ++sessionRevision;
   csrfToken = "";
+  if (reason === "sign_out") clearWorkDrafts();
   window.dispatchEvent(new Event("copypaste:session-ended"));
   if (broadcast)
     localStorage.setItem(
@@ -150,7 +152,7 @@ export async function api<T = any>(
       "登入狀態已變更，請重新載入 / Sign-in state changed. Reload this view.",
       409,
     );
-  if (status === 401 && protectedRequest) endClientSession(false);
+  if (status === 401 && protectedRequest) endClientSession(false, "expired");
   if (status < 200 || status >= 300)
     throw new ApiError(
       data?.error?.code ?? "REQUEST_FAILED",
@@ -197,7 +199,7 @@ export async function download(
     ...(tenantId ? { headers: { "X-Tenant-ID": tenantId } } : {}),
   });
   if (revision !== sessionRevision) throw new Error("Sign-in state changed");
-  if (response.status === 401) endClientSession();
+  if (response.status === 401) endClientSession(false, "expired");
   if (!response.ok) throw new Error("Download unavailable");
   const blob = await response.blob();
   if (revision !== sessionRevision) throw new Error("Sign-in state changed");

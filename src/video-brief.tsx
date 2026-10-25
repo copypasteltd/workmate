@@ -10,18 +10,18 @@ export function videoGenerationBrief(prompt: string, form: FormData) {
     + JSON.stringify({ prompt, seconds, size });
 }
 
-export function VideoBriefFields({ compact = false, disabled = false }: { compact?: boolean; disabled?: boolean }) {
+export function VideoBriefFields({ compact = false, disabled = false, defaults }: { compact?: boolean; disabled?: boolean; defaults?: { video_mode: string; video_seconds: string; video_size: string } }) {
   const { t } = useI18n(), config = useData<{ services: { video: boolean } }>("/v1/public/config");
-  const [method, setMethod] = useState("composition");
+  const [method, setMethod] = useState(defaults?.video_mode ?? "composition");
   const fields = <fieldset className="video-brief-fields" disabled={disabled}><legend>{t("影片製作方式", "Video production")}</legend>
     <Field label={t("交付方式", "Production method")}><select name="video_mode" value={method} onChange={e => setMethod(e.target.value)}>
       <option value="composition">{t("剪輯與模板製作", "Editing and template composition")}</option>
       <option value="generated" disabled={!config.data?.services.video}>{t("生成式影片", "Generated video")}</option>
     </select></Field>
     {!config.data?.services.video && <p className="muted">{t("生成式影片服務尚未啟用；你仍可進行剪輯及模板製作。", "Video generation is not enabled yet. Editing and template composition remain available.")}</p>}
-    {method === "generated" && <><div className="video-brief-grid"><Field label={t("生成片段長度", "Generated clip duration")}><select name="video_seconds" defaultValue="4">
+    {method === "generated" && <><div className="video-brief-grid"><Field label={t("生成片段長度", "Generated clip duration")}><select name="video_seconds" defaultValue={defaults?.video_seconds ?? "4"}>
       {[4, 8, 12, 16, 20].map(seconds => <option key={seconds} value={seconds}>{seconds} {t("秒", "seconds")}</option>)}
-    </select></Field><Field label={t("生成影片比例", "Generated video format")}><select name="video_size" defaultValue="1280x720">
+    </select></Field><Field label={t("生成影片比例", "Generated video format")}><select name="video_size" defaultValue={defaults?.video_size ?? "1280x720"}>
       <option value="1280x720">{t("橫向 · 1280 × 720", "Landscape · 1280 × 720")}</option>
       <option value="720x1280">{t("直向 · 720 × 1280", "Portrait · 720 × 1280")}</option>
       <option value="1024x1024">{t("方形 · 1024 × 1024", "Square · 1024 × 1024")}</option>
