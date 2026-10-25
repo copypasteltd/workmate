@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-24T19:52:14.679758+00:00",
+  "at": "2026-10-25T02:09:01.313519+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -972,8 +972,8 @@
     "original_acceptance_baseline_preserved": true
   },
   "summary": {
-    "partial_verified": 83,
-    "completion_not_proven": 19
+    "partial_verified": 84,
+    "completion_not_proven": 18
   },
   "fully_accepted_requirements": 0,
   "qualified_live_roles": 0,
@@ -17086,17 +17086,31 @@
       "requirement": "共享项目配置：项目发布共享说明、资料、Agent/技能版本及连接范围；新工作可查看继承摘要，运行固定配置版本；个人偏好不得扩大企业权限或泄露私有资源。",
       "acceptance_case": "TC-065",
       "acceptance_conditions": "当前运行固定原配置且权限仍实时核查；下一运行采用新版本；私有偏好不越过企业策略，凭证与完整私有会话不被共享。",
-      "assessment": "completion_not_proven",
-      "finding": "缺少项目共享配置版本、继承摘要与固定资源/方法快照。",
+      "assessment": "partial_verified",
+      "finding": "共享配置草稿、CAS/幂等发布、精确依赖与继承摘要、旧/新任务版本和本机 v3/v3/v4 实际资料读取已通过；当前来源、私有附件、账号和本机权限仍独立检查。尚未执行同号完整业务验收。",
       "source_inspection_candidates": [
-        "dev/copypaste-platform/src/persistent-work.ts",
-        "dev/copypaste-platform/src/catalog.ts"
+        "dev/copypaste-platform/src/project-configuration.ts",
+        "dev/copypaste-platform/migrations/103-shared-project-configuration.sql",
+        "dev/copypaste-web/src/project-configuration.tsx",
+        "dev/copypaste-desktop/renderer/src/project-configuration.tsx",
+        "dev/copypaste-extension/src/chat-upload.ts"
       ],
       "acceptance_evidence": [],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少项目共享配置版本、继承摘要与固定资源/方法快照。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "缺少项目共享配置版本、继承摘要与固定资源/方法快照。",
+      "verified_repairs": [
+        {
+          "cluster": "shared_project_guidance",
+          "verified_subflow": "Immutable project guidance, exact dependencies, original/absent continuation, real local Codex reads and settlements, actor-private resumable chat attachments, scoped Admin body governance and actual responsive native Side Panel. Synthetic provider content remains explicit; complete product acceptance stays open.",
+          "evidence": [
+            "shared_project_guidance_repair"
+          ],
+          "implementation_docs": [
+            "technical/86-shared-project-guidance-and-private-chat.md"
+          ]
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "继续验证完整项目共享/个人偏好交集、长会话及大目录/Office/PDF、全部并发与撤权矩阵、实际客户完整工作和专业角色质量。保留原 TC-065 的全部条件，当前局部证据不关闭同号完整验收。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -21540,7 +21554,7 @@
       "All original TC/NFR/G01-G10 and live qualifications"
     ]
   },
-  "evidence_currentness_policy": "Stage54 executes current backend suites, strict adoption contract, actual built Web and new packaged Desktop/native Side Panel; other historical receipts keep their original source scope. Stage55: only the new platform report is bound to current backend bytes; all previous browser/native and original acceptance evidence retains its original source scope. Stage56: only the new provider-control platform runs bind to current backend bytes; earlier UI/native reports retain their original scope. Stage57: only provider-budget platform runs bind current backend bytes; earlier UI/native receipts retain original scope. Stage58: new provider Admin native suites and built Admin browser receipts bind their exact source maps; other receipts retain their historical scope. Stage59: matrix native database, actual built Web and newly packaged frameless Desktop/native Side Panel bind their own unchanged source and artifact bytes. Earlier stage receipts retain their original execution scope. Stage60: native template-video, expiry/share fences and supplied media bind their own current source bytes, real Web/packaged frameless Desktop/native Side Panel and font/package hashes. Earlier executions retain their original scope. Stage61: synthetic marketing connector, current Admin and actual frameless Desktop/native Side Panel executions bind current source bytes; earlier raw reports, source preimages and original complete acceptance retain their execution scope. Failed/interrupted runs are never promoted. Stage62: current bounded synthetic SEO and actual Web/Admin/frameless Desktop/native Side Panel bind source and package bytes; failed executions and previous complete acceptance remain unchanged. Stage63: source-governed saved change drafts and current Web/Admin/packaged native clients are bound separately; stage62 receipts retain their historical sources, all failures and original complete acceptance remain unchanged. Stage64: current report/task source fences are bound to new HTTP/Worker/Codex and regression receipts. Stage63 UI/native and supplemental contract provenance retain their original Backend scope; current client/package verification is read-only. Original acceptance and all failed runs remain unchanged. Stage65: actual-read and retained-content source lineage binds current Backend/regression evidence. Stage64 and earlier UI/native/contracts retain their historical Backend source snapshots. Native artifact verification is read-only; no historical reads, original acceptance or failed runs are rewritten. Stage66: paid native input checkpoints bind current Backend, full regression and bounded local client journeys. Native UI model turns are explicit synthetic fixtures; the separate actual Codex process test uses synthetic provider responses. Earlier source snapshots, contracts, failures and UI reports retain their original scope. No original acceptance finding or gate is rewritten.",
+  "evidence_currentness_policy": "Stage54 executes current backend suites, strict adoption contract, actual built Web and new packaged Desktop/native Side Panel; other historical receipts keep their original source scope. Stage55: only the new platform report is bound to current backend bytes; all previous browser/native and original acceptance evidence retains its original source scope. Stage56: only the new provider-control platform runs bind to current backend bytes; earlier UI/native reports retain their original scope. Stage57: only provider-budget platform runs bind current backend bytes; earlier UI/native receipts retain original scope. Stage58: new provider Admin native suites and built Admin browser receipts bind their exact source maps; other receipts retain their historical scope. Stage59: matrix native database, actual built Web and newly packaged frameless Desktop/native Side Panel bind their own unchanged source and artifact bytes. Earlier stage receipts retain their original execution scope. Stage60: native template-video, expiry/share fences and supplied media bind their own current source bytes, real Web/packaged frameless Desktop/native Side Panel and font/package hashes. Earlier executions retain their original scope. Stage61: synthetic marketing connector, current Admin and actual frameless Desktop/native Side Panel executions bind current source bytes; earlier raw reports, source preimages and original complete acceptance retain their execution scope. Failed/interrupted runs are never promoted. Stage62: current bounded synthetic SEO and actual Web/Admin/frameless Desktop/native Side Panel bind source and package bytes; failed executions and previous complete acceptance remain unchanged. Stage63: source-governed saved change drafts and current Web/Admin/packaged native clients are bound separately; stage62 receipts retain their historical sources, all failures and original complete acceptance remain unchanged. Stage64: current report/task source fences are bound to new HTTP/Worker/Codex and regression receipts. Stage63 UI/native and supplemental contract provenance retain their original Backend scope; current client/package verification is read-only. Original acceptance and all failed runs remain unchanged. Stage65: actual-read and retained-content source lineage binds current Backend/regression evidence. Stage64 and earlier UI/native/contracts retain their historical Backend source snapshots. Native artifact verification is read-only; no historical reads, original acceptance or failed runs are rewritten. Stage66: paid native input checkpoints bind current Backend, full regression and bounded local client journeys. Native UI model turns are explicit synthetic fixtures; the separate actual Codex process test uses synthetic provider responses. Earlier source snapshots, contracts, failures and UI reports retain their original scope. No original acceptance finding or gate is rewritten. Stage86: all selected platform, focused, compatibility, client and actual Web/Admin/Side Panel/local Desktop evidence is bound to exact current sources; previous attempts keep their original outcomes.",
   "controlled_capability_verification": {
     "at": "2026-10-20T20:57:15.657131+00:00",
     "scope": "Controlled capability backend and actual Admin publishing UI; customer adoption UI and all original acceptance remain open",
@@ -39305,9 +39319,9 @@
     "verifier_sha256": "7fe1ba7d85d374e8c19a5b751e50a862b25c617c3ede86627a937ea3c75a7ad5"
   },
   "current_source_qualification": {
-    "stage": 85,
-    "checkpoint": "audio-authorizations-checkpoint.json",
-    "note": "Separate authenticated customer confirmation of exact audio intent and company quote, decline/expiry/Stop/revocation and truthful fee retention; actual cloud Web/native right Side Panel and packaged local-Codex Desktop with frameless, wrapping, rail-free accessible layouts. Explicit synthetic services and native-dialog decisions. Original complete acceptance remains open."
+    "stage": 86,
+    "checkpoint": "shared-project-checkpoint.json",
+    "note": "Immutable project guidance, exact dependencies, original/absent continuation, real local Codex reads and settlements, actor-private resumable chat attachments, scoped Admin body governance and actual responsive native Side Panel. Synthetic provider content remains explicit; complete product acceptance stays open."
   },
   "extension_conversation_repair": {
     "at": "2026-10-22T14:06:48.456750+00:00",
@@ -39529,5 +39543,15 @@
     "original_full_acceptance": "not_proven",
     "assessment_counts_unchanged": true,
     "scope": "Separate authenticated customer confirmation of exact audio intent and company quote, decline/expiry/Stop/revocation and truthful fee retention; actual cloud Web/native right Side Panel and packaged local-Codex Desktop with frameless, wrapping, rail-free accessible layouts. Explicit synthetic services and native-dialog decisions. Original complete acceptance remains open."
+  },
+  "shared_project_guidance_repair": {
+    "stage": 86,
+    "status": "verified_shared_project_guidance_and_private_chat",
+    "checkpoint": "shared-project-checkpoint.json",
+    "checkpoint_sha256": "ef18e09601e2b3f43fad147cf1610bfe3762c45c063b8b82b14ad135b3bb6a44",
+    "scope": "Immutable project guidance, exact dependencies, original/absent continuation, real local Codex reads and settlements, actor-private resumable chat attachments, scoped Admin body governance and actual responsive native Side Panel. Synthetic provider content remains explicit; complete product acceptance stays open.",
+    "original_full_acceptance": "not_proven",
+    "one_requirement_progressed_to_partial": "REQ-065",
+    "original_requirement_and_acceptance_text_preserved": 102
   }
 }
