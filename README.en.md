@@ -1,10 +1,16 @@
-# Workmate · CopyPaste Chrome Extension
+# Workmate · CopyPaste Enterprise Agent · extension
 
-<!-- shared-project-stage86 -->
+<!-- folder-work-stage87 -->
 
-ChatGPT-style conversation and attachments in Chrome's native right Side Panel read explicitly selected files and upload them for cloud Codex.
+ChatGPT-style chat and attachments in Chrome's native right Side Panel provide explicitly selected private files to cloud Codex.
 
-The product serves existing marketing teams first, with image/design/video, advertising analysis, SEO/GEO and repeated business workflows, plus software-development presets. The catalog contains 18 candidates; at least 12 professionally qualified presets remain a product acceptance requirement. All AI requests use the company's OpenAI-compatible server. Synthetic providers are authorized for development; configured demos do not prove live model quality.
+## Product and boundaries
+
+The first customers are existing marketing teams. Scope includes image/design/typography, video/effects, advertising and website analysis, SEO/GEO, repeated business processes and software development. The catalog has 18 candidates with exact Skill bindings; at least twelve individually qualified professional presets remain an acceptance requirement. The designer combines Codex, design Skills and company Image 2. Codex is the only Agent core. All AI uses the company's OpenAI-compatible backend; development currently uses authorized synthetic providers, not a claim of live professional quality.
+
+The Chrome MV3 extension opens the native right Side Panel from its toolbar icon, rather than injecting an in-page overlay. Sign in and select a workspace/project independently of Desktop. Attachments first create the actor's private conversation, then use exact-byte/SHA-256 resumable chunks; errors never fall back to project sharing. Another editor in the same project cannot list/read versions/download/open that private conversation. Project sharing is separate and explicit; files/current-page content are read only after customer selection or authorization.
+
+## Setup
 
 ### Local startup
 
@@ -20,717 +26,63 @@ Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, ena
 
 ### Use the current workflow
 
-1. Sign in using email/OTP or an explicitly configured company identity. Select a workspace/project; a new user creates a company or accepts an invitation. Native clients use the existing browser PKCE sign-in. Admin uses separately enrolled MFA credentials and assigned permissions.
-2. A project owner/admin opens **Projects → Shared project guidance**, saves instructions, delivery requirements, an exact specialist/Skill version, brand version, shared-file versions, authorized accounts and an optional maximum task budget. Search/paginate file choices, save a draft, inspect the dependency preview and explicitly publish. Publication starts no AI, grants no access and changes no balance.
-3. New work displays and pins the accepted guidance version/hash. Continuing tasks and local Codex threads retain their original version, including an explicitly absent configuration for work created before publication. Publishing a newer version never silently upgrades running work. Old versions can be copied into a new draft; immutable history is preserved.
-4. The **Refresh guidance** action, focus/visibility refresh and 15-second polling recheck current source availability. Quarantine, expiry, deletion or lost permission hides unavailable bodies, including open history. The editor and history have distinct component identities; copying/publishing leaves exactly one history. Server tools independently recheck authorization before use.
-5. Side Panel attachment selection creates the current actor's private conversation first, then uses resumable upload with exact original bytes/SHA-256 and scope-specific recovery receipts. A lost response resumes the original operation. It never falls back to a shared file. The actual uploader can download the exact bytes; an independently logged-in editor in the same project cannot list, read versions, download or open the private conversation. Publishing a file to the project needs a separate explicit action.
-6. In Desktop choose a local folder and permission level; full local permission requires the customer's native confirmation and can be revoked. Codex and terminal/file operations run locally. Authorized company references use company tools. Current source, role, budget and cloud-data restrictions still apply. Web/Extension run cloud Codex; Extension requires no Desktop installation.
-7. Admin controls scoped metadata, sensitive bodies, quarantine, restore and irreversible body erasure separately. User/tenant state, consumption, gift credits, recorded charges, VIP and approval-ledger controls retain their existing independent permissions. Previewing a financial operation changes no balance; idempotent replay does not grant twice. Admin cannot sign a customer's media consent.
+1. Complete sign-in, company membership/invitation and project selection. Native clients use browser PKCE; Admin uses separate MFA identities. Expired/revoked credentials must not silently change identity or company.
+2. Select a specialist and supply the brief and explicitly authorized references/accounts. Missing inputs request customer action. Project owners can save, preview and explicitly publish immutable shared guidance; publication starts no AI and grants no new permission.
+3. New tasks pin their accepted role, Skill, brand, reference and guidance versions. Existing work, including an originally absent configuration, retains its original state. Source revocation hides unavailable bodies and blocks later use; history is not a permission bypass.
+4. Confirm budget and any required operation/media approval. View genuine status, progress, exact deliverables and original receipts. Continue requested edits in the same task lineage. Unknown usage remains reserved for reconciliation; it is never silently free or blindly replayed.
+5. Admin can independently manage authorized user/workspace status, inspect permitted consumption, preview/confirm manual fees or credits and activate scoped VIP/expiry. Balances, recorded payments, credits, budgets and VIP are separate records. Idempotent confirmation and audit prevent duplicate grants.
 
-Apply additive **SQL103** with backend `npm run db:migrate` before upgrading clients. SQL001–102 and four historical OpenAPI contracts keep their published bytes. The new eight-operation guidance contract and current route inventory describe **487 configured + one explicitly conditional demo route**. Keep gateway origins/keys, model aliases, verified media capability and tariffs on the backend; never in a renderer or Extension. Ordinary demo does not enable every specialized media fixture.
+## Customer-local folder work
 
-CopyPaste blue/cream, Manrope/Fraunces and light/dark themes remain. Desktop has no Electron frame/menu or visible vertical/horizontal scrollbar rails; actual scrolling, keyboard/last-action access and truthful progress remain. The native Side Panel keeps input, Send and Current page reachable at actual compact Chrome sizes with guidance/settings expanded in both languages. Full accessibility/DPI/site matrices remain open.
+In Desktop, choose a writable local session and open **Folder work**. Select an input folder inside the workspace and configure extensions, instructions, a quiet period, per-file/total limits and maximum runs. Existing files are excluded unless selected. Saving creates a **paused** rule; **Confirm and activate** opens a separate native automatic-spend confirmation that defaults to Cancel.
 
-Current separate verification scopes: platform **1023** (all **1001** prior cases retained; 79 files/20 native-database batches), focused **25**, compatibility **36**, client unit tests **139**, actual Web/Admin/Side Panel **14**, packaged local Desktop **50**. Native guidance executes real customer-device Codex across **v3/v3/v4**, with exact reference-tool/file bytes, three separately settled **90-micro-HKD** tasks and no cloud replacement. Model replies and selected native-dialog decisions remain explicit fixtures. Each receipt binds its own unchanged source; previous failures remain failed.
+Stable native file events and bounded scans feed a persistent serial queue. Each job gets an exact snapshot, separate output directory, original task ID and company cost receipt. An unanswered native question is visible from Folder work; **Answer questions** returns to Conversation and requires the customer's explicit answer. Identical already-processed bytes and product outputs do not create another paid task. Unstarted old versions coalesce to the latest stable input.
 
-Current limits: guidance has up to 20 shared-file versions/12 connectors; Agent/brand/account option lists are bounded at 200. Side Panel accepts at most 20 nonempty attachments of 5 MiB each. Stored recovery receipts contain no file bytes or credentials; unfinished attachment selection is not an automatic cross-panel-close restoration promise. Full sleep/large-file/site matrices, twelve-role business qualification, complete Admin breadth, audio release/recovery, signed installation and full Codex Desktop parity remain open. All 102 original requirements and 26 gap groups remain in scope; no complete-product acceptance is implied.
+Pause stops new dispatch and lets the current file finish. Revoke stops only that rule's owned work while keeping outputs/receipts. App closure stops watching; a real reopen retains the encrypted journal and allocated limits but requires fresh confirmation. Lost replies reuse original dispatch/create/start/finish keys; uncertain native actions block for review. Full OS permission remains the customer's grant, not an additional folder sandbox. Web/Extension keep cloud execution; folder work is a Desktop capability.
+
+Limits: 20 rules; 1,000 history/200 queued items per rule; 1,000 dispatch receipts per session; 2,000 matching files/10,000 entries/12 levels per scan; 20 MiB per file and 64 MiB new reads per scan; at most 100 authorized runs, one scheduled job at a time. Limits do not reset on pause/restart. Outputs are under `.copypaste-local-jobs/<rule>/<job>/output/`. Symlinks/junctions, traversal, outside input, source replacement and conflicts block automatic work. Complete approved-program/structured-argv and crash/sleep/offline matrices remain open.
+
+## Configuration, UI and verification
+
+Apply SQL103 before client upgrades. This increment adds no HTTP route or migration; SQL001–103 and 532 recorded contracts remain byte-preserved. Set company gateways, exact model aliases, verified media capabilities and tariffs on the backend; consult its `.env.example` and the deployment runbook. Never embed company provider keys in a renderer/extension. Unconfigured capability is unavailable rather than silently redirected. Ordinary demo data does not activate every media fixture.
+
+CopyPaste blue/cream, Manrope/Fraunces, English/Traditional Chinese and light/dark themes remain. Desktop has no Electron frame/menu or visible scrollbar rails. Real wheel/focus/last-action access and truthful progress remain. The narrow session guidance card separates its icon/version from the readable name. Focused page Home/End and Ctrl+Home/End act on that page; focused text fields keep caret navigation.
+
+Fresh stage-87 scopes: **91 Desktop unit tests, 161 client unit tests and 57 actual packaged Desktop checks**, retaining all previous 50 native checks and 69 Desktop unit cases. Folder work executes real customer-local Codex, explicit same-turn answers, exact CSV outputs, an actual new-PID application restart, separately settled 90/60-micro-HKD tasks, original thread/version continuity and zero cloud replacement tasks. All 14 runtime assets/licenses match source bytes; repository screenshots/recordings stay outside the runtime ASAR. The archive shrinks from 837,577,925 to 41,487,145 bytes.
+
+Retained stage-86 scopes: **1023 platform, 25 focused, 36 compatibility and 14 actual Web/Admin/native Side Panel checks**. Backend/Web/Admin/Extension product sources remain exact; this stage does not claim those complete suites were rerun. Native processes/files/database/ledger are real; model replies, ad/customer facts and selected native-dialog decisions are explicit fixtures. All owned browsers, API, previews and test DB close; no Docker/WSL/virtualization is used.
+
+The original 102 requirements remain **86 partial / 16 unproven / 0 fully accepted**. REQ-040/042 gain bounded evidence without closing their original conditions. At least twelve professional-role qualifications, complete Admin breadth, teams/solution packages, full marketing workflows, live quality, signed installation/update/uninstall, load/restore exercises and G01–G10 remain open. Test counts are not a product-completion percentage. See the complete numbered gap assessment.
 
 
-[Design and boundaries](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/86-shared-project-guidance-and-private-chat.md) · [Exact-source checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/shared-project-checkpoint.json) · [Additive API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/project-configuration-openapi.json) · [Current gaps](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/2026-10-25-goal-gap-assessment.md)
+[Plan and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/87-desktop-folder-work.md) · [Current-source checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/folder-work-checkpoint.json) · [Complete numbered gaps](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/2026-10-25-goal-gap-assessment.md) · [Branch/checkout and publication](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md)
 
-~~~mermaid
+[Role catalog](https://github.com/copypasteltd/workmate/blob/backend/catalog/role-preset-catalog.json) · [Skill packages](https://github.com/copypasteltd/workmate/blob/backend/catalog/skill-packages.json)
+
+## Architecture
+
+```mermaid
 flowchart TD
-    Login[Email or company identity / company / project] --> Cloud[Web and native Side Panel / cloud Codex]
-    Login --> Local[Frameless Desktop / customer-local Codex]
-    Owner[Project owner or admin] --> Draft[Save draft / preview exact dependencies]
-    Draft --> Publish[Explicit immutable publication]
-    Publish --> New[New work pins version and digest]
-    Old[Existing task or local thread] --> Retain[Retain original version or absence]
-    Cloud --> New
-    Local --> New
-    File[Explicit Side Panel file selection] --> Private[Actor-owned private conversation]
-    Private --> Upload[Resumable upload / verify actual bytes]
-    Upload --> Cloud
-    New --> Gate[Current source / role / permission / budget]
-    Retain --> Gate
-    Admin[Scoped Admin / separate body and cost access] --> Governance[Audit / quarantine / restore / erasure]
-    Governance --> Gate
-~~~
+  Login[Sign in and select company/project] --> Role[Available specialist and exact Skill version]
+  Role --> Cloud[Web / native Side Panel: cloud Codex]
+  Role --> Local[Frameless Desktop: customer-local Codex]
+  Files[Explicit private attachment selection] --> Cloud
+  Local --> Grant[Customer OS grant / local files and tools]
+  Local --> Rules[Paused folder rule / explicit spend confirmation]
+  Rules --> Queue[Stable snapshot / persistent serial queue]
+  Queue --> Local
+  Cloud --> Company[Company OpenAI-compatible API]
+  Local --> Company
+  Company --> Ledger[Original task / usage / unknown-cost hold]
+  Admin[Separate Admin MFA and scoped permissions] --> Governance[Users / content / fees / VIP / audit]
+```
 
-Unedited actual UI and observed-time recordings. Provider content and native-dialog decisions are explicit fixtures; all owned browser/DB processes close.
+Retained stage-86 media for unchanged product sources; this stage adds no fresh Web/Admin/Side Panel UI qualification.
 
-![Actual guidance / task](assets/screenshots/workmate-guidance-14-native-accepted-v3-attachment-en.png)
+![Actual full window](assets/screenshots/workmate-guidance-14-native-accepted-v3-attachment-en.png)
 
-![Actual controlled state](assets/screenshots/workmate-guidance-14-native-compact-settings-zh.png)
-
-![Recorded interaction](assets/screenshots/workmate-guidance-14-project-guidance-sidepanel.gif)
+![Actual compact window](assets/screenshots/workmate-guidance-14-native-compact-settings-zh.png)
 
 [Original MP4](assets/screenshots/workmate-guidance-14-project-guidance-sidepanel.mp4)
 
-<details>
-<summary>Previous delivery details and historical evidence</summary>
-
-<!-- audio-authorizations-stage85 -->
-
-ChatGPT-style conversation and attachments live in the native Chrome right Side Panel, uploading authorized files to the cloud.
-
-### Local startup
-
-Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
-
-```powershell
-Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-extension'
-npm ci
-npm run build
-```
-
-Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, enable Developer mode and load this repository's `dist/` as an unpacked extension. Pin/click its icon to open the native right Side Panel. Keep the built Extension ID aligned with backend authorization; configure company HTTPS origins through `COPYPASTE_API_ORIGIN`/`COPYPASTE_WEB_ORIGIN` before production builds. Sign in, select a workspace/project and attach authorized files. Desktop installation is unnecessary.
-
-### Use the current workflow
-
-1. Sign in with email/OTP, select a workspace/project and the **Video & motion designer** preset (1.4.0 with speech-production 1.2.0). Describe the requested script or attach an authorized immutable WAV/MP3 source. Web and Extension run cloud Codex. In Desktop, select a local folder and explicitly grant the desired native permission; full access requires native confirmation and can be revoked.
-2. The original Codex task proposes exact copy or source version/hash/duration, language/verified voice/speed, intended use and a frozen company quote. The **Confirm speech or transcription** card starts unchecked, with blank rights-reference and use fields. Review the exact proposal and price, enter your own authorization reference and use, check the box and choose **Confirm and continue**, or decline. Neither model-supplied rights fields nor full local permission signs this operation for you.
-3. The original tool waits for at most five minutes without an audio POST, an audio-job reserve, extra provider capacity or a second AI turn. Original task reasoning already used remains chargeable. After customer confirmation, current session, source, role/skill, task lease, permission, capability, shared budget and capacity are rechecked before the one audio operation. Stop, expiry, decline and lost authority block dispatch. Withdrawal blocks later delivery/downloads; a submitted unknown or actual fee remains recorded. An unknown POST is never automatically replayed.
-4. Open **Speech and subtitles → Review audio and subtitles** to play/save the retained authenticated WAV or the original transcript/timing. Byte size and SHA-256 are checked. Manual subtitle edits create immutable versions, require explicit replacement times and preserve old versions without an AI call. Missing service timestamps remain missing. A stale version conflicts while keeping the edit.
-5. In separately authenticated Admin with MFA, **Provider control** shows audio operations and customer-authorization records. The request-read permission controls scoped metadata, cost-read separately controls fees, and content-body-read plus recent MFA permits audited sensitive confirmation/original-body access. Admin has no action to confirm for a customer. Body erasure on original-task deletion preserves minimal hashes/status/fee facts.
-
-Before upgrading clients, apply **SQL102** with backend npm run db:migrate. SQL001–101 and all four published original/audio OpenAPI files remain unchanged; audio-authorizations-openapi.json is an additive current contract. Upgrade cancels old unsubmitted audio at zero and retains dispatched unknown cost holds. Completed legacy files keep their exact bytes and are labelled as legacy model declarations; migration never invents a human confirmation.
-
-Keep company gateway origins, credentials, exact speech/transcription aliases, verified voice/locale lists, positive character/millisecond tariffs and timestamp support on the backend. Audio capacity begins at zero and needs the existing independently approved policy. Normal demo does not automatically enable this explicit synthetic audio fixture. All AI requests use the company OpenAI-compatible server; text, image, video and audio share the task budget.
-
-Desktop preserves CopyPaste blue/cream, typography and both themes. It has **no Electron frame/menu and no visible vertical or horizontal scrollbar rails**. Long content wraps; real wheel/Home/End/Tab, last-action focus and truthful task/upload/media progress remain. The actual packaged OS window was checked at 1440×980, 1280×800 and 800×600, including the new customer form. Extension remains an actual native right SIDE_PANEL with chat, attachments and authorized uploads, without requiring Desktop.
-
-Observed checks: platform **1001**, preserving all **988** prior cases across 78 files/20 isolated native database batches; audio/gateway/upgrade **56**; compatibility **80**; client tests **124**; actual Web/Admin/Side Panel **13**; packaged local Desktop **41**. All selected source hashes match exactly; actual media and owned-process cleanup are retained. The current catalog has 32 package versions/29 Skill kinds; all 31 published packages and the previous role 1.3.0 remain intact. Failed attempts keep their original outcomes.
-
-Synthetic tone, fixed ASR/reasoning and native-dialog decisions prove this bounded flow only. Independent logged-in attestation is not proof of copyright ownership. Live voice/Cantonese quality, managed audio verification/publication/rollback, unknown-POST external evidence/independent settlement/recovery, signed installers, all professional roles and complete Codex Desktop parity remain open. Original **102 REQ / 102 TC: 83 partial, 19 unproven, 0 fully accepted; G01–G10 open**.
-
-
-[Design and boundaries](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/85-audio-rights-and-administration.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/audio-authorizations-checkpoint.json) · [Current additive API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/audio-authorizations-openapi.json)
-
-~~~mermaid
-flowchart LR
-    Login[Email / company / project] --> Role[Versioned role and Skill]
-    Role --> Cloud[Web / Side Panel cloud Codex]
-    Role --> Local[Desktop local Codex]
-    Cloud --> Proposal[Immutable proposal / exact quote]
-    Local --> Proposal
-    Proposal --> Customer[Current customer session / explicit confirmation]
-    Customer --> Gate[Current source / permission / budget / capacity]
-    Gate --> Company[Company audio API / one submission]
-    Company --> Assets[Private original / actual timing / versions]
-    Customer --> Withdraw[Decline / Stop / withdraw]
-    Withdraw --> Block[Block dispatch or delivery / retain real fees]
-    Admin[Scoped Admin / audited content / separate costs] --> Proposal
-~~~
-
-Actual native right Chrome Side Panel; unedited screenshots and observed-time recordings. Company models/media and native dialog decisions are explicit fixtures.
-
-![Actual customer control](assets/screenshots/workmate-audio-08-native-customer-consent-unchecked.png)
-
-![Actual retained state](assets/screenshots/workmate-audio-08-native-customer-consent-withdrawn.png)
-
-![Recorded interaction](assets/screenshots/workmate-audio-08-audio-sidepanel.gif)
-
-[Original MP4](assets/screenshots/workmate-audio-08-audio-sidepanel.mp4)
-
-<details>
-<summary>Previous delivery details and historical evidence</summary>
-
-<!-- audio-production-stage84 -->
-
-The native Chrome right Side Panel independently hosts chat, authorized uploads and cloud audio results.
-
-### Local startup
-
-Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
-
-```powershell
-Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-extension'
-npm ci
-npm run build
-```
-
-Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, enable Developer mode and load this repository's `dist/` as an unpacked extension. Pin/click its icon to open the native right Side Panel. Keep the built Extension ID aligned with backend authorization; configure company HTTPS origins through `COPYPASTE_API_ORIGIN`/`COPYPASTE_WEB_ORIGIN` before production builds. Sign in, select a workspace/project and attach authorized files. Desktop installation is unnecessary.
-
-### Use the current workflow
-
-1. Sign in with email/OTP and choose a company/project. Select the **Video & motion designer** preset (version 1.3.0, `speech-production` 1.1.0) and describe the approved script or attach an authorized WAV/MP3 asset. In Desktop, choose a local folder and explicitly set the local permission; full access requires native confirmation and can be revoked. Web/Extension run cloud Codex; Desktop orchestration stays local.
-2. Ask for speech or file transcription in the task. The server checks the current role, optional verified audio capability, language/voice allowlists, exact source version, budget and published provider capacity. All AI requests use the company's OpenAI-compatible gateway. Reasoning, images and audio share one task budget. Unconfigured audio does not disable existing video editing.
-3. Open **Speech and subtitles → Review audio and subtitles**. WAV playback and save use authenticated bytes with size/SHA-256 checks. Transcription retains the original raw JSON, text and actual service timing. Without returned timestamps, it shows text only; it does not invent caption times.
-4. Select the current transcript version and **Revise subtitles**. Edit text/time or remove/add captions, supply a reason and save a new version. New manual time fields start blank. Earlier versions remain read only; the original remains available. A concurrent change rejects the stale version and retains your edits. Manual revisions make no AI call or new generation charge.
-5. Admin uses its separate email/OTP/TOTP identity. In **Provider control → Speech & transcription jobs**, `admin.ai.requests.read` allows scoped metadata, `admin.ai.cost.read` independently permits costs, and `admin.content.body.read` plus recent MFA permits an audited original-body read. The original request cannot be overwritten. Source isolation, deletion or permission loss blocks current previews/downloads. Confirmed costs use the existing independent-review ledger; a dispatched operation with unknown outcome holds its reservation and is not automatically retried.
-
-Before upgrading clients, apply additive **SQL101** with backend `npm run db:migrate`. Keep `AI_BASE_URL`, `AI_ALLOWED_HOSTS`, credentials, exact speech/transcription aliases, positive character/millisecond tariffs and verified voice/locale lists on the server. Set `AI_SPEECH_VERIFIED` / `AI_TRANSCRIPTION_VERIFIED` only after protocol verification; timestamp support is separately declared. Audio slots/RPM start at **0** and need the existing separately approved policy publication. Ordinary `npm run demo` does not automatically enable this audio fixture. The observed checks use isolated explicit synthetic services.
-
-Desktop uses CopyPaste typography/blue/cream and light/dark themes, with **no Electron frame/menu and no visible vertical or horizontal scrollbar rails**. Content wraps; real wheel/Home/End, last-action focus and truthful progress remain. A focused subtitle control stays visible after a real OS resize at 1440×980, 1280×800 and 800×600. Extension stays in the actual right Chrome Side Panel with ChatGPT-style chat/attachments, authorized uploads and no Desktop dependency.
-
-Validation: platform **988** (all previous **968** cases retained), audio/gateway **43**, compatibility **80**, client tests **124**, actual Web/Admin/Side Panel **10**, packaged local Desktop **40**. All three desktop sizes, real WAV decoding/saves, manual revisions and owned-resource cleanup were checked. SQL001–100 and both original OpenAPI files keep their published bytes; the seven audio operations are additive. Current runtime and executed test sources match the selected receipts. The only unrelated snapshot difference is a reviewed catalog-count test update from 30 to 31 versions; its entire four-file batch and the remaining batches ran afresh. Earlier passing results and the failed count assertion retain their original scope and bytes.
-
-The audio fixture is a decoded synthetic tone with fixed ASR text. Live voices/Cantonese quality, independent human rights confirmation, managed audio validation/publication/rollback, unknown-POST external-bill evidence and recovery delivery remain open. Stored rights fields are tool parameters linked to the actor/task, not independently authenticated human consent. This bounded repair does not establish complete professional-role quality, signed installation or full Codex Desktop parity. Original **102 REQ / 102 TC: 83 partial, 19 unproven, 0 fully accepted; G01–G10 open**.
-
-
-[Design and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/84-internal-audio-production.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/audio-production-checkpoint.json) · [Additive API contract](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/audio-production-openapi.json)
-
-```mermaid
-flowchart LR
-    Login[Email / company / project] --> Role[Versioned role and speech skill]
-    Role --> Cloud[Web / Side Panel cloud Codex]
-    Role --> Local[Desktop local Codex]
-    Cloud --> Gate[Current source / budget / audio capacity]
-    Local --> Gate
-    Gate --> Company[Company speech / transcription API]
-    Company --> Assets[Retained private originals and actual timing]
-    Assets --> Revision[Manual versioned subtitles / no AI call]
-    Assets --> Preview[Authenticated playback and save]
-    Admin[Scoped Admin / independent body and cost permissions] --> Gate
-```
-
-Actual Chrome SIDE_PANEL; original unedited screenshots and observed-time recordings. Audio/model/business content and native dialog decisions are explicit fixtures.
-
-![Actual editor](assets/screenshots/workmate-audio-06-native-caption-editor.png)
-
-![Actual second locale/state](assets/screenshots/workmate-audio-06-native-audio-zh.png)
-
-![Recorded interaction](assets/screenshots/workmate-audio-06-audio-sidepanel.gif)
-
-[Original MP4](assets/screenshots/workmate-audio-06-audio-sidepanel.mp4)
-
-<details>
-<summary>Previous delivery details and historical evidence</summary>
-
-<!-- geo-observation-stage83 -->
-
-GEO now has reproducible question sets and retained original answers. An immutable configuration pins the complete Agent definition, skills, requested model alias, Codex runtime, language, requested region and protocol. Independent API repeats keep the same configuration; user-supplied consumer answers remain a separate surface.
-
-### Local startup
-
-Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
-
-```powershell
-Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-extension'
-npm ci
-npm run build
-```
-
-Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, enable Developer mode and load this repository's `dist/` as an unpacked extension. Pin/click its icon to open the native right Side Panel. Keep the built Extension ID aligned with backend authorization; configure company HTTPS origins through `COPYPASTE_API_ORIGIN`/`COPYPASTE_WEB_ORIGIN` before production builds. Sign in, select a workspace/project and attach authorized files. Desktop installation is unnecessary.
-
-### Use the current workflow
-
-1. Sign in through the existing email flow and select your company/project. In **Marketing insights → GEO observations**, create an unbranded Agent in Specialists, then save fixed questions and measured brand aliases. Aliases are excluded from the observation question. Editing a question, region, language or Agent creates a new immutable version from the reviewed previous hash.
-2. **Run API observation** displays current active-task capacity and an exact per-question budget. Explicitly review the unchecked confirmation. Each question needs one available task slot; the backend checks and reserves the complete batch atomically. Starter's single slot cannot run a two-question batch. Each independent cloud Codex task uses the company Responses gateway with no memory/history, retrieval or business tools. Repeating creates another run.
-3. **Capture completed answers** stores actual successful task output once as a private UTF-8 asset with SHA-256 and observation time. Capture does not call the model again. Open the original answer, download its exact text, or export the full JSON. Missing answers stay absent; unknown usage remains under reconciliation with no invented zero charge. JSON timestamps remain ISO strings even for an unfinished export.
-4. **Record consumer sample** requires the product, observed region/language/time, optional displayed model, retrieval state and an initially unchecked attestation. The form records one selected question; the API accepts up to 20 known questions. Paste the complete original answer. Metadata is user supplied and unverified; no AI task or model fee is created.
-5. Choose comparison A/B, including across configuration versions. The actual downloadable JSON includes both original answers, hashes and effective configurations. Same-configuration repeats are distinguished from configuration changes; API and consumer/manual surfaces are not aggregated. Literal aliases and answer links do not establish entity identity, recommendation, rankings, independently retrieved evidence or causation. Requested region is prompt context; provider processing region and resolved underlying model are unknown.
-6. Records are private to their creator under current project authorization and forced RLS. Admin metadata, independent `admin.content.body.read`, project-scoped quarantine/restore/delete and audit cover configurations, runs and samples. An explicitly published answer copy preserves its GEO provenance. Isolation, expiry or deletion blocks current exports, managed reads and derived outputs. Default retention is 90 days; the erasure journal cancels/settles actual tasks and removes answer files and retained task copies. Files already saved outside the service cannot be recalled.
-
-Desktop keeps **local Codex**, revocable full-machine consent, its frameless native window and no Electron menu. Its clearly labelled **GEO observations · Browser** entry opens the configured company Web URL; it does not start a cloud substitute for a local Agent. A Desktop-local GEO protocol is still open. Native wheel/Home/End, whole-page Ctrl+Home, last-item focus and genuine progress remain usable without visible vertical/horizontal scrollbar rails. Extension keeps a ChatGPT-style conversation/attachment interface, authorized local-file uploads and cloud Codex in the actual right Chrome Side Panel; the GEO entry opens the company Web workspace, with no Desktop dependency.
-
-Validation is bounded: platform **968/968**, every previous **946** case retained; GEO core **22**, clients **124**, actual Web/Admin/native Side Panel **13**, packaged local Desktop **37**. SQL100 is additive; SQL001–099 and the original OpenAPI bytes are unchanged. Model, image and consumer/ad data are explicit synthetic fixtures. Real-provider quality/rankings, all professional roles, signing, full Codex Desktop parity, performance/capacity and complete original acceptance remain open. Original **102 REQ / 102 TC: 83 partial, 19 unproven, 0 fully accepted; G01–G10 not proven**.
-
-Interactive qualifications retain exact product/runtime sources. Later test-only edits update two latest-migration expectations from 99 to 100 and explicitly bound the historical 098-to-099 fixture to 99. Original data, source OID, prepared-reader and replay checks remain. Complete regression qualification spans 19 isolated batches: unchanged-source batches 01–07 from run 33 and fresh batches 08–19 from run 34. Both affected test files execute afresh; every current runtime and executed test/helper byte is checked. Original failed receipts remain failed.
-
-
-[Design and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/83-reproducible-geo-observations.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/geo-observation-checkpoint.json) · [Additive API contract](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/geo-observation-openapi.json)
-
-```mermaid
-flowchart LR
-    Login[Email / company / project] --> Version[Immutable questions and harness]
-    Version --> API[Independent Codex API runs]
-    Version --> Manual[User-attested consumer answers]
-    API --> Retained[Private original bytes and hashes]
-    Manual --> Retained
-    Retained --> Compare[Separate surfaces and configuration differences]
-    Compare --> Export[Actual JSON download]
-    Admin[Scoped Admin / expiry / deletion] --> Gate[Current source checks]
-    Gate --> Retained
-    Gate --> Export
-```
-
-Actual UI screenshots and observed-time interaction capture. All business/model content shown is synthetic; native Side Panel captures come from Chrome's real SIDE_PANEL context.
-
-![Actual current viewport](assets/screenshots/workmate-geo-05-native-panel-en.png)
-
-![Actual second locale/state](assets/screenshots/workmate-geo-05-native-panel-zh.png)
-
-![Recorded interaction](assets/screenshots/workmate-geo-05-geo-sidepanel.gif)
-
-[Original MP4](assets/screenshots/workmate-geo-05-geo-sidepanel.mp4)
-
-<details>
-<summary>Earlier delivery details (historical evidence scopes)</summary>
-
-<!-- creative-feedback-stage82 -->
-## Confirmed creative feedback and native layout
-
-Creative assets now have an explicit feedback loop: a user confirms the exact asset version, ad identity and date range before any advertising facts contribute. Same-name creatives in different accounts remain separate. Identity is user-attested; the current official connectors provide campaign-level facts and cannot establish creative performance automatically.
-
-### Local startup
-
-Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
-
-```powershell
-Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-extension'
-npm ci
-npm run build
-```
-
-Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, enable Developer mode and load this repository's `dist/` as an unpacked extension. Pin/click its icon to open the native right Side Panel. Keep the built Extension ID aligned with backend authorization; configure company HTTPS origins through `COPYPASTE_API_ORIGIN`/`COPYPASTE_WEB_ORIGIN` before production builds. Sign in, select a workspace/project and attach authorized files. Desktop installation is unnecessary.
-
-### Use the current workflow
-
-1. Sign in using the existing email flow and choose the enterprise/project. In **Marketing insights → Creative & ad feedback**, upload a shared creative first and import an ad-level Google/Meta CSV with an explicit account, currency, timezone, attribution and conversion definition. Campaign-only or incomplete sources are not selectable. Source choices show at most 100 recent eligible items; mappings and reports have explicit pagination.
-2. **New candidate** pins one shared asset version, dataset, exact ad/channel/campaign, creative ID, date range and review note. A similar name or user-supplied provider metadata is a candidate basis only. Review the frozen hashes and scope, then explicitly check the initially unchecked single-creative attestation and give a reason. Incorrect identity requires withdrawal and a new candidate; confirmed history is immutable.
-3. Select up to 40 confirmed mappings and create a dated feedback report. BigInt-derived decimal strings preserve exact amounts. Account/platform/currency/timezone/attribution/conversion/creative/version scopes stay separate. Identical ad-days are deduplicated; conflicting facts, competing allocations and overlapping correction snapshots reject. Missing conversions stay unknown and unobserved days are not zero. No cross-scope total or causal uplift is inferred.
-4. Download the actual frozen JSON or select its shared file as an explicit input to the next Codex task. Actual model reads and downstream managed outputs retain source lineage. Withdrawal, quarantine, source expiry or lost authorization stop managed reads/downloads and queued reuse. Copies already exported outside the service remain the customer's responsibility.
-5. Admin content metadata, independent `admin.content.body.read`, scoped quarantine/restore/delete and auditable actions cover mappings and feedback reports. Metadata access does not grant body access. Restoring a mapping does not silently republish an old quarantined report. Retention defaults to 90 days; the existing erasure journal orders report-file cleanup before clearing parent bodies. Admin cannot rewrite frozen identity or the original confirmation through metadata controls.
-
-Desktop runs Codex locally with explicit, revocable full local permission. It stays frameless with no Electron menu or visible vertical/horizontal scrollbar rails. Wrapping tables/code and compact layouts preserve wheel, Home/End, focus and actual task/video progress. Native packaged windows at 800×600, 1280×800 and 1440×980 were exercised. Extension remains ChatGPT-style chat/attachments in Chrome's native right Side Panel, uploading authorized files to cloud Codex; its new feedback entry opens the full cloud workspace without depending on Desktop.
-
-Apply **SQL099** through backend `npm run db:migrate` before deployment. Published SQL001–098 and both original OpenAPI files retain their bytes. Seven additive feedback operations have their own contract; the observed inventory is 454 configured operations plus the retained conditional demo operation. Company gateway secrets stay server-side.
-
-Current bounded qualification: platform **946/946**, all previous **929** cases retained; feedback core **17/17**, separate legacy analytics/source compatibility **43/43**, client checks **124**, actual Web journey **4** and actual packaged Desktop journey **36**. Each count has its own scope. Screenshots and GIF/MP4 below are **Desktop** captures, including copies in other component repositories. Advertising identities/facts and model content are explicit fixtures; native execution, files, identity, database, arithmetic and media capture are actual.
-
-Original **102 REQ/102 TC remain 83 partial, 19 unproven, 0 fully accepted**; NFR and G01–G10 remain open. Live provider creative verification, professional marketing quality, signed installers and complete Codex Desktop operation parity require further evidence. Owned browsers, previews and native databases are closed; no Docker/WSL/VM is used.
-
-All selected core, compatibility, client, Web/native UI and complete-platform receipts execute the current exact source bytes. A separate review binds the native sidebar/preferences repair, capture serialization, settled-theme report framing and Windows whole-page Ctrl+Home. Focused native-log Home/End and existing reachability conditions remain; additional end-of-page checks require navigation and preferences to remain visible. Earlier and failed attempts keep their original scopes and do not supply current-source coverage.
-
-[Design and permissions](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/82-confirmed-creative-feedback.md) · [Exact evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/creative-feedback-checkpoint.json) · [Additive API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/creative-feedback-openapi.json)
-
-```mermaid
-flowchart LR
-    Version[Shared exact asset version] --> Candidate[Ad identity and dated source]
-    Candidate --> Review[Explicit user attestation]
-    Review --> Metrics[Independent exact scopes]
-    Metrics --> JSON[Frozen managed JSON]
-    JSON --> Codex[Explicit next Codex task]
-    Withdraw[Withdraw / quarantine / expiry] --> Fence[Recheck actual reads and outputs]
-    Fence --> JSON
-    Fence --> Codex
-```
-
-![Actual feedback](assets/screenshots/stage82-desktop-workmate-feedback-44-report-en.png)
-
-![Compact Chinese/dark](assets/screenshots/stage82-desktop-workmate-feedback-44-report-zh-dark-compact.png)
-
-![Actual interaction GIF](assets/screenshots/stage82-desktop-workmate-feedback-44-creative-feedback.gif)
-
-[Recorded MP4](assets/screenshots/stage82-desktop-workmate-feedback-44-creative-feedback.mp4)
-
-
-
-<details>
-<summary>Historical stage 81 usage and complete setup reference; original scopes retained</summary>
-
-<!-- managed-video-stage81 -->
-## Managed video capabilities and current delivery
-
-This repository is one independently versioned part of Workmate. Admin can now manage video models through the same immutable draft, actual verification, independent approval, publication and rollback flow as text and images. Web, local Desktop and the native Chrome Side Panel consume published versions; existing tasks keep their frozen model and rates.
-
-### Local startup
-
-Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
-
-```powershell
-Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-extension'
-npm ci
-npm run build
-```
-
-Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, enable Developer mode and load this repository's `dist/` as an unpacked extension. Pin/click its icon to open the native right Side Panel. Keep the built Extension ID aligned with backend authorization; configure company HTTPS origins through `COPYPASTE_API_ORIGIN`/`COPYPASTE_WEB_ORIGIN` before production builds. Sign in, select a workspace/project and attach authorized files. Desktop installation is unnecessary.
-
-### Use the current workflow
-
-1. Sign in to Admin using its separate email/TOTP identity. Open **Catalog → Model capabilities → Create configuration**, select **Video generation**, enter the company model alias, a positive HKD price per billable second and an operation reason. Codex and the company internal gateway are fixed; a draft cannot add an endpoint, secret or another kernel.
-2. Open **Configuration & validation**, enter the reason and run validation. The API immediately saves a durable receipt. Its 16 cases quote up to 184 seconds from the **platform verification budget**. Closing this view does not stop execution. Progress counts actually verified cases, with actual size/duration, full MP4/H264 decoding and observed cancellation; no simulated percentage represents real service progress.
-3. **Recheck original job** queries the existing operation. **Stop this validation suite** stops new calls and checks already-dispatched usage. An unknown result keeps its budget/capacity hold and blocks another validation in this view. Once expense is known, an explicitly new validation creates a new receipt and new billable calls. The live cost and the receipt at the immutable eligibility decision remain distinct.
-4. After all cases pass, **Preview publication** compares the model and price. Current permission, recent MFA, exact version and reason are checked again; another administrator must approve. Requesters cannot approve themselves. Rollback appends a new publication fact. Scoped access and explicit denies retain priority; read-only administrators cannot mutate configurations.
-5. A stopped worker resumes original operations and confirmed content, without another generation POST. SQL098 preserves the old budget functions' identities and all prior shared accounting. Apply SQL098 using backend `npm run db:migrate` before deployment. SQL001–097 and both original OpenAPI files retain their own bytes. Company gateway credentials remain server-side. Managed publication can provide a verified video capability while the legacy environment switch is false; a live supplier still requires its own qualification.
-
-Desktop remains frameless, runs Codex on the customer's own device and supports explicit revocable full local permission. No visible vertical/horizontal scrollbar rails appear; wheel, keyboard, focus and truthful task/video progress remain available. Extension opens in Chrome's native right Side Panel, uses ChatGPT-style chat/attachments, reads/uploads authorized files and runs its Agent in the cloud without a Desktop dependency.
-
-Current platform qualification: **929/929** cases, all previous 912 retained, 71 files/18 batches. Separate checks: **106/106** legacy capability/gateway/customer-video compatibility, **7** contract checks and **7** actual Admin browser checks. Captures below show the **Admin** component, including when copied into a client repository for the shared setup workflow. Historical stage-80 client sources/captures retain their original scope; they are not relabeled as a new full-stack browser run. The new Admin journey uses real authentication, PostgreSQL, native pinned Codex version checks and actual MP4 decoding with an explicit synthetic company service/video fixture.
-
-Original **102 REQ/102 TC remain 83 partially verified, 19 unproven and zero fully accepted**; G01–G10 remain open. Live company service, all professional roles, full original video acceptance, signed installers and complete Codex Desktop operation parity are still unproven. All owned browser contexts/instances, previews and native databases close; no Docker/WSL/VM is used.
-
-The first combined qualification failed because its synthetic HTTP fixture received port 2049, which this Node Fetch runtime rejects before HTTP. That failed TAP, live port witness and owned-worker/fixture cleanup remain retained. The fixture now uses the existing safe loopback listener and a bounded test-arrival wait; no product source, assertion or test name changed for this repair. The complete platform run and 17-case core run execute the repaired harness afresh. Earlier compatibility/UI recordings retain their exact product and verifier bytes, with the two later harness-only changes explicitly reviewed rather than presented as a fresh browser recording.
-
-[Design and authority](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/81-managed-video-capability-releases.md) · [Exact evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/managed-video-checkpoint.json) · [Supplemental API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/capability-releases.openapi.json)
-
-```mermaid
-flowchart LR
-    Draft[Immutable video model and rate] --> Grant[Permission / MFA / frozen plan]
-    Grant --> Intent[Original durable operation and quote]
-    Intent --> Company[Company internal service]
-    Company --> Observe[Original lookup / retrieve / cancel]
-    Observe --> Decode[Actual MP4 hash and full decode]
-    Observe --> Cost[Confirmed expense or retained unknown]
-    Decode --> Approval[Independent preview and approval]
-    Approval --> Publish[Versioned publication / rollback]
-    Publish --> Clients[New Web / local Desktop / cloud Side Panel tasks]
-```
-
-![Actual Admin screenshot](assets/screenshots/stage81-admin-workmate-managed-video-02-video-resumed-en.png)
-
-[Admin interaction GIF](assets/screenshots/stage81-admin-workmate-managed-video-02-video-cancellation-and-cost-recovery.gif) · [Actual recorded MP4](assets/screenshots/stage81-admin-workmate-managed-video-02-video-cancellation-and-cost-recovery.mp4)
-
-<details>
-<summary>Historical stage-80 usage and installation reference; counts keep their original scope</summary>
-
-<!-- generated-video-stage80 -->
-## Generated video, scoped costs and compact Desktop
-
-The independent native Chrome right Side Panel provides ChatGPT-style chat, authorized file read/upload and cloud-video status, playback and save.
-
-### Local startup
-
-Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
-
-```powershell
-Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-extension'
-npm ci
-npm run build
-```
-
-Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, enable Developer mode and load this repository's `dist/` as an unpacked extension. Pin/click its icon to open the native right Side Panel. Keep the built Extension ID aligned with backend authorization; configure company HTTPS origins through `COPYPASTE_API_ORIGIN`/`COPYPASTE_WEB_ORIGIN` before production builds. Sign in, select a workspace/project and attach authorized files. Desktop installation is unnecessary.
-
-### Use the current workflow
-
-1. Sign in using the existing email/OTP flow, select a workspace/project and start a **Video and motion** task. New tasks use the versioned R16 1.2.0 role and its `video-generation` Skill. Frozen older tasks retain their original role/Skill; start a new task to use generation.
-2. In Web or Desktop select **Generate a video**, a supported duration (4/8/12/16/20 seconds) and format (landscape, portrait or square), then supply the brief and confirm the task budget. Template/FFmpeg composition remains a separate option. Desktop settings start collapsed so the conversation and composer retain space. In Extension, open the existing cloud video task from the same workspace/project's task history to review its status, play it and save the result.
-3. Codex uses the company's internal service. The server persists an immutable original operation and a quote before HTTP, sharing the same budget with reasoning/image requests. Input counting, reasoning, image and video also share admission limits; completed calls retain their rolling-minute rate charge after concurrency slots release. Independently reviewed termination facts affect slot usage while preserving the original requests. Only service-reported progress is shown. Pending or unknown usage retains the original hold; missing usage is never free.
-4. **Stop this generation** requests cancellation of that same operation. A later confirmed usage observation can still report a charge. Retries/recovery query the original operation and do not submit another generation. A real state change rejects a stale control revision; leases and unchanged polls do not invalidate it.
-5. A completed status becomes a deliverable only after real SHA/size, format, dimensions, duration and full native decode checks. Play and save the actual MP4. Withdrawal, source quarantine or lost authority removes the current preview/download; no fabricated success file is supplied. Inline preview is bounded to 20 MB.
-6. Admin opens **Provider controls → Generated video jobs**. Metadata, cost reads and original-job rechecks require separate scoped permissions; recheck requires current MFA and an audited reason. It cannot create a replacement video or grant access to the prompt/reference/media. Original task settlement retains independent approval and immutable provider facts.
-
-Apply the additive **SQL097** with backend `npm run db:migrate` before upgrading clients. Existing SQL001–096 and each original OpenAPI file keep their own published bytes. Set the company's `AI_BASE_URL`, allowed hosts/key, exact `AI_VIDEO_MODEL`, explicit `AI_VIDEO_VERIFIED`, positive `AI_VIDEO_HKD_MICROS_PER_SECOND` and optional signed-callback secret. Until a company capability is explicitly configured/verified, generation remains unavailable. No vendor key belongs in a renderer or Extension. Public Sora 2/Videos API retired on 2026-09-24; `company-video-jobs-v1` is an internal contract, with no silent public-provider fallback. Complete managed video capability verification/publication is still outstanding.
-
-Desktop is frameless with no native Electron menu. No visible vertical or horizontal scrollbar rails appear in the product; content still scrolls and reflows, with wheel, Home/End, keyboard focus and actual last-action access. Actual 800×600, 1280×800 and 1440×980 windows, English/Traditional Chinese and light/dark themes are exercised. Truthful task/video progress remains. Desktop Codex runs locally with explicit revocable full local permission. Extension keeps the native right Side Panel and cloud Codex; it requires no Desktop/local-Agent dependency.
-
-Validation: **912/912** platform cases, all previous 874 retained; **60/60** focused video/gateway cases; **69** client unit cases; **32** packaged Desktop, **5** Web/Admin and **9** native Side Panel checks; **17/17** native supervisor cases. These are separate scopes, not an additive acceptance count. Native Codex, identity, database, storage, media decode and ledger are real; reasoning, video content, customer data and selected native consent decisions are explicit fixtures. All owned browsers/databases close; no Docker/WSL/VM is used. The original **102 REQ/102 TC remain 83 partially verified, 19 unproven, zero fully accepted**. Live company media, full TC-019/TC-056, all professional roles and G01–G10 remain open.
-
-The complete 70-file/18-batch platform inventory uses a reviewed same-source re-execution: Windows error 1455 interrupted one batch; all four files passed on a fresh owned database, while the other seventeen complete passing batches retain exactly the same source, tests, harness and native binary. The original failed attempt stays failed and contributes no passing coverage. Each selected receipt retains its own plan hash; raw TAP files are neither combined nor relabeled.
-
-[Design and protocol](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/80-generated-video-jobs.md) · [Exact evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/generated-video-checkpoint.json) · [Additive API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/generated-video-openapi.json)
-
-```mermaid
-flowchart LR
-    SignIn[Sign in and select workspace] --> Client[Web / local Desktop / Side Panel]
-    Client --> Codex[Cloud or customer-device Codex]
-    Codex --> Intent[Original durable operation]
-    Intent --> Budget[Shared task budget]
-    Budget --> Company[Company internal video service]
-    Company --> Observe[Query / signed observation / cancel]
-    Observe --> Validate[Actual MP4 decode and immutable file]
-    Observe --> Cost[Confirmed cost or retained unknown hold]
-    Validate --> Review[Authorized playback and save]
-```
-
-![Actual screenshot](assets/screenshots/workmate-chat-16-generated-video-en.png)
-
-[Interaction GIF](assets/screenshots/workmate-chat-16-conversation.gif) · [Recorded MP4](assets/screenshots/workmate-chat-16-conversation.mp4)
-
-<details>
-<summary>Previous stage-79 documentation and full installation reference; historical counts retain their original scope</summary>
-
-[中文](README.md) · [Documentation](https://github.com/copypasteltd/workmate/blob/docs/docs/README.en.md)
-
-<!-- brand-production-stage79 -->
-
-## Fixed brand versions and production checks
-
-The independent native Chrome Side Panel provides chat and authorized file reads/uploads to company cloud Codex. Its journey is rerun; this phase adds no Side Panel brand editor.
-
-1. Sign in, select the tenant/project, and open **Brand library** in Web or Desktop. Add identity, colors, fonts and declared usage rights, approved product facts/prices, promotion expiry, channels/locales and optional fixed Logo files. Uploaded fonts must be shared in the selected project.
-2. Publish an immutable version. Further edits publish a new version; stale concurrent edits conflict. Existing specialists and tasks retain their pinned version. Explicitly adopt a newer specialist version when desired.
-3. Select a historical version and check sample text or a fixed fact. Missing glyphs identify their Unicode codepoint; expired offers or font declarations block new production. Price facts supply the stored text and amount; no silent font or price substitution.
-4. Brand-bound cloud design tasks must carry the matching brand/version and channel/locale. Text uses the fixed declared font configuration; explicit fact keys produce the stored statement and price. Outputs retain source dependencies and editable JSON; SVG text is outlined, PNG and the limited single-page PDF review output are actual renders. Font declarations do not prove copyright ownership.
-
-Apply **SQL096** with `npm run db:migrate` in the configured backend before starting dependent clients. Published SQL001–095 and each original OpenAPI file retain their own bytes. The additive brand contract documents four operations; the configured service inventory has 438 operations plus one demo-credit operation only when `DEMO_MODE=true`. Legacy brand bodies remain readable under current access rules, without invented history or rights. Publish explicit schema-v2 guidance and adopt a new specialist version before fixed-font production; existing tasks stay pinned.
-
-Desktop runs Codex on the customer's machine with explicit revocable full local permission, no native frame/menu, and no visible vertical or horizontal scrollbar rails. Wheel, keyboard and focus access remain functional, including actual 800×600, 1280×800 and 1440×980 windows. Truthful progress feedback remains. Extension runs cloud Codex through the native right Side Panel. All AI requests use the company gateway. Testing creates and closes only owned browser instances; no Docker/WSL/VM is used.
-
-Current separate results: **874/874 platform cases** in 68 files/17 batches (all prior 861 retained, 13 new), 68 client unit cases, 30 packaged Desktop checks, four brand Web checks, four Web/Admin quality checks and eight native Side Panel checks. Retained native supervisor evidence has 17 cases and all 57 bound sources unchanged. Real database/auth/files/ledger/local Codex run with explicit model/customer/business fixtures. Original 102 REQ/102 TC remain: 82 partially verified, 20 not proven, zero fully accepted; G01–G10 and real TC-056 blind review remain unproven. Desktop brand UI evidence does not establish every local professional role's brand enforcement.
-
-Desktop33, brand Web02 and Web/Admin08 retain their actual receipts with one explicitly reviewed later difference: an unrelated extension test file now waits for document readiness and logs login failures. Their application/UI and executing journey/verifier bytes are unchanged. The selected fresh extension run and full platform23 use the updated harness. Exact before/after bytes and scope are recorded in the checkpoint.
-
-```mermaid
-flowchart LR
-    Library[Brand library] --> Version[Immutable brand version]
-    Version --> Task[Frozen specialist and cloud task]
-    Task --> Check[Actual font, fact, expiry and scope checks]
-    Check --> Output[Source document and rendered output]
-    Output --> Review[Versioned customer review]
-    Sources[Current source permissions] --> Check
-    Sources --> Output
-```
-
-![Actual extension client; explicit customer/model fixtures, real controls and API writes](assets/screenshots/workmate-chat-09-conversation-zh.png)
-
-![Actual interaction / 实际交互](assets/screenshots/workmate-chat-09-conversation.gif)
-
-[MP4](assets/screenshots/workmate-chat-09-conversation.mp4) · [Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/79-versioned-brand-production.md) · [Contract / 契约](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/brand-production-openapi.json) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/brand-production-checkpoint.json) · [Changes / 更新](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-24-versioned-brand-production.md)
-
-<details>
-<summary>Previous stage-78 delivery and installation reference; older counts retain their original scope</summary>
-
-<!-- business-quality-stage78 -->
-
-## Current delivery review and usage
-
-Chat and authorized-file uploads in Chrome’s native right Side Panel, backed by company-cloud Codex. Reviews now retain the exact current delivery version, with accept, changes requested and discard decisions. Customers can report baseline minutes, cumulative human effort and revisions independently. Project usage and the scoped Admin quality dashboard distinguish technical success, customer acceptance, recorded reuse and company service costs.
-
-Desktop remains customer-local Codex with explicit revocable full local access, no Electron menu/frame, no visible vertical or horizontal scrollbar rails, and real wheel/keyboard access. Content reflows, focused inputs remain visible at 800×600, and the composer and receipt stay accessible. The previous progress-bar constraint is withdrawn; truthful progress remains. Extension remains independent native right Side Panel chat/file upload to cloud Codex. Every AI request uses the company gateway.
-
-1. Sign in, choose a tenant/project and create a task in its correct execution location. Desktop needs an explicit folder and local permission; the Extension needs no Desktop installation.
-2. Inspect the actual result and open “Review this delivery” (Desktop) or the task review form. Save acceptance, requested changes or discard with optional feedback. Task/version or delivery changes return a conflict requiring reload.
-3. Optionally record cumulative human figures. Blank means unknown; zero means explicitly none. Refresh preserves the open effort form and visible input access.
-4. Inspect project usage or Admin → Delivery quality within your permission scope. Incomplete costs stay incomplete; service costs exclude refund offsets, outside services and labor. No ROI or retention is inferred.
-
-Apply additive SQL095 before publishing the dependent API/UI; published SQL001–094 and the original task OpenAPI are unchanged. Legacy acceptance without a delivery snapshot requires a new customer review. The original review endpoint remains compatible; current forms require both task version and delivery digest plus idempotency. Customer review requires project approval authority. Admin can read scoped aggregates under `admin.usage.read` but cannot accept for a customer, read feedback through aggregates or grant OS access.
-
-```mermaid
-flowchart LR
-    Web[Web and native Chrome Side Panel] --> Cloud[Company cloud Codex]
-    Desktop[Frameless Desktop] --> Local[Customer-device Codex and local tools]
-    Cloud --> AI[Company OpenAI-compatible AI gateway]
-    Local --> AI
-    Cloud --> Delivery[Output and fixed artifact versions]
-    Local --> Delivery
-    Delivery --> Review[Customer review and human-effort records]
-    Review --> Metrics[Scoped quality and service costs]
-    Admin[Admin usage permission and explicit denies] --> Metrics
-```
-
-Current source qualification: 861/861 platform cases across 67 files/17 batches, 68 client units, 26 actual packaged-Desktop checks, four Web/Admin checks and 8 native Side Panel checks. The retained 17-case native-supervisor proof has all 57 bound files unchanged. These scopes are separate and not additive. Actual auth, database, files, billing and local Codex run; model/business/customer inputs and native-dialog decisions are explicit fixtures. TC-056 real-task baselines/blind review, all 18 roles/29 Skills, complete OS/Codex Desktop parity and production gates remain unproven. Original 102 requirements/102 cases and 81 partial / 21 unproven / 0 fully accepted remain.
-
-The Desktop31 and Web/Admin07 journeys retain their original bytes. Their only later bound-file difference is two migration-test expectations updated from 94 to 95, archived and checked exactly; all runtime, UI and journey sources remain unchanged. Platform21 freshly reruns the updated tests. See the checkpoint for this explicit qualification.
-
-![Actual extension interface](assets/screenshots/workmate-chat-07-delivery-review-en.png)
-
-![Actual extension interaction](assets/screenshots/workmate-chat-07-conversation.gif)
-
-[MP4](assets/screenshots/workmate-chat-07-conversation.mp4)
-
-[Design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/78-business-delivery-quality.md) · [Contract](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/business-quality-openapi.json) · [Exact source and media evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/business-quality-checkpoint.json) · [Changes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-business-delivery-quality.md)
-
-<details>
-<summary>Full setup, architecture and historical verification records (earlier counts/captures retain their original scope)</summary>
-
-[Backend](https://github.com/copypasteltd/workmate/tree/backend) · [Web](https://github.com/copypasteltd/workmate/tree/web) · [Admin Dashboard](https://github.com/copypasteltd/workmate/tree/admin) · [Desktop](https://github.com/copypasteltd/workmate/tree/desktop) · [Chrome Extension](https://github.com/copypasteltd/workmate/tree/extension) · [Delivery](https://github.com/copypasteltd/workmate/tree/delivery)
-
-A cloud Agent product for Hong Kong enterprises. This repository owns **Chrome Extension** and publishes to `extension`.
-
-<!-- client01-direction -->
-## Current client direction and qualified scope
-
-CLIENT01 (2026-10-22) requires **Desktop to run Codex on the customer's computer**, with a real user-opt-in **full local access** mode and Codex Desktop as the operation benchmark. The **Extension uses a ChatGPT-style conversation and attachment layout in Chrome's native right Side Panel**, reads user-selected files and uploads them for cloud Codex execution. All product AI calls still use the company gateway.
-
-**Historical stage-77 implementation:** Desktop runs Codex on the customer device with explicit full access, local files/terminal, persistent threads, native questions, company design/video tools and native workflow children. Twelve local browser tools now perform actual navigation, interaction, upload, screenshots and downloads; Stop/revoke reclaim owned pages. Desktop hides scrollbar rails and reflows artifacts, code and tables while preserving vertical scrolling and keyboard access. The previous progress-bar constraint is withdrawn; truthful progress feedback remains. Separate qualification covers 851 platform, 68 client, 17 native-supervisor, 10 standalone Electron-browser and 25 packaged-journey checks; counts are not additive. Full professional delivery across 18 roles/29 Skills, complete OS-application/Codex Desktop parity, live models and production remain pending. Extension retains independent ChatGPT-style native right Side Panel cloud chat and authorized-file upload; its UI was not rerun. See [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/77-desktop-native-browser.md), [layout requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/04-desktop-layout-and-scroll.md) and [source/media checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-browser-checkpoint.json).
-
-Desktop runs the native Agent locally; the Web and Extension run cloud Codex. The linked stage 73 proof states the tested scope.
-
-Native supervisor scope, actual permission checks and remaining integration: [implementation details](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/70-desktop-native-codex-supervisor.md).
-
-<!-- /client01-direction -->
-
-## Architecture and constraints
-
-Codex is the only Agent kernel. All AI calls use the company's internal OpenAI-compatible server. Web, Desktop, extension and Admin share server identity, permissions, sources and billing controls. UI follows CopyPaste brand assets, colors, typography and bilingual patterns.
-
-```mermaid
-flowchart LR
-  Desktop[Frameless Desktop] --> Main[Trusted local permission and session control]
-  Main --> Native[Customer-device Codex and local tools]
-  Main --> Control[Company identity / role / budget control]
-  Native --> Gateway[Company scoped AI gateway]
-  Web[Web] --> Cloud[Cloud Codex and business tools]
-  Extension[Native right Side Panel and selected-file uploads] --> Cloud
-  Cloud --> Gateway
-  Gateway --> Ledger[Server-observed usage and ledger]
-```
-
-## Native Side Panel
-
-Chrome Manifest V3 uses `side_panel.default_path` and `chrome.sidePanel.setPanelBehavior({openPanelOnActionClick:true})`. The toolbar opens the real browser Side Panel and can close it again, without an action popup or simulated sidebar tab. It is right by default and respects Chrome's selected side.
-
-`src/background.ts` handles lifecycle, company authorization and panel behavior. `src/panel.ts` owns workspace/project, tasks, inputs and results. `public/sidepanel.html` and `public/panel.css` provide the local UI. `scripts/build.mjs` generates fixed origins, CSP and the stable extension ID.
-
-## Usage flow
-
-1. Build/load the extension and pin its toolbar icon.
-2. Click the icon to open the native workspace. Complete email verification and PKCE authorization at the fixed company webpage.
-3. Choose a workspace/project and start or restore a conversation. Specialist and per-message budget settings are collapsible; ordinary messages need no task title.
-4. Select or drop files, wait for “Uploaded, not sent”, then send. Only this message's immutable versions are attached. Network retries and reopening reuse the original request and budget.
-5. Continue asking in the same cloud conversation, observe actual incremental events, deliverables and costs, or request Stop. Source denial clears old content. Basic chat/upload requires no Desktop.
-
-An extension cannot arbitrarily read every local path. Uploads require explicit selection; persistent folder/device work requires grants and a Native Messaging companion. `nativeMessaging` is optional. Models cannot grant local permissions.
-
-## Build and load
-
-```powershell
-npm ci
-npm run build
-```
-
-Open `chrome://extensions`, enable developer mode, choose Load unpacked and select this repository's `dist/`. Pin and click the icon. Chrome 120+ is required; retained native evidence identifies the actual Chromium used.
-
-Set `COPYPASTE_API_ORIGIN` and `COPYPASTE_WEB_ORIGIN` at build time. Defaults are localhost 4310/4317; production requires company HTTPS origins. Preserve `manifest-key.txt` to retain the ID; it contains a public key, not a signing private key. `extension-id.txt` is used for Backend/companion registration.
-
-The branch contains reproducible source. The local preview ZIP is ignored under `release/paid-input-66-03/`. Store submission, signing, other browser/system matrices and live supplier integration require separate qualification.
-
-## Checkout and prerequisites
-
-Clone this branch into a fresh working directory; update an existing repository without reinitializing it.
-
-```powershell
-git clone --single-branch --branch extension git@github.com:copypasteltd/workmate.git copypaste-extension
-cd copypaste-extension
-```
-
-Use Node.js ≥22.14, npm and Git with pinned lockfiles. The qualified local environment is Windows x64. Backend/full delivery also needs native PostgreSQL launcher resources, cloud-pinned Codex `0.163.0-alpha.10.2` and FFmpeg/FFprobe; Desktop independently pins `0.163.0-alpha.11` in its runtime manifest. No local Docker, WSL or virtualization. Run components in separate directories; see [workspace](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md).
-
-## Checks and evidence scope
-
-```powershell
-npm run typecheck
-npm test
-npm run build
-```
-
-Historical-source **802/802** full Platform tests and **52/52** focused task tests pass, with **13 checks** across six repositories and **32** actual packaged Desktop/native Side Panel checks. All prior 782 named regression cases remain. Task checks exercise actual PostgreSQL, identity, ledger and Worker; separate real Codex child processes use a synthetic internal gateway. UI turns/business data are synthetic as authorized. The original 102 requirements remain: 81 partially verified, 21 without proven completion and zero fully accepted.
-
-Canonical TaskDTO/task creation, arbitrary in-flight pause, unknown-effect recovery, independent complete role workflows, GEO, live suppliers and production/signing/store qualification remain tracked.
-
-This revision adds canonical task APIs and atomic original-task inputs. Current UIs continue to use their existing project/conversation interfaces over the same execution domain. The refreshed actual recordings verify compatibility; they do not claim migration of every UI to canonical task APIs. See [the implementation and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/68-canonical-task-contracts-and-input-transactions.md) for exact money, idempotency, source revocation and unsupported business parameters.
-
-## Actual screens and interactions
-
-Actual recordings preserve capture timing. AI turns/business data are explicitly synthetic. Admin form demonstrations do not claim a financial commit.
-
-![Actual product capture](assets/screenshots/workmate-chat-05-conversation-zh.png)
-
-![Actual product capture](assets/screenshots/workmate-chat-05-continued-en.png)
-
-![Actual interaction GIF](assets/screenshots/workmate-chat-05-conversation.gif)
-
-[MP4](assets/screenshots/workmate-chat-05-conversation.mp4) · [Capture/source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-chat-checkpoint.json)
-
-## Detailed design and updates
-
-- [Product](https://github.com/copypasteltd/workmate/blob/docs/docs/product/01-prd.md)
-- [Architecture](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/01-architecture-and-stack.md)
-- [Identity and permissions](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/07-security-and-permissions.md)
-- [Task continuation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/66-paid-native-input-checkpoints.md)
-- [Admin](https://github.com/copypasteltd/workmate/blob/docs/docs/product/08-admin-dashboard.md)
-- [Native clients](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/30-native-window-and-browser-sidepanel.md)
-- [Canonical task update](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-canonical-task-repair.en.md)
-- [Local Codex update](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-22-native-codex-supervisor.en.md)
-
-Every later change updates both READMEs, affected actual captures/GIFs, release notes and its mapped branch. Verify remote SHAs through Delivery publishing; do not force-push collaborator history. Keep environment secrets, databases, sessions, dependencies and installers out of Git. Exact historical README bytes are retained in [archive](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/history/stage66-before-workmate-readmes/manifest.json).
-
-## Conversation and attachment flow
-
-Choose a company/project and start or restore a chat. Ordinary messages need no task title. Attach or drop files, wait for “Uploaded, not sent”, then send. Only confirmed immutable versions bind this message. The browser reads the selected file; cloud Codex executes through the company gateway. Basic upload/chat needs no Desktop or Native Messaging. Per-message budgets and specialists are in settings; accounts and standalone business forms are collapsed.
-
-Lost acceptance responses retain the original payload, budget and idempotency key across panel reopening. Actual incremental events update the conversation. Current source denial clears old content and blocks sending. Unsaved attachments are not restored after closing; uploaded files remain in the project. Current limits: 20 attachments, each non-empty and up to 5 MiB.
-
-Validation: 32 tests, successful type/build checks and seven native right Side Panel journey checks using real email/PKCE, uploads, Worker, files and billing. Model turns are synthetic. Earlier four-client media below keep their original scope.
-
-![Native conversation](assets/screenshots/workmate-chat-05-continued-en.png)
-
-![Uploaded attachment](assets/screenshots/workmate-chat-05-attachment-ready-en.png)
-
-[Source-bound chat evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-chat-checkpoint.json) · [Design and recovery rules](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/71-extension-cloud-conversations.md)
-
-Stage 73 Desktop local execution: [design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/73-desktop-native-company-tools.md) · [source-bound proof](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Prior recordings below retain their original source scopes.
-
-Stage 73 company-tool update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-company-tools.en.md) · [source-bound checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-company-tools-checkpoint.json). Earlier reports and media retain their historical source scopes.
-
-Stage 74 native-input update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-input.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-native-input-checkpoint.json). Earlier reports/media retain their original source scopes.
-
-Stage 75 private-video update: [release notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-private-video.en.md) · [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-video-checkpoint.json). Earlier reports retain their actual source scopes; platform/main-process qualification and later UI qualification are explicitly separated.
-
-<!-- desktop-native-browser-stage77 -->
-
-## Native browser and scrollbar-free Desktop
-
-Start a new local session, select a folder and explicitly grant Full local access. Ask the local Codex to work in a browser. The trusted frameless address bar and remote page run in separate customer-device renderers. The tool namespace `copypaste_browser` v1 includes tabs/open/navigate/history/snapshot/screenshot/interact/evaluate/wait/dialog/downloads/close; interact supports real click, fill/type/select, keys, scroll/drag and exact local-file upload. Completed downloads remain in the selected workspace’s browser-downloads directory. Model screenshots capture the actual page; README browser media uses actual OS window capture, with no compositing.
-
-Current local permission, company identity, project access, origin and budget are rechecked. Web content cannot grant OS access or acquire company inference credentials. Call IDs bind exact operations; unknown accepted actions never replay automatically. Stop, revoke, sign-out or exit close owned pages and pending downloads, preserving completed files and the customer’s original windows. Existing threads retain their original tool binding; create a new session for browser tools.
-
-The previous progress-bar constraint is withdrawn. Truthful upload/task/workflow/video feedback remains. Hidden scrollbar rails do not disable native scrolling. Artifacts wrap into rows, code and tables reflow, scroll areas have keyboard focus, and the composer/receipt remain usable in actual 800×600, 1280×800 and 1440×980 windows. Real wheel/Home/End and last-download focus are verified, alongside compact billing/devices/account pages and English/Traditional Chinese light/dark controls. Physical touchpad hardware and every display-scaling configuration are not claimed by these automated checks.
-
-Current complete inventory: 66 test files / 17 batches / 851 passing cases, retaining all 848 prior cases. SQL001–094 and all 428 HTTP routes remain unchanged. The isolated UI fixture alone allocates 32 user/platform/tenant slots and appends immutable provider-policy version 2 with 32 slots and 10,000 requests/minute, retaining intentional unknown cancellation holds. Bootstrap policy and production defaults/enforcement remain unchanged. Synthetic Responses, campaign content and native-dialog choices are explicit. Original 102 REQ/102 TC, NFR and G01–G10 remain at 81 partial / 21 unproven / 0 fully accepted. Extension product/verifier bytes are unchanged; no new Extension UI claim.
-
-```mermaid
-flowchart LR
-    Customer --> Permission[Explicit local permission]
-    Permission --> Native[Customer-device Codex]
-    Native --> Gateway[Company identity, budget and AI gateway]
-    Native --> Browser[Owned local browser and real websites]
-    Browser --> Files[Actual uploads, screenshots and downloads]
-    Stop[Stop, revoke, sign-out, exit] --> Cleanup[Close task-owned pages]
-    Extension[Native Chrome right Side Panel and selected files] --> Cloud[Company cloud Codex]
-```
-
-![Actual compact Desktop](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-28-layout-800-en.png)
-
-![Actual local browser](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-28-browser-saved-en.png)
-
-[Design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/77-desktop-native-browser.md) · [Requirements](https://github.com/copypasteltd/workmate/blob/docs/docs/requirements/04-desktop-layout-and-scroll.md) · [Evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-browser-checkpoint.json) · [Changes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-browser.md)
-
-<details>
-<summary>Stage 76 historical implementation and captures (previous scrollbar layout)</summary>
-
-<!-- desktop-native-workflow-stage76 -->
-
-## Native workflows and verification
-
-Choose Workflow consultant, select a folder and explicitly grant the desired local permission. Describe the work and agree its frozen steps. Review the separate per-child budgets and approve the exact version before a child can reserve money or run. Approve any concrete human step before the next specialist starts. Review real files, private SOP/workflow JSON/recovery downloads and company usage; this conversation and incomplete steps have separate charges. Stop or revoke to terminate local parent and child processes; unknown accepted actions retain reconciliation state and never replay automatically.
-
-The first workflow subset permits up to eight sequential native Codex, human approval or analytics-summary steps. Every child uses its own approved role Skills, company tools and scoped credentials while retaining the current explicit local grant. Local full access does not grant another customer's data, project rights or unlimited budget. Company cloud Workers and schedules cannot take over native workflows. Each immutable version freezes actual external input provenance across new sessions and derived SOPs, without depending on the creator task lifetime. Source withdrawal also governs first reads, cached calls, child admission and private or explicitly published derivatives; administrators use existing permission/MFA/reason/audit controls. Closing the app fences requests still waiting for their local journal write.
-
-Historical stage-76 inventory: 65 actual test files / 17 complete batches / 848 passing tests; all 830 stage-75 cases remain covered. SQL001–093 remain unchanged; SQL094 adds native workflow provenance and immutable versions. The actual 428-route inventory retains all prior 415 routes. Original 102 REQ/102 TC, NFR and G01–G10 remain open at 81 partial / 21 unproven / 0 fully accepted. Earlier evidence and media retain their original source scope.
-
-```mermaid
-flowchart LR
-    User[Customer] --> Consent[Desktop main: permission and fee consent]
-    Consent --> Local[Local consultant Codex]
-    Local --> API[Company identity, sources and usage]
-    API --> Consent
-    Consent --> Children[Local role Codex children]
-    Children --> API
-    Children --> Approval[Human step approval]
-    Approval --> Consent
-    Children --> Files[Real files and private deliveries]
-    Extension[Chrome right Side Panel and files] --> Cloud[Company cloud Codex]
-```
-
-![Native workflow fee confirmation](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-21-workflow-fees-en.png)
-
-![Native workflow complete](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-local-21-workflow-completed-zh.png)
-
-[Design and lifecycle](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/76-desktop-native-workflows.md) · [Bound evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-workflow-checkpoint.json) · [Change notes](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/2026-10-23-desktop-native-workflows.md)
-
-</details>
-
-</details>
-
-
-</details>
-
-</details>
-
-</details>
-
-</details>
-
-</details>
-
-</details>
-
-</details>
-
-
-</details>
+![Actual interaction](assets/screenshots/workmate-guidance-14-project-guidance-sidepanel.gif)
