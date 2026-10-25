@@ -1,5 +1,6 @@
 import { canonical } from "./lib.js";
 import { browserNamespace, browserToolDefinitions } from "./browser-contract.js";
+import { programNamespace, programToolDefinitions } from "./program-contract.js";
 
 export interface DesktopCompanyToolSchema { name: string; inputSchema: unknown }
 
@@ -35,6 +36,7 @@ const custom = new Set(["apply_patch"]);
 export const desktopToolNames = [
   ...[...functions, ...custom].flatMap(name => [name, "functions." + name]),
   ...browserToolDefinitions.map(tool => browserNamespace + "." + tool.name),
+  ...programToolDefinitions.map(tool => programNamespace + "." + tool.name),
 ];
 
 export function desktopToolDeclarations(tools: unknown[], company: readonly DesktopCompanyToolSchema[] = []): boolean {
@@ -43,12 +45,12 @@ export function desktopToolDeclarations(tools: unknown[], company: readonly Desk
   const check = (tool: any, prefix = ""): boolean => {
     if (!tool || typeof tool !== "object" || Array.isArray(tool)) return false;
     if (tool.type === "namespace")
-      return !prefix && ["functions", "copypaste", browserNamespace].includes(tool.name) && Array.isArray(tool.tools) && tool.tools.length <= 32
+      return !prefix && ["functions", "copypaste", browserNamespace, programNamespace].includes(tool.name) && Array.isArray(tool.tools) && tool.tools.length <= 32
         && tool.tools.every((child: unknown) => check(child, tool.name + "."));
     if (typeof tool.name !== "string" || seen.has(prefix + tool.name)) return false;
     seen.add(prefix + tool.name);
-    if (prefix === browserNamespace + ".") {
-      const registered = browserToolDefinitions.find(item => item.name === tool.name);
+    if (prefix === browserNamespace + "." || prefix === programNamespace + ".") {
+      const registered = (prefix === browserNamespace + "." ? browserToolDefinitions : programToolDefinitions).find(item => item.name === tool.name);
       return tool.type === "function" && !!registered && tool.parameters !== null && typeof tool.parameters === "object"
         && !Array.isArray(tool.parameters) && canonical(tool.parameters) === canonical(desktopCompanyToolSchema(registered.inputSchema));
     }
