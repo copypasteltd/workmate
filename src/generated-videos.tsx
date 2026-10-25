@@ -44,7 +44,7 @@ export function GeneratedVideos({ base, taskId }: { base: string; taskId: string
   const [preview, setPreview] = useState<string | null>(null), [busy, setBusy] = useState<string | null>(null), [error, setError] = useState<unknown>(null);
   const cancelIntent = useRef<{ job: string; revision: number; key: string } | null>(null);
   const query = new URLSearchParams({ task_id: taskId, limit: "20", ...(cursor ? { cursor } : {}) });
-  const result = useData<{ items: VideoJob[]; next_cursor: string | null }>(`${base}/generated-video-jobs?${query}`, revision, 5000);
+  const result = useData<{ items: VideoJob[]; next_cursor: string | null }>(`${base}/generated-video-jobs?${query}`, revision, 5000, w.tenant, { retainOnRefresh: true });
   const items = result.data?.items ?? [];
   const cancel = async (job: VideoJob) => {
     setBusy(job.id); setError(null);
@@ -57,9 +57,9 @@ export function GeneratedVideos({ base, taskId }: { base: string; taskId: string
     finally { setBusy(null); setRevision(value => value + 1); }
   };
   if (!items.length && !result.error && !error) return null;
-  return <section className="generated-videos" aria-label={t("生成式影片", "Generated videos")}>
+  return <section className="generated-videos" aria-label={t("生成式影片", "Generated videos")} aria-busy={result.loading}>
     <div className="generated-videos-heading"><span className="eyebrow">MOTION, MADE.</span><h3>{t("你的生成式影片", "Your generated videos")}</h3>
-      <button className="text-button" aria-label={t("重新整理生成式影片", "Refresh generated videos")} onClick={() => setRevision(value => value + 1)}><RefreshCw size={16} /></button></div>
+      <button className="text-button" disabled={result.loading} aria-label={t("重新整理生成式影片", "Refresh generated videos")} onClick={() => setRevision(value => value + 1)}><RefreshCw size={16} /></button></div>
     <ErrorNotice error={result.error ?? error} />
     {items.map(job => <article className="generated-video-card" key={job.id} data-generated-video-job={job.id}>
       <header><span className="generated-video-icon"><Film size={20} /></span><div><strong>{t("生成式影片", "Generated video")}</strong><p>{job.seconds} {t("秒", "seconds")} · {job.size.replace("x", " × ")}</p></div>

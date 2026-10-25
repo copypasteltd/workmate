@@ -1,3 +1,4 @@
+import { ProjectConfigurationSummary } from "./project-configuration";
 import { useRef, useState } from "react";
 import { AdoptionReview } from "./agent-adoption";
 import { TaskInputRequests } from "./task-dependencies";
@@ -493,6 +494,7 @@ function NewConversation({
   const enabled = agents.data?.items.filter((a: any) => a.enabled) ?? [];
   return (
     <Modal title={t("開始會話", "Start conversation")} onClose={onClose}>
+      <ProjectConfigurationSummary compact />
       <ErrorNotice error={agents.error} />
       {agents.loading ? (
         <Loading />
@@ -518,7 +520,7 @@ function NewConversation({
           <Field label={t("我的專家", "Your specialist")}>
             <select name="agent">
               <option value="">
-                {t("預設助手 — 直接開始", "Default assistant — start directly")}
+                {t("專案推薦設定或預設助手", "Project recommendation or default assistant")}
               </option>
               {enabled
                 .filter((a: any) => !a.builtin_default)
@@ -749,6 +751,7 @@ export function ConversationDetail() {
         ← {t("我的會話", "Your conversations")}
       </Link>
       <ErrorNotice error={data.error ?? error} />
+      {c && <ProjectConfigurationSummary taskId={c.tasks?.at(-1)?.id} compact />}
       {!c ? (
         data.loading && <Loading />
       ) : (
