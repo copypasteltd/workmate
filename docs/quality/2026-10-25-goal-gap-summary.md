@@ -1,6 +1,10 @@
 # 当前目标差异清单 / Current goal gaps
 
-评估更新：阶段 88。阶段 88 当前增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 当前源码绑定 1544 项。批准程序/结构化 argv 与本机浏览器配额已从待实现更新为限定范围实测；完整应用矩阵、专业角色及其余业务不因此关闭。失败打包尝试 70/71 保持 failed，分别暴露紧凑提问区和全局等待锁定；修复后重新验证，不用单元通过覆盖失败。当前通过证据见[本阶段检查点](local-programs-checkpoint.json)。原 102 项条件、26 组差异、86 部分/16 未证明完整/0 完整验收均保留。
+评估更新：阶段 89。阶段 89：Web 首次建项目、设计/分析/开发角色入口及按账户/企业/项目隔离的草稿；离线、过期重登、已提交后回包丢失、精确重试、原工作回执、晚到响应与记录移除均有实际浏览器检查。14 项浏览器检查和 195 项客户端单元通过；实际 Worker 交付与下载文件字节一致，同一请求只有一项任务、一份预留，结算 30 港币微额。回复内容为明确假数据，本 UI 测试未启动原生 Codex。完整登录/跨端矩阵、至少十二个合格角色、全部 102 项条件和 G01–G10 继续开放。
+
+[本次精确源码与实际检查点](work-intake-checkpoint.json)。原 26 组差异和全部原验收条件保持。
+
+阶段 88 历史证据：阶段 88 限定增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 当时源码绑定 1544 项。批准程序/结构化 argv 与本机浏览器配额已从待实现更新为限定范围实测；完整应用矩阵、专业角色及其余业务不因此关闭。失败打包尝试 70/71 保持 failed，分别暴露紧凑提问区和全局等待锁定；修复后重新验证，不用单元通过覆盖失败。历史通过证据见[本阶段检查点](local-programs-checkpoint.json)。原 102 项条件、26 组差异、86 部分/16 未证明完整/0 完整验收均保留。
 
 
 评估日期：2026-10-25。完整 goal 是交付面向在港企业、贴合 CopyPaste 品牌的 Web、Chrome Extension、Desktop、Admin 与后端；内核唯一使用 Codex，全部 AI 请求经过公司内部 OpenAI 兼容服务。至少十二个可直接选用的专业角色覆盖开发及完整设计业务，优先服务现有客户的 marketing 团队。
@@ -11,7 +15,7 @@
 
 | 编号 | 模块 | 当前已有 | 距离目标的差异 | 优先级 |
 | --- | --- | --- | --- | --- |
-| GAP-01 | 访问与登录 | 邀请、登录、设备授权、刷新与撤销 | 首次访问到首份成果，以及过期、断网、换企业等完整流程待验收 | P0 |
+| GAP-01 | 访问与登录 | 邀请/登录与设备授权；Web 首项提交、字段/项目草稿、过期重登、离线、精确重试、下载和单次结算已有阶段 89 实测 | 全部邀请/SSO/安装包入口、跨端及企业切换异常、关闭分页和持续会话完整恢复仍待验收 | P0 |
 | GAP-02 | Desktop 本机操作 | 本机 Codex、完整权限、文件/终端/浏览器、目录任务 | 固定批准程序与结构化参数已有本阶段限定验证；完整应用操作、离线及全部异常恢复仍待补齐 | P0 |
 | GAP-03 | Extension | 原生右侧栏、独立云端聊天、私有分片上传 | 大文件、真实 worker 休眠、站点权限、撤权和换项目的完整矩阵待验收 | P0 |
 | GAP-04 | Codex 持续执行 | 原线程继续/停止、目录队列重启后暂停及手动恢复 | 任意已付费步骤的检查点、完整崩溃与未知工具结果恢复待补齐 | P0 |
@@ -46,6 +50,6 @@
 
 建议先补齐 GAP-01–09、11–12、17–23 的核心交付缺口，并在这些流程上完成 GAP-24 的客户试点。可以继续使用假数据补实现及异常流程；真实专业质量另行验收。其余原业务范围继续保留。
 
-来源：[完整 26 组差异及 102 项原需求映射](2026-10-25-goal-gap-assessment.md)、[原验收登记](requirements-alignment-progress.json)、[当前源码检查点](folder-work-checkpoint.json)、[媒体完整解码记录](folder-work-media-review-01.json)、[发布清单](workmate-publication.json)。
+来源：[完整 26 组差异及 102 项原需求映射](2026-10-25-goal-gap-assessment.md)、[原验收登记](requirements-alignment-progress.json)、[当前 Web 源码检查点](work-intake-checkpoint.json)、[当前录制完整解码记录](work-intake-media-review-01.json)、[发布清单](workmate-publication.json)。
 
 English: The multi-client development build already implements customer-local Codex Desktop with revocable full permission and an independent cloud Side Panel with private uploads. The remaining 26 groups distinguish missing implementation from incomplete acceptance. All 102 original conditions remain: 86 partial, 16 unproven and none fully closed. Eighteen role candidates do not yet establish twelve professionally qualified roles. Current native/client scopes are separate from retained historical platform evidence; actual installation, customer outcomes and full release gates remain open.

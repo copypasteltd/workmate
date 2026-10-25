@@ -1,8 +1,14 @@
 # Workmate · CopyPaste Enterprise Agent
 
-<!-- local-programs-stage88 -->
+<!-- work-intake-stage89 -->
 
 面向香港企业 marketing 团队的多端 Codex Agent 产品及独立管理后台。
+
+## 当前首项工作流程
+
+阶段 89：Web 首次建项目、设计/分析/开发角色入口及按账户/企业/项目隔离的草稿；离线、过期重登、已提交后回包丢失、精确重试、原工作回执、晚到响应与记录移除均有实际浏览器检查。14 项浏览器检查和 195 项客户端单元通过；实际 Worker 交付与下载文件字节一致，同一请求只有一项任务、一份预留，结算 30 港币微额。回复内容为明确假数据，本 UI 测试未启动原生 Codex。完整登录/跨端矩阵、至少十二个合格角色、全部 102 项条件和 G01–G10 继续开放。
+
+选择角色→填写目标和预算→明确提交→审阅及下载成果。当前分页中的草稿可在关闭表单、刷新和同账户重新验证后恢复；明确登出清除正文。未知提交只能重试原请求；确认后可查看原工作，明确“开始另一项工作”才创建新的任务。项目权限加载期间不能派发。关闭分页后的恢复及持续会话的完整恢复仍待验收。
 
 ## 产品与边界
 
@@ -57,9 +63,9 @@ Web 为 `http://localhost:4317`，Admin 为 `http://localhost:4318`；API 端口
 
 保持 CopyPaste 蓝/奶白、Manrope/Fraunces、中英双语和浅深主题。Desktop 无 Electron 自带边框/菜单，不显示纵横滚动条轨道，仍保留真实滚轮、焦点、末项访问和进度。紧凑会话摘要将图标/版本和名称分行，保持可读；聚焦页面的 Home/End、Ctrl+Home/End 到达页面首末项，聚焦文本框时保留光标导航。
 
-阶段 88 当前增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 原 57 项实际 Desktop、91 项单元及 17 项原生用例均保留。目录工作仍核对真实新 PID 重启、原线程/固定版本及 90/60 港币微额结算。全部 14 个运行素材/许可证原字节保留，仓库截图/录屏不进入运行 ASAR。
+阶段 88 历史范围：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 原 57 项实际 Desktop、91 项单元及 17 项原生用例均保留。目录工作仍核对真实新 PID 重启、原线程/固定版本及 90/60 港币微额结算。全部 14 个运行素材/许可证原字节保留，仓库截图/录屏不进入运行 ASAR。
 
-保留阶段 86 的平台 1023、核心 25、兼容 36、实际 Web/Admin/原生侧栏 14 项历史结果；本阶段没有重跑完整平台/跨端套件。Web/Admin/Extension 产品源未变化，后端工具声明改动另有当前相关检查。本机进程、文件、账本与数据库实际运行；假模型和对话框决定不证明真实专业质量。自建浏览器、API、预览及测试数据库均关闭，无 Docker/WSL/虚拟化。
+阶段 86 平台/核心/兼容套件本次未重跑，阶段 88 打包 Desktop 和原生 Codex 保留历史范围。Desktop/Admin/Extension/后端产品源码未变化；Web 与交付工具使用独立阶段 89 检查。假内容不证明专业质量。自建浏览器、API、预览和测试数据库关闭，不使用虚拟化。
 
 原 102 项需求登记为 **86 部分／16 未证明完整／0 完整验收**。REQ-040/042 获得限定证据，不关闭原完整条件。至少十二个专业角色、完整后台、团队/方案包、全部 marketing 流程、真实质量、签名安装/升级/卸载、负载/恢复演练和 G01–G10 继续开放，测试数不能换算产品完成率。详见完整编号差异表。
 
@@ -117,3 +123,33 @@ flowchart TD
 [Original MP4](design/implementation/copypaste-desktop__workmate-local-72-local-programs.mp4)
 
 ![Actual native program interaction](design/implementation/copypaste-desktop__workmate-local-72-local-programs.gif)
+
+
+## 阶段 89 实际交互
+
+[实现与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/89-first-work-and-submission-recovery.md) · [Stage 89 checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/work-intake-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Login[Email sign in] --> Scope[Authorized project]
+  Scope --> Draft[Role and saved brief]
+  Draft --> Send[Original request identity]
+  Send -->|Unknown| Retry[Explicit exact retry]
+  Retry --> Send
+  Send --> Receipt[Original work receipt]
+  Receipt --> File[Review and download]
+```
+
+![实际 Web 交互](design/implementation/work-intake-workmate-intake-05-restored-brief.png)
+
+![实际 Web 交互](design/implementation/work-intake-workmate-intake-05-actual-output-download.png)
+
+![实际 Web 交互](design/implementation/work-intake-workmate-intake-05-layout-800x600-zh-HK.png)
+
+[MP4: first-work](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-intake-05-first-work.mp4?raw=true)
+
+![first-work](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-intake-05-first-work.gif?raw=true)
+
+[MP4: submission-recovery](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-intake-05-submission-recovery.mp4?raw=true)
+
+![submission-recovery](https://github.com/copypasteltd/workmate/blob/web/assets/screenshots/workmate-intake-05-submission-recovery.gif?raw=true)
