@@ -1,0 +1,533 @@
+2026-10-26 05:15:36.368 CST [20640] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-26 05:15:36.387 CST [20640] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-26 05:15:36.387 CST [20640] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-26 05:15:37.859 CST [32636] LOG:  database system was shut down at 2026-10-26 04:12:38 CST
+
+2026-10-26 05:15:38.305 CST [20640] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+# isolated integration suite: applied migration 104
+# isolated integration suite: applied migration 105
+# isolated integration suite: applied migration 106
+# isolated integration suite: applied migration 107
+# isolated integration suite: applied migration 108
+# isolated integration suite: applied migration 109
+# isolated integration suite: applied migration 110
+# isolated integration suite: applied migration 111
+# isolated integration suite: applied migration 112
+2026-10-26 05:17:08.950 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:08.950 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:08.950 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:08.950 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"22141641-7675-4b0a-80e2-e0caf19a655c","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: original strict solution schemas are met; definitions freeze only packaged method references
+not ok 1 - original strict solution schemas are met; definitions freeze only packaged method references
+  ---
+  duration_ms: 23476.4231
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:8533'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"22141641-7675-4b0a-80e2-e0caf19a655c"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:369:14)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+2026-10-26 05:17:09.158 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:09.158 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:09.158 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:09.158 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"b91eecbd-347e-425f-a9eb-1cf3dc46f85b","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: creation retries are atomic; changed inputs conflict and current project authority is rechecked
+not ok 2 - creation retries are atomic; changed inputs conflict and current project authority is rechecked
+  ---
+  duration_ms: 202.47
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:9579'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"b91eecbd-347e-425f-a9eb-1cf3dc46f85b"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:418:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:09.359 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:09.359 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:09.359 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:09.359 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"d59b9307-2c2d-4039-933d-1f37c2be58bf","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: revisions retain old definitions and concurrent revisions allocate distinct family versions
+not ok 3 - revisions retain old definitions and concurrent revisions allocate distinct family versions
+  ---
+  duration_ms: 196.3084
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:10378'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"d59b9307-2c2d-4039-933d-1f37c2be58bf"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:460:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:09.523 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:09.523 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:09.523 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:09.523 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"e8090203-2f8a-40cb-9347-5ca292bc671c","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: previews show missing requirements without tasks, credentials or automatic authorization
+not ok 4 - previews show missing requirements without tasks, credentials or automatic authorization
+  ---
+  duration_ms: 163.523
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:11142'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"e8090203-2f8a-40cb-9347-5ca292bc671c"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:493:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:09.728 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:09.728 CST [14752] DETAIL:  Expected ":", but found ",".
+2026-10-26 05:17:09.728 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}",...
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:09.728 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"8869707f-bc43-4a94-9b33-ec26eb1fc640","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: a multi-template trial freezes every role and reserves its exact total once under retry
+not ok 5 - a multi-template trial freezes every role and reserves its exact total once under retry
+  ---
+  duration_ms: 207.4205
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:12053'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"8869707f-bc43-4a94-9b33-ec26eb1fc640"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:536:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:09.925 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:09.925 CST [14752] DETAIL:  Expected ":", but found ",".
+2026-10-26 05:17:09.925 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}",...
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:09.925 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"4d45067e-a20d-4c6b-9fc1-35414f573057","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: unapproved, stale and underfunded trial submissions cannot create paid work
+not ok 6 - unapproved, stale and underfunded trial submissions cannot create paid work
+  ---
+  duration_ms: 194.9884
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:13431'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"4d45067e-a20d-4c6b-9fc1-35414f573057"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:600:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:10.551 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:10.551 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:10.551 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:10.551 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"906c8a0f-b830-4316-98d3-24b5d7d70277","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: private approved source versions can be read exactly without exposing sibling files or another user's attachments
+not ok 7 - private approved source versions can be read exactly without exposing sibling files or another user's attachments
+  ---
+  duration_ms: 627.833
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:14308'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"906c8a0f-b830-4316-98d3-24b5d7d70277"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:653:13)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:10.755 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:10.755 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:10.755 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:10.755 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"15ac1658-0a8e-43b0-a251-aec48704df72","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: a successful answer that omitted required evidence cannot qualify a method
+not ok 8 - a successful answer that omitted required evidence cannot qualify a method
+  ---
+  duration_ms: 202.4047
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:15775'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"15ac1658-0a8e-43b0-a251-aec48704df72"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:716:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:10.906 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:10.906 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:10.906 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:10.906 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"8bb7eb09-d313-4287-bcbb-bf199acf5c20","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: publishing rejects unrelated, unfinished, partially reviewed and subsequently changed deliveries
+not ok 9 - publishing rejects unrelated, unfinished, partially reviewed and subsequently changed deliveries
+  ---
+  duration_ms: 150.2508
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:16677'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"8bb7eb09-d313-4287-bcbb-bf199acf5c20"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:758:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:11.063 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:11.063 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:11.063 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:11.063 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"29c7b3e9-6607-4c01-a938-25a8178b07fb","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: installations copy only method references; a new project starts with missing bindings and no customer content
+not ok 10 - installations copy only method references; a new project starts with missing bindings and no customer content
+  ---
+  duration_ms: 156.8842
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:17830'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"29c7b3e9-6607-4c01-a938-25a8178b07fb"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async published (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:257:18)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:816:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:14.058 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:14.058 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:14.058 CST [14752] CONTEXT:  JSON data, line 1: ...46a2d3f7\"],\"name\":\"营销数据分析师\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:14.058 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"d9b310d2-92d2-47a8-83a3-4bb9eff29d77","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: connector requirements bind a fresh account and captured data, never credentials; revoked accounts fence existing results
+not ok 11 - connector requirements bind a fresh account and captured data, never credentials; revoked accounts fence existing results
+  ---
+  duration_ms: 2996.5697
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:18911'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"d9b310d2-92d2-47a8-83a3-4bb9eff29d77"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:881:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:14.447 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:14.447 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:14.447 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:14.447 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"b1d42f2f-88fc-49fe-87fa-b0394840de2f","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: withdrawal fences a trial before worker execution and after delivery without renewing a reservation
+not ok 12 - withdrawal fences a trial before worker execution and after delivery without renewing a reservation
+  ---
+  duration_ms: 387.9816
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:20430'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"b1d42f2f-88fc-49fe-87fa-b0394840de2f"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:927:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:14.724 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:14.724 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:14.724 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:14.724 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"9f436872-264a-4602-a79e-b76407041681","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: a local task can read a pinned installed method and disablement fences its source lineage
+not ok 13 - a local task can read a pinned installed method and disablement fences its source lineage
+  ---
+  duration_ms: 275.1211
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:21370'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"9f436872-264a-4602-a79e-b76407041681"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async published (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:257:18)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:964:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:15.129 CST [14752] ERROR:  invalid input syntax for type json
+2026-10-26 05:17:15.129 CST [14752] DETAIL:  Expected ":", but found "}".
+2026-10-26 05:17:15.129 CST [14752] CONTEXT:  JSON data, line 1: ...a37a-6d5546a2d3f7\"],\"name\":\"預設助手\"}"}
+	unnamed portal parameter $6 = '...'
+2026-10-26 05:17:15.129 CST [14752] STATEMENT:  INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)
+	       VALUES($1,$2,coalesce($3::uuid,gen_random_uuid()),$4,$5,$6,$7,$8) RETURNING *
+
+# {"request_id":"2afde8d3-4752-496d-9ec9-d194698a1b4a","code":"INTERNAL_ERROR","error_type":"DatabaseError"}
+# Subtest: Admin metadata, body access and disablement keep separate scopes, current MFA and an audit trail
+not ok 14 - Admin metadata, body access and disablement keep separate scopes, current MFA and an audit trail
+  ---
+  duration_ms: 411.4452
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\solutions.test.ts:1:22568'
+  failureType: 'testCodeFailure'
+  error: 'POST /v1/solution-versions: 500 {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"2afde8d3-4752-496d-9ec9-d194698a1b4a"}}'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    ok (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:82:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\solutions.test.ts:1017:9)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-26 05:17:15.555 CST [22936] LOG:  checkpoint starting: immediate force wait
+
+2026-10-26 05:17:16.982 CST [22936] LOG:  checkpoint complete: wrote 59 buffers (0.4%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.141 s, sync=0.731 s, total=1.427 s; sync files=16, longest=0.151 s, average=0.046 s; distance=19915 kB, estimate=19915 kB; lsn=17/5EF5F5F0, redo lsn=17/5EF5F560
+
+1..14
+# tests 14
+# suites 0
+# pass 0
+# fail 14
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 97130.684
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/fac6ceb2-d34c-4767-805c-0792c02a567f/result.json","sha256":"cf71bf69436b1c5a9bc866b6e554a24f92b6218fdaaf7db3d4616d7859c7e9f6","exit_code":0}
+2026-10-26 05:17:19.094 CST [20640] LOG:  received fast shutdown request
+
+2026-10-26 05:17:19.172 CST [20640] LOG:  aborting any active transactions
+
+2026-10-26 05:17:19.199 CST [20640] LOG:  background worker "logical replication launcher" (PID 6236) exited with exit code 1
+
+2026-10-26 05:17:19.206 CST [22936] LOG:  shutting down
+
+2026-10-26 05:17:19.242 CST [22936] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-26 05:17:19.459 CST [22936] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.045 s, total=0.254 s; sync files=1, longest=0.045 s, average=0.045 s; distance=0 kB, estimate=17923 kB; lsn=17/5EF5F708, redo lsn=17/5EF5F708
+
+2026-10-26 05:17:19.771 CST [20640] LOG:  database system is shut down
+
