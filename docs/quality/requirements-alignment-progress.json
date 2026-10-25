@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-25T02:09:01.313519+00:00",
+  "at": "2026-10-25T04:49:20.816806+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -972,8 +972,8 @@
     "original_acceptance_baseline_preserved": true
   },
   "summary": {
-    "partial_verified": 84,
-    "completion_not_proven": 18
+    "partial_verified": 86,
+    "completion_not_proven": 16
   },
   "fully_accepted_requirements": 0,
   "qualified_live_roles": 0,
@@ -14290,8 +14290,8 @@
       "requirement": "本地调度：授权目录内监听、批量处理及批准程序调用；规范化路径、拒绝越界、检测冲突并支持撤销。",
       "acceptance_case": "TC-040",
       "acceptance_conditions": "按句柄/根身份验证并拒绝越界；冲突不覆盖；允许程序按结构化 argv；撤销阻止新执行，结果账本防重放。",
-      "assessment": "completion_not_proven",
-      "finding": "缺少目录监听、防抖去重、批量调度和批准程序调用。",
+      "assessment": "partial_verified",
+      "finding": "目录监听、防抖去重、稳定原字节快照、持久批量队列、同线程回答/继续、真实应用重启后暂停、预算及撤销已有当前实际证据。完整 TC-040 仍开放：结构化 argv 的批准程序注册/调用、完整冲突/崩溃/休眠/离线及全部 DESK-L01–L08 条件尚未齐。",
       "source_inspection_candidates": [
         "dev/copypaste-web/src/main.tsx",
         "dev/copypaste-web/src/persistent-work.tsx",
@@ -14299,11 +14299,23 @@
         "dev/copypaste-extension/src/background.ts",
         "dev/copypaste-delivery/README.md"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        {
+          "path": "docs/quality/folder-work-checkpoint.json",
+          "sha256": "c9ae589effdb59b31dff53bca67a454aa7cd257c88837c7c929775d8e46c33ac",
+          "scope": "bounded native evidence; complete case remains open"
+        }
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "缺少目录监听、防抖去重、批量调度和批准程序调用。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "缺少目录监听、防抖去重、批量调度和批准程序调用。",
+      "verified_repairs": [
+        {
+          "stage": 87,
+          "finding": "目录监听、防抖去重、稳定原字节快照、持久批量队列、同线程回答/继续、真实应用重启后暂停、预算及撤销已有当前实际证据。",
+          "checkpoint": "docs/quality/folder-work-checkpoint.json"
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "完整 TC-040 仍开放：结构化 argv 的批准程序注册/调用、完整冲突/崩溃/休眠/离线及全部 DESK-L01–L08 条件尚未齐。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -14348,8 +14360,8 @@
       "requirement": "浏览器资源：任务创建的标签页和上下文有归属及上限，成功、失败、取消后释放不用资源，保留用户原有页面。",
       "acceptance_case": "TC-042",
       "acceptance_conditions": "任务所属无用 tab/context 回到基线；无无主页面；保留用户原有页面，达到上限进入等待/拒绝。",
-      "assessment": "completion_not_proven",
-      "finding": "QA 已释放自建浏览器；产品任务浏览器归属、资源上限及异常清理需专项验证。",
+      "assessment": "partial_verified",
+      "finding": "当前打包客户端通过真实 Codex 浏览器成功/停止/撤权路径，按原窗口 ID 等待实际销毁，核对拥有的 Codex PID 退出及不再发起模型请求。完整 TC-042 仍开放：全部失败/崩溃及用户既有页面矩阵、每任务默认三页与驱动四页硬上限的资源口径尚须对齐和验收。",
       "source_inspection_candidates": [
         "dev/copypaste-web/src/main.tsx",
         "dev/copypaste-web/src/persistent-work.tsx",
@@ -14357,11 +14369,23 @@
         "dev/copypaste-extension/src/background.ts",
         "dev/copypaste-delivery/README.md"
       ],
-      "acceptance_evidence": [],
+      "acceptance_evidence": [
+        {
+          "path": "docs/quality/folder-work-checkpoint.json",
+          "sha256": "c9ae589effdb59b31dff53bca67a454aa7cd257c88837c7c929775d8e46c33ac",
+          "scope": "bounded native evidence; complete case remains open"
+        }
+      ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
       "original_finding": "QA 已释放自建浏览器；产品任务浏览器归属、资源上限及异常清理需专项验证。",
-      "verified_repairs": [],
-      "remaining_complete_acceptance_conditions": "QA 已释放自建浏览器；产品任务浏览器归属、资源上限及异常清理需专项验证。",
+      "verified_repairs": [
+        {
+          "stage": 87,
+          "finding": "当前打包客户端通过真实 Codex 浏览器成功/停止/撤权路径，按原窗口 ID 等待实际销毁，核对拥有的 Codex PID 退出及不再发起模型请求。",
+          "checkpoint": "docs/quality/folder-work-checkpoint.json"
+        }
+      ],
+      "remaining_complete_acceptance_conditions": "完整 TC-042 仍开放：全部失败/崩溃及用户既有页面矩阵、每任务默认三页与驱动四页硬上限的资源口径尚须对齐和验收。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -39553,5 +39577,16 @@
     "original_full_acceptance": "not_proven",
     "one_requirement_progressed_to_partial": "REQ-065",
     "original_requirement_and_acceptance_text_preserved": 102
+  },
+  "folder_work_verification": {
+    "checkpoint": "docs/quality/folder-work-checkpoint.json",
+    "sha256": "c9ae589effdb59b31dff53bca67a454aa7cd257c88837c7c929775d8e46c33ac",
+    "desktop_checks": 57,
+    "desktop_unit_tests": 91,
+    "client_unit_tests": 161,
+    "retained_stage86_platform_cases": 1023,
+    "platform_regression_rerun": false,
+    "entire_product_acceptance": "not_proven",
+    "original_requirements_unchanged": 102
   }
 }
