@@ -1,6 +1,14 @@
 import { NewWorkTask as NewTask } from "./new-work-task";
-import { loadWorkDraft, openWorkDraft, updateWorkDraft, type WorkSeed } from "./work-draft";
-import { ProjectConfigurationPanel, ProjectConfigurationSummary } from "./project-configuration";
+import {
+  loadWorkDraft,
+  openWorkDraft,
+  updateWorkDraft,
+  type WorkSeed,
+} from "./work-draft";
+import {
+  ProjectConfigurationPanel,
+  ProjectConfigurationSummary,
+} from "./project-configuration";
 import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
 import { QualitySummary } from "./quality-summary";
@@ -32,6 +40,7 @@ import { Entitlements } from "./entitlements";
 import { FinancialInbox } from "./financial-notifications";
 import { SupportAccess } from "./support-access";
 import { Schedules } from "./schedules";
+import { PrivateCloudWorkflows } from "./cloud-workflows";
 import {
   CompanySignIn,
   ConfirmCompanyIdentity,
@@ -46,7 +55,13 @@ import {
   RecentConversations,
   TaskPlan,
 } from "./persistent-work";
-import React, { useEffect, useLayoutEffect, useState, useRef, type ReactNode } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useRef,
+  type ReactNode,
+} from "react";
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
@@ -734,7 +749,14 @@ function Shell() {
         <button
           className="button primary new-task-side"
           disabled={!w.base || !project}
-          title={!w.base || !project ? t("專案載入完成後即可開始", "Your project will be ready shortly") : undefined}
+          title={
+            !w.base || !project
+              ? t(
+                  "專案載入完成後即可開始",
+                  "Your project will be ready shortly",
+                )
+              : undefined
+          }
           onClick={() => document.dispatchEvent(new Event("cp:new-task"))}
         >
           <Plus size={17} />
@@ -883,16 +905,24 @@ function Shell() {
   );
 }
 function NewTaskListener() {
-  const [open, setOpen] = useState(false), [seed, setSeed] = useState<WorkSeed>({});
+  const [open, setOpen] = useState(false),
+    [seed, setSeed] = useState<WorkSeed>({});
   const w = useWorkspace();
   useLayoutEffect(() => {
     const show = (event?: Event) => {
-      if (!w.base || !w.projects.some(project => project.id === w.project)) return;
+      if (!w.base || !w.projects.some((project) => project.id === w.project))
+        return;
       const detail = (event as CustomEvent<WorkSeed> | undefined)?.detail;
       const value: WorkSeed = {};
-      if (typeof detail?.role === "string" && /^[a-z0-9-]{1,80}$/.test(detail.role)) value.role = detail.role;
-      if (typeof detail?.prompt === "string" && detail.prompt.length <= 30000) value.prompt = detail.prompt;
-      setSeed(value); setOpen(true);
+      if (
+        typeof detail?.role === "string" &&
+        /^[a-z0-9-]{1,80}$/.test(detail.role)
+      )
+        value.role = detail.role;
+      if (typeof detail?.prompt === "string" && detail.prompt.length <= 30000)
+        value.prompt = detail.prompt;
+      setSeed(value);
+      setOpen(true);
     };
     const shortcut = (e: KeyboardEvent) => {
       if (
@@ -915,7 +945,9 @@ function NewTaskListener() {
       document.removeEventListener("keydown", shortcut);
     };
   }, [w.base, w.project, w.projects]);
-  return open && w.base ? <NewTask seed={seed} onClose={() => setOpen(false)} /> : null;
+  return open && w.base ? (
+    <NewTask seed={seed} onClose={() => setOpen(false)} />
+  ) : null;
 }
 function PublishedContent() {
   const { t, locale } = useI18n();
@@ -963,8 +995,18 @@ function Workbench() {
   const { t } = useI18n(),
     w = useWorkspace();
   const { data, error, loading } = useData(w.base + "/tasks", 0, 10000);
-  const scope = { user: String(w.me.user.id), tenant: w.tenant, project: w.project };
-  const [brief, setBrief] = useState(() => { try { return loadWorkDraft(scope)?.values.prompt ?? ""; } catch { return ""; } });
+  const scope = {
+    user: String(w.me.user.id),
+    tenant: w.tenant,
+    project: w.project,
+  };
+  const [brief, setBrief] = useState(() => {
+    try {
+      return loadWorkDraft(scope)?.values.prompt ?? "";
+    } catch {
+      return "";
+    }
+  });
   return (
     <>
       <div className="workspace-intro">
@@ -995,7 +1037,13 @@ function Workbench() {
           value={brief}
           onChange={(e) => {
             setBrief(e.target.value);
-            try { const draft = openWorkDraft(scope); if (!draft.pending && !draft.accepted) updateWorkDraft(draft, { prompt: e.target.value }); } catch { /* The composer presents recovery for an invalid saved submission. */ }
+            try {
+              const draft = openWorkDraft(scope);
+              if (!draft.pending && !draft.accepted)
+                updateWorkDraft(draft, { prompt: e.target.value });
+            } catch {
+              /* The composer presents recovery for an invalid saved submission. */
+            }
           }}
           placeholder={t(
             "設計一組海報、整理廣告數據，或建立一個全新工具…",
@@ -1014,7 +1062,9 @@ function Workbench() {
           <button
             className="button primary round"
             onClick={() => {
-              document.dispatchEvent(new CustomEvent("cp:new-task", { detail: { prompt: brief } }));
+              document.dispatchEvent(
+                new CustomEvent("cp:new-task", { detail: { prompt: brief } }),
+              );
             }}
             aria-label={t("開始工作", "Start task")}
           >
@@ -1025,14 +1075,22 @@ function Workbench() {
       <div className="quick-starts">
         {[
           [Palette, t("製作品牌視覺", "Create campaign visuals"), "designer"],
-          [ChartNoAxesCombined, t("分析廣告表現", "Understand ad performance"), "marketing-analyst"],
+          [
+            ChartNoAxesCombined,
+            t("分析廣告表現", "Understand ad performance"),
+            "marketing-analyst",
+          ],
           [Code2, t("建立網站與工具", "Build a site or tool"), "fullstack"],
         ].map(([Icon, label, role]: any) => (
           <button
             key={label}
             onClick={() => {
               if (!brief) setBrief(label);
-              document.dispatchEvent(new CustomEvent("cp:new-task", { detail: { role, prompt: brief || label } }));
+              document.dispatchEvent(
+                new CustomEvent("cp:new-task", {
+                  detail: { role, prompt: brief || label },
+                }),
+              );
             }}
           >
             <Icon size={17} />
@@ -1087,7 +1145,6 @@ function Workbench() {
         )}
       </section>
       <RecentConversations />
-
     </>
   );
 }
@@ -1492,9 +1549,29 @@ function TaskDetail() {
               {data.error_code && (
                 <div className="notice error">{data.error_code}</div>
               )}
-              {data.role_key === "video-motion" && <GeneratedVideos key={"generated-video:" + w.base + id} base={w.base} taskId={id!} />}
-              {data.role_key === "video-motion" && <AudioProductions key={"audio:" + w.base + id} base={w.base} taskId={id!} />}
-              {["succeeded", "failed", "cancelled"].includes(data.status) && data.mode !== "plan" && <DeliveryQuality key={w.base + id} base={w.base} taskId={id!} changed={() => setVersion(v => v + 1)}/>}
+              {data.role_key === "video-motion" && (
+                <GeneratedVideos
+                  key={"generated-video:" + w.base + id}
+                  base={w.base}
+                  taskId={id!}
+                />
+              )}
+              {data.role_key === "video-motion" && (
+                <AudioProductions
+                  key={"audio:" + w.base + id}
+                  base={w.base}
+                  taskId={id!}
+                />
+              )}
+              {["succeeded", "failed", "cancelled"].includes(data.status) &&
+                data.mode !== "plan" && (
+                  <DeliveryQuality
+                    key={w.base + id}
+                    base={w.base}
+                    taskId={id!}
+                    changed={() => setVersion((v) => v + 1)}
+                  />
+                )}
             </section>
             <aside>
               <div className="card">
@@ -2124,10 +2201,16 @@ function Analytics() {
             <button className="button secondary" onClick={() => setSeo(true)}>
               {t("網站診斷", "Website audit")}
             </button>
-            <button className="button secondary" onClick={() => setAnalysisParams({ view: "geo" })}>
+            <button
+              className="button secondary"
+              onClick={() => setAnalysisParams({ view: "geo" })}
+            >
               {t("GEO 觀測", "GEO observations")}
             </button>
-            <button className="button secondary" onClick={() => setAnalysisParams({ view: "creative-feedback" })}>
+            <button
+              className="button secondary"
+              onClick={() => setAnalysisParams({ view: "creative-feedback" })}
+            >
               {t("創意反饋", "Creative feedback")}
             </button>
             <button className="button primary" onClick={() => setOpen(true)}>
@@ -2317,6 +2400,7 @@ function Workflows() {
         }
       />
       <ErrorNotice error={error ?? err} />
+      <PrivateCloudWorkflows />
       {data?.items.length ? (
         <div className="project-grid">
           {data.items.map((r: any) => (
@@ -2471,7 +2555,9 @@ function Workflows() {
     </>
   );
 }
-function Brand() { return <BrandLibrary/>; }
+function Brand() {
+  return <BrandLibrary />;
+}
 
 function Devices() {
   const { t } = useI18n(),
@@ -2639,7 +2725,7 @@ function Usage() {
         )}
       />
       <ErrorNotice error={usage.error} />
-      <QualitySummary url={w.base + "/quality"}/>
+      <QualitySummary url={w.base + "/quality"} />
       <div className="metrics-grid">
         <div className="metric-card">
           <span>{t("累計用量", "Measured usage")}</span>
