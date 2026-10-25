@@ -2466,7 +2466,7 @@ function AdminDialog({
                   </option>
                   <option
                     value="metadata"
-                    disabled={row.kind === "agents" || row.state === "deleted"}
+                    disabled={["agents", "project_configurations"].includes(row.kind) || row.state === "deleted"}
                   >
                     {t("更新名稱", "Update name")}
                   </option>
@@ -2483,11 +2483,11 @@ function AdminDialog({
                   "Quarantine or deletion revokes shares. Restore does not re-enable old links.",
                 )}
               </p>
-              {["conversations", "memories"].includes(row.kind) && (
+              {["conversations", "memories", "project_configurations"].includes(row.kind) && (
                 <p className="notice">
                   {t(
-                    "刪除會清除會話或記憶文字，無法還原。進行中的會話須先取消工作或完成對帳。",
-                    "Deletion erases conversation or memory text permanently. Active conversation tasks must be cancelled or reconciled first.",
+                    "刪除會永久清除相關正文；專案共享設定包括全部歷史版本。進行中的會話須先取消工作或完成對帳。",
+                    "Deletion permanently erases the content, including all versions of shared project guidance. Active conversation tasks must be cancelled or reconciled first.",
                   )}
                 </p>
               )}
