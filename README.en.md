@@ -1,5 +1,37 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- analysis-roles-stage90 -->
+
+## Current analysis and infographic delivery
+
+Stage 90 connects versioned marketing-analyst and information-design presets to deterministic calculation and nine real deliverable files. Sixty-eight relevant backend checks and eleven actual browser checks pass. Both roles use the real pinned Codex process and authorized company tools. Model replies and account data are explicitly synthetic; the program, database, PNG/ZIP bytes, downloads, private isolation, source fences and ledger operations are real. This does not replace the requirement for twelve professionally qualified roles or complete product acceptance.
+
+1. Create the marketing analyst or information designer from the specialist directory. Existing specialists keep their old role/Skill versions.
+2. Confirm the dates, currency, account, attribution and conversion definition. Choose actual imported data or upload CSV/XLSX to this private conversation; inspect the real worksheet and headers.
+3. Select **Execute**, confirm the budget and delegate the work. Ask/Plan cannot write files. Download SVG, PNG, interactive HTML, metrics/source CSV, creative brief, editable JSON, manifest and ZIP.
+4. Request a correction using the original source version. Recalculation creates new immutable files; prior versions remain available while their sources are authorized. Identical render retries reuse the original files. Rendering makes no extra AI request; text inference follows the task ledger.
+
+```mermaid
+flowchart LR
+  A[Role and authorized sources] --> B[Exact calculation and evidence]
+  B --> C[Codex and fixed Skills]
+  C --> D[Private files and task receipt]
+  D --> E[Read source and confirm revision]
+  E --> B
+```
+
+Apply **SQL104** before starting the updated backend; SQL001–103 and all old Skill bytes remain intact.
+
+[Design and implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/90-analysis-role-delivery.md) · [Exact evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/analysis-roles-checkpoint.json)
+
+![Actual desktop report](assets/screenshots/workmate-analysis-04-report-en-desktop.png)
+
+![Actual Traditional Chinese mobile report](assets/screenshots/workmate-analysis-04-report-zh-375.png)
+
+![Actual report interaction](assets/screenshots/workmate-analysis-04-analysis-report-review.gif)
+
+[Creation and download GIF](assets/screenshots/workmate-analysis-04-analysis-role-work.gif) · [MP4](assets/screenshots/workmate-analysis-04-analysis-role-work.mp4) · [Report MP4](assets/screenshots/workmate-analysis-04-analysis-report-review.mp4)
+
 <!-- local-programs-stage88 -->
 
 Backend for identity, workspaces/projects, cloud Codex, business tools, the company AI gateway, metering and audits.

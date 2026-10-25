@@ -1,5 +1,37 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- analysis-roles-stage90 -->
+
+## 当前分析与信息图交付
+
+阶段 90 已接通营销分析师与信息图设计师的确定性计算和九种实际交付文件，角色及相关 Skill 使用 1.1.0 固定版本。68 项相关后端回归、11 项真实浏览器检查通过；两个角色均通过真实固定版 Codex 进程调用获准工具。模型回复与账号数据为已授权假数据，程序、数据库、PNG/ZIP、下载、私有隔离、来源阻断及账本流程实际运行。这不替代至少十二个专业角色及全产品的完整验收。
+
+1. 从专业角色目录建立营销分析师或信息图设计师。既有专员保留原角色及 Skill 版本。
+2. 明确日期、币种、账号、归因及转化定义，选择实际导入的数据，或在当前私有会话上传 CSV/XLSX 并核对真实工作表与表头。
+3. 选择 **执行（Execute）**、确认预算并交付工作；Ask/Plan 不写文件。下载 SVG、PNG、交互 HTML、指标及源事实 CSV、创意简报、源 JSON、清单和 ZIP。
+4. 修改时读取原源文件，再计算并生成新版本；来源仍获准时旧文件可继续下载。相同绘图请求重试复用原文件。绘图不额外调用 AI，文本推理消耗按原任务账本记录。
+
+```mermaid
+flowchart LR
+  A[Role and authorized sources] --> B[Exact calculation and evidence]
+  B --> C[Codex and fixed Skills]
+  C --> D[Private files and task receipt]
+  D --> E[Read source and confirm revision]
+  E --> B
+```
+
+升级后端前应用 **SQL104**；SQL001–103 和原 Skill 字节保持不变。
+
+[方案与实现](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/90-analysis-role-delivery.md) · [精确检查记录](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/analysis-roles-checkpoint.json)
+
+![实际桌面宽度报告](assets/screenshots/workmate-analysis-04-report-en-desktop.png)
+
+![实际繁中移动报告](assets/screenshots/workmate-analysis-04-report-zh-375.png)
+
+![实际报告交互](assets/screenshots/workmate-analysis-04-analysis-report-review.gif)
+
+[建立与下载 GIF](assets/screenshots/workmate-analysis-04-analysis-role-work.gif) · [MP4](assets/screenshots/workmate-analysis-04-analysis-role-work.mp4) · [报告 MP4](assets/screenshots/workmate-analysis-04-analysis-report-review.mp4)
+
 <!-- local-programs-stage88 -->
 
 身份、企业/项目、云端 Codex、业务工具、公司模型网关、计量与审计后端。
@@ -23,7 +55,7 @@ npm run setup:local
 npm run db:local
 ```
 
-保持数据库终端开启，在同一仓库的第二个终端运行 `npm run db:migrate`，再运行 `npm run dev`。API 为 `http://localhost:4310`。升级客户端前应用 SQL103。后台管理员按现有 `admin:create` 流程创建并登记 MFA，不提供共用默认后台账号。
+保持数据库终端开启，在同一仓库的第二个终端运行 `npm run db:migrate`，再运行 `npm run dev`。API 为 `http://localhost:4310`。升级后端前应用 SQL104。后台管理员按现有 `admin:create` 流程创建并登记 MFA，不提供共用默认后台账号。
 
 ### 当前使用流程
 
@@ -53,7 +85,7 @@ npm run db:local
 
 ## 配置、界面和验证
 
-升级客户端前应用 SQL103。本增量不新增 HTTP 路由或迁移，SQL001–103 与 532 个已记录契约保持原字节。公司网关、精确模型别名、已核验媒体能力和费率只配置在后端，详见后端 `.env.example` 和部署说明；不向渲染器/扩展写入公司供应商密钥。未配置的能力保持不可用，不静默改走其他提供方。普通示范不会自动启用全部专项媒体夹具。
+升级后端前应用 SQL104。本增量不新增 HTTP 路由或迁移，SQL001–103 与 532 个已记录契约保持原字节。公司网关、精确模型别名、已核验媒体能力和费率只配置在后端，详见后端 `.env.example` 和部署说明；不向渲染器/扩展写入公司供应商密钥。未配置的能力保持不可用，不静默改走其他提供方。普通示范不会自动启用全部专项媒体夹具。
 
 保持 CopyPaste 蓝/奶白、Manrope/Fraunces、中英双语和浅深主题。Desktop 无 Electron 自带边框/菜单，不显示纵横滚动条轨道，仍保留真实滚轮、焦点、末项访问和进度。紧凑会话摘要将图标/版本和名称分行，保持可读；聚焦页面的 Home/End、Ctrl+Home/End 到达页面首末项，聚焦文本框时保留光标导航。
 

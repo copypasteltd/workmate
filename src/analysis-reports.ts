@@ -76,7 +76,7 @@ function reportFields(r: any) {
 function tenantOf(req: FastifyRequest) {
   return uuid.parse((req.params as any).tenant ?? req.headers["x-tenant-id"]);
 }
-async function datasets(tx: Tx, project: string, ids: string[]) {
+export async function analysisDatasets(tx: Tx, project: string, ids: string[]) {
   await tx.query("SAVEPOINT analysis_input_sources");
   try {
     await tx.query(
@@ -415,7 +415,7 @@ export function registerAnalysisReports(
           randomUUID(),
           project,
           spec,
-          await datasets(tx, project, spec.snapshot_ids),
+          await analysisDatasets(tx, project, spec.snapshot_ids),
         );
       },
       tenant,
@@ -467,7 +467,7 @@ export function registerAnalysisReports(
                   id,
                   b.project_id,
                   spec,
-                  await datasets(tx, b.project_id, spec.snapshot_ids),
+                  await analysisDatasets(tx, b.project_id, spec.snapshot_ids),
                 );
               const context = {
                 ...(await freezeWorkContext(

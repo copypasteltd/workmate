@@ -50,6 +50,9 @@ const implementedTools = new Set([
   "font.inspect",
   "image.generate.internal",
   "image.edit.internal",
+  "sheet.calculate",
+  "chart.render",
+  "connector.read",
 ]);
 
 export async function seedAgentTemplates(db: Database, catalog: Catalog) {

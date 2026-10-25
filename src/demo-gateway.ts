@@ -108,6 +108,65 @@ export async function startDemoGateway(c: Config) {
         input.filter((i) => i.role === "user").at(-1) ?? "",
       );
       const reportTool = find("analysis_report_facts");
+      const analysisSources = find("analysis_sources");
+      const sheetCalculate = find("sheet_calculate");
+      const chartRender = find("chart_render");
+      const analysisSourceRead = find("analysis_source_read");
+      // Read only this turn's actual outputs. Synthetic requests must use real
+      // source IDs, definitions, calculation hashes and revision identities.
+      const toolOutputs = (
+        name: string | undefined,
+        predicate: (v: any) => boolean,
+      ) => {
+        if (!name) return [];
+        const calls = new Set(
+          current
+            .filter((i) => i.type === "function_call" && i.name === name)
+            .map((i) => i.call_id),
+        );
+        const found: any[] = [];
+        const collect = (value: any, depth = 0): void => {
+          if (depth > 12 || value == null) return;
+          if (typeof value === "string") {
+            try {
+              collect(JSON.parse(value), depth + 1);
+            } catch {
+              /* Other tool text is not a receipt. */
+            }
+          } else if (Array.isArray(value))
+            value.forEach((v) => collect(v, depth + 1));
+          else if (typeof value === "object") {
+            if (predicate(value)) {
+              found.push(value);
+              return;
+            }
+            Object.values(value).forEach((v) => collect(v, depth + 1));
+          }
+        };
+        current
+          .filter(
+            (i) => i.type === "function_call_output" && calls.has(i.call_id),
+          )
+          .forEach((i) => collect(i.output));
+        return found;
+      };
+      const analysisDirectory = toolOutputs(
+        analysisSources?.name,
+        (v) => v.kind === "frozen_analysis_datasets",
+      ).at(-1);
+      const analysisFacts = toolOutputs(
+        sheetCalculate?.name,
+        (v) =>
+          typeof v.calculation_sha256 === "string" && Array.isArray(v.scopes),
+      ).at(-1);
+      const priorAnalysis = toolOutputs(
+        analysisSourceRead?.name,
+        (v) =>
+          typeof v.source_version_id === "string" && v.render?.specification,
+      ).at(-1);
+      const sourceRequest = requested.match(
+        /revision_source_version\s*=\s*([a-f\d-]{36})/i,
+      )?.[1];
       const seoTool = find("seo_audit_facts");
       const changeTool = find("seo_change_facts");
       const changePages: any[] = [];
@@ -153,6 +212,71 @@ export async function startDemoGateway(c: Config) {
       if (find("capability_probe") && !used(find("capability_probe").name)) {
         tool = find("capability_probe");
         args = { nonce: tool.parameters?.properties?.nonce?.enum?.[0] };
+      } else if (
+        sheetCalculate &&
+        sourceRequest &&
+        analysisSourceRead &&
+        !used(analysisSourceRead.name)
+      ) {
+        tool = analysisSourceRead;
+        args = { source_version_id: sourceRequest };
+      } else if (
+        sheetCalculate &&
+        analysisSources &&
+        !priorAnalysis &&
+        !used(analysisSources.name)
+      ) {
+        tool = analysisSources;
+        args = { kind: "datasets" };
+      } else if (
+        sheetCalculate &&
+        !used(sheetCalculate.name) &&
+        (priorAnalysis || analysisDirectory?.items?.length)
+      ) {
+        tool = sheetCalculate;
+        const source = analysisDirectory?.items[0];
+        const specification = priorAnalysis
+          ? { ...priorAnalysis.render.specification }
+          : {
+              prompt:
+                "Explicitly synthetic campaign evidence and creative review",
+              snapshot_ids: analysisDirectory.items
+                .slice(0, 10)
+                .map((s: any) => s.id),
+              date_from: source.date_range.from,
+              date_to: source.date_range.to,
+              timezone: source.timezone,
+              currency_policy: "group_by_currency",
+              metrics: ["spend", "ctr", "cpa", "roas"],
+              dimensions: [],
+            };
+        if (priorAnalysis && /revise_to_last_day=true/.test(requested))
+          specification.date_from = specification.date_to;
+        args = { specification };
+      } else if (
+        chartRender &&
+        analysisFacts?.scopes?.length &&
+        !used(chartRender.name)
+      ) {
+        tool = chartRender;
+        args = {
+          specification: analysisFacts.specification,
+          calculation_sha256: analysisFacts.calculation_sha256,
+          title: priorAnalysis
+            ? "Campaign evidence · revised review"
+            : "Campaign evidence · creative review",
+          locale: /report_locale=zh-HK/.test(requested) ? "zh-HK" : "en-HK",
+          metrics: ["spend", "ctr"],
+          scope_ids: analysisFacts.scopes.slice(0, 8).map((s: any) => s.id),
+          ...(priorAnalysis
+            ? {
+                revision_of: {
+                  source_version_id: priorAnalysis.source_version_id,
+                  sha256: priorAnalysis.sha256,
+                },
+              }
+            : {}),
+        };
       } else if (reportTool && !used(reportTool.name)) {
         tool = reportTool;
         args = {};
@@ -168,6 +292,7 @@ export async function startDemoGateway(c: Config) {
         args = lastChangePage ? { offset: lastChangePage.next_offset } : {};
       } else if (
         !reportTool &&
+        !sheetCalculate &&
         find("image2_generate") &&
         !used(find("image2_generate").name)
       ) {
@@ -213,7 +338,11 @@ export async function startDemoGateway(c: Config) {
       ) {
         tool = find("code_package");
         args = { filename: "demo-source.zip" };
-      } else if (find("design_render") && !used(find("design_render").name)) {
+      } else if (
+        !sheetCalculate &&
+        find("design_render") &&
+        !used(find("design_render").name)
+      ) {
         tool = find("design_render");
         args = {
           filename: "demo-layout",
@@ -247,7 +376,11 @@ export async function startDemoGateway(c: Config) {
             ],
           },
         };
-      } else if (find("deliver_text") && !used(find("deliver_text").name)) {
+      } else if (
+        !sheetCalculate &&
+        find("deliver_text") &&
+        !used(find("deliver_text").name)
+      ) {
         tool = find("deliver_text");
         args = {
           filename: "demo-report.md",
