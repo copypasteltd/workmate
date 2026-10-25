@@ -6,7 +6,7 @@ export interface Attachment {
 }
 export interface ChatIO {
   request(scope: ChatScope, path: string, method?: string, body?: unknown, key?: string): Promise<any>;
-  upload(scope: ChatScope, file: File): Promise<any>;
+  upload(scope: ChatScope, file: File, conversationId: string): Promise<any>;
   read(key: string): Promise<any>;
   write(key: string, value: unknown): Promise<void>;
   changed(): void;
@@ -16,6 +16,7 @@ interface Pending {
   prompt: string; budget: string; versionIds: string[];
   conversationId?: string; boundAgentId?: string;
 }
+interface ConversationCreation { key: string; name: string; agentId: string }
 export const unfinished = new Set(["queued", "running", "paused", "needs_input", "awaiting_approval", "reconciling"]);
 const uuid = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
 export const chatBase = (s: ChatScope) => `/v1/tenants/${s.tenant}/projects/${s.project}`;
@@ -31,6 +32,8 @@ export class ConversationState {
   agents: any[] = [];
   history: any[] = [];
   conversation: any = null;
+  projectConfiguration: any = null;
+  projectConfigurationTaskId = "";
   attachments: Attachment[] = [];
   draft = "";
   agentId = "";
@@ -38,6 +41,8 @@ export class ConversationState {
   sending = false;
   unavailable = false;
   pending?: Pending;
+  creation?: ConversationCreation;
+  private creating?: Promise<any>;
   private generation = 0;
   private poll?: Promise<void>;
   private activeTask: any = null;
@@ -50,7 +55,7 @@ export class ConversationState {
   private notify() { this.io.changed(); }
   private persist(s: ChatScope) {
     // Serialize writes so a slow earlier response cannot restore a cleared receipt.
-    const value = { conversationId: this.conversation?.id ?? null, pending: this.pending ?? null };
+    const value = structuredClone({ conversationId: this.conversation?.id ?? null, pending: this.pending ?? null, creation: this.creation ?? null });
     const work = this.storageTail.catch(() => {}).then(() => this.io.write(this.storageKey(s), value));
     this.storageTail = work;
     return work;
@@ -58,7 +63,9 @@ export class ConversationState {
   reset() {
     ++this.generation; this.scope = undefined; this.agents = []; this.history = [];
     this.conversation = null; this.attachments = []; this.draft = ""; this.agentId = "";
+    this.projectConfiguration = null; this.projectConfigurationTaskId = "";
     this.loading = false; this.sending = false; this.unavailable = false; this.pending = undefined;
+    this.creation = undefined; this.creating = undefined;
     this.activeTask = null; this.events = []; this.cursor = 0; this.poll = undefined;
     this.notify();
   }
@@ -69,14 +76,19 @@ export class ConversationState {
     this.notify();
     try {
       await this.storageTail.catch(() => {});
-      const [agents, history, saved] = await Promise.all([
+      const [agents, history, saved, brief] = await Promise.all([
         this.io.request(s, chatBase(s) + "/agents"),
         this.io.request(s, chatBase(s) + "/conversations"), this.io.read(this.storageKey(s)),
+        this.io.request(s, chatBase(s) + "/project-configuration"),
       ]);
       if (!this.current(g)) return;
+      this.acceptBrief(brief);
       this.agents = agents.items.filter((a: any) => a.enabled && a.content_state === "active");
       this.history = history.items;
       // Saved state is a receipt, never authority. Server rechecks every read/write.
+      if (this.validCreation(saved?.creation)) {
+        this.creation = saved.creation; this.agentId = this.creation!.agentId;
+      }
       if (saved?.pending && this.validPending(saved.pending)) {
         this.pending = saved.pending; this.draft = this.pending!.prompt;
       }
@@ -86,7 +98,12 @@ export class ConversationState {
         if (!this.current(g)) return;
         this.conversation = c;
       }
+    } catch (e) { if (this.current(g)) { this.unavailable = true; this.projectConfiguration = null; } throw e;
     } finally { if (this.current(g)) { this.loading = false; this.notify(); } }
+  }
+  private acceptBrief(response: any, taskId = "") {
+    if (!response || !("published" in response)) throw new Error("Shared project guidance could not be verified / 未能確認專案共享設定");
+    this.projectConfiguration = response.published; this.projectConfigurationTaskId = taskId;
   }
   private validPending(p: any): p is Pending {
     return p && uuid.test(p.key) && uuid.test(p.createKey) && typeof p.prompt === "string" && p.prompt.length <= 30000
@@ -95,16 +112,51 @@ export class ConversationState {
       && Array.isArray(p.versionIds) && p.versionIds.length <= 20 && p.versionIds.every((id: any) => typeof id === "string" && uuid.test(id))
       && (!p.conversationId || uuid.test(p.conversationId)) && (!p.boundAgentId || uuid.test(p.boundAgentId));
   }
+  private validCreation(c: any): c is ConversationCreation {
+    return c && uuid.test(c.key) && typeof c.name === "string" && c.name.length > 0 && c.name.length <= 160
+      && typeof c.agentId === "string" && (c.agentId === "" || uuid.test(c.agentId));
+  }
+  get preparing() { return !!this.creating; }
+  private ensureConversation(s: ChatScope, g: number, proposed?: ConversationCreation): Promise<any> {
+    if (!this.current(g)) return Promise.resolve(null);
+    if (this.conversation) return Promise.resolve(this.conversation);
+    if (this.creating) return this.creating;
+    const intent = this.creation ??= proposed ?? {
+      key: crypto.randomUUID(), name: this.draft.trim().replace(/\s+/g, " ").slice(0, 160) || "File discussion / 檔案會話", agentId: this.agentId,
+    };
+    const work = (async () => {
+      await this.persist(s); if (!this.current(g)) return null;
+      const c = await this.io.request(s, chatBase(s) + "/conversations", "POST", {
+        name: intent.name, ...(intent.agentId ? { agent_id: intent.agentId } : {}),
+      }, intent.key);
+      if (!this.current(g)) return null;
+      if (!uuid.test(c?.id) || !uuid.test(c?.agent_id) || c.tenant_id !== s.tenant || c.project_id !== s.project || c.created_by !== s.actor
+        || (intent.agentId && c.agent_id !== intent.agentId)) throw new Error("Private conversation acceptance was not confirmed / 未確認私人會話是否已接收");
+      this.conversation = { ...c, messages: [], tasks: [] }; this.creation = undefined;
+      await this.persist(s); if (!this.current(g)) return null;
+      return this.conversation;
+    })().catch(async (e: any) => {
+      if (this.current(g) && e.status >= 400 && e.status < 500 && ![408, 429].includes(e.status)) {
+        this.creation = undefined; await this.persist(s);
+      }
+      throw e;
+    }).finally(() => {
+      if (this.current(g) && this.creating === work) { this.creating = undefined; this.notify(); }
+    });
+    this.creating = work; this.notify(); return work;
+  }
   async select(id: string) {
     if (id && !uuid.test(id)) throw new Error("Invalid conversation identity");
     if (!this.scope || this.sending || this.pending) throw new Error("Resolve the pending message first / 請先確認待發送訊息");
     const s = this.scope, g = ++this.generation;
     this.loading = true; this.unavailable = false; this.poll = undefined; this.attachments = []; this.draft = ""; this.activeTask = null; this.events = []; this.cursor = 0;
-    this.conversation = null; this.notify();
+    this.conversation = null; this.projectConfiguration = null; this.projectConfigurationTaskId = ""; this.notify();
+    this.creation = undefined; this.creating = undefined;
     try {
-      const c = id ? await this.io.request(s, chatBase(s) + "/conversations/" + id) : null;
+      const [c, brief] = await Promise.all([id ? this.io.request(s, chatBase(s) + "/conversations/" + id) : Promise.resolve(null), this.io.request(s, chatBase(s) + "/project-configuration")]);
       if (!this.current(g)) return;
-      this.conversation = c; await this.persist(s);
+      this.acceptBrief(brief); this.conversation = c; await this.persist(s);
+    } catch (e) { if (this.current(g)) this.unavailable = true; throw e;
     } finally { if (this.current(g)) { this.loading = false; this.notify(); } }
   }
   removeAttachment(id: string) {
@@ -119,7 +171,9 @@ export class ConversationState {
     const a: Attachment = { id: crypto.randomUUID(), name: file.name, type: file.type || "application/octet-stream", size: file.size, state: "uploading" };
     this.attachments.push(a); this.notify();
     try {
-      const asset = await this.io.upload(s, file);
+      const c = await this.ensureConversation(s, g);
+      if (!c || !this.current(g) || !this.attachments.includes(a)) return;
+      const asset = await this.io.upload(s, file, c.id);
       if (!this.current(g) || !this.attachments.includes(a)) return;
       if (!uuid.test(asset?.version?.id)) throw new Error("Upload did not return an immutable file version / 上傳未傳回檔案版本");
       a.versionId = asset.version.id; a.state = "ready";
@@ -133,6 +187,8 @@ export class ConversationState {
   async send(budget: string) {
     if (!this.scope || this.loading || this.sending) return;
     if (this.unavailable) throw new Error("Refresh this conversation before sending / 請先重新整理會話");
+    if (this.projectConfiguration && (!this.projectConfiguration.available || !this.projectConfiguration.body))
+      throw new Error("Ask an administrator to review the shared project references / 請管理員重新確認專案共享資料");
     if (!this.pending && this.busy) throw new Error("Finish or stop the current work before sending / 請先完成或停止目前工作");
     if (!this.pending && this.attachments.some(a => a.state !== "ready")) throw new Error("Wait for uploads, or remove failed attachments / 請等待上傳完成或移除失敗附件");
     const s = this.scope, g = this.generation;
@@ -140,8 +196,8 @@ export class ConversationState {
       const prompt = this.draft.trim();
       if (!prompt || prompt.length > 30000) throw new Error("Write a message (up to 30,000 characters) / 請輸入訊息（最多 30,000 字）");
       this.pending = {
-        key: crypto.randomUUID(), createKey: crypto.randomUUID(), prompt, budget: budgetMicros(budget),
-        name: prompt.replace(/\s+/g, " ").slice(0, 160), agentId: this.agentId,
+        key: crypto.randomUUID(), createKey: this.creation?.key ?? crypto.randomUUID(), prompt, budget: budgetMicros(budget),
+        name: this.creation?.name ?? prompt.replace(/\s+/g, " ").slice(0, 160), agentId: this.creation?.agentId ?? this.agentId,
         versionIds: [...new Set(this.attachments.map(a => a.versionId!))],
         ...(this.conversation ? { conversationId: this.conversation.id, boundAgentId: this.conversation.agent_id } : {}),
       };
@@ -152,11 +208,8 @@ export class ConversationState {
       // Persist BEFORE each mutation: a closed panel can retry the exact receipt.
       await this.persist(s); if (!this.current(g)) return;
       if (!p.conversationId) {
-        const c = await this.io.request(s, chatBase(s) + "/conversations", "POST", {
-          name: p.name, ...(p.agentId ? { agent_id: p.agentId } : {}),
-        }, p.createKey);
-        if (!this.current(g)) return;
-        if (!uuid.test(c?.id) || !uuid.test(c?.agent_id)) throw new Error("Conversation acceptance was not confirmed");
+        const c = await this.ensureConversation(s, g, { key: p.createKey, name: p.name, agentId: p.agentId });
+        if (!c || !this.current(g)) return;
         p.conversationId = c.id; p.boundAgentId = c.agent_id; this.conversation = { ...c, messages: [], tasks: [] };
         await this.persist(s); if (!this.current(g)) return;
       }
@@ -185,8 +238,9 @@ export class ConversationState {
     if (this.poll) return this.poll;
     const g = this.generation;
     const work = this.load(g).catch(e => {
-      if (this.current(g) && this.conversation) {
-        this.unavailable = true; this.conversation = { ...this.conversation, messages: [] };
+      if (this.current(g)) {
+        this.unavailable = true; if (this.conversation) this.conversation = { ...this.conversation, messages: [] };
+        this.projectConfiguration = null; this.projectConfigurationTaskId = "";
         this.activeTask = null; this.events = []; this.cursor = 0; this.notify();
       }
       throw e;
@@ -195,11 +249,18 @@ export class ConversationState {
   }
   private async load(g: number) {
     const s = this.scope, id = this.conversation?.id;
-    if (!s || !id || this.loading) return;
+    if (!s || this.loading) return;
+    if (!id) {
+      const brief = await this.io.request(s, chatBase(s) + "/project-configuration");
+      if (this.current(g)) { this.acceptBrief(brief); this.unavailable = false; this.notify(); }
+      return;
+    }
     const c = await this.io.request(s, chatBase(s) + "/conversations/" + id);
     if (!this.current(g) || this.conversation?.id !== id) return;
     const t = c.tasks?.slice().reverse().find((t: any) => unfinished.has(t.status)) ?? c.tasks?.at(-1);
     let detail = null, events = this.events, cursor = this.cursor;
+    const brief = await this.io.request(s, chatBase(s) + (t ? `/tasks/${t.id}/project-configuration` : "/project-configuration"));
+    if (!this.current(g) || this.conversation?.id !== id) return;
     if (t) {
       const same = t.id === this.activeTask?.id;
       const [d, batch] = await Promise.all([
@@ -215,7 +276,7 @@ export class ConversationState {
       }
       events = events.slice(-1000);
     }
-    this.conversation = c; this.activeTask = detail; this.events = events; this.cursor = cursor; this.unavailable = false;
+    this.acceptBrief(brief, t?.id); this.conversation = c; this.activeTask = detail; this.events = events; this.cursor = cursor; this.unavailable = false;
     this.notify();
   }
   async stop() {

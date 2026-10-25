@@ -16,10 +16,11 @@ function fixture() {
     upload: async (_scope, file) => ({ name: file.name, version: { id: randomUUID() } }),
     request: async (s, path, method = "GET", body?: any, key?: string) => {
       requests.push(structuredClone({ s, path, method, body, key }));
+      if (path.endsWith("/project-configuration")) return { published: null };
       if (path.endsWith("/agents")) return { items: [{ id: agent, enabled: true, content_state: "active" }] };
       if (path.endsWith("/conversations") && method === "GET") return { items: [...conversations.values()] };
       if (path.endsWith("/conversations") && method === "POST") {
-        if (!receipts.has(key!)) { const c = { id: randomUUID(), agent_id: agent, agent_version: 1, name: body.name, version: 1, messages: [], tasks: [] }; conversations.set(c.id, c); receipts.set(key!, c); }
+        if (!receipts.has(key!)) { const c = { id: randomUUID(), tenant_id: s.tenant, project_id: s.project, created_by: s.actor, agent_id: body.agent_id ?? agent, agent_version: 1, name: body.name, version: 1, messages: [], tasks: [] }; conversations.set(c.id, c); receipts.set(key!, c); }
         if (lostCreate) { lostCreate = false; throw new Error("response lost after commit"); }
         return structuredClone(receipts.get(key!));
       }
@@ -87,6 +88,40 @@ test("account/project changes discard old upload completions and bind requests t
   await s.open(next); upload.resolve({ version: { id: randomUUID() } }); await work;
   assert.deepEqual(s.scope, next); assert.equal(s.attachments.length, 0); assert.equal(s.draft, "");
 });
+
+test("shared project guidance is scope-bound, while accepted task guidance keeps its original version", async () => {
+  const f = fixture(), request = f.io.request;
+  let version = 1;
+  f.io.request = async (selected, path, ...args) => path.endsWith("/project-configuration")
+    ? { published: { version: path.includes("/tasks/") ? 1 : version, available: true, body: { name: "Authorized project", instructions: "Approved facts" } } }
+    : request(selected, path, ...args);
+  const s = new ConversationState(f.io); await s.open(scope());
+  assert.equal(s.projectConfiguration.version, 1);
+  s.draft = "Prepare the campaign"; await s.send("20");
+  version = 2; await s.refresh();
+  assert.equal(s.projectConfiguration.version, 1);
+  assert.ok(s.projectConfigurationTaskId);
+  await s.select(""); assert.equal(s.projectConfiguration.version, 2); assert.equal(s.projectConfigurationTaskId, "");
+  const taskRequest = f.requests.find(r => r.path === "/v1/tasks");
+  assert.ok(!("project_configuration" in taskRequest.body), "The server, rather than the extension, binds the authoritative project version");
+});
+
+test("late shared-project responses never cross account/project changes and failed verification blocks sending", async () => {
+  const f = fixture(), request = f.io.request, old = scope(), next = scope(), delayed = deferred<any>();
+  f.io.request = async (selected, path, ...args) => path.endsWith("/project-configuration")
+    ? selected.tenant === old.tenant ? delayed.promise : { published: { version: 3, available: true, body: { name: "New project" } } }
+    : request(selected, path, ...args);
+  const s = new ConversationState(f.io), loading = s.open(old); await s.open(next);
+  delayed.resolve({ published: { version: 1, available: true, body: { name: "Old private brief" } } }); await loading;
+  assert.equal(s.scope?.tenant, next.tenant); assert.equal(s.projectConfiguration.body.name, "New project");
+  f.io.request = async (selected, path, ...args) => {
+    if (path.endsWith("/project-configuration")) throw new Error("Current project unavailable");
+    return request(selected, path, ...args);
+  };
+  await assert.rejects(s.refresh(), /unavailable/); assert.equal(s.projectConfiguration, null);
+  s.draft = "Do not send before verification"; await assert.rejects(s.send("20"), /Refresh/);
+  assert.equal(f.tasks.size, 0);
+});
 test("old restored conversation cannot overwrite a newly opened account", async () => {
   const f = fixture(), s = new ConversationState(f.io), old = scope(), next = scope(), read = deferred<any>(), id = randomUUID();
   f.store.set(`chat:${old.actor}:${old.tenant}:${old.project}`, { conversationId: id });
@@ -116,4 +151,60 @@ test("an HTTP-successful quarantined task also clears retained conversation cont
   await assert.rejects(s.refresh(), /sources are unavailable/);
   assert.equal(s.unavailable, true); assert.deepEqual(s.conversation.messages, []);
   assert.equal(s.progress.task, null); assert.equal(s.progress.events.length, 0);
+});
+
+test("concurrent attachments share one private conversation and never create a paid task before Send", async () => {
+  const f = fixture(), s = new ConversationState(f.io), selected = scope(), calls: any[] = [], agent = randomUUID();
+  f.io.upload = async (scope, file, conversation) => {
+    calls.push({ scope, name: file.name, conversation }); return { version: { id: randomUUID() } };
+  };
+  await s.open(selected); s.agentId = agent;
+  await Promise.all([s.attach(new File(["first"], "a.txt")), s.attach(new File(["second"], "b.txt"))]);
+  assert.equal(f.conversations.size, 1); assert.equal(f.tasks.size, 0);
+  assert.equal(s.conversation.created_by, selected.actor); assert.equal(s.conversation.agent_id, agent);
+  assert.deepEqual(calls.map(c => c.conversation), [s.conversation.id, s.conversation.id]);
+  assert.ok(calls.every(c => c.scope === s.scope));
+  assert.equal(s.attachments.filter(a => a.state === "ready").length, 2);
+  s.draft = "Now analyse these two approved files"; await s.send("1");
+  assert.equal(f.conversations.size, 1); assert.equal(f.tasks.size, 1);
+  assert.equal(f.requests.find(r => r.path === "/v1/tasks").body.agent_id, agent);
+});
+
+test("lost pre-upload conversation acceptance survives panel reopening and replays the same role, name and creation key", async () => {
+  const f = fixture(), first = new ConversationState(f.io), selected = scope(), agent = randomUUID();
+  await first.open(selected); first.agentId = agent; first.draft = "Original private source discussion"; f.loseCreate();
+  await first.attach(new File(["original"], "source.txt"));
+  assert.equal(first.attachments[0].state, "failed"); assert.equal(f.tasks.size, 0);
+  const receipt = structuredClone(first.creation); assert.ok(receipt); first.reset();
+  const next = new ConversationState(f.io); await next.open(selected);
+  assert.deepEqual(next.creation, receipt); assert.equal(next.agentId, agent);
+  next.draft = "A changed prompt must not change the uncertain creation";
+  await next.attach(new File(["original"], "source.txt"));
+  assert.equal(next.attachments[0].state, "ready"); assert.equal(f.conversations.size, 1);
+  const creates = f.requests.filter(r => r.method === "POST" && r.path.endsWith("/conversations"));
+  assert.equal(creates.length, 2); assert.deepEqual(creates[0].body, creates[1].body); assert.equal(creates[0].key, creates[1].key);
+  assert.equal(next.conversation.agent_id, agent); assert.equal(next.creation, undefined);
+});
+
+test("a late private-conversation creation never uploads or restores content after a project/account switch", async () => {
+  const f = fixture(), s = new ConversationState(f.io), original = f.io.request, old = scope(), next = scope(), delayed = deferred<any>();
+  let uploads = 0; f.io.upload = async () => { uploads++; return { version: { id: randomUUID() } }; };
+  f.io.request = async (selected, path, method, ...args) => method === "POST" && path.endsWith("/conversations") ? delayed.promise : original(selected, path, method, ...args);
+  await s.open(old); const pending = s.attach(new File(["never cross a scope"], "private.txt"));
+  await new Promise(r => setImmediate(r)); await s.open(next);
+  delayed.resolve({ id: randomUUID(), agent_id: randomUUID(), tenant_id: old.tenant, project_id: old.project, created_by: old.actor }); await pending;
+  assert.equal(uploads, 0); assert.deepEqual(s.scope, next); assert.equal(s.conversation, null); assert.equal(s.attachments.length, 0);
+  assert.equal(f.store.get(`chat:${next.actor}:${next.tenant}:${next.project}`), undefined);
+});
+
+test("foreign or unconfirmed private-conversation acceptance blocks all file uploads", async () => {
+  for (const field of ["tenant_id", "project_id", "created_by", "agent_id"]) {
+    const f = fixture(), s = new ConversationState(f.io), original = f.io.request; let uploads = 0;
+    f.io.upload = async () => { uploads++; return { version: { id: randomUUID() } }; };
+    f.io.request = async (...args) => {
+      const c = await original(...args); return args[2] === "POST" && args[1].endsWith("/conversations") ? { ...c, [field]: randomUUID() } : c;
+    };
+    await s.open(scope()); s.agentId = randomUUID(); await s.attach(new File(["private source"], "private.txt"));
+    assert.equal(uploads, 0, field); assert.equal(s.attachments[0].state, "failed"); assert.equal(f.tasks.size, 0);
+  }
 });

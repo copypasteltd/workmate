@@ -75,11 +75,32 @@ export class ChatPanel {
       ["chat-attach-label", "附加檔案", "Attach files"], ["chat-settings-label", "角色與預算", "Specialist & budget"],
       ["chat-budget-label", "每條訊息預算上限（HKD）", "Budget per message (HKD)"],
       ["chat-agent-label", "專業角色", "Specialist"], ["chat-history-label", "會話記錄", "Chat history"],
-      ["chat-cloud-note", "獲選檔案上傳至公司雲端的目前專案，由雲端助手處理。", "Selected files upload to this project on the company cloud for your cloud assistant."],
+      ["chat-cloud-note", "獲選檔案上傳至公司雲端的私人會話，由雲端助手處理。分享至專案需另外確認。", "Selected files upload to your private conversation on the company cloud. Project sharing needs separate confirmation."],
     ]) el(id).textContent = t(zh, en);
     const c = s.conversation;
     el("chat-name").textContent = c?.name ?? t("今天想完成什麼？", "What would you like to make?");
+    el("chat-name").title = el("chat-name").textContent ?? "";
     el("chat-context").textContent = c ? t("雲端助手", "Cloud assistant") + " · v" + c.agent_version : t("選擇角色，直接開始對話", "Choose a specialist and start a conversation");
+    const brief = s.projectConfiguration, briefElement = el<HTMLDetailsElement>("chat-project-brief");
+    briefElement.hidden = !brief;
+    if (brief) {
+      el("chat-project-summary").textContent = (s.projectConfigurationTaskId ? t("本次工作設定", "This task's guidance") : t("專案共享設定", "Shared project guidance")) + ` · v${brief.version}`;
+      const content = el("chat-project-content"), signature = JSON.stringify([brief, this.language()]);
+      if (content.dataset.signature !== signature) {
+        content.dataset.signature = signature; content.replaceChildren();
+        const add = (text: string) => { if (text) { const p = document.createElement("p"); p.textContent = text; content.append(p); } };
+        if (!brief.available || !brief.body) add(t("資料或方法需要管理員重新確認。", "An administrator needs to review the shared references or methods."));
+        else {
+          const body = brief.body, resolved = body.resolved ?? {};
+          add(body.name); add(body.instructions); add(body.delivery_requirements);
+          if (resolved.default_agent) add(t("推薦專家：", "Recommended specialist: ") + `${resolved.default_agent.name} · v${resolved.default_agent.version}`);
+          if (resolved.brand) add(`${resolved.brand.name} · v${resolved.brand.version}`);
+          for (const r of resolved.resources ?? []) add(`${r.name} · v${r.version}`);
+          if (body.max_task_budget_micros !== null) add(t("單次工作上限：", "Task limit: ") + exactHKD(String(body.max_task_budget_micros)));
+          add(t("繼承獲准資料及方法；目前權限和費用限制仍會套用。", "Inherits authorized references and methods; current access and billing limits still apply."));
+        }
+      }
+    }
     const history = el<HTMLSelectElement>("chat-history"), agents = el<HTMLSelectElement>("chat-agent");
     const options = (select: HTMLSelectElement, rows: { id: string; name: string }[], empty: string, value: string) => {
       const spec = JSON.stringify([rows, empty, value]);
@@ -90,13 +111,13 @@ export class ChatPanel {
     const rows = [...s.history];
     if (c && !rows.some(row => row.id === c.id)) rows.unshift(c);
     options(history, rows, t("新會話", "New chat"), c?.id ?? "");
-    options(agents, s.agents, t("預設助手", "Default assistant"), c?.agent_id ?? s.agentId);
+    options(agents, s.agents, brief?.body?.resolved?.default_agent ? `${brief.body.resolved.default_agent.name} · v${brief.body.resolved.default_agent.version}` : t("預設助手", "Default assistant"), c?.agent_id ?? s.agentId);
     if (c && !s.agents.some(a => a.id === c.agent_id)) {
       const o = document.createElement("option"); o.value = c.agent_id; o.textContent = t("會話原有角色", "Conversation specialist"); agents.append(o); agents.value = c.agent_id;
     }
     const locked = s.loading || s.sending || !!s.pending;
-    history.disabled = locked; agents.disabled = locked || !!c;
-    el<HTMLButtonElement>("chat-new").disabled = locked;
+    history.disabled = locked || s.preparing; agents.disabled = locked || s.preparing || !!s.creation || !!c;
+    el<HTMLButtonElement>("chat-new").disabled = locked || s.preparing;
     const input = el<HTMLTextAreaElement>("chat-input");
     if (input.value !== s.draft) input.value = s.draft;
     input.placeholder = t("傳送訊息…", "Message your assistant…");

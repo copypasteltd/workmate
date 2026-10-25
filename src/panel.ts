@@ -26,11 +26,11 @@ const chat = new ChatPanel({
   request: (scope, path, method = "GET", body, key) => send("API", {
     path, method, body, idempotencyKey: key, tenantId: scope.tenant,
   }),
-  upload: async (scope, file) => {
+  upload: async (scope, file, conversationId) => {
     const bytes = new Uint8Array(await file.arrayBuffer());
     let binary = "";
     for (const byte of bytes) binary += String.fromCharCode(byte);
-    return send("UPLOAD", { path: `/v1/tenants/${scope.tenant}/projects/${scope.project}/assets`,
+    return send("CHAT_UPLOAD", { scope, conversationId,
       file: { name: file.name, type: file.type, base64: btoa(binary) } });
   },
   read: async key => (await chrome.storage.session.get(key))[key],
@@ -69,7 +69,7 @@ async function send(type: string, body: Record<string, unknown> = {}) {
   const revision = workspaceRevision;
   const r = await chrome.runtime.sendMessage({ type, ...body });
   if (
-    ["API", "UPLOAD", "STATUS"].includes(type) &&
+    ["API", "UPLOAD", "CHAT_UPLOAD", "STATUS"].includes(type) &&
     revision !== workspaceRevision
   )
     throw new WorkspaceChanged("Workspace changed");
@@ -105,6 +105,7 @@ function resetSignedOut() {
   project = "";
   pending = null;
   $("login").hidden = false;
+  document.body.classList.remove("signed-in");
   $("workspace").hidden = true;
   $("account-actions").hidden = true;
   for (const id of [
@@ -203,6 +204,7 @@ async function populateWorkspace() {
   const status = await send("STATUS");
   if (revision !== workspaceRevision) return;
   $("login").hidden = status.authenticated;
+  document.body.classList.toggle("signed-in", status.authenticated);
   $("workspace").hidden = true;
   $("account-actions").hidden = !status.authenticated;
   if (!status.authenticated) {

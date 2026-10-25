@@ -39,10 +39,16 @@
       <div class="workspace-head">
         <small>YOUR WORKSPACE</small><strong id="user-name"></strong>
       </div>
+      <div class="workspace-context">
       <label class="field"
         ><span>企業</span
         ><select id="tenant"></select
       ></label>
+      <label class="field"
+        ><span>專案</span
+        ><select id="project"></select
+      ></label>
+      </div>
       <div id="empty-workspace" class="notice" hidden>
         先開啟完整工作台建立企業與專案，再返回此側欄。
       </div>
@@ -50,17 +56,16 @@
         <p id="demo-banner" class="notice" role="status" hidden>
           示範環境：AI 回覆及用量為模擬資料，檔案與任務確實保存。
         </p>
-        <label class="field"
-          ><span>專案</span
-          ><select id="project"></select
-        ></label>
         <section id="chat-shell" class="chat-shell" aria-label="CopyPaste conversation">
+          <div class="chat-meta">
           <div class="chat-toolbar">
             <button id="chat-new" type="button">＋ 新會話</button>
+            <label class="chat-history-field"><span id="chat-history-label" class="sr-only">會話記錄</span><select id="chat-history"></select></label>
             <button id="chat-refresh" type="button">重新整理</button>
           </div>
-          <label class="chat-history-field"><span id="chat-history-label">會話記錄</span><select id="chat-history"></select></label>
           <div class="chat-heading"><h1 id="chat-name">今天想完成什麼？</h1><small id="chat-context"></small></div>
+          <details id="chat-project-brief" class="chat-project-brief" hidden><summary id="chat-project-summary"></summary><div id="chat-project-content"></div></details>
+          </div>
           <div id="chat-messages" class="chat-messages" role="log" aria-label="Messages" aria-live="polite" aria-relevant="additions text"></div>
           <div id="chat-unavailable" class="notice error" role="status" hidden></div>
           <div id="chat-pending" class="notice" role="status" hidden></div>
@@ -74,7 +79,7 @@
               <button id="chat-stop" type="button" hidden>停止</button>
               <button id="chat-send" class="chat-send" type="submit">傳送 ↑</button>
             </div>
-            <small id="chat-cloud-note" class="chat-cloud-note">獲選檔案上傳至公司雲端的目前專案，由雲端助手處理。</small>
+            <small id="chat-cloud-note" class="chat-cloud-note">獲選檔案上傳至公司雲端的私人會話，由雲端助手處理。分享至專案需另外確認。</small>
             <details class="chat-settings"><summary id="chat-settings-label">角色與預算</summary>
               <label class="field"><span id="chat-agent-label">專業角色</span><select id="chat-agent"></select></label>
               <label class="field"><span id="chat-budget-label">每條訊息預算上限（HKD）</span><input id="chat-budget" type="text" inputmode="decimal" value="20" required /></label>

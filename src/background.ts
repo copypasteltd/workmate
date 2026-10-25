@@ -5,6 +5,12 @@ import {
   type NativeTokens,
 } from "./native-session.js";
 import { exchangeNativeCode } from "./native-code.js";
+import { PrivateChatUploads } from "./chat-upload.js";
+const privateUploads = new PrivateChatUploads({
+  request: (scope, path, method, body, key) => request(path, method, body, key, scope.tenant),
+  read: async key => (await chrome.storage.session.get(key))[key],
+  write: async (key, value) => { await chrome.storage.session.set({ [key]: value }); },
+});
 let loginFlow: Promise<{ ok: boolean }> | null = null;
 const safePath = (path: unknown) => {
   if (
@@ -254,6 +260,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       );
     }
     if (message.type === "UPLOAD") return upload(message.path, message.file);
+    if (message.type === "CHAT_UPLOAD") return privateUploads.upload(message.scope, message.conversationId, message.file);
     if (message.type === "CAPTURE") return capturePage();
     if (message.type === "HOST") {
       if (

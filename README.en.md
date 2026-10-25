@@ -1,5 +1,76 @@
 # Workmate · CopyPaste Chrome Extension
 
+<!-- shared-project-stage86 -->
+
+ChatGPT-style conversation and attachments in Chrome's native right Side Panel read explicitly selected files and upload them for cloud Codex.
+
+The product serves existing marketing teams first, with image/design/video, advertising analysis, SEO/GEO and repeated business workflows, plus software-development presets. The catalog contains 18 candidates; at least 12 professionally qualified presets remain a product acceptance requirement. All AI requests use the company's OpenAI-compatible server. Synthetic providers are authorized for development; configured demos do not prove live model quality.
+
+### Local startup
+
+Run these commands in the checked-out component. The complete workspace has the six independent repositories side by side under `dev/`; see the [branch and checkout layout](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md). Use Windows x64, Node.js >=22.14, npm/Git and the documented native PostgreSQL, FFmpeg/FFprobe and pinned Codex resources. Preserve existing local configuration/data. No Docker/WSL/VM is used.
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-extension'
+npm ci
+npm run build
+```
+
+Start the backend and Web first. In Chrome 120+, open `chrome://extensions`, enable Developer mode and load this repository's `dist/` as an unpacked extension. Pin/click its icon to open the native right Side Panel. Keep the built Extension ID aligned with backend authorization; configure company HTTPS origins through `COPYPASTE_API_ORIGIN`/`COPYPASTE_WEB_ORIGIN` before production builds. Sign in, select a workspace/project and attach authorized files. Desktop installation is unnecessary.
+
+### Use the current workflow
+
+1. Sign in using email/OTP or an explicitly configured company identity. Select a workspace/project; a new user creates a company or accepts an invitation. Native clients use the existing browser PKCE sign-in. Admin uses separately enrolled MFA credentials and assigned permissions.
+2. A project owner/admin opens **Projects → Shared project guidance**, saves instructions, delivery requirements, an exact specialist/Skill version, brand version, shared-file versions, authorized accounts and an optional maximum task budget. Search/paginate file choices, save a draft, inspect the dependency preview and explicitly publish. Publication starts no AI, grants no access and changes no balance.
+3. New work displays and pins the accepted guidance version/hash. Continuing tasks and local Codex threads retain their original version, including an explicitly absent configuration for work created before publication. Publishing a newer version never silently upgrades running work. Old versions can be copied into a new draft; immutable history is preserved.
+4. The **Refresh guidance** action, focus/visibility refresh and 15-second polling recheck current source availability. Quarantine, expiry, deletion or lost permission hides unavailable bodies, including open history. The editor and history have distinct component identities; copying/publishing leaves exactly one history. Server tools independently recheck authorization before use.
+5. Side Panel attachment selection creates the current actor's private conversation first, then uses resumable upload with exact original bytes/SHA-256 and scope-specific recovery receipts. A lost response resumes the original operation. It never falls back to a shared file. The actual uploader can download the exact bytes; an independently logged-in editor in the same project cannot list, read versions, download or open the private conversation. Publishing a file to the project needs a separate explicit action.
+6. In Desktop choose a local folder and permission level; full local permission requires the customer's native confirmation and can be revoked. Codex and terminal/file operations run locally. Authorized company references use company tools. Current source, role, budget and cloud-data restrictions still apply. Web/Extension run cloud Codex; Extension requires no Desktop installation.
+7. Admin controls scoped metadata, sensitive bodies, quarantine, restore and irreversible body erasure separately. User/tenant state, consumption, gift credits, recorded charges, VIP and approval-ledger controls retain their existing independent permissions. Previewing a financial operation changes no balance; idempotent replay does not grant twice. Admin cannot sign a customer's media consent.
+
+Apply additive **SQL103** with backend `npm run db:migrate` before upgrading clients. SQL001–102 and four historical OpenAPI contracts keep their published bytes. The new eight-operation guidance contract and current route inventory describe **487 configured + one explicitly conditional demo route**. Keep gateway origins/keys, model aliases, verified media capability and tariffs on the backend; never in a renderer or Extension. Ordinary demo does not enable every specialized media fixture.
+
+CopyPaste blue/cream, Manrope/Fraunces and light/dark themes remain. Desktop has no Electron frame/menu or visible vertical/horizontal scrollbar rails; actual scrolling, keyboard/last-action access and truthful progress remain. The native Side Panel keeps input, Send and Current page reachable at actual compact Chrome sizes with guidance/settings expanded in both languages. Full accessibility/DPI/site matrices remain open.
+
+Current separate verification scopes: platform **1023** (all **1001** prior cases retained; 79 files/20 native-database batches), focused **25**, compatibility **36**, client unit tests **139**, actual Web/Admin/Side Panel **14**, packaged local Desktop **50**. Native guidance executes real customer-device Codex across **v3/v3/v4**, with exact reference-tool/file bytes, three separately settled **90-micro-HKD** tasks and no cloud replacement. Model replies and selected native-dialog decisions remain explicit fixtures. Each receipt binds its own unchanged source; previous failures remain failed.
+
+Current limits: guidance has up to 20 shared-file versions/12 connectors; Agent/brand/account option lists are bounded at 200. Side Panel accepts at most 20 nonempty attachments of 5 MiB each. Stored recovery receipts contain no file bytes or credentials; unfinished attachment selection is not an automatic cross-panel-close restoration promise. Full sleep/large-file/site matrices, twelve-role business qualification, complete Admin breadth, audio release/recovery, signed installation and full Codex Desktop parity remain open. All 102 original requirements and 26 gap groups remain in scope; no complete-product acceptance is implied.
+
+
+[Design and boundaries](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/86-shared-project-guidance-and-private-chat.md) · [Exact-source checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/shared-project-checkpoint.json) · [Additive API](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/project-configuration-openapi.json) · [Current gaps](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/2026-10-25-goal-gap-assessment.md)
+
+~~~mermaid
+flowchart TD
+    Login[Email or company identity / company / project] --> Cloud[Web and native Side Panel / cloud Codex]
+    Login --> Local[Frameless Desktop / customer-local Codex]
+    Owner[Project owner or admin] --> Draft[Save draft / preview exact dependencies]
+    Draft --> Publish[Explicit immutable publication]
+    Publish --> New[New work pins version and digest]
+    Old[Existing task or local thread] --> Retain[Retain original version or absence]
+    Cloud --> New
+    Local --> New
+    File[Explicit Side Panel file selection] --> Private[Actor-owned private conversation]
+    Private --> Upload[Resumable upload / verify actual bytes]
+    Upload --> Cloud
+    New --> Gate[Current source / role / permission / budget]
+    Retain --> Gate
+    Admin[Scoped Admin / separate body and cost access] --> Governance[Audit / quarantine / restore / erasure]
+    Governance --> Gate
+~~~
+
+Unedited actual UI and observed-time recordings. Provider content and native-dialog decisions are explicit fixtures; all owned browser/DB processes close.
+
+![Actual guidance / task](assets/screenshots/workmate-guidance-14-native-accepted-v3-attachment-en.png)
+
+![Actual controlled state](assets/screenshots/workmate-guidance-14-native-compact-settings-zh.png)
+
+![Recorded interaction](assets/screenshots/workmate-guidance-14-project-guidance-sidepanel.gif)
+
+[Original MP4](assets/screenshots/workmate-guidance-14-project-guidance-sidepanel.mp4)
+
+<details>
+<summary>Previous delivery details and historical evidence</summary>
+
 <!-- audio-authorizations-stage85 -->
 
 ChatGPT-style conversation and attachments live in the native Chrome right Side Panel, uploading authorized files to the cloud.
@@ -658,5 +729,8 @@ flowchart LR
 </details>
 
 </details>
+
+</details>
+
 
 </details>
