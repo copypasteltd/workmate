@@ -51,6 +51,7 @@ import { registerVideoProjects } from "./video-projects.js";
 import { registerGeneratedVideoJobs } from "./video-job-routes.js";
 import { registerAudioProduction } from "./audio-production-routes.js";
 import { registerPersistentWork } from "./persistent-work.js";
+import { registerProjectConfiguration } from "./project-configuration.js";
 import { registerAgentAdoption } from "./agent-adoption.js";
 import { registerAdminIdentities } from "./admin-identities.js";
 import { registerSchedules } from "./schedules.js";
@@ -389,6 +390,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerSeoChanges(app, db, catalog, storage);
   registerTaskEvents(app, db);
   registerPersistentWork(app, db, catalog);
+  registerProjectConfiguration(app, db, catalog);
   registerAgentAdoption(app, db, catalog);
   registerAgentTemplates(app, db, catalog);
   registerSkillLifecycle(app, db, catalog);

@@ -8,6 +8,7 @@ import { reserve } from "./billing.js";
 import { Problem } from "./lib.js";
 import type { WorkContext } from "./persistent-work.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
+import { freezeProjectConfiguration } from "./project-configuration.js";
 import {
   freezeTaskCapabilities,
   boundTaskAvailability,
@@ -142,6 +143,9 @@ export async function enqueueTask(
     b.budget_micros,
     b.mode,
   );
+  const projectConfiguration = await freezeProjectConfiguration(
+    tx, tenant, project, b.budget_micros, parent ? parent.input_context?.project_configuration ?? null : undefined,
+  );
   const task = (
     await tx.query(
       `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location)
@@ -163,6 +167,7 @@ export async function enqueueTask(
         options.context || options.execution_location === "desktop" ? actor.id : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
+          ...(projectConfiguration ? { project_configuration: projectConfiguration } : {}),
           ...(options.content_source_task_id
             ? { plan_source_task_id: options.content_source_task_id }
             : {}),

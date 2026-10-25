@@ -1,4 +1,5 @@
 import { prepareBrandProduction } from "./brand-production.js";
+import { resolveProjectConfiguration } from "./project-configuration.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
 import { AudioProduction } from "./audio-production.js";
 import { audioProductionToolSchema } from "./audio-production-model.js";
@@ -780,6 +781,25 @@ export class TaskBusinessTools {
             .strict(),
         ),
       });
+    if (t.input_context?.project_configuration && role.tool_ids.includes("asset.read")) tools.push({
+      name: "project_reference_read",
+      description: "Read an exact shared text file version selected in this task's published project brief. This does not select the latest file version or grant access to private files.",
+      inputSchema: { type: "object", properties: { asset_version_id: { type: "string" } }, required: ["asset_version_id"], additionalProperties: false },
+      run: txTool(async (tx, a) => {
+        const shared = await resolveProjectConfiguration(tx, t.tenant_id, t.project_id, t.input_context.project_configuration);
+        const reference = shared?.body.resolved.resources.find((r: any) => r.asset_version_id === a.asset_version_id);
+        if (!reference) throw new Problem(403, "PROJECT_REFERENCE_NOT_SELECTED", "Use an exact shared version selected in this task's project brief");
+        const v = (await tx.query(`SELECT v.* FROM asset_versions v JOIN assets a ON a.id=v.asset_id
+          WHERE v.id=$1 AND a.tenant_id=$2 AND a.project_id=$3 AND a.private_owner IS NULL AND a.state='active'
+          AND v.erased_at IS NULL AND a.retention_expires_at>clock_timestamp()`, [a.asset_version_id, t.tenant_id, t.project_id])).rows[0];
+        if (!v || !["text/plain", "text/csv", "application/json", "text/markdown"].includes(v.mime_type) || Number(v.bytes) > 200000)
+          throw new Problem(409, "PROJECT_REFERENCE_FORMAT", "Use the authorized file tools for non-text references or text larger than 200 KB");
+        const bytes = await this.storage.get(v.storage_key);
+        if (bytes.length !== Number(v.bytes) || hash(bytes) !== v.sha256) throw new Problem(409, "PROJECT_REFERENCE_CORRUPT", "The shared file bytes do not match their frozen version");
+        await recordTaskSourceRead(tx, t, "asset_version", v.id, v.id, v.sha256);
+        return { asset_version_id: v.id, sha256: v.sha256, text: bytes.toString("utf8") };
+      }, z.object({ asset_version_id: uuid }).strict()),
+    });
     const permitted = tools.filter(
       (tool) =>
         (
@@ -789,6 +809,7 @@ export class TaskBusinessTools {
               (role.tool_ids.includes("asset.read") ||
                 role.tool_ids.includes("connector.read")),
             project_assets: role.tool_ids.includes("asset.read"),
+            project_reference_read: !!t.input_context?.project_configuration && role.tool_ids.includes("asset.read"),
             asset_text_read: role.tool_ids.includes("asset.read"),
             cloud_files: role.tool_ids.includes("asset.read"),
             cloud_file_read: role.tool_ids.includes("asset.read"),
@@ -837,6 +858,7 @@ export class TaskBusinessTools {
           [
             "project_assets",
             "asset_text_read",
+            "project_reference_read",
             "cloud_files",
             "cloud_file_read",
             "marketing_metrics",

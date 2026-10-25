@@ -4,10 +4,13 @@ import pg from "pg";
 import { randomUUID } from "node:crypto";
 import { isolatedTestEnvironment } from "./native-test-environment.js";
 import { audioProviderFixture } from "./audio-production-fixture.js";
-import { nativeVideoFixture, startNativeVideo } from "./desktop-video-fixture.js";
+import { nativeVideoFixture, videoOK } from "./desktop-video-fixture.js";
 import { buildApp } from "../src/server.js";
 import { loadConfig } from "../src/config.js";
-import { taskCapabilities } from "../src/capability-bindings.js";
+import { freezeTaskCapabilities, taskCapabilities } from "../src/capability-bindings.js";
+import { freezeTaskSkills } from "../src/skill-lifecycle.js";
+import { authorizeTaskPlan } from "../src/plans.js";
+import { reserve } from "../src/billing.js";
 import { validateProductionAudio } from "../src/audio-production-media.js";
 import { saveAsset } from "../src/storage.js";
 import { canonical, hash } from "../src/lib.js";
@@ -33,9 +36,34 @@ test("populated SQL101 audio upgrade cancels unsubmitted work, retains unknown s
     await s.db.control.query("UPDATE ai_gateway_policy_heads SET policy_version_id=$1 WHERE data_mode='configured_services'", [policy.id]);
     const f = await nativeVideoFixture(s), index = s.catalog.roles.findIndex(role => role.role_key === "video-motion");
     const current = s.catalog.roles[index], historical = s.catalog.historicalRoles.find(role => role.role_key === "video-motion" && role.version === "1.3.0");
-    assert.ok(historical); let started: Awaited<ReturnType<typeof startNativeVideo>>;
-    try { s.catalog.roles[index] = historical; started = await startNativeVideo(s, f); } finally { s.catalog.roles[index] = current; }
-    const task = (await s.db.control.query("SELECT * FROM tasks WHERE id=$1", [started.task.task_id])).rows[0];
+    assert.ok(historical);
+    let task: any;
+    try {
+      s.catalog.roles[index] = historical;
+      // Seed an already-existing SQL101 task, rather than invoking current
+      // admission against a schema that intentionally predates SQL103.
+      const legacy = await s.db.tx(async tx => {
+        const user = (await tx.query("SELECT auth_version FROM users WHERE id=$1", [f.c.id])).rows[0];
+        const family = (await tx.query("SELECT family_id FROM refresh_tokens WHERE user_id=$1 AND client_id='desktop' AND revoked_at IS NULL", [f.c.id])).rows[0];
+        assert.ok(family);
+        const plan = await authorizeTaskPlan(tx, f.tenant, f.c.id, historical, 1000000);
+        const value = (await tx.query(`INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,
+          budget_micros,idempotency_key,actor_auth_version,mode,private_owner,input_context,plan_snapshot,execution_location)
+          VALUES($1,$2,$3,'Published SQL101 local audio task','Retain existing synthetic audio evidence',
+          'video-motion',$4,1000000,$5,$6,'execute',$3,'{}'::jsonb,$7,'desktop') RETURNING *`,
+        [f.tenant, f.project, f.c.id, system.catalog.digest(historical), randomUUID(), user.auth_version, plan])).rows[0];
+        await freezeTaskCapabilities(tx, system.db.config, system.catalog, value);
+        await freezeTaskSkills(tx, system.catalog, value);
+        await reserve(tx, f.tenant, value.id, 1000000);
+        await tx.query(`INSERT INTO desktop_executions(task_id,tenant_id,project_id,actor_id,device_id,local_session_id,
+          native_family_id,workspace_hash,runtime_sha256) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [value.id, f.tenant, f.project, f.c.id, f.fields.device_id, f.fields.local_session_id, family.family_id,
+          f.fields.workspace_hash, f.fields.runtime_sha256]);
+        return value;
+      }, f.tenant, true, f.c.id);
+      await videoOK(s, f.c, "POST", f.base + "/desktop-executions/" + legacy.id + "/start", f.fields);
+      task = (await s.db.control.query("SELECT * FROM tasks WHERE id=$1", [legacy.id])).rows[0];
+    } finally { s.catalog.roles[index] = current; }
     const probe = await validateProductionAudio(s.db.config, provider.bytes, "audio/wav");
     const ids: string[] = [];
     for (const state of ["prepared", "dispatched", "completed"]) {
@@ -68,7 +96,7 @@ test("populated SQL101 audio upgrade cancels unsubmitted work, retains unknown s
       await tx.query("INSERT INTO ai_audio_job_artifacts(job_id,revision,kind,asset_id,asset_version,created_by,reason) VALUES($1,0,'audio',$2,1,$3,'Original published decoded fixture')", [ids[2], value.id, f.c.id]);
       return value;
     }, f.tenant, true, f.c.id);
-    await owner.connect(); await runMigrations(owner, "populated SQL101 audio consent upgrade");
+    await owner.connect(); await runMigrations(owner, "populated SQL101 audio consent upgrade", { throughVersion: 102 });
     assert.equal((await owner.query("SELECT max(version) AS v FROM schema_migrations")).rows[0].v, 102);
     const rows = (await s.db.control.query("SELECT * FROM ai_audio_jobs WHERE id=ANY($1)", [ids])).rows;
     const prepared = rows.find(row => row.id === ids[0]), unknown = rows.find(row => row.id === ids[1]), retained = rows.find(row => row.id === ids[2]);
@@ -84,8 +112,18 @@ test("populated SQL101 audio upgrade cancels unsubmitted work, retains unknown s
     assert.equal((await audio.preview(actor, f.tenant, f.project, retained.id, "audio")).sha256, hash(provider.bytes));
     const originalObject = (await s.db.control.query("SELECT storage_key FROM asset_versions WHERE id=$1", [asset.version.id])).rows[0];
     assert.deepEqual(await s.storage.get(originalObject.storage_key), provider.bytes);
-    await runMigrations(owner, "unchanged SQL102 audio consent replay");
+    await runMigrations(owner, "unchanged SQL102 audio consent replay", { throughVersion: 102 });
     assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audio_authorizations")).rows[0].n, 0);
+    await runMigrations(owner, "populated SQL102 shared guidance forward upgrade");
+    assert.equal((await owner.query("SELECT max(version) AS v FROM schema_migrations")).rows[0].v, 103);
+    assert.deepEqual((await s.db.control.query("SELECT * FROM ai_audio_jobs WHERE id=ANY($1) ORDER BY id", [ids])).rows,
+      [...rows].sort((a, b) => a.id.localeCompare(b.id)));
+    assert.deepEqual((await s.db.control.query("SELECT input_context FROM tasks WHERE id=$1", [task.id])).rows[0].input_context, {});
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM project_configurations")).rows[0].n, 0);
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audio_authorizations")).rows[0].n, 0);
+    assert.deepEqual(await s.storage.get(originalObject.storage_key), provider.bytes);
+    await runMigrations(owner, "unchanged SQL103 shared guidance replay");
+    assert.deepEqual((await s.db.control.query("SELECT * FROM ai_audio_jobs WHERE id=$1", [retained.id])).rows[0], retained);
     assert.equal(provider.calls.length, 0);
   } finally {
     await owner.end().catch(() => {});

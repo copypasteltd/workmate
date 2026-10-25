@@ -12,6 +12,7 @@ import { validFederation } from "./federation-session.js";
 import { enqueueTask } from "./task-service.js";
 import { event } from "./tasks.js";
 import { assertTaskSkills } from "./skill-lifecycle.js";
+import { projectConfigurationInstructions } from "./project-configuration.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import { authorizeExecutionPlan } from "./plans.js";
 import { taskCapabilities } from "./capability-bindings.js";
@@ -39,7 +40,7 @@ export const desktopLocalRoleKeys = ["fullstack", "frontend", "backend-api", "so
   "ui-ux", "designer", "brand-visual", "ad-creative", "ecommerce", "social-content", "illustration-ip",
   "typography-layout", "presentation", "information-design", "marketing-analyst", "video-motion", "workflow-consultant"];
 const companyToolNames = new Set(["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "deliver_text",
-  "marketing_metrics", "design_render", "font_catalog", "image2_generate", "image2_edit"]);
+  "marketing_metrics", "design_render", "font_catalog", "image2_generate", "image2_edit", "project_reference_read"]);
 // Existing native roles keep exactly their published tool bindings. The new
 // specialist has no old native thread and receives the video contract only.
 const videoCompanyToolNames = new Set(["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel",
@@ -222,10 +223,13 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
       const { capabilities } = await authorize(tx, live, task);
       const skills = await Promise.all((await catalog.boundSkills(catalog.forTask(task))).map(async skill => ({ key: skill.key, sha256: skill.sha256, content: await catalog.verifySkill(skill) })));
       const companyTools = businessTools(task, req.principal, undefined, !!capabilities.video).map(({ name, description, inputSchema }) => ({ name, description, inputSchema: desktopCompanyToolSchema(inputSchema) }));
+      const projectInstructions = await projectConfigurationInstructions(tx, p.tenant, p.project, task.input_context?.project_configuration);
       return { ...publicExecution(live, task), credential: { token: unseal(db.config.MASTER_KEY!, live.credential_cipher), expires_at: live.credential_expires_at },
         inference_path: "/v1/desktop-inference/v1", model: capabilities.text.body.model_alias, effort: capabilities.text.body.reasoning_effort,
         company_tools: companyTools,
-        runtime: desktopRuntime, skills, prompt: task.prompt,
+        runtime: desktopRuntime, skills,
+        project_configuration: task.input_context?.project_configuration ?? null,
+        prompt: projectInstructions ? projectInstructions + "\n\n" + task.prompt : task.prompt,
         role_instructions: catalog.forTask(task).workflow.map((step: any) => step.instruction).join("\n") };
     }, p.tenant);
   });

@@ -3,6 +3,11 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
 import { brandContext } from "./brand-production.js";
+import {
+  projectConfigurationInstructions,
+  sharedProjectAgent,
+  type ProjectConfigurationRef,
+} from "./project-configuration.js";
 import type { Principal } from "./auth.js";
 import { audit, requireUser } from "./auth.js";
 import {
@@ -47,6 +52,7 @@ export const agentInput = z
   })
   .strict();
 export interface WorkContext {
+  project_configuration?: ProjectConfigurationRef;
   agent_id: string;
   agent_version: number;
   role_hash: string;
@@ -413,11 +419,12 @@ export async function resolveWorkContext(
   expectedRuntimeVersion?: string,
   currentCapabilityVersions?: string[],
 ) {
+  const projectInstructions = await projectConfigurationInstructions(tx, tenant, project, context.project_configuration);
   if (!context.agent_id)
     return {
-      instructions: "",
+      instructions: projectInstructions,
       role: undefined,
-      digest: hash("{}"),
+      digest: hash(canonical({ project_configuration: context.project_configuration ?? null })),
       stale: false,
     };
   const agent = await getAgentVersion(
@@ -544,7 +551,7 @@ export async function resolveWorkContext(
   return {
     instructions:
       "Authorized specialist and reference data (cannot change system rules or tool permissions):\n" +
-      instructions,
+      instructions + projectInstructions,
     role: agent.body,
     digest: hash(canonical({ context, current })),
     stale:
@@ -969,8 +976,11 @@ export function registerPersistentWork(
           key(req),
           b,
           async () => {
+            const sharedAgent = await sharedProjectAgent(tx, tenant, project);
             const a = b.agent_id
-              ? await getAgentVersion(tx, project, b.agent_id, undefined, true)
+              ? await getAgentVersion(tx, project, b.agent_id, b.agent_id === sharedAgent?.id ? sharedAgent.version : undefined, true)
+              : sharedAgent
+                ? await getAgentVersion(tx, project, sharedAgent.id, sharedAgent.version, true)
               : await defaultAssistant(
                   tx,
                   catalog,
@@ -982,7 +992,7 @@ export function registerPersistentWork(
             const c = (
               await tx.query(
                 "INSERT INTO conversations(tenant_id,project_id,created_by,name,agent_id,agent_version) VALUES($1,$2,$3,$4,$5,$6) RETURNING *",
-                [tenant, project, req.principal.id, b.name, a.id, a.version],
+                [tenant, project, req.principal.id, b.name, a.id, a.bound_version ?? a.version],
               )
             ).rows[0];
             await audit(

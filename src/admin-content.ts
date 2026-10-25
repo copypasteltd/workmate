@@ -31,6 +31,7 @@ const tables = [
   "conversations",
   "memories",
   "workspace_nodes",
+  "project_configurations",
 ] as const;
 async function find(tx: Tx, id: string) {
   for (const table of tables) {
@@ -157,7 +158,10 @@ export function registerAdminContent(
             };
           }
           const body =
-            table === "geo_samples"
+            table === "project_configurations"
+              ? { draft: r.draft, revision: r.version, current_version: r.current_version,
+                  versions: (await tx.query("SELECT version,body,sha256,created_at FROM project_configuration_versions WHERE configuration_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100", [r.id])).rows }
+              : table === "geo_samples"
               ? { question: r.body.question, run_id: r.run_id, task_id: r.task_id, asset_version_id: r.asset_version_id,
                   answer_sha256: r.answer_sha256, observed_at: r.observed_at, captured_at: r.captured_at, analysis: r.analysis }
               : table === "geo_runs"
@@ -285,11 +289,11 @@ export function registerAdminContent(
                   "Permanently deleted content cannot be changed or restored",
                 );
               if (b.action === "metadata") {
-                if (table === "agents")
+                if (table === "agents" || table === "project_configurations")
                   throw new Problem(
                     400,
                     "AGENT_VERSION_REQUIRED",
-                    "Specialist names and instructions change through a new specialist version",
+                    "Names and instructions change through a new reviewed publication",
                   );
                 if (!b.name || table === "workflow_runs")
                   throw new Problem(
@@ -317,7 +321,10 @@ export function registerAdminContent(
                 }
                 if (table === "workflow_schedules" && b.action === "delete")
                   await eraseSchedule(tx, id);
-                await tx.query(
+                if (b.action === "delete" && table === "project_configurations") {
+                  await eraseReplayContent(tx, [id]);
+                  await tx.query("UPDATE project_configurations SET draft='{}',content_state='deleted',version=version+1,moderation_version=moderation_version+1 WHERE id=$1", [id]);
+                } else await tx.query(
                   `UPDATE ${table} SET ${state}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
                   [
                     id,
