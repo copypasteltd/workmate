@@ -1,8 +1,45 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- editable-design-stage92 -->
+
+## 可编辑品牌稿与演示文稿交付
+
+阶段 92 已接通品牌视觉与演示文稿的真实交付工具。品牌稿提供可编辑及转曲 SVG；演示文稿提供原生可编辑文字、形状、路径及图表条形的 PPTX，并提供逐页 SVG/PNG、PDF/HTML 核对、证据 CSV、固定源稿、清单和含授权字体的 ZIP。93 项相关后端测试与 8 项真实浏览器检查通过；Codex 进程、权限、实际文件和账本均真实运行，模型及示例内容为明确假数据。
+
+1. 在角色目录建立品牌或演示文稿专业助手，明确受众、原文、素材和品牌，主动选择 Execute 并确认预算。Ask/Plan 不生成文件。
+2. 从 Assets & deliverables 下载实际可编辑文件和 ZIP。演示文稿必须先 slides_build，再以返回的实际源版本和散列 slides_render；保存源稿不等于完成交付。
+3. 在实际离线 HTML 或 PDF 逐页核对，针对原源稿请求修改。新版本保留旧文件，重复工具请求复用回执，原生渲染不额外调用 AI 或收取 AI 费用。
+4. 图表只能选择确定性分析的真实证据 ID，币种、账户、指标、归因和日期分别保留；已绑定品牌的角色必须使用固定版本及获准渠道和语言，遗漏或替换会被拒绝。私有权限与来源隔离约束所有衍生文件。
+
+```mermaid
+flowchart LR
+  A[Customer brief and fixed role] --> B[Authorized source versions]
+  B --> C[Codex and design Skill]
+  C --> D[Structured scene and validated layout]
+  D --> E[Editable SVG or native-object PPTX]
+  E --> F[Private downloads and page review]
+  F --> G[Read source and create immutable revision]
+```
+
+Desktop 的 Codex 继续在客户本机运行。1.1.0 专员通过真实原生登录桥接使用这些公司文件工具；读取旧稿还要求同一设备、原生登录授权、会话及工作目录，其他本机会话不能读取该私有源稿。后台核查执行真实原生授权、协议准入、工具交付和源稿修改；下方新增录制展示 Web 流程及下载后的源稿核对，不作为新的 Desktop 界面录制。
+
+SQL001–105 后依次应用 **SQL106**、**SQL107** 并安装固定依赖。后者将私有设计稿绑定至精确来源，保留明确发布操作的原有权限。两类角色及各自制作 Skill 为 1.1.0，保留原有 37 个 Skill 包字节。ZIP 附由 Noto Sans TC 固定来源派生的 CopyPaste Sans TC 常规/粗体静态字体及 OFL 许可，并保留原可变字体字节作为来源，PPTX 不嵌入字体。**PDF/PNG/HTML 是固定源稿核对，不是 PowerPoint 渲染**；发布前在目标编辑器核对实际字体排版。图表是可编辑原生条形和标签，附精确 CSV，不是内嵌 Excel 图表。当前品牌绑定的可编辑导出使用 Noto Sans TC；其他授权自定义字体使用既有品牌排版渲染器。角色专业质量及客户验收仍未证明完成。
+
+[方案与使用逻辑](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/92-editable-brand-and-presentation.md) · [源码绑定检查](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/editable-design-checkpoint.json)
+
+![Actual vector review / 实际矢量稿](design/implementation/workmate-editable-design-06-vector-review.png)
+
+![Actual slide review / 实际演示核对](design/implementation/workmate-editable-design-06-slide-review-2.png)
+
+![Actual 375px review / 实际窄屏核对](design/implementation/workmate-editable-design-06-review-375.png)
+
+![Actual navigation and revision / 实际浏览与修改](design/implementation/workmate-editable-design-06-editable-design-review.gif)
+
+[Work GIF](design/implementation/workmate-editable-design-06-editable-design-work.gif) · [Work MP4](design/implementation/workmate-editable-design-06-editable-design-work.mp4) · [Review MP4](design/implementation/workmate-editable-design-06-editable-design-review.mp4)
+
 <!-- cloud-workflows-stage91 -->
 
-## 私有云端流程交付
+## 历史验证：私有云端流程（阶段 91）
 
 阶段 91 已接通流程顾问的私有云端执行：真实固定版 Codex 准备不可变流程，客户核对步骤、预算并主动确认后执行，遇人工审批再次暂停。55 项相关后端回归与 8 项真实浏览器检查通过，包含私有文件下载、子任务单次预留/结算、修改版本、取消、来源隔离和重复请求。模型回复与账户数据按要求使用假数据；工具、数据库、原生 Codex、文件及页面交互实际运行。
 
