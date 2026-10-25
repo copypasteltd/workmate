@@ -9,6 +9,7 @@ import { BrowserToolError, type BrowserOwner, type LocalBrowserSession } from ".
 export interface LocalAgentScope { tenant: string; project: string }
 interface Operation {
   createKey: string; startKey: string; finishKey: string; cancelKey: string;
+  dispatchId?: string;
   prompt: string; budget: number; taskId?: string;
   phase: "accepting" | "starting" | "native_running" | "settling" | "uncertain";
   stopped?: boolean;
@@ -24,8 +25,13 @@ interface LocalRecord extends LocalAgentScope {
   uncertain?: boolean;
   companyToolsVersion?: 1;
   browserToolsVersion?: 1;
+  dispatches?: LocalDispatchReceipt[];
   messages: { role: "user" | "assistant"; text: string; status?: string }[];
   events: { kind: string; value: Record<string, unknown> }[];
+}
+export interface LocalDispatchReceipt {
+  id: string; digest: string; state: "pending" | "succeeded" | "failed" | "uncertain" | "cancelled";
+  taskId?: string;
 }
 export interface LocalAgentJournal { schema: 1; deviceId: string; sessions: LocalRecord[] }
 export interface LocalAgentIO {
@@ -218,10 +224,60 @@ export class LocalAgentController {
   async retry(id: string) {
     const r = await this.record(id); if (r.operation?.phase !== "settling" && !r.operation?.stopped) this.grant(r);
     if (this.busy.has(id) || !r.operation || !["accepting", "starting", "settling"].includes(r.operation.phase)) throw new LocalAgentError("LOCAL_REPLAY_NOT_ALLOWED");
+    if (r.operation.dispatchId && r.operation.phase !== "settling" && !r.operation.stopped) throw new LocalAgentError("LOCAL_DISPATCH_RESUME_REQUIRED");
     return this.execute(r);
   }
-  private async execute(r: LocalRecord) {
+  async schedulingOwner(id: string) {
+    const r = await this.withdrawalRecord(id);
+    return { actorId: r.actorId, epoch: r.epoch, tenant: r.tenant, project: r.project, workspace: r.workspace,
+      permission: r.revoked ? null : r.grant?.mode ?? null, revoked: r.revoked,
+      grantRevision: r.grant?.revision, expiresAt: r.grant?.expiresAt ?? 0 };
+  }
+  async schedulingContext(id: string) {
+    const r = await this.record(id);
+    await this.api(r, this.base(r) + "/runtime");
+    if (await this.record(id) !== r) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+    return { ...await this.schedulingOwner(id), role: r.role, permission: r.revoked ? null : r.grant?.mode ?? null,
+      grantRevision: r.grant?.revision, revoked: r.revoked, busy: this.busy.has(id), pending: !!r.operation, uncertain: !!r.uncertain };
+  }
+  /** A durable caller id is committed with the native operation and its terminal
+   * receipt. A queue crash between these two journals cannot create a second task. */
+  async dispatch(id: string, dispatchId: string, prompt: string, budget: number, beforeNative?: () => Promise<void>): Promise<LocalDispatchReceipt> {
+    if (!uuid.test(dispatchId) || typeof prompt !== "string" || !prompt.trim() || prompt.length > 30000
+      || !Number.isSafeInteger(budget) || budget < 10000 || budget > 10000000000) throw new LocalAgentError("LOCAL_REQUEST_INVALID");
+    const r = await this.record(id), digest = hash(JSON.stringify([prompt.trim(), budget]));
+    r.dispatches ??= [];
+    let receipt = r.dispatches.find(row => row.id === dispatchId);
+    if (receipt) {
+      if (receipt.digest !== digest) throw new LocalAgentError("LOCAL_DISPATCH_CONFLICT");
+      if (receipt.state !== "pending") return structuredClone(receipt);
+      if (r.operation?.dispatchId !== dispatchId) throw new LocalAgentError("LOCAL_DISPATCH_RECONCILIATION_REQUIRED");
+      if (this.busy.has(id)) return structuredClone(receipt);
+      if (r.operation.phase !== "settling" && !r.operation.stopped) this.grant(r);
+    } else {
+      this.grant(r);
+      if (this.busy.has(id) || this.permissions.has(id) || r.operation || r.uncertain) throw new LocalAgentError("LOCAL_OPERATION_PENDING");
+      if (r.dispatches.length >= 1000) throw new LocalAgentError("LOCAL_DISPATCH_LIMIT");
+      receipt = { id: dispatchId, digest, state: "pending" }; r.dispatches.push(receipt);
+      r.operation = { dispatchId, createKey: randomUUID(), startKey: randomUUID(), finishKey: randomUUID(), cancelKey: randomUUID(),
+        prompt: prompt.trim(), budget, phase: "accepting" };
+      r.messages.push({ role: "user", text: prompt.trim() }); r.error = undefined;
+    }
+    await this.persist();
+    if (!this.busy.has(id)) await this.execute(r, beforeNative);
+    return structuredClone(receipt);
+  }
+  private dispatchFinished(r: LocalRecord, op: Operation) {
+    if (!op.dispatchId) return;
+    const receipt = r.dispatches?.find(row => row.id === op.dispatchId);
+    if (!receipt) throw new LocalAgentError("LOCAL_DISPATCH_RECONCILIATION_REQUIRED");
+    receipt.taskId = op.taskId;
+    receipt.state = r.uncertain || r.lastTask?.status === "reconciling" ? "uncertain"
+      : r.lastTask?.status === "succeeded" ? "succeeded" : r.lastTask?.status === "cancelled" ? "cancelled" : "failed";
+  }
+  private async execute(r: LocalRecord, beforeNative?: () => Promise<void>) {
     if (this.closed) throw new LocalAgentError("LOCAL_APP_CLOSED");
+    if (this.busy.has(r.id)) throw new LocalAgentError("LOCAL_OPERATION_PENDING");
     const op = r.operation!; this.busy.add(r.id); this.io.changed();
     const generation = this.generation, base = this.base(r), journal = await this.state();
     const fields = { device_id: journal.deviceId, local_session_id: r.id, workspace_hash: r.workspaceHash, runtime_version: this.io.runtime.version, runtime_sha256: this.io.runtime.sha256 };
@@ -254,6 +310,7 @@ export class LocalAgentController {
       }
       r.messages.push({ role: "assistant", text: op.report!.output, status: r.lastTask.status });
       r.uncertain ||= op.report!.status === "unknown" || r.lastTask.status === "reconciling";
+      this.dispatchFinished(r, op);
       r.operation = undefined; if (!r.uncertain) r.error = undefined; await this.persist();
     };
     try {
@@ -269,6 +326,7 @@ export class LocalAgentController {
           r.lastTask = await this.api(r, taskURL + "/cancel", "POST", {}, op.cancelKey);
           if (["finished", "reconciling"].includes(r.lastTask.state)) {
             r.uncertain ||= r.lastTask.state === "reconciling";
+            this.dispatchFinished(r, op);
             r.operation = undefined; await this.persist(); return this.view(r);
           }
           // The server may already have accepted a start whose response was
@@ -289,6 +347,7 @@ export class LocalAgentController {
           if (live.cancel_requested || live.state !== "running" || live.status !== "running") throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
           r.lastTask = live;
         };
+        await beforeNative?.(); await assertOwner();
         const profile: LocalCodexProfile = { executable: this.io.executable, version: this.io.runtime.version, executableSha256: this.io.runtime.sha256,
           companyOrigin: this.io.companyOrigin, baseURL: this.io.companyOrigin + started.inference_path, model: started.model, effort: started.effort };
         const browser = r.browserToolsVersion === 1 ? this.createBrowser(r, active, op.taskId!, r.id, authorize) : undefined;
@@ -510,7 +569,7 @@ export class LocalAgentController {
     if (!active && !remoteError && cancelled && r.operation === op && op && ["accepting", "starting"].includes(op.phase)) {
       r.lastTask = cancelled;
       if (["finished", "reconciling"].includes(cancelled.state)) {
-        r.uncertain ||= cancelled.state === "reconciling"; r.operation = undefined; await this.persist();
+        r.uncertain ||= cancelled.state === "reconciling"; this.dispatchFinished(r, op); r.operation = undefined; await this.persist();
       } else {
         op.report = { status: "failed", output: "", thread_id: "unknown", turn_id: "unknown" };
         op.phase = "settling"; await this.persist();

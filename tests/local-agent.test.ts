@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import path from "node:path";
-import { LocalAgentController, type LocalAgentIO, type LocalAgentJournal, type LocalAgentRuntime } from "../src/local-agent.js";
+import { LocalAgentController, type LocalAgentIO, type LocalAgentJournal, type LocalAgentRuntime, type LocalRuntimeFactory } from "../src/local-agent.js";
 import { localRuntimeLock } from "../src/local-runtime.js";
 import { rendererApiOperation } from "../src/config.js";
 import type { LocalCodexHooks } from "../src/local-codex.js";
@@ -113,7 +113,7 @@ async function fixture() {
       throw new Error("Unexpected fixture request");
     },
   };
-  const controller = new LocalAgentController(io, (_profile, binding, hooks) => {
+  const factory: LocalRuntimeFactory = (_profile, binding, hooks) => {
     runtimeHooks.push(hooks);
     grants.push(binding.grant); let aborted: (() => void) | undefined;
     const runtime: LocalAgentRuntime = {
@@ -126,14 +126,77 @@ async function fixture() {
       close: async () => { aborted?.(); }, interrupt: async () => { aborted?.(); }, revoke: async () => { aborted?.(); },
     };
     runtimes.push(runtime); return runtime;
-  });
+  };
+  const controller = new LocalAgentController(io, factory);
   const create = async () => (await controller.create(scope, "fullstack"))!;
   const clean = async () => { await controller.close(); assert.equal(path.dirname(directory), parent); await rm(directory, { recursive: true, force: true }); };
-  return { controller, io, scope, actor, calls, grants, runtimes, runtimeHooks, create, clean, turns: () => turns, created: () => created,
+  return { controller, io, factory, scope, actor, calls, grants, runtimes, runtimeHooks, create, clean, turns: () => turns, created: () => created,
     setConsent: (v: boolean) => { consent = v; }, loseFinish: () => { finishLost = true; }, failStart: () => { startFailure = true; }, loseStart: () => { startLost = true; }, loseCreate: () => { createLost = true; },
     pending: (fn: () => Promise<any>) => { pendingTurn = fn; }, journal: () => structuredClone(journal),
   };
 }
+test("durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn", async () => {
+  const f = await fixture(); let restored: LocalAgentController | undefined;
+  try {
+    const s = await f.create(); await f.controller.permission(s.id, "workspace-write"); const id = randomUUID();
+    const first = await f.controller.dispatch(s.id, id, "Process one frozen file", 10000);
+    assert.equal(first.state, "succeeded"); assert.ok(first.taskId);
+    await assert.rejects(f.controller.dispatch(s.id, id, "Different file", 10000), { code: "LOCAL_DISPATCH_CONFLICT" });
+    await assert.rejects(f.controller.dispatch(s.id, id, "Process one frozen file", 20000), { code: "LOCAL_DISPATCH_CONFLICT" });
+    await f.controller.close();
+    restored = new LocalAgentController(f.io, () => { throw new Error("A terminal dispatch must not restart Codex"); });
+    assert.deepEqual(await restored.dispatch(s.id, id, "Process one frozen file", 10000), first);
+    assert.equal(f.created(), 1); assert.equal(f.turns(), 1);
+    f.actor.epoch = randomUUID(); await assert.rejects(restored.dispatch(s.id, id, "Process one frozen file", 10000), { code: "LOCAL_SESSION_NOT_FOUND" });
+  } finally { await restored?.close(); await f.clean(); }
+});
+for (const lost of ["create", "start", "finish"] as const) test("file dispatch recovers a lost " + lost + " response under the original request ids", async () => {
+  const f = await fixture(); let restored: LocalAgentController | undefined;
+  try {
+    const s = await f.create(); await f.controller.permission(s.id, "full-access"); const id = randomUUID();
+    if (lost === "create") f.loseCreate(); else if (lost === "start") f.loseStart(); else f.loseFinish();
+    await assert.rejects(f.controller.dispatch(s.id, id, "One paid file only", 10000));
+    await f.controller.close(); restored = new LocalAgentController(f.io, f.factory);
+    const receipt = await restored.dispatch(s.id, id, "One paid file only", 10000);
+    assert.equal(receipt.state, "succeeded"); assert.equal(f.created(), 1); assert.equal(f.turns(), 1);
+    for (const suffix of ["/desktop-executions", "/start", "/finish"]) {
+      const calls = f.calls.filter(call => call.url.endsWith(suffix));
+      assert.equal(new Set(calls.map(call => call.idempotencyKey)).size, 1);
+    }
+  } finally { await restored?.close(); await f.clean(); }
+});
+test("concurrent replay of the same dispatch id never runs a second task", async () => {
+  const f = await fixture(); try {
+    const s = await f.create(); await f.controller.permission(s.id, "workspace-write"); const id = randomUUID();
+    const receipts = await Promise.all([f.controller.dispatch(s.id, id, "Same frozen file", 10000), f.controller.dispatch(s.id, id, "Same frozen file", 10000)]);
+    assert.ok(receipts.some(receipt => receipt.state === "succeeded")); assert.equal(f.created(), 1); assert.equal(f.turns(), 1);
+  } finally { await f.clean(); }
+});
+test("a running dispatch recovered after a crash reports unknown and never restarts the possibly accepted native action", async () => {
+  const f = await fixture(); let restored: LocalAgentController | undefined;
+  try {
+    const s = await f.create(); await f.controller.permission(s.id, "workspace-write"); const id = randomUUID(); f.loseStart();
+    await assert.rejects(f.controller.dispatch(s.id, id, "Possibly accepted native file", 10000));
+    const journal = f.journal()!; journal.sessions[0].operation!.phase = "native_running"; await f.io.write(journal);
+    await f.controller.close(); restored = new LocalAgentController(f.io, () => { throw new Error("Unknown native action must not be repeated"); });
+    const receipt = await restored.dispatch(s.id, id, "Possibly accepted native file", 10000);
+    assert.equal(receipt.state, "uncertain"); assert.equal(f.turns(), 0); assert.equal(f.created(), 1);
+    assert.equal((await restored.list(f.scope)).sessions[0].uncertain, true);
+  } finally { await restored?.close(); await f.clean(); }
+});
+
+test("a queued file must revalidate its source before native startup; conversation retries cannot bypass the folder rule", async () => {
+  const f = await fixture(); try {
+    const s = await f.create(); await f.controller.permission(s.id, "workspace-write"); const id = randomUUID(); f.loseCreate();
+    await assert.rejects(f.controller.dispatch(s.id, id, "Recheck the queued file", 10000));
+    await assert.rejects(f.controller.retry(s.id), { code: "LOCAL_DISPATCH_RESUME_REQUIRED" });
+    await assert.rejects(f.controller.dispatch(s.id, id, "Recheck the queued file", 10000, async () => { throw new Error("LOCAL_SCHEDULE_FILE_CONFLICT"); }), /LOCAL_SCHEDULE_FILE_CONFLICT/);
+    assert.equal(f.turns(), 0); assert.equal(f.created(), 1);
+    const replay = await f.controller.dispatch(s.id, id, "Recheck the queued file", 10000, async () => { assert.fail("Terminal receipt needs no new file access"); });
+    assert.equal(replay.state, "failed"); assert.equal(f.calls.filter(call => call.url.endsWith("/finish")).at(-1).body.status, "failed");
+  } finally { await f.clean(); }
+});
+
 test("a folder selection grants no execution permission; declined native consent never starts tools or reserves money", async () => {
   const f = await fixture(); try {
     const s = await f.create(); assert.equal(s.permission, null);

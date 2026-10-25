@@ -11,6 +11,7 @@ import { Money, useI18n } from "./ui";
 import "./local-agent.css";
 import type { LocalPendingInput, LocalInputAnswers } from "../../src/local-input";
 import { LocalVideoJobs, type LocalVideoJob } from "./local-video";
+import { LocalFolderSchedules } from "./local-schedules";
 
 type Permission = "read-only" | "workspace-write" | "full-access";
 interface LocalSession {
@@ -114,6 +115,8 @@ export function LocalAgentWorkspace() {
     return () => { alive = false; off(); clearInterval(poll); if (timer) clearTimeout(timer); };
   }, [w.tenant, w.project]);
   const session = sessions.find(s => s.id === selected);
+  const [panel, setPanel] = useState("chat");
+  useEffect(() => setPanel("chat"), [session?.id]);
   const videoTaskIds = [...new Set([session?.task?.task_id, ...(session?.events ?? []).slice().reverse()
     .filter(event => event.kind === "local.company-tool.completed").map(event => event.value.generated_video?.task_id ?? event.value.audio?.task_id)]
     .filter((id): id is string => typeof id === "string" && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id)))];
@@ -149,11 +152,13 @@ export function LocalAgentWorkspace() {
     return found;
   }, new Map<string, any>()).values()];
   useEffect(() => {
+    if (panel !== "chat") return;
     const scroller = messages.current, card = scroller?.querySelector<HTMLElement>(".local-agent-input");
     if (session?.inputs?.length && scroller && card) {
       scroller.scrollTop += card.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+      if (!card.contains(document.activeElement)) card.querySelector<HTMLElement>("input,textarea")?.focus({ preventScroll: true });
     } else end.current?.scrollIntoView({ block: "nearest" });
-  }, [session?.id, session?.messages.length, session?.inputs?.[0]?.requestId, stream]);
+  }, [session?.id, session?.messages.length, session?.inputs?.[0]?.requestId, stream, panel]);
   const act = async (action: string, payload: unknown) => {
     setPending(true); setError("");
     try { const result = await native(action, payload); if (result?.id) setSelected(result.id); }
@@ -176,6 +181,8 @@ export function LocalAgentWorkspace() {
       ? t("專案共用指引的資料已不可用。請到「我的專案」檢查指引及資料授權，再繼續工作。", "Shared project guidance is unavailable. Open My projects to review the guidance and access to its sources, then continue your work.")
       : error === "PROJECT_BUDGET_EXCEEDED"
         ? t("本次預算超過專案上限。請降低工作預算，或請專案管理員更新共用指引中的上限。", "This turn exceeds the project budget limit. Reduce the turn budget or ask a project administrator to update the limit in shared guidance.")
+        : error === "LOCAL_DISPATCH_RESUME_REQUIRED"
+          ? t("此工作由目錄規則建立。請到「目錄工作」核對原檔、額度和剩餘項目，再確認啟用。", "This task belongs to a folder rule. Open Folder work to review the input, limits and remaining items, then confirm activation.")
         : <>{t("操作未完成：", "Action incomplete: ")}{error}</>}</div>}
     <div className="local-agent-grid"><aside className="local-agent-sessions" tabIndex={0} aria-label={t("本機工作目錄與會話", "Local workspaces and sessions")}>
       <ProjectConfigurationSummary compact />
@@ -191,9 +198,10 @@ export function LocalAgentWorkspace() {
           <option value="read-only">{t("唯讀", "Read only")}</option><option value="workspace-write">{t("目錄內讀寫", "Workspace write")}</option><option value="full-access">{t("完整本機權限", "Full local access")}</option></select>
           <button className="button" disabled={pending || session.busy || session.revoked} onClick={() => void act("permission", { id: session.id, mode })}>{t("設定授權", "Set permission")}</button>
           <button className="icon-button" aria-label={t("撤銷本機權限", "Revoke local permission")} disabled={session.revoked} onClick={() => void native("revoke", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><X size={17}/></button></div></div>
-        <div className="local-agent-safety">{t("目前授權：", "Current permission: ")}{session.permission ? t(...({ "read-only": ["唯讀", "Read only"], "workspace-write": ["目錄內讀寫", "Workspace write"], "full-access": ["完整本機權限", "Full local access"] } as Record<Permission, [string, string]>)[session.permission]) : t("尚未授權", "Not granted")}
-          <span>{t("模型服務經公司伺服器", "Model service via company server")}</span></div>
-        <div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">
+        <div className="local-agent-navigation"><nav className="local-agent-tabs" aria-label={t("本機工作檢視", "Local work views")}><button aria-label={t("對話", "Conversation")} aria-pressed={panel === "chat"} onClick={() => setPanel("chat")}>{t("對話", "Conversation")}{!!session.inputs?.length && <span className="local-agent-question-count" aria-hidden="true">{session.inputs.length}</span>}</button><button aria-pressed={panel === "folders"} onClick={() => setPanel("folders")}><FolderOpen size={14}/>{t("目錄工作", "Folder work")}</button></nav>
+          <div className="local-agent-safety">{session.permission ? <>{t("已授權：", "Granted: ")}{t(...({ "read-only": ["唯讀", "Read only"], "workspace-write": ["目錄內讀寫", "Workspace write"], "full-access": ["完整本機權限", "Full local access"] } as Record<Permission, [string, string]>)[session.permission])}</> : t("尚未授權", "Not granted")}
+            <span className="local-agent-service">{t("模型服務經公司伺服器", "Model service via company server")}</span></div></div>
+        <div className="local-agent-chat" hidden={panel !== "chat"}><div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">
           <ProjectConfigurationSummary taskId={session.task?.task_id} compact />{session.messages.length === 0 && <div className="local-agent-empty"><Terminal size={30}/><h2>{t("把想法變成檔案", "Turn an idea into files")}</h2><p>{t("先設定本機權限，再描述你想完成的工作。完整本機權限需要你在系統對話框中確認。", "Set local permission, then describe the work. Full local access requires your confirmation in a native dialog.")}</p></div>}
           {session.messages.map((m, i) => <article key={i} className={`local-agent-message ${m.role}`}><small>{m.role === "user" ? t("你", "You") : "COPYPASTE"}{m.status ? " · " + m.status : ""}</small><p>{m.text || t("本次未返回文字。請檢查工作記錄。", "No text was returned. Review the activity log.")}</p></article>)}
           {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
@@ -229,6 +237,7 @@ export function LocalAgentWorkspace() {
               : session.retryable ? <><button type="button" className="button" disabled={pending} onClick={() => void act("retry", { id: session.id })}>{session.phase === "settling" ? t("同步執行結果", "Sync result") : t("重試連線", "Retry connection")}</button>{session.phase !== "settling" && <button type="button" className="button" disabled={pending} onClick={() => void act("stop", { id: session.id })}>{t("取消待處理工作", "Cancel pending work")}</button>}</>
                 : <button className="button primary" type="submit" disabled={pending || !session.permission || session.revoked || session.uncertain || !prompt.trim()}><ArrowUp size={18}/>{t("開始工作", "Start work")}</button>}</div></form>
         {session.task && <div className="local-agent-receipt"><span>{t("公司費用記錄", "Company billing record")} · {session.task.status}</span><span>{t("已結算", "Charged")} <Money value={session.task.charged_micros}/> · {t("已觀測", "Observed")} <Money value={session.task.accrued_micros}/></span></div>}
+        </div>{panel === "folders" && <LocalFolderSchedules key={session.id} sessionId={session.id} writable={!session.revoked && ["workspace-write", "full-access"].includes(session.permission ?? "")} pendingQuestions={session.inputs?.length ?? 0} onAnswer={() => setPanel("chat")}/>}
       </> : <div className="local-agent-empty"><FolderOpen size={36}/><h2>{t("選擇你的工作目錄", "Choose your workspace")}</h2><p>{t("本機會話保存在此電腦，並與你的帳戶和企業專案綁定。", "Local sessions stay on this computer and belong to your account and company project.")}</p></div>}
     </section></div>
   </div>;

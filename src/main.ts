@@ -8,6 +8,7 @@ import { LocalVault } from "./vault.js";
 import { NativeSession, NativeSessionError, type NativeTokens } from "./native-session.js";
 import { exchangeNativeCode } from "./native-code.js";
 import { LocalAgentController, type LocalAgentJournal } from "./local-agent.js";
+import { LocalScheduleController, type ScheduleJournal } from "./local-schedule.js";
 import { localRuntimeLock } from "./local-runtime.js";
 import { NativeBrowserPool } from "./native-browser.js";
 import {
@@ -123,7 +124,7 @@ const nativeSession = new NativeSession({
   },
   changed: () => {
     // Revoke all local grants before another account can use cached folder state.
-    localAccessReset = Promise.all([files.revokeAll(), localAgent.invalidate()]).then(async () => {
+    localAccessReset = Promise.all([files.revokeAll(), localSchedules.withdraw(), localAgent.invalidate()]).then(async () => {
       await save("devices", {});
       await save("command-keys", {});
     });
@@ -173,6 +174,29 @@ const localAgent = new LocalAgentController({
   executable: app.isPackaged ? path.join(process.resourcesPath, "local-codex", "codex.exe") : process.env.COPYPASTE_LOCAL_CODEX_BIN ?? path.join(import.meta.dirname, "../.data/runtime/windows-x64/codex.exe"),
   runtime: localRuntimeLock,
   browser: (owner, authorize) => nativeBrowsers.create(owner, authorize),
+});
+const localSchedules = new LocalScheduleController({
+  read: () => load<ScheduleJournal | null>("local-schedules", null), write: journal => save("local-schedules", journal),
+  owner: id => localAgent.schedulingOwner(id), context: id => localAgent.schedulingContext(id),
+  chooseInput: async workspace => {
+    const result = await dialog.showOpenDialog(window!, { title: "選擇要監察的輸入目錄 / Choose input folder to watch",
+      defaultPath: workspace, properties: ["openDirectory"] });
+    return result.canceled ? null : result.filePaths[0] ?? null;
+  },
+  confirm: async rule => {
+    const allocated = rule.jobs.filter(job => job.allocated).length, money = (value: number) => (value / 1_000_000).toFixed(2);
+    const result = await dialog.showMessageBox(window!, { type: "question", title: "CopyPaste · 啟用目錄工作 / Activate folder work",
+      message: "允許此規則自動開始本機工作？ / Allow this rule to start local work automatically?",
+      detail: `${rule.name}\n${rule.input.path}\n${rule.role}\n\n${rule.instruction}\n\n`
+        + `每檔上限 / Per file: HK$${money(rule.budgetMicros)}\n總授權上限 / Total authorized limit: HK$${money(rule.totalBudgetMicros)}\n`
+        + `最多 / Maximum: ${rule.maxRuns}，已分配 / Allocated: ${allocated}\n\n`
+        + "此電腦開啟應用程式期間，穩定的新增或變更檔案將自動處理並計費。原檔留本機；模型及媒體經公司服務。角色與專案指引沿用此會話已固定的版本；新會話於首次工作時固定，恢復沿用原任務。暫停在檔案邊界生效；撤銷會停止本規則的執行。重開應用程式後需再次確認。\n\n"
+        + "While this app is running, stable new or changed files start paid local work automatically. Originals stay local; models and media use company services. Role and project guidance retain this session's pinned versions, fixed on its first task; recovery keeps its original task. Pause finishes the current file. Revoke stops this rule's active work. Reopening the app requires confirmation again.",
+      buttons: ["取消 / Cancel", "啟用規則 / Activate rule"], defaultId: 0, cancelId: 0 });
+    return result.response === 1;
+  },
+  dispatch: (id, jobId, prompt, budget, beforeNative) => localAgent.dispatch(id, jobId, prompt, budget, beforeNative), stop: id => localAgent.stop(id),
+  changed: () => { if (window && !window.isDestroyed()) window.webContents.send("local-agent:changed"); },
 });
 async function request(
   url: string,
@@ -521,19 +545,29 @@ async function createWindow() {
     try {
       await localAccessReset;
       if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("LOCAL_REQUEST_INVALID");
-      const keys: Record<string, string[]> = { list: ["tenant", "project"], create: ["tenant", "project", "role"], permission: ["id", "mode"], send: ["id", "prompt", "budget"], answer: ["id", "requestId", "answers"], retry: ["id"], stop: ["id"], revoke: ["id"] };
+      const keys: Record<string, string[]> = { list: ["tenant", "project"], create: ["tenant", "project", "role"], permission: ["id", "mode"], send: ["id", "prompt", "budget"], answer: ["id", "requestId", "answers"], retry: ["id"], stop: ["id"], revoke: ["id"],
+        "schedule.list": ["id"], "schedule.create": ["id", "settings"], "schedule.activate": ["id", "ruleId"], "schedule.pause": ["id", "ruleId"], "schedule.revoke": ["id", "ruleId"], "schedule.open-output": ["id", "ruleId", "jobId"] };
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
       switch (action) {
         case "list": value = await localAgent.list(payload); break;
         case "create": value = await localAgent.create(payload, payload.role); break;
-        case "permission": value = await localAgent.permission(payload.id, payload.mode); break;
+        case "permission": await localSchedules.withdraw(payload.id); value = await localAgent.permission(payload.id, payload.mode); break;
         case "send": value = await localAgent.send(payload.id, payload.prompt, payload.budget); break;
         case "answer": value = await localAgent.answer(payload.id, payload.requestId, payload.answers); break;
         case "retry": value = await localAgent.retry(payload.id); break;
-        case "stop": value = await localAgent.stop(payload.id); break;
-        case "revoke": value = await localAgent.revoke(payload.id); break;
+        case "stop": await localSchedules.withdraw(payload.id); value = await localAgent.stop(payload.id); break;
+        case "revoke": await localSchedules.withdraw(payload.id); value = await localAgent.revoke(payload.id); break;
+        case "schedule.list": value = await localSchedules.list(payload.id); break;
+        case "schedule.create": value = await localSchedules.create(payload.id, payload.settings); break;
+        case "schedule.activate": value = await localSchedules.activate(payload.id, payload.ruleId); break;
+        case "schedule.pause": value = await localSchedules.pause(payload.id, payload.ruleId); break;
+        case "schedule.revoke": value = await localSchedules.revoke(payload.id, payload.ruleId); break;
+        case "schedule.open-output": {
+          const result = await shell.openPath(await localSchedules.outputFolder(payload.id, payload.ruleId, payload.jobId));
+          if (result) throw new Error("LOCAL_SCHEDULE_OPEN_FAILED"); value = true; break;
+        }
       }
       return { ok: true, value };
     } catch (error: any) {
@@ -735,5 +769,5 @@ app.on("before-quit", event => {
   if (deviceTimer) clearInterval(deviceTimer);
   if (shuttingDown) return;
   event.preventDefault(); shuttingDown = true;
-  void localAgent.close().then(() => app.exit(0), () => app.exit(1));
+  void Promise.all([localSchedules.close(), localAgent.close()]).then(() => localSchedules.drain()).then(() => app.exit(0), () => app.exit(1));
 });

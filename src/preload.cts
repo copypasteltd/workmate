@@ -52,6 +52,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const syncOverlayOffset = () => {
     root?.style.setProperty("--cp-root-scroll", `${root.scrollTop}px`);
   };
+  // Chromium's document shortcuts can target the outer document instead of a
+  // fixed scrolling root. Handle only the explicitly focused page container;
+  // text fields, nested logs and Shift selection retain their own behavior.
+  root?.addEventListener("keydown", (event) => {
+    if (event.target !== root || event.defaultPrevented || event.altKey || event.shiftKey) return;
+    if (event.key !== "Home" && event.key !== "End") return;
+    event.preventDefault();
+    root.scrollTop = event.key === "Home" ? 0 : root.scrollHeight;
+    syncOverlayOffset();
+  });
   root?.addEventListener("scroll", syncOverlayOffset, { passive: true });
   syncOverlayOffset();
   const bar = document.createElement("header");
