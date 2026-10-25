@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "at": "2026-10-25T04:49:20.816806+00:00",
+  "at": "2026-10-25T07:27:33.769802+00:00",
   "shared_approval_verification": {
     "scope": "Bounded shared approval repairs only; initial failures and prior success bytes preserved",
     "focused_runs": [
@@ -14291,7 +14291,7 @@
       "acceptance_case": "TC-040",
       "acceptance_conditions": "按句柄/根身份验证并拒绝越界；冲突不覆盖；允许程序按结构化 argv；撤销阻止新执行，结果账本防重放。",
       "assessment": "partial_verified",
-      "finding": "目录监听、防抖去重、稳定原字节快照、持久批量队列、同线程回答/继续、真实应用重启后暂停、预算及撤销已有当前实际证据。完整 TC-040 仍开放：结构化 argv 的批准程序注册/调用、完整冲突/崩溃/休眠/离线及全部 DESK-L01–L08 条件尚未齐。",
+      "finding": "客户本机固定程序批准、精确参数、真实执行/输出/退出码、停止/撤销进程树、父进程退出及未知记录不重放已有本阶段限定证据。完整 TC-040 仍开放：全部应用操作、冲突/休眠/离线及 DESK-L01–L08 全矩阵尚未完成。",
       "source_inspection_candidates": [
         "dev/copypaste-web/src/main.tsx",
         "dev/copypaste-web/src/persistent-work.tsx",
@@ -14304,6 +14304,11 @@
           "path": "docs/quality/folder-work-checkpoint.json",
           "sha256": "c9ae589effdb59b31dff53bca67a454aa7cd257c88837c7c929775d8e46c33ac",
           "scope": "bounded native evidence; complete case remains open"
+        },
+        {
+          "path": "docs/quality/local-programs-checkpoint.json",
+          "sha256": "639f49042b6ebe9736eb5ac603122b39fea69543dc15dacfaafa08b7c7a7612d",
+          "scope": "bounded native programs/resources; complete case remains open"
         }
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
@@ -14313,9 +14318,14 @@
           "stage": 87,
           "finding": "目录监听、防抖去重、稳定原字节快照、持久批量队列、同线程回答/继续、真实应用重启后暂停、预算及撤销已有当前实际证据。",
           "checkpoint": "docs/quality/folder-work-checkpoint.json"
+        },
+        {
+          "stage": 88,
+          "finding": "客户本机固定程序批准、精确参数、真实执行/输出/退出码、停止/撤销进程树、父进程退出及未知记录不重放已有本阶段限定证据。",
+          "checkpoint": "docs/quality/local-programs-checkpoint.json"
         }
       ],
-      "remaining_complete_acceptance_conditions": "完整 TC-040 仍开放：结构化 argv 的批准程序注册/调用、完整冲突/崩溃/休眠/离线及全部 DESK-L01–L08 条件尚未齐。",
+      "remaining_complete_acceptance_conditions": "完整 TC-040 仍开放：全部应用操作、冲突/休眠/离线及 DESK-L01–L08 全矩阵尚未完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -14361,7 +14371,7 @@
       "acceptance_case": "TC-042",
       "acceptance_conditions": "任务所属无用 tab/context 回到基线；无无主页面；保留用户原有页面，达到上限进入等待/拒绝。",
       "assessment": "partial_verified",
-      "finding": "当前打包客户端通过真实 Codex 浏览器成功/停止/撤权路径，按原窗口 ID 等待实际销毁，核对拥有的 Codex PID 退出及不再发起模型请求。完整 TC-042 仍开放：全部失败/崩溃及用户既有页面矩阵、每任务默认三页与驱动四页硬上限的资源口径尚须对齐和验收。",
+      "finding": "普通打开与弹窗统一每任务三页/执行器两上下文；实际原生打开、拒绝、拥有者隔离、页面销毁、清除存储后复用已有当前证据。完整 TC-042 仍开放：全部进程崩溃、系统休眠及用户既有页面/跨端资源矩阵尚未完成。",
       "source_inspection_candidates": [
         "dev/copypaste-web/src/main.tsx",
         "dev/copypaste-web/src/persistent-work.tsx",
@@ -14374,6 +14384,11 @@
           "path": "docs/quality/folder-work-checkpoint.json",
           "sha256": "c9ae589effdb59b31dff53bca67a454aa7cd257c88837c7c929775d8e46c33ac",
           "scope": "bounded native evidence; complete case remains open"
+        },
+        {
+          "path": "docs/quality/local-programs-checkpoint.json",
+          "sha256": "639f49042b6ebe9736eb5ac603122b39fea69543dc15dacfaafa08b7c7a7612d",
+          "scope": "bounded native programs/resources; complete case remains open"
         }
       ],
       "note": "局部证据不关闭同号 TC；原需求及完整验收条件原样保留。",
@@ -14383,9 +14398,14 @@
           "stage": 87,
           "finding": "当前打包客户端通过真实 Codex 浏览器成功/停止/撤权路径，按原窗口 ID 等待实际销毁，核对拥有的 Codex PID 退出及不再发起模型请求。",
           "checkpoint": "docs/quality/folder-work-checkpoint.json"
+        },
+        {
+          "stage": 88,
+          "finding": "普通打开与弹窗统一每任务三页/执行器两上下文；实际原生打开、拒绝、拥有者隔离、页面销毁、清除存储后复用已有当前证据。",
+          "checkpoint": "docs/quality/local-programs-checkpoint.json"
         }
       ],
-      "remaining_complete_acceptance_conditions": "完整 TC-042 仍开放：全部失败/崩溃及用户既有页面矩阵、每任务默认三页与驱动四页硬上限的资源口径尚须对齐和验收。",
+      "remaining_complete_acceptance_conditions": "完整 TC-042 仍开放：全部进程崩溃、系统休眠及用户既有页面/跨端资源矩阵尚未完成。",
       "acceptance_case_execution": "not_completed"
     },
     {
@@ -39588,5 +39608,17 @@
     "platform_regression_rerun": false,
     "entire_product_acceptance": "not_proven",
     "original_requirements_unchanged": 102
+  },
+  "local_programs_verification": {
+    "checkpoint": {
+      "path": "docs/quality/local-programs-checkpoint.json",
+      "sha256": "639f49042b6ebe9736eb5ac603122b39fea69543dc15dacfaafa08b7c7a7612d"
+    },
+    "desktop_checks": 68,
+    "desktop_unit_tests": 114,
+    "native_codex_tests": 18,
+    "client_unit_tests": 184,
+    "related_backend_tests": 91,
+    "entire_product_acceptance": "not_proven"
   }
 }

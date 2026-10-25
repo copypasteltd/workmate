@@ -1,0 +1,62 @@
+# 88：本机批准程序与浏览器资源 / Approved local programs and browser resources
+
+状态：本阶段原生程序与浏览器资源取得限定通过证据；发布状态以最终提交及远程回执为准。原 26 组差异、102 项需求及完整验收条件、至少十二个专业角色和 G01–G10 全部保留。前一阶段精确输入见 [归档清单](../quality/history/stage88-before-local-programs/receipt.json)。
+
+客户在 Desktop 本机会话主动选择并批准实际程序，主进程固定其文件身份与 SHA-256。Agent 获取程序 ID 后使用参数数组调用，不接受模型或渲染器临时指定执行文件、shell 字符串或额外环境变量。批准只能由客户在本机作出，Admin、云端与 Extension 均不能代开。
+
+这项直接进程执行需要客户的完整本机权限，因为任意客户选择程序不能据此宣称受到工作目录 OS 沙箱限制。完整权限原有文件、终端和应用能力保持，不增加范围内逐命令重复审批。批准程序清单提供可管理的固定程序和结构化参数，不替代原 Codex 本机能力。
+
+新会话固定本机程序工具版本；已有原生线程保留原工具集合。程序批准绑定当前身份、登录归属、会话和授权版本。程序变化、撤权、身份变化、退出或权限降级阻断后续调用。工具每次执行前重新检查当前企业/项目/原任务权限。程序不获得公司推理凭据；所有 AI 调用继续经过公司服务。
+
+原生进程记录精确参数、原任务、调用 ID、PID、输出、退出码和结束状态。相同调用只返回原结果，不重跑；未知结果保持未知，不伪造成功或零费用。停止/撤销只终止本任务拥有的进程树，结果文件和原公司费用回执保留。预算仍由原任务账本管理，不为一次程序调用另造免费或重复的 AI 任务。
+
+清单、界面、Codex 工具协议、后端推理声明验证、真实本机执行、进程停止及实际打包交互均需完成相应验证。浏览器另对齐每任务三页、每执行器两个活动上下文的资源约束；普通打开和网页弹窗走同一资源账本。资源释放必须等待拥有的页面结束。
+
+预期客户流程：登录并选企业/项目→建立本机会话→授予完整本机权限→在“本机程序”选择实际程序并确认→在对话提出工作→Agent 通过清单选择程序及参数→查看输出、成果和原费用→按需撤销。
+
+界面沿用 CopyPaste 蓝、浅中性色、Manrope/Fraunces、繁体中文/英文及深浅主题。“本机程序”与对话/目录工作同级，紧凑窗口内容换行，保留内部滚动及键盘访问且不显示滚动轨道。原生选择器负责文件路径，产品界面展示客户能作决定的名称、批准状态和实际执行记录。
+
+## 调用与账本
+
+| 接口 | 输入 | 行为 |
+| --- | --- | --- |
+| `copypaste_programs.list` | 空对象 | 只列出当前身份、会话和授权版本可用的批准程序 |
+| `copypaste_programs.run` | `program_id`、`argv`、可选 `timeout_ms` | 重新核对当前公司权限、程序身份及客户授权，先保存执行意图，再启动实际原生进程 |
+| `copypaste_programs.status` | `receipt_id` | 只读取所属身份、会话及原任务的精确回执，不重新执行 |
+
+调用拒绝额外 executable/path/env/shell 字段、未知工具、错误版本、重复定义和被改写的声明。参数为最多 64 项字符串数组，每项最多 4,096 字符、编码合计最多 32 KiB；空字符串、中文、引号和反斜线原样传递。超时为 100–120,000 毫秒，默认 30 秒。普通退出、非零退出、停止、超时和未知状态分别记录。stdout/stderr 各保留最多 32 KiB，同时保存实际字节量和截断标识。
+
+本机加密账本最多保留 100 个批准条目和 200 个运行条目，每执行器最多两个活动程序。触及容量后明确阻止新执行，不静默覆盖历史。重复调用 ID 只读原回执；相同 ID 改参数拒绝。应用重启将未终结记录保留为未知，客户核对只能解除对未来新调用的阻断，原状态和费用不会被重写为成功或免费。
+
+## 原生进程生命周期
+
+Windows x64 使用原生 .NET Framework 编译的监督程序。监督程序核对并保持实际可执行文件身份/摘要，先暂停创建子进程、加入带 `KILL_ON_JOB_CLOSE` 的 Job Object，再恢复运行。真实 PID 通过独立协议头返回。任务停止、程序撤销、应用关闭或拥有者进程异常消失时，回收其拥有的进程树；正常根进程退出也不能遗留后台子进程。监督程序和 Job Object 不代表 OS 用户权限沙箱。
+
+运行包在 ASAR 外包含 `local-program-host.exe` 与精确清单，核对源文件摘要和编译产物摘要；不发布本机编译器或仓库录屏。子程序采用受控环境变量，不继承公司推理 token、`NODE_OPTIONS` 等应用凭据/启动注入环境。程序输出需要作为 Agent 上下文时仍经过公司 AI 接口，不能据此承诺输出永不离开设备。
+
+## 多会话与浏览器归属
+
+界面请求按企业、项目和会话记录等待状态及错误。一个会话等待客户回答或运行工具时，允许客户新建/查看其他会话；同一会话的重复提交仍受限制。后台创建回复只在原企业/项目仍有效时改变选择。任务切换不改变其他任务的原授权、费用、原生输入或浏览器归属。
+
+每执行器两个可复用的隔离上下文，分配时同步预占，清理失败则隔离该槽位。每任务三页为普通打开和弹窗共同限制，只有真实页面销毁才归还名额。上下文再次分配前，关闭原连接并清除 cookie、localStorage、缓存等存储；第三个同时占用者收到明确拒绝，不挤掉其他等待任务。全部异常/休眠、用户既有页面和其他系统矩阵仍须继续验收。
+
+```mermaid
+flowchart TD
+  Customer[Customer local full-access grant] --> Approval[Pinned program approval / default Cancel]
+  Approval --> Codex[Customer-local Codex / versioned program tools]
+  Codex --> Intent[Persist original task and call intent]
+  Intent --> Native[Native guardian / owned Job Object]
+  Native --> Result[Actual PID / output / exit status]
+  Result --> Receipt[Original immutable invocation receipt]
+  Receipt --> Company[Company inference and original task billing]
+  Stop[Stop / revoke / parent loss] --> Native
+  Unknown[Uncertain restart result] --> Review[Customer review / no replay]
+```
+
+English: This work is in progress. Customers approve pinned local executables in the trusted Desktop UI; the native Codex agent invokes their IDs with structured argument arrays. Full local permission remains customer-controlled and is not narrowed into a folder bridge or repeated per-command approvals. The original thread, task budget, exact output and owned process lifecycle must remain consistent. Legacy threads retain their original tool set. Browser page/context limits are enforced by one resource ledger for normal opens and popups. Complete product and professional-role acceptance remains open.
+
+阶段 88 当前增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。
+
+Stage 88 verifies approved pinned customer-local programs, structured argv, owned native process lifecycle/parent loss and original billing; one browser ledger enforces three pages per task/two active contexts with actual destruction and cleared storage on reuse. Fresh scopes: 68 packaged Desktop checks, 114 Desktop unit cases, 18 native Codex cases, 184 client cases, 91 related backend cases and six strict-declaration cases. Synthetic providers/dialog decisions remain explicit. Full product acceptance, twelve qualified professional roles and G01–G10 remain open.
+
+[当前精确源码与原始回执](../quality/local-programs-checkpoint.json)
