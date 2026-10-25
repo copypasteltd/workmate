@@ -77,13 +77,21 @@ export async function runGeneratedVideoNativeJourney(j: any) {
   await until(() => video.evaluate((element: HTMLVideoElement) => element.readyState), (value: number) => value >= 2, "actual generated MP4 browser decode");
   await video.evaluate((element: HTMLVideoElement) => element.play());
   await until(() => video.evaluate((element: HTMLVideoElement) => element.currentTime), (value: number) => value > 0, "actual generated video playback"); await video.evaluate((element: HTMLVideoElement) => element.pause());
+  const retainedVideo = await video.elementHandle(), retainedTime = await video.evaluate((element: HTMLVideoElement) => element.currentTime);
+  assert.ok(retainedVideo);
+  await page.getByRole("button", { name: "Refresh generated videos", exact: true }).click();
   await card.getByRole("button", { name: "Download video", exact: true }).click();
   await until(() => readFile(path.join(j.owned, "native-generated-video.mp4")).catch(() => null), (bytes: Buffer | null) => !!bytes && createHash("sha256").update(bytes).digest("hex") === provider.sha256, "actual native generated video save");
   await resize(800, 600, "actual compact generated video playback"); await video.scrollIntoViewIfNeeded(); await assertDesktopLayout(page);
+  assert.equal(await retainedVideo.evaluate((element: HTMLElement) => element.isConnected), true, "Refreshing the same authorized task must retain the actual player node");
+  assert.equal(await video.evaluate((element: HTMLVideoElement) => element.currentTime), retainedTime, "An unchanged preview retains its paused playback position");
   assert.equal(await video.evaluate((element: HTMLVideoElement) => { const bounds = element.getBoundingClientRect(), parent = element.closest(".local-agent-messages")!.getBoundingClientRect(); return bounds.height >= 100 && bounds.top >= parent.top - 1 && bounds.bottom <= parent.bottom + 1; }), true);
   await screenshot("generated-playback-800-en");
   assert.equal((await system.db.control.query("SELECT count(*)::int AS n FROM ledger WHERE task_id=$1 AND kind='charge'", [task.id])).rows[0].n, 1);
-  await j.reload(); await page.getByRole("heading", { name: "Your local workmate", exact: true }).waitFor();
+  // The compact native workspace intentionally hides its introductory heading.
+  // Verify restoration through the visible task control and actual saved job.
+  await j.reload(); await page.getByLabel("Local task", { exact: true }).waitFor();
+  assert.deepEqual(await page.evaluate(() => [innerWidth, innerHeight]), [800, 600], "Reload retains the actual compact native size");
   await page.locator(`[data-generated-video-job="${row.id}"]`).waitFor();
   assert.ok((await list()).events.some((event: any) => event.value.generated_video?.job_id === row.id));
   j.pass("Actual local Codex generates and queries one original video operation, shows real 35% progress and unknown-cost hold, decodes and saves the exact MP4 at 800x600, retains job history after reload and settles once");

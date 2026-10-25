@@ -117,14 +117,19 @@ export async function exerciseCreativeFeedback({page,repo,delivery,attempt,syste
     if(repo==="desktop") {
       const rootEl=page.locator("#root"); await rootEl.evaluate((e:HTMLElement)=>{e.scrollTop=0;});
       await page.locator(".creative-feedback h1").click(); await page.mouse.wheel(0,520);
-      await page.waitForFunction(()=>document.getElementById("root")!.scrollTop>20);
-      await page.keyboard.press("End"); await page.waitForFunction(()=>{const r=document.getElementById("root")!;return r.scrollTop+r.clientHeight>=r.scrollHeight-3;});
+      await page.waitForFunction(()=>document.getElementById("root")!.scrollTop>20, undefined, {timeout:20000}).catch(error=>{throw new Error("Creative feedback: wheel must reach the actual page",{cause:error});});
+      // Reach the real native page scroll target through the actual tab order.
+      // Body focus after a dialog does not reliably address a fixed scroller.
+      await page.getByTitle("Switch to English",{exact:true}).focus();
+      await page.keyboard.press("Shift+Tab");
+      assert.equal(await rootEl.evaluate(el=>document.activeElement===el&&el.tabIndex===0),true,"Native page scrolling must have an actual reachable keyboard target");
+      await page.keyboard.press("End"); await page.waitForFunction(()=>{const r=document.getElementById("root")!;return r.scrollTop+r.clientHeight>=r.scrollHeight-3;}).catch(error=>{throw new Error("Creative feedback: focused page End must reach the last content",{cause:error});});
       await page.waitForFunction(()=>[".sidebar",".preference-controls"].every(selector=>{
         const b=document.querySelector(selector)!.getBoundingClientRect();return b.top>=39&&b.bottom<=innerHeight+1&&b.left>=0&&b.right<=innerWidth+1;
-      }));
+      })).catch(error=>{throw new Error("Creative feedback: navigation and preferences must stay within the actual window",{cause:error});});
       // Windows whole-page navigation uses Ctrl+Home. Bare Home remains
       // separately checked inside the focused native conversation log.
-      await page.keyboard.press("Control+Home"); await page.waitForFunction(()=>document.getElementById("root")!.scrollTop<3);
+      await page.keyboard.press("Control+Home"); await page.waitForFunction(()=>document.getElementById("root")!.scrollTop<3).catch(error=>{throw new Error("Creative feedback: focused page Ctrl+Home must return to the first content",{cause:error});});
       await assertDesktopLayout(page);
     } else assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
     await page.getByTitle("Switch to English",{exact:true}).click();
@@ -146,8 +151,8 @@ export async function exerciseCreativeFeedback({page,repo,delivery,attempt,syste
     return media;
   } catch(error) {
     const diagnostic=await page.evaluate(()=>({route:location.hash,active:document.activeElement?.tagName,
-      scrolls:[...document.querySelectorAll<HTMLElement>("#root,.main-content,.feedback-report")].map(el=>({element:el.id||el.className,
-        top:el.scrollTop,client:el.clientHeight,content:el.scrollHeight,overflow:getComputedStyle(el).overflowY,bounds:el.getBoundingClientRect().toJSON()}))})).catch(()=>null);
+      scrolls:[...document.querySelectorAll<HTMLElement>("#root,.main-content,.feedback-report,.sidebar,.preference-controls")].map(el=>({element:el.id||el.className,
+        top:el.scrollTop,client:el.clientHeight,content:el.scrollHeight,overflow:getComputedStyle(el).overflowY,offset:getComputedStyle(el).getPropertyValue("--cp-root-scroll"),translate:getComputedStyle(el).translate,bounds:el.getBoundingClientRect().toJSON()}))})).catch(()=>null);
     console.error("Creative feedback UI diagnostic: "+JSON.stringify(diagnostic));
     throw error;
   } finally {

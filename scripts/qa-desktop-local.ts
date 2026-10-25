@@ -1,5 +1,7 @@
 import { exerciseCreativeFeedback } from "./creative-feedback-ui.js";
 import { exerciseBrandLibrary } from "./brand-library-ui.js";
+import { exerciseProjectConfiguration } from "./project-configuration-ui.js";
+import { DesktopProjectConfigurationModel, exerciseNativeProjectConfiguration } from "./desktop-project-configuration.js";
 import assert from "node:assert/strict";
 import { _electron, chromium, type ElectronApplication, type Browser } from "playwright";
 import { createServer } from "node:http";
@@ -31,7 +33,8 @@ const audioModel = new NativeAudioModel();
 let generatedVideoFixtureClosed = false;
 const workflowModel = new DesktopWorkflowModelFixture(workspace, outside);
 const browserModel = new DesktopBrowserModelFixture(desktop, workspace);
-let nativeBrowserMedia: any, brandLibraryMedia: any, creativeFeedbackMedia: any;
+const projectModel = new DesktopProjectConfigurationModel();
+let nativeBrowserMedia: any, brandLibraryMedia: any, creativeFeedbackMedia: any, projectConfigurationUI: any, nativeProjectConfiguration: any;
 const checks: string[] = [], screenshots: any[] = [], errors: string[] = [];
 const pass = (text: string) => { checks.push(text); console.log("PASS: " + text); };
 let isolated: any, system: any, electron: ElectronApplication | undefined, browser: Browser | undefined, recording: WorkmateRecording | undefined, media: any;
@@ -68,7 +71,7 @@ const provider = createServer(async (req, res) => {
     emit("response.created", { response });
     if (stall) { stalled = true; return; }
     let item: any;
-    const videoItem = audioModel.next(body, providerCalls) ?? generatedVideoModel.next(body, providerCalls) ?? browserModel.next(body, providerCalls) ?? workflowModel.next(body, providerCalls) ?? videoModel.next(body, providerCalls);
+    const videoItem = projectModel.next(body, providerCalls) ?? audioModel.next(body, providerCalls) ?? generatedVideoModel.next(body, providerCalls) ?? browserModel.next(body, providerCalls) ?? workflowModel.next(body, providerCalls) ?? videoModel.next(body, providerCalls);
     if (videoItem) item = videoItem;
     else if (questionNext) {
       questionNext = false;
@@ -409,6 +412,8 @@ try {
   nativeBrowserMedia = await runDesktopBrowserJourney({ page, captureSurface, electron, system, model: browserModel, delivery, attempt, list, until, pass, screenshots, providerCalls: () => providerCalls });
   await checkDesktopAccountLayout({page,captureSurface,resize,until,screenshots,delivery,attempt,pass});
   brandLibraryMedia = await exerciseBrandLibrary({page,repo:"desktop",delivery,attempt,pass,screenshots,resize,captureSurface});
+  projectConfigurationUI = await exerciseProjectConfiguration({page,repo:"desktop",delivery,attempt,system,pass,screenshots,resize,captureSurface,nativeTaskId:revokedInput.task.task_id});
+  nativeProjectConfiguration = await exerciseNativeProjectConfiguration({page,electron,system,workspace,delivery,attempt,model:projectModel,list,until,captureSurface,providerCalls:()=>providerCalls,pass,screenshots});
   await page.evaluate(() => { location.hash = "/app/analytics"; });
   await page.getByRole("heading", { name: "Marketing insights", exact: true }).waitFor();
   const beforeGeoEntry = Number((await system.db.control.query("SELECT count(*)::int AS n FROM geo_runs")).rows[0].n);
@@ -461,7 +466,7 @@ finally {
   }
   if (isolated) { process.chdir(platform); await isolated.cleanup(); fixtureClosed = true; }
   process.chdir(delivery);
-  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_generated_video_tool_results: generatedVideoModel.observations, generated_video_fixture_closed: generatedVideoFixtureClosed, native_workflow_tool_results: workflowModel.observations, native_browser_tool_results: browserModel.observations, native_browser_media: nativeBrowserMedia, brand_library_media: brandLibraryMedia, creative_feedback_media: creativeFeedbackMedia, native_browser_fixture_closed: browserModel.closed,
+  const report = { at: new Date().toISOString(), status: errors.length ? "failed" : "passed", checks, errors, screenshots, media, provider_calls: providerCalls, company_image_calls: imageCalls, native_input_completions: inputCompletions, native_video_tool_results: videoModel.observations, native_generated_video_tool_results: generatedVideoModel.observations, generated_video_fixture_closed: generatedVideoFixtureClosed, native_workflow_tool_results: workflowModel.observations, native_browser_tool_results: browserModel.observations, native_browser_media: nativeBrowserMedia, brand_library_media: brandLibraryMedia, creative_feedback_media: creativeFeedbackMedia, project_configuration: projectConfigurationUI, native_project_configuration: nativeProjectConfiguration, native_browser_fixture_closed: browserModel.closed,
     native_audio_tool_results: audioModel.results, audio_media: audioMedia,
     scope: "Actual packaged Electron and native Codex; actual email/PKCE, file, sandbox, company audio/video/design tools, local workflow children/approvals, private artifacts, download and billing; model/image/audio responses and native chooser/consent/save decisions are explicit fixtures",
     fixture_native_dialog_confirmed: permissionDecision === 1, fixture_company_max_active_tasks:32, fixture_isolated_capacity_policy:{agent_slots:32,tenant_slots:32}, fixture_isolated_provider_policy:{version:2,slots:32,rpm:10000}, electron_closed: electronClosed, browser_closed: browserClosed, api_closed: apiClosed, fixture_closed: fixtureClosed };

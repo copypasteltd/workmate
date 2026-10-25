@@ -82,13 +82,19 @@ finally {
   await new Promise(resolve => log.end(resolve));
   const unchanged = JSON.stringify(before) === JSON.stringify(await snapshot()), raw = await readFile(prefix + ".tap"), journeyRaw = await readFile(prefix + "-journey.json").catch(() => null);
   const videoTools = new Set((journey?.native_video_tool_results ?? []).map(result => result.tool));
-  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 41 && journey.company_image_calls === 2 && journey.native_input_completions === 1
+  const passed = !error && journeyCode === 0 && journey?.status === "passed" && journey.checks.length === 50 && journey.company_image_calls === 2 && journey.native_input_completions === 1
     && journey.native_audio_tool_results?.length === 2 && journey.native_audio_tool_results.every(result => result.actual_output)
     && journey.audio_media?.skipped_capture_errors === 0 && journey.audio_media?.distinct_frames > 1
     && journey.checks.some(check => check.includes("Native Desktop GEO entry explicitly hands off"))
     && journey.generated_video_fixture_closed && ["generated_video_create", "generated_video_status"].every(tool => journey.native_generated_video_tool_results?.some(result => result.tool === tool && result.actual_output))
     && journey.creative_feedback_media?.skipped_capture_errors === 0 && journey.creative_feedback_media?.distinct_frames > 1
     && journey.brand_library_media?.skipped_capture_errors === 0 && journey.brand_library_media?.distinct_frames > 1
+    && journey.project_configuration?.published_versions?.join(",") === "1,2,3" && journey.project_configuration?.media?.skipped_capture_errors === 0 && journey.project_configuration?.media?.distinct_frames > 1
+    && journey.project_configuration?.new_task_id === null
+    && journey.native_project_configuration?.versions?.join(",") === "3,3,4" && journey.native_project_configuration?.execution_locations?.every(location => location === "desktop")
+    && journey.native_project_configuration?.charged_micros?.join(",") === "90,90,90" && journey.native_project_configuration?.actual_tool_outputs?.length === 6
+    && journey.native_project_configuration?.media?.skipped_capture_errors === 0 && journey.native_project_configuration?.media?.distinct_frames > 1
+    && journey.checks.some(check => check.includes("publication never retrofits an existing local task"))
     && journey.checks.some(check => check.includes("versioned customer changes/acceptance"))
     && journey.native_browser_fixture_closed && journey.native_browser_media?.skipped_capture_errors === 0 && journey.native_browser_media?.distinct_frames > 1
     && ["open", "snapshot", "interact", "screenshot", "wait", "close"].every(tool => journey.native_browser_tool_results?.some(result => result.tool === tool && result.actual_output))

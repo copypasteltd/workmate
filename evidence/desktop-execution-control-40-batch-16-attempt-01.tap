@@ -1,0 +1,419 @@
+2026-10-25 09:45:20.078 CST [3288] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-25 09:45:20.084 CST [3288] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-25 09:45:20.084 CST [3288] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-25 09:45:20.306 CST [34776] LOG:  database system was shut down at 2026-10-25 09:45:17 CST
+
+2026-10-25 09:45:20.361 CST [3288] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# Subtest: real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
+ok 1 - real Codex persists and resumes a thread with restored tools, history, profile checks and incremental usage
+  ---
+  duration_ms: 9846.305
+  ...
+# Subtest: cancelling an initializing real Codex process rejects the pending RPC and closes the child
+ok 2 - cancelling an initializing real Codex process rejects the pending RPC and closes the child
+  ---
+  duration_ms: 64.3583
+  ...
+# Subtest: calendar validates IANA zones, clocks and weekday choices and uses local dates across UTC offsets
+ok 3 - calendar validates IANA zones, clocks and weekday choices and uses local dates across UTC offsets
+  ---
+  duration_ms: 14.9031
+  ...
+# Subtest: nonexistent DST wall times are skipped at the transition and repeated times select the first instant once
+ok 4 - nonexistent DST wall times are skipped at the transition and repeated times select the first instant once
+  ---
+  duration_ms: 4.7036
+  ...
+# Subtest: half-hour DST transitions and skipped calendar days do not consume the next valid day
+ok 5 - half-hour DST transitions and skipped calendar days do not consume the next valid day
+  ---
+  duration_ms: 2.8207
+  ...
+# Subtest: weekly schedules and bounded catch-up counts handle leap years and long downtime without enumerating all dates
+ok 6 - weekly schedules and bounded catch-up counts handle leap years and long downtime without enumerating all dates
+  ---
+  duration_ms: 3.0238
+  ...
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+2026-10-25 09:45:37.019 CST [18712] ERROR:  permission denied for table workflow_schedule_versions
+2026-10-25 09:45:37.019 CST [18712] STATEMENT:  UPDATE workflow_schedule_versions SET body='{}' WHERE schedule_id=$1
+
+# Subtest: schedule preview freezes the workflow; create is atomic/idempotent and rejects stale hashes and cross-project references
+ok 7 - schedule preview freezes the workflow; create is atomic/idempotent and rejects stale hashes and cross-project references
+  ---
+  duration_ms: 3505.8656
+  ...
+# Subtest: concurrent schedulers and repeated ticks launch one run; the real report persists and an unfinished review prevents overlap
+ok 8 - concurrent schedulers and repeated ticks launch one run; the real report persists and an unfinished review prevents overlap
+  ---
+  duration_ms: 302.935
+  ...
+# Subtest: downtime coalesces earlier opportunities into one range and launches only the latest; skip policy and end dates never backfill charges
+ok 9 - downtime coalesces earlier opportunities into one range and launches only the latest; skip policy and end dates never backfill charges
+  ---
+  duration_ms: 137.8041
+  ...
+# Subtest: pause/resume and edits are CAS/idempotent, preserve immutable history and require a fresh delegated run identity
+ok 10 - pause/resume and edits are CAS/idempotent, preserve immutable history and require a fresh delegated run identity
+  ---
+  duration_ms: 88.8939
+  ...
+# Subtest: account revocation blocks future schedules; restoring the account does not revive an old authorization
+ok 11 - account revocation blocks future schedules; restoring the account does not revive an old authorization
+  ---
+  duration_ms: 113.2299
+  ...
+# Subtest: cross-workspace and viewer access is denied; restricted database roles cannot read history outside their tenant
+ok 12 - cross-workspace and viewer access is denied; restricted database roles cannot read history outside their tenant
+  ---
+  duration_ms: 93.7344
+  ...
+# Subtest: admin schedule visibility honors explicit scope and pause needs MFA/CAS; content deletion scrubs version bodies and replay results
+ok 13 - admin schedule visibility honors explicit scope and pause needs MFA/CAS; content deletion scrubs version bodies and replay results
+  ---
+  duration_ms: 182.9133
+  ...
+# Subtest: cancelling a scheduled review is idempotent and frees its active slot without replaying the prior report
+ok 14 - cancelling a scheduled review is idempotent and frees its active slot without replaying the prior report
+  ---
+  duration_ms: 175.2979
+  ...
+# Subtest: uncertain child execution keeps the schedule occupied even after its workflow fails
+ok 15 - uncertain child execution keeps the schedule occupied even after its workflow fails
+  ---
+  duration_ms: 100.9996
+  ...
+# Subtest: a scheduled Codex role is pinned and a changed installed role blocks execution before charging
+ok 16 - a scheduled Codex role is pinned and a changed installed role blocks execution before charging
+  ---
+  duration_ms: 53.3045
+  ...
+2026-10-25 09:45:38.338 CST [20376] LOG:  checkpoint starting: immediate force wait
+
+2026-10-25 09:45:38.964 CST [20376] LOG:  checkpoint complete: wrote 38 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.438 s, total=0.626 s; sync files=12, longest=0.115 s, average=0.037 s; distance=18944 kB, estimate=18944 kB; lsn=16/48957680, redo lsn=16/48957628
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+2026-10-25 09:45:44.329 CST [13144] ERROR:  SEO task binding cannot be removed
+2026-10-25 09:45:44.329 CST [13144] CONTEXT:  PL/pgSQL function guard_seo_binding() line 40 at RAISE
+2026-10-25 09:45:44.329 CST [13144] STATEMENT:  UPDATE tasks SET input_context='{}' WHERE id=$1
+
+# Subtest: SEO create is authenticated, strict, idempotent and tied to a private frozen Codex task and reservation
+ok 17 - SEO create is authenticated, strict, idempotent and tied to a private frozen Codex task and reservation
+  ---
+  duration_ms: 3399.2047
+  ...
+# Subtest: insufficient funds and unconfirmed scope reject before any website traffic or partial task creation
+ok 18 - insufficient funds and unconfirmed scope reject before any website traffic or partial task creation
+  ---
+  duration_ms: 105.3807
+  ...
+# Subtest: native database checkpoints retain actual website response containers and issue locations; Codex can publish only a validated report
+ok 19 - native database checkpoints retain actual website response containers and issue locations; Codex can publish only a validated report
+  ---
+  duration_ms: 5656.5935
+  ...
+# Subtest: same-project editors and other tenants cannot read another user private audit or raw sources
+ok 20 - same-project editors and other tenants cannot read another user private audit or raw sources
+  ---
+  duration_ms: 4989.6154
+  ...
+# Subtest: pause, resume and cancellation preserve the existing pre-model task checkpoint and stop collection
+ok 21 - pause, resume and cancellation preserve the existing pre-model task checkpoint and stop collection
+  ---
+  duration_ms: 562.6954
+  ...
+2026-10-25 09:46:14.873 CST [11892] ERROR:  permission denied for table seo_documents
+2026-10-25 09:46:14.873 CST [11892] STATEMENT:  UPDATE seo_documents SET url_sha256=$2 WHERE run_id=$1
+
+2026-10-25 09:46:14.926 CST [24440] ERROR:  SEO identity or finished history cannot be rewritten
+2026-10-25 09:46:14.926 CST [24440] CONTEXT:  PL/pgSQL function guard_seo_history() line 16 at RAISE
+2026-10-25 09:46:14.926 CST [24440] STATEMENT:  UPDATE seo_runs SET checkpoint='{}',revision=revision+1 WHERE id=$1
+
+# Subtest: immutable recheck records observed repairs and retains both previous and current evidence
+ok 22 - immutable recheck records observed repairs and retains both previous and current evidence
+  ---
+  duration_ms: 19053.7
+  ...
+# Subtest: a recheck retry survives its parent report revision without duplicate work and still enforces current source access
+ok 23 - a recheck retry survives its parent report revision without duplicate work and still enforces current source access
+  ---
+  duration_ms: 9509.6302
+  ...
+# Subtest: an old report cannot be read, downloaded or copied after a source is quarantined or expired
+ok 24 - an old report cannot be read, downloaded or copied after a source is quarantined or expired
+  ---
+  duration_ms: 8634.9737
+  ...
+# Subtest: conditional HTTP cache retains its source lineage and blocks derived evidence when the original is quarantined
+ok 25 - conditional HTTP cache retains its source lineage and blocks derived evidence when the original is quarantined
+  ---
+  duration_ms: 31765.2113
+  ...
+# Subtest: current identity is checked again after retained evidence storage I/O
+ok 26 - current identity is checked again after retained evidence storage I/O
+  ---
+  duration_ms: 10944.3688
+  ...
+# Subtest: explicitly published copies preserve source governance and are physically erased with a deleted source
+ok 27 - explicitly published copies preserve source governance and are physically erased with a deleted source
+  ---
+  duration_ms: 14406.3757
+  ...
+# Subtest: unbound numerical or unread narrative claims fail without creating a report
+ok 28 - unbound numerical or unread narrative claims fail without creating a report
+  ---
+  duration_ms: 44732.9662
+  ...
+# Subtest: current permission revocation fences the next crawl request and releases only the unclaimed AI reservation
+ok 29 - current permission revocation fences the next crawl request and releases only the unclaimed AI reservation
+  ---
+  duration_ms: 212.2311
+  ...
+2026-10-25 09:48:15.997 CST [33576] ERROR:  PLAN_STORAGE_LIMIT
+2026-10-25 09:48:15.997 CST [33576] CONTEXT:  PL/pgSQL function assert_tenant_storage_capacity(uuid,bigint,uuid) line 20 at RAISE
+2026-10-25 09:48:15.997 CST [33576] STATEMENT:  SELECT assert_tenant_storage_capacity($1,$2,$3)
+
+# Subtest: actual SQL storage exhaustion stops collection and releases the unclaimed model reservation without repeated HTTP
+ok 30 - actual SQL storage exhaustion stops collection and releases the unclaimed model reservation without repeated HTTP
+  ---
+  duration_ms: 906.0452
+  ...
+2026-10-25 09:48:16.104 CST [20376] LOG:  checkpoint starting: immediate force wait
+
+2026-10-25 09:48:16.964 CST [20376] LOG:  checkpoint complete: wrote 51 buffers (0.3%), wrote 6 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.010 s, sync=0.477 s, total=0.860 s; sync files=13, longest=0.106 s, average=0.037 s; distance=21451 kB, estimate=21451 kB; lsn=16/49E4A3D0, redo lsn=16/49E4A378
+
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 176485.0103
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/942e104e-e9b7-4ed6-b9cb-b445d2bde5ce/result.json","sha256":"5d6ac11772042285d5e0fd9ed188749af7f8a8dd2bfc65983af2a6f9bcdff198","exit_code":0}
+2026-10-25 09:48:17.641 CST [3288] LOG:  received fast shutdown request
+
+2026-10-25 09:48:17.706 CST [3288] LOG:  aborting any active transactions
+
+2026-10-25 09:48:17.713 CST [3288] LOG:  background worker "logical replication launcher" (PID 31840) exited with exit code 1
+
+2026-10-25 09:48:17.713 CST [20376] LOG:  shutting down
+
+2026-10-25 09:48:17.754 CST [20376] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-25 09:48:17.933 CST [20376] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.037 s, total=0.221 s; sync files=1, longest=0.037 s, average=0.037 s; distance=0 kB, estimate=19306 kB; lsn=16/49E4A4E8, redo lsn=16/49E4A4E8
+
+2026-10-25 09:48:18.024 CST [3288] LOG:  database system is shut down
+
