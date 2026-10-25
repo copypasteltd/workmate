@@ -4,6 +4,8 @@ import {
   ArrowDown,
   ArrowUpRight,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Circle,
   GitBranch,
   LockKeyhole,
@@ -40,6 +42,7 @@ type Run = {
   name: string;
   state: string;
   revision: number;
+  created_at: string;
   version: number;
   error_code: string | null;
   coordinator_task_id: string;
@@ -66,14 +69,84 @@ const readyRoles = new Set([
 const requestId = () => crypto.randomUUID();
 
 export function AgentGroups() {
+  const w = useWorkspace();
+  return (
+    <AgentGroupsWorkspace key={`${w.me?.user?.id}:${w.tenant}:${w.project}`} />
+  );
+}
+
+function HistoryPager({
+  label,
+  page,
+  hasNext,
+  previous,
+  next,
+  disabled,
+  onPrevious,
+  onNext,
+}: {
+  label: string;
+  page: number;
+  hasNext: boolean;
+  previous: string;
+  next: string;
+  disabled: boolean;
+  onPrevious: () => void;
+  onNext: () => void;
+}) {
+  const { t } = useI18n();
+  return (
+    <nav className="team-pagination" aria-label={label}>
+      <button
+        className="button"
+        disabled={disabled || page === 1}
+        onClick={onPrevious}
+        aria-label={previous}
+      >
+        <ChevronLeft size={15} />
+        {previous}
+      </button>
+      <span className="muted" role="status" aria-live="polite">
+        {t(`第 ${page} 頁`, `Page ${page}`)}
+      </span>
+      <button
+        className="button"
+        disabled={disabled || !hasNext}
+        onClick={onNext}
+        aria-label={next}
+      >
+        {next}
+        <ChevronRight size={15} />
+      </button>
+    </nav>
+  );
+}
+
+type HistoryPages<T> = { group: string; cursors: (T | null)[] };
+
+function AgentGroupsWorkspace() {
   const w = useWorkspace(),
     { t } = useI18n();
   const [teams, setTeams] = useState<Team[]>([]),
     [agents, setAgents] = useState<any[]>([]),
-    [selected, setSelected] = useState("");
+    [group, setGroup] = useState<Team | null>(null);
+  const [teamPages, setTeamPages] = useState<(string | null)[]>([null]),
+    [nextTeam, setNextTeam] = useState<string | null>(null),
+    [runPages, setRunPages] = useState<HistoryPages<string>>({
+      group: "",
+      cursors: [null],
+    }),
+    [versionPages, setVersionPages] = useState<HistoryPages<number>>({
+      group: "",
+      cursors: [null],
+    });
   const [runs, setRuns] = useState<Run[]>([]),
     [versions, setVersions] = useState<any[]>([]),
     [failure, setFailure] = useState<unknown>(null);
+  const [nextRun, setNextRun] = useState<string | null>(null),
+    [nextVersion, setNextVersion] = useState<number | null>(null),
+    [fixedBindings, setFixedBindings] = useState<any[]>([]),
+    [historyLoading, setHistoryLoading] = useState(false);
   const [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
     [editor, setEditor] = useState(false);
@@ -91,7 +164,9 @@ export function AgentGroups() {
     [cancelKey, setCancelKey] = useState("");
   const live = useRef(true),
     sequence = useRef(0),
-    detailSequence = useRef(0);
+    detailSequence = useRef(0),
+    groupRef = useRef(group);
+  groupRef.current = group;
   useEffect(() => {
     live.current = true;
     return () => {
@@ -100,7 +175,17 @@ export function AgentGroups() {
       ++detailSequence.current;
     };
   }, []);
-  const group = teams.find((g) => g.id === selected),
+  const selected = group?.id ?? "",
+    teamCursor = teamPages[teamPages.length - 1],
+    runCursors = runPages.group === selected ? runPages.cursors : [null],
+    versionCursors =
+      versionPages.group === selected ? versionPages.cursors : [null],
+    runCursor = runCursors[runCursors.length - 1],
+    versionCursor = versionCursors[versionCursors.length - 1],
+    directoryTeams =
+      group && !teams.some((g) => g.id === group.id)
+        ? [group, ...teams]
+        : teams,
     root = "/v1/agent-groups";
   const request = useCallback(
     (path: string, method = "GET", body?: unknown, key?: string) =>
@@ -114,49 +199,109 @@ export function AgentGroups() {
       }),
     [w.tenant],
   );
-  const reload = useCallback(async () => {
-    const n = ++sequence.current;
-    try {
-      const [gs, as] = await Promise.all([
-        request("?project_id=" + w.project + "&limit=100"),
-        api(w.base + "/agents"),
-      ]);
-      if (!live.current || n !== sequence.current) return;
-      setTeams(gs.items);
-      setAgents(
-        as.items.filter((a: any) => a.enabled && a.content_state === "active"),
-      );
-      setSelected((id) =>
-        gs.items.some((g: Team) => g.id === id) ? id : (gs.items[0]?.id ?? ""),
-      );
-    } catch (e) {
-      if (live.current && n === sequence.current) setFailure(e);
-    } finally {
-      if (live.current && n === sequence.current) setLoading(false);
-    }
-  }, [request, w.project, w.base]);
-  const loadRuns = useCallback(async () => {
-    if (!selected) {
-      setRuns([]);
-      setVersions([]);
-      return;
-    }
-    const n = ++detailSequence.current;
-    try {
-      const [rs, vs] = await Promise.all([
-        request(`/${selected}/runs?limit=8`),
-        request(`/${selected}/versions?limit=20`),
-      ]);
-      if (live.current && n === detailSequence.current) {
-        setRuns(rs.items);
-        setVersions(vs.items);
+  const reload = useCallback(
+    async (preferred?: Team | null) => {
+      const n = ++sequence.current;
+      setLoading(true);
+      try {
+        const [gs, as] = await Promise.all([
+          request(
+            "?project_id=" +
+              w.project +
+              "&limit=100" +
+              (teamCursor ? "&cursor=" + teamCursor : ""),
+          ),
+          api(w.base + "/agents"),
+        ]);
+        if (!live.current || n !== sequence.current) return;
+        const current =
+          preferred === null ? null : (preferred ?? groupRef.current);
+        let active = current
+          ? gs.items.find((g: Team) => g.id === current.id)
+          : null;
+        if (current && !active) {
+          try {
+            active = await request("/" + current.id);
+          } catch (e) {
+            if ((e as any).status !== 404 && (e as any).status !== 403) throw e;
+          }
+        }
+        if (!live.current || n !== sequence.current) return;
+        setTeams(gs.items);
+        setNextTeam(gs.next_cursor);
+        setAgents(
+          as.items.filter(
+            (a: any) => a.enabled && a.content_state === "active",
+          ),
+        );
+        if ((active ?? gs.items[0])?.id !== groupRef.current?.id) {
+          setRunPages({ group: "", cursors: [null] });
+          setVersionPages({ group: "", cursors: [null] });
+        } else if (active?.version !== groupRef.current?.version) {
+          setVersionPages({ group: "", cursors: [null] });
+        }
+        setGroup(active ?? gs.items[0] ?? null);
+      } catch (e) {
+        if (live.current && n === sequence.current) {
+          setTeams([]);
+          setGroup(null);
+          setNextTeam(null);
+          setFailure(e);
+        }
+      } finally {
+        if (live.current && n === sequence.current) setLoading(false);
       }
-    } catch (e) {
-      if (live.current && n === detailSequence.current) setFailure(e);
-    }
-  }, [request, selected]);
+    },
+    [request, w.project, w.base, teamCursor],
+  );
+  const loadRuns = useCallback(
+    async (quiet = false) => {
+      if (!selected) return;
+      const n = ++detailSequence.current;
+      if (!quiet) setHistoryLoading(true);
+      try {
+        const [rs, vs] = await Promise.all([
+          request(
+            `/${selected}/runs?limit=8` +
+              (runCursor ? "&before=" + runCursor : ""),
+          ),
+          request(
+            `/${selected}/versions?limit=20` +
+              (versionCursor !== null ? "&before=" + versionCursor : ""),
+          ),
+        ]);
+        const pinned =
+          vs.items.find((v: any) => v.version === group?.version) ??
+          (
+            await request(
+              `/${selected}/versions?limit=1&before=${(group?.version ?? 0) + 1}`,
+            )
+          ).items[0];
+        if (live.current && n === detailSequence.current) {
+          setRuns(rs.items);
+          setVersions(vs.items);
+          setNextRun(rs.next_before);
+          setNextVersion(vs.next_before);
+          setFixedBindings(pinned?.body.bindings ?? []);
+        }
+      } catch (e) {
+        if (live.current && n === detailSequence.current) {
+          setRuns([]);
+          setVersions([]);
+          setNextRun(null);
+          setNextVersion(null);
+          setFixedBindings([]);
+          setFailure(e);
+        }
+      } finally {
+        if (live.current && n === detailSequence.current)
+          setHistoryLoading(false);
+      }
+    },
+    [request, selected, group?.version, runCursor, versionCursor],
+  );
   useEffect(() => {
-    if (!window.copyPasteBridge) void reload();
+    if (!window.copyPasteBridge) void reload(null);
   }, [reload]);
   useEffect(() => {
     if (window.copyPasteBridge) return;
@@ -166,15 +311,41 @@ export function AgentGroups() {
     setCancel(null);
     setSteps([]);
     setBrief("");
+    setFixedBindings([]);
+    setNextRun(null);
+    setNextVersion(null);
+  }, [selected]);
+  useEffect(() => {
+    setReview(null);
+  }, [group?.version]);
+  useEffect(() => {
+    if (window.copyPasteBridge || !selected) return;
     void loadRuns();
     const timer = window.setInterval(() => {
-      if (!document.hidden) void loadRuns();
+      if (!document.hidden) void loadRuns(true);
     }, 4000);
     return () => {
       window.clearInterval(timer);
       ++detailSequence.current;
     };
-  }, [loadRuns]);
+  }, [loadRuns, selected]);
+  const selectGroup = (g: Team | null) => {
+    ++detailSequence.current;
+    setRuns([]);
+    setVersions([]);
+    setFixedBindings([]);
+    setRunPages({ group: "", cursors: [null] });
+    setVersionPages({ group: "", cursors: [null] });
+    setGroup(g);
+    setFailure(null);
+  };
+  const changeDirectory = (pages: (string | null)[]) => {
+    if (busy || loading) return;
+    ++sequence.current;
+    selectGroup(null);
+    setLoading(true);
+    setTeamPages(pages);
+  };
   const act = async (operation: () => Promise<unknown>) => {
     if (busy) return;
     setBusy(true);
@@ -212,9 +383,7 @@ export function AgentGroups() {
       );
       if (!live.current) return;
       setEditor(false);
-      await reload();
-      setSelected(saved.id);
-      await loadRuns();
+      await reload(saved);
     });
   const addStep = () => {
     if (!group || steps.length >= 16) return;
@@ -241,7 +410,7 @@ export function AgentGroups() {
   };
   const titleOf = (id: string) =>
     agents.find((a) => a.id === id)?.name ??
-    versions[0]?.body.bindings.find((a: any) => a.agent_id === id)?.name ??
+    fixedBindings.find((a: any) => a.agent_id === id)?.name ??
     t("已停用的專家", "Unavailable specialist");
   const micros = (amount: string) => {
     if (!/^\d+(?:\.\d{1,6})?$/.test(amount))
@@ -299,7 +468,8 @@ export function AgentGroups() {
       );
       if (live.current) {
         setReview(null);
-        await loadRuns();
+        if (runCursor === null) await loadRuns();
+        else setRunPages({ group: selected, cursors: [null] });
       }
     });
   if (window.copyPasteBridge)
@@ -338,7 +508,11 @@ export function AgentGroups() {
           {t("專案團隊", "Project team")}
           <select
             value={selected}
-            onChange={(e) => setSelected(e.target.value)}
+            onChange={(e) =>
+              selectGroup(
+                directoryTeams.find((g) => g.id === e.target.value) ?? null,
+              )
+            }
             disabled={loading || busy}
           >
             <option value="">
@@ -346,7 +520,7 @@ export function AgentGroups() {
                 ? t("載入中…", "Loading…")
                 : t("選擇團隊", "Choose a team")}
             </option>
-            {teams.map((g) => (
+            {directoryTeams.map((g) => (
               <option key={g.id} value={g.id}>
                 {g.name} · v{g.version}
                 {g.state === "archived" ? t(" · 已封存", " · Archived") : ""}
@@ -356,14 +530,24 @@ export function AgentGroups() {
         </label>
         <button
           className="button"
-          onClick={() => void act(reload)}
+          onClick={() => void act(() => reload())}
           disabled={busy}
           aria-label={t("重新整理團隊", "Refresh teams")}
         >
           <RefreshCw size={16} />
         </button>
+        <HistoryPager
+          label={t("團隊分頁", "Team pages")}
+          page={teamPages.length}
+          hasNext={nextTeam !== null}
+          disabled={busy || loading}
+          previous={t("上一頁團隊", "Previous teams")}
+          next={t("下一頁團隊", "Next teams")}
+          onPrevious={() => changeDirectory(teamPages.slice(0, -1))}
+          onNext={() => nextTeam && changeDirectory([...teamPages, nextTeam])}
+        />
       </div>
-      {!loading && !teams.length && (
+      {!loading && !directoryTeams.length && (
         <section className="team-empty">
           <Users size={28} />
           <h2>
@@ -420,7 +604,6 @@ export function AgentGroups() {
                       requestId(),
                     );
                     await reload();
-                    await loadRuns();
                   })
                 }
               >
@@ -453,25 +636,44 @@ export function AgentGroups() {
                 </article>
               ))}
             </div>
-            {versions[0] && (
-              <details>
-                <summary>
-                  {t("固定成員版本與歷史", "Fixed member versions & history")}
-                </summary>
-                {versions.map((v) => (
-                  <div className="team-version" key={v.version}>
-                    <strong>
-                      v{v.version} · {v.body.name}
-                    </strong>
-                    <span>
-                      {v.body.bindings
-                        .map((b: any) => `${b.name} v${b.agent_version}`)
-                        .join(" / ")}
-                    </span>
-                  </div>
-                ))}
-              </details>
-            )}
+            <details aria-busy={historyLoading}>
+              <summary>
+                {t("固定成員版本與歷史", "Fixed member versions & history")}
+              </summary>
+              {versions.map((v) => (
+                <div className="team-version" key={v.version}>
+                  <strong>
+                    v{v.version} · {v.body.name}
+                  </strong>
+                  <span>
+                    {v.body.bindings
+                      .map((b: any) => `${b.name} v${b.agent_version}`)
+                      .join(" / ")}
+                  </span>
+                </div>
+              ))}
+              <HistoryPager
+                label={t("版本歷史分頁", "Version history pages")}
+                page={versionCursors.length}
+                hasNext={nextVersion !== null}
+                disabled={busy || historyLoading}
+                previous={t("較新版本", "Newer versions")}
+                next={t("較舊版本", "Older versions")}
+                onPrevious={() =>
+                  setVersionPages({
+                    group: selected,
+                    cursors: versionCursors.slice(0, -1),
+                  })
+                }
+                onNext={() =>
+                  nextVersion !== null &&
+                  setVersionPages({
+                    group: selected,
+                    cursors: [...versionCursors, nextVersion],
+                  })
+                }
+              />
+            </details>
           </section>
           {group.state === "active" && (
             <section
@@ -706,10 +908,35 @@ export function AgentGroups() {
             className="team-runs"
             aria-label={t("我的團隊執行", "My team runs")}
           >
-            <div className="team-section-title">
+            <div className="team-section-title" aria-busy={historyLoading}>
               <h2>{t("我的團隊執行", "Your team runs")}</h2>
-              <span className="muted">{t("最近 8 次", "Latest 8 runs")}</span>
+              <span className="muted">
+                {runCursor === null
+                  ? t("最新執行", "Newest runs")
+                  : t("歷史執行", "Earlier runs")}
+              </span>
             </div>
+            <HistoryPager
+              label={t("執行歷史分頁", "Run history pages")}
+              page={runCursors.length}
+              hasNext={nextRun !== null}
+              disabled={busy || historyLoading}
+              previous={t("較新執行", "Newer runs")}
+              next={t("較舊執行", "Older runs")}
+              onPrevious={() =>
+                setRunPages({
+                  group: selected,
+                  cursors: runCursors.slice(0, -1),
+                })
+              }
+              onNext={() =>
+                nextRun &&
+                setRunPages({
+                  group: selected,
+                  cursors: [...runCursors, nextRun],
+                })
+              }
+            />
             {!runs.length && (
               <p className="muted">
                 {t(
@@ -719,13 +946,22 @@ export function AgentGroups() {
               </p>
             )}
             {runs.map((run) => (
-              <article className="team-run" key={run.id}>
+              <article className="team-run" key={run.id} data-run-id={run.id}>
                 <header>
                   <div>
                     <span className="eyebrow">
                       v{run.version} · {t("雲端 Codex", "Cloud Codex")}
                     </span>
                     <h3>{run.name}</h3>
+                    <time
+                      className="team-run-created"
+                      dateTime={run.created_at}
+                    >
+                      {new Intl.DateTimeFormat(t("zh-HK", "en-HK"), {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      }).format(new Date(run.created_at))}
+                    </time>
                   </div>
                   <Badge value={run.state} />
                   {run.state === "running" && (
