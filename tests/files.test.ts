@@ -279,3 +279,9 @@ test("sign-out removes every folder grant and cached file result before queued w
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("method library bridge admits scoped metadata and configuration but no cloud trial execution", () => {
+ const id="11111111-1111-4111-8111-111111111111";
+ for(const [url,method] of [["/v1/solution-access?project_id="+id,"GET"],["/v1/solution-targets?project_id="+id+"&kind=assets","GET"],["/v1/solution-versions","POST"],[`/v1/solution-versions/${id}/details`,"GET"],[`/v1/solution-versions/${id}/installations`,"POST"],[`/v1/solution-installations/${id}/configurations`,"POST"],[`/v1/solution-trials/${id}`,"GET"]]) assert.equal(rendererApiOperation(url,method),true);
+ for(const [url,method] of [[`/v1/solution-versions/${id}/trials`,"POST"],[`/v1/solution-versions/${id}`,"DELETE"],[`/v1/solution-installations/${id}/configurations`,"GET"],["/v1/solution-targets","POST"],[`/v1/solution-versions/${id}/publish`,"POST"]]) assert.equal(rendererApiOperation(url,method),false);
+});

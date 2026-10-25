@@ -14,6 +14,7 @@ import { MarketingReports } from "./marketing-reports";
 import { CreativeFeedback } from "./creative-feedback";
 import { SeoAudits } from "./seo-audits";
 import { NativeFiles } from "./native-files";
+import { Solutions } from "./solutions";
 import { LocalAgentWorkspace, CloudWorkspaceLink } from "./local-agent";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
@@ -647,6 +648,7 @@ const navigation = [
   ["roles", Sparkles, "專業角色", "Specialists"],
   ["specialists", Users, "我的專家", "Your specialists"],
   ["skills", BookOpen, "專案技能", "Project methods"],
+  ["solutions", Layers, "業務方案", "Business methods"],
   ["notifications", Bell, "工作通知", "Work notifications"],
   ["conversations", MessageSquare, "我的會話", "Your conversations"],
   ["memories", Brain, "記憶與偏好", "Memory & preferences"],
@@ -830,6 +832,7 @@ function Shell() {
           {w.base ? (
             <Routes>
               <Route index element={<LocalAgentWorkspace />} />
+              <Route path="solutions" element={<Solutions />} />
               <Route path="cloud" element={<CloudWorkspaceLink />} />
               <Route path="roles" element={<Roles />} />
               <Route path="specialists" element={<Specialists />} />

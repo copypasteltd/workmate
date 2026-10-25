@@ -462,3 +462,17 @@ test("an unused local session can reopen without replaying inference or resuming
     assert.equal(f.requests.length, 0);
   } finally { await f.clean(); }
 });
+
+test("native read-only Codex can read a registered exact method without gaining write permission", {timeout:120000}, async()=>{
+ const f=await fixture(), id=randomUUID(), calls:any[]=[];
+ try {
+  const binding={...f.binding,grant:{...f.binding.grant,mode:"read-only" as const},companyTools:[{name:"solution_read",description:"Read a pinned installed reusable method.",inputSchema:{type:"object",properties:{installation_id:{type:"string"}},required:["installation_id"],additionalProperties:false}}]};
+  const native=f.make(f.profile,binding,async call=>{calls.push(call);return {solution_version_id:randomUUID(),version:1,instructions:"NATIVE_PINNED_METHOD_READ_96",private_materials_or_credentials_copied:false};});
+  await f.start(native);f.actions.push({company:{tool:"solution_read",arguments:{installation_id:id}}});
+  await native.turn("Read the registered installed method within the current read-only permission.");
+  assert.equal(calls.length,1);assert.equal(calls[0].tool,"solution_read");assert.equal(calls[0].arguments.installation_id,id);
+  assert.ok(f.requests.some(r=>JSON.stringify(r.body.input).includes("NATIVE_PINNED_METHOD_READ_96")));
+  assert.equal(f.events.filter(e=>e.kind==="local.company-tool.completed").length,1);
+  assert.equal(f.events.some(e=>e.kind==="local.company-tool.failed"),false);
+ } finally {await f.clean();}
+});

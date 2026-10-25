@@ -4,10 +4,11 @@ import { GeneratedVideos } from "./generated-videos";
 import { AudioProductions } from "./audio-production";
 import { VideoBriefFields, videoGenerationBrief } from "./video-brief";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X } from "lucide-react";
+import { BookOpen, ArrowUp, Download, FolderOpen, Monitor, Plus, ShieldCheck, Square, Terminal, X } from "lucide-react";
 import { download } from "./api";
+import { useSearchParams } from "react-router-dom";
 import { useWorkspace } from "./context";
-import { Money, useI18n } from "./ui";
+import { ErrorNotice, Money, useData, useI18n } from "./ui";
 import "./local-agent.css";
 import type { LocalPendingInput, LocalInputAnswers } from "../../src/local-input";
 import { LocalVideoJobs, type LocalVideoJob } from "./local-video";
@@ -87,6 +88,11 @@ export function CloudWorkspaceLink() {
 }
 export function LocalAgentWorkspace() {
   const w = useWorkspace(), { t } = useI18n();
+  const [methodQuery, setMethodQuery] = useSearchParams();
+  const methodInstallation = methodQuery.get("method_project") === w.project && /^[a-f0-9-]{36}$/.test(methodQuery.get("method_installation") ?? "") ? methodQuery.get("method_installation")! : "";
+  const installedMethod = useData<any>(methodInstallation ? `/v1/solution-installations/${methodInstallation}` : null, 0, 0, w.tenant);
+  const pinnedMethod = useData<any>(installedMethod.data?.solution ? `/v1/solution-versions/${installedMethod.data.solution.id}/details` : null, 0, 0, w.tenant);
+  const methodRole = pinnedMethod.data?.templates?.some((v:any)=>v.role_key === methodQuery.get("method_role")) ? methodQuery.get("method_role")! : "";
   const [sessions, setSessions] = useState<LocalSession[]>([]), [roles, setRoles] = useState<string[]>([]);
   const [selected, setSelected] = useState(""), [role, setRole] = useState("fullstack"), [mode, setMode] = useState<Permission>("workspace-write");
   const [prompt, setPrompt] = useState(""), [budget, setBudget] = useState("5"), [workspaceError, setError] = useState("");
@@ -193,6 +199,13 @@ export function LocalAgentWorkspace() {
     <header className="local-agent-heading"><div><div className="eyebrow">COPYPASTE · ON YOUR COMPUTER</div>
       <h1>{t("你的本機工作夥伴", "Your local workmate")}</h1><p>{t("從一個目錄、一個想法開始。讓工作在你的電腦上完成。", "Start with a folder and an idea. Get the work done on your computer.")}</p></div>
       <span className="local-agent-chip"><Monitor size={16}/>{t("在此電腦執行", "Runs on this computer")}</span></header>
+    <ErrorNotice error={installedMethod.error || pinnedMethod.error}/>
+    {installedMethod.data?.solution && pinnedMethod.data && (!methodRole || !roles.includes(methodRole)) && <p role="status" className="notice">{t("此方法所選的角色尚未支援本機工作。請選擇方法內另一個已支援的專業角色，或到 Web 執行；預設雲端助手不會替代本機 Codex。", "This method's selected role is not available for local work. Choose another supported pinned specialist or run it on Web. The cloud default assistant does not replace local Codex.")}</p>}
+    {methodInstallation && installedMethod.data?.solution && <section className="local-agent-method" aria-label={t("已選方法", "Selected method")}><BookOpen size={20}/><div><strong>{installedMethod.data.name} · v{installedMethod.data.solution.version}</strong><p>{t("套用方法後，請選取相同角色的本機會話，核對目錄、權限與預算後再發送。", "Apply this method, select a local session with the same role, then review its folder, permissions and budget before sending.")}</p></div><button className="button secondary" disabled={!roles.includes(methodRole) || pending || (!!session && session.role !== methodRole)} onClick={()=>{
+      setRole(methodRole);
+      setPrompt(`Read the exact installed method using the company solution_read tool with installation_id ${methodInstallation}. Apply its pinned method only within this task's current local permissions, approved files and budget. Ask me for missing required target inputs or reporting accounts before proceeding; this instruction does not grant local access or external-write approval.\n\nMy request:\n`);
+      setMethodQuery({});
+    }}>{t("將方法加入本次簡報", "Add method to this brief")}</button></section>}
     {error && <div role="alert" className="local-agent-alert">{error === "PROJECT_CONFIGURATION_UNAVAILABLE"
       ? t("專案共用指引的資料已不可用。請到「我的專案」檢查指引及資料授權，再繼續工作。", "Shared project guidance is unavailable. Open My projects to review the guidance and access to its sources, then continue your work.")
       : error === "PROJECT_BUDGET_EXCEEDED"

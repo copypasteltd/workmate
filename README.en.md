@@ -1,8 +1,43 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- solution-packages-stage96 -->
+
+## Versioned business methods
+
+Stage 96 implements immutable business-method versions, free dependency previews, private paid trials, exact-delivery acceptance, publication and fresh cross-project rebinding. 122 related integration checks, 45 Desktop unit checks, two actual local Codex checks and eight actual browser checks pass. Model/account data remain explicitly synthetic; files, processes, authorization, accounting and audit execute normally.
+
+1. Sign in, select a project and open Business methods. Save reusable instructions, preset roles, input labels and reporting requirements. This pins template, role, Codex profile and Skill versions; revisions require new trials and acceptance.
+2. Select currently approved fixed files and reporting accounts. Preview missing requirements, snapshots, source hashes and task capacity free. Explicitly approve a private brief and total budget; each role gets an independent task in one atomic batch. Insufficient capacity rejects the complete batch.
+3. Inspect every actual delivery before acceptance and publication. Browsing file or snapshot metadata cannot qualify required content; exact versions and hashes need separate actual content-read facts. Incomplete or unrelated trials, stale delivery hashes and revoked accounts cannot qualify a version. Unknown responses retain the same body and idempotency key across reload.
+4. Installation copies a published method reference only. Source customer files, private briefs, results, memories, accounts and keys are not automatically copied. Upload target-project inputs, save revision-safe bindings and separately approve paid reuse.
+5. Admin metadata, body reads and disablement use separate scoped permissions. Body access is audited; disablement requires recent MFA and a reason. Withdrawn methods, inputs and account authority fence dependent content.
+
+```mermaid
+flowchart LR
+ A[Login and current project] --> B[Pinned method and role versions]
+ B --> C[Fresh inputs and free preview]
+ C --> D[Approve private brief and total budget]
+ D --> E[Actual Codex tasks and measured usage]
+ E --> F[Accept exact deliveries then publish]
+ F --> G[Install reference in target project]
+ G --> C
+```
+
+Desktop keeps local Codex with explicit local folder, permission and budget approval. Its generic bridge rejects cloud method-trial admission; exact installed methods are read-only company tools available only to compatible pinned native roles. The cloud default assistant is not a local role. Extension keeps a cloud agent, approved attachment upload and a native right side panel. These new captures show actual Web/Admin; new packaged Desktop method-library visuals are not qualified here. Earlier Desktop screenshots keep their historical scope.
+
+[方案与使用 / Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/96-versioned-business-solutions.md) · [Exact-source evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/solution-packages-checkpoint.json)
+
+![Actual Web source and dependency preview / 实际 Web 资料预览](assets/screenshots/workmate-solution-packages-07-preview-en.png)
+
+![Actual scoped Admin method control / 实际 Admin 方案管理](assets/screenshots/workmate-solution-packages-07-admin-metadata.png)
+
+![Actual review, original request retry and acceptance / 实际审阅、原提交重试和验收](assets/screenshots/workmate-solution-packages-07-method-review-and-publish.gif)
+
+[375px](assets/screenshots/workmate-solution-packages-07-responsive-375.png) · [Published method](assets/screenshots/workmate-solution-packages-07-published-en.png) · [Fresh target requirements](assets/screenshots/workmate-solution-packages-07-installed-missing.png) · [Audited body read](assets/screenshots/workmate-solution-packages-07-admin-body-audited.png) · [Review MP4](assets/screenshots/workmate-solution-packages-07-method-review-and-publish.mp4) · [Copy & rebind GIF](assets/screenshots/workmate-solution-packages-07-copy-rebind-and-trial.gif) · [Copy & rebind MP4](assets/screenshots/workmate-solution-packages-07-copy-rebind-and-trial.mp4)
+
 <!-- media-effects-stage95 -->
 
-## Reviewed native media effects
+## Earlier reviewed native media effects (stage 95)
 
 Stage 95 connects ten versioned native effects: transitions, Chinese animated text, chroma key and cleanup. After reviewing exact source versions, parameters and budget, customers approve Codex to invoke native FFmpeg and deliver actual silent MP4, PNG, source JSON and ZIP. All 106 related regression cases and eight real browser checks pass, including two native Codex processes, eight private downloads and real accounting. Model responses and account capacity are explicitly synthetic.
 
