@@ -1,8 +1,8 @@
 # Workmate · CopyPaste Enterprise Agent
 
-<!-- goal-gap-review-07 -->
+<!-- goal-gap-review-08 -->
 
-**Current review (2026-10-25, seventh):** The published stage-86 baseline is distinguished from unpublished Desktop/Delivery candidates. Folder scheduling has candidate code and 91 passing Desktop unit tests; the latest packaged journey fails after eight observations before its folder-work scenario is reached. Previous 1023-platform/50-packaged-Desktop results retain stage-86 scope. The original register remains 84 partial / 18 unproven / 0 fully accepted requirements, with 18 role candidates and at least 12 professional qualifications still required. See the [26 numbered gaps and completion criteria](quality/2026-10-25-goal-gap-assessment.md) and [source/evidence review](quality/2026-10-25-goal-gap-review-07.json). The stage-86 description below retains its published scope.
+**Current review (2026-10-25, eighth):** Customer-local Codex Desktop, revocable full permission, an independent native cloud Side Panel and the multi-client workspace are implemented. Remaining gaps concern complete journeys, at least twelve professionally qualified roles, marketing production, comprehensive Admin and formal release; see the [26 numbered gaps and completion criteria](quality/2026-10-25-goal-gap-assessment.md). The original register remains 84 partial / 18 unproven / 0 fully accepted, with 18 candidates rather than twelve qualified roles. Published stage 86 and unpublished Desktop/Delivery work retain separate scopes. The [eighth source/evidence review](quality/2026-10-25-goal-gap-review-08.json) records current validation and preserved failures. The description below retains its published stage-86 scope; test counts are not a product-completion percentage.
 
 <!-- shared-project-stage86 -->
 

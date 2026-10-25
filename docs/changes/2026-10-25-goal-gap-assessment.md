@@ -2,7 +2,15 @@
 
 日期 / Date：2026-10-25，Asia/Taipei。
 
-## 第七次工作区复核：当前 / Seventh working-tree review: current
+## 第八次工作区复核：当前 / Eighth working-tree review: current
+
+更新[26 组编号差异与完成标准](../quality/2026-10-25-goal-gap-assessment.md)及中英入口，明确已有本机 Codex、可撤销全权限、独立云端原生右侧栏，不将这些方向列为缺失。完整需求登记保持 84 部分／18 未证明完整／0 完整验收，18 候选角色的至少 12 个专业资格仍待交付。生图、字体、视频、特效及广告/SEO/GEO 分析按原需求列核心优先级。
+
+评估期间继续既有开发：保留第 65–67 次实际失败，核对第 66 次窗口销毁观察错误和第 67 次 Windows ASAR 路径错误，修正观察器后重跑。运行包实际保留全部 14 个运行资产与许可证，排除仓库截图/录屏；这不替代完整业务、安装或专业成果验收。第 68 次完整流程结果以[第八次来源核查](../quality/2026-10-25-goal-gap-review-08.json)和评估表为准。前次文档和各失败回执原字节归档，当前组件增量未随此次评估文档冒充已发布。
+
+Updated the 26 numbered gaps and bilingual entry points while retaining every original requirement and gate. Local Codex/full-permission Desktop and the independent cloud Side Panel are implemented; complete journeys, twelve professional role qualifications, marketing production, comprehensive administration and production release remain open. Images, typography, video, effects and advertising/SEO/GEO analysis retain core priority. Ongoing goal work preserves failed attempts 65–67, repairs the window-destruction observer and Windows ASAR path handling, and reruns actual native validation. Runtime assets/licenses remain intact and repository media is excluded from the application archive. Current results are bounded by their receipts; local component candidates are not published through this documentation-only review.
+
+## 第七次工作区复核：历史 / Seventh working-tree review: historical
 
 更新[26 组编号差异与完成标准](../quality/2026-10-25-goal-gap-assessment.md)及主文档中英入口，区分已发布阶段 86 和未提交 Desktop/Delivery 候选。目录监听、去重和持久队列已有候选代码；最新 Desktop 单元 91/91、类型和打包通过，但第 65 次实际打包流程 failed，8 个观察后断言失败，新增目录调度未进入。原因仍需定位，不将单元通过写为端到端通过。保留阶段 86 的六份原回执；其 1510 个选定输入中 1503 相符、7 变化，新增源码另计。
 
