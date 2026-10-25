@@ -1,3 +1,4 @@
+import { ProjectConfigurationPanel, ProjectConfigurationSummary } from "./project-configuration";
 import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
 import { QualitySummary } from "./quality-summary";
@@ -927,6 +928,7 @@ function NewTask({
   </Modal>;
   return (
     <Modal title={t("開始一項新工作", "Start something new")} onClose={onClose}>
+      <ProjectConfigurationSummary compact />
       <AsyncForm
         submitLabel={t("開始工作", "Start task")}
         onSubmit={async (f) => {
@@ -1409,6 +1411,7 @@ function Projects() {
           </article>
         ))}
       </div>
+      <ProjectConfigurationPanel key={w.base} />
       {open && (
         <Modal
           title={t("建立新專案", "Create a project")}
@@ -1535,6 +1538,7 @@ function TaskDetail() {
         ← {t("返回工作台", "Back to workspace")}
       </Link>
       <ErrorNotice error={error} />
+      {data && <ProjectConfigurationSummary taskId={id} />}
       {data && (
         <>
           <PageHeader

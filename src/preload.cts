@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     html, body { height:100%; overflow:hidden; }
     #root { position:fixed; inset:40px 0 0; overflow-y:auto; overflow-x:clip; transform:translateZ(0); scroll-padding-top:64px; }
     #root :is(.sidebar,.preference-controls) { translate:0 var(--cp-root-scroll,0px); }
+    #root:focus-visible { outline:2px solid var(--blue,#1f5eff); outline-offset:-2px; }
     /* Keep native wheel, touchpad and keyboard scrolling without visible rails. */
     html, body, #root, #root * { scrollbar-width:none !important; }
     *::-webkit-scrollbar { display:none !important; width:0 !important; height:0 !important; }
@@ -44,6 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // A transformed root contains fixed overlays. Offset its existing scroll so
   // navigation/preferences remain in view and dialogs stay below the title bar.
   const root = document.getElementById("root");
+  // The native page scrolls inside this container, rather than the document.
+  // Include it in keyboard navigation so Home/End target the visible page even
+  // after a dialog or control has owned focus. Nested inputs/logs keep theirs.
+  if (root) { root.tabIndex = 0; root.setAttribute("role", "region"); }
   const syncOverlayOffset = () => {
     root?.style.setProperty("--cp-root-scroll", `${root.scrollTop}px`);
   };
@@ -152,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let maximized = false;
   const labels = () => {
     const en = document.documentElement.lang.startsWith("en");
+    root?.setAttribute("aria-label", en ? "CopyPaste workspace" : "CopyPaste 工作區");
     bar.setAttribute("aria-label", en ? "Application window" : "應用視窗");
     for (const [key, label] of [
       ["minimize", en ? "Minimize window" : "最小化視窗"],

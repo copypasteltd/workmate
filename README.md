@@ -1,5 +1,79 @@
 # Workmate · CopyPaste Desktop
 
+<!-- shared-project-stage86 -->
+
+无边框桌面客户端在客户本机运行固定 Codex，客户可主动授予并随时撤销完整本机权限。
+
+产品先服务现有客户的 marketing 团队，覆盖图片/设计/视频、广告分析、SEO/GEO、重复业务流程和软件开发预设。当前目录为 18 个候选角色，至少 12 个专业角色完成业务资格仍是验收要求。全部 AI 走公司内部 OpenAI 兼容服务；开发可用已授权假数据，演示通过不代表真实模型质量。
+
+### 本地启动
+
+以下命令在已检出的对应仓库内执行。完整工作区将六个独立仓库并列放在 `dev/`，见[分支与检出布局](https://github.com/copypasteltd/workmate/blob/docs/docs/governance/04-git-branches-and-publication.md)。使用 Windows x64、Node.js >=22.14、npm/Git，以及文档约束的原生 PostgreSQL、FFmpeg/FFprobe 与固定 Codex 资源；保留已有本地配置和数据，不使用 Docker/WSL/虚拟机。
+
+```powershell
+Set-Location 'D:/dev/copypasted/自有agent/dev/copypaste-desktop'
+npm ci
+$env:COPYPASTE_LOCAL_CODEX_BIN = 'D:/approved-runtime/codex.exe'
+npm run runtime:prepare
+npm run build
+npm start
+```
+
+先启动后端。上述内核路径是示例，需提供符合 `contracts/local-codex-runtime.json` 的固定二进制及相邻辅助资源；公司地址配置在 `deployment.json`。`npm run package:dir` 构建解包候选，`npm run package` 构建安装包。当前证据覆盖未签名解包候选，签名及人工安装/升级/卸载验收仍保留。渲染器可独立构建，须保留本机覆盖层。
+
+### 当前使用流程
+
+1. 用户通过邮箱/验证码或明确配置的企业身份登录，创建企业或接受邀请后选择企业/项目；原生端使用既有浏览器 PKCE 登录。Admin 使用独立登记、具备 MFA 及对应权限的账号。
+2. 项目 owner/admin 打开「项目 → 共享设置」，填写共同说明、交付要求、精确 Agent/Skill、品牌、共享文件版本、获准账号及可选单次预算上限。搜索/翻页选择文件，保存草稿，预览精确依赖后确认发布。发布不启动 AI、不授予权限、不改变余额。
+3. 新工作展示并固定接收时的配置版本/摘要。旧任务及本机 Codex 线程续做保持原配置；在首次发布前开始的任务仍保留原先「无配置」状态。发布新版本不静默升级旧工作。历史只能复制成新草稿，原始版本不可覆盖。
+4. 「重新核对设置」、窗口/页面恢复及 15 秒轮询重新检查来源。隔离、到期、删除或失权后隐藏不可用正文，包括打开的历史记录。历史与编辑弹窗使用独立组件标识，复制并发布不会遗留第二份旧历史；工具执行仍独立检查当前权限。
+5. 侧栏选文件先创建当前用户的私有会话，再按原始字节/SHA-256 与精确范围回执分片上传；丢回包恢复原操作，不回退到共享文件。实际上传者可以下载原字节，同项目另一位独立登录编辑者不能列出、读版本、下载或访问该私有会话。共享到项目仍需独立明确操作。
+6. Desktop 先选本机目录与权限，完整权限需客户原生确认且可撤销；Codex、终端与文件操作在客户本机运行，获准云端参考资料走公司工具。当前资料、角色、预算与云数据权限继续生效。Web/Extension 在云端运行 Codex，Extension 无须安装 Desktop。
+7. Admin 的范围内元数据、敏感正文、隔离、恢复及永久正文删除分别授权；用户/企业状态、消耗、赠额、费用登记、VIP 与审批账本继续执行各自权限。财务预览不改余额，幂等重放不重复赠额；后台不能替客户签署具体媒体授权。
+
+升级客户端前在后端执行 `npm run db:migrate` 应用增量 **SQL103**。SQL001–102 与四份历史 OpenAPI 保持已发布字节。新增共享配置八项接口，当前路由为 **487 项配置接口 + 一项明确条件化的 demo 接口**。公司网关、密钥、模型别名、已核验媒体能力及费率仅配置于后端，不进入渲染器/扩展。普通示范不自动启用全部专项媒体夹具。
+
+保留 CopyPaste 蓝/米白、Manrope/Fraunces、浅深主题。Desktop 无 Electron 原生边框菜单、无可见纵横滚动条，保留真实滚动、键盘/末项访问及实际进度。原生侧栏在实际紧凑 Chrome 窗口和两种语言展开说明/设置时，输入框、发送与当前页面仍可触达；完整可访问性/DPI/站点矩阵仍待补齐。
+
+当前独立核查范围：平台 **1023**（保留原 **1001** 用例，79 文件/20 原生数据库批次）、核心 **25**、兼容 **36**、客户端 **139**、真实 Web/Admin/侧栏 **14**、打包本机 Desktop **50**。本机共享配置实际执行 Codex **v3/v3/v4**，核对资料工具和本地文件原字节、三项各 **90 港币微额** 的独立结算，未建立云端替代任务。推理回复及部分原生对话框决策为明确夹具；各回执分别绑定未变化源码，历史失败不改写为通过。
+
+当前限制：共享配置最多 20 个文件版本/12 个连接器，Agent/品牌/账号选项各限 200；侧栏每条消息最多 20 个非空附件，每个不超过 5 MiB。恢复回执不存文件正文/凭据，未发送附件不承诺关闭侧栏后自动恢复。完整休眠/大文件/站点矩阵、十二角色业务资格、全部后台内容、音频发行/未知结果恢复、签名安装和完整 Codex Desktop 对齐仍开放。原 102 项需求与 26 个差异组全部保留，不将本增量写成全产品验收完成。
+
+
+[方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/86-shared-project-guidance-and-private-chat.md) · [精确源码检查点](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/shared-project-checkpoint.json) · [增量接口](https://github.com/copypasteltd/workmate/blob/docs/docs/contracts/project-configuration-openapi.json) · [当前差异](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/2026-10-25-goal-gap-assessment.md)
+
+~~~mermaid
+flowchart TD
+    Login[Email or company identity / company / project] --> Cloud[Web and native Side Panel / cloud Codex]
+    Login --> Local[Frameless Desktop / customer-local Codex]
+    Owner[Project owner or admin] --> Draft[Save draft / preview exact dependencies]
+    Draft --> Publish[Explicit immutable publication]
+    Publish --> New[New work pins version and digest]
+    Old[Existing task or local thread] --> Retain[Retain original version or absence]
+    Cloud --> New
+    Local --> New
+    File[Explicit Side Panel file selection] --> Private[Actor-owned private conversation]
+    Private --> Upload[Resumable upload / verify actual bytes]
+    Upload --> Cloud
+    New --> Gate[Current source / role / permission / budget]
+    Retain --> Gate
+    Admin[Scoped Admin / separate body and cost access] --> Governance[Audit / quarantine / restore / erasure]
+    Governance --> Gate
+~~~
+
+未经改图的实际界面与按观察时间录制的交互；提供方内容及原生对话框决策为明确夹具，自建浏览器/数据库均关闭。
+
+![实际配置与任务](assets/screenshots/workmate-guidance-64-native-v3-reference-file.png)
+
+![实际受控状态](assets/screenshots/workmate-guidance-64-native-retained-v3-after-v4.png)
+
+![真实交互录制](assets/screenshots/workmate-guidance-64-native-project-guidance.gif)
+
+[原始 MP4](assets/screenshots/workmate-guidance-64-native-project-guidance.mp4)
+
+<details>
+<summary>以前交付细节与历史证据</summary>
+
 <!-- audio-authorizations-stage85 -->
 
 无边框 Desktop 在客户本机运行固定 Codex，保持可撤销完整本机权限。
@@ -694,5 +768,8 @@ flowchart LR
 </details>
 
 </details>
+
+</details>
+
 
 </details>

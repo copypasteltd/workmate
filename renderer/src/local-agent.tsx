@@ -1,3 +1,4 @@
+import { ProjectConfigurationSummary } from "./project-configuration";
 import { DeliveryQuality } from "./delivery-quality";
 import { GeneratedVideos } from "./generated-videos";
 import { AudioProductions } from "./audio-production";
@@ -171,8 +172,13 @@ export function LocalAgentWorkspace() {
     <header className="local-agent-heading"><div><div className="eyebrow">COPYPASTE · ON YOUR COMPUTER</div>
       <h1>{t("你的本機工作夥伴", "Your local workmate")}</h1><p>{t("從一個目錄、一個想法開始。讓工作在你的電腦上完成。", "Start with a folder and an idea. Get the work done on your computer.")}</p></div>
       <span className="local-agent-chip"><Monitor size={16}/>{t("在此電腦執行", "Runs on this computer")}</span></header>
-    {error && <div role="alert" className="local-agent-alert">{t("操作未完成：", "Action incomplete: ")}{error}</div>}
+    {error && <div role="alert" className="local-agent-alert">{error === "PROJECT_CONFIGURATION_UNAVAILABLE"
+      ? t("專案共用指引的資料已不可用。請到「我的專案」檢查指引及資料授權，再繼續工作。", "Shared project guidance is unavailable. Open My projects to review the guidance and access to its sources, then continue your work.")
+      : error === "PROJECT_BUDGET_EXCEEDED"
+        ? t("本次預算超過專案上限。請降低工作預算，或請專案管理員更新共用指引中的上限。", "This turn exceeds the project budget limit. Reduce the turn budget or ask a project administrator to update the limit in shared guidance.")
+        : <>{t("操作未完成：", "Action incomplete: ")}{error}</>}</div>}
     <div className="local-agent-grid"><aside className="local-agent-sessions" tabIndex={0} aria-label={t("本機工作目錄與會話", "Local workspaces and sessions")}>
+      <ProjectConfigurationSummary compact />
       <label>{t("專業角色", "Specialist")}<select aria-label={t("本機角色", "Local specialist")} value={role} onChange={e => setRole(e.target.value)}>
         {roles.map(key => <option key={key} value={key}>{roleNames[key] ? t(...roleNames[key]) : key}</option>)}</select></label>
       <button className="button primary" disabled={pending || !roles.includes(role)} onClick={() => void act("create", { tenant: w.tenant, project: w.project, role })}><Plus size={16}/>{t("選擇目錄開始", "Choose folder to start")}</button>
@@ -187,7 +193,8 @@ export function LocalAgentWorkspace() {
           <button className="icon-button" aria-label={t("撤銷本機權限", "Revoke local permission")} disabled={session.revoked} onClick={() => void native("revoke", { id: session.id }).then(() => refresh.current()).catch(e => setError(e.message))}><X size={17}/></button></div></div>
         <div className="local-agent-safety">{t("目前授權：", "Current permission: ")}{session.permission ? t(...({ "read-only": ["唯讀", "Read only"], "workspace-write": ["目錄內讀寫", "Workspace write"], "full-access": ["完整本機權限", "Full local access"] } as Record<Permission, [string, string]>)[session.permission]) : t("尚未授權", "Not granted")}
           <span>{t("模型服務經公司伺服器", "Model service via company server")}</span></div>
-        <div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">{session.messages.length === 0 && <div className="local-agent-empty"><Terminal size={30}/><h2>{t("把想法變成檔案", "Turn an idea into files")}</h2><p>{t("先設定本機權限，再描述你想完成的工作。完整本機權限需要你在系統對話框中確認。", "Set local permission, then describe the work. Full local access requires your confirmation in a native dialog.")}</p></div>}
+        <div ref={messages} className="local-agent-messages" tabIndex={0} role="log" aria-label={t("本機工作記錄", "Local work history")} aria-live="polite">
+          <ProjectConfigurationSummary taskId={session.task?.task_id} compact />{session.messages.length === 0 && <div className="local-agent-empty"><Terminal size={30}/><h2>{t("把想法變成檔案", "Turn an idea into files")}</h2><p>{t("先設定本機權限，再描述你想完成的工作。完整本機權限需要你在系統對話框中確認。", "Set local permission, then describe the work. Full local access requires your confirmation in a native dialog.")}</p></div>}
           {session.messages.map((m, i) => <article key={i} className={`local-agent-message ${m.role}`}><small>{m.role === "user" ? t("你", "You") : "COPYPASTE"}{m.status ? " · " + m.status : ""}</small><p>{m.text || t("本次未返回文字。請檢查工作記錄。", "No text was returned. Review the activity log.")}</p></article>)}
           {session.busy && <article className="local-agent-message assistant"><small>COPYPASTE · {session.inputs?.length ? t("等待你的回答", "Waiting for your answer") : t("執行中", "Working")}</small><p>{stream || (session.inputs?.length ? t("回答以下問題後，工作便可繼續。", "Answer below to continue the work.") : t("正在處理本機工作…", "Working on your computer…"))}</p></article>}
           {videos.length > 0 && <LocalVideoJobs key={session.id} jobs={videos}/>}
