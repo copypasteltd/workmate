@@ -55,6 +55,9 @@ const implementedTools = new Set([
   "connector.read",
   "workflow.validate",
   "workflow.run",
+  "vector.render",
+  "slides.build",
+  "slides.render",
 ]);
 
 export async function seedAgentTemplates(db: Database, catalog: Catalog) {

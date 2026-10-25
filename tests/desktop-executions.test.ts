@@ -13,6 +13,7 @@ import { defaults } from "../src/plans.js";
 import { hash } from "../src/lib.js";
 import { desktopImageFixture } from "./desktop-image-fixture.js";
 import { desktopLocalRoleKeys } from "../src/desktop-executions.js";
+import { demoVectorInput, demoSlidesInput } from "../src/editable-design-demo.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>;
 let mode: "known" | "unknown" = "known", providerCalls = 0, countCalls = 0;
@@ -224,10 +225,98 @@ test("all eighteen connected native roles load their exact Skills and company to
       && (role === "video-motion" || !tool.name.startsWith("video_project"))));
     if (role === "designer") assert.ok(r.begun.company_tools.some((tool: any) => tool.name === "image2_generate"));
     if (role === "marketing-analyst") assert.ok(r.begun.company_tools.some((tool: any) => tool.name === "marketing_metrics"));
+    if (["marketing-analyst", "information-design", "presentation"].includes(role))
+      for (const name of ["analysis_sources", "analysis_file_inspect", "sheet_calculate", "analysis_source_read", "chart_render"])
+        assert.ok(r.begun.company_tools.some((tool: any) => tool.name === name), role + ": " + name);
+    if (["brand-visual", "presentation"].includes(role))
+      assert.ok(r.begun.company_tools.some((tool: any) => tool.name === (role === "brand-visual" ? "vector_render" : "slides_render")));
     await ok(f.c, "POST", r.url + "/finish", { ...complete, status: "failed", output: "Admission fixture only; no native business qualification claimed" });
     assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM outbox WHERE topic='task.run' AND payload->>'task_id'=$1", [r.created.task_id])).rows[0].n, 0);
   }
 });
+
+for (const role of ["brand-visual", "presentation"])
+  test(`${role}: native bridge delivers editable files, scopes private sources to its actual desktop session and preserves revisions`, async () => {
+    const f = await fixture();
+    f.input.role_key = role;
+    const first = await start(f);
+    const invoke = async (r: { url: string }, name: string, args: any, callId = randomUUID()) =>
+      (await ok(f.c, "POST", r.url + "/tools", { tool: name, arguments: args, call_id: callId, thread_id: "fixed-native-design-thread", turn_id: "fixed-native-design-turn" })).output;
+    const input = role === "brand-visual" ? demoVectorInput() : demoSlidesInput();
+    if (role === "presentation") {
+      const projectBase = `/v1/tenants/${f.tenant}/projects/${f.project}`;
+      const dataset = await ok(f.web, "POST", projectBase + "/analytics/import", {
+        name: "Actual fixed native chart source",
+        csv: "date,channel,campaign,impressions,clicks,spend,conversions,revenue,currency\n2026-10-01,Google,Launch,100,10,10,1,20,HKD\n2026-10-02,Google,Launch,1000,200,90,3,180,HKD",
+        currency: "HKD", account_id: "native-account", attribution_definition: "7d click", conversion_definition: "Purchase",
+      });
+      const specification = { prompt: "Calculate the exact captured spend", snapshot_ids: [dataset.id], date_from: "2026-10-01", date_to: "2026-10-02", timezone: "Asia/Hong_Kong", currency_policy: "group_by_currency", metrics: ["spend"], dimensions: [] };
+      const calculation = await invoke(first, "sheet_calculate", { specification });
+      const analysis = await invoke(first, "chart_render", { specification, calculation_sha256: calculation.calculation_sha256, title: "Exact native evidence", locale: "en-HK", metrics: ["spend"], scope_ids: calculation.scopes.map((s: any) => s.id) });
+      const source = analysis.files.find((file: any) => file.filename === "analysis.source.json");
+      const read = await invoke(first, "analysis_source_read", { source_version_id: source.asset_version_id });
+      assert.equal(read.calculation_sha256, calculation.calculation_sha256);
+      const chart = await invoke(first, "design_chart_read", { source_version_id: source.asset_version_id });
+      const evidence = chart.evidence.find((row: any) => row.metric_id === "spend");
+      assert.equal(evidence.value, "100.00000000");
+      if (!("slides" in input)) throw new Error("Expected presentation input");
+      input.slides[0].scene.layers = [{ kind: "chart", id: "native-chart", x: 64, y: 150, w: 1000, h: 350, title: "Captured spend", color: "#1F5EFF", source_version_id: source.asset_version_id, sha256: chart.sha256, evidence_ids: [evidence.id] }];
+    }
+    const writerName = role === "brand-visual" ? "vector_render" : "slides_build";
+    const descriptor = first.begun.company_tools.find((tool: any) => tool.name === writerName);
+    assert.ok(descriptor);
+    const declaration = { type: "namespace", name: "copypaste", tools: [{ type: "function", name: descriptor.name, description: descriptor.description, parameters: descriptor.inputSchema }] };
+    assert.equal((await inference(first.begun.credential.token, { tools: [declaration] })).statusCode, 200);
+    const save = async (r: { url: string }, args: any) => {
+      const id = randomUUID();
+      const prepared = await invoke(r, writerName, args, id);
+      assert.deepEqual(await invoke(r, writerName, args, id), prepared);
+      if (role === "brand-visual") return prepared;
+      return invoke(r, "slides_render", { source_version_id: prepared.source_version_id, sha256: prepared.sha256 });
+    };
+    const delivered = await save(first, input);
+    assert.equal(delivered.state, "delivered");
+    const editableName = role === "brand-visual" ? "brand-vector.svg" : "presentation.pptx";
+    const oldFile = delivered.files.find((file: any) => file.filename === editableName);
+    const oldVersion = (await s.db.control.query("SELECT v.storage_key,a.private_owner FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.id=$1", [oldFile.asset_version_id])).rows[0];
+    const oldBytes = await s.storage.get(oldVersion.storage_key);
+    assert.equal(hash(oldBytes), oldFile.sha256);
+    assert.equal(oldVersion.private_owner, f.c.id);
+    const sourceId = delivered.editable_source.asset_version_id;
+    const ownSourceFile = delivered.files.find((file: any) => file.asset_version_id === sourceId);
+    const ownRead = await invoke(first, "asset_text_read", { asset_id: ownSourceFile.asset_id });
+    assert.equal(JSON.parse(ownRead.text).kind, role === "brand-visual" ? "vector" : "presentation");
+    assert.equal((await invoke(first, "design_source_read", { source_version_id: sourceId })).sha256, delivered.editable_source.sha256);
+    await ok(f.c, "POST", first.url + "/finish", complete);
+    assert.equal((await taskRow(first.created.task_id)).execution_location, "desktop");
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM outbox WHERE payload->>'task_id'=$1", [first.created.task_id])).rows[0].n, 0);
+    for (const patch of [{ device_id: randomUUID() }, { workspace_hash: hash("different native directory") }])
+      assert.equal((await call(f.c, "POST", f.base, { ...f.input, ...patch })).data.error.code, "DESKTOP_SESSION_BINDING_CHANGED");
+    const otherFields = { ...f.fields, local_session_id: randomUUID() };
+    const other = await start({ ...f, fields: otherFields, input: { ...f.input, ...otherFields } });
+    const deniedSource = await call(f.c, "POST", other.url + "/tools", { tool: "design_source_read", arguments: { source_version_id: sourceId }, call_id: randomUUID(), thread_id: "other-native-thread", turn_id: "other-native-turn" });
+    assert.equal(deniedSource.status, 404);
+    assert.equal(deniedSource.data.error.code, "NOT_FOUND");
+    const sourceFile = delivered.files.find((file: any) => file.asset_version_id === sourceId);
+    const otherDirectory = await invoke(other, "project_assets", {});
+    assert.ok(!otherDirectory.items.some((file: any) => file.id === sourceFile.asset_id));
+    const genericDenied = await call(f.c, "POST", other.url + "/tools", { tool: "asset_text_read", arguments: { asset_id: sourceFile.asset_id }, call_id: randomUUID(), thread_id: "other-native-thread", turn_id: "other-native-turn" });
+    assert.equal(genericDenied.status, 404);
+    await ok(f.c, "POST", other.url + "/finish", { ...complete, status: "failed", output: "Source access was correctly denied" });
+    const next = await start(f);
+    const source = await invoke(next, "design_source_read", { source_version_id: sourceId });
+    const revised = source.input;
+    revised.title += " revised";
+    const scene = role === "brand-visual" ? revised.scene : revised.slides[1].scene;
+    const text = scene.layers.find((layer: any) => layer.kind === "text");
+    text.text = "Revised native delivery";
+    revised.revision_of = { source_version_id: sourceId, sha256: source.sha256 };
+    const revision = await save(next, revised);
+    assert.notEqual(revision.files.find((file: any) => file.filename === editableName).sha256, oldFile.sha256);
+    assert.deepEqual(await s.storage.get(oldVersion.storage_key), oldBytes);
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM reservations WHERE task_id=ANY($1::uuid[])", [[first.created.task_id, next.created.task_id]])).rows[0].n, 2);
+    await ok(f.c, "POST", next.url + "/finish", complete);
+  });
 
 test("native company tools recheck owner, native family, role and the complete call binding before any effect", async () => {
   const f = await fixture(), r = await start(f), body = { tool: "deliver_text", arguments: { filename: "native-note.md", mime_type: "text/markdown", content: "Native company tool fixture" }, call_id: "call_company_binding", thread_id: "native-thread", turn_id: "native-turn" };
@@ -258,6 +347,12 @@ test("native designer generation and editing share exact company prices and neve
   assert.equal(imageCalls, before + 2); assert.equal(edited.output.private_owner, f.c.id);
   const finished = await ok(f.c, "POST", r.url + "/finish", complete); assert.equal(finished.status, "succeeded"); assert.equal(finished.charged_micros, "2000000");
   assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM tool_operations WHERE task_id=$1 AND state='succeeded'", [r.created.task_id])).rows[0].n, 2);
+  const fields = { ...f.fields, local_session_id: randomUUID() };
+  const other = await start({ ...f, fields, input: { ...f.input, ...fields, role_key: "designer", budget_micros: 5000000 } });
+  const denied = await call(f.c, "POST", other.url + "/tools", { ...edit, call_id: randomUUID(), arguments: { ...edit.arguments, asset_id: first.output.id } });
+  assert.equal(denied.status, 404);
+  assert.equal(imageCalls, before + 2, "An unauthorized private source must not reach the image provider");
+  await ok(f.c, "POST", other.url + "/finish", { ...complete, status: "failed", output: "Cross-session image editing was correctly denied" });
 });
 
 test("native company namespace rejects altered schemas and unregistered names before provider dispatch", async () => {

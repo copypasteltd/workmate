@@ -1,4 +1,5 @@
 import { prepareBrandProduction } from "./brand-production.js";
+import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { CloudWorkflows } from "./cloud-workflows.js";
 import { resolveProjectConfiguration } from "./project-configuration.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
@@ -102,6 +103,22 @@ import {
   readFrozenConnector,
   inspectAnalysisFile,
 } from "./analysis-role-tools.js";
+import {
+  vectorInput,
+  slidesInput,
+  slidesRenderInput,
+  sourceReadInput,
+  designSourcesInput,
+  chartReadInput,
+} from "./editable-design-model.js";
+import {
+  renderVector,
+  buildSlides,
+  renderSlides,
+  listDesignSources,
+  readDesignSource,
+  readDesignChart,
+} from "./editable-design-tools.js";
 
 export interface TaskBusinessAuthority {
   authorize(tx: Tx): Promise<unknown>;
@@ -127,7 +144,13 @@ export class TaskBusinessTools {
     const analysisTools = [
       "information-design@1.1.0",
       "marketing-analyst@1.1.0",
+      "presentation@1.1.0",
     ].includes(role.role_key + "@" + role.version);
+    const vectorTools =
+      role.role_key === "brand-visual" && role.version === "1.1.0";
+    const slidesTools =
+      role.role_key === "presentation" && role.version === "1.1.0";
+    const editableDesignTools = vectorTools || slidesTools;
     const cloudWorkflowTools =
       role.role_key === "workflow-consultant" &&
       role.version === "1.1.0" &&
@@ -187,6 +210,69 @@ export class TaskBusinessTools {
           actor.id,
         );
     const tools: RuntimeContext["tools"] = [
+      {
+        name: "design_sources",
+        description:
+          "Discover authorized fixed PNG image or deterministic analysis source versions in this private conversation or shared project. Use actual IDs and SHA-256; unavailable, expired and other users' private files are excluded. This does not fetch remote URLs or grant access.",
+        inputSchema: z.toJSONSchema(designSourcesInput),
+        run: readTool(
+          (tx, a) => listDesignSources(tx, t, a),
+          designSourcesInput,
+        ),
+      },
+      {
+        name: "design_source_read",
+        description:
+          "Read an actual saved vector or presentation source and digest before revising it. Supply this exact source version/hash in revision_of on a newly built version. Old files remain intact; a draft is not a rendered presentation.",
+        inputSchema: z.toJSONSchema(sourceReadInput),
+        run: readTool(
+          (tx, a) => readDesignSource(tx, this.storage, t, a.source_version_id),
+          sourceReadInput,
+        ),
+      },
+      {
+        name: "design_chart_read",
+        description:
+          "Read up to 24 exact evidence rows from an authorized deterministic analysis source. Page through actual evidence IDs before selecting a chart. Do not invent chart values; separate metrics, units, currencies, accounts, attribution and dates. N/A is not zero.",
+        inputSchema: z.toJSONSchema(chartReadInput),
+        run: readTool(
+          (tx, a) => readDesignChart(tx, this.storage, t, a),
+          chartReadInput,
+        ),
+      },
+      {
+        name: "vector_render",
+        description:
+          "Create real editable SVG, outlined SVG, PNG, PDF/HTML review, exact evidence CSV, immutable structured source, manifest and ZIP with licensed font. Supply structured text/shapes/paths and fixed authorized PNGs; arbitrary SVG, external URLs and executable markup are unsupported. Text overflow is rejected. Brand binding must be the exact current authorized version. Revisions require original source/hash. No model request or extra AI fee; transactional replay returns original files.",
+        inputSchema: z.toJSONSchema(vectorInput),
+        run: txTool(
+          (tx, a) => renderVector(tx, this.storage, t, a),
+          vectorInput,
+          "vector_render",
+        ),
+      },
+      {
+        name: "slides_build",
+        description:
+          "Validate and save an immutable editable presentation source: audience, decision, 1-20 same-size slides, notes and structured text/shapes/paths/fixed PNG/chart evidence. Coordinates are pixels, canvas 256-1920, layers stay inside the page, and text overflow is rejected. Chart layers select actual evidence IDs from design_chart_read, never invented numeric series. This only prepares a source; call slides_render on its returned exact version/hash to deliver actual files. Revisions require the prior source/hash. No extra AI fee.",
+        inputSchema: z.toJSONSchema(slidesInput),
+        run: txTool(
+          (tx, a) => buildSlides(tx, this.storage, t, a),
+          slidesInput,
+          "slides_build",
+        ),
+      },
+      {
+        name: "slides_render",
+        description:
+          "Render the exact authorized prepared source version/hash into actual editable PPTX (native text, shapes, paths and evidence bars), per-page SVG/PNG, source-based PDF/HTML review, exact evidence CSV, source JSON, manifest and ZIP with licensed font. Rechecks source permissions and hashes. PDF/PNG/HTML are source-based reviews, not PowerPoint renders; fonts are supplied, not embedded. Charts are editable native bars with exact CSV, not Excel objects. No extra AI fee; replay returns original files.",
+        inputSchema: z.toJSONSchema(slidesRenderInput),
+        run: txTool(
+          (tx, a) => renderSlides(tx, this.storage, t, a),
+          slidesRenderInput,
+          "slides_render",
+        ),
+      },
       {
         name: "analysis_sources",
         description:
@@ -278,12 +364,22 @@ export class TaskBusinessTools {
           properties: {},
           additionalProperties: false,
         },
-        run: txTool(
+        run: readTool(
           async (tx) => ({
             items: (
               await tx.query(
-                "SELECT id,name,kind,current_version FROM assets WHERE project_id=$1 AND state='active' ORDER BY created_at DESC LIMIT 100",
-                [t.project_id],
+                `SELECT a.id,a.name,a.kind,a.current_version FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version
+                 WHERE a.tenant_id=$1 AND a.project_id=$2 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
+                   AND (a.private_owner IS NULL OR (a.private_owner=$3 AND a.private_owner=$4 AND ${taskPrivateAssetScopeSQL(5, 6)}))
+                 ORDER BY a.created_at DESC LIMIT 100`,
+                [
+                  t.tenant_id,
+                  t.project_id,
+                  t.created_by,
+                  t.private_owner ?? null,
+                  t.conversation_id ?? null,
+                  t.id,
+                ],
               )
             ).rows,
           }),
@@ -300,25 +396,45 @@ export class TaskBusinessTools {
           required: ["asset_id"],
           additionalProperties: false,
         },
-        run: txTool(
+        run: readTool(
           async (tx, a) => {
             const v = (
               await tx.query(
-                "SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active'",
-                [a.asset_id, t.project_id],
+                `SELECT v.* FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version
+                 WHERE a.id=$1 AND a.tenant_id=$2 AND a.project_id=$3 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
+                   AND (a.private_owner IS NULL OR (a.private_owner=$4 AND a.private_owner=$5 AND ${taskPrivateAssetScopeSQL(6, 7)}))`,
+                [
+                  a.asset_id,
+                  t.tenant_id,
+                  t.project_id,
+                  t.created_by,
+                  t.private_owner ?? null,
+                  t.conversation_id ?? null,
+                  t.id,
+                ],
               )
             ).rows[0];
+            if (!v)
+              throw new Problem(
+                404,
+                "NOT_FOUND",
+                "The authorized text source is unavailable",
+              );
             if (
-              !v ||
               !["text/plain", "text/csv", "application/json"].includes(
                 v.mime_type,
               ) ||
               Number(v.bytes) > 500000
             )
               throw new Error("Unsupported text asset");
-            const text = (await this.storage.get(v.storage_key)).toString(
-              "utf8",
-            );
+            const bytes = await this.storage.get(v.storage_key);
+            if (bytes.length !== Number(v.bytes) || hash(bytes) !== v.sha256)
+              throw new Problem(
+                409,
+                "ASSET_SOURCE_INTEGRITY",
+                "The source bytes no longer match their fixed digest",
+              );
+            const text = bytes.toString("utf8");
             await recordTaskSourceRead(
               tx,
               t,
@@ -1239,6 +1355,29 @@ export class TaskBusinessTools {
             code_write: role.tool_ids.includes("code.patch"),
             code_package: role.tool_ids.includes("delivery.package"),
             design_render: allowedFormats.length > 0,
+            design_sources:
+              editableDesignTools && role.tool_ids.includes("asset.read"),
+            design_source_read:
+              editableDesignTools && role.tool_ids.includes("asset.read"),
+            design_chart_read:
+              slidesTools &&
+              role.tool_ids.includes("asset.read") &&
+              role.tool_ids.includes("chart.render"),
+            vector_render:
+              vectorTools &&
+              role.tool_ids.includes("vector.render") &&
+              role.tool_ids.includes("asset.read") &&
+              role.tool_ids.includes("asset.write"),
+            slides_build:
+              slidesTools &&
+              role.tool_ids.includes("slides.build") &&
+              role.tool_ids.includes("asset.read") &&
+              role.tool_ids.includes("asset.write"),
+            slides_render:
+              slidesTools &&
+              role.tool_ids.includes("slides.render") &&
+              role.tool_ids.includes("asset.read") &&
+              role.tool_ids.includes("asset.write"),
             video_project_queue:
               role.tool_ids.includes("video.render") &&
               (!t.private_owner || nativeVideo),
@@ -1287,6 +1426,9 @@ export class TaskBusinessTools {
             "analysis_report_facts",
             "code_read",
             "font_catalog",
+            "design_sources",
+            "design_source_read",
+            "design_chart_read",
             "video_projects",
             "video_project_read",
             "video_project_status",
@@ -1370,12 +1512,27 @@ export class TaskBusinessTools {
               await authorize(tx);
               const v = (
                 await tx.query(
-                  "SELECT a.name,v.id,v.sha256,v.mime_type,v.storage_key,v.bytes FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version WHERE a.id=$1 AND a.project_id=$2 AND a.state='active'",
-                  [(b as any).asset_id, t.project_id],
+                  `SELECT a.name,v.id,v.sha256,v.mime_type,v.storage_key,v.bytes FROM assets a JOIN asset_versions v ON v.asset_id=a.id AND v.version=a.current_version
+                   WHERE a.id=$1 AND a.tenant_id=$2 AND a.project_id=$3 AND a.state='active' AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
+                     AND (a.private_owner IS NULL OR (a.private_owner=$4 AND a.private_owner=$5 AND ${taskPrivateAssetScopeSQL(6, 7)}))`,
+                  [
+                    (b as any).asset_id,
+                    t.tenant_id,
+                    t.project_id,
+                    t.created_by,
+                    t.private_owner ?? null,
+                    t.conversation_id ?? null,
+                    t.id,
+                  ],
                 )
               ).rows[0];
+              if (!v)
+                throw new Problem(
+                  404,
+                  "NOT_FOUND",
+                  "The authorized image source is unavailable",
+                );
               if (
-                !v ||
                 !["image/png", "image/jpeg", "image/webp"].includes(
                   v.mime_type,
                 ) ||
@@ -1385,6 +1542,12 @@ export class TaskBusinessTools {
                   "Choose a current project PNG, JPEG or WebP smaller than 10 MB",
                 );
               const bytes = await this.storage.get(v.storage_key);
+              if (bytes.length !== Number(v.bytes) || hash(bytes) !== v.sha256)
+                throw new Problem(
+                  409,
+                  "ASSET_SOURCE_INTEGRITY",
+                  "The source bytes no longer match their fixed digest",
+                );
               await recordTaskSourceRead(
                 tx,
                 t,

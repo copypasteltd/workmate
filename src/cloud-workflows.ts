@@ -20,7 +20,7 @@ import { analyticsEvidence } from "./analytics.js";
 import { saveAsset } from "./storage.js";
 
 // These roles have actual company-tool implementations. Engineering, browser,
-// slide and recursive workflow execution do not become available by catalog label.
+// and recursive workflow execution do not become available by catalog label.
 const childRoles = new Set([
   "assistant",
   "designer",
@@ -31,6 +31,8 @@ const childRoles = new Set([
   "typography-layout",
   "information-design",
   "marketing-analyst",
+  "brand-visual",
+  "presentation",
 ]);
 export const cloudWorkflowDefinition = nativeWorkflowDefinition;
 const workflowRef = z.object({ workflow_id: uuid }).strict();

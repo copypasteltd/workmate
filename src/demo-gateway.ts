@@ -3,6 +3,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import type { Config } from "./config.js";
 import { pngFromSVG } from "./render.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
+import { demoVectorInput, demoSlidesInput } from "./editable-design-demo.js";
 
 /** A loopback-only, synthetic dependency for development. The Codex kernel,
  * authorization, tool execution, assets, queue and ledger remain real. */
@@ -112,6 +113,10 @@ export async function startDemoGateway(c: Config) {
       const sheetCalculate = find("sheet_calculate");
       const chartRender = find("chart_render");
       const analysisSourceRead = find("analysis_source_read");
+      const vectorRender = find("vector_render"),
+        slidesBuild = find("slides_build"),
+        slidesRender = find("slides_render"),
+        designSourceRead = find("design_source_read");
       const workflowValidate = find("workflow_validate"),
         workflowSave = find("workflow_save"),
         workflowRead = find("workflow_read"),
@@ -189,6 +194,23 @@ export async function startDemoGateway(c: Config) {
       const sourceRequest = requested.match(
         /revision_source_version\s*=\s*([a-f\d-]{36})/i,
       )?.[1];
+      const designRevision = requested.match(
+        /design_revision_source_version\s*=\s*([a-f\d-]{36})/i,
+      )?.[1];
+      const priorDesign = toolOutputs(
+        designSourceRead?.name,
+        (v) =>
+          v.schema === "copypaste-editable-design-1" &&
+          v.input &&
+          typeof v.sha256 === "string",
+      ).at(-1);
+      const preparedSlides = toolOutputs(
+        slidesBuild?.name,
+        (v) =>
+          v.schema === "copypaste-editable-design-1" &&
+          v.state === "prepared" &&
+          typeof v.source_version_id === "string",
+      ).at(-1);
       const seoTool = find("seo_audit_facts");
       const changeTool = find("seo_change_facts");
       const changePages: any[] = [];
@@ -234,6 +256,46 @@ export async function startDemoGateway(c: Config) {
       if (find("capability_probe") && !used(find("capability_probe").name)) {
         tool = find("capability_probe");
         args = { nonce: tool.parameters?.properties?.nonce?.enum?.[0] };
+      } else if (
+        designRevision &&
+        designSourceRead &&
+        !used(designSourceRead.name)
+      ) {
+        tool = designSourceRead;
+        args = { source_version_id: designRevision };
+      } else if (
+        vectorRender &&
+        !used(vectorRender.name) &&
+        (!designRevision || priorDesign)
+      ) {
+        tool = vectorRender;
+        args = demoVectorInput(!!priorDesign);
+        if (priorDesign)
+          args.revision_of = {
+            source_version_id: priorDesign.source_version_id,
+            sha256: priorDesign.sha256,
+          };
+      } else if (
+        slidesBuild &&
+        !used(slidesBuild.name) &&
+        (!designRevision || priorDesign)
+      ) {
+        tool = slidesBuild;
+        args = demoSlidesInput(!!priorDesign);
+        if (priorDesign)
+          args.revision_of = {
+            source_version_id: priorDesign.source_version_id,
+            sha256: priorDesign.sha256,
+          };
+      } else if (slidesRender && preparedSlides && !used(slidesRender.name)) {
+        tool = slidesRender;
+        args = {
+          source_version_id: preparedSlides.source_version_id,
+          sha256: preparedSlides.sha256,
+        };
+      } else if (vectorRender || slidesBuild) {
+        // The synthetic role finishes after its actual design file tools. Do
+        // not invent unrelated analytics, images or a second delivery.
       } else if (
         workflowSave &&
         workflowRevision &&

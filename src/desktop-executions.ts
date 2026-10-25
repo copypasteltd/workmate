@@ -41,6 +41,10 @@ export const desktopLocalRoleKeys = ["fullstack", "frontend", "backend-api", "so
   "typography-layout", "presentation", "information-design", "marketing-analyst", "video-motion", "workflow-consultant"];
 const companyToolNames = new Set(["project_assets", "asset_text_read", "cloud_files", "cloud_file_read", "deliver_text",
   "marketing_metrics", "design_render", "font_catalog", "image2_generate", "image2_edit", "project_reference_read"]);
+// New tools are available only on explicitly versioned specialists. Already
+// frozen 1.0 tasks retain their original descriptors and authority.
+const analysisCompanyToolNames = new Set(["analysis_sources", "analysis_file_inspect", "connector_read", "sheet_calculate", "analysis_source_read", "chart_render"]);
+const editableCompanyToolNames = new Set(["design_sources", "design_source_read", "design_chart_read", "vector_render", "slides_build", "slides_render"]);
 // Existing native roles keep exactly their published tool bindings. The new
 // specialist has no old native thread and receives the video contract only.
 const videoCompanyToolNames = new Set(["video_projects", "video_project_read", "video_project_queue", "video_project_status", "video_project_edit", "video_project_render", "video_project_cancel",
@@ -135,6 +139,9 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
   }
 
   function businessTools(t: any, actor: Principal, signal?: AbortSignal, videoReady = false) {
+    const role = catalog.forTask(t);
+    const analysisReady = role.version === "1.1.0" && ["marketing-analyst", "information-design", "presentation"].includes(role.role_key);
+    const editableReady = role.version === "1.1.0" && ["brand-visual", "presentation"].includes(role.role_key);
     const tools = new TaskBusinessTools(db, catalog, storage, {
       authorize: async tx => {
         await lockNativeWorkflowParent(tx, t);
@@ -144,7 +151,9 @@ export async function registerDesktopExecutions(app: FastifyInstance, db: Databa
         await authorize(tx, execution, current);
       },
       inference: request => inferenceAuthority(null, t, request), signal, videoReady,
-    }).build(t, actor, t.fencing_token, catalog.forTask(t)).filter(tool => companyToolNames.has(tool.name)
+    }).build(t, actor, t.fencing_token, role).filter(tool => companyToolNames.has(tool.name)
+      || analysisReady && analysisCompanyToolNames.has(tool.name)
+      || editableReady && editableCompanyToolNames.has(tool.name)
       || t.role_key === "video-motion" && videoCompanyToolNames.has(tool.name));
     return [...tools, ...workflows.build(t, actor)];
   }

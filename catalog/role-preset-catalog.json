@@ -843,6 +843,47 @@
         "extension",
         "desktop"
       ]
+    },
+    {
+      "skill_key": "brand-system",
+      "version": "1.1.0",
+      "purpose": "品牌视觉系统与应用",
+      "candidate_sources": [],
+      "package_state": "planned",
+      "package_sha256": null,
+      "ai_network_policy": "internal_only",
+      "tool_ids": [
+        "vector.render",
+        "layout.render",
+        "font.inspect"
+      ],
+      "required_model_profiles": [],
+      "supported_clients": [
+        "web",
+        "extension",
+        "desktop"
+      ]
+    },
+    {
+      "skill_key": "presentation-production",
+      "version": "1.1.0",
+      "purpose": "可编辑演示及逐页渲染",
+      "candidate_sources": [
+        "presentations:Presentations"
+      ],
+      "package_state": "planned",
+      "package_sha256": null,
+      "ai_network_policy": "internal_only",
+      "tool_ids": [
+        "slides.build",
+        "slides.render"
+      ],
+      "required_model_profiles": [],
+      "supported_clients": [
+        "web",
+        "extension",
+        "desktop"
+      ]
     }
   ],
   "roles": [
@@ -1514,7 +1555,7 @@
     {
       "role_key": "brand-visual",
       "catalog_id": "R07",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "display_name": "品牌视觉设计师",
       "category": "design",
       "status": "design_only",
@@ -1522,7 +1563,7 @@
       "skill_bindings": [
         {
           "skill_key": "brand-system",
-          "version": "1.0.0",
+          "version": "1.1.0",
           "required": true
         },
         {
@@ -2193,7 +2234,7 @@
     {
       "role_key": "presentation",
       "catalog_id": "R13",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "display_name": "演示文稿设计师",
       "category": "design",
       "status": "design_only",
@@ -2201,7 +2242,7 @@
       "skill_bindings": [
         {
           "skill_key": "presentation-production",
-          "version": "1.0.0",
+          "version": "1.1.0",
           "required": true
         },
         {
@@ -2211,7 +2252,7 @@
         },
         {
           "skill_key": "dataviz",
-          "version": "1.0.0",
+          "version": "1.1.0",
           "required": true
         },
         {
@@ -2223,6 +2264,11 @@
           "skill_key": "image2-production",
           "version": "1.0.0",
           "required": false
+        },
+        {
+          "skill_key": "deterministic-metrics",
+          "version": "1.1.0",
+          "required": true
         }
       ],
       "model_bindings": [
@@ -2239,6 +2285,8 @@
         "asset.read",
         "asset.write",
         "chart.render",
+        "connector.read",
+        "dataset.read",
         "delivery.package",
         "document.render",
         "font.inspect",

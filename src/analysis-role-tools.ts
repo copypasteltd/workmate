@@ -17,6 +17,7 @@ import {
   type AnalysisRenderInput,
 } from "./analysis-role-delivery.js";
 import { recordTaskSourceRead } from "./task-content-sources.js";
+import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { connectorFact, connectorLimits } from "./connector-model.js";
 import { campaignFile, normalizeCampaignFile } from "./analytics-file.js";
 
@@ -64,7 +65,7 @@ export async function listAnalysisSources(
       WHERE a.tenant_id=$1 AND a.project_id=$2 AND a.state='active' AND a.retention_expires_at>clock_timestamp()
         AND v.erased_at IS NULL AND v.bytes<=5000000 AND a.name~*'\\.(csv|xlsx)$'
         AND ($3::uuid IS NULL OR v.id>$3)
-        AND (a.private_owner IS NULL OR (a.private_owner=$4 AND a.private_owner=$5 AND v.metadata->>'conversation_id'=$6::text))
+        AND (a.private_owner IS NULL OR (a.private_owner=$4 AND a.private_owner=$5 AND ${taskPrivateAssetScopeSQL(6, 8)}))
         AND task_asset_version_sources_available(v.id) ORDER BY v.id LIMIT $7`,
         [
           t.tenant_id,
@@ -74,6 +75,7 @@ export async function listAnalysisSources(
           t.private_owner ?? null,
           t.conversation_id ?? null,
           input.limit + 1,
+          t.id,
         ],
       )
     ).rows;
@@ -156,7 +158,7 @@ async function analysisFileVersion(
     WHERE v.id=$1 AND a.tenant_id=$2 AND a.project_id=$3 AND a.state='active'
       AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
       AND (a.private_owner IS NULL OR (a.private_owner=$4 AND a.private_owner=$5
-        AND v.metadata->>'conversation_id'=$6::text))
+        AND ${taskPrivateAssetScopeSQL(6, 7)}))
       AND task_asset_version_sources_available(v.id) FOR SHARE OF a NOWAIT`,
       [
         id,
@@ -165,6 +167,7 @@ async function analysisFileVersion(
         t.created_by,
         t.private_owner ?? null,
         t.conversation_id ?? null,
+        t.id,
       ],
     )
   ).rows[0];
@@ -333,7 +336,7 @@ async function sourceVersion(
      WHERE v.id=$1 AND a.tenant_id=$2 AND a.project_id=$3 AND a.state='active'
        AND a.retention_expires_at>clock_timestamp() AND v.erased_at IS NULL
        AND (a.private_owner IS NULL OR (a.private_owner=$4 AND a.private_owner=$5
-         AND v.metadata->>'conversation_id'=$6::text))
+         AND ${taskPrivateAssetScopeSQL(6, 7)}))
        AND task_asset_version_sources_available(v.id) FOR SHARE OF a NOWAIT`,
       [
         id,
@@ -342,6 +345,7 @@ async function sourceVersion(
         t.created_by,
         t.private_owner ?? null,
         t.conversation_id ?? null,
+        t.id,
       ],
     )
   ).rows[0];

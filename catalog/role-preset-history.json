@@ -674,5 +674,244 @@
     },
     "initial_stage": "M2",
     "readiness_evidence": []
+  },
+  {
+    "role_key": "brand-visual",
+    "catalog_id": "R07",
+    "version": "1.0.0",
+    "display_name": "品牌视觉设计师",
+    "category": "design",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "brand-system",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "image-art-direction",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "image2-production",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "typography-layout",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      },
+      {
+        "profile_key": "internal-image2-v1",
+        "required": true
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "delivery.package",
+      "document.render",
+      "font.inspect",
+      "image.edit.internal",
+      "image.generate.internal",
+      "layout.render",
+      "vector.render"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "brand_position",
+        "audience",
+        "applications"
+      ],
+      "optional_fields": [
+        "existing_logo",
+        "font_assets",
+        "reference_assets"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "方向板与定位"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "标识和视觉探索"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "字体色彩及应用"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "规范和素材交接"
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "品牌规范",
+        "format": "pdf",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "标识矢量与位图",
+        "format": "svg",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "包装应用版面",
+        "format": "json",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "为香港咖啡品牌做视觉系统和开业物料。",
+    "acceptance_checks": [
+      "标识提案与名片、包装应用遵守统一规范，矢量文件可实际解析。",
+      "修改品牌主色后应用稿和规范同步生成新版本。",
+      "矢量工具缺失不得用位图改后缀冒充，字体来源缺口可定位。"
+    ],
+    "qualification_cases": {
+      "normal": "标识提案与名片、包装应用遵守统一规范，矢量文件可实际解析。",
+      "revision": "修改品牌主色后应用稿和规范同步生成新版本。",
+      "dependency_or_permission_failure": "矢量工具缺失不得用位图改后缀冒充，字体来源缺口可定位。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M1",
+    "readiness_evidence": []
+  },
+  {
+    "role_key": "presentation",
+    "catalog_id": "R13",
+    "version": "1.0.0",
+    "display_name": "演示文稿设计师",
+    "category": "design",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "presentation-production",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "typography-layout",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "dataviz",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "image2-production",
+        "version": "1.0.0",
+        "required": false
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      },
+      {
+        "profile_key": "internal-image2-v1",
+        "required": false
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "chart.render",
+      "delivery.package",
+      "document.render",
+      "font.inspect",
+      "image.edit.internal",
+      "image.generate.internal",
+      "layout.render",
+      "sheet.calculate",
+      "slides.build",
+      "slides.render"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "audience",
+        "purpose",
+        "source_material",
+        "page_count"
+      ],
+      "optional_fields": [
+        "brand_assets",
+        "illustration_brief"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "叙事结构"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "页面与图表"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "可编辑PPTX"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "逐页渲染及源文件交付"
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "可编辑演示",
+        "format": "pptx",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "演示校样",
+        "format": "pdf",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "图表源数据",
+        "format": "csv",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "把市场报告做成 15 页客户提案。",
+    "acceptance_checks": [
+      "文字图表可编辑，PPTX/PDF 一致，无缺字溢出且数字可追溯。",
+      "修改一页图表并重渲染，图表数值与源数据一致。",
+      "缺少数据来源提示限制；不可用整页图片冒充可编辑演示。"
+    ],
+    "qualification_cases": {
+      "normal": "文字图表可编辑，PPTX/PDF 一致，无缺字溢出且数字可追溯。",
+      "revision": "修改一页图表并重渲染，图表数值与源数据一致。",
+      "dependency_or_permission_failure": "缺少数据来源提示限制；不可用整页图片冒充可编辑演示。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M1",
+    "readiness_evidence": []
   }
 ]
