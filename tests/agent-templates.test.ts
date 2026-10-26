@@ -298,7 +298,7 @@ test("preflights persist one current receipt without installing methods, reservi
   assert.equal(missing.state, "unavailable");
   assert.ok(
     missing.missing_required_dependencies.includes(
-      "TOOL_NOT_IMPLEMENTED:process.run.allowed",
+      "TOOL_NOT_IMPLEMENTED:api.test",
     ),
   );
   for (const overrides of [

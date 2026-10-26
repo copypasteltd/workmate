@@ -196,7 +196,12 @@ export async function writeCloudSource(
     asset_version_id: asset.version.id,
   };
 }
-export async function bundleCloudSources(tx: Tx, storage: Storage, t: any) {
+export async function exportCloudSources(
+  tx: Tx,
+  storage: Storage,
+  t: any,
+  track = true,
+) {
   const r = await root(tx, t),
     rows = (
       await tx.query(
@@ -226,6 +231,15 @@ export async function bundleCloudSources(tx: Tx, storage: Storage, t: any) {
     const bytes = await storage.get(n.storage_key);
     if (hash(bytes) !== n.sha256)
       throw new Error("WORKING_SOURCE_INTEGRITY_FAILED");
+    if (track)
+      await recordTaskContentRead(
+        tx,
+        t,
+        "asset_version",
+        n.asset_version_id,
+        n.asset_version_id,
+        n.sha256,
+      );
     data[n.path] = bytes;
     files.push({ path: n.path, bytes: bytes.length, sha256: n.sha256 });
   }
@@ -242,6 +256,10 @@ export async function bundleCloudSources(tx: Tx, storage: Storage, t: any) {
       "CONTEXT_REVOKED",
       "A working file was removed during packaging",
     );
+  return { data, files };
+}
+export async function bundleCloudSources(tx: Tx, storage: Storage, t: any) {
+  const { data, files } = await exportCloudSources(tx, storage, t);
   data["copypaste-manifest.json"] = Buffer.from(
     JSON.stringify(
       {

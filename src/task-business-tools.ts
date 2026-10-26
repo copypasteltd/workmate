@@ -43,6 +43,12 @@ import {
 import { videoCreate, videoEdit } from "./video-project-model.js";
 import { videoRendererProfile } from "./video-render.js";
 import { CodeWorkspace } from "./code-workspace.js";
+import { cloudProgramInput } from "./cloud-program-executor.js";
+import {
+  taskProgramSources,
+  executeTaskProgram,
+  checkedSourcePackage,
+} from "./cloud-program-tools.js";
 import {
   readCloudSource,
   writeCloudSource,
@@ -779,6 +785,34 @@ export class TaskBusinessTools {
         "project",
       ),
     );
+    if (
+      t.execution_location !== "desktop" &&
+      role.tool_ids.includes("process.run.allowed")
+    )
+      tools.push({
+        name: "process_run_allowed",
+        description:
+          "Run actual JavaScript/TypeScript sources with the approved Node runtime in a fresh company-owned native AppContainer. node runs an entry with literal script arguments; node_test runs Node built-in tests in one process; node_check checks syntax. No shell, network, package installation, environment overrides or child processes. Save immutable stdout, stderr, exact input/output hashes, exit code and downloadable files. passed only describes this invocation. Use code_write to correct sources, then rerun and code_package to deliver exact-source checks.",
+        inputSchema: z.toJSONSchema(cloudProgramInput),
+        run: txTool(
+          (tx, a) =>
+            executeTaskProgram(
+              tx,
+              this.storage,
+              t,
+              actor.id,
+              this.db.config.DATA_DIR,
+              workspace,
+              a,
+              () => authorize(tx),
+              this.authority.signal,
+            ),
+          cloudProgramInput,
+          "process_run_allowed",
+          async (tx) =>
+            (await taskProgramSources(tx, this.storage, t, workspace)).manifest,
+        ),
+      });
     if (role.tool_ids.includes("code.read"))
       tools.push({
         name: "code_read",
@@ -848,7 +882,7 @@ export class TaskBusinessTools {
       tools.push({
         name: "code_package",
         description:
-          "Package actual workspace sources with a hash manifest into a downloadable ZIP. This does not claim tests have executed.",
+          "Package actual workspace sources into a downloadable ZIP. Include immutable execution receipts only for commands run against these exact current source bytes. Failed checks stay failed; a later source edit invalidates older checks. This does not claim complete test coverage.",
         inputSchema: {
           type: "object",
           properties: { filename: { type: "string" } },
@@ -857,10 +891,11 @@ export class TaskBusinessTools {
         },
         run: txTool(
           async (tx, a) => {
-            const zip =
+            const sources =
               t.conversation_id && t.private_owner
                 ? await bundleCloudSources(tx, this.storage, t)
                 : await workspace.bundle();
+            const zip = await checkedSourcePackage(tx, t, sources);
             return saveAsset(tx, this.storage, {
               tenant: t.tenant_id,
               project: t.project_id,
@@ -872,7 +907,8 @@ export class TaskBusinessTools {
               metadata: {
                 task_id: t.id,
                 files: zip.files,
-                execution_validation: "not_executed",
+                execution_validation: zip.execution_validation,
+                checks: zip.checks,
               },
             });
           },
@@ -880,12 +916,20 @@ export class TaskBusinessTools {
             .object({ filename: z.string().min(1).max(160).endsWith(".zip") })
             .strict(),
           "code_package",
-          async (tx) =>
-            t.conversation_id && t.private_owner
-              ? (await bundleCloudSources(tx, this.storage, t)).files
-              : (await workspace.list()).sort((a, b) =>
-                  a.path.localeCompare(b.path),
-                ),
+          async (tx) => ({
+            files:
+              t.conversation_id && t.private_owner
+                ? (await bundleCloudSources(tx, this.storage, t)).files
+                : (await workspace.list()).sort((a, b) =>
+                    a.path.localeCompare(b.path),
+                  ),
+            checks: (
+              await tx.query(
+                "SELECT id,input_hash FROM task_tool_receipts WHERE task_id=$1 AND tool_name='process_run_allowed' ORDER BY created_at",
+                [t.id],
+              )
+            ).rows,
+          }),
         ),
       });
     const nativeVideo =
@@ -1470,6 +1514,9 @@ export class TaskBusinessTools {
             code_read: role.tool_ids.includes("code.read"),
             code_write: role.tool_ids.includes("code.patch"),
             code_package: role.tool_ids.includes("delivery.package"),
+            process_run_allowed:
+              t.execution_location !== "desktop" &&
+              role.tool_ids.includes("process.run.allowed"),
             design_render: allowedFormats.length > 0,
             effects_catalog:
               effectsTools && role.tool_ids.includes("video.render"),

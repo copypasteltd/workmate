@@ -112,6 +112,17 @@ export class CodeWorkspace {
         const file = path.join(dir, e.name);
         if (e.isDirectory()) await walk(file);
         else {
+          const info = await lstat(file);
+          if (
+            !info.isFile() ||
+            info.isSymbolicLink() ||
+            info.nlink > 1 ||
+            info.size > 1_000_000 ||
+            total + info.size > 20_000_000
+          )
+            throw new Error(
+              "Source contains an unsupported file or exceeds its byte limit",
+            );
           const b = await readFile(file);
           total += b.length;
           if (files.length >= 500 || total > 20_000_000)
@@ -131,8 +142,12 @@ export class CodeWorkspace {
     const files = await this.list();
     if (!files.length) throw new Error("Write source files before packaging");
     const data: Record<string, Uint8Array> = {};
-    for (const f of files)
-      data[f.path] = await readFile(await this.file(f.path));
+    for (const f of files) {
+      const bytes = await readFile(await this.file(f.path));
+      if (hash(bytes) !== f.sha256)
+        throw new Error("Source changed during packaging");
+      data[f.path] = bytes;
+    }
     data["copypaste-manifest.json"] = Buffer.from(
       JSON.stringify(
         {

@@ -4,7 +4,31 @@ import pg from "pg";
 import { runMigrations } from "../scripts/migration-runner.js";
 import { isolatedTestEnvironment } from "./native-test-environment.js";
 import { randomUUID, createHash } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
+
+async function assertMigrationHead(c: pg.Client) {
+  const files = (await readdir("migrations"))
+    .filter((f) => /^\d{3}-.+\.sql$/.test(f))
+    .sort();
+  const expected = await Promise.all(
+    files.map(async (file) => ({
+      version: Number(file.slice(0, 3)),
+      source_sha256: createHash("sha256")
+        .update(await readFile("migrations/" + file))
+        .digest("hex"),
+    })),
+  );
+  assert.equal(new Set(expected.map((v) => v.version)).size, files.length);
+  assert.deepEqual(
+    (
+      await c.query(
+        "SELECT version,source_sha256 FROM schema_migrations ORDER BY version",
+      )
+    ).rows,
+    expected,
+    "Every applied migration must match the complete current source history",
+  );
+}
 test("a changed applied migration digest stops startup and the forward-only history remains intact", async () => {
   const isolated = await isolatedTestEnvironment();
   const c = new pg.Client({
@@ -83,11 +107,7 @@ test("a populated 041 checkpoint upgrades without pending-trigger DDL failures o
       [task.id, tenant],
     );
     await runMigrations(c, "populated 041 upgrade");
-    assert.equal(
-      (await c.query("SELECT max(version) AS v FROM schema_migrations")).rows[0]
-        .v,
-      103,
-    );
+    await assertMigrationHead(c);
     for (const [table, old] of [
       ["wallets", wallet],
       ["ledger", entry],
@@ -263,11 +283,7 @@ test("048 preserves real financial review history, registers frozen member/accou
     const account = await operation("users.status.write", true);
     const unknown = await operation("entitlements.extend", false);
     await runMigrations(c, "populated 047 approval upgrade");
-    assert.equal(
-      (await c.query("SELECT max(version) AS v FROM schema_migrations")).rows[0]
-        .v,
-      103,
-    );
+    await assertMigrationHead(c);
     const retainedRequest = (
       await c.query("SELECT * FROM admin_approval_requests WHERE id=$1", [
         oldRequest.id,

@@ -35,6 +35,7 @@ import { registerCreativeFeedback } from "./creative-feedback.js";
 import { registerGeoObservations } from "./geo-observations.js";
 import { registerTasks } from "./tasks.js";
 import { registerBusinessQuality } from "./business-quality.js";
+import { registerCloudProgramRoutes } from "./cloud-program-routes.js";
 import { registerCanonicalTasks } from "./canonical-tasks.js";
 import { registerDesktopExecutions } from "./desktop-executions.js";
 import { registerAdmin } from "./admin.js";
@@ -403,6 +404,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTasks(app, db, catalog);
   registerMediaEffects(app, db, catalog, storage);
   registerBusinessQuality(app, db);
+  registerCloudProgramRoutes(app, db, storage);
   registerCanonicalTasks(app, db, catalog);
   const desktopExecutions = await registerDesktopExecutions(
     app,
