@@ -1,6 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
 
+**阶段 107 / Stage 107：** 用户能力目录按各协议独立判定视频／音频状态，状态变化使旧分页失效；相关 68 项实际检查通过。阶段 106 的完整基线及实际页面录制继续保留。见[方案与证据](../technical/107-profile-specific-capability-inventory.md)。
+
+
+
 **阶段 106 / Stage 106：** 已修复明确选中的私有文件跨任务读取、原生 API 检查启动就绪和私有流程确认失效；97 个后端文件共 1230 项执行，1,229 通过、一项超时取消；原文件独立复查两项通过，保留未归因超时。11 项实际跨端流程通过。旧版本、费用与权限边界保留；模型／账号仍是假数据。见[实现与证据](../technical/106-selected-inputs-and-runtime-readiness.md)。
 
 

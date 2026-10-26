@@ -1,5 +1,16 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- capability-inventory-stage107 -->
+
+Video, speech and transcription now use their exact implemented protocols and independent verification flags in the customer capability inventory. Changed availability expires the signed page cursor. Revoked versions, mismatched protocols, tenant scope and task execution authorization remain checked.
+
+The repaired capability suites passed 68 actual checks. The original failing reproduction is retained. The Stage106 complete backend attempt and its unchanged-source runtime replay are retained, including one unattributed timeout in the full attempt. This increment reruns the affected capability suites. Models/accounts remain synthetic, with no live professional-quality claim.
+
+Reproduce in Delivery: `node scripts/run-capability-inventory.mjs <new-two-digit-attempt> core`. The customer API correction adds no page. Screenshots and GIF/MP4 below retain their actual Stage106 recording and source scope.
+
+[Design / 方案](technical/107-profile-specific-capability-inventory.md)
+
+
 <!-- platform-integration-stage106 -->
 
 Explicitly selected private file versions now remain usable by subsequent private tasks while unselected files stay isolated. Replaced/revoked inputs still stop execution. Native cloud HTTP checks wait for actual application readiness before starting each request deadline. Web clears a private workflow confirmation after a denied read or source withdrawal.
