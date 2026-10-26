@@ -1,5 +1,20 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- live-private-views-stage105 -->
+
+Web 现已在读取失败或来源撤回时，清除已打开的私有计划确认、编辑、操作和历史弹窗。正常轮询保留仍可读取的草稿及精确版本确认；访问恢复后不会重新打开旧内容。待确认的不可变提案同步更新就绪与过期状态。
+
+九项实际跨端流程通过，包含真实来源隔离后无需刷新清空弹窗，以及明确模拟的 HTTP403 拒绝读取。保留 11 张截图、4 组 GIF／MP4；后端源码未变，沿用既有 78 项检查基线，本轮未重复运行。模型与账号为假数据；不新增 Desktop 验收结论。Desktop 继续本机 Codex，Extension 保持原生右侧云端对话及获准文件上传。
+
+[Design / 方案](technical/105-live-private-schedule-views.md)
+
+![Actual Web private history](assets/screenshots/live-views-workmate-private-view-03-history-before-withdrawal-zh.png)
+
+![Actual Web source withdrawal, without reload](assets/screenshots/live-views-workmate-private-view-03-private-view-withdrawal.gif)
+
+[Actual Web interaction MP4](assets/screenshots/live-views-workmate-private-view-03-private-view-withdrawal.mp4)
+
+
 <!-- cloud-schedules-stage104 -->
 
 私有云端定时工作流已接通顾问对话及已有私有成果。核对固定方法、输入、时区、交付与每次 Agent 预算 → 主动勾选确认 → 启用每日／每周计划 → 查看逐次执行、人工审批、私有交付和实际费用。Web 与真实 Chrome 右侧栏可确认和暂停；Admin 按权限范围查看元数据，并在近期 MFA 与记录理由后暂停未来触发。

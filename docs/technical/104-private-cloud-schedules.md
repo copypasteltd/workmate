@@ -1,5 +1,9 @@
 # 104 · 私有雲端定時工作流 / Private cloud workflow schedules
 
+
+**阶段 105 / Stage 105：** 私有云端计划在来源撤回／读取失败时同步关闭已打开的私有弹窗；正常轮询保留可读草稿。九项实际跨端流程通过，含真实来源隔离无刷新与明确模拟的 HTTP403。后端未变，沿用旧 78 项检查基线；不扩大完整产品或 Desktop 验收。见[实现与证据](105-live-private-schedule-views.md)。
+
+
 用戶可以請流程顧問在私有對話裡準備每日／每週工作，也可以將已有的私有流程保存為計劃。Codex 只能準備提案；客戶必須在 Web 或 Chrome 原生右側欄核對方法、固定輸入、時區、交付與每次預算，主動勾選後確認啟用。關閉頁面仍由公司雲端 Worker 執行。Desktop 繼續在客戶本機運行 Codex，其原生憑證不能啟用本功能作為本機執行的替代。
 
 Customers can prepare daily/weekly work in a private consultant conversation or save an existing private workflow as a schedule. Codex prepares a request only. Web or the actual Chrome right Side Panel displays the fixed method, inputs, time zone, outputs and per-run budget; the customer explicitly checks consent and activates it. The company cloud worker continues after the client closes. Desktop keeps its customer-local Codex execution; its native credentials cannot activate a cloud replacement through these routes.
