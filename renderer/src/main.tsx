@@ -1,6 +1,7 @@
 import { ProjectConfigurationPanel, ProjectConfigurationSummary } from "./project-configuration";
 import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
+import { SoftwareChecks } from "./software-checks";
 import { QualitySummary } from "./quality-summary";
 import { Connections, ConnectorLaunch } from "./connections";
 import "./support.css";
@@ -1672,6 +1673,7 @@ function TaskDetail() {
               {data.error_code && (
                 <div className="notice error">{data.error_code}</div>
               )}
+              {data.execution_location !== "desktop" && ["fullstack","frontend","backend-api","software-qa","ui-ux","landing-page"].includes(data.role_key) && <SoftwareChecks key={"software-checks:"+w.base+id} base={w.base} taskId={id!}/>}
               {["succeeded", "failed", "cancelled"].includes(data.status) && data.mode !== "plan" && <DeliveryQuality key={w.base + id} base={w.base} taskId={id!} changed={() => setVersion(v => v + 1)}/>}
             </section>
             <aside>
