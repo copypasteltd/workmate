@@ -1,5 +1,20 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- live-private-views-stage105 -->
+
+Web now clears an already-open private schedule review, editor, action or history when an authoritative read loses access or removes the source. Normal polling preserves readable drafts and exact version confirmation; a recovered read does not reopen discarded private content. Pending immutable requests refresh readiness and expiry.
+
+Nine actual cross-client journeys passed, including a real source quarantine without page reload and an explicitly simulated denied HTTP403 read. Eleven screenshots and four GIF/MP4 pairs are retained. The unchanged backend retains its 78-check baseline; those tests were not rerun. Synthetic model/accounts; no new Desktop qualification. Desktop remains customer-local Codex and Extension remains the native right cloud Side Panel with authorized file upload.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/105-live-private-schedule-views.md)
+
+![Actual Web private history](assets/screenshots/live-views-workmate-private-view-03-history-before-withdrawal-zh.png)
+
+![Actual Web source withdrawal, without reload](assets/screenshots/live-views-workmate-private-view-03-private-view-withdrawal.gif)
+
+[Actual Web interaction MP4](assets/screenshots/live-views-workmate-private-view-03-private-view-withdrawal.mp4)
+
+
 <!-- cloud-schedules-stage104 -->
 
 Private cloud schedules now connect consultant conversation or an existing private result to explicit customer review and daily/weekly execution. Review the fixed method, inputs, time zone, outputs and per-run Agent budget → check consent → activate → inspect each independent run, human review point, private deliverable and actual charges. Web and the real Chrome right Side Panel provide confirmation and pause; Admin lists scoped metadata and can pause future times after recent MFA and a recorded reason.
