@@ -481,3 +481,71 @@ for (const action of ["stop", "revoke", "invalidate", "close"] as const) test(`w
     assert.equal(f.created(), 1); assert.equal(f.turns(), 1);
   } finally { await f.clean(); }
 });
+
+async function methodFixture() {
+  const f=await fixture(), base=f.io.request, admitted=new Map<string,any>(); let admissions=0, lost=false, rejected=false;
+  const requests:any[]=[];
+  f.io.request=async(url,options)=>{
+    if(!url.endsWith('/desktop-trials'))return base(url,options);
+    requests.push(structuredClone({url,...options}));
+    if(rejected)return {status:409,body:{error:{code:'SOLUTION_PREVIEW_CHANGED'}}};
+    const key=options!.idempotencyKey!;let body=admitted.get(key);
+    if(!body){
+      const sessions=(options!.body as any).sessions,tasks=[];
+      for(let position=0;position<sessions.length;position++){
+        const created=await base(`/v1/tenants/${f.scope.tenant}/projects/${f.scope.project}/desktop-executions`,{method:'POST',idempotencyKey:key+':'+position,body:{}});
+        tasks.push({task_id:created.body.task_id,position});
+      }
+      body={id:randomUUID(),execution_location:'desktop',tasks,local_sessions:sessions.map((s:any,position:number)=>({local_session_id:s.local_session_id,position,budget_micros:Math.floor((options!.body as any).trial.budget_micros/sessions.length)+(position===0?(options!.body as any).trial.budget_micros%sessions.length:0)}))};
+      admitted.set(key,body);admissions++;
+    }
+    if(lost){lost=false;throw new Error('Lost accepted native method response');}
+    return {status:201,body:structuredClone(body)};
+  };
+  const sessions=[(await f.create()).id,(await f.create()).id];
+  for(const id of sessions)await f.controller.permission(id,'workspace-write');
+  const input={...f.scope,solution:randomUUID(),sessions,trial:{project_id:f.scope.project,bindings:{assets:[],connectors:[]},expected_preview_hash:'a'.repeat(64),budget_micros:20000,brief:'Private method brief',approval:true}};
+  return {...f,input,requests,admissions:()=>admissions,lose:()=>{lost=true;},reject:()=>{rejected=true;}};
+}
+
+test('a native method reserves one durable batch, runs each role locally and never creates a fallback task on retry',async()=>{
+  const f=await methodFixture();try{
+    const run=await f.controller.prepareSolution(f.input);assert.equal(f.admissions(),1);assert.equal(f.turns(),0);
+    const prepared=await f.controller.list(f.scope);assert.equal(prepared.sessions.filter((s:any)=>s.phase==='starting').length,2);
+    for(const id of f.input.sessions)await f.controller.retry(id);
+    assert.equal(f.turns(),2);assert.equal(f.created(),2);assert.equal(f.requests.length,1);
+    const completed=await f.controller.list(f.scope);assert.ok(completed.sessions.every((s:any)=>s.solution.trialId===run.id && s.phase==='idle' && s.task.status==='succeeded'));
+    await assert.rejects(f.controller.prepareSolution(f.input),/SOLUTION_LOCAL_SESSION_USED/);
+    assert.equal(f.admissions(),1);await assert.rejects(f.controller.retry(f.input.sessions[0]),/LOCAL_REPLAY_NOT_ALLOWED/);
+  }finally{await f.clean();}
+});
+
+test('lost native method admission survives a main-process restart and resumes the original immutable batch',async()=>{
+  const f=await methodFixture();let restored:LocalAgentController|undefined;
+  try{
+    f.lose();await assert.rejects(f.controller.prepareSolution(f.input),/Lost accepted/);
+    assert.equal(f.admissions(),1);assert.equal(f.turns(),0);await f.controller.close();
+    restored=new LocalAgentController(f.io,f.factory);
+    await restored.retry(f.input.sessions[1]);await restored.retry(f.input.sessions[0]);
+    assert.equal(f.admissions(),1);assert.equal(f.created(),2);assert.equal(f.turns(),2);
+    assert.equal(f.requests.length,2);assert.deepEqual(f.requests[1],f.requests[0]);
+  }finally{await restored?.close();await f.clean();}
+});
+
+test('a withdrawn local grant can reconcile and cancel a lost batch without launching Codex or requiring a new permission',async()=>{
+  const f=await methodFixture();try{
+    f.lose();await assert.rejects(f.controller.prepareSolution(f.input),/Lost accepted/);
+    await f.controller.revoke(f.input.sessions[0]);await f.controller.stop(f.input.sessions[0]);await f.controller.stop(f.input.sessions[1]);
+    assert.equal(f.turns(),0);assert.equal(f.admissions(),1);assert.equal(f.created(),2);
+    const rows=(await f.controller.list(f.scope)).sessions;assert.ok(rows.every((s:any)=>s.phase==='idle' && s.task.status==='cancelled'));
+  }finally{await f.clean();}
+});
+
+test('a definitive native method rejection releases the local reservations and an account change during persistence cannot admit work',async()=>{
+  const f=await methodFixture();try{
+    f.reject();await assert.rejects(f.controller.prepareSolution(f.input),/SOLUTION_PREVIEW_CHANGED/);
+    assert.ok((await f.controller.list(f.scope)).sessions.every((s:any)=>s.phase==='idle'));assert.equal(f.created(),0);
+    const write=f.io.write;f.io.write=async journal=>{await write(journal);f.actor.epoch=randomUUID();};
+    await assert.rejects(f.controller.prepareSolution(f.input),/LOCAL_SESSION_NOT_FOUND/);assert.equal(f.requests.length,1);assert.equal(f.admissions(),0);
+  }finally{await f.clean();}
+});

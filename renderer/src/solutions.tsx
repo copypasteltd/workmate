@@ -26,6 +26,7 @@ import {
   useI18n,
 } from "./ui";
 import "./solutions.css";
+import { LocalSolutionTrial } from "./local-solution-trial";
 
 type Bindings = {
   assets: { requirement: string; asset_version_id: string; sha256: string }[];
@@ -1136,35 +1137,20 @@ function SolutionsWorkspace() {
                       : t("先試運行，再決定。", "Try it, then decide.")}
                   </h3>
                   {native ? (
-                    <>
-                      <p>
-                        {t(
-                          "選擇已安裝方法的固定角色，然後在本機工作台選取目錄、授權並確認預算。",
-                          "Choose a pinned role from an installed method, then select a folder, grant permissions and confirm your budget in the local workspace.",
-                        )}
-                      </p>
-                      {installationId && method.state === "published" ? (
-                        <div className="solution-actions">
-                          {method.templates?.map((v: any) => (
-                            <Link
-                              className="button primary"
-                              key={v.template_version_id}
-                              to={`/app?method_installation=${installationId}&method_role=${encodeURIComponent(v.role_key)}&method_project=${w.project}`}
-                            >
-                              {v.name}
-                              <ArrowUpRight size={15} />
-                            </Link>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="muted">
-                          {t(
-                            "先安裝已發佈的方法。方案首次試運行與發佈，請在 Web 進行。",
-                            "Install a published method first. Use Web for its first qualification trial and publication.",
-                          )}
-                        </p>
-                      )}
-                    </>
+                    <LocalSolutionTrial
+                      key={method.id + ":" + w.project + ":" + installationId}
+                      tenant={w.tenant}
+                      project={w.project}
+                      method={method}
+                      installation={installationId}
+                      bindings={bindings}
+                      preview={preview}
+                      blocked={blocked}
+                      onPrepared={(id) => {
+                        setTrialId(id);
+                        setRefresh((v) => v + 1);
+                      }}
+                    />
                   ) : (
                     <form
                       onSubmit={(e) => {

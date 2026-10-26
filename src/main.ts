@@ -574,11 +574,13 @@ async function createWindow() {
       const keys: Record<string, string[]> = { list: ["tenant", "project"], create: ["tenant", "project", "role"], permission: ["id", "mode"], send: ["id", "prompt", "budget"], answer: ["id", "requestId", "answers"], retry: ["id"], stop: ["id"], revoke: ["id"],
         "schedule.list": ["id"], "schedule.create": ["id", "settings"], "schedule.activate": ["id", "ruleId"], "schedule.pause": ["id", "ruleId"], "schedule.revoke": ["id", "ruleId"], "schedule.open-output": ["id", "ruleId", "jobId"],
         "program.list": ["id"], "program.approve": ["id"], "program.revoke": ["id", "programId"], "program.review": ["id", "receiptId"] };
+      keys["solution.prepare"] = ["tenant", "project", "solution", "trial", "sessions"];
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
       switch (action) {
         case "list": value = await localAgent.list(payload); break;
+        case "solution.prepare": value = await localAgent.prepareSolution(payload); break;
         case "create": value = await localAgent.create(payload, payload.role); break;
         case "permission": await localSchedules.withdraw(payload.id); await localPrograms.withdraw(payload.id); value = await localAgent.permission(payload.id, payload.mode); break;
         case "send": value = await localAgent.send(payload.id, payload.prompt, payload.budget); break;
