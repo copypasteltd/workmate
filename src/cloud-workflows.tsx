@@ -81,6 +81,20 @@ export function PrivateCloudWorkflows() {
     setFailure(null);
     setBusy(false);
   }, [base]);
+  useEffect(() => {
+    // Confirmation is valid only while its private run remains readable. Keep
+    // the original version/budget snapshot during ordinary successful polling.
+    if (error) {
+      setAction(null);
+      setFailure(null);
+    } else if (data) {
+      setAction((current) =>
+        current && !data.runs.some((run: Run) => run.id === current.run.id)
+          ? null
+          : current,
+      );
+    }
+  }, [data, error]);
   const names = new Map<string, string>(
     (data?.items ?? []).map((v: any) => [v.id, v.name]),
   );
