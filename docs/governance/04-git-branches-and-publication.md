@@ -1,6 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
 
+**阶段 108 / Stage 108：** 后台语音／转录不可变发版、平台预算持久验证、独立审批／回滚及原始不明 POST 不重发已接通；229 项后端、6 项后台单元及 8 项实际页面流程通过，明确假模型。见[方案及证据](../technical/108-managed-audio-capabilities.md)。原完整验收与未归因超时保留。
+
+
+
 **阶段 107 / Stage 107：** 用户能力目录按各协议独立判定视频／音频状态，状态变化使旧分页失效；相关 68 项实际检查通过。阶段 106 的完整基线及实际页面录制继续保留。见[方案与证据](../technical/107-profile-specific-capability-inventory.md)。
 
 
