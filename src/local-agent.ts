@@ -82,6 +82,7 @@ interface LocalRecord extends LocalAgentScope {
   workspace: string;
   workspaceHash: string;
   role: string;
+  specialist?: { id: string; version: number; name: string };
   grant?: LocalPermissionGrant;
   revoked: boolean;
   operation?: Operation;
@@ -309,6 +310,7 @@ export class LocalAgentController {
       project: r.project,
       workspace: r.workspace,
       role: r.role,
+      specialist: r.specialist,
       revoked: r.revoked,
       permission: r.revoked ? null : (r.grant?.mode ?? null),
       busy: this.busy.has(r.id),
@@ -451,11 +453,12 @@ export class LocalAgentController {
       roles: access.body.role_keys as string[],
     };
   }
-  async create(scope: LocalAgentScope, role: string) {
+  async create(scope: LocalAgentScope, role: string, specialist?: { id: string; version: number }) {
     if (
       !uuid.test(scope.tenant) ||
       !uuid.test(scope.project) ||
-      !/^[a-z][a-z0-9-]{0,79}$/.test(role)
+      !/^[a-z][a-z0-9-]{0,79}$/.test(role) ||
+      (specialist && (!uuid.test(specialist.id) || !Number.isSafeInteger(specialist.version) || specialist.version < 1))
     )
       throw new LocalAgentError("LOCAL_SCOPE_INVALID");
     const actor = await this.identity(),
@@ -470,15 +473,29 @@ export class LocalAgentController {
       response.body.windows_x64_sha256 !== this.io.runtime.sha256
     )
       throw new LocalAgentError("LOCAL_RUNTIME_UPDATE_REQUIRED");
+    let bound: LocalRecord["specialist"];
+    if (specialist) {
+      const checked = await this.io.request(`/v1/tenants/${scope.tenant}/projects/${scope.project}/desktop-executions/specialists/${specialist.id}?version=${specialist.version}`);
+      if (checked.status !== 200 || checked.body?.id !== specialist.id || checked.body.version !== specialist.version || checked.body.role_key !== role ||
+          typeof checked.body.name !== "string" || !checked.body.name.trim() || checked.body.name.length > 160)
+        throw new LocalAgentError("LOCAL_SPECIALIST_UNAVAILABLE");
+      bound = { id: specialist.id, version: specialist.version, name: checked.body.name };
+    }
+    if (generation !== this.generation || (await this.identity()).epoch !== actor.epoch)
+      throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
     const workspace = await this.io.chooseWorkspace();
     if (!workspace) return null;
     if (generation !== this.generation)
       throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
     const resolved = await realpath(workspace);
+    const currentActor = await this.identity();
+    if (generation !== this.generation || currentActor.actorId !== actor.actorId || currentActor.epoch !== actor.epoch)
+      throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
     if (!path.isAbsolute(resolved))
       throw new LocalAgentError("LOCAL_WORKSPACE_INVALID");
     const r: LocalRecord = {
-      ...scope,
+      tenant: scope.tenant,
+      project: scope.project,
       id: randomUUID(),
       actorId: actor.actorId,
       epoch: actor.epoch,
@@ -487,6 +504,7 @@ export class LocalAgentController {
         process.platform === "win32" ? resolved.toLowerCase() : resolved,
       ),
       role,
+      ...(bound ? { specialist: bound } : {}),
       revoked: false,
       companyToolsVersion: 1,
       ...(this.io.browser ? { browserToolsVersion: 1 as const } : {}),
@@ -612,6 +630,7 @@ export class LocalAgentController {
           this.busy.has(id) ||
           this.permissions.has(id) ||
           r.operation ||
+          r.specialist ||
           r.uncertain ||
           r.lastTask ||
           r.messages.length
@@ -1009,6 +1028,7 @@ export class LocalAgentController {
               title: op.prompt.slice(0, 100),
               prompt: op.prompt,
               role_key: r.role,
+              ...(r.specialist ? { agent_id: r.specialist.id, agent_version: r.specialist.version } : {}),
               budget_micros: op.budget,
             },
             op.createKey,

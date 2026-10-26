@@ -35,8 +35,6 @@ import {
 } from "./federation";
 import {
   Specialists,
-  Conversations,
-  ConversationDetail,
   Memories,
   ModeField,
   RecentConversations,
@@ -838,10 +836,10 @@ function Shell() {
               <Route path="specialists" element={<Specialists />} />
               <Route path="skills" element={<ProjectSkills />} />
               <Route path="notifications" element={<Notifications />} />
-              <Route path="conversations" element={<Conversations />} />
+              <Route path="conversations" element={<LocalAgentWorkspace />} />
               <Route
                 path="conversations/:id"
-                element={<ConversationDetail />}
+                element={<CloudWorkspaceLink />}
               />
               <Route path="memories" element={<Memories />} />
               <Route path="projects" element={<Projects />} />

@@ -136,6 +136,47 @@ async function fixture() {
   };
 }
 
+test("saved native specialists retain their version through uncertain admission and restart, without a replacement reservation", async () => {
+  const f = await fixture(), specialist = { id: randomUUID(), version: 7 }; let restored: LocalAgentController | undefined;
+  try {
+    const request = f.io.request;
+    f.io.request = async (url, options) => url.includes("/specialists/")
+      ? { status: 200, body: { ...specialist, name: "Saved expert", role_key: "fullstack" } } : request(url, options);
+    const session = (await f.controller.create(f.scope, "fullstack", specialist))!;
+    assert.deepEqual(session.specialist, { ...specialist, name: "Saved expert" }); assert.equal(session.permission, null);
+    await f.controller.permission(session.id, "full-access");
+    const trial = { ...f.scope, solution: randomUUID(), sessions: [session.id], trial: { project_id: f.scope.project, approval: true } };
+    await assert.rejects(f.controller.prepareSolution(trial), /SOLUTION_LOCAL_SESSION_USED/);
+    f.loseCreate(); await assert.rejects(f.controller.send(session.id, "Run my saved expert", 20000), /lost create response/);
+    const sent = f.calls.find(c => c.url.endsWith("/desktop-executions") && c.method === "POST");
+    assert.equal(sent.body.agent_id, specialist.id); assert.equal(sent.body.agent_version, 7);
+    await f.controller.close(); restored = new LocalAgentController(f.io, f.factory);
+    const recovered = (await restored.list(f.scope)).sessions.find((s: any) => s.id === session.id)!;
+    assert.deepEqual(recovered.specialist, session.specialist); await restored.retry(session.id);
+    assert.equal(f.created(), 1); assert.equal(f.turns(), 1);
+    const calls = f.calls.filter(c => c.url.endsWith("/desktop-executions") && c.method === "POST");
+    assert.equal(calls.length, 2); assert.equal(calls[0].idempotencyKey, calls[1].idempotencyKey); assert.deepEqual(calls[0].body, calls[1].body);
+  } finally { await restored?.close(); await f.clean(); }
+});
+
+test("saved specialist selection rejects a wrong role or changed account before opening a customer folder", async () => {
+  const f = await fixture(), specialist = { id: randomUUID(), version: 1 }; let folders = 0;
+  try {
+    const request = f.io.request; f.io.chooseWorkspace = async () => { folders++; throw new Error("A rejected specialist must not open a folder"); };
+    f.io.request = async (url, options) => url.includes("/specialists/")
+      ? { status: 200, body: { ...specialist, name: "Wrong role", role_key: "designer" } } : request(url, options);
+    await assert.rejects(f.controller.create(f.scope, "fullstack", specialist), /LOCAL_SPECIALIST_UNAVAILABLE/);
+    f.io.request = async (url, options) => { if (!url.includes("/specialists/")) return request(url, options);
+      f.actor.epoch = randomUUID(); return { status: 200, body: { ...specialist, name: "Saved expert", role_key: "fullstack" } };
+    };
+    await assert.rejects(f.controller.create(f.scope, "fullstack", specialist), /LOCAL_ACCOUNT_CHANGED/);
+    assert.equal(folders, 0); assert.equal(f.created(), 0); assert.equal(f.turns(), 0);
+    assert.equal(rendererApiOperation("/v1/brand-version-options?project_id=" + f.scope.project, "GET"), true);
+    assert.equal(rendererApiOperation("/v1/brand-version-options", "POST"), false);
+    assert.equal(rendererApiOperation(`/v1/tenants/${f.scope.tenant}/projects/${f.scope.project}/desktop-executions/specialists/${specialist.id}?version=1`, "GET"), false);
+  } finally { await f.clean(); }
+});
+
 test("legacy native records do not silently acquire approved-program tools", async () => {
   const f = await fixture(); let created = 0;
   try {

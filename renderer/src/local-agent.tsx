@@ -18,6 +18,7 @@ import { LocalPrograms } from "./local-programs";
 type Permission = "read-only" | "workspace-write" | "full-access";
 interface LocalSession {
   id: string; workspace: string; role: string; permission: Permission | null;
+  specialist?: { id: string; version: number; name: string };
   revoked: boolean; busy: boolean; phase: string; uncertain: boolean; retryable: boolean; error?: string;
   task?: { task_id: string; status: string; charged_micros: string; accrued_micros: string };
   messages: { role: "user" | "assistant"; text: string; status?: string }[];
@@ -25,6 +26,7 @@ interface LocalSession {
   inputs: LocalPendingInput[]; programToolsVersion?: 1;
 }
 const roleNames: Record<string, [string, string]> = {
+  assistant: ["工作助理", "Work assistant"],
   fullstack: ["全端工程師", "Full-stack developer"], frontend: ["前端工程師", "Frontend developer"],
   "backend-api": ["後端與 API 工程師", "Backend & API developer"], "software-qa": ["軟體測試工程師", "Software QA engineer"],
   "landing-page": ["落地頁設計師", "Landing page designer"],
@@ -89,6 +91,9 @@ export function CloudWorkspaceLink() {
 export function LocalAgentWorkspace() {
   const w = useWorkspace(), { t } = useI18n();
   const [methodQuery, setMethodQuery] = useSearchParams();
+  const requestedSession = methodQuery.get("native_project") === w.project && /^[a-f0-9-]{36}$/.test(methodQuery.get("native_session") ?? "") ? methodQuery.get("native_session")! : "";
+  const requested = useRef(requestedSession);
+  useEffect(() => { requested.current = requestedSession; }, [requestedSession, w.project]);
   const methodInstallation = methodQuery.get("method_project") === w.project && /^[a-f0-9-]{36}$/.test(methodQuery.get("method_installation") ?? "") ? methodQuery.get("method_installation")! : "";
   const installedMethod = useData<any>(methodInstallation ? `/v1/solution-installations/${methodInstallation}` : null, 0, 0, w.tenant);
   const pinnedMethod = useData<any>(installedMethod.data?.solution ? `/v1/solution-versions/${installedMethod.data.solution.id}/details` : null, 0, 0, w.tenant);
@@ -112,7 +117,11 @@ export function LocalAgentWorkspace() {
       if (loading || !alive) return; loading = true;
       try {
         const data = await native("list", { tenant: w.tenant, project: w.project });
-        if (alive) { setSessions(data.sessions); setRoles(data.roles); setSelected(id => data.sessions.some((s: LocalSession) => s.id === id) ? id : data.sessions.at(-1)?.id ?? ""); }
+        if (alive) { setSessions(data.sessions); setRoles(data.roles); setSelected(id => {
+          const wanted = requested.current;
+          if (wanted && data.sessions.some((s: LocalSession) => s.id === wanted)) { requested.current = ""; return wanted; }
+          return data.sessions.some((s: LocalSession) => s.id === id) ? id : data.sessions.at(-1)?.id ?? "";
+        }); }
       } catch (e) { if (alive) {
         const code = (e as Error).message;
         if (["LOCAL_ACCOUNT_CHANGED", "LOCAL_PROJECT_ACCESS_REQUIRED", "AUTH_REQUIRED", "AUTH_CHANGED"].includes(code)) { setSessions([]); setSelected(""); }
@@ -220,7 +229,7 @@ export function LocalAgentWorkspace() {
       <button className="button primary" disabled={creating || !roles.includes(role)} onClick={() => void act("create", { tenant: w.tenant, project: w.project, role })}><Plus size={16}/>{t("選擇目錄開始", "Choose folder to start")}</button>
       <p className="muted">{t("檔案與終端在此電腦處理；圖片、影片與專案工具使用公司服務。", "Files and terminal run on this computer; image, video and project tools use company services.")}</p>
       <nav aria-label={t("本機會話", "Local sessions")}>{sessions.map(s => <button key={s.id} title={s.workspace} aria-pressed={s.id === selected} className={s.id === selected ? "selected" : ""} onClick={() => { setSelected(s.id); setError(""); }}>
-        <FolderOpen size={16}/><span>{s.workspace.split(/[\\/]/).filter(Boolean).at(-1)}<small>{roleNames[s.role] ? t(...roleNames[s.role]) : s.role}{s.revoked ? t(" · 已撤權", " · Revoked") : ""}</small></span></button>)}</nav>
+        <FolderOpen size={16}/><span>{s.workspace.split(/[\\/]/).filter(Boolean).at(-1)}<small>{s.specialist ? s.specialist.name + " · v" + s.specialist.version : roleNames[s.role] ? t(...roleNames[s.role]) : s.role}{s.revoked ? t(" · 已撤權", " · Revoked") : ""}</small></span></button>)}</nav>
     </aside><section className="local-agent-conversation" aria-label={t("本機工作對話", "Local work conversation")}>
       {session ? <><div className="local-agent-toolbar"><div className="local-agent-folder"><FolderOpen size={17}/><span title={session.workspace}>{session.workspace}</span></div>
         <div className="local-agent-permission"><ShieldCheck size={16}/><select aria-label={t("本機權限", "Local permission")} value={mode} onChange={e => setMode(e.target.value as Permission)} disabled={session.busy || session.revoked || pending}>

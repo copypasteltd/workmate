@@ -90,11 +90,11 @@ export function Specialists() {
     );
   async function start(a: any) {
     try {
-      const c = await post(w.base + "/conversations", {
-        name: a.name,
-        agent_id: a.id,
+      const local = await window.copyPasteBridge!.localAgent("specialist.create", {
+        tenant: w.tenant, project: w.project, role: a.role_key, agent_id: a.id, agent_version: a.version,
       });
-      nav("/app/conversations/" + c.id);
+      if (!local.ok) throw new Error(local.code ?? "LOCAL_SPECIALIST_UNAVAILABLE");
+      if (local.value?.id) nav("/app?native_project=" + w.project + "&native_session=" + local.value.id);
     } catch (e) {
       setError(e as Error);
     }
@@ -162,6 +162,7 @@ export function Specialists() {
                     "Uses the role’s installed methods.",
                   )}
               </p>
+              {a.body.brand && <p className="muted small-text">{t("固定品牌版本", "Fixed brand revision")} · v{a.body.brand.version}</p>}
               <div className="row-actions">
                 <button
                   className="button primary"

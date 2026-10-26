@@ -163,6 +163,7 @@ export function LocalSolutionTrial({
                         (s) =>
                           s.role === v.role_key &&
                           s.phase === "idle" &&
+                          !s.specialist &&
                           !s.task &&
                           !s.revoked &&
                           s.permission &&
