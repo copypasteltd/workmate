@@ -1,5 +1,35 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- cloud-browser-stage101 -->
+
+Cloud Codex now performs actual page interactions and DOM checks with a pinned native Chromium runtime, retaining a real screenshot and exact source. The verifiers run actual Codex, Chromium, PostgreSQL and downloads and check owned-process cleanup.
+
+Usage: sign in, select an authorized software role and approve a cloud task/budget. Codex writes an HTML entry and local assets, executes named page checks, repairs failures and repeats. Expand Software checks to see the actual PNG and expected/actual values; download execution files or the matching source package. Four additive Skill packages and six role versions preserve historical approved bindings and do not expand permissions.
+
+Backend setup on Windows x64: `npm ci`, then `node scripts/setup-cloud-browser.mjs --download` for the first installation (or `--source <approved-folder>`); subsequently run setup without arguments to reverify. Build and run `node scripts/probe-cloud-browser.mjs --compiled`. Exact browser files, guardian and native renderer/job measurements are required.
+
+Verified: 113 checks in fourteen related suites and four authenticated Web journey checks; actual Codex, browser and downloads, synthetic provider responses and credit. Static task preview and independent API/SQLite checks do not establish a combined deployed application, arbitrary npm/framework support, live professional quality or complete product acceptance. Chromium policy restrictions are separate from an OS-wide no-network guarantee. Earlier notes below keep their historical scope.
+
+[Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-browser-checkpoint.json) · [Design, setup and limits / 方案、安装与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/101-cloud-browser-preview.md).
+
+```mermaid
+flowchart LR
+ A[Authorized cloud task] --> B[Codex writes exact source]
+ B --> C[Native Chromium actions and assertions]
+ C --> D[Actual PNG and version-bound receipt]
+ D --> E[Scoped UI and downloads]
+ B --> F[Repair failed source]
+ F --> C
+```
+
+![Actual Web browser checks / 实际 Web 页面检查](assets/screenshots/workmate-cloud-browser-01-checks-en.png)
+
+![Actual Web browser checks / 实际 Web 页面检查](assets/screenshots/workmate-cloud-browser-01-compact-zh.png)
+
+![Actual Web interaction / 实际 Web 交互](assets/screenshots/workmate-01-cloud-browser.gif)
+
+[Actual interaction MP4 / 实际交互录像](assets/screenshots/workmate-01-cloud-browser.mp4)
+
 <!-- cloud-development-stage100 -->
 
 Cloud Codex can now run actual HTTP application requests and native SQLite data/constraint checks. Exact-source receipts retain failures, mark results stale after source changes, and accompany matching code packages. Delivery scripts verify actual Codex, HTTP, native SQLite, platform PostgreSQL, browser downloads and owned-process cleanup.
