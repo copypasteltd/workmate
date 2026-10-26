@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- admin-data-stage103 -->
+
+后台已接入持久批量任务，以及用户目录、用量、费用流水和审计资料快照导出。操作流程：选择对象／条件 → 核对精确记录、版本与字段 → 明确确认 → 查看逐项结果 → 对失败对象预览并建立重试子任务，或下载已授权的 CSV／清单。取消保留已完成操作；原费用与 VIP 审批历史仍可查询。
+
+限制：每批最多 100 位用户，导出最多 10,000 笔，超限明确拒绝。逐项执行和下载重新验证当前权限、显式限制、近期 MFA、版本与字段可见性。预览五分钟、任务密文十五分钟过期；只有数据库暂时性错误自动退避，最多三次。
+
+已核查：六个后端测试文件共 94 项，七项真实 Admin 浏览器流程，六张未修改 PNG 及两组真实 GIF／MP4。采用原生 PostgreSQL、实际电邮／TOTP 会话、假用户和零模型调用。Desktop 本机 Codex 与 Chrome 原生右侧栏的执行模型继续保留；本增量不扩大为三端或完整产品验收结论。
+
+从 Delivery 原生运行 `node scripts/run-admin-data-checks.mjs <新的两位编号> full`，再运行 `node scripts/run-admin-data-ui.mjs <新的两位编号>`；逐次保存确切源码和失败记录，并关闭自有数据库及浏览器。部署需套用 SQL119、启用 Worker maintenance；不使用 Docker／WSL。
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/103-persistent-admin-data-jobs.md) · [Exact evidence / 确切证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-data-jobs-checkpoint.json)
+
+```mermaid
+flowchart LR
+ A[Select accounts or export criteria] --> B[Freeze and review]
+ B --> C[Confirm persistent job]
+ C --> D[Atomic item outcomes]
+ D --> E[Failed-only child preview]
+ E --> B
+ D --> F[Recheck permission and download]
+```
+
+![Actual Admin export / 实际后台导出](assets/screenshots/admin-workmate-admin-data-03-export-ready-en.png)
+
+![Actual batch and retry / 实际批量与重试](assets/screenshots/admin-workmate-03-admin-data-batch.gif)
+
+[Actual interaction MP4](assets/screenshots/admin-workmate-03-admin-data-batch.mp4)
+
+
 <!-- client-content-stage102 -->
 
 后端负责不可变版本、完整保底、身份上下文、MFA、并发及审计。

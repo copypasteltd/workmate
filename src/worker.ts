@@ -31,6 +31,7 @@ import {
 import { videoCreate } from "./video-project-model.js";
 import { videoRendererProfile } from "./video-render.js";
 import { dispatchFinancialNotifications } from "./financial-notifications.js";
+import { advanceAdminDataJobs } from "./admin-data-jobs.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import { cleanAuthReceipts } from "./auth-receipts.js";
 import { dispatchInvitationMail } from "./invitation-delivery.js";
@@ -323,6 +324,7 @@ export class Worker {
         ["uploads", () => cleanUploadStaging(this.db)],
         ["invitations", () => dispatchInvitationMail(this.db)],
         ["admin_approvals", () => expireAdminApprovals(this.db)],
+        ["admin_data_jobs", () => advanceAdminDataJobs(this.db)],
         [
           "entitlement_notifications",
           () => dispatchEntitlementNotifications(this.db),

@@ -10,6 +10,7 @@ import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
 import { registerAdminDirectory, readScope } from "./admin-directory.js";
 import { registerAdminJobs } from "./admin-jobs.js";
+import { registerAdminDataJobs } from "./admin-data-jobs.js";
 import { providerApprovalVisibility } from "./provider-admin-access.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -772,6 +773,7 @@ export function registerAdmin(
   registerAdminDirectory(app, db);
   registerAdminContent(app, db, storage);
   registerAdminJobs(app, db);
+  registerAdminDataJobs(app, db);
   registerAdminCatalog(app, db, catalog);
   registerAdminAccess(app, db, catalog);
 }
