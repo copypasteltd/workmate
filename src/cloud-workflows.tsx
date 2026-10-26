@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Check,
   ChevronRight,
@@ -16,6 +16,7 @@ import { download, post } from "./api";
 import { useWorkspace } from "./context";
 import { useData, useI18n, Badge, ErrorNotice, Modal, Money } from "./ui";
 import "./cloud-workflows.css";
+import { ScheduleFromRun } from "./cloud-schedules";
 
 type Step = {
   kind: string;
@@ -54,9 +55,27 @@ export function PrivateCloudWorkflows() {
     } | null>(null);
   const [busy, setBusy] = useState(false),
     [failure, setFailure] = useState<unknown>(null);
-  const { data, error, loading } = useData(base, refresh, 5000, "", {
-    retainOnRefresh: true,
-  });
+  const location = useLocation(),
+    focusedRun = /^#cloud-run-[\da-f-]{36}$/.test(location.hash)
+      ? location.hash.slice(11)
+      : null;
+  const { data, error, loading } = useData(
+    base + (focusedRun ? "?run_id=" + focusedRun : ""),
+    refresh,
+    5000,
+    "",
+    {
+      retainOnRefresh: true,
+    },
+  );
+  useEffect(() => {
+    if (!/^#cloud-run-[\da-f-]{36}$/.test(location.hash) || !data) return;
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) {
+      target.scrollIntoView({ block: "center", behavior: "smooth" });
+      target.focus({ preventScroll: true });
+    }
+  }, [location.hash, Boolean(data), base]);
   useEffect(() => {
     setAction(null);
     setFailure(null);
@@ -134,6 +153,13 @@ export function PrivateCloudWorkflows() {
         </button>
       </div>
       <ErrorNotice error={error ?? (!action ? failure : null)} />
+      {focusedRun && (
+        <p>
+          <Link className="button secondary small" to={location.pathname}>
+            {t("查看所有流程執行", "Show all workflow runs")}
+          </Link>
+        </p>
+      )}
       {!data && !error && (
         <p role="status" className="muted">
           {t("正在載入你的流程…", "Loading your workflows…")}
@@ -168,6 +194,8 @@ export function PrivateCloudWorkflows() {
             className="card private-workflow-run"
             key={run.id}
             data-workflow-run={run.id}
+            id={"cloud-run-" + run.id}
+            tabIndex={-1}
           >
             <header>
               <span className="workflow-private-label">
@@ -282,6 +310,7 @@ export function PrivateCloudWorkflows() {
               </p>
             )}
             <footer>
+              <ScheduleFromRun run={run} />
               {run.state === "awaiting_approval" && (
                 <button
                   className="button primary small"

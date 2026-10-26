@@ -43,6 +43,7 @@ import { FinancialInbox } from "./financial-notifications";
 import { SupportAccess } from "./support-access";
 import { Schedules } from "./schedules";
 import { PrivateCloudWorkflows } from "./cloud-workflows";
+import { CloudSchedules } from "./cloud-schedules";
 import {
   CompanySignIn,
   ConfirmCompanyIdentity,
@@ -1581,6 +1582,7 @@ function TaskDetail() {
                   taskId={id!}
                 />
               )}
+              {data.role_key === "workflow-consultant" && data.execution_location !== "desktop" && <CloudSchedules key={"cloud-plans:" + w.base + id} taskId={id!} />}
               {data.execution_location !== "desktop" && ["fullstack","frontend","backend-api","software-qa","ui-ux","landing-page"].includes(data.role_key) && <SoftwareChecks key={"software-checks:"+w.base+id} base={w.base} taskId={id!}/>}
               {["succeeded", "failed", "cancelled"].includes(data.status) &&
                 data.mode !== "plan" && (
@@ -2419,6 +2421,7 @@ function Workflows() {
         }
       />
       <ErrorNotice error={error ?? err} />
+      <CloudSchedules key={w.base} />
       <PrivateCloudWorkflows />
       {data?.items.length ? (
         <div className="project-grid">
