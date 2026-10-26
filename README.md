@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent · admin
 
+<!-- cloud-browser-stage101 -->
+
+云端 Codex 现可使用固定的原生 Chromium 执行真实页面交互和 DOM 检查，保留实际截图及确切源码。Admin 继续使用企业、来源、用户和内容权限管理；下图来自实际用户端 Web 任务。
+
+使用：登录并选择具有工具授权的软件角色，批准云端任务及预算。Codex 写入 HTML 和本地资源、执行具名检查，修复失败后重新执行。在「软件检查记录」展开实际 PNG 与预期/实际断言，下载执行文件或匹配源码包。新增四份 Skill 和六个角色版本，保留已批准任务的历史绑定，不扩大角色权限。
+
+验证：十四个相关测试文件的 113 项检查及 4 项登录 Web 流程；Codex、浏览器和下载真实运行，模型响应和额度使用假数据。静态任务预览及独立 API/SQLite 检查不代表已连通部署应用、任意 npm/框架、真实模型专业质量或全产品验收。浏览器策略限制不等于操作系统级无网络保证。下方旧说明保留历史验证范围。
+
+[Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-browser-checkpoint.json) · [Design, setup and limits / 方案、安装与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/101-cloud-browser-preview.md).
+
+```mermaid
+flowchart LR
+ A[Authorized cloud task] --> B[Codex writes exact source]
+ B --> C[Native Chromium actions and assertions]
+ C --> D[Actual PNG and version-bound receipt]
+ D --> E[Scoped UI and downloads]
+ B --> F[Repair failed source]
+ F --> C
+```
+
+![Actual Web browser checks / 实际 Web 页面检查](assets/screenshots/workmate-cloud-browser-01-checks-en.png)
+
+![Actual Web browser checks / 实际 Web 页面检查](assets/screenshots/workmate-cloud-browser-01-compact-zh.png)
+
+![Actual Web interaction / 实际 Web 交互](assets/screenshots/workmate-01-cloud-browser.gif)
+
+[Actual interaction MP4 / 实际交互录像](assets/screenshots/workmate-01-cloud-browser.mp4)
+
 <!-- cloud-development-stage100 -->
 
 云端 Codex 现可实际运行真实 HTTP 应用请求及原生 SQLite 数据和约束检查。检查回执绑定确切源码、保留每项断言的预期与实际结果、标记代码变更，并随匹配源码打包交付。Admin 沿用现有企业、来源、文件和权限管理；下图实际来自用户端 Web 联调。
