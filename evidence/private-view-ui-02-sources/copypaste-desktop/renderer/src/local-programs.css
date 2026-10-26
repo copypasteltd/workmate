@@ -1,0 +1,35 @@
+.local-programs { flex:1; min-height:0; min-width:0; overflow-y:auto; overflow-x:clip; padding:24px; }
+.local-programs-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+.local-programs-heading > div { flex:1; min-width:min(100%,220px); }
+.local-programs h2 { font:500 28px Fraunces,serif; margin:8px 0 10px; letter-spacing:-.5px; }
+.local-programs p { font-size:12px; line-height:1.8; overflow-wrap:anywhere; }
+.local-programs-heading p,.local-programs-note { color:var(--muted); }
+.local-programs-note { font-size:11px!important; }
+.local-programs-error { border-left:3px solid var(--red); background:var(--surface); padding:12px; }
+.local-programs-empty { display:grid; justify-items:center; text-align:center; gap:12px; padding:36px 20px; border:1px dashed var(--line); border-radius:14px; margin:24px 0; }
+.local-programs-empty > svg,.local-program-icon { color:var(--blue); }
+.local-programs-empty h3 { font:500 23px Fraunces,serif; margin:0; }
+.local-programs-empty p { margin:0; max-width:430px; color:var(--muted); }
+.local-programs-catalog { display:grid; gap:12px; margin:20px 0 30px; }
+.local-program-card { display:flex; align-items:flex-start; gap:12px; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--surface); }
+.local-program-icon { display:grid; place-items:center; flex:0 0 36px; height:36px; border-radius:9px; background:var(--blue-soft); }
+.local-program-card > div:nth-child(2) { flex:1; min-width:0; }
+.local-program-card header,.local-program-run header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; }
+.local-program-card h3 { font-size:13px; margin:0; overflow-wrap:anywhere; }
+.local-program-card header > span { display:flex; gap:4px; align-items:center; color:var(--muted); font-size:10px; }
+.local-program-card header > .is-active { color:var(--green,#187251); }
+.local-program-card p { color:var(--muted); font-size:10px; margin:7px 0; }
+.local-program-card > button { flex-shrink:0; padding:7px 10px; font-size:11px; }
+.local-programs details { font-size:11px; margin-top:8px; }
+.local-programs summary { cursor:pointer; color:var(--muted); }
+.local-programs code,.local-programs pre { display:block; max-width:100%; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; font-size:10px; line-height:1.7; }
+.local-programs pre { padding:12px; border:1px solid var(--line); border-radius:8px; max-height:240px; overflow-y:auto; overflow-x:clip; background:var(--bg); }
+.local-programs-history-heading { display:flex; align-items:center; gap:8px; margin:24px 0 12px; }
+.local-programs-history-heading h3 { font-size:13px; margin:0; }
+.local-programs-history-heading > span { color:var(--muted); font-size:11px; margin-left:auto; }
+.local-program-run { padding:16px 0; border-top:1px solid var(--line); }
+.local-program-run header { font-size:12px; }
+.local-program-run header span { color:var(--muted); font-size:11px; }
+.local-program-run > p { color:var(--muted); font-size:10px; margin:8px 0; }
+.local-programs :is(button,summary):focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+@media(max-width:1050px) { .local-programs { padding:16px; } .local-program-card { flex-wrap:wrap; } .local-program-card > button { margin-left:48px; } .local-programs h2 { font-size:25px; } }

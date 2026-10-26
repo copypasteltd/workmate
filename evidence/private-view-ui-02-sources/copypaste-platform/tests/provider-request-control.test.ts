@@ -1,0 +1,1333 @@
+import { beforeEach, afterEach, test } from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { createServer, type Server } from "node:http";
+import { spawn } from "node:child_process";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+import { listenLoopbackHTTP } from "../src/loopback-http.js";
+import { Worker } from "../src/worker.js";
+import { taskCapabilities } from "../src/capability-bindings.js";
+import { seedRuntimeProfile } from "../src/runtime-profiles.js";
+import { seedProviderBudgetPolicy } from "../src/provider-budgets.js";
+import { recoverProviderRequests } from "../src/provider-request-control.js";
+import { hash } from "../src/lib.js";
+import {
+  AIRequestFailure,
+  internalAIRequest,
+  startScopedInferenceGateway,
+  finishInternalAIRequest,
+  type AIRequestInfo,
+  type AIRequestPermit,
+  type AIRequestAuthority,
+} from "../src/internal-ai-gateway.js";
+
+let owned: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
+let s: Awaited<ReturnType<typeof buildApp>>;
+let upstream: Server;
+let env: NodeJS.ProcessEnv;
+let generationCalls: number;
+let countCalls: number;
+let observedCounts: any[];
+let countedTokens: unknown;
+let outputTokens: number;
+let malformed: boolean;
+let emitCreated: boolean;
+const fixtureKey = "provider-request-fixture-never-a-real-key";
+
+beforeEach(async () => {
+  owned = await isolatedTestEnvironment();
+  generationCalls = 0;
+  countCalls = 0;
+  observedCounts = [];
+  countedTokens = 7;
+  outputTokens = 11;
+  malformed = false;
+  emitCreated = false;
+  upstream = createServer(async (req, res) => {
+    const chunks: Buffer[] = [];
+    for await (const part of req) chunks.push(Buffer.from(part));
+    if (req.url === "/v1/responses/input_tokens") {
+      countCalls++;
+      observedCounts.push(JSON.parse(Buffer.concat(chunks).toString()));
+      assert.equal(req.headers.authorization, "Bearer " + fixtureKey);
+      res.writeHead(200, { "content-type": "application/json" }).end(
+        JSON.stringify({
+          object: "response.input_tokens",
+          input_tokens: countedTokens,
+        }),
+      );
+      return;
+    }
+    generationCalls++;
+    assert.equal(req.headers.authorization, "Bearer " + fixtureKey);
+    res.writeHead(200, { "content-type": "text/event-stream" });
+    if (malformed) {
+      res.end(
+        'event: response.created\ndata: {"response":{"id":"resp_fixture"}}\n\nevent: response.completed\ndata: {',
+      );
+    } else {
+      if (emitCreated)
+        res.write(
+          'event: response.created\ndata: {"type":"response.created","response":{"id":"resp_fixture"}}\n\n',
+        );
+      res.end(
+        "event: response.completed\ndata: " +
+          JSON.stringify({
+            type: "response.completed",
+            response: {
+              id: "resp_fixture",
+              status: "completed",
+              output: [],
+              usage: { input_tokens: 7, output_tokens: outputTokens },
+            },
+          }) +
+          "\n\n",
+      );
+    }
+  });
+  await listenLoopbackHTTP(upstream);
+  env = {
+    ...owned.env,
+    NODE_ENV: "test",
+    DEV_MAILBOX: "true",
+    WORKER_ENABLED: "false",
+    DEMO_MODE: "false",
+    AI_BASE_URL: `http://127.0.0.1:${(upstream.address() as any).port}/v1`,
+    AI_ALLOWED_HOSTS: "127.0.0.1",
+    AI_API_KEY: fixtureKey,
+    AI_MODEL: "provider-control-fixture",
+    AI_REASONING_EFFORT: "high",
+    AI_VERIFIED: "true",
+    AI_INPUT_COUNT_VERIFIED: "true",
+    AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "3",
+    AI_INPUT_HKD_MICROS_PER_MILLION: "1000000",
+    AI_OUTPUT_HKD_MICROS_PER_MILLION: "2000000",
+    AI_IMAGE_MODEL: "provider-image-fixture",
+    AI_IMAGE_VERIFIED: "true",
+    AI_IMAGE_HKD_MICROS_PER_IMAGE: "200",
+  };
+  s = await buildApp(loadConfig(env), { worker: false });
+});
+afterEach(async () => {
+  try {
+    await s?.app.close();
+  } finally {
+    upstream?.closeAllConnections();
+    if (upstream)
+      await new Promise<void>((resolve, reject) =>
+        upstream.close((e) => (e ? reject(e) : resolve())),
+      );
+    await owned?.cleanup();
+  }
+});
+
+type Client = { id: string; cookie: string; csrf: string };
+async function api(
+  client: Client | undefined,
+  method: string,
+  url: string,
+  body: unknown,
+) {
+  const reply = await s.app.inject({
+    method: method as any,
+    url,
+    headers: {
+      origin: s.db.config.WEB_ORIGIN,
+      "content-type": "application/json",
+      "idempotency-key": randomUUID(),
+      ...(client ? { cookie: client.cookie, "x-csrf-token": client.csrf } : {}),
+    },
+    payload: JSON.stringify(body),
+  });
+  assert.equal(reply.statusCode, 200, reply.body);
+  return { body: reply.json(), reply };
+}
+async function fixture(options: { budget?: number; role?: string } = {}) {
+  const email = `provider-control-${randomUUID()}@example.invalid`;
+  const challenge = await api(undefined, "POST", "/v1/auth/challenge", {
+    email,
+  });
+  const mail = JSON.parse(
+    await readFile(
+      `${s.db.config.DATA_DIR}/mailbox/${challenge.body.challenge_id}.json`,
+      "utf8",
+    ),
+  );
+  const verified = await api(undefined, "POST", "/v1/auth/verify", {
+    challenge_id: challenge.body.challenge_id,
+    code: mail.text.match(/\b\d{6}\b/)[0],
+  });
+  const cookie = verified.reply.cookies.find((c) => c.name === "cp_session")!;
+  const client: Client = {
+    id: verified.body.user.id,
+    cookie: `${cookie.name}=${cookie.value}`,
+    csrf: verified.body.csrf_token,
+  };
+  const workspace = await api(client, "POST", "/v1/tenants", {
+    name: "Provider request fixture",
+    project_name: "Real authorization",
+  });
+  const tenant = workspace.body.tenant.id,
+    project = workspace.body.project.id;
+  await s.db.control.query(
+    "UPDATE wallets SET credit_limit_micros=100000000 WHERE tenant_id=$1",
+    [tenant],
+  );
+  const created = await api(
+    client,
+    "POST",
+    `/v1/tenants/${tenant}/projects/${project}/tasks`,
+    {
+      title: "Provider admission fixture",
+      prompt: "Only use the labelled mock provider.",
+      role_key: options.role ?? "marketing-analyst",
+      budget_micros: options.budget ?? 1000000,
+    },
+  );
+  const fencing = randomUUID();
+  const task = (
+    await s.db.control.query(
+      "UPDATE tasks SET status='running',attempt=1,fencing_token=$2,lease_until=now()+interval '5 minutes' WHERE id=$1 RETURNING *",
+      [created.body.id, fencing],
+    )
+  ).rows[0];
+  const actor = (
+    await s.db.control.query(
+      "SELECT email,name,auth_version FROM users WHERE id=$1",
+      [client.id],
+    )
+  ).rows[0];
+  const principal = {
+    id: client.id,
+    email: actor.email,
+    name: actor.name,
+    authVersion: actor.auth_version,
+    audience: "user",
+    sessionId: "",
+    sessionHash: "",
+  };
+  const cap = await s.db.tx(
+    (tx) => taskCapabilities(tx, s.db.config, s.catalog, task),
+    tenant,
+    true,
+    client.id,
+  );
+  const worker = new Worker(s.db, s.catalog, s.storage);
+  const authority: AIRequestAuthority = {
+    budgeted: true,
+    taskId: task.id,
+    tenantId: tenant,
+    projectId: project,
+    actorId: client.id,
+    capabilityVersionId: cap.text.id,
+    attempt: 1,
+    fencingToken: fencing,
+    authorize: (request) =>
+      (worker as any).authorizeInference(task, principal, fencing, request),
+  };
+  const body = {
+    model: cap.text.body.model_alias,
+    reasoning: { effort: cap.text.body.reasoning_effort },
+    stream: true,
+    input:
+      "A private fixture prompt that must never appear in request metadata",
+    tools: [],
+    max_output_tokens: 32,
+  };
+  const info = (): AIRequestInfo => ({
+    ...authority,
+    requestId: randomUUID(),
+    operation: "responses",
+    model: body.model,
+    requestHash: hash(JSON.stringify(body)),
+    requestBytes: Buffer.byteLength(JSON.stringify(body)),
+  });
+  const countedInfo = async () => {
+    const generation = info();
+    const { stream, max_output_tokens, ...countBody } = body;
+    const response = await internalAIRequest(s.db.config, {
+      operation: "responses.input_tokens",
+      model: body.model,
+      body: countBody,
+      authority: {
+        ...authority,
+        authorize: async (request) => {
+          const permit = (await authority.authorize(
+            request,
+          )) as AIRequestPermit;
+          generation.inputCountId = permit.requestId;
+          return permit;
+        },
+      },
+      signal: new AbortController().signal,
+      generationOperationId: generation.requestId,
+      generationHash: generation.requestHash,
+    });
+    const result = await response.json();
+    await finishInternalAIRequest(response, {
+      state: "completed",
+      countedInputTokens: result.input_tokens,
+      httpStatus: response.status,
+    });
+    generation.maxOutputTokens = max_output_tokens;
+    return generation;
+  };
+  return {
+    client,
+    task,
+    tenant,
+    project,
+    authority,
+    body,
+    info,
+    countedInfo,
+    worker,
+    imageAuthority: { ...authority, capabilityVersionId: cap.image?.id },
+  };
+}
+
+async function policy(overrides: Record<string, number> = {}) {
+  const settings = {
+    global_slots: 100,
+    tenant_slots: 100,
+    actor_slots: 100,
+    text_slots: 100,
+    image_slots: 100,
+    verification_slots: 100,
+    global_rpm: 100000,
+    tenant_rpm: 100000,
+    actor_rpm: 100000,
+    text_rpm: 100000,
+    image_rpm: 100000,
+    verification_rpm: 100000,
+    preparation_seconds: 30,
+    ...overrides,
+  };
+  const keys = Object.keys(settings);
+  return s.db.tx(
+    async (tx) => {
+      await tx.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended('ai-gateway:configured_services',0))",
+      );
+      const version = (
+        await tx.query(
+          "SELECT coalesce(max(version),0)+1 AS next FROM ai_gateway_policy_versions WHERE data_mode='configured_services'",
+        )
+      ).rows[0].next;
+      const row = (
+        await tx.query(
+          `INSERT INTO ai_gateway_policy_versions(data_mode,version,reason,${keys.join(",")}) VALUES('configured_services',$1,'Isolated provider test policy',${keys.map((_, i) => "$" + (i + 2)).join(",")}) RETURNING *`,
+          [version, ...Object.values(settings)],
+        )
+      ).rows[0];
+      await tx.query(
+        "UPDATE ai_gateway_policy_heads SET policy_version_id=$1 WHERE data_mode='configured_services'",
+        [row.id],
+      );
+      return row;
+    },
+    undefined,
+    true,
+  );
+}
+const rows = async () =>
+  (
+    await s.db.control.query(
+      "SELECT * FROM ai_gateway_requests ORDER BY created_at,id",
+    )
+  ).rows;
+const fail =
+  (code: string, dispatched = false) =>
+  (e: any) =>
+    e instanceof AIRequestFailure &&
+    e.code === code &&
+    e.dispatched === dispatched;
+async function proxy(
+  f: Awaited<ReturnType<typeof fixture>>,
+  authority = f.authority,
+) {
+  const gateway = await startScopedInferenceGateway(s.db.config, {
+    model: f.body.model,
+    reasoningEffort: f.body.reasoning.effort,
+    tools: [],
+    authority,
+    signal: new AbortController().signal,
+  });
+  try {
+    const reply = await fetch(gateway.baseURL + "/responses", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer " + gateway.credential,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(f.body),
+    });
+    let text: string | undefined;
+    try {
+      text = await reply.text();
+    } catch {
+      /* A truncated stream must close the client response. */
+    }
+    return {
+      status: reply.status,
+      retry: reply.headers.get("retry-after"),
+      text,
+      forwarded: gateway.forwardedRequests,
+    };
+  } finally {
+    await gateway.close();
+  }
+}
+
+test("actual worker request commits frozen attribution, dispatch and validated usage without recording private input or charging twice", async () => {
+  const f = await fixture();
+  const result = await proxy(f);
+  assert.equal(result.status, 200);
+  assert.equal(generationCalls, 1);
+  assert.equal(
+    countCalls,
+    1,
+    "The exact input counter is a separate real HTTP call",
+  );
+  const [row] = await rows();
+  assert.equal(row.state, "completed");
+  assert.equal(row.task_id, f.task.id);
+  assert.equal(row.actor_id, f.client.id);
+  assert.equal(row.attempt, 1);
+  assert.equal(row.fencing_token, f.task.fencing_token);
+  assert.equal(row.input_tokens, "7");
+  assert.equal(row.output_tokens, "11");
+  assert.equal(row.known_charge_micros, "29");
+  assert.equal(row.charge_numerator, "29000000");
+  assert.ok(row.released_at && row.usage_known);
+  assert.deepEqual(row.rate_snapshot, [1000000, 2000000]);
+  assert.equal(row.policy_version_id, row.dispatch_policy_version_id);
+  assert.ok(!JSON.stringify(row).includes("private fixture prompt"));
+  assert.ok(!JSON.stringify(row).includes(fixtureKey));
+  const events = (
+    await s.db.control.query(
+      "SELECT state FROM ai_gateway_request_events WHERE request_id=$1 ORDER BY created_at,id",
+      [row.id],
+    )
+  ).rows;
+  assert.deepEqual(
+    events.map((r) => r.state),
+    ["prepared", "dispatched", "completed"],
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*) FROM ledger WHERE task_id=$1 AND kind='charge'",
+        [f.task.id],
+      )
+    ).rows[0].count,
+    "0",
+  );
+});
+
+test(
+  "terminal frames wait for durable usage and hand off to the next request without an asynchronous busy gap",
+  { timeout: 20000 },
+  async () => {
+    const f = await fixture();
+    emitCreated = true;
+    let notifyFinishing!: () => void;
+    let releaseFinish!: () => void;
+    const finishing = new Promise<void>((resolve) => {
+      notifyFinishing = resolve;
+    });
+    const release = new Promise<void>((resolve) => {
+      releaseFinish = resolve;
+    });
+    let first = true;
+    const authority: AIRequestAuthority = {
+      ...f.authority,
+      authorize: async (info) => {
+        const permit = (await f.authority.authorize(info)) as AIRequestPermit;
+        const hold = first && info.operation === "responses";
+        if (info.operation === "responses") first = false;
+        return {
+          ...permit,
+          finish: async (outcome) => {
+            if (hold && outcome.state === "completed") {
+              notifyFinishing();
+              await release;
+            }
+            await permit.finish(outcome);
+          },
+        };
+      },
+    };
+    const gateway = await startScopedInferenceGateway(s.db.config, {
+      model: f.body.model,
+      reasoningEffort: f.body.reasoning.effort,
+      tools: [],
+      authority,
+      signal: new AbortController().signal,
+    });
+    const send = () =>
+      fetch(gateway.baseURL + "/responses", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer " + gateway.credential,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(f.body),
+      });
+    let observed = "";
+    let consumed: Promise<void> | undefined;
+    try {
+      const response = await send();
+      assert.equal(response.status, 200);
+      consumed = (async () => {
+        for await (const chunk of response.body!)
+          observed += Buffer.from(chunk).toString("utf8");
+      })();
+      await finishing;
+      assert.equal(observed.includes("response.completed"), false);
+      assert.equal((await rows())[0].state, "dispatched");
+      releaseFinish();
+      await consumed;
+      assert.ok(observed.includes("response.created"));
+      assert.ok(observed.includes("response.completed"));
+      assert.equal((await rows())[0].state, "completed");
+      const next = await send();
+      assert.equal(next.status, 200);
+      await next.text();
+      assert.equal(generationCalls, 2);
+      assert.equal(
+        (await rows()).filter((row) => row.state === "completed").length,
+        2,
+      );
+    } finally {
+      releaseFinish();
+      await gateway.close();
+      await consumed?.catch(() => {});
+    }
+  },
+);
+
+test("the database rejects missing usage, inconsistent prices and unsuccessful HTTP outcomes without releasing a dispatched request", async () => {
+  const f = await fixture();
+  const permit = (await f.authority.authorize(
+    await f.countedInfo(),
+  )) as AIRequestPermit;
+  await permit.dispatch();
+  const [row] = await rows();
+  const attempt = (
+    input: number | null,
+    output: number | null,
+    numerator: string | null,
+    charge: number | null,
+    status: number | null,
+  ) =>
+    s.db.control.query(
+      `UPDATE ai_gateway_requests SET state='completed',finished_at=now(),released_at=now(),
+       usage_known=true,input_tokens=$2,output_tokens=$3,image_units=0,charge_numerator=$4,
+       known_charge_micros=$5,http_status=$6 WHERE id=$1`,
+      [row.id, input, output, numerator, charge, status],
+    );
+  for (const invalid of [
+    [null, null, null, null, 200],
+    [7, 11, "29000000", 999, 200],
+    [7, 11, "29000001", 30, 200],
+    [7, 11, "29000000", 29, 500],
+    [7, 11, "29000000", 29, null],
+  ] as const) {
+    await assert.rejects(
+      attempt(invalid[0], invalid[1], invalid[2], invalid[3], invalid[4]),
+      (e: any) => e.code === "23514",
+    );
+    const [unchanged] = await rows();
+    assert.equal(unchanged.state, "dispatched");
+    assert.equal(unchanged.released_at, null);
+    assert.equal(unchanged.usage_known, false);
+  }
+  // This test never invokes fetch; only its own unused dispatch intent is cancelled.
+  await permit.finish({
+    state: "cancelled",
+    code: "CANCELLED_BEFORE_DISPATCH",
+  });
+  assert.equal(generationCalls, 0);
+});
+
+test("fractional per-request costs retain an exact numerator for one aggregate rounding without posting duplicate ledger charges", async () => {
+  Object.assign(s.db.config, {
+    AI_INPUT_HKD_MICROS_PER_MILLION: 1,
+    AI_OUTPUT_HKD_MICROS_PER_MILLION: 1,
+  });
+  await seedRuntimeProfile(s.db, s.catalog);
+  const f = await fixture();
+  assert.equal((await proxy(f)).status, 200);
+  assert.equal((await proxy(f)).status, 200);
+  const recorded = await rows();
+  assert.equal(recorded.length, 2);
+  for (const row of recorded) {
+    assert.equal(row.charge_numerator, "18");
+    assert.equal(row.known_charge_micros, "1");
+    assert.deepEqual(row.rate_snapshot, [1, 1]);
+  }
+  const numerator = recorded.reduce(
+    (sum, row) => sum + BigInt(row.charge_numerator),
+    0n,
+  );
+  assert.equal((numerator + 999999n) / 1000000n, 1n);
+  assert.equal(
+    recorded.reduce((sum, row) => sum + BigInt(row.known_charge_micros), 0n),
+    2n,
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*) FROM ledger WHERE task_id=$1 AND kind='charge'",
+        [f.task.id],
+      )
+    ).rows[0].count,
+    "0",
+  );
+  assert.equal(generationCalls, 2);
+  assert.equal(countCalls, 2);
+  await (f.worker as any).finish(
+    f.task,
+    f.task.fencing_token,
+    "succeeded",
+    "Fractional fixture",
+    0,
+    0,
+    false,
+  );
+  const actual = (
+    await s.db.control.query(
+      "SELECT amount_micros FROM ledger WHERE task_id=$1 AND kind='charge'",
+      [f.task.id],
+    )
+  ).rows;
+  assert.deepEqual(
+    actual.map((r) => r.amount_micros),
+    ["-1"],
+    "One customer settlement rounds the aggregate numerator once",
+  );
+});
+
+test("prepared rate promises serialize before any HTTP dispatch and cancellation returns only unused promises", async () => {
+  const f = await fixture();
+  await policy({ global_rpm: 1 });
+  const first = (await f.authority.authorize(f.info())) as AIRequestPermit;
+  await assert.rejects(
+    () => f.authority.authorize(f.info()),
+    fail("AI_REQUEST_GLOBAL_RATE"),
+  );
+  assert.equal(generationCalls, 0);
+  await first.finish({ state: "cancelled", code: "CANCELLED_BEFORE_DISPATCH" });
+  await f.authority.authorize(f.info());
+  assert.deepEqual(
+    (await rows()).map((r) => r.state),
+    ["cancelled", "denied", "prepared"],
+  );
+  assert.equal((await rows())[0].known_charge_micros, "0");
+});
+
+test("new policy is enforced again at dispatch without silently applying an old permit's limits", async () => {
+  const f = await fixture();
+  const old = await policy();
+  const first = (await f.authority.authorize(
+    await f.countedInfo(),
+  )) as AIRequestPermit;
+  const second = (await f.authority.authorize(
+    await f.countedInfo(),
+  )) as AIRequestPermit;
+  await policy({ global_slots: 1 });
+  await assert.rejects(
+    () => first.dispatch(),
+    fail("AI_REQUEST_GLOBAL_CAPACITY"),
+  );
+  await second.dispatch();
+  const result = await rows();
+  assert.equal(result[0].state, "cancelled");
+  assert.equal(result[0].policy_version_id, old.id);
+  assert.equal(result[1].state, "dispatched");
+  assert.notEqual(result[1].dispatch_policy_version_id, old.id);
+  assert.equal(
+    generationCalls,
+    0,
+    "The test intentionally stops at the durable dispatch intent",
+  );
+});
+
+test("revocation after admission is rechecked before fetch and retains known zero spend", async () => {
+  const f = await fixture();
+  const authority = {
+    ...f.authority,
+    authorize: async (request: AIRequestInfo) => {
+      const permit = await f.authority.authorize(request);
+      if (request.operation === "responses")
+        await s.db.control.query(
+          "UPDATE users SET auth_version=auth_version+1 WHERE id=$1",
+          [f.client.id],
+        );
+      return permit;
+    },
+  };
+  const result = await proxy(f, authority);
+  assert.equal(result.status, 403);
+  assert.equal(result.forwarded, 0);
+  assert.equal(generationCalls, 0);
+  const [row] = await rows();
+  assert.equal(row.state, "cancelled");
+  assert.equal(row.known_charge_micros, "0");
+  assert.equal(row.dispatched_at, null);
+});
+
+test("cancellation after durable dispatch intent but before fetch is proven zero and releases both capacity and rate promise", async () => {
+  const f = await fixture();
+  await policy({ global_slots: 1, global_rpm: 1 });
+  const stop = new AbortController();
+  const authority = {
+    ...f.authority,
+    authorize: async (request: AIRequestInfo) => {
+      const permit = (await f.authority.authorize(request)) as AIRequestPermit;
+      return {
+        ...permit,
+        dispatch: async () => {
+          await permit.dispatch();
+          stop.abort();
+        },
+      };
+    },
+  };
+  await assert.rejects(
+    () =>
+      internalAIRequest(s.db.config, {
+        operation: "responses",
+        model: f.body.model,
+        reasoningEffort: f.body.reasoning.effort,
+        tools: [],
+        body: f.body,
+        authority,
+        signal: stop.signal,
+      }),
+    fail("AI_REQUEST_CANCELLED"),
+  );
+  assert.equal(generationCalls, 0);
+  const [row] = (
+    await s.db.control.query("SELECT * FROM ai_input_count_requests")
+  ).rows;
+  assert.equal(row.state, "cancelled");
+  assert.ok(row.dispatched_at);
+  assert.equal(row.charge_numerator, "0");
+  assert.equal(countCalls, 0);
+  assert.equal((await rows()).length, 0);
+  await f.authority.authorize(f.info());
+  assert.equal((await rows())[0].state, "prepared");
+});
+
+test("unterminated response remains unknown and consumes actor capacity across a fresh runtime", async () => {
+  const f = await fixture();
+  await policy({ actor_slots: 1 });
+  malformed = true;
+  await proxy(f);
+  const [row] = await rows();
+  assert.equal(row.state, "unknown");
+  assert.equal(row.released_at, null);
+  assert.equal(row.known_charge_micros, null);
+  malformed = false;
+  const next = await proxy(f);
+  assert.equal(next.status, 429);
+  assert.equal(next.retry, "1");
+  assert.match(next.text!, /AI_REQUEST_BUDGET_RECONCILIATION_REQUIRED/);
+  assert.equal(generationCalls, 1);
+});
+
+test("an orphaned dispatch intent becomes unknown once and retains shared capacity without replay or zero-spend fabrication", async () => {
+  const f = await fixture();
+  const other = await fixture();
+  await policy({ global_slots: 1 });
+  const permit = (await f.authority.authorize(
+    await f.countedInfo(),
+  )) as AIRequestPermit;
+  await permit.dispatch();
+  assert.equal(await recoverProviderRequests(s.db), 0);
+  await s.db.control.query(
+    "UPDATE tasks SET lease_until=now()-interval '1 second' WHERE id=$1",
+    [f.task.id],
+  );
+  assert.equal(await recoverProviderRequests(s.db), 1);
+  assert.equal(await recoverProviderRequests(s.db), 0);
+  const [row] = await rows();
+  assert.equal(row.state, "unknown");
+  assert.equal(row.outcome_code, "ORIGINATOR_NOT_ACTIVE");
+  assert.equal(row.usage_known, false);
+  assert.equal(row.known_charge_micros, null);
+  assert.equal(row.charge_numerator, null);
+  assert.equal(row.released_at, null);
+  assert.ok(row.dispatched_at);
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*) FROM ai_gateway_request_events WHERE request_id=$1 AND state='unknown'",
+        [row.id],
+      )
+    ).rows[0].count,
+    "1",
+  );
+  await assert.rejects(
+    other.authority.authorize(other.info()),
+    fail("AI_REQUEST_GLOBAL_CAPACITY"),
+  );
+  // Only a durable intent was simulated here; no provider replay is attempted by maintenance.
+  assert.equal(generationCalls, 0);
+});
+
+test("expired prepared permits are reclaimed with immutable zero-spend events and cannot later dispatch", async () => {
+  const f = await fixture();
+  await policy({ global_slots: 1, preparation_seconds: 1 });
+  const first = (await f.authority.authorize(f.info())) as AIRequestPermit;
+  await new Promise((resolve) => setTimeout(resolve, 1150));
+  await f.authority.authorize(f.info());
+  await assert.rejects(() => first.dispatch());
+  const result = await rows();
+  assert.equal(result[0].state, "cancelled");
+  assert.equal(result[0].outcome_code, "PREPARATION_EXPIRED");
+  assert.equal(result[0].known_charge_micros, "0");
+  assert.equal(result[1].state, "prepared");
+  assert.equal(generationCalls, 0);
+});
+
+test("a completed provider request keeps its rolling-minute rate charge after freeing concurrency", async () => {
+  const f = await fixture();
+  await policy({ global_slots: 1, global_rpm: 2 });
+  assert.equal((await proxy(f)).status, 200);
+  const denied = await proxy(f);
+  assert.equal(denied.status, 429);
+  assert.equal(denied.retry, "60");
+  assert.match(denied.text!, /AI_REQUEST_GLOBAL_RATE/);
+  assert.equal(generationCalls, 1);
+});
+
+test("one operation can never be replayed into another provider request even after a known cancellation", async () => {
+  const f = await fixture();
+  const info = f.info();
+  const first = (await f.authority.authorize(info)) as AIRequestPermit;
+  await first.finish({ state: "cancelled", code: "CANCELLED_BEFORE_DISPATCH" });
+  await assert.rejects(
+    () => f.authority.authorize(info),
+    fail("AI_REQUEST_OPERATION_ALREADY_USED"),
+  );
+  assert.equal((await rows()).length, 1);
+  assert.equal(generationCalls, 0);
+});
+
+test("request and policy history cannot be rewritten and ordinary RLS cannot expose another actor's or tenant's request", async () => {
+  const first = await fixture(),
+    other = await fixture();
+  await first.authority.authorize(first.info());
+  const [row] = await rows();
+  await assert.rejects(() =>
+    s.db.control.query(
+      "UPDATE ai_gateway_requests SET request_hash=$2 WHERE id=$1",
+      [row.id, "a".repeat(64)],
+    ),
+  );
+  await assert.rejects(() =>
+    s.db.control.query(
+      "UPDATE ai_gateway_policy_versions SET actor_slots=99 WHERE id=$1",
+      [row.policy_version_id],
+    ),
+  );
+  await assert.rejects(() =>
+    s.db.control.query(
+      "UPDATE ai_gateway_request_events SET body='{}' WHERE request_id=$1",
+      [row.id],
+    ),
+  );
+  const own = await s.db.tx(
+    (tx) => tx.query("SELECT id FROM ai_gateway_requests"),
+    first.tenant,
+    false,
+    first.client.id,
+  );
+  const cross = await s.db.tx(
+    (tx) => tx.query("SELECT id FROM ai_gateway_requests"),
+    other.tenant,
+    false,
+    other.client.id,
+  );
+  const wrongActor = await s.db.tx(
+    (tx) => tx.query("SELECT id FROM ai_gateway_requests"),
+    first.tenant,
+    false,
+    other.client.id,
+  );
+  assert.equal(own.rows.length, 1);
+  assert.equal(cross.rows.length, 0);
+  assert.equal(wrongActor.rows.length, 0);
+  await assert.rejects(() =>
+    s.db.tx(
+      (tx) => tx.query("UPDATE ai_gateway_requests SET state='completed'"),
+      first.tenant,
+      false,
+      first.client.id,
+    ),
+  );
+});
+
+test("four actual Node workers share the database admission ceiling across two tenants", async () => {
+  const a = await fixture(),
+    b = await fixture();
+  await policy({ global_slots: 2 });
+  const children = [a, b, a, b].map((f) => {
+    const child = spawn(
+      process.execPath,
+      ["--import", "tsx", "tests/fixtures/provider-admission-child.ts"],
+      {
+        windowsHide: true,
+        stdio: ["ignore", "ignore", "pipe", "ipc"],
+      },
+    );
+    let isReady = false;
+    const ready = new Promise<void>((resolve, reject) => {
+      child.once("error", reject);
+      child.once("exit", () => {
+        if (!isReady)
+          reject(new Error("Owned admission child exited before readiness"));
+      });
+      const onMessage = (m: any) => {
+        if (m.ready) {
+          isReady = true;
+          child.off("message", onMessage);
+          resolve();
+        }
+      };
+      child.on("message", onMessage);
+    });
+    const result = new Promise<any>((resolve, reject) => {
+      child.once("error", reject);
+      child.on("message", (m: any) => {
+        if (!m.ready) resolve(m);
+      });
+    });
+    const exited = new Promise<void>((resolve, reject) =>
+      child.once("exit", (code, signal) => {
+        if (code === 0 && signal === null) resolve();
+        else reject(new Error("Owned admission child did not exit normally"));
+      }),
+    );
+    void ready.catch(() => {});
+    void result.catch(() => {});
+    void exited.catch(() => {});
+    return { child, ready, result, exited, info: f.info() };
+  });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const results = await Promise.race([
+      (async () => {
+        await Promise.all(children.map((c) => c.ready));
+        for (const c of children) c.child.send({ env, request: c.info });
+        const results = await Promise.all(children.map((c) => c.result));
+        await Promise.all(children.map((c) => c.exited));
+        return results;
+      })(),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error("Owned admission workers timed out")),
+          15000,
+        );
+      }),
+    ]);
+    assert.equal(results.filter((r) => r.admitted).length, 2);
+    assert.equal(
+      results.filter((r) => r.reason === "GLOBAL_CAPACITY").length,
+      2,
+    );
+    assert.ok(results.every((r) => !r.failed));
+    assert.equal(
+      (await rows()).filter((r) => r.state === "prepared").length,
+      2,
+    );
+    assert.equal((await rows()).filter((r) => r.state === "denied").length, 2);
+    assert.equal(generationCalls, 0);
+  } finally {
+    if (timer) clearTimeout(timer);
+    for (const c of children)
+      if (c.child.exitCode === null && c.child.signalCode === null)
+        c.child.kill();
+    await Promise.allSettled(children.map((c) => c.exited));
+  }
+});
+
+test("exact counting includes the normalized context and binds one proof to the actual generation bytes", async () => {
+  const f = await fixture();
+  const body = {
+    ...f.body,
+    instructions: "Private fixture instructions",
+    text: { format: { type: "json_object" } },
+    tools: [
+      {
+        type: "function",
+        name: "fixture_tool",
+        description: "Fixture tool schema",
+        parameters: {
+          type: "object",
+          properties: { label: { type: "string" } },
+        },
+      },
+    ],
+  };
+  const response = await internalAIRequest(s.db.config, {
+    operation: "responses",
+    model: body.model,
+    reasoningEffort: body.reasoning.effort,
+    tools: ["fixture_tool"],
+    body,
+    authority: f.authority,
+    signal: new AbortController().signal,
+  });
+  await response.text();
+  await finishInternalAIRequest(response, {
+    state: "completed",
+    inputTokens: 7,
+    outputTokens: 11,
+    httpStatus: 200,
+  });
+  assert.equal(countCalls, 1);
+  assert.equal(generationCalls, 1);
+  const { stream, max_output_tokens, ...expected } = body;
+  assert.deepEqual(observedCounts, [expected]);
+  const c = (await s.db.control.query("SELECT * FROM ai_input_count_requests"))
+    .rows[0];
+  const g = (await rows())[0];
+  assert.equal(c.generation_operation_id, g.operation_id);
+  assert.equal(c.generation_hash, g.request_hash);
+  const a = (
+    await s.db.control.query(
+      "SELECT * FROM ai_request_budget_allocations WHERE provider_request_id=$1",
+      [g.id],
+    )
+  ).rows[0];
+  assert.equal(a.input_count_id, c.id);
+  assert.equal(a.input_tokens_bound, "7");
+  assert.equal(a.max_output_tokens, 32);
+  assert.equal(a.amount_numerator, "71000000");
+  assert.equal(c.charge_numerator, "3000000");
+  assert.ok(!JSON.stringify(c).includes("Private fixture instructions"));
+});
+
+test("unverified or unpriced input counting makes zero provider calls and never guesses a token count", async () => {
+  const f = await fixture();
+  for (const values of [
+    { AI_INPUT_COUNT_VERIFIED: false },
+    {
+      AI_INPUT_COUNT_VERIFIED: true,
+      AI_INPUT_COUNT_HKD_MICROS_PER_CALL: undefined,
+    },
+  ]) {
+    Object.assign(s.db.config, values);
+    await seedProviderBudgetPolicy(s.db);
+    const reply = await proxy(f);
+    assert.equal(reply.status, 429);
+    assert.match(reply.text!, /AI_REQUEST_INPUT_COUNT_NOT_VERIFIED/);
+  }
+  assert.equal(countCalls, 0);
+  assert.equal(generationCalls, 0);
+  assert.equal((await rows()).length, 0);
+  assert.ok(
+    (
+      await s.db.control.query("SELECT * FROM ai_input_count_requests")
+    ).rows.every((r) => r.state === "denied" && r.charge_numerator === "0"),
+  );
+});
+
+test("malformed exact count retains its platform commitment and blocks a new attempt without generation", async () => {
+  const f = await fixture();
+  countedTokens = "7";
+  assert.equal((await proxy(f)).status, 502);
+  assert.equal(countCalls, 1);
+  assert.equal(generationCalls, 0);
+  const c = (await s.db.control.query("SELECT * FROM ai_input_count_requests"))
+    .rows[0];
+  assert.equal(c.state, "unknown");
+  assert.equal(c.counted_input_tokens, null);
+  assert.equal(c.charge_numerator, null);
+  assert.equal(c.released_at, null);
+  assert.equal((await proxy(f)).status, 429);
+  assert.equal(countCalls, 1);
+  assert.equal(generationCalls, 0);
+});
+
+test("text and image share one original reservation and an over-budget image is blocked before HTTP", async () => {
+  const f = await fixture({ budget: 220, role: "designer" });
+  assert.equal((await proxy(f)).status, 200);
+  await assert.rejects(
+    () =>
+      internalAIRequest(s.db.config, {
+        operation: "images.generate",
+        model: s.db.config.AI_IMAGE_MODEL!,
+        body: {
+          model: s.db.config.AI_IMAGE_MODEL!,
+          prompt: "Fixture image",
+          n: 1,
+          size: "1024x1024",
+          quality: "high",
+          output_format: "png",
+        },
+        authority: f.imageAuthority,
+        signal: new AbortController().signal,
+      }),
+    fail("AI_REQUEST_BUDGET_EXHAUSTED"),
+  );
+  assert.equal(countCalls, 1);
+  assert.equal(
+    generationCalls,
+    1,
+    "Only the earlier text generation reached the gateway",
+  );
+  const record = (await rows()).find((r) => r.request_class === "image");
+  assert.equal(record.state, "cancelled");
+  assert.equal(record.dispatched_at, null);
+  const reservation = (
+    await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [
+      f.task.id,
+    ])
+  ).rows[0];
+  assert.equal(reservation.amount_micros, "220");
+  assert.equal(reservation.status, "reserved");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*) FROM ledger WHERE task_id=$1 AND kind='charge'",
+        [f.task.id],
+      )
+    ).rows[0].count,
+    "0",
+  );
+});
+
+test("concurrent requests serialize one task budget while task counting is funded only by the platform", async () => {
+  const f = await fixture({ budget: 90 });
+  await policy();
+  const replies = await Promise.all([proxy(f), proxy(f)]);
+  assert.deepEqual(replies.map((r) => r.status).sort(), [200, 429]);
+  assert.equal(countCalls, 2);
+  assert.equal(generationCalls, 1);
+  const a = (
+    await s.db.control.query(
+      `SELECT a.*, c.price_micros FROM ai_request_budget_allocations a
+    JOIN ai_input_count_requests c ON c.id=a.count_request_id WHERE c.task_id=$1`,
+      [f.task.id],
+    )
+  ).rows;
+  assert.equal(a.length, 2);
+  assert.ok(
+    a.every(
+      (r) =>
+        r.envelope_id === null &&
+        r.platform_period_id &&
+        r.amount_numerator === "3000000",
+    ),
+  );
+  await (f.worker as any).finish(
+    f.task,
+    f.task.fencing_token,
+    "succeeded",
+    "Fixture result",
+    0,
+    0,
+    false,
+  );
+  const charged = (
+    await s.db.control.query("SELECT * FROM tasks WHERE id=$1", [f.task.id])
+  ).rows[0];
+  assert.equal(
+    charged.charged_micros,
+    "29",
+    "The customer's charge excludes both platform counting fees",
+  );
+  assert.equal(charged.input_tokens, "7");
+  assert.equal(charged.output_tokens, "11");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*) FROM ledger WHERE task_id=$1 AND kind='charge'",
+        [f.task.id],
+      )
+    ).rows[0].count,
+    "1",
+  );
+});
+
+test("input count mismatch preserves actual spend then blocks the next call and final settlement for reconciliation", async () => {
+  const f = await fixture({ budget: 220 });
+  countedTokens = 6;
+  await proxy(f);
+  const [g] = await rows();
+  assert.equal(g.state, "completed");
+  assert.equal(g.input_tokens, "7");
+  assert.equal(g.charge_numerator, "29000000");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT code FROM ai_request_budget_violations WHERE provider_request_id=$1",
+        [g.id],
+      )
+    ).rows[0].code,
+    "INPUT_COUNT_MISMATCH",
+  );
+  const second = await proxy(f);
+  assert.equal(second.status, 429);
+  assert.match(second.text!, /AI_REQUEST_BUDGET_RECONCILIATION_REQUIRED/);
+  assert.equal(countCalls, 1);
+  assert.equal(generationCalls, 1);
+  await (f.worker as any).finish(
+    f.task,
+    f.task.fencing_token,
+    "succeeded",
+    "Must not publish",
+    0,
+    0,
+    false,
+  );
+  const reservation = (
+    await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [
+      f.task.id,
+    ])
+  ).rows[0];
+  assert.equal(reservation.status, "reconciling");
+  assert.equal(reservation.amount_micros, "220");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*) FROM ledger WHERE task_id=$1 AND kind='charge'",
+        [f.task.id],
+      )
+    ).rows[0].count,
+    "0",
+  );
+});
+
+test("output above its explicit bound is recorded as real usage and cannot widen the customer budget", async () => {
+  const f = await fixture({ budget: 90 });
+  outputTokens = 60;
+  await proxy(f);
+  const [g] = await rows();
+  assert.equal(g.state, "completed");
+  assert.equal(g.output_tokens, "60");
+  assert.equal(g.charge_numerator, "127000000");
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT code FROM ai_request_budget_violations WHERE provider_request_id=$1",
+        [g.id],
+      )
+    ).rows[0].code,
+    "OUTPUT_LIMIT_EXCEEDED",
+  );
+  await (f.worker as any).finish(
+    f.task,
+    f.task.fencing_token,
+    "succeeded",
+    "",
+    0,
+    0,
+    false,
+  );
+  const r = (
+    await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [
+      f.task.id,
+    ])
+  ).rows[0];
+  assert.equal(r.status, "reconciling");
+  assert.equal(r.amount_micros, "90");
+  assert.equal(countCalls, 1);
+  assert.equal(generationCalls, 1);
+});
+
+test("the platform counting pool is shared across tasks and cannot draw from a customer wallet", async () => {
+  Object.assign(s.db.config, { AI_PLATFORM_COUNT_DAILY_BUDGET_MICROS: 3 });
+  await seedProviderBudgetPolicy(s.db);
+  const first = await fixture(),
+    second = await fixture();
+  assert.equal((await proxy(first)).status, 200);
+  const denied = await proxy(second);
+  assert.equal(denied.status, 429);
+  assert.match(denied.text!, /AI_REQUEST_PLATFORM_BUDGET_EXHAUSTED/);
+  assert.equal(countCalls, 1);
+  assert.equal(generationCalls, 1);
+  const r = (
+    await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [
+      second.task.id,
+    ])
+  ).rows[0];
+  assert.equal(r.status, "reserved");
+  assert.equal(r.amount_micros, "1000000");
+});
+
+test("one count proof cannot authorize a different generation hash or be consumed twice", async () => {
+  const f = await fixture();
+  const info = await f.countedInfo();
+  const original = (await f.authority.authorize(info)) as AIRequestPermit;
+  await original.dispatch();
+  await original.finish({
+    state: "completed",
+    inputTokens: 7,
+    outputTokens: 11,
+    httpStatus: 200,
+  });
+  const changed = {
+    ...info,
+    requestId: randomUUID(),
+    requestHash: hash("changed fixture"),
+  };
+  const other = (await f.authority.authorize(changed)) as AIRequestPermit;
+  await assert.rejects(
+    () => other.dispatch(),
+    fail("AI_REQUEST_INPUT_COUNT_REQUIRED"),
+  );
+  assert.equal(countCalls, 1);
+  assert.equal(
+    generationCalls,
+    0,
+    "This case stops at an explicit durable generation intent",
+  );
+  const firstAllocation = (
+    await s.db.control.query(
+      "SELECT * FROM ai_request_budget_allocations WHERE provider_request_id=$1",
+      [original.requestId],
+    )
+  ).rows[0];
+  await assert.rejects(() =>
+    s.db.control.query(
+      "UPDATE ai_request_budget_allocations SET amount_numerator=0 WHERE id=$1",
+      [firstAllocation.id],
+    ),
+  );
+  await assert.rejects(() =>
+    s.db.tx(
+      (tx) => tx.query("SELECT * FROM ai_input_count_requests"),
+      f.tenant,
+      false,
+      f.client.id,
+    ),
+  );
+});
+
+test("unsupported context fields are rejected before counting rather than omitting part of a paid model input", async () => {
+  const f = await fixture();
+  await assert.rejects(
+    () =>
+      internalAIRequest(s.db.config, {
+        operation: "responses",
+        model: f.body.model,
+        reasoningEffort: f.body.reasoning.effort,
+        body: { ...f.body, prompt: { id: "stored-fixture-prompt" } },
+        authority: f.authority,
+        signal: new AbortController().signal,
+      }),
+    fail("AI_INPUT_COUNT_CONTEXT_UNSUPPORTED"),
+  );
+  assert.equal(countCalls, 0);
+  assert.equal(generationCalls, 0);
+  assert.equal((await rows()).length, 0);
+});
