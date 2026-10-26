@@ -1,0 +1,137 @@
+TAP version 13
+# Subtest: strict development check inputs reject outside endpoints, transport injection, external databases and unobservable SQL claims
+ok 1 - strict development check inputs reject outside endpoints, transport injection, external databases and unobservable SQL claims
+  ---
+  duration_ms: 7.144
+  ...
+# Subtest: actual HTTP requests keep app state across closed connections, auth rejection, JSON, body, query and headers
+ok 2 - actual HTTP requests keep app state across closed connections, auth rejection, JSON, body, query and headers
+  ---
+  duration_ms: 2860.0594
+  ...
+# Subtest: actual TypeScript named handler, unstarted Server export, HEAD and exact text use the standard HTTP parser
+ok 3 - actual TypeScript named handler, unstarted Server export, HEAD and exact text use the standard HTTP parser
+  ---
+  duration_ms: 6321.616
+  ...
+# Subtest: failed API assertions stay failed even when the app exits successfully; invalid JSON cannot satisfy a null expectation
+ok 4 - failed API assertions stay failed even when the app exits successfully; invalid JSON cannot satisfy a null expectation
+  ---
+  duration_ms: 3298.2408
+  ...
+# Subtest: early process success, malformed transport and excessive response bodies cannot forge API checks
+ok 5 - early process success, malformed transport and excessive response bodies cannot forge API checks
+  ---
+  duration_ms: 9058.9512
+  ...
+# Subtest: the HTTP request validator does not follow an external redirect
+ok 6 - the HTTP request validator does not follow an external redirect
+  ---
+  duration_ms: 4299.342
+  ...
+# Subtest: stdin-enabled API programs still cannot read a host canary, connect to the host, spawn children or inherit company secrets
+not ok 7 - stdin-enabled API programs still cannot read a host canary, connect to the host, spawn children or inherit company secrets
+  ---
+  duration_ms: 18223.4823
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\cloud-development-checks.test.ts:3:3560'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schema":1,"execution_id":"3af1549c-d6b2-4fc0-93d7-e972c73cd76f","program":"api_test","entry":"api.cjs","args":[],"timeout_ms":15000,"started_at":"2026-10-26T04:51:36.891Z","finished_at":"2026-10-26T04:51:54.702Z","source_manifest":[{"path":"api.cjs","bytes":841,"sha256":"bee84238250c3bea7bdd191e71b335ae8f4d5e98144972212338a5631299a300"}],"source_digest":"8cdae308a63c32f17a1a30a7a2cd2288fb59420ab81d650546f43bddf2f68b40","output_manifest":[{"path":"api.cjs","bytes":841,"sha256":"bee84238250c3bea7bdd191e71b335ae8f4d5e98144972212338a5631299a300"}],"exit_code":1460,"passed":false,"stop_reason":"timeout","stdout":"","stderr":"","output_truncated":false,"check_result":{"kind":"api","passed":false,"checks":[],"error":"Error: HTTP_REQUEST_TIMEOUT"},"check_input":{"entry":"api.cjs","export_name":"default","requests":[{"name":"Actual application behavior","method":"GET","path":"/","headers":{},"expect":{"status":200,"json":{"denied":true,"connected":false,"child_denied":true,"secrets_absent":true}}}],"timeout_ms":15000},"harness_sha256":"9bb3eb8229ffe250e40967daf68e044d53c1c13c52f77a602803362fd76860c7","runtime":{"id":"windows-node22-appcontainer-v2","node_version":"v22.14.0","node_sha256":"33b1bc1a8aca11fd5a4f2699e51019c63c0af30cf437701d07af69be7706771b","host_sha256":"4358a7263160261b551b1fa71be659ea12c62d3150ae636003d51930e056556a","host_source_sha256":"bb60912903d441e6213f7d8da61a7fdbede69d2f1848d6868bc990cee8d38b3d","boundary":"appcontainer-no-capabilities-single-process-job-v2"},"host":{"schema":1,"process_id":26908,"exit_code":1460,"resumed":true,"timed_out":true,"cancelled":false,"elapsed_ms":17703,"profile_name":"cpsoftware-b889c20f604a4c1680434e9e26192165","profile_created":true,"profile_deleted":true,"no_network_capabilities":true,"child_processes_prohibited":true,"stdin_channel":true,"memory_limit_bytes":536870912,"failure":null},"workspace_deleted":true}
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-development-checks.test.ts:105:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: API deadline and cancellation stop a blocked application and reclaim its native resources
+ok 8 - API deadline and cancellation stop a blocked application and reclaim its native resources
+  ---
+  duration_ms: 6754.8692
+  ...
+# Subtest: actual native SQLite checks cover bound CRUD, transactions, constraints, 64-bit values and blobs
+ok 9 - actual native SQLite checks cover bound CRUD, transactions, constraints, 64-bit values and blobs
+  ---
+  duration_ms: 4534.475
+  ...
+# Subtest: SQLite mismatches, unexpected successful statements and invalid schema stay observable failures
+ok 10 - SQLite mismatches, unexpected successful statements and invalid schema stay observable failures
+  ---
+  duration_ms: 7022.1396
+  ...
+# Subtest: SQLite cannot attach a host database or load native extensions; each invocation receives a fresh database
+not ok 11 - SQLite cannot attach a host database or load native extensions; each invocation receives a fresh database
+  ---
+  duration_ms: 18046.1037
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\cloud-development-checks.test.ts:6:4192'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schema":1,"execution_id":"738c12c4-3c42-4056-b90c-89c7bb7028bf","program":"database_sqlite","entry":"schema.sql","args":[],"timeout_ms":15000,"started_at":"2026-10-26T04:52:13.402Z","finished_at":"2026-10-26T04:52:31.058Z","source_manifest":[{"path":"schema.sql","bytes":71,"sha256":"ea32169bd908d78abd377f435840e4cee7c5a0e2afcc8cf9c98f1a08eff799e0"}],"source_digest":"9e5eda16c76640a63a56e4ce4e406db36d20664eaf7c6ecb677cd67cf8ad3a8a","output_manifest":[{"path":"copypaste-database-check-8403a7ac-ea8d-4039-a12a-54af68fd3f09/database.sqlite","bytes":8192,"sha256":"f81cf7ba6d004332de344bd0ad2869ef18642b9abe25283ff48b985e9327be67"},{"path":"schema.sql","bytes":71,"sha256":"ea32169bd908d78abd377f435840e4cee7c5a0e2afcc8cf9c98f1a08eff799e0"}],"exit_code":1460,"passed":false,"stop_reason":"timeout","stdout":"","stderr":"","output_truncated":false,"check_result":{"kind":"sqlite","passed":false,"checks":[],"error":"Error: The trusted database result is missing or too large"},"check_input":{"engine":"sqlite","entry":"schema.sql","checks":[{"name":"Actual database behavior","sql":"ATTACH DATABASE 'D:/dev/copypasted/自有agent/dev/copypaste-platform/.data/cloud-development-unit/5ead094c-d66d-4388-8727-0a31fb68aa41/outside.sqlite' AS host","params":[],"expect":{"error_code":"14"}},{"name":"Actual database behavior","sql":"SELECT load_extension('outside.dll')","params":[],"expect":{"error_code":"1","error_message":"not authorized"}},{"name":"Actual database behavior","sql":"SELECT COUNT(*) AS count FROM fresh","params":[],"expect":{"rows":[{"count":1}]}}],"timeout_ms":15000,"output_directory":"copypaste-database-check-8403a7ac-ea8d-4039-a12a-54af68fd3f09"},"harness_sha256":"17c5345ea2206cbf3a043cf14232a79edca12c204e86eb554086034efa125d99","runtime":{"id":"windows-node22-appcontainer-v2","node_version":"v22.14.0","node_sha256":"33b1bc1a8aca11fd5a4f2699e51019c63c0af30cf437701d07af69be7706771b","host_sha256":"4358a7263160261b551b1fa71be659ea12c62d3150ae636003d51930e056556a","host_source_sha256":"bb60912903d441e6213f7d8da61a7fdbede69d2f1848d6868bc990cee8d38b3d","boundary":"appcontainer-no-capabilities-single-process-job-v2"},"host":{"schema":1,"process_id":17952,"exit_code":1460,"resumed":true,"timed_out":true,"cancelled":false,"elapsed_ms":17582,"profile_name":"cpsoftware-f44e1d07a0d9451ba3199af343354ecb","profile_created":true,"profile_deleted":true,"no_network_capabilities":true,"child_processes_prohibited":true,"stdin_channel":false,"memory_limit_bytes":536870912,"failure":null},"workspace_deleted":true}
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\cloud-development-checks.test.ts:157:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: unbounded SQLite queries hit the native deadline and oversized row sets are rejected
+ok 12 - unbounded SQLite queries hit the native deadline and oversized row sets are rejected
+  ---
+  duration_ms: 8946.5044
+  ...
+# Subtest: structured native commands reject arbitrary binaries, environment, traversal and ambiguous source identities
+ok 13 - structured native commands reject arbitrary binaries, environment, traversal and ambiguous source identities
+  ---
+  duration_ms: 17.6093
+  ...
+# Subtest: actual AppContainer Node executes sources while denying outside files, network and ambient secrets
+ok 14 - actual AppContainer Node executes sources while denying outside files, network and ambient secrets
+  ---
+  duration_ms: 3167.5238
+  ...
+# Subtest: Node built-in tests execute in one restricted process and preserve failing exits
+ok 15 - Node built-in tests execute in one restricted process and preserve failing exits
+  ---
+  duration_ms: 6856.8977
+  ...
+# Subtest: real TypeScript ESM executes and script arguments cannot become Node startup options
+ok 16 - real TypeScript ESM executes and script arguments cannot become Node startup options
+  ---
+  duration_ms: 3354.7729
+  ...
+# Subtest: syntax failure, infinite code and prohibited child creation cannot produce a passing receipt
+ok 17 - syntax failure, infinite code and prohibited child creation cannot produce a passing receipt
+  ---
+  duration_ms: 12047.2608
+  ...
+# Subtest: cancellation, oversized output and temporary files remain bounded and never pass
+ok 18 - cancellation, oversized output and temporary files remain bounded and never pass
+  ---
+  duration_ms: 9545.3422
+  ...
+# Subtest: an interrupted owned guardian kills its customer process and cleans the native profile and workspace without inventing success
+ok 19 - an interrupted owned guardian kills its customer process and cleans the native profile and workspace without inventing success
+  ---
+  duration_ms: 4129.5429
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 17
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 129250.6351
