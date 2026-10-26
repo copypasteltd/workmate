@@ -83,6 +83,7 @@ export async function api<T = any>(
 ): Promise<T> {
   const revision = sessionRevision;
   const protectedRequest =
+    /^\/v1\/client-content(?:[?]|$)/.test(path) ||
     (/^\/v1\/(?:connector-providers|connections|syncs|connector-snapshots|snapshots|seo)(?:[/?]|$)/.test(
       path,
     ) &&

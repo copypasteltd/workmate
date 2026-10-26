@@ -2,6 +2,8 @@ import { ProjectConfigurationPanel, ProjectConfigurationSummary } from "./projec
 import { BrandLibrary } from "./brand-library";
 import { DeliveryQuality } from "./delivery-quality";
 import { SoftwareChecks } from "./software-checks";
+import { ClientContentContext, useClientContent } from "./client-content";
+import "./client-content-native.css";
 import { QualitySummary } from "./quality-summary";
 import { Connections, ConnectorLaunch } from "./connections";
 import "./support.css";
@@ -41,7 +43,7 @@ import {
   RecentConversations,
   TaskPlan,
 } from "./persistent-work";
-import React, { useEffect, useState, useRef, type ReactNode } from "react";
+import React, { useContext, useEffect, useState, useRef, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
   BrowserRouter,
@@ -684,9 +686,9 @@ function Shell() {
     };
   }, []);
   const location = useLocation();
-  const published = useData("/v1/public/content");
+  const published = useClientContent(w.me?.user.id, w.tenant, w.project);
   const navConfig = (path: string) =>
-    published.data?.items.find(
+    published.items.find(
       (i: any) => i.kind === "navigation" && i.body.path === path,
     )?.body;
   useEffect(() => setMobile(false), [location.pathname]);
@@ -696,6 +698,7 @@ function Shell() {
   const selected = w.me.memberships.find((m: any) => m.id === w.tenant);
   const project = w.projects.find((p) => p.id === w.project);
   return (
+    <ClientContentContext.Provider value={published}>
     <div className={"app-shell" + (mobile ? " mobile-open" : "")}>
       <a className="skip-link" href="#main">
         {t("跳到內容", "Skip to content")}
@@ -828,6 +831,7 @@ function Shell() {
           key={w.tenant + ":" + w.project}
         >
           <ErrorNotice error={w.error} />
+          <PublishedContent />
           {w.base ? (
             <Routes>
               <Route index element={<LocalAgentWorkspace />} />
@@ -880,6 +884,7 @@ function Shell() {
       </div>
       {location.pathname !== "/app" && location.pathname !== "/app/" && <NewTaskListener />}
     </div>
+    </ClientContentContext.Provider>
   );
 }
 function NewTaskListener() {
@@ -1101,12 +1106,12 @@ function NewTask({
 }
 function PublishedContent() {
   const { t, locale } = useI18n();
-  const { data } = useData("/v1/public/content");
+  const data = useContext(ClientContentContext);
+  if (!data.items.some((i: any) => ["announcement", "help"].includes(i.kind))) return null;
   return (
-    <>
+    <section className="native-managed-content" aria-label={t("工作空間公告", "Workspace notices")} tabIndex={0}>
       {data?.items
         .filter((r: any) => ["announcement", "help"].includes(r.kind))
-        .slice(0, 6)
         .map((r: any) =>
           r.kind === "help" ? (
             <details key={r.id} className="card section-block">
@@ -1138,7 +1143,7 @@ function PublishedContent() {
             </div>
           ),
         )}
-    </>
+    </section>
   );
 }
 function Workbench() {
@@ -1170,7 +1175,6 @@ function Workbench() {
           <span />
         </div>
       </div>
-      <PublishedContent />
       <section className="brief-composer">
         <textarea
           aria-label={t("描述你的工作", "Describe your task")}

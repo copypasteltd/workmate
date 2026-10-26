@@ -148,6 +148,7 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
     return method === "GET";
   if (/^\/v1\/members\/[a-f0-9-]{36}$/i.test(pathname))
     return method === "PATCH" || method === "DELETE";
+  if (pathname === "/v1/client-content") return method === "GET";
   return /^\/v1\/(me(?:\/|$)|tenants\/|catalog\/|agent-templates(?:\/|$)|public\/|invites\/|auth\/logout$)/.test(
     pathname,
   );

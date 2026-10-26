@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- client-content-stage102 -->
+
+The packaged Desktop reads copy through its GET-only bridge and retains local Codex, a frameless window and hidden scrollbar rails.
+
+Usage: sign in to Admin → Catalog → Client content; edit both languages, schedules and existing optional menus; select clients, directory recipients and a stable percentage cohort; save a draft, preview the selected recipient and confirm. Unselected customers keep the exact baseline. Rollback previews a previously published release and appends a new publication. Account, VIP, billing, role and Skill permissions still control execution.
+
+Verified: 79 related backend checks in five suites, seven actual client journey checks, eight unedited screenshots and four real GIF/MP4 recordings. Native PostgreSQL, real email/MFA/PKCE sessions and an unsigned packaged Desktop were used. Accounts/copy are synthetic; this increment makes zero model calls and does not establish live professional quality or complete product acceptance.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/102-client-content-releases.md) · [Exact evidence / 确切证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/client-content-checkpoint.json).
+
+```mermaid
+flowchart LR
+ A[Bilingual draft] --> B[Recipient preview]
+ B --> C[Live authority and MFA check]
+ C --> D[Append publication]
+ D --> E[Selected: release]
+ D --> F[Others: frozen baseline]
+ D --> G[Historical rollback preview]
+ G --> B
+```
+
+![Actual desktop content](assets/screenshots/desktop-workmate-client-content-06-native-en.png)
+
+[Actual desktop MP4](assets/screenshots/desktop-workmate-06-client-content-desktop.mp4)
+
+![Actual desktop interaction](assets/screenshots/desktop-workmate-06-client-content-desktop.gif)
+
+
 <!-- cloud-browser-stage101 -->
 
 Cloud Codex now performs actual page interactions and DOM checks with a pinned native Chromium runtime, retaining a real screenshot and exact source. Desktop keeps customer-local Codex. Its check component was independently built and packaged; the images below show a Web cloud task.
