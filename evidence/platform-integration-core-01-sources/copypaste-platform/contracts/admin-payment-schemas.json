@@ -1,0 +1,255 @@
+{
+  "source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "schemas": {
+    "AdminPaymentRecord": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "billing_account_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "external_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amount": {
+          "$ref": "#/components/schemas/Money"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "recorded",
+            "confirmed",
+            "refunding",
+            "refunded",
+            "reconciling"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "billing_account_id",
+        "external_reference",
+        "amount",
+        "state",
+        "version",
+        "received_at"
+      ],
+      "additionalProperties": false
+    },
+    "AdminPaymentRecordCreate": {
+      "type": "object",
+      "properties": {
+        "billing_account_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "external_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "amount": {
+          "$ref": "#/components/schemas/AdminPositiveMoney"
+        },
+        "received_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_asset_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "billing_account_id",
+        "external_reference",
+        "amount",
+        "received_at",
+        "evidence_asset_version_id",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "AdminPaymentConfirm": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        },
+        "verified_reference": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "expected_version",
+        "reason",
+        "verified_reference"
+      ],
+      "additionalProperties": false
+    },
+    "AdminPaymentRecordList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/AdminPaymentRecord"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "additionalProperties": false
+    },
+    "AdminOperation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending_approval",
+            "queued",
+            "running",
+            "succeeded",
+            "partially_succeeded",
+            "failed",
+            "cancelled",
+            "reconciling"
+          ]
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "target_ids",
+        "actor_id",
+        "state",
+        "payload_hash",
+        "policy_version_id",
+        "version",
+        "created_at",
+        "result_ids"
+      ],
+      "additionalProperties": false
+    },
+    "AdminPositiveMoney": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "const": "HKD"
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$"
+        }
+      },
+      "required": [
+        "currency",
+        "amount_micros"
+      ],
+      "additionalProperties": false
+    },
+    "Money": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "enum": [
+            "HKD"
+          ]
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "description": "One millionth of currency; decimal integer string."
+        }
+      },
+      "required": [
+        "currency",
+        "amount_micros"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "at": "2026-10-26T17:25:41.383Z",
+  "attempt": "02",
+  "source_files": {
+    "src/cloud-development-checks.ts": "fb22f5d18154921c1c5980868b663c9c0ef50e9697387d1b1337a6c309a27a28",
+    "src/cloud-api-bootstrap.cjs": "2edf3bbf4196701a332300b33d96933228e229f4c5d3cb88ad26687586977435",
+    "src/cloud-program-executor.ts": "b38e5b64617fc953244d34b79f760d5a20ef4907327cd276db7f745c02245c7e",
+    "src/cloud-program-host.cs": "bb60912903d441e6213f7d8da61a7fdbede69d2f1848d6868bc990cee8d38b3d"
+  },
+  "application_source": "await new Promise(r=>setTimeout(r,5500));export default (q,s)=>s.end('ready after actual module initialization');",
+  "application_sha256": "08141f4eb8c1fff9b9d8420e5216411089ff9aec428b08e6fde33a3047125982",
+  "startup_delay_ms": 5500,
+  "http_request_timeout_ms": 5000,
+  "isolation": "Actual native Windows process sandbox, no VM, no network, single-process job",
+  "source_unchanged": true,
+  "receipt": {
+    "schema": 1,
+    "execution_id": "423ac177-7518-47bc-8ebe-d8b0e4002187",
+    "program": "api_test",
+    "entry": "delayed.mjs",
+    "args": [],
+    "timeout_ms": 15000,
+    "started_at": "2026-10-26T17:25:32.227Z",
+    "finished_at": "2026-10-26T17:25:41.333Z",
+    "source_manifest": [
+      {
+        "path": "delayed.mjs",
+        "bytes": 113,
+        "sha256": "08141f4eb8c1fff9b9d8420e5216411089ff9aec428b08e6fde33a3047125982"
+      }
+    ],
+    "source_digest": "74366c7770b73d0d476a2d6b72ddb8f676c03885b14161a1c7cc6e01b98b4d96",
+    "output_manifest": [
+      {
+        "path": "delayed.mjs",
+        "bytes": 113,
+        "sha256": "08141f4eb8c1fff9b9d8420e5216411089ff9aec428b08e6fde33a3047125982"
+      }
+    ],
+    "exit_code": 0,
+    "passed": true,
+    "stop_reason": null,
+    "stdout": "{\"ready\":true}\n{\"id\":\"c1\",\"data\":\"SFRUUC8xLjEgMjAwIE9LDQpEYXRlOiBNb24sIDI2IE9jdCAyMDI2IDE3OjI1OjQxIEdNVA0KQ29ubmVjdGlvbjogY2xvc2UNCkNvbnRlbnQtTGVuZ3RoOiA0MA0KDQpyZWFkeSBhZnRlciBhY3R1YWwgbW9kdWxlIGluaXRpYWxpemF0aW9u\"}\n{\"id\":\"c1\",\"end\":true}\n{\"id\":\"c1\",\"end\":true}\n{\"id\":\"c2\",\"data\":\"SFRUUC8xLjEgMjAwIE9LDQpEYXRlOiBNb24sIDI2IE9jdCAyMDI2IDE3OjI1OjQxIEdNVA0KQ29ubmVjdGlvbjogY2xvc2UNCkNvbnRlbnQtTGVuZ3RoOiA0MA0KDQpyZWFkeSBhZnRlciBhY3R1YWwgbW9kdWxlIGluaXRpYWxpemF0aW9u\"}\n{\"id\":\"c2\",\"end\":true}\n{\"id\":\"c2\",\"end\":true}\n",
+    "stderr": "",
+    "output_truncated": false,
+    "check_result": {
+      "kind": "api",
+      "passed": true,
+      "checks": [
+        {
+          "name": "First request after actual 5.5 second initialization",
+          "passed": true,
+          "expected": {
+            "status": 200,
+            "text": "ready after actual module initialization"
+          },
+          "actual": {
+            "status": 200,
+            "headers": {
+              "date": "Mon, 26 Oct 2026 17:25:41 GMT",
+              "connection": "close",
+              "content-length": "40"
+            },
+            "text": "ready after actual module initialization"
+          }
+        },
+        {
+          "name": "A fresh connection uses the same initialized application",
+          "passed": true,
+          "expected": {
+            "status": 200,
+            "text": "ready after actual module initialization"
+          },
+          "actual": {
+            "status": 200,
+            "headers": {
+              "date": "Mon, 26 Oct 2026 17:25:41 GMT",
+              "connection": "close",
+              "content-length": "40"
+            },
+            "text": "ready after actual module initialization"
+          }
+        }
+      ]
+    },
+    "check_input": {
+      "entry": "delayed.mjs",
+      "export_name": "default",
+      "requests": [
+        {
+          "name": "First request after actual 5.5 second initialization",
+          "method": "GET",
+          "path": "/",
+          "headers": {},
+          "expect": {
+            "status": 200,
+            "text": "ready after actual module initialization"
+          }
+        },
+        {
+          "name": "A fresh connection uses the same initialized application",
+          "method": "GET",
+          "path": "/second",
+          "headers": {},
+          "expect": {
+            "status": 200,
+            "text": "ready after actual module initialization"
+          }
+        }
+      ],
+      "timeout_ms": 15000
+    },
+    "harness_sha256": "2edf3bbf4196701a332300b33d96933228e229f4c5d3cb88ad26687586977435",
+    "runtime": {
+      "id": "windows-node22-appcontainer-v2",
+      "node_version": "v22.14.0",
+      "node_sha256": "33b1bc1a8aca11fd5a4f2699e51019c63c0af30cf437701d07af69be7706771b",
+      "host_sha256": "4358a7263160261b551b1fa71be659ea12c62d3150ae636003d51930e056556a",
+      "host_source_sha256": "bb60912903d441e6213f7d8da61a7fdbede69d2f1848d6868bc990cee8d38b3d",
+      "boundary": "appcontainer-no-capabilities-single-process-job-v2"
+    },
+    "host": {
+      "schema": 1,
+      "process_id": 33512,
+      "exit_code": 0,
+      "resumed": true,
+      "timed_out": false,
+      "cancelled": false,
+      "elapsed_ms": 8884,
+      "profile_name": "cpsoftware-43b028a400cf41c581344d7a8229ef85",
+      "profile_created": true,
+      "profile_deleted": true,
+      "no_network_capabilities": true,
+      "child_processes_prohibited": true,
+      "stdin_channel": true,
+      "memory_limit_bytes": 536870912,
+      "failure": null
+    },
+    "workspace_deleted": true
+  }
+}
