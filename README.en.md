@@ -1,5 +1,31 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- cloud-development-stage100 -->
+
+Cloud Codex can now run actual HTTP application requests and native SQLite data/constraint checks. Exact-source receipts retain failures, mark results stale after source changes, and accompany matching code packages. Web task pages show passed, failed and stale checks, expandable output and exact-version downloads.
+
+Usage: approve an eligible cloud task and its budget, let Codex write and check the code, inspect Software checks, expand output, then download execution files or the full record. The Windows-only native boundary has no network or child processes; external TCP/TLS endpoints, PostgreSQL/MySQL compatibility, arbitrary npm dependencies and cloud browser preview remain outside this scope.
+
+Earlier implementation notes below retain their historical validation scope; this section describes the current change.
+
+Verified: 96 related checks across eleven suites and four actual authenticated Web journey checks. Synthetic provider responses and credit; actual Codex, native execution and downloads. [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-development-checkpoint.json) · [Design and limits / 方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/100-cloud-development-checks.md).
+
+```mermaid
+flowchart LR
+ A[Authorized cloud task] --> B[Codex writes exact source]
+ B --> C[HTTP API / SQLite checks]
+ C --> D[Source-bound receipt and files]
+ D --> E[Task UI and matching code package]
+```
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-development-06-checks-en.png)
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-development-06-compact-zh.png)
+
+![Actual Web interaction / 实际 Web 交互](assets/screenshots/workmate-06-cloud-development.gif)
+
+[Actual interaction MP4 / 实际交互录像](assets/screenshots/workmate-06-cloud-development.mp4)
+
 <!-- cloud-program-stage99 -->
 
 Cloud Codex can now run actual pinned Node programs, built-in tests and syntax checks. Exact-source receipts retain failures, mark results stale after source changes, and accompany matching code packages. Web task pages show passed, failed and stale checks, expandable output and exact-version downloads.
