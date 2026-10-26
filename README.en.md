@@ -1,5 +1,32 @@
 # Workmate · CopyPaste Enterprise Agent · extension
 
+<!-- admin-data-stage103 -->
+
+Admin now processes persistent account batches and frozen directory, usage, billing and audit exports. Select targets/filters → review exact records, versions and projected fields → explicitly confirm → follow each item → retry only failed targets in a reviewed child or download authorized CSV/manifest. Cancellation preserves committed effects. Existing billing/VIP approval history remains available.
+
+Limits: 100 accounts per batch, 10,000 export rows; oversize selections are rejected. Every item and download rechecks live permissions, explicit denies, recent MFA, versions and field visibility. Previews expire after 5 minutes; encrypted job payloads after 15. Three bounded automatic attempts apply only to transient DB errors.
+
+Verified with native PostgreSQL and actual Admin email/TOTP: 94 checks across six backend suites, seven browser journeys, six unedited PNGs and two actual GIF/MP4 recordings. Synthetic accounts, zero model calls. Customer-local Codex Desktop and native right Chrome Side Panel retain their existing execution model; this increment does not newly qualify those clients or the whole product.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/103-persistent-admin-data-jobs.md) · [Exact evidence / 确切证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-data-jobs-checkpoint.json)
+
+```mermaid
+flowchart LR
+ A[Select accounts or export criteria] --> B[Freeze and review]
+ B --> C[Confirm persistent job]
+ C --> D[Atomic item outcomes]
+ D --> E[Failed-only child preview]
+ E --> B
+ D --> F[Recheck permission and download]
+```
+
+![Actual Admin export / 实际后台导出](assets/screenshots/admin-workmate-admin-data-03-export-ready-en.png)
+
+![Actual batch and retry / 实际批量与重试](assets/screenshots/admin-workmate-03-admin-data-batch.gif)
+
+[Actual interaction MP4](assets/screenshots/admin-workmate-03-admin-data-batch.mp4)
+
+
 <!-- client-content-stage102 -->
 
 Extension displays guidance in the actual native Chrome right Side Panel while preserving chat, authorized uploads and account actions.
