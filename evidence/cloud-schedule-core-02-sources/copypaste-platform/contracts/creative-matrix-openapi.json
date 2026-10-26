@@ -1,0 +1,1397 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste creative production matrices",
+    "version": "0.5.0",
+    "description": "Additive project design batch contract. Deterministic local layout; six operations, independent immutable input revisions, explicit per-unit retries and actual PNG/SVG/JSON files. Original OpenAPI remains unchanged."
+  },
+  "x-normative-source-sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "x-model-source-sha256": "78d999fbb29afd224be667e8ed7d578872b2f50b5bec2c2f73848374f0b51742",
+  "x-route-source-sha256": "df6c7667cd79b482351256f612c5086bbecd46ffae63aabb06c4d0fd26fc812e",
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/creative-batches": {
+      "get": {
+        "operationId": "listCreativeMatrices",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current project-authorized result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatrixList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCreativeMatrix",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatrixCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current project-authorized result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatrixCreated"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-batches/{batch}": {
+      "get": {
+        "operationId": "readCreativeMatrix",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current project-authorized result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatrixDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-batches/{batch}/units/{unit}/edit": {
+      "post": {
+        "operationId": "editCreativeMatrixUnit",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "unit",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatrixEdit"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current project-authorized result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatrixUpdated"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-batches/{batch}/units/{unit}/retry": {
+      "post": {
+        "operationId": "retryCreativeMatrixUnit",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "unit",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatrixRetry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current project-authorized result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatrixUpdated"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-batches/{batch}/cancel": {
+      "post": {
+        "operationId": "cancelCreativeMatrix",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batch",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatrixCancel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current project-authorized result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatrixCancelled"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "customerSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      }
+    },
+    "schemas": {
+      "MatrixCreate": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "locales": {
+            "minItems": 1,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "zh-HK",
+                "en"
+              ]
+            }
+          },
+          "sizes": {
+            "minItems": 1,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "width": {
+                  "type": "integer",
+                  "minimum": 256,
+                  "maximum": 2048
+                },
+                "height": {
+                  "type": "integer",
+                  "minimum": 256,
+                  "maximum": 2048
+                }
+              },
+              "required": [
+                "key",
+                "name",
+                "width",
+                "height"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "creatives": {
+            "minItems": 1,
+            "maxItems": 30,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "theme": {
+                  "type": "object",
+                  "properties": {
+                    "background": {
+                      "type": "string",
+                      "pattern": "^#[a-fA-F0-9]{6}$"
+                    },
+                    "ink": {
+                      "type": "string",
+                      "pattern": "^#[a-fA-F0-9]{6}$"
+                    },
+                    "accent": {
+                      "type": "string",
+                      "pattern": "^#[a-fA-F0-9]{6}$"
+                    }
+                  },
+                  "required": [
+                    "background",
+                    "ink",
+                    "accent"
+                  ],
+                  "additionalProperties": false
+                },
+                "image": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "asset_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "asset_id",
+                        "version"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "copy": {
+                  "minItems": 1,
+                  "maxItems": 2,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "locale": {
+                        "type": "string",
+                        "enum": [
+                          "zh-HK",
+                          "en"
+                        ]
+                      },
+                      "text": {
+                        "type": "object",
+                        "properties": {
+                          "brand_line": {
+                            "type": "string",
+                            "maxLength": 80
+                          },
+                          "headline": {
+                            "type": "string",
+                            "maxLength": 240
+                          },
+                          "body": {
+                            "type": "string",
+                            "maxLength": 800
+                          },
+                          "action": {
+                            "type": "string",
+                            "maxLength": 100
+                          }
+                        },
+                        "required": [
+                          "brand_line",
+                          "headline",
+                          "body",
+                          "action"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "locale",
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "key",
+                "name",
+                "theme",
+                "image",
+                "copy"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "name",
+          "locales",
+          "sizes",
+          "creatives"
+        ],
+        "additionalProperties": false,
+        "description": "Runtime additionally rejects duplicate creative/size/language axes, requires exactly one copy per selected language, and enforces creatives × languages × sizes <= 60 before persistence. No AI translation or generation is performed."
+      },
+      "MatrixEdit": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "copy": {
+            "type": "object",
+            "properties": {
+              "brand_line": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "headline": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "body": {
+                "type": "string",
+                "maxLength": 800
+              },
+              "action": {
+                "type": "string",
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "brand_line",
+              "headline",
+              "body",
+              "action"
+            ],
+            "additionalProperties": false
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "asset_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "asset_id",
+                  "version"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "theme": {
+            "type": "object",
+            "properties": {
+              "background": {
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "ink": {
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "accent": {
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              }
+            },
+            "required": [
+              "background",
+              "ink",
+              "accent"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "expected_revision",
+          "copy"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixRetry": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixCancel": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixCreated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixUpdated": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "unit_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "revision": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "const": "queued"
+          }
+        },
+        "required": [
+          "id",
+          "unit_id",
+          "revision",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixCancelled": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "cancelled": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "id",
+          "cancelled"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixList": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "version": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "cancelled": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version",
+                "created_at",
+                "cancelled"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "MatrixDetail": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "data_mode": {
+            "type": "string",
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "cancelled": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "running",
+              "succeeded",
+              "partially_succeeded",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "counts": {
+            "type": "object",
+            "properties": {
+              "queued": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "rendering": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "succeeded": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "failed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "cancelled": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "queued",
+              "rendering",
+              "succeeded",
+              "failed",
+              "cancelled"
+            ],
+            "additionalProperties": false
+          },
+          "cost": {
+            "type": "object",
+            "properties": {
+              "ai_cost_micros": {
+                "type": "string",
+                "const": "0"
+              },
+              "source": {
+                "type": "string",
+                "const": "local_composition_no_ai"
+              },
+              "currency": {
+                "type": "string",
+                "const": "HKD"
+              }
+            },
+            "required": [
+              "ai_cost_micros",
+              "source",
+              "currency"
+            ],
+            "additionalProperties": false
+          },
+          "units": {
+            "minItems": 1,
+            "maxItems": 60,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "creative_key": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+                },
+                "locale": {
+                  "type": "string",
+                  "enum": [
+                    "zh-HK",
+                    "en"
+                  ]
+                },
+                "size_key": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+                },
+                "revision": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "queued",
+                    "rendering",
+                    "succeeded",
+                    "failed",
+                    "cancelled"
+                  ]
+                },
+                "error_code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "updated_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "input": {
+                  "type": "object",
+                  "properties": {
+                    "renderer": {
+                      "type": "string",
+                      "const": "copypaste-layout-1"
+                    },
+                    "locale": {
+                      "type": "string",
+                      "enum": [
+                        "zh-HK",
+                        "en"
+                      ]
+                    },
+                    "creative_key": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+                    },
+                    "creative_name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    },
+                    "size": {
+                      "type": "object",
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        },
+                        "width": {
+                          "type": "integer",
+                          "minimum": 256,
+                          "maximum": 2048
+                        },
+                        "height": {
+                          "type": "integer",
+                          "minimum": 256,
+                          "maximum": 2048
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "name",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "theme": {
+                      "type": "object",
+                      "properties": {
+                        "background": {
+                          "type": "string",
+                          "pattern": "^#[a-fA-F0-9]{6}$"
+                        },
+                        "ink": {
+                          "type": "string",
+                          "pattern": "^#[a-fA-F0-9]{6}$"
+                        },
+                        "accent": {
+                          "type": "string",
+                          "pattern": "^#[a-fA-F0-9]{6}$"
+                        }
+                      },
+                      "required": [
+                        "background",
+                        "ink",
+                        "accent"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "copy": {
+                      "type": "object",
+                      "properties": {
+                        "brand_line": {
+                          "type": "string",
+                          "maxLength": 80
+                        },
+                        "headline": {
+                          "type": "string",
+                          "maxLength": 240
+                        },
+                        "body": {
+                          "type": "string",
+                          "maxLength": 800
+                        },
+                        "action": {
+                          "type": "string",
+                          "maxLength": 100
+                        }
+                      },
+                      "required": [
+                        "brand_line",
+                        "headline",
+                        "body",
+                        "action"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "image": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "asset_id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "version": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "asset_id",
+                            "version",
+                            "sha256"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "renderer",
+                    "locale",
+                    "creative_key",
+                    "creative_name",
+                    "size",
+                    "theme",
+                    "copy",
+                    "image"
+                  ],
+                  "additionalProperties": false
+                },
+                "input_hash": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "source_available": {
+                  "type": "boolean"
+                },
+                "attempts": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "unit_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "revision": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "rendering",
+                          "succeeded",
+                          "failed",
+                          "cancelled"
+                        ]
+                      },
+                      "error_code": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "png_asset_id": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "svg_asset_id": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "source_asset_id": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "ai_cost_micros": {
+                        "type": "string",
+                        "const": "0"
+                      },
+                      "cost_source": {
+                        "type": "string",
+                        "const": "local_composition_no_ai"
+                      },
+                      "elapsed_ms": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "output_bytes": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^\\d+$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "started_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "finished_at": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "output_available": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "unit_id",
+                      "revision",
+                      "state",
+                      "error_code",
+                      "png_asset_id",
+                      "svg_asset_id",
+                      "source_asset_id",
+                      "ai_cost_micros",
+                      "cost_source",
+                      "elapsed_ms",
+                      "output_bytes",
+                      "started_at",
+                      "finished_at",
+                      "output_available"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "creative_key",
+                "locale",
+                "size_key",
+                "revision",
+                "state",
+                "error_code",
+                "created_at",
+                "updated_at",
+                "input",
+                "input_hash",
+                "source_available",
+                "attempts"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "version",
+          "data_mode",
+          "cancelled",
+          "state",
+          "counts",
+          "cost",
+          "units"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

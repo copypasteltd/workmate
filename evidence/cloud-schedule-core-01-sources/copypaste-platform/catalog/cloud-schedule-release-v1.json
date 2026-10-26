@@ -1,0 +1,137 @@
+{
+  "schema": "copypaste-cloud-schedule-release-1",
+  "previous_role_sha256": "c71a3c2dc1cab8334e061ebeb8128080ab1f7a41953a80b8d3b29865f6a82711",
+  "role": {
+    "role_key": "workflow-consultant",
+    "catalog_id": "R18",
+    "version": "1.2.0",
+    "display_name": "企业流程自动化顾问",
+    "category": "operations",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "workflow-design",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "workflow-execution",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "workflow-scheduling",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "connector.read",
+      "dataset.read",
+      "delivery.package",
+      "workflow.run",
+      "workflow.validate"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "current_process",
+        "input_output",
+        "exception_examples"
+      ],
+      "optional_fields": [
+        "systems",
+        "permissions",
+        "frequency"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "现状与重复点"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "SOP和流程依赖"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "有界流程版本"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "试运行及异常恢复"
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "SOP及责任说明",
+        "format": "md",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "可执行流程版本",
+        "format": "json",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "异常恢复记录",
+        "format": "md",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "把每周报表整理和内部审批变成可复用流程。",
+    "acceptance_checks": [
+      "流程输入输出责任和失败策略明确，承诺执行的版本有真实运行成果。",
+      "修改一项流程后新运行采用新版，旧运行保持原方法。",
+      "重复触发不重复外部写入，连接撤销后禁止后续调用。"
+    ],
+    "qualification_cases": {
+      "normal": "流程输入输出责任和失败策略明确，承诺执行的版本有真实运行成果。",
+      "revision": "修改一项流程后新运行采用新版，旧运行保持原方法。",
+      "dependency_or_permission_failure": "重复触发不重复外部写入，连接撤销后禁止后续调用。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M2",
+    "readiness_evidence": []
+  },
+  "skill_package": {
+    "key": "workflow-scheduling",
+    "version": "1.0.0",
+    "sha256": "9499ed8f3b6573b2f5ca0e0cab0e66ae0cb0f333d9ad6f92611db2db3d9e7f55",
+    "path": "skills/workflow-scheduling/1.0.0/SKILL.md",
+    "qualification": "pending_live_validation"
+  },
+  "skill_definition": {
+    "skill_key": "workflow-scheduling",
+    "version": "1.0.0",
+    "purpose": "对话到私有云端计划、明确确认与触发记录",
+    "candidate_sources": [],
+    "package_state": "installed",
+    "package_sha256": "9499ed8f3b6573b2f5ca0e0cab0e66ae0cb0f333d9ad6f92611db2db3d9e7f55",
+    "ai_network_policy": "internal_only",
+    "tool_ids": [
+      "workflow.validate",
+      "workflow.run"
+    ],
+    "required_model_profiles": [],
+    "supported_clients": [
+      "web",
+      "extension",
+      "desktop"
+    ]
+  }
+}
