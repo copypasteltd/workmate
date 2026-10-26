@@ -1,6 +1,16 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
 
+## 阶段 102 用户端内容发版 / Stage 102 client content releases
+
+后台已接入三端公告、帮助与可选菜单的双语编辑、时间窗口、固定版本、身份前后预览、定向保底、发布和历史回滚。确认时复核全局权限、显式拒绝、有效会话及 MFA；失效预览不能覆盖新发版。Desktop 保留本机 Codex、无边框与无可见滚动条；Extension 保留原生右侧栏和获准上传。
+
+Admin controls bilingual client guidance and optional menus through immutable drafts, recipient previews, targeted baselines, guarded publication and historical rollback. Confirmation rechecks global authority, explicit restrictions, the live session and MFA. Desktop remains local; Extension remains a native right Side Panel.
+
+[Design / 方案](../technical/102-client-content-releases.md) · [Evidence / 证据](../quality/client-content-checkpoint.json). Original complete requirement, live role and G01–G10 acceptance decisions remain unchanged.
+
+
+
 ## 阶段 101 实际云端页面检查 / Stage 101 actual cloud browser checks
 
 云端 Codex 新增实际 Chromium 页面交互、DOM 断言、原始截图及确切源码交付。固定原生运行时，在 Windows Job 内核对实际 renderer token，超时、取消及控制器异常退出后回收所属进程。页面使用独立来源 sandbox iframe、任务内资源和离线请求策略；不宣称 Chrome broker 具有操作系统级无网络权限。截图接口重新校验私有任务、来源与文件版本。新增四份 Skill 1.1.0 和六个软件角色 1.1.0，保留旧版本及权限边界。113 项相关测试和 4 项实际登录 Web 流程使用假模型与额度；Desktop 继续在客户本机运行 Codex，独立构建及打包。

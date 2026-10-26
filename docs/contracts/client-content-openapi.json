@@ -1,0 +1,704 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate client content releases",
+    "version": "1.0.0",
+    "description": "Additive presentation API contract. Zod definitions supply document/audience schemas. Server transaction and PostgreSQL guards additionally enforce context, audience, version, baseline and append-only invariants. No execution permissions can be granted through presentation."
+  },
+  "paths": {
+    "/v1/client-content": {
+      "get": {
+        "summary": "Read effective presentation for the live authenticated identity",
+        "security": [
+          {
+            "userSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current result"
+          },
+          "400": {
+            "description": "Invalid strict schema or missing workspace context"
+          },
+          "401": {
+            "description": "Live sign-in required"
+          },
+          "403": {
+            "description": "Permission, explicit restriction or recent MFA required"
+          },
+          "404": {
+            "description": "Authorized resource not found"
+          },
+          "409": {
+            "description": "Expired/stale/session-mismatched preview, unavailable subject, overlapping rollout, legacy conflict or idempotency conflict"
+          }
+        },
+        "parameters": [
+          {
+            "name": "client",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "web",
+                "desktop",
+                "extension"
+              ]
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Requires X-Tenant-ID and projectAccess"
+          },
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Optional workspace; server validates live membership"
+          }
+        ]
+      }
+    },
+    "/v1/admin/client-content": {
+      "get": {
+        "summary": "List immutable content versions, current head, initial document and supported menu inventory",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current result"
+          },
+          "400": {
+            "description": "Invalid strict schema or missing workspace context"
+          },
+          "401": {
+            "description": "Live sign-in required"
+          },
+          "403": {
+            "description": "Permission, explicit restriction or recent MFA required"
+          },
+          "404": {
+            "description": "Authorized resource not found"
+          },
+          "409": {
+            "description": "Expired/stale/session-mismatched preview, unavailable subject, overlapping rollout, legacy conflict or idempotency conflict"
+          }
+        },
+        "x-permission": "admin.catalog.read",
+        "parameters": [
+          {
+            "name": "before_version",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Save an immutable bilingual draft with an exact audience",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current result"
+          },
+          "400": {
+            "description": "Invalid strict schema or missing workspace context"
+          },
+          "401": {
+            "description": "Live sign-in required"
+          },
+          "403": {
+            "description": "Permission, explicit restriction or recent MFA required"
+          },
+          "404": {
+            "description": "Authorized resource not found"
+          },
+          "409": {
+            "description": "Expired/stale/session-mismatched preview, unavailable subject, overlapping rollout, legacy conflict or idempotency conflict"
+          }
+        },
+        "x-permission": "admin.catalog.draft",
+        "x-csrf-and-origin-check": true,
+        "x-recent-mfa-seconds": 600,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Draft"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/admin/client-content/publications": {
+      "get": {
+        "summary": "Read append-only publication and rollback history",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current result"
+          },
+          "400": {
+            "description": "Invalid strict schema or missing workspace context"
+          },
+          "401": {
+            "description": "Live sign-in required"
+          },
+          "403": {
+            "description": "Permission, explicit restriction or recent MFA required"
+          },
+          "404": {
+            "description": "Authorized resource not found"
+          },
+          "409": {
+            "description": "Expired/stale/session-mismatched preview, unavailable subject, overlapping rollout, legacy conflict or idempotency conflict"
+          }
+        },
+        "x-permission": "admin.catalog.read",
+        "parameters": [
+          {
+            "name": "before_revision",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ]
+      }
+    },
+    "/v1/admin/client-content/{id}/previews": {
+      "post": {
+        "summary": "Freeze a five-minute recipient comparison against the current publication",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current result"
+          },
+          "400": {
+            "description": "Invalid strict schema or missing workspace context"
+          },
+          "401": {
+            "description": "Live sign-in required"
+          },
+          "403": {
+            "description": "Permission, explicit restriction or recent MFA required"
+          },
+          "404": {
+            "description": "Authorized resource not found"
+          },
+          "409": {
+            "description": "Expired/stale/session-mismatched preview, unavailable subject, overlapping rollout, legacy conflict or idempotency conflict"
+          }
+        },
+        "x-permission": "admin.catalog.publish OR admin.catalog.rollback, matching action; admin.catalog.read also required",
+        "x-csrf-and-origin-check": true,
+        "x-recent-mfa-seconds": 600,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewRequest"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/admin/client-content/publish": {
+      "post": {
+        "summary": "Append the exact reviewed publish after live authority/session/MFA checks",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current result"
+          },
+          "400": {
+            "description": "Invalid strict schema or missing workspace context"
+          },
+          "401": {
+            "description": "Live sign-in required"
+          },
+          "403": {
+            "description": "Permission, explicit restriction or recent MFA required"
+          },
+          "404": {
+            "description": "Authorized resource not found"
+          },
+          "409": {
+            "description": "Expired/stale/session-mismatched preview, unavailable subject, overlapping rollout, legacy conflict or idempotency conflict"
+          }
+        },
+        "x-permission": "admin.catalog.publish and admin.catalog.read",
+        "x-csrf-and-origin-check": true,
+        "x-recent-mfa-seconds": 600,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Confirmation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/client-content/rollback": {
+      "post": {
+        "summary": "Append the exact reviewed rollback after live authority/session/MFA checks",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current result"
+          },
+          "400": {
+            "description": "Invalid strict schema or missing workspace context"
+          },
+          "401": {
+            "description": "Live sign-in required"
+          },
+          "403": {
+            "description": "Permission, explicit restriction or recent MFA required"
+          },
+          "404": {
+            "description": "Authorized resource not found"
+          },
+          "409": {
+            "description": "Expired/stale/session-mismatched preview, unavailable subject, overlapping rollout, legacy conflict or idempotency conflict"
+          }
+        },
+        "x-permission": "admin.catalog.rollback and admin.catalog.read",
+        "x-csrf-and-origin-check": true,
+        "x-recent-mfa-seconds": 600,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Confirmation"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Document": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "number",
+            "const": 1
+          },
+          "announcements": {
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[\\w-]{1,80}$"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "title_en": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "text": {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                "text_en": {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "starts_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "ends_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "key",
+                "title",
+                "title_en",
+                "text",
+                "text_en",
+                "enabled"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "help": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[\\w-]{1,80}$"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "title_en": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "text": {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                "text_en": {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "starts_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "ends_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "key",
+                "title",
+                "title_en",
+                "text",
+                "text_en",
+                "enabled"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "navigation": {
+            "maxItems": 90,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "client": {
+                  "type": "string",
+                  "enum": [
+                    "web",
+                    "desktop",
+                    "extension"
+                  ]
+                },
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "label_en": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "enabled": {
+                  "type": "boolean"
+                },
+                "order": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              },
+              "required": [
+                "client",
+                "path",
+                "label",
+                "label_en",
+                "enabled",
+                "order"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "schema",
+          "announcements",
+          "help",
+          "navigation"
+        ],
+        "additionalProperties": false,
+        "description": "Complete bilingual presentation bundle. Server additionally rejects duplicate section keys and duplicate client/path menu overrides and validates each client-specific existing optional path. A visibility end must follow its start."
+      },
+      "Audience": {
+        "type": "object",
+        "properties": {
+          "clients": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "web",
+                "desktop",
+                "extension"
+              ]
+            }
+          },
+          "tenant_ids": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "user_ids": {
+            "maxItems": 100,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "percentage": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "cohort_key": {
+            "type": "string",
+            "pattern": "^[\\w-]{1,80}$"
+          }
+        },
+        "required": [
+          "clients",
+          "tenant_ids",
+          "user_ids",
+          "percentage",
+          "cohort_key"
+        ],
+        "additionalProperties": false,
+        "description": "Client, workspace, user and stable percentage conditions intersect. Empty ID lists mean any. At most one targeted rollout is active. Unselected users receive the exact frozen baseline."
+      },
+      "Sample": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "client"
+        ],
+        "properties": {
+          "client": {
+            "type": "string",
+            "enum": [
+              "web",
+              "desktop",
+              "extension"
+            ]
+          },
+          "user_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "Draft": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "document",
+          "audience",
+          "reason"
+        ],
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/Audience"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        }
+      },
+      "PreviewRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "action",
+          "reason",
+          "sample"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "rollback"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          },
+          "sample": {
+            "$ref": "#/components/schemas/Sample"
+          }
+        }
+      },
+      "Confirmation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "preview_id"
+        ],
+        "properties": {
+          "preview_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "adminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session"
+      },
+      "userSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "nativeBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

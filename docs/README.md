@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- client-content-stage102 -->
+
+本次交付连通后台内容发版与三个用户端。
+
+使用：登入 Admin → 目录与发布 → 用户端内容，编辑双语正文、显示时间和现有可选菜单；选择客户端、目录接收人和固定比例分组；保存草稿，核对指定身份的前后内容后确认发布。其余用户保留完整旧版。回滚也先预览，引用已发布版本并新增记录。账户、VIP、费用、角色和 Skill 权限继续约束实际执行。
+
+核查：五个后端测试文件共 79 项、七项实际客户端流程、八张未修改截图及四组真实 GIF/MP4。使用原生 PostgreSQL、实际邮箱/MFA/PKCE 会话和未签名的打包 Desktop。账户与正文为假数据；本增量不发起模型调用，不代表真实专业质量或完整产品验收。
+
+[Design / 方案](technical/102-client-content-releases.md) · [Exact evidence / 确切证据](quality/client-content-checkpoint.json).
+
+```mermaid
+flowchart LR
+ A[Bilingual draft] --> B[Recipient preview]
+ B --> C[Live authority and MFA check]
+ C --> D[Append publication]
+ D --> E[Selected: release]
+ D --> F[Others: frozen baseline]
+ D --> G[Historical rollback preview]
+ G --> B
+```
+
+![Actual admin content](assets/screenshots/admin-workmate-client-content-06-targeted-preview-en.png)
+
+[Actual admin MP4](assets/screenshots/admin-workmate-06-client-content-publication.mp4)
+
+![Actual admin interaction](assets/screenshots/admin-workmate-06-client-content-publication.gif)
+
+
 <!-- cloud-browser-stage101 -->
 
 云端 Codex 现可使用固定的原生 Chromium 执行真实页面交互和 DOM 检查，保留实际截图及确切源码。本次连接软件角色版本、云端页面执行、确切源码及用户可见证据。

@@ -1,5 +1,15 @@
 # M11/M12 内部 AI、费用、权益与运营
 
+
+## 阶段 102 用户端内容发版 / Stage 102 client content releases
+
+后台已接入三端公告、帮助与可选菜单的双语编辑、时间窗口、固定版本、身份前后预览、定向保底、发布和历史回滚。确认时复核全局权限、显式拒绝、有效会话及 MFA；失效预览不能覆盖新发版。Desktop 保留本机 Codex、无边框与无可见滚动条；Extension 保留原生右侧栏和获准上传。
+
+Admin controls bilingual client guidance and optional menus through immutable drafts, recipient previews, targeted baselines, guarded publication and historical rollback. Confirmation rechecks global authority, explicit restrictions, the live session and MFA. Desktop remains local; Extension remains a native right Side Panel.
+
+[Design / 方案](../technical/102-client-content-releases.md) · [Evidence / 证据](../quality/client-content-checkpoint.json). Original complete requirement, live role and G01–G10 acceptance decisions remain unchanged.
+
+
 当前实现新增 [企业席位与存储约束](../technical/48-enterprise-seat-and-storage-enforcement.md)：仅企业方案决定共用容量，个人 VIP 不扩容；启用成员、所有未擦除版本和有效上传预留据实统计。准入与授权变更串行化，超额拒绝新占用，降级保留既有数据；后台整体范围读取同时要求企业与权益权限。本册其他完整商业和综合验收要求继续保留。
 
 关联：REQ-043–048、050、052–054、056、058、060、083–102。ADMIN01 的页面规格见 [Admin Dashboard](../product/08-admin-dashboard.md)，技术主线见 [后台控制面](../technical/11-admin-control-plane.md)。
