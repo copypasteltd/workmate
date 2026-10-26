@@ -81,8 +81,12 @@ export async function api<T = any>(
   if (data?.csrf_token) setCsrf(data.csrf_token);
   return data as T;
 }
-export const post = (path: string, body: unknown = {}) =>
-  api(path, { method: "POST", body: JSON.stringify(body) });
+export const post = (path: string, body: unknown = {}, requestKey?: string) =>
+  api(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+    ...(requestKey ? { headers: { "Idempotency-Key": requestKey } } : {}),
+  });
 export const patch = (path: string, body: unknown) =>
   api(path, { method: "PATCH", body: JSON.stringify(body) });
 export async function download(path: string, filename: string) {
