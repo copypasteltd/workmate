@@ -8,6 +8,7 @@ import { loadConfig } from "../src/config.js";
 import { Worker } from "../src/worker.js";
 import { CodexRuntimeAdapter, type RuntimeContext } from "../src/runtime.js";
 import { seedRuntimeProfile } from "../src/runtime-profiles.js";
+import { cloudBrowserAvailable } from "../src/cloud-browser-runtime.js";
 import { tokenCharge } from "../src/billing.js";
 import { presetBrandDefinition } from "./preset-brand-fixture.js";
 import {
@@ -297,12 +298,21 @@ test("preflights persist one current receipt without installing methods, reservi
       { ...f.input, template_version: engineering.version },
       f.tenant,
     );
-  assert.equal(missing.state, "unavailable");
-  assert.ok(
-    missing.missing_required_dependencies.includes(
-      "TOOL_NOT_IMPLEMENTED:browser.preview",
-    ),
-  );
+  if (await cloudBrowserAvailable()) {
+    assert.ok(
+      !missing.missing_required_dependencies.includes(
+        "TOOL_NOT_IMPLEMENTED:browser.preview",
+      ),
+    );
+    assert.equal(missing.qualification_state, "unverified");
+  } else {
+    assert.equal(missing.state, "unavailable");
+    assert.ok(
+      missing.missing_required_dependencies.includes(
+        "TOOL_NOT_IMPLEMENTED:browser.preview",
+      ),
+    );
+  }
   for (const overrides of [
     { kernel: "dsh" },
     { api_base_url: "https://outside.example.invalid" },

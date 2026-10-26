@@ -14,10 +14,15 @@ import {
 } from "./cloud-program-executor.js";
 import type { z } from "zod";
 import { hash, Problem } from "./lib.js";
+import {
+  runCloudBrowserPreview,
+  type BrowserPreviewInput,
+} from "./cloud-browser-preview.js";
 export const cloudCheckTools = [
   "process_run_allowed",
   "api_test",
   "database_test_native",
+  "browser_preview",
 ];
 
 export async function taskProgramSources(
@@ -70,6 +75,42 @@ export async function executeTaskProgram(
     signal,
     driver,
   );
+  return saveTaskCheck(tx, storage, t, user, workspace, authorize, {
+    receipt,
+    files,
+  });
+}
+
+export async function executeTaskBrowser(
+  tx: Tx,
+  storage: Storage,
+  t: any,
+  user: string,
+  dataDir: string,
+  workspace: CodeWorkspace,
+  input: BrowserPreviewInput,
+  authorize: () => Promise<void>,
+  signal?: AbortSignal,
+) {
+  const { sources } = await taskProgramSources(tx, storage, t, workspace);
+  const result = await runCloudBrowserPreview(dataDir, input, sources, signal);
+  return saveTaskCheck(tx, storage, t, user, workspace, authorize, result);
+}
+
+async function saveTaskCheck(
+  tx: Tx,
+  storage: Storage,
+  t: any,
+  user: string,
+  workspace: CodeWorkspace,
+  authorize: () => Promise<void>,
+  {
+    receipt,
+    files,
+  }:
+    | Awaited<ReturnType<typeof runCloudProgram>>
+    | Awaited<ReturnType<typeof runCloudBrowserPreview>>,
+) {
   await authorize();
   const current = await taskProgramSources(tx, storage, t, workspace);
   if (sourceDigest(current.manifest) !== receipt.source_digest)
@@ -118,7 +159,27 @@ export async function executeTaskProgram(
       files: receipt.output_manifest,
     },
   });
-  return { receipt, record, artifacts };
+  const picture =
+    receipt.program === "browser_preview"
+      ? files.find((f) => f.path === "browser-preview.png")
+      : null;
+  const preview = picture
+    ? await saveAsset(tx, storage, {
+        tenant: t.tenant_id,
+        project: t.project_id,
+        user,
+        name: `browser-preview-${receipt.execution_id}.png`,
+        mime: "image/png",
+        bytes: picture.bytes,
+        kind: "software_browser_preview",
+        metadata: {
+          task_id: t.id,
+          source_digest: receipt.source_digest,
+          receipt_asset_id: record.id,
+        },
+      })
+    : null;
+  return { receipt, record, artifacts, ...(preview ? { preview } : {}) };
 }
 
 /** Bind checks to the exact current file manifest, not a task-level green flag.
@@ -144,7 +205,11 @@ export async function checkedSourcePackage(
   if (!checks.length)
     return { ...zip, execution_validation: "not_executed", checks: [] };
   for (const check of checks) {
-    const ids = [check.record.version.id, check.artifacts.version.id];
+    const ids = [
+      check.record.version.id,
+      check.artifacts.version.id,
+      ...(check.preview ? [check.preview.version.id] : []),
+    ];
     const available = (
       await tx.query(
         "SELECT v.id FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.id=ANY($1::uuid[]) AND a.state='active' AND v.erased_at IS NULL AND a.retention_expires_at>clock_timestamp() AND task_asset_version_sources_available(v.id)",

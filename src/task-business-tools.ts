@@ -44,6 +44,7 @@ import { videoCreate, videoEdit } from "./video-project-model.js";
 import { videoRendererProfile } from "./video-render.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import { cloudProgramInput } from "./cloud-program-executor.js";
+import { browserPreviewInput } from "./cloud-browser-preview.js";
 import {
   apiCheckInput,
   databaseCheckInput,
@@ -53,6 +54,7 @@ import {
 import {
   taskProgramSources,
   executeTaskProgram,
+  executeTaskBrowser,
   checkedSourcePackage,
   cloudCheckTools,
 } from "./cloud-program-tools.js";
@@ -841,6 +843,34 @@ export class TaskBusinessTools {
     }
     if (
       t.execution_location !== "desktop" &&
+      role.tool_ids.includes("browser.preview")
+    )
+      tools.push({
+        name: "browser_preview",
+        description:
+          "Preview this task's actual HTML/CSS/JavaScript files in a fresh native Chromium sandbox. Supply structured click/fill/select/check/press/wait actions and named DOM assertions. Only exact current task source buffers are served; external HTTP, WebSocket, workers, frames, downloads and device access are blocked. No arbitrary URLs, Node evaluation, shell, dependencies or server startup. Build framework output before selecting an HTML entry. Save the real viewport PNG, DOM, text, assertion results, native sandbox/process receipt and exact source hashes. A passing check covers only those actions/assertions. Source changes require another preview.",
+        inputSchema: z.toJSONSchema(browserPreviewInput),
+        run: txTool(
+          (tx, a) =>
+            executeTaskBrowser(
+              tx,
+              this.storage,
+              t,
+              actor.id,
+              this.db.config.DATA_DIR,
+              workspace,
+              a,
+              () => authorize(tx),
+              this.authority.signal,
+            ),
+          browserPreviewInput,
+          "browser_preview",
+          async (tx) =>
+            (await taskProgramSources(tx, this.storage, t, workspace)).manifest,
+        ),
+      });
+    if (
+      t.execution_location !== "desktop" &&
       role.tool_ids.includes("process.run.allowed")
     )
       tools.push({
@@ -1577,6 +1607,9 @@ export class TaskBusinessTools {
             database_test_native:
               t.execution_location !== "desktop" &&
               role.tool_ids.includes("database.test.native"),
+            browser_preview:
+              t.execution_location !== "desktop" &&
+              role.tool_ids.includes("browser.preview"),
             design_render: allowedFormats.length > 0,
             effects_catalog:
               effectsTools && role.tool_ids.includes("video.render"),

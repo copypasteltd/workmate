@@ -5,7 +5,7 @@ import type { Database } from "./db.js";
 import type { Storage } from "./storage.js";
 import { requireUser } from "./auth.js";
 import { projectAccess } from "./access.js";
-import { Problem, uuid } from "./lib.js";
+import { hash, Problem, uuid } from "./lib.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import { assertReportSources } from "./analysis-reports.js";
 import { CodeWorkspace } from "./code-workspace.js";
@@ -89,7 +89,11 @@ export function registerCloudProgramRoutes(
         const items = [];
         for (const r of rows.slice(0, query.limit)) {
           const v = r.result,
-            ids = [v.record.version.id, v.artifacts.version.id];
+            ids = [
+              v.record.version.id,
+              v.artifacts.version.id,
+              ...(v.preview ? [v.preview.version.id] : []),
+            ];
           const visible =
             (
               await tx.query(
@@ -116,6 +120,13 @@ export function registerCloudProgramRoutes(
             stderr: c.stderr,
             output_truncated: c.output_truncated,
             check_result: c.check_result ?? null,
+            preview: v.preview
+              ? {
+                  id: v.preview.id,
+                  version: v.preview.version.version,
+                  name: v.preview.name,
+                }
+              : null,
             elapsed_ms: c.host.elapsed_ms,
             files: c.output_manifest,
             receipt: {
@@ -151,5 +162,121 @@ export function registerCloudProgramRoutes(
     "/v1/tasks/:task_id/software-checks",
     { preHandler: requireUser(db) },
     handler(true),
+  );
+  const preview = (canonical: boolean) => async (req: any, reply: any) => {
+    const tenant = uuid.parse(
+        canonical ? req.headers["x-tenant-id"] : req.params.tenant,
+      ),
+      task = uuid.parse(canonical ? req.params.task_id : req.params.task),
+      check = uuid.parse(req.params.check_id);
+    z.object({}).strict().parse(req.query);
+    const result = await db.tx(
+      async (tx) => {
+        const t = (
+          await tx.query("SELECT * FROM tasks WHERE id=$1 AND tenant_id=$2", [
+            task,
+            tenant,
+          ])
+        ).rows[0];
+        if (
+          !t ||
+          (!canonical && t.project_id !== uuid.parse(req.params.project))
+        )
+          throw new Problem(404, "NOT_FOUND", "Task not found");
+        const authorize = async () => {
+          await projectAccess(tx, req.principal, tenant, t.project_id);
+          await assertReportSources(tx, t, false);
+          await assertTaskContentSources(tx, t);
+        };
+        await authorize();
+        await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
+        const record = (
+          await tx.query(
+            "SELECT result FROM task_tool_receipts WHERE id=$1 AND task_id=$2 AND tool_name='browser_preview'",
+            [check, t.id],
+          )
+        ).rows[0]?.result;
+        if (!record?.preview)
+          throw new Problem(
+            404,
+            "PREVIEW_UNAVAILABLE",
+            "Browser screenshot unavailable",
+          );
+        const ids = [
+          record.record.version.id,
+          record.artifacts.version.id,
+          record.preview.version.id,
+        ];
+        const available = async () => {
+          const rows = (
+            await tx.query(
+              "SELECT v.* FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.id=ANY($1::uuid[]) AND a.state='active' AND v.erased_at IS NULL AND a.retention_expires_at>clock_timestamp() AND task_asset_version_sources_available(v.id)",
+              [ids],
+            )
+          ).rows;
+          if (rows.length !== ids.length)
+            throw new Problem(
+              404,
+              "PREVIEW_UNAVAILABLE",
+              "Browser screenshot unavailable",
+            );
+          return rows.find((v) => v.id === record.preview.version.id);
+        };
+        const file = await available();
+        if (file.mime_type !== "image/png" || Number(file.bytes) > 4_000_000)
+          throw new Problem(
+            404,
+            "PREVIEW_UNAVAILABLE",
+            "Browser screenshot unavailable",
+          );
+        const bytes = await storage.get(file.storage_key);
+        if (
+          bytes.length !== Number(file.bytes) ||
+          hash(bytes) !== file.sha256 ||
+          bytes.length < 24 ||
+          bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a"
+        )
+          throw new Problem(
+            409,
+            "PREVIEW_INTEGRITY_FAILED",
+            "Browser screenshot integrity check failed",
+          );
+        const width = bytes.readUInt32BE(16),
+          height = bytes.readUInt32BE(20);
+        if (
+          width !== record.receipt.browser?.viewport.width ||
+          height !== record.receipt.browser?.viewport.height
+        )
+          throw new Problem(
+            409,
+            "PREVIEW_INTEGRITY_FAILED",
+            "Browser screenshot dimensions do not match the execution record",
+          );
+        await authorize();
+        await available();
+        return {
+          content_type: "image/png",
+          bytes: bytes.length,
+          sha256: file.sha256,
+          width,
+          height,
+          base64: bytes.toString("base64"),
+        };
+      },
+      tenant,
+      false,
+      req.principal.id,
+    );
+    return reply.header("Cache-Control", "private, no-store").send(result);
+  };
+  app.get(
+    "/v1/tenants/:tenant/projects/:project/tasks/:task/software-checks/:check_id/preview",
+    { preHandler: requireUser(db) },
+    preview(false),
+  );
+  app.get(
+    "/v1/tasks/:task_id/software-checks/:check_id/preview",
+    { preHandler: requireUser(db) },
+    preview(true),
   );
 }

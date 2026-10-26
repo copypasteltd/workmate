@@ -103,6 +103,63 @@ export class Catalog {
     );
     this.skills.push(effects.skill_package);
     this.skillDefinitions.push(effects.skill_definition);
+    const software = JSON.parse(
+      await readFile("catalog/software-toolchain-release-v1.json", "utf8"),
+    );
+    if (
+      software.schema !== "copypaste-software-toolchain-release-1" ||
+      software.roles.length !== 6 ||
+      software.skill_packages.length !== 4 ||
+      software.skill_definitions.length !== 4
+    )
+      throw new Problem(
+        503,
+        "ROLE_RELEASE_INVALID",
+        "Invalid software toolchain release",
+      );
+    const releaseRoles = new Set<string>(),
+      releaseSkills = new Set<string>();
+    for (const item of software.roles) {
+      const prior = this.role(item.role.role_key);
+      if (
+        releaseRoles.has(prior.role_key) ||
+        prior.version !== "1.0.0" ||
+        item.role.version !== "1.1.0" ||
+        this.digest(prior) !== item.previous_role_sha256 ||
+        canonical(prior.tool_ids) !== canonical(item.role.tool_ids)
+      )
+        throw new Problem(
+          503,
+          "ROLE_RELEASE_INVALID",
+          "Software role release does not match its retained permissions and base",
+        );
+      releaseRoles.add(prior.role_key);
+      this.historicalRoles.push(prior);
+      this.roles = this.roles.map((r) =>
+        r.role_key === prior.role_key ? item.role : r,
+      );
+    }
+    for (const item of software.skill_packages) {
+      const definition = software.skill_definitions.find(
+        (d: any) => d.skill_key === item.key && d.version === item.version,
+      );
+      if (
+        releaseSkills.has(item.key) ||
+        item.version !== "1.1.0" ||
+        this.skills.some(
+          (p) => p.key === item.key && p.version === item.version,
+        ) ||
+        definition?.package_sha256 !== item.sha256
+      )
+        throw new Problem(
+          503,
+          "ROLE_RELEASE_INVALID",
+          "Invalid software Skill package release",
+        );
+      releaseSkills.add(item.key);
+      this.skills.push(item);
+      this.skillDefinitions.push(definition);
+    }
     this.admin = JSON.parse(
       await readFile("catalog/admin-permission-catalog.json", "utf8"),
     );

@@ -17,6 +17,7 @@ import {
   registerBrandVersionOptions,
 } from "./brand-bindings.js";
 import { cloudProgramAvailable } from "./cloud-program-executor.js";
+import { cloudBrowserAvailable } from "./cloud-browser-runtime.js";
 
 const tenantOf = (request: FastifyRequest) =>
   uuid.parse(request.headers["x-tenant-id"]);
@@ -68,6 +69,7 @@ const implementedTools = new Set([
   "process.run.allowed",
   "api.test",
   "database.test.native",
+  "browser.preview",
 ]);
 // Desktop uses the customer's native Codex command/browser protocols. Cloud
 // readiness is evaluated separately for each implemented company tool.
@@ -232,6 +234,7 @@ async function presentationContext(
     capabilityMap,
     native,
     cloudPrograms: native || (await cloudProgramAvailable()),
+    cloudBrowser: native || (await cloudBrowserAvailable()),
   };
 }
 function present(
@@ -258,7 +261,8 @@ function present(
         (["process.run.allowed", "api.test", "database.test.native"].includes(
           tool,
         ) &&
-          !context.cloudPrograms)) &&
+          !context.cloudPrograms) ||
+        (tool === "browser.preview" && !context.cloudBrowser)) &&
       !(context.native && nativeOperations.has(tool)),
   );
   const missingCapability = role.model_bindings.find(
@@ -367,13 +371,16 @@ export async function assessTemplate(
   }
   const cloudPrograms =
     executionLocation === "desktop" || (await cloudProgramAvailable());
+  const cloudBrowser =
+    executionLocation === "desktop" || (await cloudBrowserAvailable());
   for (const tool of role.tool_ids)
     if (
       (!implementedTools.has(tool) ||
         (["process.run.allowed", "api.test", "database.test.native"].includes(
           tool,
         ) &&
-          !cloudPrograms)) &&
+          !cloudPrograms) ||
+        (tool === "browser.preview" && !cloudBrowser)) &&
       !(executionLocation === "desktop" && nativeOperations.has(tool))
     ) {
       missing.push("TOOL_NOT_IMPLEMENTED:" + tool);

@@ -36,7 +36,7 @@ export const cloudProgramInput = z
 export type SourceManifest = { path: string; bytes: number; sha256: string }[];
 export type ProgramSource = { path: string; bytes: Buffer };
 export interface CloudCheckResult {
-  kind: "api" | "sqlite";
+  kind: "api" | "sqlite" | "browser";
   passed: boolean;
   checks: {
     name: string;

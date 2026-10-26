@@ -491,6 +491,162 @@ test("private API and SQLite checks preserve real failures, exact-source package
   assert.ok(!revoked.body.includes("Approved record"));
 });
 
+test("private real browser previews preserve source versions, screenshots, replay and withdrawal boundaries", async () => {
+  const f = await fixture(),
+    args = {
+      entry: "index.html",
+      actions: [{ action: "click", selector: "button" }],
+      checks: [
+        {
+          name: "Save reaches the expected page state",
+          selector: "#result",
+          expect: { text: "Saved" },
+        },
+      ],
+    };
+  let result: any,
+    packaged: any,
+    sourceVersion = "";
+  const original =
+      "<!doctype html><h1>Workmate</h1><button>Save</button><p id=result>Broken</p>",
+    fixed =
+      "<!doctype html><h1>Workmate</h1><button onclick=\"document.querySelector('#result').textContent='Saved'\">Save</button><p id=result>Pending</p>";
+  const task = await run(f, async (ctx) => {
+    await tool(ctx, "code_write")({ path: "index.html", content: original });
+    const preview = tool(ctx, "browser_preview"),
+      failed = await preview(args);
+    assert.equal(failed.receipt.passed, false);
+    assert.ok(failed.preview);
+    const written = await tool(
+      ctx,
+      "code_write",
+    )({
+      path: "index.html",
+      content: fixed,
+      expected_sha256: (await tool(ctx, "code_read")({ path: "index.html" }))
+        .sha256,
+    });
+    sourceVersion = written.asset_version_id;
+    const key = randomUUID();
+    result = await preview(args, key);
+    assert.equal(
+      result.receipt.passed,
+      true,
+      JSON.stringify(result.receipt.check_result),
+    );
+    assert.equal(
+      (await preview(args, key)).receipt.execution_id,
+      result.receipt.execution_id,
+    );
+    packaged = await tool(
+      ctx,
+      "code_package",
+    )({ filename: "actual-browser-checked-source.zip" });
+    const bundle = await zip(packaged),
+      manifest = JSON.parse(
+        Buffer.from(bundle["copypaste-manifest.json"]).toString(),
+      );
+    assert.equal(manifest.checks.length, 1);
+    assert.equal(manifest.checks[0].program, "browser_preview");
+    assert.equal(manifest.source_digest, result.receipt.source_digest);
+    assert.equal(Buffer.from(bundle["index.html"]).toString(), fixed);
+    const output = await zip(result.artifacts);
+    assert.equal(
+      Buffer.from(output["files/browser-preview.png"])
+        .subarray(0, 8)
+        .toString("hex"),
+      "89504e470d0a1a0a",
+    );
+    assert.ok(
+      Buffer.from(output["files/page-text.txt"]).toString().includes("Saved"),
+    );
+  });
+  const history = (
+    await call(f.c, "GET", f.base + `/tasks/${task.id}/software-checks`)
+  ).data;
+  assert.equal(history.items.length, 2);
+  assert.equal(
+    history.items.filter((r: any) => r.matches_current_sources === false)
+      .length,
+    1,
+  );
+  const item = history.items.find(
+    (r: any) => r.execution_id === result.receipt.execution_id,
+  );
+  assert.ok(item.preview);
+  assert.equal(item.check_result.kind, "browser");
+  const scoped =
+      f.base + `/tasks/${task.id}/software-checks/${item.id}/preview`,
+    canonical = `/v1/tasks/${task.id}/software-checks/${item.id}/preview`;
+  for (const url of [scoped, canonical]) {
+    const shot = await s.app.inject({
+      method: "GET",
+      url,
+      headers: { cookie: f.c.cookie, "x-tenant-id": f.tenant },
+    });
+    assert.equal(shot.statusCode, 200, shot.body);
+    assert.equal(shot.headers["cache-control"], "private, no-store");
+    const json = shot.json();
+    assert.equal(json.width, 1280);
+    assert.equal(json.height, 800);
+    assert.equal(Buffer.from(json.base64, "base64").length, json.bytes);
+    assert.equal(
+      Buffer.from(json.base64, "base64").subarray(0, 8).toString("hex"),
+      "89504e470d0a1a0a",
+    );
+  }
+  const other = await fixture();
+  await s.db.control.query(
+    "INSERT INTO memberships(tenant_id,user_id,role) VALUES($1,$2,'member')",
+    [f.tenant, other.c.id],
+  );
+  await s.db.control.query(
+    "INSERT INTO project_members(tenant_id,project_id,user_id,role) VALUES($1,$2,$3,'editor')",
+    [f.tenant, f.project, other.c.id],
+  );
+  for (const url of [
+    scoped,
+    canonical,
+    f.base + `/assets/${result.preview.id}/download`,
+  ]) {
+    const denied = await s.app.inject({
+      method: "GET",
+      url,
+      headers: { cookie: other.c.cookie, "x-tenant-id": f.tenant },
+    });
+    assert.ok(
+      [403, 404].includes(denied.statusCode),
+      `${denied.statusCode}: ${denied.body}`,
+    );
+    assert.ok(!denied.body.includes("base64"));
+  }
+  await s.db.control.query(
+    "UPDATE assets SET state='deleted' WHERE id=(SELECT asset_id FROM asset_versions WHERE id=$1)",
+    [sourceVersion],
+  );
+  for (const url of [
+    scoped,
+    canonical,
+    ...[
+      result.record.id,
+      result.artifacts.id,
+      result.preview.id,
+      packaged.id,
+    ].map((id) => f.base + `/assets/${id}/download`),
+  ]) {
+    const denied = await s.app.inject({
+      method: "GET",
+      url,
+      headers: { cookie: f.c.cookie, "x-tenant-id": f.tenant },
+    });
+    assert.ok(
+      [404, 409, 410].includes(denied.statusCode),
+      `${denied.statusCode}: ${denied.body}`,
+    );
+    assert.ok(!denied.body.includes("base64"));
+  }
+});
+
 test("ask/plan, an ungranted role and Desktop never receive the cloud native runner", async () => {
   const f = await fixture();
   for (const mode of ["ask", "plan"])
@@ -503,6 +659,7 @@ test("ask/plan, an ungranted role and Desktop never receive the cloud native run
               "process_run_allowed",
               "api_test",
               "database_test_native",
+              "browser_preview",
             ].includes(v.name),
           ),
           false,
@@ -518,9 +675,12 @@ test("ask/plan, an ungranted role and Desktop never receive the cloud native run
   await run(helper, async (ctx) =>
     assert.equal(
       ctx.tools.some((v) =>
-        ["process_run_allowed", "api_test", "database_test_native"].includes(
-          v.name,
-        ),
+        [
+          "process_run_allowed",
+          "api_test",
+          "database_test_native",
+          "browser_preview",
+        ].includes(v.name),
       ),
       false,
     ),
@@ -543,9 +703,12 @@ test("ask/plan, an ungranted role and Desktop never receive the cloud native run
   );
   assert.equal(
     forbidden.some((v) =>
-      ["process_run_allowed", "api_test", "database_test_native"].includes(
-        v.name,
-      ),
+      [
+        "process_run_allowed",
+        "api_test",
+        "database_test_native",
+        "browser_preview",
+      ].includes(v.name),
     ),
     false,
   );
