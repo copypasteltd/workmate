@@ -1,6 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
 
+**阶段 106 / Stage 106：** 已修复明确选中的私有文件跨任务读取、原生 API 检查启动就绪和私有流程确认失效；97 个后端文件共 1230 项执行，1,229 通过、一项超时取消；原文件独立复查两项通过，保留未归因超时。11 项实际跨端流程通过。旧版本、费用与权限边界保留；模型／账号仍是假数据。见[实现与证据](../technical/106-selected-inputs-and-runtime-readiness.md)。
+
+
+
 **阶段 105 / Stage 105：** 私有云端计划在来源撤回／读取失败时同步关闭已打开的私有弹窗；正常轮询保留可读草稿。九项实际跨端流程通过，含真实来源隔离无刷新与明确模拟的 HTTP403。后端未变，沿用旧 78 项检查基线；不扩大完整产品或 Desktop 验收。见[实现与证据](../technical/105-live-private-schedule-views.md)。
 
 
