@@ -579,6 +579,37 @@ export function CloudSchedules({ taskId }: { taskId?: string }) {
     setError(null);
     setConfirmedVersions({});
   }, [base, taskId]);
+  useEffect(() => {
+    // A completed read is authoritative for open views as well as cards. Keep
+    // drafts mounted during polling, and clear private snapshots on lost access.
+    if (readError) {
+      setReview(null);
+      setEdit(null);
+      setAction(null);
+      setHistory(null);
+      setError(null);
+      return;
+    }
+    if (!data) return;
+    const requests = new Map<string, any>(
+      data.requests
+        .filter((row: any) => row.state === "pending")
+        .map((row: any) => [row.id, row]),
+    );
+    const schedules = new Set(data.schedules.map((row: any) => row.id));
+    setReview((current: any) =>
+      current ? (requests.get(current.id) ?? null) : null,
+    );
+    setEdit((current: any) =>
+      current && schedules.has(current.id) ? current : null,
+    );
+    setAction((current: any) =>
+      current && schedules.has(current.row.id) ? current : null,
+    );
+    setHistory((current: any) =>
+      current && schedules.has(current.id) ? current : null,
+    );
+  }, [data, readError]);
   function rememberVersion(result: any) {
     if (result?.schedule)
       setConfirmedVersions((versions) => ({
