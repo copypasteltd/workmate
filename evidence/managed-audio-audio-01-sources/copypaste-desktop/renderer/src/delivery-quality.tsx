@@ -1,0 +1,48 @@
+import { useEffect, useState } from "react";
+import { api } from "./api";
+import { completeOperation, operationKey } from "./operation-key";
+import { DateText, ErrorNotice, Loading, useData, useI18n } from "./ui";
+import "./delivery-quality.css";
+
+export function DeliveryQuality({ base, taskId, changed }: { base: string; taskId: string; changed?: () => void }) {
+  const { t } = useI18n(), [revision, setRevision] = useState(0), [pending, setPending] = useState(false), [error, setError] = useState<Error | null>(null);
+  const path = `${base}/tasks/${taskId}`, { data, error: loadError, loading } = useData(path + "/quality", revision, 0, "", { retainOnRefresh: true });
+  const [decision, setDecision] = useState("accepted"), [comment, setComment] = useState("");
+  const [baseline, setBaseline] = useState(""), [human, setHuman] = useState(""), [revisions, setRevisions] = useState("");
+  useEffect(() => { const m = data?.measurements; setBaseline(m?.baseline_minutes?.toString() ?? ""); setHuman(m?.human_minutes?.toString() ?? ""); setRevisions(m?.manual_revisions?.toString() ?? ""); }, [taskId, data?.measurements?.id]);
+  const labels: Record<string, string> = { pending_review: t("待審閱", "Awaiting review"), accepted: t("已接受", "Accepted"), changes_requested: t("需修改", "Changes requested"), discarded: t("已棄用", "Discarded") };
+  const send = async (action: string, body: unknown) => {
+    if (pending) return; setPending(true); setError(null);
+    try {
+      const key = await operationKey(base, path + action, body);
+      await api(path + action, { method: "POST", body: JSON.stringify(body), headers: { "Idempotency-Key": key } });
+      await completeOperation(base, path + action, body); if (action === "/reviews") setComment(""); setRevision(v => v + 1); changed?.();
+    } catch (e) { setError(e as Error); } finally { setPending(false); }
+  };
+  return <section className="delivery-quality" aria-label={t("交付審閱與人工投入", "Delivery review & human effort")}>
+    <header><div><span className="eyebrow">DELIVERY REVIEW</span><h3>{t("這份成果，合用嗎？", "Does this delivery work for you?")}</h3></div>{data && <span className="badge">{labels[data.review_state] ?? data.review_state}</span>}</header>
+    <ErrorNotice error={loadError || error}/>{loading && <Loading/>}
+    {(error || loadError) && <button className="button secondary" type="button" disabled={pending} onClick={() => setRevision(v => v + 1)}>{t("重新載入目前版本", "Reload current version")}</button>}
+    {data && <>
+      <p className="muted">{t("工作完成後，由你確認成果是否可用。你的評價會保留所審閱的版本。", "You decide whether the completed work is usable. Each review keeps the version you reviewed.")}</p>
+      {data.can_review && <form onSubmit={e => { e.preventDefault(); void send("/reviews", { expected_version: data.task_version, expected_delivery_hash: data.delivery_hash, decision, comment }); }}>
+        <fieldset disabled={pending || loading}><legend>{t("目前交付", "Current delivery")}</legend>
+          <ul>{data.delivery.artifacts.map((a: any) => <li key={a.id}><span>{t("交付物", "Artifact")} · {a.id.slice(0, 8)}</span><small>v{a.version}</small></li>)}</ul>
+          {!data.delivery.artifacts.length && <p>{t("本次文字交付；不讀取或上傳你的本機檔案。", "This turn’s text delivery. Your local files are not read or uploaded.")}</p>}
+          <label>{t("整份交付的評價", "Review of the complete delivery")}<select aria-label={t("整份交付的評價", "Review of the complete delivery")} value={decision} onChange={e => setDecision(e.target.value)}>
+            <option value="accepted">{t("接受交付", "Accept delivery")}</option><option value="changes_requested">{t("需要修改", "Request changes")}</option><option value="discarded">{t("棄用交付", "Discard delivery")}</option></select></label>
+          <label>{t("你的意見（選填）", "Your feedback (optional)")}<textarea aria-label={t("你的意見（選填）", "Your feedback (optional)")} maxLength={5000} value={comment} onChange={e => setComment(e.target.value)} placeholder={t("哪些地方可用、哪些需要調整？", "What works, and what needs changing?")}/></label>
+          <button className="button primary" type="submit">{pending ? t("正在儲存…", "Saving…") : t("儲存審閱", "Save review")}</button>
+        </fieldset>
+      </form>}
+      {data.can_measure && <details><summary>{t("記錄人工投入", "Record human effort")}</summary><form onSubmit={e => { e.preventDefault(); void send("/quality/measurements", { expected_version: data.task_version, baseline_minutes: baseline === "" ? null : Number(baseline), human_minutes: human === "" ? null : Number(human), manual_revisions: revisions === "" ? null : Number(revisions) }); }}>
+        <fieldset disabled={pending || loading}><legend>{t("你填報的累計數字", "Cumulative figures you report")}</legend><p className="muted">{t("未知的數字請留空；0 表示確實沒有投入或修改。這些數字不會自動換算成收益。", "Leave unknown figures blank. Zero means none. These figures are not automatically converted to financial returns.")}</p>
+          <div className="delivery-quality-fields"><label>{t("原本全人工需時（分鐘）", "Manual baseline (minutes)")}<input type="number" min="0" max="525600" step="1" aria-label={t("原本全人工需時（分鐘）", "Manual baseline (minutes)")} value={baseline} onChange={e => setBaseline(e.target.value)}/></label>
+            <label>{t("實際人工投入（分鐘）", "Actual human effort (minutes)")}<input type="number" min="0" max="525600" step="1" aria-label={t("實際人工投入（分鐘）", "Actual human effort (minutes)")} value={human} onChange={e => setHuman(e.target.value)}/></label>
+            <label>{t("人工修改次數", "Manual revisions")}<input type="number" min="0" max="10000" step="1" aria-label={t("人工修改次數", "Manual revisions")} value={revisions} onChange={e => setRevisions(e.target.value)}/></label></div>
+          <button className="button secondary" type="submit">{t("儲存人工記錄", "Save human effort")}</button>
+        </fieldset></form></details>}
+      {data.reviews.length > 0 && <details className="delivery-quality-history"><summary>{t("審閱記錄", "Review history")} · {data.reviews.length}</summary><ol>{data.reviews.map((r: any) => <li key={r.id}><strong>{labels[r.decision]}</strong><small><DateText value={r.created_at}/> · {r.current_delivery ? t("目前交付", "Current delivery") : t("歷史交付", "Historical delivery")}</small>{r.comment && <p>{r.comment}</p>}</li>)}</ol>{data.history_truncated && <p className="muted">{t("顯示最近 50 次審閱。", "Showing the most recent 50 reviews.")}</p>}</details>}
+    </>}
+  </section>;
+}
