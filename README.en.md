@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- cloud-schedules-stage104 -->
+
+Private cloud schedules now connect consultant conversation or an existing private result to explicit customer review and daily/weekly execution. Review the fixed method, inputs, time zone, outputs and per-run Agent budget → check consent → activate → inspect each independent run, human review point, private deliverable and actual charges. Web and the real Chrome right Side Panel provide confirmation and pause; Admin lists scoped metadata and can pause future times after recent MFA and a recorded reason.
+
+Pause preserves current work; cancel a current run separately. Resumption is confirmed by the customer and skips the paused interval. Editing creates a new pending request and immutable version. Failed or unknown paid work blocks future launches for review. Fixed inputs do not automatically refresh external account data, and activation does not precharge all future runs. Desktop continues running customer-local Codex; its native credentials cannot activate cloud replacement work.
+
+Verified: 78 checks across six related backend suites, eight actual cross-client journeys, eight unedited PNGs and three actual GIF/MP4 pairs, using native PostgreSQL, pinned native Codex, real email/MFA/PKCE and explicitly synthetic model/account data. This scoped increment does not establish live model quality or complete product acceptance.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/104-private-cloud-schedules.md) · [Exact evidence / 确切证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/private-cloud-schedules-checkpoint.json)
+
+```mermaid
+flowchart LR
+ A[Private conversation or result] --> B[Pending fixed-method request]
+ B --> C[Customer reviews and confirms]
+ C --> D[Durable calendar]
+ D --> E[Independent private run]
+ E --> F[Human review and actual settlement]
+ C --> G[Pause future times]
+ G --> H[Customer confirms resume]
+ H --> D
+```
+
+![Actual copypaste-web cloud schedule / 实际云端计划](assets/screenshots/schedule-copypaste-web-workmate-cloud-schedule-06-active-en.png)
+
+![Actual confirmation or pause / 实际确认或暂停](assets/screenshots/schedule-copypaste-web-workmate-cloud-schedule-06-cloud-schedule-confirm.gif)
+
+[Actual interaction MP4](assets/screenshots/schedule-copypaste-web-workmate-cloud-schedule-06-cloud-schedule-confirm.mp4)
+
+
 <!-- admin-data-stage103 -->
 
 Admin now processes persistent account batches and frozen directory, usage, billing and audit exports. Select targets/filters → review exact records, versions and projected fields → explicitly confirm → follow each item → retry only failed targets in a reviewed child or download authorized CSV/manifest. Cancellation preserves committed effects. Existing billing/VIP approval history remains available.
