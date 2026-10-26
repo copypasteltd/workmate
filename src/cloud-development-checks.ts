@@ -184,6 +184,18 @@ const resultSchema = z
   })
   .strict();
 const bootstrap = (name: string) => readFile(new URL(name, import.meta.url));
+function assertHttpReady(line: string) {
+  if (line.length > 32768) throw new Error("HTTP_CHANNEL_LIMIT");
+  const frame = JSON.parse(line);
+  if (
+    !frame ||
+    typeof frame !== "object" ||
+    Array.isArray(frame) ||
+    Object.keys(frame).length !== 1 ||
+    frame.ready !== true
+  )
+    throw new Error("HTTP_APPLICATION_NOT_READY");
+}
 function httpFrame(line: string, maxId: number) {
   if (line.length > 32768) throw new Error("HTTP_CHANNEL_LIMIT");
   const frame = JSON.parse(line);
@@ -230,8 +242,9 @@ export async function apiCheckDriver(
       try {
         if (stdout && !stdout.endsWith("\n"))
           throw new Error("HTTP_CHANNEL_INCOMPLETE");
-        for (const line of stdout ? stdout.slice(0, -1).split("\n") : [])
-          httpFrame(line, a.requests.length);
+        const lines = stdout ? stdout.slice(0, -1).split("\n") : [];
+        assertHttpReady(lines.shift() ?? "null");
+        for (const line of lines) httpFrame(line, a.requests.length);
         return result;
       } catch (error) {
         return {
@@ -247,11 +260,20 @@ export async function apiCheckDriver(
       let serial = 0,
         pending = "",
         protocolError: Error | null = null,
-        closing = false;
+        closing = false,
+        readySeen = false;
+      let readyResolve!: () => void, readyReject!: (error: Error) => void;
+      const ready = new Promise<void>((resolve, reject) => {
+        readyResolve = resolve;
+        readyReject = reject;
+      });
+      // Abort can precede the await below; keep rejection observed in that race.
+      ready.catch(() => {});
       const send = (frame: unknown) =>
         io.write(Buffer.from(JSON.stringify(frame) + "\n"));
       const fail = (error: Error) => {
         protocolError ??= error;
+        readyReject(error);
         for (const socket of sockets.values()) socket.destroy(error);
       };
       const data = (bytes: Buffer) => {
@@ -262,6 +284,12 @@ export async function apiCheckDriver(
               const line = pending.slice(0, end);
               pending = pending.slice(end + 1);
               if (line.length > 32768) throw new Error("HTTP_CHANNEL_LIMIT");
+              if (!readySeen) {
+                assertHttpReady(line);
+                readySeen = true;
+                readyResolve();
+                continue;
+              }
               const frame = httpFrame(line, a.requests.length),
                 socket = sockets.get(frame.id);
               if (
@@ -290,6 +318,7 @@ export async function apiCheckDriver(
           }
         },
         end = () => {
+          if (!readySeen) fail(new Error("HTTP_APPLICATION_NOT_READY"));
           for (const socket of sockets.values()) socket.push(null);
         };
       io.output.on("data", data);
@@ -338,6 +367,9 @@ export async function apiCheckDriver(
       const checks: CloudCheckResult["checks"] = [];
       try {
         io.signal.throwIfAborted();
+        // Native startup/module initialization has its existing whole-process
+        // deadline. The unchanged per-request deadline starts only after ready.
+        await ready;
         for (const request of a.requests) {
           if (protocolError) throw protocolError;
           const expected = request.expect;

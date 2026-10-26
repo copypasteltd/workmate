@@ -1,4 +1,5 @@
 import { test } from "node:test";
+import { readdir } from "node:fs/promises";
 import assert from "node:assert/strict";
 import pg from "pg";
 import { randomUUID } from "node:crypto";
@@ -114,7 +115,7 @@ test("populated SQL101 audio upgrade cancels unsubmitted work, retains unknown s
     assert.deepEqual(await s.storage.get(originalObject.storage_key), provider.bytes);
     await runMigrations(owner, "unchanged SQL102 audio consent replay", { throughVersion: 102 });
     assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audio_authorizations")).rows[0].n, 0);
-    await runMigrations(owner, "populated SQL102 shared guidance forward upgrade");
+    await runMigrations(owner, "populated SQL102 shared guidance forward upgrade", { throughVersion: 103 });
     assert.equal((await owner.query("SELECT max(version) AS v FROM schema_migrations")).rows[0].v, 103);
     assert.deepEqual((await s.db.control.query("SELECT * FROM ai_audio_jobs WHERE id=ANY($1) ORDER BY id", [ids])).rows,
       [...rows].sort((a, b) => a.id.localeCompare(b.id)));
@@ -122,8 +123,15 @@ test("populated SQL101 audio upgrade cancels unsubmitted work, retains unknown s
     assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM project_configurations")).rows[0].n, 0);
     assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audio_authorizations")).rows[0].n, 0);
     assert.deepEqual(await s.storage.get(originalObject.storage_key), provider.bytes);
-    await runMigrations(owner, "unchanged SQL103 shared guidance replay");
+    await runMigrations(owner, "unchanged SQL103 shared guidance replay", { throughVersion: 103 });
     assert.deepEqual((await s.db.control.query("SELECT * FROM ai_audio_jobs WHERE id=$1", [retained.id])).rows[0], retained);
+    await runMigrations(owner, "populated audio fixture upgrades through every current migration");
+    const versions = (await readdir("migrations")).flatMap(name => /^([0-9]+)-.*\.sql$/.test(name) ? [Number(name.split("-")[0])] : []);
+    assert.equal((await owner.query("SELECT max(version) AS v FROM schema_migrations")).rows[0].v, Math.max(...versions));
+    assert.deepEqual((await s.db.control.query("SELECT * FROM ai_audio_jobs WHERE id=ANY($1) ORDER BY id", [ids])).rows,
+      [...rows].sort((a, b) => a.id.localeCompare(b.id)));
+    assert.deepEqual(await s.storage.get(originalObject.storage_key), provider.bytes);
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audio_authorizations")).rows[0].n, 0);
     assert.equal(provider.calls.length, 0);
   } finally {
     await owner.end().catch(() => {});

@@ -1,8 +1,9 @@
 /** Extra source scope inside an already owner/project-authorized asset query.
  * Alias v always denotes asset_versions. Parameter numbers are static code,
  * never model input. Native tasks may share files only within one actual,
- * authenticated device/session/workspace binding; a web conversation cannot
- * inherit that access simply by supplying an asset or task identifier.
+ * authenticated device/session/workspace binding. A separate private task can
+ * also use the exact file version explicitly selected through its resolved
+ * input dependency; knowing an asset or task identifier grants no access.
  */
 export function taskPrivateAssetScopeSQL(
   conversationParameter: number,
@@ -13,6 +14,22 @@ export function taskPrivateAssetScopeSQL(
       throw new Error("Invalid static SQL parameter");
   return `(
     v.metadata->>'conversation_id'=$${conversationParameter}::text
+    OR EXISTS (
+      SELECT 1 FROM tasks selected_task
+      JOIN task_dependencies selected_input
+        ON selected_input.task_id=selected_task.id
+       AND selected_input.tenant_id=selected_task.tenant_id
+       AND selected_input.project_id=selected_task.project_id
+       AND selected_input.kind='file' AND selected_input.state='resolved'
+       AND selected_input.required_scope='project.asset_version.read'
+      JOIN assets selected_asset ON selected_asset.id=v.asset_id
+       AND selected_asset.tenant_id=selected_task.tenant_id
+       AND selected_asset.project_id=selected_task.project_id
+       AND selected_asset.private_owner=selected_task.created_by
+      WHERE selected_task.id=$${taskParameter}::uuid
+       AND selected_task.private_owner=selected_task.created_by
+       AND v.id=ANY(selected_input.resource_ids)
+    )
     OR EXISTS (
       SELECT 1 FROM tasks approved_task JOIN solution_trials approved_trial
         ON approved_trial.id::text=approved_task.input_context->'solution_trial'->>'trial_id'

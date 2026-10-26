@@ -4,11 +4,13 @@ import { randomUUID } from "node:crypto";
 import { mkdir, writeFile, readFile, lstat } from "node:fs/promises";
 import { createServer } from "node:net";
 import path from "node:path";
+import { PassThrough } from "node:stream";
 import {
   apiCheckInput,
   databaseCheckInput,
   runCloudApiCheck,
   runCloudDatabaseCheck,
+  apiCheckDriver,
 } from "../src/cloud-development-checks.js";
 
 const root = path.resolve(".data/cloud-development-unit", randomUUID());
@@ -29,6 +31,109 @@ const sqlCheck = (sql: string, expect: any, extra: any = {}) => ({
   ...extra,
 });
 const native = process.platform === "win32";
+
+test("HTTP startup control rejects missing, duplicate or extra readiness frames and terminates an aborted wait", async () => {
+  for (const frames of [
+    '{"id":"c1","end":true}\n',
+    '{"ready":true,"unchecked":true}\n',
+    '{"ready":true}\n{"ready":true}\n',
+  ]) {
+    const driver = await apiCheckDriver({
+      entry: "api.cjs",
+      requests: [request({ status: 200 })],
+    });
+    const output = new PassThrough(),
+      controller = new AbortController();
+    let ended = false,
+      writes = 0;
+    const running = driver.interact!({
+      output,
+      signal: controller.signal,
+      write: async () => {
+        writes++;
+      },
+      end: () => {
+        ended = true;
+      },
+    });
+    output.write(frames);
+    const result = await running;
+    assert.equal(result.passed, false);
+    assert.equal(result.checks.length, 0);
+    assert.equal(writes, 0, "Invalid startup never sends an HTTP request");
+    assert.equal(ended, true);
+    assert.equal(
+      driver.verify!([], frames, { kind: "api", passed: true, checks: [] })
+        .passed,
+      false,
+    );
+    output.destroy();
+  }
+  const driver = await apiCheckDriver({
+    entry: "api.cjs",
+    requests: [request({ status: 200 })],
+  });
+  for (const reason of ["abort", "end"] as const) {
+    const output = new PassThrough(),
+      controller = new AbortController();
+    const running = driver.interact!({
+      output,
+      signal: controller.signal,
+      write: async () => {
+        throw new Error("No request is allowed before readiness");
+      },
+      end: () => {},
+    });
+    if (reason === "abort") controller.abort();
+    else output.end();
+    const result = await running;
+    assert.equal(result.passed, false);
+    assert.equal(result.checks.length, 0);
+    output.destroy();
+  }
+});
+
+test(
+  "actual native API module initialization can exceed the request deadline while its subsequent requests remain bounded",
+  { skip: !native },
+  async () => {
+    const result = await runCloudApiCheck(
+      root,
+      {
+        entry: "delayed.mjs",
+        timeout_ms: 15000,
+        requests: [
+          request({ status: 200, text: "initialized" }),
+          request({ status: 200, text: "initialized" }, { path: "/second" }),
+        ],
+      },
+      files(
+        "await new Promise(r=>setTimeout(r,5500));export default (q,s)=>s.end('initialized');",
+        "delayed.mjs",
+      ),
+    );
+    assert.equal(result.receipt.passed, true, JSON.stringify(result.receipt));
+    assert.equal(result.receipt.check_result?.checks.length, 2);
+    assert.equal(result.receipt.workspace_deleted, true);
+    assert.equal(result.receipt.host.profile_deleted, true);
+    const expired = await runCloudApiCheck(
+      root,
+      {
+        entry: "delayed.mjs",
+        timeout_ms: 1000,
+        requests: [request({ status: 200 })],
+      },
+      files(
+        "await new Promise(r=>setTimeout(r,60000));export default (q,s)=>s.end('too late');",
+        "delayed.mjs",
+      ),
+    );
+    assert.equal(expired.receipt.passed, false);
+    assert.equal(expired.receipt.check_result?.checks.length, 0);
+    assert.equal(expired.receipt.workspace_deleted, true);
+    assert.equal(expired.receipt.host.profile_deleted, true);
+  },
+);
 
 test("strict development check inputs reject outside endpoints, transport injection, external databases and unobservable SQL claims", () => {
   const api = { entry: "api.cjs", requests: [request({ status: 200 })] };

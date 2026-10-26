@@ -58,8 +58,8 @@ class FixtureRuntime extends CodexRuntimeAdapter {
     return {text:"Explicit simulated business result",inputTokens:10,outputTokens:20,accepted:true,usageKnown:true,status:"completed",thread:"fixture",turn:"1"};
   }
 }
-async function completed(f:Fixture,files=2,readAsset?:string,shared=false) {
-  const a=await ok(f.owner,"POST",f.base+"/tasks",{title:"Controlled quality test",prompt:"Write clearly simulated business deliverables.",role_key:"assistant",...(shared?{}:{agent_id:f.agent.id}),budget_micros:1000000});
+async function completed(f:Fixture,files=2,readAsset?:string,shared=false,selectedVersion?:string) {
+  const a=await ok(f.owner,"POST",f.base+"/tasks",{title:"Controlled quality test",prompt:"Write clearly simulated business deliverables.",role_key:"assistant",...(shared?{}:{agent_id:f.agent.id}),budget_micros:1000000,...(selectedVersion?{dependencies:[{kind:"file",description:"Explicitly selected fixed-version source for reuse",resource_ids:[selectedVersion]}]}:{})});
   await new Worker(s.db,s.catalog,s.storage,new FixtureRuntime(files,readAsset)).run(f.tenant,a.id);
   const q=await ok(f.owner,"GET",f.base+"/tasks/"+a.id+"/quality"); schema("TaskQuality",q);assert.equal(q.technical_status,"succeeded");return q;
 }
@@ -159,7 +159,7 @@ test("reuse counts an actual fixed-version model read once, excludes mere downlo
  const f=await fixture(),source=await completed(f,0);
  const artifact=await s.db.tx(async tx=>{await tx.query("SELECT set_config('app.actor_id',$1,true)",[f.owner.id]);return saveAsset(tx,s.storage,{tenant:f.tenant,project:f.project,user:f.owner.id,name:"source-for-reuse.txt",mime:"text/plain",bytes:Buffer.from("Explicit fixture source"),metadata:{task_id:source.task_id}});},f.tenant);
  assert.equal((await ok(f.owner,"GET",f.base+"/quality")).observed_reuse_pairs,0);
- const used=await completed(f,0,artifact.id);assert.equal(used.technical_status,"succeeded");
+ const used=await completed(f,0,artifact.id,false,artifact.version.id);assert.equal(used.technical_status,"succeeded");
  let summary=await ok(f.owner,"GET",f.base+"/quality");assert.equal(summary.observed_reuse_pairs,1);assert.equal(summary.successful_reuse_pairs,1);
  await s.db.control.query("UPDATE assets SET state='quarantined' WHERE id=$1",[artifact.id]);
  summary=await ok(f.owner,"GET",f.base+"/quality");assert.equal(summary.observed_reuse_pairs,0);assert.equal(summary.sources_unavailable,1);

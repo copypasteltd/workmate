@@ -124,6 +124,9 @@ async function main() {
     server.closeAllConnections();
     server.close();
   });
+  // Readiness is emitted only after the customer module and transport listeners
+  // exist. Startup remains bounded by the native host's process deadline.
+  send({ ready: true });
 }
 main().catch((error) => {
   console.error(error.stack);

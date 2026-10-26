@@ -275,6 +275,9 @@ test("recovery rechecks a renewed task lease after the actual row-lock wait and 
     void recovery.catch(() => {});
     const deadline = Date.now() + 10000;
     for (;;) {
+      // This owner keeps the heartbeat transaction open. Refresh its statistics
+      // snapshot so each poll can observe a newly blocked recovery connection.
+      await owner.query("SELECT pg_stat_clear_snapshot()");
       const waiting = (await owner.query(`SELECT EXISTS(SELECT 1 FROM pg_stat_activity
         WHERE wait_event_type='Lock' AND $1::int=ANY(pg_blocking_pids(pid))
         AND query='SELECT id FROM tasks WHERE id=$1 FOR UPDATE') AS waiting`, [pid])).rows[0].waiting;

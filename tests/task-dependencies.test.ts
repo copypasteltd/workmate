@@ -215,6 +215,179 @@ class CountedRuntime extends CodexRuntimeAdapter {
   }
 }
 
+test("resolved inputs permit exactly selected private file versions without exposing other private files or another user's selection", async () => {
+  const f = await fixture();
+  const makePrivate = (name: string) =>
+    s.db.tx(
+      (tx) =>
+        saveAsset(tx, s.storage, {
+          tenant: f.tenant,
+          project: f.project,
+          user: f.owner.id,
+          privateOwner: f.owner.id,
+          name,
+          mime: "text/plain",
+          bytes: Buffer.from("Private input bytes: " + name),
+        }),
+      f.tenant,
+      false,
+      f.owner.id,
+    );
+  const selected = await makePrivate("selected-private.txt"),
+    other = await makePrivate("unselected-private.txt");
+  const work = await waiting(f, [
+    { ...needs[0], resource_ids: [selected.version.id] },
+  ]);
+  assert.equal(
+    (
+      await s.db.control.query("SELECT private_owner FROM tasks WHERE id=$1", [
+        work.task.id,
+      ])
+    ).rows[0].private_owner,
+    f.owner.id,
+  );
+  class SelectedReader extends CountedRuntime {
+    override async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+      const items = (await ctx.tools
+        .find((t) => t.name === "project_assets")!
+        .run({}, randomUUID())) as any;
+      assert.ok(items.items.some((item: any) => item.id === selected.id));
+      assert.ok(!items.items.some((item: any) => item.id === other.id));
+      const read = ctx.tools.find((t) => t.name === "asset_text_read")!;
+      assert.deepEqual(
+        await read.run({ asset_id: selected.id }, randomUUID()),
+        { text: "Private input bytes: selected-private.txt" },
+      );
+      await assert.rejects(
+        () => read.run({ asset_id: other.id }, randomUUID()),
+        (e: any) => e.code === "NOT_FOUND",
+      );
+      return super.start(ctx);
+    }
+  }
+  const runtime = new SelectedReader(selected.version.id);
+  await new Worker(s.db, s.catalog, s.storage, runtime).run(
+    f.tenant,
+    work.task.id,
+  );
+  assert.equal(
+    (await ok(f.owner, "GET", f.base + "/tasks/" + work.task.id)).status,
+    "succeeded",
+  );
+  const reads = (
+    await s.db.control.query(
+      "SELECT asset_version_id,sha256 FROM task_source_reads WHERE task_id=$1",
+      [work.task.id],
+    )
+  ).rows;
+  assert.deepEqual(
+    reads.map((row) => row.asset_version_id),
+    [selected.version.id],
+  );
+  assert.equal(reads[0].sha256, selected.version.sha256);
+  const denied = await call(
+    f.member,
+    "POST",
+    f.base + "/delegations",
+    brief({
+      dependencies: [{ ...needs[0], resource_ids: [selected.version.id] }],
+    }),
+  );
+  assert.equal(denied.status, 404);
+});
+
+test("replacing an explicitly selected private input during a run cannot silently authorize its new version or replay the model", async () => {
+  const f = await fixture();
+  const selected = await s.db.tx(
+    (tx) =>
+      saveAsset(tx, s.storage, {
+        tenant: f.tenant,
+        project: f.project,
+        user: f.owner.id,
+        privateOwner: f.owner.id,
+        name: "versioned-private.txt",
+        mime: "text/plain",
+        bytes: Buffer.from("Approved version one"),
+      }),
+    f.tenant,
+    false,
+    f.owner.id,
+  );
+  const work = await waiting(f, [
+    { ...needs[0], resource_ids: [selected.version.id] },
+  ]);
+  class ReplacingReader extends CodexRuntimeAdapter {
+    calls = 0;
+    override async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+      this.calls++;
+      const read = ctx.tools.find((t) => t.name === "asset_text_read")!;
+      assert.deepEqual(
+        await read.run({ asset_id: selected.id }, randomUUID()),
+        { text: "Approved version one" },
+      );
+      await s.db.tx(
+        (tx) =>
+          saveAsset(tx, s.storage, {
+            tenant: f.tenant,
+            project: f.project,
+            user: f.owner.id,
+            privateOwner: f.owner.id,
+            asset: selected.id,
+            expectedVersion: 1,
+            name: "versioned-private.txt",
+            mime: "text/plain",
+            bytes: Buffer.from("Unapproved version two"),
+          }),
+        f.tenant,
+        false,
+        f.owner.id,
+      );
+      await assert.rejects(
+        () => read.run({ asset_id: selected.id }, randomUUID()),
+        (e: any) => e.code === "DEPENDENCY_RESOURCE_REVOKED",
+      );
+      return {
+        text: "Do not publish this revoked-source answer",
+        status: "completed",
+        inputTokens: 10,
+        outputTokens: 20,
+        usageKnown: true,
+        accepted: true,
+        thread: randomUUID(),
+        turn: randomUUID(),
+      };
+    }
+  }
+  const runtime = new ReplacingReader(s.db.config),
+    worker = new Worker(s.db, s.catalog, s.storage, runtime);
+  await worker.run(f.tenant, work.task.id);
+  await worker.run(f.tenant, work.task.id);
+  const final = await ok(f.owner, "GET", f.base + "/tasks/" + work.task.id);
+  assert.equal(runtime.calls, 1);
+  assert.equal(final.status, "cancelled");
+  assert.equal(final.error_code, "CONTEXT_REVOKED");
+  assert.equal(final.output, "");
+  const reads = (
+    await s.db.control.query(
+      "SELECT asset_version_id FROM task_source_reads WHERE task_id=$1",
+      [work.task.id],
+    )
+  ).rows;
+  assert.deepEqual(
+    reads.map((row) => row.asset_version_id),
+    [selected.version.id],
+  );
+  assert.equal(
+    (
+      await s.db.control.query(
+        "SELECT count(*)::int AS n FROM reservations WHERE task_id=$1",
+        [work.task.id],
+      )
+    ).rows[0].n,
+    1,
+  );
+});
+
 test("input checkpoint holds one original budget without model/outbox, isolates private requests, and repeated callbacks queue exactly once", async () => {
   const f = await fixture(),
     a = await asset(f),
