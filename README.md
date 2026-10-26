@@ -1,5 +1,19 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- preset-specialists-stage98 -->
+
+Desktop 的「我的专家」现已直接启动本机 Codex。选择角色、长期工作要求和项目内固定品牌版本，免费预检保存后，选择本机目录、主动授权并确认每次预算。Web 与 Extension 保持云端执行。后续品牌发布或专家编辑不会悄悄替换既有本机会话的版本。
+
+验证：212 项相关集成检查、51 项 Desktop 单元检查、2 项真实本机 Codex 协议检查及 7 项打包 Desktop / 登录 Web 流程检查通过。[Current evidence / 当前证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/preset-specialists-checkpoint.json).
+
+![Actual local saved specialist / 实际本机专家](assets/screenshots/workmate-preset-specialists-01-delivered-en.png)
+
+![Actual local saved specialist / 实际本机专家](assets/screenshots/workmate-preset-specialists-01-compact-zh-dark.png)
+
+![Actual saved specialist execution / 实际专家执行](assets/screenshots/workmate-01-preset-specialists.gif)
+
+[MP4](assets/screenshots/workmate-01-preset-specialists.mp4)
+
 <!-- native-methods-stage97 -->
 
 ## Desktop 方案本机试运行
