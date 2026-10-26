@@ -17,6 +17,7 @@ try {
   const before = JSON.parse(await readFile(manifest, "utf8"));
   if (
     before.source_sha256 === sourceHash &&
+    before.boundary === "appcontainer-no-capabilities-single-process-job-v2" &&
     before.sha256 === digest(await readFile(output))
   )
     process.exit(0);
@@ -49,7 +50,7 @@ await writeFile(
       platform: "windows-x64",
       source_sha256: sourceHash,
       sha256: digest(await readFile(output)),
-      boundary: "appcontainer-no-capabilities-single-process-job-v1",
+      boundary: "appcontainer-no-capabilities-single-process-job-v2",
     },
     null,
     2,

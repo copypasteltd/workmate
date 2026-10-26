@@ -45,9 +45,16 @@ import { videoRendererProfile } from "./video-render.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import { cloudProgramInput } from "./cloud-program-executor.js";
 import {
+  apiCheckInput,
+  databaseCheckInput,
+  apiCheckDriver,
+  databaseCheckDriver,
+} from "./cloud-development-checks.js";
+import {
   taskProgramSources,
   executeTaskProgram,
   checkedSourcePackage,
+  cloudCheckTools,
 } from "./cloud-program-tools.js";
 import {
   readCloudSource,
@@ -785,6 +792,53 @@ export class TaskBusinessTools {
         "project",
       ),
     );
+    if (t.execution_location !== "desktop") {
+      for (const spec of [
+        {
+          permission: "api.test",
+          name: "api_test",
+          schema: apiCheckInput,
+          driver: apiCheckDriver,
+          description:
+            "Execute actual HTTP/1.1 requests against this task's exported Node HTTP handler or unstarted http.Server. Requests and exact status/body/header assertions run outside the customer process over anonymous pipes. The app has no network or company credentials. Export default or specify export_name; preserve application state between requests. This checks application HTTP behavior, not TCP/TLS, external endpoints or installed npm frameworks. Failed assertions stay failed. Results and exact-source files are downloadable.",
+        },
+        {
+          permission: "database.test.native",
+          name: "database_test_native",
+          schema: databaseCheckInput,
+          driver: databaseCheckDriver,
+          description:
+            "Execute this task's real SQL schema and bound-value checks in a fresh native SQLite database inside the no-network AppContainer. The only engine is sqlite; no company/customer production database connection is accepted. Check exact rows, mutation counts, insert IDs or expected SQLite error codes. SQL is actually executed with foreign keys enabled and extension loading disabled. User PRAGMA, ATTACH, DETACH and VACUUM are rejected; each check contains one SQL statement. Save the actual database, detailed results and exact-source receipt. This does not establish PostgreSQL/MySQL compatibility.",
+        },
+      ]) {
+        if (!role.tool_ids.includes(spec.permission)) continue;
+        tools.push({
+          name: spec.name,
+          description: spec.description,
+          inputSchema: z.toJSONSchema(spec.schema),
+          run: txTool(
+            async (tx, a) =>
+              executeTaskProgram(
+                tx,
+                this.storage,
+                t,
+                actor.id,
+                this.db.config.DATA_DIR,
+                workspace,
+                { program: "node", entry: a.entry, timeout_ms: a.timeout_ms },
+                () => authorize(tx),
+                this.authority.signal,
+                await (spec.driver as (input: any) => Promise<any>)(a),
+              ),
+            spec.schema as any,
+            spec.name,
+            async (tx) =>
+              (await taskProgramSources(tx, this.storage, t, workspace))
+                .manifest,
+          ),
+        });
+      }
+    }
     if (
       t.execution_location !== "desktop" &&
       role.tool_ids.includes("process.run.allowed")
@@ -925,8 +979,8 @@ export class TaskBusinessTools {
                   ),
             checks: (
               await tx.query(
-                "SELECT id,input_hash FROM task_tool_receipts WHERE task_id=$1 AND tool_name='process_run_allowed' ORDER BY created_at",
-                [t.id],
+                "SELECT id,input_hash FROM task_tool_receipts WHERE task_id=$1 AND tool_name=ANY($2::text[]) ORDER BY created_at",
+                [t.id, cloudCheckTools],
               )
             ).rows,
           }),
@@ -1517,6 +1571,12 @@ export class TaskBusinessTools {
             process_run_allowed:
               t.execution_location !== "desktop" &&
               role.tool_ids.includes("process.run.allowed"),
+            api_test:
+              t.execution_location !== "desktop" &&
+              role.tool_ids.includes("api.test"),
+            database_test_native:
+              t.execution_location !== "desktop" &&
+              role.tool_ids.includes("database.test.native"),
             design_render: allowedFormats.length > 0,
             effects_catalog:
               effectsTools && role.tool_ids.includes("video.render"),

@@ -301,6 +301,196 @@ test("private software sources run actual failing/passing Node tests; only exact
   assert.ok(!hidden.body.includes("discount rule"));
 });
 
+test("private API and SQLite checks preserve real failures, exact-source packages, idempotency and withdrawal", async () => {
+  const f = await fixture();
+  const original = "module.exports=(q,s)=>{s.statusCode=500;s.end('broken');};";
+  const fixed =
+    "module.exports=(q,s)=>{s.setHeader('content-type','application/json');if(q.headers['x-account']!=='approved'){s.statusCode=401;s.end(JSON.stringify({error:'unauthorized'}));return;}s.statusCode=201;s.end(JSON.stringify({created:true}));};";
+  const apiArgs = {
+    entry: "api.cjs",
+    requests: [
+      {
+        name: "Unauthenticated request is rejected",
+        method: "GET",
+        path: "/records",
+        expect: { status: 401, json: { error: "unauthorized" } },
+      },
+      {
+        name: "Approved record is created",
+        method: "POST",
+        path: "/records",
+        headers: { "x-account": "approved" },
+        body: "{}",
+        expect: { status: 201, json: { created: true } },
+      },
+    ],
+  };
+  const dbArgs = {
+    entry: "schema.sql",
+    engine: "sqlite",
+    checks: [
+      {
+        name: "Seeded rows are read from SQLite",
+        sql: "SELECT COUNT(*) AS count FROM records",
+        expect: { rows: [{ count: 1 }] },
+      },
+      {
+        name: "Duplicate keys are rejected",
+        sql: "INSERT INTO records VALUES(1,'duplicate')",
+        expect: { error_code: "1555" },
+      },
+    ],
+  };
+  let sourceVersion = "",
+    api: any,
+    database: any,
+    packaged: any;
+  const task = await run(f, async (ctx) => {
+    const write = tool(ctx, "code_write"),
+      checkApi = tool(ctx, "api_test"),
+      checkDb = tool(ctx, "database_test_native"),
+      pack = tool(ctx, "code_package");
+    await write({ path: "api.cjs", content: original });
+    const source = await write({
+      path: "schema.sql",
+      content:
+        "CREATE TABLE records(id INTEGER PRIMARY KEY,name TEXT);INSERT INTO records VALUES(1,'CopyPaste');",
+    });
+    sourceVersion = source.asset_version_id;
+    assert.equal((await checkApi(apiArgs)).receipt.passed, false);
+    await write({
+      path: "api.cjs",
+      content: fixed,
+      expected_sha256: (await tool(ctx, "code_read")({ path: "api.cjs" }))
+        .sha256,
+    });
+    const key = randomUUID();
+    api = await checkApi(apiArgs, key);
+    const replay = await checkApi(apiArgs, key);
+    assert.equal(api.receipt.passed, true);
+    assert.equal(api.receipt.execution_id, replay.receipt.execution_id);
+    const wrong = await checkDb({
+      ...dbArgs,
+      checks: [
+        {
+          name: "Wrong row count stays failed",
+          sql: "SELECT COUNT(*) AS count FROM records",
+          expect: { rows: [{ count: 99 }] },
+        },
+      ],
+    });
+    assert.equal(wrong.receipt.passed, false);
+    assert.equal(wrong.receipt.exit_code, 1);
+    const dbKey = randomUUID();
+    database = await checkDb(dbArgs, dbKey);
+    assert.equal(database.receipt.passed, true);
+    assert.equal(
+      (await checkDb(dbArgs, dbKey)).receipt.execution_id,
+      database.receipt.execution_id,
+    );
+    packaged = await pack({ filename: "api-database-source-and-checks.zip" });
+    const bundle = await zip(packaged),
+      manifest = JSON.parse(
+        Buffer.from(bundle["copypaste-manifest.json"]).toString(),
+      );
+    assert.equal(manifest.checks.length, 3);
+    assert.equal(manifest.checks.filter((v: any) => !v.passed).length, 1);
+    assert.equal(manifest.source_digest, api.receipt.source_digest);
+    assert.equal(manifest.source_digest, database.receipt.source_digest);
+    assert.equal(Buffer.from(bundle["api.cjs"]).toString(), fixed);
+    assert.equal(
+      JSON.parse(
+        Buffer.from(
+          bundle[`copypaste-checks/${database.receipt.execution_id}.json`],
+        ).toString(),
+      ).check_result.kind,
+      "sqlite",
+    );
+    const output = await zip(database.artifacts),
+      name = Object.keys(output).find((v) => v.endsWith("/database.sqlite"))!;
+    assert.equal(
+      Buffer.from(output[name]).subarray(0, 16).toString(),
+      "SQLite format 3\0",
+    );
+    assert.ok(
+      database.receipt.workspace_deleted && api.receipt.workspace_deleted,
+    );
+  });
+  assert.equal(task.status, "succeeded");
+  const history = (
+    await call(f.c, "GET", f.base + `/tasks/${task.id}/software-checks`)
+  ).data;
+  assert.equal(history.items.length, 4);
+  assert.equal(
+    history.items.filter((v: any) => v.check_result.kind === "api").length,
+    2,
+  );
+  assert.equal(
+    history.items.filter((v: any) => v.check_result.kind === "sqlite").length,
+    2,
+  );
+  assert.equal(
+    history.items.filter((v: any) => v.matches_current_sources === false)
+      .length,
+    1,
+  );
+  assert.ok(history.items.every((v: any) => v.check_result.checks.length > 0));
+  const canonical = await s.app.inject({
+    method: "GET",
+    url: `/v1/tasks/${task.id}/software-checks`,
+    headers: { cookie: f.c.cookie, "x-tenant-id": f.tenant },
+  });
+  assert.equal(canonical.statusCode, 200);
+  assert.equal(canonical.json().items.length, 4);
+  const stranger = await fixture();
+  for (const result of [api, database]) {
+    const denied = await s.app.inject({
+      method: "GET",
+      url: f.base + `/assets/${result.record.id}/download`,
+      headers: { cookie: stranger.c.cookie, "x-tenant-id": f.tenant },
+    });
+    assert.ok([403, 404].includes(denied.statusCode));
+    assert.equal(
+      (
+        await s.app.inject({
+          method: "GET",
+          url: f.base + `/assets/${result.record.id}/download`,
+          headers: { cookie: f.c.cookie, "x-tenant-id": f.tenant },
+        })
+      ).statusCode,
+      200,
+    );
+  }
+  await s.db.control.query(
+    "UPDATE assets SET state='deleted' WHERE id=(SELECT asset_id FROM asset_versions WHERE id=$1)",
+    [sourceVersion],
+  );
+  for (const id of [
+    api.record.id,
+    api.artifacts.id,
+    database.record.id,
+    database.artifacts.id,
+    packaged.id,
+  ]) {
+    const revoked = await s.app.inject({
+      method: "GET",
+      url: f.base + `/assets/${id}/download`,
+      headers: { cookie: f.c.cookie, "x-tenant-id": f.tenant },
+    });
+    assert.ok(
+      [404, 410].includes(revoked.statusCode),
+      `${revoked.statusCode}: ${revoked.body}`,
+    );
+  }
+  const revoked = await s.app.inject({
+    method: "GET",
+    url: f.base + `/tasks/${task.id}/software-checks`,
+    headers: { cookie: f.c.cookie, "x-tenant-id": f.tenant },
+  });
+  assert.ok([404, 409, 410].includes(revoked.statusCode));
+  assert.ok(!revoked.body.includes("Approved record"));
+});
+
 test("ask/plan, an ungranted role and Desktop never receive the cloud native runner", async () => {
   const f = await fixture();
   for (const mode of ["ask", "plan"])
@@ -308,7 +498,13 @@ test("ask/plan, an ungranted role and Desktop never receive the cloud native run
       f,
       async (ctx) => {
         assert.equal(
-          ctx.tools.some((v) => v.name === "process_run_allowed"),
+          ctx.tools.some((v) =>
+            [
+              "process_run_allowed",
+              "api_test",
+              "database_test_native",
+            ].includes(v.name),
+          ),
           false,
         );
         assert.equal(
@@ -321,7 +517,11 @@ test("ask/plan, an ungranted role and Desktop never receive the cloud native run
   const helper = await fixture("assistant");
   await run(helper, async (ctx) =>
     assert.equal(
-      ctx.tools.some((v) => v.name === "process_run_allowed"),
+      ctx.tools.some((v) =>
+        ["process_run_allowed", "api_test", "database_test_native"].includes(
+          v.name,
+        ),
+      ),
       false,
     ),
   );
@@ -342,7 +542,11 @@ test("ask/plan, an ungranted role and Desktop never receive the cloud native run
     s.catalog.role("fullstack"),
   );
   assert.equal(
-    forbidden.some((v) => v.name === "process_run_allowed"),
+    forbidden.some((v) =>
+      ["process_run_allowed", "api_test", "database_test_native"].includes(
+        v.name,
+      ),
+    ),
     false,
   );
 });

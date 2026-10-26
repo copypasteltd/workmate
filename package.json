@@ -7,7 +7,7 @@
     "node": ">=22.14.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/copy-cloud-check-bootstrap.mjs",
     "typecheck": "tsc --noEmit",
     "build:cloud-program-host": "node scripts/build-cloud-program-host.mjs",
     "test": "node --env-file=.env scripts/run-tests-owned.mjs tests/*.test.ts",

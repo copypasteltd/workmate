@@ -66,6 +66,8 @@ const implementedTools = new Set([
   "slides.render",
   "speech.generate.internal",
   "process.run.allowed",
+  "api.test",
+  "database.test.native",
 ]);
 // Desktop uses the customer's native Codex command/browser protocols. Cloud
 // readiness is evaluated separately for each implemented company tool.
@@ -253,7 +255,10 @@ function present(
   const unsupportedTool = role.tool_ids.find(
     (tool: string) =>
       (!implementedTools.has(tool) ||
-        (tool === "process.run.allowed" && !context.cloudPrograms)) &&
+        (["process.run.allowed", "api.test", "database.test.native"].includes(
+          tool,
+        ) &&
+          !context.cloudPrograms)) &&
       !(context.native && nativeOperations.has(tool)),
   );
   const missingCapability = role.model_bindings.find(
@@ -365,7 +370,10 @@ export async function assessTemplate(
   for (const tool of role.tool_ids)
     if (
       (!implementedTools.has(tool) ||
-        (tool === "process.run.allowed" && !cloudPrograms)) &&
+        (["process.run.allowed", "api.test", "database.test.native"].includes(
+          tool,
+        ) &&
+          !cloudPrograms)) &&
       !(executionLocation === "desktop" && nativeOperations.has(tool))
     ) {
       missing.push("TOOL_NOT_IMPLEMENTED:" + tool);

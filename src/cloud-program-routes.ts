@@ -11,6 +11,7 @@ import { assertReportSources } from "./analysis-reports.js";
 import { CodeWorkspace } from "./code-workspace.js";
 import { exportCloudSources } from "./cloud-source.js";
 import { sourceDigest, sourceManifest } from "./cloud-program-executor.js";
+import { cloudCheckTools } from "./cloud-program-tools.js";
 
 export function registerCloudProgramRoutes(
   app: FastifyInstance,
@@ -79,10 +80,10 @@ export function registerCloudProgramRoutes(
         }
         const rows = (
           await tx.query(
-            `SELECT id,created_at,result FROM task_tool_receipts WHERE task_id=$1 AND tool_name='process_run_allowed'
-        AND ($2::uuid IS NULL OR (created_at,id)<(SELECT created_at,id FROM task_tool_receipts WHERE id=$2 AND task_id=$1 AND tool_name='process_run_allowed'))
+            `SELECT id,created_at,result FROM task_tool_receipts WHERE task_id=$1 AND tool_name=ANY($4::text[])
+        AND ($2::uuid IS NULL OR (created_at,id)<(SELECT created_at,id FROM task_tool_receipts WHERE id=$2 AND task_id=$1 AND tool_name=ANY($4::text[])))
         ORDER BY created_at DESC,id DESC LIMIT $3`,
-            [t.id, query.before ?? null, query.limit + 1],
+            [t.id, query.before ?? null, query.limit + 1, cloudCheckTools],
           )
         ).rows;
         const items = [];
@@ -114,6 +115,7 @@ export function registerCloudProgramRoutes(
             stdout: c.stdout,
             stderr: c.stderr,
             output_truncated: c.output_truncated,
+            check_result: c.check_result ?? null,
             elapsed_ms: c.host.elapsed_ms,
             files: c.output_manifest,
             receipt: {

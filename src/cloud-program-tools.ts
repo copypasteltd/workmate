@@ -10,9 +10,15 @@ import {
   runCloudProgram,
   type ProgramSource,
   cloudProgramInput,
+  type CloudCheckDriver,
 } from "./cloud-program-executor.js";
 import type { z } from "zod";
 import { hash, Problem } from "./lib.js";
+export const cloudCheckTools = [
+  "process_run_allowed",
+  "api_test",
+  "database_test_native",
+];
 
 export async function taskProgramSources(
   tx: Tx,
@@ -54,6 +60,7 @@ export async function executeTaskProgram(
   input: z.input<typeof cloudProgramInput>,
   authorize: () => Promise<void>,
   signal?: AbortSignal,
+  driver?: CloudCheckDriver,
 ) {
   const { sources } = await taskProgramSources(tx, storage, t, workspace);
   const { receipt, files } = await runCloudProgram(
@@ -61,6 +68,7 @@ export async function executeTaskProgram(
     input,
     sources,
     signal,
+    driver,
   );
   await authorize();
   const current = await taskProgramSources(tx, storage, t, workspace);
@@ -126,8 +134,8 @@ export async function checkedSourcePackage(
   const digest = sourceDigest(zip.files);
   const rows = (
     await tx.query(
-      "SELECT result FROM task_tool_receipts WHERE task_id=$1 AND tool_name='process_run_allowed' AND result->'receipt'->>'source_digest'=$2 ORDER BY created_at",
-      [t.id, digest],
+      "SELECT result FROM task_tool_receipts WHERE task_id=$1 AND tool_name=ANY($3::text[]) AND result->'receipt'->>'source_digest'=$2 ORDER BY created_at",
+      [t.id, digest, cloudCheckTools],
     )
   ).rows;
   const checks = rows

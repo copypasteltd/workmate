@@ -12,6 +12,7 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
+import { PassThrough } from "node:stream";
 import { z } from "zod";
 import { canonical, hash, Problem } from "./lib.js";
 import { validateSourcePath } from "./code-workspace.js";
@@ -34,6 +35,37 @@ export const cloudProgramInput = z
   .strict();
 export type SourceManifest = { path: string; bytes: number; sha256: string }[];
 export type ProgramSource = { path: string; bytes: Buffer };
+export interface CloudCheckResult {
+  kind: "api" | "sqlite";
+  passed: boolean;
+  checks: {
+    name: string;
+    passed: boolean;
+    expected?: unknown;
+    actual?: unknown;
+    error?: string;
+  }[];
+  error?: string;
+}
+/** Constructed by company code only; never accepted from a serialized tool input. */
+export interface CloudCheckDriver {
+  program: "api_test" | "database_sqlite";
+  bootstrap: Buffer;
+  configuration: unknown;
+  arguments: string[];
+  stdin: boolean;
+  interact?: (io: {
+    output: PassThrough;
+    write: (bytes: Buffer) => Promise<void>;
+    end: () => void;
+    signal: AbortSignal;
+  }) => Promise<CloudCheckResult>;
+  verify?: (
+    files: ProgramSource[],
+    stdout: string,
+    observed: CloudCheckResult | null,
+  ) => CloudCheckResult;
+}
 
 const moduleFolder = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(
@@ -179,12 +211,17 @@ async function executeCloudProgram(
   sources: ProgramSource[],
   signal?: AbortSignal,
   executionId?: string,
+  driver?: CloudCheckDriver,
 ) {
   const a = cloudProgramInput.parse(input),
     source_manifest = sourceManifest(sources);
   const entry = validateSourcePath(a.entry).normalize("NFC");
   if (
-    !/\.(?:[cm]?js|[cm]?ts)$/i.test(entry) ||
+    !(
+      driver?.program === "database_sqlite"
+        ? /\.sql$/i
+        : /\.(?:[cm]?js|[cm]?ts)$/i
+    ).test(entry) ||
     !source_manifest.some((f) => f.path === entry) ||
     (a.program !== "node" && a.args.length)
   )
@@ -202,6 +239,18 @@ async function executeCloudProgram(
   await mkdir(work, { recursive: true });
   await mkdir(path.dirname(executable));
   await copyFile(process.execPath, executable);
+  if (driver) {
+    await writeFile(
+      path.join(root, "runtime/check-bootstrap.cjs"),
+      driver.bootstrap,
+      { flag: "wx" },
+    );
+    await writeFile(
+      path.join(root, "runtime/check-input.json"),
+      JSON.stringify(driver.configuration),
+      { flag: "wx" },
+    );
+  }
   for (let i = 0; i < sources.length; i++) {
     const file = path.join(
       work,
@@ -218,7 +267,10 @@ async function executeCloudProgram(
   if (a.program === "node_test")
     argv.push("--test", "--experimental-test-isolation=none");
   if (a.program === "node_check") argv.push("--check");
-  argv.push(entry, ...a.args);
+  argv.push(
+    driver ? path.join(root, "runtime/check-bootstrap.cjs") : entry,
+    ...(driver ? [entry, ...driver.arguments.slice(1)] : a.args),
+  );
   const start = new Date().toISOString();
   const child = spawn(
     hostPath,
@@ -227,6 +279,7 @@ async function executeCloudProgram(
       executable,
       runtime.profile.node_sha256,
       String(a.timeout_ms),
+      ...(driver?.stdin ? ["--stdin-channel"] : []),
       ...argv,
     ],
     { windowsHide: true, stdio: ["pipe", "pipe", "pipe"], shell: false },
@@ -236,6 +289,11 @@ async function executeCloudProgram(
   let size = 0,
     stopped: string | null = null,
     scanning = false;
+  const channel = driver?.interact ? new PassThrough() : null;
+  channel?.on("error", () => {});
+  const driverAbort = new AbortController();
+  let channelHeader = Buffer.alloc(0),
+    channelReady = false;
   const stop = (reason: string) => {
     if (!stopped) {
       stopped = reason;
@@ -245,12 +303,71 @@ async function executeCloudProgram(
   const read = (into: Buffer[]) => (b: Buffer) => {
     const left = Math.max(0, 131072 - size);
     if (left) into.push(b.subarray(0, left));
+    if (channel && into === chunks && left) {
+      const part = b.subarray(0, left);
+      if (channelReady) channel.write(part);
+      else {
+        channelHeader = Buffer.concat([channelHeader, part]);
+        const end = channelHeader.indexOf(10);
+        if (end >= 0) {
+          if (
+            !/^CPCLOUD1 \d+\r?\n$/.test(
+              channelHeader.subarray(0, end + 1).toString("ascii"),
+            )
+          )
+            stop("check_protocol");
+          else {
+            channelReady = true;
+            channel.write(channelHeader.subarray(end + 1));
+          }
+          channelHeader = Buffer.alloc(0);
+        } else if (channelHeader.length > 100) stop("check_protocol");
+      }
+    }
     size += b.length;
     if (size > 131072) stop("output_limit");
   };
   child.stdout.on("data", read(chunks));
   child.stderr.on("data", read(errors));
   child.stdin.on("error", () => {});
+  const interaction =
+    driver?.interact && channel
+      ? Promise.resolve()
+          .then(() =>
+            driver.interact!({
+              output: channel,
+              async write(bytes) {
+                for (let offset = 0; offset < bytes.length; offset += 8192) {
+                  await new Promise<void>((resolve, reject) =>
+                    child.stdin.write(
+                      "data:" +
+                        bytes
+                          .subarray(offset, offset + 8192)
+                          .toString("base64") +
+                        "\n",
+                      (error) => (error ? reject(error) : resolve()),
+                    ),
+                  );
+                }
+              },
+              end() {
+                if (!child.stdin.destroyed) child.stdin.write("eof\n");
+              },
+              signal: signal
+                ? AbortSignal.any([signal, driverAbort.signal])
+                : driverAbort.signal,
+            }),
+          )
+          .catch((error) => {
+            stop("check_protocol");
+            return {
+              kind: "api" as const,
+              passed: false,
+              checks: [],
+              error: String(error).slice(0, 1000),
+            };
+          })
+      : null;
   const abort = () => stop("cancelled");
   signal?.addEventListener("abort", abort, { once: true });
   if (signal?.aborted) abort();
@@ -283,6 +400,8 @@ async function executeCloudProgram(
     clearTimeout(force);
     signal?.removeEventListener("abort", abort);
     child.stdin.end();
+    channel?.end();
+    driverAbort.abort();
   }
   const wire = Buffer.concat(chunks).toString("utf8"),
     header = /^CPCLOUD1 (\d+)\r?\n/.exec(wire),
@@ -298,6 +417,7 @@ async function executeCloudProgram(
     host.schema !== 1 ||
     host.no_network_capabilities !== true ||
     host.child_processes_prohibited !== true ||
+    host.stdin_channel !== Boolean(driver?.stdin) ||
     !host.profile_created ||
     !host.profile_deleted ||
     Number(host.exit_code) >>> 0 !== Number(exit) >>> 0
@@ -313,10 +433,14 @@ async function executeCloudProgram(
   } catch {
     stopped ??= "workspace_limit";
   }
+  const observed = interaction ? await interaction : null;
+  const check_result = driver?.verify
+    ? driver.verify(output.files, wire.slice(header[0].length), observed)
+    : observed;
   const receipt = {
     schema: 1,
     execution_id: id,
-    program: a.program,
+    program: driver?.program ?? a.program,
     entry,
     args: a.args,
     timeout_ms: a.timeout_ms,
@@ -326,11 +450,23 @@ async function executeCloudProgram(
     source_digest: sourceDigest(source_manifest),
     output_manifest: output.manifest,
     exit_code: exit,
-    passed: exit === 0 && !host.timed_out && !host.cancelled && !stopped,
+    passed:
+      exit === 0 &&
+      !host.timed_out &&
+      !host.cancelled &&
+      !stopped &&
+      (!driver || check_result?.passed === true),
     stop_reason: stopped ?? (host.timed_out ? "timeout" : null),
     stdout: wire.slice(header[0].length),
     stderr,
     output_truncated: size > 131072,
+    ...(driver
+      ? {
+          check_result,
+          check_input: driver.configuration,
+          harness_sha256: hash(driver.bootstrap),
+        }
+      : {}),
     runtime: {
       id: runtime.profile.id,
       node_version: process.version,
@@ -354,13 +490,21 @@ export async function runCloudProgram(
   input: z.input<typeof cloudProgramInput>,
   sources: ProgramSource[],
   signal?: AbortSignal,
+  driver?: CloudCheckDriver,
 ) {
   const id = randomUUID(),
     parent = path.resolve(dataDir, "cloud-programs"),
     root = path.join(parent, id);
   let result: Awaited<ReturnType<typeof executeCloudProgram>>;
   try {
-    result = await executeCloudProgram(dataDir, input, sources, signal, id);
+    result = await executeCloudProgram(
+      dataDir,
+      input,
+      sources,
+      signal,
+      id,
+      driver,
+    );
   } finally {
     let owner = false,
       deleted = false;

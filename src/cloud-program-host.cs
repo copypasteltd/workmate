@@ -3,6 +3,7 @@
 // process and prohibits child creation before any customer instruction runs.
 using System;
 using System.ComponentModel;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -105,9 +106,9 @@ internal static class CloudProgramHost {
       } catch { return 74; }
     }
     IntPtr sid = IntPtr.Zero, attributes = IntPtr.Zero, capsMemory = IntPtr.Zero, childPolicy = IntPtr.Zero, handlesMemory = IntPtr.Zero, environment = IntPtr.Zero;
-    IntPtr job = IntPtr.Zero, outputRead = IntPtr.Zero, outputWrite = IntPtr.Zero, errorRead = IntPtr.Zero, errorWrite = IntPtr.Zero, input = IntPtr.Zero;
+    IntPtr job = IntPtr.Zero, outputRead = IntPtr.Zero, outputWrite = IntPtr.Zero, errorRead = IntPtr.Zero, errorWrite = IntPtr.Zero, input = IntPtr.Zero, inputWrite = IntPtr.Zero;
     var process = new ProcessInfo(); var clock = Stopwatch.StartNew();
-    bool created = false, resumed = false, timedOut = false, cancelled = false, profileDeleted = false;
+    bool created = false, resumed = false, timedOut = false, cancelled = false, profileDeleted = false, inputChannel = false;
     string profile = "cpsoftware-" + Guid.NewGuid().ToString("N"), root = null, failure = null;
     int result = 74; FileStream pinned = null;
     try {
@@ -115,6 +116,8 @@ internal static class CloudProgramHost {
       int timeout;
       if (args.Length < 5 || !Path.IsPathRooted(args[0]) || !Path.IsPathRooted(args[1]) || args[2].Length != 64 || !Int32.TryParse(args[3], out timeout) || timeout < 100 || timeout > 120000) throw new ArgumentException("INPUT");
       root = Path.GetFullPath(args[0]); string work = Path.Combine(root, "work"), executable = Path.GetFullPath(args[1]);
+      inputChannel = args[4] == "--stdin-channel";
+      if (inputChannel && args.Length < 6) throw new ArgumentException("INPUT");
       Guid ignored;
       if (!Guid.TryParse(Path.GetFileName(root), out ignored) || !Directory.Exists(work) || !executable.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("ROOT");
       SafePath(work); SafePath(Path.GetDirectoryName(executable));
@@ -139,7 +142,9 @@ internal static class CloudProgramHost {
       var security = new Security { Length = Marshal.SizeOf(typeof(Security)), Inherit = 1 };
       Check(CreatePipe(out outputRead, out outputWrite, ref security, 0)); Check(CreatePipe(out errorRead, out errorWrite, ref security, 0));
       Check(SetHandleInformation(outputRead, 1, 0)); Check(SetHandleInformation(errorRead, 1, 0));
-      input = CreateFile("NUL", 0x80000000, 3, ref security, 3, 0, IntPtr.Zero); Check(input.ToInt64() != -1);
+      if (inputChannel) {
+        Check(CreatePipe(out input, out inputWrite, ref security, 0)); Check(SetHandleInformation(inputWrite, 1, 0));
+      } else { input = CreateFile("NUL", 0x80000000, 3, ref security, 3, 0, IntPtr.Zero); Check(input.ToInt64() != -1); }
       IntPtr size = IntPtr.Zero; InitializeProcThreadAttributeList(IntPtr.Zero, 3, 0, ref size);
       attributes = Marshal.AllocHGlobal(size); Check(InitializeProcThreadAttributeList(attributes, 3, 0, ref size));
       capsMemory = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(Capabilities)));
@@ -155,32 +160,61 @@ internal static class CloudProgramHost {
       Array.Sort(variables, StringComparer.OrdinalIgnoreCase);
       environment = Marshal.StringToHGlobalUni(String.Join("\0", variables) + "\0\0");
       var startup = new StartupEx { Basic = new Startup { Size = Marshal.SizeOf(typeof(StartupEx)), Flags = 0x101, Show = 0, Input = input, Output = outputWrite, Error = errorWrite }, Attributes = attributes };
-      var command = new StringBuilder(Quote(executable)); for (int i = 4; i < args.Length; i++) command.Append(' ').Append(Quote(args[i]));
+      var command = new StringBuilder(Quote(executable)); for (int i = inputChannel ? 5 : 4; i < args.Length; i++) command.Append(' ').Append(Quote(args[i]));
       Check(CreateProcess(executable, command, IntPtr.Zero, IntPtr.Zero, true, 0x0008040C, environment, work, ref startup, out process));
       Check(AssignProcessToJobObject(job, process.Process));
       Close(ref outputWrite); Close(ref errorWrite); Close(ref input);
       var wire = Console.OpenStandardOutput(); byte[] header = Encoding.ASCII.GetBytes("CPCLOUD1 " + process.Pid + "\n"); wire.Write(header, 0, header.Length); wire.Flush();
       var output = Pump(outputRead, wire); outputRead = IntPtr.Zero;
       var error = Pump(errorRead, Console.OpenStandardError()); errorRead = IntPtr.Zero;
-      var watcher = new Thread(() => { try { Console.In.ReadLine(); } catch (IOException) { } cancelled = true; TerminateJobObject(job, 1223); }); watcher.IsBackground = true; watcher.Start();
+      var inputQueue = new BlockingCollection<byte[]>(8);
+      Thread inputPump = null;
+      if (inputChannel) {
+        IntPtr writer = inputWrite; inputWrite = IntPtr.Zero;
+        inputPump = new Thread(() => {
+          try {
+            using (var stream = new FileStream(new Microsoft.Win32.SafeHandles.SafeFileHandle(writer, true), FileAccess.Write)) {
+              foreach (byte[] bytes in inputQueue.GetConsumingEnumerable()) { stream.Write(bytes, 0, bytes.Length); stream.Flush(); }
+            }
+          } catch (IOException) { }
+        }); inputPump.IsBackground = true; inputPump.Start();
+      }
+      var watcher = new Thread(() => {
+        try {
+          string line; int total = 0;
+          while ((line = Console.In.ReadLine()) != null) {
+            if (inputChannel && line == "eof" && !inputQueue.IsAddingCompleted) { inputQueue.CompleteAdding(); continue; }
+            if (inputChannel && line.StartsWith("data:", StringComparison.Ordinal) && line.Length <= 11000 && !inputQueue.IsAddingCompleted) {
+              byte[] bytes = Convert.FromBase64String(line.Substring(5));
+              total += bytes.Length;
+              if (bytes.Length <= 8192 && total <= 1048576 && inputQueue.TryAdd(bytes)) continue;
+            }
+            break;
+          }
+        } catch (Exception) { }
+        cancelled = true; TerminateJobObject(job, 1223);
+        if (!inputQueue.IsAddingCompleted) inputQueue.CompleteAdding();
+      }); watcher.IsBackground = true; watcher.Start();
       Check(ResumeThread(process.Thread) != 0xffffffff); resumed = true; Close(ref process.Thread);
       uint waited = WaitForSingleObject(process.Process, (uint)timeout);
       if (waited == 258) { timedOut = true; Check(TerminateJobObject(job, 1460)); WaitForSingleObject(process.Process, 10000); }
       else Check(waited == 0);
       uint code; Check(GetExitCodeProcess(process.Process, out code)); result = unchecked((int)code);
       TerminateJobObject(job, 1223); output.Join(5000); error.Join(5000);
+      if (!inputQueue.IsAddingCompleted) inputQueue.CompleteAdding();
+      if (inputPump != null) inputPump.Join(5000);
     } catch (Exception e) { failure = e is Win32Exception ? "WIN32_" + ((Win32Exception)e).NativeErrorCode : e.GetType().Name; Console.Error.WriteLine("COPYPASTE_CLOUD_HOST_FAILED:" + failure); result = 74; }
     finally {
       if (!resumed && process.Process != IntPtr.Zero) TerminateProcess(process.Process, 74);
       Close(ref job); Close(ref process.Thread); Close(ref process.Process);
-      Close(ref outputRead); Close(ref outputWrite); Close(ref errorRead); Close(ref errorWrite); Close(ref input);
+      Close(ref outputRead); Close(ref outputWrite); Close(ref errorRead); Close(ref errorWrite); Close(ref input); Close(ref inputWrite);
       if (attributes != IntPtr.Zero) { DeleteProcThreadAttributeList(attributes); Marshal.FreeHGlobal(attributes); }
       foreach (IntPtr pointer in new IntPtr[] { capsMemory, childPolicy, handlesMemory, environment }) if (pointer != IntPtr.Zero) Marshal.FreeHGlobal(pointer);
       if (pinned != null) pinned.Dispose();
       if (created) profileDeleted = DeleteAppContainerProfile(profile) >= 0;
       if (sid != IntPtr.Zero) FreeSid(sid);
       if (root != null && Directory.Exists(root)) {
-        File.WriteAllText(Path.Combine(root, "host-receipt.json"), new JavaScriptSerializer().Serialize(new { schema = 1, process_id = process.Pid, exit_code = result, resumed = resumed, timed_out = timedOut, cancelled = cancelled, elapsed_ms = clock.ElapsedMilliseconds, profile_name = profile, profile_created = created, profile_deleted = profileDeleted, no_network_capabilities = true, child_processes_prohibited = true, memory_limit_bytes = 512UL * 1024 * 1024, failure = failure }), new UTF8Encoding(false));
+        File.WriteAllText(Path.Combine(root, "host-receipt.json"), new JavaScriptSerializer().Serialize(new { schema = 1, process_id = process.Pid, exit_code = result, resumed = resumed, timed_out = timedOut, cancelled = cancelled, elapsed_ms = clock.ElapsedMilliseconds, profile_name = profile, profile_created = created, profile_deleted = profileDeleted, no_network_capabilities = true, child_processes_prohibited = true, stdin_channel = inputChannel, memory_limit_bytes = 512UL * 1024 * 1024, failure = failure }), new UTF8Encoding(false));
       }
     }
     return result;
