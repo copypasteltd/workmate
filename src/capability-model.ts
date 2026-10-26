@@ -15,6 +15,14 @@ export type CapabilityDocument = {
       reasoning_effort: null;
       rates: [number];
     }
+  | {
+      profile_key: "internal-speech-v1";
+      reasoning_effort: null; rates: [number]; voices: string[]; locales: ("en" | "zh-HK" | "yue-HK")[];
+    }
+  | {
+      profile_key: "internal-transcription-v1";
+      reasoning_effort: null; rates: [number]; locales: ("en" | "zh-HK" | "yue-HK")[]; timestamps: boolean;
+    }
 );
 export type CapabilityRelease = {
   id: string;
@@ -32,6 +40,7 @@ export type CapabilityRelease = {
   validation_error_codes: string[];
   head_revision: number;
   current_publication_id: string | null;
+  audio_verification_plan?: { total_cases: number; plan_hash: string; quoted_micros: string; quality_scope: "protocol_only" };
 };
 export type WorkspacePurge = {
   validation_id: string;
@@ -64,6 +73,16 @@ export type CapabilityValidation = {
     workspace_cleanup_error_code?: string;
   };
   workspace_cleanup: WorkspacePurge | null;
+  audio_suite?: {
+    plan_hash: string; total_cases: number; verified_cases: number; quoted_micros: string; quality_scope: "protocol_only";
+    known_cost_micros: string; usage_known: boolean; cancel_requested: boolean; deadline_at: string; error_code: string | null;
+    cases: { id: string; ordinal: number; operation_id: string; state: string; kind: "speech" | "transcription";
+      locale: string; voice: string | null; speed: number | null; mime_type: string | null; timestamps: boolean | null;
+      quoted_micros: string; actual_micros: string | null; usage_known: boolean; verified: boolean; error_code: string | null;
+      response_sha256: string | null; source_sha256: string | null;
+      media: { duration_ms?: number; fully_decoded?: boolean; segment_count?: number; utf8_json?: boolean;
+        input?: { fully_decoded: boolean; duration_ms: number } } | null }[];
+  } | null;
   video_suite?: {
     plan_hash: string; total_cases: number; verified_cases: number; quoted_micros: string;
     known_cost_micros: string; usage_known: boolean; cancel_requested: boolean; deadline_at: string; error_code: string | null;
@@ -147,6 +166,21 @@ export function capabilityDraft(form: FormData) {
       reasoning_effort: null,
       rates: [rate(form.get(profile === "internal-video-v1" ? "video_rate" : "image_rate"), false)],
     };
+  } else if (profile === "internal-speech-v1" || profile === "internal-transcription-v1") {
+    const locales = String(form.get("locales") ?? "").split(/[\s,]+/).filter(Boolean);
+    if (!locales.length || locales.length > 3 || new Set(locales).size !== locales.length
+      || locales.some(value => !["en", "zh-HK", "yue-HK"].includes(value)))
+      throw new Error("請選擇不重複的支援語言 / Choose unique supported locales");
+    const price = rate(form.get("audio_rate"), false);
+    if (price > 1e9) throw new Error("音訊每單位費率最高 HK$1,000 / Audio rate is at most HK$1,000 per unit");
+    const audio = { ...common, reasoning_effort: null, rates: [price], locales };
+    if (profile === "internal-speech-v1") {
+      const voices = String(form.get("voices") ?? "").split(/[\s,]+/).filter(Boolean);
+      if (!voices.length || voices.length > 8 || new Set(voices).size !== voices.length
+        || voices.some(value => !/^[a-zA-Z0-9_-]{1,80}$/.test(value)))
+        throw new Error("請提供一至八個不重複的聲音 ID / Enter one to eight unique voice IDs");
+      document = { ...audio, profile_key: profile, voices } as CapabilityDocument;
+    } else document = { ...audio, profile_key: profile, timestamps: form.get("timestamps") === "on" } as CapabilityDocument;
   } else throw new Error("請選擇支援的能力 / Choose a supported capability");
   return { document, reason };
 }

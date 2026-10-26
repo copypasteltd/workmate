@@ -42,7 +42,10 @@ function ProfileName({ value }: { value: CapabilityDocument["profile_key"] }) {
     <>
       {value === "internal-text-v1"
         ? t("文字與開發", "Text & development")
-        : value === "internal-video-v1" ? t("影片生成", "Video generation") : t("圖片生成與編輯", "Image generation & editing")}
+        : value === "internal-video-v1" ? t("影片生成", "Video generation")
+        : value === "internal-speech-v1" ? t("語音生成", "Speech generation")
+        : value === "internal-transcription-v1" ? t("音訊轉錄", "Audio transcription")
+        : t("圖片生成與編輯", "Image generation & editing")}
     </>
   );
 }
@@ -102,10 +105,18 @@ export function CapabilityFacts({
           </>
         ) : (
           <>
-            <dt>{document.profile_key === "internal-video-v1" ? t("每秒計費影片", "Per billable video second") : t("每張圖片", "Per image")}</dt>
+            <dt>{document.profile_key === "internal-video-v1" ? t("每秒計費影片", "Per billable video second")
+              : document.profile_key === "internal-speech-v1" ? t("每個 Unicode 字元", "Per Unicode scalar")
+              : document.profile_key === "internal-transcription-v1" ? t("每毫秒輸入音訊", "Per input audio millisecond")
+              : t("每張圖片", "Per image")}</dt>
             <dd>{formatHKD(String(document.rates[0]))}</dd>
           </>
         )}
+        {(document.profile_key === "internal-speech-v1" || document.profile_key === "internal-transcription-v1") && <>
+          <dt>{t("語言", "Locales")}</dt><dd>{document.locales.join(" · ")}</dd>
+          {document.profile_key === "internal-speech-v1" ? <><dt>{t("聲音 ID", "Voice IDs")}</dt><dd>{document.voices.join(" · ")}</dd></>
+            : <><dt>{t("分段時間", "Segment timestamps")}</dt><dd>{document.timestamps ? t("啟用並驗證", "Enabled and verified") : t("不啟用", "Disabled")}</dd></>}
+        </>}
       </dl>
     </div>
   );
@@ -205,8 +216,8 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
         eyebrow="THE MODEL BEHIND THE WORK."
         title={t("模型能力", "Model capabilities")}
         description={t(
-          "為文字、圖片與影片建立可驗證的配置，逐次審核模型、強度與費率。",
-            "Create verifiable text, image and video configurations. Review the model, reasoning effort and rates before each publication.",
+          "為文字、圖片、影片、語音與轉錄建立可驗證的配置，逐次審核模型、語言與費率。",
+            "Create verifiable text, image, video, speech and transcription configurations. Review the model, locales and rates before each publication.",
         )}
         action={
           access.has("admin.catalog.draft") && (
@@ -247,8 +258,8 @@ export function AdminCapabilities({ access }: { access: CapabilityAccess }) {
             <Empty
               title={t("尚未建立模型配置", "No model configurations yet")}
               body={t(
-                "建立文字、圖片或影片配置，完成驗證後再申請發佈。",
-                "Create a text, image or video configuration, validate it, then request publication.",
+                "建立模型配置，完成驗證後再申請發佈。",
+                "Create a model configuration, validate it, then request publication.",
               )}
             />
           ) : (
@@ -465,6 +476,8 @@ function DraftModal({
                 {t("圖片生成與編輯", "Image generation & editing")}
               </option>
               <option value="internal-video-v1">{t("影片生成", "Video generation")}</option>
+              <option value="internal-speech-v1">{t("語音生成", "Speech generation")}</option>
+              <option value="internal-transcription-v1">{t("音訊轉錄", "Audio transcription")}</option>
             </select>
           </Field>
           <Field label={t("內部模型別名", "Internal model alias")}>
@@ -525,7 +538,21 @@ function DraftModal({
                 </Field>
               </div>
             </>
-          ) : (
+          ) : profile === "internal-speech-v1" || profile === "internal-transcription-v1" ? <>
+            <Field label={t("語言代碼", "Locale codes")} hint={t("以逗號分隔：en、zh-HK、yue-HK。只會發佈逐項通過驗證的語言。", "Comma-separated: en, zh-HK, yue-HK. Only locales exercised by this validation are published.")}>
+              <input name="locales" required maxLength={100} defaultValue={d && "locales" in d ? d.locales.join(", ") : "en"} />
+            </Field>
+            {profile === "internal-speech-v1" ? <Field label={t("公司聲音 ID", "Company voice IDs")}
+              hint={t("以逗號分隔，一至八個。每個聲音與語言會測試慢速、正常和快速。", "Comma-separated, one to eight. Each voice and locale is checked at slow, normal and fast speeds.")}>
+              <input name="voices" required maxLength={650} defaultValue={d?.profile_key === profile ? d.voices.join(", ") : ""} />
+            </Field> : <label className="checkbox"><input name="timestamps" type="checkbox" defaultChecked={d?.profile_key === profile && d.timestamps} />
+              {t("啟用實際分段時間；驗證會檢查 JSON 與分段格式。", "Enable actual segment timestamps; validation checks JSON and segment formats.")}</label>}
+            <Field label={profile === "internal-speech-v1" ? t("每個 Unicode 字元費率（HKD）", "Rate per Unicode scalar (HKD)")
+              : t("每毫秒輸入音訊費率（HKD）", "Rate per input audio millisecond (HKD)")}
+              hint={t("最多六位小數且大於零。驗證由平台預算支付；保存後會顯示完整案例上限報價。", "Positive, up to six decimal places. Platform funds pay for validation; the saved configuration shows its complete maximum quote.")}>
+              <input name="audio_rate" required inputMode="decimal" defaultValue={d?.profile_key === profile ? rateInput(d.rates[0]) : ""} />
+            </Field>
+          </> : (
             <Field
               label={profile === "internal-video-v1" ? t("每秒計費費率（HKD）", "Rate per billable second (HKD)") : t("每張圖片費率（HKD）", "Rate per image (HKD)")}
               hint={profile === "internal-video-v1" ? t("必須大於零。16 個案例最多報價 184 秒，由平台驗證預算支付。", "Must be positive. 16 cases quote up to 184 seconds, funded by the platform verification budget.") : t(
@@ -631,6 +658,11 @@ function DetailModal({
             document={release.data.document}
             version={release.data.version}
           />
+          {release.data.audio_verification_plan && <p className="notice" role="status">
+            {t("完整驗證", "Complete validation")} {release.data.audio_verification_plan.total_cases} {t("個案例，最高報價", "cases; maximum quote")}{" "}
+            <strong>{formatHKD(release.data.audio_verification_plan.quoted_micros)}</strong>.{" "}
+            {t("平台預算支付。格式與協議驗證不代表音質、轉錄準確度或粵語品質驗收。", "Paid from platform funds. Format and protocol checks do not qualify voice quality, transcription accuracy or Cantonese quality.")}
+          </p>}
           <details className="cap-technical">
             <summary>{t("版本識別", "Version identity")}</summary>
             <dl className="key-value">
@@ -756,6 +788,7 @@ function ValidationReceipt({
     >
       <h3>{t(...(labels[value.state] ?? [value.state, value.state]))}</h3>
       {value.video_suite && <VideoValidation value={value} releaseVersion={releaseVersion} access={access} onDone={onDone} />}
+      {value.audio_suite && <AudioValidation value={value} releaseVersion={releaseVersion} access={access} onDone={onDone} />}
       {value.video_suite && <h4>{t("資格決定時的回執", "Receipt at the eligibility decision")}</h4>}
       <dl className="key-value">
         <dt>{t("開始時間", "Started")}</dt>
@@ -785,7 +818,7 @@ function ValidationReceipt({
             <small>{t("不代表最終費用", "Not the final cost")}</small>
           )}
         </dd>
-        {!value.video_suite && <><dt>{t("輸入／輸出 tokens", "Input / output tokens")}</dt>
+        {!value.video_suite && !value.audio_suite && <><dt>{t("輸入／輸出 tokens", "Input / output tokens")}</dt>
           <dd>{r.input_tokens ?? "—"} / {r.output_tokens ?? "—"}</dd></>}
       </dl>
       {r.checks?.length ? (
@@ -840,6 +873,55 @@ function ValidationReceipt({
       </details>
     </section>
   );
+}
+function AudioValidation({ value, releaseVersion, access, onDone }: {
+  value: CapabilityValidation; releaseVersion: number; access: CapabilityAccess; onDone: () => void;
+}) {
+  const { t } = useI18n(), suite = value.audio_suite!;
+  const [busy, setBusy] = useState(false), [error, setError] = useState<Error | null>(null);
+  async function cancel(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault(); if (busy) return;
+    const reason = String(new FormData(e.currentTarget).get("reason") ?? "");
+    setBusy(true); setError(null);
+    try {
+      await command(access, "capability.audio-cancellation:" + value.id,
+        `${root}/validations/${value.id}/audio-cancellations`, { expected_version: releaseVersion, reason });
+      onDone();
+    } catch (e) { setError(e as Error); } finally { setBusy(false); }
+  }
+  const states: Record<string, [string, string]> = {
+    prepared: ["準備中", "Prepared"], dispatched: ["已送出", "Dispatched"], completed: ["已完成", "Completed"],
+    cancelled: ["已取消", "Cancelled"], unknown: ["費用待核對", "Cost unconfirmed"],
+  };
+  return <section className="cap-video-suite" aria-label={t("音訊驗證進度", "Audio validation progress")}>
+    <p><strong>{t("已驗證案例", "Verified cases")} {suite.verified_cases} / {suite.total_cases}</strong></p>
+    <progress max={suite.total_cases} value={suite.verified_cases} aria-label={t("已驗證音訊案例", "Verified audio cases")} />
+    <dl className="key-value">
+      <dt>{t("全套最高報價", "Suite quoted maximum")}</dt><dd>{formatHKD(suite.quoted_micros)}</dd>
+      <dt>{t("目前已知費用", "Current known cost")}</dt><dd>{formatHKD(suite.known_cost_micros)}{!suite.usage_known && t("（仍有待核對費用）", " (some cost remains unconfirmed)")}</dd>
+      <dt>{t("執行授權期限", "Execution grant expires")}</dt><dd><DateText value={suite.deadline_at} /></dd>
+    </dl>
+    <p className="muted">{t("驗證使用平台預算，關閉此視窗後仍會繼續。它檢查交付格式，不代表聲音、粵語或轉錄準確度的正式驗收。", "Validation uses platform funds and continues when this view closes. It checks delivery formats and does not qualify voice, Cantonese or transcription quality.")}</p>
+    {suite.cancel_requested && <p role="status">{t("已要求停止新案例。已送出的呼叫仍可能產生費用。", "New cases have been stopped. Dispatched calls may still incur costs.")}</p>}
+    {!suite.usage_known && value.state !== "running" && <p className="notice">{t("原音訊請求的結果與費用不明，系統會保留原報價，並停止自動重送。", "The original audio response and cost are unknown. Its quote remains held and automatic resubmission is stopped.")}</p>}
+    {suite.error_code && <p className="notice error"><code>{suite.error_code}</code></p>}
+    <details><summary>{t("查看音訊案例與媒體校驗", "View audio cases and media validation")}</summary>
+      <ol className="cap-video-cases">{suite.cases.map(c => <li key={c.id}>
+        <strong>{c.locale} · {c.kind === "speech" ? `${c.voice} · ${c.speed}×` : `${c.mime_type}${c.timestamps ? t(" · 分段時間", " · segment times") : " · JSON"}`}</strong>
+        <span>{t(...(states[c.state] ?? [c.state, c.state]))}{c.verified && t(" · 格式驗證通過", " · format verified")}</span>
+        <span>{c.actual_micros === null ? t("費用待確認", "Cost unconfirmed") : formatHKD(c.actual_micros)}</span>
+        {c.media?.fully_decoded && <span>{t("完整解碼", "Fully decoded")} · {c.media.duration_ms} ms</span>}
+        {c.media?.utf8_json && <span>{t("完整 JSON", "Complete JSON")} · {c.media.segment_count} {t("個時間段", "segments")}</span>}
+        {c.error_code && <code>{c.error_code}</code>}
+      </li>)}</ol>
+    </details>
+    {access.has("admin.catalog.publish") && value.state === "running" && !suite.cancel_requested &&
+      <form className="form-stack" onSubmit={cancel}>
+        <Field label={t("停止音訊驗證原因", "Reason to stop audio validation")}><input name="reason" required minLength={3} maxLength={1000} disabled={busy} /></Field>
+        <button className="button secondary" disabled={busy}>{busy ? t("處理中…", "Working…") : t("停止後續案例", "Stop further cases")}</button>
+      </form>}
+    <ErrorNotice error={error} />
+  </section>;
 }
 function VideoValidation({ value, releaseVersion, access, onDone }: {
   value: CapabilityValidation; releaseVersion: number; access: CapabilityAccess; onDone: () => void;
