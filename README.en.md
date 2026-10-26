@@ -1,5 +1,28 @@
 # Workmate · CopyPaste Enterprise Agent · extension
 
+<!-- native-methods-stage97 -->
+
+## Native Desktop method trials
+
+Desktop prepares a complete pinned method as local tasks, then runs, stops, reconciles, accepts and publishes those tasks using the customer's local Codex. Select a fresh session, folder and native permission for every specialist, preview approved inputs, and explicitly approve the private brief and total budget. Preparation reserves the exact batch once. Each task starts only on a customer action. The server rejects Desktop-to-cloud trial fallback.
+
+Uncertain admissions reuse the original encrypted journal request and key across renderer reload or application restart. Already executed work cannot silently restart. Acceptance requires every current successful delivery and required source-read fact. Installation copies method references only. Pre-upgrade native conversations retain their original company-tool version.
+
+Isolated acceptance uses synthetic models, accounts and credit with actual local Codex processes, native files and company usage settlement. It does not establish real payment, live provider quality, human native-dialog clicks, signed installers or complete product acceptance. Read the [execution, permission, recovery and data contract](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/97-native-method-trials.md).
+
+```mermaid
+flowchart LR
+ A[Desktop sign-in and pinned method] --> B[Fresh local sessions and folder permissions]
+ B --> C[Native preview and approved total budget]
+ C --> D[Atomic batch reservation]
+ D --> E[Start or stop each local Codex task]
+ E --> F[Observed usage and exact delivery review]
+ F --> G[Customer acceptance and publication]
+```
+
+
+Verified: 124 related integration checks, 49 Desktop unit checks, two actual local Codex protocol probes and six packaged Desktop journey checks. Earlier entries retain their historical validation scope. [Current evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-methods-checkpoint.json).
+
 <!-- solution-packages-stage96 -->
 
 ## Versioned business methods
