@@ -1,5 +1,29 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- cloud-program-stage99 -->
+
+Cloud Codex can now run actual pinned Node programs, built-in tests and syntax checks. Exact-source receipts retain failures, mark results stale after source changes, and accompany matching code packages. Delivery scripts verify actual Codex, native Node, PostgreSQL, browser downloads and owned-process cleanup.
+
+Usage: approve an eligible cloud task and its budget, let Codex write and check the code, inspect Software checks, expand output, then download execution files or the full record. The Windows-only native boundary has no network or child processes; arbitrary npm dependencies and the other three cloud development tools remain unavailable.
+
+Verified: 83 related checks across ten suites and four actual authenticated Web journey checks. Synthetic provider responses and credit; actual Codex, native execution and downloads. [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-program-checkpoint.json) · [Design and limits / 方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/99-cloud-program-execution.md).
+
+```mermaid
+flowchart LR
+ A[Authorized cloud task] --> B[Codex writes exact source]
+ B --> C[Native Node check]
+ C --> D[Source-bound receipt and files]
+ D --> E[Task UI and matching code package]
+```
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-program-03-checks-en.png)
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-program-03-compact-zh.png)
+
+![Actual Web interaction / 实际 Web 交互](assets/screenshots/workmate-03-cloud-program.gif)
+
+[Actual interaction MP4 / 实际交互录像](assets/screenshots/workmate-03-cloud-program.mp4)
+
 <!-- preset-specialists-stage98 -->
 
 Saved specialists now start local Codex from Desktop. Select a preset, lasting instructions and an exact project brand revision, save it after a free check, then choose a local folder, grant permissions and approve each turn budget. Web and Extension keep cloud execution. Later brand publications and specialist edits do not silently replace an existing native session’s saved version.

@@ -1,0 +1,23 @@
+.software-checks { min-width:0; margin-top:24px; padding-top:24px; border-top:1px solid var(--line); }
+.software-checks>header { display:flex; align-items:center; justify-content:space-between; gap:14px; }
+.software-checks h3 { margin:4px 0 10px; }
+.software-check-list { display:grid; gap:14px; margin:18px 0; }
+.software-check { min-width:0; padding:18px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+.software-check-result { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.software-check-mark { display:grid; place-items:center; width:32px; height:32px; flex:0 0 32px; border-radius:8px; color:var(--red); background:color-mix(in srgb,var(--red) 8%,var(--surface)); }
+.software-check[data-passed="true"] .software-check-mark { color:var(--green); background:color-mix(in srgb,var(--green) 8%,var(--surface)); }
+.software-check-result>div { flex:1; min-width:0; }
+.software-check-result small { display:block; margin-top:4px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.software-check-result time { font-size:11px; color:var(--muted); }
+.software-check-entry { display:flex; gap:8px; align-items:start; color:var(--muted); font-size:13px; }
+.software-check-entry code { overflow-wrap:anywhere; min-width:0; }
+.software-check-stale { padding:9px 12px; border-left:2px solid var(--blue); background:var(--blue-soft); font-size:12px; line-height:1.7; }
+.software-check details { min-width:0; margin:12px 0; border-top:1px solid var(--line); }
+.software-check summary { display:flex; align-items:center; gap:7px; padding:12px 0; cursor:pointer; font-size:12px; font-weight:650; }
+.software-check summary:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+.software-check pre { padding:12px; margin:5px 0 12px; background:var(--bg); color:var(--ink); border-radius:8px; font:12px/1.8 Consolas,monospace; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; max-width:100%; }
+.software-check pre.software-check-stderr { border-left:2px solid var(--red); }
+.software-check-digest { color:var(--muted); font:10px/1.8 Consolas,monospace; overflow-wrap:anywhere; }
+.software-check footer { display:flex; gap:10px 18px; align-items:center; flex-wrap:wrap; padding-top:9px; }
+.software-check footer .text-button { font-size:12px; }
+@media(max-width:600px) { .software-check { padding:14px; } .software-check-result time { flex-basis:100%; margin-left:42px; } }
