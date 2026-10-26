@@ -1,4 +1,5 @@
 import { ChatPanel } from "./chat-panel.js";
+import { ClientContent } from "./client-content.js";
 import { mountDeliveryQuality } from "./delivery-quality.js";
 import { mountGeneratedVideos } from "./generated-videos.js";
 import { mountAudioProductions } from "./audio-production.js";
@@ -21,6 +22,7 @@ let workspaceRevision = 0,
   notificationRevision = 0;
 let entitlementRevision = 0;
 let locale = "zh-HK";
+const clientContent = new ClientContent($("client-content"), path => request(path), () => locale);
 let actor = "";
 const chat = new ChatPanel({
   request: (scope, path, method = "GET", body, key) => send("API", {
@@ -93,6 +95,7 @@ async function send(type: string, body: Record<string, unknown> = {}) {
   return r.data;
 }
 function resetSignedOut() {
+  clientContent.clear();
   chat.reset(); actor = "";
   ++workspaceRevision;
   ++notificationRevision;
@@ -248,6 +251,7 @@ async function populateWorkspace() {
     "assistant",
   );
   notificationTimer = setInterval(() => {
+    void refreshClientContent();
     void run(notifications);
     void entitlements();
     void financial();
@@ -256,6 +260,7 @@ async function populateWorkspace() {
   if (revision === workspaceRevision) $("workspace").hidden = false;
 }
 async function projects() {
+  clientContent.clear();
   chat.reset();
   $("entitlement-summary").replaceChildren();
   $("entitlement-notices").replaceChildren();
@@ -279,6 +284,7 @@ async function projects() {
   $("demo-banner").hidden =
     me.memberships.find((m: any) => m.id === tenant)?.data_mode !== "simulated";
   if (project && revision === workspaceRevision) await chat.open({ actor, tenant, project });
+  if (revision === workspaceRevision && scope === tenant) await refreshClientContent();
   await tasks();
   await notifications();
   await entitlements();
@@ -1129,11 +1135,13 @@ $("project").addEventListener(
   () =>
     void run(async () => {
       project = $<HTMLSelectElement>("project").value;
+      clientContent.clear();
       chat.reset();
       workspaceRevision++;
       pending = null;
       clearTask();
       if (project) await chat.open({ actor, tenant, project });
+      await refreshClientContent();
       await tasks();
       await notifications();
     }),
@@ -1482,6 +1490,11 @@ async function applyLocale() {
     await financial();
   }
   if (task) await refreshTask(task);
+  if (actor && tenant) await refreshClientContent();
+}
+async function refreshClientContent() {
+  if (!actor || !tenant) return;
+  await clientContent.refresh({ actor, tenant, project });
 }
 $("locale").addEventListener(
   "click",

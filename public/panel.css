@@ -734,3 +734,11 @@ body.signed-in > #error { flex: none; max-height: 18dvh; overflow-y: auto; margi
   .chat-heading { margin-block: 3px; }
   #chat-form { padding: 8px; }
 }
+/* Company-managed copy stays inside the native Side Panel. */
+.client-content { min-width:0; max-height:180px; overflow:auto; scrollbar-width:none; margin:8px 0; }
+.client-content::-webkit-scrollbar { display:none; }
+.client-content p { white-space:pre-wrap; overflow-wrap:anywhere; margin:6px 0 0; font-size:12px; }
+.client-content article,.client-content details { padding:10px 12px; margin:6px 0; border:1px solid var(--chat-line); border-radius:8px; background:var(--chat-paper); color:var(--chat-ink); }
+.client-content article { border-left:3px solid var(--blue,#1f5eff); }
+.client-content-menu { display:flex; flex-direction:column; gap:6px; }
+.client-content-menu>[hidden] { display:none!important; }
