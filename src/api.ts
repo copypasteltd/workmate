@@ -89,7 +89,14 @@ export async function download(path: string, filename: string) {
   if (window.copyPasteBridge)
     throw new Error("Use the Desktop file panel to save deliverables");
   const response = await fetch(base + path, { credentials: "include" });
-  if (!response.ok) throw new Error("Download unavailable");
+  if (!response.ok) {
+    const data = await response.json().catch(() => null);
+    throw new ApiError(
+      data?.error?.code ?? "DOWNLOAD_UNAVAILABLE",
+      data?.error?.message ?? "Download unavailable",
+      response.status,
+    );
+  }
   const url = URL.createObjectURL(await response.blob());
   const a = document.createElement("a");
   a.href = url;

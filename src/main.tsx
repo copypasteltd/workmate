@@ -5,6 +5,7 @@ import { ApprovalReview } from "./approvals";
 import { AdminPlans } from "./plans";
 import { AdminCapabilities } from "./capabilities";
 import { AdminClientContent } from "./client-content";
+import { AdminDataJobs, AdminDataComposer } from "./data-jobs";
 import { AdminProviderControl } from "./provider-control";
 import { AdminSolutions } from "./solutions";
 import { AdminSupport } from "./support";
@@ -516,6 +517,8 @@ function AdminShell() {
                     element={
                       n[0] === "quality" ? (
                         <QualitySummary url="/v1/admin/quality" />
+                      ) : n[0] === "jobs" ? (
+                        <JobsPage />
                       ) : n[0] === "billing" ? (
                         <BillingPage />
                       ) : n[0] === "provider-control" ? (
@@ -913,6 +916,11 @@ function CatalogPage() {
     </>
   );
 }
+function JobsPage() {
+  const a = useAdmin(), { t } = useI18n(), location = useLocation();
+  const history = new URLSearchParams(location.search).get("view") === "history";
+  return <><nav className="cap-navigation" aria-label={t("任務管理", "Job management")}><Link to="/jobs" aria-current={!history ? "page" : undefined}>{t("資料任務與匯出", "Data jobs & exports")}</Link><Link to="/jobs?view=history" aria-current={history ? "page" : undefined}>{t("費用與權益操作紀錄", "Billing & entitlement history")}</Link></nav>{history ? <Section section="jobs" /> : <AdminDataJobs key={a.me.user.id} access={a} />}</>;
+}
 function Section({ section }: { section: string }) {
   const { t } = useI18n(),
     a = useAdmin(),
@@ -1219,22 +1227,12 @@ function Section({ section }: { section: string }) {
           >
             <RefreshCw size={17} />
           </button>
-          {a.has("admin.exports.create") &&
+          {a.has("admin.exports.create") && a.has("admin.jobs.create") && a.has("admin.jobs.read") &&
             ["users", "usage", "billing", "audit"].includes(active) && (
               <button
                 className="icon-button"
                 title={t("匯出已授權資料", "Export authorized data")}
-                onClick={() =>
-                  void action(async () => {
-                    const r = await post("/v1/admin/exports", {
-                      source: active,
-                    });
-                    await download(
-                      "/v1/admin/exports/" + r.id + "/download",
-                      "copypaste-" + active + ".csv",
-                    );
-                  })
-                }
+                onClick={() => setDialog("data-export")}
               >
                 <Download size={17} />
               </button>
@@ -1604,8 +1602,9 @@ function Section({ section }: { section: string }) {
         />
       )}
       {dialog === "batch" && (
-        <BatchDialog onClose={() => setDialog(null)} onDone={bump} />
+        <AdminDataComposer access={a} kind="users.status" onClose={() => setDialog(null)} onCreated={(job) => { setDialog(null); bump(); navTo("/jobs?job=" + job.id); }} />
       )}
+      {dialog === "data-export" && ["users", "usage", "billing", "audit"].includes(active) && <AdminDataComposer access={a} initialSource={active as "users" | "usage" | "billing" | "audit"} onClose={() => setDialog(null)} onCreated={(job) => { setDialog(null); navTo("/jobs?job=" + job.id); }} />}
       {dialog === "invite" && (
         <InviteAdministrator
           roles={data?.roles ?? []}
@@ -2713,86 +2712,4 @@ createRoot(document.getElementById("root")!).render(
   </React.StrictMode>,
 );
 
-function BatchDialog({
-  onClose,
-  onDone,
-}: {
-  onClose: () => void;
-  onDone: () => void;
-}) {
-  const { t } = useI18n();
-  const [preview, setPreview] = useState<any>(null);
-  return (
-    <Modal title={t("批次用戶操作", "Batch user action")} onClose={onClose}>
-      {preview ? (
-        <>
-          <div className="notice">
-            <div>
-              <strong>{t("確認變更範圍", "Review affected users")}</strong>
-              <p>
-                {preview.found} {t("名用戶", "users")} ·{" "}
-                {preview.command.status} · {preview.missing}{" "}
-                {t("筆不存在", "not found")}
-              </p>
-              <p>{preview.command.reason}</p>
-            </div>
-          </div>
-          <AsyncForm
-            submitLabel={t("確認套用並撤銷會話", "Apply and revoke sessions")}
-            onSubmit={async () => {
-              await post("/v1/admin/jobs", {
-                preview_id: preview.id,
-                payload_hash: preview.payload_hash,
-              });
-              onDone();
-              onClose();
-            }}
-          >
-            <button
-              className="text-button"
-              type="button"
-              onClick={() => setPreview(null)}
-            >
-              {t("重新編輯", "Edit")}
-            </button>
-          </AsyncForm>
-        </>
-      ) : (
-        <AsyncForm
-          submitLabel={t("預覽影響", "Preview impact")}
-          onSubmit={async (f) => {
-            setPreview(
-              await post("/v1/admin/jobs/preview", {
-                action: "users.status",
-                ids: String(f.get("ids"))
-                  .split(/[\s,]+/)
-                  .filter(Boolean),
-                status: String(f.get("status")),
-                reason: String(f.get("reason")),
-              }),
-            );
-          }}
-        >
-          <Field
-            label={t(
-              "用戶 ID（以逗號或換行分隔，最多 100 名）",
-              "User IDs (comma/newline separated, up to 100)",
-            )}
-          >
-            <textarea name="ids" rows={4} required />
-          </Field>
-          <Field label={t("狀態", "Status")}>
-            <select name="status">
-              <option value="suspended">Suspended</option>
-              <option value="active">Active</option>
-            </select>
-          </Field>
-          <Field label={t("操作原因", "Reason")}>
-            <textarea name="reason" minLength={3} required />
-          </Field>
-        </AsyncForm>
-      )}
-    </Modal>
-  );
-}
 import { AdminSchedules } from "./schedules";
