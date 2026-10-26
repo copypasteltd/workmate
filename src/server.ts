@@ -1,5 +1,8 @@
 import { registerAdminApprovals } from "./admin-approvals.js";
-import { publicClientContent, registerClientContent } from "./client-content.js";
+import {
+  publicClientContent,
+  registerClientContent,
+} from "./client-content.js";
 import { seedCommercialPlans } from "./commercial-plans.js";
 import { registerAdminPlans } from "./admin-plans.js";
 import { registerProviderAdmin } from "./provider-admin.js";
@@ -51,6 +54,7 @@ import { seedRoles, auditDenied } from "./admin-access.js";
 import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
 import { registerCloudWorkflows } from "./cloud-workflows.js";
+import { registerCloudWorkflowSchedules } from "./cloud-schedules.js";
 import { registerAgentGroups } from "./agent-groups.js";
 import { registerCreativeMatrices } from "./creative-matrices.js";
 import { registerVideoProjects } from "./video-projects.js";
@@ -421,6 +425,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerTaskDependencies(app, db);
   registerBusiness(app, db, storage, catalog);
   registerCloudWorkflows(app, db, catalog, storage);
+  registerCloudWorkflowSchedules(app, db, catalog, storage);
   registerAgentGroups(app, db, catalog);
   registerCreativeMatrices(app, db, storage);
   registerVideoProjects(app, db, storage);

@@ -89,6 +89,7 @@ import {
 } from "./render.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { advanceSchedules } from "./schedules.js";
+import { advanceCloudSchedules } from "./cloud-schedules.js";
 import { expireFederationAttempts } from "./federation-session.js";
 import { ErasureService } from "./erasure.js";
 import { cleanUploadStaging } from "./uploads.js";
@@ -312,6 +313,10 @@ export class Worker {
         ["provider_requests", () => recoverProviderRequests(this.db)],
         ["queue_recovery", () => recoverQueuedClaims(this.db)],
         ["schedules", () => advanceSchedules(this.db, this.catalog)],
+        [
+          "private_cloud_schedules",
+          () => advanceCloudSchedules(this.db, this.catalog, this.storage),
+        ],
         [
           "workflows",
           () => advanceWorkflows(this.db, this.catalog, this.storage),

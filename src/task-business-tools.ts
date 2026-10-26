@@ -9,6 +9,7 @@ import {
 } from "./solution-tools.js";
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { CloudWorkflows } from "./cloud-workflows.js";
+import { CloudWorkflowSchedules } from "./cloud-schedules.js";
 import { resolveProjectConfiguration } from "./project-configuration.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
 import { AudioProduction } from "./audio-production.js";
@@ -187,8 +188,9 @@ export class TaskBusinessTools {
       role.role_key === "video-motion" && role.version === "1.5.0";
     const cloudWorkflowTools =
       role.role_key === "workflow-consultant" &&
-      role.version === "1.1.0" &&
+      ["1.1.0", "1.2.0"].includes(role.version) &&
       t.execution_location !== "desktop";
+    const cloudScheduleTools = cloudWorkflowTools && role.version === "1.2.0";
     const authorize = async (tx: any) => {
       await lockTaskTools(tx, t.id);
       await this.authority.authorize(tx);
@@ -1526,6 +1528,18 @@ export class TaskBusinessTools {
           authorize,
         ),
       );
+    if (
+      cloudScheduleTools &&
+      role.tool_ids.includes("workflow.run") &&
+      role.tool_ids.includes("workflow.validate")
+    )
+      tools.push(
+        ...new CloudWorkflowSchedules(
+          this.db,
+          this.catalog,
+          this.storage,
+        ).build(t, actor, authorize),
+      );
     const permitted = tools.filter(
       (tool) =>
         (
@@ -1664,6 +1678,9 @@ export class TaskBusinessTools {
             workflow_run: cloudWorkflowTools,
             workflow_status: cloudWorkflowTools,
             workflow_cancel: cloudWorkflowTools,
+            workflow_schedule_preview: cloudScheduleTools,
+            workflow_schedule_request: cloudScheduleTools,
+            workflow_schedule_status: cloudScheduleTools,
           }) as Record<string, boolean>
         )[tool.name],
     );
@@ -1713,6 +1730,8 @@ export class TaskBusinessTools {
             "workflow_read",
             "workflow_validate",
             "workflow_status",
+            "workflow_schedule_preview",
+            "workflow_schedule_status",
           ].includes(tool.name),
         )
       : permitted;

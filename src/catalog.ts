@@ -160,6 +160,39 @@ export class Catalog {
       this.skills.push(item);
       this.skillDefinitions.push(definition);
     }
+    const scheduleRelease = JSON.parse(
+      await readFile("catalog/cloud-schedule-release-v1.json", "utf8"),
+    );
+    const scheduleBase = this.role("workflow-consultant");
+    if (
+      scheduleRelease.schema !== "copypaste-cloud-schedule-release-1" ||
+      scheduleBase.version !== "1.1.0" ||
+      scheduleRelease.previous_role_sha256 !== this.digest(scheduleBase) ||
+      scheduleRelease.role.role_key !== scheduleBase.role_key ||
+      scheduleRelease.role.version !== "1.2.0" ||
+      canonical(scheduleRelease.role.tool_ids) !==
+        canonical(scheduleBase.tool_ids) ||
+      scheduleRelease.skill_package.key !== "workflow-scheduling" ||
+      scheduleRelease.skill_package.version !== "1.0.0" ||
+      scheduleRelease.skill_definition.package_sha256 !==
+        scheduleRelease.skill_package.sha256 ||
+      this.skills.some(
+        (s) =>
+          s.key === scheduleRelease.skill_package.key &&
+          s.version === scheduleRelease.skill_package.version,
+      )
+    )
+      throw new Problem(
+        503,
+        "ROLE_RELEASE_INVALID",
+        "Cloud schedule release does not match its retained role and permissions",
+      );
+    this.historicalRoles.push(scheduleBase);
+    this.roles = this.roles.map((r) =>
+      r.role_key === scheduleBase.role_key ? scheduleRelease.role : r,
+    );
+    this.skills.push(scheduleRelease.skill_package);
+    this.skillDefinitions.push(scheduleRelease.skill_definition);
     this.admin = JSON.parse(
       await readFile("catalog/admin-permission-catalog.json", "utf8"),
     );

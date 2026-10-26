@@ -122,6 +122,25 @@ export async function startDemoGateway(c: Config) {
         workflowRead = find("workflow_read"),
         workflowPublish = find("workflow_publish"),
         workflowRun = find("workflow_run");
+      const schedulePreview = find("workflow_schedule_preview"),
+        scheduleRequest = find("workflow_schedule_request"),
+        scheduleDemo = requested.includes("schedule_demo=confirmed");
+      const scheduleDemoArgs = (published: any) => ({
+        name: "Harbour daily campaign review",
+        calendar: {
+          timezone: "Asia/Hong_Kong",
+          frequency: "daily",
+          time: "09:00",
+          weekdays: [],
+        },
+        catch_up: "latest",
+        ends_at: null,
+        expected_output:
+          "Review the fixed campaign summary, wait for my approval and prepare a private campaign note.",
+        workflow_id: published.workflow.id,
+        workflow_version: published.workflow.version,
+        workflow_definition_hash: published.definition_hash,
+      });
       // Read only this turn's actual outputs. Synthetic requests must use real
       // source IDs, definitions, calculation hashes and revision identities.
       const toolOutputs = (
@@ -473,7 +492,28 @@ export async function startDemoGateway(c: Config) {
           workflow_id: savedWorkflow.workflow.id,
           expected_version: savedWorkflow.workflow.version,
         };
-      } else if (workflowRun && publishedWorkflow && !used(workflowRun.name)) {
+      } else if (
+        scheduleDemo &&
+        schedulePreview &&
+        publishedWorkflow &&
+        !used(schedulePreview.name)
+      ) {
+        tool = schedulePreview;
+        args = scheduleDemoArgs(publishedWorkflow);
+      } else if (
+        scheduleDemo &&
+        scheduleRequest &&
+        publishedWorkflow &&
+        !used(scheduleRequest.name)
+      ) {
+        tool = scheduleRequest;
+        args = scheduleDemoArgs(publishedWorkflow);
+      } else if (
+        workflowRun &&
+        !scheduleDemo &&
+        publishedWorkflow &&
+        !used(workflowRun.name)
+      ) {
         tool = workflowRun;
         args = {
           workflow_id: publishedWorkflow.workflow.id,

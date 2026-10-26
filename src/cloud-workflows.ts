@@ -84,6 +84,9 @@ export function publicCloudRun(r: any) {
     ),
     budget_excludes_current_consultant: true,
     origin_task_id: r.origin_task_id,
+    schedule_id: r.cloud_schedule_id ?? null,
+    schedule_revision: r.cloud_schedule_revision ?? null,
+    schedule_occurrence_id: r.cloud_schedule_occurrence_id ?? null,
   };
 }
 
@@ -624,7 +627,7 @@ export async function cancelPrivateCloudRun(
   );
 }
 
-async function runInputs(tx: Tx, run: any, actor: Principal) {
+export async function runInputs(tx: Tx, run: any, actor: Principal) {
   await projectAccess(tx, actor, run.tenant_id, run.project_id, "write");
   const origin = (
     await tx.query("SELECT * FROM tasks WHERE id=$1 FOR SHARE", [
@@ -673,7 +676,8 @@ export function registerCloudWorkflows(
   });
   const service = new CloudWorkflows(db, catalog, storage);
   app.get(base, { preHandler: requireUser(db) }, async (req) => {
-    const p = params.parse(req.params);
+    const p = params.parse(req.params),
+      q = z.object({ run_id: uuid.optional() }).strict().parse(req.query);
     return db.tx(
       async (tx) => {
         await projectAccess(tx, req.principal, p.tenant, p.project);
@@ -681,8 +685,9 @@ export function registerCloudWorkflows(
           await tx.query(
             `SELECT w.* FROM workflows w WHERE w.project_id=$1 AND w.private_owner=$2
         AND w.execution_location='cloud' AND w.content_state='active' AND cloud_workflow_version_available(w.id,w.version)
+        AND ($3::uuid IS NULL OR w.id=(SELECT workflow_id FROM workflow_runs WHERE id=$3 AND private_owner=$2))
         ORDER BY w.created_at DESC LIMIT 100`,
-            [p.project, req.principal.id],
+            [p.project, req.principal.id, q.run_id ?? null],
           )
         ).rows;
         const runs = (
@@ -690,10 +695,12 @@ export function registerCloudWorkflows(
             `SELECT r.* FROM workflow_runs r JOIN workflows w ON w.id=r.workflow_id
         WHERE r.project_id=$1 AND r.private_owner=$2 AND r.execution_location='cloud' AND r.content_state='active'
         AND w.content_state='active' AND cloud_workflow_version_available(w.id,r.workflow_version)
-        AND task_content_sources_available(r.origin_task_id) ORDER BY r.created_at DESC LIMIT 100`,
-            [p.project, req.principal.id],
+        AND task_content_sources_available(r.origin_task_id) AND ($3::uuid IS NULL OR r.id=$3)
+        ORDER BY r.created_at DESC LIMIT 100`,
+            [p.project, req.principal.id, q.run_id ?? null],
           )
         ).rows;
+        if (q.run_id && !runs.length) throw missing();
         return {
           items: items.map(publicWorkflow),
           runs: runs.map(publicCloudRun),
