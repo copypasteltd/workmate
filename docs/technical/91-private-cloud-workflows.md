@@ -1,5 +1,9 @@
 # 私有云端流程顾问 / Private cloud workflow consultant
 
+
+**阶段 104 / Stage 104：** 已接通私有对话／成果到明确确认的云端每日／每周计划、不可变版本、逐次 run、人工审批、费用结算、暂停／取消隔离、客户恢复确认和按范围的 MFA Admin 暂停。78 项相关后端检查、8 项实际跨端流程、8 张截图、3 组交互录制；明确假数据。SQL120 新增，SQL001–119 保留。Desktop 本机 Codex 不被云端替代；原 102 REQ／TC 和完整验收结论不改写。见[方案与实际范围](104-private-cloud-schedules.md)。
+
+
 本增量把企业流程顾问接到实际的云端顺序执行引擎。Web/Extension 使用云端 Codex；Desktop 继续使用客户本机 Codex 和独立的本机流程工具。流程版本保持私有，不因发布而成为项目共享内容。
 
 ## 用户流程 / Customer journey
