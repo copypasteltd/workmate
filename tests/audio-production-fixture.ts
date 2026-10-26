@@ -31,7 +31,7 @@ export async function withAudioCustomerConfirmation<T>(s: VideoSystem, client: V
   }
 }
 
-export async function audioProviderFixture(directory: string) {
+export async function audioProviderFixture(directory: string, options: { allowPlatformVerification?: boolean } = {}) {
   const text = await generatedVideoProvider(directory);
   const file = path.join(directory, "explicit-synthetic-tone.wav");
   await promisify(execFile)(process.env.FFMPEG_BIN ?? "ffmpeg", ["-v", "error", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=24000", "-t", "2", "-ac", "1", "-c:a", "pcm_s16le", file], { windowsHide: true, timeout: 60000 });
@@ -54,7 +54,12 @@ export async function audioProviderFixture(directory: string) {
       assert.equal(req.method, "POST"); assert.equal(req.headers.authorization, "Bearer synthetic-video-provider-fixture");
       const operation = String(req.headers["x-copypaste-operation-id"]);
       assert.match(operation, /^[a-f0-9-]{36}$/); assert.equal(req.headers["idempotency-key"], operation);
-      for (const name of ["task", "tenant", "project", "actor", "capability-version"]) assert.match(String(req.headers["x-copypaste-" + name + "-id"]), /^[a-f0-9-]{36}$/);
+      for (const name of ["task", "actor"]) assert.match(String(req.headers["x-copypaste-" + name + "-id"]), /^[a-f0-9-]{36}$/);
+      const platform = options.allowPlatformVerification && req.headers["x-copypaste-tenant-id"] === undefined;
+      for (const name of ["tenant", "project", "capability-version"]) {
+        if (platform) assert.equal(req.headers["x-copypaste-" + name + "-id"], undefined, "A platform verification never invents customer scope");
+        else assert.match(String(req.headers["x-copypaste-" + name + "-id"]), /^[a-f0-9-]{36}$/);
+      }
       const call: typeof calls[number] = { path: req.url, operation, fields: {} };
       if (req.url === "/v1/audio/speech") call.fields = JSON.parse(raw.toString());
       else {

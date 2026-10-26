@@ -17,6 +17,8 @@ import {
 import { activeRuntimeProfile } from "./runtime-profiles.js";
 import { validationProviderBudgetReceipt } from "./provider-budgets.js";
 import { prepareCapabilityVideoSuite, capabilityVideoDTO } from "./capability-video-verification.js";
+import { prepareCapabilityAudioSuite, capabilityAudioDTO } from "./capability-audio-verification.js";
+import { capabilityAudioPlan } from "./capability-audio-plan.js";
 import { globalPlanAuthority } from "./admin-plans.js";
 import {
   currentAdminControl,
@@ -111,6 +113,8 @@ const releaseSelect = `SELECT r.*,v.id AS validation_id,v.state AS validation_st
  LEFT JOIN capability_heads h ON h.profile_key=r.profile_key AND h.data_mode=r.data_mode
  LEFT JOIN capability_publications current_p ON current_p.id=h.publication_id`;
 function releaseDTO(row: any) {
+  const audio = ["internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key)
+    ? capabilityAudioPlan(capabilityDocument.parse(row.definition)) : null;
   return {
     id: row.id,
     kind: "model_capability",
@@ -141,6 +145,8 @@ function releaseDTO(row: any) {
       : [],
     head_revision: row.head_revision ?? 0,
     current_publication_id: row.current_publication_id ?? null,
+    ...(audio ? { audio_verification_plan: { total_cases: audio.cases.length, plan_hash: audio.hash,
+      quoted_micros: audio.quoted_micros, quality_scope: audio.quality_scope } } : {}),
   };
 }
 async function release(tx: Tx, db: Database, id: string) {
@@ -158,6 +164,7 @@ async function release(tx: Tx, db: Database, id: string) {
 }
 async function validationDTO(tx: Tx, v: any) {
   const video = await capabilityVideoDTO(tx, v.id);
+  const audio = await capabilityAudioDTO(tx, v.id);
   const purge = (
     await tx.query(
       "SELECT * FROM capability_workspace_purges WHERE validation_id=$1",
@@ -175,11 +182,12 @@ async function validationDTO(tx: Tx, v: any) {
     result: v.result,
     workspace_cleanup: purge ? capabilityWorkspacePurgeDTO(purge) : null,
     ...(video ? { video_suite: video } : {}),
+    ...(audio ? { audio_suite: audio } : {}),
   };
 }
 async function expireVerifications(tx: Tx) {
   await tx.query(
-    "UPDATE capability_validations v SET state='reconciling',finished_at=now(),result=jsonb_build_object('error_code','VERIFICATION_LEASE_EXPIRED','accepted',true,'usage_known',false) WHERE state='running' AND lease_until<now() AND NOT EXISTS(SELECT 1 FROM capability_video_suites s WHERE s.validation_id=v.id)",
+    "UPDATE capability_validations v SET state='reconciling',finished_at=now(),result=jsonb_build_object('error_code','VERIFICATION_LEASE_EXPIRED','accepted',true,'usage_known',false) WHERE state='running' AND lease_until<now() AND NOT EXISTS(SELECT 1 FROM capability_video_suites s WHERE s.validation_id=v.id) AND NOT EXISTS(SELECT 1 FROM capability_audio_suites s WHERE s.validation_id=v.id)",
   );
 }
 async function inspect(
@@ -656,7 +664,7 @@ export function registerCapabilityReleases(
               k,
               payloadHash,
               nonce,
-              row.profile_key === "internal-video-v1",
+              ["internal-video-v1", "internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key),
             ],
           )
         ).rows[0];
@@ -675,13 +683,15 @@ export function registerCapabilityReleases(
         await tx.query("SELECT register_validation_ai_budget($1)", [v.id]);
         if (row.profile_key === "internal-video-v1")
           await prepareCapabilityVideoSuite(tx, db, v, row, req.principal);
+        if (["internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key))
+          await prepareCapabilityAudioSuite(tx, db, v, row, req.principal);
         return { row, v };
       },
       undefined,
       true,
       req.principal.id,
     );
-    if (prepared.v.execution_nonce !== nonce || prepared.row.profile_key === "internal-video-v1")
+    if (prepared.v.execution_nonce !== nonce || ["internal-video-v1", "internal-speech-v1", "internal-transcription-v1"].includes(prepared.row.profile_key))
       return db.tx(
         async (tx) => {
           await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
@@ -905,6 +915,25 @@ export function registerCapabilityReleases(
     );
     if (denied) throw denied;
     return result;
+  });
+  app.post(root + "/validations/:validation/audio-cancellations", auth, async (req, reply) => {
+    const id = uuid.parse((req.params as any).validation), b = command.parse(req.body);
+    reply.code(202).header("Cache-Control", "no-store");
+    return db.tx(async tx => {
+      await capabilityAuthority(tx, req.principal, "admin.catalog.publish");
+      const v = (await tx.query(`SELECT v.* FROM capability_validations v JOIN capability_releases r ON r.id=v.release_id
+        JOIN capability_audio_suites s ON s.validation_id=v.id WHERE v.id=$1 AND r.data_mode=$2 FOR UPDATE OF v`, [id, mode(db)])).rows[0];
+      if (!v) throw new Problem(404, "NOT_FOUND", "Audio validation not found");
+      const r = await release(tx, db, v.release_id);
+      if (r.version !== b.expected_version) throw new Problem(409, "VERSION_CONFLICT", "Reload the exact capability document");
+      return replay(tx, req.principal.id, "capability.audio-cancellation:" + id, key(req), b, async () => {
+        if (v.state !== "running") throw new Problem(409, "CAPABILITY_VERIFICATION_TERMINAL", "A completed receipt cannot be cancelled or reopened");
+        await tx.query(`UPDATE capability_audio_suites SET cancel_requested_at=coalesce(cancel_requested_at,clock_timestamp()),
+          next_poll_at=clock_timestamp() WHERE validation_id=$1`, [id]);
+        await audit(tx, req.principal, "admin.catalog.publish", v.release_id, "audio-cancellation", { validation_id: id, reason: b.reason });
+        return validationDTO(tx, v);
+      });
+    }, undefined, true, req.principal.id);
   });
   for (const action of ["video-cancellations", "video-rechecks"] as const) {
     app.post(root + "/validations/:validation/" + action, auth, async (req, reply) => {

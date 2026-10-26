@@ -1,5 +1,24 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- managed-audio-stage108 -->
+
+Admin now manages immutable speech and transcription model releases: fixed voices/locales and exact rates, durable platform-funded protocol checks, actual background progress, stop controls, independent publication and historical rollback. Existing customer work retains its original model and rates; customer audio authorization remains separate.
+
+229 affected backend checks, six Admin form/money checks and eight actual browser flows passed. A real crashed processor after POST retains the original unknown operation without resubmission. Actual Admin screenshots and GIF/MP4 below show this shared control flow; previous client-specific captures retain their original scope. Models/accounts and audio replies are explicitly synthetic.
+
+The build now bundles its original audio reference files and license. The compiled verifier loads and fully decodes both formats from an unrelated working directory; the original missing-file failure is retained.
+
+Native decoding and timestamp structure do not qualify voice, transcription accuracy or Cantonese quality. Unknown audio costs still require external evidence. Stage106 retains its one unattributed full-run timeout and the passing unchanged two-case replay; this increment is the affected regression, not a new complete-product acceptance.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/108-managed-audio-capabilities.md) · [MP4](assets/verification/managed-audio-108/workmate-managed-audio-01-audio-configuration-and-background-resume.mp4)
+
+![Actual Admin speech verification / 实际后台语音验证](assets/verification/managed-audio-108/workmate-managed-audio-01-speech-completed-en.png)
+
+![Actual transcription formats / 实际转录格式](assets/verification/managed-audio-108/workmate-managed-audio-01-transcription-formats-and-timestamps-en.png)
+
+![Actual background continuation / 实际后台继续执行](assets/verification/managed-audio-108/workmate-managed-audio-01-audio-configuration-and-background-resume.gif)
+
+
 <!-- capability-inventory-stage107 -->
 
 Video, speech and transcription now use their exact implemented protocols and independent verification flags in the customer capability inventory. Changed availability expires the signed page cursor. Revoked versions, mismatched protocols, tenant scope and task execution authorization remain checked.

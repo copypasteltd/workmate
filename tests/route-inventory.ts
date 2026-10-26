@@ -22,17 +22,23 @@ export async function currentRouteInventory() {
     await readFile("contracts/client-operations-route-additions.json", "utf8"),
   );
   assert.equal(clients.baseline_lf_sha256, additions.baseline_lf_sha256);
+  const audio = JSON.parse(
+    await readFile("contracts/managed-audio-route-additions.json", "utf8"),
+  );
+  assert.equal(audio.baseline_lf_sha256, additions.baseline_lf_sha256);
   const routes = [
       ...baseline.routes,
       ...additions.routes,
       ...programs.routes,
       ...clients.routes,
+      ...audio.routes,
     ],
     conditional_routes = [
       ...baseline.conditional_routes,
       ...additions.conditional_routes,
       ...programs.conditional_routes,
       ...clients.conditional_routes,
+      ...audio.conditional_routes,
     ];
   const labels = [...routes, ...conditional_routes].map(
     (row) => row.method + " " + row.path,

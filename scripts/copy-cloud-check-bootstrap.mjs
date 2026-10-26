@@ -9,3 +9,10 @@ for (const file of ["cloud-api-bootstrap.cjs", "cloud-sqlite-bootstrap.cjs"]) {
     path.join(root, "dist/src", file),
   );
 }
+
+// Protocol references are runtime dependencies of the compiled audio verifier.
+const audio = path.join(root, "dist/assets/audio");
+await mkdir(audio, { recursive: true });
+for (const file of ["LICENSE.txt", "protocol-tone-v1.wav", "protocol-tone-v1.mp3"]) {
+  await copyFile(path.join(root, "assets/audio", file), path.join(audio, file));
+}

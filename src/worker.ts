@@ -3,6 +3,7 @@ import { finalizeReviewedEffect } from "./media-effects-tools.js";
 import { AudioProduction } from "./audio-production.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
 import { CapabilityVideoVerification } from "./capability-video-verification.js";
+import { CapabilityAudioVerification } from "./capability-audio-verification.js";
 import {
   assertTaskContentSources,
   recordTaskSourceRead,
@@ -127,6 +128,8 @@ export class Worker {
   private generatedVideoAbort = new AbortController();
   private capabilityVideoRun: Promise<unknown> | null = null;
   private capabilityVideoAbort = new AbortController();
+  private capabilityAudioRun: Promise<unknown> | null = null;
+  private capabilityAudioAbort = new AbortController();
   private connectorRun: Promise<unknown> | null = null;
   private connectorAbort = new AbortController();
   private seoRun: Promise<unknown> | null = null;
@@ -275,6 +278,12 @@ export class Worker {
           .finally(() => {
             this.capabilityVideoRun = null;
           });
+      }
+      if (!this.stopping && !this.capabilityAudioRun) {
+        this.capabilityAudioRun = new CapabilityAudioVerification(this.db, this.catalog)
+          .advance(this.capabilityAudioAbort.signal)
+          .catch(() => console.error(JSON.stringify({ component: "worker.capability_audio", error_code: "AUDIO_VERIFICATION_MAINTENANCE_FAILED" })))
+          .finally(() => { this.capabilityAudioRun = null; });
       }
       if (!this.stopping && !this.connectorRun) {
         this.connectorRun = advanceConnectors(this.db, this.storage, {
@@ -1144,11 +1153,13 @@ export class Worker {
     this.videoAbort.abort();
     this.generatedVideoAbort.abort();
     this.capabilityVideoAbort.abort();
+    this.capabilityAudioAbort.abort();
     this.connectorAbort.abort();
     this.seoAbort.abort();
     await this.videoRun;
     await this.generatedVideoRun;
     await this.capabilityVideoRun;
+    await this.capabilityAudioRun;
     await this.connectorRun;
     await this.seoRun;
     await this.matrixRun;

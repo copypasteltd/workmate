@@ -10,6 +10,7 @@ import { tokenCharge } from "./billing.js";
 import { removeOwnedUUIDDirectory } from "./owned-directory-cleanup.js";
 import { validateVerificationPNG } from "./png-validation.js";
 import { videoJobLimits, videoJobOperations, videoJobProtocol } from "./video-job-protocol.js";
+import { speechLimits, speechProtocol, transcriptionLimits, transcriptionProtocol } from "./audio-production-model.js";
 import {
   internalAIRequest,
   finishInternalAIRequest,
@@ -23,6 +24,8 @@ const common = {
   gateway_policy: z.literal("company_internal_only"),
   model_alias: z.string().trim().min(1).max(200),
 };
+const audioLocales = z.array(z.enum(["en", "zh-HK", "yue-HK"])).min(1).max(3)
+  .refine(values => new Set(values).size === values.length);
 export const capabilityDocument = z.discriminatedUnion("profile_key", [
   z
     .object({
@@ -42,12 +45,34 @@ export const capabilityDocument = z.discriminatedUnion("profile_key", [
     .strict(),
   z.object({ ...common, profile_key: z.literal("internal-video-v1"),
     reasoning_effort: z.null(), rates: z.tuple([rate.positive()]) }).strict(),
+  z.object({ ...common, profile_key: z.literal("internal-speech-v1"),
+    reasoning_effort: z.null(), rates: z.tuple([rate.positive().max(1e9)]), locales: audioLocales,
+    voices: z.array(z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/)).min(1).max(8)
+      .refine(values => new Set(values).size === values.length) }).strict(),
+  z.object({ ...common, profile_key: z.literal("internal-transcription-v1"),
+    reasoning_effort: z.null(), rates: z.tuple([rate.positive().max(1e9)]), locales: audioLocales,
+    timestamps: z.boolean() }).strict(),
 ]);
+export type CapabilityDocument = z.infer<typeof capabilityDocument>;
 export function capabilityBody(
   c: Config,
   document: z.infer<typeof capabilityDocument>,
 ) {
   const text = document.profile_key === "internal-text-v1";
+  if (document.profile_key === "internal-speech-v1" || document.profile_key === "internal-transcription-v1") {
+    const speech = document.profile_key === "internal-speech-v1";
+    return {
+      profile_key: document.profile_key, model_alias: document.model_alias, ready: true,
+      rates: document.rates, schema_version: 2, reasoning_effort: null,
+      wire_protocol: speech ? speechProtocol : transcriptionProtocol,
+      supported_operations: [speech ? "audio.speech" : "audio.transcriptions"],
+      limits: document.profile_key === "internal-speech-v1"
+        ? speechLimits({ ...c, AI_SPEECH_VOICES: document.voices.join(","), AI_SPEECH_LOCALES: document.locales.join(",") })
+        : transcriptionLimits({ ...c, AI_TRANSCRIPTION_LOCALES: document.locales.join(","), AI_TRANSCRIPTION_TIMESTAMPS: document.timestamps }),
+      gateway_policy: "company_internal_only", gateway_fingerprint: gatewayFingerprint(c),
+      data_mode: c.DEMO_MODE ? "simulated" : "configured_services",
+    };
+  }
   if (document.profile_key === "internal-video-v1") return {
     profile_key: document.profile_key, model_alias: document.model_alias, ready: true,
     rates: document.rates, schema_version: 2, wire_protocol: videoJobProtocol,
@@ -97,6 +122,8 @@ export async function verifyCapability(
 ) {
   if (document.profile_key === "internal-video-v1")
     throw new Problem(409, "ASYNC_VIDEO_VERIFICATION_REQUIRED", "Video verification uses its durable worker suite");
+  if (document.profile_key === "internal-speech-v1" || document.profile_key === "internal-transcription-v1")
+    throw new Problem(409, "ASYNC_AUDIO_VERIFICATION_REQUIRED", "Audio verification uses its durable worker suite");
   if (!c.AI_BASE_URL || !c.AI_API_KEY)
     throw new Problem(
       409,
