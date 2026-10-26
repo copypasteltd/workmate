@@ -1,4 +1,5 @@
 import { registerAdminApprovals } from "./admin-approvals.js";
+import { publicClientContent, registerClientContent } from "./client-content.js";
 import { seedCommercialPlans } from "./commercial-plans.js";
 import { registerAdminPlans } from "./admin-plans.js";
 import { registerProviderAdmin } from "./provider-admin.js";
@@ -374,20 +375,12 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
           ? "local_mailbox"
           : "email",
   }));
-  app.get("/v1/public/content", async () =>
-    db.tx(
-      async (tx) => ({
-        items: (
-          await tx.query(
-            "SELECT id,kind,key,version,body FROM catalog_entries WHERE state='published' AND kind IN ('help','announcement','navigation') AND (kind='navigation' OR coalesce((body->>'enabled')::boolean,true)) ORDER BY created_at DESC",
-          )
-        ).rows,
-      }),
-      undefined,
-      true,
-    ),
-  );
+  app.get("/v1/public/content", async (_req, reply) => {
+    reply.header("Cache-Control", "no-store");
+    return db.tx(publicClientContent, undefined, true);
+  });
   registerAuth(app, db);
+  registerClientContent(app, db);
   registerFederation(app, db);
   registerWorkspaces(app, db);
   registerDemo(app, db);

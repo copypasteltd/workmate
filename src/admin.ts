@@ -1,4 +1,5 @@
 import { planSchema, authorizeTaskPlan } from "./plans.js";
+import { guardLegacyClientContent } from "./client-content.js";
 import { freezeTaskSkills } from "./skill-lifecycle.js";
 import {
   freezeTaskCapabilities,
@@ -816,6 +817,7 @@ function registerAdminCatalog(
               "CANONICAL_PLAN_REQUIRED",
               "Use the immutable plan draft and publication APIs",
             );
+          await guardLegacyClientContent(tx, req.principal, "admin.catalog.draft", b.kind);
           await tx.query(
             "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
             [`catalog:${b.kind}:${b.key}`],
@@ -864,6 +866,7 @@ function registerAdminCatalog(
                 : "admin.catalog.publish",
           );
           await requireRecentMfa(tx, req.principal);
+          await guardLegacyClientContent(tx, req.principal, "admin.catalog.publish", e.kind);
           if (e.kind === "plan")
             throw new Problem(
               409,
@@ -1014,6 +1017,7 @@ function registerAdminCatalog(
       return db.tx(
         async (tx) => {
           await permit(tx, req.principal, "admin.catalog.rollback");
+          await requireRecentMfa(tx, req.principal);
           const e = (
             await tx.query(
               "SELECT * FROM catalog_entries WHERE id=$1 FOR UPDATE",
@@ -1030,6 +1034,7 @@ function registerAdminCatalog(
               "ROLLBACK_UNAVAILABLE",
               "This version requires its own publication qualification",
             );
+          await guardLegacyClientContent(tx, req.principal, "admin.catalog.rollback", e.kind);
           await tx.query(
             "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
             [`catalog:${e.kind}:${e.key}`],
