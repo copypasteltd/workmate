@@ -3,6 +3,7 @@ import { ClientContent } from "./client-content.js";
 import { mountDeliveryQuality } from "./delivery-quality.js";
 import { mountGeneratedVideos } from "./generated-videos.js";
 import { mountAudioProductions } from "./audio-production.js";
+import { mountCloudSchedules } from "./cloud-schedules.js";
 import {
   exactHKD,
   financialLabels,
@@ -22,25 +23,46 @@ let workspaceRevision = 0,
   notificationRevision = 0;
 let entitlementRevision = 0;
 let locale = "zh-HK";
-const clientContent = new ClientContent($("client-content"), path => request(path), () => locale);
+const clientContent = new ClientContent(
+  $("client-content"),
+  (path) => request(path),
+  () => locale,
+);
 let actor = "";
-const chat = new ChatPanel({
-  request: (scope, path, method = "GET", body, key) => send("API", {
-    path, method, body, idempotencyKey: key, tenantId: scope.tenant,
-  }),
-  upload: async (scope, file, conversationId) => {
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    let binary = "";
-    for (const byte of bytes) binary += String.fromCharCode(byte);
-    return send("CHAT_UPLOAD", { scope, conversationId,
-      file: { name: file.name, type: file.type, base64: btoa(binary) } });
+const chat = new ChatPanel(
+  {
+    request: (scope, path, method = "GET", body, key) =>
+      send("API", {
+        path,
+        method,
+        body,
+        idempotencyKey: key,
+        tenantId: scope.tenant,
+      }),
+    upload: async (scope, file, conversationId) => {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      let binary = "";
+      for (const byte of bytes) binary += String.fromCharCode(byte);
+      return send("CHAT_UPLOAD", {
+        scope,
+        conversationId,
+        file: { name: file.name, type: file.type, base64: btoa(binary) },
+      });
+    },
+    read: async (key) => (await chrome.storage.session.get(key))[key],
+    write: async (key, value) => {
+      await chrome.storage.session.set({ [key]: value });
+    },
   },
-  read: async key => (await chrome.storage.session.get(key))[key],
-  write: async (key, value) => { await chrome.storage.session.set({ [key]: value }); },
-}, () => locale, showError, () => send("CAPTURE"), async id => {
-  $<HTMLDetailsElement>("workspace-tools").open = true;
-  await openTask(id); $("task-view").scrollIntoView({ behavior: "smooth", block: "start" });
-});
+  () => locale,
+  showError,
+  () => send("CAPTURE"),
+  async (id) => {
+    $<HTMLDetailsElement>("workspace-tools").open = true;
+    await openTask(id);
+    $("task-view").scrollIntoView({ behavior: "smooth", block: "start" });
+  },
+);
 let financialRevision = 0;
 let dependencyRevision = 0,
   dependencyFingerprint = "";
@@ -48,12 +70,17 @@ let taskDrawRevision = 0;
 let taskVersion = 0;
 let generatedVideos: { key: string; dispose: () => void } | undefined;
 let audioProductions: { key: string; dispose: () => void } | undefined;
+let cloudSchedules: { key: string; dispose: () => void } | undefined;
 let startFlow: Promise<void> | null = null;
 class WorkspaceChanged extends Error {}
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
 function clearTask() {
-  generatedVideos?.dispose(); generatedVideos = undefined;
-  audioProductions?.dispose(); audioProductions = undefined;
+  generatedVideos?.dispose();
+  generatedVideos = undefined;
+  audioProductions?.dispose();
+  audioProductions = undefined;
+  cloudSchedules?.dispose();
+  cloudSchedules = undefined;
   taskDrawRevision++;
   dependencyRevision++;
   dependencyFingerprint = "";
@@ -96,7 +123,8 @@ async function send(type: string, body: Record<string, unknown> = {}) {
 }
 function resetSignedOut() {
   clientContent.clear();
-  chat.reset(); actor = "";
+  chat.reset();
+  actor = "";
   ++workspaceRevision;
   ++notificationRevision;
   ++financialRevision;
@@ -283,8 +311,10 @@ async function projects() {
   if (revision !== workspaceRevision || scope !== tenant) return;
   $("demo-banner").hidden =
     me.memberships.find((m: any) => m.id === tenant)?.data_mode !== "simulated";
-  if (project && revision === workspaceRevision) await chat.open({ actor, tenant, project });
-  if (revision === workspaceRevision && scope === tenant) await refreshClientContent();
+  if (project && revision === workspaceRevision)
+    await chat.open({ actor, tenant, project });
+  if (revision === workspaceRevision && scope === tenant)
+    await refreshClientContent();
   await tasks();
   await notifications();
   await entitlements();
@@ -804,21 +834,89 @@ async function drawTask(t: any) {
     endpoint = base(),
     revision = workspaceRevision;
   const videoKey = [revision, endpoint, t.id, locale].join(":");
-  if (t.role_key === "video-motion" && !t.source_unavailable && t.content_state === "active") {
+  if (
+    t.role_key === "workflow-consultant" &&
+    !t.source_unavailable &&
+    t.content_state === "active"
+  ) {
+    if (cloudSchedules?.key !== videoKey) {
+      cloudSchedules?.dispose();
+      cloudSchedules = {
+        key: videoKey,
+        dispose: mountCloudSchedules($("cloud-schedules"), {
+          base: endpoint,
+          taskId: t.id,
+          request,
+          tr,
+          live: () =>
+            revision === workspaceRevision &&
+            endpoint === base() &&
+            task === t.id,
+          openWorkflows: () => send("OPEN_WEB", { section: "workflows" }),
+        }),
+      };
+    }
+  } else {
+    cloudSchedules?.dispose();
+    cloudSchedules = undefined;
+  }
+  if (
+    t.role_key === "video-motion" &&
+    !t.source_unavailable &&
+    t.content_state === "active"
+  ) {
     if (generatedVideos?.key !== videoKey) {
       generatedVideos?.dispose();
-      generatedVideos = { key: videoKey, dispose: mountGeneratedVideos($("generated-videos"), { base: endpoint, taskId: t.id, request, tr,
-        live: () => revision === workspaceRevision && endpoint === base() && task === t.id }) };
+      generatedVideos = {
+        key: videoKey,
+        dispose: mountGeneratedVideos($("generated-videos"), {
+          base: endpoint,
+          taskId: t.id,
+          request,
+          tr,
+          live: () =>
+            revision === workspaceRevision &&
+            endpoint === base() &&
+            task === t.id,
+        }),
+      };
     }
     if (audioProductions?.key !== videoKey) {
       audioProductions?.dispose();
-      audioProductions = { key: videoKey, dispose: mountAudioProductions($("audio-productions"), { base: endpoint, taskId: t.id, request, tr,
-        live: () => revision === workspaceRevision && endpoint === base() && task === t.id }) };
+      audioProductions = {
+        key: videoKey,
+        dispose: mountAudioProductions($("audio-productions"), {
+          base: endpoint,
+          taskId: t.id,
+          request,
+          tr,
+          live: () =>
+            revision === workspaceRevision &&
+            endpoint === base() &&
+            task === t.id,
+        }),
+      };
     }
-  } else { generatedVideos?.dispose(); generatedVideos = undefined; audioProductions?.dispose(); audioProductions = undefined; }
-  if (["succeeded", "failed", "cancelled"].includes(t.status) && t.mode !== "plan")
-    mountDeliveryQuality($("delivery-quality"), { path: endpoint + "/tasks/" + t.id, request, tr,
-      live: () => drawing === taskDrawRevision && revision === workspaceRevision && endpoint === base() && task === t.id });
+  } else {
+    generatedVideos?.dispose();
+    generatedVideos = undefined;
+    audioProductions?.dispose();
+    audioProductions = undefined;
+  }
+  if (
+    ["succeeded", "failed", "cancelled"].includes(t.status) &&
+    t.mode !== "plan"
+  )
+    mountDeliveryQuality($("delivery-quality"), {
+      path: endpoint + "/tasks/" + t.id,
+      request,
+      tr,
+      live: () =>
+        drawing === taskDrawRevision &&
+        revision === workspaceRevision &&
+        endpoint === base() &&
+        task === t.id,
+    });
   else $("delivery-quality").replaceChildren();
   if (t.status !== "needs_input") {
     dependencyRevision++;
@@ -1110,12 +1208,20 @@ $("website-audits").addEventListener(
       await send("OPEN_WEB", { section: "seo" });
     }),
 );
-$("creative-feedback").addEventListener("click", () => void run(async () => {
-  await send("OPEN_WEB", { section: "creative-feedback" });
-}));
-$("geo-observations").addEventListener("click", () => void run(async () => {
-  await send("OPEN_WEB", { section: "geo" });
-}));
+$("creative-feedback").addEventListener(
+  "click",
+  () =>
+    void run(async () => {
+      await send("OPEN_WEB", { section: "creative-feedback" });
+    }),
+);
+$("geo-observations").addEventListener(
+  "click",
+  () =>
+    void run(async () => {
+      await send("OPEN_WEB", { section: "geo" });
+    }),
+);
 $("tenant").addEventListener(
   "change",
   () =>
@@ -1252,7 +1358,14 @@ $("cancel-task").addEventListener(
 $("close-task").addEventListener("click", () => {
   clearTask();
 });
-window.addEventListener("pagehide", () => { generatedVideos?.dispose(); generatedVideos = undefined; audioProductions?.dispose(); audioProductions = undefined; });
+window.addEventListener("pagehide", () => {
+  generatedVideos?.dispose();
+  generatedVideos = undefined;
+  audioProductions?.dispose();
+  audioProductions = undefined;
+  cloudSchedules?.dispose();
+  cloudSchedules = undefined;
+});
 $("capture-page").addEventListener(
   "click",
   () =>

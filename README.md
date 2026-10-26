@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · extension
 
+<!-- cloud-schedules-stage104 -->
+
+私有云端定时工作流已接通顾问对话及已有私有成果。核对固定方法、输入、时区、交付与每次 Agent 预算 → 主动勾选确认 → 启用每日／每周计划 → 查看逐次执行、人工审批、私有交付和实际费用。Web 与真实 Chrome 右侧栏可确认和暂停；Admin 按权限范围查看元数据，并在近期 MFA 与记录理由后暂停未来触发。
+
+暂停保留当前工作，取消某次执行需单独操作；恢复由客户重新确认并略过暂停期间。修改先生成独立提案，再追加不可变版本。失败或费用未知会阻止未来触发，待核对后再处理。固定输入不自动刷新外部账号数据，启用不预扣全部未来费用。Desktop 继续运行客户本机 Codex，原生凭证不能启用云端替代执行。
+
+已核查：六个相关后端测试文件共 78 项、八项真实跨端流程、八张未修改 PNG、三组实际 GIF／MP4；使用原生 PostgreSQL、固定原生 Codex、真实电邮／MFA／PKCE 和明确的假模型／账号数据。本增量不代表真实模型质量或完整产品验收。
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/104-private-cloud-schedules.md) · [Exact evidence / 确切证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/private-cloud-schedules-checkpoint.json)
+
+```mermaid
+flowchart LR
+ A[Private conversation or result] --> B[Pending fixed-method request]
+ B --> C[Customer reviews and confirms]
+ C --> D[Durable calendar]
+ D --> E[Independent private run]
+ E --> F[Human review and actual settlement]
+ C --> G[Pause future times]
+ G --> H[Customer confirms resume]
+ H --> D
+```
+
+![Actual copypaste-extension cloud schedule / 实际云端计划](assets/screenshots/schedule-copypaste-extension-workmate-cloud-schedule-06-active-en.png)
+
+![Actual confirmation or pause / 实际确认或暂停](assets/screenshots/schedule-copypaste-extension-workmate-cloud-schedule-06-cloud-schedule-sidepanel.gif)
+
+[Actual interaction MP4](assets/screenshots/schedule-copypaste-extension-workmate-cloud-schedule-06-cloud-schedule-sidepanel.mp4)
+
+
 <!-- admin-data-stage103 -->
 
 后台已接入持久批量任务，以及用户目录、用量、费用流水和审计资料快照导出。操作流程：选择对象／条件 → 核对精确记录、版本与字段 → 明确确认 → 查看逐项结果 → 对失败对象预览并建立重试子任务，或下载已授权的 CSV／清单。取消保留已完成操作；原费用与 VIP 审批历史仍可查询。
