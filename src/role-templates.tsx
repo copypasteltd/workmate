@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api, ApiError } from "./api";
 import { useWorkspace } from "./context";
+import { RoleBrandVersion } from "./role-brand-version";
 import {
   DateText,
   Empty,
@@ -118,6 +119,8 @@ const scoped = (tenant: string, url: string, options: RequestInit = {}) =>
   });
 
 function dependencyText(code: string, t: (zh: string, en: string) => string) {
+  if (code.startsWith("BRAND_"))
+    return t("所選品牌版本或它引用的來源已不可用，請重新選擇。", "The selected brand revision or its sources are unavailable. Choose another revision.");
   if (code.startsWith("TOOL_NOT_IMPLEMENTED:"))
     return t(
       "此角色的部分專業工具尚未提供。",
@@ -389,6 +392,7 @@ function TemplateSetup({
         : template.name,
     ),
     [instructions, setInstructions] = useState(""),
+    [brandVersion, setBrandVersion] = useState(""),
     [check, setCheck] = useState<Preflight | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState<Error | null>(null),
@@ -434,6 +438,7 @@ function TemplateSetup({
           ? { role_description: instructions.trim() }
           : {}),
         locale: locale === "en" ? "en-HK" : "zh-HK",
+        ...(brandVersion ? { brand_version_id: brandVersion } : {}),
       },
     };
   }
@@ -583,6 +588,8 @@ function TemplateSetup({
               onChange={(e) => change(() => setInstructions(e.target.value))}
             />
           </Field>
+          <RoleBrandVersion key={w.tenant + "/" + w.project} tenant={w.tenant} project={w.project} value={brandVersion} disabled={busy}
+            onChange={value => change(() => setBrandVersion(value))}/>
         </fieldset>
         <ErrorNotice error={error} />
         {!!requirements.length && (

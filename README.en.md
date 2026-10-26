@@ -1,5 +1,13 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- preset-specialists-stage98 -->
+
+Saved specialists now start local Codex from Desktop. Select a preset, lasting instructions and an exact project brand revision, save it after a free check, then choose a local folder, grant permissions and approve each turn budget. Web and Extension keep cloud execution. Later brand publications and specialist edits do not silently replace an existing native session’s saved version.
+
+Verified: 212 related integration checks, 51 Desktop unit checks, two actual local Codex protocol probes and seven packaged Desktop / authenticated Web journey checks. [Current evidence / 当前证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/preset-specialists-checkpoint.json).
+
+![Actual Web fixed brand / 实际 Web 固定品牌](assets/screenshots/workmate-preset-specialists-01-brand-en.png)
+
 <!-- native-methods-stage97 -->
 
 ## Native Desktop method trials

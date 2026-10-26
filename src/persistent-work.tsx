@@ -162,6 +162,7 @@ export function Specialists() {
                     "Uses the role’s installed methods.",
                   )}
               </p>
+              {a.body.brand && <p className="muted small-text">{t("固定品牌版本", "Fixed brand revision")} · v{a.body.brand.version}</p>}
               <div className="row-actions">
                 <button
                   className="button primary"
