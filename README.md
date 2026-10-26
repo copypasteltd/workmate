@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- client-content-stage102 -->
+
+Web 工作台显示有效公告与帮助，并应用现有菜单的名称与排序。
+
+使用：登入 Admin → 目录与发布 → 用户端内容，编辑双语正文、显示时间和现有可选菜单；选择客户端、目录接收人和固定比例分组；保存草稿，核对指定身份的前后内容后确认发布。其余用户保留完整旧版。回滚也先预览，引用已发布版本并新增记录。账户、VIP、费用、角色和 Skill 权限继续约束实际执行。
+
+核查：五个后端测试文件共 79 项、七项实际客户端流程、八张未修改截图及四组真实 GIF/MP4。使用原生 PostgreSQL、实际邮箱/MFA/PKCE 会话和未签名的打包 Desktop。账户与正文为假数据；本增量不发起模型调用，不代表真实专业质量或完整产品验收。
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/102-client-content-releases.md) · [Exact evidence / 确切证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/client-content-checkpoint.json).
+
+```mermaid
+flowchart LR
+ A[Bilingual draft] --> B[Recipient preview]
+ B --> C[Live authority and MFA check]
+ C --> D[Append publication]
+ D --> E[Selected: release]
+ D --> F[Others: frozen baseline]
+ D --> G[Historical rollback preview]
+ G --> B
+```
+
+![Actual web content](assets/screenshots/web-workmate-client-content-06-pilot-en.png)
+
+[Actual web MP4](assets/screenshots/web-workmate-06-client-content-workspace.mp4)
+
+![Actual web interaction](assets/screenshots/web-workmate-06-client-content-workspace.gif)
+
+
 <!-- cloud-browser-stage101 -->
 
 云端 Codex 现可使用固定的原生 Chromium 执行真实页面交互和 DOM 检查，保留实际截图及确切源码。Web 任务详情可按需展开实际页面截图、断言和版本记录，并下载原图及源码。
