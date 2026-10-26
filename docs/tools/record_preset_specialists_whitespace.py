@@ -1,0 +1,66 @@
+"""Check editable staged whitespace, preserving exact raw logs/source archives."""
+from datetime import datetime,timezone
+from hashlib import sha256
+import argparse
+import json
+from pathlib import Path
+import re
+import subprocess
+
+ROOT=Path(__file__).resolve().parents[2]
+DEV=ROOT/'dev'
+parser=argparse.ArgumentParser()
+parser.add_argument('--report',default='desktop-browser-whitespace-01.json')
+report_name=parser.parse_args().report
+assert re.fullmatch(r'desktop-browser-whitespace-\d{2}\.json',report_name)
+repositories={'docs':ROOT,**{name:DEV/('copypaste-'+name) for name in ['platform','web','admin','desktop','extension','delivery']}}
+def git(repo,*args):
+    return subprocess.run(['git','-c','core.fsmonitor=false','-c','core.untrackedCache=false',*args],cwd=repo,capture_output=True)
+archives={}
+for report in (DEV/'copypaste-delivery/evidence').glob('desktop-browser-*.json'):
+    data=json.loads(report.read_text(encoding='utf-8'))
+    for name,value in data.get('source_files',{}).items():
+        archives[report.with_suffix('').relative_to(DEV/'copypaste-delivery').as_posix()+'-sources/'+name]=value
+for report in (DEV/'copypaste-delivery/evidence').glob('local-codex-native-*.json'):
+    data=json.loads(report.read_text(encoding='utf-8'))
+    archives.update({'evidence/'+report.stem+'-sources/'+name:value for name,value in data.get('source_files',{}).items()})
+for report in [*(DEV/'copypaste-delivery/evidence').glob('solution-packages-native-*.json'), *(DEV/'copypaste-delivery/evidence').glob('native-methods-native-*.json'), *(DEV/'copypaste-delivery/evidence').glob('preset-specialists-native-*.json')]:
+    data=json.loads(report.read_text(encoding='utf-8'))
+    archives.update({'evidence/'+report.stem+'-sources/'+name:value for name,value in data.get('source_files',{}).items()})
+exceptions,raw_files=[],{}
+for component,repo in repositories.items():
+    live=git(repo,'diff','--cached','--check','--','.',':(exclude)evidence/**',':(exclude)docs/quality/history/**')
+    assert live.returncode==0 and not live.stdout and not live.stderr,(component,live.stdout.decode('utf-8'))
+    raw=git(repo,'diff','--cached','--check')
+    assert raw.returncode in [0,2] and not raw.stderr
+    last=None
+    # Raw Windows logs can contain CRCRLF. Split Git diagnostics on LF only;
+    # str.splitlines() would turn a source CR into a fictitious empty record.
+    for line in raw.stdout.decode('utf-8').removesuffix('\n').split('\n'):
+        line=line.removesuffix('\r')
+        if not line and not raw.stdout:
+            continue
+        match=re.fullmatch(r'(.+):(\d+): (trailing whitespace|new blank line at EOF)\.',line)
+        if not match:
+            assert last and line.startswith('+'),component
+            continue
+        name,number,kind=match.groups()
+        allowed=component=='docs' and name.startswith('docs/quality/history/')
+        allowed=allowed or component=='delivery' and (re.fullmatch(r'evidence/[a-z0-9._-]+\.(?:tap|log)',name) or name in archives)
+        assert allowed,(component,name,'Editable source is not exempt')
+        key=component+'/'+name
+        if key not in raw_files:
+            data=(repo/name).read_bytes()
+            if name in archives:
+                assert sha256(data).hexdigest()==archives[name],name
+            staged=git(repo,'show',':'+name)
+            assert staged.returncode==0 and staged.stdout==data
+            raw_files[key]={'repository':component,'path':name,'sha256':sha256(data).hexdigest(),'staged_bytes_equal_disk':True}
+        last={'repository':component,'path':name,'line':int(number),'kind':kind}
+        exceptions.append(last)
+for row in raw_files.values():
+    assert sha256((repositories[row['repository']]/row['path']).read_bytes()).hexdigest()==row['sha256'],row['path']
+result={'at':datetime.now(timezone.utc).isoformat(),'status':'passed','repositories':list(repositories),'source_and_readme_whitespace_issues':0,'raw_log_exceptions':exceptions,'raw_files':list(raw_files.values()),'unique_staged_raw_files_checked':len(raw_files),'raw_bytes_rechecked_at_end':True,'raw_bytes_changed':False,'scope':'All seven staged repositories. Each immutable raw file is compared with its staged blob once and rehashed at the end; every diagnostic is still checked. Only retained raw TAP/logs and exact source/history archives keep their original diagnostics. Editable source and README are checked normally.','verifier_sha256':sha256(Path(__file__).read_bytes()).hexdigest()}
+with (ROOT/'docs/quality'/report_name).open('x',encoding='utf-8') as stream:
+    stream.write(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+print(json.dumps({'status':'passed','repositories':7,'editable_issues':0,'raw_diagnostics':len(exceptions)}))
