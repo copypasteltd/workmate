@@ -1,5 +1,24 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- managed-audio-stage108 -->
+
+后台已接通语音与转录模型发版：固定声音、语言与精确费率，平台预算支付的持久验证，实际后台进度、停止、独立审批和历史回滚。已有客户工作保留原模型及费率，音讯使用仍需客户独立授权。
+
+本轮通过 229 项相关后端检查、6 项后台表单／金额检查和 8 项实际浏览器流程。真实子进程在 POST 后崩溃的用例确认原操作保留为不明且不会重发。下方为实际后台公共控制流程截图及 GIF／MP4，各端此前截图保留原范围。模型、账号和音讯回应明确使用假数据。
+
+编译流程已补齐原创音讯验证素材及许可证；已从另一工作目录调用编译后的执行器，读取并完整解码两种格式，原始素材缺失记录予以保留。
+
+原生解码与时间段结构不代表真实音质、转录准确度或粤语品质验收；不明音讯费用仍需外部证据。阶段 106 的整批一项未归因超时及原文件独立两项通过均保留，本轮按改动范围回归，不改写成完整产品验收。
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/108-managed-audio-capabilities.md) · [MP4](assets/verification/managed-audio-108/workmate-managed-audio-01-audio-configuration-and-background-resume.mp4)
+
+![Actual Admin speech verification / 实际后台语音验证](assets/verification/managed-audio-108/workmate-managed-audio-01-speech-completed-en.png)
+
+![Actual transcription formats / 实际转录格式](assets/verification/managed-audio-108/workmate-managed-audio-01-transcription-formats-and-timestamps-en.png)
+
+![Actual background continuation / 实际后台继续执行](assets/verification/managed-audio-108/workmate-managed-audio-01-audio-configuration-and-background-resume.gif)
+
+
 <!-- capability-inventory-stage107 -->
 
 用户能力目录现按视频、配音、转写各自的已实现协议和核验标志显示状态；状态变化使旧签名分页失效。撤销版本、协议匹配、租户范围与任务执行授权继续逐项校验。
