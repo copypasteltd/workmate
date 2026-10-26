@@ -8,6 +8,8 @@ import { audit, requireAdmin, requireUser } from "./auth.js";
 import { key, replay, projectAccess, tenantAccess } from "./access.js";
 import { canonical, hash, hmac, equal, Problem, uuid } from "./lib.js";
 import { gatewayFingerprint } from "./capability-bindings.js";
+import { videoJobProtocol } from "./video-job-protocol.js";
+import { speechProtocol, transcriptionProtocol } from "./audio-production-model.js";
 import {
   admitProviderRequest,
   providerRequestPermit,
@@ -1201,9 +1203,52 @@ export function registerCapabilityReleases(
           const versions = [
               ...(await catalog.currentCapabilities(tx)).values(),
             ].sort((a, b) => a.profile_key.localeCompare(b.profile_key)),
+            availability = versions.map((v) => {
+              const b = v.body;
+              const registrations: Record<
+                string,
+                { protocol: string; verified: boolean }
+              > = {
+                "internal-text-v1": {
+                  protocol: "responses",
+                  verified: db.config.AI_VERIFIED,
+                },
+                "internal-image2-v1": {
+                  protocol: "images",
+                  verified: db.config.AI_IMAGE_VERIFIED,
+                },
+                "internal-video-v1": {
+                  protocol: videoJobProtocol,
+                  verified: db.config.AI_VIDEO_VERIFIED,
+                },
+                "internal-speech-v1": {
+                  protocol: speechProtocol,
+                  verified: db.config.AI_SPEECH_VERIFIED,
+                },
+                "internal-transcription-v1": {
+                  protocol: transcriptionProtocol,
+                  verified: db.config.AI_TRANSCRIPTION_VERIFIED,
+                },
+              };
+              const registration = registrations[b.profile_key];
+              return v.revoked ||
+                !registration ||
+                b.wire_protocol !== registration.protocol
+                ? "disabled"
+                : b.gateway_fingerprint !== gatewayFingerprint(db.config)
+                  ? "degraded"
+                  : b.ready && (v.publication_id || registration.verified)
+                    ? "verified"
+                    : "unverified";
+            }),
             fingerprint = hash(
               canonical(
-                versions.map((v) => [v.id, v.revoked, v.head_revision ?? 0]),
+                versions.map((v, index) => [
+                  v.id,
+                  v.revoked,
+                  v.head_revision ?? 0,
+                  availability[index],
+                ]),
               ),
             );
           let offset = 0;
@@ -1248,23 +1293,9 @@ export function registerCapabilityReleases(
               );
             }
           }
-          const items = versions.slice(offset, offset + q.limit).map((v) => {
+          const items = versions.slice(offset, offset + q.limit).map((v, index) => {
             const b = v.body,
-              implemented = ["responses", "images"].includes(b.wire_protocol),
-              verified = !!(
-                v.publication_id ||
-                (b.profile_key === "internal-text-v1"
-                  ? db.config.AI_VERIFIED
-                  : db.config.AI_IMAGE_VERIFIED)
-              );
-            const state =
-              v.revoked || !implemented
-                ? "disabled"
-                : b.gateway_fingerprint !== gatewayFingerprint(db.config)
-                  ? "degraded"
-                  : b.ready && verified
-                    ? "verified"
-                    : "unverified";
+              state = availability[offset + index];
             const dto = {
               id: v.profile_key,
               version: v.id,
