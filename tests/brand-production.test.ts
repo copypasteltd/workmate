@@ -1,3 +1,4 @@
+import { currentRouteInventory } from "./route-inventory.js";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import { createRequire } from "node:module";
 import contract from "../contracts/brand-production-openapi.json" with { type: "json" };
@@ -920,9 +921,7 @@ test("additive brand contracts validate real responses and the complete running 
           url: path.replace(/\{([^}]+)\}/g, ":$1"),
         }),
       );
-  const inventory = JSON.parse(
-      await readFile("contracts/implemented-routes.json", "utf8"),
-    ),
+  const inventory = await currentRouteInventory(),
     label = (r: { method: string; path: string }) => r.method + " " + r.path,
     actual = new Set(s.routes.map(label)),
     recorded = new Set<string>(

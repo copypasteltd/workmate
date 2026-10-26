@@ -1,3 +1,4 @@
+import { currentRouteInventory } from "./route-inventory.js";
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
@@ -1178,9 +1179,7 @@ test("canonical pause cannot race a claimed turn into a second execution or rele
 });
 
 test("actual Fastify inventory retains declared routes and the five canonical task method/path pairs", async () => {
-  const declared = JSON.parse(
-    await readFile("contracts/implemented-routes.json", "utf8"),
-  );
+  const declared = await currentRouteInventory();
   const routes = [...s.routes].sort(
     (a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method),
   );

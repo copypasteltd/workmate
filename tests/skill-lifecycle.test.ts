@@ -174,11 +174,15 @@ after(async () => {
 
 test("preset installation and version bindings are project-scoped, idempotent and cannot be managed by a member", async () => {
   const f = await fixture();
-  assert.equal(f.versions.length, 32);
-  assert.equal(new Set(f.versions.map((v: any) => v.skill_key)).size, 29);
-  assert.equal(new Set(f.versions.map((v: any) => v.id)).size, 32);
-  assert.deepEqual(f.versions.filter((v: any) => v.skill_key === "video-generation").map((v: any) => v.package_version).sort(), ["1.0.0", "1.1.0"]);
-  assert.deepEqual(f.versions.filter((v: any) => v.skill_key === "speech-production").map((v: any) => v.package_version).sort(), ["1.0.0", "1.1.0", "1.2.0"]);
+  // Compare every published version and digest, rather than a historic count
+  // which would reject additive releases while missing a substituted package.
+  const identity = (key: string, version: string, hash: string) => [key, version, hash].join(":");
+  assert.deepEqual(f.versions.map((v: any) => identity(v.skill_key, v.package_version, v.content_hash)).sort(),
+    s.catalog.skills.map(v => identity(v.key, v.version, v.sha256)).sort());
+  assert.equal(new Set(f.versions.map((v: any) => v.id)).size, f.versions.length);
+  for (const [key, versions] of [["video-generation", ["1.0.0", "1.1.0"]], ["speech-production", ["1.0.0", "1.1.0", "1.2.0"]]] as const) {
+    for (const version of versions) assert.ok(f.versions.some((v: any) => v.skill_key === key && v.package_version === version), `${key}@${version}`);
+  }
   assert.equal(f.installed.length, 5);
   const effective = await ok(
     f.owner,

@@ -2,6 +2,7 @@ import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { currentRouteInventory } from "./route-inventory.js";
 import { createRequire } from "node:module";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import contract from "../contracts/project-configuration-openapi.json" with { type: "json" };
@@ -385,7 +386,7 @@ test("actual configured app retains every inventoried route and all eight shared
     const identity = (r: { method: string; path: string }) => r.method + " " + r.path;
     const actual = new Set(configured.routes.map(identity));
     assert.equal(actual.size, configured.routes.length);
-    const inventory = JSON.parse(await readFile(new URL("../contracts/implemented-routes.json", import.meta.url), "utf8"));
+    const inventory = await currentRouteInventory();
     for (const route of inventory.routes) assert.ok(actual.has(identity(route)), identity(route));
     const operations = Object.entries(contract.paths).flatMap(([p, methods]) =>
       Object.keys(methods).map(m => m.toUpperCase() + " " + p.replace(/\{([^}]+)\}/g, ":$1")));

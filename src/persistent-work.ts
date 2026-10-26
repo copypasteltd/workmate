@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import type { Database, Tx } from "./db.js";
 import { brandContext } from "./brand-production.js";
+import { fixedBrandVersion } from "./brand-bindings.js";
 import {
   projectConfigurationInstructions,
   sharedProjectAgent,
@@ -49,6 +50,7 @@ export const agentInput = z
     instructions: z.string().trim().max(8000).default(""),
     tool_ids: z.array(z.string().min(1).max(120)).max(40).optional(),
     brand_id: uuid.nullable().default(null),
+    brand_version_id: uuid.nullable().optional(),
   })
   .strict();
 export interface WorkContext {
@@ -115,7 +117,11 @@ export async function agentDefinition(
       "Agent tools must be a subset of the installed role",
     );
   let brand: any = null;
-  if (b.brand_id) {
+  if (b.brand_version_id) {
+    brand = await fixedBrandVersion(tx, project, b.brand_version_id);
+    if (b.brand_id && b.brand_id !== brand.id)
+      throw new Problem(422, "BRAND_VERSION_SCOPE_INVALID", "The selected version belongs to a different brand");
+  } else if (b.brand_id) {
     brand = (
       await tx.query(
         "SELECT id,version FROM brand_profiles WHERE id=$1 AND project_id=$2 AND content_state='active' FOR SHARE",
@@ -137,6 +143,7 @@ export async function agentDefinition(
     instructions: b.instructions,
     tool_ids: tools,
     brand,
+    ...(b.brand_version_id ? { brand_version_id: b.brand_version_id } : {}),
     skills: skills.map((s) => ({
       key: s.key,
       version: s.version,
@@ -221,6 +228,13 @@ export function retainTemplateProvenance<T extends object>(
   };
 }
 
+/** Editing instructions must not silently replace an explicitly pinned brand. */
+export function retainBrandVersion<T extends z.infer<typeof agentInput>>(input: T, previous: any): T {
+  return input.brand_version_id === undefined && previous.brand_version_id && input.brand_id === previous.brand?.id
+    ? { ...input, brand_version_id: previous.brand_version_id }
+    : input;
+}
+
 function agentBindings(body: any) {
   return {
     runtime_profile_id: body.runtime_profile_id,
@@ -231,6 +245,7 @@ function agentBindings(body: any) {
       ({ installation_version: _revision, ...skill }: any) => skill,
     ),
     brand: body.brand,
+    brand_version_id: body.brand_version_id ?? null,
   };
 }
 export async function getAgentVersion(
@@ -857,7 +872,7 @@ export function registerPersistentWork(
         const proposed = await agentDefinition(
           tx,
           catalog,
-          b,
+          retainBrandVersion(b, previous.body),
           project,
           tenant,
           req.principal.id,

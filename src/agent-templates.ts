@@ -11,6 +11,8 @@ import { skillVersionId } from "./skill-lifecycle.js";
 import { agentInput, createSpecialist } from "./persistent-work.js";
 import { authorizeExecutionPlan } from "./plans.js";
 import { CodexRuntimeAdapter } from "./runtime.js";
+import { desktopSessionFamily } from "./desktop-family.js";
+import { fixedBrandVersion, registerBrandVersionOptions } from "./brand-bindings.js";
 
 const tenantOf = (request: FastifyRequest) =>
   uuid.parse(request.headers["x-tenant-id"]);
@@ -58,6 +60,7 @@ const implementedTools = new Set([
   "vector.render",
   "slides.build",
   "slides.render",
+  "speech.generate.internal",
 ]);
 // These operations are implemented by the native Codex command/browser
 // protocols. They are not cloud business tools and do not become cloud-ready.
@@ -198,7 +201,7 @@ async function templateVersion(tx: Tx, id: string, version?: number) {
     throw new Problem(404, "TEMPLATE_NOT_FOUND", "Template version not found");
   return row;
 }
-async function presentationContext(tx: Tx, catalog: Catalog, db: Database) {
+async function presentationContext(tx: Tx, catalog: Catalog, db: Database, native = false) {
   const capabilityMap = await catalog.currentCapabilities(tx);
   const configured = await catalog.publicConfigured(tx, db.config, true);
   const runtimes = (
@@ -210,7 +213,7 @@ async function presentationContext(tx: Tx, catalog: Catalog, db: Database) {
       [[...(await catalog.currentCapabilities(tx)).values()].map((v) => v.id)],
     )
   ).rows;
-  return { configured, runtimes, capabilities, capabilityMap };
+  return { configured, runtimes, capabilities, capabilityMap, native };
 }
 function present(
   context: Awaited<ReturnType<typeof presentationContext>>,
@@ -231,7 +234,7 @@ function present(
   const { role_hash, role_key, category, ...body } = row.body;
   const role = catalog.role(row.role_key);
   const unsupportedTool = role.tool_ids.find(
-    (tool: string) => !implementedTools.has(tool),
+    (tool: string) => !implementedTools.has(tool) && !(context.native && nativeOperations.has(tool)),
   );
   const missingCapability = role.model_bindings.find(
     (binding: any) =>
@@ -374,8 +377,14 @@ export async function assessTemplate(
       missing.push("SKILL_INSTALLATION_REQUIRED:" + skill.key);
     else skills.push(id);
   }
-  if (input.overrides?.brand_version_id)
-    missing.push("BRAND_VERSION_BINDING_NOT_IMPLEMENTED");
+  if (input.overrides?.brand_version_id) {
+    try {
+      await fixedBrandVersion(tx, input.project_id, input.overrides.brand_version_id);
+    } catch (error) {
+      if (!(error instanceof Problem)) throw error;
+      missing.push(error.code);
+    }
+  }
   // Native admission verifies the pinned device runtime separately. A missing
   // cloud executable must never force a Desktop method into cloud execution.
   if (executionLocation === "cloud") {
@@ -432,6 +441,7 @@ export function registerAgentTemplates(
   db: Database,
   catalog: Catalog,
 ) {
+  registerBrandVersionOptions(app, db);
   app.get(
     "/v1/agent-templates",
     { preHandler: requireUser(db) },
@@ -477,7 +487,7 @@ export function registerAgentTemplates(
           )
         ).rows;
         const selected = rows.slice(0, query.limit);
-        const context = await presentationContext(tx, catalog, db);
+        const context = await presentationContext(tx, catalog, db, !!(await desktopSessionFamily(tx, request.principal, false)));
         return {
           items: selected.map((row) => present(context, catalog, db, row)),
           next_cursor:
@@ -499,7 +509,7 @@ export function registerAgentTemplates(
       return db.tx(async (tx) => {
         await tenantAccess(tx, request.principal, tenant);
         return present(
-          await presentationContext(tx, catalog, db),
+          await presentationContext(tx, catalog, db, !!(await desktopSessionFamily(tx, request.principal, false))),
           catalog,
           db,
           await templateVersion(tx, id, query.version),
@@ -522,12 +532,13 @@ export function registerAgentTemplates(
           input.project_id,
           "write",
         );
+        const executionLocation = (await desktopSessionFamily(tx, request.principal, false)) ? "desktop" : "cloud";
         return replay(
           tx,
           request.principal.id,
           "template.preflight:" + id,
           key(request),
-          { tenant, ...input },
+          { tenant, ...(executionLocation === "desktop" ? { execution_location: executionLocation } : {}), ...input },
           async () => {
             const row = await templateVersion(tx, id, input.template_version),
               result = {
@@ -540,6 +551,7 @@ export function registerAgentTemplates(
                   tenant,
                   row,
                   input,
+                  executionLocation,
                 )),
               };
             await tx.query(
@@ -577,12 +589,13 @@ export function registerAgentTemplates(
           input.project_id,
           "write",
         );
+        const executionLocation = (await desktopSessionFamily(tx, request.principal, false)) ? "desktop" : "cloud";
         return replay(
           tx,
           request.principal.id,
           "template.instantiate:" + id,
           key(request),
-          { tenant, ...input },
+          { tenant, ...(executionLocation === "desktop" ? { execution_location: executionLocation } : {}), ...input },
           async () => {
             const row = await templateVersion(tx, id, input.template_version),
               check = await assessTemplate(
@@ -593,6 +606,7 @@ export function registerAgentTemplates(
                 tenant,
                 row,
                 input,
+                executionLocation,
               );
             if (check.state !== "ready")
               throw new Problem(
@@ -619,6 +633,7 @@ export function registerAgentTemplates(
                 name: custom.name ?? input.name ?? row.body.name,
                 role_key: row.role_key,
                 instructions,
+                ...(custom.brand_version_id ? { brand_version_id: custom.brand_version_id } : {}),
               }),
               {
                 id: row.id,

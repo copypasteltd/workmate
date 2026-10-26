@@ -9,6 +9,8 @@ import { Worker } from "../src/worker.js";
 import { CodexRuntimeAdapter, type RuntimeContext } from "../src/runtime.js";
 import { seedRuntimeProfile } from "../src/runtime-profiles.js";
 import { tokenCharge } from "../src/billing.js";
+import { presetBrandDefinition } from "./preset-brand-fixture.js";
+import { resolveWorkContext, freezeWorkContext, getAgentVersion } from "../src/persistent-work.js";
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>;
 let s: Awaited<ReturnType<typeof buildApp>>;
 type Client = { id: string; cookie: string; csrf: string };
@@ -279,7 +281,7 @@ test("preflights persist one current receipt without installing methods, reservi
   assert.equal(brand.state, "needs_configuration");
   assert.ok(
     brand.missing_required_dependencies.includes(
-      "BRAND_VERSION_BINDING_NOT_IMPLEMENTED",
+      "BRAND_VERSION_UNAVAILABLE",
     ),
   );
   const all = (
@@ -310,6 +312,44 @@ test("preflights persist one current receipt without installing methods, reservi
       400,
     );
 });
+test("brand choices have opaque immutable revisions, scoped paging and exact template bindings that survive later publications", async () => {
+  const f = await fixture(), original = presetBrandDefinition(), brand = await ok(f.owner, "POST", f.base + "/brand/definitions", original, f.tenant);
+  const choicesUrl = `/v1/brand-version-options?project_id=${f.project}`, choices = await ok(f.owner, "GET", choicesUrl, undefined, f.tenant), fixed = choices.items.find((row: any) => row.brand_id === brand.id);
+  assert.equal(fixed.version, 1); assert.equal(fixed.current, true); assert.equal(fixed.available, true);
+  assert.ok(!JSON.stringify(choices).includes(original.tone));
+  const body = { ...f.input, overrides: { name: "Pinned brand expert", brand_version_id: fixed.id, role_description: "Read the exact approved brand" } };
+  const preflight = await ok(f.owner, "POST", `/v1/agent-templates/${f.template.id}/preflights`, body, f.tenant);
+  assert.equal(preflight.state, "ready");
+  await ok(f.owner, "PUT", f.base + "/brand/" + brand.id, { expected_version: 1, definition: presetBrandDefinition("PRESET_BRAND_LATER_GUIDANCE") }, f.tenant);
+  const agent = await ok(f.owner, "POST", `/v1/agent-templates/${f.template.id}/instances`, body, f.tenant), actor = { id: f.owner.id, audience: "user" as const, authVersion: 1, sessionId: "", sessionHash: "", email: "fixture@example.invalid", name: "Fixture" };
+  await s.db.tx(async tx => {
+    const version = await getAgentVersion(tx, f.project, agent.id);
+    assert.deepEqual(version.body.brand, { id: brand.id, version: 1 }); assert.equal(version.body.brand_version_id, fixed.id);
+    const context = await freezeWorkContext(tx, actor, f.tenant, f.project, version, undefined, s.catalog);
+    const resolved = await resolveWorkContext(tx, actor, f.tenant, f.project, context);
+    assert.ok(resolved.instructions.includes(original.tone)); assert.ok(!resolved.instructions.includes("PRESET_BRAND_LATER_GUIDANCE"));
+  }, f.tenant, false, f.owner.id);
+  const before = (await s.db.control.query("SELECT sha256,body,id FROM brand_profile_versions WHERE brand_id=$1 AND version=1", [brand.id])).rows[0];
+  assert.equal(before.id, fixed.id);
+  await assert.rejects(s.db.control.query("UPDATE brand_profile_versions SET id=$2 WHERE id=$1", [fixed.id, randomUUID()]), { code: "23514" });
+  const first = await ok(f.owner, "GET", choicesUrl + "&limit=1", undefined, f.tenant);
+  assert.equal(first.items.length, 1); assert.ok(first.next_cursor);
+  const next = await ok(f.owner, "GET", choicesUrl + "&limit=1&cursor=" + first.next_cursor, undefined, f.tenant);
+  assert.equal(next.items.length, 1); assert.notEqual(first.items[0].id, next.items[0].id);
+  assert.equal((await call(f.owner, "GET", choicesUrl + "&cursor=" + randomUUID(), undefined, f.tenant)).status, 410);
+  const outsider = await fixture();
+  // Unknown workspaces keep the existing non-enumerating access response.
+  assert.equal((await call(outsider.owner, "GET", choicesUrl, undefined, f.tenant)).status, 404);
+  const foreign = await ok(outsider.owner, "POST", `/v1/agent-templates/${outsider.template.id}/preflights`, { ...outsider.input, overrides: { brand_version_id: fixed.id } }, outsider.tenant);
+  assert.ok(foreign.missing_required_dependencies.includes("BRAND_VERSION_UNAVAILABLE"));
+  await s.db.control.query("UPDATE brand_profiles SET content_state='quarantined' WHERE id=$1", [brand.id]);
+  const rejected = await ok(f.owner, "POST", `/v1/agent-templates/${f.template.id}/preflights`, body, f.tenant);
+  assert.notEqual(rejected.state, "ready");
+  assert.equal((await call(f.owner, "POST", `/v1/agent-templates/${f.template.id}/instances`, body, f.tenant)).status, 409);
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM tasks WHERE project_id=$1", [f.project])).rows[0].n, 0);
+  assert.equal((await s.db.control.query("SELECT body,sha256,id FROM brand_profile_versions WHERE id=$1", [fixed.id])).rows[0].sha256, before.sha256);
+});
+
 test("canonical instantiation atomically pins real versions and replay creates only one authorized specialist", async () => {
   const f = await fixture(),
     key = randomUUID(),

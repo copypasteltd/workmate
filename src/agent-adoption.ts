@@ -25,7 +25,9 @@ import {
   getAgentVersion,
   ownConversation,
   retainTemplateProvenance,
+  retainBrandVersion,
 } from "./persistent-work.js";
+import { fixedBrandVersion } from "./brand-bindings.js";
 
 const version = z.number().int().positive().safe();
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
@@ -480,7 +482,7 @@ async function prepare(
       : await agentDefinition(
           tx,
           catalog,
-          proposal.definition!,
+          retainBrandVersion(proposal.definition!, source.body),
           scope.project,
           scope.tenant,
           p.id,
@@ -637,6 +639,7 @@ async function prepare(
       installation_version: s.installation_version,
     })),
     brand: target.body.brand ?? null,
+    brand_version_id: target.body.brand_version_id ?? null,
   };
   return {
     kind: actualKind,
@@ -791,7 +794,10 @@ async function checkGuards(
     installation_version: s.installation_version,
   }));
   if (canonical(skills) !== canonical(guards.skill_state)) throw stale();
-  if (guards.brand) {
+  if (guards.brand_version_id) {
+    const brand = await fixedBrandVersion(tx, scope.project, guards.brand_version_id);
+    if (canonical(brand) !== canonical(guards.brand)) throw stale();
+  } else if (guards.brand) {
     const brand = (
       await tx.query(
         "SELECT id,version FROM brand_profiles WHERE id=$1 AND project_id=$2 AND content_state='active' FOR SHARE",
@@ -1060,7 +1066,7 @@ export function registerAgentAdoption(
                   : await agentDefinition(
                       tx,
                       catalog,
-                      body.definition!,
+                      retainBrandVersion(body.definition!, prepared.source.body),
                       scope.project,
                       scope.tenant,
                       req.principal.id,

@@ -15,6 +15,7 @@ import { desktopImageFixture } from "./desktop-image-fixture.js";
 import { desktopLocalRoleKeys } from "../src/desktop-executions.js";
 import { demoVectorInput, demoSlidesInput } from "../src/editable-design-demo.js";
 import { saveAsset } from "../src/storage.js";
+import { presetBrandDefinition } from "./preset-brand-fixture.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>;
 let mode: "known" | "unknown" = "known", providerCalls = 0, countCalls = 0;
@@ -132,6 +133,72 @@ test("one immutable local owner and hold survive duplicate create; queue, cloud 
   await assert.rejects(s.db.control.query("UPDATE tasks SET execution_location='cloud' WHERE id=$1", [t.id]), /immutable/);
 });
 
+test("native template instantiation loads the saved instructions and exact brand, preserves session identity and rechecks revoked content", async () => {
+  const f = await fixture(), projectBase = f.base.replace(/\/desktop-executions$/, "");
+  const scoped = async (client: Client, method: string, url: string, body?: any, key = randomUUID()) => {
+    const response = await s.app.inject({ method: method as any, url, headers: {
+      ...(client.access_token ? { Authorization: "Bearer " + client.access_token } : { cookie: client.cookie!, "x-csrf-token": client.csrf! }),
+      "x-tenant-id": f.tenant, "idempotency-key": key,
+    }, ...(body === undefined ? {} : { payload: body }) });
+    return { status: response.statusCode, data: response.json() };
+  };
+  const published = await call(f.c, "POST", projectBase + "/brand/definitions", presetBrandDefinition());
+  assert.equal(published.status, 201, JSON.stringify(published.data)); const brand = published.data;
+  const options = await scoped(f.c, "GET", `/v1/brand-version-options?project_id=${f.project}`);
+  assert.equal(options.status, 200); const revision = options.data.items.find((v: any) => v.brand_id === brand.id);
+  const directory = await scoped(f.c, "GET", "/v1/agent-templates"), fullstack = directory.data.items.find((v: any) => v.role_key === "fullstack");
+  assert.equal(fullstack.available, true, JSON.stringify(fullstack));
+  const input = { project_id: f.project, template_version: fullstack.version, overrides: { name: "Native pinned expert", role_description: "NATIVE_PRESET_SAVED_INSTRUCTIONS", brand_version_id: revision.id } };
+  const checkKey = randomUUID(), preview = await scoped(f.c, "POST", `/v1/agent-templates/${fullstack.id}/preflights`, input, checkKey);
+  assert.equal(preview.data.state, "ready", JSON.stringify(preview.data));
+  assert.equal((await scoped(f.web, "POST", `/v1/agent-templates/${fullstack.id}/preflights`, input, checkKey)).status, 409, "A web receipt cannot replay a native preflight");
+  const expert = await scoped(f.c, "POST", `/v1/agent-templates/${fullstack.id}/instances`, input);
+  assert.equal(expert.status, 201, JSON.stringify(expert.data));
+  const agent = expert.data, body = { ...f.input, agent_id: agent.id, agent_version: 1 };
+  const selected = await ok(f.c, "GET", f.base + `/specialists/${agent.id}?version=1`);
+  assert.deepEqual(selected, { id: agent.id, version: 1, name: input.overrides.name, role_key: "fullstack" });
+  assert.equal((await call(await native(f.web, "extension"), "GET", f.base + `/specialists/${agent.id}?version=1`)).status, 403);
+  const k = randomUUID(), created = await ok(f.c, "POST", f.base, body, k);
+  assert.equal((await ok(f.c, "POST", f.base, body, k)).task_id, created.task_id);
+  const task = await taskRow(created.task_id);
+  assert.equal(task.input_context.agent_id, agent.id); assert.equal(task.input_context.agent_version, 1);
+  await assert.rejects(s.db.control.query("UPDATE tasks SET input_context=jsonb_set(input_context,'{agent_version}','2') WHERE id=$1", [task.id]), { code: "23514" });
+  await assert.rejects(s.db.control.query("UPDATE tasks SET input_context='{}' WHERE id=$1", [task.id]), { code: "23514" });
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM reservations WHERE task_id=$1", [task.id])).rows[0].n, 1);
+  await ok(f.c, "PUT", projectBase + "/brand/" + brand.id, { expected_version: 1, definition: presetBrandDefinition("PRESET_BRAND_LATER_GUIDANCE") });
+  const url = f.base + "/" + task.id, begun = await ok(f.c, "POST", url + "/start", f.fields);
+  assert.ok(begun.prompt.includes("NATIVE_PRESET_SAVED_INSTRUCTIONS")); assert.ok(begun.prompt.includes("PRESET_BRAND_ORIGINAL_GUIDANCE"));
+  assert.ok(!begun.prompt.includes("PRESET_BRAND_LATER_GUIDANCE")); assert.ok(begun.skills.length > 0);
+  assert.equal((await inference(begun.credential.token)).statusCode, 200);
+  await ok(f.c, "POST", url + "/finish", complete);
+  assert.equal((await call(f.c, "POST", f.base, { ...body, agent_version: 2 })).data.error.code, "DESKTOP_SESSION_BINDING_CHANGED");
+  assert.equal((await call(f.c, "POST", f.base, f.input)).data.error.code, "DESKTOP_SESSION_BINDING_CHANGED");
+  assert.equal((await call(f.c, "POST", f.base, { ...f.input, local_session_id: randomUUID(), agent_id: agent.id })).status, 400);
+  const next = await ok(f.c, "POST", f.base, body), nextTask = await taskRow(next.task_id);
+  assert.deepEqual(nextTask.input_context.memories, task.input_context.memories);
+  assert.equal(nextTask.input_context.agent_version, 1);
+  await s.db.control.query("UPDATE brand_profiles SET content_state='quarantined' WHERE id=$1", [brand.id]);
+  const callsBefore = providerCalls;
+  assert.equal((await call(f.c, "POST", f.base + "/" + next.task_id + "/start", f.fields)).status, 409);
+  assert.equal(providerCalls, callsBefore);
+  await ok(f.c, "POST", f.base + "/" + next.task_id + "/cancel", {});
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM outbox WHERE payload->>'task_id'=ANY($1::text[])", [[task.id, next.task_id]])).rows[0].n, 0);
+});
+
+test("saved specialist company tools retain their configured subset and inaccessible experts cannot reserve local work", async () => {
+  const f = await fixture(), projectBase = f.base.replace(/\/desktop-executions$/, "");
+  const agent = await ok(f.c, "POST", projectBase + "/agents", { name: "Read-only company tools", role_key: "designer", instructions: "Use the supplied company tools", tool_ids: ["asset.read"] });
+  const input = { ...f.input, role_key: "designer", agent_id: agent.id, agent_version: 1 };
+  const created = await ok(f.c, "POST", f.base, input), url = f.base + "/" + created.task_id, begun = await ok(f.c, "POST", url + "/start", f.fields);
+  assert.ok(!begun.company_tools.some((v: any) => ["design_render", "image2_generate", "image2_edit", "deliver_text"].includes(v.name)));
+  const before = providerCalls;
+  assert.equal((await call(f.c, "POST", url + "/tools", { tool: "image2_generate", arguments: {}, call_id: "subset-denied", thread_id: "native", turn_id: "turn" })).status, 403);
+  assert.equal(providerCalls, before); await ok(f.c, "POST", url + "/cancel", {});
+  const other = await fixture();
+  assert.equal((await call(other.c, "POST", other.base, { ...other.input, role_key: "designer", agent_id: agent.id, agent_version: 1 })).status, 404);
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM tasks WHERE project_id=$1", [other.project])).rows[0].n, 0);
+});
+
 test("lost start acceptance replays a single encrypted credential without exposing it in public reads or replay storage", async () => {
   const f = await fixture(), created = await ok(f.c, "POST", f.base, f.input), url = f.base + "/" + created.task_id, k = randomUUID();
   const a = await ok(f.c, "POST", url + "/start", f.fields, k), b = await ok(f.c, "POST", url + "/start", f.fields, k);
@@ -215,8 +282,8 @@ test("a lost local outcome or expired lease cannot be reported as zero-cost succ
   }
 });
 
-test("all eighteen connected native roles load their exact Skills and company tool descriptors without cloud dispatch", async () => {
-  const f = await fixture(); assert.equal(desktopLocalRoleKeys.length, 18);
+test("eighteen native specialists and the default helper load exact Skills and company descriptors without cloud dispatch", async () => {
+  const f = await fixture(); assert.equal(desktopLocalRoleKeys.length, 19); assert.ok(desktopLocalRoleKeys.includes("assistant"));
   assert.deepEqual((await ok(f.c, "GET", f.base + "/runtime")).role_keys, desktopLocalRoleKeys);
   for (const role of desktopLocalRoleKeys) {
     const fields = { ...f.fields, local_session_id: randomUUID() };
