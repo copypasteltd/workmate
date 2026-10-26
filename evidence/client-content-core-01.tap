@@ -1,0 +1,255 @@
+2026-10-26 16:21:31.552 CST [3384] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-26 16:21:31.560 CST [3384] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-26 16:21:31.561 CST [3384] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-26 16:21:34.660 CST [9308] LOG:  database system was shut down at 2026-10-26 15:18:20 CST
+
+2026-10-26 16:21:35.341 CST [3384] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+# isolated integration suite: applied migration 104
+# isolated integration suite: applied migration 105
+# isolated integration suite: applied migration 106
+# isolated integration suite: applied migration 107
+# isolated integration suite: applied migration 108
+# isolated integration suite: applied migration 109
+# isolated integration suite: applied migration 110
+# isolated integration suite: applied migration 111
+# isolated integration suite: applied migration 112
+# isolated integration suite: applied migration 113
+# isolated integration suite: applied migration 114
+# isolated integration suite: applied migration 115
+# isolated integration suite: applied migration 116
+# isolated integration suite: applied migration 117
+# isolated integration suite: applied migration 118
+# Subtest: legacy public content stays compatible; first preview rejects a changed legacy baseline
+ok 1 - legacy public content stays compatible; first preview rejects a changed legacy baseline
+  ---
+  duration_ms: 13700.1268
+  ...
+# Subtest: strict documents reject duplicate keys, invalid schedules, non-menu paths and hidden account controls
+ok 2 - strict documents reject duplicate keys, invalid schedules, non-menu paths and hidden account controls
+  ---
+  duration_ms: 166.5855
+  ...
+2026-10-26 16:23:12.735 CST [31732] ERROR:  Client content documents, previews and publications are immutable
+2026-10-26 16:23:12.735 CST [31732] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-26 16:23:12.735 CST [31732] STATEMENT:  UPDATE client_content_releases SET reason='changed' WHERE id=$1
+
+2026-10-26 16:23:12.784 CST [11528] ERROR:  Client content documents, previews and publications are immutable
+2026-10-26 16:23:12.784 CST [11528] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-26 16:23:12.784 CST [11528] STATEMENT:  DELETE FROM client_content_releases WHERE id=$1
+
+2026-10-26 16:23:12.789 CST [9260] ERROR:  permission denied for table client_content_releases
+2026-10-26 16:23:12.789 CST [9260] STATEMENT:  SELECT * FROM client_content_releases
+
+2026-10-26 16:23:12.866 CST [16020] ERROR:  A new matching reviewed publication is required
+2026-10-26 16:23:12.866 CST [16020] CONTEXT:  PL/pgSQL function guard_client_content_head() line 10 at RAISE
+2026-10-26 16:23:12.866 CST [16020] STATEMENT:  UPDATE client_content_head SET revision=revision+1 WHERE singleton
+
+2026-10-26 16:23:13.016 CST [23712] ERROR:  new row for relation "client_content_releases" violates check constraint "client_content_releases_check1"
+2026-10-26 16:23:13.016 CST [23712] STATEMENT:  INSERT INTO client_content_releases(version,document,audience,canonical_definition,definition_hash,reason,created_by,idempotency_key,request_hash) VALUES(100000,$1,$2,$3,$4,'tampered definition',$5,$6,$4)
+
+# Subtest: draft requests are idempotent and content versions are digest-checked, append-only and control-only
+ok 3 - draft requests are idempotent and content versions are digest-checked, append-only and control-only
+  ---
+  duration_ms: 350.9179
+  ...
+# Subtest: global content control cannot bypass a scoped allow or explicit scoped deny
+ok 4 - global content control cannot bypass a scoped allow or explicit scoped deny
+  ---
+  duration_ms: 477.9034
+  ...
+# Subtest: full publication reaches all three clients with private metadata and optional-menu appearance only
+ok 5 - full publication reaches all three clients with private metadata and optional-menu appearance only
+  ---
+  duration_ms: 158.599
+  ...
+# Subtest: targeted publication preserves the exact baseline for other users, workspaces and clients
+ok 6 - targeted publication preserves the exact baseline for other users, workspaces and clients
+  ---
+  duration_ms: 186.6551
+  ...
+# Subtest: overlapping targeted rollouts are rejected; promotion to everyone is explicit
+ok 7 - overlapping targeted rollouts are rejected; promotion to everyone is explicit
+  ---
+  duration_ms: 92.8918
+  ...
+2026-10-26 16:23:14.089 CST [31884] ERROR:  Client content documents, previews and publications are immutable
+2026-10-26 16:23:14.089 CST [31884] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-26 16:23:14.089 CST [31884] STATEMENT:  DELETE FROM client_content_publications WHERE id=$1
+
+# Subtest: rollback creates a new publication and restores a historical rollout's original baseline
+ok 8 - rollback creates a new publication and restores a historical rollout's original baseline
+  ---
+  duration_ms: 156.6965
+  ...
+# Subtest: stale concurrent previews cannot overwrite a newer administrator publication
+ok 9 - stale concurrent previews cannot overwrite a newer administrator publication
+  ---
+  duration_ms: 229.2795
+  ...
+2026-10-26 16:23:14.436 CST [32276] ERROR:  Client content documents, previews and publications are immutable
+2026-10-26 16:23:14.436 CST [32276] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-26 16:23:14.436 CST [32276] STATEMENT:  UPDATE client_content_previews SET reason='changed' WHERE id=$1
+
+# Subtest: preview binds actor, action, session and deadline; expired MFA blocks publication
+ok 10 - preview binds actor, action, session and deadline; expired MFA blocks publication
+  ---
+  duration_ms: 117.4667
+  ...
+# Subtest: duplicate concurrent confirmation publishes once and replay still rechecks live authority
+ok 11 - duplicate concurrent confirmation publishes once and replay still rechecks live authority
+  ---
+  duration_ms: 414.5649
+  ...
+# Subtest: zero percent and stable cohort hashing preserve identity; schedule boundaries and literal text are exact
+ok 12 - zero percent and stable cohort hashing preserve identity; schedule boundaries and literal text are exact
+  ---
+  duration_ms: 94.2471
+  ...
+# Subtest: audience and preview subjects require directory authority and active membership
+ok 13 - audience and preview subjects require directory authority and active membership
+  ---
+  duration_ms: 122.9302
+  ...
+# Subtest: managed content blocks legacy backdoors while old public byte-compatible menu precedence is preserved
+ok 14 - managed content blocks legacy backdoors while old public byte-compatible menu precedence is preserved
+  ---
+  duration_ms: 18.4371
+  ...
+2026-10-26 16:23:15.210 CST [30072] LOG:  checkpoint starting: immediate force wait
+
+2026-10-26 16:23:16.407 CST [30072] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.036 s, sync=0.774 s, total=1.197 s; sync files=15, longest=0.132 s, average=0.052 s; distance=20183 kB, estimate=20183 kB; lsn=18/35461950, redo lsn=18/354618F8
+
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 98481.7108
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/79efa2f2-0d5d-4e6a-9cb1-e066a2711e93/result.json","sha256":"8cd51029dc723ba822e051e72224c29d43d0ff6303170454a4f9015828fa129b","exit_code":0}
+2026-10-26 16:23:17.821 CST [3384] LOG:  received fast shutdown request
+
+2026-10-26 16:23:17.943 CST [3384] LOG:  aborting any active transactions
+
+2026-10-26 16:23:17.949 CST [3384] LOG:  background worker "logical replication launcher" (PID 31792) exited with exit code 1
+
+2026-10-26 16:23:17.950 CST [30072] LOG:  shutting down
+
+2026-10-26 16:23:18.032 CST [30072] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-26 16:23:18.339 CST [30072] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.052 s, total=0.389 s; sync files=1, longest=0.052 s, average=0.052 s; distance=0 kB, estimate=18165 kB; lsn=18/35461A68, redo lsn=18/35461A68
+
+2026-10-26 16:23:18.657 CST [3384] LOG:  database system is shut down
+

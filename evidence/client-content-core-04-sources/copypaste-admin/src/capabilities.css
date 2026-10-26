@@ -1,0 +1,241 @@
+.cap-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.cap-video-suite { min-width: 0; padding: 20px; margin: 18px 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.cap-video-suite progress { width: 100%; accent-color: var(--blue); }
+.cap-video-suite .key-value { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 10px; }
+.cap-video-suite dd { margin: 0; overflow-wrap: anywhere; }
+.cap-video-suite form { margin-top: 18px; }
+.cap-video-cases { padding-inline-start: 24px; }
+.cap-video-cases li { display: grid; gap: 5px; min-width: 0; padding: 12px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+@media (max-width: 560px) { .cap-video-suite { padding: 14px; } .cap-video-suite .key-value { grid-template-columns: minmax(0, 1fr); } }
+.cap-navigation a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  text-decoration: none;
+}
+.cap-navigation a[aria-current="page"] {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+  font-weight: 700;
+}
+.cap-toolbar,
+.cap-actions,
+.cap-meta,
+.cap-release-heading,
+.cap-pagination {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.cap-toolbar,
+.cap-release-heading {
+  justify-content: space-between;
+}
+.cap-toolbar {
+  margin: 0 0 24px;
+}
+.cap-toolbar p {
+  max-width: 65ch;
+  margin: 0;
+}
+.cap-release-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+.cap-release {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 26px;
+  border-radius: 14px;
+}
+.cap-release-heading {
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+.cap-release h2,
+.cap-facts h3 {
+  overflow-wrap: anywhere;
+}
+.cap-release h2 {
+  margin: 4px 0 0;
+  font-size: 24px;
+}
+.cap-release h2 small,
+.cap-facts h3 small {
+  font:
+    500 14px Manrope,
+    sans-serif;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.cap-release > .cap-facts h3 {
+  display: none;
+}
+.cap-facts .key-value {
+  display: grid;
+  grid-template-columns: minmax(110px, 1fr) minmax(0, 1.4fr);
+  gap: 12px;
+  font-size: 14px;
+}
+.cap-facts dd,
+.cap-technical dd,
+.cap-receipt dd {
+  overflow-wrap: anywhere;
+}
+.cap-facts .key-value dt {
+  color: var(--muted);
+}
+.cap-facts .key-value dd {
+  padding: 0;
+  margin: 0;
+}
+.cap-receipt > .key-value,
+.cap-technical .key-value {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 12px;
+}
+.cap-receipt > .key-value dd,
+.cap-technical .key-value dd {
+  margin: 0;
+}
+.cap-meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 14px 0;
+}
+.cap-actions {
+  margin-top: 20px;
+}
+.cap-actions .button,
+.cap-pagination .button,
+.cap-confirm {
+  min-height: 44px;
+}
+.cap-pagination {
+  justify-content: center;
+  margin: 28px 0;
+}
+.cap-comparison,
+.cap-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.cap-comparison > section {
+  min-width: 0;
+  border: 1px solid var(--line);
+  padding: 16px;
+  border-radius: 10px;
+}
+.cap-comparison h4 {
+  color: var(--muted);
+  margin-top: 0;
+  font-size: 13px;
+}
+.cap-comparison .key-value {
+  display: block;
+}
+.cap-comparison .key-value dd {
+  margin: 4px 0 12px;
+}
+.cap-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+.cap-fields .cap-input-grid {
+  margin: 0;
+}
+.cap-receipt,
+.cap-validation-form {
+  margin-top: 24px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.cap-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding-left: 20px;
+  font-size: 14px;
+}
+.cap-checks li::marker {
+  color: var(--green);
+}
+.cap-cleanup {
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.cap-cleanup h4 {
+  margin: 0 0 12px;
+}
+.cap-technical {
+  margin: 20px 0;
+}
+.cap-technical summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 600;
+}
+.cap-technical code {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.cap-confirm {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  line-height: 1.5;
+}
+.cap-confirm input {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--blue);
+}
+@media (max-width: 1100px) {
+  .cap-release-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .cap-comparison,
+  .cap-input-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cap-release {
+    padding: 18px;
+  }
+  .cap-actions .button {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+  .cap-pagination {
+    gap: 8px;
+  }
+  .cap-facts .key-value {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

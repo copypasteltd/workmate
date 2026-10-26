@@ -1,0 +1,435 @@
+{
+  "normative_source": "docs/contracts/openapi.json",
+  "normative_source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "scope": "Supplemental composite command. Original request and response schemas remain byte-for-byte unchanged.",
+  "schemas": {
+    "AdminVipGrantCreate": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "user",
+                "tenant"
+              ]
+            },
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "additionalProperties": false
+        },
+        "plan_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "starts_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ends_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "overlap_policy": {
+          "type": "string",
+          "enum": [
+            "reject",
+            "replace",
+            "extend_same_plan"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "paid",
+            "trial",
+            "promotion",
+            "compensation",
+            "contract"
+          ]
+        },
+        "payment_record_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "auto_renew": {
+          "const": false
+        },
+        "expected_subject_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "subject",
+        "plan_version_id",
+        "starts_at",
+        "ends_at",
+        "overlap_policy",
+        "source",
+        "auto_renew",
+        "expected_subject_version",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source": {
+                "const": "paid"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "payment_record_id"
+            ]
+          }
+        }
+      ]
+    },
+    "AdminFeeGift": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        },
+        "action": {
+          "const": "gift"
+        },
+        "amount": {
+          "$ref": "#/components/schemas/AdminPositiveMoney"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "expected_version",
+        "reason",
+        "action",
+        "amount",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "AdminPositiveMoney": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "const": "HKD"
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]*$"
+        }
+      },
+      "required": [
+        "currency",
+        "amount_micros"
+      ],
+      "additionalProperties": false
+    },
+    "Money": {
+      "type": "object",
+      "properties": {
+        "currency": {
+          "type": "string",
+          "enum": [
+            "HKD"
+          ]
+        },
+        "amount_micros": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)$",
+          "description": "One millionth of currency; decimal integer string."
+        }
+      },
+      "required": [
+        "currency",
+        "amount_micros"
+      ],
+      "additionalProperties": false
+    },
+    "AdminPreview": {
+      "type": "object",
+      "properties": {
+        "preview_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 1
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "direct",
+            "recent_mfa",
+            "independent_approval",
+            "denied"
+          ]
+        },
+        "missing_permission_keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "admin.overview.read",
+              "admin.users.read",
+              "admin.users.contact.read",
+              "admin.users.profile.write",
+              "admin.users.status.write",
+              "admin.users.sessions.revoke",
+              "admin.tenants.read",
+              "admin.tenants.status.write",
+              "admin.tenants.members.write",
+              "admin.tenants.sso.write",
+              "admin.usage.read",
+              "admin.usage.internal_cost.read",
+              "admin.billing.read",
+              "admin.billing.top_up",
+              "admin.billing.gift",
+              "admin.billing.debit",
+              "admin.billing.credit_limit.write",
+              "admin.billing.refund",
+              "admin.billing.reconcile",
+              "admin.entitlements.read",
+              "admin.entitlements.grant",
+              "admin.entitlements.extend",
+              "admin.entitlements.revoke",
+              "admin.plans.read",
+              "admin.plans.draft",
+              "admin.plans.publish",
+              "admin.content.read",
+              "admin.content.body.read",
+              "admin.content.download",
+              "admin.content.metadata.write",
+              "admin.content.version.create",
+              "admin.content.quarantine",
+              "admin.content.restore",
+              "admin.content.delete",
+              "admin.sharing.revoke",
+              "admin.execution.read",
+              "admin.execution.cancel",
+              "admin.execution.retry",
+              "admin.execution.pause",
+              "admin.execution.resume",
+              "admin.catalog.read",
+              "admin.catalog.draft",
+              "admin.catalog.publish",
+              "admin.catalog.rollback",
+              "admin.connections.read",
+              "admin.connections.revoke",
+              "admin.devices.read",
+              "admin.devices.revoke",
+              "admin.access.read",
+              "admin.access.principals.write",
+              "admin.access.sessions.revoke",
+              "admin.access.roles.write",
+              "admin.access.bindings.write",
+              "admin.access.bindings.revoke",
+              "admin.support.read",
+              "admin.support.start",
+              "admin.support.revoke",
+              "admin.audit.read",
+              "admin.approvals.read",
+              "admin.approvals.decide",
+              "admin.jobs.read",
+              "admin.jobs.create",
+              "admin.exports.create",
+              "admin.exports.download",
+              "admin.exports.sensitive",
+              "admin.policy.read",
+              "admin.policy.draft",
+              "admin.policy.publish"
+            ]
+          },
+          "minItems": 0
+        },
+        "impact_summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "creates_business_effect": {
+          "const": false
+        },
+        "expected_target_versions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "id",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "preview_id",
+        "payload_hash",
+        "target_ids",
+        "policy_version_id",
+        "decision",
+        "missing_permission_keys",
+        "impact_summary",
+        "expires_at",
+        "creates_business_effect",
+        "expected_target_versions"
+      ],
+      "additionalProperties": false
+    },
+    "AdminOperation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending_approval",
+            "queued",
+            "running",
+            "succeeded",
+            "partially_succeeded",
+            "failed",
+            "cancelled",
+            "reconciling"
+          ]
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "target_ids",
+        "actor_id",
+        "state",
+        "payload_hash",
+        "policy_version_id",
+        "version",
+        "created_at",
+        "result_ids"
+      ],
+      "additionalProperties": false
+    },
+    "VipCreditCommand": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "billing_account_id",
+        "vip",
+        "gift"
+      ],
+      "properties": {
+        "billing_account_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "vip": {
+          "$ref": "#/components/schemas/AdminVipGrantCreate"
+        },
+        "gift": {
+          "$ref": "#/components/schemas/AdminFeeGift"
+        }
+      }
+    }
+  }
+}
