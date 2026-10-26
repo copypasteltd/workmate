@@ -1,5 +1,29 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- cloud-program-stage99 -->
+
+云端 Codex 现可实际运行固定 Node 程序、内置测试及语法检查。检查回执绑定确切源码、保留失败、标记代码变更，并随匹配源码打包交付。本次交付连接云端执行、确切源码、检查回执及页面。
+
+使用：批准具有工具授权的云端任务及预算，由 Codex 写入和检查源码，在「软件检查记录」查看结果、展开输出并下载执行文件或完整记录。当前为 Windows 原生执行边界，禁止网络和子进程；任意 npm 依赖及另外三个云端开发工具仍未开放。
+
+验证：十个相关测试文件的 83 项检查及 4 项实际登录 Web 流程通过。模型响应和额度为假数据；Codex、原生执行和下载均真实。[Evidence / 证据](quality/cloud-program-checkpoint.json) · [Design and limits / 方案与边界](technical/99-cloud-program-execution.md).
+
+```mermaid
+flowchart LR
+ A[Authorized cloud task] --> B[Codex writes exact source]
+ B --> C[Native Node check]
+ C --> D[Source-bound receipt and files]
+ D --> E[Task UI and matching code package]
+```
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-program-03-checks-en.png)
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-program-03-compact-zh.png)
+
+![Actual Web interaction / 实际 Web 交互](assets/screenshots/workmate-03-cloud-program.gif)
+
+[Actual interaction MP4 / 实际交互录像](assets/screenshots/workmate-03-cloud-program.mp4)
+
 <!-- preset-specialists-stage98 -->
 
 Desktop 的「我的专家」现已直接启动本机 Codex。选择角色、长期工作要求和项目内固定品牌版本，免费预检保存后，选择本机目录、主动授权并确认每次预算。Web 与 Extension 保持云端执行。后续品牌发布或专家编辑不会悄悄替换既有本机会话的版本。
