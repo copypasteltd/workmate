@@ -1,5 +1,31 @@
 # Workmate · CopyPaste Enterprise Agent · admin
 
+<!-- cloud-development-stage100 -->
+
+云端 Codex 现可实际运行真实 HTTP 应用请求及原生 SQLite 数据和约束检查。检查回执绑定确切源码、保留每项断言的预期与实际结果、标记代码变更，并随匹配源码打包交付。Admin 沿用现有企业、来源、文件和权限管理；下图实际来自用户端 Web 联调。
+
+使用：批准具有工具授权的云端任务及预算，由 Codex 写入和检查源码，在「软件检查记录」查看结果、展开输出并下载执行文件或完整记录。当前为 Windows 原生执行边界，禁止网络和子进程；外部 TCP/TLS、PostgreSQL/MySQL 兼容性、任意 npm 依赖及云端浏览器预览不在本次范围。
+
+下方保留各历史阶段的实现与验证范围；本节描述当前更新。
+
+验证：十一个相关测试文件的 96 项检查及 4 项实际登录 Web 流程通过。模型响应和额度为假数据；Codex、原生执行和下载均真实。[Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-development-checkpoint.json) · [Design and limits / 方案与边界](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/100-cloud-development-checks.md).
+
+```mermaid
+flowchart LR
+ A[Authorized cloud task] --> B[Codex writes exact source]
+ B --> C[HTTP API / SQLite checks]
+ C --> D[Source-bound receipt and files]
+ D --> E[Task UI and matching code package]
+```
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-development-06-checks-en.png)
+
+![Actual Web software checks / 实际 Web 软件检查](assets/screenshots/workmate-cloud-development-06-compact-zh.png)
+
+![Actual Web interaction / 实际 Web 交互](assets/screenshots/workmate-06-cloud-development.gif)
+
+[Actual interaction MP4 / 实际交互录像](assets/screenshots/workmate-06-cloud-development.mp4)
+
 <!-- cloud-program-stage99 -->
 
 云端 Codex 现可实际运行固定 Node 程序、内置测试及语法检查。检查回执绑定确切源码、保留失败、标记代码变更，并随匹配源码打包交付。Admin 沿用现有企业、来源、文件和权限管理；下图实际来自用户端 Web 联调。
