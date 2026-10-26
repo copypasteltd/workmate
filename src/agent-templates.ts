@@ -59,6 +59,14 @@ const implementedTools = new Set([
   "slides.build",
   "slides.render",
 ]);
+// These operations are implemented by the native Codex command/browser
+// protocols. They are not cloud business tools and do not become cloud-ready.
+const nativeOperations = new Set([
+  "api.test",
+  "browser.preview",
+  "database.test.native",
+  "process.run.allowed",
+]);
 
 export async function seedAgentTemplates(db: Database, catalog: Catalog) {
   await db.tx(
@@ -270,6 +278,7 @@ export async function assessTemplate(
   tenant: string,
   row: any,
   input: z.infer<typeof useTemplate>,
+  executionLocation: "cloud" | "desktop" = "cloud",
 ) {
   await projectAccess(tx, actor, tenant, input.project_id, "write");
   const role = catalog.role(row.role_key),
@@ -329,7 +338,10 @@ export async function assessTemplate(
     else capabilities.push(current.id);
   }
   for (const tool of role.tool_ids)
-    if (!implementedTools.has(tool)) {
+    if (
+      !implementedTools.has(tool) &&
+      !(executionLocation === "desktop" && nativeOperations.has(tool))
+    ) {
       missing.push("TOOL_NOT_IMPLEMENTED:" + tool);
       unavailable = true;
     }
@@ -364,11 +376,17 @@ export async function assessTemplate(
   }
   if (input.overrides?.brand_version_id)
     missing.push("BRAND_VERSION_BINDING_NOT_IMPLEMENTED");
-  try {
-    await new CodexRuntimeAdapter(db.config).version();
-  } catch (error) {
-    missing.push(error instanceof Problem ? error.code : "CODEX_NOT_AVAILABLE");
-    unavailable = true;
+  // Native admission verifies the pinned device runtime separately. A missing
+  // cloud executable must never force a Desktop method into cloud execution.
+  if (executionLocation === "cloud") {
+    try {
+      await new CodexRuntimeAdapter(db.config).version();
+    } catch (error) {
+      missing.push(
+        error instanceof Problem ? error.code : "CODEX_NOT_AVAILABLE",
+      );
+      unavailable = true;
+    }
   }
   return {
     template_id: row.template_id,

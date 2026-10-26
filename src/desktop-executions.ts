@@ -43,6 +43,7 @@ import {
 } from "./desktop-tool-policy.js";
 import { requestTaskCancellation } from "./task-control.js";
 import type { Storage } from "./storage.js";
+import { registerDesktopSolutions } from "./desktop-solutions.js";
 import { TaskBusinessTools } from "./task-business-tools.js";
 import {
   DesktopWorkflows,
@@ -108,6 +109,14 @@ const companyToolNames = new Set([
   "image2_generate",
   "image2_edit",
   "project_reference_read",
+  "solution_list",
+  "solution_read",
+  "solution_source_read",
+]);
+const methodToolNames = new Set([
+  "solution_list",
+  "solution_read",
+  "solution_source_read",
 ]);
 // New tools are available only on explicitly versioned specialists. Already
 // frozen 1.0 tasks retain their original descriptors and authority.
@@ -142,9 +151,6 @@ const videoCompanyToolNames = new Set([
   "generated_video_cancel",
   "audio_produce",
   "effects_catalog",
-  "solution_list",
-  "solution_read",
-  "solution_source_read",
   "effects_sources",
   "effect_render",
 ]);
@@ -173,6 +179,7 @@ export async function registerDesktopExecutions(
   storage: Storage,
 ) {
   await seedDesktopRuntime(db);
+  registerDesktopSolutions(app, db, catalog, desktopLocalRoleKeys);
   const gateways = new Map<string, Promise<Gateway>>(),
     shutdown = new AbortController();
   const companyCalls = new Map<
@@ -252,6 +259,7 @@ export async function registerDesktopExecutions(
   }
 
   async function authorize(tx: Tx, d: any, t: any, active = true) {
+    t.native_method_tools_version = d.method_tools_version;
     const parent = await lockNativeWorkflowParent(tx, t, true);
     if (parent) await authorize(tx, parent.d, parent.t);
     const actor: Principal = {
@@ -424,11 +432,14 @@ export async function registerDesktopExecutions(
       .build(t, actor, t.fencing_token, role)
       .filter(
         (tool) =>
-          companyToolNames.has(tool.name) ||
+          (companyToolNames.has(tool.name) &&
+            (!methodToolNames.has(tool.name) ||
+              t.native_method_tools_version === 1)) ||
           (analysisReady && analysisCompanyToolNames.has(tool.name)) ||
           (editableReady && editableCompanyToolNames.has(tool.name)) ||
           (t.role_key === "video-motion" &&
-            videoCompanyToolNames.has(tool.name)),
+            (videoCompanyToolNames.has(tool.name) ||
+              methodToolNames.has(tool.name))),
       );
     return [...tools, ...workflows.build(t, actor)];
   }
@@ -535,8 +546,8 @@ export async function registerDesktopExecutions(
           );
           const d = (
             await tx.query(
-              `INSERT INTO desktop_executions(task_id,tenant_id,project_id,actor_id,device_id,local_session_id,native_family_id,workspace_hash,runtime_sha256)
-           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *`,
+              `INSERT INTO desktop_executions(task_id,tenant_id,project_id,actor_id,device_id,local_session_id,native_family_id,workspace_hash,runtime_sha256,method_tools_version)
+           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
               [
                 t.id,
                 p.tenant,
@@ -547,6 +558,7 @@ export async function registerDesktopExecutions(
                 family,
                 b.workspace_hash,
                 b.runtime_sha256,
+                previous?.method_tools_version ?? 1,
               ],
             )
           ).rows[0];

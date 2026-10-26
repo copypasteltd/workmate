@@ -10,6 +10,8 @@ import { enqueueTask } from "./task-service.js";
 import { assertTaskContentSources } from "./task-content-sources.js";
 import { recordDeliveryReview } from "./business-quality.js";
 import { effectivePlan } from "./plans.js";
+import { desktopSessionFamily } from "./desktop-family.js";
+import type { desktopSolutionBinding } from "./desktop-solutions.js";
 import {
   solutionCreate,
   solutionPreview,
@@ -172,6 +174,7 @@ export class Solutions {
     tenant: string,
     s: any,
     input: z.infer<typeof solutionPreview>,
+    executionLocation: "cloud" | "desktop" = "cloud",
   ) {
     await projectAccess(tx, actor, tenant, input.project_id, "write");
     if (s.state === "disabled")
@@ -223,6 +226,7 @@ export class Solutions {
           project_id: input.project_id,
           template_version: item.template_version,
         },
+        executionLocation,
       );
       checks.push({
         template_id: item.template_id,
@@ -393,6 +397,9 @@ export class Solutions {
       resolved_sources,
       missing_requirements: [...new Set(missing)],
       state: missing.length ? "needs_configuration" : "ready",
+      ...(executionLocation === "desktop"
+        ? { execution_location: "desktop" }
+        : {}),
     };
     const plan = await effectivePlan(tx, tenant, actor.id);
     const active = (
@@ -421,7 +428,7 @@ export class Solutions {
         "trial_results",
       ],
       qualification: "customer_review_required",
-      execution_location: "cloud",
+      execution_location: executionLocation,
       task_capacity: {
         required: s.frozen.length,
         available: Math.max(0, plan.body.max_active_tasks - active),
@@ -440,11 +447,18 @@ export class Solutions {
     let missing: string[];
     try {
       missing = (
-        await this.assess(tx, actor, tenant, s, {
-          project_id: i.project_id,
-          installation_id: i.id,
-          bindings: i.bindings,
-        })
+        await this.assess(
+          tx,
+          actor,
+          tenant,
+          s,
+          {
+            project_id: i.project_id,
+            installation_id: i.id,
+            bindings: i.bindings,
+          },
+          (await desktopSessionFamily(tx, actor, false)) ? "desktop" : "cloud",
+        )
       ).missing_requirements;
     } catch (error) {
       if (!(error instanceof Problem)) throw error;
@@ -466,10 +480,21 @@ export class Solutions {
     s: any,
     input: z.infer<typeof solutionTrial>,
     requestKey: string,
+    native?: {
+      family: string;
+      sessions: z.infer<typeof desktopSolutionBinding>[];
+    },
   ) {
     if (s.state !== "published")
       await projectAccess(tx, actor, tenant, s.project_id, "manage");
-    const preview = await this.assess(tx, actor, tenant, s, input);
+    const preview = await this.assess(
+      tx,
+      actor,
+      tenant,
+      s,
+      input,
+      native ? "desktop" : "cloud",
+    );
     if (preview.state !== "ready")
       throw new Problem(
         409,
@@ -514,8 +539,8 @@ export class Solutions {
       );
     const run = (
       await tx.query(
-        `INSERT INTO solution_trials(tenant_id,project_id,solution_version_id,installation_id,private_owner,definition_hash,preview_hash,bindings,budget_micros,resolved_sources)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+        `INSERT INTO solution_trials(tenant_id,project_id,solution_version_id,installation_id,private_owner,definition_hash,preview_hash,bindings,budget_micros,resolved_sources,execution_location,native_bindings)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
         [
           tenant,
           input.project_id,
@@ -527,6 +552,8 @@ export class Solutions {
           input.bindings,
           input.budget_micros,
           JSON.stringify(preview.resolved_sources),
+          native ? "desktop" : "cloud",
+          native ? JSON.stringify(native) : null,
         ],
       )
     ).rows[0];
@@ -556,8 +583,30 @@ export class Solutions {
           prompt: `Execute this exact reviewed reusable method as ${item.role_key}. Use only authorized project resources. This is one independent role in a reviewed trial; do not create more paid tasks or external writes. Read approved UTF-8 text using solution_source_read with its exact asset_version_id. Use the role's actual exact-version reader for binary files, and connector_read for fixed captured reporting sources. Never invent account facts.\n\nReusable method:\n${s.definition.instructions}\n\nPrivate request (excluded from the published method):\n${input.brief}\n\nApproved fixed inputs:\n${canonical(input.bindings)}\n\nFixed captured reporting sources:\n${canonical(preview.resolved_sources)}`,
         },
         requestKey + ":" + position,
-        { role_hash: item.role_hash, solution_trial: binding },
+        {
+          role_hash: item.role_hash,
+          solution_trial: binding,
+          execution_location: native ? "desktop" : "cloud",
+        },
       );
+      if (native) {
+        const session = native.sessions[position];
+        await tx.query(
+          `INSERT INTO desktop_executions(task_id,tenant_id,project_id,actor_id,device_id,local_session_id,native_family_id,workspace_hash,runtime_sha256)
+          VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+          [
+            task.id,
+            tenant,
+            input.project_id,
+            actor.id,
+            session.device_id,
+            session.local_session_id,
+            native.family,
+            session.workspace_hash,
+            session.runtime_sha256,
+          ],
+        );
+      }
       await tx.query(
         "INSERT INTO solution_trial_tasks(trial_id,tenant_id,task_id,position,template_version_id,private_owner) VALUES($1,$2,$3,$4,$5,$6)",
         [run.id, tenant, task.id, position, item.template_version_id, actor.id],
@@ -587,7 +636,17 @@ export class Solutions {
           [run.id],
         )
       ).rows,
-      execution_location: "cloud",
+      execution_location: native ? "desktop" : "cloud",
+      ...(native
+        ? {
+            local_sessions: native.sessions.map((v, position) => ({
+              local_session_id: v.local_session_id,
+              position,
+              budget_micros:
+                perTask + (position === 0 ? input.budget_micros % n : 0),
+            })),
+          }
+        : {}),
       data_mode: this.db.config.DEMO_MODE ? "simulated" : "configured_services",
     };
   }
@@ -656,6 +715,9 @@ export class Solutions {
       project_id: run.project_id,
       budget_micros: Number(run.budget_micros),
       reviewed: !!run.reviewed_at,
+      ...(run.execution_location === "desktop"
+        ? { execution_location: "desktop" }
+        : {}),
       tasks: results,
       unread_required_sources: requiredVersions
         .filter(
@@ -775,10 +837,17 @@ export class Solutions {
         "SOLUTION_VALIDATION_REQUIRED",
         "Use a completed, accepted trial for this exact method",
       );
-    const checked = await this.assess(tx, actor, tenant, s, {
-      project_id: run.project_id,
-      bindings: run.bindings,
-    });
+    const checked = await this.assess(
+      tx,
+      actor,
+      tenant,
+      s,
+      {
+        project_id: run.project_id,
+        bindings: run.bindings,
+      },
+      run.execution_location,
+    );
     if (checked.state !== "ready")
       throw conflict(
         "SOLUTION_DEPENDENCY_CHANGED",

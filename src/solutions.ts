@@ -12,6 +12,7 @@ import {
 } from "./admin-access.js";
 import { Problem, uuid } from "./lib.js";
 import { Solutions, solutionMissing } from "./solution-service.js";
+import { desktopSessionFamily } from "./desktop-family.js";
 import {
   solutionCreate,
   solutionPublish,
@@ -231,6 +232,9 @@ export function registerSolutions(
             tenant,
             await service.version(tx, req.principal, tenant, id),
             b,
+            (await desktopSessionFamily(tx, req.principal, false))
+              ? "desktop"
+              : "cloud",
           ),
         tenant,
         false,
@@ -249,6 +253,12 @@ export function registerSolutions(
         async (tx) => {
           const s = await service.version(tx, req.principal, tenant, id);
           await projectAccess(tx, req.principal, tenant, b.project_id, "write");
+          if (await desktopSessionFamily(tx, req.principal, false))
+            throw new Problem(
+              403,
+              "SOLUTION_LOCAL_EXECUTION_REQUIRED",
+              "Prepare this trial from the local desktop; cloud work cannot replace local Codex",
+            );
           if (s.state === "disabled")
             throw new Problem(
               409,

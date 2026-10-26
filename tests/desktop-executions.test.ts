@@ -14,6 +14,7 @@ import { hash } from "../src/lib.js";
 import { desktopImageFixture } from "./desktop-image-fixture.js";
 import { desktopLocalRoleKeys } from "../src/desktop-executions.js";
 import { demoVectorInput, demoSlidesInput } from "../src/editable-design-demo.js";
+import { saveAsset } from "../src/storage.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>;
 let mode: "known" | "unknown" = "known", providerCalls = 0, countCalls = 0;
@@ -383,4 +384,83 @@ test("an unknown native company image result fences further calls and keeps the 
     const finished = await ok(f.c, "POST", r.url + "/finish", complete); assert.equal(finished.status, "reconciling");
     assert.equal((await s.db.control.query("SELECT status FROM reservations WHERE task_id=$1", [r.created.task_id])).rows[0].status, "reconciling");
   } finally { imageUnknown = false; }
+});
+
+async function localMethod(f: Fixture, required = false) {
+  const nativeCall = async (c:Client, method:string, url:string, body?:any, requestKey:string=randomUUID()) => {
+    const raw = await s.app.inject({method:method as any,url,headers:{"x-tenant-id":f.tenant,"idempotency-key":requestKey,
+      ...(c.access_token?{authorization:"Bearer "+c.access_token}:{cookie:c.cookie!,"x-csrf-token":c.csrf!})},...(body===undefined?{}:{payload:body})});
+    return {status:raw.statusCode,data:raw.json()};
+  };
+  const good = async (method:string,url:string,body?:any,key?:string) => {
+    const r=await nativeCall(f.c,method,url,body,key); assert.ok(r.status>=200 && r.status<300,JSON.stringify(r));return r.data;
+  };
+  const templates = (await good("GET", "/v1/agent-templates")).items;
+  const method = await good("POST","/v1/solution-versions",{project_id:f.project,name:"Native reviewed method",
+    instructions:"Read the approved fixed source and implement the requested result locally. Use exact company source readers for approved cloud inputs.",
+    agent_template_ids:["fullstack","backend-api"].map(role=>templates.find((v:any)=>v.role_key===role).id),skill_version_ids:[],required_assets:required?["Source brief"]:[],required_connectors:[]});
+  let bindings:any={assets:[],connectors:[]};
+  if(required){
+    const asset=await s.db.tx(tx=>saveAsset(tx,s.storage,{tenant:f.tenant,project:f.project,user:f.web.id,name:"brief.txt",bytes:Buffer.from("Synthetic approved local method source"),mime:"text/plain",privateOwner:f.web.id}),f.tenant,false,f.web.id);
+    const version=(await s.db.control.query("SELECT id,sha256 FROM asset_versions WHERE asset_id=$1",[asset.id])).rows[0];
+    bindings.assets.push({requirement:"Source brief",asset_version_id:version.id,sha256:version.sha256});
+  }
+  const p=await good("POST",`/v1/solution-versions/${method.id}/previews`,{project_id:f.project,bindings});
+  assert.equal(p.execution_location,"desktop"); assert.equal(p.state,"ready",JSON.stringify(p.missing_requirements));
+  const body={trial:{project_id:f.project,bindings,expected_preview_hash:p.preview_hash,budget_micros:1000001,brief:"Implement the exact synthetic method in the selected local folders",approval:true},
+    sessions:["fullstack","backend-api"].map(role_key=>({...f.fields,local_session_id:randomUUID(),role_key}))};
+  return {method,body,good,nativeCall,preview:p};
+}
+
+test("native methods reserve the complete pinned batch once, never enter the cloud queue, and require actual source reads and every local delivery before publication",async()=>{
+  const f=await fixture(), m=await localMethod(f,true), endpoint=`/v1/solution-versions/${m.method.id}/desktop-trials`, requestKey=randomUUID();
+  const run=await m.good("POST",endpoint,m.body,requestKey);
+  assert.equal(run.execution_location,"desktop");assert.equal(run.tasks.length,2);
+  assert.equal((await m.good("POST",endpoint,m.body,requestKey)).id,run.id);
+  const rows=(await s.db.control.query("SELECT t.*,d.local_session_id,d.device_id,d.workspace_hash FROM tasks t JOIN desktop_executions d ON d.task_id=t.id WHERE t.id=ANY($1::uuid[]) ORDER BY t.budget_micros DESC",[run.tasks.map((v:any)=>v.task_id)])).rows;
+  assert.deepEqual(rows.map(v=>Number(v.budget_micros)),[500001,500000]);assert.ok(rows.every(v=>v.execution_location==="desktop" && v.private_owner===f.c.id));
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM outbox WHERE topic='task.run' AND payload->>'task_id'=ANY($1::text[])",[run.tasks.map((v:any)=>v.task_id)])).rows[0].n,0);
+  await recoverQueuedClaims(s.db);
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM tasks WHERE id=ANY($1::uuid[]) AND attempt<>0",[run.tasks.map((v:any)=>v.task_id)])).rows[0].n,0);
+  for(let position=0;position<run.tasks.length;position++){
+    const {role_key,...fields}=m.body.sessions[position],url=f.base+"/"+run.tasks[position].task_id;
+    const begun=await ok(f.c,"POST",url+"/start",fields);
+    assert.ok(begun.company_tools.some((t:any)=>t.name==="solution_source_read"),"All admitted native roles receive the exact required-source reader");
+    assert.equal((await inference(begun.credential.token)).statusCode,200);
+    if(position===0){
+      const read=await ok(f.c,"POST",url+"/tools",{tool:"solution_source_read",arguments:{asset_version_id:m.body.trial.bindings.assets[0].asset_version_id},call_id:"native_solution_source",thread_id:"native_method_thread",turn_id:"native_method_turn"});
+      assert.ok(JSON.stringify(read).includes("Synthetic approved local method source"));
+    }
+    await ok(f.c,"POST",url+"/finish",{...complete,output:"Synthetic local delivery for "+role_key});
+  }
+  const detail=await m.good("GET","/v1/solution-trials/"+run.id);
+  assert.equal(detail.execution_location,"desktop");assert.deepEqual(detail.unread_required_sources,[]);
+  assert.ok(detail.tasks.every((t:any)=>t.status==="succeeded" && t.charged_micros>0));
+  const review={approval:true,tasks:detail.tasks.map((t:any)=>({task_id:t.task_id,expected_version:t.task_version,expected_delivery_hash:t.delivery_hash})),comment:"Reviewed both exact local deliveries"};
+  const incomplete=await m.nativeCall(f.c,"POST",`/v1/solution-trials/${run.id}/reviews`,{...review,tasks:review.tasks.slice(0,1)});assert.equal(incomplete.status,409);
+  await m.good("POST",`/v1/solution-trials/${run.id}/reviews`,review);
+  const published=await m.good("POST",`/v1/solution-versions/${m.method.id}/publications`,{expected_version:1,validation_task_id:detail.validation_task_id});
+  assert.equal(published.state,"published");
+  assert.equal((await m.nativeCall(f.c,"POST",endpoint,m.body,randomUUID())).data.error.code,"SOLUTION_LOCAL_SESSION_USED");
+  await assert.rejects(s.db.control.query("UPDATE solution_trials SET execution_location='cloud',native_bindings=NULL WHERE id=$1",[run.id]),/immutable|binding/i);
+});
+
+test("native method admission rejects browser/extension/cloud fallbacks, stale previews, duplicate or altered sessions and insufficient total budgets without paid tasks",async()=>{
+  const f=await fixture(),m=await localMethod(f),endpoint=`/v1/solution-versions/${m.method.id}/desktop-trials`;
+  assert.equal((await m.nativeCall(f.web,"POST",endpoint,m.body)).status,403);
+  assert.equal((await m.nativeCall(await native(f.web,"extension"),"POST",endpoint,m.body)).status,403);
+  assert.equal((await m.nativeCall(f.c,"POST",`/v1/solution-versions/${m.method.id}/trials`,m.body.trial)).data.error.code,"SOLUTION_LOCAL_EXECUTION_REQUIRED");
+  const browserPreview=await m.nativeCall(f.web,"POST",`/v1/solution-versions/${m.method.id}/previews`,{project_id:f.project,bindings:m.body.trial.bindings});
+  assert.notEqual(browserPreview.data.preview_hash,m.preview.preview_hash);
+  const cases=[
+    {...m.body,trial:{...m.body.trial,expected_preview_hash:browserPreview.data.preview_hash}},
+    {...m.body,sessions:m.body.sessions.map((v,i)=>i===1?{...v,device_id:randomUUID()}:v)},
+    {...m.body,sessions:m.body.sessions.map((v,i)=>i===1?{...v,role_key:"designer"}:v)},
+    {...m.body,sessions:[m.body.sessions[0],m.body.sessions[0]]},
+    {...m.body,trial:{...m.body.trial,budget_micros:19999}},
+    {...m.body,trial:{...m.body.trial,approval:false}},
+  ];
+  for(const body of cases){const rejected=await m.nativeCall(f.c,"POST",endpoint,body);assert.ok([400,403,409,422].includes(rejected.status),JSON.stringify(rejected));}
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM tasks WHERE tenant_id=$1",[f.tenant])).rows[0].n,0);
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM solution_trials WHERE tenant_id=$1",[f.tenant])).rows[0].n,0);
 });
