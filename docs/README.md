@@ -1,5 +1,36 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- native-methods-stage97 -->
+
+## Desktop 方案本机试运行
+
+Desktop 可将整套固定方法准备为本机任务，再通过客户电脑上的 Codex 执行、停止、核对、验收和发布。为每位固定角色选取新的会话、实际目录与原生权限，免费预览获准资料，再明确确认本次私有简报和总预算。准备只进行一次整批预留；每项均由客户主动启动。服务端会拒绝 Desktop 改用云端方案试运行。
+
+网络结果未知时，刷新界面或重新打开应用仍核对原加密日志中的正文及幂等键，已执行任务不能静默重跑。发布前须验收每项当前成功交付，并具备必需来源的实际读取事实。新项目安装仍仅复制方法引用；升级前原生会话保留原有公司工具版本。
+
+隔离验收使用假模型、假账号及测试额度，实际运行本机 Codex、文件操作和公司用量结算；不据此声称真实付款、真人原生弹窗操作、线上模型质量、签名安装包或整个产品已验收。详见[执行、权限、恢复和数据约束](technical/97-native-method-trials.md).
+
+```mermaid
+flowchart LR
+ A[Desktop sign-in and pinned method] --> B[Fresh local sessions and folder permissions]
+ B --> C[Native preview and approved total budget]
+ C --> D[Atomic batch reservation]
+ D --> E[Start or stop each local Codex task]
+ E --> F[Observed usage and exact delivery review]
+ F --> G[Customer acceptance and publication]
+```
+
+
+验证：124 项相关集成检查、49 项 Desktop 单元检查、2 项真实本机 Codex 协议检查及 6 项打包界面检查通过。以下旧阶段条目保留其当时的验证范围。[当前证据](quality/native-methods-checkpoint.json).
+
+![Actual native method / 实际本机方案](assets/screenshots/workmate-native-methods-02-published-en.png)
+
+![Actual native method / 实际本机方案](assets/screenshots/workmate-native-methods-02-compact-zh-dark.png)
+
+![Actual local execution and acceptance / 实际本机执行与验收](assets/screenshots/workmate-02-native-methods.gif)
+
+[MP4](assets/screenshots/workmate-02-native-methods.mp4)
+
 <!-- solution-packages-stage96 -->
 
 ## 可试运行和复制的业务方案
