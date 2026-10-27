@@ -1,0 +1,2184 @@
+{
+  "schema": "copypaste-media-effects-contract-1",
+  "request": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "transition.crossfade"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "transition_seconds": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "0.5",
+                  "1.5"
+                ]
+              }
+            },
+            "required": [
+              "transition_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "transition.slide-left"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "transition_seconds": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "0.5",
+                  "1.5"
+                ]
+              }
+            },
+            "required": [
+              "transition_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "transition.wipe-right"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "transition_seconds": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "0.5",
+                  "1.5"
+                ]
+              }
+            },
+            "required": [
+              "transition_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "transition.dip-black"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 2,
+            "maxItems": 2,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "transition_seconds": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "0.5",
+                  "1.5"
+                ]
+              }
+            },
+            "required": [
+              "transition_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "text.fade-in"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 1,
+            "maxItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "font_size": {
+                "type": "integer",
+                "minimum": 24,
+                "maximum": 120
+              },
+              "position": {
+                "type": "string",
+                "enum": [
+                  "center",
+                  "lower_third"
+                ]
+              },
+              "entrance_seconds": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "0.5",
+                  "1.5"
+                ]
+              }
+            },
+            "required": [
+              "text",
+              "color",
+              "font_size",
+              "position",
+              "entrance_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "text.slide-up"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 1,
+            "maxItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "font_size": {
+                "type": "integer",
+                "minimum": 24,
+                "maximum": 120
+              },
+              "position": {
+                "type": "string",
+                "enum": [
+                  "center",
+                  "lower_third"
+                ]
+              },
+              "entrance_seconds": {
+                "type": "string",
+                "enum": [
+                  "1",
+                  "2",
+                  "0.5",
+                  "1.5"
+                ]
+              }
+            },
+            "required": [
+              "text",
+              "color",
+              "font_size",
+              "position",
+              "entrance_seconds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "key.chroma"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 1,
+            "maxItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "key_color": {
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              },
+              "similarity": {
+                "type": "number",
+                "minimum": 0.05,
+                "maximum": 0.5
+              },
+              "blend": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 0.25
+              },
+              "background": {
+                "type": "string",
+                "pattern": "^#[a-fA-F0-9]{6}$"
+              }
+            },
+            "required": [
+              "key_color",
+              "similarity",
+              "blend",
+              "background"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "cleanup.denoise"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 1,
+            "maxItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "strength": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 8
+              }
+            },
+            "required": [
+              "strength"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "cleanup.sharpen"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 1,
+            "maxItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "amount": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 1.5
+              }
+            },
+            "required": [
+              "amount"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "const": "copypaste-media-effect-1"
+          },
+          "effect_id": {
+            "type": "string",
+            "const": "cleanup.exposure"
+          },
+          "version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "sources": {
+            "minItems": 1,
+            "maxItems": 1,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "asset_version_id",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "output": {
+            "type": "object",
+            "properties": {
+              "size": {
+                "type": "string",
+                "enum": [
+                  "640x360",
+                  "360x640",
+                  "640x640",
+                  "1280x720",
+                  "720x1280",
+                  "720x720"
+                ]
+              },
+              "seconds": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 12
+              }
+            },
+            "required": [
+              "size",
+              "seconds"
+            ],
+            "additionalProperties": false
+          },
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "brightness": {
+                "type": "number",
+                "minimum": -0.25,
+                "maximum": 0.25
+              },
+              "contrast": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 1.5
+              },
+              "gamma": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 2
+              }
+            },
+            "required": [
+              "brightness",
+              "contrast",
+              "gamma"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema",
+          "effect_id",
+          "version",
+          "sources",
+          "output",
+          "parameters"
+        ],
+        "additionalProperties": false
+      }
+    ]
+  },
+  "catalog": {
+    "schema": "copypaste-media-effect-1",
+    "version": "1.0.0",
+    "fps": 24,
+    "audio": "omitted",
+    "source_policy": "Exact authorized PNG/H.264 MP4 versions, at most 32 MiB each, 1920 pixels per side, 60 seconds; video must cover its required interval. Original files stay intact.",
+    "output_sizes": [
+      "640x360",
+      "360x640",
+      "640x640",
+      "1280x720",
+      "720x1280",
+      "720x720"
+    ],
+    "max_seconds": 12,
+    "items": [
+      {
+        "id": "transition.crossfade",
+        "version": "1.0.0",
+        "name_zh": "交叉淡化",
+        "name_en": "Crossfade",
+        "category": "transition",
+        "description": "Two sources blend through the reviewed transition interval.",
+        "defaults": {
+          "transition_seconds": "1"
+        },
+        "source_count": 2,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "transition.crossfade"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 2,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "transition_seconds": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "0.5",
+                    "1.5"
+                  ]
+                }
+              },
+              "required": [
+                "transition_seconds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "c42c47ec2b03dcc4cc67e184d10196d85340b664fdb4c21e5b7c04d87f5fd6fc"
+      },
+      {
+        "id": "transition.slide-left",
+        "version": "1.0.0",
+        "name_zh": "向左滑動",
+        "name_en": "Slide left",
+        "category": "transition",
+        "description": "The second source pushes the first source to the left.",
+        "defaults": {
+          "transition_seconds": "1"
+        },
+        "source_count": 2,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "transition.slide-left"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 2,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "transition_seconds": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "0.5",
+                    "1.5"
+                  ]
+                }
+              },
+              "required": [
+                "transition_seconds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "ce897fbeedd1667ac2a390541d9d136893ff8ce4e4b28ba2249d89dac13402c6"
+      },
+      {
+        "id": "transition.wipe-right",
+        "version": "1.0.0",
+        "name_zh": "向右擦除",
+        "name_en": "Wipe right",
+        "category": "transition",
+        "description": "The second source is revealed from left to right.",
+        "defaults": {
+          "transition_seconds": "1"
+        },
+        "source_count": 2,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "transition.wipe-right"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 2,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "transition_seconds": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "0.5",
+                    "1.5"
+                  ]
+                }
+              },
+              "required": [
+                "transition_seconds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "8b36292908089f45be35777dac063e39da89e17274a7f046aeed98b115816ae7"
+      },
+      {
+        "id": "transition.dip-black",
+        "version": "1.0.0",
+        "name_zh": "黑場轉接",
+        "name_en": "Dip to black",
+        "category": "transition",
+        "description": "The first source fades to black before the second appears.",
+        "defaults": {
+          "transition_seconds": "1"
+        },
+        "source_count": 2,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "transition.dip-black"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 2,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "transition_seconds": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "0.5",
+                    "1.5"
+                  ]
+                }
+              },
+              "required": [
+                "transition_seconds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "c9f912a628937ba09bac6711d1dbcd51ae8dc69be8d4427c63306b641f76490a"
+      },
+      {
+        "id": "text.fade-in",
+        "version": "1.0.0",
+        "name_zh": "文字淡入",
+        "name_en": "Text fade in",
+        "category": "text",
+        "description": "A fixed licensed Traditional Chinese font fades into the source.",
+        "defaults": {
+          "text": "讓好點子動起來",
+          "color": "#FFFFFF",
+          "font_size": 48,
+          "position": "lower_third",
+          "entrance_seconds": "1"
+        },
+        "source_count": 1,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "text.fade-in"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 1,
+              "maxItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "color": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                },
+                "font_size": {
+                  "type": "integer",
+                  "minimum": 24,
+                  "maximum": 120
+                },
+                "position": {
+                  "type": "string",
+                  "enum": [
+                    "center",
+                    "lower_third"
+                  ]
+                },
+                "entrance_seconds": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "0.5",
+                    "1.5"
+                  ]
+                }
+              },
+              "required": [
+                "text",
+                "color",
+                "font_size",
+                "position",
+                "entrance_seconds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "71a18f5adfdf11dec416dd3f3f0b2ef9cc6b41ef3017ff568ff03e6f743deeec"
+      },
+      {
+        "id": "text.slide-up",
+        "version": "1.0.0",
+        "name_zh": "文字上移",
+        "name_en": "Text slide up",
+        "category": "text",
+        "description": "The approved text moves up from below the frame.",
+        "defaults": {
+          "text": "讓好點子動起來",
+          "color": "#FFFFFF",
+          "font_size": 48,
+          "position": "lower_third",
+          "entrance_seconds": "1"
+        },
+        "source_count": 1,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "text.slide-up"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 1,
+              "maxItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "color": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                },
+                "font_size": {
+                  "type": "integer",
+                  "minimum": 24,
+                  "maximum": 120
+                },
+                "position": {
+                  "type": "string",
+                  "enum": [
+                    "center",
+                    "lower_third"
+                  ]
+                },
+                "entrance_seconds": {
+                  "type": "string",
+                  "enum": [
+                    "1",
+                    "2",
+                    "0.5",
+                    "1.5"
+                  ]
+                }
+              },
+              "required": [
+                "text",
+                "color",
+                "font_size",
+                "position",
+                "entrance_seconds"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "3a19b4e984fa9d75fad232ed425bf0e4108a69d32613b1f5199359b14591f1fd"
+      },
+      {
+        "id": "key.chroma",
+        "version": "1.0.0",
+        "name_zh": "色鍵合成",
+        "name_en": "Chroma key",
+        "category": "key",
+        "description": "Remove one reviewed RGB key color and composite onto a solid background.",
+        "defaults": {
+          "key_color": "#00FF00",
+          "similarity": 0.15,
+          "blend": 0.05,
+          "background": "#1F5EFF"
+        },
+        "source_count": 1,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "key.chroma"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 1,
+              "maxItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "key_color": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                },
+                "similarity": {
+                  "type": "number",
+                  "minimum": 0.05,
+                  "maximum": 0.5
+                },
+                "blend": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 0.25
+                },
+                "background": {
+                  "type": "string",
+                  "pattern": "^#[a-fA-F0-9]{6}$"
+                }
+              },
+              "required": [
+                "key_color",
+                "similarity",
+                "blend",
+                "background"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "721430ea2db10721ab20588ff3eb39547e3b1fa8d88c81a1ce998f371989579e"
+      },
+      {
+        "id": "cleanup.denoise",
+        "version": "1.0.0",
+        "name_zh": "基礎降噪",
+        "name_en": "Denoise",
+        "category": "cleanup",
+        "description": "Spatial and temporal filtering; it may soften fine detail.",
+        "defaults": {
+          "strength": 3
+        },
+        "source_count": 1,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "cleanup.denoise"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 1,
+              "maxItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "strength": {
+                  "type": "number",
+                  "minimum": 0.5,
+                  "maximum": 8
+                }
+              },
+              "required": [
+                "strength"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "40046d480bfc162ec9759b9737ab605d4f05a5c0ec5068320b59cf066a215042"
+      },
+      {
+        "id": "cleanup.sharpen",
+        "version": "1.0.0",
+        "name_zh": "基礎銳化",
+        "name_en": "Sharpen",
+        "category": "cleanup",
+        "description": "A bounded unsharp filter increases edge contrast; it does not recover lost detail.",
+        "defaults": {
+          "amount": 0.7
+        },
+        "source_count": 1,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "cleanup.sharpen"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 1,
+              "maxItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": "number",
+                  "minimum": 0.1,
+                  "maximum": 1.5
+                }
+              },
+              "required": [
+                "amount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "48eff1da7a644480a8a912d25e935868a81795fc0fcf4be18971860f22d41203"
+      },
+      {
+        "id": "cleanup.exposure",
+        "version": "1.0.0",
+        "name_zh": "曝光校正",
+        "name_en": "Exposure",
+        "category": "cleanup",
+        "description": "Adjust brightness, contrast and gamma; clipped source information cannot be recovered.",
+        "defaults": {
+          "brightness": 0.05,
+          "contrast": 1.05,
+          "gamma": 1
+        },
+        "source_count": 1,
+        "input_schema": {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "const": "copypaste-media-effect-1"
+            },
+            "effect_id": {
+              "type": "string",
+              "const": "cleanup.exposure"
+            },
+            "version": {
+              "type": "string",
+              "const": "1.0.0"
+            },
+            "sources": {
+              "minItems": 1,
+              "maxItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "asset_version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_version_id",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "output": {
+              "type": "object",
+              "properties": {
+                "size": {
+                  "type": "string",
+                  "enum": [
+                    "640x360",
+                    "360x640",
+                    "640x640",
+                    "1280x720",
+                    "720x1280",
+                    "720x720"
+                  ]
+                },
+                "seconds": {
+                  "type": "integer",
+                  "minimum": 2,
+                  "maximum": 12
+                }
+              },
+              "required": [
+                "size",
+                "seconds"
+              ],
+              "additionalProperties": false
+            },
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "brightness": {
+                  "type": "number",
+                  "minimum": -0.25,
+                  "maximum": 0.25
+                },
+                "contrast": {
+                  "type": "number",
+                  "minimum": 0.5,
+                  "maximum": 1.5
+                },
+                "gamma": {
+                  "type": "number",
+                  "minimum": 0.5,
+                  "maximum": 2
+                }
+              },
+              "required": [
+                "brightness",
+                "contrast",
+                "gamma"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "schema",
+            "effect_id",
+            "version",
+            "sources",
+            "output",
+            "parameters"
+          ],
+          "additionalProperties": false
+        },
+        "definition_sha256": "a8d9e21f30b4d1e833da88c712a67a66dd5213c4c076761673bffdc1d0d0ffa6"
+      }
+    ],
+    "catalog_sha256": "2862f5638f8dadf68349f128733e620e49695c55a8b7fde4f5bd34a8a966936b"
+  }
+}

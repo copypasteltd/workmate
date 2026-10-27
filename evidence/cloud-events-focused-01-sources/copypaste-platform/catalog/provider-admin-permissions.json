@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "origin_id": "ADMIN01",
+  "permissions": [
+    {"key":"admin.ai.policy.read","sensitive_field_access":false,"scope_kinds":["global"],"audit_required":true},
+    {"key":"admin.ai.policy.draft","sensitive_field_access":true,"scope_kinds":["global"],"audit_required":true},
+    {"key":"admin.ai.policy.publish","sensitive_field_access":true,"scope_kinds":["global"],"audit_required":true},
+    {"key":"admin.ai.requests.read","sensitive_field_access":false,"scope_kinds":["global","tenant","project"],"audit_required":true},
+    {"key":"admin.ai.cost.read","sensitive_field_access":true,"scope_kinds":["global","tenant","project"],"audit_required":true},
+    {"key":"admin.ai.evidence.write","sensitive_field_access":true,"scope_kinds":["global","tenant","project"],"audit_required":true},
+    {"key":"admin.ai.cost.reconcile","sensitive_field_access":true,"scope_kinds":["global","tenant","project"],"audit_required":true},
+    {"key":"admin.ai.capacity.release","sensitive_field_access":true,"scope_kinds":["global","tenant","project"],"audit_required":true},
+    {"key":"admin.ai.tasks.settle","sensitive_field_access":true,"scope_kinds":["global","tenant"],"audit_required":true}
+  ],
+  "super_permissions_for_new_installations": [
+    "admin.ai.policy.read",
+    "admin.ai.policy.draft",
+    "admin.ai.policy.publish",
+    "admin.ai.requests.read",
+    "admin.ai.cost.read",
+    "admin.ai.evidence.write",
+    "admin.ai.cost.reconcile",
+    "admin.ai.capacity.release",
+    "admin.ai.tasks.settle"
+  ],
+  "existing_roles_receive_permissions_automatically": false
+}

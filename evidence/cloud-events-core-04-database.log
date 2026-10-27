@@ -1,0 +1,197 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-V9K546/runtime/.data/native-qa/8aa3d09a-c1de-44ff-8a75-8eac15d4be98 ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-V9K546^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-V9K546^\runtime^\^.data^\native^-qa^\8aa3d09a^-c1de^-44ff^-8a75^-8eac15d4be98^" -l logfile start
+
+
+2026-10-27 23:14:09.581 CST [34524] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-27 23:14:09.589 CST [34524] LOG:  listening on IPv6 address "::1", port 5597
+
+2026-10-27 23:14:09.589 CST [34524] LOG:  listening on IPv4 address "127.0.0.1", port 5597
+
+2026-10-27 23:14:09.815 CST [28596] LOG:  database system was shut down at 2026-10-27 23:13:38 CST
+
+2026-10-27 23:14:09.853 CST [34524] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:5597. Application roles are not owners and do not bypass RLS.
+2026-10-27 23:14:22.652 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:14:27.690 CST [10212] LOG:  checkpoint complete: wrote 1006 buffers (6.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.088 s, sync=4.676 s, total=5.039 s; sync files=312, longest=0.114 s, average=0.015 s; distance=26115 kB, estimate=26115 kB; lsn=0/3172500, redo lsn=0/3172470
+
+2026-10-27 23:14:59.762 CST [25732] ERROR:  permission denied for table cloud_event_inbox
+2026-10-27 23:14:59.762 CST [25732] STATEMENT:  INSERT INTO cloud_event_inbox SELECT * FROM cloud_event_inbox WHERE trigger_id=$1
+
+2026-10-27 23:14:59.763 CST [35836] ERROR:  Terminal event receipts cannot be rewritten
+2026-10-27 23:14:59.763 CST [35836] CONTEXT:  PL/pgSQL function guard_cloud_event_records() line 65 at RAISE
+2026-10-27 23:14:59.763 CST [35836] STATEMENT:  UPDATE cloud_event_inbox SET event_id='forged' WHERE trigger_id=$1
+
+2026-10-27 23:14:59.826 CST [13752] ERROR:  Event run binding is immutable
+2026-10-27 23:14:59.826 CST [13752] CONTEXT:  PL/pgSQL function check_private_cloud_run_126() line 5 at RAISE
+2026-10-27 23:14:59.826 CST [13752] STATEMENT:  UPDATE workflow_runs SET cloud_event_revision=99 WHERE cloud_event_trigger_id=$1
+
+2026-10-27 23:14:59.910 CST [19540] ERROR:  permission denied for table cloud_event_keys
+2026-10-27 23:14:59.910 CST [19540] STATEMENT:  DELETE FROM cloud_event_keys WHERE trigger_id=$1
+
+2026-10-27 23:15:21.702 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:15:33.272 CST [10212] LOG:  checkpoint complete: wrote 2872 buffers (17.5%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.371 s, sync=10.978 s, total=11.570 s; sync files=1726, longest=0.169 s, average=0.007 s; distance=45417 kB, estimate=45417 kB; lsn=0/5DDD020, redo lsn=0/5DCC990
+
+2026-10-27 23:15:33.784 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:15:34.392 CST [10212] LOG:  checkpoint complete: wrote 19 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.340 s, total=0.609 s; sync files=9, longest=0.060 s, average=0.038 s; distance=184 kB, estimate=40894 kB; lsn=0/5DFABD8, redo lsn=0/5DFAB80
+
+2026-10-27 23:16:10.293 CST [35060] ERROR:  Cloud schedule request cannot be rewritten
+2026-10-27 23:16:10.293 CST [35060] CONTEXT:  PL/pgSQL function guard_cloud_schedule_records() line 30 at RAISE
+2026-10-27 23:16:10.293 CST [35060] STATEMENT:  UPDATE cloud_schedule_requests SET body=jsonb_set(body,'{max_budget_micros}','1') WHERE id=$1
+
+2026-10-27 23:16:10.362 CST [9248] ERROR:  Cloud schedule version is immutable
+2026-10-27 23:16:10.362 CST [9248] CONTEXT:  PL/pgSQL function guard_cloud_schedule_records() line 37 at RAISE
+2026-10-27 23:16:10.362 CST [9248] STATEMENT:  UPDATE cloud_schedule_versions SET body='{}' WHERE schedule_id=$1
+
+2026-10-27 23:16:10.530 CST [15296] ERROR:  Cloud schedule run binding is immutable
+2026-10-27 23:16:10.530 CST [15296] CONTEXT:  PL/pgSQL function check_private_cloud_run_126() line 9 at RAISE
+2026-10-27 23:16:10.530 CST [15296] STATEMENT:  UPDATE workflow_runs SET cloud_schedule_revision=99 WHERE id=$1
+
+2026-10-27 23:16:10.533 CST [11528] ERROR:  Scheduled cloud run lacks an exact customer authorization
+2026-10-27 23:16:10.533 CST [11528] CONTEXT:  PL/pgSQL function check_private_cloud_run_126() line 41 at RAISE
+2026-10-27 23:16:10.533 CST [11528] STATEMENT:  INSERT INTO workflow_runs(tenant_id,project_id,workflow_id,created_by,actor_auth_version,
+	    definition,workflow_version,role_hashes,execution_location,private_owner,origin_task_id,state,authorized_at,
+	    cloud_schedule_id,cloud_schedule_revision,cloud_schedule_occurrence_id)
+	    VALUES($1,$2,$3,$4,1,$5,$6,$7,'cloud',$4,$8,'running',now(),$9,1,$10)
+
+2026-10-27 23:16:30.239 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:16:31.093 CST [10212] LOG:  checkpoint complete: wrote 48 buffers (0.3%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.009 s, sync=0.642 s, total=0.854 s; sync files=17, longest=0.108 s, average=0.038 s; distance=24671 kB, estimate=39271 kB; lsn=0/7612BD0, redo lsn=0/7612B78
+
+2026-10-27 23:17:07.489 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:17:08.458 CST [10212] LOG:  checkpoint complete: wrote 95 buffers (0.6%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.014 s, sync=0.786 s, total=0.970 s; sync files=27, longest=0.156 s, average=0.030 s; distance=23383 kB, estimate=37683 kB; lsn=0/8CE8B00, redo lsn=0/8CE8AA8
+
+2026-10-27 23:17:13.051 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:17:14.241 CST [10212] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.007 s, sync=0.816 s, total=1.190 s; sync files=10, longest=0.192 s, average=0.082 s; distance=21276 kB, estimate=36042 kB; lsn=0/A1AFB88, redo lsn=0/A1AFB30
+
+2026-10-27 23:17:17.991 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:17:18.540 CST [10212] LOG:  checkpoint complete: wrote 25 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.008 s, sync=0.357 s, total=0.550 s; sync files=9, longest=0.063 s, average=0.040 s; distance=21267 kB, estimate=34564 kB; lsn=0/B674B50, redo lsn=0/B674AF8
+
+2026-10-27 23:17:25.172 CST [23152] ERROR:  Review decisions are immutable
+2026-10-27 23:17:25.172 CST [23152] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-27 23:17:25.172 CST [23152] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-27 23:17:25.174 CST [23152] ERROR:  Frozen approval is immutable
+2026-10-27 23:17:25.174 CST [23152] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-27 23:17:25.174 CST [23152] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-27 23:17:25.431 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:17:26.499 CST [10212] LOG:  checkpoint complete: wrote 30 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.517 s, total=1.069 s; sync files=10, longest=0.100 s, average=0.052 s; distance=21282 kB, estimate=33236 kB; lsn=0/CB3D638, redo lsn=0/CB3D5E0
+
+2026-10-27 23:17:49.506 CST [9872] ERROR:  Recovery receipts are immutable
+2026-10-27 23:17:49.506 CST [9872] CONTEXT:  PL/pgSQL function recovery_receipt_immutable() line 2 at RAISE
+2026-10-27 23:17:49.506 CST [9872] STATEMENT:  UPDATE recovery_runs SET outcome='verified' WHERE id=$1
+
+2026-10-27 23:17:54.548 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:18:09.821 CST [10212] LOG:  checkpoint complete: wrote 4681 buffers (28.6%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 4 recycled; write=0.301 s, sync=14.765 s, total=15.274 s; sync files=3299, longest=0.229 s, average=0.005 s; distance=64367 kB, estimate=64367 kB; lsn=0/10A5AE70, redo lsn=0/10A19428
+
+2026-10-27 23:18:14.168 CST [16992] FATAL:  database "copypaste_suite_aed65cce14674e8c9bf18469f44f5ae9" does not exist
+
+2026-10-27 23:18:14.318 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:18:20.564 CST [10212] LOG:  checkpoint complete: wrote 2343 buffers (14.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.200 s, sync=5.873 s, total=6.247 s; sync files=1658, longest=0.276 s, average=0.004 s; distance=28791 kB, estimate=60809 kB; lsn=0/12C26458, redo lsn=0/12637270
+
+2026-10-27 23:18:20.870 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:18:22.578 CST [10212] LOG:  checkpoint complete: wrote 978 buffers (6.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.023 s, sync=1.411 s, total=1.708 s; sync files=39, longest=0.209 s, average=0.037 s; distance=7734 kB, estimate=55502 kB; lsn=0/12DC4C20, redo lsn=0/12DC4BC8
+
+2026-10-27 23:18:22.774 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:18:23.139 CST [10212] LOG:  checkpoint complete: wrote 10 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.172 s, total=0.366 s; sync files=4, longest=0.058 s, average=0.043 s; distance=107 kB, estimate=49962 kB; lsn=0/12DDF8D8, redo lsn=0/12DDF880
+
+2026-10-27 23:18:41.601 CST [36536] ERROR:  permission denied for table task_source_reads
+2026-10-27 23:18:41.601 CST [36536] STATEMENT:  UPDATE task_source_reads SET sha256=repeat('0',64) WHERE task_id=$1
+
+2026-10-27 23:18:41.767 CST [4784] ERROR:  permission denied for table task_source_reads
+2026-10-27 23:18:41.767 CST [4784] STATEMENT:  SELECT * FROM task_source_reads
+
+2026-10-27 23:18:41.768 CST [23952] ERROR:  permission denied for function content_source_manifest
+2026-10-27 23:18:41.768 CST [23952] STATEMENT:  SELECT content_source_manifest($1,$2,ARRAY[$3::uuid],'{}')
+
+2026-10-27 23:18:45.200 CST [32852] ERROR:  Published input provenance is immutable
+2026-10-27 23:18:45.200 CST [32852] CONTEXT:  PL/pgSQL function guard_publication_input_snapshot() line 7 at RAISE
+2026-10-27 23:18:45.200 CST [32852] STATEMENT:  UPDATE asset_versions SET erased_at=now(),metadata='{}' WHERE asset_id=$1
+
+2026-10-27 23:18:45.212 CST [32852] ERROR:  Approved plan source is immutable
+2026-10-27 23:18:45.212 CST [32852] CONTEXT:  PL/pgSQL function guard_content_source_binding() line 7 at RAISE
+2026-10-27 23:18:45.212 CST [32852] STATEMENT:  UPDATE tasks SET content_state='deleted',input_context=jsonb_set(input_context,'{plan_source_task_id}',to_jsonb($2::text)) WHERE id=$1
+
+2026-10-27 23:18:45.214 CST [32852] ERROR:  Published input provenance is immutable
+2026-10-27 23:18:45.214 CST [32852] CONTEXT:  PL/pgSQL function guard_publication_input_snapshot() line 7 at RAISE
+2026-10-27 23:18:45.214 CST [32852] STATEMENT:  UPDATE asset_versions SET erased_at=now(),metadata='{}' WHERE asset_id=$1
+
+2026-10-27 23:18:45.215 CST [32852] ERROR:  Approved plan source is immutable
+2026-10-27 23:18:45.215 CST [32852] CONTEXT:  PL/pgSQL function guard_content_source_binding() line 7 at RAISE
+2026-10-27 23:18:45.215 CST [32852] STATEMENT:  UPDATE tasks SET content_state='deleted',input_context=jsonb_set(input_context,'{plan_source_task_id}',to_jsonb($2::text)) WHERE id=$1
+
+2026-10-27 23:18:45.215 CST [32852] ERROR:  Published input provenance is immutable
+2026-10-27 23:18:45.215 CST [32852] CONTEXT:  PL/pgSQL function guard_publication_input_snapshot() line 7 at RAISE
+2026-10-27 23:18:45.215 CST [32852] STATEMENT:  UPDATE asset_versions SET erased_at=now(),metadata='{}' WHERE asset_id=$1
+
+2026-10-27 23:18:45.216 CST [32852] ERROR:  Approved plan source is immutable
+2026-10-27 23:18:45.216 CST [32852] CONTEXT:  PL/pgSQL function guard_content_source_binding() line 7 at RAISE
+2026-10-27 23:18:45.216 CST [32852] STATEMENT:  UPDATE tasks SET content_state='deleted',input_context=jsonb_set(input_context,'{plan_source_task_id}',to_jsonb($2::text)) WHERE id=$1
+
+2026-10-27 23:18:46.462 CST [10212] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:18:47.295 CST [10212] LOG:  checkpoint complete: wrote 54 buffers (0.3%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.010 s, sync=0.546 s, total=0.834 s; sync files=13, longest=0.083 s, average=0.042 s; distance=23891 kB, estimate=47355 kB; lsn=0/14534560, redo lsn=0/14534508
+
+2026-10-27 23:18:47.972 CST [34524] LOG:  received fast shutdown request
+
+2026-10-27 23:18:48.049 CST [34524] LOG:  aborting any active transactions
+
+2026-10-27 23:18:48.055 CST [34524] LOG:  background worker "logical replication launcher" (PID 32748) exited with exit code 1
+
+2026-10-27 23:18:48.055 CST [10212] LOG:  shutting down
+
+2026-10-27 23:18:48.095 CST [10212] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-27 23:18:48.279 CST [10212] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.038 s, total=0.224 s; sync files=1, longest=0.038 s, average=0.038 s; distance=0 kB, estimate=42620 kB; lsn=0/14534678, redo lsn=0/14534678
+
+2026-10-27 23:18:48.367 CST [34524] LOG:  database system is shut down
+

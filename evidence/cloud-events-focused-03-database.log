@@ -1,0 +1,88 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-qnzl7T/runtime/.data/native-qa/beb005ce-b95a-46fd-b472-a89b7be3c703 ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-qnzl7T^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-qnzl7T^\runtime^\^.data^\native^-qa^\beb005ce^-b95a^-46fd^-b472^-a89b7be3c703^" -l logfile start
+
+
+2026-10-27 23:10:39.305 CST [24640] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-27 23:10:39.313 CST [24640] LOG:  listening on IPv6 address "::1", port 11816
+
+2026-10-27 23:10:39.313 CST [24640] LOG:  listening on IPv4 address "127.0.0.1", port 11816
+
+2026-10-27 23:10:39.616 CST [23464] LOG:  database system was shut down at 2026-10-27 23:10:09 CST
+
+2026-10-27 23:10:39.729 CST [24640] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:11816. Application roles are not owners and do not bypass RLS.
+2026-10-27 23:11:26.517 CST [27604] ERROR:  permission denied for table cloud_event_inbox
+2026-10-27 23:11:26.517 CST [27604] STATEMENT:  INSERT INTO cloud_event_inbox SELECT * FROM cloud_event_inbox WHERE trigger_id=$1
+
+2026-10-27 23:11:26.518 CST [16292] ERROR:  Terminal event receipts cannot be rewritten
+2026-10-27 23:11:26.518 CST [16292] CONTEXT:  PL/pgSQL function guard_cloud_event_records() line 65 at RAISE
+2026-10-27 23:11:26.518 CST [16292] STATEMENT:  UPDATE cloud_event_inbox SET event_id='forged' WHERE trigger_id=$1
+
+2026-10-27 23:11:26.623 CST [36188] ERROR:  Event run binding is immutable
+2026-10-27 23:11:26.623 CST [36188] CONTEXT:  PL/pgSQL function check_private_cloud_run_126() line 5 at RAISE
+2026-10-27 23:11:26.623 CST [36188] STATEMENT:  UPDATE workflow_runs SET cloud_event_revision=99 WHERE cloud_event_trigger_id=$1
+
+2026-10-27 23:11:26.778 CST [32184] ERROR:  permission denied for table cloud_event_keys
+2026-10-27 23:11:26.778 CST [32184] STATEMENT:  DELETE FROM cloud_event_keys WHERE trigger_id=$1
+
+2026-10-27 23:11:54.288 CST [24892] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:12:21.604 CST [24892] LOG:  checkpoint complete: wrote 3892 buffers (23.8%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 3 recycled; write=0.938 s, sync=26.137 s, total=27.317 s; sync files=2036, longest=0.247 s, average=0.013 s; distance=50284 kB, estimate=50284 kB; lsn=0/4944688, redo lsn=0/490C858
+
+2026-10-27 23:12:22.217 CST [24892] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 23:12:22.822 CST [24892] LOG:  checkpoint complete: wrote 35 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.445 s, total=0.605 s; sync files=12, longest=0.056 s, average=0.038 s; distance=335 kB, estimate=45289 kB; lsn=0/49607A8, redo lsn=0/4960750
+
+2026-10-27 23:12:23.435 CST [24640] LOG:  received fast shutdown request
+
+2026-10-27 23:12:23.494 CST [24640] LOG:  aborting any active transactions
+
+2026-10-27 23:12:23.502 CST [24640] LOG:  background worker "logical replication launcher" (PID 24944) exited with exit code 1
+
+2026-10-27 23:12:23.502 CST [24892] LOG:  shutting down
+
+2026-10-27 23:12:23.545 CST [24892] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-27 23:12:23.726 CST [24892] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.039 s, total=0.225 s; sync files=1, longest=0.039 s, average=0.039 s; distance=0 kB, estimate=40761 kB; lsn=0/49608C0, redo lsn=0/49608C0
+
+2026-10-27 23:12:23.816 CST [24640] LOG:  database system is shut down
+
