@@ -1,5 +1,28 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- cloud-events-stage115 -->
+已接通私有签名事件工作：客户明确确认、持久去重回执、独立云端运行与范围化后台管理。
+
+Desktop 继续在客户本机运行 Codex，沿用客户明确授予的本机权限与本机流程。本项云端事件能力不替代 Desktop 执行，也不增加云端启用界面。新顾问 Skill 明确保留本机执行；无边框和隐藏滚动条约束继续有效。
+
+验证：85 项相关后端测试、13 项构建／类型检查、7 条真实 Web／Admin／原生侧栏流程、5 种布局与 2 次锁定版本原生 Codex 执行。模型、账户及发端使用假数据；第三方原生事件接入与完整产品验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/115-signed-cloud-events.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-events-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Customer reviews fixed method and budgets] --> Trigger[Private event rule]
+  Sender[Customer configured sender] --> Verify[Raw byte HMAC and current authority]
+  Trigger --> Verify
+  Verify --> Inbox[Durable deduplicated inbox]
+  Inbox --> Policy[Age overlap interval daily caps]
+  Policy --> Run[One independent private run]
+  Run --> Review[Human review]
+  Review --> Codex[Company cloud Codex child]
+  Codex --> Receipt[Actual delivery and settled usage]
+```
+
+
 <!-- native-recovery-stage114 -->
 已实现原生加密备份与隔离恢复：同一快照的数据库及不可变文件经完整认证，恢复后先应用较新的独立删除日志，再提供核验凭证。
 
