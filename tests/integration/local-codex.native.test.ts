@@ -143,6 +143,37 @@ async function fixture() {
     pid: () => readyPid, revokeAuthority: () => { authority = false; }, token, directory };
 }
 const quoted = (value: string) => "'" + value.replaceAll("'", "''") + "'";
+
+test("native Codex transports the versioned website-analysis schema and returns exact authenticated tool evidence", { timeout: 180000 }, async () => {
+  const { connectorReadInput } = await import("../../../copypaste-platform/src/analysis-role-tools.js");
+  const { desktopCompanyToolSchema } = await import("../../../copypaste-platform/src/desktop-tool-policy.js");
+  const { z } = await import("../../../copypaste-platform/node_modules/zod/index.js");
+  const schema = desktopCompanyToolSchema(z.toJSONSchema(connectorReadInput, { io: "input" }));
+  const f = await fixture(), calls: any[] = [];
+  const args = { snapshot_id: randomUUID(), analysis: { profile: "ga4_traffic", account_id: "201", date_from: "2026-10-01", date_to: "2026-10-07", group_by: ["channel"] } };
+  const report = { kind: "captured_web_analytics", calculation_sha256: digest("native-web-analysis-fixture"),
+    summary: { metrics: { totalRevenue: { value: "-199.5", unit: "HKD" }, totalUsers: { value: null, null_reason: "non_additive_unique_users" } } },
+    report_downloads: { json: "/v1/connector-snapshots/" + args.snapshot_id + "/web-analysis?format=json" },
+    additional_ai_charge_micros: "0" };
+  try {
+    const binding = { ...f.binding, grant: { ...f.binding.grant, mode: "read-only" as const }, companyTools: [{ name: "connector_read", description: "Read captured website facts and deterministic website analysis.", inputSchema: schema }] };
+    const native = f.make(f.profile, binding, async call => {
+      calls.push(call); assert.equal(call.namespace, "copypaste"); assert.equal(call.tool, "connector_read");
+      assert.deepEqual(connectorReadInput.parse(call.arguments), { ...args, offset: 0, limit: 12 });
+      return report;
+    });
+    await f.start(native); f.actions.push({ company: { tool: "connector_read", arguments: args } });
+    const turn = await native.turn("Read the captured GA4 website report using connector_read. Preserve unknown values and signed revenue.");
+    assert.equal(turn.status, "completed"); assert.equal(calls.length, 1); assert.equal(f.requests.length, 2);
+    const out = f.requests[1].body.input.find((item: any) => item.type === "function_call_output" && item.call_id === "call_company_1");
+    assert.ok(out); assert.deepEqual(JSON.parse(out.output), report);
+    const tool = f.requests[0].body.tools.find((item: any) => item.type === "namespace" && item.name === "copypaste").tools.find((item: any) => item.name === "connector_read");
+    assert.ok(JSON.stringify(tool.parameters).includes("ga4_traffic"));
+    const operational = f.events.filter(event => event.kind.startsWith("local.company-tool."));
+    assert.equal(operational.filter(event => event.kind === "local.company-tool.completed").length, 1);
+    assert.ok(!JSON.stringify(operational).includes(report.calculation_sha256), "Company-tool operational receipts must not duplicate private report bodies");
+  } finally { await f.clean(); }
+});
 const writeCommand = (file: string, content: string) => `[IO.File]::WriteAllText(${quoted(file)}, ${quoted(content)}); Write-Output ('runtime-token-present=' + [bool][Environment]::GetEnvironmentVariable('COPYPASTE_LOCAL_INFERENCE_TOKEN'))`;
 
 const inputQuestions = [{ id: "palette", header: "Palette", question: "Which palette should the actual work use?", options: [

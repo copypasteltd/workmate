@@ -69,7 +69,9 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   let pathname: string;
   try {
     const url = new URL(apiURL("https://copypaste-bridge.invalid", value));
-    if (url.hash || /\\|%2f|%5c/i.test(value)) return false;
+    // Escaped separators are forbidden in the route. Query values can contain
+    // legitimate encoded site URLs, such as a Search Console URL property.
+    if (url.hash || /\\|%2f|%5c/i.test(value.split("?", 1)[0])) return false;
     pathname = url.pathname;
     if (pathname.includes("%")) return false;
   } catch {
@@ -142,6 +144,8 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   if (
     /^\/v1\/(?:snapshots|connector-snapshots)\/[a-f0-9-]{36}$/i.test(pathname)
   )
+    return method === "GET";
+  if (/^\/v1(?:\/tenants\/[a-f0-9-]{36}\/projects\/[a-f0-9-]{36})?\/connector-snapshots\/[a-f0-9-]{36}\/web-analysis$/i.test(pathname))
     return method === "GET";
   if (pathname === "/v1/dataset-imports" || pathname === "/v1/reports")
     return method === "POST";

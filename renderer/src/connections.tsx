@@ -22,6 +22,7 @@ import {
   useI18n,
 } from "./ui";
 import "./connections.css";
+import { WebsiteAnalytics, type WebAnalysisOption } from "./web-analytics";
 
 type Connection = {
   id: string;
@@ -107,6 +108,7 @@ type Facts = {
   limitations: string[];
   dataset_ids: string[];
   spec_hash: string;
+  web_analysis_options?: WebAnalysisOption[];
 };
 async function request<T>(
   tenant: string,
@@ -917,6 +919,7 @@ function SnapshotFacts({ id, close }: { id: string; close: () => void }) {
   const { t } = useI18n(),
     w = useWorkspace(),
     [offset, setOffset] = useState(0),
+    [analysis, setAnalysis] = useState(false),
     r = useScoped<Facts>(
       w.tenant,
       `/v1/connector-snapshots/${id}?offset=${offset}&limit=25`,
@@ -925,8 +928,10 @@ function SnapshotFacts({ id, close }: { id: string; close: () => void }) {
   return (
     <Modal title={t("來源快照", "Source snapshot")} onClose={close}>
       <ErrorNotice error={r.error} />
-      {d && (
+      {d && analysis && !!d.web_analysis_options?.length && <WebsiteAnalytics id={id} options={d.web_analysis_options} onBack={() => setAnalysis(false)} />}
+      {d && !analysis && (
         <div className="connector-facts">
+          {!!d.web_analysis_options?.length && <button className="button primary small" onClick={() => setAnalysis(true)}>{t("網站分析與報告", "Website analysis & report")}</button>}
           <p className="muted">
             {d.source_mode === "simulated"
               ? t("合成數據", "Synthetic data")
