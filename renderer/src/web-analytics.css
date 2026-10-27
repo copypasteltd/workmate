@@ -1,4 +1,5 @@
 .web-analysis { display:grid; gap:22px; min-width:0; }
+.modal:has(.web-analysis) { max-width:1000px; }
 .web-analysis > .button { justify-self:start; }
 .web-analysis header h2 { margin:6px 0 10px; font-size:clamp(24px,3vw,34px); line-height:1.2; }
 .web-analysis header p { margin:0; color:var(--muted); }
@@ -14,7 +15,7 @@
 .web-analysis-results h3 { margin:0; font-size:17px; overflow-wrap:anywhere; }
 .web-analysis-source { display:grid; gap:5px; color:var(--muted); font-size:13px; overflow-wrap:anywhere; }
 .web-analysis-source strong { color:var(--ink); }
-.web-analysis-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.web-analysis-metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:12px; }
 .web-analysis-metric { display:grid; align-content:start; gap:6px; min-width:0; padding:16px; border:1px solid var(--line); border-radius:12px; }
 .web-analysis-metric > span,.web-analysis-metric small { color:var(--muted); font-size:12px; line-height:1.5; }
 .web-analysis-metric strong { font-size:clamp(20px,2.5vw,27px); line-height:1.25; font-variant-numeric:tabular-nums; overflow-wrap:anywhere; }
@@ -24,5 +25,5 @@
 .web-analysis-provenance summary { font-weight:600; cursor:pointer; min-height:26px; }
 .web-analysis-provenance code { display:block; margin-top:6px; font-size:11px; word-break:break-all; }
 .web-analysis .row-actions { flex-wrap:wrap; }
-@media(max-width:650px) { .web-analysis-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } .web-analysis-groups article,.web-analysis form { padding:14px; } }
+@media(max-width:650px) { .web-analysis-groups article,.web-analysis form { padding:14px; } }
 @media(max-width:380px) { .web-analysis-dates { grid-template-columns:minmax(0,1fr); } .web-analysis-metrics { grid-template-columns:minmax(0,1fr); } }
