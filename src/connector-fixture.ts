@@ -6,7 +6,7 @@ import {
 import { randomUUID } from "node:crypto";
 import type { AddressInfo } from "node:net";
 import type { Config } from "./config.js";
-import { hash, token } from "./lib.js";
+import { canonical, hash, token } from "./lib.js";
 
 export type ConnectorFixtureFault =
   | "rate_limit"
@@ -47,6 +47,31 @@ export async function startConnectorFixture(config: Config) {
     refreshes = new Map<string, string>();
   const faults = new Map<string, ConnectorFixtureFault[]>();
   const calls: Array<{ host: string; path: string; method: string }> = [];
+  const budgets = new Map<string, Record<string, unknown>>();
+  let budgetFaults: Array<
+    | "reject"
+    | "apply_then_disconnect"
+    | "malformed_receipt"
+    | "disconnect_before_apply"
+    | "delay"
+  > = [];
+  const fixtureBudget = (account: string, id: string) => {
+    if (!["700", "701", "702"].includes(id)) return undefined;
+    const key = account + ":" + id;
+    if (!budgets.has(key))
+      budgets.set(key, {
+        resourceName: `customers/${account}/campaignBudgets/${id}`,
+        id,
+        name: "香港品牌 · 平均每日预算",
+        amountMicros: "100000000",
+        period: "DAILY",
+        explicitlyShared: false,
+        referenceCount: "1",
+        status: "ENABLED",
+        type: "STANDARD",
+      });
+    return budgets.get(key)!;
+  };
   const scopes: Record<string, string> = {
     google_ads: "https://www.googleapis.com/auth/adwords",
     ga4: "https://www.googleapis.com/auth/analytics.readonly",
@@ -205,6 +230,73 @@ export async function startConnectorFixture(config: Config) {
       return send(res, 200, {
         data: [{ permission: "ads_read", status: "granted" }],
       });
+    if (
+      host === "googleads.googleapis.com" &&
+      resource.endsWith("/campaignBudgets:mutate")
+    ) {
+      const account = resource.match(/customers\/(\d+)/)?.[1] ?? "";
+      if (
+        provider !== "google_ads" ||
+        !["101", "102"].includes(account) ||
+        req.headers["developer-token"] !== "simulated-developer-token"
+      )
+        return send(res, 403, { error: { code: 403 } });
+      const update = body.operations?.[0]?.update;
+      const id =
+        String(update?.resourceName ?? "").match(
+          new RegExp(`^customers/${account}/campaignBudgets/(\\d+)$`),
+        )?.[1] ?? "";
+      const budget = fixtureBudget(account, id);
+      const expected = {
+        operations: [
+          {
+            update: {
+              resourceName: budget?.resourceName,
+              amountMicros: update?.amountMicros,
+            },
+            updateMask: "amount_micros",
+          },
+        ],
+        partialFailure: false,
+        validateOnly: false,
+        responseContentType: "MUTABLE_RESOURCE",
+      };
+      if (
+        !budget ||
+        typeof update?.amountMicros !== "string" ||
+        !/^[1-9][0-9]{0,17}$/.test(update.amountMicros) ||
+        canonical(body) !== canonical(expected)
+      )
+        return send(res, 400, {
+          error: { code: 400, message: "invalid_fixed_budget_mutation" },
+        });
+      const budgetFault = budgetFaults.shift();
+      if (budgetFault === "reject")
+        return send(res, 400, {
+          error: { code: 400, message: "simulated_atomic_rejection" },
+        });
+      if (budgetFault === "disconnect_before_apply") return res.destroy();
+      if (budgetFault === "delay")
+        await new Promise<void>((resolve) => setTimeout(resolve, 350));
+      budget.amountMicros = update.amountMicros;
+      if (budgetFault === "apply_then_disconnect") return res.destroy();
+      if (budgetFault === "malformed_receipt")
+        return send(res, 200, {
+          results: [{ resourceName: budget.resourceName }],
+        });
+      res.setHeader("request-id", randomUUID());
+      return send(res, 200, {
+        results: [
+          {
+            resourceName: budget.resourceName,
+            campaignBudget: {
+              resourceName: budget.resourceName,
+              amountMicros: budget.amountMicros,
+            },
+          },
+        ],
+      });
+    }
     const account = (id: string, manager = false) => ({
       id,
       descriptiveName: manager ? "模擬集團經理" : "香港品牌 · " + id,
@@ -237,6 +329,21 @@ export async function startConnectorFixture(config: Config) {
         return send(res, 200, { results: [{ customer: account(id!, true) }] });
       if (!["101", "102"].includes(id ?? ""))
         return send(res, 403, { error: { code: 403 } });
+      if (query.includes("FROM campaign_budget")) {
+        const budgetId =
+          query.match(/WHERE campaign_budget.id = ([1-9][0-9]*)$/)?.[1] ?? "";
+        const budget = fixtureBudget(id!, budgetId);
+        return send(res, 200, {
+          results: budget
+            ? [
+                {
+                  customer: { currencyCode: "HKD" },
+                  campaignBudget: { ...budget },
+                },
+              ]
+            : [],
+        });
+      }
       const range = query.match(
         /BETWEEN '(\d{4}-\d{2}-\d{2})' AND '(\d{4}-\d{2}-\d{2})'/,
       );
@@ -317,7 +424,13 @@ export async function startConnectorFixture(config: Config) {
         ).map((value) => ({ value })),
         metricValues: (event
           ? ["150", "100", "3"]
-          : ["120", "100", "150", "3", fault === "negative_revenue" && i === 0 ? "-1800.50" : "800.50"]
+          : [
+              "120",
+              "100",
+              "150",
+              "3",
+              fault === "negative_revenue" && i === 0 ? "-1800.50" : "800.50",
+            ]
         ).map((value) => ({ value })),
       }));
       return send(res, 200, {
@@ -449,6 +562,18 @@ export async function startConnectorFixture(config: Config) {
       faults.set(provider, [...values]);
     },
     calls,
+    setBudgetFaults(values: typeof budgetFaults) {
+      budgetFaults = [...values];
+    },
+    setBudget(account: string, id: string, changes: Record<string, unknown>) {
+      const budget = fixtureBudget(account, id);
+      if (!budget) throw new Error("Unknown synthetic budget");
+      Object.assign(budget, changes);
+    },
+    resetBudgets() {
+      budgets.clear();
+      budgetFaults = [];
+    },
     async close() {
       for (const socket of sockets) socket.destroy();
       await new Promise<void>((resolve) => server.close(() => resolve()));

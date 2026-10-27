@@ -6,6 +6,7 @@ import {
 import { seedCommercialPlans } from "./commercial-plans.js";
 import { registerAdminPlans } from "./admin-plans.js";
 import { registerProviderAdmin } from "./provider-admin.js";
+import { registerExternalBudgets } from "./external-budget-routes.js";
 import { registerCapabilityReleases } from "./capability-releases.js";
 import { registerAdminVip } from "./admin-vip.js";
 import { registerAdminVipCredit } from "./admin-vip-credit.js";
@@ -107,24 +108,37 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     };
   const db = new Database(c);
   const catalog = new Catalog();
-  await catalog.load();
-  const identity = (
-    await db.app.query(
-      "SELECT r.rolsuper,r.rolbypassrls,current_user FROM pg_roles r WHERE r.rolname=current_user",
+  try {
+    await catalog.load();
+    const identity = (
+      await db.app.query(
+        "SELECT r.rolsuper,r.rolbypassrls,current_user FROM pg_roles r WHERE r.rolname=current_user",
+      )
+    ).rows[0];
+    if (
+      identity.rolsuper ||
+      identity.rolbypassrls ||
+      identity.current_user !== "cp_app"
     )
-  ).rows[0];
-  if (
-    identity.rolsuper ||
-    identity.rolbypassrls ||
-    identity.current_user !== "cp_app"
-  )
-    throw new Error("Application database identity must be restricted cp_app");
-  await seedRoles(db, catalog);
-  await seedCommercialPlans(db, catalog);
-  await seedSkillVersions(db, catalog);
-  await seedRuntimeProfile(db, catalog);
-  await seedProviderBudgetPolicy(db);
-  await seedAgentTemplates(db, catalog);
+      throw new Error(
+        "Application database identity must be restricted cp_app",
+      );
+    await seedRoles(db, catalog);
+    await seedCommercialPlans(db, catalog);
+    await seedSkillVersions(db, catalog);
+    await seedRuntimeProfile(db, catalog);
+    await seedProviderBudgetPolicy(db);
+    await seedAgentTemplates(db, catalog);
+  } catch (error) {
+    // A rejected catalog must not leave owned fixture servers or DB pools alive.
+    await Promise.allSettled([
+      db.close(),
+      demo?.close(),
+      connectorFixture?.close(),
+      seoFixture?.close(),
+    ]);
+    throw error;
+  }
   const storage = new Storage(c);
   const worker = new Worker(db, catalog, storage);
   const app = Fastify({
@@ -435,6 +449,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdmin(app, db, catalog, storage);
   registerAdminPlans(app, db, catalog);
   registerProviderAdmin(app, db);
+  registerExternalBudgets(app, db);
   registerCapabilityReleases(app, db, catalog);
   registerAdminVip(app, db);
   registerAdminVipCredit(app, db);

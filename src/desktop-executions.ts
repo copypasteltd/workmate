@@ -45,7 +45,12 @@ import { requestTaskCancellation } from "./task-control.js";
 import type { Storage } from "./storage.js";
 import { registerDesktopSolutions } from "./desktop-solutions.js";
 import { registerDesktopGeo, desktopGeoProtocol } from "./desktop-geo.js";
-import { freezeWorkContext, getAgentVersion, resolveWorkContext, type WorkContext } from "./persistent-work.js";
+import {
+  freezeWorkContext,
+  getAgentVersion,
+  resolveWorkContext,
+  type WorkContext,
+} from "./persistent-work.js";
 import { TaskBusinessTools } from "./task-business-tools.js";
 import {
   DesktopWorkflows,
@@ -70,7 +75,11 @@ const createBody = binding
     agent_id: uuid.optional(),
     agent_version: z.number().int().positive().optional(),
   })
-  .strict().refine(b => !!b.agent_id === !!b.agent_version, "Supply both the specialist ID and its fixed version");
+  .strict()
+  .refine(
+    (b) => !!b.agent_id === !!b.agent_version,
+    "Supply both the specialist ID and its fixed version",
+  );
 const reportBody = z
   .object({
     status: z.enum(["completed", "failed", "interrupted", "unknown"]),
@@ -129,6 +138,9 @@ const analysisCompanyToolNames = new Set([
   "analysis_sources",
   "analysis_file_inspect",
   "connector_read",
+  "external_budget_preview",
+  "external_budget_prepare",
+  "external_budget_status",
   "sheet_calculate",
   "analysis_source_read",
   "chart_render",
@@ -302,9 +314,21 @@ export async function registerDesktopExecutions(
     );
     await assertTaskContentSources(tx, t);
     if (t.input_context?.agent_id) {
-      const agent = await getAgentVersion(tx, t.project_id, t.input_context.agent_id, t.input_context.agent_version);
-      const resolved = await resolveWorkContext(tx, actor, t.tenant_id, t.project_id, t.input_context,
-        catalog.runtimeProfile.pinned_version, [...(await catalog.currentCapabilities(tx)).values()].map(v => v.id));
+      const agent = await getAgentVersion(
+        tx,
+        t.project_id,
+        t.input_context.agent_id,
+        t.input_context.agent_version,
+      );
+      const resolved = await resolveWorkContext(
+        tx,
+        actor,
+        t.tenant_id,
+        t.project_id,
+        t.input_context,
+        catalog.runtimeProfile.pinned_version,
+        [...(await catalog.currentCapabilities(tx)).values()].map((v) => v.id),
+      );
       t.native_agent_tool_ids = agent.body.tool_ids;
       t.native_specialist_instructions = resolved.instructions;
     }
@@ -412,10 +436,17 @@ export async function registerDesktopExecutions(
     if (t.input_context?.geo_sample_id) return [];
     const installedRole = catalog.forTask(t);
     const role = t.native_agent_tool_ids
-      ? { ...installedRole, tool_ids: installedRole.tool_ids.filter((id: string) => t.native_agent_tool_ids.includes(id)) }
+      ? {
+          ...installedRole,
+          tool_ids: installedRole.tool_ids.filter((id: string) =>
+            t.native_agent_tool_ids.includes(id),
+          ),
+        }
       : installedRole;
     const analysisReady =
-      (role.version === "1.1.0" || (role.role_key === "marketing-analyst" && role.version === "1.2.0")) &&
+      (role.version === "1.1.0" ||
+        (role.role_key === "marketing-analyst" &&
+          ["1.2.0", "1.3.0"].includes(role.version))) &&
       ["marketing-analyst", "information-design", "presentation"].includes(
         role.role_key,
       );
@@ -459,7 +490,13 @@ export async function registerDesktopExecutions(
             (videoCompanyToolNames.has(tool.name) ||
               methodToolNames.has(tool.name))),
       );
-    return [...tools, ...(role.tool_ids.includes("workflow.run") && role.tool_ids.includes("workflow.validate") ? workflows.build(t, actor) : [])];
+    return [
+      ...tools,
+      ...(role.tool_ids.includes("workflow.run") &&
+      role.tool_ids.includes("workflow.validate")
+        ? workflows.build(t, actor)
+        : []),
+    ];
   }
   async function closeCompanyCalls(id?: string) {
     const calls = [...companyCalls.values()].filter(
@@ -502,18 +539,46 @@ export async function registerDesktopExecutions(
     }, p.tenant);
   });
 
-  app.get(base + "/specialists/:id", { preHandler: requireUser(db) }, async req => {
-    const p = params.extend({ id: uuid }).parse(req.params), q = z.object({ version: z.coerce.number().int().positive() }).strict().parse(req.query);
-    return db.tx(async tx => {
-      await projectAccess(tx, req.principal, p.tenant, p.project, "write");
-      await desktopFamily(tx, req.principal);
-      const agent = await getAgentVersion(tx, p.project, p.id, q.version, true);
-      if (!desktopLocalRoleKeys.includes(agent.role_key)) throw denied("DESKTOP_ROLE_NOT_READY");
-      await catalog.ensureEnabled(tx, agent.role_key, agent.body.role_hash);
-      await freezeWorkContext(tx, req.principal, p.tenant, p.project, agent, undefined, catalog);
-      return { id: agent.id, version: agent.bound_version, name: agent.body.name, role_key: agent.role_key };
-    }, p.tenant);
-  });
+  app.get(
+    base + "/specialists/:id",
+    { preHandler: requireUser(db) },
+    async (req) => {
+      const p = params.extend({ id: uuid }).parse(req.params),
+        q = z
+          .object({ version: z.coerce.number().int().positive() })
+          .strict()
+          .parse(req.query);
+      return db.tx(async (tx) => {
+        await projectAccess(tx, req.principal, p.tenant, p.project, "write");
+        await desktopFamily(tx, req.principal);
+        const agent = await getAgentVersion(
+          tx,
+          p.project,
+          p.id,
+          q.version,
+          true,
+        );
+        if (!desktopLocalRoleKeys.includes(agent.role_key))
+          throw denied("DESKTOP_ROLE_NOT_READY");
+        await catalog.ensureEnabled(tx, agent.role_key, agent.body.role_hash);
+        await freezeWorkContext(
+          tx,
+          req.principal,
+          p.tenant,
+          p.project,
+          agent,
+          undefined,
+          catalog,
+        );
+        return {
+          id: agent.id,
+          version: agent.bound_version,
+          name: agent.body.name,
+          role_key: agent.role_key,
+        };
+      }, p.tenant);
+    },
+  );
 
   app.post(base, { preHandler: requireUser(db) }, async (req) => {
     const p = params.parse(req.params),
@@ -553,8 +618,10 @@ export async function registerDesktopExecutions(
               previous.workspace_hash !== b.workspace_hash ||
               previous.runtime_sha256 !== b.runtime_sha256 ||
               previous.role_key !== b.role_key ||
-              (previous.input_context?.agent_id ?? null) !== (b.agent_id ?? null) ||
-              (previous.input_context?.agent_version ?? null) !== (b.agent_version ?? null) ||
+              (previous.input_context?.agent_id ?? null) !==
+                (b.agent_id ?? null) ||
+              (previous.input_context?.agent_version ?? null) !==
+                (b.agent_version ?? null) ||
               previous.role_hash !==
                 catalog.digest(catalog.role(b.role_key, previous.role_hash)) ||
               previous.state !== "finished")
@@ -562,11 +629,37 @@ export async function registerDesktopExecutions(
             throw denied("DESKTOP_SESSION_BINDING_CHANGED");
           let context: WorkContext | undefined;
           if (b.agent_id) {
-            const agent = await getAgentVersion(tx, p.project, b.agent_id, b.agent_version, true);
-            if (agent.role_key !== b.role_key) throw denied("DESKTOP_SPECIALIST_ROLE_CHANGED");
-            context = previous ? previous.input_context : await freezeWorkContext(tx, req.principal, p.tenant, p.project, agent, undefined, catalog);
-            await resolveWorkContext(tx, req.principal, p.tenant, p.project, context!, catalog.runtimeProfile.pinned_version,
-              [...(await catalog.currentCapabilities(tx)).values()].map(v => v.id));
+            const agent = await getAgentVersion(
+              tx,
+              p.project,
+              b.agent_id,
+              b.agent_version,
+              true,
+            );
+            if (agent.role_key !== b.role_key)
+              throw denied("DESKTOP_SPECIALIST_ROLE_CHANGED");
+            context = previous
+              ? previous.input_context
+              : await freezeWorkContext(
+                  tx,
+                  req.principal,
+                  p.tenant,
+                  p.project,
+                  agent,
+                  undefined,
+                  catalog,
+                );
+            await resolveWorkContext(
+              tx,
+              req.principal,
+              p.tenant,
+              p.project,
+              context!,
+              catalog.runtimeProfile.pinned_version,
+              [...(await catalog.currentCapabilities(tx)).values()].map(
+                (v) => v.id,
+              ),
+            );
           }
           const t = await enqueueTask(
             tx,
@@ -737,14 +830,19 @@ export async function registerDesktopExecutions(
           model: capabilities.text.body.model_alias,
           effort: capabilities.text.body.reasoning_effort,
           company_tools: companyTools,
-          ...(task.input_context?.geo_sample_id ? { observation_protocol: desktopGeoProtocol } : {}),
+          ...(task.input_context?.geo_sample_id
+            ? { observation_protocol: desktopGeoProtocol }
+            : {}),
           runtime: desktopRuntime,
           skills,
           project_configuration:
             task.input_context?.project_configuration ?? null,
-          prompt: (task.native_specialist_instructions || projectInstructions)
-            ? (task.native_specialist_instructions || projectInstructions) + "\n\n" + task.prompt
-            : task.prompt,
+          prompt:
+            task.native_specialist_instructions || projectInstructions
+              ? (task.native_specialist_instructions || projectInstructions) +
+                "\n\n" +
+                task.prompt
+              : task.prompt,
           role_instructions: catalog
             .forTask(task)
             .workflow.map((step: any) => step.instruction)
@@ -1140,10 +1238,12 @@ export async function registerDesktopExecutions(
         gateway = startScopedInferenceGateway(db.config, {
           model: capabilities.text.body.model_alias!,
           reasoningEffort: capabilities.text.body.reasoning_effort!,
-          tools: t.input_context?.geo_sample_id ? [] : [
-            ...desktopToolNames,
-            ...companyTools.map((tool) => "copypaste." + tool.name),
-          ],
+          tools: t.input_context?.geo_sample_id
+            ? []
+            : [
+                ...desktopToolNames,
+                ...companyTools.map((tool) => "copypaste." + tool.name),
+              ],
           nativeDesktop: !t.input_context?.geo_sample_id,
           nativeCompanyTools: companyTools,
           signal: shutdown.signal,

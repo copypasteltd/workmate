@@ -60,6 +60,8 @@ const implementedTools = new Set([
   "sheet.calculate",
   "chart.render",
   "connector.read",
+  "connector.budget.read",
+  "connector.budget.prepare",
   "workflow.validate",
   "workflow.run",
   "vector.render",

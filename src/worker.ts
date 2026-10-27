@@ -1,4 +1,5 @@
 import { TaskBusinessTools } from "./task-business-tools.js";
+import { advanceExternalBudgets } from "./external-budget.js";
 import { finalizeReviewedEffect } from "./media-effects-tools.js";
 import { AudioProduction } from "./audio-production.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
@@ -280,10 +281,22 @@ export class Worker {
           });
       }
       if (!this.stopping && !this.capabilityAudioRun) {
-        this.capabilityAudioRun = new CapabilityAudioVerification(this.db, this.catalog)
+        this.capabilityAudioRun = new CapabilityAudioVerification(
+          this.db,
+          this.catalog,
+        )
           .advance(this.capabilityAudioAbort.signal)
-          .catch(() => console.error(JSON.stringify({ component: "worker.capability_audio", error_code: "AUDIO_VERIFICATION_MAINTENANCE_FAILED" })))
-          .finally(() => { this.capabilityAudioRun = null; });
+          .catch(() =>
+            console.error(
+              JSON.stringify({
+                component: "worker.capability_audio",
+                error_code: "AUDIO_VERIFICATION_MAINTENANCE_FAILED",
+              }),
+            ),
+          )
+          .finally(() => {
+            this.capabilityAudioRun = null;
+          });
       }
       if (!this.stopping && !this.connectorRun) {
         this.connectorRun = advanceConnectors(this.db, this.storage, {
@@ -319,6 +332,7 @@ export class Worker {
       }
       // A connector/workflow error must never starve cleanup or other due work.
       for (const [name, operation] of [
+        ["external_budget", () => advanceExternalBudgets(this.db)],
         ["provider_requests", () => recoverProviderRequests(this.db)],
         ["queue_recovery", () => recoverQueuedClaims(this.db)],
         ["schedules", () => advanceSchedules(this.db, this.catalog)],

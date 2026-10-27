@@ -1,5 +1,35 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- controlled-budget-stage113 -->
+Google Ads budget changes now have an explicit expiring policy, exact immutable previews, customer confirmation, a single durable dispatch and immutable receipts. Unknown outcomes are observed and manually closed without resending.
+
+Apply forward-only migration 124. The fixed-field Google Ads mutation has no retry; ambiguous outcomes remain unknown. Recovery records the original AEAD-encrypted reply without another mutation. Old role versions and admin bindings retain their permissions.
+
+154 backend · 53 Desktop unit · 22 actual native Codex · 12 actual client flows · 3 measured layouts. Synthetic models/accounts and an unsigned installer candidate; real advertising spend, production signing and full-product acceptance remain unproven. Average daily budget is not a maximum daily charge; Google bills advertising separately.
+
+Existing deployments: explicitly grant the new permissions to an enrolled permanent global super through `npm run admin:enable-external-budget -- operator@example.com --acknowledge-global-budget-authority` in the backend repository. Old roles never auto-expand.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/113-controlled-advertising-budgets.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/external-budget-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Login[Login and project authority] --> Policy[Explicit bounded budget policy]
+  Policy --> Preview[Immutable exact preview]
+  Preview --> Confirm[Customer confirmation or authorized policy]
+  Confirm --> Admission[Revalidate and persist dispatch]
+  Admission --> Once[One provider mutation]
+  Once --> Receipt[Encrypted receipt and immutable events]
+  Once --> Unknown[Unknown never resent]
+  Unknown --> Review[Observe and manually close]
+  Admin[Scoped Admin and current MFA] --> Policy
+  Admin --> Review
+```
+
+![Actual scoped budget panel / 实际预算面板](https://raw.githubusercontent.com/copypasteltd/workmate/web/assets/screenshots/workmate-budget-05-exact-confirmation-en.png)
+
+![Actual interaction / 实际交互](https://raw.githubusercontent.com/copypasteltd/workmate/web/assets/screenshots/workmate-05-controlled-budgets.gif)
+
+
 <!-- responsive-report-stage112 -->
 Website reports now use a dedicated wider dialog and intrinsic metric columns. Complete CTR, ranking and refund values remain readable on one line at the measured 375px Web and 800px Desktop sizes; scrolling remains available without Desktop rails.
 

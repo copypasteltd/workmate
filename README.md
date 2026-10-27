@@ -1,5 +1,35 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- controlled-budget-stage113 -->
+Google Ads 预算修改已接通有期限的明确策略、不可改写的确切预览、客户确认、一次持久入场及原始回执。未知结果经观察及人工核对关闭，不重发修改。
+
+执行向前迁移 124。固定字段 Google Ads 修改不重试；不明结果保留 unknown。恢复只补记原 AEAD 加密回应，不再调用修改。历史角色及旧管理员授权不自动扩大。
+
+154 backend · 53 Desktop unit · 22 actual native Codex · 12 actual client flows · 3 measured layouts. 模型及账户为假数据，安装候选未签名；真实广告费、正式签名与全产品验收尚未证明。平均每日预算不是每日最高扣款，Google 广告费与公司 AI 账单独立。
+
+已有部署：在后端仓库对已登记的永久全局 super 明确运行 `npm run admin:enable-external-budget -- operator@example.com --acknowledge-global-budget-authority` 后再委派新权限，旧角色不自动扩大。
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/113-controlled-advertising-budgets.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/external-budget-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Login[Login and project authority] --> Policy[Explicit bounded budget policy]
+  Policy --> Preview[Immutable exact preview]
+  Preview --> Confirm[Customer confirmation or authorized policy]
+  Confirm --> Admission[Revalidate and persist dispatch]
+  Admission --> Once[One provider mutation]
+  Once --> Receipt[Encrypted receipt and immutable events]
+  Once --> Unknown[Unknown never resent]
+  Unknown --> Review[Observe and manually close]
+  Admin[Scoped Admin and current MFA] --> Policy
+  Admin --> Review
+```
+
+![Actual scoped budget panel / 实际预算面板](https://raw.githubusercontent.com/copypasteltd/workmate/web/assets/screenshots/workmate-budget-05-exact-confirmation-en.png)
+
+![Actual interaction / 实际交互](https://raw.githubusercontent.com/copypasteltd/workmate/web/assets/screenshots/workmate-05-controlled-budgets.gif)
+
+
 <!-- responsive-report-stage112 -->
 網站報告採用專用寬版對話框及隨容器排版的指標卡片。實測 375px Web 與 800px Desktop 的 CTR、排名及退款數值完整單行顯示；Desktop 可捲動並維持隱藏滾動條。
 

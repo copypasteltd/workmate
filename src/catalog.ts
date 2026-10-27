@@ -193,23 +193,92 @@ export class Catalog {
     );
     this.skills.push(scheduleRelease.skill_package);
     this.skillDefinitions.push(scheduleRelease.skill_definition);
-    const webRelease = JSON.parse(await readFile("catalog/web-analytics-release-v1.json", "utf8"));
+    const webRelease = JSON.parse(
+      await readFile("catalog/web-analytics-release-v1.json", "utf8"),
+    );
     const webBase = this.role("marketing-analyst");
-    if (webRelease.schema !== "copypaste-web-analytics-release-1" || webBase.version !== "1.1.0" ||
-      webRelease.previous_role_sha256 !== this.digest(webBase) || webRelease.role.role_key !== webBase.role_key ||
-      webRelease.role.version !== "1.2.0" || canonical(webRelease.role.tool_ids) !== canonical(webBase.tool_ids) ||
-      canonical(webRelease.role.model_bindings) !== canonical(webBase.model_bindings) ||
-      canonical(webRelease.role.skill_bindings) !== canonical([...webBase.skill_bindings, { skill_key: "web-analytics", version: "1.0.0", required: true }]) ||
-      webRelease.skill_package.key !== "web-analytics" || webRelease.skill_package.version !== "1.0.0" ||
-      webRelease.skill_definition.skill_key !== "web-analytics" || webRelease.skill_definition.version !== "1.0.0" ||
-      webRelease.skill_definition.package_sha256 !== webRelease.skill_package.sha256 ||
-      canonical(webRelease.skill_definition.tool_ids) !== canonical(["connector.read"]) ||
-      this.skills.some(s => s.key === "web-analytics" && s.version === "1.0.0"))
-      throw new Problem(503, "ROLE_RELEASE_INVALID", "Website analysis release does not match its retained role, Skills and permissions");
+    if (
+      webRelease.schema !== "copypaste-web-analytics-release-1" ||
+      webBase.version !== "1.1.0" ||
+      webRelease.previous_role_sha256 !== this.digest(webBase) ||
+      webRelease.role.role_key !== webBase.role_key ||
+      webRelease.role.version !== "1.2.0" ||
+      canonical(webRelease.role.tool_ids) !== canonical(webBase.tool_ids) ||
+      canonical(webRelease.role.model_bindings) !==
+        canonical(webBase.model_bindings) ||
+      canonical(webRelease.role.skill_bindings) !==
+        canonical([
+          ...webBase.skill_bindings,
+          { skill_key: "web-analytics", version: "1.0.0", required: true },
+        ]) ||
+      webRelease.skill_package.key !== "web-analytics" ||
+      webRelease.skill_package.version !== "1.0.0" ||
+      webRelease.skill_definition.skill_key !== "web-analytics" ||
+      webRelease.skill_definition.version !== "1.0.0" ||
+      webRelease.skill_definition.package_sha256 !==
+        webRelease.skill_package.sha256 ||
+      canonical(webRelease.skill_definition.tool_ids) !==
+        canonical(["connector.read"]) ||
+      this.skills.some(
+        (s) => s.key === "web-analytics" && s.version === "1.0.0",
+      )
+    )
+      throw new Problem(
+        503,
+        "ROLE_RELEASE_INVALID",
+        "Website analysis release does not match its retained role, Skills and permissions",
+      );
     this.historicalRoles.push(webBase);
-    this.roles = this.roles.map(r => r.role_key === webBase.role_key ? webRelease.role : r);
+    this.roles = this.roles.map((r) =>
+      r.role_key === webBase.role_key ? webRelease.role : r,
+    );
     this.skills.push(webRelease.skill_package);
     this.skillDefinitions.push(webRelease.skill_definition);
+    const budgetRelease = JSON.parse(
+      await readFile("catalog/external-budget-release-v1.json", "utf8"),
+    );
+    const budgetBase = this.role("marketing-analyst");
+    if (
+      budgetRelease.schema !== "copypaste-external-budget-release-1" ||
+      budgetBase.version !== "1.2.0" ||
+      budgetRelease.previous_role_sha256 !== this.digest(budgetBase) ||
+      budgetRelease.role.role_key !== budgetBase.role_key ||
+      budgetRelease.role.version !== "1.3.0" ||
+      canonical(budgetRelease.role.model_bindings) !==
+        canonical(budgetBase.model_bindings) ||
+      canonical(budgetRelease.role.tool_ids) !==
+        canonical(
+          [
+            ...budgetBase.tool_ids,
+            "connector.budget.read",
+            "connector.budget.prepare",
+          ].sort(),
+        ) ||
+      canonical(budgetRelease.role.skill_bindings) !==
+        canonical([
+          ...budgetBase.skill_bindings,
+          { skill_key: "external-budget", version: "1.0.0", required: true },
+        ]) ||
+      budgetRelease.skill_package.key !== "external-budget" ||
+      budgetRelease.skill_package.version !== "1.0.0" ||
+      budgetRelease.skill_definition.skill_key !== "external-budget" ||
+      budgetRelease.skill_definition.version !== "1.0.0" ||
+      budgetRelease.skill_definition.package_sha256 !==
+        budgetRelease.skill_package.sha256 ||
+      canonical(budgetRelease.skill_definition.tool_ids) !==
+        canonical(["connector.budget.read", "connector.budget.prepare"])
+    )
+      throw new Problem(
+        503,
+        "ROLE_RELEASE_INVALID",
+        "External budget release does not match its retained role, Skills and permissions",
+      );
+    this.historicalRoles.push(budgetBase);
+    this.roles = this.roles.map((r) =>
+      r.role_key === budgetBase.role_key ? budgetRelease.role : r,
+    );
+    this.skills.push(budgetRelease.skill_package);
+    this.skillDefinitions.push(budgetRelease.skill_definition);
     this.admin = JSON.parse(
       await readFile("catalog/admin-permission-catalog.json", "utf8"),
     );
@@ -234,6 +303,22 @@ export class Catalog {
     // seedRoles uses ON CONFLICT DO NOTHING: existing installed roles are not expanded.
     superRole.permissions.push(
       ...providerAdmin.super_permissions_for_new_installations,
+    );
+    const budgetAdmin = JSON.parse(
+      await readFile("catalog/external-budget-admin-permissions.json", "utf8"),
+    );
+    const permissionKeys = new Set(
+      this.admin.permissions.map((p: any) => p.key),
+    );
+    if (budgetAdmin.permissions.some((p: any) => permissionKeys.has(p.key)))
+      throw new Problem(
+        503,
+        "PERMISSION_CATALOG_CONFLICT",
+        "Duplicate external budget permission",
+      );
+    this.admin.permissions.push(...budgetAdmin.permissions);
+    superRole.permissions.push(
+      ...budgetAdmin.super_permissions_for_new_installations,
     );
     for (const p of this.skills) await this.verifySkill(p);
   }

@@ -1,5 +1,16 @@
 import { prepareBrandProduction } from "./brand-production.js";
 import {
+  budgetToolPreview,
+  budgetToolPrepare,
+  budgetToolRead,
+} from "./external-budget-model.js";
+import {
+  previewBudget,
+  prepareBudget,
+  budgetOperation,
+  budgetOperationDTO,
+} from "./external-budget.js";
+import {
   listTaskSolutions,
   readTaskSolution,
   readSolutionSource,
@@ -179,9 +190,14 @@ export class TaskBusinessTools {
       "information-design@1.1.0",
       "marketing-analyst@1.1.0",
       "marketing-analyst@1.2.0",
+      "marketing-analyst@1.3.0",
       "presentation@1.1.0",
     ].includes(role.role_key + "@" + role.version);
-    const webAnalysisTools = role.role_key === "marketing-analyst" && role.version === "1.2.0";
+    const webAnalysisTools =
+      role.role_key === "marketing-analyst" &&
+      ["1.2.0", "1.3.0"].includes(role.version);
+    const budgetTools =
+      role.role_key === "marketing-analyst" && role.version === "1.3.0";
     const vectorTools =
       role.role_key === "brand-visual" && role.version === "1.1.0";
     const slidesTools =
@@ -394,9 +410,12 @@ export class TaskBusinessTools {
       },
       {
         name: "connector_read",
-        description:
-          webAnalysisTools ? "List or read paged already captured Google Ads, Meta, GA4 and Search Console snapshots. For GA4/search performance, supply analysis with exact profile, account_id, date_from, date_to and supported group_by dimensions to obtain deterministic source-bound metrics, null reasons, observed coverage and a calculation SHA-256. totalUsers is never summed across rows; search CTR uses totals and position is impression-weighted over captured byPage rows. Follow next_offset. Use normalized campaign dataset_ids with sheet_calculate. Never perform live retrieval, fabricate authorization or merge reporting profiles/accounts." : "List or read paged already captured Google Ads, Meta, GA4 and Search Console snapshots. Returns actual facts and scope, never live retrieval or credentials. Use normalized dataset_ids with sheet_calculate; request missing customer authorization instead of fabricating account data.",
-        inputSchema: z.toJSONSchema(webAnalysisTools ? connectorReadInput : connectorReadInputV1),
+        description: webAnalysisTools
+          ? "List or read paged already captured Google Ads, Meta, GA4 and Search Console snapshots. For GA4/search performance, supply analysis with exact profile, account_id, date_from, date_to and supported group_by dimensions to obtain deterministic source-bound metrics, null reasons, observed coverage and a calculation SHA-256. totalUsers is never summed across rows; search CTR uses totals and position is impression-weighted over captured byPage rows. Follow next_offset. Use normalized campaign dataset_ids with sheet_calculate. Never perform live retrieval, fabricate authorization or merge reporting profiles/accounts."
+          : "List or read paged already captured Google Ads, Meta, GA4 and Search Console snapshots. Returns actual facts and scope, never live retrieval or credentials. Use normalized dataset_ids with sheet_calculate; request missing customer authorization instead of fabricating account data.",
+        inputSchema: z.toJSONSchema(
+          webAnalysisTools ? connectorReadInput : connectorReadInputV1,
+        ),
         run: readTool(
           (tx, a) => readFrozenConnector(tx, this.storage, t, a),
           webAnalysisTools ? connectorReadInput : connectorReadInputV1,
@@ -1543,6 +1562,80 @@ export class TaskBusinessTools {
           this.storage,
         ).build(t, actor, authorize),
       );
+    if (budgetTools)
+      tools.push(
+        {
+          name: "external_budget_preview",
+          description:
+            "Preview a specific authorized non-shared Google Ads average daily budget against an existing explicit project policy. Supply exact advertiser account, budget ID and desired positive integer currency micros. Adds no mutation or AI call. Never infer an amount or create authority.",
+          inputSchema: z.toJSONSchema(budgetToolPreview),
+          run: async (args) => {
+            const { connection_id, ...b } = budgetToolPreview.parse(args);
+            return previewBudget(
+              this.db,
+              actor,
+              t.tenant_id,
+              t.project_id,
+              connection_id,
+              b,
+              authorize,
+            );
+          },
+        },
+        {
+          name: "external_budget_prepare",
+          description:
+            "Prepare the exact immutable budget operation using preview_id and expected_source_sha256 from external_budget_preview. No changed target or amount. Owner/admin confirms each_operation policies in Connections; only explicit bounded within_policy authorization may queue automatically. Never claim applied until status has a provider receipt. Unknown outcomes must never be resent.",
+          inputSchema: z.toJSONSchema(budgetToolPrepare),
+          run: async (args, callId) => {
+            const { connection_id, ...b } = budgetToolPrepare.parse(args);
+            return prepareBudget(
+              this.db,
+              actor,
+              t.tenant_id,
+              t.project_id,
+              connection_id,
+              b,
+              `task:${t.id}:${callId}`,
+              t.id,
+              authorize,
+            );
+          },
+        },
+        {
+          name: "external_budget_status",
+          description:
+            "Read the current authorized project budget operation, including pending confirmation, execution, exact receipt state or unknown attribution. It does not retry or confirm an operation.",
+          inputSchema: z.toJSONSchema(budgetToolRead),
+          run: async (args) => {
+            const b = budgetToolRead.parse(args);
+            return this.db.tx(
+              async (tx) => {
+                await authorize(tx);
+                await projectAccess(
+                  tx,
+                  actor,
+                  t.tenant_id,
+                  t.project_id,
+                  "read",
+                );
+                return budgetOperationDTO(
+                  await budgetOperation(
+                    this.db,
+                    tx,
+                    t.tenant_id,
+                    t.project_id,
+                    b.operation_id,
+                  ),
+                );
+              },
+              t.tenant_id,
+              true,
+              actor.id,
+            );
+          },
+        },
+      );
     const permitted = tools.filter(
       (tool) =>
         (
@@ -1577,6 +1670,12 @@ export class TaskBusinessTools {
             connector_read:
               (analysisTools || cloudWorkflowTools) &&
               role.tool_ids.includes("connector.read"),
+            external_budget_preview:
+              budgetTools && role.tool_ids.includes("connector.budget.read"),
+            external_budget_status:
+              budgetTools && role.tool_ids.includes("connector.budget.read"),
+            external_budget_prepare:
+              budgetTools && role.tool_ids.includes("connector.budget.prepare"),
             sheet_calculate:
               analysisTools &&
               role.tool_ids.includes("sheet.calculate") &&
@@ -1715,6 +1814,8 @@ export class TaskBusinessTools {
             "analysis_sources",
             "analysis_file_inspect",
             "connector_read",
+            "external_budget_preview",
+            "external_budget_status",
             "sheet_calculate",
             "analysis_source_read",
             "analysis_report_facts",
