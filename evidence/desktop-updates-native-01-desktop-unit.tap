@@ -1,0 +1,515 @@
+TAP version 13
+# Subtest: shared protocol verifies exact signatures, bounds and deterministic rollout without an account token
+ok 1 - shared protocol verifies exact signatures, bounds and deterministic rollout without an account token
+  ---
+  duration_ms: 6.8841
+  ...
+# Subtest: cancelling a real HTTP download aborts the stream and deletes its partial file
+ok 2 - cancelling a real HTTP download aborts the stream and deletes its partial file
+  ---
+  duration_ms: 106.0406
+  ...
+# Subtest: download rechecks publication, verifies exact bytes and persists restartable installer state
+ok 3 - download rechecks publication, verifies exact bytes and persists restartable installer state
+  ---
+  duration_ms: 529.2439
+  ...
+# Subtest: a forged or replayed manifest cannot replace a trusted release, even after restart
+ok 4 - a forged or replayed manifest cannot replace a trusted release, even after restart
+  ---
+  duration_ms: 5.4248
+  ...
+# Subtest: withdrawal or publication change before download prevents any artifact request
+ok 5 - withdrawal or publication change before download prevents any artifact request
+  ---
+  duration_ms: 3.7069
+  ...
+# Subtest: stream length and file hashes are checked before invoking the native signature verifier
+ok 6 - stream length and file hashes are checked before invoking the native signature verifier
+  ---
+  duration_ms: 6.6953
+  ...
+# Subtest: untrusted Windows signatures leave no prepared file or installation permission
+ok 7 - untrusted Windows signatures leave no prepared file or installation permission
+  ---
+  duration_ms: 394.6538
+  ...
+# Subtest: active local work blocks installation, without cancelling work or discarding its journal
+ok 8 - active local work blocks installation, without cancelling work or discarding its journal
+  ---
+  duration_ms: 238.2713
+  ...
+# Subtest: admission waits for in-flight operations and prevents a new turn while installation confirms
+ok 9 - admission waits for in-flight operations and prevents a new turn while installation confirms
+  ---
+  duration_ms: 278.296
+  ...
+# Subtest: withdrawal immediately before install blocks a previously verified cached installer
+ok 10 - withdrawal immediately before install blocks a previously verified cached installer
+  ---
+  duration_ms: 422.3493
+  ...
+# Subtest: cache tampering after download cannot survive install-time verification
+ok 11 - cache tampering after download cannot survive install-time verification
+  ---
+  duration_ms: 123.6487
+  ...
+# Subtest: portable installs stay manual and empty trust disables checks without any network access
+ok 12 - portable installs stay manual and empty trust disables checks without any network access
+  ---
+  duration_ms: 113.2492
+  ...
+# Subtest: discard removes only its owned installer and retains anti-replay sequence across checks
+ok 13 - discard removes only its owned installer and retains anti-replay sequence across checks
+  ---
+  duration_ms: 161.2921
+  ...
+# Subtest: network failures and a missing known channel cannot erase the trusted sequence floor
+ok 14 - network failures and a missing known channel cannot erase the trusted sequence floor
+  ---
+  duration_ms: 2.2836
+  ...
+# Subtest: packaged Desktop ignores a development trust override, keeping only its pinned release roots
+ok 15 - packaged Desktop ignores a development trust override, keeping only its pinned release roots
+  ---
+  duration_ms: 0.5987
+  ...
+# Subtest: oversized responses and unexpected transfer encodings fail before trusting metadata
+ok 16 - oversized responses and unexpected transfer encodings fail before trusting metadata
+  ---
+  duration_ms: 4.5199
+  ...
+# Subtest: folder grants enforce expiry, explicit writes, create-only semantics and idempotency
+ok 17 - folder grants enforce expiry, explicit writes, create-only semantics and idempotency
+  ---
+  duration_ms: 23.0529
+  ...
+# Subtest: API bridge cannot change origin or escape the API prefix
+ok 18 - API bridge cannot change origin or escape the API prefix
+  ---
+  duration_ms: 0.2986
+  ...
+# Subtest: native workspace bridge permits canonical session/onboarding/business calls and rejects credential and path escapes
+ok 19 - native workspace bridge permits canonical session/onboarding/business calls and rejects credential and path escapes
+  ---
+  duration_ms: 2.3264
+  ...
+# Subtest: marketing bridge permits scoped reporting operations while rejecting admin and OAuth credential access
+ok 20 - marketing bridge permits scoped reporting operations while rejecting admin and OAuth credential access
+  ---
+  duration_ms: 0.5915
+  ...
+# Subtest: provider authorization opens only the configured company page with a bounded state
+ok 21 - provider authorization opens only the configured company page with a bounded state
+  ---
+  duration_ms: 13.6314
+  ...
+# Subtest: website audit bridge admits explicit read/create/recheck operations and rejects unrelated writes
+ok 22 - website audit bridge admits explicit read/create/recheck operations and rejects unrelated writes
+  ---
+  duration_ms: 0.7447
+  ...
+# Subtest: saved website change bridge exposes creation and private reads without any website mutation operation
+ok 23 - saved website change bridge exposes creation and private reads without any website mutation operation
+  ---
+  duration_ms: 0.6816
+  ...
+# Subtest: sign-out removes every folder grant and cached file result before queued work can replay
+ok 24 - sign-out removes every folder grant and cached file result before queued work can replay
+  ---
+  duration_ms: 31.2948
+  ...
+# Subtest: method library bridge admits scoped metadata and configuration but no cloud trial execution
+ok 25 - method library bridge admits scoped metadata and configuration but no cloud trial execution
+  ---
+  duration_ms: 0.4487
+  ...
+# Subtest: update checkpoints allow idle sessions and block a live local turn until its settlement finishes
+ok 26 - update checkpoints allow idle sessions and block a live local turn until its settlement finishes
+  ---
+  duration_ms: 52.036
+  ...
+# Subtest: closing the app while a send is persisting prevents a later task reservation or native start
+ok 27 - closing the app while a send is persisting prevents a later task reservation or native start
+  ---
+  duration_ms: 2.2684
+  ...
+# Subtest: existing native records retain their original tool set after the browser factory becomes available
+ok 28 - existing native records retain their original tool set after the browser factory becomes available
+  ---
+  duration_ms: 1.9685
+  ...
+# Subtest: new native browser bindings retain actual actor/project/workspace ownership and cannot bypass a read-only grant
+ok 29 - new native browser bindings retain actual actor/project/workspace ownership and cannot bypass a read-only grant
+  ---
+  duration_ms: 3.4535
+  ...
+# Subtest: stop closes the owned browser even while the native tool is waiting
+ok 30 - stop closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 3.4168
+  ...
+# Subtest: revoke closes the owned browser even while the native tool is waiting
+ok 31 - revoke closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 4.4239
+  ...
+# Subtest: logout closes the owned browser even while the native tool is waiting
+ok 32 - logout closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 3.6278
+  ...
+# Subtest: close closes the owned browser even while the native tool is waiting
+ok 33 - close closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 3.8882
+  ...
+# Subtest: saved native specialists retain their version through uncertain admission and restart, without a replacement reservation
+ok 34 - saved native specialists retain their version through uncertain admission and restart, without a replacement reservation
+  ---
+  duration_ms: 4.9622
+  ...
+# Subtest: saved specialist selection rejects a wrong role or changed account before opening a customer folder
+ok 35 - saved specialist selection rejects a wrong role or changed account before opening a customer folder
+  ---
+  duration_ms: 2.6802
+  ...
+# Subtest: legacy native records do not silently acquire approved-program tools
+ok 36 - legacy native records do not silently acquire approved-program tools
+  ---
+  duration_ms: 2.1806
+  ...
+# Subtest: approved-program tools retain original task and customer ownership and recheck the full local grant
+ok 37 - approved-program tools retain original task and customer ownership and recheck the full local grant
+  ---
+  duration_ms: 3.7402
+  ...
+# Subtest: stop closes an owned program tool while the native turn is waiting
+ok 38 - stop closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 4.3152
+  ...
+# Subtest: revoke closes an owned program tool while the native turn is waiting
+ok 39 - revoke closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 3.0059
+  ...
+# Subtest: logout closes an owned program tool while the native turn is waiting
+ok 40 - logout closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 2.2278
+  ...
+# Subtest: close closes an owned program tool while the native turn is waiting
+ok 41 - close closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 5.1487
+  ...
+# Subtest: durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn
+ok 42 - durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn
+  ---
+  duration_ms: 4.4921
+  ...
+# Subtest: file dispatch recovers a lost create response under the original request ids
+ok 43 - file dispatch recovers a lost create response under the original request ids
+  ---
+  duration_ms: 5.9767
+  ...
+# Subtest: file dispatch recovers a lost start response under the original request ids
+ok 44 - file dispatch recovers a lost start response under the original request ids
+  ---
+  duration_ms: 5.8722
+  ...
+# Subtest: file dispatch recovers a lost finish response under the original request ids
+ok 45 - file dispatch recovers a lost finish response under the original request ids
+  ---
+  duration_ms: 2.8014
+  ...
+# Subtest: concurrent replay of the same dispatch id never runs a second task
+ok 46 - concurrent replay of the same dispatch id never runs a second task
+  ---
+  duration_ms: 2.44
+  ...
+# Subtest: a running dispatch recovered after a crash reports unknown and never restarts the possibly accepted native action
+ok 47 - a running dispatch recovered after a crash reports unknown and never restarts the possibly accepted native action
+  ---
+  duration_ms: 2.9411
+  ...
+# Subtest: a queued file must revalidate its source before native startup; conversation retries cannot bypass the folder rule
+ok 48 - a queued file must revalidate its source before native startup; conversation retries cannot bypass the folder rule
+  ---
+  duration_ms: 2.6979
+  ...
+# Subtest: a folder selection grants no execution permission; declined native consent never starts tools or reserves money
+ok 49 - a folder selection grants no execution permission; declined native consent never starts tools or reserves money
+  ---
+  duration_ms: 1.3594
+  ...
+# Subtest: explicit native full permission reaches the runtime; public state never contains the scoped token or mutable internals
+ok 50 - explicit native full permission reaches the runtime; public state never contains the scoped token or mutable internals
+  ---
+  duration_ms: 1.5247
+  ...
+# Subtest: a lost finish response retries only the saved receipt, never the native turn or task reservation
+ok 51 - a lost finish response retries only the saved receipt, never the native turn or task reservation
+  ---
+  duration_ms: 1.6416
+  ...
+# Subtest: a native start failure reports definite failure before any turn and clears the controller lock
+ok 52 - a native start failure reports definite failure before any turn and clears the controller lock
+  ---
+  duration_ms: 11.2088
+  ...
+# (node:37548) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a completed workflow child stops its heartbeat before native shutdown and terminal settlement
+ok 53 - a completed workflow child stops its heartbeat before native shutdown and terminal settlement
+  ---
+  duration_ms: 4.1642
+  ...
+# Subtest: an uncertain native result reports unknown and cannot be silently replayed or followed by another local turn
+ok 54 - an uncertain native result reports unknown and cannot be silently replayed or followed by another local turn
+  ---
+  duration_ms: 1.9621
+  ...
+# Subtest: account invalidation revokes local grants and hides the previous account's journal
+ok 55 - account invalidation revokes local grants and hides the previous account's journal
+  ---
+  duration_ms: 4.2007
+  ...
+# Subtest: concurrent native consent cannot race another permission grant or begin execution
+ok 56 - concurrent native consent cannot race another permission grant or begin execution
+  ---
+  duration_ms: 1.3902
+  ...
+# Subtest: generic renderer API cannot retrieve native credentials or proxy native inference
+ok 57 - generic renderer API cannot retrieve native credentials or proxy native inference
+  ---
+  duration_ms: 0.3302
+  ...
+# Subtest: an explicit native answer resumes one owned operation without a new task, turn, budget or answer journal entry
+ok 58 - an explicit native answer resumes one owned operation without a new task, turn, budget or answer journal entry
+  ---
+  duration_ms: 3.3168
+  ...
+# Subtest: malformed answers, guessed native ids and a different account cannot answer a live question
+ok 59 - malformed answers, guessed native ids and a different account cannot answer a live question
+  ---
+  duration_ms: 2.5059
+  ...
+# Subtest: simultaneous answer submissions are single use and cannot win a stop during company authorization
+ok 60 - simultaneous answer submissions are single use and cannot win a stop during company authorization
+  ---
+  duration_ms: 4.1098
+  ...
+# Subtest: waiting questions disappear on stop and cannot be answered or replayed
+ok 61 - waiting questions disappear on stop and cannot be answered or replayed
+  ---
+  duration_ms: 3.8383
+  ...
+# Subtest: waiting questions disappear on revoke and cannot be answered or replayed
+ok 62 - waiting questions disappear on revoke and cannot be answered or replayed
+  ---
+  duration_ms: 2.9515
+  ...
+# Subtest: waiting questions disappear on invalidate and cannot be answered or replayed
+ok 63 - waiting questions disappear on invalidate and cannot be answered or replayed
+  ---
+  duration_ms: 2.1999
+  ...
+# Subtest: waiting questions disappear on close and cannot be answered or replayed
+ok 64 - waiting questions disappear on close and cannot be answered or replayed
+  ---
+  duration_ms: 1.736
+  ...
+# Subtest: a native method reserves one durable batch, runs each role locally and never creates a fallback task on retry
+ok 65 - a native method reserves one durable batch, runs each role locally and never creates a fallback task on retry
+  ---
+  duration_ms: 5.7401
+  ...
+# Subtest: lost native method admission survives a main-process restart and resumes the original immutable batch
+ok 66 - lost native method admission survives a main-process restart and resumes the original immutable batch
+  ---
+  duration_ms: 3.0734
+  ...
+# Subtest: a withdrawn local grant can reconcile and cancel a lost batch without launching Codex or requiring a new permission
+ok 67 - a withdrawn local grant can reconcile and cancel a lost batch without launching Codex or requiring a new permission
+  ---
+  duration_ms: 2.8931
+  ...
+# Subtest: a definitive native method rejection releases the local reservations and an account change during persistence cannot admit work
+ok 68 - a definitive native method rejection releases the local reservations and an account change during persistence cannot admit work
+  ---
+  duration_ms: 2.3118
+  ...
+# Subtest: program selection and native approval both default to no grant; an older native thread cannot silently acquire new tools
+ok 69 - program selection and native approval both default to no grant; an older native thread cannot silently acquire new tools
+  ---
+  duration_ms: 237.0253
+  ...
+# Subtest: approved native argv preserves quotes, Unicode and trailing slashes without shell expansion and keeps company credentials out of the child
+ok 70 - approved native argv preserves quotes, Unicode and trailing slashes without shell expansion and keeps company credentials out of the child
+  ---
+  duration_ms: 1330.7011
+  ...
+# Subtest: concurrent duplicate program calls execute once and replay exact immutable receipts; changed arguments with the same ID are rejected
+ok 71 - concurrent duplicate program calls execute once and replay exact immutable receipts; changed arguments with the same ID are rejected
+  ---
+  duration_ms: 1449.7892
+  ...
+# Subtest: program nonzero exit and bounded output are recorded as actual failure rather than fabricated success
+ok 72 - program nonzero exit and bounded output are recorded as actual failure rather than fabricated success
+  ---
+  duration_ms: 1138.3811
+  ...
+# Subtest: permission downgrade, account change and company revocation deny cached program output and new launches
+ok 73 - permission downgrade, account change and company revocation deny cached program output and new launches
+  ---
+  duration_ms: 1197.1381
+  ...
+# Subtest: changed approved executable is rejected before another program process starts
+ok 74 - changed approved executable is rejected before another program process starts
+  ---
+  duration_ms: 626.9758
+  ...
+# Subtest: a persisted running invocation becomes unknown after restart; a new call cannot bypass required customer review
+ok 75 - a persisted running invocation becomes unknown after restart; a new call cannot bypass required customer review
+  ---
+  duration_ms: 1575.7482
+  ...
+# Subtest: aborting a real native job kills its program and grandchild while retaining an unrelated owned test process
+ok 76 - aborting a real native job kills its program and grandchild while retaining an unrelated owned test process
+  ---
+  duration_ms: 1283.7203
+  ...
+# Subtest: normal root exit also closes background descendants; timeout remains a separate unsuccessful state
+ok 77 - normal root exit also closes background descendants; timeout remains a separate unsuccessful state
+  ---
+  duration_ms: 2347.5519
+  ...
+# Subtest: losing the owning controller cancels current programs; two admitted runs exhaust the process quota before any third launch
+ok 78 - losing the owning controller cancels current programs; two admitted runs exhaust the process quota before any third launch
+  ---
+  duration_ms: 1182.6342
+  ...
+# Subtest: failed intent persistence never launches a process and malformed structured arguments never become commands
+ok 79 - failed intent persistence never launches a process and malformed structured arguments never become commands
+  ---
+  duration_ms: 462.8155
+  ...
+# Subtest: revocation still kills an actual program when saving the revocation and final receipt both fail
+ok 80 - revocation still kills an actual program when saving the revocation and final receipt both fail
+  ---
+  duration_ms: 991.8227
+  ...
+# Subtest: unexpected death of the owning process closes the guardian job and its real descendants, preserving unrelated processes
+ok 81 - unexpected death of the owning process closes the guardian job and its real descendants, preserving unrelated processes
+  ---
+  duration_ms: 856.6121
+  ...
+# Subtest: a real filesystem watch debounces rapid edits, excludes its own outputs and dispatches each content fingerprint once
+ok 82 - a real filesystem watch debounces rapid edits, excludes its own outputs and dispatches each content fingerprint once
+  ---
+  duration_ms: 4293.826
+  ...
+# Subtest: batch dispatch is serial, pause finishes the current file and resume handles only remaining work within both caps
+ok 83 - batch dispatch is serial, pause finishes the current file and resume handles only remaining work within both caps
+  ---
+  duration_ms: 4276.5073
+  ...
+# Subtest: lost result and restart recover the original job and output without spending on another execution
+ok 84 - lost result and restart recover the original job and output without spending on another execution
+  ---
+  duration_ms: 2732.206
+  ...
+# Subtest: active rules reopen paused and require fresh confirmation before processing changes made while closed
+ok 85 - active rules reopen paused and require fresh confirmation before processing changes made while closed
+  ---
+  duration_ms: 3962.2777
+  ...
+# Subtest: a known changed original is reported as conflict after a paid run and prevents the next file
+ok 86 - a known changed original is reported as conflict after a paid run and prevents the next file
+  ---
+  duration_ms: 1718.1428
+  ...
+# Subtest: unknown outcomes retain their original task, block further dispatch and cannot be silently resumed
+ok 87 - unknown outcomes retain their original task, block further dispatch and cannot be silently resumed
+  ---
+  duration_ms: 903.5274
+  ...
+# Subtest: withdrawal during activation invalidates the pending confirmation and cannot revive a paused rule
+ok 88 - withdrawal during activation invalidates the pending confirmation and cannot revive a paused rule
+  ---
+  duration_ms: 713.5184
+  ...
+# Subtest: revoked grants and account changes stop dispatch, and a new login epoch cannot list the old rules
+ok 89 - revoked grants and account changes stop dispatch, and a new login epoch cannot list the old rules
+  ---
+  duration_ms: 29.085
+  ...
+# Subtest: failed journal persistence prevents native dispatch and leaves an actionable storage error
+ok 90 - failed journal persistence prevents native dispatch and leaves an actionable storage error
+  ---
+  duration_ms: 719.693
+  ...
+# Subtest: changes waiting behind a busy session supersede unpaid versions, including content that returns to an earlier unpaid fingerprint
+ok 91 - changes waiting behind a busy session supersede unpaid versions, including content that returns to an earlier unpaid fingerprint
+  ---
+  duration_ms: 3019.9065
+  ...
+# Subtest: revoking a rule stops only its active owned task and retains its original receipt without starting the next file
+ok 92 - revoking a rule stops only its active owned task and retains its original receipt without starting the next file
+  ---
+  duration_ms: 1242.7217
+  ...
+# Subtest: native WinVerifyTrust validates a real Windows-trusted signed binary and its exact publisher
+not ok 93 - native WinVerifyTrust validates a real Windows-trusted signed binary and its exact publisher
+  ---
+  duration_ms: 708.0388
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\update-installer-host.test.ts:1:1572'
+  failureType: 'testCodeFailure'
+  error: |-
+    Command failed: powershell.exe -NoProfile -NonInteractive -EncodedCommand JABzACAAPQAgAEcAZQB0AC0AQQB1AHQAaABlAG4AdABpAGMAbwBkAGUAUwBpAGcAbgBhAHQAdQByAGUAIAAtAEwAaQB0AGUAcgBhAGwAUABhAHQAaAAgACQAZQBuAHYAOgBDAE8AUABZAFAAQQBTAFQARQBfAEkATgBTAFAARQBDAFQAXwBDAEEATgBEAEkARABBAFQARQA7ACAAaQBmACAAKAAkAG4AdQBsAGwAIAAtAGUAcQAgACQAcwAuAFMAaQBnAG4AZQByAEMAZQByAHQAaQBmAGkAYwBhAHQAZQApACAAewAgAHQAaAByAG8AdwAgACcATgBvACAAcwBpAGcAbgBpAG4AZwAgAGMAZQByAHQAaQBmAGkAYwBhAHQAZQAnACAAfQA7ACAAJABoACAAPQAgAFsAUwBlAGMAdQByAGkAdAB5AC4AQwByAHkAcAB0AG8AZwByAGEAcABoAHkALgBTAEgAQQAyADUANgBdADoAOgBDAHIAZQBhAHQAZQAoACkAOwAgAFsAUABTAEMAdQBzAHQAbwBtAE8AYgBqAGUAYwB0AF0AQAB7AHMAdABhAHQAdQBzAD0AWwBzAHQAcgBpAG4AZwBdACQAcwAuAFMAdABhAHQAdQBzADsAIABzAGkAZwBuAGUAcgA9ACgAWwBCAGkAdABDAG8AbgB2AGUAcgB0AGUAcgBdADoAOgBUAG8AUwB0AHIAaQBuAGcAKAAkAGgALgBDAG8AbQBwAHUAdABlAEgAYQBzAGgAKAAkAHMALgBTAGkAZwBuAGUAcgBDAGUAcgB0AGkAZgBpAGMAYQB0AGUALgBSAGEAdwBEAGEAdABhACkAKQApAC4AUgBlAHAAbABhAGMAZQAoACcALQAnACwAJwAnACkALgBUAG8ATABvAHcAZQByAEkAbgB2AGEAcgBpAGEAbgB0ACgAKQB9ACAAfAAgAEMAbwBuAHYAZQByAHQAVABvAC0ASgBzAG8AbgAgAC0AQwBvAG0AcAByAGUAcwBzAA==
+    #< CLIXML
+    <Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04"><S S="Error">Get-AuthenticodeSignature : ��ģ�顰Microsoft.PowerShell.Security�����ҵ���Get-AuthenticodeSignature��������޷����ظ�ģ_x000D__x000A_</S><S S="Error">�顣�й���ϸ��Ϣ�������С�Import-Module Microsoft.PowerShell.Security����_x000D__x000A_</S><S S="Error">����λ�� ��:1 �ַ�: 6_x000D__x000A_</S><S S="Error">+ $s = Get-AuthenticodeSignature -LiteralPath $env:COPYPASTE_INSPECT_CA ..._x000D__x000A_</S><S S="Error">+      ~~~~~~~~~~~~~~~~~~~~~~~~~_x000D__x000A_</S><S S="Error">    + CategoryInfo          : ObjectNotFound: (Get-AuthenticodeSignature:String) [], CommandNotFoundException_x000D__x000A_</S><S S="Error">    + FullyQualifiedErrorId : CouldNotAutoloadMatchingModule_x000D__x000A_</S><S S="Error"> _x000D__x000A_</S><S S="Error">No signing certificate_x000D__x000A_</S><S S="Error">����λ�� ��:1 �ַ�: 117_x000D__x000A_</S><S S="Error">+ ... ll -eq $s.SignerCertificate) { throw 'No signing certificate' }; $h = ..._x000D__x000A_</S><S S="Error">+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~_x000D__x000A_</S><S S="Error">    + CategoryInfo          : OperationStopped: (No signing certificate:String) [], RuntimeException_x000D__x000A_</S><S S="Error">    + FullyQualifiedErrorId : No signing certificate_x000D__x000A_</S><S S="Error"> _x000D__x000A_</S></Objs>
+  code: 1
+  stack: |-
+    genericNodeError (node:internal/errors:983:15)
+    wrappedFn (node:internal/errors:537:14)
+    ChildProcess.exithandler (node:child_process:414:12)
+    ChildProcess.emit (node:events:518:28)
+    maybeClose (node:internal/child_process:1101:16)
+    ChildProcess._handle.onexit (node:internal/child_process:304:5)
+  ...
+# Subtest: native verifier rejects changed bytes and the unsigned development helper without launching anything
+ok 94 - native verifier rejects changed bytes and the unsigned development helper without launching anything
+  ---
+  duration_ms: 242.8577
+  ...
+# Subtest: native install handshake locks verified bytes and refuses to start without the exact COMMIT message
+not ok 95 - native install handshake locks verified bytes and refuses to start without the exact COMMIT message
+  ---
+  duration_ms: 376.8062
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\update-installer-host.test.ts:1:2375'
+  failureType: 'testCodeFailure'
+  error: |-
+    Command failed: powershell.exe -NoProfile -NonInteractive -EncodedCommand JABzACAAPQAgAEcAZQB0AC0AQQB1AHQAaABlAG4AdABpAGMAbwBkAGUAUwBpAGcAbgBhAHQAdQByAGUAIAAtAEwAaQB0AGUAcgBhAGwAUABhAHQAaAAgACQAZQBuAHYAOgBDAE8AUABZAFAAQQBTAFQARQBfAEkATgBTAFAARQBDAFQAXwBDAEEATgBEAEkARABBAFQARQA7ACAAaQBmACAAKAAkAG4AdQBsAGwAIAAtAGUAcQAgACQAcwAuAFMAaQBnAG4AZQByAEMAZQByAHQAaQBmAGkAYwBhAHQAZQApACAAewAgAHQAaAByAG8AdwAgACcATgBvACAAcwBpAGcAbgBpAG4AZwAgAGMAZQByAHQAaQBmAGkAYwBhAHQAZQAnACAAfQA7ACAAJABoACAAPQAgAFsAUwBlAGMAdQByAGkAdAB5AC4AQwByAHkAcAB0AG8AZwByAGEAcABoAHkALgBTAEgAQQAyADUANgBdADoAOgBDAHIAZQBhAHQAZQAoACkAOwAgAFsAUABTAEMAdQBzAHQAbwBtAE8AYgBqAGUAYwB0AF0AQAB7AHMAdABhAHQAdQBzAD0AWwBzAHQAcgBpAG4AZwBdACQAcwAuAFMAdABhAHQAdQBzADsAIABzAGkAZwBuAGUAcgA9ACgAWwBCAGkAdABDAG8AbgB2AGUAcgB0AGUAcgBdADoAOgBUAG8AUwB0AHIAaQBuAGcAKAAkAGgALgBDAG8AbQBwAHUAdABlAEgAYQBzAGgAKAAkAHMALgBTAGkAZwBuAGUAcgBDAGUAcgB0AGkAZgBpAGMAYQB0AGUALgBSAGEAdwBEAGEAdABhACkAKQApAC4AUgBlAHAAbABhAGMAZQAoACcALQAnACwAJwAnACkALgBUAG8ATABvAHcAZQByAEkAbgB2AGEAcgBpAGEAbgB0ACgAKQB9ACAAfAAgAEMAbwBuAHYAZQByAHQAVABvAC0ASgBzAG8AbgAgAC0AQwBvAG0AcAByAGUAcwBzAA==
+    #< CLIXML
+    <Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04"><S S="Error">Get-AuthenticodeSignature : ��ģ�顰Microsoft.PowerShell.Security�����ҵ���Get-AuthenticodeSignature��������޷����ظ�ģ_x000D__x000A_</S><S S="Error">�顣�й���ϸ��Ϣ�������С�Import-Module Microsoft.PowerShell.Security����_x000D__x000A_</S><S S="Error">����λ�� ��:1 �ַ�: 6_x000D__x000A_</S><S S="Error">+ $s = Get-AuthenticodeSignature -LiteralPath $env:COPYPASTE_INSPECT_CA ..._x000D__x000A_</S><S S="Error">+      ~~~~~~~~~~~~~~~~~~~~~~~~~_x000D__x000A_</S><S S="Error">    + CategoryInfo          : ObjectNotFound: (Get-AuthenticodeSignature:String) [], CommandNotFoundException_x000D__x000A_</S><S S="Error">    + FullyQualifiedErrorId : CouldNotAutoloadMatchingModule_x000D__x000A_</S><S S="Error"> _x000D__x000A_</S><S S="Error">No signing certificate_x000D__x000A_</S><S S="Error">����λ�� ��:1 �ַ�: 117_x000D__x000A_</S><S S="Error">+ ... ll -eq $s.SignerCertificate) { throw 'No signing certificate' }; $h = ..._x000D__x000A_</S><S S="Error">+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~_x000D__x000A_</S><S S="Error">    + CategoryInfo          : OperationStopped: (No signing certificate:String) [], RuntimeException_x000D__x000A_</S><S S="Error">    + FullyQualifiedErrorId : No signing certificate_x000D__x000A_</S><S S="Error"> _x000D__x000A_</S></Objs>
+  code: 1
+  stack: |-
+    genericNodeError (node:internal/errors:983:15)
+    wrappedFn (node:internal/errors:537:14)
+    ChildProcess.exithandler (node:child_process:414:12)
+    ChildProcess.emit (node:events:518:28)
+    maybeClose (node:internal/child_process:1101:16)
+    ChildProcess._handle.onexit (node:internal/child_process:304:5)
+  ...
+1..95
+# tests 95
+# suites 0
+# pass 93
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45851.8684

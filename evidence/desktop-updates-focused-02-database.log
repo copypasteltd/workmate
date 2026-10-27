@@ -1,0 +1,88 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-U3BGyj/runtime/.data/native-qa/63600b0d-05f6-4df4-96eb-cfccae5ad0e1 ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-U3BGyj^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-U3BGyj^\runtime^\^.data^\native^-qa^\63600b0d^-05f6^-4df4^-96eb^-cfccae5ad0e1^" -l logfile start
+
+
+2026-10-28 01:41:22.339 CST [6048] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-28 01:41:22.345 CST [6048] LOG:  listening on IPv6 address "::1", port 1466
+
+2026-10-28 01:41:22.346 CST [6048] LOG:  listening on IPv4 address "127.0.0.1", port 1466
+
+2026-10-28 01:41:22.767 CST [2200] LOG:  database system was shut down at 2026-10-28 01:40:32 CST
+
+2026-10-28 01:41:22.833 CST [6048] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:1466. Application roles are not owners and do not bypass RLS.
+2026-10-28 01:41:43.367 CST [18792] ERROR:  permission denied for table desktop_update_releases
+2026-10-28 01:41:43.367 CST [18792] STATEMENT:  SELECT * FROM desktop_update_releases
+
+2026-10-28 01:41:44.625 CST [33760] ERROR:  desktop release definitions are immutable
+2026-10-28 01:41:44.625 CST [33760] CONTEXT:  PL/pgSQL function immutable_desktop_release_definition() line 4 at RAISE
+2026-10-28 01:41:44.625 CST [33760] STATEMENT:  UPDATE desktop_update_releases SET envelope='{}' WHERE id=$1
+
+2026-10-28 01:41:44.716 CST [17580] ERROR:  desktop publication history is immutable
+2026-10-28 01:41:44.716 CST [17580] CONTEXT:  PL/pgSQL function immutable_desktop_publication() line 1 at RAISE
+2026-10-28 01:41:44.716 CST [17580] STATEMENT:  DELETE FROM desktop_update_publications WHERE release_id=$1
+
+2026-10-28 01:41:44.782 CST [37500] ERROR:  desktop release transition is invalid
+2026-10-28 01:41:44.782 CST [37500] CONTEXT:  PL/pgSQL function immutable_desktop_release_definition() line 6 at RAISE
+2026-10-28 01:41:44.782 CST [37500] STATEMENT:  UPDATE desktop_update_releases SET state='uploading',version=version+1 WHERE id=$1
+
+2026-10-28 01:41:51.445 CST [12228] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 01:42:06.459 CST [12228] LOG:  checkpoint complete: wrote 1006 buffers (6.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.277 s, sync=14.199 s, total=15.014 s; sync files=312, longest=0.341 s, average=0.046 s; distance=26202 kB, estimate=26202 kB; lsn=0/3188038, redo lsn=0/3187F90
+
+2026-10-28 01:42:07.357 CST [6048] LOG:  received fast shutdown request
+
+2026-10-28 01:42:07.395 CST [6048] LOG:  aborting any active transactions
+
+2026-10-28 01:42:07.402 CST [6048] LOG:  background worker "logical replication launcher" (PID 28016) exited with exit code 1
+
+2026-10-28 01:42:07.437 CST [12228] LOG:  shutting down
+
+2026-10-28 01:42:07.485 CST [12228] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-28 01:42:07.734 CST [12228] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.003 s, sync=0.025 s, total=0.298 s; sync files=1, longest=0.025 s, average=0.025 s; distance=0 kB, estimate=23582 kB; lsn=0/3188150, redo lsn=0/3188150
+
+2026-10-28 01:42:07.826 CST [6048] LOG:  database system is shut down
+

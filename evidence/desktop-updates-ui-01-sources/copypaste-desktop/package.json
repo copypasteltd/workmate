@@ -1,0 +1,104 @@
+{
+  "name": "@copypaste/desktop",
+  "version": "0.6.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "scripts": {
+    "build": "node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p renderer/tsconfig.json",
+    "start": "electron .",
+    "pretest": "node scripts/build-program-host.mjs && node scripts/build-update-host.mjs",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "test:local": "node --import tsx --test --test-concurrency=1 tests/integration/local-codex.native.test.ts",
+    "runtime:prepare": "node scripts/prepare-local-codex.mjs",
+    "package": "npm run runtime:prepare && npm run build && electron-builder --win portable nsis",
+    "package:dir": "npm run runtime:prepare && npm run build && electron-builder --win --dir",
+    "renderer:sync": "node scripts/sync-renderer.mjs",
+    "native:register": "electron scripts/register-native-host.mjs",
+    "package:release": "node scripts/package-release.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  },
+  "main": "dist/main.js",
+  "description": "CopyPaste enterprise desktop workspace",
+  "author": "CopyPaste",
+  "dependencies": {
+    "@noble/hashes": "2.4.0",
+    "lucide-react": "1.59.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router-dom": "7.18.4"
+  },
+  "build": {
+    "appId": "hk.copypaste.agent",
+    "productName": "CopyPaste",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer-dist/**/*",
+      "assets/*.png",
+      "assets/*.ico",
+      "assets/*.cmd",
+      "assets/browser-shell.*",
+      "assets/licenses/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "assets/icon.ico",
+      "signExecutable": false
+    },
+    "asar": true,
+    "electronDist": "node_modules/electron/dist",
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "CopyPaste-${version}-${arch}-Setup.${ext}",
+      "createDesktopShortcut": true
+    },
+    "portable": {
+      "artifactName": "CopyPaste-${version}-${arch}-Portable.${ext}"
+    },
+    "extraResources": [
+      {
+        "from": ".data/native-program-host",
+        "to": "local-program-host"
+      },
+      {
+        "from": ".data/runtime/windows-x64",
+        "to": "local-codex"
+      },
+      {
+        "from": "dist/native-host.cjs",
+        "to": "native-host.cjs"
+      },
+      {
+        "from": "assets/native-host.cmd",
+        "to": "native-host.cmd"
+      },
+      {
+        "from": ".data/update-installer-host",
+        "to": "update-installer-host"
+      }
+    ]
+  }
+}
