@@ -19,6 +19,7 @@ import { SeoAudits } from "./seo-audits";
 import { NativeFiles } from "./native-files";
 import { Solutions } from "./solutions";
 import { LocalAgentWorkspace, CloudWorkspaceLink } from "./local-agent";
+import { GeoObservations } from "./geo-observations";
 import { DeleteAsset, DeletionProgress } from "./deletions";
 import { DataModeNotice } from "./data-mode";
 import { TaskInputRequests } from "./task-dependencies";
@@ -2290,6 +2291,8 @@ function Analytics() {
   };
   if (analysisParams.get("view") === "seo")
     return <SeoAudits key={w.base} onBack={() => setSeo(false)} />;
+  if (analysisParams.get("view") === "geo")
+    return <GeoObservations key={w.base} onBack={() => setAnalysisParams({})} />;
   if (analysisParams.get("view") === "creative-feedback")
     return <CreativeFeedback key={w.base} onBack={() => setSeo(false)} />;
   return (
@@ -2309,8 +2312,8 @@ function Analytics() {
             <button className="button secondary" onClick={() => setAnalysisParams({ view: "creative-feedback" })}>
               {t("創意反饋", "Creative feedback")}
             </button>
-            <button className="button secondary" onClick={() => void window.copyPasteBridge!.openCloudWorkspace("geo")}>
-              {t("GEO 觀測 · 瀏覽器", "GEO observations · Browser")}
+            <button className="button secondary" onClick={() => setAnalysisParams({ view: "geo" })}>
+              {t("本機 GEO 觀測", "Local GEO observations")}
             </button>
             <button className="button primary" onClick={() => setOpen(true)}>
               <Upload size={17} />

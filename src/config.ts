@@ -79,6 +79,7 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   // process. The generic renderer bridge must never expose these routes.
   if (/\/desktop-executions(?:\/|$)|^\/v1\/desktop-inference(?:\/|$)/.test(pathname))
     return false;
+  if (/\/geo\/experiments\/[a-f0-9-]{36}\/(?:desktop-runs|desktop-configuration)$/i.test(pathname)) return false;
   if (pathname === "/v1/session/context") return method === "GET";
   if (pathname === "/v1/brand-version-options") return method === "GET";
   if (["/v1/solution-access", "/v1/solution-targets", "/v1/solution-installations"].includes(pathname)) return method === "GET";

@@ -1,7 +1,7 @@
 import { spawn, execFile, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { promisify } from "node:util";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, realpath, open, unlink } from "node:fs/promises";
+import { mkdir, readFile, realpath, open, unlink, readdir } from "node:fs/promises";
 import { StringDecoder } from "node:string_decoder";
 import { createReadStream } from "node:fs";
 import path from "node:path";
@@ -39,6 +39,7 @@ export interface LocalSessionBinding {
   companyTools?: LocalCompanyTool[];
   browserToolsVersion?: 1;
   programToolsVersion?: 1;
+  observationProtocol?: "codex-desktop-geo-v1";
 }
 export interface LocalCompanyTool { name: string; description: string; inputSchema: Record<string, unknown> }
 export interface LocalCompanyToolCall { namespace: "copypaste"; tool: string; arguments: Record<string, unknown>; callId: string; threadId: string; turnId: string }
@@ -140,10 +141,15 @@ export class LocalCodexSession {
       || !Number.isSafeInteger(grant.revision) || grant.revision < 1
       || !Number.isSafeInteger(grant.expiresAt) || grant.expiresAt <= Date.now())
       throw new LocalCodexError("LOCAL_PERMISSION_REQUIRED");
+    if (this.binding.observationProtocol && grant.mode !== "read-only")
+      throw new LocalCodexError("LOCAL_OBSERVATION_PERMISSION_INVALID");
   }
 
   private common() {
     const policy = localPermissionPolicy(this.grant.mode);
+    if (this.binding.observationProtocol) return { model: this.profile.model, modelProvider: "copypaste_internal", cwd: this.binding.workspace,
+      approvalPolicy: policy.approvalPolicy, sandbox: policy.sandbox, environments: [],
+      developerInstructions: "Run this one fixed GEO question independently. Use the explicitly pinned specialist instructions and skills. Retrieval, shell, file reads, browser, computer, business tools, project guidance, previous answers and memories are disabled. Do not request tools or invent citations. Return the original answer only. All model requests use the company provider." };
     return { model: this.profile.model, modelProvider: "copypaste_internal", cwd: this.binding.workspace,
       approvalPolicy: policy.approvalPolicy, sandbox: policy.sandbox, environments: [],
       developerInstructions: "You are the customer's local CopyPaste Codex Agent. Use the selected Skills and local tools to deliver real files and verifiable results. Follow the locally granted permission mode. Skill restrictions on cloud-worker shell execution apply to the company cloud; this native session's file and terminal tools are governed by the customer's current local grant. Skill tool IDs are capability labels: call only the exact tool names and schemas exposed by this session. Company tenant, project, content and budget controls remain mandatory in every local permission mode. Workflow fee and human-step decisions are made only through the trusted application's confirmation cards; no model tool may approve them. All product AI uses the company provider. Never launch Docker, WSL or virtual machines. Close only task-owned browser pages when no longer needed. Report what actually completed." };
@@ -230,6 +236,9 @@ export class LocalCodexSession {
         skills.push({ key: skill.key, sha256: skill.sha256 });
       }
       const companyTools = this.binding.companyTools ?? [];
+      if (this.binding.observationProtocol && (this.binding.observationProtocol !== "codex-desktop-geo-v1" || companyTools.length ||
+          this.binding.browserToolsVersion || this.binding.programToolsVersion || (await readdir(this.binding.workspace)).length))
+        throw new LocalCodexError("LOCAL_OBSERVATION_ISOLATION_REQUIRED");
       if (this.binding.browserToolsVersion !== undefined && (this.binding.browserToolsVersion !== 1 || !this.hooks.browserTool))
         throw new LocalCodexError("LOCAL_BROWSER_TOOLS_INVALID");
       if (this.binding.programToolsVersion !== undefined && (this.binding.programToolsVersion !== 1 || !this.hooks.programTool))
@@ -244,6 +253,7 @@ export class LocalCodexSession {
       this.bindingHash = hash(JSON.stringify({ session: this.binding.sessionId, actor: this.binding.actorId, tenant: this.binding.tenantId,
         project: this.binding.projectId, cwd: this.binding.workspace, version: this.profile.version,
         binary: this.profile.executableSha256, endpoint: this.profile.baseURL, model: this.profile.model, effort: this.profile.effort, skills,
+        ...(this.binding.observationProtocol ? { observationProtocol: this.binding.observationProtocol } : {}),
         ...(companyTools.length ? { companyTools } : {}),
         ...(this.binding.browserToolsVersion === 1 ? { browserToolsVersion: 1, browserTools: browserToolDefinitions } : {}),
         ...(this.binding.programToolsVersion === 1 ? { programToolsVersion: 1, programTools: programToolDefinitions } : {}) }));
@@ -259,6 +269,7 @@ export class LocalCodexSession {
           throw new LocalCodexError("LOCAL_PERMISSION_VERSION_CONFLICT");
         this.checkpoint = checkpoint;
         this.hasTurns = checkpoint.hasTurns;
+        if (this.binding.observationProtocol && checkpoint.hasTurns) throw new LocalCodexError("LOCAL_OBSERVATION_REPLAY_FORBIDDEN");
         // Codex does not persist an empty thread rollout. Reallocate only a
         // never-used thread; running/uncertain checkpoints were rejected above.
         this.threadId = checkpoint.hasTurns ? checkpoint.threadId : "";
@@ -276,12 +287,14 @@ export class LocalCodexSession {
         `model = ${quote(this.profile.model)}`, 'model_provider = "copypaste_internal"',
         `model_reasoning_effort = ${quote(this.profile.effort)}`, `approval_policy = ${quote(policy.approvalPolicy)}`,
         `sandbox_mode = ${quote(policy.sandbox)}`, 'web_search = "disabled"',
+        ...(this.binding.observationProtocol ? ['project_doc_max_bytes = 0'] : []),
         '[model_providers.copypaste_internal]', 'name = "CopyPaste Internal Gateway"',
         `base_url = ${quote(this.profile.baseURL)}`, 'env_key = "COPYPASTE_LOCAL_INFERENCE_TOKEN"', 'wire_api = "responses"',
         'request_max_retries = 0', 'stream_max_retries = 0', 'supports_websockets = false',
         '[shell_environment_policy]', 'inherit = "all"', 'ignore_default_excludes = false',
         'exclude = ["COPYPASTE_LOCAL_INFERENCE_TOKEN"]',
-        '[features]', 'shell_tool = true', 'multi_agent = false', 'apps = false', 'plugins = false', 'remote_plugin = false',
+        '[features]', `shell_tool = ${!this.binding.observationProtocol}`, 'multi_agent = false', 'apps = false', 'plugins = false', 'remote_plugin = false',
+        ...(this.binding.observationProtocol ? ["goals = false", "view_image = false", "computer_use = false", "browser_use = false", "browser_use_external = false", "skill_search = false", "workspace_dependencies = false", "sleep_tool = false", "tool_suggest = false"] : []),
         'image_generation = false', 'skill_mcp_dependency_install = false', 'prefer_mxc = false',
         '[analytics]', 'enabled = false',
         '[windows]', 'sandbox = "unelevated"',
@@ -301,10 +314,11 @@ export class LocalCodexSession {
         ['model_providers.copypaste_internal.wire_api', '"responses"'],
         ['model_providers.copypaste_internal.requires_openai_auth', 'false'],
         ['sandbox_mode', quote(policy.sandbox)], ['approval_policy', quote(policy.approvalPolicy)],
-        ['features.shell_tool', 'true'], ['features.apps', 'false'], ['features.plugins', 'false'], ['features.remote_plugin', 'false'],
+        ['features.shell_tool', this.binding.observationProtocol ? 'false' : 'true'], ['features.apps', 'false'], ['features.plugins', 'false'], ['features.remote_plugin', 'false'],
+        ...(this.binding.observationProtocol ? [['project_doc_max_bytes', '0'], ...['goals','view_image','computer_use','browser_use','browser_use_external','skill_search','workspace_dependencies','sleep_tool','tool_suggest'].map(k => ['features.' + k, 'false'])] : []),
         ['web_search', '"disabled"'], ['features.image_generation', 'false'], ['features.multi_agent', 'false'], ['features.skill_mcp_dependency_install', 'false'],
         ['features.prefer_mxc', 'false'], ['windows.sandbox', '"unelevated"'],
-        ['features.default_mode_request_user_input', 'true'],
+        ['features.default_mode_request_user_input', this.binding.observationProtocol ? 'false' : 'true'],
         ['shell_environment_policy.exclude', '["COPYPASTE_LOCAL_INFERENCE_TOKEN"]'],
       ].flatMap(([key, value]) => ["-c", `${key}=${value}`]);
       this.validateGrant();
@@ -630,6 +644,7 @@ export class LocalCodexSession {
   }
 
   async turn(prompt: string, signal?: AbortSignal): Promise<LocalTurnResult> {
+    if (this.binding.observationProtocol && this.hasTurns) throw new LocalCodexError("LOCAL_OBSERVATION_REPLAY_FORBIDDEN");
     if (this.closed || this.revoked || this.operation || this.active || !this.threadId || this.checkpoint?.phase !== "ready") throw new LocalCodexError("LOCAL_SESSION_NOT_READY");
     if (typeof prompt !== "string" || !prompt.trim() || prompt.length > 100000) throw new LocalCodexError("LOCAL_PROMPT_INVALID");
     if (signal?.aborted) throw new LocalCodexError("LOCAL_TURN_ABORTED");

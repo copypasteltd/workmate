@@ -4,3 +4,10 @@
 *.woff2 binary
 # Preserve original brand image bytes; treat them as graphic assets.
 CopyPaste_*.svg -text -diff
+
+# Keep the qualified renderer snapshot reproducible after a fresh clone.
+renderer-source.json -text whitespace=cr-at-eol
+renderer/src/main.tsx -text whitespace=cr-at-eol
+renderer/src/persistent-work.tsx -text whitespace=cr-at-eol
+renderer/src/geo-observations.tsx -text whitespace=cr-at-eol
+renderer/src/native-geo.tsx -text whitespace=cr-at-eol

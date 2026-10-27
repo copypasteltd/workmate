@@ -1,5 +1,5 @@
 import { randomUUID, createHash } from "node:crypto";
-import { realpath } from "node:fs/promises";
+import { realpath, mkdir } from "node:fs/promises";
 import path from "node:path";
 import {
   LocalCodexSession,
@@ -50,6 +50,7 @@ interface Operation {
     request: { trial: Record<string, any>; sessions: Record<string, any>[] };
     trialId?: string;
   };
+  geo?: { experimentId: string; request: Record<string, any> };
   phase: "accepting" | "starting" | "native_running" | "settling" | "uncertain";
   stopped?: boolean;
   workflowRunId?: string;
@@ -83,6 +84,7 @@ interface LocalRecord extends LocalAgentScope {
   workspaceHash: string;
   role: string;
   specialist?: { id: string; version: number; name: string };
+  geo?: { experimentId: string; experimentSha256: string; questionKey: string; runId?: string };
   grant?: LocalPermissionGrant;
   revoked: boolean;
   operation?: Operation;
@@ -126,6 +128,7 @@ export interface LocalAgentIO {
   ): Promise<{ status: number; body: any }>;
   chooseWorkspace(): Promise<string | null>;
   consent(mode: LocalPermissionMode, workspace: string): Promise<boolean>;
+  geoConsent?(review: { name: string; model: string; questions: string[]; perQuestionBudgetMicros: string; totalBudgetMicros: string }): Promise<boolean>;
   approval(
     kind: "command" | "file",
     value: Record<string, unknown>,
@@ -311,6 +314,7 @@ export class LocalAgentController {
       workspace: r.workspace,
       role: r.role,
       specialist: r.specialist,
+      geo: r.geo,
       revoked: r.revoked,
       permission: r.revoked ? null : (r.grant?.mode ?? null),
       busy: this.busy.has(r.id),
@@ -342,6 +346,7 @@ export class LocalAgentController {
     signal: AbortSignal,
     authorize: () => Promise<void>,
   ) {
+    if (r.geo) throw new LocalAgentError("LOCAL_OBSERVATION_INPUT_FORBIDDEN");
     const request = parseLocalInput(raw);
     await authorize();
     if (
@@ -425,7 +430,7 @@ export class LocalAgentController {
       throw error;
     }
   }
-  async list(scope: LocalAgentScope) {
+  async list(scope: LocalAgentScope, observations = false) {
     if (!uuid.test(scope.tenant) || !uuid.test(scope.project))
       throw new LocalAgentError("LOCAL_SCOPE_INVALID");
     const actor = await this.identity();
@@ -449,7 +454,7 @@ export class LocalAgentController {
         r.project === scope.project,
     );
     return {
-      sessions: sessions.map((r) => this.view(r)),
+      sessions: sessions.filter(r => !!r.geo === observations).map((r) => this.view(r)),
       roles: access.body.role_keys as string[],
     };
   }
@@ -520,6 +525,7 @@ export class LocalAgentController {
     if (!modes.has(mode)) throw new LocalAgentError("LOCAL_PERMISSION_INVALID");
     const r = await this.record(id),
       generation = this.generation;
+    if (r.geo) throw new LocalAgentError("LOCAL_OBSERVATION_PERMISSION_FIXED");
     if (r.revoked) throw new LocalAgentError("LOCAL_PERMISSION_REVOKED");
     if (this.busy.has(id) || this.permissions.has(id))
       throw new LocalAgentError("LOCAL_STOP_BEFORE_PERMISSION_CHANGE");
@@ -544,6 +550,7 @@ export class LocalAgentController {
   }
   async send(id: string, prompt: string, budget: number) {
     const r = await this.record(id);
+    if (r.geo) throw new LocalAgentError("GEO_NEW_RUN_REQUIRED");
     this.grant(r);
     if (
       this.busy.has(id) ||
@@ -592,6 +599,87 @@ export class LocalAgentController {
     )
       throw new LocalAgentError("LOCAL_DISPATCH_RESUME_REQUIRED");
     return this.execute(r);
+  }
+  /** Native GEO admission is journaled as a whole batch before any network
+   * reservation. Each prepared question uses the existing one-turn lifecycle. */
+  async prepareGeo(input: LocalAgentScope & { experiment: string; expected_sha256: string; name: string; budget: string }) {
+    if (!input || !uuid.test(input.tenant) || !uuid.test(input.project) || !uuid.test(input.experiment) ||
+      !/^[a-f0-9]{64}$/.test(input.expected_sha256) || typeof input.name !== "string" || !input.name.trim() || input.name.trim().length > 160 ||
+      !/^[1-9]\d{0,10}$/.test(input.budget) || BigInt(input.budget) < 10000n || BigInt(input.budget) > 10000000000n)
+      throw new LocalAgentError("LOCAL_REQUEST_INVALID");
+    const actor = await this.identity(), generation = this.generation, journal = await this.state();
+    if (journal.sessions.some(r => r.actorId === actor.actorId && r.epoch === actor.epoch && r.project === input.project && r.geo?.experimentId === input.experiment && r.operation?.phase === "accepting"))
+      throw new LocalAgentError("GEO_LOCAL_RESERVATION_PENDING");
+    const base = `/v1/tenants/${input.tenant}/projects/${input.project}/geo/experiments/${input.experiment}`;
+    const checked = await this.io.request(base + "/desktop-configuration", { tenantId: input.tenant });
+    if (checked.status !== 200) throw new LocalAgentError(checked.body?.error?.code ?? "GEO_CONFIGURATION_UNAVAILABLE");
+    const e = checked.body, questions = e?.questions;
+    if (e.id !== input.experiment || e.sha256 !== input.expected_sha256 || !Array.isArray(questions) || questions.length < 1 || questions.length > 20 ||
+      questions.some(q => typeof q.key !== "string" || typeof q.text !== "string") || new Set(questions.map(q => q.key)).size !== questions.length ||
+      e.runtime?.pinned_version !== this.io.runtime.version || e.runtime?.windows_x64_sha256 !== this.io.runtime.sha256 ||
+      !/^[a-z][a-z0-9-]{0,79}$/.test(e.role_key) || typeof e.model_alias !== "string" || !Number.isSafeInteger(e.quota?.available) || e.quota.available < questions.length)
+      throw new LocalAgentError("GEO_CONFIGURATION_CHANGED");
+    const total = (BigInt(input.budget) * BigInt(questions.length)).toString();
+    if (!this.io.geoConsent || !await this.io.geoConsent({ name: input.name.trim(), model: e.model_alias,
+      questions: questions.map(q => q.text), perQuestionBudgetMicros: input.budget, totalBudgetMicros: total })) return null;
+    const current = await this.identity();
+    if (generation !== this.generation || current.actorId !== actor.actorId || current.epoch !== actor.epoch)
+      throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+    const createKey = randomUUID(), records: LocalRecord[] = [];
+    for (const q of questions) {
+      const id = randomUUID(), workspace = path.join(this.io.stateRoot, "geo-observations", id, "workspace");
+      await mkdir(workspace, { recursive: false }).catch(async error => {
+        if (error.code !== "ENOENT") throw error;
+        await mkdir(path.dirname(workspace), { recursive: true }); await mkdir(workspace);
+      });
+      const resolved = await realpath(workspace);
+      records.push({ id, ...{ tenant: input.tenant, project: input.project }, actorId: actor.actorId, epoch: actor.epoch,
+        workspace: resolved, workspaceHash: hash(process.platform === "win32" ? resolved.toLowerCase() : resolved),
+        role: e.role_key, revoked: false, geo: { experimentId: input.experiment, experimentSha256: e.sha256, questionKey: q.key },
+        grant: { id: randomUUID(), actorId: actor.actorId, mode: "read-only", revision: 1, expiresAt: Number.MAX_SAFE_INTEGER },
+        messages: [{ role: "user", text: q.text }], events: [] });
+    }
+    const request = { name: input.name.trim(), expected_experiment_sha256: input.expected_sha256, per_question_budget_micros: input.budget,
+      sessions: records.map(r => ({ question_key: r.geo!.questionKey, device_id: journal.deviceId, local_session_id: r.id,
+        workspace_hash: r.workspaceHash, runtime_version: this.io.runtime.version, runtime_sha256: this.io.runtime.sha256 })) };
+    for (const r of records) r.operation = { createKey, startKey: randomUUID(), finishKey: randomUUID(), cancelKey: randomUUID(),
+      prompt: r.messages[0].text, budget: Number(input.budget), phase: "accepting", geo: { experimentId: input.experiment, request } };
+    const beforeWrite = await this.identity();
+    if (generation !== this.generation || beforeWrite.actorId !== actor.actorId || beforeWrite.epoch !== actor.epoch) throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+    journal.sessions.push(...records); await this.persist();
+    try { return await this.admitGeo(records[0]); }
+    catch (error) { for (const r of records) r.error = error instanceof LocalAgentError ? error.code : "GEO_LOCAL_RESERVATION_UNKNOWN"; await this.persist(); throw error; }
+  }
+  private async admitGeo(r: LocalRecord) {
+    const op = r.operation!, geo = op.geo!;
+    await this.record(r.id); if (!op.stopped) this.grant(r);
+    const response = await this.io.request(`/v1/tenants/${r.tenant}/projects/${r.project}/geo/experiments/${geo.experimentId}/desktop-runs`,
+      { method: "POST", body: geo.request, tenantId: r.tenant, idempotencyKey: op.createKey });
+    if (response.status < 200 || response.status >= 300) {
+      if (response.status >= 400 && response.status < 500 && ![408,429].includes(response.status)) {
+        for (const row of (await this.state()).sessions) if (row.actorId === r.actorId && row.epoch === r.epoch && row.operation?.createKey === op.createKey && !row.operation.taskId)
+          row.operation = undefined;
+      }
+      throw new LocalAgentError(response.body?.error?.code ?? "GEO_LOCAL_RESERVATION_UNKNOWN");
+    }
+    await this.record(r.id);
+    const receipt = response.body;
+    if (!uuid.test(receipt?.id) || receipt.execution_location !== "desktop" || receipt.protocol !== "codex-desktop-geo-v1" ||
+      receipt.experiment_id !== geo.experimentId || !Array.isArray(receipt.sessions) || receipt.sessions.length !== geo.request.sessions.length ||
+      receipt.total_budget_micros !== (BigInt(geo.request.per_question_budget_micros) * BigInt(receipt.sessions.length)).toString() ||
+      new Set(receipt.sessions.map((s: any) => s.task_id)).size !== receipt.sessions.length ||
+      receipt.sessions.some((s: any, i: number) => !uuid.test(s.task_id) || !uuid.test(s.sample_id) || s.local_session_id !== geo.request.sessions[i].local_session_id ||
+        s.question_key !== geo.request.sessions[i].question_key || s.budget_micros !== geo.request.per_question_budget_micros || s.role_key !== r.role))
+      throw new LocalAgentError("GEO_LOCAL_RECEIPT_INVALID");
+    for (const local of (await this.state()).sessions) {
+      if (local.actorId !== r.actorId || local.epoch !== r.epoch || local.operation?.createKey !== op.createKey || !local.geo) continue;
+      const bound = receipt.sessions.find((s: any) => s.local_session_id === local.id);
+      if (!bound) throw new LocalAgentError("GEO_LOCAL_RECEIPT_INVALID");
+      local.geo.runId = receipt.id; local.operation.taskId = bound.task_id; local.operation.phase = "starting";
+      local.lastTask = { task_id: bound.task_id, state: "prepared", status: "queued", execution_location: "desktop", budget_micros: bound.budget_micros };
+      local.error = undefined;
+    }
+    await this.persist(); return { ...receipt, local_sessions: receipt.sessions.map((s: any) => s.local_session_id) };
   }
   /** Reserve the whole reviewed batch in the encrypted native journal before
    * touching the network. Each role remains an ordinary, stoppable local turn.
@@ -831,6 +919,7 @@ export class LocalAgentController {
       throw new LocalAgentError("LOCAL_REQUEST_INVALID");
     const r = await this.record(id),
       digest = hash(JSON.stringify([prompt.trim(), budget]));
+    if (r.geo) throw new LocalAgentError("GEO_NEW_RUN_REQUIRED");
     r.dispatches ??= [];
     let receipt = r.dispatches.find((row) => row.id === dispatchId);
     if (receipt) {
@@ -1017,7 +1106,8 @@ export class LocalAgentController {
     try {
       if (op.phase !== "settling" && !op.stopped) await assertOwner();
       if (!op.taskId) {
-        if (op.solution) await this.admitSolution(r);
+        if (op.geo) await this.admitGeo(r);
+        else if (op.solution) await this.admitSolution(r);
         else {
           const task = await this.api(
             r,
@@ -1086,6 +1176,8 @@ export class LocalAgentController {
           !Array.isArray(started.skills)
         )
           throw new LocalAgentError("LOCAL_RUNTIME_UPDATE_REQUIRED");
+        if (!!r.geo !== (started.observation_protocol === "codex-desktop-geo-v1") || (r.geo && (!Array.isArray(started.company_tools) || started.company_tools.length || started.project_configuration != null)))
+          throw new LocalAgentError("LOCAL_OBSERVATION_ISOLATION_REQUIRED");
         r.lastTask = {
           ...started,
           credential: undefined,
@@ -1135,6 +1227,7 @@ export class LocalAgentController {
             stateRoot: this.io.stateRoot,
             grant: { ...this.grant(r) },
             skills: started.skills,
+            ...(r.geo ? { observationProtocol: "codex-desktop-geo-v1" as const } : {}),
             ...(r.companyToolsVersion === 1
               ? { companyTools: started.company_tools ?? [] }
               : {}),

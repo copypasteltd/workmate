@@ -164,6 +164,14 @@ const localAgent = new LocalAgentController({
     });
     return result.response === 1;
   },
+  geoConsent: async review => {
+    const money = (v: string) => { const n = BigInt(v); return `${n / 1000000n}.${(n % 1000000n).toString().padStart(6, "0")} HKD`; };
+    const result = await dialog.showMessageBox(window!, { type: "question", title: "CopyPaste · 本機 GEO / Local GEO",
+      message: `預留 ${review.questions.length} 題本機觀測？ / Reserve ${review.questions.length} local observations?`,
+      detail: `${review.name}\n${review.model}\n\n每題 / Each: ${money(review.perQuestionBudgetMicros)}\n總預留上限 / Total reservation: ${money(review.totalBudgetMicros)}\n\n每題在此電腦以獨立 Codex 執行。使用空白目錄，無檔案、命令或瀏覽器工具。AI 請求經公司伺服器；可逐題停止，未知結果不自動重跑。\nEach question runs with local Codex in an empty workspace without file, terminal or browser tools. Model requests use the company server. Stop any question; unknown outcomes are never replayed.\n\n${review.questions.map((q, i) => `${i + 1}. ${q}`).join("\n\n")}`,
+      buttons: ["取消 / Cancel", "確認預留 / Reserve"], defaultId: 0, cancelId: 0, noLink: true });
+    return result.response === 1;
+  },
   approval: async (kind, value) => {
     const result = await dialog.showMessageBox(window!, { type: "question", title: "CopyPaste · 操作審批 / Approve action",
       message: kind === "command" ? "執行本機命令？ / Run local command?" : "變更本機檔案？ / Change local files?",
@@ -576,11 +584,15 @@ async function createWindow() {
         "program.list": ["id"], "program.approve": ["id"], "program.revoke": ["id", "programId"], "program.review": ["id", "receiptId"] };
       keys["solution.prepare"] = ["tenant", "project", "solution", "trial", "sessions"];
       keys["specialist.create"] = ["tenant", "project", "role", "agent_id", "agent_version"];
+      keys["geo.prepare"] = ["tenant", "project", "experiment", "expected_sha256", "name", "budget"];
+      keys["geo.list"] = ["tenant", "project"];
       const allowed = keys[action];
       if (!allowed || Object.keys(payload).length !== allowed.length || allowed.some(k => !(k in payload))) throw new Error("LOCAL_REQUEST_INVALID");
       let value;
       switch (action) {
         case "list": value = await localAgent.list(payload); break;
+        case "geo.list": value = await localAgent.list(payload, true); break;
+        case "geo.prepare": value = await localAgent.prepareGeo(payload); break;
         case "solution.prepare": value = await localAgent.prepareSolution(payload); break;
         case "create": value = await localAgent.create(payload, payload.role); break;
         case "specialist.create": value = await localAgent.create(payload, payload.role, { id: payload.agent_id, version: payload.agent_version }); break;
