@@ -1,0 +1,895 @@
+{
+  "version": "1.0",
+  "origin_id": "ADMIN01",
+  "status": "design_only",
+  "default_effect": "deny",
+  "explicit_deny_wins": true,
+  "scope_kinds": [
+    "global",
+    "tenant",
+    "project"
+  ],
+  "protected_data": [
+    "password_hash",
+    "session_token",
+    "oauth_token",
+    "provider_api_key",
+    "local_device_secret"
+  ],
+  "permissions": [
+    {
+      "key": "admin.overview.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.users.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.users.contact.read",
+      "sensitive_field_access": true,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.users.profile.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.users.status.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.users.sessions.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.tenants.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.tenants.status.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.tenants.members.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.tenants.sso.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.usage.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.usage.internal_cost.read",
+      "sensitive_field_access": true,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.billing.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.billing.top_up",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.billing.gift",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.billing.debit",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.billing.credit_limit.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.billing.refund",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.billing.reconcile",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.entitlements.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.entitlements.grant",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.entitlements.extend",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.entitlements.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.plans.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.plans.draft",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.plans.publish",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.body.read",
+      "sensitive_field_access": true,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.download",
+      "sensitive_field_access": true,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.metadata.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.version.create",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.quarantine",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.restore",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.content.delete",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.sharing.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.execution.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.execution.cancel",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.execution.retry",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.execution.pause",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.execution.resume",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.catalog.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.catalog.draft",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.catalog.publish",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.catalog.rollback",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.connections.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.connections.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.devices.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.devices.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.access.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.access.principals.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.access.sessions.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.access.roles.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.access.bindings.write",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.access.bindings.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.support.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.support.start",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.support.revoke",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.audit.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.approvals.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.approvals.decide",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.jobs.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.jobs.create",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.exports.create",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.exports.download",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.exports.sensitive",
+      "sensitive_field_access": true,
+      "scope_kinds": [
+        "global",
+        "tenant",
+        "project"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.policy.read",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.policy.draft",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    },
+    {
+      "key": "admin.policy.publish",
+      "sensitive_field_access": false,
+      "scope_kinds": [
+        "global"
+      ],
+      "audit_required": true
+    }
+  ],
+  "roles": [
+    {
+      "id": "super_admin",
+      "permissions": [
+        "admin.access.bindings.revoke",
+        "admin.access.bindings.write",
+        "admin.access.principals.write",
+        "admin.access.read",
+        "admin.access.roles.write",
+        "admin.access.sessions.revoke",
+        "admin.approvals.decide",
+        "admin.approvals.read",
+        "admin.audit.read",
+        "admin.billing.credit_limit.write",
+        "admin.billing.debit",
+        "admin.billing.gift",
+        "admin.billing.read",
+        "admin.billing.reconcile",
+        "admin.billing.refund",
+        "admin.billing.top_up",
+        "admin.catalog.draft",
+        "admin.catalog.publish",
+        "admin.catalog.read",
+        "admin.catalog.rollback",
+        "admin.connections.read",
+        "admin.connections.revoke",
+        "admin.content.body.read",
+        "admin.content.delete",
+        "admin.content.download",
+        "admin.content.metadata.write",
+        "admin.content.quarantine",
+        "admin.content.read",
+        "admin.content.restore",
+        "admin.content.version.create",
+        "admin.devices.read",
+        "admin.devices.revoke",
+        "admin.entitlements.extend",
+        "admin.entitlements.grant",
+        "admin.entitlements.read",
+        "admin.entitlements.revoke",
+        "admin.execution.cancel",
+        "admin.execution.pause",
+        "admin.execution.read",
+        "admin.execution.resume",
+        "admin.execution.retry",
+        "admin.exports.create",
+        "admin.exports.download",
+        "admin.exports.sensitive",
+        "admin.jobs.create",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.plans.draft",
+        "admin.plans.publish",
+        "admin.plans.read",
+        "admin.policy.draft",
+        "admin.policy.publish",
+        "admin.policy.read",
+        "admin.sharing.revoke",
+        "admin.support.read",
+        "admin.support.revoke",
+        "admin.support.start",
+        "admin.tenants.members.write",
+        "admin.tenants.read",
+        "admin.tenants.sso.write",
+        "admin.tenants.status.write",
+        "admin.usage.internal_cost.read",
+        "admin.usage.read",
+        "admin.users.contact.read",
+        "admin.users.profile.write",
+        "admin.users.read",
+        "admin.users.sessions.revoke",
+        "admin.users.status.write"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    },
+    {
+      "id": "user_operator",
+      "permissions": [
+        "admin.entitlements.read",
+        "admin.exports.create",
+        "admin.exports.download",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.support.read",
+        "admin.tenants.members.write",
+        "admin.tenants.read",
+        "admin.tenants.status.write",
+        "admin.usage.read",
+        "admin.users.contact.read",
+        "admin.users.profile.write",
+        "admin.users.read",
+        "admin.users.sessions.revoke",
+        "admin.users.status.write"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    },
+    {
+      "id": "finance_admin",
+      "permissions": [
+        "admin.approvals.read",
+        "admin.billing.credit_limit.write",
+        "admin.billing.debit",
+        "admin.billing.gift",
+        "admin.billing.read",
+        "admin.billing.reconcile",
+        "admin.billing.refund",
+        "admin.billing.top_up",
+        "admin.entitlements.extend",
+        "admin.entitlements.grant",
+        "admin.entitlements.read",
+        "admin.entitlements.revoke",
+        "admin.exports.create",
+        "admin.exports.download",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.plans.draft",
+        "admin.plans.publish",
+        "admin.plans.read",
+        "admin.tenants.read",
+        "admin.usage.internal_cost.read",
+        "admin.usage.read",
+        "admin.users.read"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    },
+    {
+      "id": "content_admin",
+      "permissions": [
+        "admin.connections.read",
+        "admin.connections.revoke",
+        "admin.content.body.read",
+        "admin.content.delete",
+        "admin.content.download",
+        "admin.content.metadata.write",
+        "admin.content.quarantine",
+        "admin.content.read",
+        "admin.content.restore",
+        "admin.content.version.create",
+        "admin.devices.read",
+        "admin.devices.revoke",
+        "admin.execution.cancel",
+        "admin.execution.pause",
+        "admin.execution.read",
+        "admin.execution.resume",
+        "admin.execution.retry",
+        "admin.exports.create",
+        "admin.exports.download",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.sharing.revoke",
+        "admin.tenants.read",
+        "admin.users.read"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    },
+    {
+      "id": "catalog_manager",
+      "permissions": [
+        "admin.catalog.draft",
+        "admin.catalog.publish",
+        "admin.catalog.read",
+        "admin.catalog.rollback",
+        "admin.execution.read",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.plans.draft",
+        "admin.plans.read"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    },
+    {
+      "id": "support_agent",
+      "permissions": [
+        "admin.content.read",
+        "admin.execution.read",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.support.read",
+        "admin.support.revoke",
+        "admin.support.start",
+        "admin.tenants.read",
+        "admin.usage.read",
+        "admin.users.read"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    },
+    {
+      "id": "security_admin",
+      "permissions": [
+        "admin.access.bindings.revoke",
+        "admin.access.bindings.write",
+        "admin.access.principals.write",
+        "admin.access.read",
+        "admin.access.roles.write",
+        "admin.access.sessions.revoke",
+        "admin.approvals.decide",
+        "admin.approvals.read",
+        "admin.audit.read",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.policy.draft",
+        "admin.policy.publish",
+        "admin.policy.read",
+        "admin.support.read",
+        "admin.support.revoke",
+        "admin.tenants.read",
+        "admin.tenants.sso.write",
+        "admin.users.read",
+        "admin.users.sessions.revoke"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    },
+    {
+      "id": "auditor",
+      "permissions": [
+        "admin.access.read",
+        "admin.approvals.read",
+        "admin.audit.read",
+        "admin.billing.read",
+        "admin.entitlements.read",
+        "admin.exports.create",
+        "admin.exports.download",
+        "admin.jobs.read",
+        "admin.overview.read",
+        "admin.policy.read",
+        "admin.usage.read"
+      ],
+      "status": "proposed",
+      "grant_requires_explicit_scope": true
+    }
+  ],
+  "enforcement": {
+    "independent_admin_session": true,
+    "mfa_required": true,
+    "recheck_on_worker_and_download": true,
+    "ordinary_authorized_action_requires_customer_approval": false,
+    "high_impact_policy_version_required": true,
+    "role_grant_cannot_exceed_delegation_ceiling": true
+  }
+}

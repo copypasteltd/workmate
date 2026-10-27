@@ -1,0 +1,146 @@
+TAP version 13
+# Subtest: actual local Codex GEO has no tools or project guidance, uses fresh threads and refuses accepted-question replay
+not ok 1 - actual local Codex GEO has no tools or project guidance, uses fresh threads and refuses accepted-question replay
+  ---
+  duration_ms: 5599.4473
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\tests\\integration\\local-geo.native.test.ts:1:691'
+  failureType: 'testCodeFailure'
+  error: |-
+    The actual native process must advertise no tools
+    + actual - expected
+    
+    + [
+    +   {
+    +     description: 'Request user input for one to three short questions and wait for the response. This tool is only available in Plan mode.',
+    +     name: 'request_user_input',
+    +     parameters: {
+    +       additionalProperties: false,
+    +       properties: {
+    +         questions: {
+    +           description: 'Questions to show the user. Prefer 1 and do not exceed 3',
+    +           items: {
+    +             additionalProperties: false,
+    +             properties: {
+    +               header: {
+    +                 description: 'Short header label shown in the UI (12 or fewer chars).',
+    +                 type: 'string'
+    +               },
+    +               id: {
+    +                 description: 'Stable identifier for mapping answers (snake_case).',
+    +                 type: 'string'
+    +               },
+    +               options: {
+    +                 description: 'Provide 2-3 mutually exclusive choices. Put the recommended option first and suffix its label with "(Recommended)". Do not include an "Other" option in this list; the client will add a free-form "Other" option automatically.',
+    +                 items: {
+    +                   additionalProperties: false,
+    +                   properties: {
+    +                     description: {
+    +                       description: 'One short sentence explaining impact/tradeoff if selected.',
+    +                       type: 'string'
+    +                     },
+    +                     label: {
+    +                       description: 'User-facing label (1-5 words).',
+    +                       type: 'string'
+    +                     }
+    +                   },
+    +                   required: [
+    +                     'label',
+    +                     'description'
+    +                   ],
+    +                   type: 'object'
+    +                 },
+    +                 type: 'array'
+    +               },
+    +               question: {
+    +                 description: 'Single-sentence prompt shown to the user.',
+    +                 type: 'string'
+    +               }
+    +             },
+    +             required: [
+    +               'id',
+    +               'header',
+    +               'question',
+    +               'options'
+    +             ],
+    +             type: 'object'
+    +           },
+    +           type: 'array'
+    +         }
+    +       },
+    +       required: [
+    +         'questions'
+    +       ],
+    +       type: 'object'
+    +     },
+    +     strict: false,
+    +     type: 'function'
+    +   }
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0:
+      type: 'function'
+      name: 'request_user_input'
+      description: 'Request user input for one to three short questions and wait for the response. This tool is only available in Plan mode.'
+      strict: false
+      parameters:
+        type: 'object'
+        properties:
+          questions:
+            type: 'array'
+            description: 'Questions to show the user. Prefer 1 and do not exceed 3'
+            items:
+              type: 'object'
+              properties:
+                header:
+                  type: 'string'
+                  description: 'Short header label shown in the UI (12 or fewer chars).'
+                id:
+                  type: 'string'
+                  description: 'Stable identifier for mapping answers (snake_case).'
+                options:
+                  type: 'array'
+                  description: 'Provide 2-3 mutually exclusive choices. Put the recommended option first and suffix its label with "(Recommended)". Do not include an "Other" option in this list; the client will add a free-form "Other" option automatically.'
+                  items:
+                    type: 'object'
+                    properties:
+                      description:
+                        type: 'string'
+                        description: 'One short sentence explaining impact/tradeoff if selected.'
+                      label:
+                        type: 'string'
+                        description: 'User-facing label (1-5 words).'
+                    required:
+                      0: 'label'
+                      1: 'description'
+                    additionalProperties: false
+                question:
+                  type: 'string'
+                  description: 'Single-sentence prompt shown to the user.'
+              required:
+                0: 'id'
+                1: 'header'
+                2: 'question'
+                3: 'options'
+              additionalProperties: false
+        required:
+          0: 'questions'
+        additionalProperties: false
+  operator: 'deepStrictEqual'
+  stack: |-
+    Server.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-desktop\tests\integration\local-geo.native.test.ts:21:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5891.7411

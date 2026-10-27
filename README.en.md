@@ -1,5 +1,27 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- desktop-native-geo-stage110 -->
+Desktop GEO now runs fixed questions with local Codex in independent empty sessions. Review the exact batch reservation, run or stop questions, recover original receipts, retain full answers and compare new immutable runs. All AI uses the company gateway; observed costs come from company receipts.
+
+135 backend checks · 46 Desktop unit checks · 20 actual native Codex checks · 9 actual Electron flows · 11 build/type checks. Synthetic accounts and models; native answers are client reported. Live model quality, production signing and whole-product acceptance remain unproven.
+
+[方案 / Design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/110-desktop-native-geo.md) · [证据 / Evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-geo-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Review[Desktop review] --> Journal[Encrypted local journal]
+  Journal --> API[Company API: atomic holds]
+  API --> Local[Local Codex: fresh question thread]
+  Local --> Gateway[Company Responses and cost receipt]
+  Gateway --> Answer[Original answer and SHA-256]
+  Review --> Stop[Stop or recover original receipt]
+```
+
+![Actual local GEO / 实际本机观测](https://raw.githubusercontent.com/copypasteltd/workmate/desktop/assets/screenshots/workmate-native-geo-05-prepared-en.png)
+
+![Actual interaction / 实际交互](https://raw.githubusercontent.com/copypasteltd/workmate/desktop/assets/screenshots/workmate-05-native-geo.gif)
+
+
 <!-- audio-accounting-stage109 -->
 
 Unknown customer audio and platform verification fees now accept immutable original-operation evidence, separate independent cost and termination approvals, scoped read controls and exact frozen tariffs. Cost confirmation does not debit the customer or release capacity. Task settlement remains independently approved, occurs once within its original hold and preserves business failure.

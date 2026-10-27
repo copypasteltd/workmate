@@ -1,0 +1,528 @@
+{
+  "kind": "supplemental-extension",
+  "normative_source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "scope": "Actual original-source compensation and independent manual cash refund observations. Original AdminFeeRefund/AdminOperation contracts remain unchanged. No payment provider API verification.",
+  "schemas": {
+    "AdminRefund": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "billing_account_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "original_entry_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "created_by": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "destination": {
+          "enum": ["payment_method", "paid_balance"]
+        },
+        "amount": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "currency": {
+              "const": "HKD"
+            },
+            "amount_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$",
+              "maxLength": 19
+            }
+          },
+          "required": ["currency", "amount_micros"]
+        },
+        "confirmed_paid": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "currency": {
+              "const": "HKD"
+            },
+            "amount_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$",
+              "maxLength": 19
+            }
+          },
+          "required": ["currency", "amount_micros"]
+        },
+        "held": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "currency": {
+              "const": "HKD"
+            },
+            "amount_micros": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$",
+              "maxLength": 19
+            }
+          },
+          "required": ["currency", "amount_micros"]
+        },
+        "state": {
+          "enum": [
+            "compensated",
+            "awaiting_evidence",
+            "partially_paid",
+            "reconciling_unknown",
+            "reconciling_mismatch",
+            "paid",
+            "not_paid",
+            "partially_paid_closed"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "data_mode": {
+          "enum": ["simulated", "configured_services"]
+        },
+        "payment_record_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "billing_account_id",
+        "operation_id",
+        "original_entry_id",
+        "created_by",
+        "destination",
+        "amount",
+        "confirmed_paid",
+        "held",
+        "state",
+        "version",
+        "created_at",
+        "data_mode",
+        "payment_record_id"
+      ]
+    },
+    "AdminRefundList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AdminRefund"
+          }
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["items", "next_cursor"]
+    },
+    "AdminRefundDetail": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "refund": {
+          "$ref": "#/$defs/AdminRefund"
+        },
+        "source_parts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "source_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "journal_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "repayment_part_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "cancellation_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "restored_lot_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "expiry_journal_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "amount_micros": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]*$",
+                "maxLength": 19
+              },
+              "restored_kind": {
+                "enum": ["paid", "gift", null]
+              },
+              "expires_at": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "source_id",
+              "journal_id",
+              "repayment_part_id",
+              "cancellation_id",
+              "restored_lot_id",
+              "expiry_journal_id",
+              "amount_micros",
+              "restored_kind",
+              "expires_at"
+            ]
+          }
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "verified_by": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "operation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "expected_version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "outcome": {
+                "enum": ["paid", "not_paid", "unknown", "mismatch"]
+              },
+              "observed_amount_micros": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)$",
+                    "maxLength": 19
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "external_reference": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evidence_asset_version_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "evidence_sha256": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "occurred_at": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 1000
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "journal_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "release_journal_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "verified_by",
+              "operation_id",
+              "expected_version",
+              "outcome",
+              "observed_amount_micros",
+              "external_reference",
+              "evidence_asset_version_id",
+              "evidence_sha256",
+              "occurred_at",
+              "reason",
+              "created_at",
+              "journal_id",
+              "release_journal_id"
+            ]
+          }
+        },
+        "verification_method": {
+          "const": "manual_evidence_review"
+        },
+        "bank_api_verified": {
+          "const": false
+        }
+      },
+      "required": [
+        "refund",
+        "source_parts",
+        "events",
+        "verification_method",
+        "bank_api_verified"
+      ]
+    },
+    "AdminRefundOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "outcome": {
+          "enum": ["paid", "not_paid", "unknown"]
+        },
+        "observed_amount": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "currency": {
+                  "const": "HKD"
+                },
+                "amount_micros": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9][0-9]*)$",
+                  "maxLength": 19
+                }
+              },
+              "required": ["currency", "amount_micros"]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "external_reference": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_asset_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "occurred_at": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "expected_version",
+        "outcome",
+        "observed_amount",
+        "external_reference",
+        "evidence_asset_version_id",
+        "occurred_at",
+        "reason"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "enum": ["paid", "not_paid"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "observed_amount": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "currency": {
+                    "const": "HKD"
+                  },
+                  "amount_micros": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)$",
+                    "maxLength": 19
+                  }
+                },
+                "required": ["currency", "amount_micros"]
+              },
+              "external_reference": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "evidence_asset_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "occurred_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
