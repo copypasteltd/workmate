@@ -1,0 +1,40 @@
+import assert from "node:assert/strict";
+import { saveWorkmateScreenshot } from "./record-workmate-media.js";
+export async function checkDesktopDeliveryQuality({ page, captureSurface, system, taskId, resize, until, screenshots, delivery, attempt, pass }: any) {
+  const before=(await system.db.control.query("SELECT charged_micros FROM tasks WHERE id=$1",[taskId])).rows[0];
+  await page.getByText("Review this delivery",{exact:true}).click();
+  const card=page.locator(".local-agent-messages .delivery-quality");
+  await card.getByRole("button",{name:"Save review",exact:true}).waitFor();
+  await card.getByLabel("Review of the complete delivery",{exact:true}).selectOption("changes_requested");
+  await card.getByLabel("Your feedback (optional)",{exact:true}).fill("Keep the company blue; the layout needs one revision. Explicit UI fixture feedback.");
+  await card.getByRole("button",{name:"Save review",exact:true}).click();
+  await card.locator("header .badge").filter({hasText:"Changes requested"}).waitFor();
+  await card.getByLabel("Review of the complete delivery",{exact:true}).selectOption("accepted");
+  await card.getByLabel("Your feedback (optional)",{exact:true}).fill("Accepted by the test customer; not real marketing acceptance.");
+  await card.getByRole("button",{name:"Save review",exact:true}).click();
+  await card.locator("header .badge").filter({hasText:"Accepted"}).waitFor();
+  await card.getByText("Record human effort",{exact:true}).click();
+  await card.getByLabel("Manual baseline (minutes)",{exact:true}).fill("75");
+  await card.getByLabel("Actual human effort (minutes)",{exact:true}).fill("12");
+  await card.getByLabel("Manual revisions",{exact:true}).fill("1");
+  await card.getByRole("button",{name:"Save human effort",exact:true}).click();
+  await until(async()=> (await system.db.control.query("SELECT * FROM task_quality_measurements WHERE task_id=$1 ORDER BY task_version DESC LIMIT 1",[taskId])).rows[0],(m:any)=>m?.human_minutes===12,"native customer human-effort record");
+  await until(()=>card.getByRole("button",{name:"Save human effort",exact:true}).isEnabled(),Boolean,"review refresh keeps effort form mounted and usable");
+  const rows=(await system.db.control.query("SELECT decision FROM delivery_reviews WHERE task_id=$1 ORDER BY task_version",[taskId])).rows;
+  assert.deepEqual(rows.map((r:any)=>r.decision),["changes_requested","accepted"]);
+  assert.equal((await system.db.control.query("SELECT charged_micros FROM tasks WHERE id=$1",[taskId])).rows[0].charged_micros,before.charged_micros);
+  await card.scrollIntoViewIfNeeded();
+  screenshots.push(await saveWorkmateScreenshot("desktop","local-"+attempt,"delivery-review-en",await captureSurface(),"Actual packaged local Codex result; real versioned review and human-effort records. Model, image and customer feedback are explicit fixtures.",delivery));
+  await resize(800,600,"compact native delivery review");
+  const effort=card.getByLabel("Actual human effort (minutes)",{exact:true});
+  assert.equal(await effort.isVisible(),true);await effort.scrollIntoViewIfNeeded();await effort.focus();
+  await until(()=>effort.evaluate((e:HTMLInputElement)=>{const b=e.getBoundingClientRect(),s=e.closest(".local-agent-messages")!.getBoundingClientRect();return document.activeElement===e&&b.top>=s.top&&b.bottom<=s.bottom&&b.left>=s.left&&b.right<=s.right;}),Boolean,"compact keyboard focus is actually visible inside the conversation");
+  const layout=await page.evaluate(()=>({width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth,
+    bars:[...document.querySelectorAll<HTMLElement>(".local-agent-messages,.local-agent-conversation,.sidebar")].map(e=>getComputedStyle(e).scrollbarWidth)}));
+  assert.equal(layout.overflow,false);assert.ok(layout.bars.every((x:string)=>x==="none"));
+  const composer=await page.locator(".local-agent-composer").boundingBox();assert.ok(composer&&composer.y>=0&&composer.y+composer.height<=600);
+  screenshots.push(await saveWorkmateScreenshot("desktop","local-"+attempt,"delivery-review-compact-en",await captureSurface(),"Actual 800x600 Desktop review; keyboard-accessible human inputs inside scrolling conversation, hidden scrollbar rails and no horizontal document overflow.",delivery));
+  await resize(1280,800,"restore native workspace after review");
+  await page.getByText("Review this delivery",{exact:true}).click();
+  pass("Native completed deliveries retain versioned customer changes/acceptance and human effort without extra billing; 800x600 review keeps content accessible with no scrollbar rails");
+}

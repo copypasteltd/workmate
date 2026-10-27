@@ -1,0 +1,83 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-J0XJfO/runtime/.data/native-qa/28fa8a0f-e104-4c7a-a665-1f5ea8231f79 ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-J0XJfO^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-J0XJfO^\runtime^\^.data^\native^-qa^\28fa8a0f^-e104^-4c7a^-a665^-1f5ea8231f79^" -l logfile start
+
+
+2026-10-27 19:07:54.501 CST [34328] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-27 19:07:54.511 CST [34328] LOG:  listening on IPv6 address "::1", port 2373
+
+2026-10-27 19:07:54.512 CST [34328] LOG:  listening on IPv4 address "127.0.0.1", port 2373
+
+2026-10-27 19:07:54.741 CST [22556] LOG:  database system was shut down at 2026-10-27 19:07:26 CST
+
+2026-10-27 19:07:54.789 CST [34328] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:2373. Application roles are not owners and do not bypass RLS.
+2026-10-27 19:08:17.983 CST [34564] ERROR:  Recovery receipts are immutable
+2026-10-27 19:08:17.983 CST [34564] CONTEXT:  PL/pgSQL function recovery_receipt_immutable() line 2 at RAISE
+2026-10-27 19:08:17.983 CST [34564] STATEMENT:  UPDATE recovery_runs SET outcome='verified' WHERE id=$1
+
+2026-10-27 19:08:20.542 CST [2728] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 19:08:42.199 CST [2728] LOG:  checkpoint complete: wrote 5700 buffers (34.8%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 4 recycled; write=0.379 s, sync=21.051 s, total=21.658 s; sync files=3580, longest=0.163 s, average=0.006 s; distance=66791 kB, estimate=66791 kB; lsn=0/592B450, redo lsn=0/592B3C0
+
+2026-10-27 19:08:42.570 CST [2728] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 19:08:43.050 CST [2728] LOG:  checkpoint complete: wrote 9 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.006 s, sync=0.209 s, total=0.480 s; sync files=4, longest=0.064 s, average=0.053 s; distance=105 kB, estimate=60123 kB; lsn=0/5945BC0, redo lsn=0/5945B68
+
+2026-10-27 19:08:43.364 CST [2728] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 19:08:43.674 CST [2728] LOG:  checkpoint complete: wrote 9 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.005 s, sync=0.142 s, total=0.311 s; sync files=4, longest=0.043 s, average=0.036 s; distance=110 kB, estimate=54121 kB; lsn=0/59613C8, redo lsn=0/5961370
+
+2026-10-27 19:08:44.258 CST [34328] LOG:  received fast shutdown request
+
+2026-10-27 19:08:44.329 CST [34328] LOG:  aborting any active transactions
+
+2026-10-27 19:08:44.336 CST [34328] LOG:  background worker "logical replication launcher" (PID 19640) exited with exit code 1
+
+2026-10-27 19:08:44.336 CST [2728] LOG:  shutting down
+
+2026-10-27 19:08:44.374 CST [2728] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-27 19:08:44.538 CST [2728] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.043 s, total=0.203 s; sync files=1, longest=0.042 s, average=0.042 s; distance=0 kB, estimate=48709 kB; lsn=0/59614E0, redo lsn=0/59614E0
+
+2026-10-27 19:08:44.620 CST [34328] LOG:  database system is shut down
+

@@ -1,0 +1,425 @@
+{
+  "normative_source_sha256": "cc7506ea7238359adf5a06dbbe1627c61ca445e668aa3624509f7406bea316a2",
+  "schemas": {
+    "Selection": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "enum": [
+            "ga4_traffic",
+            "ga4_events",
+            "search_performance"
+          ]
+        },
+        "account_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "date_from": {
+          "type": "string",
+          "format": "date"
+        },
+        "date_to": {
+          "type": "string",
+          "format": "date"
+        },
+        "group_by": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "date",
+              "channel",
+              "landing_page",
+              "event",
+              "query",
+              "page",
+              "country",
+              "device"
+            ]
+          },
+          "maxItems": 5,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "profile",
+        "account_id",
+        "date_from",
+        "date_to",
+        "group_by"
+      ],
+      "additionalProperties": false
+    },
+    "Metric": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]{1,12})?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "unit": {
+          "type": "string"
+        },
+        "null_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "formula": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "value",
+        "unit",
+        "null_reason",
+        "formula",
+        "evidence_id"
+      ],
+      "additionalProperties": false
+    },
+    "Group": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "row_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "metrics": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/components/schemas/Metric"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "dimensions",
+        "row_count",
+        "metrics"
+      ],
+      "additionalProperties": false
+    },
+    "Source": {
+      "type": "object",
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "spec_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "state": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "provider": {
+          "enum": [
+            "ga4",
+            "search_console"
+          ]
+        },
+        "data_mode": {
+          "enum": [
+            "simulated",
+            "configured_services"
+          ]
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "platform_data_as_of": {
+          "const": null
+        },
+        "account_id": {
+          "type": "string"
+        },
+        "account_name": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profile": {
+          "enum": [
+            "ga4_traffic",
+            "ga4_events",
+            "search_performance"
+          ]
+        },
+        "reporting_identity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reporting_identity_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "api_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "sha256",
+        "spec_hash",
+        "state",
+        "provider",
+        "data_mode",
+        "captured_at",
+        "platform_data_as_of",
+        "account_id",
+        "account_name",
+        "timezone",
+        "currency",
+        "profile",
+        "reporting_identity",
+        "reporting_identity_source",
+        "api_version"
+      ],
+      "additionalProperties": false
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "selected_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshot_rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_dates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date"
+          },
+          "maxItems": 370
+        },
+        "days_without_rows": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "date"
+          },
+          "maxItems": 370
+        },
+        "missing_dates_are_zero": {
+          "const": false
+        },
+        "scope": {
+          "const": "observed_source_rows"
+        }
+      },
+      "required": [
+        "selected_rows",
+        "snapshot_rows",
+        "observed_dates",
+        "days_without_rows",
+        "missing_dates_are_zero",
+        "scope"
+      ],
+      "additionalProperties": false
+    },
+    "Report": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "web-analytics/1.0.0"
+        },
+        "source": {
+          "$ref": "#/components/schemas/Source"
+        },
+        "selection": {
+          "$ref": "#/components/schemas/Selection"
+        },
+        "coverage": {
+          "$ref": "#/components/schemas/Coverage"
+        },
+        "summary": {
+          "$ref": "#/components/schemas/Group"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Group"
+          },
+          "maxItems": 10000
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 210
+        },
+        "provider_calls": {
+          "const": 0
+        },
+        "additional_ai_calls": {
+          "const": 0
+        },
+        "additional_ai_charge_micros": {
+          "const": "0"
+        },
+        "calculation_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "schema",
+        "source",
+        "selection",
+        "coverage",
+        "summary",
+        "groups",
+        "limitations",
+        "provider_calls",
+        "additional_ai_calls",
+        "additional_ai_charge_micros",
+        "calculation_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "ReportPage": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "web-analytics/1.0.0"
+        },
+        "source": {
+          "$ref": "#/components/schemas/Source"
+        },
+        "selection": {
+          "$ref": "#/components/schemas/Selection"
+        },
+        "coverage": {
+          "$ref": "#/components/schemas/Coverage"
+        },
+        "summary": {
+          "$ref": "#/components/schemas/Group"
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/components/schemas/Group"
+          },
+          "maxItems": 10000
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 210
+        },
+        "provider_calls": {
+          "const": 0
+        },
+        "additional_ai_calls": {
+          "const": 0
+        },
+        "additional_ai_charge_micros": {
+          "const": "0"
+        },
+        "calculation_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "total_groups": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "next_offset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "source",
+        "selection",
+        "coverage",
+        "summary",
+        "groups",
+        "limitations",
+        "provider_calls",
+        "additional_ai_calls",
+        "additional_ai_charge_micros",
+        "calculation_sha256",
+        "total_groups",
+        "next_offset"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

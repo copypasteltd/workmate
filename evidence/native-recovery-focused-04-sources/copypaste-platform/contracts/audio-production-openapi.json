@@ -1,0 +1,1446 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate internal speech, transcription and subtitle versions",
+    "version": "1.0.0",
+    "description": "Additive candidate runtime contract. Job creation is exclusively an authorized frozen Codex tool, not a customer direct generation API. All AI calls use company services. Unknown company usage is null and retains holds; supplier cost remains separately unconfirmed. Cookie writes require current CSRF; native bearer uses existing PKCE. Real voice/language quality, managed audio publication and unknown POST external-evidence reconciliation are not implied."
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/audio-jobs": {
+      "get": {
+        "operationId": "listAudioJobs",
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized immutable view or original idempotent action receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobList"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                },
+                "description": "Private result; do not cache"
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input or query invalid"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Current scoped authority unavailable"
+          },
+          "404": {
+            "description": "Original job or source-bound artifact unavailable"
+          },
+          "409": {
+            "description": "Revision, idempotency, task or capability conflict"
+          },
+          "410": {
+            "description": "Cursor or body erased"
+          },
+          "422": {
+            "description": "Invalid real timing or transcript content"
+          }
+        },
+        "x-requirements": [
+          "REQ-021",
+          "REQ-043",
+          "REQ-046",
+          "REQ-058"
+        ]
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/audio-jobs/{job}": {
+      "get": {
+        "operationId": "readAudioJob",
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized immutable view or original idempotent action receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                },
+                "description": "Private result; do not cache"
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input or query invalid"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Current scoped authority unavailable"
+          },
+          "404": {
+            "description": "Original job or source-bound artifact unavailable"
+          },
+          "409": {
+            "description": "Revision, idempotency, task or capability conflict"
+          },
+          "410": {
+            "description": "Cursor or body erased"
+          },
+          "422": {
+            "description": "Invalid real timing or transcript content"
+          }
+        },
+        "x-requirements": [
+          "REQ-021",
+          "REQ-043",
+          "REQ-046",
+          "REQ-058"
+        ]
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/audio-jobs/{job}/preview": {
+      "get": {
+        "operationId": "previewAudioArtifact",
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "audio",
+                "transcript",
+                "raw_response",
+                "srt",
+                "vtt"
+              ]
+            }
+          },
+          {
+            "name": "revision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized immutable view or original idempotent action receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                },
+                "description": "Private result; do not cache"
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input or query invalid"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Current scoped authority unavailable"
+          },
+          "404": {
+            "description": "Original job or source-bound artifact unavailable"
+          },
+          "409": {
+            "description": "Revision, idempotency, task or capability conflict"
+          },
+          "410": {
+            "description": "Cursor or body erased"
+          },
+          "422": {
+            "description": "Invalid real timing or transcript content"
+          }
+        },
+        "x-requirements": [
+          "REQ-021",
+          "REQ-043",
+          "REQ-046",
+          "REQ-058"
+        ],
+        "description": "Rechecks original actor/task/capability and transitive source access before and after storage read. Audio/raw response use revision 0; transcript/SRT/VTT default to the current subtitle revision. Decoded WAV is AI generated. Real byte length and SHA-256 accompany content; transcript adds document."
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/audio-jobs/{job}/subtitles": {
+      "post": {
+        "operationId": "reviseAudioSubtitles",
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized immutable view or original idempotent action receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input or query invalid"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Current scoped authority unavailable"
+          },
+          "404": {
+            "description": "Original job or source-bound artifact unavailable"
+          },
+          "409": {
+            "description": "Revision, idempotency, task or capability conflict"
+          },
+          "410": {
+            "description": "Cursor or body erased"
+          },
+          "422": {
+            "description": "Invalid real timing or transcript content"
+          }
+        },
+        "x-requirements": [
+          "REQ-021",
+          "REQ-043",
+          "REQ-046",
+          "REQ-058"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubtitleEdit"
+              }
+            }
+          }
+        },
+        "description": "No AI request. Compare-and-swap original job revision; preserve prior immutable artifacts. Cues must be ordered, non-overlapping and within decoded duration; full text equals cue texts joined by newline when cues exist. Manual timing remains explicitly customer sourced."
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/audio-jobs/{job}/cancel": {
+      "post": {
+        "operationId": "cancelAudioJob",
+        "security": [
+          {
+            "customerSession": []
+          },
+          {
+            "nativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized immutable view or original idempotent action receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input or query invalid"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Current scoped authority unavailable"
+          },
+          "404": {
+            "description": "Original job or source-bound artifact unavailable"
+          },
+          "409": {
+            "description": "Revision, idempotency, task or capability conflict"
+          },
+          "410": {
+            "description": "Cursor or body erased"
+          },
+          "422": {
+            "description": "Invalid real timing or transcript content"
+          }
+        },
+        "x-requirements": [
+          "REQ-021",
+          "REQ-043",
+          "REQ-046",
+          "REQ-058"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Cancel"
+              }
+            }
+          }
+        },
+        "description": "Predispatch cancellation with evidence is zero usage. Possibly dispatched work remains unknown and retains the original hold. Does not replay a POST, cancel unrelated native processes or invent a provider cancellation protocol."
+      }
+    },
+    "/v1/admin/ai/audio-jobs": {
+      "get": {
+        "operationId": "listAdminAudioJobs",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized immutable view or original idempotent action receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminJobList"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                },
+                "description": "Private result; do not cache"
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input or query invalid"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Current scoped authority unavailable"
+          },
+          "404": {
+            "description": "Original job or source-bound artifact unavailable"
+          },
+          "409": {
+            "description": "Revision, idempotency, task or capability conflict"
+          },
+          "410": {
+            "description": "Cursor or body erased"
+          },
+          "422": {
+            "description": "Invalid real timing or transcript content"
+          }
+        },
+        "x-requirements": [
+          "REQ-021",
+          "REQ-043",
+          "REQ-046",
+          "REQ-058"
+        ],
+        "x-permission": "admin.ai.requests.read",
+        "description": "Scoped metadata only. Independent admin.ai.cost.read controls cost. No original text, rights body or raw audio. Fixed server data mode, independent explicit denies and audited reads."
+      }
+    },
+    "/v1/admin/ai/audio-jobs/{job}/content": {
+      "get": {
+        "operationId": "readAdminAudioBody",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "job",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized immutable view or original idempotent action receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminBody"
+                }
+              }
+            },
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                },
+                "description": "Private result; do not cache"
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input or query invalid"
+          },
+          "401": {
+            "description": "Current session required"
+          },
+          "403": {
+            "description": "Current scoped authority unavailable"
+          },
+          "404": {
+            "description": "Original job or source-bound artifact unavailable"
+          },
+          "409": {
+            "description": "Revision, idempotency, task or capability conflict"
+          },
+          "410": {
+            "description": "Cursor or body erased"
+          },
+          "422": {
+            "description": "Invalid real timing or transcript content"
+          }
+        },
+        "x-requirements": [
+          "REQ-021",
+          "REQ-043",
+          "REQ-046",
+          "REQ-058"
+        ],
+        "x-permission": "admin.ai.requests.read",
+        "description": "Requires independent current admin.content.body.read AND admin.ai.requests.read in the original tenant/project scope, plus recent MFA. Audits sensitive access; deleted/erased input is unavailable. No permission to alter the original request or fees."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Cue": {
+        "type": "object",
+        "properties": {
+          "start_ms": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "end_ms": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": [
+          "start_ms",
+          "end_ms",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "SubtitleEdit": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 200000
+          },
+          "cues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cue"
+            },
+            "maxItems": 2000
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "expected_revision",
+          "text",
+          "cues",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "Cancel": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "Asset": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "audio",
+              "transcript",
+              "raw_response",
+              "srt",
+              "vtt"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "mime_type": {
+            "type": "string"
+          },
+          "bytes": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "kind",
+          "revision",
+          "id",
+          "name",
+          "asset_version_id",
+          "version",
+          "mime_type",
+          "bytes",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "Transcript": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "const": 1
+          },
+          "text": {
+            "type": "string"
+          },
+          "cues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Cue"
+            },
+            "maxItems": 2000
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "timing_source": {
+            "enum": [
+              "none",
+              "provider_segments_rounded_to_millisecond",
+              "customer_manual_revision"
+            ]
+          },
+          "audio_job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "previous_revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "schema_version",
+          "text",
+          "cues",
+          "duration_ms",
+          "timing_source",
+          "audio_job_id",
+          "revision"
+        ],
+        "additionalProperties": false
+      },
+      "Preview": {
+        "type": "object",
+        "properties": {
+          "content_type": {
+            "type": "string"
+          },
+          "base64": {
+            "type": "string",
+            "contentEncoding": "base64"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "ai_generated": {
+            "type": "boolean"
+          },
+          "document": {
+            "$ref": "#/components/schemas/Transcript"
+          }
+        },
+        "required": [
+          "content_type",
+          "base64",
+          "bytes",
+          "sha256",
+          "ai_generated"
+        ],
+        "additionalProperties": false
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "enum": [
+              "speech",
+              "transcription"
+            ]
+          },
+          "state": {
+            "enum": [
+              "prepared",
+              "dispatched",
+              "completed",
+              "cancelled",
+              "unknown"
+            ]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "subtitle_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "model_alias": {
+            "type": "string"
+          },
+          "capability_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "data_mode": {
+            "enum": [
+              "configured_services",
+              "simulated"
+            ]
+          },
+          "quoted_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "actual_micros": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pricing_unit": {
+            "enum": [
+              "unicode_scalar",
+              "input_millisecond"
+            ]
+          },
+          "quoted_units": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "billable_units": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "usage_state": {
+            "enum": [
+              "confirmed_company_tariff",
+              "awaiting_confirmation"
+            ]
+          },
+          "supplier_cost_micros": {
+            "type": "null"
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "decoded_media": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delivery_state": {
+            "enum": [
+              "pending",
+              "available",
+              "blocked"
+            ]
+          },
+          "cancel_requested": {
+            "type": "boolean"
+          },
+          "assets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "operation_id",
+          "kind",
+          "state",
+          "revision",
+          "subtitle_revision",
+          "model_alias",
+          "capability_version_id",
+          "data_mode",
+          "quoted_micros",
+          "actual_micros",
+          "pricing_unit",
+          "quoted_units",
+          "billable_units",
+          "usage_state",
+          "supplier_cost_micros",
+          "duration_ms",
+          "decoded_media",
+          "error_code",
+          "delivery_state",
+          "cancel_requested",
+          "assets",
+          "created_at",
+          "finished_at"
+        ],
+        "additionalProperties": false
+      },
+      "JobList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Job"
+            },
+            "maxItems": 100
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "AdminJob": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actor_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "operation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "capability_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "data_mode": {
+            "enum": [
+              "configured_services",
+              "simulated"
+            ]
+          },
+          "kind": {
+            "enum": [
+              "speech",
+              "transcription"
+            ]
+          },
+          "state": {
+            "enum": [
+              "prepared",
+              "dispatched",
+              "completed",
+              "cancelled",
+              "unknown"
+            ]
+          },
+          "model_alias": {
+            "type": "string"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "subtitle_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "delivery_state": {
+            "enum": [
+              "pending",
+              "available",
+              "blocked"
+            ]
+          },
+          "usage_known": {
+            "type": "boolean"
+          },
+          "cancel_requested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "dispatched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "quoted_micros": {
+                    "type": "string",
+                    "pattern": "^[0-9]+$"
+                  },
+                  "actual_micros": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9]+$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "quoted_units": {
+                    "type": "string",
+                    "pattern": "^[0-9]+$"
+                  },
+                  "billable_units": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[0-9]+$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "pricing_unit": {
+                    "enum": [
+                      "unicode_scalar",
+                      "input_millisecond"
+                    ]
+                  },
+                  "rate_micros": {
+                    "type": "string",
+                    "pattern": "^[0-9]+$"
+                  },
+                  "supplier_cost_micros": {
+                    "type": "null"
+                  }
+                },
+                "required": [
+                  "quoted_micros",
+                  "actual_micros",
+                  "quoted_units",
+                  "billable_units",
+                  "pricing_unit",
+                  "rate_micros",
+                  "supplier_cost_micros"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "tenant_id",
+          "project_id",
+          "task_id",
+          "actor_id",
+          "operation_id",
+          "capability_version_id",
+          "policy_version_id",
+          "data_mode",
+          "kind",
+          "state",
+          "model_alias",
+          "revision",
+          "subtitle_revision",
+          "delivery_state",
+          "usage_known",
+          "cancel_requested_at",
+          "error_code",
+          "created_at",
+          "dispatched_at",
+          "finished_at",
+          "cost"
+        ],
+        "additionalProperties": false
+      },
+      "AdminJobList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminJob"
+            },
+            "maxItems": 100
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "AdminBody": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "specification": {
+            "type": "object"
+          },
+          "specification_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "asset_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "asset_id",
+                  "version",
+                  "sha256"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "specification",
+          "specification_hash",
+          "source"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "customerSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "nativeBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      },
+      "adminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session"
+      }
+    }
+  }
+}
