@@ -1,5 +1,36 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- desktop-updates-stage116-final -->
+Final Desktop update qualification includes the corrected NSIS silent-install restart handoff, Admin release operations and local installation admission.
+
+Apply migration 127; SQL001–126 stay byte-identical. Configure DESKTOP_UPDATE_PUBLIC_KEYS and DESKTOP_UPDATE_MIN_SEQUENCE with public trust only. Existing administrators obtain the separate read/stage/publish global permissions through the documented enrolled-super-admin CLI, which revokes old admin sessions. Stage an offline-signed manifest with a reason, upload canonical 4 MiB chunks, finalize the exact hash, then publish against the exact channel revision and manifest digest. Public clients receive only current valid signed heads and their fixed hash artifact. Encrypted native backup now preserves ready/published installers and channel state; isolated restore clears incomplete upload parts.
+
+Validation: 64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Real Windows trust and Electron; synthetic accounts/models and an inert signed test file. Company-signed installed-product upgrades, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/116-desktop-updates.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-updates-final-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-ready.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-withdrawn.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.gif)
+
+
 <!-- desktop-updates-stage116 -->
 Controlled Desktop updates now connect Admin release operations, signed downloads and local installation admission.
 
