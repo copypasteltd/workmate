@@ -1,5 +1,27 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- desktop-native-geo-stage110 -->
+Desktop GEO 已接通本机 Codex：独立空白会话、整批费用确认、逐题运行／停止、原回执恢复、原始回答留存与不可改写的重复观测比较。全部 AI 经公司接口，费用依据公司凭证。
+
+135 backend checks · 46 Desktop unit checks · 20 actual native Codex checks · 9 actual Electron flows · 11 build/type checks. 明确使用假账号与假模型；本机回答标记为客户端报告。真实模型效果、生产签名与全产品验收尚未证明。
+
+[方案 / Design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/110-desktop-native-geo.md) · [证据 / Evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-geo-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Review[Desktop review] --> Journal[Encrypted local journal]
+  Journal --> API[Company API: atomic holds]
+  API --> Local[Local Codex: fresh question thread]
+  Local --> Gateway[Company Responses and cost receipt]
+  Gateway --> Answer[Original answer and SHA-256]
+  Review --> Stop[Stop or recover original receipt]
+```
+
+![Actual local GEO / 实际本机观测](https://raw.githubusercontent.com/copypasteltd/workmate/desktop/assets/screenshots/workmate-native-geo-05-prepared-en.png)
+
+![Actual interaction / 实际交互](https://raw.githubusercontent.com/copypasteltd/workmate/desktop/assets/screenshots/workmate-05-native-geo.gif)
+
+
 <!-- audio-accounting-stage109 -->
 
 客户音讯及平台验证的未知费用已接通不可改写的原请求证据、分开的费用与终止独立审批、权限范围及冻结费率核对。费用确认不直接扣款或释放容量；任务仍经独立审批、在原预留内结算一次，并保留原业务失败。
