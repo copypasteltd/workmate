@@ -9,6 +9,7 @@ import { AdminDataJobs, AdminDataComposer } from "./data-jobs";
 import { AdminPrivateCloudSchedules } from "./private-cloud-schedules";
 import { AdminProviderControl } from "./provider-control";
 import { AdminExternalBudgets } from "./external-budget";
+import { AdminNativeRecovery } from "./native-recovery";
 import { AdminSolutions } from "./solutions";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
@@ -374,6 +375,7 @@ const nav = [
     "admin.external_budget.read",
   ],
   ["support", Headphones, "支援工作台", "Support", "admin.support.read"],
+  ["recovery", ShieldCheck, "備份與恢復", "Backup & recovery", "admin.recovery.read"],
   ["audit", ScrollText, "審計與審批", "Audit & approvals", "admin.audit.read"],
   ["jobs", ListChecks, "批次與匯出", "Jobs & exports", "admin.jobs.read"],
   ["plans", Wallet, "方案與權限", "Plans & access", "admin.plans.read"],
@@ -534,6 +536,8 @@ function AdminShell() {
                         <AdminProviderControl access={a} />
                       ) : n[0] === "external-budget" ? (
                         <AdminExternalBudgets access={a} />
+                      ) : n[0] === "recovery" ? (
+                        <AdminNativeRecovery access={a} />
                       ) : n[0] === "solutions" ? (
                         <AdminSolutions access={a} />
                       ) : n[0] === "plans" ? (
