@@ -1,5 +1,83 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- desktop-updates-stage116-final -->
+Final Desktop update qualification includes the corrected NSIS silent-install restart handoff, Admin release operations and local installation admission.
+
+Validation: 64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Real Windows trust and Electron; synthetic accounts/models and an inert signed test file. Company-signed installed-product upgrades, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](technical/116-desktop-updates.md) · [Evidence / 证据](quality/desktop-updates-final-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-ready.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-update-available.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-update-verified.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-update-zh-dark.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-withdrawn.png)
+
+[Actual interaction video / 实际交互视频](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.gif)
+
+[Actual interaction video / 实际交互视频](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-signed-update-download.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-signed-update-download.gif)
+
+
+<!-- desktop-updates-stage116 -->
+Controlled Desktop updates now connect Admin release operations, signed downloads and local installation admission.
+
+Validation: 64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Real Windows trust and Electron; synthetic accounts/models and an inert signed test file. Company-signed installed-product upgrades, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](technical/116-desktop-updates.md) · [Evidence / 证据](quality/desktop-updates-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-02-release-ready.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-available.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-verified.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-zh-dark.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-02-release-withdrawn.png)
+
+[Actual interaction video / 实际交互视频](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-02-desktop-release-publish.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-admin__workmate-desktop-updates-02-desktop-release-publish.gif)
+
+[Actual interaction video / 实际交互视频](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](design/implementation/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.gif)
+
+
 <!-- cloud-events-stage115 -->
 Private signed event work now connects customer confirmation, durable deduplicated receipts and independent cloud runs with scoped administration.
 

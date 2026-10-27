@@ -1,0 +1,1474 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate controlled native Desktop updates",
+    "version": "1.0.0"
+  },
+  "x-runtime-schema-sha256": "9799927b7efefd7ff11b558ed5dd15805c5cf781b52d23bee8f20eb8767a34f4",
+  "paths": {
+    "/v1/admin/desktop-updates": {
+      "get": {
+        "operationId": "listDesktopReleases",
+        "description": "Global admin.desktop_updates.read, current MFA, audit. Channel stable/preview; 20 newest-first sequences and 20 latest publication records. before_sequence provides stable pagination. Trust status exposes no private key.",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current signed release or authorized operation result"
+          },
+          "400": {
+            "description": "Invalid manifest, signature or part"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Global action permission and current ten-minute MFA required; overlapping denies win"
+          },
+          "404": {
+            "description": "Unavailable release/artifact"
+          },
+          "409": {
+            "description": "Revision, immutable part, sequence or artifact conflict"
+          },
+          "503": {
+            "description": "No current trusted release/storage"
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "stable",
+                "preview"
+              ],
+              "default": "stable"
+            }
+          },
+          {
+            "name": "before_sequence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "stageDesktopRelease",
+        "description": "Global admin.desktop_updates.stage, current MFA. Offline Ed25519 signature, app/platform/key fingerprint, canonical JSON, expiry <=31 days and sequence floor verified. Stage a strictly higher sequence than current channel. No AI or customer credentials. Idempotency-Key required.",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current signed release or authorized operation result"
+          },
+          "400": {
+            "description": "Invalid manifest, signature or part"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Global action permission and current ten-minute MFA required; overlapping denies win"
+          },
+          "404": {
+            "description": "Unavailable release/artifact"
+          },
+          "409": {
+            "description": "Revision, immutable part, sequence or artifact conflict"
+          },
+          "503": {
+            "description": "No current trusted release/storage"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesktopUpdateStage"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/admin/desktop-updates/{id}/parts/{part}": {
+      "put": {
+        "operationId": "uploadDesktopInstallerPart",
+        "description": "Global staging permission, current MFA. Canonical base64 for one exact 4 MiB part (last part shorter), SHA-256, fixed index and total signed byte count. Identical retries succeed; changed bytes conflict. Only uploading releases. Audit metadata; no arbitrary server path.",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current signed release or authorized operation result"
+          },
+          "400": {
+            "description": "Invalid manifest, signature or part"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Global action permission and current ten-minute MFA required; overlapping denies win"
+          },
+          "404": {
+            "description": "Unavailable release/artifact"
+          },
+          "409": {
+            "description": "Revision, immutable part, sequence or artifact conflict"
+          },
+          "503": {
+            "description": "No current trusted release/storage"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesktopUpdatePart"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "part",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 511
+            }
+          }
+        ]
+      }
+    },
+    "/v1/admin/desktop-updates/{id}/finalize": {
+      "post": {
+        "operationId": "finalizeDesktopInstaller",
+        "description": "Global staging permission, current MFA. Serialize per release; verify every part and aggregate signed size/hash and Windows MZ header, fsync and atomically retain a company-owned immutable artifact. Existing content is hashed again. Repeat returns current state.",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current signed release or authorized operation result"
+          },
+          "400": {
+            "description": "Invalid manifest, signature or part"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Global action permission and current ten-minute MFA required; overlapping denies win"
+          },
+          "404": {
+            "description": "Unavailable release/artifact"
+          },
+          "409": {
+            "description": "Revision, immutable part, sequence or artifact conflict"
+          },
+          "503": {
+            "description": "No current trusted release/storage"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/admin/desktop-updates/{id}/publish": {
+      "post": {
+        "operationId": "publishDesktopRelease",
+        "description": "Independent global admin.desktop_updates.publish, current MFA and exact manifest checksum/current channel revision. Under locks, strictly increase signed channel sequence. Append immutable history. Rollback needs an exact formerly published release; withdrawal is an offline-signed null release at a higher sequence. Idempotency-Key required.",
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current signed release or authorized operation result"
+          },
+          "400": {
+            "description": "Invalid manifest, signature or part"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Global action permission and current ten-minute MFA required; overlapping denies win"
+          },
+          "404": {
+            "description": "Unavailable release/artifact"
+          },
+          "409": {
+            "description": "Revision, immutable part, sequence or artifact conflict"
+          },
+          "503": {
+            "description": "No current trusted release/storage"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesktopUpdatePublication"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/public/desktop-updates/{channel}": {
+      "get": {
+        "operationId": "checkDesktopUpdate",
+        "description": "No session/auth token. Returns {envelope:null} only for a never-published channel, otherwise the exact current signed envelope. No-store, fail closed on expired/untrusted publication. Clients persist sequence+envelope hash and independently verify every field, signature, rollout, compatibility and direction.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Exact signed current envelope, or null if never published",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "envelope"
+                  ],
+                  "properties": {
+                    "envelope": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/DesktopUpdateEnvelope"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid manifest, signature or part"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Global action permission and current ten-minute MFA required; overlapping denies win"
+          },
+          "404": {
+            "description": "Unavailable release/artifact"
+          },
+          "409": {
+            "description": "Revision, immutable part, sequence or artifact conflict"
+          },
+          "503": {
+            "description": "No current trusted release/storage"
+          }
+        },
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "stable",
+                "preview"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/v1/public/desktop-updates/artifacts/{sha256}": {
+      "get": {
+        "operationId": "downloadDesktopInstaller",
+        "description": "No session/auth token. Fixed company API origin, no redirects. Serves only an artifact referenced by a current valid channel head with exact content length, nosniff and no-store. Withdrawn/unpublished artifacts return 404. Desktop independently hashes actual bytes and validates Windows chain and publisher.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Exact signed installer byte count; independently verify hash and publisher",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid manifest, signature or part"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Global action permission and current ten-minute MFA required; overlapping denies win"
+          },
+          "404": {
+            "description": "Unavailable release/artifact"
+          },
+          "409": {
+            "description": "Revision, immutable part, sequence or artifact conflict"
+          },
+          "503": {
+            "description": "No current trusted release/storage"
+          }
+        },
+        "parameters": [
+          {
+            "name": "sha256",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DesktopRelease": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+          },
+          "minimum_version": {
+            "type": "string",
+            "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2147483648
+          },
+          "signer_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "notes": {
+            "type": "object",
+            "properties": {
+              "en": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3000
+              },
+              "zh": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3000
+              }
+            },
+            "required": [
+              "en",
+              "zh"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "version",
+          "minimum_version",
+          "sha256",
+          "bytes",
+          "signer_sha256",
+          "notes"
+        ],
+        "additionalProperties": false
+      },
+      "DesktopUpdatePayload": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "protocol": {
+                "type": "string",
+                "const": "copypaste-desktop-update-v1"
+              },
+              "app_id": {
+                "type": "string",
+                "const": "hk.copypaste.agent"
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "stable",
+                  "preview"
+                ]
+              },
+              "platform": {
+                "type": "string",
+                "const": "windows-x64"
+              },
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "issued_at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "action": {
+                "type": "string",
+                "const": "install"
+              },
+              "rollout_basis_points": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "release": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                  },
+                  "minimum_version": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483648
+                  },
+                  "signer_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "notes": {
+                    "type": "object",
+                    "properties": {
+                      "en": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3000
+                      },
+                      "zh": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3000
+                      }
+                    },
+                    "required": [
+                      "en",
+                      "zh"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "version",
+                  "minimum_version",
+                  "sha256",
+                  "bytes",
+                  "signer_sha256",
+                  "notes"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "protocol",
+              "app_id",
+              "channel",
+              "platform",
+              "sequence",
+              "issued_at",
+              "expires_at",
+              "action",
+              "rollout_basis_points",
+              "release"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "protocol": {
+                "type": "string",
+                "const": "copypaste-desktop-update-v1"
+              },
+              "app_id": {
+                "type": "string",
+                "const": "hk.copypaste.agent"
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "stable",
+                  "preview"
+                ]
+              },
+              "platform": {
+                "type": "string",
+                "const": "windows-x64"
+              },
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "issued_at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "action": {
+                "type": "string",
+                "const": "rollback"
+              },
+              "rollout_basis_points": {
+                "type": "number",
+                "const": 10000
+              },
+              "release": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                  },
+                  "minimum_version": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 2147483648
+                  },
+                  "signer_sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "notes": {
+                    "type": "object",
+                    "properties": {
+                      "en": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3000
+                      },
+                      "zh": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 3000
+                      }
+                    },
+                    "required": [
+                      "en",
+                      "zh"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "version",
+                  "minimum_version",
+                  "sha256",
+                  "bytes",
+                  "signer_sha256",
+                  "notes"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "protocol",
+              "app_id",
+              "channel",
+              "platform",
+              "sequence",
+              "issued_at",
+              "expires_at",
+              "action",
+              "rollout_basis_points",
+              "release"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "protocol": {
+                "type": "string",
+                "const": "copypaste-desktop-update-v1"
+              },
+              "app_id": {
+                "type": "string",
+                "const": "hk.copypaste.agent"
+              },
+              "channel": {
+                "type": "string",
+                "enum": [
+                  "stable",
+                  "preview"
+                ]
+              },
+              "platform": {
+                "type": "string",
+                "const": "windows-x64"
+              },
+              "sequence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              },
+              "issued_at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "action": {
+                "type": "string",
+                "const": "withdraw"
+              },
+              "rollout_basis_points": {
+                "type": "number",
+                "const": 10000
+              },
+              "release": {
+                "type": "null"
+              }
+            },
+            "required": [
+              "protocol",
+              "app_id",
+              "channel",
+              "platform",
+              "sequence",
+              "issued_at",
+              "expires_at",
+              "action",
+              "rollout_basis_points",
+              "release"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "DesktopUpdateEnvelope": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "key_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "payload": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "protocol": {
+                    "type": "string",
+                    "const": "copypaste-desktop-update-v1"
+                  },
+                  "app_id": {
+                    "type": "string",
+                    "const": "hk.copypaste.agent"
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "stable",
+                      "preview"
+                    ]
+                  },
+                  "platform": {
+                    "type": "string",
+                    "const": "windows-x64"
+                  },
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "issued_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "expires_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "action": {
+                    "type": "string",
+                    "const": "install"
+                  },
+                  "rollout_basis_points": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 10000
+                  },
+                  "release": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                      },
+                      "minimum_version": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "bytes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2147483648
+                      },
+                      "signer_sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "notes": {
+                        "type": "object",
+                        "properties": {
+                          "en": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3000
+                          },
+                          "zh": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3000
+                          }
+                        },
+                        "required": [
+                          "en",
+                          "zh"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "version",
+                      "minimum_version",
+                      "sha256",
+                      "bytes",
+                      "signer_sha256",
+                      "notes"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "protocol",
+                  "app_id",
+                  "channel",
+                  "platform",
+                  "sequence",
+                  "issued_at",
+                  "expires_at",
+                  "action",
+                  "rollout_basis_points",
+                  "release"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "protocol": {
+                    "type": "string",
+                    "const": "copypaste-desktop-update-v1"
+                  },
+                  "app_id": {
+                    "type": "string",
+                    "const": "hk.copypaste.agent"
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "stable",
+                      "preview"
+                    ]
+                  },
+                  "platform": {
+                    "type": "string",
+                    "const": "windows-x64"
+                  },
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "issued_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "expires_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "action": {
+                    "type": "string",
+                    "const": "rollback"
+                  },
+                  "rollout_basis_points": {
+                    "type": "number",
+                    "const": 10000
+                  },
+                  "release": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                      },
+                      "minimum_version": {
+                        "type": "string",
+                        "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "bytes": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2147483648
+                      },
+                      "signer_sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "notes": {
+                        "type": "object",
+                        "properties": {
+                          "en": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3000
+                          },
+                          "zh": {
+                            "type": "string",
+                            "minLength": 3,
+                            "maxLength": 3000
+                          }
+                        },
+                        "required": [
+                          "en",
+                          "zh"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "version",
+                      "minimum_version",
+                      "sha256",
+                      "bytes",
+                      "signer_sha256",
+                      "notes"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "protocol",
+                  "app_id",
+                  "channel",
+                  "platform",
+                  "sequence",
+                  "issued_at",
+                  "expires_at",
+                  "action",
+                  "rollout_basis_points",
+                  "release"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "protocol": {
+                    "type": "string",
+                    "const": "copypaste-desktop-update-v1"
+                  },
+                  "app_id": {
+                    "type": "string",
+                    "const": "hk.copypaste.agent"
+                  },
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "stable",
+                      "preview"
+                    ]
+                  },
+                  "platform": {
+                    "type": "string",
+                    "const": "windows-x64"
+                  },
+                  "sequence": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "issued_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "expires_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "action": {
+                    "type": "string",
+                    "const": "withdraw"
+                  },
+                  "rollout_basis_points": {
+                    "type": "number",
+                    "const": 10000
+                  },
+                  "release": {
+                    "type": "null"
+                  }
+                },
+                "required": [
+                  "protocol",
+                  "app_id",
+                  "channel",
+                  "platform",
+                  "sequence",
+                  "issued_at",
+                  "expires_at",
+                  "action",
+                  "rollout_basis_points",
+                  "release"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{86}$"
+          }
+        },
+        "required": [
+          "key_id",
+          "payload",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "DesktopUpdateStage": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "envelope": {
+            "type": "object",
+            "properties": {
+              "key_id": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "payload": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "protocol": {
+                        "type": "string",
+                        "const": "copypaste-desktop-update-v1"
+                      },
+                      "app_id": {
+                        "type": "string",
+                        "const": "hk.copypaste.agent"
+                      },
+                      "channel": {
+                        "type": "string",
+                        "enum": [
+                          "stable",
+                          "preview"
+                        ]
+                      },
+                      "platform": {
+                        "type": "string",
+                        "const": "windows-x64"
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "issued_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "action": {
+                        "type": "string",
+                        "const": "install"
+                      },
+                      "rollout_basis_points": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "release": {
+                        "type": "object",
+                        "properties": {
+                          "version": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                          },
+                          "minimum_version": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483648
+                          },
+                          "signer_sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "notes": {
+                            "type": "object",
+                            "properties": {
+                              "en": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3000
+                              },
+                              "zh": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3000
+                              }
+                            },
+                            "required": [
+                              "en",
+                              "zh"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "minimum_version",
+                          "sha256",
+                          "bytes",
+                          "signer_sha256",
+                          "notes"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "protocol",
+                      "app_id",
+                      "channel",
+                      "platform",
+                      "sequence",
+                      "issued_at",
+                      "expires_at",
+                      "action",
+                      "rollout_basis_points",
+                      "release"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "protocol": {
+                        "type": "string",
+                        "const": "copypaste-desktop-update-v1"
+                      },
+                      "app_id": {
+                        "type": "string",
+                        "const": "hk.copypaste.agent"
+                      },
+                      "channel": {
+                        "type": "string",
+                        "enum": [
+                          "stable",
+                          "preview"
+                        ]
+                      },
+                      "platform": {
+                        "type": "string",
+                        "const": "windows-x64"
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "issued_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "action": {
+                        "type": "string",
+                        "const": "rollback"
+                      },
+                      "rollout_basis_points": {
+                        "type": "number",
+                        "const": 10000
+                      },
+                      "release": {
+                        "type": "object",
+                        "properties": {
+                          "version": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                          },
+                          "minimum_version": {
+                            "type": "string",
+                            "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2147483648
+                          },
+                          "signer_sha256": {
+                            "type": "string",
+                            "pattern": "^[a-f0-9]{64}$"
+                          },
+                          "notes": {
+                            "type": "object",
+                            "properties": {
+                              "en": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3000
+                              },
+                              "zh": {
+                                "type": "string",
+                                "minLength": 3,
+                                "maxLength": 3000
+                              }
+                            },
+                            "required": [
+                              "en",
+                              "zh"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "minimum_version",
+                          "sha256",
+                          "bytes",
+                          "signer_sha256",
+                          "notes"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "protocol",
+                      "app_id",
+                      "channel",
+                      "platform",
+                      "sequence",
+                      "issued_at",
+                      "expires_at",
+                      "action",
+                      "rollout_basis_points",
+                      "release"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "protocol": {
+                        "type": "string",
+                        "const": "copypaste-desktop-update-v1"
+                      },
+                      "app_id": {
+                        "type": "string",
+                        "const": "hk.copypaste.agent"
+                      },
+                      "channel": {
+                        "type": "string",
+                        "enum": [
+                          "stable",
+                          "preview"
+                        ]
+                      },
+                      "platform": {
+                        "type": "string",
+                        "const": "windows-x64"
+                      },
+                      "sequence": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 9007199254740991
+                      },
+                      "issued_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "action": {
+                        "type": "string",
+                        "const": "withdraw"
+                      },
+                      "rollout_basis_points": {
+                        "type": "number",
+                        "const": 10000
+                      },
+                      "release": {
+                        "type": "null"
+                      }
+                    },
+                    "required": [
+                      "protocol",
+                      "app_id",
+                      "channel",
+                      "platform",
+                      "sequence",
+                      "issued_at",
+                      "expires_at",
+                      "action",
+                      "rollout_basis_points",
+                      "release"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "signature": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{86}$"
+              }
+            },
+            "required": [
+              "key_id",
+              "payload",
+              "signature"
+            ],
+            "additionalProperties": false
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "envelope",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "DesktopUpdatePart": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "base64": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 5592408
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "base64",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "DesktopUpdatePublication": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483646
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          },
+          "confirmed_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "reason",
+          "confirmed_sha256"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "adminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session"
+      }
+    }
+  }
+}

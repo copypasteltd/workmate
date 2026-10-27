@@ -1,5 +1,8 @@
 # 技术架构与技术栈
 
+**阶段 116：原生更新链路。** Desktop 0.6.0 使用 Electron 主进程更新状态机、Ed25519 签名清单、加密序号账本和 Windows C# WinVerifyTrust 助手；公司 API 提供有范围权限与 MFA 的发布操作、原生文件分块和 PostgreSQL 单调频道头。开发可携版本只下载验证；正式安装握手等待本机执行检查点，公钥仅在构建时固定。Codex 继续是唯一内核；Web／Extension 云端与 Desktop 本机执行边界不变。见[实现及发布规范](116-desktop-updates.md)。
+
+
 
 **阶段 104 / Stage 104：** 已接通私有对话／成果到明确确认的云端每日／每周计划、不可变版本、逐次 run、人工审批、费用结算、暂停／取消隔离、客户恢复确认和按范围的 MFA Admin 暂停。78 项相关后端检查、8 项实际跨端流程、8 张截图、3 组交互录制；明确假数据。SQL120 新增，SQL001–119 保留。Desktop 本机 Codex 不被云端替代；原 102 REQ／TC 和完整验收结论不改写。见[方案与实际范围](104-private-cloud-schedules.md)。
 

@@ -1,5 +1,8 @@
 # Admin 控制面、权限与账务实施设计
 
+**阶段 116：Desktop 发布管理。** `admin.desktop_updates.read`／`stage`／`publish` 是独立全局权限，重叠 deny 优先，十分钟内 MFA 在锁内复核。提供清单暂存、分块续传、完整文件校验、精确频道版本发布、不可变历史、签名撤回及严格历史文件回滚。普通应用和队列 SQL 角色不能管理发行表；离线私钥不进入服务和后台。备份和隔离恢复保留已完成安装包与频道事实。见[完整设计及授权命令](116-desktop-updates.md)和[当前验证范围](../quality/desktop-updates-final-checkpoint.json)。
+
+
 
 **阶段 104 / Stage 104：** 已接通私有对话／成果到明确确认的云端每日／每周计划、不可变版本、逐次 run、人工审批、费用结算、暂停／取消隔离、客户恢复确认和按范围的 MFA Admin 暂停。78 项相关后端检查、8 项实际跨端流程、8 张截图、3 组交互录制；明确假数据。SQL120 新增，SQL001–119 保留。Desktop 本机 Codex 不被云端替代；原 102 REQ／TC 和完整验收结论不改写。见[方案与实际范围](104-private-cloud-schedules.md)。
 

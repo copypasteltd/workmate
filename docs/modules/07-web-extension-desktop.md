@@ -1,5 +1,8 @@
 # M09/M10 三端客户端、设备与执行
 
+**阶段 116：Desktop 受控更新。** 已补充 Windows x64 本机更新控制器与后台发布面板：离线签名、固定来源下载、原生证书链及文件校验、分批发布、撤回／受控回滚、本机操作准入和空闲检查点、固定参数安装助手。64 项相关后台、96 项桌面单元、22 项真实 Codex 内核检查及 13 项构建通过；4 条真实界面流程、5 种布局和 2 组 GIF／MP4 已记录。明确假数据与惰性签名文件；公司签名已安装产品的完整升级及 macOS 验收仍未证明。Desktop 保留本机 Codex、客户可授予完整权限、无系统边框／菜单、隐藏滚动条及真实滚动。见[实现及安装说明](../technical/116-desktop-updates.md)与[源码及原始证据](../quality/desktop-updates-final-checkpoint.json)。
+
+
 <!-- stage110-desktop-native-geo -->
 **当前增量：Desktop 原生 GEO 工作流。** 固定问句现使用独立本机 Codex 线程、空白工作目录、原子整批预留与逐题运行／停止；原始回答、公司费用回执、重复比较及预算不足退出均已接通。135 项相关后端、46 项 Desktop 单元、20 项真实内核检查、9 项实际打包交互及 11 项构建／类型检查通过；账号和模型响应为明确假数据。见[技术设计与实际验证](../technical/110-desktop-native-geo.md)、[需求补充](../requirements/05-desktop-native-geo.md)及[绑定凭证](../quality/desktop-geo-checkpoint.json)。以下阶段内容按原时间保留。
 
