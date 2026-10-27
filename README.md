@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · extension
 
+<!-- cloud-events-stage115 -->
+已接通私有签名事件工作：客户明确确认、持久去重回执、独立云端运行与范围化后台管理。
+
+点击 Chrome 按钮打开原生右侧 Side Panel，选择顾问任务并核对事件提案，明确授权每次和每日上限。默认遮住的密钥只返回一次。侧栏可查看分页回执、暂停和停止，完整方法编辑与恢复进入 Web 工作区。文件仍由客户选择和上传；Codex 在公司云端执行。
+
+验证：85 项相关后端测试、13 项构建／类型检查、7 条真实 Web／Admin／原生侧栏流程、5 种布局与 2 次锁定版本原生 Codex 执行。模型、账户及发端使用假数据；第三方原生事件接入与完整产品验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/115-signed-cloud-events.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-events-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Customer reviews fixed method and budgets] --> Trigger[Private event rule]
+  Sender[Customer configured sender] --> Verify[Raw byte HMAC and current authority]
+  Trigger --> Verify
+  Verify --> Inbox[Durable deduplicated inbox]
+  Inbox --> Policy[Age overlap interval daily caps]
+  Policy --> Run[One independent private run]
+  Run --> Review[Human review]
+  Review --> Codex[Company cloud Codex child]
+  Codex --> Receipt[Actual delivery and settled usage]
+```
+
+![Actual copypaste-extension event flow / 实际事件流程](media/cloud-events-copypaste-extension__workmate-cloud-events-04-review-en.png)
+
+[Actual interaction video / 实际交互视频](media/cloud-events-copypaste-extension__workmate-04-cloud-events-sidepanel.mp4)
+
+![Actual copypaste-extension event flow / 实际事件流程](media/cloud-events-copypaste-extension__workmate-04-cloud-events-sidepanel.gif)
+
+
 <!-- native-recovery-stage114 -->
 已实现原生加密备份与隔离恢复：同一快照的数据库及不可变文件经完整认证，恢复后先应用较新的独立删除日志，再提供核验凭证。
 

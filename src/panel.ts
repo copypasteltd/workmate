@@ -4,6 +4,7 @@ import { mountDeliveryQuality } from "./delivery-quality.js";
 import { mountGeneratedVideos } from "./generated-videos.js";
 import { mountAudioProductions } from "./audio-production.js";
 import { mountCloudSchedules } from "./cloud-schedules.js";
+import { mountCloudEvents } from "./cloud-events.js";
 import {
   exactHKD,
   financialLabels,
@@ -843,7 +844,8 @@ async function drawTask(t: any) {
       cloudSchedules?.dispose();
       cloudSchedules = {
         key: videoKey,
-        dispose: mountCloudSchedules($("cloud-schedules"), {
+        dispose: (() => {
+          const io = {
           base: endpoint,
           taskId: t.id,
           request,
@@ -853,7 +855,11 @@ async function drawTask(t: any) {
             endpoint === base() &&
             task === t.id,
           openWorkflows: () => send("OPEN_WEB", { section: "workflows" }),
-        }),
+          };
+          const stopSchedules = mountCloudSchedules($("cloud-schedules"), io);
+          const stopEvents = mountCloudEvents($("cloud-events"), io);
+          return () => { stopSchedules(); stopEvents(); };
+        })(),
       };
     }
   } else {
