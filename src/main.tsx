@@ -7,6 +7,7 @@ import { AdminCapabilities } from "./capabilities";
 import { AdminClientContent } from "./client-content";
 import { AdminDataJobs, AdminDataComposer } from "./data-jobs";
 import { AdminPrivateCloudSchedules } from "./private-cloud-schedules";
+import { AdminPrivateCloudEvents } from "./private-cloud-events";
 import { AdminProviderControl } from "./provider-control";
 import { AdminExternalBudgets } from "./external-budget";
 import { AdminNativeRecovery } from "./native-recovery";
@@ -1550,7 +1551,8 @@ function Section({ section }: { section: string }) {
         />
       )}{" "}
       {section === "execution" && (
-        <AdminPrivateCloudSchedules canPause={a.has("admin.execution.pause")} />
+      <><AdminPrivateCloudSchedules canPause={a.has("admin.execution.pause")} />
+      <AdminPrivateCloudEvents canPause={a.has("admin.execution.pause")} /></>
       )}
       {section === "execution" && (
         <AdminSchedules
