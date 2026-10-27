@@ -176,6 +176,32 @@ test("native Codex transports the versioned website-analysis schema and returns 
 });
 const writeCommand = (file: string, content: string) => `[IO.File]::WriteAllText(${quoted(file)}, ${quoted(content)}); Write-Output ('runtime-token-present=' + [bool][Environment]::GetEnvironmentVariable('COPYPASTE_LOCAL_INFERENCE_TOKEN'))`;
 
+for (const mode of ["read-only","full-access"] as const) test(`native Codex transports frozen budget preview and enforces ${mode} preparation rights`,{timeout:180000},async()=>{
+ const {budgetToolPreview,budgetToolPrepare}=await import("../../../copypaste-platform/src/external-budget-model.js");
+ const {desktopCompanyToolSchema}=await import("../../../copypaste-platform/src/desktop-tool-policy.js");
+ const {z}=await import("../../../copypaste-platform/node_modules/zod/index.js");
+ const f=await fixture(),calls:any[]=[];
+ const args={connection_id:randomUUID(),account_id:"101",budget_id:"700",new_average_daily_micros:"125000000"};
+ const preview={preview_id:randomUUID(),source_sha256:digest("exact-native-budget-preview"),before:{amount_micros:"100000000",currency:"HKD"},desired_average_daily_micros:"125000000",provider_mutations:0};
+ try{
+  const binding={...f.binding,grant:{...f.binding.grant,mode},companyTools:[
+   {name:"external_budget_preview",description:"Preview an exact authorized Google Ads average daily budget.",inputSchema:desktopCompanyToolSchema(z.toJSONSchema(budgetToolPreview,{io:"input"}))},
+   {name:"external_budget_prepare",description:"Prepare a frozen operation under explicit policy; never self-confirm.",inputSchema:desktopCompanyToolSchema(z.toJSONSchema(budgetToolPrepare,{io:"input"}))},
+  ]};
+  const native=f.make(f.profile,binding,async call=>{calls.push(call);if(call.tool==="external_budget_preview"){assert.deepEqual(budgetToolPreview.parse(call.arguments),args);return preview;}
+   assert.equal(mode,"full-access");assert.deepEqual(budgetToolPrepare.parse(call.arguments),{...args,preview_id:preview.preview_id,expected_source_sha256:preview.source_sha256});
+   return {id:randomUUID(),state:"awaiting_confirmation",provider_mutations:0};
+  });
+  await f.start(native);f.actions.push({company:{tool:"external_budget_preview",arguments:args}});
+  assert.equal((await native.turn("Preview the exact configured budget without a mutation.")).status,"completed");
+  f.actions.push({company:{tool:"external_budget_prepare",arguments:{...args,preview_id:preview.preview_id,expected_source_sha256:preview.source_sha256}}});
+  await native.turn("Exercise the frozen preparation permission boundary; never confirm it.");
+  assert.equal(calls.length,mode==="read-only"?1:2);
+  if(mode==="read-only")assert.ok(f.events.some(e=>e.kind==="local.company-tool.failed"&&e.value.code==="LOCAL_COMPANY_TOOL_READ_ONLY"));
+  else assert.equal(f.events.filter(e=>e.kind==="local.company-tool.completed").length,2);
+ }finally{await f.clean();}
+});
+
 const inputQuestions = [{ id: "palette", header: "Palette", question: "Which palette should the actual work use?", options: [
   { label: "Company blue", description: "Use the existing CopyPaste palette." }, { label: "Warm neutral", description: "Use the reviewed warm neutral palette." },
 ] }, { id: "format", header: "Format", question: "Choose the requested output format.", options: [
