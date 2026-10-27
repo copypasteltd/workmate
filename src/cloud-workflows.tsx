@@ -17,6 +17,7 @@ import { useWorkspace } from "./context";
 import { useData, useI18n, Badge, ErrorNotice, Modal, Money } from "./ui";
 import "./cloud-workflows.css";
 import { ScheduleFromRun } from "./cloud-schedules";
+import { EventFromRun } from "./cloud-events";
 
 type Step = {
   kind: string;
@@ -325,6 +326,7 @@ export function PrivateCloudWorkflows() {
             )}
             <footer>
               <ScheduleFromRun run={run} />
+              <EventFromRun run={run} />
               {run.state === "awaiting_approval" && (
                 <button
                   className="button primary small"

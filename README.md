@@ -1,5 +1,38 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- cloud-events-stage115 -->
+已接通私有签名事件工作：客户明确确认、持久去重回执、独立云端运行与范围化后台管理。
+
+打开工作流程，从已有运行或顾问对话准备事件工作，核对方法、输入、时区、每次及每日费用上限后勾选启用。把默认遮住的一次性密钥保存到发端。事件与方法提供分页回执、固定版本及真实运行链接。暂停保留当前工作；恢复与修订重新确认，轮换即时撤销旧密钥。
+
+验证：85 项相关后端测试、13 项构建／类型检查、7 条真实 Web／Admin／原生侧栏流程、5 种布局与 2 次锁定版本原生 Codex 执行。模型、账户及发端使用假数据；第三方原生事件接入与完整产品验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/115-signed-cloud-events.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-events-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Customer reviews fixed method and budgets] --> Trigger[Private event rule]
+  Sender[Customer configured sender] --> Verify[Raw byte HMAC and current authority]
+  Trigger --> Verify
+  Verify --> Inbox[Durable deduplicated inbox]
+  Inbox --> Policy[Age overlap interval daily caps]
+  Policy --> Run[One independent private run]
+  Run --> Review[Human review]
+  Review --> Codex[Company cloud Codex child]
+  Codex --> Receipt[Actual delivery and settled usage]
+```
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-cloud-events-04-review-en.png)
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-cloud-events-04-receipt-en.png)
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-cloud-events-04-compact-zh-dark.png)
+
+[Actual interaction video / 实际交互视频](media/cloud-events-copypaste-web__workmate-04-cloud-events-confirmation.mp4)
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-04-cloud-events-confirmation.gif)
+
+
 <!-- native-recovery-stage114 -->
 已实现原生加密备份与隔离恢复：同一快照的数据库及不可变文件经完整认证，恢复后先应用较新的独立删除日志，再提供核验凭证。
 
