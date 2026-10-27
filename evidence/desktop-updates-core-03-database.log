@@ -1,0 +1,177 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-obPHOY/runtime/.data/native-qa/b14fd36e-5bfd-4e0d-916f-5d3cdd5a63dd ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+creating configuration files ...
+ 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-obPHOY^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-obPHOY^\runtime^\^.data^\native^-qa^\b14fd36e^-5bfd^-4e0d^-916f^-5d3cdd5a63dd^" -l logfile start
+
+
+2026-10-28 02:48:53.264 CST [37120] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-28 02:48:53.270 CST [37120] LOG:  listening on IPv6 address "::1", port 9423
+
+2026-10-28 02:48:53.270 CST [37120] LOG:  listening on IPv4 address "127.0.0.1", port 9423
+
+2026-10-28 02:48:53.634 CST [34220] LOG:  database system was shut down at 2026-10-28 02:47:46 CST
+
+2026-10-28 02:48:53.733 CST [37120] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:9423. Application roles are not owners and do not bypass RLS.
+2026-10-28 02:49:38.839 CST [28288] ERROR:  permission denied for table admin_enrollments
+2026-10-28 02:49:38.839 CST [28288] STATEMENT:  SELECT * FROM admin_enrollments LIMIT 1
+
+2026-10-28 02:49:39.815 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:49:55.418 CST [28420] LOG:  checkpoint complete: wrote 1006 buffers (6.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.197 s, sync=14.967 s, total=15.604 s; sync files=312, longest=0.345 s, average=0.048 s; distance=26337 kB, estimate=26337 kB; lsn=0/31B9FF0, redo lsn=0/31A9988
+
+2026-10-28 02:50:10.269 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:50:11.192 CST [28420] LOG:  checkpoint complete: wrote 34 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.016 s, sync=0.612 s, total=0.924 s; sync files=13, longest=0.121 s, average=0.047 s; distance=21714 kB, estimate=25874 kB; lsn=0/46DE370, redo lsn=0/46DE318
+
+2026-10-28 02:50:20.813 CST [11396] ERROR:  Client content documents, previews and publications are immutable
+2026-10-28 02:50:20.813 CST [11396] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-28 02:50:20.813 CST [11396] STATEMENT:  UPDATE client_content_releases SET reason='changed' WHERE id=$1
+
+2026-10-28 02:50:20.893 CST [32440] ERROR:  Client content documents, previews and publications are immutable
+2026-10-28 02:50:20.893 CST [32440] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-28 02:50:20.893 CST [32440] STATEMENT:  DELETE FROM client_content_releases WHERE id=$1
+
+2026-10-28 02:50:20.897 CST [7916] ERROR:  permission denied for table client_content_releases
+2026-10-28 02:50:20.897 CST [7916] STATEMENT:  SELECT * FROM client_content_releases
+
+2026-10-28 02:50:20.960 CST [35712] ERROR:  A new matching reviewed publication is required
+2026-10-28 02:50:20.960 CST [35712] CONTEXT:  PL/pgSQL function guard_client_content_head() line 10 at RAISE
+2026-10-28 02:50:20.960 CST [35712] STATEMENT:  UPDATE client_content_head SET revision=revision+1 WHERE singleton
+
+2026-10-28 02:50:21.117 CST [30812] ERROR:  new row for relation "client_content_releases" violates check constraint "client_content_releases_check1"
+2026-10-28 02:50:21.117 CST [30812] STATEMENT:  INSERT INTO client_content_releases(version,document,audience,canonical_definition,definition_hash,reason,created_by,idempotency_key,request_hash) VALUES(100000,$1,$2,$3,$4,'tampered definition',$5,$6,$4)
+
+2026-10-28 02:50:21.613 CST [34756] ERROR:  Client content documents, previews and publications are immutable
+2026-10-28 02:50:21.613 CST [34756] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-28 02:50:21.613 CST [34756] STATEMENT:  DELETE FROM client_content_publications WHERE id=$1
+
+2026-10-28 02:50:21.849 CST [26116] ERROR:  Client content documents, previews and publications are immutable
+2026-10-28 02:50:21.849 CST [26116] CONTEXT:  PL/pgSQL function guard_client_content_fact() line 2 at RAISE
+2026-10-28 02:50:21.849 CST [26116] STATEMENT:  UPDATE client_content_previews SET reason='changed' WHERE id=$1
+
+2026-10-28 02:50:22.409 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:50:23.434 CST [28420] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.022 s, sync=0.695 s, total=1.025 s; sync files=13, longest=0.110 s, average=0.054 s; distance=21874 kB, estimate=25474 kB; lsn=0/5C3AF20, redo lsn=0/5C3AEC8
+
+2026-10-28 02:50:35.448 CST [16292] ERROR:  permission denied for table desktop_update_releases
+2026-10-28 02:50:35.448 CST [16292] STATEMENT:  SELECT * FROM desktop_update_releases
+
+2026-10-28 02:50:36.102 CST [18808] ERROR:  desktop release definitions are immutable
+2026-10-28 02:50:36.102 CST [18808] CONTEXT:  PL/pgSQL function immutable_desktop_release_definition() line 4 at RAISE
+2026-10-28 02:50:36.102 CST [18808] STATEMENT:  UPDATE desktop_update_releases SET envelope='{}' WHERE id=$1
+
+2026-10-28 02:50:36.173 CST [27300] ERROR:  desktop publication history is immutable
+2026-10-28 02:50:36.173 CST [27300] CONTEXT:  PL/pgSQL function immutable_desktop_publication() line 1 at RAISE
+2026-10-28 02:50:36.173 CST [27300] STATEMENT:  DELETE FROM desktop_update_publications WHERE release_id=$1
+
+2026-10-28 02:50:36.225 CST [28308] ERROR:  desktop release transition is invalid
+2026-10-28 02:50:36.225 CST [28308] CONTEXT:  PL/pgSQL function immutable_desktop_release_definition() line 6 at RAISE
+2026-10-28 02:50:36.225 CST [28308] STATEMENT:  UPDATE desktop_update_releases SET state='uploading',version=version+1 WHERE id=$1
+
+2026-10-28 02:50:52.785 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:51:24.123 CST [28420] LOG:  checkpoint complete: wrote 2465 buffers (15.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 3 recycled; write=0.226 s, sync=30.233 s, total=31.338 s; sync files=1729, longest=0.775 s, average=0.018 s; distance=43185 kB, estimate=43185 kB; lsn=0/86AB460, redo lsn=0/8667420
+
+2026-10-28 02:51:24.582 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:51:25.739 CST [28420] LOG:  checkpoint complete: wrote 50 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.006 s, sync=0.884 s, total=1.158 s; sync files=14, longest=0.089 s, average=0.064 s; distance=378 kB, estimate=38904 kB; lsn=0/86C5E08, redo lsn=0/86C5DB0
+
+2026-10-28 02:51:33.361 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:51:35.459 CST [28420] LOG:  checkpoint complete: wrote 43 buffers (0.3%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.083 s, sync=1.330 s, total=2.098 s; sync files=10, longest=0.247 s, average=0.133 s; distance=21634 kB, estimate=37177 kB; lsn=0/9BE6858, redo lsn=0/9BE6800
+
+2026-10-28 02:51:42.322 CST [16244] FATAL:  terminating autovacuum process due to administrator command
+
+2026-10-28 02:51:42.463 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:51:43.838 CST [28420] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.009 s, sync=0.576 s, total=1.376 s; sync files=10, longest=0.110 s, average=0.058 s; distance=21439 kB, estimate=35603 kB; lsn=0/B0D66E0, redo lsn=0/B0D6688
+
+2026-10-28 02:51:47.785 CST [17460] ERROR:  Review decisions are immutable
+2026-10-28 02:51:47.785 CST [17460] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-28 02:51:47.785 CST [17460] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-28 02:51:47.786 CST [17460] ERROR:  Frozen approval is immutable
+2026-10-28 02:51:47.786 CST [17460] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-28 02:51:47.786 CST [17460] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-28 02:51:47.917 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:51:48.588 CST [28420] LOG:  checkpoint complete: wrote 28 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.429 s, total=0.672 s; sync files=9, longest=0.093 s, average=0.048 s; distance=21367 kB, estimate=34180 kB; lsn=0/C5B4658, redo lsn=0/C5B4600
+
+2026-10-28 02:52:20.307 CST [25376] ERROR:  Recovery receipts are immutable
+2026-10-28 02:52:20.307 CST [25376] CONTEXT:  PL/pgSQL function recovery_receipt_immutable() line 2 at RAISE
+2026-10-28 02:52:20.307 CST [25376] STATEMENT:  UPDATE recovery_runs SET outcome='verified' WHERE id=$1
+
+2026-10-28 02:52:24.985 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:53:09.421 CST [28420] LOG:  checkpoint complete: wrote 4709 buffers (28.7%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 4 recycled; write=0.343 s, sync=43.663 s, total=44.436 s; sync files=3334, longest=0.194 s, average=0.014 s; distance=64637 kB, estimate=64637 kB; lsn=0/10C3C600, redo lsn=0/104D3A50
+
+2026-10-28 02:53:15.850 CST [19352] FATAL:  database "copypaste_suite_5186555e747445709d87e80ff0e3a972" does not exist
+
+2026-10-28 02:53:16.023 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:53:40.634 CST [28420] LOG:  checkpoint complete: wrote 3254 buffers (19.9%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.154 s, sync=24.259 s, total=24.612 s; sync files=1707, longest=0.257 s, average=0.015 s; distance=28889 kB, estimate=61062 kB; lsn=0/128BD7C0, redo lsn=0/12109F28
+
+2026-10-28 02:53:40.891 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:53:48.901 CST [28420] LOG:  checkpoint complete: wrote 1017 buffers (6.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.028 s, sync=7.678 s, total=8.011 s; sync files=47, longest=0.413 s, average=0.164 s; distance=7980 kB, estimate=55754 kB; lsn=0/128FE200, redo lsn=0/128D5248
+
+2026-10-28 02:53:49.221 CST [28420] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 02:53:51.101 CST [28420] LOG:  checkpoint complete: wrote 41 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.009 s, sync=1.173 s, total=1.880 s; sync files=13, longest=0.146 s, average=0.091 s; distance=267 kB, estimate=50205 kB; lsn=0/12917EB0, redo lsn=0/12917E58
+
+2026-10-28 02:53:59.415 CST [37120] LOG:  received fast shutdown request
+
+2026-10-28 02:54:00.249 CST [37120] LOG:  aborting any active transactions
+
+2026-10-28 02:54:00.273 CST [37120] LOG:  background worker "logical replication launcher" (PID 36312) exited with exit code 1
+
+2026-10-28 02:54:00.326 CST [28420] LOG:  shutting down
+
+2026-10-28 02:54:00.875 CST [28420] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-28 02:54:03.762 CST [28420] LOG:  checkpoint complete: wrote 36 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.009 s, sync=2.464 s, total=3.436 s; sync files=12, longest=0.743 s, average=0.206 s; distance=269 kB, estimate=45211 kB; lsn=0/1295B650, redo lsn=0/1295B650
+
+2026-10-28 02:54:04.069 CST [37120] LOG:  database system is shut down
+

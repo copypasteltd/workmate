@@ -1,5 +1,46 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- desktop-updates-stage116-final -->
+已修正静默安装后的应用重启交接，并重新验证 Desktop 更新、后台发布及本机安装准入。
+
+使用 node scripts/run-desktop-updates-v1.mjs NN core|native|clients 及 node scripts/run-desktop-updates-ui-v1.mjs NN 复现，每次使用新的两位尝试编号。套件绑定准确源码、原始 TAP、原生信任检查及真实 Electron／Admin 录制，结束关闭自建原生 PostgreSQL／浏览器／Electron 服务。保留失败尝试和已执行核查脚本。签名 Node 夹具仅下载与校验，绝不安装或执行。禁止 Docker、WSL 和其他虚拟化。
+
+验证：64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Windows 信任检查与 Electron 为实际运行；账户／模型及惰性签名文件为测试夹具。公司签名安装版本的完整升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/116-desktop-updates.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-updates-final-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-ready.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-update-available.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-update-verified.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-update-zh-dark.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-withdrawn.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.gif)
+
+[Actual interaction video / 实际交互视频](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-signed-update-download.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-03-signed-update-download.gif)
+
+
 <!-- desktop-updates-stage116 -->
 已接通 Desktop 受控更新：后台发布、签名下载及本机安装准入。
 
