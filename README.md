@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- native-recovery-stage114 -->
+已实现原生加密备份与隔离恢复：同一快照的数据库及不可变文件经完整认证，恢复后先应用较新的独立删除日志，再提供核验凭证。
+
+Agent 继续在客户本机使用 Codex，保留可撤回完整权限、无边框和无 Electron 菜单。备份覆盖已提交的服务器数据及文件，不包含客户本机文件或本地进程检查点。隔离服务器不能凭恢复后的任务历史重新发起本机执行。
+
+验证：64 项相关后端测试（含 10 项原生恢复测试）、13 项构建／类型检查、6 条真实后台流程及 3 种布局。备份及恢复使用真实原生工具；客户与模型数据为假数据。生产切换、异地耐久性、PITR 与完整生产 RPO／RTO 仍未通过验收。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/114-native-backup-recovery.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-recovery-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Live[Native database and immutable objects] --> Snapshot[One exported snapshot]
+  Snapshot --> Archive[Authenticated encrypted archive]
+  Live --> Journal[Independent deletion journal]
+  Archive --> Verify[Verify every file and key]
+  Journal --> Verify
+  Verify --> Restore[New quarantined database and directory]
+  Restore --> Erase[Replay newer deletion records]
+  Erase --> Receipt[Immutable isolated recovery receipt]
+  Receipt --> Admin[Global permission and current MFA]
+  Restore --> Fence[API and workers remain fenced]
+```
+
+![Actual Admin recovery readiness / 实际后台恢复面板](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/workmate-recovery-06-overview-en.png)
+
+![Actual Admin recovery interaction / 实际后台恢复交互](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/workmate-06-native-recovery.gif)
+
+
 <!-- controlled-budget-stage113 -->
 Google Ads 预算修改已接通有期限的明确策略、不可改写的确切预览、客户确认、一次持久入场及原始回执。未知结果经观察及人工核对关闭，不重发修改。
 
