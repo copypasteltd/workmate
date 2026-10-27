@@ -1,5 +1,22 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- audio-accounting-stage109 -->
+
+客户音讯及平台验证的未知费用已接通不可改写的原请求证据、分开的费用与终止独立审批、权限范围及冻结费率核对。费用确认不直接扣款或释放容量；任务仍经独立审批、在原预留内结算一次，并保留原业务失败。
+
+两项确认完成后可明确发起新平台验证，旧 POST、媒体结论和验证回执均保留。Web、无边框 Desktop 及 Chrome 原生右侧侧栏展示人工证据来源；Desktop 本地 Codex／完整权限与 Extension 云端执行约束继续执行。
+
+本轮先通过 253 项相关后端检查，并在并发修复后通过 65 项音讯／授权回归；另通过 9 项后台表单／金额检查、7 项三端编译／构建检查及 8 项实际后台页面流程，原始失败记录保留。下方截图及 GIF／MP4 为实际后台交互，账号、模型和证据明确使用假数据；原生解码不代表真实音质验收。阶段 106 整批未归因超时及原文件重放通过记录保留，本轮不改写为整体产品验收。
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/109-audio-evidence-accounting.md) · [MP4](assets/verification/audio-accounting-109/workmate-audio-accounting-08-audio-evidence-and-cost-preview.mp4)
+
+![Actual immutable evidence / 实际不可变证据](assets/verification/audio-accounting-109/workmate-audio-accounting-08-platform-immutable-evidence-form-en.png)
+
+![Original verification retained / 原验证保留](assets/verification/audio-accounting-109/workmate-audio-accounting-08-original-verification-accounted-unqualified-en.png)
+
+![Actual evidence and preview / 实际证据及预览](assets/verification/audio-accounting-109/workmate-audio-accounting-08-audio-evidence-and-cost-preview.gif)
+
+
 <!-- managed-audio-stage108 -->
 
 后台已接通语音与转录模型发版：固定声音、语言与精确费率，平台预算支付的持久验证，实际后台进度、停止、独立审批和历史回滚。已有客户工作保留原模型及费率，音讯使用仍需客户独立授权。

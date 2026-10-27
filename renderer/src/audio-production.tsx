@@ -8,7 +8,8 @@ import "./audio-production.css";
 interface AudioAsset { id: string; name: string; version: number; revision: number; kind: string; sha256: string }
 interface AudioJob { id: string; task_id: string; kind: string; state: string; revision: number; subtitle_revision: number;
   quoted_micros: string; actual_micros: string | null; duration_ms: number | null; cancel_requested: boolean;
-  delivery_state: string; assets: AudioAsset[] }
+  delivery_state: string; assets: AudioAsset[];
+  accounting: { confirmed_micros: string | null; cost_source: string; accounting_resolved: boolean; capacity_held: boolean; allocation_exceeded: boolean } }
 interface Cue { start_ms: number; end_ms: number; text: string }
 interface Transcript { text: string; cues: Cue[]; timing_source: string; duration_ms: number; revision: number }
 interface AudioAuthorization { id: string; task_id: string; state: string; revision: number; specification_hash: string;
@@ -163,8 +164,9 @@ export function AudioProductions({ base, taskId }: { base: string; taskId: strin
       <header><span className="audio-icon">{job.kind === "speech" ? <Mic2 size={20} /> : <FileAudio size={20} />}</span><div><strong>{job.kind === "speech" ? t("AI 配音", "AI speech") : t("音訊轉寫與字幕", "Transcription and subtitles")}</strong>
         <p>{job.duration_ms ? `${job.duration_ms / 1000} ${t("秒", "seconds")}` : t("尚無已確認音訊", "Audio not yet confirmed")}</p></div><span className="badge" role="status">{t(...(states[job.state] ?? [job.state, job.state]))}</span></header>
       <dl><div><dt>{t("公司收費上限", "Company tariff limit")}</dt><dd><Money value={job.quoted_micros} /></dd></div>
-        <div><dt>{t("已確認公司費用", "Confirmed company charge")}</dt><dd>{job.actual_micros === null ? t("待確認", "Unconfirmed") : <Money value={job.actual_micros} />}</dd></div></dl>
-      {job.actual_micros === null && <p className="muted">{t("原任務預留會保留，請勿重新提交未知的作業。", "The original task hold remains. Do not resubmit an unknown operation.")}</p>}
+        <div><dt>{t("已確認公司費用", "Confirmed company charge")}</dt><dd>{job.accounting.confirmed_micros === null ? t("待確認", "Unconfirmed") : <Money value={job.accounting.confirmed_micros} />}</dd></div></dl>
+      {job.accounting.confirmed_micros === null && <p className="muted">{t("原任務預留會保留，請勿重新提交未知的作業。", "The original task hold remains. Do not resubmit an unknown operation.")}</p>}
+      {job.accounting.cost_source === "human_evidence" && <p className="muted">{t("費用已按外部證據獨立確認。原作業結果仍保留；此處的確認金額將受原任務預算限制結算。", "Cost was independently confirmed from external evidence. The original outcome is retained; settlement remains bounded by the original task budget.")}</p>}
       {job.delivery_state === "blocked" && <p className="notice">{t("交付已停止，請核對原任務、來源與權限。", "Delivery stopped. Review the original task, source and permissions.")}</p>}
       <div className="audio-actions">
         {job.delivery_state === "available" && job.assets.length > 0 && <button className="button secondary" onClick={() => setOpen(open === job.id ? null : job.id)}>{open === job.id ? <X size={16} /> : <Play size={16} />}{open === job.id ? t("收起內容", "Close preview") : t("查看音訊與字幕", "Review audio and subtitles")}</button>}
