@@ -119,6 +119,7 @@ import {
 import {
   analysisSourcesInput,
   connectorReadInput,
+  connectorReadInputV1,
   analysisSourceReadInput,
   analysisFileInspectInput,
   listAnalysisSources,
@@ -177,8 +178,10 @@ export class TaskBusinessTools {
     const analysisTools = [
       "information-design@1.1.0",
       "marketing-analyst@1.1.0",
+      "marketing-analyst@1.2.0",
       "presentation@1.1.0",
     ].includes(role.role_key + "@" + role.version);
+    const webAnalysisTools = role.role_key === "marketing-analyst" && role.version === "1.2.0";
     const vectorTools =
       role.role_key === "brand-visual" && role.version === "1.1.0";
     const slidesTools =
@@ -392,11 +395,11 @@ export class TaskBusinessTools {
       {
         name: "connector_read",
         description:
-          "List or read paged already captured Google Ads, Meta, GA4 and Search Console snapshots. Returns actual facts and scope, never live retrieval or credentials. Use normalized dataset_ids with sheet_calculate; request missing customer authorization instead of fabricating account data.",
-        inputSchema: z.toJSONSchema(connectorReadInput),
+          webAnalysisTools ? "List or read paged already captured Google Ads, Meta, GA4 and Search Console snapshots. For GA4/search performance, supply analysis with exact profile, account_id, date_from, date_to and supported group_by dimensions to obtain deterministic source-bound metrics, null reasons, observed coverage and a calculation SHA-256. totalUsers is never summed across rows; search CTR uses totals and position is impression-weighted over captured byPage rows. Follow next_offset. Use normalized campaign dataset_ids with sheet_calculate. Never perform live retrieval, fabricate authorization or merge reporting profiles/accounts." : "List or read paged already captured Google Ads, Meta, GA4 and Search Console snapshots. Returns actual facts and scope, never live retrieval or credentials. Use normalized dataset_ids with sheet_calculate; request missing customer authorization instead of fabricating account data.",
+        inputSchema: z.toJSONSchema(webAnalysisTools ? connectorReadInput : connectorReadInputV1),
         run: readTool(
           (tx, a) => readFrozenConnector(tx, this.storage, t, a),
-          connectorReadInput,
+          webAnalysisTools ? connectorReadInput : connectorReadInputV1,
         ),
       },
       {

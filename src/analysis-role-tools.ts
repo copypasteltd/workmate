@@ -23,6 +23,9 @@ import {
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { connectorFact, connectorLimits } from "./connector-model.js";
 import { campaignFile, normalizeCampaignFile } from "./analytics-file.js";
+import {
+  calculateWebAnalytics, checkedWebSnapshot, webAnalyticsPage, webAnalyticsSelection,
+} from "./web-analytics.js";
 
 export const analysisSourcesInput = z
   .object({
@@ -31,17 +34,24 @@ export const analysisSourcesInput = z
     limit: z.number().int().min(1).max(20).default(12),
   })
   .strict();
-export const connectorReadInput = z
+const connectorReadFields = z
   .object({
     snapshot_id: uuid.optional(),
     after_id: uuid.optional(),
     offset: z.number().int().min(0).max(connectorLimits.facts).default(0),
     limit: z.number().int().min(1).max(20).default(12),
-  })
-  .strict()
+  }).strict();
+export const connectorReadInputV1 = connectorReadFields
   .refine(
     (v) => (v.snapshot_id ? !v.after_id : v.offset === 0),
     "Choose a snapshot with a fact offset, or list snapshots with an optional cursor",
+  );
+export const connectorReadInput = connectorReadFields.extend({ analysis: webAnalyticsSelection.optional() })
+  .refine(v => v.snapshot_id ? !v.after_id : v.offset === 0,
+    "Choose a snapshot with a fact offset, or list snapshots with an optional cursor")
+  .refine(
+    v => !v.analysis || !!v.snapshot_id,
+    "Website calculations require one exact captured snapshot",
   );
 export const analysisSourceReadInput = z
   .object({ source_version_id: uuid })
@@ -613,7 +623,7 @@ export async function readFrozenConnector(
       "CONNECTOR_SNAPSHOT_INTEGRITY",
       "The captured connector snapshot failed its scope check",
     );
-  if (input.offset > body.facts.length)
+  if (!input.analysis && input.offset > body.facts.length)
     throw new Problem(
       422,
       "ANALYSIS_PAGE_RANGE",
@@ -627,6 +637,17 @@ export async function readFrozenConnector(
     row.source_version_id,
     row.sha256,
   );
+  if (input.analysis) {
+    const checked = checkedWebSnapshot(row, bytes);
+    const query = new URLSearchParams({ profile: input.analysis.profile, account_id: input.analysis.account_id,
+      date_from: input.analysis.date_from, date_to: input.analysis.date_to, group_by: [...input.analysis.group_by].sort().join(",") });
+    const reportPath = `/v1/tenants/${t.tenant_id}/projects/${t.project_id}/connector-snapshots/${row.id}/web-analysis`;
+    return { kind: "captured_web_analytics", ...webAnalyticsPage(
+      calculateWebAnalytics(row, checked, input.analysis), input.offset, Math.min(input.limit, 2)),
+      report_downloads: Object.fromEntries(["html", "csv", "json"].map(format => [format, reportPath + "?" + query.toString() + "&format=" + format])),
+      page_notice: "Group evidence is paginated. Follow next_offset. Summary covers observed captured rows only; totalUsers is never added across source rows. No live request or additional model charge.",
+    };
+  }
   const end = input.offset + input.limit;
   return {
     kind: "captured_connector_facts",

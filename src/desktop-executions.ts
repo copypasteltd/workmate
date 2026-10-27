@@ -415,7 +415,7 @@ export async function registerDesktopExecutions(
       ? { ...installedRole, tool_ids: installedRole.tool_ids.filter((id: string) => t.native_agent_tool_ids.includes(id)) }
       : installedRole;
     const analysisReady =
-      role.version === "1.1.0" &&
+      (role.version === "1.1.0" || (role.role_key === "marketing-analyst" && role.version === "1.2.0")) &&
       ["marketing-analyst", "information-design", "presentation"].includes(
         role.role_key,
       );

@@ -17,7 +17,8 @@ export type ConnectorFixtureFault =
   | "row_count_changed"
   | "slow"
   | "missing_scope"
-  | "cross_account";
+  | "cross_account"
+  | "negative_revenue";
 const escape = (s: string) =>
   s
     .replaceAll("&", "&amp;")
@@ -316,7 +317,7 @@ export async function startConnectorFixture(config: Config) {
         ).map((value) => ({ value })),
         metricValues: (event
           ? ["150", "100", "3"]
-          : ["120", "100", "150", "3", "800.50"]
+          : ["120", "100", "150", "3", fault === "negative_revenue" && i === 0 ? "-1800.50" : "800.50"]
         ).map((value) => ({ value })),
       }));
       return send(res, 200, {

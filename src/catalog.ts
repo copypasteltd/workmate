@@ -193,6 +193,23 @@ export class Catalog {
     );
     this.skills.push(scheduleRelease.skill_package);
     this.skillDefinitions.push(scheduleRelease.skill_definition);
+    const webRelease = JSON.parse(await readFile("catalog/web-analytics-release-v1.json", "utf8"));
+    const webBase = this.role("marketing-analyst");
+    if (webRelease.schema !== "copypaste-web-analytics-release-1" || webBase.version !== "1.1.0" ||
+      webRelease.previous_role_sha256 !== this.digest(webBase) || webRelease.role.role_key !== webBase.role_key ||
+      webRelease.role.version !== "1.2.0" || canonical(webRelease.role.tool_ids) !== canonical(webBase.tool_ids) ||
+      canonical(webRelease.role.model_bindings) !== canonical(webBase.model_bindings) ||
+      canonical(webRelease.role.skill_bindings) !== canonical([...webBase.skill_bindings, { skill_key: "web-analytics", version: "1.0.0", required: true }]) ||
+      webRelease.skill_package.key !== "web-analytics" || webRelease.skill_package.version !== "1.0.0" ||
+      webRelease.skill_definition.skill_key !== "web-analytics" || webRelease.skill_definition.version !== "1.0.0" ||
+      webRelease.skill_definition.package_sha256 !== webRelease.skill_package.sha256 ||
+      canonical(webRelease.skill_definition.tool_ids) !== canonical(["connector.read"]) ||
+      this.skills.some(s => s.key === "web-analytics" && s.version === "1.0.0"))
+      throw new Problem(503, "ROLE_RELEASE_INVALID", "Website analysis release does not match its retained role, Skills and permissions");
+    this.historicalRoles.push(webBase);
+    this.roles = this.roles.map(r => r.role_key === webBase.role_key ? webRelease.role : r);
+    this.skills.push(webRelease.skill_package);
+    this.skillDefinitions.push(webRelease.skill_definition);
     this.admin = JSON.parse(
       await readFile("catalog/admin-permission-catalog.json", "utf8"),
     );

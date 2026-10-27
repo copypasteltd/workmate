@@ -13,6 +13,7 @@ import {
   connectorQuery,
   discoveryCursor,
   decimalValue,
+  signedRevenueValue,
   fact,
   pageCursor,
   type ConnectorAccount,
@@ -84,6 +85,14 @@ function decimal(v: unknown): string | null {
   )
     invalid();
   const parsed = decimalValue.safeParse(String(v));
+  if (!parsed.success) invalid();
+  return parsed.data;
+}
+function revenueDecimal(v: unknown): string | null {
+  if (v === undefined || v === null || v === "") return null;
+  if ((typeof v !== "string" && typeof v !== "number") ||
+    (typeof v === "number" && (!Number.isFinite(v) || (Number.isInteger(v) && !Number.isSafeInteger(v))))) invalid();
+  const parsed = signedRevenueValue.safeParse(String(v));
   if (!parsed.success) invalid();
   return parsed.data;
 }
@@ -823,7 +832,7 @@ export async function readConnectorPage(
           dims.slice(1).map((name, i) => [name, values[i + 1]]),
         ),
         Object.fromEntries(
-          metrics.map((name, i) => [name, decimal(r.metricValues[i].value)]),
+          metrics.map((name, i) => [name, name === "totalRevenue" ? revenueDecimal(r.metricValues[i].value) : decimal(r.metricValues[i].value)]),
         ),
       );
     });

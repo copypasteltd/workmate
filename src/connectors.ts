@@ -61,6 +61,14 @@ import {
   refreshConnectorCredential,
 } from "./connector-provider.js";
 import { ConnectorFailure } from "./connector-http.js";
+import {
+  calculateWebAnalytics,
+  checkedWebSnapshot,
+  renderWebAnalytics,
+  webAnalyticsOptions,
+  webAnalyticsPage,
+  webAnalyticsSelection,
+} from "./web-analytics.js";
 
 const tenantOf = (req: FastifyRequest) =>
   uuid.parse(req.headers["x-tenant-id"] ?? (req.params as any).tenant);
@@ -1587,12 +1595,47 @@ export function registerConnections(
           spec_hash: row.spec_hash,
           dataset_ids: row.dataset_ids,
           asset_id: row.asset_id,
+          web_analysis_options: webAnalyticsOptions(body),
           facts: body.facts.slice(q.offset, q.offset + q.limit),
           next_offset:
             q.offset + q.limit < body.facts.length ? q.offset + q.limit : null,
         };
       },
     );
+  for (const reportRoute of [
+    "/v1/connector-snapshots/:id/web-analysis",
+    "/v1/tenants/:tenant/projects/:project/connector-snapshots/:id/web-analysis",
+  ]) app.get(reportRoute, { preHandler: requireUser(db) }, async (req, reply) => {
+    const tenant = tenantOf(req), id = idOf(req);
+    const q = webAnalyticsSelection.extend({
+      group_by: z.string().max(100).default("").transform(s => webAnalyticsSelection.shape.group_by.parse(s ? s.split(",") : [])),
+      offset: z.coerce.number().int().min(0).max(10000).default(0),
+      limit: z.coerce.number().int().min(1).max(100).default(20),
+      format: z.enum(["page", "json", "csv", "html"]).default("page"),
+      locale: z.enum(["zh-HK", "en-HK"]).default("zh-HK"),
+    }).strict().parse(req.query);
+    const access = async (tx: Tx) => {
+      const row = await snapshotAccess(tx, req.principal, tenant, id);
+      if ((req.params as any).project && (row.project_id !== (req.params as any).project || tenant !== (req.params as any).tenant)) throw notFound();
+      return row;
+    };
+    const row = await db.tx(access, tenant, true, req.principal.id);
+    const body = checkedWebSnapshot(row, await storage.get(row.storage_key));
+    const { offset, limit, format, locale, ...selection } = q;
+    const report = calculateWebAnalytics(row, body, selection);
+    const result = format === "page" ? webAnalyticsPage(report, offset, limit) : renderWebAnalytics(report, format, locale);
+    await db.tx(async tx => {
+      try { await tx.query("SELECT id FROM assets WHERE id=$1 FOR SHARE NOWAIT", [row.asset_id]); }
+      catch (e) { if ((e as any).code === "55P03") throw new Problem(409, "CONNECTOR_SOURCE_CHANGING", "The source is changing; reload its current availability"); throw e; }
+      const current = await access(tx);
+      if (current.sha256 !== row.sha256 || current.spec_hash !== row.spec_hash || current.state !== row.state)
+        throw new Problem(409, "CONNECTOR_SNAPSHOT_INTEGRITY", "The source changed during calculation");
+    }, tenant, true, req.principal.id);
+    reply.header("Cache-Control", "private, no-store").header("X-Content-Type-Options", "nosniff");
+    if (format !== "page") return reply.type(format === "html" ? "text/html; charset=utf-8" : format === "csv" ? "text/csv; charset=utf-8" : "application/json")
+      .header("Content-Disposition", `attachment; filename="workmate-web-analysis.${format}"`).send(result);
+    return result;
+  });
   // Historical arbitrary-account report entry points are deliberately retired.
   const legacy = "/v1/tenants/:tenant/projects/:project/connections";
   app.get(legacy, { preHandler: requireUser(db) }, async (req) => {

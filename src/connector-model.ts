@@ -182,6 +182,8 @@ export const pageCursor = z.discriminatedUnion("kind", [
 ]);
 export type PageCursor = z.infer<typeof pageCursor>;
 export const decimalValue = z.string().regex(/^\d{1,20}(?:\.\d{1,12})?$/);
+// GA4 totalRevenue includes refunds. Keep count/ad-spend facts non-negative.
+export const signedRevenueValue = z.string().regex(/^-?\d{1,20}(?:\.\d{1,12})?$/);
 export const connectorFact = z
   .object({
     key: z.string().regex(/^[a-f\d]{64}$/),
@@ -189,14 +191,19 @@ export const connectorFact = z
     profile: reportProfile,
     date: calendarDate,
     dimensions: z.record(z.string().max(100), cleanText),
-    metrics: z.record(z.string().max(100), decimalValue.nullable()),
+    metrics: z.record(z.string().max(100), signedRevenueValue.nullable()),
     currency: z
       .string()
       .regex(/^[A-Z]{3}$/)
       .nullable(),
     timezone: z.string().min(1).max(100).nullable(),
   })
-  .strict();
+  .strict()
+  .superRefine((v, ctx) => {
+    for (const [key, value] of Object.entries(v.metrics))
+      if (value?.startsWith("-") && !(v.profile === "ga4_traffic" && key === "totalRevenue"))
+        ctx.addIssue({ code: "custom", path: ["metrics", key], message: "Only GA4 totalRevenue may include a negative refund balance" });
+  });
 export type ConnectorFact = z.infer<typeof connectorFact>;
 export function fact(
   query: ConnectorQuery,
