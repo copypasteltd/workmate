@@ -1,5 +1,9 @@
 # 实际开发、独立仓库与交付
 
+<!-- native-pairing-stage118 -->
+Desktop 0.7.1 已加入持久配对、精确创建重试、先于创建的退休、旧设备失败停止、账户迟到响应隔离及未知设备的卸载清理。SQL128 为向前迁移；完整产品、公司签名安装版本及真实模型验收继续保留。详见 [实现方案](../technical/118-recoverable-native-pairings.md) 与 [准确证据](../quality/native-pairing-checkpoint.json)。
+
+
 <!-- desktop-removal-stage117 -->
 Desktop 0.7.0 已接通原生确认、本机 Codex／文件／程序／浏览器撤权、设备签名云端断开、Host 退出与注册归属检查、可选安全缓存清理、Windows 卸载钩子及重新 PKCE 登录。离线与未验证结果保留加密待发回执。公司签名已安装产品卸载／升级和原始完整产品验收仍未证明。详见 [实现方案](../technical/117-desktop-removal.md) 与 [准确证据](../quality/desktop-removal-checkpoint.json)。
 
