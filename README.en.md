@@ -1,5 +1,17 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- responsive-report-stage112 -->
+Website reports now use a dedicated wider dialog and intrinsic metric columns. Complete CTR, ranking and refund values remain readable on one line at the measured 375px Web and 800px Desktop sizes; scrolling remains available without Desktop rails.
+
+16 actual client flows, five measured layout states and 11 build/package checks passed. The previous 195 backend/native checks are retained; this CSS increment does not claim they were rerun. Synthetic accounts/models and unsigned packaging.
+
+[Evidence / 證據](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/report-layout-checkpoint.json)
+
+![Actual readable search report / 實際搜尋報告](assets/screenshots/workmate-web-analysis-08-search-en.png)
+
+![Actual interaction / 實際交互](assets/screenshots/workmate-08-website-analysis.gif)
+
+
 <!-- website-analytics-stage111 -->
 Website reports now connect captured GA4 traffic/events and Search Console data to exact metrics and complete HTML/CSV/JSON. Distinct users are never summed across rows, refund revenue can be negative, and missing dates remain unknown. Report calculation adds no AI call or fee.
 
