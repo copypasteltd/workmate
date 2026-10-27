@@ -1,5 +1,8 @@
 # 产品 API、事件与错误契约
 
+**签名事件实现 / Signed events：** 新增的实际接口和运行时 DTO 以 [cloud-events.openapi.json](../contracts/cloud-events.openapi.json) 为准，来源为实际 Zod schema，而非下文早期设计。客户确认、控制和密钥轮换使用当前用户授权、CSRF／产品 bearer 及幂等键；独立 webhook 入口对 32 KiB 原始 JSON 按 Workmate HMAC 协议验签，持久化后返回 202。Admin 仅有受范围与近期 MFA 约束的元数据读取和暂停。详见[当前方案](115-signed-cloud-events.md)。
+
+
 实施状态：本分册保留长期设计约束；本轮锁定版本、实际 API/工具、各端实现与差异，以 [实际开发清单](12-implementation-and-repositories.md) 和 [运行验收](../quality/04-implementation-acceptance.md) 为准，未实现项没有删除。
 
 

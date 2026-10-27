@@ -1,5 +1,8 @@
 # 预设角色与 Skill 模板需求
 
+**流程顾问事件增量 / Event specialist increment：** 顾问当前加法发布为 `1.3.0`，新增 `workflow-events@1.0.0`，保留旧角色与 Skill 摘要。Web／Extension 云端任务只获得事件预览、准备提案和状态工具，不能由模型启用或代客户批准费用；只读任务不获得提案写入。Desktop 继续使用本机流程工具。当前事件绑定与验证见[阶段 115 方案](../technical/115-signed-cloud-events.md)；本节下方各旧目录及历史记录保持原验收范围。
+
+
 
 **阶段 104 / Stage 104：** 已接通私有对话／成果到明确确认的云端每日／每周计划、不可变版本、逐次 run、人工审批、费用结算、暂停／取消隔离、客户恢复确认和按范围的 MFA Admin 暂停。78 项相关后端检查、8 项实际跨端流程、8 张截图、3 组交互录制；明确假数据。SQL120 新增，SQL001–119 保留。Desktop 本机 Codex 不被云端替代；原 102 REQ／TC 和完整验收结论不改写。见[方案与实际范围](../technical/104-private-cloud-schedules.md)。
 

@@ -1,5 +1,8 @@
 # M07/M08 外部连接与企业流程
 
+**阶段 115 / Stage 115：** 已接通私有流程的签名事件提案、客户明确确认、一次性加密密钥、持久 inbox 与 event_id 去重、跨实例串行运行、繁忙策略、时区每日费用限制、失败核对及来源删除；Web 与 Chrome 原生右侧 Side Panel 提供客户控制，Admin 使用范围权限与近期 MFA 读取元数据并暂停未来事件。顾问 1.3.0 通过新增 Skill 实现，Desktop 保持本机 Codex。真实运行范围、截图和录制见[方案](../technical/115-signed-cloud-events.md)及[核查凭证](../quality/cloud-events-checkpoint.json)。这是 Workmate 自有签名协议；第三方原生事件、真实模型及完整产品验收仍须分别完成。
+
+
 
 **阶段 106 / Stage 106：** 已修复明确选中的私有文件跨任务读取、原生 API 检查启动就绪和私有流程确认失效；97 个后端文件共 1230 项执行，1,229 通过、一项超时取消；原文件独立复查两项通过，保留未归因超时。11 项实际跨端流程通过。旧版本、费用与权限边界保留；模型／账号仍是假数据。见[实现与证据](../technical/106-selected-inputs-and-runtime-readiness.md)。
 
