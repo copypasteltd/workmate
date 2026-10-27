@@ -1,0 +1,47 @@
+
+> @copypaste/desktop@0.7.1 package
+> npm run runtime:prepare && npm run build && electron-builder --win portable nsis --config.directories.output=release/native-pairings-118-01 --publish never
+
+
+> @copypaste/desktop@0.7.1 runtime:prepare
+> node scripts/prepare-local-codex.mjs
+
+{"status":"prepared","runtime":"0.163.0-alpha.11","destination":".data/runtime/windows-x64","files":{"codex.exe":{"sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","bytes":342187312},"codex-command-runner.exe":{"sha256":"e95db2235cde22f645c835e79e84b7fbc1e8130d7bfc997d94cdaab8042ecfe7","bytes":8217392},"codex-windows-sandbox-setup.exe":{"sha256":"229b04d59fe698df557780ebe6a2e890d235227ecdcbcd07d48affcc8c409cb8","bytes":17701680},"codex-code-mode-host.exe":{"sha256":"08f5c6131da89af9b3def059399caa9cd8dd9e54d6f9ee5f824223369cc40eb3","bytes":74922800}}}
+
+> @copypaste/desktop@0.7.1 build
+> node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts
+
+Deployment origins compiled; no AI credentials are embedded.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2017 modules transformed.
+rendering chunks...
+computing gzip size...
+renderer-dist/index.html                   0.92 kB │ gzip:   0.46 kB
+renderer-dist/assets/index-B7qGMM1Q.css  137.68 kB │ gzip:  24.50 kB
+renderer-dist/assets/index-CaYcsjCs.js   913.14 kB │ gzip: 284.09 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 647ms
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+  • executing @electron/rebuild  electronVersion=44.5.1 arch=x64 buildFromSource=false workspaceRoot=D:\dev\copypasted\自有agent\dev\copypaste-desktop projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=44.5.1 appOutDir=release\native-pairings-118-01\win-unpacked
+  • using custom unpacked Electron distribution  electronDist=node_modules\electron\dist
+  • copying unpacked Electron  source=D:\dev\copypasted\自有agent\dev\copypaste-desktop\node_modules\electron\dist destination=D:\dev\copypasted\自有agent\dev\copypaste-desktop\release\native-pairings-118-01\win-unpacked
+  • searching for node modules  pm=npm searchDir=D:\dev\copypasted\自有agent\dev\copypaste-desktop
+  • duplicate dependency references  dependencies=["react-dom@19.3.1","react-dom@19.3.1"]
+  • updating asar integrity executable resource  executablePath=release\native-pairings-118-01\win-unpacked\CopyPaste.exe
+  • file signing skipped via signExecutable configuration  file=release\native-pairings-118-01\win-unpacked\CopyPaste.exe
+  • building        target=portable file=release\native-pairings-118-01\CopyPaste-0.7.1-x64-Portable.exe archs=x64
+  • file signing skipped via signExecutable configuration  file=release\native-pairings-118-01\CopyPaste-0.7.1-x64-Portable.exe
+  • building        target=nsis file=release\native-pairings-118-01\CopyPaste-0.7.1-x64-Setup.exe archs=x64 oneClick=false perMachine=false
+  • file signing skipped via signExecutable configuration  file=release\native-pairings-118-01\CopyPaste-0.7.1-x64-Setup.__uninstaller.exe
+  • file signing skipped via signExecutable configuration  file=release\native-pairings-118-01\CopyPaste-0.7.1-x64-Setup.exe
+  • building block map  blockMapFile=release\native-pairings-118-01\CopyPaste-0.7.1-x64-Setup.exe.blockmap

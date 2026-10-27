@@ -1,0 +1,433 @@
+.data-jobs-page {
+  min-width: 0;
+}
+.data-jobs-layout {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.8fr) minmax(0, 1.65fr);
+  gap: 22px;
+  align-items: start;
+}
+.data-job-list,
+.data-job-detail {
+  min-width: 0;
+  padding: 22px;
+}
+.data-job-list > header,
+.data-job-detail > header,
+.data-selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.data-job-list h2,
+.data-job-detail h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.data-job-row {
+  display: flex;
+  text-align: left;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 10px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.data-job-row.selected {
+  background: var(--blue-soft);
+  box-shadow: inset 3px 0 var(--blue);
+}
+.data-job-row:hover {
+  background: var(--warm);
+}
+.data-job-row > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+.data-job-row strong {
+  font-size: 12px;
+}
+.data-job-row small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.data-job-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--blue);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.data-state {
+  width: fit-content;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: var(--warm);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+  white-space: normal;
+}
+.data-state-succeeded {
+  background: #edf5ef;
+  color: #246b4e;
+}
+.data-state-failed,
+.data-state-needs_authorization {
+  color: #96332f;
+  background: #fff0ec;
+}
+.data-state-running,
+.data-state-queued {
+  color: var(--blue);
+  background: var(--blue-soft);
+}
+.data-state-partially_succeeded {
+  background: #fff7e3;
+  color: #7a5419;
+}
+.data-empty {
+  padding: 48px 12px;
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  color: var(--muted);
+}
+.data-empty > svg {
+  color: var(--blue);
+}
+.data-empty h2,
+.data-empty h3 {
+  color: var(--ink);
+  font-family: Fraunces, "Microsoft JhengHei", serif;
+  font-size: 25px;
+  font-weight: 450;
+  line-height: 1.4;
+  margin: 0;
+}
+.data-empty p {
+  max-width: 36em;
+  font-size: 12px;
+  line-height: 1.9;
+  margin: 0;
+}
+.data-result-counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 22px 0 14px;
+}
+.data-result-counts > div {
+  display: grid;
+  gap: 8px;
+}
+.data-result-counts strong {
+  font-family: Fraunces, serif;
+  font-size: 32px;
+  font-weight: 450;
+}
+.data-result-counts span {
+  color: var(--muted);
+  font-size: 10px;
+}
+.data-job-detail progress {
+  width: 100%;
+  height: 5px;
+  accent-color: var(--blue);
+}
+.data-job-reason {
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.data-facts {
+  display: grid;
+  gap: 12px;
+  font-size: 11px;
+  margin: 18px 0;
+}
+.data-facts > div {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  gap: 12px;
+}
+.data-facts dt {
+  color: var(--muted);
+}
+.data-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.data-facts code,
+.data-job-detail code,
+.data-preview code {
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.data-item-list {
+  border-top: 1px solid var(--line);
+}
+.data-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.data-item > span:first-child {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+.data-item small {
+  color: var(--muted);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.data-list-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 18px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.data-job-actions {
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+.data-download {
+  padding: 18px;
+  margin: 22px 0;
+  background: var(--blue-soft);
+  border: 1px solid #d8e3ff;
+  border-radius: 10px;
+}
+.data-download > div:first-child {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--blue);
+  font-size: 12px;
+}
+.data-download p {
+  font-size: 11px;
+  line-height: 1.8;
+}
+.data-download .row-actions {
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+.data-compose {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+.data-explanation {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.data-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.data-form-grid .field {
+  min-width: 0;
+}
+.data-form-grid input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+.data-review-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--blue-soft);
+  color: var(--blue);
+  border-radius: 10px;
+  padding: 16px;
+}
+.data-review-banner strong {
+  font-size: 13px;
+}
+.data-review-banner p {
+  font-size: 11px;
+  line-height: 1.8;
+  margin: 8px 0 0;
+}
+.data-preview h3,
+.data-job-detail h3 {
+  font-size: 12px;
+  margin-top: 24px;
+}
+.data-samples {
+  display: grid;
+  gap: 10px;
+  max-height: 275px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.data-samples dl {
+  padding: 12px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 8px;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.data-samples dl > div {
+  display: grid;
+  grid-template-columns: minmax(80px, 0.7fr) minmax(0, 1fr);
+  gap: 12px;
+  font-size: 10px;
+}
+.data-samples dt {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.data-samples dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.data-preview details,
+.data-selection details,
+.data-audit {
+  font-size: 11px;
+  line-height: 1.8;
+  margin-top: 18px;
+}
+.data-targets {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-left: 20px;
+  scrollbar-width: thin;
+}
+.data-targets li {
+  padding: 5px;
+}
+.data-targets span {
+  margin-left: 10px;
+  color: var(--muted);
+}
+.data-hash {
+  display: block;
+  margin-top: 16px;
+  font-size: 9px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.data-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.data-confirm input,
+.data-user-option input {
+  width: 16px !important;
+  min-height: 16px !important;
+  height: 16px;
+  padding: 0;
+  margin: 3px 0 0;
+  accent-color: var(--blue);
+  flex-shrink: 0;
+}
+.data-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.data-selected {
+  font-size: 11px;
+  margin: 12px 0;
+}
+.data-user-options {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  scrollbar-width: thin;
+}
+.data-user-option {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 11px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.data-user-option:last-child {
+  border-bottom: 0;
+}
+.data-user-option > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 5px;
+}
+.data-user-option strong {
+  font-size: 11px;
+}
+.data-user-option small {
+  font-size: 9px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.data-audit ol {
+  padding-left: 20px;
+}
+.data-audit li {
+  display: grid;
+  gap: 7px;
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0;
+}
+@media (max-width: 1100px) {
+  .data-jobs-layout {
+    grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.3fr);
+    gap: 14px;
+  }
+  .data-job-list,
+  .data-job-detail {
+    padding: 16px;
+  }
+}
+@media (max-width: 800px) {
+  .data-jobs-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .data-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .data-facts > div {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+  .data-job-row {
+    padding: 12px 8px;
+  }
+}

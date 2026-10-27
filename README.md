@@ -1,5 +1,47 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- native-pairing-stage118 -->
+Desktop 0.7.1 已加入持久本机配对、精确重试及不可逆意图退休。
+
+使用全新编号运行 run-native-pairing-v1.mjs NN core|native|clients 及选定 run-native-pairing-ui-vN.mjs NN。原生 PostgreSQL、Windows 加密、Electron IPC 和 Host 清理为真实运行；提交后503、模型／账户及原生确认答案为明确夹具。保留失败、TAP、精确快照与自建资源关闭证据。
+
+验证：42 backend + 141 Desktop + 22 native Codex checks; 13 builds; 7 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Windows DPAPI、自建 Native Host、Electron IPC、Web PKCE 和原生 PostgreSQL 为实际运行；客户／模型为假数据。原生确认答案和 shell 调度在隔离核查进程内控制。公司签名安装版本的卸载／升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/118-recoverable-native-pairings.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-pairing-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Explicit folder pairing] --> Intent[Durable signed intent]
+  Intent --> Pair[Current session and atomic create]
+  Pair --> Retry[Same device on retry]
+  Intent --> Retire[Sign-out or uninstall]
+  Retire --> Fence[Permanent private retirement]
+  Fence --> Receipt[Confirmed or durable pending receipt]
+```
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-computer-permissions.png)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-pairing-pending.png)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-pairing-recovered.png)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-offline-withdrawal.png)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-web__workmate-native-pairing-04-device-withdrawn.png)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-computer-zh-dark.png)
+
+[Actual interaction video / 实际交互视频](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-recover-pairing.mp4)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-recover-pairing.gif)
+
+[Actual interaction video / 实际交互视频](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-disconnect-and-retry.mp4)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-disconnect-and-retry.gif)
+
+
 <!-- desktop-removal-stage117 -->
 Desktop 0.7.0 已加入本机确认撤权、设备签名断开、Chrome Host 清理及可选缓存清理。
 

@@ -1,0 +1,113 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-RLyUZQ/runtime/.data/native-qa/807ea037-b0f7-4b25-b4dc-4ce34ef17b92 ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+
+selecting default "shared_buffers" ... 
+128MB
+
+selecting default time zone ... 
+Asia/Taipei
+
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-RLyUZQ^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-RLyUZQ^\runtime^\^.data^\native^-qa^\807ea037^-b0f7^-4b25^-b4dc^-4ce34ef17b92^" -l logfile start
+
+
+2026-10-28 06:11:41.203 CST [37292] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-28 06:11:41.210 CST [37292] LOG:  listening on IPv6 address "::1", port 14196
+
+2026-10-28 06:11:41.210 CST [37292] LOG:  listening on IPv4 address "127.0.0.1", port 14196
+
+2026-10-28 06:11:41.421 CST [24268] LOG:  database system was shut down at 2026-10-28 06:11:17 CST
+
+2026-10-28 06:11:41.454 CST [37292] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:14196. Application roles are not owners and do not bypass RLS.
+2026-10-28 06:12:17.243 CST [35108] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 06:12:29.213 CST [35108] LOG:  checkpoint complete: wrote 1006 buffers (6.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.120 s, sync=11.496 s, total=11.971 s; sync files=312, longest=0.100 s, average=0.037 s; distance=26328 kB, estimate=26328 kB; lsn=0/31A77B8, redo lsn=0/31A7728
+
+2026-10-28 06:12:40.131 CST [35108] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 06:12:40.721 CST [35108] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.310 s, total=0.591 s; sync files=8, longest=0.054 s, average=0.039 s; distance=21607 kB, estimate=25856 kB; lsn=0/46C16A8, redo lsn=0/46C1650
+
+2026-10-28 06:12:50.914 CST [35108] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 06:12:51.705 CST [35108] LOG:  checkpoint complete: wrote 45 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.512 s, total=0.791 s; sync files=14, longest=0.060 s, average=0.037 s; distance=21789 kB, estimate=25449 kB; lsn=0/5C08C38, redo lsn=0/5C08BE0
+
+2026-10-28 06:12:58.820 CST [26976] ERROR:  Native pairing identity and retirement are immutable
+2026-10-28 06:12:58.820 CST [26976] CONTEXT:  PL/pgSQL function guard_desktop_pairing() line 6 at RAISE
+2026-10-28 06:12:58.820 CST [26976] STATEMENT:  UPDATE desktop_pairings SET state='paired' WHERE user_id=$1 AND id=$2
+
+2026-10-28 06:12:59.171 CST [27316] ERROR:  permission denied for table desktop_pairings
+2026-10-28 06:12:59.171 CST [27316] STATEMENT:  INSERT INTO desktop_pairings(user_id,id,tenant_id,family_id,input_hash,public_key,state) VALUES($1,$2,$3,$4,$5,$6,'retired')
+
+2026-10-28 06:12:59.265 CST [35108] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 06:12:59.770 CST [35108] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.008 s, sync=0.317 s, total=0.506 s; sync files=8, longest=0.056 s, average=0.040 s; distance=21588 kB, estimate=25063 kB; lsn=0/711DEE8, redo lsn=0/711DE90
+
+2026-10-28 06:13:03.619 CST [35108] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 06:13:04.237 CST [35108] LOG:  checkpoint complete: wrote 49 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.436 s, total=0.619 s; sync files=11, longest=0.076 s, average=0.040 s; distance=21573 kB, estimate=24714 kB; lsn=0/862F550, redo lsn=0/862F4F8
+
+2026-10-28 06:13:07.625 CST [35108] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 06:13:08.203 CST [35108] LOG:  checkpoint complete: wrote 27 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.007 s, sync=0.384 s, total=0.578 s; sync files=10, longest=0.065 s, average=0.039 s; distance=21404 kB, estimate=24383 kB; lsn=0/9B167D8, redo lsn=0/9B16780
+
+2026-10-28 06:13:11.690 CST [32384] ERROR:  Review decisions are immutable
+2026-10-28 06:13:11.690 CST [32384] CONTEXT:  PL/pgSQL function protect_financial_approval() line 5 at RAISE
+2026-10-28 06:13:11.690 CST [32384] STATEMENT:  UPDATE admin_approval_decisions SET reason='Rewrite old evidence' WHERE id=$1
+
+2026-10-28 06:13:11.691 CST [32384] ERROR:  Frozen approval is immutable
+2026-10-28 06:13:11.691 CST [32384] CONTEXT:  PL/pgSQL function protect_financial_approval() line 19 at RAISE
+2026-10-28 06:13:11.691 CST [32384] STATEMENT:  UPDATE admin_approval_requests SET expires_at=now()+interval '1 day' WHERE operation_id=$1
+
+2026-10-28 06:13:11.794 CST [35108] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 06:13:12.345 CST [35108] LOG:  checkpoint complete: wrote 32 buffers (0.2%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.006 s, sync=0.352 s, total=0.551 s; sync files=10, longest=0.057 s, average=0.036 s; distance=21445 kB, estimate=24089 kB; lsn=0/B007C80, redo lsn=0/B007BF0
+
+2026-10-28 06:13:12.966 CST [37292] LOG:  received fast shutdown request
+
+2026-10-28 06:13:13.017 CST [37292] LOG:  aborting any active transactions
+
+2026-10-28 06:13:13.023 CST [37292] LOG:  background worker "logical replication launcher" (PID 18452) exited with exit code 1
+
+2026-10-28 06:13:13.023 CST [35108] LOG:  shutting down
+
+2026-10-28 06:13:13.061 CST [35108] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-28 06:13:13.230 CST [35108] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.041 s, total=0.208 s; sync files=1, longest=0.041 s, average=0.041 s; distance=0 kB, estimate=21680 kB; lsn=0/B007D98, redo lsn=0/B007D98
+
+2026-10-28 06:13:13.290 CST [37292] LOG:  database system is shut down
+
