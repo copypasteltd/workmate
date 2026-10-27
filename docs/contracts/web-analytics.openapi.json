@@ -1,0 +1,866 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste Website and Search Analytics",
+    "version": "111.0.0"
+  },
+  "paths": {
+    "/v1/connector-snapshots/{id}/web-analysis": {
+      "get": {
+        "operationId": "readWebsiteAnalysis",
+        "summary": "Calculate and download exact metrics from one retained GA4/GSC account and profile",
+        "description": "Strict query. Dates stay within capture. Read authorization and source availability are checked before and after file loading. No provider request, task reservation, model call or additional AI charge. Page offsets affect JSON page groups only; json/csv/html exports contain every selected group and the same full-report digest. Up to 10000 groups; export limit 8 MiB. Native Desktop and Extension bearer families keep their existing project scope. OAuth disconnect preserves previously retained snapshots. Quarantined, erased, expired, removed or unauthorized source data is rejected. A source changing under a concurrent lock returns 409. All exports are attachment downloads. The value null is distinct from zero; missing dates are never synthesized. The calculation digest covers the full report before pagination.",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "profile",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ga4_traffic",
+                "ga4_events",
+                "search_performance"
+              ]
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "group_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated distinct profile-supported dimensions. Empty means summary only. At most five; order is canonicalized."
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "page",
+                "json",
+                "csv",
+                "html"
+              ],
+              "default": "page"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "zh-HK",
+                "en-HK"
+              ],
+              "default": "zh-HK"
+            }
+          },
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default: paginated report. format=json: full report. CSV/HTML: complete bounded file. All responses private, no-store and nosniff. Download requires the same current authorization as preview.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "const": "nosniff"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReportPage"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Report"
+                    }
+                  ]
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict query rejected"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current membership denied"
+          },
+          "404": {
+            "description": "Project/source unavailable or private"
+          },
+          "409": {
+            "description": "Source integrity/scope changed or concurrently locked"
+          },
+          "422": {
+            "description": "Date/account/profile/dimension/page/group/export limit invalid"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/connector-snapshots/{id}/web-analysis": {
+      "get": {
+        "operationId": "readProjectWebsiteAnalysis",
+        "summary": "Calculate and download exact metrics from one retained GA4/GSC account and profile",
+        "description": "Strict query. Dates stay within capture. Read authorization and source availability are checked before and after file loading. No provider request, task reservation, model call or additional AI charge. Page offsets affect JSON page groups only; json/csv/html exports contain every selected group and the same full-report digest. Up to 10000 groups; export limit 8 MiB. Native Desktop and Extension bearer families keep their existing project scope. OAuth disconnect preserves previously retained snapshots. Quarantined, erased, expired, removed or unauthorized source data is rejected. A source changing under a concurrent lock returns 409. All exports are attachment downloads. The value null is distinct from zero; missing dates are never synthesized. The calculation digest covers the full report before pagination.",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "profile",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "ga4_traffic",
+                "ga4_events",
+                "search_performance"
+              ]
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 512
+            }
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "group_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated distinct profile-supported dimensions. Empty means summary only. At most five; order is canonicalized."
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "page",
+                "json",
+                "csv",
+                "html"
+              ],
+              "default": "page"
+            }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "zh-HK",
+                "en-HK"
+              ],
+              "default": "zh-HK"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default: paginated report. format=json: full report. CSV/HTML: complete bounded file. All responses private, no-store and nosniff. Download requires the same current authorization as preview.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "private, no-store"
+                }
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "const": "nosniff"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/ReportPage"
+                    },
+                    {
+                      "$ref": "#/components/schemas/Report"
+                    }
+                  ]
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict query rejected"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current membership denied"
+          },
+          "404": {
+            "description": "Project/source unavailable or private"
+          },
+          "409": {
+            "description": "Source integrity/scope changed or concurrently locked"
+          },
+          "422": {
+            "description": "Date/account/profile/dimension/page/group/export limit invalid"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "UserCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "NativeBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Selection": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "enum": [
+              "ga4_traffic",
+              "ga4_events",
+              "search_performance"
+            ]
+          },
+          "account_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "date_from": {
+            "type": "string",
+            "format": "date"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date"
+          },
+          "group_by": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "date",
+                "channel",
+                "landing_page",
+                "event",
+                "query",
+                "page",
+                "country",
+                "device"
+              ]
+            },
+            "maxItems": 5,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "profile",
+          "account_id",
+          "date_from",
+          "date_to",
+          "group_by"
+        ],
+        "additionalProperties": false
+      },
+      "Metric": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]{1,12})?$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "null_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "formula": {
+            "type": "string"
+          },
+          "evidence_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "value",
+          "unit",
+          "null_reason",
+          "formula",
+          "evidence_id"
+        ],
+        "additionalProperties": false
+      },
+      "Group": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "dimensions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "row_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Metric"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "dimensions",
+          "row_count",
+          "metrics"
+        ],
+        "additionalProperties": false
+      },
+      "Source": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "spec_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "complete",
+              "partial"
+            ]
+          },
+          "provider": {
+            "enum": [
+              "ga4",
+              "search_console"
+            ]
+          },
+          "data_mode": {
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "captured_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "platform_data_as_of": {
+            "const": null
+          },
+          "account_id": {
+            "type": "string"
+          },
+          "account_name": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string",
+            "minLength": 1
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profile": {
+            "enum": [
+              "ga4_traffic",
+              "ga4_events",
+              "search_performance"
+            ]
+          },
+          "reporting_identity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reporting_identity_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "api_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "sha256",
+          "spec_hash",
+          "state",
+          "provider",
+          "data_mode",
+          "captured_at",
+          "platform_data_as_of",
+          "account_id",
+          "account_name",
+          "timezone",
+          "currency",
+          "profile",
+          "reporting_identity",
+          "reporting_identity_source",
+          "api_version"
+        ],
+        "additionalProperties": false
+      },
+      "Coverage": {
+        "type": "object",
+        "properties": {
+          "selected_rows": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "snapshot_rows": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "observed_dates": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "maxItems": 370
+          },
+          "days_without_rows": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "maxItems": 370
+          },
+          "missing_dates_are_zero": {
+            "const": false
+          },
+          "scope": {
+            "const": "observed_source_rows"
+          }
+        },
+        "required": [
+          "selected_rows",
+          "snapshot_rows",
+          "observed_dates",
+          "days_without_rows",
+          "missing_dates_are_zero",
+          "scope"
+        ],
+        "additionalProperties": false
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "const": "web-analytics/1.0.0"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/Selection"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Group"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            },
+            "maxItems": 10000
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 210
+          },
+          "provider_calls": {
+            "const": 0
+          },
+          "additional_ai_calls": {
+            "const": 0
+          },
+          "additional_ai_charge_micros": {
+            "const": "0"
+          },
+          "calculation_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "schema",
+          "source",
+          "selection",
+          "coverage",
+          "summary",
+          "groups",
+          "limitations",
+          "provider_calls",
+          "additional_ai_calls",
+          "additional_ai_charge_micros",
+          "calculation_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "ReportPage": {
+        "type": "object",
+        "properties": {
+          "schema": {
+            "const": "web-analytics/1.0.0"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "selection": {
+            "$ref": "#/components/schemas/Selection"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Group"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            },
+            "maxItems": 10000
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 210
+          },
+          "provider_calls": {
+            "const": 0
+          },
+          "additional_ai_calls": {
+            "const": 0
+          },
+          "additional_ai_charge_micros": {
+            "const": "0"
+          },
+          "calculation_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "total_groups": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "next_offset": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "schema",
+          "source",
+          "selection",
+          "coverage",
+          "summary",
+          "groups",
+          "limitations",
+          "provider_calls",
+          "additional_ai_calls",
+          "additional_ai_charge_micros",
+          "calculation_sha256",
+          "total_groups",
+          "next_offset"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "x-role-release": {
+    "role_key": "marketing-analyst",
+    "version": "1.2.0",
+    "skill": "web-analytics@1.0.0",
+    "previous_version": "1.1.0",
+    "historical_descriptors_unchanged": true
+  },
+  "x-statistical-definitions": {
+    "ga4_users": "Single captured row only; multiple rows return null with non_additive_unique_users.",
+    "ga4_revenue": "Signed, includes negative net revenue after refunds; other metrics remain nonnegative.",
+    "ga4_event_ratio": "sum(keyEvents)/sum(sessions), explicitly not conversion rate.",
+    "gsc_ctr": "sum(clicks)/sum(impressions), not average row CTR.",
+    "gsc_position": "sum(position*impressions)/sum(impressions) over captured byPage rows; 8-decimal HALF_UP.",
+    "coverage": "Captured rows only; no cross-account, cross-profile or cross-platform attribution; sparse dates are unknown."
+  },
+  "x-primary-references": [
+    "https://developers.google.com/analytics/devguides/reporting/data/v1/api-schema",
+    "https://developers.google.com/analytics/devguides/collection/ga4/sessions",
+    "https://developers.google.com/webmaster-tools/v1/searchanalytics/query",
+    "https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data"
+  ]
+}

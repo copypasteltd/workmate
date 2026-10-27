@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-27T06:18:40.940621+00:00",
+  "status": "passed",
+  "checkpoint_sha256": "422454ecf70b5cf937faca69fa14cb99077d01e1826469e6373321c69473663e",
+  "source_unchanged": true,
+  "source_files_rehashed": 1866,
+  "checks": [
+    {
+      "args": [
+        "node",
+        "node_modules/typescript/bin/tsc"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform",
+      "exit_code": 0
+    },
+    {
+      "args": [
+        "node",
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform",
+      "exit_code": 0
+    },
+    {
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "const m=await import(process.argv[1]);if(typeof m.buildApp!==\"function\")throw new Error(\"Compiled server export missing\");console.log(\"Compiled backend import passed from an unrelated working directory\");",
+        "file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-platform/dist/src/server.js"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\docs",
+      "exit_code": 0
+    }
+  ],
+  "compiled_files": {
+    "dist/src/server.js": "ead1aa000ce3048362912fd08e0a08d3f8ee78f3280840823829b55483b7caaf",
+    "dist/src/web-analytics.js": "ce9bdcc029bd39c0aaca5f25dc6052627edf434043baa667742a4c1763127514",
+    "dist/src/connectors.js": "86f85761e7e5600ead1e3a2bc71cb9fe11ed8c23cd6df6578c4e714252cd281c",
+    "dist/src/connector-provider.js": "203a0f5d25bd5b76e2021f2bb80d9e70a172edc20c8f394b80f4052cc356091b",
+    "dist/src/analysis-role-tools.js": "fc42921b2bb1bbd06ef1983a170bc92763374824c781a3683e7503809587286f",
+    "dist/src/catalog.js": "33d1b7edce834877eca8950056471eed51d90647c28807685735d5303d8b467b"
+  },
+  "raw_log": {
+    "path": "docs/quality/web-analytics-backend-build-01.log",
+    "sha256": "2200434fc1fc660a23cf4e8848c3a5f7f2652453098ab7a860a6b5ec5b149fe4"
+  },
+  "scope": "Actual backend TypeScript emit, resource copy and compiled server import from docs cwd. No service/database/browser is started; this supplements the frozen native transaction and actual browser qualification.",
+  "verifier_sha256": "832413c64d232103da9668cc2380923c5a8cf985e491bb0a346274796d6ce09d"
+}

@@ -1,5 +1,28 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- website-analytics-stage111 -->
+網站報告已接通 GA4 流量／事件及 Search Console：可核對指標、完整 HTML／CSV／JSON。跨行用戶不相加、退款可為負收入、缺少日期保留未知；報告計算不新增 AI 呼叫或費用。
+
+122 backend checks · 53 Desktop unit checks · 20 actual native Codex checks · 11 actual client flows. 使用假帳戶／模型；真實供應商效果、正式簽名與全產品驗收尚未證明。
+
+[方案 / Design](technical/111-web-analytics.md) · [證據 / Evidence](quality/web-analytics-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Login[Login and project scope] --> Capture[Immutable GA4 or GSC snapshot]
+  Capture --> Verify[Source hash and current authority]
+  Verify --> Metrics[Exact captured-row calculation]
+  Metrics --> Clients[Web and native Desktop report]
+  Metrics --> Skill[Versioned marketing specialist]
+  Metrics --> Files[Complete HTML CSV JSON]
+  Admin[Admin source controls] --> Verify
+```
+
+![Actual website report / 實際網站報告](design/implementation/copypaste-web__workmate-web-analysis-07-ga4-en.png)
+
+![Actual report interaction / 實際報告交互](design/implementation/copypaste-web__workmate-07-website-analysis.gif)
+
+
 <!-- desktop-native-geo-stage110 -->
 Desktop GEO 已接通本机 Codex：独立空白会话、整批费用确认、逐题运行／停止、原回执恢复、原始回答留存与不可改写的重复观测比较。全部 AI 经公司接口，费用依据公司凭证。
 
