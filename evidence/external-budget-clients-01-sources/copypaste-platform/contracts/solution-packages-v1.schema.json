@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://copypaste.hk/contracts/solution-packages-v1",
+  "original_openapi_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4",
+  "$defs": {
+    "SolutionCreate": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instructions": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent_template_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "skill_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "required_assets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "required_connectors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": [
+        "project_id",
+        "name",
+        "instructions",
+        "agent_template_ids",
+        "skill_version_ids",
+        "required_assets",
+        "required_connectors"
+      ],
+      "additionalProperties": false
+    },
+    "SolutionVersion": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "definition": {
+          "$ref": "#/$defs/SolutionCreate"
+        },
+        "state": {
+          "type": "string",
+          "enum": ["draft", "published", "disabled"]
+        }
+      },
+      "required": ["id", "project_id", "version", "definition", "state"],
+      "additionalProperties": false
+    },
+    "SolutionPublish": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "validation_task_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": ["expected_version", "validation_task_id"],
+      "additionalProperties": false
+    },
+    "SolutionInstall": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["project_id"],
+      "additionalProperties": false
+    },
+    "SolutionInstallation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "solution_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "missing_requirements": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        },
+        "state": {
+          "type": "string",
+          "enum": ["needs_configuration", "ready"]
+        }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "solution_version_id",
+        "missing_requirements",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "SolutionVersionList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SolutionVersion"
+          },
+          "minItems": 0
+        },
+        "next_cursor": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["items", "next_cursor"],
+      "additionalProperties": false
+    }
+  }
+}

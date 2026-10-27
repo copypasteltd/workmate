@@ -1,0 +1,142 @@
+{
+  "schema": "copypaste-web-analytics-release-1",
+  "previous_role_sha256": "b2ec6ab8b78049cfb15ce006346d4c0b2806d7a5dae8aa61fa034981927c5b38",
+  "role": {
+    "role_key": "marketing-analyst",
+    "catalog_id": "R17",
+    "version": "1.2.0",
+    "display_name": "营销数据分析师",
+    "category": "marketing",
+    "status": "design_only",
+    "runtime_profile": "codex-internal-v1",
+    "skill_bindings": [
+      {
+        "skill_key": "ads-analysis",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "deterministic-metrics",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "dataviz",
+        "version": "1.1.0",
+        "required": true
+      },
+      {
+        "skill_key": "delivery-core",
+        "version": "1.0.0",
+        "required": true
+      },
+      {
+        "skill_key": "web-analytics",
+        "version": "1.0.0",
+        "required": true
+      }
+    ],
+    "model_bindings": [
+      {
+        "profile_key": "internal-text-v1",
+        "required": true
+      }
+    ],
+    "tool_ids": [
+      "asset.read",
+      "asset.write",
+      "chart.render",
+      "connector.read",
+      "dataset.read",
+      "delivery.package",
+      "sheet.calculate"
+    ],
+    "input_contract": {
+      "required_fields": [
+        "data_source",
+        "date_range",
+        "currency",
+        "conversion_definition"
+      ],
+      "optional_fields": [
+        "brand_assets",
+        "creative_mapping",
+        "website_data"
+      ]
+    },
+    "workflow": [
+      {
+        "step_key": "step-1",
+        "instruction": "映射和口径检查"
+      },
+      {
+        "step_key": "step-2",
+        "instruction": "确定性计算"
+      },
+      {
+        "step_key": "step-3",
+        "instruction": "渠道创意网站复盘"
+      },
+      {
+        "step_key": "step-4",
+        "instruction": "证据报告及测试brief"
+      }
+    ],
+    "deliverables": [
+      {
+        "label": "证据报告",
+        "format": "html",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "指标与图表数据",
+        "format": "csv",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      },
+      {
+        "label": "创意测试brief",
+        "format": "md",
+        "editable_scope": "按角色约定保存源代码、文字/图表、产品布局或时间线；第三方专业工程需独立验证。"
+      }
+    ],
+    "sample_task": "分析上月广告花费和落地页，给出下月创意建议。",
+    "acceptance_checks": [
+      "关键数字能回溯快照和公式，缺失、多币种、平台归因明确。",
+      "更新日期范围后计算和解释同步，不继承过期结论。",
+      "账户未授权时支持用户导入的获准数据，不伪造平台取数结果。"
+    ],
+    "qualification_cases": {
+      "normal": "关键数字能回溯快照和公式，缺失、多币种、平台归因明确。",
+      "revision": "更新日期范围后计算和解释同步，不继承过期结论。",
+      "dependency_or_permission_failure": "账户未授权时支持用户导入的获准数据，不伪造平台取数结果。",
+      "execution_status": "not_run"
+    },
+    "initial_stage": "M1",
+    "readiness_evidence": []
+  },
+  "skill_package": {
+    "key": "web-analytics",
+    "version": "1.0.0",
+    "sha256": "066ebfe82b49aaa79be09cb4c6d6f5a271723f18302e8d02168fdcec1efaf6a1",
+    "path": "skills/web-analytics/1.0.0/SKILL.md",
+    "qualification": "pending_live_validation"
+  },
+  "skill_definition": {
+    "skill_key": "web-analytics",
+    "version": "1.0.0",
+    "purpose": "GA4 與搜尋快照的確定性指標、口徑與下載報告",
+    "candidate_sources": [],
+    "package_state": "installed",
+    "package_sha256": "066ebfe82b49aaa79be09cb4c6d6f5a271723f18302e8d02168fdcec1efaf6a1",
+    "ai_network_policy": "internal_only",
+    "tool_ids": [
+      "connector.read"
+    ],
+    "required_model_profiles": [],
+    "supported_clients": [
+      "web",
+      "extension",
+      "desktop"
+    ]
+  }
+}

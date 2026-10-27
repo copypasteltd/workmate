@@ -1,0 +1,351 @@
+.effects-page {
+  max-width: 1200px;
+  margin-inline: auto;
+}
+.effects-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 32px 0 22px;
+}
+.effects-filter button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 17px;
+  border-radius: 24px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  min-height: 42px;
+}
+.effects-filter button.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+}
+.effects-filter > span {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.effects-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.effect-card {
+  min-width: 0;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+.effect-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--blue);
+}
+.effect-card.selected {
+  border: 2px solid var(--blue);
+}
+.effect-card:disabled {
+  cursor: default;
+  transform: none;
+}
+.effect-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  background: var(--bg);
+}
+.effect-card > div {
+  padding: 16px;
+}
+.effect-number {
+  font-size: 0.6rem;
+  letter-spacing: 0.075em;
+  color: var(--muted);
+}
+.effect-card h2 {
+  font-family: inherit;
+  font-size: 0.97rem;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 9px 0 7px;
+}
+.effect-card h2 svg {
+  flex: 0 0 auto;
+  color: var(--blue);
+}
+.effect-card p {
+  font-size: 0.73rem;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0;
+  min-height: 3.3em;
+}
+.effect-studio {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  margin: 40px 0;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.effect-preview {
+  padding: 32px;
+  background: var(--bg);
+  min-width: 0;
+}
+.effect-section-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  color: var(--blue);
+  margin-bottom: 24px;
+}
+.effect-preview video,
+.effect-delivery video {
+  width: 100%;
+  max-height: 520px;
+  background: #111827;
+  border-radius: 10px;
+  display: block;
+}
+.effect-preview > p,
+.effect-preview-notes p {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.effect-spec {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  border-block: 1px solid var(--line);
+  padding: 18px 0;
+  margin-top: 26px;
+  font-size: 0.73rem;
+}
+.effect-spec span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.effect-preview-notes {
+  display: flex;
+  gap: 12px;
+  margin-top: 22px;
+  align-items: start;
+}
+.effect-preview-notes svg {
+  flex: 0 0 auto;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.effect-preview-notes p {
+  margin: 0;
+}
+.effect-studio form {
+  padding: 32px;
+  min-width: 0;
+}
+.effect-studio form h2,
+.effect-delivery h2 {
+  font-size: 1.55rem;
+  margin: 0 0 24px;
+  letter-spacing: -0.035em;
+}
+.effect-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+}
+.effect-fields > label,
+.effect-field-pair label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 0;
+}
+.effect-fields input:not([type="checkbox"]),
+.effect-fields select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 11px 12px;
+  font: inherit;
+  min-height: 44px;
+}
+.effect-fields input[type="color"] {
+  padding: 5px 7px;
+}
+.effect-field-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 14px;
+}
+.effect-source-heading,
+.effect-delivery-status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.79rem;
+}
+.effect-source-heading a,
+.effect-delivery-status a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--blue);
+}
+.effects-source-pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.effects-source-pages button {
+  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+}
+.effect-fields .effect-consent {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  line-height: 1.8;
+  font-weight: 400;
+  padding: 14px;
+  border-radius: 9px;
+  background: var(--bg);
+}
+.effect-consent input {
+  accent-color: var(--blue);
+  margin-top: 5px;
+  flex: 0 0 auto;
+}
+.effect-studio form > .button {
+  margin-top: 20px;
+  width: 100%;
+  justify-content: space-between;
+}
+.effect-saved-request {
+  margin-top: 16px;
+  font-size: 0.75rem;
+}
+.effect-saved-request pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+.effect-delivery {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 30px;
+  margin: 28px 0;
+  min-width: 0;
+}
+.effect-delivery-status {
+  margin-bottom: 20px;
+}
+.effect-delivery > p {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.effect-downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 20px;
+}
+.effect-downloads .button {
+  font-size: 0.75rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1100px) {
+  .effects-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .effect-preview,
+  .effect-studio form {
+    padding: 24px;
+  }
+}
+@media (max-width: 800px) {
+  .effects-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .effect-studio {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .effect-preview video {
+    max-height: 340px;
+  }
+}
+@media (max-width: 440px) {
+  .effects-grid {
+    gap: 10px;
+  }
+  .effect-card > div {
+    padding: 12px;
+  }
+  .effect-card h2 {
+    font-size: 0.83rem;
+  }
+  .effect-card p {
+    font-size: 0.68rem;
+  }
+  .effect-preview,
+  .effect-studio form,
+  .effect-delivery {
+    padding: 20px;
+  }
+  .effects-filter > span {
+    width: 100%;
+    margin: 8px 0 0;
+  }
+  .effect-field-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .effect-number {
+    font-size: 0.52rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .effect-card {
+    transition: none;
+  }
+  .effect-card:hover {
+    transform: none;
+  }
+}
