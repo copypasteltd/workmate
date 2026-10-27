@@ -1,4 +1,10 @@
 import { deployment } from "./deployment.js";
+import { existsSync } from "node:fs";
+import { DesktopUpdateController } from "./desktop-updates.js";
+import { UpdateAdmission } from "./update-admission.js";
+import { updateTrust } from "./update-trust.js";
+import { resolveUpdateTrust } from "./update-configuration.js";
+import { inspectInstaller, prepareInstaller } from "./update-native.js";
 import { saveDownload } from "./download.js";
 import { attachWindowControls, windowAppearance } from "./window-controls.js";
 import { execFile } from "node:child_process";
@@ -47,6 +53,7 @@ import {
 } from "./config.js";
 
 const config = configuration();
+const updateAdmission = new UpdateAdmission();
 let window: BrowserWindow | null = null;
 let authFlow: Promise<void> | null = null;
 const nativeArgument = process.argv.find((a) =>
@@ -229,9 +236,33 @@ const localSchedules = new LocalScheduleController({
       buttons: ["取消 / Cancel", "啟用規則 / Activate rule"], defaultId: 0, cancelId: 0 });
     return result.response === 1;
   },
-  dispatch: (id, jobId, prompt, budget, beforeNative) => localAgent.dispatch(id, jobId, prompt, budget, beforeNative), stop: id => localAgent.stop(id),
+  dispatch: (id, jobId, prompt, budget, beforeNative) => updateAdmission.run(() => localAgent.dispatch(id, jobId, prompt, budget, beforeNative)), stop: id => localAgent.stop(id),
   changed: () => { if (window && !window.isDestroyed()) window.webContents.send("local-agent:changed"); },
 });
+const installerHelper = app.isPackaged ? path.join(process.resourcesPath, "update-installer-host/update-installer-host.exe") : path.join(import.meta.dirname, "../.data/update-installer-host/update-installer-host.exe");
+const configuredUpdateTrust = await resolveUpdateTrust(updateTrust, app.isPackaged, process.env.COPYPASTE_DEV_UPDATE_TRUST_FILE);
+const desktopUpdates = new DesktopUpdateController({
+  origin: config.api, cache: path.join(userDir, "update-cache"), version: app.getVersion(), channel: "stable",
+  keys: configuredUpdateTrust.keys, minimumSequence: configuredUpdateTrust.minimumSequence,
+  installerSupported: process.platform === "win32" && app.isPackaged && !process.env.PORTABLE_EXECUTABLE_FILE && existsSync(path.join(path.dirname(process.execPath), "Uninstall CopyPaste.exe")),
+  read: () => load("desktop-updates", null), write: value => save("desktop-updates", value),
+  changed: () => { if (window && !window.isDestroyed()) window.webContents.send("desktop-updates:changed"); },
+  checkpoint: async () => {
+    await localAccessReset;
+    const checks = await Promise.all([localAgent.updateCheckpoint(), localSchedules.updateCheckpoint(), localPrograms.updateCheckpoint()]);
+    return { safe: checks.every(c => c.safe) && nativeBrowsers.updateCheckpoint().safe && !polling && !shuttingDown };
+  },
+  confirm: async envelope => {
+    const r = envelope.payload.release!;
+    const answer = await dialog.showMessageBox(window!, { type: envelope.payload.action === "rollback" ? "warning" : "question", title: "CopyPaste · 更新應用程式 / Update app",
+      message: `${envelope.payload.action === "rollback" ? "回復版本 / Roll back to" : "安裝版本 / Install"} ${r.version}`,
+      detail: `${r.notes.zh}\n\n${r.notes.en}\n\n此應用程式將關閉並重新啟動。已儲存的會話和原始檔案會保留；目錄自動工作需再次啟用。\nThe app will close and restart. Saved sessions and original files are retained. Folder automation requires activation again.`,
+      buttons: ["稍後 / Later", "安裝並重新啟動 / Install and restart"], defaultId: 0, cancelId: 0, noLink: true });
+    return answer.response === 1;
+  },
+  verifyInstaller: (file, hash, signer) => inspectInstaller(installerHelper, file, hash, signer),
+  install: async (file, hash, signer) => { await prepareInstaller(installerHelper, file, hash, signer); setImmediate(() => app.quit()); },
+}, updateAdmission);
 async function request(
   url: string,
   options: {
@@ -462,6 +493,9 @@ async function deviceSync(tenant: string) {
   return d.body;
 }
 async function pollDevices() {
+  try { await updateAdmission.run(() => pollDevicesUnchecked()); } catch { /* Installation has closed local admission. */ }
+}
+async function pollDevicesUnchecked() {
   if (polling) return;
   polling = true;
   try {
@@ -572,7 +606,18 @@ async function createWindow() {
       throw new Error("API operation is not exposed");
     return request(p, o);
   });
-  ipcMain.handle("local-agent", async (event, action, payload) => {
+  ipcMain.handle("desktop-updates", async (event, action) => {
+    const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
+    if (event.sender !== window?.webContents || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url.split("#")[0] !== expected) throw new Error("UPDATE_IPC_DENIED");
+    if (action === "status") return desktopUpdates.status();
+    if (action === "check") return desktopUpdates.check();
+    if (action === "download") return desktopUpdates.download();
+    if (action === "cancel") return desktopUpdates.cancel();
+    if (action === "discard") return desktopUpdates.discard();
+    if (action === "install") return desktopUpdates.install();
+    throw new Error("UPDATE_REQUEST_INVALID");
+  });
+  ipcMain.handle("local-agent", async (event, action, payload) => updateAdmission.run(async () => {
     const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
     if (event.sender !== window?.webContents || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url.split("#")[0] !== expected)
       throw new Error("LOCAL_IPC_DENIED");
@@ -621,26 +666,26 @@ async function createWindow() {
       const code = typeof error?.code === "string" && /^[A-Z][A-Z0-9_]{1,90}$/.test(error.code) ? error.code : "LOCAL_OPERATION_FAILED";
       return { ok: false, code };
     }
-  });
-  ipcMain.handle("auth:signin", () => signIn());
+  }));
+  ipcMain.handle("auth:signin", () => updateAdmission.run(() => signIn()));
   ipcMain.handle("workspace:cloud", (_e, section?: string) => shell.openExternal(config.web + (section === "geo" ? "/app/analytics?view=geo" : "/app")));
-  ipcMain.handle("auth:signout", async () => {
+  ipcMain.handle("auth:signout", async () => updateAdmission.run(async () => {
     const result = await nativeSession.signOut();
     await localAccessReset;
     return result;
-  });
-  ipcMain.handle("files:choose", async () => {
+  }));
+  ipcMain.handle("files:choose", async () => updateAdmission.run(async () => {
     await tokens();
     await localAccessReset;
     return choose();
-  });
+  }));
   ipcMain.handle("files:grants", () => files.grants());
   ipcMain.handle("files:revoke", (_e, id) => files.revoke(id));
-  ipcMain.handle("files:execute", async (_e, c) => {
+  ipcMain.handle("files:execute", async (_e, c) => updateAdmission.run(async () => {
     await tokens();
     await localAccessReset;
     return files.execute(c);
-  });
+  }));
   ipcMain.handle("device:sync", (_e, t) => deviceSync(t));
   ipcMain.handle("chrome:register", async () => {
     if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_FILE)
@@ -816,5 +861,5 @@ app.on("before-quit", event => {
   if (deviceTimer) clearInterval(deviceTimer);
   if (shuttingDown) return;
   event.preventDefault(); shuttingDown = true;
-  void Promise.all([localSchedules.close(), localPrograms.close(), localAgent.close(), nativeBrowsers.close()]).then(() => localSchedules.drain()).then(() => app.exit(0), () => app.exit(1));
+  void Promise.all([desktopUpdates.close(), localSchedules.close(), localPrograms.close(), localAgent.close(), nativeBrowsers.close()]).then(() => localSchedules.drain()).then(() => app.exit(0), () => app.exit(1));
 });

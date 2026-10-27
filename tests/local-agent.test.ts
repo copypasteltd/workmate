@@ -10,6 +10,19 @@ import type { LocalCodexHooks } from "../src/local-codex.js";
 import type { LocalInputRequest } from "../src/local-input.js";
 import { GuardedBrowserSession } from "../src/browser-session.js";
 
+test("update checkpoints allow idle sessions and block a live local turn until its settlement finishes", async () => {
+  const f = await fixture(); let release!: () => void;
+  try {
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    assert.equal((await f.controller.updateCheckpoint()).safe, true);
+    let entered!: () => void; const pending = new Promise<void>(r => { entered = r; });
+    f.pending(async () => { entered(); await new Promise<void>(r => { release = r; }); return { status: "completed", text: "Settled checkpoint", threadId: "native", turnId: "turn", nativeTokenUsage: null }; });
+    const run = f.controller.send(session.id, "Keep update admission closed until settlement", 10000);
+    await pending; assert.equal((await f.controller.updateCheckpoint()).safe, false);
+    release(); await run; assert.equal((await f.controller.updateCheckpoint()).safe, true);
+  } finally { release?.(); await f.clean(); }
+});
+
 test("closing the app while a send is persisting prevents a later task reservation or native start", async () => {
   const f = await fixture();
   try {

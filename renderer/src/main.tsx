@@ -131,6 +131,7 @@ import {
 import { WorkspaceProvider, useWorkspace } from "./context";
 import "./style.css";
 import "./desktop-layout.css";
+import { DesktopUpdatesCard, DesktopUpdatesPage } from "./desktop-updates";
 
 function Logo() {
   return (
@@ -164,6 +165,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/updates" element={<DesktopUpdatesPage />} />
       <Route path="/sso" element={<CompanySignIn />} />
       <Route path="/sso/confirm" element={<ConfirmCompanyIdentity />} />
       <Route path="/welcome" element={<Onboarding />} />
@@ -2929,6 +2931,7 @@ function SettingsPage() {
         title={t("帳戶設定", "Account settings")}
       />
       <div className="settings-grid">
+        <DesktopUpdatesCard />
         <LinkedCompanyIdentities />
         <section className="card">
           <h2>{t("個人資料", "Profile")}</h2>

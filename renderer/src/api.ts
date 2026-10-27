@@ -30,6 +30,8 @@ export class ApiError extends Error {
 declare global {
   interface Window {
     copyPasteBridge?: {
+      desktopUpdates: (action: "status" | "check" | "download" | "cancel" | "discard" | "install") => Promise<any>;
+      onDesktopUpdatesChanged: (fn: () => void) => () => void;
       openCloudWorkspace: (section?: "geo") => Promise<void>;
       localAgent: (action: string, payload: unknown) => Promise<{ ok: boolean; value?: any; code?: string }>;
       onLocalAgentChanged: (fn: () => void) => () => void;

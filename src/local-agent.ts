@@ -1955,6 +1955,12 @@ export class LocalAgentController {
     );
     await this.persist();
   }
+  async updateCheckpoint() {
+    const state = await this.state();
+    await this.writeTail;
+    return { safe: !this.busy.size && !this.running.size && !this.permissions.size && !this.inputs.size
+      && state.sessions.every(r => !r.operation && !r.uncertain) };
+  }
   async close() {
     this.closed = true;
     for (const item of this.running.values()) item.abort.abort();

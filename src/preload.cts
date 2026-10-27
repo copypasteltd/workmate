@@ -72,6 +72,12 @@ document.addEventListener("DOMContentLoaded", () => {
   logo.src = new URL("./icon-32.png", location.href).href;
   logo.alt = "";
   brand.append(logo, "CopyPaste");
+  const updates = document.createElement("button");
+  updates.textContent = "↻";
+  updates.setAttribute("aria-label", "應用程式更新 / Application updates");
+  updates.style.cssText = "-webkit-app-region:no-drag;width:28px;height:28px;border-radius:8px;font-size:18px;margin-left:5px;";
+  updates.addEventListener("click", () => { location.hash = "#/updates"; });
+  brand.append(updates);
   const actions = document.createElement("div");
   actions.className = "window-actions";
   const buttons = new Map<string, HTMLButtonElement>();
@@ -223,6 +229,12 @@ contextBridge.exposeInMainWorld(
   "copyPasteBridge",
   Object.freeze({
     version: "0.1.0",
+    desktopUpdates: (action: "status" | "check" | "download" | "cancel" | "discard" | "install") => ipcRenderer.invoke("desktop-updates", action),
+    onDesktopUpdatesChanged: (fn: () => void) => {
+      const listener = () => fn();
+      ipcRenderer.on("desktop-updates:changed", listener);
+      return () => ipcRenderer.removeListener("desktop-updates:changed", listener);
+    },
     openCloudWorkspace: (section?: "geo") => ipcRenderer.invoke("workspace:cloud", section),
     localAgent: (action: string, payload: unknown) => ipcRenderer.invoke("local-agent", action, payload),
     onLocalAgentChanged: (fn: () => void) => {

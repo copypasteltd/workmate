@@ -323,6 +323,10 @@ export class LocalScheduleController {
     }
     await this.persist();
   }
+  async updateCheckpoint() {
+    const state = await this.state(); await this.writes;
+    return { safe: !this.running && !this.scans.size && !this.actions.size && state.rules.every(r => r.state !== "active" && r.jobs.every(j => j.state !== "dispatching")) };
+  }
   async close() {
     this.closed = true; ++this.generation;
     for (const id of [...this.watchers.keys()]) this.unlisten(id);

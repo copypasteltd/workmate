@@ -279,6 +279,10 @@ export class LocalProgramController {
     const active = [...this.active.values()].filter(item => !id || item.sessionId === id);
     active.forEach(item => item.abort.abort()); await Promise.allSettled(active.map(item => item.done));
   }
+  async updateCheckpoint() {
+    const state = await this.state(); await this.writes;
+    return { safe: !this.active.size && !this.sessions.size && state.receipts.every(r => !["prepared", "running"].includes(r.state) && (r.state !== "unknown" || !!r.reviewedAt)) };
+  }
   async close() {
     this.closed = true; await this.withdraw(); await Promise.allSettled([...this.sessions].map(session => session.close())); await this.writes;
   }

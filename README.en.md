@@ -1,5 +1,38 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- desktop-updates-stage116 -->
+Controlled Desktop updates now connect Admin release operations, signed downloads and local installation admission.
+
+Desktop 0.6.0: click the custom title-bar update icon before login, or Updates in account settings. Check → download → native verification → locally confirm installation. The main process verifies canonical Ed25519 metadata, version/rollout/expiry and an encrypted monotonic sequence journal; streams the fixed company-origin artifact; checks full SHA-256, Windows certificate chain and exact signing certificate. Installation admits no new local work, requires all agent/schedule/program/browser checkpoints, rechecks the current head and uses a locked native helper with fixed arguments and an explicit commit handshake. Development/portable builds download and verify but require manual installation. Build production installers with npm run package:release, explicit public trust/minimum sequence and company signing credentials; unsigned release packaging fails closed. Never substitute the inert signed test binary for a product installer. Existing local Codex and customer-controlled full permission remain in place.
+
+Validation: 64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Real Windows trust and Electron; synthetic accounts/models and an inert signed test file. Company-signed installed-product upgrades, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/116-desktop-updates.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-updates-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-available.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-verified.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-zh-dark.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.gif)
+
+
 <!-- cloud-events-stage115 -->
 Private signed event work now connects customer confirmation, durable deduplicated receipts and independent cloud runs with scoped administration.
 

@@ -47,6 +47,7 @@ const snapshotScript = javascript`(() => {
 })()`;
 
 export class NativeBrowserPool {
+  updateCheckpoint() { return { safe: !this.pages.size && !this.sessions.size }; }
   private pages = new Set<Page>();
   private sessions = new Set<NativeBrowserDriver>();
   private ipcInstalled = false;
