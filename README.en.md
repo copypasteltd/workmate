@@ -1,5 +1,29 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 adds confirmed local withdrawal, signed device retirement, Chrome Host cleanup and optional safe cache removal.
+
+Web Devices reflects a signed Desktop withdrawal while retaining other computers. The same browser session can grant a fresh Desktop PKCE login after withdrawal; it does not restore previous local folder or Chrome permissions. The screenshots below include the actual Web device state after the real company API processes the withdrawal.
+
+Validation: 79 backend + 127 Desktop + 22 native Codex checks; 13 builds; 5 real UI flows; 4 layouts; 1 GIF/MP4 pair.
+
+Real Windows DPAPI, owned Native Host, Electron IPC, Web PKCE and native PostgreSQL; synthetic customer/model data. Native consent answers and shell launch interception belong to the isolated automation. Company-signed installed-product uninstall/upgrade, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/117-desktop-removal.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-removal-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Native customer confirmation] --> Outbox[Encrypted signed withdrawal]
+  Outbox --> Stop[Stop local Codex and revoke grants]
+  Stop --> Host[Owned Host exit and registry check]
+  Host --> Company[Company device retirement]
+  Company --> Receipt[Confirmed or durable retry receipt]
+  Receipt --> Windows[Windows uninstall with preparation hook]
+```
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-web__workmate-desktop-removal-02-device-withdrawn.png)
+
+
 <!-- desktop-updates-stage116-final -->
 Final Desktop update qualification includes the corrected NSIS silent-install restart handoff, Admin release operations and local installation admission.
 

@@ -1,5 +1,29 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 已加入本机确认撤权、设备签名断开、Chrome Host 清理及可选缓存清理。
+
+Web 设备页同步展示签名 Desktop 撤权结果，保留其他电脑。客户可在原浏览器账户中重新授权 Desktop 的 PKCE 登录，旧的本机目录和 Chrome 权限不会恢复。下方包含实际公司 API 处理撤权后，Web 设备列表的真实截图。
+
+验证：79 backend + 127 Desktop + 22 native Codex checks; 13 builds; 5 real UI flows; 4 layouts; 1 GIF/MP4 pair.
+
+Windows DPAPI、自建 Native Host、Electron IPC、Web PKCE 和原生 PostgreSQL 为实际运行；客户／模型为假数据。原生确认答案和 shell 调度在隔离核查进程内控制。公司签名安装版本的卸载／升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/117-desktop-removal.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-removal-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Native customer confirmation] --> Outbox[Encrypted signed withdrawal]
+  Outbox --> Stop[Stop local Codex and revoke grants]
+  Stop --> Host[Owned Host exit and registry check]
+  Host --> Company[Company device retirement]
+  Company --> Receipt[Confirmed or durable retry receipt]
+  Receipt --> Windows[Windows uninstall with preparation hook]
+```
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-web__workmate-desktop-removal-02-device-withdrawn.png)
+
+
 <!-- desktop-updates-stage116-final -->
 已修正静默安装后的应用重启交接，并重新验证 Desktop 更新、后台发布及本机安装准入。
 
