@@ -4,11 +4,13 @@ import { DesktopUpdateController } from "./desktop-updates.js";
 import { UpdateAdmission } from "./update-admission.js";
 import { updateTrust } from "./update-trust.js";
 import { resolveUpdateTrust } from "./update-configuration.js";
+import { DesktopRemovalController, type RemovalJournal } from "./desktop-removal.js";
+import { removalMarked, markRemoved, clearRemovalMarker, removeOwnedUpdateCache, assertLocalEnabled } from "./removal-fence.js";
+import { pauseNativeHosts, resumeNativeHosts, waitNativeHosts } from "./native-host-lifecycle.js";
+import { chromeRegistration } from "./chrome-registration.js";
 import { inspectInstaller, prepareInstaller } from "./update-native.js";
 import { saveDownload } from "./download.js";
 import { attachWindowControls, windowAppearance } from "./window-controls.js";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import { exclusive } from "./lock.js";
 import { LocalVault } from "./vault.js";
 import { NativeSession, NativeSessionError, type NativeTokens } from "./native-session.js";
@@ -53,7 +55,8 @@ import {
 } from "./config.js";
 
 const config = configuration();
-const updateAdmission = new UpdateAdmission();
+let removalBlocked = true;
+const updateAdmission = new UpdateAdmission(() => !removalBlocked);
 let window: BrowserWindow | null = null;
 let authFlow: Promise<void> | null = null;
 const nativeArgument = process.argv.find((a) =>
@@ -261,8 +264,50 @@ const desktopUpdates = new DesktopUpdateController({
     return answer.response === 1;
   },
   verifyInstaller: (file, hash, signer) => inspectInstaller(installerHelper, file, hash, signer),
-  install: async (file, hash, signer) => { await prepareInstaller(installerHelper, file, hash, signer); setImmediate(() => app.quit()); },
+  install: async (file, hash, signer) => {
+    await pauseNativeHosts(userDir);
+    try { await waitNativeHosts(userDir); await prepareInstaller(installerHelper, file, hash, signer); }
+    catch(error) { await resumeNativeHosts(userDir); throw error; }
+    setImmediate(() => app.quit());
+  },
 }, updateAdmission);
+const desktopRemoval = new DesktopRemovalController({
+  read: () => load<RemovalJournal | null>("desktop-removal", null), write: value => save("desktop-removal", value),
+  marked: () => removalMarked(userDir), mark: () => markRemoved(userDir),
+  unmark: () => exclusive(userDir, () => clearRemovalMarker(userDir)), exclusive: fn => exclusive(userDir, fn),
+  acquire: () => updateAdmission.acquire(), block: value => { removalBlocked = value; },
+  confirm: async clearCache => {
+    const answer = await dialog.showMessageBox({ type: "warning", title: "CopyPaste · 斷開此電腦 / Disconnect this computer",
+      message: "停止本機任務並撤銷此電腦的權限？ / Stop local work and withdraw this computer's permissions?",
+      detail: "將登出此 Desktop、停止本機 Codex、目錄自動工作與程式，關閉本機 Agent 建立的瀏覽器頁面，撤銷資料夾授權及 Chrome Host 註冊。其他電腦和企業帳戶保留。離線時會保留加密的雲端撤權重試記錄；重新開啟本程式後可重試。客戶原檔、工作目錄、未結算記錄和重試回執保留。\n\nThis signs out this Desktop, stops local Codex, folder work and programs, closes its Agent browser pages, withdraws folder grants and removes its Chrome Host registration. Other computers and the company account remain. Offline cloud revocation stays pending in an encrypted retry record; reopen this app to retry. Original files, workspaces, unsettled records and retry receipts are retained.",
+      checkboxLabel: "同時清理應用程式快取及已下載更新 / Also clear app caches and downloaded updates", checkboxChecked: clearCache,
+      buttons: ["取消 / Cancel", "斷開此電腦 / Disconnect this computer"], defaultId: 0, cancelId: 0, noLink: true });
+    return { confirmed: answer.response === 1, clearCache: answer.checkboxChecked === true };
+  },
+  capture: async () => {
+    await localAccessReset;
+    const auth = await load<NativeTokens | null>("auth", null), devices = await load<Record<string,string>>("devices", {}), identity = await load<{private_key:string} | null>("identity", null);
+    return { refresh_token: auth?.refresh_token, devices, private_key: identity?.private_key };
+  },
+  withdraw: async () => {
+    await nativeSession.signOut({ remote: false });
+    await localAccessReset;
+    await save("extensions", []);
+    await Promise.all([nativeBrowsers.close(), localAgent.drainWithdrawn(), localSchedules.drain(), waitNativeHosts(userDir)]);
+  },
+  unregister: () => chromeRegistration("remove", path.join(userDir,"hk.copypaste.agent.json"), undefined, path.join(process.resourcesPath,"native-host.cmd")),
+  clearCache: async () => {
+    desktopUpdates.cancel(); await desktopUpdates.discard();
+    await session.defaultSession.clearCache(); await session.defaultSession.clearStorageData();
+    await removeOwnedUpdateCache(userDir);
+  },
+  post: async body => {
+    const response = await fetch(config.api + "/v1/auth/native/disconnect", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body), redirect: "error", signal: AbortSignal.timeout(8000) });
+    if (!response.ok) throw new Error("DISCONNECT_UNAVAILABLE");
+    return response.json();
+  },
+  changed: () => { if (window && !window.isDestroyed()) window.webContents.send("desktop-removal:changed"); },
+});
 async function request(
   url: string,
   options: {
@@ -610,12 +655,27 @@ async function createWindow() {
     const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
     if (event.sender !== window?.webContents || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url.split("#")[0] !== expected) throw new Error("UPDATE_IPC_DENIED");
     if (action === "status") return desktopUpdates.status();
-    if (action === "check") return desktopUpdates.check();
-    if (action === "download") return desktopUpdates.download();
+    if (action === "check") return updateAdmission.run(() => desktopUpdates.check(), true);
+    if (action === "download") return updateAdmission.run(() => desktopUpdates.download(), true);
     if (action === "cancel") return desktopUpdates.cancel();
-    if (action === "discard") return desktopUpdates.discard();
+    if (action === "discard") return updateAdmission.run(() => desktopUpdates.discard(), true);
     if (action === "install") return desktopUpdates.install();
     throw new Error("UPDATE_REQUEST_INVALID");
+  });
+  ipcMain.handle("desktop-removal", async (event, action, payload) => {
+    const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
+    if (event.sender !== window?.webContents || event.senderFrame !== event.sender.mainFrame || event.senderFrame.url.split("#")[0] !== expected) throw new Error("REMOVAL_IPC_DENIED");
+    if (action === "status" && payload === undefined) return desktopRemoval.status();
+    if (action === "retry" && payload === undefined) return desktopRemoval.retry();
+    if (action === "prepare" && payload && typeof payload === "object" && !Array.isArray(payload) && Object.keys(payload).length === 1 && typeof payload.clearCache === "boolean") return desktopRemoval.prepare(payload.clearCache);
+    if (action === "uninstall-settings" && payload === undefined) {
+      const status = await desktopRemoval.status();
+      if (!status.disabled || !status.completedAt || status.host === "retry" || status.cache === "retry") throw new Error("REMOVAL_PREPARATION_REQUIRED");
+      if (process.platform !== "win32") throw new Error("UNINSTALL_PLATFORM_UNSUPPORTED");
+      await shell.openExternal("ms-settings:appsfeatures");
+      return status;
+    }
+    throw new Error("REMOVAL_REQUEST_INVALID");
   });
   ipcMain.handle("local-agent", async (event, action, payload) => updateAdmission.run(async () => {
     const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
@@ -667,8 +727,8 @@ async function createWindow() {
       return { ok: false, code };
     }
   }));
-  ipcMain.handle("auth:signin", () => updateAdmission.run(() => signIn()));
-  ipcMain.handle("workspace:cloud", (_e, section?: string) => shell.openExternal(config.web + (section === "geo" ? "/app/analytics?view=geo" : "/app")));
+  ipcMain.handle("auth:signin", () => updateAdmission.run(() => desktopRemoval.activate(async () => { await signIn(); await localAccessReset; }), true));
+  ipcMain.handle("workspace:cloud", (_e, section?: string) => shell.openExternal(config.web + (section === "geo" ? "/app/analytics?view=geo" : section === "devices" ? "/app/devices" : "/app")));
   ipcMain.handle("auth:signout", async () => updateAdmission.run(async () => {
     const result = await nativeSession.signOut();
     await localAccessReset;
@@ -686,8 +746,8 @@ async function createWindow() {
     await localAccessReset;
     return files.execute(c);
   }));
-  ipcMain.handle("device:sync", (_e, t) => deviceSync(t));
-  ipcMain.handle("chrome:register", async () => {
+  ipcMain.handle("device:sync", (_e, t) => updateAdmission.run(() => deviceSync(t)));
+  ipcMain.handle("chrome:register", async () => updateAdmission.run(async () => {
     if (!app.isPackaged || process.env.PORTABLE_EXECUTABLE_FILE)
       throw new Error(
         "Use the Setup-installed CopyPaste application to connect Chrome.",
@@ -704,6 +764,8 @@ async function createWindow() {
         "Each folder still requires a separate local grant. This registers the native helper for your Windows account.",
     });
     if (consent.response !== 0) return { registered: false };
+    return exclusive(userDir, async () => {
+    await assertLocalEnabled(userDir);
     const origins = [`chrome-extension://${deployment.extensionId}/`];
     await mkdir(userDir, { recursive: true });
     await save("extensions", origins);
@@ -722,22 +784,10 @@ async function createWindow() {
         2,
       ),
     );
-    await promisify(execFile)(
-      "reg.exe",
-      [
-        "ADD",
-        "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\hk.copypaste.agent",
-        "/ve",
-        "/t",
-        "REG_SZ",
-        "/d",
-        manifest,
-        "/f",
-      ],
-      { windowsHide: true },
-    );
+    await chromeRegistration("register", manifest);
     return { registered: true };
-  });
+    });
+  }));
   ipcMain.handle("external", (_e, url) => {
     const u = new URL(url);
     if (![config.web, "https://copypaste.hk"].includes(u.origin))
@@ -841,13 +891,25 @@ void app
       }
     } else {
       if (!app.requestSingleInstanceLock()) {
-        app.quit();
+        if (process.argv.includes("--prepare-uninstall")) app.exit(42);
+        else app.quit();
       } else {
-        app.on("second-instance", () => {
+        await desktopRemoval.initialize();
+        if (process.argv.includes("--prepare-uninstall")) {
+          try {
+            const result = await desktopRemoval.prepare(false);
+            app.exit(!result.cancelled && result.disabled && result.completedAt && result.host !== "retry" && result.cache !== "retry" ? 0 : 41);
+          } catch { app.exit(43); }
+          return;
+        }
+        await resumeNativeHosts(userDir);
+        app.on("second-instance", (_event, argv) => {
+          if (argv.includes("--prepare-uninstall")) return;
           window?.show();
           window?.focus();
         });
         await createWindow();
+        void desktopRemoval.retry().catch(() => {});
       }
     }
   })

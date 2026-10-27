@@ -1961,6 +1961,10 @@ export class LocalAgentController {
     return { safe: !this.busy.size && !this.running.size && !this.permissions.size && !this.inputs.size
       && state.sessions.every(r => !r.operation && !r.uncertain) };
   }
+  async drainWithdrawn() {
+    await Promise.allSettled([...this.running.values()].map(item => item.done));
+    await this.writeTail;
+  }
   async close() {
     this.closed = true;
     for (const item of this.running.values()) item.abort.abort();

@@ -1,6 +1,8 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import { chromeRegistration } from "../dist/chrome-registration.js";
+import { assertNativeHostEnabled } from "../dist/native-host-lifecycle.js";
+import { exclusive } from "../dist/lock.js";
 import { app } from "electron";
 import { LocalVault } from "../dist/vault.js";
 // Run with Electron, because the origin allowlist is DPAPI-encrypted just like grants.
@@ -18,6 +20,8 @@ void app
   .then(async () => {
     const root = path.join(app.getPath("appData"), "CopyPaste");
     await mkdir(root, { recursive: true });
+    await exclusive(root, async () => {
+    await assertNativeHostEnabled(root);
     const origins = [`chrome-extension://${extension}/`];
     await writeFile(
       path.join(root, "extensions.enc"),
@@ -42,20 +46,8 @@ void app
         2,
       ),
     );
-    const result = spawnSync(
-      "reg.exe",
-      [
-        "ADD",
-        "HKCU\\Software\\Google\\Chrome\\NativeMessagingHosts\\hk.copypaste.agent",
-        "/ve",
-        "/t",
-        "REG_SZ",
-        "/d",
-        manifest,
-        "/f",
-      ],
-      { windowsHide: true, stdio: "inherit" },
-    );
-    app.exit(result.status ?? 1);
+    await chromeRegistration("register", manifest);
+    });
+    app.exit(0);
   })
   .catch(() => app.exit(1));

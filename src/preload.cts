@@ -78,6 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
   updates.style.cssText = "-webkit-app-region:no-drag;width:28px;height:28px;border-radius:8px;font-size:18px;margin-left:5px;";
   updates.addEventListener("click", () => { location.hash = "#/updates"; });
   brand.append(updates);
+  const device = document.createElement("button");
+  device.textContent = "⊘";
+  device.setAttribute("aria-label", "此電腦與卸載 / This computer and uninstall");
+  device.style.cssText = "-webkit-app-region:no-drag;width:28px;height:28px;border-radius:8px;font-size:18px;margin-left:5px;";
+  device.addEventListener("click", () => { location.hash = "#/computer"; });
+  brand.append(device);
   const actions = document.createElement("div");
   actions.className = "window-actions";
   const buttons = new Map<string, HTMLButtonElement>();
@@ -229,13 +235,19 @@ contextBridge.exposeInMainWorld(
   "copyPasteBridge",
   Object.freeze({
     version: "0.1.0",
+    desktopRemoval: (action: "status" | "prepare" | "retry" | "uninstall-settings", payload?: { clearCache: boolean }) => ipcRenderer.invoke("desktop-removal", action, payload),
+    onDesktopRemovalChanged: (fn: () => void) => {
+      const listener = () => fn();
+      ipcRenderer.on("desktop-removal:changed", listener);
+      return () => ipcRenderer.removeListener("desktop-removal:changed", listener);
+    },
     desktopUpdates: (action: "status" | "check" | "download" | "cancel" | "discard" | "install") => ipcRenderer.invoke("desktop-updates", action),
     onDesktopUpdatesChanged: (fn: () => void) => {
       const listener = () => fn();
       ipcRenderer.on("desktop-updates:changed", listener);
       return () => ipcRenderer.removeListener("desktop-updates:changed", listener);
     },
-    openCloudWorkspace: (section?: "geo") => ipcRenderer.invoke("workspace:cloud", section),
+    openCloudWorkspace: (section?: "geo" | "devices") => ipcRenderer.invoke("workspace:cloud", section),
     localAgent: (action: string, payload: unknown) => ipcRenderer.invoke("local-agent", action, payload),
     onLocalAgentChanged: (fn: () => void) => {
       ipcRenderer.on("local-agent:changed", fn);

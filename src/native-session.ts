@@ -211,7 +211,7 @@ export class NativeSession {
     }
     return !!removed;
   }
-  async signOut(): Promise<{ remote_revoked: boolean }> {
+  async signOut(options: { remote?: boolean } = {}): Promise<{ remote_revoked: boolean }> {
     ++this.revision;
     const removed = await this.exclusive(async () => {
       const current = await this.store.read();
@@ -220,6 +220,6 @@ export class NativeSession {
     });
     // Local sign-out completes before any network work; late login/refresh is fenced.
     this.store.changed();
-    return { remote_revoked: await this.revoke(removed) };
+    return { remote_revoked: options.remote === false ? false : await this.revoke(removed) };
   }
 }

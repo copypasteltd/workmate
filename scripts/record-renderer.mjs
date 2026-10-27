@@ -12,7 +12,7 @@ async function walk(folder) {
   }
 }
 await walk("renderer");
-await writeFile("renderer-source.json", JSON.stringify({ source: "copypaste-desktop", version: "0.6.0", native_desktop: true,
+await writeFile("renderer-source.json", JSON.stringify({ source: "copypaste-desktop", version: "0.7.0", native_desktop: true,
   upstream: prior.upstream ?? { source: prior.source, version: prior.version, snapshot_sha256: sha(Buffer.from(JSON.stringify(prior))) },
   files: Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b))) }, null, 2) + "\n");
 console.log("Native Desktop renderer hashes recorded; shared Web updates require an explicit merge.");

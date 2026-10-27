@@ -1,9 +1,10 @@
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { LocalFiles, atomicFile, type Journal } from "./files.js";
 import { LocalVault } from "./vault.js";
 import { exclusive } from "./lock.js";
+import { assertNativeHostEnabled, nativeHostDisabled, registerNativeHostLease } from "./native-host-lifecycle.js";
 
 const root = path.resolve(
   process.env.COPYPASTE_USER_DATA ??
@@ -13,6 +14,8 @@ const origin = process.argv.find((a) =>
   /^chrome-extension:\/\/[a-p]{32}\/$/.test(a),
 );
 const vault = new LocalVault(root);
+const dialogs = new Set<ChildProcess>();
+let stopping = false;
 async function load<T>(key: string, fallback: T): Promise<T> {
   try {
     return JSON.parse(
@@ -31,7 +34,7 @@ const save = async (key: string, value: unknown) =>
 const files = new LocalFiles(
   () => load<Journal>("folders", { grants: [], completed: {} }),
   (j) => save("folders", j),
-  (fn) => exclusive(root, fn),
+  (fn) => exclusive(root, async () => { await assertNativeHostEnabled(root); return fn(); }),
 );
 async function choose() {
   const script =
@@ -48,6 +51,7 @@ async function choose() {
       ["-NoProfile", "-NonInteractive", "-STA", "-Command", script],
       { windowsHide: true, stdio: ["ignore", "pipe", "pipe"] },
     );
+    dialogs.add(child);
     let output = "";
     const timer = setTimeout(() => {
       child.kill();
@@ -63,6 +67,7 @@ async function choose() {
     child.stderr.on("data", () => {});
     child.once("error", reject);
     child.once("close", (code) => {
+      dialogs.delete(child);
       clearTimeout(timer);
       try {
         if (code !== 0) throw new Error("Native folder dialog unavailable");
@@ -77,6 +82,8 @@ async function choose() {
 async function message(body: Buffer) {
   let response: unknown;
   try {
+    if (stopping) throw new Error("DESKTOP_DISCONNECTED");
+    await assertNativeHostEnabled(root);
     if (!origin || !(await load<string[]>("extensions", [])).includes(origin))
       throw new Error("Unregistered extension origin");
     const m = JSON.parse(body.toString("utf8"));
@@ -106,6 +113,15 @@ async function message(body: Buffer) {
 }
 async function main() {
   if (!origin) throw new Error("Chrome extension origin is required");
+  const release = await registerNativeHostLease(root);
+  let checking = false;
+  const stop = () => { stopping = true; for (const child of dialogs) child.kill(); process.stdin.destroy(); };
+  const timer = setInterval(() => {
+    if(checking)return; checking=true;
+    void nativeHostDisabled(root).then(disabled => { if(disabled)stop(); },stop).finally(() => { checking=false; });
+  },250);
+  timer.unref();
+  try {
   let pending = Buffer.alloc(0);
   for await (const chunk of process.stdin) {
     pending = Buffer.concat([pending, chunk]);
@@ -116,10 +132,13 @@ async function main() {
       if (pending.length < length + 4) break;
       const body = pending.subarray(4, 4 + length);
       pending = pending.subarray(4 + length);
+      if(stopping)break;
       await message(body);
     }
   }
-  if (pending.length) throw new Error("Incomplete native message");
+  if (pending.length && !stopping) throw new Error("Incomplete native message");
+  } catch(error) { if(!stopping)throw error; }
+  finally { clearInterval(timer); for(const child of dialogs)child.kill(); await release(); }
 }
 void main().catch((e) => {
   process.stderr.write("CopyPaste native host: " + e.message + "\n");
