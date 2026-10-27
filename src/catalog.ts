@@ -193,6 +193,51 @@ export class Catalog {
     );
     this.skills.push(scheduleRelease.skill_package);
     this.skillDefinitions.push(scheduleRelease.skill_definition);
+    const eventRelease = JSON.parse(
+      await readFile("catalog/cloud-event-release-v1.json", "utf8"),
+    );
+    const eventBase = this.role("workflow-consultant");
+    const eventBindings = [
+      ...eventBase.skill_bindings,
+      { skill_key: "workflow-events", version: "1.0.0", required: true },
+    ];
+    if (
+      eventRelease.schema !== "copypaste-cloud-event-release-1" ||
+      eventBase.version !== "1.2.0" ||
+      eventRelease.previous_role_sha256 !== this.digest(eventBase) ||
+      eventRelease.role.role_key !== eventBase.role_key ||
+      eventRelease.role.version !== "1.3.0" ||
+      canonical(eventRelease.role.tool_ids) !== canonical(eventBase.tool_ids) ||
+      canonical(eventRelease.role.model_bindings) !==
+        canonical(eventBase.model_bindings) ||
+      canonical(eventRelease.role.skill_bindings) !==
+        canonical(eventBindings) ||
+      eventRelease.skill_package.key !== "workflow-events" ||
+      eventRelease.skill_package.version !== "1.0.0" ||
+      eventRelease.skill_package.path !==
+        "skills/workflow-events/1.0.0/SKILL.md" ||
+      eventRelease.skill_definition.skill_key !== "workflow-events" ||
+      eventRelease.skill_definition.version !== "1.0.0" ||
+      eventRelease.skill_definition.ai_network_policy !== "internal_only" ||
+      eventRelease.skill_definition.package_sha256 !==
+        eventRelease.skill_package.sha256 ||
+      this.skills.some(
+        (s) =>
+          s.key === eventRelease.skill_package.key &&
+          s.version === eventRelease.skill_package.version,
+      )
+    )
+      throw new Problem(
+        503,
+        "ROLE_RELEASE_INVALID",
+        "Cloud event release differs from retained role, Skill or permissions",
+      );
+    this.historicalRoles.push(eventBase);
+    this.roles = this.roles.map((r) =>
+      r.role_key === eventBase.role_key ? eventRelease.role : r,
+    );
+    this.skills.push(eventRelease.skill_package);
+    this.skillDefinitions.push(eventRelease.skill_definition);
     const webRelease = JSON.parse(
       await readFile("catalog/web-analytics-release-v1.json", "utf8"),
     );
@@ -320,12 +365,20 @@ export class Catalog {
     superRole.permissions.push(
       ...budgetAdmin.super_permissions_for_new_installations,
     );
-    const recoveryAdmin = JSON.parse(await readFile("catalog/native-recovery-admin-permissions.json", "utf8"));
+    const recoveryAdmin = JSON.parse(
+      await readFile("catalog/native-recovery-admin-permissions.json", "utf8"),
+    );
     const currentKeys = new Set(this.admin.permissions.map((p: any) => p.key));
     if (recoveryAdmin.permissions.some((p: any) => currentKeys.has(p.key)))
-      throw new Problem(503, "PERMISSION_CATALOG_CONFLICT", "Duplicate recovery permission");
+      throw new Problem(
+        503,
+        "PERMISSION_CATALOG_CONFLICT",
+        "Duplicate recovery permission",
+      );
     this.admin.permissions.push(...recoveryAdmin.permissions);
-    superRole.permissions.push(...recoveryAdmin.super_permissions_for_new_installations);
+    superRole.permissions.push(
+      ...recoveryAdmin.super_permissions_for_new_installations,
+    );
     for (const p of this.skills) await this.verifySkill(p);
   }
   async verifySkill(p: SkillPackage) {

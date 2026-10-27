@@ -21,6 +21,7 @@ import {
 import { taskPrivateAssetScopeSQL } from "./task-private-asset-scope.js";
 import { CloudWorkflows } from "./cloud-workflows.js";
 import { CloudWorkflowSchedules } from "./cloud-schedules.js";
+import { CloudWorkflowEvents } from "./cloud-events.js";
 import { resolveProjectConfiguration } from "./project-configuration.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
 import { AudioProduction } from "./audio-production.js";
@@ -207,9 +208,11 @@ export class TaskBusinessTools {
       role.role_key === "video-motion" && role.version === "1.5.0";
     const cloudWorkflowTools =
       role.role_key === "workflow-consultant" &&
-      ["1.1.0", "1.2.0"].includes(role.version) &&
+      ["1.1.0", "1.2.0", "1.3.0"].includes(role.version) &&
       t.execution_location !== "desktop";
-    const cloudScheduleTools = cloudWorkflowTools && role.version === "1.2.0";
+    const cloudScheduleTools =
+      cloudWorkflowTools && ["1.2.0", "1.3.0"].includes(role.version);
+    const cloudEventTools = cloudWorkflowTools && role.version === "1.3.0";
     const authorize = async (tx: any) => {
       await lockTaskTools(tx, t.id);
       await this.authority.authorize(tx);
@@ -1562,6 +1565,18 @@ export class TaskBusinessTools {
           this.storage,
         ).build(t, actor, authorize),
       );
+    if (
+      cloudEventTools &&
+      role.tool_ids.includes("workflow.run") &&
+      role.tool_ids.includes("workflow.validate")
+    )
+      tools.push(
+        ...new CloudWorkflowEvents(this.db, this.catalog, this.storage).build(
+          t,
+          actor,
+          authorize,
+        ),
+      );
     if (budgetTools)
       tools.push(
         {
@@ -1783,6 +1798,9 @@ export class TaskBusinessTools {
             workflow_schedule_preview: cloudScheduleTools,
             workflow_schedule_request: cloudScheduleTools,
             workflow_schedule_status: cloudScheduleTools,
+            workflow_event_preview: cloudEventTools,
+            workflow_event_request: cloudEventTools,
+            workflow_event_status: cloudEventTools,
           }) as Record<string, boolean>
         )[tool.name],
     );
@@ -1836,6 +1854,8 @@ export class TaskBusinessTools {
             "workflow_status",
             "workflow_schedule_preview",
             "workflow_schedule_status",
+            "workflow_event_preview",
+            "workflow_event_status",
           ].includes(tool.name),
         )
       : permitted;

@@ -125,6 +125,24 @@ export async function startDemoGateway(c: Config) {
       const schedulePreview = find("workflow_schedule_preview"),
         scheduleRequest = find("workflow_schedule_request"),
         scheduleDemo = requested.includes("schedule_demo=confirmed");
+      const eventPreview = find("workflow_event_preview"),
+        eventRequest = find("workflow_event_request"),
+        eventDemo = requested.includes("event_demo=confirmed");
+      const eventDemoArgs = (published: any) => ({
+        name: "Harbour incoming campaign review",
+        event_type: "campaign.ready",
+        timezone: "Asia/Hong_Kong",
+        overlap_policy: "latest",
+        min_interval_seconds: 10,
+        max_runs_per_day: 3,
+        max_event_age_seconds: 3600,
+        ends_at: new Date(Date.now() + 86400_000).toISOString(),
+        expected_output:
+          "Review the fixed campaign evidence, wait for my approval and prepare a private note.",
+        workflow_id: published.workflow.id,
+        workflow_version: published.workflow.version,
+        workflow_definition_hash: published.definition_hash,
+      });
       const scheduleDemoArgs = (published: any) => ({
         name: "Harbour daily campaign review",
         calendar: {
@@ -509,8 +527,32 @@ export async function startDemoGateway(c: Config) {
         tool = scheduleRequest;
         args = scheduleDemoArgs(publishedWorkflow);
       } else if (
+        eventDemo &&
+        eventPreview &&
+        publishedWorkflow &&
+        !used(eventPreview.name)
+      ) {
+        tool = eventPreview;
+        args = eventDemoArgs(publishedWorkflow);
+      } else if (
+        eventDemo &&
+        eventRequest &&
+        publishedWorkflow &&
+        !used(eventRequest.name)
+      ) {
+        tool = eventRequest;
+        const preview = toolOutputs(
+          eventPreview?.name,
+          (v) => v.body?.event_type === "campaign.ready",
+        ).at(-1);
+        args = {
+          ...eventDemoArgs(publishedWorkflow),
+          ...(preview ? { ends_at: preview.body.ends_at } : {}),
+        };
+      } else if (
         workflowRun &&
         !scheduleDemo &&
+        !eventDemo &&
         publishedWorkflow &&
         !used(workflowRun.name)
       ) {

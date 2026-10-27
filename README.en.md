@@ -1,5 +1,38 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- cloud-events-stage115 -->
+Private signed event work now connects customer confirmation, durable deduplicated receipts and independent cloud runs with scoped administration.
+
+Apply migration 126 without rewriting SQL001–125. POST a published private workflow and event options to `/cloud-workflow-events/requests`; only the customer decision endpoint can activate the exact hash and both budgets. Configure the trusted sender with the one-time key, exact original JSON bytes and documented Workmate HMAC headers. Inspect durable receipts and real runs. Application SQL cannot forge inbox inserts. Source deletion scrubs bodies, payloads, keys and cached responses.
+
+Validation: 85 affected backend tests, 13 build/type checks, 7 actual Web/Admin/native Side Panel flows, 5 layouts and 2 pinned native Codex executions. Model/accounts/sender are synthetic. Provider-native webhook and full-product acceptance remain unproven.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/115-signed-cloud-events.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/cloud-events-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Customer reviews fixed method and budgets] --> Trigger[Private event rule]
+  Sender[Customer configured sender] --> Verify[Raw byte HMAC and current authority]
+  Trigger --> Verify
+  Verify --> Inbox[Durable deduplicated inbox]
+  Inbox --> Policy[Age overlap interval daily caps]
+  Policy --> Run[One independent private run]
+  Run --> Review[Human review]
+  Review --> Codex[Company cloud Codex child]
+  Codex --> Receipt[Actual delivery and settled usage]
+```
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-cloud-events-04-review-en.png)
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-cloud-events-04-receipt-en.png)
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-cloud-events-04-compact-zh-dark.png)
+
+[Actual interaction video / 实际交互视频](media/cloud-events-copypaste-web__workmate-04-cloud-events-confirmation.mp4)
+
+![Actual copypaste-web event flow / 实际事件流程](media/cloud-events-copypaste-web__workmate-04-cloud-events-confirmation.gif)
+
+
 <!-- native-recovery-stage114 -->
 Native encrypted backups and isolated recovery are implemented. A consistent database snapshot and immutable files are authenticated together; a newer independent deletion journal suppresses deleted content before a restored environment can be reviewed.
 

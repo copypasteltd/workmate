@@ -26,6 +26,7 @@ import {
   upcomingScheduleTimes,
   type CloudScheduleBody,
 } from "./cloud-schedule-model.js";
+import type { FrozenEventMethod } from "./cloud-event-model.js";
 
 const root = "/v1/tenants/:tenant/projects/:project/cloud-workflow-schedules";
 const routeParams = z.object({ tenant: uuid, project: uuid });
@@ -39,7 +40,7 @@ const missing = () =>
   new Problem(404, "NOT_FOUND", "Private cloud schedule not found");
 const bodyOf = (row: any): CloudScheduleBody => row.body;
 const sourceShape = (
-  body: CloudScheduleBody,
+  body: FrozenEventMethod,
   tenant: string,
   project: string,
 ) => ({
@@ -123,7 +124,7 @@ export class CloudWorkflowSchedules {
     actor: Principal,
     tenant: string,
     project: string,
-    body: CloudScheduleBody,
+    body: FrozenEventMethod,
   ) {
     const v = (
       await tx.query(

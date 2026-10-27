@@ -93,6 +93,7 @@ import {
 import { resolveWorkContext } from "./persistent-work.js";
 import { advanceSchedules } from "./schedules.js";
 import { advanceCloudSchedules } from "./cloud-schedules.js";
+import { advanceCloudEvents } from "./cloud-events.js";
 import { expireFederationAttempts } from "./federation-session.js";
 import { ErasureService } from "./erasure.js";
 import { cleanUploadStaging } from "./uploads.js";
@@ -342,6 +343,10 @@ export class Worker {
         [
           "private_cloud_schedules",
           () => advanceCloudSchedules(this.db, this.catalog, this.storage),
+        ],
+        [
+          "private_cloud_events",
+          () => advanceCloudEvents(this.db, this.catalog, this.storage),
         ],
         [
           "workflows",

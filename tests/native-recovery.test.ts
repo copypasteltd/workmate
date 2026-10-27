@@ -80,7 +80,11 @@ after(async () => {
 
 test("native snapshot includes real PostgreSQL, exact object bytes and encrypted receipts; keys stay separate", async () => {
   const v = await verifyBackup(backup.directory, o.backupKey); assert.equal(v.manifest.files.filter(f => f.kind === "object").length, 2); assert.equal(v.manifest.files.filter(f => f.kind === "receipt").length, 1);
-  assert.equal(v.manifest.migrations.at(-1)!.version, 125); assert.equal(v.manifest_sha256, backup.manifest_sha256);
+  const migrationFiles = (await readdir("migrations")).filter(f => /^\d{3}-.+\.sql$/.test(f)).sort();
+  const expectedMigrations = await Promise.all(migrationFiles.map(async file => ({ version: Number(file.slice(0, 3)), source_sha256: hash(await readFile("migrations/" + file)) })));
+  assert.ok(expectedMigrations.some(m => m.version === 126), "The signed event migration must be included");
+  assert.deepEqual(v.manifest.migrations, expectedMigrations, "Backup must bind every applied migration and its exact current source bytes");
+  assert.equal(v.manifest_sha256, backup.manifest_sha256);
   assert.ok(!(await readFile(path.join(backup.directory, "manifest.sealed"), "utf8")).includes("must never return"));
   await assert.rejects(verifyBackup(backup.directory, randomBytes(32).toString("hex")));
   await assert.rejects(createNativeBackup({ ...o, backupKey: o.config.MASTER_KEY! }, root), /SEPARATE_KEYS/);

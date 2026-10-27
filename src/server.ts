@@ -58,6 +58,8 @@ import { Worker } from "./worker.js";
 import { registerBusiness } from "./business.js";
 import { registerCloudWorkflows } from "./cloud-workflows.js";
 import { registerCloudWorkflowSchedules } from "./cloud-schedules.js";
+import { registerCloudWorkflowEvents } from "./cloud-events.js";
+import { registerAdminCloudEvents } from "./cloud-event-admin.js";
 import { registerAgentGroups } from "./agent-groups.js";
 import { registerCreativeMatrices } from "./creative-matrices.js";
 import { registerVideoProjects } from "./video-projects.js";
@@ -95,7 +97,11 @@ import {
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   // Check before starting fixtures, seeding catalogs, admitting HTTP or workers.
   const probe = new Database(c);
-  try { await assertLiveEnvironment(probe); } finally { await probe.close(); }
+  try {
+    await assertLiveEnvironment(probe);
+  } finally {
+    await probe.close();
+  }
   const demo = c.DEMO_MODE ? await startDemoGateway(c) : undefined;
   if (demo) c = demo.config;
   const connectorFixture =
@@ -445,6 +451,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerBusiness(app, db, storage, catalog);
   registerCloudWorkflows(app, db, catalog, storage);
   registerCloudWorkflowSchedules(app, db, catalog, storage);
+  registerCloudWorkflowEvents(app, db, catalog, storage);
+  registerAdminCloudEvents(app, db);
   registerAgentGroups(app, db, catalog);
   registerCreativeMatrices(app, db, storage);
   registerVideoProjects(app, db, storage);

@@ -87,6 +87,9 @@ export function publicCloudRun(r: any) {
     schedule_id: r.cloud_schedule_id ?? null,
     schedule_revision: r.cloud_schedule_revision ?? null,
     schedule_occurrence_id: r.cloud_schedule_occurrence_id ?? null,
+    event_trigger_id: r.cloud_event_trigger_id ?? null,
+    event_revision: r.cloud_event_revision ?? null,
+    event_inbox_id: r.cloud_event_inbox_id ?? null,
   };
 }
 

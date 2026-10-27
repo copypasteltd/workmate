@@ -399,7 +399,12 @@ async function finishRun(id: string) {
 
 test("conversation prepares a private fixed request; no model activation or child reservation and no activation before successful origin", async () => {
   const f = await fixture();
-  assert.equal(s.catalog.role("workflow-consultant").version, "1.2.0");
+  assert.equal(s.catalog.role("workflow-consultant").version, "1.3.0");
+  assert.ok(
+    s.catalog.historicalRoles.some(
+      (r) => r.role_key === "workflow-consultant" && r.version === "1.2.0",
+    ),
+  );
   assert.ok(
     s.catalog.historicalRoles.some(
       (r) => r.role_key === "workflow-consultant" && r.version === "1.1.0",
