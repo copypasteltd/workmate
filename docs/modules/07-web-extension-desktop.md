@@ -1,5 +1,9 @@
 # M09/M10 三端客户端、设备与执行
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 已接通原生确认、本机 Codex／文件／程序／浏览器撤权、设备签名云端断开、Host 退出与注册归属检查、可选安全缓存清理、Windows 卸载钩子及重新 PKCE 登录。离线与未验证结果保留加密待发回执。公司签名已安装产品卸载／升级和原始完整产品验收仍未证明。详见 [实现方案](../technical/117-desktop-removal.md) 与 [准确证据](../quality/desktop-removal-checkpoint.json)。
+
+
 **阶段 116：Desktop 受控更新。** 已补充 Windows x64 本机更新控制器与后台发布面板：离线签名、固定来源下载、原生证书链及文件校验、分批发布、撤回／受控回滚、本机操作准入和空闲检查点、固定参数安装助手。64 项相关后台、96 项桌面单元、22 项真实 Codex 内核检查及 13 项构建通过；4 条真实界面流程、5 种布局和 2 组 GIF／MP4 已记录。明确假数据与惰性签名文件；公司签名已安装产品的完整升级及 macOS 验收仍未证明。Desktop 保留本机 Codex、客户可授予完整权限、无系统边框／菜单、隐藏滚动条及真实滚动。见[实现及安装说明](../technical/116-desktop-updates.md)与[源码及原始证据](../quality/desktop-updates-final-checkpoint.json)。
 
 

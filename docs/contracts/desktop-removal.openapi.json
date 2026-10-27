@@ -1,0 +1,170 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate Desktop withdrawal",
+    "version": "1.0.0"
+  },
+  "x-runtime-schema-sha256": "b491973b1b0a33141c8b95308bd84fce1d1c4fe993df136d1a8b2025afab7f38",
+  "paths": {
+    "/v1/auth/native/disconnect": {
+      "post": {
+        "operationId": "disconnectDesktopInstallation",
+        "security": [],
+        "description": "One-way withdrawal only. Possession of a Desktop refresh credential revokes its own family even when expired, used or already revoked. Retiring a device additionally requires its Ed25519 signature and matching credential owner, tenant and Desktop client. Removed membership does not block withdrawal. Unknown/foreign identifiers and wrong proof keys uniformly return unverified. Pending/claimed commands are cancelled; completed results and original files remain. Repeated identical requests are safe; no new access is issued. No session cookies or short-lived access token are needed. Body credentials must never enter logs.",
+        "x-proof-message": "UTF-8 JSON array [copypaste.desktop-disconnect.v1, desktop, request_id, lowercase SHA256(refresh_token), tenant_id, device_id]; Ed25519 signature as exactly 86 base64url characters without padding.",
+        "x-constraint": "At most 64 distinct (tenant_id,device_id) pairs; duplicate pairs are rejected before mutation. This semantic refinement is checked by the runtime.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesktopDisconnectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No-store, bounded result in request order. ok acknowledges processing, not successful revocation of unverified devices. Credentials with no devices use the same uniform acknowledgement as native revoke.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesktopDisconnectReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid strict body or duplicate device pair"
+          },
+          "500": {
+            "description": "No acknowledgement; retain encrypted request for retry"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DesktopDisconnectRequest": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "type": "string",
+            "const": "copypaste.desktop-disconnect.v1"
+          },
+          "client_id": {
+            "type": "string",
+            "const": "desktop"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "refresh_token": {
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 100
+          },
+          "devices": {
+            "maxItems": 64,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tenant_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "device_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "signature": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]{86}$"
+                }
+              },
+              "required": [
+                "tenant_id",
+                "device_id",
+                "signature"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "protocol",
+          "client_id",
+          "request_id",
+          "refresh_token",
+          "devices"
+        ],
+        "additionalProperties": false
+      },
+      "DesktopDisconnectReceipt": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "devices": {
+            "maxItems": 64,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tenant_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "device_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "revoked",
+                    "unverified"
+                  ]
+                }
+              },
+              "required": [
+                "tenant_id",
+                "device_id",
+                "status"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "ok",
+          "request_id",
+          "devices"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

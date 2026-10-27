@@ -1,5 +1,9 @@
 # 技术架构与技术栈
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 已接通原生确认、本机 Codex／文件／程序／浏览器撤权、设备签名云端断开、Host 退出与注册归属检查、可选安全缓存清理、Windows 卸载钩子及重新 PKCE 登录。离线与未验证结果保留加密待发回执。公司签名已安装产品卸载／升级和原始完整产品验收仍未证明。详见 [实现方案](../technical/117-desktop-removal.md) 与 [准确证据](../quality/desktop-removal-checkpoint.json)。
+
+
 **阶段 116：原生更新链路。** Desktop 0.6.0 使用 Electron 主进程更新状态机、Ed25519 签名清单、加密序号账本和 Windows C# WinVerifyTrust 助手；公司 API 提供有范围权限与 MFA 的发布操作、原生文件分块和 PostgreSQL 单调频道头。开发可携版本只下载验证；正式安装握手等待本机执行检查点，公钥仅在构建时固定。Codex 继续是唯一内核；Web／Extension 云端与 Desktop 本机执行边界不变。见[实现及发布规范](116-desktop-updates.md)。
 
 

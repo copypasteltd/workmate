@@ -1,5 +1,9 @@
 # 实际开发、独立仓库与交付
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 已接通原生确认、本机 Codex／文件／程序／浏览器撤权、设备签名云端断开、Host 退出与注册归属检查、可选安全缓存清理、Windows 卸载钩子及重新 PKCE 登录。离线与未验证结果保留加密待发回执。公司签名已安装产品卸载／升级和原始完整产品验收仍未证明。详见 [实现方案](../technical/117-desktop-removal.md) 与 [准确证据](../quality/desktop-removal-checkpoint.json)。
+
+
 **阶段 116：Desktop 0.6.0 受控更新。** 当前新增 migration 127，SQL001–126 字节保留；后台权限、签名发布、原生下载及验证、本机检查点和安装握手已实现。64 后台＋96 桌面单元＋22 本机 Codex 检查、13 构建／类型检查、4 实际界面流程通过。交付提供新目录中的未签名开发 Setup／Portable；正式发布须显式构建信任根和公司签名凭据，未满足时发布构建失败。所有旧失败日志及源码归档保留，原完整产品验收结论不改写。见[当前实施与资格边界](116-desktop-updates.md)及[绑定证据](../quality/desktop-updates-final-checkpoint.json)。
 
 

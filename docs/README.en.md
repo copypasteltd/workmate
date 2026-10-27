@@ -1,5 +1,37 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 adds confirmed local withdrawal, signed device retirement, Chrome Host cleanup and optional safe cache removal.
+
+Validation: 79 backend + 127 Desktop + 22 native Codex checks; 13 builds; 5 real UI flows; 4 layouts; 1 GIF/MP4 pair.
+
+Real Windows DPAPI, owned Native Host, Electron IPC, Web PKCE and native PostgreSQL; synthetic customer/model data. Native consent answers and shell launch interception belong to the isolated automation. Company-signed installed-product uninstall/upgrade, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](technical/117-desktop-removal.md) · [Evidence / 证据](quality/desktop-removal-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Native customer confirmation] --> Outbox[Encrypted signed withdrawal]
+  Outbox --> Stop[Stop local Codex and revoke grants]
+  Stop --> Host[Owned Host exit and registry check]
+  Host --> Company[Company device retirement]
+  Company --> Receipt[Confirmed or durable retry receipt]
+  Receipt --> Windows[Windows uninstall with preparation hook]
+```
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](design/implementation/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-computer-permissions.png)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](design/implementation/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-offline-withdrawal.png)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](design/implementation/desktop-removal-copypaste-web__workmate-desktop-removal-02-device-withdrawn.png)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](design/implementation/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-computer-zh-dark.png)
+
+[Actual interaction video / 实际交互视频](design/implementation/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-disconnect-and-retry.mp4)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](design/implementation/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-disconnect-and-retry.gif)
+
+
 <!-- desktop-updates-stage116-final -->
 Final Desktop update qualification includes the corrected NSIS silent-install restart handoff, Admin release operations and local installation admission.
 
