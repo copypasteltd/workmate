@@ -1,5 +1,36 @@
 # Workmate · CopyPaste Enterprise Agent · admin
 
+<!-- desktop-updates-stage116-final -->
+已修正静默安装后的应用重启交接，并重新验证 Desktop 更新、后台发布及本机安装准入。
+
+在十分钟内 MFA 及全局发布权限下打开 Desktop 发布。选择 stable／preview，输入离线签名 JSON 和暂存原因，选择匹配安装包并上传或继续上传。核对版本、期限、分批比例、文件／证书完整摘要及频道版本；发布须有独立权限、勾选确认和原因。撤回使用更高序号签名清单；回滚选择曾发布的完全相同文件并使用新序号签名。后台不接收私钥、不强制安装，保留不可变历史。
+
+验证：64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Windows 信任检查与 Electron 为实际运行；账户／模型及惰性签名文件为测试夹具。公司签名安装版本的完整升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/116-desktop-updates.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-updates-final-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-ready.png)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-release-withdrawn.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-admin__workmate-desktop-updates-03-desktop-release-publish.gif)
+
+
 <!-- desktop-updates-stage116 -->
 已接通 Desktop 受控更新：后台发布、签名下载及本机安装准入。
 
