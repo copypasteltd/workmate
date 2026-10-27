@@ -1,4 +1,8 @@
 const limits: Record<string, [string, string]> = {
+  WEB_ANALYTICS_PARTIAL_SOURCE: ["此快照只包含部分同步結果。", "This snapshot contains only a partial synchronization."],
+  WEB_ANALYTICS_OBSERVED_ROWS_ONLY: ["摘要只反映已捕獲資料，不能當作全站總量。", "The summary covers captured rows, not complete website totals."],
+  WEB_ANALYTICS_NO_CROSS_PLATFORM_ATTRIBUTION: ["沒有跨平台去重、歸因或因果推斷。", "No cross-platform deduplication, attribution or causal inference is applied."],
+  WEB_ANALYTICS_MISSING_DATES_NOT_ZERO: ["沒有返回資料的日期保持未知，不補零。", "Dates without returned rows remain unknown, not zero."],
   CONNECTOR_RATE_OR_TRANSIENT: [
     "來源暫時限流，系統會按供應商指定時間重試。",
     "The provider is temporarily rate-limiting requests. A retry follows its requested delay.",
