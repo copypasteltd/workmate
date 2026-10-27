@@ -1,0 +1,622 @@
+2026-10-27 07:53:01.433 CST [37308] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-27 07:53:01.447 CST [37308] LOG:  listening on IPv6 address "::1", port 55432
+
+2026-10-27 07:53:01.448 CST [37308] LOG:  listening on IPv4 address "127.0.0.1", port 55432
+
+2026-10-27 07:53:02.231 CST [31628] LOG:  database system was shut down at 2026-10-27 06:30:47 CST
+
+2026-10-27 07:53:02.656 CST [37308] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:55432. Application roles are not owners and do not bypass RLS.
+TAP version 13
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+# isolated integration suite: applied migration 104
+# isolated integration suite: applied migration 105
+# isolated integration suite: applied migration 106
+# isolated integration suite: applied migration 107
+# isolated integration suite: applied migration 108
+# isolated integration suite: applied migration 109
+# isolated integration suite: applied migration 110
+# isolated integration suite: applied migration 111
+# isolated integration suite: applied migration 112
+# isolated integration suite: applied migration 113
+# isolated integration suite: applied migration 114
+# isolated integration suite: applied migration 115
+# isolated integration suite: applied migration 116
+# isolated integration suite: applied migration 117
+# isolated integration suite: applied migration 118
+# isolated integration suite: applied migration 119
+# isolated integration suite: applied migration 120
+# isolated integration suite: applied migration 121
+# Forward-only SQL122 audio accounting qualification: applied migration 122
+# Subtest: SQL122 preserves budget/capacity/receipt function OIDs and prepared SQL121 callers
+ok 1 - SQL122 preserves budget/capacity/receipt function OIDs and prepared SQL121 callers
+  ---
+  duration_ms: 14783.3559
+  ...
+2026-10-27 07:54:29.332 CST [12768] ERROR:  permission denied for function task_ai_budget_receipt
+2026-10-27 07:54:29.332 CST [12768] STATEMENT:  SELECT task_ai_budget_receipt($1) AS receipt
+
+# {"request_id":"73216d2c-1a50-4a87-ac7c-80178c980910","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42501"}
+# Subtest: a real dropped customer POST accepts independently approved cost, retains capacity and never invents media
+not ok 2 - a real dropped customer POST accepts independently approved cost, retains capacity and never invents media
+  ---
+  duration_ms: 2501.0667
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-accounting.test.ts:6:5837'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"73216d2c-1a50-4a87-ac7c-80178c980910"}}
+    
+    500 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async customer (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:76:3)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:109:11)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: platform validation requires both approvals before a new explicit run; original verification and POST remain unchanged
+ok 3 - platform validation requires both approvals before a new explicit run; original verification and POST remain unchanged
+  ---
+  duration_ms: 9438.7883
+  ...
+# Subtest: termination-only evidence can release capacity with a price discrepancy while cost stays unknown
+ok 4 - termination-only evidence can release capacity with a price discrepancy while cost stays unknown
+  ---
+  duration_ms: 6976.4992
+  ...
+2026-10-27 07:54:52.377 CST [37736] ERROR:  permission denied for table ai_audio_evidence
+2026-10-27 07:54:52.377 CST [37736] STATEMENT:  UPDATE ai_audio_evidence SET reason='overwrite' WHERE id=$1
+
+2026-10-27 07:54:52.378 CST [5040] ERROR:  permission denied for table ai_audio_evidence
+2026-10-27 07:54:52.378 CST [5040] STATEMENT:  DELETE FROM ai_audio_evidence WHERE id=$1
+
+# Subtest: immutable evidence is exactly idempotent, deduplicated and bound to original model/source/hash/time
+ok 5 - immutable evidence is exactly idempotent, deduplicated and bound to original model/source/hash/time
+  ---
+  duration_ms: 6607.0615
+  ...
+# Subtest: evidence authors cannot approve consequences requested by a different administrator
+ok 6 - evidence authors cannot approve consequences requested by a different administrator
+  ---
+  duration_ms: 6084.4906
+  ...
+2026-10-27 07:54:59.930 CST [14712] ERROR:  permission denied for function task_ai_budget_receipt
+2026-10-27 07:54:59.930 CST [14712] STATEMENT:  SELECT task_ai_budget_receipt($1) AS receipt
+
+# {"request_id":"a9a9835c-12a0-47e5-8f3a-66a2b4b102ca","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42501"}
+# Subtest: cost and evidence access is scoped; requests-only readers never receive amounts or evidence
+not ok 7 - cost and evidence access is scoped; requests-only readers never receive amounts or evidence
+  ---
+  duration_ms: 1468.348
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-accounting.test.ts:6:10686'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"a9a9835c-12a0-47e5-8f3a-66a2b4b102ca"}}
+    
+    500 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async customer (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:76:3)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:156:11)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-27 07:55:00.968 CST [14712] ERROR:  permission denied for function task_ai_budget_receipt
+2026-10-27 07:55:00.968 CST [14712] STATEMENT:  SELECT task_ai_budget_receipt($1) AS receipt
+
+# {"request_id":"80f78ecf-329f-4d06-8c17-1d2e8701b8b5","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42501"}
+# Subtest: project explicit deny and expired MFA block every audio write and sensitive read
+not ok 8 - project explicit deny and expired MFA block every audio write and sensitive read
+  ---
+  duration_ms: 1036.9056
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-accounting.test.ts:6:11696'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"80f78ecf-329f-4d06-8c17-1d2e8701b8b5"}}
+    
+    500 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async customer (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:76:3)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:165:11)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: visible confirmations invalidate signed cursors and filters cannot be swapped
+ok 9 - visible confirmations invalidate signed cursors and filters cannot be swapped
+  ---
+  duration_ms: 13030.0548
+  ...
+2026-10-27 07:55:15.828 CST [32672] ERROR:  permission denied for function task_ai_budget_receipt
+2026-10-27 07:55:15.828 CST [32672] STATEMENT:  SELECT task_ai_budget_receipt($1) AS receipt
+
+# {"request_id":"406d87ca-6e6a-4c5b-8d80-17aeb25a21d7","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42501"}
+# Subtest: cost facts settle one original customer task exactly once and retain a failed business outcome
+not ok 10 - cost facts settle one original customer task exactly once and retain a failed business outcome
+  ---
+  duration_ms: 1828.6862
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-accounting.test.ts:6:13334'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"406d87ca-6e6a-4c5b-8d80-17aeb25a21d7"}}
+    
+    500 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async customer (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:76:3)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:182:11)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-27 07:55:16.915 CST [32672] ERROR:  permission denied for function task_ai_budget_receipt
+2026-10-27 07:55:16.915 CST [32672] STATEMENT:  SELECT task_ai_budget_receipt($1) AS receipt
+
+# {"request_id":"ce2a621d-176c-45f1-b3c8-73e8086c9f2b","code":"INTERNAL_ERROR","error_type":"DatabaseError","db_code":"42501"}
+# Subtest: external overquote is recorded as a violation without silently expanding the original customer reservation
+not ok 11 - external overquote is recorded as a violation without silently expanding the original customer reservation
+  ---
+  duration_ms: 1085.9685
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\audio-accounting.test.ts:6:14301'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"error":{"code":"INTERNAL_ERROR","message":"暫時無法完成，請稍後重試 / Unable to complete this request","request_id":"ce2a621d-176c-45f1-b3c8-73e8086c9f2b"}}
+    
+    500 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 500
+  operator: 'strictEqual'
+  stack: |-
+    videoOK (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\desktop-video-fixture.ts:23:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async customer (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:76:3)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\audio-accounting.test.ts:192:11)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+2026-10-27 07:55:23.783 CST [32200] ERROR:  permission denied for table ai_audio_cost_confirmations
+2026-10-27 07:55:23.783 CST [32200] STATEMENT:  UPDATE ai_audio_cost_confirmations SET billable_units=0 WHERE id=$1
+
+2026-10-27 07:55:23.818 CST [36032] ERROR:  Audio confirmation requires independently approved original evidence
+2026-10-27 07:55:23.818 CST [36032] CONTEXT:  PL/pgSQL function guard_audio_accounting_confirmation() line 21 at RAISE
+2026-10-27 07:55:23.818 CST [36032] STATEMENT:  INSERT INTO ai_audio_termination_confirmations(audio_probe_id,evidence_id,data_mode,operation_id,actor_id,reviewer_id) VALUES($1,$2,'configured_services',$3,$4,$5)
+
+2026-10-27 07:55:23.822 CST [32672] ERROR:  permission denied for table ai_audio_evidence
+2026-10-27 07:55:23.822 CST [32672] STATEMENT:  SELECT * FROM ai_audio_evidence LIMIT 1
+
+2026-10-27 07:55:23.881 CST [37532] ERROR:  permission denied for table ai_audio_cost_confirmations
+2026-10-27 07:55:23.881 CST [37532] STATEMENT:  SELECT * FROM ai_audio_cost_confirmations LIMIT 1
+
+2026-10-27 07:55:23.924 CST [28308] ERROR:  permission denied for table ai_audio_termination_confirmations
+2026-10-27 07:55:23.924 CST [28308] STATEMENT:  SELECT * FROM ai_audio_termination_confirmations LIMIT 1
+
+2026-10-27 07:55:23.973 CST [35216] ERROR:  permission denied for view current_audio_accounting_requests
+2026-10-27 07:55:23.973 CST [35216] STATEMENT:  SELECT * FROM current_audio_accounting_requests LIMIT 1
+
+2026-10-27 07:55:24.015 CST [27164] ERROR:  permission denied for view accounted_audio_jobs
+2026-10-27 07:55:24.015 CST [27164] STATEMENT:  SELECT * FROM accounted_audio_jobs LIMIT 1
+
+2026-10-27 07:55:24.056 CST [27624] ERROR:  permission denied for view capacity_audio_probes
+2026-10-27 07:55:24.056 CST [27624] STATEMENT:  SELECT * FROM capacity_audio_probes LIMIT 1
+
+# Subtest: confirmation race produces one immutable fact and database roles cannot forge accounting
+ok 12 - confirmation race produces one immutable fact and database roles cannot forge accounting
+  ---
+  duration_ms: 7140.14
+  ...
+2026-10-27 07:55:24.154 CST [36636] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 07:55:25.281 CST [36636] LOG:  checkpoint complete: wrote 59 buffers (0.4%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.021 s, sync=0.780 s, total=1.128 s; sync files=16, longest=0.101 s, average=0.049 s; distance=21703 kB, estimate=21703 kB; lsn=1A/1AB463C0, redo lsn=1A/1AB46368
+
+# isolated integration suite: applied migration 1
+# isolated integration suite: applied migration 2
+# isolated integration suite: applied migration 3
+# isolated integration suite: applied migration 4
+# isolated integration suite: applied migration 5
+# isolated integration suite: applied migration 6
+# isolated integration suite: applied migration 7
+# isolated integration suite: applied migration 8
+# isolated integration suite: applied migration 9
+# isolated integration suite: applied migration 10
+# isolated integration suite: applied migration 11
+# isolated integration suite: applied migration 12
+# isolated integration suite: applied migration 13
+# isolated integration suite: applied migration 14
+# isolated integration suite: applied migration 15
+# isolated integration suite: applied migration 16
+# isolated integration suite: applied migration 17
+# isolated integration suite: applied migration 18
+# isolated integration suite: applied migration 19
+# isolated integration suite: applied migration 20
+# isolated integration suite: applied migration 21
+# isolated integration suite: applied migration 22
+# isolated integration suite: applied migration 23
+# isolated integration suite: applied migration 24
+# isolated integration suite: applied migration 25
+# isolated integration suite: applied migration 26
+# isolated integration suite: applied migration 27
+# isolated integration suite: applied migration 28
+# isolated integration suite: applied migration 29
+# isolated integration suite: applied migration 30
+# isolated integration suite: applied migration 31
+# isolated integration suite: applied migration 32
+# isolated integration suite: applied migration 33
+# isolated integration suite: applied migration 34
+# isolated integration suite: applied migration 35
+# isolated integration suite: applied migration 36
+# isolated integration suite: applied migration 37
+# isolated integration suite: applied migration 38
+# isolated integration suite: applied migration 39
+# isolated integration suite: applied migration 40
+# isolated integration suite: applied migration 41
+# isolated integration suite: applied migration 42
+# isolated integration suite: applied migration 43
+# isolated integration suite: applied migration 44
+# isolated integration suite: applied migration 45
+# isolated integration suite: applied migration 46
+# isolated integration suite: applied migration 47
+# isolated integration suite: applied migration 48
+# isolated integration suite: applied migration 49
+# isolated integration suite: applied migration 50
+# isolated integration suite: applied migration 51
+# isolated integration suite: applied migration 52
+# isolated integration suite: applied migration 53
+# isolated integration suite: applied migration 54
+# isolated integration suite: applied migration 55
+# isolated integration suite: applied migration 56
+# isolated integration suite: applied migration 57
+# isolated integration suite: applied migration 58
+# isolated integration suite: applied migration 59
+# isolated integration suite: applied migration 60
+# isolated integration suite: applied migration 61
+# isolated integration suite: applied migration 62
+# isolated integration suite: applied migration 63
+# isolated integration suite: applied migration 64
+# isolated integration suite: applied migration 65
+# isolated integration suite: applied migration 66
+# isolated integration suite: applied migration 67
+# isolated integration suite: applied migration 68
+# isolated integration suite: applied migration 69
+# isolated integration suite: applied migration 70
+# isolated integration suite: applied migration 71
+# isolated integration suite: applied migration 72
+# isolated integration suite: applied migration 73
+# isolated integration suite: applied migration 74
+# isolated integration suite: applied migration 75
+# isolated integration suite: applied migration 76
+# isolated integration suite: applied migration 77
+# isolated integration suite: applied migration 78
+# isolated integration suite: applied migration 79
+# isolated integration suite: applied migration 80
+# isolated integration suite: applied migration 81
+# isolated integration suite: applied migration 82
+# isolated integration suite: applied migration 83
+# isolated integration suite: applied migration 84
+# isolated integration suite: applied migration 85
+# isolated integration suite: applied migration 86
+# isolated integration suite: applied migration 87
+# isolated integration suite: applied migration 88
+# isolated integration suite: applied migration 89
+# isolated integration suite: applied migration 90
+# isolated integration suite: applied migration 91
+# isolated integration suite: applied migration 92
+# isolated integration suite: applied migration 93
+# isolated integration suite: applied migration 94
+# isolated integration suite: applied migration 95
+# isolated integration suite: applied migration 96
+# isolated integration suite: applied migration 97
+# isolated integration suite: applied migration 98
+# isolated integration suite: applied migration 99
+# isolated integration suite: applied migration 100
+# isolated integration suite: applied migration 101
+# isolated integration suite: applied migration 102
+# isolated integration suite: applied migration 103
+# isolated integration suite: applied migration 104
+# isolated integration suite: applied migration 105
+# isolated integration suite: applied migration 106
+# isolated integration suite: applied migration 107
+# isolated integration suite: applied migration 108
+# isolated integration suite: applied migration 109
+# isolated integration suite: applied migration 110
+# isolated integration suite: applied migration 111
+# isolated integration suite: applied migration 112
+# isolated integration suite: applied migration 113
+# isolated integration suite: applied migration 114
+# isolated integration suite: applied migration 115
+# isolated integration suite: applied migration 116
+# isolated integration suite: applied migration 117
+# isolated integration suite: applied migration 118
+# isolated integration suite: applied migration 119
+# isolated integration suite: applied migration 120
+# Forward-only managed audio capability upgrade: applied migration 121
+# Forward-only managed audio capability upgrade: applied migration 122
+# Subtest: the populated 120 checkpoint retains budget function OIDs and prepared callers after SQL121–122
+ok 13 - the populated 120 checkpoint retains budget function OIDs and prepared callers after SQL121–122
+  ---
+  duration_ms: 11887.531
+  ...
+# Subtest: voice/locale/speed matrix decodes real WAV responses, charges only the platform and requires independent publication
+ok 14 - voice/locale/speed matrix decodes real WAV responses, charges only the platform and requires independent publication
+  ---
+  duration_ms: 30710.6175
+  ...
+# Subtest: transcription checks WAV and MP3 plus ordinary JSON and actual ordered segment times
+ok 15 - transcription checks WAV and MP3 plus ordinary JSON and actual ordered segment times
+  ---
+  duration_ms: 38681.7625
+  ...
+# Subtest: explicit audio definitions reject duplicates, unknown locale/fields, empty voices and unsafe prices
+ok 16 - explicit audio definitions reject duplicates, unknown locale/fields, empty voices and unsafe prices
+  ---
+  duration_ms: 14.0786
+  ...
+# Subtest: validation replay returns its original durable receipt and never creates another audio POST
+ok 17 - validation replay returns its original durable receipt and never creates another audio POST
+  ---
+  duration_ms: 20751.5812
+  ...
+# Subtest: dropped audio POST holds its original quote and processor restart never replays it
+ok 18 - dropped audio POST holds its original quote and processor restart never replays it
+  ---
+  duration_ms: 5764.8739
+  ...
+# Subtest: invalid audio bytes keep uncertain provider cost and cannot grant publication
+ok 19 - invalid audio bytes keep uncertain provider cost and cannot grant publication
+  ---
+  duration_ms: 5920.6659
+  ...
+# Subtest: missing provider segment timestamps never become a verified timestamp capability
+ok 20 - missing provider segment timestamps never become a verified timestamp capability
+  ---
+  duration_ms: 12029.0955
+  ...
+# Subtest: cancellation before dispatch is idempotent, free and prevents every provider call
+ok 21 - cancellation before dispatch is idempotent, free and prevents every provider call
+  ---
+  duration_ms: 1375.9644
+  ...
+# Subtest: cancellation while a complete reply arrives preserves actual cost and stops later cases
+not ok 22 - cancellation while a complete reply arrives preserves actual cost and stops later cases
+  ---
+  duration_ms: 6278.3702
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform\\tests\\capability-audio-verification.test.ts:7:1761'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"id":"54a307c4-f59b-45a2-826d-ec604ec1b1fc","release_id":"51ee7a98-9692-4724-b8dd-d4d71f485c9d","state":"reconciling","capability_version_id":null,"created_at":"2026-10-26T23:57:35.726Z","finished_at":"2026-10-26T23:57:41.934Z","expires_at":null,"result":{"checks":[],"accepted":true,"data_mode":"configured_services","error_code":"AUDIO_VALIDATION_CANCELLED","model_alias":"synthetic-managed-speech-v1","usage_known":false,"input_tokens":0,"codex_version":"0.163.0-alpha.11","output_tokens":0,"quality_scope":"protocol_only","definition_hash":"128dcd4d5afaed54641659c641677c637d67b753477a81fbb791a7404ffc88e0","reasoning_effort":null,"known_cost_micros":"0","codex_binary_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","gateway_fingerprint":"7e865a41ea55e1a776a2cd26562ab1e69060a78554630833508f91f0e308305e","supported_operations":["audio.speech"]},"workspace_cleanup":null,"audio_suite":{"plan_hash":"a6ca4fa6b115189aa4c091a8f20c66f98df6c283311121a07a81e1167a762f42","total_cases":3,"verified_cases":0,"quoted_micros":"24000","quality_scope":"protocol_only","known_cost_micros":"0","usage_known":false,"cancel_requested":true,"deadline_at":"2026-10-27T01:57:35.726Z","error_code":"AUDIO_VALIDATION_CANCELLED","accounting":{"confirmed_micros":"0","unconfirmed_cases":1,"capacity_held_cases":1,"resolved":false,"allocation_exceeded":false},"cases":[{"id":"9a18d500-3729-40c2-9e65-b73d35040425","ordinal":0,"operation_id":"4e8d4e96-7fee-4e7c-9f8a-36e6a805fa60","state":"unknown","kind":"speech","locale":"en","voice":"alloy","speed":0.25,"mime_type":null,"timestamps":null,"quoted_micros":"8000","actual_micros":null,"usage_known":false,"verified":false,"error_code":"AUDIO_VALIDATION_CANCELLED","response_sha256":null,"source_sha256":null,"media":null,"accounting":{"original_state":"unknown","original_usage_known":false,"cost_state":"unknown","cost_source":"unknown","confirmed_micros":null,"confirmed_units":null,"cost_confirmation_id":null,"termination_confirmation_id":null,"capacity_held":true,"accounting_resolved":false,"allocation_exceeded":false}}]}}
+    + actual - expected
+    
+    + 'reconciling'
+    - 'cancelled'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'cancelled'
+  actual: 'reconciling'
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform\tests\capability-audio-verification.test.ts:220:10)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: permission removal before the next case stops dispatch without overwriting already recorded fees
+ok 23 - permission removal before the next case stops dispatch without overwriting already recorded fees
+  ---
+  duration_ms: 6386.0179
+  ...
+# Subtest: current audio capacity is enforced before preparation and dispatch and resumes safely when capacity returns
+ok 24 - current audio capacity is enforced before preparation and dispatch and resumes safely when capacity returns
+  ---
+  duration_ms: 23293.48
+  ...
+# Subtest: the complete plan must fit platform run funding before a durable validation is admitted
+ok 25 - the complete plan must fit platform run funding before a durable validation is admitted
+  ---
+  duration_ms: 89.7449
+  ...
+2026-10-27 07:58:29.183 CST [5352] ERROR:  Immutable audio verification operation or outcome
+2026-10-27 07:58:29.183 CST [5352] CONTEXT:  PL/pgSQL function guard_capability_audio_probe() line 24 at RAISE
+2026-10-27 07:58:29.183 CST [5352] STATEMENT:  UPDATE capability_audio_probes SET billable_units=0 WHERE id=$1
+
+2026-10-27 07:58:29.259 CST [16960] ERROR:  Immutable audio verification grant or plan
+2026-10-27 07:58:29.259 CST [16960] CONTEXT:  PL/pgSQL function guard_capability_audio_suite() line 7 at RAISE
+2026-10-27 07:58:29.259 CST [16960] STATEMENT:  UPDATE capability_audio_suites SET plan='[]' WHERE validation_id=$1
+
+2026-10-27 07:58:29.308 CST [30424] ERROR:  Immutable completed capability verification
+2026-10-27 07:58:29.308 CST [30424] CONTEXT:  PL/pgSQL function guard_capability_validation() line 6 at RAISE
+2026-10-27 07:58:29.308 CST [30424] STATEMENT:  UPDATE capability_validations SET result='{}' WHERE id=$1
+
+# Subtest: a completed verification receipt and its probe media/fee evidence are immutable
+ok 26 - a completed verification receipt and its probe media/fee evidence are immutable
+  ---
+  duration_ms: 17580.8463
+  ...
+# Subtest: a second processor cannot own the same pending POST
+ok 27 - a second processor cannot own the same pending POST
+  ---
+  duration_ms: 16565.3669
+  ...
+2026-10-27 07:58:55.056 CST [27248] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+2026-10-27 07:58:55.056 CST [35936] LOG:  could not receive data from client: An existing connection was forcibly closed by the remote host.
+	
+
+# Subtest: an actual processor crash after dispatch is recovered as an unknown original POST without a second service submission
+ok 28 - an actual processor crash after dispatch is recovered as an unknown original POST without a second service submission
+  ---
+  duration_ms: 11563.1909
+  ...
+# Subtest: anonymous and read-only users cannot start or cancel platform-funded audio verification
+ok 29 - anonymous and read-only users cannot start or cancel platform-funded audio verification
+  ---
+  duration_ms: 1254.5528
+  ...
+# Subtest: new tasks adopt independently published speech prices while old tasks retain their exact version after publication and rollback
+ok 30 - new tasks adopt independently published speech prices while old tasks retain their exact version after publication and rollback
+  ---
+  duration_ms: 58612.6364
+  ...
+2026-10-27 07:59:57.425 CST [36636] LOG:  checkpoint starting: immediate force wait
+
+2026-10-27 07:59:58.114 CST [36636] LOG:  checkpoint complete: wrote 50 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.011 s, sync=0.468 s, total=0.689 s; sync files=11, longest=0.138 s, average=0.043 s; distance=21898 kB, estimate=21898 kB; lsn=1A/1C0A8EB8, redo lsn=1A/1C0A8E60
+
+1..30
+# tests 30
+# suites 0
+# pass 24
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 413463.2582
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/148e7fbb-d993-4a95-81da-a5f5d1bf099e/result.json","sha256":"a49c4359be707709cd18c313b69326ffc56578e3483c7d2f28773b6a7fea1534","exit_code":0}
+2026-10-27 07:59:59.176 CST [37308] LOG:  received fast shutdown request
+
+2026-10-27 07:59:59.309 CST [37308] LOG:  aborting any active transactions
+
+2026-10-27 07:59:59.332 CST [37308] LOG:  background worker "logical replication launcher" (PID 8828) exited with exit code 1
+
+2026-10-27 07:59:59.332 CST [36636] LOG:  shutting down
+
+2026-10-27 07:59:59.388 CST [36636] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-27 07:59:59.574 CST [36636] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.042 s, total=0.225 s; sync files=1, longest=0.042 s, average=0.042 s; distance=0 kB, estimate=19708 kB; lsn=1A/1C0A8FD0, redo lsn=1A/1C0A8FD0
+
+2026-10-27 07:59:59.678 CST [37308] LOG:  database system is shut down
+

@@ -1,0 +1,92 @@
+import { useEffect, useRef, useState } from "react";
+import { Download, Film, Play, RefreshCw, Square, X } from "lucide-react";
+import { api, download, post } from "./api";
+import { useWorkspace } from "./context";
+import { useI18n } from "./ui";
+import { VideoPlayer } from "./video-projects";
+
+export interface LocalVideoJob { project_id: string; render_id: string; revision: number; state: string; version?: number }
+interface VideoStatus {
+  project: { id: string; name: string; version: number };
+  render: { id: string; version: number; revision: number; state: string; error_code: string | null };
+  delivery_state: string;
+  requires_render_completion: boolean;
+  assets: { id: string; name: string; version: { id: string; version: number; mime_type: string; bytes: string; sha256: string } }[];
+}
+const assetLabels: Record<string, [string, string]> = {
+  "video/mp4": ["下載成片", "Download video"],
+  "text/markdown": ["腳本", "Script"],
+  "text/vtt": ["字幕", "Subtitles"],
+};
+function LocalVideoJobCard({ job }: { job: LocalVideoJob }) {
+  const w = useWorkspace(), { t } = useI18n();
+  const [data, setData] = useState<VideoStatus | null>(null), [preview, setPreview] = useState(false);
+  const [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const refresh = useRef<() => Promise<void>>(async () => {}), cancelKey = useRef<{ revision: number; key: string } | null>(null);
+  useEffect(() => {
+    let live = true, loading = false, settled = false;
+    setData(null); setPreview(false); setError("");
+    const load = async () => {
+      if (!live || loading) return;
+      loading = true;
+      try {
+        const result = await api<VideoStatus>(`${w.base}/video-projects/${job.project_id}/renders/${job.render_id}/status`);
+        if (!live) return;
+        if (result.project.id !== job.project_id || result.render.id !== job.render_id)
+          throw new Error("VIDEO_STATUS_SCOPE_INVALID");
+        setData(result); setError(""); settled = !result.requires_render_completion;
+        if (result.delivery_state !== "available") setPreview(false);
+      } catch (e) {
+        if (!live) return;
+        setData(null); setPreview(false); setError((e as Error).message);
+        if ([401, 403, 404].includes((e as any).status)) settled = true;
+      } finally { loading = false; }
+    };
+    refresh.current = load;
+    void load();
+    const interval = setInterval(() => { if (!settled && document.visibilityState === "visible") void load(); }, 3000);
+    return () => { live = false; clearInterval(interval); };
+  }, [w.base, job.project_id, job.render_id]);
+  useEffect(() => { void refresh.current(); }, [job.revision]);
+  const state = data?.render.state ?? job.state;
+  const stateNames: Record<string, [string, string]> = {
+    queued: ["等候製作", "Queued"], rendering: ["製作中", "Rendering"], succeeded: ["製作完成", "Rendered"],
+    failed: ["製作失敗", "Render failed"], cancelled: ["已取消", "Cancelled"],
+  };
+  const pending = data?.requires_render_completion ?? ["queued", "rendering"].includes(job.state);
+  const cancel = async () => {
+    if (!data || !pending || busy) return;
+    setBusy(true); setError("");
+    if (cancelKey.current?.revision !== data.render.revision)
+      cancelKey.current = { revision: data.render.revision, key: crypto.randomUUID() };
+    try {
+      await post(`${w.base}/video-projects/${job.project_id}/renders/${job.render_id}/cancel`,
+        { expected_revision: cancelKey.current.revision }, cancelKey.current.key);
+      cancelKey.current = null; await refresh.current();
+    } catch (e) {
+      await refresh.current(); setError((e as Error).message);
+    } finally { setBusy(false); }
+  };
+  return <article className="local-agent-video" data-local-video-render={job.render_id} aria-label={t("影片製作", "Video production")}>
+    <header><Film size={17}/><strong>{data?.project.name ?? t("影片製作", "Video production")}</strong>
+      <span>v{data?.render.version ?? job.version ?? "?"}</span><span className="local-agent-video-state" role="status">{t(...(stateNames[state] ?? [state, state]))}</span></header>
+    {pending && <p>{t("影片在公司服務製作中，完成前不會顯示下載。你可以繼續本機工作。", "Company services are composing the video. Downloads appear when it is ready; you can continue local work.")}</p>}
+    {data?.delivery_state === "unavailable" && <p>{t("成片或來源素材已不可用。請檢查專案素材與權限。", "The outputs or their sources are unavailable. Check project assets and permissions.")}</p>}
+    {["failed", "cancelled"].includes(state) && <p>{state === "cancelled" ? t("這次製作已停止，沒有新增成片。", "This render stopped without a new video.") : t("這次製作未能交付成片。請檢查素材、權限及製作記錄，再決定是否重試。", "This render delivered no video. Check sources, permissions and activity before choosing to retry.")}</p>}
+    {error && <p role="alert">{t("未能更新或完成操作，請重新整理後再試。", "Could not update or complete the action. Refresh and try again.")}</p>}
+    <div className="local-agent-video-actions">
+      <button className="button" disabled={busy} aria-label={t("重新整理影片狀態", "Refresh video status")} onClick={() => { setBusy(true); void refresh.current().finally(() => setBusy(false)); }}><RefreshCw size={13}/>{t("重新整理", "Refresh")}</button>
+      {pending && <button className="button" disabled={busy || !data} onClick={() => void cancel()}><Square size={13}/>{t("取消製作", "Cancel render")}</button>}
+      {data?.delivery_state === "available" && <><button className="button" onClick={() => setPreview(!preview)}>{preview ? <X size={14}/> : <Play size={14}/>}{preview ? t("關閉預覽", "Close preview") : t("播放成片", "Play video")}</button>
+        {data.assets.map(asset => <button className="button" key={asset.version.id}
+          title={asset.name} onClick={() => void download(`${w.base}/assets/${asset.id}/download?version=${asset.version.version}`, asset.name, w.tenant).catch(() => setError("VIDEO_DOWNLOAD_FAILED"))}>
+          <Download size={13}/>{assetLabels[asset.version.mime_type] ? t(...assetLabels[asset.version.mime_type]) : asset.name.endsWith(".project.json") ? t("時間線", "Timeline") : asset.name.endsWith(".storyboard.json") ? t("分鏡", "Storyboard") : t("影片檢查", "Video checks")}</button>)}</>}
+    </div>
+    {preview && data?.delivery_state === "available" && <VideoPlayer base={w.base} video={job.project_id} render={job.render_id}/>}
+  </article>;
+}
+export function LocalVideoJobs({ jobs }: { jobs: LocalVideoJob[] }) {
+  const [expanded, setExpanded] = useState(false), { t } = useI18n();
+  return <div className="local-agent-videos">{(expanded ? jobs : jobs.slice(-3)).map(job => <LocalVideoJobCard key={job.render_id} job={job}/>)}
+    {jobs.length > 3 && <button className="button" onClick={() => setExpanded(!expanded)}>{expanded ? t("收起較早製作", "Hide earlier renders") : t(`顯示另外 ${jobs.length - 3} 次製作`, `Show ${jobs.length - 3} earlier renders`)}</button>}</div>;
+}

@@ -1,0 +1,181 @@
+{
+  "source": "docs/contracts/openapi.json",
+  "schemas": {
+    "AdminUserProfileChange": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["expected_version", "reason"],
+      "additionalProperties": false,
+      "anyOf": [
+        {
+          "required": ["display_name"]
+        },
+        {
+          "required": ["labels"]
+        }
+      ]
+    },
+    "AdminAccountStatusChange": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        },
+        "state": {
+          "type": "string",
+          "enum": ["active", "frozen", "closed"]
+        },
+        "inflight_policy": {
+          "type": "string",
+          "enum": ["stop_new", "request_cancel"]
+        }
+      },
+      "required": ["expected_version", "reason", "state", "inflight_policy"],
+      "additionalProperties": false
+    },
+    "AdminTenantStatusChange": {
+      "type": "object",
+      "properties": {
+        "expected_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        },
+        "state": {
+          "type": "string",
+          "enum": ["active", "suspended", "closed"]
+        },
+        "inflight_policy": {
+          "type": "string",
+          "enum": ["stop_new", "request_cancel"]
+        }
+      },
+      "required": ["expected_version", "reason", "state", "inflight_policy"],
+      "additionalProperties": false
+    },
+    "AdminReason": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 1000
+        }
+      },
+      "required": ["reason"],
+      "additionalProperties": false
+    },
+    "AdminOperation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "actor_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "pending_approval",
+            "queued",
+            "running",
+            "succeeded",
+            "partially_succeeded",
+            "failed",
+            "cancelled",
+            "reconciling"
+          ]
+        },
+        "payload_hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "policy_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "result_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "minItems": 0
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "target_ids",
+        "actor_id",
+        "state",
+        "payload_hash",
+        "policy_version_id",
+        "version",
+        "created_at",
+        "result_ids"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "source_sha256": "51dd90f26137798dd23c4e881b7f9f0b20f99ad4b9fee0cce98686e11873aab4"
+}

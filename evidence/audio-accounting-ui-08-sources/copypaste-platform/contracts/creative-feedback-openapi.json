@@ -1,0 +1,1285 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Workmate confirmed creative feedback",
+    "version": "1.0.0",
+    "description": "User-confirmed, immutable ad-level identity allocation. No automatic provider identity verification, causal uplift or cross-scope total. Report bodies/options remain documented JSON structures; strict mutation/receipt/mapping-list schemas below are executable contracts, not full original design acceptance."
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/creative-feedback/mappings": {
+      "get": {
+        "operationId": "listCreativeMappings",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized project result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MappingList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing idempotency key"
+          },
+          "403": {
+            "description": "Current role cannot mutate"
+          },
+          "404": {
+            "description": "Scope or retained source unavailable"
+          },
+          "409": {
+            "description": "Stale version, conflicting allocation/facts, correction overlap or idempotency conflict"
+          },
+          "422": {
+            "description": "Source grain or selected measurement period invalid"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCreativeMapping",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MappingCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Currently authorized project result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MappingReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing idempotency key"
+          },
+          "403": {
+            "description": "Current role cannot mutate"
+          },
+          "404": {
+            "description": "Scope or retained source unavailable"
+          },
+          "409": {
+            "description": "Stale version, conflicting allocation/facts, correction overlap or idempotency conflict"
+          },
+          "422": {
+            "description": "Source grain or selected measurement period invalid"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-feedback/mappings/{id}/confirm": {
+      "post": {
+        "operationId": "confirmCreativeMapping",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MappingConfirm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Currently authorized project result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MappingReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing idempotency key"
+          },
+          "403": {
+            "description": "Current role cannot mutate"
+          },
+          "404": {
+            "description": "Scope or retained source unavailable"
+          },
+          "409": {
+            "description": "Stale version, conflicting allocation/facts, correction overlap or idempotency conflict"
+          },
+          "422": {
+            "description": "Source grain or selected measurement period invalid"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-feedback/mappings/{id}/withdraw": {
+      "post": {
+        "operationId": "withdrawCreativeMapping",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MappingWithdraw"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Currently authorized project result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MappingReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing idempotency key"
+          },
+          "403": {
+            "description": "Current role cannot mutate"
+          },
+          "404": {
+            "description": "Scope or retained source unavailable"
+          },
+          "409": {
+            "description": "Stale version, conflicting allocation/facts, correction overlap or idempotency conflict"
+          },
+          "422": {
+            "description": "Source grain or selected measurement period invalid"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-feedback/reports": {
+      "get": {
+        "operationId": "listCreativeFeedback",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized project result"
+          },
+          "400": {
+            "description": "Invalid input or missing idempotency key"
+          },
+          "403": {
+            "description": "Current role cannot mutate"
+          },
+          "404": {
+            "description": "Scope or retained source unavailable"
+          },
+          "409": {
+            "description": "Stale version, conflicting allocation/facts, correction overlap or idempotency conflict"
+          },
+          "422": {
+            "description": "Source grain or selected measurement period invalid"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createCreativeFeedback",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128,
+              "pattern": "^[\\w:-]+$"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Currently authorized project result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing idempotency key"
+          },
+          "403": {
+            "description": "Current role cannot mutate"
+          },
+          "404": {
+            "description": "Scope or retained source unavailable"
+          },
+          "409": {
+            "description": "Stale version, conflicting allocation/facts, correction overlap or idempotency conflict"
+          },
+          "422": {
+            "description": "Source grain or selected measurement period invalid"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/creative-feedback/options": {
+      "get": {
+        "operationId": "creativeFeedbackOptions",
+        "security": [
+          {
+            "customerSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "dataset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Mutually exclusive selectors; omit both for up to 100 eligible assets/sources and current can_write capability."
+          },
+          {
+            "name": "asset_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Mutually exclusive selectors; omit both for up to 100 eligible assets/sources and current can_write capability."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Currently authorized project result"
+          },
+          "400": {
+            "description": "Invalid input or missing idempotency key"
+          },
+          "403": {
+            "description": "Current role cannot mutate"
+          },
+          "404": {
+            "description": "Scope or retained source unavailable"
+          },
+          "409": {
+            "description": "Stale version, conflicting allocation/facts, correction overlap or idempotency conflict"
+          },
+          "422": {
+            "description": "Source grain or selected measurement period invalid"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "customerSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      }
+    },
+    "schemas": {
+      "MappingCreate": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "asset_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "dataset_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "channel": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "campaign": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "ad_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "creative_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "date_from": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "date_to": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "match_source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "name_candidate",
+              "provider_metadata"
+            ]
+          },
+          "match_note": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 2000
+          },
+          "allocation": {
+            "type": "string",
+            "const": "single_creative_entire_ad"
+          }
+        },
+        "required": [
+          "name",
+          "asset_version_id",
+          "dataset_id",
+          "channel",
+          "campaign",
+          "ad_id",
+          "creative_id",
+          "date_from",
+          "date_to",
+          "match_source",
+          "match_note",
+          "allocation"
+        ],
+        "additionalProperties": false,
+        "description": "Runtime additionally validates real calendar dates, retained shared exact asset version, declared platform/account and ad-level source, measurement definitions and unambiguous daily facts. Similar-name and provider-metadata candidates still require explicit user confirmation."
+      },
+      "MappingConfirm": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expected_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 2000
+          },
+          "confirm_single_creative_allocation": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "expected_version",
+          "expected_sha256",
+          "reason",
+          "confirm_single_creative_allocation"
+        ],
+        "additionalProperties": false
+      },
+      "MappingWithdraw": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expected_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "expected_version",
+          "expected_sha256",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "FeedbackCreate": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "mapping_ids": {
+            "minItems": 1,
+            "maxItems": 40,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "date_from": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "date_to": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "name",
+          "mapping_ids",
+          "date_from",
+          "date_to"
+        ],
+        "additionalProperties": false
+      },
+      "MappingReceipt": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "candidate",
+              "confirmed",
+              "withdrawn"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "state",
+          "version",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "FeedbackReceipt": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "asset_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "asset_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "asset_id",
+          "asset_version_id",
+          "version"
+        ],
+        "additionalProperties": false
+      },
+      "MappingList": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "candidate",
+                    "confirmed",
+                    "withdrawn"
+                  ]
+                },
+                "version": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "tenant_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "project_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "schema": {
+                      "type": "string",
+                      "const": "confirmed-ad-creative/1.0"
+                    },
+                    "input": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 160
+                        },
+                        "asset_version_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "dataset_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "channel": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "campaign": {
+                          "type": "string",
+                          "maxLength": 200
+                        },
+                        "ad_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "creative_id": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        },
+                        "date_from": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "date_to": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "match_source": {
+                          "type": "string",
+                          "enum": [
+                            "manual",
+                            "name_candidate",
+                            "provider_metadata"
+                          ]
+                        },
+                        "match_note": {
+                          "type": "string",
+                          "minLength": 5,
+                          "maxLength": 2000
+                        },
+                        "allocation": {
+                          "type": "string",
+                          "const": "single_creative_entire_ad"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "asset_version_id",
+                        "dataset_id",
+                        "channel",
+                        "campaign",
+                        "ad_id",
+                        "creative_id",
+                        "date_from",
+                        "date_to",
+                        "match_source",
+                        "match_note",
+                        "allocation"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "asset": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "asset_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "mime_type": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "asset_id",
+                        "version",
+                        "sha256",
+                        "mime_type",
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "dataset": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "meta_ads",
+                            "google_ads"
+                          ]
+                        },
+                        "account_id": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "timezone": {
+                          "type": "string"
+                        },
+                        "attribution_definition": {
+                          "type": "string"
+                        },
+                        "conversion_definition": {
+                          "type": "string"
+                        },
+                        "entity_level": {
+                          "type": "string",
+                          "const": "ad"
+                        },
+                        "spec_hash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "source_sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "source_asset_version_id": {
+                          "anyOf": [
+                            {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "source",
+                        "account_id",
+                        "currency",
+                        "timezone",
+                        "attribution_definition",
+                        "conversion_definition",
+                        "entity_level",
+                        "spec_hash",
+                        "source_sha256",
+                        "source_asset_version_id"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "facts_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "row_count": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "identity_evidence": {
+                      "type": "string",
+                      "const": "user_confirmation_required"
+                    },
+                    "metric_grain": {
+                      "type": "string",
+                      "const": "ad_daily"
+                    },
+                    "limitation": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "schema",
+                    "input",
+                    "asset",
+                    "dataset",
+                    "facts_sha256",
+                    "row_count",
+                    "identity_evidence",
+                    "metric_grain",
+                    "limitation"
+                  ],
+                  "additionalProperties": false
+                },
+                "asset_version_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "dataset_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "platform": {
+                  "type": "string",
+                  "enum": [
+                    "google_ads",
+                    "meta_ads"
+                  ]
+                },
+                "account_id": {
+                  "type": "string"
+                },
+                "channel": {
+                  "type": "string"
+                },
+                "ad_id": {
+                  "type": "string"
+                },
+                "creative_id": {
+                  "type": "string"
+                },
+                "date_from": {
+                  "type": "string"
+                },
+                "date_to": {
+                  "type": "string"
+                },
+                "created_by": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "confirmed_by": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "confirmed_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "withdrawn_by": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "withdrawn_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "withdrawal_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "content_state": {
+                  "type": "string",
+                  "const": "active"
+                },
+                "moderation_version": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                "retention_expires_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                }
+              },
+              "required": [
+                "id",
+                "state",
+                "version",
+                "sha256",
+                "tenant_id",
+                "project_id",
+                "name",
+                "body",
+                "asset_version_id",
+                "dataset_id",
+                "platform",
+                "account_id",
+                "channel",
+                "ad_id",
+                "creative_id",
+                "date_from",
+                "date_to",
+                "created_by",
+                "confirmed_by",
+                "confirmed_at",
+                "withdrawn_by",
+                "withdrawn_at",
+                "withdrawal_reason",
+                "content_state",
+                "moderation_version",
+                "created_at",
+                "retention_expires_at"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
