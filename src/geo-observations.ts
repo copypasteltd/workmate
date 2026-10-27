@@ -56,6 +56,8 @@ async function authorizeRead(tx: Tx, actor: Principal, tenant: string, project: 
   await projectAccess(tx, actor, tenant, project);
 }
 const receipt = (r: any) => ({ id: r.id, version: r.version, sha256: r.sha256, experiment_id: r.experiment_id, surface: r.surface });
+// Shared authorization and quota barriers for the separately bound native API.
+export { write as geoWrite, own as geoOwn, quota as geoQuota };
 async function freezeHarness(tx: Tx, catalog: Catalog, actor: Principal, tenant: string, project: string, agentId: string) {
   const agent = await getAgentVersion(tx, project, agentId, undefined, true);
   if (agent.body.brand) throw new Problem(422, "GEO_UNBRANDED_AGENT_REQUIRED", "Choose an Agent without an attached brand to avoid priming the measured aliases");
@@ -72,9 +74,10 @@ async function freezeHarness(tx: Tx, catalog: Catalog, actor: Principal, tenant:
 }
 async function answerFile(tx: Tx, storage: Storage, sample: any, actor: Principal, answer: string, observed: Date) {
   const analysis = geoAnalysis(answer, sample.brands);
+  const local = sample.task_id && (await tx.query("SELECT execution_location FROM tasks WHERE id=$1", [sample.task_id])).rows[0]?.execution_location === "desktop";
   const asset = await saveAsset(tx, storage, { tenant: sample.tenant_id, project: sample.project_id, user: actor.id,
     privateOwner: actor.id, name: sample.name + ".txt", kind: "report", mime: "text/plain", bytes: Buffer.from(answer, "utf8"),
-    metadata: { geo_sample_id: sample.id, ...(sample.task_id ? { task_id: sample.task_id } : {}), provenance: sample.task_id ? "actual_task_output" : "user_supplied_consumer_answer" } });
+    metadata: { geo_sample_id: sample.id, ...(sample.task_id ? { task_id: sample.task_id } : {}), provenance: local ? "native_client_reported_output" : sample.task_id ? "actual_task_output" : "user_supplied_consumer_answer" } });
   await tx.query(`UPDATE geo_samples SET asset_version_id=$2,answer_sha256=$3,analysis=$4,observed_at=$5,captured_at=clock_timestamp() WHERE id=$1 AND asset_version_id IS NULL`,
     [sample.id, asset.version.id, analysis.answer_sha256, analysis, observed]);
 }
@@ -109,7 +112,7 @@ async function readRun(tx: Tx, actor: Principal, tenant: string, project: string
     surface: run.surface, config_hash: run.config_hash, effective_config: run.body.effective_config, created_at: run.created_at,
     questions: experiment.body.spec.questions, brands: experiment.body.spec.brands, samples,
     progress: { captured: samples.filter(s => s.state === "captured").length, total: experiment.body.spec.questions.length },
-    limitations: [...limits, ...(run.surface === "consumer_manual" ? ["Consumer answers and their metadata are user supplied and are not provider-verified."] : [])] };
+    limitations: [...limits, ...(run.body.effective_config?.execution_location === "desktop" ? ["This observation ran with local Desktop Codex. Answers are native-client-reported output; model cost uses company receipts. Local OS execution is not independently provider-attested."] : []), ...(run.surface === "consumer_manual" ? ["Consumer answers and their metadata are user supplied and are not provider-verified."] : [])] };
 }
 
 export function registerGeoObservations(app: FastifyInstance, db: Database, catalog: Catalog, storage: Storage) {

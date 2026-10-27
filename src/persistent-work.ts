@@ -54,6 +54,8 @@ export const agentInput = z
   })
   .strict();
 export interface WorkContext {
+  /** Server-bound fixed-question observation; never accepted from generic input. */
+  geo_sample_id?: string;
   project_configuration?: ProjectConfigurationRef;
   agent_id: string;
   agent_version: number;

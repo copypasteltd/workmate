@@ -230,7 +230,7 @@ export async function enqueueTask(
     b.budget_micros,
     b.mode,
   );
-  const projectConfiguration = await freezeProjectConfiguration(
+  const reviewedProjectConfiguration = await freezeProjectConfiguration(
     tx,
     tenant,
     project,
@@ -241,6 +241,8 @@ export async function enqueueTask(
         ? (parent.input_context?.project_configuration ?? null)
         : undefined,
   );
+  const projectConfiguration = options.execution_location === "desktop" && options.context?.geo_sample_id
+    ? undefined : reviewedProjectConfiguration;
   const task = (
     await tx.query(
       `INSERT INTO tasks(tenant_id,project_id,created_by,title,prompt,role_key,role_hash,budget_micros,idempotency_key,actor_auth_version,parent_id,mode,conversation_id,private_owner,input_context,plan_snapshot,billing_account_id,execution_location,cloud_workflow_run_id,cloud_workflow_cursor,agent_group_run_id,agent_group_node_key,status)

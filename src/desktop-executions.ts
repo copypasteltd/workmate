@@ -44,6 +44,7 @@ import {
 import { requestTaskCancellation } from "./task-control.js";
 import type { Storage } from "./storage.js";
 import { registerDesktopSolutions } from "./desktop-solutions.js";
+import { registerDesktopGeo, desktopGeoProtocol } from "./desktop-geo.js";
 import { freezeWorkContext, getAgentVersion, resolveWorkContext, type WorkContext } from "./persistent-work.js";
 import { TaskBusinessTools } from "./task-business-tools.js";
 import {
@@ -221,6 +222,8 @@ export async function registerDesktopExecutions(
       );
     return row.family_id as string;
   }
+
+  registerDesktopGeo(app, db, catalog, desktopFamily, desktopLocalRoleKeys);
 
   async function own(tx: Tx, req: FastifyRequest, write = false, lock = false) {
     const p = executionParams.parse(req.params);
@@ -406,6 +409,7 @@ export async function registerDesktopExecutions(
     signal?: AbortSignal,
     videoReady = false,
   ) {
+    if (t.input_context?.geo_sample_id) return [];
     const installedRole = catalog.forTask(t);
     const role = t.native_agent_tool_ids
       ? { ...installedRole, tool_ids: installedRole.tool_ids.filter((id: string) => t.native_agent_tool_ids.includes(id)) }
@@ -733,6 +737,7 @@ export async function registerDesktopExecutions(
           model: capabilities.text.body.model_alias,
           effort: capabilities.text.body.reasoning_effort,
           company_tools: companyTools,
+          ...(task.input_context?.geo_sample_id ? { observation_protocol: desktopGeoProtocol } : {}),
           runtime: desktopRuntime,
           skills,
           project_configuration:
@@ -1135,11 +1140,11 @@ export async function registerDesktopExecutions(
         gateway = startScopedInferenceGateway(db.config, {
           model: capabilities.text.body.model_alias!,
           reasoningEffort: capabilities.text.body.reasoning_effort!,
-          tools: [
+          tools: t.input_context?.geo_sample_id ? [] : [
             ...desktopToolNames,
             ...companyTools.map((tool) => "copypaste." + tool.name),
           ],
-          nativeDesktop: true,
+          nativeDesktop: !t.input_context?.geo_sample_id,
           nativeCompanyTools: companyTools,
           signal: shutdown.signal,
           authority: {
