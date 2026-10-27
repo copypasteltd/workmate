@@ -654,6 +654,11 @@ export function registerCapabilityReleases(
             "CAPABILITY_VERIFICATION_RUNNING",
             "The current verification is still running; inspect its receipt",
           );
+        if (["internal-speech-v1", "internal-transcription-v1"].includes(row.profile_key) &&
+          (await tx.query(`SELECT 1 FROM current_audio_accounting_requests WHERE release_id=$1
+            AND state='unknown' AND (NOT accounting_resolved OR allocation_exceeded) LIMIT 1`, [id])).rowCount)
+          throw new Problem(409, "AUDIO_RECONCILIATION_REQUIRED",
+            "Resolve the original audio cost and capacity before explicitly starting another verification");
         v = (
           await tx.query(
             "INSERT INTO capability_validations(release_id,principal_id,session_id,idempotency_hash,payload_hash,execution_nonce,lease_until) VALUES($1,$2,$3,$4,$5,$6,now()+CASE WHEN $7 THEN interval '2 hours' ELSE interval '4 minutes' END) RETURNING *",

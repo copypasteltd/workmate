@@ -26,12 +26,15 @@ export async function currentRouteInventory() {
     await readFile("contracts/managed-audio-route-additions.json", "utf8"),
   );
   assert.equal(audio.baseline_lf_sha256, additions.baseline_lf_sha256);
+  const audioAccounting = JSON.parse(await readFile("contracts/audio-accounting-route-additions.json", "utf8"));
+  assert.equal(audioAccounting.baseline_lf_sha256, additions.baseline_lf_sha256);
   const routes = [
       ...baseline.routes,
       ...additions.routes,
       ...programs.routes,
       ...clients.routes,
       ...audio.routes,
+      ...audioAccounting.routes,
     ],
     conditional_routes = [
       ...baseline.conditional_routes,
@@ -39,6 +42,7 @@ export async function currentRouteInventory() {
       ...programs.conditional_routes,
       ...clients.conditional_routes,
       ...audio.conditional_routes,
+      ...audioAccounting.conditional_routes,
     ];
   const labels = [...routes, ...conditional_routes].map(
     (row) => row.method + " " + row.path,

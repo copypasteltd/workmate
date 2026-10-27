@@ -103,7 +103,7 @@ export function providerEvidenceCost(r: any, raw: unknown, now = Date.now()) {
 }
 export async function inspectProviderRequestCommand(
   tx: Tx,
-  b: Extract<ProviderCommand, { request_id: string }>,
+  b: Extract<ProviderCommand, { channel: "generation" | "input_count" }>,
 ) {
   const r = await requestRow(tx, b.channel, b.request_id, true);
   const e = (
@@ -308,7 +308,9 @@ export async function inspectProviderTaskSettlement(
   const violations = (
     await tx.query(
       `SELECT x.id,x.code FROM ai_request_budget_violations x JOIN ai_gateway_requests r ON r.id=x.provider_request_id WHERE r.task_id=$1
-       UNION ALL SELECT x.id,x.code FROM ai_video_budget_violations x JOIN ai_video_jobs j ON j.id=x.job_id WHERE j.task_id=$1 ORDER BY id`,
+       UNION ALL SELECT x.id,x.code FROM ai_video_budget_violations x JOIN ai_video_jobs j ON j.id=x.job_id WHERE j.task_id=$1
+       UNION ALL SELECT c.id,'AUDIO_ALLOCATION_EXCEEDED' AS code FROM ai_audio_cost_confirmations c
+       JOIN ai_audio_jobs j ON j.id=c.audio_job_id WHERE j.task_id=$1 AND c.amount_micros>j.quoted_micros ORDER BY id`,
       [t.id],
     )
   ).rows;
@@ -341,9 +343,11 @@ export async function inspectProviderTaskSettlement(
     rate_micros::text,billable_seconds::text FROM ai_video_jobs WHERE task_id=$1 ORDER BY created_at,id`, [t.id])).rows;
   facts.push(...videoFacts);
   const audioFacts = (await tx.query(`SELECT id,'audio' AS channel,state,
-    CASE WHEN usage_known THEN 'known_company_tariff' ELSE 'unknown' END AS cost_state,
+    CASE WHEN human_cost_confirmation_id IS NOT NULL THEN 'manually_confirmed'
+    WHEN usage_known THEN 'known_company_tariff' ELSE 'unknown' END AS cost_state,
     (actual_micros*1000000)::text AS numerator,operation_id,capability_version_id,specification_hash,
-    response_sha256,rate_micros::text,billable_units::text,pricing_unit FROM ai_audio_jobs WHERE task_id=$1 ORDER BY created_at,id`, [t.id])).rows;
+    response_sha256,rate_micros::text,billable_units::text,pricing_unit,human_cost_confirmation_id,human_cost_evidence_id,
+    human_termination_confirmation_id FROM accounted_audio_jobs WHERE task_id=$1 ORDER BY created_at,id`, [t.id])).rows;
   facts.push(...audioFacts);
   return {
     scope: { data_mode: t.data_mode, tenant_id: t.tenant_id, project_id: null },

@@ -68,8 +68,10 @@ export function registerAudioProduction(app: FastifyInstance, db: Database, cata
         j.cancel_requested_at,j.error_code,j.created_at,j.dispatched_at,j.finished_at,
         CASE WHEN ${providerVisibility(s, "admin.ai.cost.read", "j")} THEN jsonb_build_object('quoted_micros',j.quoted_micros::text,
           'actual_micros',j.actual_micros::text,'quoted_units',j.quoted_units::text,'billable_units',j.billable_units::text,
-          'pricing_unit',j.pricing_unit,'rate_micros',j.rate_micros::text,'supplier_cost_micros',NULL) END AS cost
-        FROM ai_audio_jobs j WHERE ${where} AND (${tenant}::uuid IS NULL OR j.tenant_id=${tenant})
+          'pricing_unit',j.pricing_unit,'rate_micros',j.rate_micros::text,'supplier_cost_micros',NULL,
+          'confirmed_micros',a.effective_micros::text,'source',CASE WHEN a.cost_confirmation_id IS NOT NULL THEN 'human_evidence' WHEN j.usage_known THEN 'company_tariff' ELSE 'unknown' END) END AS cost
+        FROM ai_audio_jobs j JOIN current_audio_accounting_requests a ON a.channel='audio_customer' AND a.id=j.id
+        WHERE ${where} AND (${tenant}::uuid IS NULL OR j.tenant_id=${tenant})
         AND (${project}::uuid IS NULL OR j.project_id=${project}) AND (${task}::uuid IS NULL OR j.task_id=${task})
         AND (${cursor}::uuid IS NULL OR j.id<${cursor}) ORDER BY j.id DESC LIMIT ${s.arg(q.limit + 1)}`, s.values)).rows;
       // Prompts, rights attestations, original audio and transcript bodies stay

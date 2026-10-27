@@ -110,6 +110,8 @@ test("populated SQL101 audio upgrade cancels unsubmitted work, retains unknown s
     const actor = { id: u.id, name: u.name, email: u.email, authVersion: u.auth_version, audience: "user" as const, sessionId: "", sessionHash: "" };
     const audio = new AudioProduction(s.db, s.catalog, s.storage), view = await audio.read(actor, f.tenant, f.project, retained.id);
     assert.equal(view.authorization_basis, "legacy_model_declaration"); assert.equal(view.assets[0].sha256, hash(provider.bytes));
+    assert.equal(view.accounting.cost_source, "company_tariff"); assert.equal(view.accounting.cost_confirmation_id, null);
+    assert.equal(view.accounting.confirmed_micros, String(completed.actual_micros));
     assert.equal((await audio.preview(actor, f.tenant, f.project, retained.id, "audio")).sha256, hash(provider.bytes));
     const originalObject = (await s.db.control.query("SELECT storage_key FROM asset_versions WHERE id=$1", [asset.version.id])).rows[0];
     assert.deepEqual(await s.storage.get(originalObject.storage_key), provider.bytes);
@@ -133,6 +135,9 @@ test("populated SQL101 audio upgrade cancels unsubmitted work, retains unknown s
     assert.deepEqual(await s.storage.get(originalObject.storage_key), provider.bytes);
     assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM audio_authorizations")).rows[0].n, 0);
     assert.equal(provider.calls.length, 0);
+    const upgraded = await audio.read(actor, f.tenant, f.project, retained.id);
+    assert.deepEqual(upgraded.accounting, view.accounting);
+    assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM ai_audio_evidence")).rows[0].n, 0);
   } finally {
     await owner.end().catch(() => {});
     try { await s?.app.close(); } finally { try { await provider?.close(); } finally { await isolated.cleanup(); } }

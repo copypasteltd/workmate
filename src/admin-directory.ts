@@ -268,6 +268,7 @@ const cursorShape = z
       "capability_releases",
       "provider_requests",
       "provider_policies",
+      "audio_accounting",
       "vip_grants",
       "approvals",
     ]),

@@ -148,6 +148,10 @@ export class AudioAuthorizations {
         signal?.throwIfAborted();
         const row = await this.db.tx(async tx => {
           await authorize(tx);
+          // Customer decisions and origin checks lock the task before its
+          // authorization. Enforce that order even when the caller's access
+          // check does not take a task row lock.
+          await tx.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [task.id]);
           const a = (await tx.query("SELECT * FROM audio_authorizations WHERE id=$1 AND task_id=$2 FOR UPDATE", [id, task.id])).rows[0];
           if (!a) throw unavailable();
           if (["pending", "confirmed"].includes(a.state)) {

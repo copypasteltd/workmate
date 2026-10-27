@@ -12,6 +12,7 @@ import { parseAudioTranscription } from "./audio-production-model.js";
 import { internalAIRequest, type AIRequestAuthority } from "./internal-ai-gateway.js";
 import { CodexRuntimeAdapter } from "./runtime.js";
 import { canonical, hash, Problem } from "./lib.js";
+import { audioAccountingFactDTO } from "./audio-accounting.js";
 
 const denied = (code: string) => new Problem(409, code, "The frozen audio verification cannot perform this operation");
 const mode = (db: Database) => db.config.DEMO_MODE ? "simulated" : "configured_services";
@@ -30,18 +31,25 @@ export async function capabilityAudioDTO(tx: Tx, id: string) {
     JOIN capability_validations v ON v.id=s.validation_id WHERE validation_id=$1`, [id])).rows[0];
   if (!suite) return null;
   const probes = (await tx.query("SELECT * FROM capability_audio_probes WHERE validation_id=$1 ORDER BY ordinal", [id])).rows;
+  const facts = (await tx.query("SELECT * FROM current_audio_accounting_requests WHERE validation_id=$1", [id])).rows;
+  const indexed = new Map(facts.map(r => [r.id, audioAccountingFactDTO(r)]));
   return {
     plan_hash: suite.plan_hash, total_cases: suite.plan.length, verified_cases: probes.filter(p => p.verified_at).length,
     quoted_micros: String(suite.quoted_micros), quality_scope: "protocol_only",
     known_cost_micros: probes.reduce((n, p) => n + (p.usage_known ? BigInt(p.actual_micros) : 0n), 0n).toString(),
     usage_known: probes.every(p => p.usage_known), cancel_requested: !!suite.cancel_requested_at,
     deadline_at: new Date(suite.deadline_at).toISOString(), error_code: suite.error_code ?? null,
+    accounting: { confirmed_micros: facts.reduce((n, r) => n + (r.effective_micros === null ? 0n : BigInt(r.effective_micros)), 0n).toString(),
+      unconfirmed_cases: facts.filter(r => r.cost_state === "unknown").length,
+      capacity_held_cases: facts.filter(r => r.capacity_held).length,
+      resolved: facts.every(r => r.accounting_resolved), allocation_exceeded: facts.some(r => r.allocation_exceeded) },
     cases: probes.map(p => ({ id: p.id, ordinal: p.ordinal, operation_id: p.operation_id, state: p.state,
       kind: p.specification.kind, locale: p.specification.locale, voice: p.specification.voice ?? null,
       speed: p.specification.speed ?? null, mime_type: p.specification.mime_type ?? null, timestamps: p.specification.timestamps ?? null,
       quoted_micros: String(p.quoted_micros), actual_micros: p.actual_micros === null ? null : String(p.actual_micros),
       usage_known: p.usage_known, verified: !!p.verified_at, error_code: p.error_code ?? null,
-      response_sha256: p.response_sha256 ?? null, source_sha256: p.source_sha256 ?? null, media: p.media ?? null })),
+      response_sha256: p.response_sha256 ?? null, source_sha256: p.source_sha256 ?? null, media: p.media ?? null,
+      accounting: indexed.get(p.id) })),
   };
 }
 
@@ -276,7 +284,10 @@ export class CapabilityAudioVerification {
       if (heartbeatRun || combined.aborted) return;
       heartbeatRun = this.db.control.query(`UPDATE capability_audio_suites SET lease_until=clock_timestamp()+interval '45 seconds'
         WHERE validation_id=$1 AND lease_token=$2 AND lease_until>clock_timestamp() RETURNING cancel_requested_at`, [id, lease])
-        .then(r => { if (!r.rowCount || r.rows[0].cancel_requested_at) stop.abort(); }).catch(() => stop.abort()).finally(() => { heartbeatRun = undefined; });
+        // Cancellation stops subsequent dispatch. A submitted synchronous POST
+        // may still return its complete billable reply; keep observing it under
+        // the original bounded lease rather than manufacture an unknown fee.
+        .then(r => { if (!r.rowCount) stop.abort(); }).catch(() => stop.abort()).finally(() => { heartbeatRun = undefined; });
     }, 5000); heartbeat.unref();
     let probe: any;
     try {

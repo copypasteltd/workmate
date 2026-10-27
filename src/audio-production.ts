@@ -14,6 +14,7 @@ import { internalAIRequest, AIRequestFailure, finishInternalAIRequest, type AIRe
 import { audioProductionRequest, parseAudioTranscription, audioSubtitles, subtitleEdit, validateAudioCues } from "./audio-production-model.js";
 import { validateProductionAudio } from "./audio-production-media.js";
 import { AudioAuthorizations } from "./audio-authorizations.js";
+import { audioAccountingFact } from "./audio-accounting.js";
 
 const unavailable = (code = "AUDIO_OPERATION_UNAVAILABLE") => new Problem(409, code, "The audio operation is unavailable under its current authority");
 type Authorize = (tx: Tx) => Promise<unknown>;
@@ -140,6 +141,7 @@ export class AudioProduction {
       data_mode: job.data_mode, quoted_micros: String(job.quoted_micros), actual_micros: job.usage_known ? String(job.actual_micros) : null,
       pricing_unit: job.pricing_unit, quoted_units: String(job.quoted_units), billable_units: job.usage_known ? String(job.billable_units) : null,
       usage_state: job.usage_known ? "confirmed_company_tariff" : "awaiting_confirmation", supplier_cost_micros: null,
+      accounting: await audioAccountingFact(tx, "audio_customer", job.id, job),
       duration_ms: job.duration_ms, decoded_media: job.decoded_media, error_code: job.error_code, delivery_state: job.delivery_state,
       cancel_requested: !!job.cancel_requested_at, assets, created_at: job.created_at, finished_at: job.finished_at };
   }

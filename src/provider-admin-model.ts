@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { uuid } from "./lib.js";
+import { audioAccountingCommand } from "./audio-accounting-model.js";
 
 const bounded = (max: number) => z.number().int().min(1).max(max);
 const safe = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
@@ -148,6 +149,7 @@ export const providerTaskSettlement = z
 export const providerCommand = z.union([
   providerPolicyPublication,
   providerRequestCommand,
+  audioAccountingCommand,
   providerTaskSettlement,
 ]);
 export type ProviderCommand = z.infer<typeof providerCommand>;

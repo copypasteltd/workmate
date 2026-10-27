@@ -498,6 +498,50 @@ test("audio immutable operation and usage facts reject direct intent rewrites", 
   for (const update of ["model_alias='rewritten'", "specification='{}'", "billable_units=0", "state='prepared'"])
     await assert.rejects(s.db.control.query(`UPDATE ai_audio_jobs SET ${update},revision=revision+1 WHERE id=$1`, [job.id]));
 });
+test("audio waiting locks the task before authorization even with an access-only caller", { timeout: 30000 }, async () => {
+  const f = await fixture();
+  let enterWait!: () => void, continueWait!: () => void;
+  const entered = new Promise<void>(resolve => { enterWait = resolve; }), proceed = new Promise<void>(resolve => { continueWait = resolve; });
+  const abort = new AbortController(), blocker = await s.db.control.connect();
+  let calls = 0, waitingPid = 0;
+  const authorize = async (tx: any) => {
+    await projectAccess(tx, f.actor, f.tenant, f.project, "write");
+    if (++calls === 2) {
+      waitingPid = (await tx.query("SELECT pg_backend_pid() AS pid")).rows[0].pid;
+      enterWait(); await proceed;
+    }
+  };
+  const preparing = audio.prepare(f.task, f.task.fencing_token, speech, "lock_order_" + randomUUID(), authorize, abort.signal);
+  void preparing.catch(() => {});
+  try {
+    await entered;
+    const list = await videoOK(s, f.web, "GET", f.base + "/audio-authorizations?task_id=" + f.task.id);
+    const pending = list.items.find((r: any) => r.state === "pending"); assert.ok(pending);
+    await blocker.query("BEGIN");
+    await blocker.query("SELECT id FROM tasks WHERE id=$1 FOR UPDATE", [f.task.id]);
+    continueWait();
+    const deadline = Date.now() + 5000;
+    while (!(await blocker.query("SELECT EXISTS(SELECT 1 FROM pg_locks WHERE pid=$1 AND NOT granted) AS waiting", [waitingPid])).rows[0].waiting) {
+      assert.ok(Date.now() < deadline, "The actual waiter must reach its contested row lock"); await delay(20);
+    }
+    // The waiter must not hold this row while blocked on the parent task.
+    // NOWAIT makes the former authorization -> task inversion deterministic.
+    assert.equal((await blocker.query("SELECT id FROM audio_authorizations WHERE id=$1 FOR UPDATE NOWAIT", [pending.id])).rows[0].id, pending.id);
+    await blocker.query("ROLLBACK");
+    await videoOK(s, f.web, "POST", f.base + "/audio-authorizations/" + pending.id + "/confirm", {
+      expected_revision: pending.revision, specification_hash: pending.specification_hash, quoted_micros: pending.quoted_micros,
+      confirm_authorized_use: true, rights_reference: "Owned concurrency test script", purpose: "An actual customer confirms after a deliberately contended task lock",
+    }, "lock-order-confirm-" + pending.id);
+    const job = await preparing;
+    assert.equal(job.authorization_id, pending.id); assert.equal(job.state, "prepared");
+    assert.equal(provider.calls.filter(c => c.operation === job.operation_id).length, 0);
+  } finally {
+    abort.abort(); continueWait();
+    try { await blocker.query("ROLLBACK"); } finally { blocker.release(); }
+    await preparing.catch(() => {});
+  }
+});
+
 test("real local Codex calls audio through company tools, keeps its native task and settles one charge", { timeout: 180000 }, async t => {
   const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN; assert.ok(executable && path.isAbsolute(executable));
   const { LocalAgentController } = await import(new URL("../../copypaste-desktop/src/local-agent.ts", import.meta.url).href);

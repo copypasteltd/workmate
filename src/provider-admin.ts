@@ -26,6 +26,7 @@ import {
   providerPage,
   providerPolicyDraft,
   providerCommand,
+  providerRequestCommand,
   providerSubmit,
   providerRequestQuery,
   providerChannel,
@@ -45,6 +46,9 @@ import {
   applyProviderTaskSettlement,
   assertProviderEvidenceBinding,
 } from "./provider-admin-reconciliation.js";
+import { audioAccountingChannel, audioAccountingCommand } from "./audio-accounting-model.js";
+import { audioAccountingRow, inspectAudioAccountingCommand, applyAudioAccountingCommand } from "./audio-accounting.js";
+import { registerAudioAccountingRoutes } from "./audio-accounting-routes.js";
 
 const json = <T>(v: T): T => JSON.parse(JSON.stringify(v));
 const commandHash = (b: unknown) => hash(canonical(b));
@@ -125,7 +129,9 @@ async function commandScope(
   if (b.action === "ai.policy.publish")
     return { data_mode: modeOf(db), tenant_id: null, project_id: null };
   if ("request_id" in b) {
-    const r = await requestRow(tx, b.channel, b.request_id);
+    const r = audioAccountingChannel.safeParse(b.channel).success
+      ? await audioAccountingRow(tx, audioAccountingChannel.parse(b.channel), b.request_id)
+      : await requestRow(tx, b.channel, b.request_id);
     return {
       data_mode: r.data_mode,
       tenant_id: r.tenant_id,
@@ -177,7 +183,9 @@ async function inspect(tx: Tx, db: Database, b: ProviderCommand) {
     return json(await inspectProviderPolicy(tx, db, b));
   if (b.action === "ai.tasks.settle")
     return json(await inspectProviderTaskSettlement(tx, b));
-  return json(await inspectProviderRequestCommand(tx, b));
+  if (audioAccountingChannel.safeParse(b.channel).success)
+    return json(await inspectAudioAccountingCommand(tx, audioAccountingCommand.parse(b)));
+  return json(await inspectProviderRequestCommand(tx, providerRequestCommand.parse(b)));
 }
 async function newOperation(
   tx: Tx,
@@ -305,7 +313,9 @@ export async function decideProviderAdminOperation(
       ? await applyProviderPolicy(tx, op, checked as any, reviewer.id)
       : command.action === "ai.tasks.settle"
         ? await applyProviderTaskSettlement(tx, op, checked as any, reviewer.id)
-        : await applyProviderRequestCommand(
+        : "channel" in command && audioAccountingChannel.safeParse(command.channel).success
+          ? await applyAudioAccountingCommand(tx, op, checked as any, reviewer.id)
+          : await applyProviderRequestCommand(
             tx,
             op,
             checked as any,
@@ -314,6 +324,7 @@ export async function decideProviderAdminOperation(
   await finish(tx, actor, op, result);
 }
 export function registerProviderAdmin(app: FastifyInstance, db: Database) {
+  registerAudioAccountingRoutes(app, db, { newOperation, finish });
   const auth = { preHandler: requireAdmin(db) };
   app.get("/v1/admin/ai/policy", auth, async (req, reply) => {
     reply.header("Cache-Control", "no-store");
@@ -694,7 +705,9 @@ export function registerProviderAdmin(app: FastifyInstance, db: Database) {
           const violations = (
             await tx.query(
               `SELECT x.id,x.code FROM ai_request_budget_violations x JOIN ai_gateway_requests r ON r.id=x.provider_request_id WHERE r.task_id=$1
-               UNION ALL SELECT x.id,x.code FROM ai_video_budget_violations x JOIN ai_video_jobs j ON j.id=x.job_id WHERE j.task_id=$1 ORDER BY id`,
+               UNION ALL SELECT x.id,x.code FROM ai_video_budget_violations x JOIN ai_video_jobs j ON j.id=x.job_id WHERE j.task_id=$1
+               UNION ALL SELECT c.id,'AUDIO_ALLOCATION_EXCEEDED' AS code FROM ai_audio_cost_confirmations c
+               JOIN ai_audio_jobs j ON j.id=c.audio_job_id WHERE j.task_id=$1 AND c.amount_micros>j.quoted_micros ORDER BY id`,
               [t.id],
             )
           ).rows;

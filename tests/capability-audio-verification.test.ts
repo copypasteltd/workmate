@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { createRequire } from "node:module";
 import { spawn } from "node:child_process";
 import { Ajv2020 } from "ajv/dist/2020.js";
-import contract from "../contracts/managed-audio-capability-schemas.json" with { type: "json" };
+import contract from "../contracts/audio-accounting-schemas.json" with { type: "json" };
 import pg from "pg";
 import { isolatedTestEnvironment } from "./native-test-environment.js";
 import { audioProviderFixture } from "./audio-production-fixture.js";
@@ -123,11 +123,11 @@ async function publish(a: VideoClient, reviewer: VideoClient, r: any, rollback =
   return p.data;
 }
 
-test("the populated 120 checkpoint retains budget function OIDs and prepared callers after SQL121", async () => {
+test("the populated 120 checkpoint retains budget function OIDs and prepared callers after SQL121–122", async () => {
   assert.deepEqual((await owner.query("SELECT 'ai_budget_used(uuid,uuid)'::regprocedure::oid AS used,'ai_budget_subject_blocked(uuid)'::regprocedure::oid AS blocked")).rows[0], oldOids);
   assert.equal((await owner.query({ ...legacyUsed, values: [null, null] })).rows[0].used, "0");
   assert.equal((await owner.query({ ...legacyBlocked, values: [null] })).rows[0].blocked, false);
-  assert.equal((await owner.query("SELECT max(version) AS version FROM schema_migrations")).rows[0].version, 121);
+  assert.equal((await owner.query("SELECT max(version) AS version FROM schema_migrations")).rows[0].version, 122);
 });
 
 test("voice/locale/speed matrix decodes real WAV responses, charges only the platform and requires independent publication", async () => {
@@ -227,6 +227,19 @@ test("permission removal before the next case stops dispatch without overwriting
   await tick(f.v.id);
   const v = (await s.db.control.query("SELECT * FROM capability_validations WHERE id=$1", [f.v.id])).rows[0];
   assert.equal(v.state, "failed"); assert.ok(BigInt(v.result.known_cost_micros) > 0n); assert.equal(provider.calls.length, count + 1);
+});
+
+test("a submitted audio reply crossing the heartbeat after cancellation retains its validated actual cost", async () => {
+  const f = await start(), count = provider.calls.length;
+  provider.state.beforeReply = async () => {
+    provider.state.beforeReply = undefined;
+    assert.equal((await call(f.a, "POST", `${root}/validations/${f.v.id}/audio-cancellations`, command(f.r))).status, 202);
+    await new Promise(resolve => setTimeout(resolve, 6500));
+  };
+  await tick(f.v.id); const receipt = await read(f);
+  assert.equal(receipt.state, "cancelled", JSON.stringify(receipt));
+  assert.equal(receipt.result.usage_known, true); assert.ok(BigInt(receipt.result.known_cost_micros) > 0n);
+  assert.equal(provider.calls.length, count + 1); assert.equal(receipt.audio_suite.verified_cases, 1);
 });
 
 test("current audio capacity is enforced before preparation and dispatch and resumes safely when capacity returns", async () => {
