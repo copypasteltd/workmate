@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- native-pairing-stage118 -->
+Desktop 0.7.1 adds durable native device pairing, exact retry and permanent intent retirement.
+
+Migration 128 adds private native pairing facts and irreversible retirement. POST /v1/auth/native/device-pair requires the current Desktop session, original credential family, workspace permission and exact Ed25519 proof under one owner lock. Exact retries return the same active device. POST /retire accepts the original expired/revoked credential and a distinct retirement signature, fences even a create not yet received, cancels uncompleted commands and preserves completed results. SQL001–127 remain unchanged.
+
+Validation: 42 backend + 141 Desktop + 22 native Codex checks; 13 builds; 7 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Real Windows DPAPI, owned Native Host, Electron IPC, Web PKCE and native PostgreSQL; synthetic customer/model data. Native consent answers and shell launch interception belong to the isolated automation. Company-signed installed-product uninstall/upgrade, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/118-recoverable-native-pairings.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-pairing-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Explicit folder pairing] --> Intent[Durable signed intent]
+  Intent --> Pair[Current session and atomic create]
+  Pair --> Retry[Same device on retry]
+  Intent --> Retire[Sign-out or uninstall]
+  Retire --> Fence[Permanent private retirement]
+  Fence --> Receipt[Confirmed or durable pending receipt]
+```
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-computer-permissions.png)
+
+[Actual interaction video / 实际交互视频](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-recover-pairing.mp4)
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-desktop__workmate-native-pairing-04-recover-pairing.gif)
+
+
 <!-- desktop-removal-stage117 -->
 Desktop 0.7.0 adds confirmed local withdrawal, signed device retirement, Chrome Host cleanup and optional safe cache removal.
 
