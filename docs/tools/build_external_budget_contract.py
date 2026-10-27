@@ -1,0 +1,57 @@
+"""Build the scoped Google Ads budget contract without changing historical contracts."""
+from pathlib import Path
+import json, hashlib
+ROOT=Path(__file__).resolve().parents[2]
+def obj(p,optional=()): return dict(type='object',properties=p,required=[k for k in p if k not in optional],additionalProperties=False)
+def s(**k):return dict(type='string',**k)
+def arr(v,n=100):return dict(type='array',items=v,maxItems=n)
+def ref(v):return {'$ref':'#/components/schemas/'+v}
+def nullable(v):return {'anyOf':[v,{'type':'null'}]}
+def lit(v):return {'const':v}
+uuid=s(format='uuid');sha=s(pattern='^[a-f0-9]{64}$');identifier=s(pattern='^[1-9][0-9]{0,19}$');micros=s(pattern='^(0|[1-9][0-9]{0,17})$',description='Exact account-currency micros; never JSON floating point. Desired value must be positive.');stamp=s(format='date-time');version=dict(type='integer',minimum=1);mode={'enum':['simulated','configured_services']}
+state={'enum':['awaiting_confirmation','queued','checking','dispatched','succeeded','failed','cancelled','expired','unknown','closed_unknown','no_change']}
+policy=obj(dict(enabled=dict(type='boolean'),currency=s(pattern='^[A-Z]{3}$'),budget_ids={**arr(identifier,50),'minItems':1,'uniqueItems':True},maximum_average_daily_micros=micros,maximum_change_micros=micros,confirmation={'enum':['each_operation','within_policy']},expires_at=stamp))
+policyDTO=obj(dict(id=uuid,version=version,connection_id=uuid,project_id=uuid,account_id=identifier,policy=ref('Policy'),payload_sha256=sha,data_mode=mode,created_at=stamp))
+snapshot=obj(dict(protocol=lit('google-ads-budget/1.0.0'),account_id=identifier,budget_id=identifier,resource_name=s(maxLength=150),name=s(maxLength=1000),currency=s(pattern='^[A-Z]{3}$'),amount_micros=micros,period=lit('DAILY'),explicitly_shared=lit(False),reference_count=dict(type='integer',minimum=0,maximum=1),status=lit('ENABLED'),type=lit('STANDARD')))
+previewInput=obj(dict(connection_id=uuid,account_id=identifier,budget_id=identifier,new_average_daily_micros=micros))
+prepareInput=obj({**previewInput['properties'],'preview_id':uuid,'expected_source_sha256':sha})
+spec=obj(dict(protocol=lit('google-ads-budget/1.0.0'),connection_auth_version=version,binding_version=version,configuration_hash=sha,api_version=s(),policy_id=uuid,policy_version=version,policy_sha256=sha,before=ref('BudgetSnapshot'),desired_average_daily_micros=micros,source_sha256=sha))
+operation=obj(dict(id=uuid,tenant_id=uuid,project_id=uuid,connection_id=uuid,account_id=identifier,budget_id=identifier,state=state,version=version,payload_sha256=sha,specification=ref('Specification'),policy_id=uuid,policy_version=version,data_mode=mode,created_by=uuid,confirmed_by=nullable(uuid),error_code=nullable(s()),observation=nullable(dict(type='object',description='A signed-hash current remote observation; attribution remains unknown.')),resolution=nullable(dict(type='object',description='Manual closure evidence; never a success attribution.')),request_sha256=nullable(sha),expires_at=stamp,created_at=stamp,finished_at=nullable(stamp),additional_ai_calls=lit(0),additional_ai_charge_micros=lit('0')))
+revision=obj(dict(expected_version=version))
+schemas=dict(Policy=policy,PolicyWrite=obj(dict(expected_version=dict(type='integer',minimum=0),policy=ref('Policy'))),PolicyDTO=policyDTO,BudgetSnapshot=snapshot,Specification=spec,PreviewInput=previewInput,PrepareInput=prepareInput,Preview=obj(dict(protocol=lit('google-ads-budget/1.0.0'),preview_id=uuid,expires_at=stamp,before=ref('BudgetSnapshot'),source_sha256=sha,desired_average_daily_micros=micros,policy=ref('PolicyDTO'),data_mode=mode,provider_mutations=lit(0),additional_ai_calls=lit(0),limitation=s())),Operation=operation,Revision=revision,Decision=obj(dict(expected_version=version,payload_sha256=sha,decision={'enum':['confirm','reject']})),Observe=obj(dict(expected_version=version,connection_id=uuid),['connection_id']),CloseUnknown=obj(dict(expected_version=version,observation_sha256=sha,reason=s(minLength=5,maxLength=1000),acknowledge_unknown_attribution=lit(True))))
+schemas['Detail']=obj(dict(operation=ref('Operation'),receipts=arr(obj(dict(id=uuid,outcome={'enum':['applied','rejected','unknown']},body=dict(type='object'),body_sha256=sha,created_at=stamp)),10000),events=arr(obj(dict(id=s(pattern='^[0-9]+$'),version=version,state=state,actor_id=nullable(uuid),details=dict(type='object'),created_at=stamp)),10000)))
+schemas['OperationPage']=obj(dict(items=arr(ref('Operation')),next_cursor=nullable(uuid),data_mode=mode))
+paths={};routes=[]
+user='/v1/tenants/{tenant}/projects/{project}/external-budget';admin='/v1/admin/tenants/{tenant}/projects/{project}/external-budget'
+def add(path,method,name,response,request=None,permission=None,query=None,created=False):
+ params=[dict(name=k[1:-1],**{'in':'path'},required=True,schema=identifier if k in ['{account}'] else uuid) for k in path.split('/') if k.startswith('{')]
+ if request and method!='get' and not path.endswith(('/previews','/observe')):params.append(dict(name='Idempotency-Key',**{'in':'header'},required=True,schema=s(minLength=16,maxLength=128)))
+ if query:
+  params.extend(dict(name=k,**{'in':'query'},required=required,schema=v) for k,v,required in query)
+ security=[{'AdminCookie':[]}] if permission else [{'UserCookie':[]},{'NativeBearer':[]}]
+ op=dict(operationId=name,summary=name,security=security,parameters=params,responses={str(202 if created else 200):dict(description='Current authorized state; repeated idempotent commands return the current original operation.',content={'application/json':dict(schema=response)}),**{str(c):dict(description=t) for c,t in [(400,'Strict input validation failed'),(401,'Current login required'),(403,'Current authority, scope, explicit deny or MFA check failed'),(404,'Scoped resource unavailable'),(409,'Version, preview, policy, source, operation state or idempotency conflict'),(429,'Preview admission limit reached'),(502,'Provider read failed or unsupported response')]}})
+ if request:op['requestBody']=dict(required=True,content={'application/json':dict(schema=ref(request))})
+ if permission:op['x-admin-permission']=permission;op['x-recent-mfa-seconds']=600
+ paths.setdefault(path,{})[method]=op;routes.append(dict(method=method.upper(),path='/'.join(':'+k[1:-1] if k.startswith('{') else k for k in path.split('/'))))
+filters=[('connection_id',uuid,False),('account_id',identifier,False),('state',state,False),('cursor',uuid,False),('limit',dict(type='integer',minimum=1,maximum=100,default=30),False)]
+for root,isadmin in [(user,False),(admin,True)]:
+ pr='admin.external_budget.read' if isadmin else None
+ add(root+'/policy','get',('admin' if isadmin else 'user')+'ReadBudgetPolicy',obj(dict(policy=nullable(ref('PolicyDTO')),data_mode=mode,**({} if isadmin else {'can_manage':dict(type='boolean')}))),permission=pr,query=[('connection_id',uuid,True),('account_id',identifier,True)])
+ add(root+'/policy/{connection}/{account}','put',('admin' if isadmin else 'user')+'WriteBudgetPolicy',ref('PolicyDTO'),'PolicyWrite','admin.external_budget.policy.write' if isadmin else None)
+ add(root+'/operations','get',('admin' if isadmin else 'user')+'ListBudgetOperations',ref('OperationPage'),permission=pr,query=filters)
+ add(root+'/operations/{id}','get',('admin' if isadmin else 'user')+'ReadBudgetOperation',ref('Detail'),permission=pr)
+ for action,body in [('cancel','Revision'),('observe','Observe'),('close-unknown','CloseUnknown')]:add(root+'/operations/{id}/'+action,'post',('admin' if isadmin else 'user')+action.replace('-','').title()+'BudgetOperation',ref('Operation'),body,'admin.external_budget.resolve' if isadmin else None)
+add(user+'/previews','post','previewExactBudgetChange',ref('Preview'),'PreviewInput')
+add(user+'/operations','post','prepareExactBudgetChange',ref('Operation'),'PrepareInput',created=True)
+add(user+'/operations/{id}/decision','post','customerDecideExactBudgetChange',ref('Operation'),'Decision')
+add('/v1/admin/external-budget/operations','get','adminListScopedBudgetOperations',ref('OperationPage'),permission='admin.external_budget.read',query=filters+[('tenant_id',uuid,False),('project_id',uuid,False)])
+contract=dict(openapi='3.1.0',info=dict(title='CopyPaste controlled Google Ads budgets',version='113.0.0'),paths=paths,components=dict(securitySchemes=dict(UserCookie=dict(type='apiKey',**{'in':'cookie'},name='cp_session'),AdminCookie=dict(type='apiKey',**{'in':'cookie'},name='cp_admin_session'),NativeBearer=dict(type='http',scheme='bearer')),schemas=schemas))
+contract['x-execution-rules']=['Default disabled; explicit per-project/account versioned whitelist and limits expire within 30 days.','Preview is immutable, actor-bound, capped at 100 unexpired per actor/project and valid for up to 10 minutes.','Each-operation confirmation requires current customer manage authority; no Codex or Admin confirmation endpoint.','Within-policy execution requires an explicitly saved policy; Codex may prepare only within its current tools and project authority.','One unresolved target per tenant/account/budget across connections/projects.','Exact source re-read, auth/policy revalidation, durable dispatch admission, one physical mutate with no retry.','Dispatched lease expiry and transport ambiguity become unknown, never queued.','A matching current value is an observation, not causal proof. Manual closure requires a fresh 10-minute observation, reason and explicit acknowledgement.','AEAD local receipt outbox precedes DB persistence; recovery only records the captured response. Simultaneous loss of both storage systems can leave unknown evidence.','Google Ads provides no object CAS lock. A concurrent external change between final read and mutate remains possible.','Revocation or policy changes cannot recall an already committed dispatch admission.','Average daily budget is not a maximum daily charge. Provider spend is separate from company AI billing.','Existing admin roles never auto-gain the three new permission keys. Monetary bounded grants remain HKD; other currencies require a matching grant without a monetary cap.']
+contract['x-role-release']=dict(role_key='marketing-analyst',version='1.3.0',previous_version='1.2.0',skill='external-budget@1.0.0',historical_descriptors_unchanged=True)
+contract['x-primary-references']=['https://developers.google.com/google-ads/api/docs/campaigns/budgets/create-budgets','https://developers.google.com/google-ads/api/reference/rpc/v26/MutateCampaignBudgetsRequest','https://developers.google.com/google-ads/api/reference/rpc/v26/MutateCampaignBudgetResult','https://developers.google.com/google-ads/api/docs/concepts/api-structure']
+p=ROOT/'docs/contracts/external-budget.openapi.json';raw=(json.dumps(contract,ensure_ascii=False,indent=2)+'\n').encode();p.write_bytes(raw)
+plat=ROOT/'dev/copypaste-platform/contracts';mirror=dict(normative_source_sha256=hashlib.sha256(raw).hexdigest(),schemas=schemas)
+(plat/'external-budget-schemas.json').write_text(json.dumps(mirror,indent=2)+'\n',encoding='utf-8',newline='\n')
+baseline=(plat/'implemented-routes.json').read_bytes().replace(b'\r\n',b'\n')
+(plat/'external-budget-route-additions.json').write_text(json.dumps(dict(baseline_lf_sha256=hashlib.sha256(baseline).hexdigest(),routes=routes,conditional_routes=[]),indent=2)+'\n',encoding='utf-8',newline='\n')
+print(json.dumps(dict(routes=len(routes),schemas=len(schemas),sha256=mirror['normative_source_sha256'])))

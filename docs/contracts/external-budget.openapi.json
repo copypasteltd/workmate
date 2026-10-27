@@ -1,0 +1,2606 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste controlled Google Ads budgets",
+    "version": "113.0.0"
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/policy": {
+      "get": {
+        "operationId": "userReadBudgetPolicy",
+        "summary": "userReadBudgetPolicy",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "connection_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "policy": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/PolicyDTO"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_mode": {
+                      "enum": [
+                        "simulated",
+                        "configured_services"
+                      ]
+                    },
+                    "can_manage": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "policy",
+                    "data_mode",
+                    "can_manage"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/policy/{connection}/{account}": {
+      "put": {
+        "operationId": "userWriteBudgetPolicy",
+        "summary": "userWriteBudgetPolicy",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "connection",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "account",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/operations": {
+      "get": {
+        "operationId": "userListBudgetOperations",
+        "summary": "userListBudgetOperations",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "connection_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "awaiting_confirmation",
+                "queued",
+                "checking",
+                "dispatched",
+                "succeeded",
+                "failed",
+                "cancelled",
+                "expired",
+                "unknown",
+                "closed_unknown",
+                "no_change"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        }
+      },
+      "post": {
+        "operationId": "prepareExactBudgetChange",
+        "summary": "prepareExactBudgetChange",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrepareInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/operations/{id}": {
+      "get": {
+        "operationId": "userReadBudgetOperation",
+        "summary": "userReadBudgetOperation",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Detail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/operations/{id}/cancel": {
+      "post": {
+        "operationId": "userCancelBudgetOperation",
+        "summary": "userCancelBudgetOperation",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Revision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/operations/{id}/observe": {
+      "post": {
+        "operationId": "userObserveBudgetOperation",
+        "summary": "userObserveBudgetOperation",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Observe"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/operations/{id}/close-unknown": {
+      "post": {
+        "operationId": "userCloseunknownBudgetOperation",
+        "summary": "userCloseunknownBudgetOperation",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseUnknown"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/tenants/{tenant}/projects/{project}/external-budget/policy": {
+      "get": {
+        "operationId": "adminReadBudgetPolicy",
+        "summary": "adminReadBudgetPolicy",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "connection_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "policy": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/PolicyDTO"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_mode": {
+                      "enum": [
+                        "simulated",
+                        "configured_services"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "policy",
+                    "data_mode"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "x-admin-permission": "admin.external_budget.read",
+        "x-recent-mfa-seconds": 600
+      }
+    },
+    "/v1/admin/tenants/{tenant}/projects/{project}/external-budget/policy/{connection}/{account}": {
+      "put": {
+        "operationId": "adminWriteBudgetPolicy",
+        "summary": "adminWriteBudgetPolicy",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "connection",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "account",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PolicyWrite"
+              }
+            }
+          }
+        },
+        "x-admin-permission": "admin.external_budget.policy.write",
+        "x-recent-mfa-seconds": 600
+      }
+    },
+    "/v1/admin/tenants/{tenant}/projects/{project}/external-budget/operations": {
+      "get": {
+        "operationId": "adminListBudgetOperations",
+        "summary": "adminListBudgetOperations",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "connection_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "awaiting_confirmation",
+                "queued",
+                "checking",
+                "dispatched",
+                "succeeded",
+                "failed",
+                "cancelled",
+                "expired",
+                "unknown",
+                "closed_unknown",
+                "no_change"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "x-admin-permission": "admin.external_budget.read",
+        "x-recent-mfa-seconds": 600
+      }
+    },
+    "/v1/admin/tenants/{tenant}/projects/{project}/external-budget/operations/{id}": {
+      "get": {
+        "operationId": "adminReadBudgetOperation",
+        "summary": "adminReadBudgetOperation",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Detail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "x-admin-permission": "admin.external_budget.read",
+        "x-recent-mfa-seconds": 600
+      }
+    },
+    "/v1/admin/tenants/{tenant}/projects/{project}/external-budget/operations/{id}/cancel": {
+      "post": {
+        "operationId": "adminCancelBudgetOperation",
+        "summary": "adminCancelBudgetOperation",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Revision"
+              }
+            }
+          }
+        },
+        "x-admin-permission": "admin.external_budget.resolve",
+        "x-recent-mfa-seconds": 600
+      }
+    },
+    "/v1/admin/tenants/{tenant}/projects/{project}/external-budget/operations/{id}/observe": {
+      "post": {
+        "operationId": "adminObserveBudgetOperation",
+        "summary": "adminObserveBudgetOperation",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Observe"
+              }
+            }
+          }
+        },
+        "x-admin-permission": "admin.external_budget.resolve",
+        "x-recent-mfa-seconds": 600
+      }
+    },
+    "/v1/admin/tenants/{tenant}/projects/{project}/external-budget/operations/{id}/close-unknown": {
+      "post": {
+        "operationId": "adminCloseunknownBudgetOperation",
+        "summary": "adminCloseunknownBudgetOperation",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseUnknown"
+              }
+            }
+          }
+        },
+        "x-admin-permission": "admin.external_budget.resolve",
+        "x-recent-mfa-seconds": 600
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/previews": {
+      "post": {
+        "operationId": "previewExactBudgetChange",
+        "summary": "previewExactBudgetChange",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/external-budget/operations/{id}/decision": {
+      "post": {
+        "operationId": "customerDecideExactBudgetChange",
+        "summary": "customerDecideExactBudgetChange",
+        "security": [
+          {
+            "UserCookie": []
+          },
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Decision"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/external-budget/operations": {
+      "get": {
+        "operationId": "adminListScopedBudgetOperations",
+        "summary": "adminListScopedBudgetOperations",
+        "security": [
+          {
+            "AdminCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "connection_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "account_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "awaiting_confirmation",
+                "queued",
+                "checking",
+                "dispatched",
+                "succeeded",
+                "failed",
+                "cancelled",
+                "expired",
+                "unknown",
+                "closed_unknown",
+                "no_change"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 30
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized state; repeated idempotent commands return the current original operation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input validation failed"
+          },
+          "401": {
+            "description": "Current login required"
+          },
+          "403": {
+            "description": "Current authority, scope, explicit deny or MFA check failed"
+          },
+          "404": {
+            "description": "Scoped resource unavailable"
+          },
+          "409": {
+            "description": "Version, preview, policy, source, operation state or idempotency conflict"
+          },
+          "429": {
+            "description": "Preview admission limit reached"
+          },
+          "502": {
+            "description": "Provider read failed or unsupported response"
+          }
+        },
+        "x-admin-permission": "admin.external_budget.read",
+        "x-recent-mfa-seconds": 600
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "UserCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "AdminCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session"
+      },
+      "NativeBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "schemas": {
+      "Policy": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "budget_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "maximum_average_daily_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$",
+            "description": "Exact account-currency micros; never JSON floating point. Desired value must be positive."
+          },
+          "maximum_change_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$",
+            "description": "Exact account-currency micros; never JSON floating point. Desired value must be positive."
+          },
+          "confirmation": {
+            "enum": [
+              "each_operation",
+              "within_policy"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "enabled",
+          "currency",
+          "budget_ids",
+          "maximum_average_daily_micros",
+          "maximum_change_micros",
+          "confirmation",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "PolicyWrite": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "policy": {
+            "$ref": "#/components/schemas/Policy"
+          }
+        },
+        "required": [
+          "expected_version",
+          "policy"
+        ],
+        "additionalProperties": false
+      },
+      "PolicyDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "connection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "account_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/Policy"
+          },
+          "payload_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "data_mode": {
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "connection_id",
+          "project_id",
+          "account_id",
+          "policy",
+          "payload_sha256",
+          "data_mode",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "BudgetSnapshot": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "const": "google-ads-budget/1.0.0"
+          },
+          "account_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "budget_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "resource_name": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "amount_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$",
+            "description": "Exact account-currency micros; never JSON floating point. Desired value must be positive."
+          },
+          "period": {
+            "const": "DAILY"
+          },
+          "explicitly_shared": {
+            "const": false
+          },
+          "reference_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "status": {
+            "const": "ENABLED"
+          },
+          "type": {
+            "const": "STANDARD"
+          }
+        },
+        "required": [
+          "protocol",
+          "account_id",
+          "budget_id",
+          "resource_name",
+          "name",
+          "currency",
+          "amount_micros",
+          "period",
+          "explicitly_shared",
+          "reference_count",
+          "status",
+          "type"
+        ],
+        "additionalProperties": false
+      },
+      "Specification": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "const": "google-ads-budget/1.0.0"
+          },
+          "connection_auth_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "binding_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "configuration_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "api_version": {
+            "type": "string"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "policy_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "before": {
+            "$ref": "#/components/schemas/BudgetSnapshot"
+          },
+          "desired_average_daily_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$",
+            "description": "Exact account-currency micros; never JSON floating point. Desired value must be positive."
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "protocol",
+          "connection_auth_version",
+          "binding_version",
+          "configuration_hash",
+          "api_version",
+          "policy_id",
+          "policy_version",
+          "policy_sha256",
+          "before",
+          "desired_average_daily_micros",
+          "source_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "PreviewInput": {
+        "type": "object",
+        "properties": {
+          "connection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "account_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "budget_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "new_average_daily_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$",
+            "description": "Exact account-currency micros; never JSON floating point. Desired value must be positive."
+          }
+        },
+        "required": [
+          "connection_id",
+          "account_id",
+          "budget_id",
+          "new_average_daily_micros"
+        ],
+        "additionalProperties": false
+      },
+      "PrepareInput": {
+        "type": "object",
+        "properties": {
+          "connection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "account_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "budget_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "new_average_daily_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$",
+            "description": "Exact account-currency micros; never JSON floating point. Desired value must be positive."
+          },
+          "preview_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "connection_id",
+          "account_id",
+          "budget_id",
+          "new_average_daily_micros",
+          "preview_id",
+          "expected_source_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "Preview": {
+        "type": "object",
+        "properties": {
+          "protocol": {
+            "const": "google-ads-budget/1.0.0"
+          },
+          "preview_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "before": {
+            "$ref": "#/components/schemas/BudgetSnapshot"
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "desired_average_daily_micros": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]{0,17})$",
+            "description": "Exact account-currency micros; never JSON floating point. Desired value must be positive."
+          },
+          "policy": {
+            "$ref": "#/components/schemas/PolicyDTO"
+          },
+          "data_mode": {
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "provider_mutations": {
+            "const": 0
+          },
+          "additional_ai_calls": {
+            "const": 0
+          },
+          "limitation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "protocol",
+          "preview_id",
+          "expires_at",
+          "before",
+          "source_sha256",
+          "desired_average_daily_micros",
+          "policy",
+          "data_mode",
+          "provider_mutations",
+          "additional_ai_calls",
+          "limitation"
+        ],
+        "additionalProperties": false
+      },
+      "Operation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "connection_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "account_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "budget_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "state": {
+            "enum": [
+              "awaiting_confirmation",
+              "queued",
+              "checking",
+              "dispatched",
+              "succeeded",
+              "failed",
+              "cancelled",
+              "expired",
+              "unknown",
+              "closed_unknown",
+              "no_change"
+            ]
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "payload_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "specification": {
+            "$ref": "#/components/schemas/Specification"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "data_mode": {
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          },
+          "created_by": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "confirmed_by": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "observation": {
+            "anyOf": [
+              {
+                "type": "object",
+                "description": "A signed-hash current remote observation; attribution remains unknown."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "object",
+                "description": "Manual closure evidence; never a success attribution."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "request_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "additional_ai_calls": {
+            "const": 0
+          },
+          "additional_ai_charge_micros": {
+            "const": "0"
+          }
+        },
+        "required": [
+          "id",
+          "tenant_id",
+          "project_id",
+          "connection_id",
+          "account_id",
+          "budget_id",
+          "state",
+          "version",
+          "payload_sha256",
+          "specification",
+          "policy_id",
+          "policy_version",
+          "data_mode",
+          "created_by",
+          "confirmed_by",
+          "error_code",
+          "observation",
+          "resolution",
+          "request_sha256",
+          "expires_at",
+          "created_at",
+          "finished_at",
+          "additional_ai_calls",
+          "additional_ai_charge_micros"
+        ],
+        "additionalProperties": false
+      },
+      "Revision": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "Decision": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "payload_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "decision": {
+            "enum": [
+              "confirm",
+              "reject"
+            ]
+          }
+        },
+        "required": [
+          "expected_version",
+          "payload_sha256",
+          "decision"
+        ],
+        "additionalProperties": false
+      },
+      "Observe": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "connection_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "CloseUnknown": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "observation_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 1000
+          },
+          "acknowledge_unknown_attribution": {
+            "const": true
+          }
+        },
+        "required": [
+          "expected_version",
+          "observation_sha256",
+          "reason",
+          "acknowledge_unknown_attribution"
+        ],
+        "additionalProperties": false
+      },
+      "Detail": {
+        "type": "object",
+        "properties": {
+          "operation": {
+            "$ref": "#/components/schemas/Operation"
+          },
+          "receipts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "outcome": {
+                  "enum": [
+                    "applied",
+                    "rejected",
+                    "unknown"
+                  ]
+                },
+                "body": {
+                  "type": "object"
+                },
+                "body_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "id",
+                "outcome",
+                "body",
+                "body_sha256",
+                "created_at"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 10000
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[0-9]+$"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "state": {
+                  "enum": [
+                    "awaiting_confirmation",
+                    "queued",
+                    "checking",
+                    "dispatched",
+                    "succeeded",
+                    "failed",
+                    "cancelled",
+                    "expired",
+                    "unknown",
+                    "closed_unknown",
+                    "no_change"
+                  ]
+                },
+                "actor_id": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "details": {
+                  "type": "object"
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "id",
+                "version",
+                "state",
+                "actor_id",
+                "details",
+                "created_at"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 10000
+          }
+        },
+        "required": [
+          "operation",
+          "receipts",
+          "events"
+        ],
+        "additionalProperties": false
+      },
+      "OperationPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Operation"
+            },
+            "maxItems": 100
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_mode": {
+            "enum": [
+              "simulated",
+              "configured_services"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "data_mode"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "x-execution-rules": [
+    "Default disabled; explicit per-project/account versioned whitelist and limits expire within 30 days.",
+    "Preview is immutable, actor-bound, capped at 100 unexpired per actor/project and valid for up to 10 minutes.",
+    "Each-operation confirmation requires current customer manage authority; no Codex or Admin confirmation endpoint.",
+    "Within-policy execution requires an explicitly saved policy; Codex may prepare only within its current tools and project authority.",
+    "One unresolved target per tenant/account/budget across connections/projects.",
+    "Exact source re-read, auth/policy revalidation, durable dispatch admission, one physical mutate with no retry.",
+    "Dispatched lease expiry and transport ambiguity become unknown, never queued.",
+    "A matching current value is an observation, not causal proof. Manual closure requires a fresh 10-minute observation, reason and explicit acknowledgement.",
+    "AEAD local receipt outbox precedes DB persistence; recovery only records the captured response. Simultaneous loss of both storage systems can leave unknown evidence.",
+    "Google Ads provides no object CAS lock. A concurrent external change between final read and mutate remains possible.",
+    "Revocation or policy changes cannot recall an already committed dispatch admission.",
+    "Average daily budget is not a maximum daily charge. Provider spend is separate from company AI billing.",
+    "Existing admin roles never auto-gain the three new permission keys. Monetary bounded grants remain HKD; other currencies require a matching grant without a monetary cap."
+  ],
+  "x-role-release": {
+    "role_key": "marketing-analyst",
+    "version": "1.3.0",
+    "previous_version": "1.2.0",
+    "skill": "external-budget@1.0.0",
+    "historical_descriptors_unchanged": true
+  },
+  "x-primary-references": [
+    "https://developers.google.com/google-ads/api/docs/campaigns/budgets/create-budgets",
+    "https://developers.google.com/google-ads/api/reference/rpc/v26/MutateCampaignBudgetsRequest",
+    "https://developers.google.com/google-ads/api/reference/rpc/v26/MutateCampaignBudgetResult",
+    "https://developers.google.com/google-ads/api/docs/concepts/api-structure"
+  ]
+}
