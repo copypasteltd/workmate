@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 已加入本机确认撤权、设备签名断开、Chrome Host 清理及可选缓存清理。
+
+POST /v1/auth/native/disconnect 使用严格、有界的 Desktop 撤权请求。原 refresh 只撤销其原 family；每台设备还必须通过自身 Ed25519 签名、准确 tenant/device 及凭据所有者验证。已过期／使用／撤销的凭据仍可撤权；异主、Extension 或错误证明统一未验证。取消待处理／已认领文件命令，保留完成结果并记录单向撤权审计。SQL001–127 不变，运行时 schema 与 OpenAPI 绑定实际路由。
+
+验证：79 backend + 127 Desktop + 22 native Codex checks; 13 builds; 5 real UI flows; 4 layouts; 1 GIF/MP4 pair.
+
+Windows DPAPI、自建 Native Host、Electron IPC、Web PKCE 和原生 PostgreSQL 为实际运行；客户／模型为假数据。原生确认答案和 shell 调度在隔离核查进程内控制。公司签名安装版本的卸载／升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/117-desktop-removal.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-removal-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Native customer confirmation] --> Outbox[Encrypted signed withdrawal]
+  Outbox --> Stop[Stop local Codex and revoke grants]
+  Stop --> Host[Owned Host exit and registry check]
+  Host --> Company[Company device retirement]
+  Company --> Receipt[Confirmed or durable retry receipt]
+  Receipt --> Windows[Windows uninstall with preparation hook]
+```
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-computer-permissions.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-disconnect-and-retry.mp4)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-disconnect-and-retry.gif)
+
+
 <!-- desktop-updates-stage116-final -->
 已修正静默安装后的应用重启交接，并重新验证 Desktop 更新、后台发布及本机安装准入。
 
