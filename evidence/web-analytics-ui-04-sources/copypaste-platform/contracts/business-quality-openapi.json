@@ -1,0 +1,1105 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste business delivery quality",
+    "version": "1.0.0",
+    "description": "Additive contract. Costs are company task usage before refunds, excluding external services and labor. Customer measurements are self reported. Fixed-version reads establish observed reuse, not renewal or ROI. Time interval is [from,to), defaults to 30 days and is limited to 366 days."
+  },
+  "paths": {
+    "/v1/tasks/{task_id}/reviews": {
+      "post": {
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^\"[1-9][0-9]*\"$"
+            }
+          },
+          {
+            "name": "X-Delivery-SHA256",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Recorded result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            }
+          }
+        },
+        "x-requirements": [
+          "REQ-012",
+          "REQ-022",
+          "REQ-056"
+        ],
+        "security": [
+          {
+            "userSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCreate"
+              }
+            }
+          }
+        },
+        "description": "Original ReviewCreate/Review retained. Without optional concurrency headers, reviews the current selected artifact versions at commit. Product forms use mandatory expected_version and expected_delivery_hash on the project route."
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/tasks/{task}/reviews": {
+      "post": {
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Recorded result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            }
+          }
+        },
+        "x-requirements": [
+          "REQ-012",
+          "REQ-022",
+          "REQ-056"
+        ],
+        "security": [
+          {
+            "userSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectReviewCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/tasks/{task}/quality": {
+      "get": {
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current view",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskQuality"
+                }
+              }
+            }
+          }
+        },
+        "x-requirements": [
+          "REQ-012",
+          "REQ-022",
+          "REQ-056"
+        ],
+        "security": [
+          {
+            "userSession": []
+          }
+        ]
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/tasks/{task}/quality/measurements": {
+      "post": {
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "task",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Recorded result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualityMeasurement"
+                }
+              }
+            }
+          }
+        },
+        "x-requirements": [
+          "REQ-012",
+          "REQ-022",
+          "REQ-056"
+        ],
+        "security": [
+          {
+            "userSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualityMeasurementCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/quality": {
+      "get": {
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "data_mode",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current view",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualitySummary"
+                }
+              }
+            }
+          }
+        },
+        "x-requirements": [
+          "REQ-012",
+          "REQ-022",
+          "REQ-056"
+        ],
+        "security": [
+          {
+            "userSession": []
+          }
+        ]
+      }
+    },
+    "/v1/admin/quality": {
+      "get": {
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "data_mode",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "simulated",
+                "configured_services"
+              ]
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized current view",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualitySummary"
+                }
+              }
+            }
+          }
+        },
+        "x-requirements": [
+          "REQ-012",
+          "REQ-022",
+          "REQ-056"
+        ],
+        "security": [
+          {
+            "adminSession": []
+          }
+        ],
+        "x-permission": "admin.usage.read",
+        "description": "Metadata aggregates only. Explicit project denies constrain every count and cost. Does not authorize writing customer acceptance."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ReviewCreate": {
+        "type": "object",
+        "properties": {
+          "artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "changes_requested",
+              "discarded"
+            ]
+          },
+          "comment": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "artifact_ids",
+          "decision"
+        ],
+        "additionalProperties": false
+      },
+      "Review": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "decision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "decision",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "ProjectReviewCreate": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "expected_delivery_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "artifact_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accepted",
+              "changes_requested",
+              "discarded"
+            ]
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "expected_version",
+          "expected_delivery_hash",
+          "decision"
+        ],
+        "additionalProperties": false
+      },
+      "QualityMeasurementCreate": {
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "baseline_minutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 525600
+          },
+          "human_minutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 525600
+          },
+          "manual_revisions": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "expected_version",
+          "baseline_minutes",
+          "human_minutes",
+          "manual_revisions"
+        ],
+        "additionalProperties": false
+      },
+      "QualityMeasurement": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "baseline_minutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "human_minutes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "manual_revisions": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "task_id",
+          "task_version",
+          "baseline_minutes",
+          "human_minutes",
+          "manual_revisions",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "DeliverySnapshot": {
+        "type": "object",
+        "properties": {
+          "output_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "artifacts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "id",
+                "version_id",
+                "version",
+                "sha256"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "output_sha256",
+          "artifacts"
+        ],
+        "additionalProperties": false
+      },
+      "QualitySummary": {
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "technical_successes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "failed": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "cancelled": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "reviewable": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "accepted": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "changes_requested": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "revision_requests": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "discarded": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pending_review": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "sources_unavailable": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "incomplete_cost_tasks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uncertain_cost_tasks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "human_minutes_coverage": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "baseline_minutes_coverage": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "manual_revisions_coverage": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "observed_reuse_pairs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "successful_reuse_pairs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "simulated_tasks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "configured_services_tasks": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "known_cost_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "failed_cancelled_cost_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          },
+          "human_minutes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "baseline_minutes": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "manual_revisions": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "complete_cost_per_accepted_micros": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[0-9]+$"
+          },
+          "currency": {
+            "const": "HKD"
+          },
+          "cohort": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "clock": {
+                "const": "task_created_at"
+              },
+              "data_mode": {
+                "enum": [
+                  "all",
+                  "simulated",
+                  "configured_services"
+                ]
+              }
+            },
+            "required": [
+              "from",
+              "to",
+              "clock",
+              "data_mode"
+            ],
+            "additionalProperties": false
+          },
+          "acceptance_rate": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 1
+          },
+          "measurements_source": {
+            "const": "customer_reported"
+          },
+          "reuse_source": {
+            "const": "observed_fixed_asset_reads"
+          },
+          "cost_basis": {
+            "const": "company_task_usage_before_refunds_excludes_external_and_labor_cost"
+          },
+          "roi": {
+            "type": "null"
+          }
+        },
+        "required": [
+          "tasks",
+          "technical_successes",
+          "failed",
+          "cancelled",
+          "reviewable",
+          "accepted",
+          "changes_requested",
+          "revision_requests",
+          "discarded",
+          "pending_review",
+          "sources_unavailable",
+          "incomplete_cost_tasks",
+          "uncertain_cost_tasks",
+          "human_minutes_coverage",
+          "baseline_minutes_coverage",
+          "manual_revisions_coverage",
+          "observed_reuse_pairs",
+          "successful_reuse_pairs",
+          "simulated_tasks",
+          "configured_services_tasks",
+          "known_cost_micros",
+          "failed_cancelled_cost_micros",
+          "human_minutes",
+          "baseline_minutes",
+          "manual_revisions",
+          "complete_cost_per_accepted_micros",
+          "currency",
+          "cohort",
+          "acceptance_rate",
+          "measurements_source",
+          "reuse_source",
+          "cost_basis",
+          "roi"
+        ],
+        "additionalProperties": false
+      },
+      "TaskQuality": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "technical_status": {
+            "type": "string"
+          },
+          "review_state": {
+            "enum": [
+              "pending_review",
+              "accepted",
+              "changes_requested",
+              "discarded"
+            ]
+          },
+          "delivery": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DeliverySnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delivery_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "can_review": {
+            "type": "boolean"
+          },
+          "can_measure": {
+            "type": "boolean"
+          },
+          "measurements_source": {
+            "const": "customer_reported"
+          },
+          "measurements": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "task_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "baseline_minutes": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "human_minutes": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "manual_revisions": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "id",
+                  "task_version",
+                  "baseline_minutes",
+                  "human_minutes",
+                  "manual_revisions",
+                  "created_at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "decision": {
+                  "type": "string",
+                  "enum": [
+                    "accepted",
+                    "changes_requested",
+                    "discarded"
+                  ]
+                },
+                "task_version": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "created_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "erased_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "current_delivery": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "comment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "artifact_ids": {
+                  "anyOf": [
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "decision",
+                "task_version",
+                "created_at",
+                "erased_at",
+                "current_delivery",
+                "comment",
+                "artifact_ids"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 50
+          },
+          "history_truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_version",
+          "technical_status",
+          "review_state",
+          "delivery",
+          "delivery_hash",
+          "can_review",
+          "can_measure",
+          "measurements_source",
+          "measurements",
+          "reviews",
+          "history_truncated"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "userSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "adminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session"
+      }
+    }
+  }
+}

@@ -1,5 +1,30 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- website-analytics-stage111 -->
+Website reports now connect captured GA4 traffic/events and Search Console data to exact metrics and complete HTML/CSV/JSON. Distinct users are never summed across rows, refund revenue can be negative, and missing dates remain unknown. Report calculation adds no AI call or fee.
+
+Frozen qualification scripts preserve failed attempts, hash exact sources, run native PostgreSQL without virtualization, package Desktop and close owned browser/service fixtures.
+
+122 backend checks · 53 Desktop unit checks · 20 actual native Codex checks · 11 actual client flows. Synthetic accounts/models; live provider quality, production signing and full-product acceptance remain unproven.
+
+[方案 / Design](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/111-web-analytics.md) · [證據 / Evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/web-analytics-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Login[Login and project scope] --> Capture[Immutable GA4 or GSC snapshot]
+  Capture --> Verify[Source hash and current authority]
+  Verify --> Metrics[Exact captured-row calculation]
+  Metrics --> Clients[Web and native Desktop report]
+  Metrics --> Skill[Versioned marketing specialist]
+  Metrics --> Files[Complete HTML CSV JSON]
+  Admin[Admin source controls] --> Verify
+```
+
+![Actual website report / 實際網站報告](https://raw.githubusercontent.com/copypasteltd/workmate/web/assets/screenshots/workmate-web-analysis-07-ga4-en.png)
+
+![Actual report interaction / 實際報告交互](https://raw.githubusercontent.com/copypasteltd/workmate/web/assets/screenshots/workmate-07-website-analysis.gif)
+
+
 <!-- desktop-native-geo-stage110 -->
 Desktop GEO now runs fixed questions with local Codex in independent empty sessions. Review the exact batch reservation, run or stop questions, recover original receipts, retain full answers and compare new immutable runs. All AI uses the company gateway; observed costs come from company receipts.
 

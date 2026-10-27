@@ -1,0 +1,34 @@
+/* Native Desktop presentation; Web and Extension keep their own layouts. */
+#root { overflow-wrap:anywhere; }
+#root :is(.main-shell,.main-content,.sidebar,.card,.table-scroll,.tabs) {
+  min-width:0;
+}
+#root :is(.sidebar,.main-content,.modal) { overflow-x:clip; }
+#root .sidebar nav { min-height:0; overflow-x:clip; }
+#root :is(.main-content,.modal) :is(pre,code) {
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+#root :is(.main-content,.modal) :is(img,video,canvas,svg) { max-width:100%; }
+#root :is(input,textarea,select,fieldset) { min-width:0; max-width:100%; }
+#root .table-scroll { overflow-x:clip; }
+#root table { width:100%; min-width:0; table-layout:fixed; white-space:normal; }
+#root :is(th,td) {
+  min-width:0;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  overflow:visible;
+  text-overflow:clip;
+}
+#root :is(th,td) > * { min-width:0; max-width:100%; }
+#root .tabs { flex-wrap:wrap; overflow:visible; }
+#root .tabs button { white-space:normal; }
+#root :is(.filter-row,.action-row) { flex-wrap:wrap; }
+#root :is(.local-agent-messages,.local-agent-artifacts,.local-agent-sessions,.sidebar nav):focus-visible {
+  outline:2px solid var(--blue);
+  outline-offset:-3px;
+}
+@media(max-width:1100px) {
+  #root :is(th,td) { padding:12px 9px; }
+}

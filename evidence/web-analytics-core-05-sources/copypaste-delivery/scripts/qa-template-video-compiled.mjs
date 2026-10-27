@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+import path from "node:path";
+const platform=path.resolve("../copypaste-platform");
+const {videoRendererProfile}=await import(pathToFileURL(path.join(platform,"dist/src/video-render.js")));
+const profile=await videoRendererProfile();
+assert.equal(profile.font_sha256,"864727d210d54f2537bbe23b3a839436c3992af72de9322af5270897246bd44f");
+assert.equal(profile.video_codec,"h264");
+assert.match(profile.ffmpeg_sha256,/^[a-f0-9]{64}$/);
+assert.match(profile.ffprobe_sha256,/^[a-f0-9]{64}$/);
+console.log(JSON.stringify({status:"passed",scope:"Actual compiled module resolves and verifies the bundled font and native encoder/probe version fingerprints",profile}));
