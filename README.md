@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · extension
 
+<!-- desktop-updates-stage116 -->
+已接通 Desktop 受控更新：后台发布、签名下载及本机安装准入。
+
+原生 Chrome 右侧 Side Panel 保留对话、客户选取文件及云端 Codex 执行。Desktop 更新由 Desktop 主进程和后台管理，扩展桥接不能下载或启动安装程序。下方跨产品截图展示对应发布界面。
+
+验证：64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Windows 信任检查与 Electron 为实际运行；账户／模型及惰性签名文件为测试夹具。公司签名安装版本的完整升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/116-desktop-updates.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-updates-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-verified.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.gif)
+
+
 <!-- cloud-events-stage115 -->
 已接通私有签名事件工作：客户明确确认、持久去重回执、独立云端运行与范围化后台管理。
 

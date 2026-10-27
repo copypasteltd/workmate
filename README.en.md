@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · extension
 
+<!-- desktop-updates-stage116 -->
+Controlled Desktop updates now connect Admin release operations, signed downloads and local installation admission.
+
+The native right Chrome Side Panel retains chat, customer-selected files and cloud Codex execution. Desktop updates are managed by the Desktop main process and Admin; the extension cannot download or run installers through its bridge. The cross-product screenshots below show those release surfaces.
+
+Validation: 64 backend + 96 Desktop + 22 native Codex checks; 13 builds; 4 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Real Windows trust and Electron; synthetic accounts/models and an inert signed test file. Company-signed installed-product upgrades, macOS and complete product/live-model acceptance remain unqualified.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/116-desktop-updates.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-updates-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Sign[Offline signed release] --> Admin[Global MFA release review]
+  Admin --> Head[Versioned company channel]
+  Head --> Desktop[Local Desktop verification]
+  Desktop --> Trust[Hash and Windows signer trust]
+  Trust --> Confirm[Customer confirmation]
+  Confirm --> Idle[Local work checkpoints]
+  Idle --> Helper[Locked native installer handoff]
+```
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-update-verified.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.mp4)
+
+![Actual Desktop/Admin update UI / 实际更新界面](media/desktop-updates-copypaste-desktop__workmate-desktop-updates-02-signed-update-download.gif)
+
+
 <!-- cloud-events-stage115 -->
 Private signed event work now connects customer confirmation, durable deduplicated receipts and independent cloud runs with scoped administration.
 
