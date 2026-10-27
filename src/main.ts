@@ -1,3 +1,4 @@
+import { DesktopPairingController, type PairingJournal } from "./desktop-pairing.js";
 import { deployment } from "./deployment.js";
 import { existsSync } from "node:fs";
 import { DesktopUpdateController } from "./desktop-updates.js";
@@ -136,14 +137,29 @@ const nativeSession = new NativeSession({
   changed: () => {
     // Revoke all local grants before another account can use cached folder state.
     localAccessReset = Promise.all([files.revokeAll(), localSchedules.withdraw(), localPrograms.withdraw(), localAgent.invalidate()]).then(async () => {
-      await save("devices", {});
-      await save("command-keys", {});
+      await pairings.withdraw();
     });
     void localAccessReset.catch(() => {});
     window?.webContents.send("auth:changed");
   },
 });
 const tokens = () => nativeSession.get();
+
+const pairings = new DesktopPairingController({
+  read: () => load<PairingJournal|null>("desktop-pairings",null), write: value => save("desktop-pairings",value),
+  epoch: async () => (await load<NativeTokens|null>("auth",null))?.session_epoch ?? null,
+  pair: async body => { const r=await request("/v1/auth/native/device-pair",{method:"POST",body}); if(r.status!==200)throw new Error(r.body.error?.code ?? "PAIRING_UNAVAILABLE");return r.body; },
+  retire: async body => {const r=await fetch(config.api+"/v1/auth/native/device-pair/retire",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),redirect:"error",signal:AbortSignal.timeout(8000)});if(!r.ok)throw new Error("PAIRING_RETIREMENT_PENDING");return r.json();},
+  legacy: async (tenant,id) => {const r=await request(`/v1/tenants/${tenant}/devices/${id}`,{method:"DELETE"});if(r.status!==200 || r.body?.ok!==true)throw new Error("PAIRING_PREVIOUS_DEVICE_PENDING");},
+  connect: async(tenant,d)=>{
+    const pub=await request("/v1/public/config");if(pub.status!==200 || !pub.body.device_command_public_key)throw new Error("Command signing key unavailable");
+    const devices=await load<Record<string,string>>("devices",{}),keys=await load<Record<string,string>>("command-keys",{});
+    devices[tenant]=d.id;keys[tenant]=pub.body.device_command_public_key;
+    await save("command-keys",keys);await save("devices",devices);
+  },
+  clear:async()=>{await save("devices",{});await save("command-keys",{});},
+});
+
 const nativeBrowsers = new NativeBrowserPool(async () => {
   if(!window || window.isDestroyed())return "en";
   return window.webContents.executeJavaScript("localStorage.getItem('cp_locale') === 'zh' ? 'zh' : 'en'");
@@ -287,7 +303,7 @@ const desktopRemoval = new DesktopRemovalController({
   capture: async () => {
     await localAccessReset;
     const auth = await load<NativeTokens | null>("auth", null), devices = await load<Record<string,string>>("devices", {}), identity = await load<{private_key:string} | null>("identity", null);
-    return { refresh_token: auth?.refresh_token, devices, private_key: identity?.private_key };
+    return { refresh_token: auth?.refresh_token, devices, private_key: identity?.private_key, pairings: await pairings.removals() };
   },
   withdraw: async () => {
     await nativeSession.signOut({ remote: false });
@@ -301,6 +317,7 @@ const desktopRemoval = new DesktopRemovalController({
     await session.defaultSession.clearCache(); await session.defaultSession.clearStorageData();
     await removeOwnedUpdateCache(userDir);
   },
+  retire: body => pairings.retire(body),
   post: async body => {
     const response = await fetch(config.api + "/v1/auth/native/disconnect", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body), redirect: "error", signal: AbortSignal.timeout(8000) });
     if (!response.ok) throw new Error("DISCONNECT_UNAVAILABLE");
@@ -511,31 +528,11 @@ async function deviceSync(tenant: string) {
     };
     await save("identity", identity);
   }
-  const grants = await files.grants();
-  let devices = await load<any>("devices", {});
-  const old = devices[tenant];
-  if (old)
-    await request(`/v1/tenants/${tenant}/devices/${old}`, { method: "DELETE" });
-  const d = await request(`/v1/tenants/${tenant}/devices`, {
-    method: "POST",
-    body: {
-      name: app.getName() + " · " + process.platform,
-      client: "desktop",
-      public_key: identity.public_key,
-      grants,
-    },
-  });
-  if (d.status !== 200)
-    throw new Error(d.body.error?.message ?? "Device pairing failed");
-  devices[tenant] = d.body.id;
-  await save("devices", devices);
-  const pub = await request("/v1/public/config");
-  if (pub.status !== 200 || !pub.body.device_command_public_key)
-    throw new Error("Command signing key unavailable");
-  const keys = await load<any>("command-keys", {});
-  keys[tenant] = pub.body.device_command_public_key;
-  await save("command-keys", keys);
-  return d.body;
+  const auth=await tokens();
+  if(!auth.session_epoch)throw new Error("PAIRING_ACCOUNT_CHANGED");
+  const devices=await load<Record<string,string>>("devices",{});
+  return pairings.pair(tenant,{name:app.getName()+" · "+process.platform,public_key:identity.public_key,grants:await files.grants()},
+    {refresh_token:auth.refresh_token,session_epoch:auth.session_epoch},identity.private_key,devices[tenant]);
 }
 async function pollDevices() {
   try { await updateAdmission.run(() => pollDevicesUnchecked()); } catch { /* Installation has closed local admission. */ }
@@ -544,6 +541,7 @@ async function pollDevicesUnchecked() {
   if (polling) return;
   polling = true;
   try {
+    await pairings.flush();
     const devices = await load<any>("devices", {}),
       keys = await load<any>("command-keys", {});
     for (const [tenant, id] of Object.entries(devices)) {
@@ -894,6 +892,7 @@ void app
         if (process.argv.includes("--prepare-uninstall")) app.exit(42);
         else app.quit();
       } else {
+        await pairings.initialize();
         await desktopRemoval.initialize();
         if (process.argv.includes("--prepare-uninstall")) {
           try {
@@ -923,5 +922,5 @@ app.on("before-quit", event => {
   if (deviceTimer) clearInterval(deviceTimer);
   if (shuttingDown) return;
   event.preventDefault(); shuttingDown = true;
-  void Promise.all([desktopUpdates.close(), localSchedules.close(), localPrograms.close(), localAgent.close(), nativeBrowsers.close()]).then(() => localSchedules.drain()).then(() => app.exit(0), () => app.exit(1));
+  void Promise.all([desktopUpdates.close(), localSchedules.close(), localPrograms.close(), localAgent.close(), nativeBrowsers.close(), pairings.drain()]).then(() => localSchedules.drain()).then(() => app.exit(0), () => app.exit(1));
 });

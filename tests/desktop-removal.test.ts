@@ -11,6 +11,12 @@ import {
   type DesktopDisconnectRequest,
 } from "../src/desktop-disconnect-contract.js";
 import { UpdateAdmission } from "../src/update-admission.js";
+import {
+  pairingProtocol,
+  pairingMessage,
+  type PairingRequest,
+} from "../src/desktop-pairing-contract.js";
+import { sign } from "node:crypto";
 
 const pair = generateKeyPairSync("ed25519"),
   private_key = pair.privateKey
@@ -334,4 +340,62 @@ test("a failed marker removal durably queues and locally withdraws the newly acc
   assert.equal(f.journal?.pending[0].devices.length, 0);
   await f.controller.retry();
   assert.equal(f.journal?.pending.length, 0);
+});
+
+test("uninstall retains an unacknowledged pairing independently of known device IDs and its family receipt", async () => {
+  const f = fixture(0),
+    request: PairingRequest = {
+      protocol: pairingProtocol,
+      refresh_token: "r".repeat(43),
+      input: {
+        id: randomUUID(),
+        tenant_id: randomUUID(),
+        name: "Unacknowledged pairing",
+        public_key: publicKey,
+        grants: [],
+      },
+      signature: "",
+    };
+  request.signature = sign(
+    null,
+    pairingMessage("retire", request),
+    private_key,
+  ).toString("base64url");
+  const capture = f.io.capture;
+  f.io.capture = async () => ({ ...(await capture()), pairings: [request] });
+  let online = false;
+  f.io.retire = async (body) => {
+    if (!online) throw Error("offline");
+    return { pairing_id: body.input.id, status: "retired" };
+  };
+  const result = await f.controller.prepare(false);
+  assert.equal(result.remote, "pending");
+  assert.equal(result.pending, 1);
+  assert.equal(f.journal?.pending.length, 0);
+  assert.deepEqual(f.journal?.pairings, [request]);
+  online = true;
+  await f.controller.retry();
+  assert.equal((await f.controller.status()).remote, "disconnected");
+  assert.equal(f.journal?.pairings?.length, 0);
+});
+test("a mismatched pairing retirement receipt stays unverified rather than reporting a completed cloud withdrawal", async () => {
+  const f = fixture(0),
+    request: PairingRequest = {
+      protocol: pairingProtocol,
+      refresh_token: "r".repeat(43),
+      input: {
+        id: randomUUID(),
+        tenant_id: randomUUID(),
+        name: "Synthetic pairing",
+        public_key: publicKey,
+        grants: [],
+      },
+      signature: "",
+    };
+  const capture = f.io.capture;
+  f.io.capture = async () => ({ ...(await capture()), pairings: [request] });
+  f.io.retire = async () => ({ pairing_id: randomUUID(), status: "retired" });
+  assert.equal((await f.controller.prepare(false)).remote, "unverified");
+  assert.equal((await f.controller.status()).pending, 1);
+  assert.equal(f.journal?.pairings?.length, 1);
 });

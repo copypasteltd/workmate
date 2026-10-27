@@ -123,7 +123,16 @@ export function NativeFiles({ onChange }: { onChange?: () => void }) {
             className="button secondary small"
             onClick={() =>
               void run(async () => {
-                await bridge.syncDevice(w.tenant);
+                try {
+                  await bridge.syncDevice(w.tenant);
+                } catch {
+                  throw new Error(
+                    t(
+                      "配對尚未確認。請檢查連線後重試；原請求會保留，斷開此電腦時會一併清理。已撤銷的授權需重新選取資料夾。",
+                      "Pairing is not confirmed. Check your connection and retry; the saved request is also cleaned up when you disconnect this computer. Revoked access requires choosing a folder again.",
+                    ),
+                  );
+                }
                 onChange?.();
                 setNotice(
                   t(
@@ -137,6 +146,12 @@ export function NativeFiles({ onChange }: { onChange?: () => void }) {
             <RefreshCw size={16} />
             {t("同步雲端排程權限", "Pair cloud scheduling")}
           </button>
+          <p className="muted small">
+            {t(
+              "網路中斷後可重試，會保留同一次配對。退出或斷開後，未確認的配對也會撤銷。",
+              "Retry after a connection failure to recover the same pairing. Signing out or disconnecting also retires unconfirmed pairings.",
+            )}
+          </p>
           <div className="form-stack section-block">
             <Field label={t("資料夾授權", "Folder grant")}>
               <select

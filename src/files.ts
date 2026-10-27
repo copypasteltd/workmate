@@ -15,7 +15,7 @@ export interface Grant {
   id: string;
   root: string;
   label: string;
-  operations: string[];
+  operations: FileCommand["operation"][];
   expires_at: string;
 }
 export interface FileCommand {

@@ -6,10 +6,15 @@ import {
   type DesktopDisconnectReceipt,
 } from "./desktop-disconnect-contract.js";
 import type { RegistrationState } from "./chrome-registration.js";
+import type {
+  PairingRequest,
+  PairingRetirement,
+} from "./desktop-pairing-contract.js";
 
 export interface RemovalJournal {
   version: 1;
   pending: DesktopDisconnectRequest[];
+  pairings?: PairingRequest[];
   completedAt?: string;
   cache: "retained" | "cleared" | "retry";
   host: RegistrationState | "retry";
@@ -31,11 +36,13 @@ export interface RemovalIO {
     refresh_token?: string;
     private_key?: string;
     devices: Record<string, string>;
+    pairings?: PairingRequest[];
   }>;
   withdraw(): Promise<void>;
   unregister(): Promise<RegistrationState>;
   clearCache(): Promise<void>;
   post(request: DesktopDisconnectRequest): Promise<DesktopDisconnectReceipt>;
+  retire?(request: PairingRequest): Promise<PairingRetirement>;
   changed(): void;
 }
 export class DesktopRemovalController {
@@ -55,6 +62,17 @@ export class DesktopRemovalController {
       entries = Object.entries(snapshot.devices).sort(([a], [b]) =>
         a.localeCompare(b),
       );
+    for (const request of snapshot.pairings ?? []) {
+      value.pairings ??= [];
+      if (
+        !value.pairings.some(
+          (r) =>
+            r.input.id === request.input.id &&
+            r.refresh_token === request.refresh_token,
+        )
+      )
+        value.pairings.push(request);
+    }
     if (entries.length && (!snapshot.refresh_token || !snapshot.private_key))
       throw new Error("DISCONNECT_IDENTITY_UNAVAILABLE");
     if (
@@ -88,16 +106,18 @@ export class DesktopRemovalController {
         value.pending.push(request);
       }
     }
-    value.remote = value.pending.length ? "pending" : "disconnected";
+    value.remote =
+      value.pending.length || value.pairings?.length
+        ? "pending"
+        : "disconnected";
   }
   private view(value: RemovalJournal, disabled: boolean) {
     return {
       disabled,
       cancelled: false,
-      pending: value.pending.reduce(
-        (n, r) => n + Math.max(1, r.devices.length),
-        0,
-      ),
+      pending:
+        (value.pairings?.length ?? 0) +
+        value.pending.reduce((n, r) => n + Math.max(1, r.devices.length), 0),
       remote: value.remote,
       cache: value.cache,
       host: value.host,
@@ -120,6 +140,22 @@ export class DesktopRemovalController {
   }
   private async flush(value: RemovalJournal) {
     let uncertain = false;
+    for (const request of [...(value.pairings ?? [])]) {
+      try {
+        const receipt = await this.io.retire?.(request);
+        if (
+          receipt?.pairing_id !== request.input.id ||
+          receipt.status !== "retired"
+        ) {
+          uncertain = true;
+          continue;
+        }
+        value.pairings = value.pairings!.filter((r) => r !== request);
+        await this.io.write(value);
+      } catch {
+        /* Retain the exact signed intent, including creates with lost replies. */
+      }
+    }
     for (const request of [...value.pending]) {
       try {
         const receipt = await this.io.post(request);
@@ -148,11 +184,12 @@ export class DesktopRemovalController {
         /* Offline and malformed acknowledgements remain recoverable. */
       }
     }
-    value.remote = value.pending.length
-      ? uncertain
-        ? "unverified"
-        : "pending"
-      : "disconnected";
+    value.remote =
+      value.pending.length || value.pairings?.length
+        ? uncertain
+          ? "unverified"
+          : "pending"
+        : "disconnected";
     await this.io.write(value);
   }
   private once(
