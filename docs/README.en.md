@@ -1,5 +1,31 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- native-recovery-stage114 -->
+Native encrypted backups and isolated recovery are implemented. A consistent database snapshot and immutable files are authenticated together; a newer independent deletion journal suppresses deleted content before a restored environment can be reviewed.
+
+Validation: 64 affected backend tests (including 10 native recovery tests), 13 build/type checks and 6 actual Admin flows across 3 measured layouts. Real native backup/restore; synthetic customer/model data. Production cutover, offsite durability, PITR and full production RPO/RTO remain unqualified.
+
+[Runbook / 方案](technical/114-native-backup-recovery.md) · [Evidence / 证据](quality/native-recovery-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Live[Native database and immutable objects] --> Snapshot[One exported snapshot]
+  Snapshot --> Archive[Authenticated encrypted archive]
+  Live --> Journal[Independent deletion journal]
+  Archive --> Verify[Verify every file and key]
+  Journal --> Verify
+  Verify --> Restore[New quarantined database and directory]
+  Restore --> Erase[Replay newer deletion records]
+  Erase --> Receipt[Immutable isolated recovery receipt]
+  Receipt --> Admin[Global permission and current MFA]
+  Restore --> Fence[API and workers remain fenced]
+```
+
+![Actual Admin recovery readiness / 实际后台恢复面板](design/implementation/copypaste-admin__workmate-recovery-06-overview-en.png)
+
+![Actual Admin recovery interaction / 实际后台恢复交互](design/implementation/copypaste-admin__workmate-06-native-recovery.gif)
+
+
 <!-- controlled-budget-stage113 -->
 Google Ads budget changes now have an explicit expiring policy, exact immutable previews, customer confirmation, a single durable dispatch and immutable receipts. Unknown outcomes are observed and manually closed without resending.
 
