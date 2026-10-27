@@ -1,5 +1,29 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- native-pairing-stage118 -->
+Desktop 0.7.1 已加入持久本机配对、精确重试及不可逆意图退休。
+
+Web 设备页展示原设备、已恢复配对及未确认配对的退休状态，保留另一台电脑。Desktop 新登录继续使用真实 Web 授权／PKCE，不恢复旧本机权限；本轮不宣称新增 Web 页面。
+
+验证：42 backend + 141 Desktop + 22 native Codex checks; 13 builds; 7 real UI flows; 5 layouts; 2 GIF/MP4 pairs.
+
+Windows DPAPI、自建 Native Host、Electron IPC、Web PKCE 和原生 PostgreSQL 为实际运行；客户／模型为假数据。原生确认答案和 shell 调度在隔离核查进程内控制。公司签名安装版本的卸载／升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/118-recoverable-native-pairings.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-pairing-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Explicit folder pairing] --> Intent[Durable signed intent]
+  Intent --> Pair[Current session and atomic create]
+  Pair --> Retry[Same device on retry]
+  Intent --> Retire[Sign-out or uninstall]
+  Retire --> Fence[Permanent private retirement]
+  Fence --> Receipt[Confirmed or durable pending receipt]
+```
+
+![Actual Desktop/Web pairing and retirement / 实际配对与撤权界面](media/native-pairing-copypaste-web__workmate-native-pairing-04-device-withdrawn.png)
+
+
 <!-- desktop-removal-stage117 -->
 Desktop 0.7.0 已加入本机确认撤权、设备签名断开、Chrome Host 清理及可选缓存清理。
 
