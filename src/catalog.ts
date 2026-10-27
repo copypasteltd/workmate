@@ -320,6 +320,12 @@ export class Catalog {
     superRole.permissions.push(
       ...budgetAdmin.super_permissions_for_new_installations,
     );
+    const recoveryAdmin = JSON.parse(await readFile("catalog/native-recovery-admin-permissions.json", "utf8"));
+    const currentKeys = new Set(this.admin.permissions.map((p: any) => p.key));
+    if (recoveryAdmin.permissions.some((p: any) => currentKeys.has(p.key)))
+      throw new Problem(503, "PERMISSION_CATALOG_CONFLICT", "Duplicate recovery permission");
+    this.admin.permissions.push(...recoveryAdmin.permissions);
+    superRole.permissions.push(...recoveryAdmin.super_permissions_for_new_installations);
     for (const p of this.skills) await this.verifySkill(p);
   }
   async verifySkill(p: SkillPackage) {

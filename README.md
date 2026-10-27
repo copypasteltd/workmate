@@ -1,5 +1,35 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- native-recovery-stage114 -->
+已实现原生加密备份与隔离恢复：同一快照的数据库及不可变文件经完整认证，恢复后先应用较新的独立删除日志，再提供核验凭证。
+
+执行向前迁移 125 和 `npm run setup:recovery-tools`，独立设置 `RECOVERY_BACKUP_KEY`、原 `MASTER_KEY`、owner DSN 以及 `DATA_DIR` 外的归档目录。`npm run recovery -- backup`、`ledger`、`verify`、`prune`、`watch`、`restore` 为原生运维命令，完整参数见运行手册。watch 的服务／调度与异地副本需由部署环境配置。恢复要求明确隔离、新 `workmate_recovery_<32hex>` 数据库及 `restore-<32hex>` 目录，不会自动转为生产。
+
+验证：64 项相关后端测试（含 10 项原生恢复测试）、13 项构建／类型检查、6 条真实后台流程及 3 种布局。备份及恢复使用真实原生工具；客户与模型数据为假数据。生产切换、异地耐久性、PITR 与完整生产 RPO／RTO 仍未通过验收。
+
+已有部署须对已登记的永久全局 super 明确运行 `npm run admin:enable-recovery -- operator@example.com --acknowledge-global-recovery-visibility` 后再委派观察权限；旧角色不会自动扩权。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/114-native-backup-recovery.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-recovery-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Live[Native database and immutable objects] --> Snapshot[One exported snapshot]
+  Snapshot --> Archive[Authenticated encrypted archive]
+  Live --> Journal[Independent deletion journal]
+  Archive --> Verify[Verify every file and key]
+  Journal --> Verify
+  Verify --> Restore[New quarantined database and directory]
+  Restore --> Erase[Replay newer deletion records]
+  Erase --> Receipt[Immutable isolated recovery receipt]
+  Receipt --> Admin[Global permission and current MFA]
+  Restore --> Fence[API and workers remain fenced]
+```
+
+![Actual Admin recovery readiness / 实际后台恢复面板](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/workmate-recovery-06-overview-en.png)
+
+![Actual Admin recovery interaction / 实际后台恢复交互](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/workmate-06-native-recovery.gif)
+
+
 <!-- controlled-budget-stage113 -->
 Google Ads 预算修改已接通有期限的明确策略、不可改写的确切预览、客户确认、一次持久入场及原始回执。未知结果经观察及人工核对关闭，不重发修改。
 

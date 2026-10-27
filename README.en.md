@@ -1,5 +1,35 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- native-recovery-stage114 -->
+Native encrypted backups and isolated recovery are implemented. A consistent database snapshot and immutable files are authenticated together; a newer independent deletion journal suppresses deleted content before a restored environment can be reviewed.
+
+Run forward-only migration 125 and `npm run setup:recovery-tools`. Configure an independent `RECOVERY_BACKUP_KEY`, the original `MASTER_KEY`, an owner DSN and an archive directory outside `DATA_DIR`. `npm run recovery -- backup`, `ledger`, `verify`, `prune`, `watch` and `restore` are native owner operations; complete arguments are in the runbook. The watch command needs an independently provisioned service/scheduler and offsite copy. Restore requires explicit isolation, a new `workmate_recovery_<32hex>` database and `restore-<32hex>` directory; it never activates production.
+
+Validation: 64 affected backend tests (including 10 native recovery tests), 13 build/type checks and 6 actual Admin flows across 3 measured layouts. Real native backup/restore; synthetic customer/model data. Production cutover, offsite durability, PITR and full production RPO/RTO remain unqualified.
+
+Existing deployments must explicitly grant the new observer authority to an enrolled permanent global super: `npm run admin:enable-recovery -- operator@example.com --acknowledge-global-recovery-visibility`. Existing roles never auto-expand.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/114-native-backup-recovery.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-recovery-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Live[Native database and immutable objects] --> Snapshot[One exported snapshot]
+  Snapshot --> Archive[Authenticated encrypted archive]
+  Live --> Journal[Independent deletion journal]
+  Archive --> Verify[Verify every file and key]
+  Journal --> Verify
+  Verify --> Restore[New quarantined database and directory]
+  Restore --> Erase[Replay newer deletion records]
+  Erase --> Receipt[Immutable isolated recovery receipt]
+  Receipt --> Admin[Global permission and current MFA]
+  Restore --> Fence[API and workers remain fenced]
+```
+
+![Actual Admin recovery readiness / 实际后台恢复面板](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/workmate-recovery-06-overview-en.png)
+
+![Actual Admin recovery interaction / 实际后台恢复交互](https://raw.githubusercontent.com/copypasteltd/workmate/admin/assets/screenshots/workmate-06-native-recovery.gif)
+
+
 <!-- controlled-budget-stage113 -->
 Google Ads budget changes now have an explicit expiring policy, exact immutable previews, customer confirmation, a single durable dispatch and immutable receipts. Unknown outcomes are observed and manually closed without resending.
 

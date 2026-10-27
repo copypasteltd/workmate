@@ -1,3 +1,4 @@
+import { assertLiveEnvironment } from "./recovery-fence.js";
 import { TaskBusinessTools } from "./task-business-tools.js";
 import { advanceExternalBudgets } from "./external-budget.js";
 import { finalizeReviewedEffect } from "./media-effects-tools.js";
@@ -156,6 +157,7 @@ export class Worker {
     this.boss.on("error", () => {});
   }
   async start() {
+    await assertLiveEnvironment(this.db);
     await this.boss.start();
     await this.boss.createQueue("task.run", {
       retryLimit: 0,
@@ -172,6 +174,7 @@ export class Worker {
     await this.dispatch();
   }
   async dispatch() {
+    await assertLiveEnvironment(this.db);
     if (this.dispatching) return;
     this.dispatching = true;
     try {
@@ -378,6 +381,7 @@ export class Worker {
     }
   }
   async run(tenant: string, id: string) {
+    await assertLiveEnvironment(this.db);
     const fencing = randomUUID();
     // Worker control identity locates the owner; restricted execution still uses RLS.
     const owner = (

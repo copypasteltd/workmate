@@ -21,7 +21,10 @@
     "skills:build": "node --import tsx scripts/build-skills.ts",
     "db:migrate": "node --env-file=.env --import tsx scripts/migrate.ts",
     "contracts:export": "node --env-file=.env --import tsx scripts/export-routes.ts",
-    "codex:probe": "node --env-file=.env --import tsx scripts/codex-probe.ts"
+    "codex:probe": "node --env-file=.env --import tsx scripts/codex-probe.ts",
+    "recovery": "node --env-file-if-exists=.env --import tsx scripts/native-recovery.ts",
+    "setup:recovery-tools": "python -B scripts/setup-recovery-tools.py",
+    "admin:enable-recovery": "node --env-file=.env --import tsx scripts/admin-enable-recovery.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1152.0",

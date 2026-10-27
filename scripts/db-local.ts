@@ -8,7 +8,10 @@ import { promisify } from "node:util";
 if (process.env.NODE_ENV === "production")
   throw new Error("Local database launcher is disabled in production");
 const owner = new URL(process.env.OWNER_DATABASE_URL ?? "");
-const dir = path.resolve(".data/postgres");
+const custom = process.env.COPYPASTE_NATIVE_DATABASE_DIR;
+if (custom && !/^\.data[\\/]native-qa[\\/][a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(custom))
+  throw new Error("A custom native database must use an owned .data/native-qa UUID directory");
+const dir = path.resolve(custom ?? ".data/postgres");
 // The pinned embedded-postgres package force-kills the Windows cluster in its
 // default stop(). Use PostgreSQL's own checkpointing shutdown, including when
 // the library invokes stop() from its exit hook.

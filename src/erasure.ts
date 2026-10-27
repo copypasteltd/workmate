@@ -46,8 +46,14 @@ export class ErasureService {
     private db: Database,
     private storage: Storage,
     private runtimeActive = (_id: string) => false,
+    private recoveryId?: string,
   ) {}
   async advance(limit = 2) {
+    if (this.recoveryId) {
+      const fence = (await this.db.control.query("SELECT state,restore_id FROM recovery_environment WHERE singleton")).rows[0];
+      if (fence?.state !== "quarantined" || fence.restore_id !== this.recoveryId)
+        throw new Error("ERASURE_RECOVERY_FENCE_REQUIRED");
+    }
     for (let n = 0; n < limit; n++) {
       const token = randomUUID();
       const job = await this.db.tx(
@@ -109,7 +115,7 @@ export class ErasureService {
         if (
           job.target_type === "tasks" &&
           row &&
-          (activeStates.includes(row.status) || this.runtimeActive(row.id))
+          ((!this.recoveryId && activeStates.includes(row.status)) || this.runtimeActive(row.id))
         ) {
           await tx.query(
             "UPDATE deletion_jobs SET state='queued',next_attempt_at=now()+interval '30 seconds',lease_until=NULL,lease_token=NULL,attempts=greatest(0,attempts-1),exceptions='[\"WAITING_FOR_EXECUTION_TO_CLOSE\"]' WHERE id=$1",

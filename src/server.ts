@@ -1,3 +1,5 @@
+import { assertLiveEnvironment } from "./recovery-fence.js";
+import { registerNativeRecovery } from "./native-recovery-routes.js";
 import { registerAdminApprovals } from "./admin-approvals.js";
 import {
   publicClientContent,
@@ -91,6 +93,9 @@ import {
 } from "./skill-lifecycle.js";
 
 export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
+  // Check before starting fixtures, seeding catalogs, admitting HTTP or workers.
+  const probe = new Database(c);
+  try { await assertLiveEnvironment(probe); } finally { await probe.close(); }
   const demo = c.DEMO_MODE ? await startDemoGateway(c) : undefined;
   if (demo) c = demo.config;
   const connectorFixture =
@@ -450,6 +455,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminPlans(app, db, catalog);
   registerProviderAdmin(app, db);
   registerExternalBudgets(app, db);
+  registerNativeRecovery(app, db);
   registerCapabilityReleases(app, db, catalog);
   registerAdminVip(app, db);
   registerAdminVipCredit(app, db);
