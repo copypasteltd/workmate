@@ -8,6 +8,7 @@ import { AdminClientContent } from "./client-content";
 import { AdminDataJobs, AdminDataComposer } from "./data-jobs";
 import { AdminPrivateCloudSchedules } from "./private-cloud-schedules";
 import { AdminProviderControl } from "./provider-control";
+import { AdminExternalBudgets } from "./external-budget";
 import { AdminSolutions } from "./solutions";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
@@ -365,6 +366,13 @@ const nav = [
     "admin.connections.read",
   ],
   ["access", KeyRound, "管理員與權限", "Admin access", "admin.access.read"],
+  [
+    "external-budget",
+    ShieldCheck,
+    "廣告預算控制",
+    "Advertising budgets",
+    "admin.external_budget.read",
+  ],
   ["support", Headphones, "支援工作台", "Support", "admin.support.read"],
   ["audit", ScrollText, "審計與審批", "Audit & approvals", "admin.audit.read"],
   ["jobs", ListChecks, "批次與匯出", "Jobs & exports", "admin.jobs.read"],
@@ -524,6 +532,8 @@ function AdminShell() {
                         <BillingPage />
                       ) : n[0] === "provider-control" ? (
                         <AdminProviderControl access={a} />
+                      ) : n[0] === "external-budget" ? (
+                        <AdminExternalBudgets access={a} />
                       ) : n[0] === "solutions" ? (
                         <AdminSolutions access={a} />
                       ) : n[0] === "plans" ? (
@@ -891,17 +901,26 @@ function CatalogPage() {
     { t } = useI18n(),
     location = useLocation(),
     view = new URLSearchParams(location.search).get("view"),
-    capabilities = view === "capabilities", content = view === "content";
+    capabilities = view === "capabilities",
+    content = view === "content";
   return (
     <>
       <nav
         className="cap-navigation"
         aria-label={t("目錄管理", "Catalog management")}
       >
-        <Link to="/catalog" aria-current={!capabilities && !content ? "page" : undefined}>
+        <Link
+          to="/catalog"
+          aria-current={!capabilities && !content ? "page" : undefined}
+        >
           {t("角色與內容", "Roles & content")}
         </Link>
-        <Link to="/catalog?view=content" aria-current={content ? "page" : undefined}>{t("用戶端內容", "Client content")}</Link>
+        <Link
+          to="/catalog?view=content"
+          aria-current={content ? "page" : undefined}
+        >
+          {t("用戶端內容", "Client content")}
+        </Link>
         <Link
           to="/catalog?view=capabilities"
           aria-current={capabilities ? "page" : undefined}
@@ -909,7 +928,9 @@ function CatalogPage() {
           {t("模型能力", "Model capabilities")}
         </Link>
       </nav>
-      {content ? <AdminClientContent key={a.me.user.id} access={a} /> : capabilities ? (
+      {content ? (
+        <AdminClientContent key={a.me.user.id} access={a} />
+      ) : capabilities ? (
         <AdminCapabilities access={a} />
       ) : (
         <Section section="catalog" />
@@ -918,9 +939,34 @@ function CatalogPage() {
   );
 }
 function JobsPage() {
-  const a = useAdmin(), { t } = useI18n(), location = useLocation();
-  const history = new URLSearchParams(location.search).get("view") === "history";
-  return <><nav className="cap-navigation" aria-label={t("任務管理", "Job management")}><Link to="/jobs" aria-current={!history ? "page" : undefined}>{t("資料任務與匯出", "Data jobs & exports")}</Link><Link to="/jobs?view=history" aria-current={history ? "page" : undefined}>{t("費用與權益操作紀錄", "Billing & entitlement history")}</Link></nav>{history ? <Section section="jobs" /> : <AdminDataJobs key={a.me.user.id} access={a} />}</>;
+  const a = useAdmin(),
+    { t } = useI18n(),
+    location = useLocation();
+  const history =
+    new URLSearchParams(location.search).get("view") === "history";
+  return (
+    <>
+      <nav
+        className="cap-navigation"
+        aria-label={t("任務管理", "Job management")}
+      >
+        <Link to="/jobs" aria-current={!history ? "page" : undefined}>
+          {t("資料任務與匯出", "Data jobs & exports")}
+        </Link>
+        <Link
+          to="/jobs?view=history"
+          aria-current={history ? "page" : undefined}
+        >
+          {t("費用與權益操作紀錄", "Billing & entitlement history")}
+        </Link>
+      </nav>
+      {history ? (
+        <Section section="jobs" />
+      ) : (
+        <AdminDataJobs key={a.me.user.id} access={a} />
+      )}
+    </>
+  );
 }
 function Section({ section }: { section: string }) {
   const { t } = useI18n(),
@@ -1228,7 +1274,9 @@ function Section({ section }: { section: string }) {
           >
             <RefreshCw size={17} />
           </button>
-          {a.has("admin.exports.create") && a.has("admin.jobs.create") && a.has("admin.jobs.read") &&
+          {a.has("admin.exports.create") &&
+            a.has("admin.jobs.create") &&
+            a.has("admin.jobs.read") &&
             ["users", "usage", "billing", "audit"].includes(active) && (
               <button
                 className="icon-button"
@@ -1606,9 +1654,29 @@ function Section({ section }: { section: string }) {
         />
       )}
       {dialog === "batch" && (
-        <AdminDataComposer access={a} kind="users.status" onClose={() => setDialog(null)} onCreated={(job) => { setDialog(null); bump(); navTo("/jobs?job=" + job.id); }} />
+        <AdminDataComposer
+          access={a}
+          kind="users.status"
+          onClose={() => setDialog(null)}
+          onCreated={(job) => {
+            setDialog(null);
+            bump();
+            navTo("/jobs?job=" + job.id);
+          }}
+        />
       )}
-      {dialog === "data-export" && ["users", "usage", "billing", "audit"].includes(active) && <AdminDataComposer access={a} initialSource={active as "users" | "usage" | "billing" | "audit"} onClose={() => setDialog(null)} onCreated={(job) => { setDialog(null); navTo("/jobs?job=" + job.id); }} />}
+      {dialog === "data-export" &&
+        ["users", "usage", "billing", "audit"].includes(active) && (
+          <AdminDataComposer
+            access={a}
+            initialSource={active as "users" | "usage" | "billing" | "audit"}
+            onClose={() => setDialog(null)}
+            onCreated={(job) => {
+              setDialog(null);
+              navTo("/jobs?job=" + job.id);
+            }}
+          />
+        )}
       {dialog === "invite" && (
         <InviteAdministrator
           roles={data?.roles ?? []}
