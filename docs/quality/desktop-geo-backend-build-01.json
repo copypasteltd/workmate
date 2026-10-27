@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-27T04:00:33.637883+00:00",
+  "status": "passed",
+  "checkpoint_sha256": "5d8f03d5652a71a6089c6d3801470c3cb0f242de2edd0829ffb0b3c1654454ce",
+  "source_unchanged": true,
+  "source_files_rehashed": 1851,
+  "checks": [
+    {
+      "args": [
+        "node",
+        "node_modules/typescript/bin/tsc"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform",
+      "exit_code": 0
+    },
+    {
+      "args": [
+        "node",
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform",
+      "exit_code": 0
+    },
+    {
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "const m=await import(process.argv[1]);if(typeof m.buildApp!==\"function\")throw new Error(\"Compiled server export missing\");console.log(\"Compiled backend import passed from an unrelated working directory\");",
+        "file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-platform/dist/src/server.js"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\docs",
+      "exit_code": 0
+    }
+  ],
+  "compiled_files": {
+    "dist/src/server.js": "ead1aa000ce3048362912fd08e0a08d3f8ee78f3280840823829b55483b7caaf",
+    "dist/src/desktop-geo.js": "872ad5e29c8b2f0cbb6358d7b11b6f3973a5d85c42d206aa438a47021d2fc5f8",
+    "dist/src/desktop-executions.js": "6088ed4130d894ca8d5ba544ee8f37d43f5e067bcb2cc63d42cb929cb69d3996",
+    "dist/src/geo-observations.js": "b581ebb2b0198e36bd0e9edecf8ffc86f70538bdd3a6e6b94e6e5addb0e9871b",
+    "dist/src/task-service.js": "7d3e2c6550d70a152757a679967acc07c77b22b066814a9390b4ba30c65996cb",
+    "dist/src/persistent-work.js": "a3d272daf6772de8e5820cb5322dcd820e7c967cd3c71ecdd587447b9a70295f"
+  },
+  "raw_log": {
+    "path": "docs/quality/desktop-geo-backend-build-01.log",
+    "sha256": "2200434fc1fc660a23cf4e8848c3a5f7f2652453098ab7a860a6b5ec5b149fe4"
+  },
+  "scope": "Actual backend TypeScript emit, resource copy and compiled server import from docs cwd. No service/database/browser is started; this supplements the frozen native transaction and actual browser qualification.",
+  "verifier_sha256": "34aa4ecfb90c7cd300bf682922f867e20cb3be28121cc9d77bd5ffedbf272ad3"
+}

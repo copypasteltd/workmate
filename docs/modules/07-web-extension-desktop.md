@@ -1,5 +1,9 @@
 # M09/M10 三端客户端、设备与执行
 
+<!-- stage110-desktop-native-geo -->
+**当前增量：Desktop 原生 GEO 工作流。** 固定问句现使用独立本机 Codex 线程、空白工作目录、原子整批预留与逐题运行／停止；原始回答、公司费用回执、重复比较及预算不足退出均已接通。135 项相关后端、46 项 Desktop 单元、20 项真实内核检查、9 项实际打包交互及 11 项构建／类型检查通过；账号和模型响应为明确假数据。见[技术设计与实际验证](../technical/110-desktop-native-geo.md)、[需求补充](../requirements/05-desktop-native-geo.md)及[绑定凭证](../quality/desktop-geo-checkpoint.json)。以下阶段内容按原时间保留。
+
+
 
 **阶段 106 / Stage 106：** 已修复明确选中的私有文件跨任务读取、原生 API 检查启动就绪和私有流程确认失效；97 个后端文件共 1230 项执行，1,229 通过、一项超时取消；原文件独立复查两项通过，保留未归因超时。11 项实际跨端流程通过。旧版本、费用与权限边界保留；模型／账号仍是假数据。见[实现与证据](../technical/106-selected-inputs-and-runtime-readiness.md)。
 

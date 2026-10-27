@@ -1,0 +1,488 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste Desktop-native GEO",
+    "version": "110.0.0"
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/geo/experiments/{id}/desktop-configuration": {
+      "get": {
+        "operationId": "readDesktopGeoConfiguration",
+        "security": [
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Exact native configuration or atomic preparation receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeConfiguration"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input binding rejected"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Current Desktop authorization required"
+          },
+          "404": {
+            "description": "Private content or native family unavailable"
+          },
+          "409": {
+            "description": "Quota, credit, plan, version or idempotency conflict"
+          },
+          "422": {
+            "description": "Fixed question order or frozen Agent invalid"
+          },
+          "503": {
+            "description": "Pinned capability unavailable"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/geo/experiments/{id}/desktop-runs": {
+      "post": {
+        "operationId": "prepareDesktopGeoRun",
+        "security": [
+          {
+            "NativeBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Exact native configuration or atomic preparation receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NativeRunReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Strict input binding rejected"
+          },
+          "401": {
+            "description": "Current sign-in required"
+          },
+          "403": {
+            "description": "Current Desktop authorization required"
+          },
+          "404": {
+            "description": "Private content or native family unavailable"
+          },
+          "409": {
+            "description": "Quota, credit, plan, version or idempotency conflict"
+          },
+          "422": {
+            "description": "Fixed question order or frozen Agent invalid"
+          },
+          "503": {
+            "description": "Pinned capability unavailable"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NativeRunInput"
+              }
+            }
+          }
+        },
+        "description": "Atomically reserve all fixed questions, preserving private experiment lineage and binding each task to a fresh native session, device, workspace hash and current Desktop login family. No cloud queue dispatch or model call. Every question must occur exactly once in original order, on one device; session IDs and workspace hashes must be distinct. Never reuse an accepted or unknown native question."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "NativeBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "A current PKCE Desktop native authorization. A Web cookie or Extension token cannot prepare native work."
+      }
+    },
+    "schemas": {
+      "NativeRuntime": {
+        "type": "object",
+        "properties": {
+          "profile_key": {
+            "type": "string",
+            "const": "codex-desktop-native-v1"
+          },
+          "kernel": {
+            "type": "string",
+            "const": "codex"
+          },
+          "pinned_version": {
+            "type": "string",
+            "const": "0.163.0-alpha.11"
+          },
+          "transport": {
+            "type": "string",
+            "const": "stdio"
+          },
+          "gateway_policy": {
+            "type": "string",
+            "const": "company_internal_only"
+          },
+          "automatic_fallback": {
+            "type": "boolean",
+            "const": false
+          },
+          "windows_x64_sha256": {
+            "type": "string",
+            "const": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c"
+          }
+        },
+        "required": [
+          "profile_key",
+          "kernel",
+          "pinned_version",
+          "transport",
+          "gateway_policy",
+          "automatic_fallback",
+          "windows_x64_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "key",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "LocalBinding": {
+        "type": "object",
+        "properties": {
+          "question_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "device_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "local_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "workspace_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "runtime_version": {
+            "type": "string",
+            "const": "0.163.0-alpha.11"
+          },
+          "runtime_sha256": {
+            "type": "string",
+            "const": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c"
+          }
+        },
+        "required": [
+          "question_key",
+          "device_id",
+          "local_session_id",
+          "workspace_hash",
+          "runtime_version",
+          "runtime_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "Quota": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "max_active_tasks": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "available": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "max_question_budget_micros": {
+            "type": "string",
+            "pattern": "^[0-9]+$"
+          }
+        },
+        "required": [
+          "active",
+          "max_active_tasks",
+          "available",
+          "max_question_budget_micros"
+        ],
+        "additionalProperties": false
+      },
+      "NativeConfiguration": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "role_key": {
+            "type": "string"
+          },
+          "model_alias": {
+            "type": "string"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            },
+            "minItems": 1,
+            "maxItems": 20
+          },
+          "runtime": {
+            "$ref": "#/components/schemas/NativeRuntime"
+          },
+          "quota": {
+            "$ref": "#/components/schemas/Quota"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "sha256",
+          "role_key",
+          "model_alias",
+          "questions",
+          "runtime",
+          "quota"
+        ],
+        "additionalProperties": false
+      },
+      "NativeRunInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "expected_experiment_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "per_question_budget_micros": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{4,10}$",
+            "description": "Exact HKD micros as a decimal string; validated integer range 10000 through 10000000000, inclusive."
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LocalBinding"
+            },
+            "minItems": 1,
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "name",
+          "expected_experiment_sha256",
+          "per_question_budget_micros",
+          "sessions"
+        ],
+        "additionalProperties": false
+      },
+      "NativeSampleReceipt": {
+        "type": "object",
+        "properties": {
+          "question_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "sample_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "task_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "local_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "budget_micros": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{4,10}$",
+            "description": "Exact HKD micros as a decimal string; validated integer range 10000 through 10000000000, inclusive."
+          },
+          "role_key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_key",
+          "sample_id",
+          "task_id",
+          "local_session_id",
+          "budget_micros",
+          "role_key"
+        ],
+        "additionalProperties": false
+      },
+      "NativeRunReceipt": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "experiment_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "execution_location": {
+            "type": "string",
+            "const": "desktop"
+          },
+          "protocol": {
+            "type": "string",
+            "const": "codex-desktop-geo-v1"
+          },
+          "config_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "total_budget_micros": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "sessions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NativeSampleReceipt"
+            },
+            "minItems": 1,
+            "maxItems": 20
+          }
+        },
+        "required": [
+          "id",
+          "experiment_id",
+          "execution_location",
+          "protocol",
+          "config_hash",
+          "total_budget_micros",
+          "sessions"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "x-historical-geo-contract": {
+    "path": "docs/contracts/geo-observation-openapi.json",
+    "sha256": "db6a64fcc895f041d80feddaac70537ccd589e1ed100ace72bf8b5cc13b88006",
+    "unchanged": true
+  },
+  "x-execution": "Actual local Codex on the customer computer; company Responses gateway for all AI. Separate configuration from cloud runs. Native answer text is client-reported; financial usage uses company receipts."
+}
