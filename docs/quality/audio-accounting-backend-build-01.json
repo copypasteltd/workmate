@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-27T01:47:26.397679+00:00",
+  "status": "passed",
+  "checkpoint_sha256": "762a4b3cb384fe4c28c82bf08fc90d16096c437989a331021c544ed68af73523",
+  "source_unchanged": true,
+  "source_files_rehashed": 1809,
+  "checks": [
+    {
+      "args": [
+        "node",
+        "node_modules/typescript/bin/tsc"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform",
+      "exit_code": 0
+    },
+    {
+      "args": [
+        "node",
+        "scripts/copy-cloud-check-bootstrap.mjs"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform",
+      "exit_code": 0
+    },
+    {
+      "args": [
+        "node",
+        "--input-type=module",
+        "-e",
+        "const m=await import(process.argv[1]);if(typeof m.buildApp!==\"function\")throw new Error(\"Compiled server export missing\");console.log(\"Compiled backend import passed from an unrelated working directory\");",
+        "file:///D:/dev/copypasted/%E8%87%AA%E6%9C%89agent/dev/copypaste-platform/dist/src/server.js"
+      ],
+      "cwd": "D:\\dev\\copypasted\\自有agent\\docs",
+      "exit_code": 0
+    }
+  ],
+  "compiled_files": {
+    "dist/src/server.js": "ead1aa000ce3048362912fd08e0a08d3f8ee78f3280840823829b55483b7caaf",
+    "dist/src/audio-accounting.js": "9bcb395ac5a9c271786cf433b77aae856442109a9f1af2b90d66633b09928177",
+    "dist/src/audio-accounting-routes.js": "45e3ec9c743c35a400a2cefc4ff119a9b7f347e516b288cce74c21baadd8262d",
+    "dist/src/audio-authorizations.js": "8c57b4ca30073f28e686a0793ef087c30490009d03a659239e9d6f38157dd5c5",
+    "dist/assets/audio/protocol-tone-v1.wav": "9572fbd512b2547afa755d70beb3c62aa1f7b550611e67c196747ec1146b5f86",
+    "dist/assets/audio/protocol-tone-v1.mp3": "4a706b4a7a052a58a8412b106bb564dbc214b6f2d14c52e8084f2af3ed9191a9"
+  },
+  "raw_log": {
+    "path": "docs/quality/audio-accounting-backend-build-01.log",
+    "sha256": "2200434fc1fc660a23cf4e8848c3a5f7f2652453098ab7a860a6b5ec5b149fe4"
+  },
+  "scope": "Actual backend TypeScript emit, resource copy and compiled server import from docs cwd. No service/database/browser is started; this supplements the frozen native transaction and actual browser qualification.",
+  "verifier_sha256": "0fc2ab0b3323c4901ad862b20cf80141f440797a77558cc1884e0f718b88f61d"
+}
