@@ -74,12 +74,14 @@ export type CapabilityValidation = {
   };
   workspace_cleanup: WorkspacePurge | null;
   audio_suite?: {
+    accounting: { confirmed_micros: string; unconfirmed_cases: number; capacity_held_cases: number; resolved: boolean; allocation_exceeded: boolean };
     plan_hash: string; total_cases: number; verified_cases: number; quoted_micros: string; quality_scope: "protocol_only";
     known_cost_micros: string; usage_known: boolean; cancel_requested: boolean; deadline_at: string; error_code: string | null;
     cases: { id: string; ordinal: number; operation_id: string; state: string; kind: "speech" | "transcription";
       locale: string; voice: string | null; speed: number | null; mime_type: string | null; timestamps: boolean | null;
       quoted_micros: string; actual_micros: string | null; usage_known: boolean; verified: boolean; error_code: string | null;
       response_sha256: string | null; source_sha256: string | null;
+      accounting: { confirmed_micros: string | null; cost_source: string; cost_state: string; capacity_held: boolean; accounting_resolved: boolean; allocation_exceeded: boolean };
       media: { duration_ms?: number; fully_decoded?: boolean; segment_count?: number; utf8_json?: boolean;
         input?: { fully_decoded: boolean; duration_ms: number } } | null }[];
   } | null;

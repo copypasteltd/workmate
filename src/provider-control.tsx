@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   RefreshCw,
   ChevronLeft,
@@ -22,6 +22,7 @@ import {
   useI18n,
 } from "./ui";
 import "./provider-control.css";
+import { AudioAccountingQueue } from "./audio-accounting";
 
 const root = "/v1/admin/ai";
 const labels: Record<string, [string, string]> = {
@@ -1467,7 +1468,7 @@ function GeneratedVideoRequests({ access, revision, onDone }: { access: Capabili
         setRecheck(null); onDone();
       }}><Field label={t("核對原因", "Reason for recheck")}><textarea name="reason" minLength={3} maxLength={1000} required /></Field></AsyncForm>
     </Modal>}
-    {command && <Command command={command} access={access} onClose={() => setCommand(null)} onDone={() => { setCommand(null); onDone(); }} />}
+    {command && <Command command={command} access={access} onClose={() => setCommand(null)} onDone={onDone} />}
   </>;
 }
 
@@ -1510,6 +1511,7 @@ function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess;
   const query = new URLSearchParams({ ...filters, limit: "20", ...(cursors.length ? { cursor: cursors.at(-1)! } : {}) });
   const result = useData(root + "/audio-jobs?" + query, revision);
   return <>
+    <AudioAccountingQueue access={access} revision={revision} onDone={onDone} onCommand={setCommand} />
     <form className="provider-card" onSubmit={event => {
       event.preventDefault(); const data = new FormData(event.currentTarget), next: Record<string, string> = {};
       for (const name of ["tenant_id", "project_id", "task_id"]) if (String(data.get(name) ?? "").trim()) next[name] = String(data.get(name)).trim();
@@ -1538,17 +1540,17 @@ function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess;
         </dl>
         {job.cost && <section className="provider-video-cost"><dl className="key-value">
           <dt>{t("公司收費上限", "Company tariff limit")}</dt><dd><Money value={job.cost.quoted_micros} /></dd>
-          <dt>{t("已確認公司費用", "Confirmed company charge")}</dt><dd>{job.cost.actual_micros === null ? t("待確認；保留原預留", "Unconfirmed; original hold retained") : <Money value={job.cost.actual_micros} />}</dd>
+          <dt>{t("已確認公司費用", "Confirmed company charge")}</dt><dd>{job.cost.confirmed_micros === null ? t("待確認；保留原預留", "Unconfirmed; original hold retained") : <Money value={job.cost.confirmed_micros} />}{job.cost.source === "human_evidence" && t(" · 人工證據獨立確認", " · independently confirmed human evidence")}</dd>
           <dt>{t("已確認計費量", "Confirmed billable units")}</dt><dd>{job.cost.billable_units ?? "—"} · {job.cost.pricing_unit === "unicode_scalar" ? t("字元", "characters") : t("音訊毫秒", "audio milliseconds")}</dd>
           <dt>{t("供應商成本", "Supplier cost")}</dt><dd>{t("未獨立確認", "Not independently confirmed")}</dd>
         </dl></section>}
-        {!job.usage_known && <p className="notice">{t("原請求結果尚待核對，保留費用與容量，不自動重新提交或按零結算。", "The original request remains unconfirmed. Cost and capacity holds remain; no automatic resubmission or zero settlement.")}</p>}
+        {!job.usage_known && <p className="notice">{t("原請求結果尚待核對。請使用上方對帳記錄分別確認費用和容量；原請求不自動重送。", "The original outcome remains unknown. Use accounting records above to confirm cost and capacity separately; no automatic replay.")}</p>}
         {job.error_code && <p className="muted"><code>{job.error_code}</code></p>}
         <p className="muted">{t("文字、授權聲明與原音訊由獨立的內容權限管理；此處只展示作業記錄。", "Text, rights attestations and source audio use separate content permissions. This view shows operation records.")}</p>
         {access.has("admin.content.body.read") && <button className="button secondary" onClick={() => {
           setContentError(null); void api(`${root}/audio-jobs/${job.id}/content`).then(setContent).catch(setContentError);
         }}>{t("讀取原始要求與授權", "Read original request and rights")}</button>}
-        {job.cost && job.usage_known && access.has("admin.ai.tasks.settle") && <details><summary>{t("結算原任務費用", "Settle original task costs")}</summary>
+        {job.cost?.confirmed_micros !== null && job.cost && access.has("admin.ai.tasks.settle") && <details><summary>{t("結算原任務費用", "Settle original task costs")}</summary>
           <AsyncForm submitLabel={t("預覽結算", "Preview settlement")} onSubmit={async form => {
             const facts = await api(`${root}/tasks/${job.task_id}/settlement`);
             if (facts.violations.length && form.get("acknowledge") !== "on") throw new Error(t("請明確確認歷史預算違規。", "Explicitly acknowledge the historical budget violations."));
@@ -1561,7 +1563,7 @@ function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess;
       <div className="provider-pagination"><button className="button secondary" disabled={!cursors.length} onClick={() => setCursors(values => values.slice(0, -1))}><ChevronLeft size={16} />{t("上一頁", "Previous")}</button>
         <button className="button secondary" disabled={!result.data.next_cursor} onClick={() => setCursors(values => [...values, result.data.next_cursor])}>{t("下一頁", "Next")}<ChevronRight size={16} /></button></div>
     </>}
-    {command && <Command command={command} access={access} onClose={() => setCommand(null)} onDone={() => { setCommand(null); onDone(); }} />}
+    {command && <Command command={command} access={access} onClose={() => setCommand(null)} onDone={onDone} />}
     {content && <Modal title={t("原始要求與授權", "Original request and rights")} onClose={() => setContent(null)}>
       <p className="muted">{t("此次敏感讀取已記錄審計。原始要求不可覆寫；新要求需建立獨立工作。", "This sensitive read is audited. The original request is immutable; a new request requires a separate task.")}</p>
       <pre className="provider-audio-body">{JSON.stringify(content, null, 2)}</pre>
@@ -1570,9 +1572,10 @@ function AudioRequests({ access, revision, onDone }: { access: CapabilityAccess;
 }
 
 export function AdminProviderControl({ access }: { access: CapabilityAccess }) {
+  const [search] = useSearchParams();
   const { t } = useI18n(),
     [view, setView] = useState(
-      access.has("admin.ai.requests.read") ? "requests" : "policies",
+      access.has("admin.ai.requests.read") ? (["audio", "videos", "requests"].includes(search.get("view") ?? "") ? search.get("view")! : "requests") : "policies",
     ),
     [revision, setRevision] = useState(0),
     refresh = () => setRevision((v) => v + 1);

@@ -717,7 +717,9 @@ function DetailModal({
                   busy ||
                   (receipt.data?.state ?? release.data.validation_state) === "running" ||
                   (receipt.data?.state ?? release.data.validation_state) === "reconciling" &&
-                    (!receipt.data?.video_suite || !receipt.data.video_suite.usage_known)
+                    (receipt.data?.audio_suite
+                      ? !receipt.data.audio_suite.accounting.resolved || receipt.data.audio_suite.accounting.allocation_exceeded
+                      : !receipt.data?.video_suite || !receipt.data.video_suite.usage_known)
                 }
                 type="submit"
               >
@@ -837,7 +839,7 @@ function ValidationReceipt({
           {t("驗證錯誤", "Validation error")}: <code>{r.error_code}</code>
         </p>
       )}
-      {value.state === "reconciling" && (!value.video_suite || !value.video_suite.usage_known) && (
+      {value.state === "reconciling" && (value.audio_suite ? !value.audio_suite.accounting.resolved : !value.video_suite || !value.video_suite.usage_known) && (
         <p className="notice">
           {t(
             "服務可能已接受呼叫，結果仍待核對。請先查看回執，避免再次產生費用。",
@@ -899,17 +901,21 @@ function AudioValidation({ value, releaseVersion, access, onDone }: {
     <dl className="key-value">
       <dt>{t("全套最高報價", "Suite quoted maximum")}</dt><dd>{formatHKD(suite.quoted_micros)}</dd>
       <dt>{t("目前已知費用", "Current known cost")}</dt><dd>{formatHKD(suite.known_cost_micros)}{!suite.usage_known && t("（仍有待核對費用）", " (some cost remains unconfirmed)")}</dd>
+      <dt>{t("含獨立對帳的已確認費用", "Confirmed cost including independent accounting")}</dt><dd>{formatHKD(suite.accounting.confirmed_micros)}</dd>
+      <dt>{t("待確認費用／佔用容量的案例", "Unconfirmed costs / held capacity cases")}</dt><dd>{suite.accounting.unconfirmed_cases} / {suite.accounting.capacity_held_cases}</dd>
       <dt>{t("執行授權期限", "Execution grant expires")}</dt><dd><DateText value={suite.deadline_at} /></dd>
     </dl>
     <p className="muted">{t("驗證使用平台預算，關閉此視窗後仍會繼續。它檢查交付格式，不代表聲音、粵語或轉錄準確度的正式驗收。", "Validation uses platform funds and continues when this view closes. It checks delivery formats and does not qualify voice, Cantonese or transcription quality.")}</p>
     {suite.cancel_requested && <p role="status">{t("已要求停止新案例。已送出的呼叫仍可能產生費用。", "New cases have been stopped. Dispatched calls may still incur costs.")}</p>}
-    {!suite.usage_known && value.state !== "running" && <p className="notice">{t("原音訊請求的結果與費用不明，系統會保留原報價，並停止自動重送。", "The original audio response and cost are unknown. Its quote remains held and automatic resubmission is stopped.")}</p>}
+    {!suite.accounting.resolved && value.state !== "running" && <p className="notice">{t("請在調用管理的音訊對帳中分別確認費用及終止證據。原操作不會自動重送。", "Confirm cost and termination evidence separately in Provider controls → Audio accounting. The original operation is never replayed.")} <Link to="/provider-control?view=audio">{t("處理音訊對帳", "Open audio accounting")}</Link></p>}
+    {!suite.usage_known && suite.accounting.resolved && <p className="notice">{t("獨立費用及容量對帳已完成。原驗證仍未通過；如需驗證，請明確建立一次新的驗證。", "Independent cost and capacity accounting is complete. The original verification remains unqualified; explicitly start a new verification if needed.")}</p>}
+    {suite.accounting.allocation_exceeded && <p className="notice error">{t("外部已確認費用超出原報價，此預算已封鎖，請先處理費用差異。", "The confirmed external cost exceeds the original quote. This budget is blocked pending resolution.")}</p>}
     {suite.error_code && <p className="notice error"><code>{suite.error_code}</code></p>}
     <details><summary>{t("查看音訊案例與媒體校驗", "View audio cases and media validation")}</summary>
       <ol className="cap-video-cases">{suite.cases.map(c => <li key={c.id}>
         <strong>{c.locale} · {c.kind === "speech" ? `${c.voice} · ${c.speed}×` : `${c.mime_type}${c.timestamps ? t(" · 分段時間", " · segment times") : " · JSON"}`}</strong>
         <span>{t(...(states[c.state] ?? [c.state, c.state]))}{c.verified && t(" · 格式驗證通過", " · format verified")}</span>
-        <span>{c.actual_micros === null ? t("費用待確認", "Cost unconfirmed") : formatHKD(c.actual_micros)}</span>
+        <span>{c.accounting.confirmed_micros === null ? t("費用待確認", "Cost unconfirmed") : formatHKD(c.accounting.confirmed_micros)}{c.accounting.cost_source === "human_evidence" && t(" · 人工證據獨立確認", " · independently confirmed human evidence")}</span>
         {c.media?.fully_decoded && <span>{t("完整解碼", "Fully decoded")} · {c.media.duration_ms} ms</span>}
         {c.media?.utf8_json && <span>{t("完整 JSON", "Complete JSON")} · {c.media.segment_count} {t("個時間段", "segments")}</span>}
         {c.error_code && <code>{c.error_code}</code>}

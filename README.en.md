@@ -1,5 +1,22 @@
 # Workmate · CopyPaste Enterprise Agent · admin
 
+<!-- audio-accounting-stage109 -->
+
+Unknown customer audio and platform verification fees now accept immutable original-operation evidence, separate independent cost and termination approvals, scoped read controls and exact frozen tariffs. Cost confirmation does not debit the customer or release capacity. Task settlement remains independently approved, occurs once within its original hold and preserves business failure.
+
+Both confirmations permit an explicit new platform validation; the old POST, media result and verification receipt remain unchanged. Web, frameless Desktop and the native Chrome right Side Panel show human-evidence provenance. Existing Desktop local Codex/full permission and Extension cloud execution remain in force.
+
+253 initial affected backend checks plus 65 follow-up audio/concurrency checks, nine Admin form/money checks, seven client compilation/build checks and eight actual Admin browser flows passed. Original failed runs are retained. Screenshots and GIF/MP4 below show actual Admin interactions with synthetic accounts/models/evidence. Native decoding is not live audio-quality qualification. Stage106 retains its unattributed full-run timeout and unchanged passing replay; this is not complete-product acceptance.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/109-audio-evidence-accounting.md) · [MP4](assets/verification/audio-accounting-109/workmate-audio-accounting-08-audio-evidence-and-cost-preview.mp4)
+
+![Actual immutable evidence / 实际不可变证据](assets/verification/audio-accounting-109/workmate-audio-accounting-08-platform-immutable-evidence-form-en.png)
+
+![Original verification retained / 原验证保留](assets/verification/audio-accounting-109/workmate-audio-accounting-08-original-verification-accounted-unqualified-en.png)
+
+![Actual evidence and preview / 实际证据及预览](assets/verification/audio-accounting-109/workmate-audio-accounting-08-audio-evidence-and-cost-preview.gif)
+
+
 <!-- managed-audio-stage108 -->
 
 Admin now manages immutable speech and transcription model releases: fixed voices/locales and exact rates, durable platform-funded protocol checks, actual background progress, stop controls, independent publication and historical rollback. Existing customer work retains its original model and rates; customer audio authorization remains separate.

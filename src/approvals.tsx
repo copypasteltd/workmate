@@ -152,7 +152,8 @@ export function ApprovalReview({
             </dl>
           )}
           {pending &&
-            (approval.requester_id === operator ? (
+            (approval.requester_id === operator ||
+              (["audio_customer", "audio_validation"].includes(command.channel) && data.before?.evidence?.actor_id === operator) ? (
               <p className="notice">
                 {t(
                   "此操作需由另一位管理員審批。",
