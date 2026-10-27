@@ -48,7 +48,8 @@ export function mountAudioProductions(root: HTMLElement, io: IO) {
           make("p", job.state === "completed" ? io.tr("處理完成", "Completed") : job.state === "unknown" ? io.tr("結果與費用待核對", "Outcome and cost unconfirmed")
             : job.state === "cancelled" ? io.tr("已停止", "Stopped") : io.tr("正在處理", "Processing")),
           make("p", io.tr("公司收費上限：", "Company tariff limit: ") + exactHKD(job.quoted_micros)),
-          make("p", io.tr("已確認公司費用：", "Confirmed company charge: ") + (job.actual_micros === null ? io.tr("待確認；保留原預留", "Unconfirmed; original hold retained") : exactHKD(job.actual_micros))));
+          make("p", io.tr("已確認公司費用：", "Confirmed company charge: ") + (job.accounting.confirmed_micros === null ? io.tr("待確認；保留原預留", "Unconfirmed; original hold retained") : exactHKD(job.accounting.confirmed_micros))));
+        if (job.accounting.cost_source === "human_evidence") card.append(make("small", io.tr("費用已按外部證據獨立確認；原作業結果保留，結算受原任務預算限制。", "Cost was independently confirmed from external evidence; the original outcome remains and settlement stays within the original task budget.")));
         if (!job.usage_known && job.actual_micros === null) card.append(make("small", io.tr("不自動重新提交未知請求。", "Unknown requests are not automatically resubmitted.")));
         if (job.delivery_state === "blocked") card.append(make("p", io.tr("交付已停止，請核對原工作、來源與權限。", "Delivery stopped. Review the original task, sources and permissions.")));
         if (!job.cancel_requested && !["completed", "cancelled"].includes(job.state)) {
