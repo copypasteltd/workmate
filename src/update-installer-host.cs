@@ -59,7 +59,7 @@ class CopyPasteInstallerHost {
      Demand(Console.ReadLine() == "COMMIT", "UPDATE_COMMIT_REQUIRED");
      Demand(parent.WaitForExit(60000), "UPDATE_PARENT_STILL_RUNNING");
      Verify(file, target, args[2], args[3]);
-     ProcessStartInfo start = new ProcessStartInfo(target, "/S --updated") { UseShellExecute=false, CreateNoWindow=true, WorkingDirectory=Path.GetDirectoryName(target) };
+     ProcessStartInfo start = new ProcessStartInfo(target, "/S --updated --force-run") { UseShellExecute=false, CreateNoWindow=true, WorkingDirectory=Path.GetDirectoryName(target) };
      using (Process child = Process.Start(start)) { Demand(child != null, "UPDATE_INSTALLER_START_FAILED"); }
     }
    }
