@@ -1,5 +1,39 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- desktop-removal-stage117 -->
+Desktop 0.7.0 已加入本机确认撤权、设备签名断开、Chrome Host 清理及可选缓存清理。
+
+使用 node scripts/run-desktop-removal-v1.mjs NN core|native|clients，以及选定版本 run-desktop-removal-ui-vN.mjs NN 复现；每次使用新的两位编号。项目文档工具验证实际 NSIS 钩子与开发安装包，保留原始失败、TAP、源码快照及已执行核查版本。套件结束关闭自建 PostgreSQL、浏览器、Electron 和 Native Host；禁止 Docker、WSL 及其他虚拟化。
+
+验证：79 backend + 127 Desktop + 22 native Codex checks; 13 builds; 5 real UI flows; 4 layouts; 1 GIF/MP4 pair.
+
+Windows DPAPI、自建 Native Host、Electron IPC、Web PKCE 和原生 PostgreSQL 为实际运行；客户／模型为假数据。原生确认答案和 shell 调度在隔离核查进程内控制。公司签名安装版本的卸载／升级、macOS、完整产品与真实模型验收仍未证明。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/117-desktop-removal.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/desktop-removal-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Customer[Native customer confirmation] --> Outbox[Encrypted signed withdrawal]
+  Outbox --> Stop[Stop local Codex and revoke grants]
+  Stop --> Host[Owned Host exit and registry check]
+  Host --> Company[Company device retirement]
+  Company --> Receipt[Confirmed or durable retry receipt]
+  Receipt --> Windows[Windows uninstall with preparation hook]
+```
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-computer-permissions.png)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-offline-withdrawal.png)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-web__workmate-desktop-removal-02-device-withdrawn.png)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-computer-zh-dark.png)
+
+[Actual interaction video / 实际交互视频](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-disconnect-and-retry.mp4)
+
+![Actual Desktop/Web withdrawal UI / 实际撤权界面](media/desktop-removal-copypaste-desktop__workmate-desktop-removal-02-disconnect-and-retry.gif)
+
+
 <!-- desktop-updates-stage116-final -->
 已修正静默安装后的应用重启交接，并重新验证 Desktop 更新、后台发布及本机安装准入。
 
