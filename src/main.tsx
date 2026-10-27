@@ -11,6 +11,7 @@ import { AdminPrivateCloudEvents } from "./private-cloud-events";
 import { AdminProviderControl } from "./provider-control";
 import { AdminExternalBudgets } from "./external-budget";
 import { AdminNativeRecovery } from "./native-recovery";
+import { AdminDesktopUpdates } from "./desktop-updates";
 import { AdminSolutions } from "./solutions";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
@@ -325,6 +326,7 @@ function Login() {
 }
 const nav = [
   ["overview", LayoutDashboard, "總覽", "Overview", "admin.overview.read"],
+  ["desktop-updates", Monitor, "Desktop 發佈", "Desktop releases", "admin.desktop_updates.read"],
   ["users", Users, "用戶管理", "Users", "admin.users.read"],
   ["tenants", Building2, "企業管理", "Workspaces", "admin.tenants.read"],
   ["usage", ChartNoAxesCombined, "用量與消耗", "Usage", "admin.usage.read"],
@@ -537,6 +539,8 @@ function AdminShell() {
                         <AdminProviderControl access={a} />
                       ) : n[0] === "external-budget" ? (
                         <AdminExternalBudgets access={a} />
+                      ) : n[0] === "desktop-updates" ? (
+                        <AdminDesktopUpdates access={a} />
                       ) : n[0] === "recovery" ? (
                         <AdminNativeRecovery access={a} />
                       ) : n[0] === "solutions" ? (
