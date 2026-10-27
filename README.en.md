@@ -1,5 +1,33 @@
 # Workmate · CopyPaste Enterprise Agent · web
 
+<!-- controlled-budget-stage113 -->
+Google Ads budget changes now have an explicit expiring policy, exact immutable previews, customer confirmation, a single durable dispatch and immutable receipts. Unknown outcomes are observed and manually closed without resending.
+
+Connections → Google Ads → authorize and bind an advertiser/project → Manage budgets & operations → configure policy → exact preview → submit → customer-manager confirmation → immutable receipt. Changed inputs require a fresh preview.
+
+154 backend · 53 Desktop unit · 22 actual native Codex · 12 actual client flows · 3 measured layouts. Synthetic models/accounts and an unsigned installer candidate; real advertising spend, production signing and full-product acceptance remain unproven. Average daily budget is not a maximum daily charge; Google bills advertising separately.
+
+[Design / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/113-controlled-advertising-budgets.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/external-budget-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Login[Login and project authority] --> Policy[Explicit bounded budget policy]
+  Policy --> Preview[Immutable exact preview]
+  Preview --> Confirm[Customer confirmation or authorized policy]
+  Confirm --> Admission[Revalidate and persist dispatch]
+  Admission --> Once[One provider mutation]
+  Once --> Receipt[Encrypted receipt and immutable events]
+  Once --> Unknown[Unknown never resent]
+  Unknown --> Review[Observe and manually close]
+  Admin[Scoped Admin and current MFA] --> Policy
+  Admin --> Review
+```
+
+![Actual scoped budget panel / 实际预算面板](assets/screenshots/workmate-budget-05-exact-confirmation-en.png)
+
+![Actual interaction / 实际交互](assets/screenshots/workmate-05-controlled-budgets.gif)
+
+
 <!-- responsive-report-stage112 -->
 Website reports now use a dedicated wider dialog and intrinsic metric columns. Complete CTR, ranking and refund values remain readable on one line at the measured 375px Web and 800px Desktop sizes; scrolling remains available without Desktop rails.
 

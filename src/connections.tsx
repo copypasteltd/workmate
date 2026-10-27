@@ -23,6 +23,7 @@ import {
 } from "./ui";
 import "./connections.css";
 import { WebsiteAnalytics, type WebAnalysisOption } from "./web-analytics";
+import { BudgetControl } from "./budget-control";
 
 type Connection = {
   id: string;
@@ -224,7 +225,8 @@ function ConnectionWorkspace() {
     [busy, setBusy] = useState(false),
     busyRef = useRef(false),
     [revoke, setRevoke] = useState(false),
-    [snapshot, setSnapshot] = useState<string | null>(null);
+    [snapshot, setSnapshot] = useState<string | null>(null),
+    [budgetOpen, setBudgetOpen] = useState(false);
   const [directoryPages, setDirectoryPages] = useState<string[]>([]),
     [historyPages, setHistoryPages] = useState<string[]>([]);
   const directoryCursor = directoryPages.at(-1),
@@ -269,6 +271,7 @@ function ConnectionWorkspace() {
     snapshots = visibleHistory?.snapshots ?? [];
   useEffect(() => {
     setHistoryPages([]);
+    setBudgetOpen(false);
   }, [id]);
   const [accounts, setAccounts] = useState<string[]>([]),
     [projects, setProjects] = useState<string[]>([]),
@@ -631,6 +634,54 @@ function ConnectionWorkspace() {
                     </button>
                   </div>
                 </section>
+                {d.connection.provider === "google_ads" && (
+                  <section className="card">
+                    <p className="eyebrow">GOOGLE ADS · CONTROLLED ACTIONS</p>
+                    <h2>
+                      {t("廣告預算操作", "Advertising budget operations")}
+                    </h2>
+                    <p className="muted">
+                      {t(
+                        "按確切帳戶、預算和金額確認修改，保留完整執行記錄。",
+                        "Review exact accounts, budgets and amounts with a full execution record.",
+                      )}
+                    </p>
+                    <button
+                      className="button secondary"
+                      onClick={() => setBudgetOpen(true)}
+                    >
+                      <ShieldCheck size={16} />
+                      {t("管理預算與操作", "Manage budgets & operations")}
+                    </button>
+                  </section>
+                )}
+                {budgetOpen && (
+                  <Modal
+                    title={t("廣告預算操作", "Advertising budget operations")}
+                    onClose={() => setBudgetOpen(false)}
+                  >
+                    <BudgetControl
+                      key={w.tenant + ":" + w.project + ":" + d.connection.id}
+                      root={`/v1/tenants/${w.tenant}/projects/${w.project}/external-budget`}
+                      connection={d.connection.id}
+                      accounts={d.accounts.filter(
+                        (a) =>
+                          a.readable &&
+                          a.kind === "advertiser" &&
+                          d.connection.account_ids.includes(a.account_id),
+                      )}
+                      actorId={w.me?.user?.id ?? ""}
+                      policyAccess={["owner", "admin"].includes(
+                        w.me?.memberships?.find((m: any) => m.id === w.tenant)
+                          ?.role,
+                      )}
+                      resolveAccess={["owner", "admin"].includes(
+                        w.me?.memberships?.find((m: any) => m.id === w.tenant)
+                          ?.role,
+                      )}
+                    />
+                  </Modal>
+                )}
                 <section className="card">
                   <p className="eyebrow">02 · SYNC A SNAPSHOT</p>
                   <h2>{t("同步數據", "Sync data")}</h2>
@@ -928,10 +979,23 @@ function SnapshotFacts({ id, close }: { id: string; close: () => void }) {
   return (
     <Modal title={t("來源快照", "Source snapshot")} onClose={close}>
       <ErrorNotice error={r.error} />
-      {d && analysis && !!d.web_analysis_options?.length && <WebsiteAnalytics id={id} options={d.web_analysis_options} onBack={() => setAnalysis(false)} />}
+      {d && analysis && !!d.web_analysis_options?.length && (
+        <WebsiteAnalytics
+          id={id}
+          options={d.web_analysis_options}
+          onBack={() => setAnalysis(false)}
+        />
+      )}
       {d && !analysis && (
         <div className="connector-facts">
-          {!!d.web_analysis_options?.length && <button className="button primary small" onClick={() => setAnalysis(true)}>{t("網站分析與報告", "Website analysis & report")}</button>}
+          {!!d.web_analysis_options?.length && (
+            <button
+              className="button primary small"
+              onClick={() => setAnalysis(true)}
+            >
+              {t("網站分析與報告", "Website analysis & report")}
+            </button>
+          )}
           <p className="muted">
             {d.source_mode === "simulated"
               ? t("合成數據", "Synthetic data")
