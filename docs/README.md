@@ -1,5 +1,17 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- responsive-report-stage112 -->
+網站報告採用專用寬版對話框及隨容器排版的指標卡片。實測 375px Web 與 800px Desktop 的 CTR、排名及退款數值完整單行顯示；Desktop 可捲動並維持隱藏滾動條。
+
+16 條實際界面流程、5 個量測排版狀態及 11 項構建／打包通過。保留上一輪 195 項後端／本機檢查，本次 CSS 修復不宣稱重跑；使用假帳戶／模型與未簽名打包版。
+
+[Evidence / 證據](quality/report-layout-checkpoint.json)
+
+![Actual readable search report / 實際搜尋報告](design/implementation/copypaste-web__workmate-web-analysis-08-search-en.png)
+
+![Actual interaction / 實際交互](design/implementation/copypaste-web__workmate-08-website-analysis.gif)
+
+
 <!-- website-analytics-stage111 -->
 網站報告已接通 GA4 流量／事件及 Search Console：可核對指標、完整 HTML／CSV／JSON。跨行用戶不相加、退款可為負收入、缺少日期保留未知；報告計算不新增 AI 呼叫或費用。
 
