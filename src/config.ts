@@ -21,6 +21,8 @@ const schema = z.object({
   WEB_ORIGIN: z.string().url().default("http://localhost:4317"),
   ADMIN_ORIGIN: z.string().url().default("http://localhost:4318"),
   API_ORIGIN: z.string().url().default("http://localhost:4310"),
+  DESKTOP_UPDATE_PUBLIC_KEYS: z.string().max(10000).default("{}"),
+  DESKTOP_UPDATE_MIN_SEQUENCE: z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0),
   MASTER_KEY: z
     .string()
     .regex(/^[a-f\d]{64}$/i)

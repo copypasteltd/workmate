@@ -379,6 +379,12 @@ export class Catalog {
     superRole.permissions.push(
       ...recoveryAdmin.super_permissions_for_new_installations,
     );
+    const desktopUpdates = JSON.parse(await readFile("catalog/desktop-update-admin-permissions.json", "utf8"));
+    const updatePermissionKeys = new Set(this.admin.permissions.map((p: any) => p.key));
+    if (desktopUpdates.permissions.some((p: any) => updatePermissionKeys.has(p.key)))
+      throw new Problem(503, "PERMISSION_CATALOG_CONFLICT", "Duplicate Desktop update permission");
+    this.admin.permissions.push(...desktopUpdates.permissions);
+    superRole.permissions.push(...desktopUpdates.super_permissions_for_new_installations);
     for (const p of this.skills) await this.verifySkill(p);
   }
   async verifySkill(p: SkillPackage) {

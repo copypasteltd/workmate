@@ -1,5 +1,6 @@
 import { assertLiveEnvironment } from "./recovery-fence.js";
 import { registerNativeRecovery } from "./native-recovery-routes.js";
+import { registerDesktopUpdates } from "./desktop-update-routes.js";
 import { registerAdminApprovals } from "./admin-approvals.js";
 import {
   publicClientContent,
@@ -409,6 +410,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     return db.tx(publicClientContent, undefined, true);
   });
   registerAuth(app, db);
+  registerDesktopUpdates(app, db);
   registerClientContent(app, db);
   registerFederation(app, db);
   registerWorkspaces(app, db);

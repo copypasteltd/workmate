@@ -102,6 +102,18 @@ export async function createNativeBackup(o: RecoveryOptions, archiveRoot: string
       const bytes = Number(row.bytes); if (!Number.isSafeInteger(bytes)) throw new Error("RECOVERY_OBJECT_TOO_LARGE");
       files.push(await encryptEntry(staged, o.backupKey, id, files.length, "object", row.storage_key, await storage.stream(row.storage_key), { bytes, sha256: row.sha256 }));
     }
+    // Published/ready installers are durable shared release content. Partial upload files remain transient.
+    if ((await c.query("SELECT to_regclass('desktop_update_releases') AS name")).rows[0].name) {
+      const releases = (await c.query("SELECT DISTINCT envelope->'payload'->'release' AS artifact FROM desktop_update_releases WHERE state IN('ready','published') AND envelope->'payload'->'release' <> 'null'::jsonb")).rows;
+      const seen = new Set<string>();
+      for (const { artifact } of releases) {
+        if (!/^[a-f0-9]{64}$/.test(artifact.sha256) || !Number.isSafeInteger(artifact.bytes) || artifact.bytes < 1 || artifact.bytes > 2147483648) throw new Error("RECOVERY_DESKTOP_UPDATE_INVALID");
+        if (seen.has(artifact.sha256)) continue; seen.add(artifact.sha256);
+        const locator = "desktop-updates/" + artifact.sha256 + ".exe", file = path.resolve(o.config.DATA_DIR, locator);
+        await checkedFile(file, artifact.bytes);
+        files.push(await encryptEntry(staged, o.backupKey, id, files.length, "desktop_update", locator, createReadStream(file), { bytes: artifact.bytes, sha256: artifact.sha256 }));
+      }
+    }
     // Only closed, immutable encrypted receipt files are included; never tmp files.
     const receipts = path.resolve(o.config.DATA_DIR, "external-budget-receipts");
     const rs = await lstat(receipts).catch((e: NodeJS.ErrnoException) => { if (e.code !== "ENOENT") throw e; return null; });
@@ -123,7 +135,7 @@ export async function createNativeBackup(o: RecoveryOptions, archiveRoot: string
     const result = { id, source_id: identity.source_id, snapshot_at: snapshotAt!, file_count: files.length,
       plaintext_bytes: files.reduce((sum, f) => sum + f.bytes, 0), manifest_sha256: hash(sealed) };
     await receipt(c, { ...result, kind: "backup", outcome: "verified", started_at: started, ledger_at: ledger.observed_at,
-      detail: { authenticated_full_read: true, has_tool_warnings: dump.warning(), object_count: objects.length, receipt_count: files.length - objects.length - 1 } });
+      detail: { authenticated_full_read: true, has_tool_warnings: dump.warning(), object_count: objects.length, receipt_count: files.filter(f => f.kind === "receipt").length } });
     return { ...result, directory: target };
   } catch (e) {
     await c.query("ROLLBACK").catch(() => {});
@@ -239,6 +251,12 @@ export async function restoreNativeBackup(o: RecoveryOptions, input: {
     // Operator-only erasure uses the owner connection while the service identities stay disconnected.
     const restoreURL = settings(o); restoreURL.pathname = "/" + input.databaseName;
     db = new Database({ ...env, DATABASE_URL: restoreURL.href, CONTROL_DATABASE_URL: restoreURL.href, QUEUE_DATABASE_URL: restoreURL.href });
+    if ((await db.control.query("SELECT to_regclass('desktop_update_releases') AS name")).rows[0].name) {
+      // Partial files were excluded. Retain signed definitions, but let operators upload all parts again.
+      await db.control.query("DELETE FROM desktop_update_parts p USING desktop_update_releases r WHERE p.release_id=r.id AND r.state='uploading'");
+      const installers = (await db.control.query("SELECT DISTINCT envelope->'payload'->'release' AS artifact FROM desktop_update_releases WHERE state IN('ready','published') AND envelope->'payload'->'release'<>'null'::jsonb")).rows;
+      for (const { artifact } of installers) await checkedFile(path.join(target, "desktop-updates", artifact.sha256 + ".exe"), artifact.bytes);
+    }
     const erasure = new ErasureService(db, new Storage(env), () => false, restoreId);
     for (let batch = 0; batch < 100; batch++) {
       const count = Number((await db.control.query("SELECT count(*) AS n FROM deletion_jobs WHERE state<>'completed'")).rows[0].n);
