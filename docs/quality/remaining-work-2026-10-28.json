@@ -1,0 +1,1085 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-10-28T14:49:09.611802+00:00",
+  "workspace": "D:\\dev\\copypasted\\自有agent",
+  "basis": "Original 102 requirements; stage120 publication and bounded unpublished stage121 evidence. Not full acceptance.",
+  "source_ledger_sha256": "2de1fc417542db4531f537c159fac03907a46df6f26e3ac2ae4eb08a7ba0a3b4",
+  "summary": {
+    "original_requirements": 102,
+    "partial_verified": 86,
+    "completion_not_proven": 16,
+    "fully_accepted": 0,
+    "open": 102,
+    "priorities": {
+      "P0": 78,
+      "P1": 23,
+      "P2": 1
+    },
+    "live_qualified_professional_roles": 0,
+    "delivery_tasks": 6,
+    "delivery_tasks_overlap_original_requirements": true
+  },
+  "user_authorized_synthetic_data": true,
+  "latest_verified_product_publication": "stage120",
+  "unpublished_work": "stage121",
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "企业隔离",
+      "implemented_scope": "企业归属、RLS、私有文件及多类越权测试",
+      "remaining": "所有连接器、团队、媒体、批量导出及异步路径的完整跨企业负向验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-002",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "项目与成员权限",
+      "implemented_scope": "项目范围、动作权限、当前授权复查",
+      "remaining": "全品牌/项目角色矩阵，以及撤权后的全部下载、导出和异步执行验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-003",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "登录与会话",
+      "implemented_scope": "三端登录/PKCE、邀请、撤销、刷新竞争及企业身份相关实现",
+      "remaining": "企业身份实际部署、安装后登录及全部过期、换账号、断网、竞争组合的验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-004",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "外部账户授权",
+      "implemented_scope": "Google/Meta/GA4/GSC 协议模拟、账户范围和撤销",
+      "remaining": "正式应用权限、实际账户字段/数据口径、授权失效和生产同步验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-005",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "持续 Agent",
+      "implemented_scope": "默认助手、固定专家、配置及 Skill 版本",
+      "remaining": "品牌/工具继承、全部版本变更与三端持续使用的完整验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-006",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "分层记忆",
+      "implemented_scope": "分域记忆、来源治理、在线删除及部分恢复保护",
+      "remaining": "全部历史引用、索引、缓存和备份恢复后删除重放的一致性验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-007",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "自然语言委派",
+      "implemented_scope": "首项工作、附件、预算及显式缺口补齐",
+      "remaining": "自动识别真正阻塞字段；全部业务的渐进输入引导。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-008",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "持久任务",
+      "implemented_scope": "云端队列、持久状态、事件和局部成果",
+      "remaining": "全业务真实步骤/部分产物状态，以及关闭页面、断线、多节点故障全矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-009",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "暂停、重试与恢复",
+      "implemented_scope": "排队暂停、已计量回合补充输入、原线程和原预算继续",
+      "remaining": "任意运行中安全暂停、未知副作用、全部崩溃检查点与累计费用恢复。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-010",
+      "priority": "P0",
+      "recorded_assessment": "completion_not_proven",
+      "module": "外部操作授权",
+      "implemented_scope": "精确批准及广告预算修改的受控流程",
+      "remaining": "外部发布等其余写动作的参数/对象/版本授权、撤销与恢复闭环。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-011",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "执行可追踪性",
+      "implemented_scope": "工具身份、事件、来源及费用记录",
+      "remaining": "所有业务的步骤、工具链、脱敏日志与规范字段逐项一致性验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-012",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "产物与版本",
+      "implemented_scope": "真实文件、固定版本、源码 ZIP、PDF 及部分编辑格式",
+      "remaining": "全类型预览、局部成功、继续修改与可恢复工程的统一闭环。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-013",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "品牌资料",
+      "implemented_scope": "不可变品牌版本、字体/价格/活动规则及固定引用",
+      "remaining": "全设计/媒体/本机角色遵循、字体使用范围及自然语言事实准确性验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-014",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "上传与下载",
+      "implemented_scope": "校验、分片、恢复、私人会话附件及原生传输",
+      "remaining": "三端完整 1 GiB 实传、生产对象存储、旧上传与桥接大文件路径整合。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-015",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "生图与编辑",
+      "implemented_scope": "公司接口模拟、实际图片文件与调用逻辑",
+      "remaining": "真实内部 Image 2 生成/限定编辑，以及参考图和业务效果验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-016",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "字体与排版",
+      "implemented_scope": "真实字体渲染、分层图文、PNG/SVG/PDF",
+      "remaining": "完整繁英换行、溢出检查、字体来源/授权及专业排版验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-017",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "创意批量适配",
+      "implemented_scope": "独立单元矩阵、局部失败/修改/重试及真实文件",
+      "remaining": "全角色端到端委派、多媒体组合与实际营销交付的完整验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-018",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "模板视频",
+      "implemented_scope": "脚本、分镜、字幕、音轨、工程及真实 MP4",
+      "remaining": "完整专业委派、所有约定规格，以及可恢复工程跨环境重做验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-019",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "生成式视频",
+      "implemented_scope": "异步提交/查询/取消/对账、固定配置和后台发版",
+      "remaining": "真实公司视频服务、全部参考素材/规格和专业成片质量验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-020",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "特效目录",
+      "implemented_scope": "已有十项版本化效果，含色键/降噪及真实 MP4/PNG/工程",
+      "remaining": "专业抠像/修复质量，以及全目录输入、示例、异常和跨端使用的完整验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-021",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "配音与转写",
+      "implemented_scope": "公司音频协议、客户确认、后台发版及未知费用证据流程",
+      "remaining": "真实语音/粤语质量、转写准确率、授权音源核验和完整专业音频交付。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-022",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "审阅与导出",
+      "implemented_scope": "固定版本接受/修改/弃用、PDF 下载及部分源工程",
+      "remaining": "全类型评论/修改闭环、完整 ZIP 版本清单及所有可恢复编辑描述。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-023",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "广告数据导入",
+      "implemented_scope": "CSV/XLSX、映射、精确值、并发去重及更正链",
+      "remaining": "全官方导出/语言数字格式、多维事实模型和规范资产上传 API。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-024",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "确定性广告分析",
+      "implemented_scope": "精确指标、来源快照、证据引用及真实分析文件",
+      "remaining": "完整币种/归因/缺失值组合、语义统计质量及专业结论验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-025",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "Google Ads",
+      "implemented_scope": "协议模拟、授权同步及受控预算写入",
+      "remaining": "正式账号接入、数据对照、限流与未知写入结果的实际服务验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-026",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "Meta Ads",
+      "implemented_scope": "广告读取协议、撤销和预算修改子流程",
+      "remaining": "正式应用/账户、字段和口径验证；其他自然内容/发布/私信另按能力开放。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-027",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "GA4",
+      "implemented_scope": "报告查询、限制标识及网站分析工具",
+      "remaining": "正式属性数据、reporting identity、时区和不可加和指标的完整对照。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-028",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "Search Console",
+      "implemented_scope": "获准站点、搜索维度和结果限制",
+      "remaining": "正式站点数据、覆盖限制、授权失效和完整报告验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-029",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "SEO",
+      "implemented_scope": "有界抓取、问题证据、复查及独立修改建议任务",
+      "remaining": "正式站点 DNS/TLS、Search Console 组合及获授权 CMS 写回闭环。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-030",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "GEO",
+      "implemented_scope": "固定问句、重复观察、原始回答、云端与本机入口",
+      "remaining": "真实提供方/消费者产品观测、地区语言差异、专业判断及业务价值验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-031",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "创意效果反馈",
+      "implemented_scope": "固定素材、广告级身份、客户明确确认及来源治理",
+      "remaining": "正式平台身份核实、专业归因判断和真实客户创意改进结果闭环。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-032",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "流程模板",
+      "implemented_scope": "私有版本化流程、明确批准、子任务和固定预算",
+      "remaining": "全输入输出/失败策略、跨模块组合；当前受限顺序流程以外的能力补齐。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-033",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "自动触发",
+      "implemented_scope": "每日/每周计划、签名私有事件、去重及暂停",
+      "remaining": "真实事件提供方、全部错过执行/停用/失败风暴和时区边界验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-034",
+      "priority": "P0",
+      "recorded_assessment": "completion_not_proven",
+      "module": "外部写入幂等",
+      "implemented_scope": "广告预算意图、结果观察、未知不重放",
+      "remaining": "其余发布/外部应用写入的统一意图、核对、人工处置和恢复机制。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-035",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "Web 工作台",
+      "implemented_scope": "委派、会话、文件、角色、团队、计划及用量页面",
+      "remaining": "自动缺口发现、全业务成果续做及从访问到交付的综合用户路径。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-036",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "扩展网页协作",
+      "implemented_scope": "原生右侧 Side Panel、对话、历史和网页上下文",
+      "remaining": "站点授权、网页选择/上下文的全部兼容和权限组合验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-037",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "本地文件基础",
+      "implemented_scope": "主动选择文件/目录、明确上传、私人版本及撤销守卫",
+      "remaining": "浏览器兼容降级、所有撤销/换项目/断点恢复和文件类型矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-038",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "Native Host 增强",
+      "implemented_scope": "本机配对、来源/设备/命令核验及恢复",
+      "remaining": "扩展 Host 大文件、安装后协议兼容和完整异常/撤销矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-039",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "Desktop 客户端",
+      "implemented_scope": "本机 Codex、完整权限、无边框、更新/移除相关实现",
+      "remaining": "公司签名安装/更新/卸载、人工安装旅程及承诺 OS/DPI 的完整矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-040",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "本机调度与操作",
+      "implemented_scope": "本机文件/终端/浏览器、批准程序、监听与批量队列",
+      "remaining": "对标 Codex Desktop 的全工具覆盖、应用操作、冲突/休眠/离线组合。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-041",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "三端接续",
+      "implemented_scope": "统一任务/文件身份及多类会话恢复",
+      "remaining": "依赖本机步骤的离线等待、重连和原任务续做完整闭环。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-042",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "浏览器资源回收",
+      "implemented_scope": "所属页面/上下文限额、停止/崩溃回收及孤儿清理",
+      "remaining": "全休眠/异常退出/跨端组合，以及用户原有页面不受影响的完整验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-043",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "公司统一 AI API",
+      "implemented_scope": "Codex、图片、视频、音频等受控公司网关路径",
+      "remaining": "所有新增工具、媒体、后台和出站分支的完整约束验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-044",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "Codex 唯一内核",
+      "implemented_scope": "锁定真实 Codex、多轮工具、原线程和受控取消",
+      "remaining": "全 Worker 恢复、多节点故障、全部角色/团队/计划执行组合验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-045",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "模型能力注册",
+      "implemented_scope": "版本、实测状态、参数限制及显式采用",
+      "remaining": "全参数拒绝、过期、模型变更、受控发布/回滚和实际服务兼容验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-046",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "预算与费用",
+      "implemented_scope": "精确预留、调用事实、来源分摊、结算及未知对账",
+      "remaining": "所有并行/媒体/本机路径的竞争和费用未知矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-047",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "商业方案",
+      "implemented_scope": "人工方案/VIP、额度、席位、存储及可追踪调整",
+      "remaining": "全商业配额组合与运营验收；自动收款/正式订阅属于后续独立扩展。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-048",
+      "priority": "P0",
+      "recorded_assessment": "completion_not_proven",
+      "module": "Admin 总体",
+      "implemented_scope": "独立后台、用户、用量、费用、VIP、内容和执行",
+      "remaining": "所有用户端资源的正文管理、支持协助及动作覆盖闭环。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-049",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "数据生命周期",
+      "implemented_scope": "在线删除、保留期、进度、部分恢复重放",
+      "remaining": "项目/企业整删、全量导出、备份轮换及所有衍生数据完整性。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-050",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "凭证和数据流向",
+      "implemented_scope": "服务端密钥域、本机/云端边界及受控凭证",
+      "remaining": "所有传输/媒体分支、正式 OAuth 和实际区域流向核验。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-051",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "香港使用体验",
+      "implemented_scope": "繁中/英文、港币与部分时区及指标展示",
+      "remaining": "全动态文案、时区转换和指标语言完整性；粤语效果另验。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-052",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "资源与性能",
+      "implemented_scope": "企业/用户/能力槽位、多 Worker 和公平派发",
+      "remaining": "逐调用限流、长媒体独立调度及完整 NFR 负载/容量验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-053",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "备份与灾难恢复",
+      "implemented_scope": "实际原生备份、独立恢复、删除重放及恢复隔离专项",
+      "remaining": "生产 RPO/RTO、异地耐久性、容量及正式切换恢复演练。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-054",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "发布维护",
+      "implemented_scope": "增量迁移、版本策略、部分更新/回滚及分支发布",
+      "remaining": "完整灰度、旧客户端兼容、签名更新和生产回滚验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-055",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "可访问性",
+      "implemented_scope": "部分键盘、焦点、错误定位和窄屏检查",
+      "remaining": "全关键路径键盘、100%/200% 缩放、对比、读屏及 reduced-motion 验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-056",
+      "priority": "P0",
+      "recorded_assessment": "completion_not_proven",
+      "module": "客户业务质量",
+      "implemented_scope": "交付接受/返工/人工投入记录及后台统计",
+      "remaining": "三类各十个真实代表任务、人工基线/盲审、成本返工与持续使用证据。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-057",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "执行安全边界",
+      "implemented_scope": "原生执行器、路径/网络/工具限制及不可信来源守卫",
+      "remaining": "所有网络/进程/文件/网页路径的完整攻击与撤权矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-058",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "能力真实状态",
+      "implemented_scope": "假数据显式标记、协议能力目录及部分缺口展示",
+      "remaining": "全离线设备、未授权账户、异步媒体和补齐依赖后的状态一致性。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-059",
+      "priority": "P2",
+      "recorded_assessment": "completion_not_proven",
+      "module": "可选专属云电脑",
+      "implemented_scope": "阶段 121 本地已有方案/报价/租约/控制/计费/节点代码",
+      "remaining": "尚未合并发布；真实 Linux 物理节点安装/回滚、独占操作和清理结算待验收。",
+      "full_acceptance": "open",
+      "optional": true
+    },
+    {
+      "id": "REQ-060",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "文档与开发交付",
+      "implemented_scope": "D 盘、docs、六端独立仓库、双语 README 和实际媒体",
+      "remaining": "最新本地增量的文档/媒体/组件清单同步、独立复现及最终交付。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-061",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "会话生命周期",
+      "implemented_scope": "私有会话目录、独立任务及多类生命周期操作",
+      "remaining": "全部多任务消息定位/补充、删除和长期记忆交互组合。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-062",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "专业模板",
+      "implemented_scope": "默认助手、固定预设、持久专家及受控实例化",
+      "remaining": "全专业输入引导、企业定制模板发布/升级及完整跨端验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-063",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "云文件工作区",
+      "implemented_scope": "文件树、搜索、版本、引用、移动和持久源码",
+      "remaining": "Office/PDF 分页预览、大目录选择/搜索及完整生命周期矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-064",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "Skill 生命周期",
+      "implemented_scope": "精确包、项目安装、绑定、启停/撤销及方法试运行",
+      "remaining": "自定义包审核/组织发布和所有动态资源/角色/项目权限交集。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-065",
+      "priority": "P1",
+      "recorded_assessment": "partial_verified",
+      "module": "共享项目配置",
+      "implemented_scope": "固定说明/资料/依赖、个人私有会话和版本继承",
+      "remaining": "全个人偏好交集、长会话、大目录及所有并发/撤权组合。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-066",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "专业团队协作",
+      "implemented_scope": "持久云团队、DAG、受控并行、预算、私有成果和历史翻页",
+      "remaining": "Desktop 本机团队，以及全角色/失败依赖/费用/统一交付综合验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-067",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "计划/咨询/执行模式",
+      "implemented_scope": "默认执行、咨询限制、计划摘要和原输入确认",
+      "remaining": "全计划版本变化、关键输入变更、工具拒绝和恢复分支验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-068",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "成果继续修改",
+      "implemented_scope": "固定版本源码、设计稿/演示文稿修改及部分审阅",
+      "remaining": "图片选区、视频时段、文本锚点和全部成果类型的冲突/继续工作闭环。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-069",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "按需依赖引导",
+      "implemented_scope": "显式文件/连接检查点、原任务及部分已计量回合补齐",
+      "remaining": "自动发现、全部付费步骤、设备离线/能力缺失到原任务恢复。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-070",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "业务方案包",
+      "implemented_scope": "版本、预览、试运行、接受、发布、复制及本机试运行",
+      "remaining": "全方案/依赖组合、目标项目重新绑定、异常和专业业务复用验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-071",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "对话创建计划",
+      "implemented_scope": "私有对话/成果到确认的云计划、逐次运行及恢复确认",
+      "remaining": "所有表达/依赖快照、时区/错过执行，以及未来暂停和在途取消完整矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-072",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "首项工作和通知",
+      "implemented_scope": "无需全量配置的首单、明确示例、站内通知及定位",
+      "remaining": "附图与所有业务阻塞信息的原会话恢复；全部首次使用旅程验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-073",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "至少十二个角色",
+      "implemented_scope": "既有十八个专业候选及默认助手，有实际工具接入",
+      "remaining": "至少十二个含开发和设计的完整专业任务、修改及异常资格；当前正式合格数为零。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-074",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "角色 Skill 组合",
+      "implemented_scope": "精确 Skill 包、版本、工具/依赖绑定",
+      "remaining": "逐角色完整输入输出、流程、真实文件和异常验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-075",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "Codex 实际加载 Skill",
+      "implemented_scope": "真实本机/云端 Codex 加载及版本、撤销记录",
+      "remaining": "所有角色、团队、后台计划和恢复分支的实际执行覆盖。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-076",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "选择与创建角色",
+      "implemented_scope": "共享目录、搜索筛选、无费用预检和幂等实例化",
+      "remaining": "所有专业业务输入及依赖在原会话补齐的完整链路。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-077",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "设计师和 Image 2",
+      "implemented_scope": "固定设计 Skill、公司图片工具、分层稿及修改逻辑",
+      "remaining": "真实指定 Image 2 生成/编辑、完整可恢复工程和专业设计交付验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-078",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "角色交付约定",
+      "implemented_scope": "角色/Skill 合同、多类真实文件和本机/云端工具接入",
+      "remaining": "每一角色的全输入、异常、继续修改及三端同版本行为验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-079",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "模板版本与定制",
+      "implemented_scope": "固定旧版、显式升级、持久专家和品牌版本绑定",
+      "remaining": "企业复制/覆盖/比较、安全复制及所有版本组合完整验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-080",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "角色发布资格",
+      "implemented_scope": "模板/Skill/能力状态与版本化证据框架",
+      "remaining": "至少十二个角色的真实专业任务、修改、越权/依赖异常及费用证据。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-081",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "CopyPaste 品牌",
+      "implemented_scope": "既有品牌 token、两主题和多端页面实现",
+      "remaining": "全端组件单源、所有新增页面与官网品牌一致性核查。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-082",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "品牌设计验收",
+      "implemented_scope": "局部双语、主题、宽度及实际截图",
+      "remaining": "全组件状态、375/768/1024/1440px、缩放、键盘、对比和动画设置验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-083",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "后台独立身份",
+      "implemented_scope": "独立管理员会话、MFA、CSRF、权限版本和撤销",
+      "remaining": "所有设备令牌、旧异步作业和撤销竞争的完整拒绝矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-084",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "完整用户列表",
+      "implemented_scope": "去重用户、分页搜索、详情和多类关联入口",
+      "remaining": "全筛选、注册/登录字段、所有企业关系及内容/任务入口核查。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-085",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "用户与企业控制",
+      "implemented_scope": "账号/成员/企业状态分离、冻结/恢复及受控批量操作",
+      "remaining": "责任转移、全部在途任务策略和三端管理状态组合验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-086",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "用户消耗",
+      "implemented_scope": "明确假数据、精确微额及多类账务/用量目录",
+      "remaining": "全用户/付款方/企业/项目/时间/能力钻取与未知内部成本对照。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-087",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "人工费用管理",
+      "implemented_scope": "充值、赠额、授信、补偿、独立审批和原来源记录",
+      "remaining": "历史授信来源人工对账、全限额/来源/并发组合和运营验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-088",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "人工 VIP",
+      "implemented_scope": "开通/延期/换方案/暂停/撤销/到期及明确赠额组合",
+      "remaining": "旧授予迁移、个人/企业重叠全状态和生产运营矩阵。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-089",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "方案与权益",
+      "implemented_scope": "不可变版本、实时有效权益、席位/存储准入和预算交集",
+      "remaining": "媒体/团队/调度等所有配额交集、物理存储运营与综合验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-090",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "全量用户内容管理",
+      "implemented_scope": "多类资源目录、正文权限、修订和受控状态操作",
+      "remaining": "全团队/方案/自定义方法及其他资源的正文修订和治理覆盖。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-091",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "内容生命周期控制",
+      "implemented_scope": "隔离/恢复/永久删除、进度及部分恢复保护",
+      "remaining": "所有下载/索引/公开链接/模型读取和备份恢复组合。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-092",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "后台执行控制",
+      "implemented_scope": "排队暂停、取消、原用户权限与费用守卫及部分计划控制",
+      "remaining": "运行中检查点、所有工作流/Routine 和未知外部动作人工处置。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-093",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "用户端内容配置",
+      "implemented_scope": "公告/帮助/菜单的双语草稿、预览、定向发布及回滚",
+      "remaining": "全主体/端/时间窗口组合、能力资格约束和真实运营验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-094",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "后台细粒度权限",
+      "implemented_scope": "注册动作、范围/字段、显式拒绝、MFA 和多类异步检查",
+      "remaining": "全动作/对象状态/额度/导出/异步执行矩阵逐项验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-095",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "客服受控协助",
+      "implemented_scope": "用户授权、限时支持、只读、正文双门槛及审计",
+      "remaining": "完整竞态、Desktop 支持表单的独立原生旅程和所有页面无障碍验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-096",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "审计与独立审批",
+      "implemented_scope": "不可变审计、近期 MFA、非自批和版本复查",
+      "remaining": "所有新增敏感路径、参数不可变性及生产审计留存验证。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-097",
+      "priority": "P1",
+      "recorded_assessment": "completion_not_proven",
+      "module": "批量与导出",
+      "implemented_scope": "持久冻结任务、逐项权限/结果/重试及最高一万行安全导出",
+      "remaining": "所有资源/字段、过期下载、并发撤权及大规模生产负载完整验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-098",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "后台交互",
+      "implemented_scope": "主要导航、部分组合筛选/分页、主题和多尺寸布局",
+      "remaining": "全表格列配置、异常、键盘、缩放、焦点和运营路径验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-099",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "平台能力配置",
+      "implemented_scope": "固定 Codex/公司网关、版本验证、发布/回滚及显式采用",
+      "remaining": "所有模型/媒体/Skill 参数、失效、灰度和未合格能力拒绝组合。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-100",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "管理变化跨端生效",
+      "implemented_scope": "成员/费用/通知版本及多类三端撤销流程",
+      "remaining": "全资金/内容/权限策略、批次、离线重连和生产留存验收。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-101",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "收退款和对账",
+      "implemented_scope": "人工收款、原交易累计退款、来源补偿、现金证据和通知",
+      "remaining": "历史授信对账、完整退款/差额/未知组合；支付机构自动回调作为后续扩展。",
+      "full_acceptance": "open",
+      "optional": false
+    },
+    {
+      "id": "REQ-102",
+      "priority": "P0",
+      "recorded_assessment": "partial_verified",
+      "module": "权益真实执行",
+      "implemented_scope": "服务器实时权益、领取/工具准入、并发和部分存储约束",
+      "remaining": "全媒体/团队/计划/席位/存储/本机授权交集及到期在途结算验收。",
+      "full_acceptance": "open",
+      "optional": false
+    }
+  ],
+  "delivery_tasks": [
+    {
+      "id": "D01",
+      "task": "阶段 121 后端完整回归及接口验收",
+      "status": "阶段 120 的 111 文件/1363 用例已通过并发布；阶段 121 的 full-03 无最终成功报告，深路径 SQLite 专项 15/15 通过。全部规范请求/响应/状态码/权限/事件仍需完整对齐；历史路由差异数量不当作当前缺失接口数量。",
+      "related_requirement_numbers": "011、044、054、060"
+    },
+    {
+      "id": "D02",
+      "task": "阶段 121 各端当前源码 UI 验收",
+      "status": "本机 Desktop 单元/真实 Codex 已有通过；打包 UI desktop-ui-04 无最终报告。Web/Admin 与扩展需在最终同一源码范围补齐当前录制/验收，历史通过保持原范围。",
+      "related_requirement_numbers": "035—042、081—082"
+    },
+    {
+      "id": "D03",
+      "task": "本地增量整合至交付分支",
+      "status": "六个 dedicated-cloud-121 本地工作区的功能/修复尚未整合发布；不同基线需审阅后合并并重新检查。不能说远端已包含该代码。",
+      "related_requirement_numbers": "054、060"
+    },
+    {
+      "id": "D04",
+      "task": "新版 README、截图、GIF、变更说明和组件版本清单",
+      "status": "既有阶段 120 文档/媒体已发布；本地阶段 121 设计草稿已有，最终六端双语说明、媒体和精确证据清单尚未完成。",
+      "related_requirement_numbers": "060"
+    },
+    {
+      "id": "D05",
+      "task": "新版 Git 提交、推送与远端核对",
+      "status": "最后已核验的完整发布是阶段 120，八个分支已推送；阶段 121 尚未提交并推送。",
+      "related_requirement_numbers": "054、060"
+    },
+    {
+      "id": "D06",
+      "task": "正式交付及生产门槛",
+      "status": "G01—G10 和完整 NFR 均未关闭。签名分发、实际部署/负载/恢复、正式服务及客户业务接受需按原条件分别验收。",
+      "related_requirement_numbers": "039、052—056、073、080"
+    }
+  ]
+}

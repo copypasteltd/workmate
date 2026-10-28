@@ -1,5 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- open-work-review-20261028 -->
+2026-10-28 未完成项核查：原 102 项需求为 86 项部分验证、16 项尚未证明完成、0 项完整验收；包含 1 项 P2 可选专属云环境。已有代码和局部通过不等于整项未实现。逐项表格校正了旧记录中团队、特效、方案、导出等滞后描述，并单列六项相互重合的交付收尾工作。最后已核验产品发布为阶段 120；阶段 121 本地增量尚未合并发布。按用户要求继续使用明确假数据。
+
+[完整编号检查表](quality/remaining-work-2026-10-28.md) · [结构化清单](quality/remaining-work-2026-10-28.json) · [本次更新说明](changes/remaining-work-review-2026-10-28.md)
+
 <!-- integrated-recovery-stage120 -->
 本轮完成附件恢复及当前完整后端回归验证。
 
