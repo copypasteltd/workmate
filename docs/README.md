@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
 <!-- open-work-review-20261028 -->
-2026-10-28 未完成项核查：原 102 项需求为 86 项部分验证、16 项尚未证明完成、0 项完整验收；包含 1 项 P2 可选专属云环境。已有代码和局部通过不等于整项未实现。逐项表格校正了旧记录中团队、特效、方案、导出等滞后描述，并单列六项相互重合的交付收尾工作。最后已核验产品发布为阶段 120；阶段 121 本地增量尚未合并发布。按用户要求继续使用明确假数据。
+2026-10-28 v2 核查：102 项原需求尚未关闭整项验收，含 101 必需与 1 可选；原台账保留 86 部分验证、16 尚未证明完成。最新本地 Desktop、Web/Admin、Extension 各 8 项实际流程已通过，共 29 张截图和 5 组录制；后端完整回归仍在运行。最终源码整合、README/证据及阶段 121 产品发布仍待完成。继续使用明确假数据。
 
-[完整编号检查表](quality/remaining-work-2026-10-28.md) · [结构化清单](quality/remaining-work-2026-10-28.json) · [本次更新说明](changes/remaining-work-review-2026-10-28.md)
+[全部编号检查表](quality/remaining-work-2026-10-28-v2.md) · [结构化清单](quality/remaining-work-2026-10-28-v2.json) · [更新说明](changes/remaining-work-review-2026-10-28-v2.md) · [保留的 v1 快照](quality/remaining-work-2026-10-28.md)
 
 <!-- integrated-recovery-stage120 -->
 本轮完成附件恢复及当前完整后端回归验证。

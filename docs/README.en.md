@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
 <!-- open-work-review-20261028 -->
-Open-work review, 2026-10-28: the original 102 requirements retain 86 partially verified records, 16 without proof of completion and zero full acceptances, including one optional P2 environment. This does not mean 102 features have no implementation. The numbered inventory corrects stale descriptions of teams, effects, solutions and exports, and separately tracks six overlapping delivery tasks. Stage 120 is the latest verified product publication; local stage 121 work remains unpublished. Explicit synthetic data remains authorized.
+Open-work refresh, 2026-10-28 v2: all 102 original full-acceptance records remain open, including 101 required and one optional. The formal ledger retains 86 partial and 16 not-proven decisions. Latest local Desktop, Web/Admin and Extension runs each passed eight actual scenarios, with 29 screenshots and five recording pairs. Complete backend regression is still running. Final integration, README/evidence updates and stage 121 product publication remain open. Explicit synthetic data remains authorized.
 
-[Numbered inventory](quality/remaining-work-2026-10-28.md) · [Structured inventory](quality/remaining-work-2026-10-28.json) · [Review changes](changes/remaining-work-review-2026-10-28.md)
+[Full inventory](quality/remaining-work-2026-10-28-v2.md) · [Structured inventory](quality/remaining-work-2026-10-28-v2.json) · [Changes](changes/remaining-work-review-2026-10-28-v2.md) · [Preserved v1](quality/remaining-work-2026-10-28.md)
 
 <!-- integrated-recovery-stage120 -->
 Extension attachment recovery and the complete backend regression are qualified below.
