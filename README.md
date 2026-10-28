@@ -2,6 +2,31 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- runtime-startup-122 -->
+
+## Codex 启动与轮次隔离 · 阶段 122
+
+本机 Codex 的工具、输入请求、审批、消息、用量和完成通知绑定当前线程及轮次，排队的旧消息不能转入后续任务。丢失 turn/start 响应时，真实完成通知可结束原轮次，避免重复执行。原生错误日志只保留受限字段。客户本机完整权限、撤销、无边框及自绘窗口控制保持生效。
+
+180 项单元与 25 项真实原生 Codex 检查通过。npm test 的预构建现包含 Native Host，支持新检出目录。当前源码打包后另有 8 项实际 UI 检查通过，覆盖 OTP/PKCE、本机明确授权、真实本机文件与公司工具费用、撤销，以及 1440/1280/800 窗口无可见滚动条和横向溢出。提供方回复与原生对话框选择为明确测试数据。
+
+```mermaid
+flowchart LR
+  A[Customer permission] --> B[Customer-local Codex]
+  B --> C{Current thread and turn?}
+  C -->|Yes| D[Authorized local or company tool]
+  C -->|No| E[Reject foreign request]
+  D --> F[Native completion and original billing]
+```
+
+[完整方案 / Behavior and verification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/122-codex-startup-and-turn-isolation.md)
+
+![Actual frameless Desktop](assets/screenshots/workmate-runtime-startup-desktop-02-layout-1440-en.png)
+
+![Actual native interaction](assets/screenshots/workmate-runtime-startup-desktop-02-local-cloud-boundary.gif)
+
+[800px](assets/screenshots/workmate-runtime-startup-desktop-02-layout-800-en.png) · [繁體中文](assets/screenshots/workmate-runtime-startup-desktop-02-workspace-zh.png) · [MP4](assets/screenshots/workmate-runtime-startup-desktop-02-local-cloud-boundary.mp4)
+
 ## 产品与边界
 
 首批面向现有客户的 marketing 团队，完整范围包含生图、设计/字体、视频/特效、广告和网站分析、SEO/GEO、企业重复流程及软件开发。目录已有 18 个精确 Skill 绑定的候选角色；至少十二个逐一完成专业任务、修改及异常处理的角色仍是验收要求。设计师由 Codex、设计 Skill 与公司 Image 2 组合。Agent 内核唯一使用 Codex；全部 AI 请求走公司 OpenAI 兼容后端。当前开发使用已授权假数据，不代表真实模型专业质量已经验收。

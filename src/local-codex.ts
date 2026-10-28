@@ -423,7 +423,12 @@ export class LocalCodexSession {
     void this.close().catch(() => { void this.hooks.event("local.runtime.stop_failed", { code: "LOCAL_PROCESS_SHUTDOWN_FAILED" }).catch(() => {}); });
   }
 
-  private setTurnId(id: string) { if (this.active) this.active.id = id; }
+  private setTurnId(id: string) {
+    if (this.active) {
+      if (this.active.id && this.active.id !== id) throw new LocalCodexError("LOCAL_CODEX_TURN_MISMATCH");
+      this.active.id = id;
+    }
+  }
   private async markUncertain() { if (this.checkpoint?.phase === "running") await this.save("uncertain"); }
 
   private cancelInputs() {
@@ -472,14 +477,25 @@ export class LocalCodexSession {
       const pending = this.pending.get(message.id);
       if (pending) { clearTimeout(pending.timer); this.pending.delete(message.id);
         if (message.error) this.eventTail = this.eventTail.then(() => this.emit("local.runtime.rpc_rejected", {
-          method: pending.method, native_code: message.error.code,
-          detail: typeof message.error.message === "string" ? message.error.message.slice(0, 1000) : "Native request rejected",
+          method: pending.method, native_code: Number.isSafeInteger(message.error.code) ? message.error.code : null,
+          detail: "Native request rejected",
         })).catch(() => {});
         message.error ? pending.reject(new LocalCodexError("LOCAL_CODEX_RPC_REJECTED")) : pending.resolve(message.result); }
       return;
     }
+    // A queued frame belongs to the operation observed at receipt, never to a
+    // later turn that happened to become active while persistence was waiting.
+    const observedTurn = this.active;
     this.eventTail = this.eventTail.then(async () => {
       if (message.id !== undefined && message.method) {
+        const inCurrentTurn = !!observedTurn && observedTurn === this.active && !!observedTurn.id
+          && message.params?.threadId === this.threadId && message.params?.turnId === observedTurn.id;
+        if (["item/tool/call", "item/tool/requestUserInput"].includes(message.method) && !inCurrentTurn) {
+          if (this.child && !this.hasExited && !this.child.stdin.destroyed) this.child.stdin.write(JSON.stringify({ id: message.id,
+            result: message.method === "item/tool/call" ? { success: false, contentItems: [{ type: "inputText", text: "LOCAL_TOOL_TURN_SCOPE_INVALID" }] }
+              : { answers: {} } }) + "\n");
+          return;
+        }
         if (message.method === "item/tool/requestUserInput") { await this.requestInput(message); return; }
         if (message.method === "item/tool/call") {
           const call = message.params;
@@ -590,7 +606,7 @@ export class LocalCodexSession {
         }
         const kind = approvalMethods.get(message.method);
         let decision: "accept" | "decline" = "decline";
-        if (kind && !this.closed && !this.revoked) {
+        if (kind && inCurrentTurn && !this.closed && !this.revoked) {
           this.validateGrant(); await this.hooks.authorize();
           if (this.grant.mode === "full-access") decision = "accept";
           else if (this.grant.mode === "workspace-write" && this.hooks.approval) {
@@ -609,12 +625,21 @@ export class LocalCodexSession {
       }
       const method = message.method, params = message.params ?? {};
       if (params.threadId && params.threadId !== this.threadId) return;
+      const turnScoped = method === "thread/tokenUsage/updated" || method?.startsWith("turn/") || method?.startsWith("item/");
+      if (turnScoped) {
+        if (!observedTurn || observedTurn !== this.active || params.threadId !== this.threadId) return;
+        const turnId = ["turn/started", "turn/completed"].includes(method) ? params.turn?.id : params.turnId;
+        if (typeof turnId !== "string" || !turnId) return;
+        if (method === "turn/started") {
+          if (observedTurn.id && observedTurn.id !== turnId) return;
+          observedTurn.id = turnId;
+        } else if (!observedTurn.id || observedTurn.id !== turnId) return;
+      }
       if (method === "thread/tokenUsage/updated") {
         const usage = params.tokenUsage?.total;
         this.nativeUsage = usage && [usage.inputTokens, usage.outputTokens].every((n) => Number.isSafeInteger(n) && n >= 0)
           ? { input: usage.inputTokens, output: usage.outputTokens } : null;
       }
-      if (method === "turn/started" && this.active) this.active.id = params.turn?.id ?? this.active.id;
       if (method === "item/agentMessage/delta" && this.active && typeof params.delta === "string") this.active.text += params.delta;
       const item = params.item;
       const visibleItem = !item || ["agentMessage", "commandExecution", "fileChange", "plan", "mcpToolCall", "dynamicToolCall", "webSearch", "imageView"].includes(item.type);

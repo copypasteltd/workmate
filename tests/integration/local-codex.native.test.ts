@@ -4,6 +4,8 @@ import { createServer, type ServerResponse } from "node:http";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
 import { mkdir, mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
+import type { ChildProcessWithoutNullStreams } from "node:child_process";
+import { StringDecoder } from "node:string_decoder";
 import { LocalCodexSession, type LocalCodexProfile, type LocalSessionBinding, type LocalCodexHooks } from "../../src/local-codex.js";
 import type { LocalInputRequest } from "../../src/local-input.js";
 import { LocalProgramController, type ProgramJournal } from "../../src/local-programs.js";
@@ -13,7 +15,7 @@ const lock = JSON.parse(await readFile(new URL("../../contracts/local-codex-runt
 const executable = process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN;
 assert.ok(executable && path.isAbsolute(executable), "Set COPYPASTE_LOCAL_CODEX_TEST_BIN to the locked absolute native Codex binary. No PATH fallback.");
 const skill = "---\nname: native-fixture-method\ndescription: Verify a local fixture without fabricating results.\n---\nNATIVE_SKILL_FROM_DISK_73D6. Inspect actual tool results and preserve unrelated files.";
-type Action = { command?: string; input?: { questions: any[] }; company?: { tool: string; arguments: Record<string, unknown> }; program?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; stage?: number };
+type Action = { command?: string; input?: { questions: any[] }; company?: { tool: string; arguments: Record<string, unknown> }; program?: { tool: string; arguments: Record<string, unknown> }; stall?: () => void; hold?: () => Promise<void>; stage?: number };
 
 function emit(res: ServerResponse, type: string, payload: Record<string, unknown>) {
   res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...payload })}\n\n`);
@@ -71,6 +73,7 @@ async function fixture() {
       const action = actions[0];
       assert.ok(action, "Unexpected additional provider dispatch");
       res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache" });
+      if (action.hold) await action.hold();
       if (action.stall) {
         actions.shift();
         emit(res, "response.created", { response: { id: "resp_stalled", object: "response", status: "in_progress", output: [] } });
@@ -143,6 +146,137 @@ async function fixture() {
     pid: () => readyPid, revokeAuthority: () => { authority = false; }, token, directory };
 }
 const quoted = (value: string) => "'" + value.replaceAll("'", "''") + "'";
+
+function nativeProtocolFixture(native: LocalCodexSession) {
+  const internal = native as unknown as { child: ChildProcessWithoutNullStreams; eventTail: Promise<void> };
+  const child = internal.child; assert.ok(child?.pid && child.exitCode === null);
+  const replies: any[] = [], write = child.stdin.write;
+  child.stdin.write = function (...args: any[]) {
+    let value: any;
+    try { value = JSON.parse(Buffer.isBuffer(args[0]) ? args[0].toString() : args[0]); } catch {}
+    if (String(value?.id).startsWith("copypaste_fixture_")) {
+      replies.push(value);
+      const callback = args.find((arg, index) => index > 0 && typeof arg === "function");
+      if (callback) queueMicrotask(() => callback());
+      return true;
+    }
+    return Reflect.apply(write, child.stdin, args);
+  } as typeof write;
+  return { child, replies, drain: () => internal.eventTail,
+    inject: (value: unknown) => child.stdout.emit("data", Buffer.from(JSON.stringify(value) + "\n")),
+    restore: () => { child.stdin.write = write; } };
+}
+
+test("native local turns reject pre-turn tools and foreign notifications, usage and approvals without losing the active task", { timeout: 120000 }, async () => {
+  const f = await fixture(); let release = () => {}, restore = () => {}, toolCalls = 0, inputs = 0;
+  try {
+    const binding = { ...f.binding, companyTools: [{ name: "project_assets", description: "Read the private fixture project.",
+      inputSchema: { type: "object", properties: {}, additionalProperties: false } }] };
+    const native = f.make(f.profile, binding, async () => { toolCalls++; return { assets: [] }; },
+      async () => { inputs++; return {}; });
+    await f.start(native);
+    const protocol = nativeProtocolFixture(native); restore = protocol.restore;
+    const threadId = (await f.checkpoint()).threadId;
+    protocol.inject({ id: "copypaste_fixture_before_turn", method: "item/tool/call", params: {
+      threadId, turnId: "not-started", namespace: "copypaste", tool: "project_assets", callId: "call_fixture_before", arguments: {} } });
+    protocol.inject({ id: "copypaste_fixture_early_approval", method: "item/commandExecution/requestApproval", params: {
+      threadId, turnId: "not-started", itemId: "fixture_early" } });
+    await protocol.drain();
+    assert.equal(toolCalls, 0); assert.equal(f.requests.length, 0);
+    assert.equal(protocol.replies[0].result.success, false); assert.equal(protocol.replies[1].result.decision, "decline");
+    let reached!: () => void;
+    const ready = new Promise<void>(resolve => { reached = resolve; });
+    const held = new Promise<void>(resolve => { release = resolve; });
+    f.actions.push({ hold: () => { reached(); return held; } });
+    const pending = native.turn("Complete the actual local task after rejecting foreign protocol frames.");
+    void pending.catch(() => {});
+    await ready; await protocol.drain();
+    const started = f.events.find(e => e.kind === "turn/started")?.value;
+    assert.ok(started?.turn?.id); const scope = { threadId: started.threadId, turnId: started.turn.id };
+    let index = 0;
+    for (const fields of [{ ...scope, threadId: "foreign-thread" }, { ...scope, turnId: "foreign-turn" }, { turnId: scope.turnId }]) {
+      protocol.inject({ method: "turn/started", params: { ...fields, turn: { id: "FOREIGN_TURN", status: "inProgress" } } });
+      protocol.inject({ method: "thread/tokenUsage/updated", params: { ...fields, tokenUsage: { total: { inputTokens: 999999, outputTokens: 999999 } } } });
+      protocol.inject({ method: "item/agentMessage/delta", params: { ...fields, delta: "FOREIGN_OUTPUT" } });
+      protocol.inject({ method: "item/commandExecution/outputDelta", params: { ...fields, delta: "FOREIGN_COMMAND" } });
+      protocol.inject({ method: "turn/completed", params: { ...fields, turn: { id: fields.turnId, status: "completed" } } });
+      protocol.inject({ id: "copypaste_fixture_tool_" + index, method: "item/tool/call", params: {
+        ...fields, namespace: "copypaste", tool: "project_assets", callId: "call_fixture_" + index, arguments: {} } });
+      protocol.inject({ id: "copypaste_fixture_input_" + index, method: "item/tool/requestUserInput", params: { ...fields, questions: [] } });
+      for (const method of ["item/commandExecution/requestApproval", "item/fileChange/requestApproval"])
+        protocol.inject({ id: "copypaste_fixture_approval_" + index++, method, params: { ...fields, itemId: "fixture" } });
+    }
+    protocol.inject({ method: "turn/completed", params: { ...scope, turn: { status: "completed" } } });
+    await protocol.drain();
+    assert.equal(toolCalls, 0); assert.equal(inputs, 0);
+    assert.ok(protocol.replies.filter(r => r.id.includes("_tool_")).every(r => r.result.success === false));
+    assert.ok(protocol.replies.filter(r => r.id.includes("_approval_")).every(r => r.result.decision === "decline"));
+    assert.equal(f.events.some(e => JSON.stringify(e.value).includes("FOREIGN_")), false);
+    release(); const result = await pending;
+    assert.equal(result.status, "completed"); assert.equal(result.turnId, scope.turnId);
+    assert.equal(result.text, "LOCAL_CODEX_NATIVE_COMPLETE"); assert.deepEqual(result.nativeTokenUsage, { input: 17, output: 5 });
+    assert.equal(f.requests.length, 1);
+    f.actions.push({}); const next = await native.turn("Continue the same valid local thread.");
+    assert.equal(next.status, "completed"); assert.equal(next.threadId, result.threadId); assert.notEqual(next.turnId, result.turnId);
+    assert.equal(f.requests.length, 2); assert.equal(toolCalls, 0);
+  } finally { release(); restore(); await f.clean(); }
+});
+
+test("a real native completion recovers a lost turn-start reply without replay or a second provider dispatch", { timeout: 120000 }, async () => {
+  const f = await fixture(); let restore = () => {};
+  try {
+    const native = f.make(); await f.start(native);
+    const protocol = nativeProtocolFixture(native), child = protocol.child;
+    const write = child.stdin.write, emit = child.stdout.emit, decoder = new StringDecoder("utf8");
+    let requestId: unknown, buffer = "", dropped = 0;
+    child.stdin.write = function (...args: any[]) {
+      const request = JSON.parse(String(args[0])); if (request.method === "turn/start") requestId = request.id;
+      return Reflect.apply(write, child.stdin, args);
+    } as typeof write;
+    child.stdout.emit = function (event: string | symbol, ...args: any[]) {
+      if (event !== "data") return Reflect.apply(emit, child.stdout, [event, ...args]);
+      buffer += decoder.write(Buffer.from(args[0]));
+      const lines = buffer.split("\n"); buffer = lines.pop()!;
+      const kept = lines.filter(line => {
+        let value: any; try { value = JSON.parse(line); } catch { return true; }
+        if (requestId !== undefined && value.id === requestId && value.result?.turn?.id) { dropped++; return false; }
+        return true;
+      });
+      return kept.length ? Reflect.apply(emit, child.stdout, ["data", Buffer.from(kept.join("\n") + "\n")]) : true;
+    } as typeof emit;
+    restore = () => { child.stdin.write = write; child.stdout.emit = emit; protocol.restore(); };
+    f.actions.push({}); const result = await native.turn("Complete the real task even when the RPC acknowledgement is lost.");
+    assert.equal(dropped, 1); assert.equal(buffer, ""); assert.equal(result.status, "completed");
+    assert.equal(result.text, "LOCAL_CODEX_NATIVE_COMPLETE"); assert.deepEqual(result.nativeTokenUsage, { input: 17, output: 5 });
+    assert.equal(f.requests.length, 1); assert.equal((await f.checkpoint()).phase, "ready");
+  } finally { restore(); await f.clean(); }
+});
+
+test("native RPC rejection diagnostics expose neither native content nor structured error payloads", { timeout: 60000 }, async () => {
+  const f = await fixture(); let restore = () => {};
+  try {
+    const native = f.make(); await f.start(native);
+    const protocol = nativeProtocolFixture(native), write = protocol.child.stdin.write;
+    protocol.child.stdin.write = function (...args: any[]) {
+      const request = JSON.parse(String(args[0]));
+      if (request.method === "turn/start") {
+        queueMicrotask(() => protocol.inject({ id: request.id, error: { code: { private: "PRIVATE_NATIVE_CONTENT" },
+          message: "PRIVATE_NATIVE_CONTENT", data: { prompt: "PRIVATE_NATIVE_CONTENT" } } }));
+        const callback = args.find((arg, index) => index > 0 && typeof arg === "function");
+        if (callback) queueMicrotask(() => callback());
+        return true;
+      }
+      return Reflect.apply(write, protocol.child.stdin, args);
+    } as typeof write;
+    restore = () => { protocol.child.stdin.write = write; protocol.restore(); };
+    await assert.rejects(native.turn("Exercise controlled native rejection without dispatch."), { code: "LOCAL_CODEX_RPC_REJECTED" });
+    await native.close(); await protocol.drain();
+    assert.equal(f.requests.length, 0);
+    const diagnostic = f.events.find(e => e.kind === "local.runtime.rpc_rejected")?.value;
+    assert.deepEqual(diagnostic, { method: "turn/start", native_code: null, detail: "Native request rejected" });
+    assert.equal(JSON.stringify(f.events).includes("PRIVATE_NATIVE_CONTENT"), false);
+  } finally { restore(); await f.clean(); }
+});
 
 test("native Codex transports the versioned website-analysis schema and returns exact authenticated tool evidence", { timeout: 180000 }, async () => {
   const { connectorReadInput } = await import("../../../copypaste-platform/src/analysis-role-tools.js");

@@ -2,6 +2,31 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- runtime-startup-122 -->
+
+## Codex startup and turn isolation · Stage 122
+
+Local Codex tools, input requests, approvals, messages, usage and completion are scoped to the current thread and turn. Queued old frames cannot enter a later task. A real completion can recover a lost turn/start reply without replay. Native error diagnostics retain only bounded fields. Customer-local full permission, revocation, frameless presentation and custom window controls remain enforced.
+
+180 unit and 25 real native Codex checks passed. npm test now builds the Native Host for fresh checkouts. Eight actual packaged UI checks also passed: OTP/PKCE, explicit local consent, real local files and company-tool billing, revocation, and 1440/1280/800 layouts without visible scrollbar rails or horizontal overflow. Provider responses and native dialog selections are explicit fixtures.
+
+```mermaid
+flowchart LR
+  A[Customer permission] --> B[Customer-local Codex]
+  B --> C{Current thread and turn?}
+  C -->|Yes| D[Authorized local or company tool]
+  C -->|No| E[Reject foreign request]
+  D --> F[Native completion and original billing]
+```
+
+[完整方案 / Behavior and verification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/122-codex-startup-and-turn-isolation.md)
+
+![Actual frameless Desktop](assets/screenshots/workmate-runtime-startup-desktop-02-layout-1440-en.png)
+
+![Actual native interaction](assets/screenshots/workmate-runtime-startup-desktop-02-local-cloud-boundary.gif)
+
+[800px](assets/screenshots/workmate-runtime-startup-desktop-02-layout-800-en.png) · [繁體中文](assets/screenshots/workmate-runtime-startup-desktop-02-workspace-zh.png) · [MP4](assets/screenshots/workmate-runtime-startup-desktop-02-local-cloud-boundary.mp4)
+
 ## Product and boundaries
 
 The first customers are existing marketing teams. Scope includes image/design/typography, video/effects, advertising and website analysis, SEO/GEO, repeated business processes and software development. The catalog has 18 candidates with exact Skill bindings; at least twelve individually qualified professional presets remain an acceptance requirement. The designer combines Codex, design Skills and company Image 2. Codex is the only Agent core. All AI uses the company's OpenAI-compatible backend; development currently uses authorized synthetic providers, not a claim of live professional quality.

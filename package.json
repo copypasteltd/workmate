@@ -10,7 +10,7 @@
     "build": "node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p renderer/tsconfig.json",
     "start": "electron .",
-    "pretest": "node scripts/build-program-host.mjs && node scripts/build-update-host.mjs",
+    "pretest": "node scripts/build-program-host.mjs && node scripts/build-update-host.mjs && node scripts/build-native-host.mjs",
     "test": "node --import tsx --test tests/*.test.ts",
     "test:local": "node --import tsx --test --test-concurrency=1 tests/integration/local-codex.native.test.ts",
     "runtime:prepare": "node scripts/prepare-local-codex.mjs",
