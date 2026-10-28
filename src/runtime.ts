@@ -61,6 +61,23 @@ export class RuntimeFailure extends Error {
     super(code);
   }
 }
+class RuntimeRPCFailure extends RuntimeFailure {
+  constructor(
+    code: string,
+    readonly method: string,
+    readonly elapsedMs: number,
+    accepted: boolean,
+    usageKnown: boolean,
+    input: number,
+    output: number,
+  ) {
+    super(code, accepted, usageKnown, input, output);
+  }
+}
+// This error can leave startAttempt only after its finally block has proved
+// that the previous native process and its scoped gateway are closed.
+class RecoverableInitializationFailure extends RuntimeFailure {}
+
 export class CodexRuntimeAdapter {
   constructor(private c: Config) {}
   async version() {
@@ -78,6 +95,33 @@ export class CodexRuntimeAdapter {
     return v;
   }
   async start(ctx: RuntimeContext): Promise<RuntimeResult> {
+    const deadlineAt = Date.now() + 15 * 60_000;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        return await this.startAttempt(ctx, attempt, deadlineAt);
+      } catch (error) {
+        if (!(error instanceof RecoverableInitializationFailure)) throw error;
+        if (ctx.signal.aborted)
+          throw new RuntimeFailure("CODEX_CANCELLED", false, true);
+        if (attempt === 2 || Date.now() >= deadlineAt) throw error;
+        // No task/turn is resubmitted. Initialization alone may restart once;
+        // provider, tool and billing authority remain the original task's.
+        await ctx.onEvent("runtime.startup.retry", {
+          attempt,
+          next_attempt: attempt + 1,
+          maximum_attempts: 2,
+          code: error.code,
+        });
+      }
+    }
+    throw new RuntimeFailure("CODEX_RUNTIME_FAILED", false, true);
+  }
+
+  private async startAttempt(
+    ctx: RuntimeContext,
+    attempt: number,
+    deadlineAt: number,
+  ): Promise<RuntimeResult> {
     const selected = ctx.selection;
     if (
       selected &&
@@ -126,6 +170,8 @@ export class CodexRuntimeAdapter {
       throw new RuntimeFailure("AI_REQUEST_SCOPE_REQUIRED", false, true);
     if (ctx.signal.aborted)
       throw new RuntimeFailure("CODEX_CANCELLED", false, true);
+    if (Date.now() >= deadlineAt)
+      throw new RuntimeFailure("CODEX_RPC_TIMEOUT", false, true);
     await this.version();
     if (ctx.signal.aborted)
       throw new RuntimeFailure("CODEX_CANCELLED", false, true);
@@ -261,6 +307,10 @@ export class CodexRuntimeAdapter {
         CODEX_HOME: home,
         COPYPASTE_RUNTIME_KEY: gateway.credential,
       };
+      if (ctx.signal.aborted)
+        throw new RuntimeFailure("CODEX_CANCELLED", false, true);
+      if (Date.now() >= deadlineAt)
+        throw new RuntimeFailure("CODEX_RPC_TIMEOUT", false, true);
       const child = spawn(
         c.CODEX_BIN,
         ["app-server", "--stdio", "--strict-config"],
@@ -311,12 +361,26 @@ export class CodexRuntimeAdapter {
         threadOutput = baselineOutput;
       let completedResult: RuntimeResult | undefined;
       let invalidUsage = false;
+      let stdoutBytes = 0,
+        stderrBytes = 0;
+      const rpcFailure = (code: string, method: string, startedAt: number) =>
+        new RuntimeRPCFailure(
+          code,
+          method,
+          Math.max(0, Math.round(performance.now() - startedAt)),
+          accepted,
+          usageKnown,
+          input,
+          output,
+        );
       const pending = new Map<
         number,
         {
           resolve: (v: any) => void;
           reject: (e: Error) => void;
           timer: ReturnType<typeof setTimeout>;
+          method: string;
+          startedAt: number;
         }
       >();
       const send = (method: string, params: unknown) =>
@@ -333,26 +397,31 @@ export class CodexRuntimeAdapter {
             );
             return;
           }
+          const startedAt = performance.now();
+          if (hasExited || child.stdin.destroyed || !child.stdin.writable) {
+            reject(rpcFailure("CODEX_CONNECTION_LOST", method, startedAt));
+            return;
+          }
           const id = ++seq;
           const timer = setTimeout(() => {
             pending.delete(id);
-            reject(
-              new RuntimeFailure(
-                "CODEX_RPC_TIMEOUT",
-                accepted,
-                usageKnown,
-                input,
-                output,
-              ),
-            );
+            reject(rpcFailure("CODEX_RPC_TIMEOUT", method, startedAt));
           }, 60_000);
-          pending.set(id, { resolve, reject, timer });
-          child.stdin.write(JSON.stringify({ id, method, params }) + "\n");
+          pending.set(id, { resolve, reject, timer, method, startedAt });
+          child.stdin.write(JSON.stringify({ id, method, params }) + "\n", (error) => {
+            if (error && pending.has(id)) {
+              clearTimeout(timer);
+              pending.delete(id);
+              reject(rpcFailure("CODEX_CONNECTION_LOST", method, startedAt));
+            }
+          });
         });
       let finish!: (v: string) => void;
       const done = new Promise<string>((r) => {
         finish = r;
       });
+      const currentTurn = (params: any, turnId = params?.turnId) =>
+        !!turn && params?.threadId === thread && turnId === turn;
       const onLine = async (line: string) => {
         let m: any;
         try {
@@ -367,8 +436,10 @@ export class CodexRuntimeAdapter {
             pending.delete(m.id);
             if (m.error)
               p.reject(
-                new RuntimeFailure(
+                new RuntimeRPCFailure(
                   "CODEX_RPC_REJECTED",
+                  p.method,
+                  Math.max(0, Math.round(performance.now() - p.startedAt)),
                   accepted,
                   usageKnown,
                   input,
@@ -384,7 +455,15 @@ export class CodexRuntimeAdapter {
             const tool = ctx.tools.find((t) => t.name === m.params?.tool);
             let result: any;
             try {
-              if (!tool || ctx.signal.aborted)
+              if (
+                !tool ||
+                !accepted ||
+                !currentTurn(m.params) ||
+                m.params.namespace != null ||
+                typeof m.params.callId !== "string" ||
+                !m.params.callId.length ||
+                ctx.signal.aborted
+              )
                 throw new Error("Tool not allowed");
               result = {
                 success: true,
@@ -409,7 +488,7 @@ export class CodexRuntimeAdapter {
             );
           return;
         }
-        if (m.method === "item/agentMessage/delta") {
+        if (m.method === "item/agentMessage/delta" && currentTurn(m.params)) {
           const delta = String(m.params?.delta ?? "");
           text += delta;
           await ctx.onEvent("message.delta", { text: delta });
@@ -447,23 +526,27 @@ export class CodexRuntimeAdapter {
               output >= 0;
           }
         }
-        if (m.method === "turn/completed")
+        if (m.method === "turn/completed" && typeof m.params?.turn?.id === "string" && currentTurn(m.params, m.params.turn.id))
           finish(m.params?.turn?.status ?? "failed");
-        if (m.method === "error" && m.params?.willRetry === false)
+        if (m.method === "error" && currentTurn(m.params) && m.params?.willRetry === false)
           finish("failed");
       };
       let chain = Promise.resolve();
       lines.on("line", (l) => {
         chain = chain.then(() => onLine(l)).catch(() => finish("failed"));
       });
-      child.stderr.on("data", () => {
+      child.stdout.on("data", (chunk: Buffer) => {
+        stdoutBytes += chunk.length;
+      });
+      child.stderr.on("data", (chunk: Buffer) => {
+        stderrBytes += chunk.length;
         /* Raw runtime stderr can contain sensitive input; do not log it. */
       });
       const failPending = (code = "CODEX_CONNECTION_LOST") => {
         for (const p of pending.values()) {
           clearTimeout(p.timer);
           p.reject(
-            new RuntimeFailure(code, accepted, usageKnown, input, output),
+            rpcFailure(code, p.method, p.startedAt),
           );
         }
         pending.clear();
@@ -503,7 +586,7 @@ export class CodexRuntimeAdapter {
         abort();
         failPending("CODEX_RPC_TIMEOUT");
         finish("timeout");
-      }, 15 * 60_000);
+      }, Math.max(0, deadlineAt - Date.now()));
       if (ctx.signal.aborted) abort();
       try {
         await ctx.onEvent("runtime.phase", { phase: "initialize" });
@@ -607,6 +690,16 @@ export class CodexRuntimeAdapter {
         // Revoke the grant before proving zero dispatches. An authorization
         // callback still in flight must not dispatch after this observation.
         await gateway.close();
+        if (e instanceof RuntimeRPCFailure)
+          await ctx.onEvent("runtime.rpc.failed", {
+            attempt,
+            method: e.method,
+            code: e.code,
+            elapsed_ms: e.elapsedMs,
+            provider_requests: gateway.forwardedRequests,
+            stdout_bytes: stdoutBytes,
+            stderr_bytes: stderrBytes,
+          }).catch(() => {});
         if (gateway.forwardedRequests === 0) {
           accepted = false;
           usageKnown = true;
@@ -619,6 +712,14 @@ export class CodexRuntimeAdapter {
         }
         if (e instanceof RuntimeFailure) {
           if (e.accepted) e.usageKnown = false;
+          if (
+            e instanceof RuntimeRPCFailure &&
+            e.method === "initialize" &&
+            ["CODEX_RPC_TIMEOUT", "CODEX_CONNECTION_LOST"].includes(e.code) &&
+            gateway.forwardedRequests === 0 &&
+            !ctx.signal.aborted
+          )
+            throw new RecoverableInitializationFailure(e.code, false, true);
           throw e;
         }
         throw new RuntimeFailure(

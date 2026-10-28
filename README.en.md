@@ -2,6 +2,29 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- runtime-startup-122 -->
+
+The [billing integration scenario](tests/runtime-startup-billing.test.ts) prepares real private source evidence and its original funding reservation, then checks recovery and settlement within the retained 120-second bound. Two initial failures and the later isolated pass stay separate; the checkpoint records the final complete related-file count. Earlier failure causes remain unproven.
+
+## Codex startup and turn isolation · Stage 122
+
+A timed-out or disconnected cloud Codex initialization may restart once only after zero model dispatches and actual closure of the old process and gateway. RPCs retain the 60-second deadline; both starts share the original task deadline, authority and budget. Failures after thread or model admission are not replayed. Tools, output and completion must belong to the current thread and turn.
+
+12 real native runtime checks passed, including the actual 60-second timeout, restart limit, cancellation, explicit rejection, cleanup failure and foreign-turn denial. Model responses are synthetic; the historical intermittent timeout root cause remains unproven. Native checks require the locked executable and adjacent Desktop contract.
+
+```mermaid
+flowchart LR
+  A[Original task and budget] --> B[Native Codex initialize]
+  B --> C{Initialized?}
+  C -->|Yes| D[Current thread and turn]
+  C -->|No| E{Zero dispatch, old process closed, retry unused?}
+  E -->|Yes, once| B
+  E -->|No| F[Stop and report actual outcome]
+  D --> G[Company tools and original settlement]
+```
+
+[完整方案 / Behavior and verification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/122-codex-startup-and-turn-isolation.md)
+
 ## Product and boundaries
 
 The first customers are existing marketing teams. Scope includes image/design/typography, video/effects, advertising and website analysis, SEO/GEO, repeated business processes and software development. The catalog has 18 candidates with exact Skill bindings; at least twelve individually qualified professional presets remain an acceptance requirement. The designer combines Codex, design Skills and company Image 2. Codex is the only Agent core. All AI uses the company's OpenAI-compatible backend; development currently uses authorized synthetic providers, not a claim of live professional quality.
