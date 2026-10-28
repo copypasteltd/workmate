@@ -44,6 +44,7 @@ export const roleEnglish: Record<string, string> = {
   "video-motion": "Video & motion designer",
   "marketing-analyst": "Marketing analyst",
   "workflow-consultant": "Workflow consultant",
+  "computer-operator": "Dedicated computer operator",
 };
 const examplesEnglish: Record<string, string> = {
   assistant:
@@ -242,6 +243,7 @@ function TemplatePage({
       "workflow-consultant",
     ],
     items = [...(page?.items ?? [])]
+      .filter((row) => row.role_key !== "computer-operator")
       .filter((row) => row.kind === "role_preset" || !limit)
       .sort((a, b) =>
         limit

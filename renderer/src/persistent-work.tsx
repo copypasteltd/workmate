@@ -388,7 +388,8 @@ function SpecialistEditor({
               <option value="assistant">
                 {t("預設助手", "Default assistant")}
               </option>
-              {roles.data?.items.map((r: any) => (
+              {role === "computer-operator" && <option value={role}>{t("雲端電腦角色 · 請使用 Web", "Cloud computer role · use Web")}</option>}
+              {roles.data?.items.filter((r: any) => r.role_key !== "computer-operator").map((r: any) => (
                 <option key={r.role_key} value={r.role_key}>
                   {r.display_name} · {r.role_key}
                 </option>

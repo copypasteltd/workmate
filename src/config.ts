@@ -79,6 +79,8 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   }
   // Scoped native credentials and execution admission belong to the main
   // process. The generic renderer bridge must never expose these routes.
+  if (/\/cloud-computers(?:\/|$)|^\/v1\/cloud-runtime-nodes(?:\/|$)/.test(pathname))
+    return false;
   if (/\/desktop-executions(?:\/|$)|^\/v1\/desktop-inference(?:\/|$)/.test(pathname))
     return false;
   if (/\/geo\/experiments\/[a-f0-9-]{36}\/(?:desktop-runs|desktop-configuration)$/i.test(pathname)) return false;
