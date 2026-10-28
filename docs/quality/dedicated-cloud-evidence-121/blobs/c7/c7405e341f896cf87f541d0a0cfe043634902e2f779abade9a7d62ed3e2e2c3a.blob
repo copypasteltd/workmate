@@ -1,0 +1,141 @@
+import { randomUUID } from "node:crypto";
+import { canonical, check, sha256, startSpecification, verifySource, controlInput, uuid } from "./protocol.mjs";
+
+/** Host credentials stay in this privileged broker. The lease driver receives
+ * only bounded controls and the exact already verified selected file bytes. */
+export class DedicatedNodeAgent {
+  constructor({ config, api, driver, journal, clock = () => performance.now(), instance = randomUUID() }) {
+    Object.assign(this, { config, api, driver, journal, clock, instance });
+    this.state = { format: 1, current: null, commands: [] }; this.pendingWrites = Promise.resolve(); this.jobs = new Map(); this.lastPoll = -Infinity; this.frameSequence = 0;
+  }
+  async save() {
+    // Serialize actual snapshots, including concurrent stop/watchdog callbacks.
+    const bytes = JSON.stringify(this.state);
+    this.pendingWrites = this.pendingWrites.then(() => this.journal.save(JSON.parse(bytes)));
+    await this.pendingWrites;
+  }
+  async initialize() {
+    this.state = await this.journal.initialize();
+    if (this.state.current) {
+      // A daemon restart never resumes private controls under a fresh instance.
+      // Cleanup and actual usage come from the host, not its former JSON state.
+      this.state.current.cleanup = await this.driver.recover(this.state.current);
+      this.state.current.scope = { terminal: false, visual: false }; await this.save();
+    }
+  }
+  async poll() {
+    const started = this.clock(), current = this.state.current;
+    const reply = await this.api.request("poll", {
+      machine_fingerprint: this.config.machine_fingerprint, instance_id: this.instance, agent_version: "1.0.0", physical_host: true,
+      current_session_id: current?.session_id ?? null, current_generation: current?.generation ?? 0,
+    });
+    check(typeof reply.stop_all === "boolean" && Array.isArray(reply.commands) && reply.commands.length <= 1 && Number.isFinite(Date.parse(reply.server_time)), "POLL_RESPONSE_INVALID");
+    this.lastPoll = this.clock();
+    if (reply.stop_all) await this.stopLocally();
+    for (const command of reply.commands) {
+      check(uuid(command?.id) && uuid(command.session_id) && Number.isSafeInteger(command.generation) && command.generation > 0 && ["start", "stop", "input"].includes(command.kind), "NODE_COMMAND_INVALID");
+      if (reply.stop_all && command.kind !== "stop") throw new Error("DRAINING_NODE_CANNOT_EXECUTE");
+      const digest = sha256(canonical(command)), previous = this.state.commands.find(c => c.id === command.id);
+      if (previous) {
+        check(previous.sha256 === digest, "DELIVERED_COMMAND_CHANGED");
+        if (previous.receipt) await this.ack(previous); // A lost response repeats the exact saved receipt, never the command.
+        else if (!this.jobs.has(command.id) && previous.status === "executing") await this.stopLocally();
+        continue;
+      }
+      if (command.kind !== "start") check(this.state.current?.session_id === command.session_id && this.state.current.generation === command.generation, "STALE_COMMAND_GENERATION");
+      else check(!this.state.current, "COMPUTER_ALREADY_OWNED");
+      const entry = { id: command.id, sha256: digest, status: "executing", session_id: command.session_id, generation: command.generation, kind: command.kind };
+      this.state.commands.push(entry); await this.save();
+      if (command.kind === "stop") {
+        await this.stopLocally();
+        check(this.state.current?.cleanup?.cleanup_verified === true, "HOST_CLEANUP_UNCONFIRMED");
+        entry.receipt = this.receipt(command, "stopped", this.state.current.cleanup);
+        entry.status = "completed"; await this.save(); await this.ack(entry);
+      } else {
+        const abort = new AbortController(); this.abort = abort;
+        // Commands run independently of polling. A slow terminal command must
+        // not prevent heartbeats, lease expiry or a higher priority stop.
+        const job = this.execute(command, entry, reply.server_time, this.clock() - started, abort.signal)
+          .catch(async () => { try { await this.stopLocally(); } catch { this.fatalError = new Error("HOST_CLEANUP_UNCONFIRMED"); } })
+          .finally(() => this.jobs.delete(command.id));
+        this.jobs.set(command.id, job);
+      }
+    }
+  }
+  receipt(command, outcome, cleanup = {}) {
+    return { instance_id: this.instance, command_id: command.id, session_id: command.session_id, generation: command.generation,
+      outcome, cleanup_verified: cleanup.cleanup_verified === true, running_milliseconds: cleanup.running_milliseconds ?? 0 };
+  }
+  async execute(command, entry, serverTime, roundTrip, signal) {
+    if (command.kind === "start") {
+      this.state.current = { session_id: command.session_id, generation: command.generation, scope: { terminal: false, visual: false }, deadline: this.clock() + 15_000, driver_identity: this.driver.identity(command) };
+      await this.save();
+      try {
+        const { specification: spec, remaining_milliseconds: remaining } = startSpecification(command, this.config, serverTime, roundTrip);
+        this.state.current.scope = spec.scope; this.state.current.deadline = this.clock() + remaining; await this.save();
+        const files = [];
+        for (const expected of spec.selected_files) {
+          signal.throwIfAborted();
+          const suffix = `sessions/${command.session_id}/files/${expected.id}?generation=${command.generation}&instance_id=${this.instance}`;
+          files.push(verifySource(await this.api.request(suffix, undefined, signal), expected));
+        }
+        signal.throwIfAborted();
+        await this.driver.start(command, spec, files, this.state.current.deadline - this.clock(), signal);
+        signal.throwIfAborted(); entry.receipt = this.receipt(command, "ready");
+      } catch {
+        await this.stopLocally();
+        check(this.state.current?.cleanup?.cleanup_verified, "START_CLEANUP_UNCONFIRMED");
+        entry.receipt = this.receipt(command, "failed", this.state.current.cleanup);
+      }
+    } else {
+      check(this.state.current && !this.state.current.cleanup && this.clock() < this.state.current.deadline, "CONTROL_LEASE_ENDED");
+      const input = controlInput(command.body, this.state.current.scope);
+      try { const result = await this.driver.input(input, signal); entry.receipt = { ...this.receipt(command, "completed"), result: String(result).slice(0, 16_384) }; }
+      catch { signal.throwIfAborted(); entry.receipt = { ...this.receipt(command, "failed"), result: "CONTROL_FAILED" }; }
+    }
+    entry.status = "completed"; await this.save();
+    if (!signal.aborted) {
+      // Transport failure after a committed acknowledgement is uncertain. Keep
+      // the original receipt for the next delivery, without undoing a live unit.
+      await this.ack(entry).catch(() => {});
+    }
+  }
+  async ack(entry) {
+    await this.api.request("acknowledgements", entry.receipt);
+    entry.status = "acknowledged";
+    if (entry.kind === "stop" || entry.kind === "start" && entry.receipt.outcome === "failed") {
+      this.state.current = null;
+      this.state.commands = [entry]; // Private controls/results do not survive a completed lease.
+    }
+    // Keep the exact final receipt until a higher generation starts: its HTTP
+    // response can be lost after the server commits the cleanup transaction.
+    if (entry.kind === "input") { entry.receipt_sha256 = sha256(canonical(entry.receipt)); delete entry.receipt; }
+    await this.save();
+  }
+  async stopLocally() {
+    this.abort?.abort(new Error("LEASE_STOPPED"));
+    if (!this.state.current || this.state.current.cleanup?.cleanup_verified) return;
+    if (!this.stopping) this.stopping = (async () => {
+      const cleanup = await this.driver.stop(this.state.current);
+      check(cleanup?.cleanup_verified === true && Number.isSafeInteger(cleanup.running_milliseconds) && cleanup.running_milliseconds >= 0 && cleanup.running_milliseconds <= 86_400_000, "HOST_CLEANUP_UNCONFIRMED");
+      this.state.current.cleanup = cleanup; this.state.current.scope = { terminal: false, visual: false }; await this.save();
+    })().finally(() => { this.stopping = undefined; });
+    await this.stopping;
+  }
+  async watchdog() {
+    const current = this.state.current;
+    if (current && !current.cleanup && (this.clock() >= current.deadline || this.clock() - this.lastPoll >= 15_000)) await this.stopLocally();
+  }
+  async frame() {
+    const current = this.state.current;
+    if (!current || current.cleanup || !current.scope.visual || this.clock() >= current.deadline) return;
+    const bytes = await this.driver.frame();
+    // The backend independently validates CRC, dimensions, decompression and PNG structure.
+    check(Buffer.isBuffer(bytes) && bytes.length <= 524_288 && bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), "FRAME_INVALID");
+    if (this.state.current !== current || current.cleanup || this.clock() >= current.deadline) return;
+    await this.api.request("frames", { instance_id: this.instance, session_id: current.session_id, generation: current.generation, sequence: ++this.frameSequence, png_base64: bytes.toString("base64") });
+  }
+  async close() {
+    await this.stopLocally(); await Promise.allSettled(this.jobs.values()); await this.pendingWrites; await this.journal.close();
+  }
+}

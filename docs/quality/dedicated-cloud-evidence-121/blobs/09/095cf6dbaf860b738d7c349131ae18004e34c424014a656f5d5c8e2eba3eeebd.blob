@@ -1,0 +1,108 @@
+import assert from "node:assert/strict";
+import { readFile, lstat, mkdir, open, rename, chmod, unlink, realpath, readdir } from "node:fs/promises";
+import { spawn, execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import path from "node:path";
+import { digest, validateNativeBundle, validateInstallEntry } from "./package-contract.mjs";
+import { configuration, sha256 } from "../src/cloud-node/protocol.mjs";
+
+// Intentionally unavailable on the Windows development host. No service,
+// filesystem formatting, local VM, container, WSL or remote host is provisioned.
+assert.ok(process.platform === "linux" && process.getuid?.() === 0, "ROOT_NATIVE_LINUX_HOST_REQUIRED");
+assert.ok(["x64", "arm64"].includes(process.arch)); assert.ok(Number(process.versions.node.split(".")[0]) >= 22);
+const recovery = process.argv[2] === "--recover" ? process.argv[3] : null;
+if (recovery !== null) { assert.equal(process.argv.length, 4); assert.match(recovery, /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/); }
+else { assert.equal(process.argv.length, 8, "Use --bundle FILE --sha256 HASH --config ROOT_0600_FILE, or --recover SNAPSHOT_UUID"); assert.equal(process.argv[2], "--bundle"); assert.equal(process.argv[4], "--sha256"); assert.equal(process.argv[6], "--config"); }
+const state = "/var/lib/workmate-cloud", root = "/opt/copypaste-cloud-node", configurationPath = "/etc/copypaste-cloud-node.json", service = "/etc/systemd/system/copypaste-cloud-node.service";
+const environment = { PATH: "/usr/bin:/bin", LANG: "C.UTF-8" };
+function host(binary, args, inspect = false) { try { return execFileSync(binary, args, { env: environment, timeout: 15000, maxBuffer: 131072, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }); } catch(error) { if (inspect && typeof error.stdout === "string") return error.stdout; throw error; } }
+async function trustedDirectory(directory, mode = 0o755) {
+  let cursor = "/";
+  for (const part of directory.split("/").filter(Boolean)) {
+    cursor = path.join(cursor, part);
+    try { await mkdir(cursor, { mode }); } catch (error) { if (error.code !== "EEXIST") throw error; }
+    const info = await lstat(cursor); assert.ok(info.isDirectory() && !info.isSymbolicLink() && info.uid === 0 && (info.mode & 0o022) === 0, "TRUSTED_DIRECTORY_REQUIRED");
+  }
+  assert.equal(await realpath(directory), directory);
+}
+async function idleHost() {
+  let previous;
+  try { previous = JSON.parse(await readFile(state + "/state.json", "utf8")); } catch(error) { if(error.code !== "ENOENT") throw error; }
+  assert.ok(!previous?.current && (!previous || previous.format === 1), "DRAIN_AND_RECONCILE_EXISTING_LEASE_BEFORE_UPGRADE");
+  const observed = host("/usr/bin/systemctl", ["show", "copypaste-cloud-node.service", "--property=LoadState,ActiveState,MainPID"], true);
+  assert.ok(/^LoadState=not-found$/m.test(observed) || /^ActiveState=(inactive|failed)$/m.test(observed) && /^MainPID=0$/m.test(observed), "STOP_IDLE_BROKER_BEFORE_INSTALL");
+  assert.equal(host("/usr/bin/systemctl", ["list-units", "--all", "--plain", "--no-legend", "--no-pager", "--state=active,activating,deactivating", "workmate-cloud-*.service"]).trim(), "", "DRAIN_ALL_OWNED_RESOURCE_UNITS_BEFORE_INSTALL");
+}
+async function atomicReplace(target, bytes, mode, suffix) {
+  await trustedDirectory(path.dirname(target)); const temporary = target + ".install-" + suffix;
+  const handle = await open(temporary, "wx", 0o600);
+  try { await handle.writeFile(bytes); await handle.sync(); await handle.chmod(mode); } finally { await handle.close(); }
+  await rename(temporary, target); const parent = await open(path.dirname(target), "r"); try { await parent.sync(); } finally { await parent.close(); }
+}
+await trustedDirectory(state, 0o700); assert.equal((await lstat(state)).mode & 0o077, 0);
+if (process.env.COPYPASTE_NODE_INSTALL_LOCK !== "1") {
+  const child = spawn("/usr/bin/flock", ["--no-fork", "--exclusive", "--nonblock", state + "/daemon.lock", process.execPath, fileURLToPath(import.meta.url), ...process.argv.slice(2)], { env: { ...environment, COPYPASTE_NODE_INSTALL_LOCK: "1" }, stdio: "inherit" });
+  child.once("error", () => { process.exitCode = 1; }); child.once("close", code => { process.exitCode = code ?? 1; });
+} else {
+  process.umask(0o077);
+  await idleHost();
+  if (recovery !== null) {
+    const snapshot = state + "/install-snapshots/" + recovery, entries = snapshot + "/entries";
+    await trustedDirectory(entries, 0o700);
+    const names = (await readdir(entries)).sort().reverse(); assert.ok(names.length > 0 && names.length <= 32);
+    const rows = [];
+    for(const name of names) { assert.match(name, /^\d{4}\.json$/); const file=entries+"/"+name, stat=await lstat(file); assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.uid===0&&(stat.mode&0o077)===0&&stat.size<=24000000); rows.push(validateInstallEntry(JSON.parse(await readFile(file,"utf8")))); }
+    assert.equal(new Set(rows.map(row=>row.target)).size, rows.length);
+    const operation=randomUUID();
+    for(const row of rows) { if(row.previously_absent) { try { const stat=await lstat(row.target); assert.ok(stat.isFile()&&!stat.isSymbolicLink()&&stat.uid===0); await unlink(row.target); } catch(error) { if(error.code!=="ENOENT") throw error; } } else await atomicReplace(row.target,Buffer.from(row.base64,"base64"),row.mode,operation); }
+    host("/usr/bin/systemctl",["daemon-reload"]);
+    const receipt=await open(snapshot+"/recovered-"+operation+".json","wx",0o600);try{await receipt.writeFile(JSON.stringify({status:"prior_files_restored_service_stopped",entries:rows.length,service_started:false}));await receipt.sync();}finally{await receipt.close();}
+    process.stdout.write("Prior installation files restored. Service remains stopped.\n");
+  } else {
+  const sourceConfig = path.resolve(process.argv[7]), info = await lstat(sourceConfig);
+  assert.ok(info.isFile() && !info.isSymbolicLink() && info.uid === 0 && (info.mode & 0o077) === 0 && info.size <= 16384, "ROOT_CONFIGURATION_PERMISSION_REQUIRED");
+  const configBytes = await readFile(sourceConfig), config = configuration(JSON.parse(configBytes));
+  assert.equal(config.machine_fingerprint, sha256((await readFile("/etc/machine-id", "utf8")).trim()), "ENROLLED_PHYSICAL_HOST_CHANGED");
+  const bundleFile = path.resolve(process.argv[3]), bundleInfo = await lstat(bundleFile);
+  assert.ok(bundleInfo.isFile() && !bundleInfo.isSymbolicLink() && bundleInfo.size <= 524288);
+  const bundle = validateNativeBundle(await readFile(bundleFile), process.argv[5]);
+  await trustedDirectory(root);
+  const id = randomUUID(), snapshot = state + "/install-snapshots/" + id, backups = [], created = [];
+  await trustedDirectory(snapshot, 0o700);
+  async function backup(target) {
+    if (backups.some(row => row.target === target) || created.includes(target)) return;
+    try { const stat = await lstat(target); assert.ok(stat.isFile() && !stat.isSymbolicLink() && stat.uid === 0 && (stat.mode & 0o022) === 0 && stat.size <= 16777216); const bytes = await readFile(target); backups.push({ target, mode: stat.mode & 0o777, base64: bytes.toString("base64") }); }
+    catch (error) { if (error.code === "ENOENT") created.push(target); else throw error; }
+    const entry = snapshot + "/entries/" + String(backups.length + created.length).padStart(4,"0") + ".json";
+    await trustedDirectory(path.dirname(entry), 0o700);
+    const saved = await open(entry, "wx", 0o600);
+    try { await saved.writeFile(JSON.stringify(backups.find(row => row.target === target) ?? { target, previously_absent: true })); await saved.sync(); } finally { await saved.close(); }
+    const entriesDirectory = await open(path.dirname(entry), "r"); try { await entriesDirectory.sync(); } finally { await entriesDirectory.close(); }
+  }
+  async function replace(target, bytes, mode) {
+    return atomicReplace(target,bytes,mode,id);
+  }
+  try {
+    for (const [name, file] of Object.entries(bundle.files)) { const target = path.join(root, name); assert.ok(target.startsWith(root + "/")); await backup(target); await replace(target, Buffer.from(file.base64, "base64"), file.mode); }
+    for (const target of [configurationPath, service, root + "/native/cloud-runner-guard.so", root + "/native/cloud-runner-guard-build.json"]) await backup(target);
+    await replace(configurationPath, configBytes, 0o600);
+    await replace(service, Buffer.from(bundle.files["deployment/copypaste-cloud-node.service"].base64, "base64"), 0o644);
+    const library = root + "/native/cloud-runner-guard.so", temporary = library + ".install-" + id;
+    host("/usr/bin/cc", ["-std=c11", "-Wall", "-Wextra", "-Werror", "-O2", "-fPIC", "-shared", "-Wl,-z,relro,-z,now", "-o", temporary, root + "/native/cloud-runner-guard.c"]);
+    await chmod(temporary, 0o644); await rename(temporary, library);
+    await replace(root + "/native/cloud-runner-guard-build.json", Buffer.from(JSON.stringify({ format: 1, source_sha256: bundle.files["native/cloud-runner-guard.c"].sha256, library_sha256: digest(await readFile(library)), compiler: "/usr/bin/cc" })), 0o644);
+    const { SystemdLeaseDriver } = await import(pathToFileURL(root + "/src/cloud-node/systemd-driver.mjs").href + "?install=" + id);
+    await new SystemdLeaseDriver().preflight(config);
+    host("/usr/bin/systemctl", ["daemon-reload"]);
+    await replace(snapshot + "/previous-files.json", Buffer.from(JSON.stringify({ backups, created })), 0o600);
+    await replace(snapshot + "/receipt.json", Buffer.from(JSON.stringify({ status: "installed_service_stopped", bundle_sha256: process.argv[5], credentials_printed: false, service_started: false, physical_remote_execution_qualified: false })), 0o600);
+    process.stdout.write("Native cloud node installed and preflight checked. Service remains stopped. Confirm operator readiness before starting copypaste-cloud-node.service.\n");
+  } catch {
+    for (const row of backups.reverse()) await replace(row.target, Buffer.from(row.base64, "base64"), row.mode);
+    for (const target of created) { assert.ok(target.startsWith(root + "/") || [configurationPath, service].includes(target)); await unlink(target).catch(error => { if (error.code !== "ENOENT") throw error; }); }
+    host("/usr/bin/systemctl", ["daemon-reload"]);
+    throw new Error("NATIVE_INSTALL_FAILED_PRIOR_FILES_RESTORED_NO_SERVICE_STARTED");
+  }
+  }
+}

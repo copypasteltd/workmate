@@ -1,0 +1,117 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-cvmSAJ/runtime/.data/native-qa/23bc21db-03ea-44c0-a92e-8c33f3bb0790 ... 
+ok
+
+
+creating subdirectories ... 
+ok
+
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ...
+ 
+ok
+
+syncing data to disk ... 
+ok
+
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-cvmSAJ^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-cvmSAJ^\runtime^\^.data^\native^-qa^\23bc21db^-03ea^-44c0^-a92e^-8c33f3bb0790^" -l logfile start
+
+
+2026-10-28 22:32:57.053 CST [22204] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-28 22:32:57.059 CST [22204] LOG:  listening on IPv6 address "::1", port 5166
+
+2026-10-28 22:32:57.059 CST [22204] LOG:  listening on IPv4 address "127.0.0.1", port 5166
+
+2026-10-28 22:32:57.835 CST [26796] LOG:  database system was shut down at 2026-10-28 22:32:33 CST
+
+2026-10-28 22:32:57.897 CST [22204] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:5166. Application roles are not owners and do not bypass RLS.
+2026-10-28 22:33:17.149 CST [34368] WARNING:  there is no transaction in progress
+
+2026-10-28 22:33:17.213 CST [10384] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 22:33:32.676 CST [10384] LOG:  checkpoint complete: wrote 1006 buffers (6.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.112 s, sync=14.557 s, total=15.464 s; sync files=312, longest=0.181 s, average=0.047 s; distance=27253 kB, estimate=27253 kB; lsn=0/329F060, redo lsn=0/328E9F8
+
+2026-10-28 22:33:49.923 CST [25096] ERROR:  permission denied for table admin_approval_decisions
+2026-10-28 22:33:49.923 CST [25096] STATEMENT:  UPDATE admin_approval_decisions SET reason='Changed record' WHERE approval_id=$1
+
+2026-10-28 22:33:49.998 CST [26040] ERROR:  permission denied for table admin_approval_requests
+2026-10-28 22:33:49.998 CST [26040] STATEMENT:  DELETE FROM admin_approval_requests WHERE id=$1
+
+2026-10-28 22:34:03.063 CST [23952] ERROR:  Controlled approval audit failure
+2026-10-28 22:34:03.063 CST [23952] CONTEXT:  PL/pgSQL function controlled_shared_approval_audit_failure() line 1 at RAISE
+2026-10-28 22:34:03.063 CST [23952] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-28 22:34:04.331 CST [10384] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 22:34:12.183 CST [10384] LOG:  checkpoint complete: wrote 84 buffers (0.5%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.032 s, sync=5.668 s, total=7.853 s; sync files=23, longest=0.429 s, average=0.247 s; distance=22914 kB, estimate=26819 kB; lsn=0/48EF600, redo lsn=0/48EF5A8
+
+2026-10-28 22:34:29.271 CST [31632] ERROR:  Billing account subject and mode are immutable
+2026-10-28 22:34:29.271 CST [31632] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 4 at RAISE
+2026-10-28 22:34:29.271 CST [31632] STATEMENT:  UPDATE wallets SET user_id=$2 WHERE id=$1
+
+2026-10-28 22:34:29.357 CST [40428] ERROR:  Billing account subject and mode are immutable
+2026-10-28 22:34:29.357 CST [40428] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 4 at RAISE
+2026-10-28 22:34:29.357 CST [40428] STATEMENT:  UPDATE wallets SET data_mode='simulated' WHERE id=$1
+
+2026-10-28 22:34:29.434 CST [25888] ERROR:  Task billing subject and mode are immutable
+2026-10-28 22:34:29.434 CST [25888] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 6 at RAISE
+2026-10-28 22:34:29.434 CST [25888] STATEMENT:  UPDATE tasks SET created_by=$2 WHERE id=$1
+
+2026-10-28 22:34:29.498 CST [29932] ERROR:  A task payer is immutable
+2026-10-28 22:34:29.498 CST [29932] CONTEXT:  PL/pgSQL function immutable_task_payer() line 2 at RAISE
+2026-10-28 22:34:29.498 CST [29932] STATEMENT:  UPDATE tasks SET billing_account_id=$2 WHERE id=$1
+
+2026-10-28 22:34:29.575 CST [27096] ERROR:  Reserved financial identity is immutable
+2026-10-28 22:34:29.575 CST [27096] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 8 at RAISE
+2026-10-28 22:34:29.575 CST [27096] STATEMENT:  UPDATE reservations SET billing_account_id=$2 WHERE task_id=$1
+
+2026-10-28 22:34:29.638 CST [21964] ERROR:  Funding source identity and expiry are immutable
+2026-10-28 22:34:29.638 CST [21964] CONTEXT:  PL/pgSQL function immutable_billing_identity() line 10 at RAISE
+2026-10-28 22:34:29.638 CST [21964] STATEMENT:  UPDATE funding_lots SET billing_account_id=$2 WHERE ledger_id=$1
+
+2026-10-28 22:34:29.703 CST [17164] ERROR:  Journal operation identity mismatch
+2026-10-28 22:34:29.703 CST [17164] CONTEXT:  PL/pgSQL function validate_billing_journal() line 4 at RAISE
+2026-10-28 22:34:29.703 CST [17164] STATEMENT:  INSERT INTO billing_journal(billing_account_id,operation_id,actor_id,kind,direction,bucket,amount_micros,reason) VALUES($1,$2,$3,'gift','credit','promotional',1,'Forged target')
+
+2026-10-28 22:34:29.753 CST [25636] ERROR:  permission denied for table billing_journal
+2026-10-28 22:34:29.753 CST [25636] STATEMENT:  UPDATE billing_journal SET actor_id=$2 WHERE id=$1
+
+2026-10-28 22:34:29.814 CST [38132] ERROR:  permission denied for table billing_operations
+2026-10-28 22:34:29.814 CST [38132] STATEMENT:  UPDATE billing_operations SET actor_id=$2 WHERE id=$1
+
+2026-10-28 22:34:30.164 CST [10384] LOG:  checkpoint starting: immediate force wait
+
+2026-10-28 22:34:31.450 CST [10384] LOG:  checkpoint complete: wrote 48 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.906 s, total=1.286 s; sync files=15, longest=0.081 s, average=0.061 s; distance=22609 kB, estimate=26398 kB; lsn=0/5F03A30, redo lsn=0/5F039D8
+

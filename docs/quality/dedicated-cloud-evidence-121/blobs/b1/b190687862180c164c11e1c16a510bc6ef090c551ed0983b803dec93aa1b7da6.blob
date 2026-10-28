@@ -1,0 +1,285 @@
+The files belonging to this database system will be owned by user "carzy".
+This user must also own the server process.
+
+
+The database cluster will be initialized with locale "C".
+The default text search configuration will be set to "english".
+
+Data page checksums are enabled.
+
+
+
+creating directory C:/Users/carzy/AppData/Local/CopyPaste/native-runtime-aliases/postgres-vgNLPS/runtime/.data/native-qa/fe921ac2-ed0d-41c5-b952-e8d9e625e98c ... 
+ok
+
+creating subdirectories ... 
+ok
+
+selecting dynamic shared memory implementation ... windows
+selecting default "max_connections" ... 
+100
+selecting default "shared_buffers" ... 
+128MB
+selecting default time zone ... 
+Asia/Taipei
+
+creating configuration files ... 
+ok
+running bootstrap script ... 
+ok
+
+performing post-bootstrap initialization ... 
+ok
+syncing data to disk ... 
+ok
+
+Success. You can now start the database server using:
+
+    ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-vgNLPS^\runtime^\node^_modules^\^@embedded^-postgres^\windows^-x64^\native^\bin^\pg^_ctl^" -D ^"C^:^\Users^\carzy^\AppData^\Local^\CopyPaste^\native^-runtime^-aliases^\postgres^-vgNLPS^\runtime^\^.data^\native^-qa^\fe921ac2^-ed0d^-41c5^-b952^-e8d9e625e98c^" -l logfile start
+
+
+2026-10-29 00:36:05.388 CST [36360] LOG:  starting PostgreSQL 18.4 on x86_64-windows, compiled by msvc-19.44.35226, 64-bit
+
+2026-10-29 00:36:05.403 CST [36360] LOG:  listening on IPv6 address "::1", port 2610
+
+2026-10-29 00:36:05.404 CST [36360] LOG:  listening on IPv4 address "127.0.0.1", port 2610
+
+2026-10-29 00:36:05.698 CST [29900] LOG:  database system was shut down at 2026-10-29 00:36:00 CST
+
+2026-10-29 00:36:05.750 CST [36360] LOG:  database system is ready to accept connections
+
+Native PostgreSQL startup only; migrations explicitly deferred.
+Native PostgreSQL ready on 127.0.0.1:2610. Application roles are not owners and do not bypass RLS.
+2026-10-29 00:39:50.558 CST [6968] ERROR:  permission denied for table cloud_event_inbox
+2026-10-29 00:39:50.558 CST [6968] STATEMENT:  INSERT INTO cloud_event_inbox SELECT * FROM cloud_event_inbox WHERE trigger_id=$1
+
+2026-10-29 00:39:50.574 CST [28376] ERROR:  Terminal event receipts cannot be rewritten
+2026-10-29 00:39:50.574 CST [28376] CONTEXT:  PL/pgSQL function guard_cloud_event_records() line 65 at RAISE
+2026-10-29 00:39:50.574 CST [28376] STATEMENT:  UPDATE cloud_event_inbox SET event_id='forged' WHERE trigger_id=$1
+
+2026-10-29 00:39:50.652 CST [37300] ERROR:  Event run binding is immutable
+2026-10-29 00:39:50.652 CST [37300] CONTEXT:  PL/pgSQL function check_private_cloud_run_126() line 5 at RAISE
+2026-10-29 00:39:50.652 CST [37300] STATEMENT:  UPDATE workflow_runs SET cloud_event_revision=99 WHERE cloud_event_trigger_id=$1
+
+2026-10-29 00:39:50.717 CST [7872] ERROR:  permission denied for table cloud_event_keys
+2026-10-29 00:39:50.717 CST [7872] STATEMENT:  DELETE FROM cloud_event_keys WHERE trigger_id=$1
+
+2026-10-29 00:40:14.736 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:41:16.198 CST [36968] LOG:  checkpoint complete: wrote 3958 buffers (24.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 3 recycled; write=0.534 s, sync=60.448 s, total=61.463 s; sync files=2112, longest=0.231 s, average=0.029 s; distance=52158 kB, estimate=52158 kB; lsn=0/4BB4B68, redo lsn=0/4AE0ED0
+
+2026-10-29 00:41:17.002 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:41:20.865 CST [36968] LOG:  checkpoint complete: wrote 33 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.015 s, sync=2.367 s, total=3.864 s; sync files=12, longest=0.350 s, average=0.198 s; distance=906 kB, estimate=47033 kB; lsn=0/4BC38F0, redo lsn=0/4BC3898
+
+2026-10-29 00:41:43.383 CST [15432] ERROR:  WORKSPACE_CYCLE_OR_DEPTH
+2026-10-29 00:41:43.383 CST [15432] CONTEXT:  PL/pgSQL function guard_workspace_node() line 30 at RAISE
+2026-10-29 00:41:43.383 CST [15432] STATEMENT:  UPDATE workspace_nodes SET name=$2,parent_id=$3,asset_version_id=$4,version=version+1,moderation_version=moderation_version+1,updated_at=now() WHERE id=$1
+
+2026-10-29 00:41:47.904 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:41:49.530 CST [36968] LOG:  checkpoint complete: wrote 49 buffers (0.3%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.016 s, sync=1.053 s, total=1.627 s; sync files=17, longest=0.267 s, average=0.062 s; distance=23206 kB, estimate=44650 kB; lsn=0/626D460, redo lsn=0/626D408
+
+2026-10-29 00:43:21.353 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:43:22.393 CST [36968] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.009 s, sync=0.776 s, total=1.041 s; sync files=18, longest=0.094 s, average=0.044 s; distance=23566 kB, estimate=42542 kB; lsn=0/7970EE8, redo lsn=0/7970E90
+
+2026-10-29 00:44:07.473 CST [40192] ERROR:  Cloud schedule request cannot be rewritten
+2026-10-29 00:44:07.473 CST [40192] CONTEXT:  PL/pgSQL function guard_cloud_schedule_records() line 30 at RAISE
+2026-10-29 00:44:07.473 CST [40192] STATEMENT:  UPDATE cloud_schedule_requests SET body=jsonb_set(body,'{max_budget_micros}','1') WHERE id=$1
+
+2026-10-29 00:44:07.540 CST [32672] ERROR:  Cloud schedule version is immutable
+2026-10-29 00:44:07.540 CST [32672] CONTEXT:  PL/pgSQL function guard_cloud_schedule_records() line 37 at RAISE
+2026-10-29 00:44:07.540 CST [32672] STATEMENT:  UPDATE cloud_schedule_versions SET body='{}' WHERE schedule_id=$1
+
+2026-10-29 00:44:07.658 CST [18992] ERROR:  Cloud schedule run binding is immutable
+2026-10-29 00:44:07.658 CST [18992] CONTEXT:  PL/pgSQL function check_private_cloud_run_126() line 9 at RAISE
+2026-10-29 00:44:07.658 CST [18992] STATEMENT:  UPDATE workflow_runs SET cloud_schedule_revision=99 WHERE id=$1
+
+2026-10-29 00:44:07.661 CST [38028] ERROR:  Scheduled cloud run lacks an exact customer authorization
+2026-10-29 00:44:07.661 CST [38028] CONTEXT:  PL/pgSQL function check_private_cloud_run_126() line 41 at RAISE
+2026-10-29 00:44:07.661 CST [38028] STATEMENT:  INSERT INTO workflow_runs(tenant_id,project_id,workflow_id,created_by,actor_auth_version,
+	    definition,workflow_version,role_hashes,execution_location,private_owner,origin_task_id,state,authorized_at,
+	    cloud_schedule_id,cloud_schedule_revision,cloud_schedule_occurrence_id)
+	    VALUES($1,$2,$3,$4,1,$5,$6,$7,'cloud',$4,$8,'running',now(),$9,1,$10)
+
+2026-10-29 00:44:32.057 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:44:33.073 CST [36968] LOG:  checkpoint complete: wrote 37 buffers (0.2%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.015 s, sync=0.694 s, total=1.017 s; sync files=17, longest=0.081 s, average=0.041 s; distance=25454 kB, estimate=40833 kB; lsn=0/924C808, redo lsn=0/924C7B0
+
+2026-10-29 00:45:09.476 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:45:10.439 CST [36968] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 5 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.011 s, sync=0.645 s, total=0.963 s; sync files=17, longest=0.084 s, average=0.038 s; distance=23966 kB, estimate=39146 kB; lsn=0/A9B4278, redo lsn=0/A9B4220
+
+2026-10-29 00:45:23.971 CST [40004] ERROR:  Finished connector jobs are immutable
+2026-10-29 00:45:23.971 CST [40004] CONTEXT:  PL/pgSQL function guard_connector_job() line 3 at RAISE
+2026-10-29 00:45:23.971 CST [40004] STATEMENT:  UPDATE connector_jobs SET spec_hash=$2,revision=revision+1 WHERE id=$1
+
+2026-10-29 00:45:24.027 CST [30036] ERROR:  permission denied for table connector_pages
+2026-10-29 00:45:24.027 CST [30036] STATEMENT:  DELETE FROM connector_pages WHERE job_id=$1
+
+2026-10-29 00:45:24.409 CST [16780] ERROR:  Finished connector jobs are immutable
+2026-10-29 00:45:24.409 CST [16780] CONTEXT:  PL/pgSQL function guard_connector_job() line 3 at RAISE
+2026-10-29 00:45:24.409 CST [16780] STATEMENT:  UPDATE connector_jobs SET spec_hash=$2,revision=revision+1 WHERE id=$1
+
+2026-10-29 00:45:24.467 CST [36852] ERROR:  permission denied for table connector_pages
+2026-10-29 00:45:24.467 CST [36852] STATEMENT:  DELETE FROM connector_pages WHERE job_id=$1
+
+2026-10-29 00:45:25.178 CST [39132] ERROR:  Finished connector jobs are immutable
+2026-10-29 00:45:25.178 CST [39132] CONTEXT:  PL/pgSQL function guard_connector_job() line 3 at RAISE
+2026-10-29 00:45:25.178 CST [39132] STATEMENT:  UPDATE connector_jobs SET spec_hash=$2,revision=revision+1 WHERE id=$1
+
+2026-10-29 00:45:25.226 CST [27428] ERROR:  permission denied for table connector_pages
+2026-10-29 00:45:25.226 CST [27428] STATEMENT:  DELETE FROM connector_pages WHERE job_id=$1
+
+2026-10-29 00:45:25.719 CST [38300] ERROR:  Finished connector jobs are immutable
+2026-10-29 00:45:25.719 CST [38300] CONTEXT:  PL/pgSQL function guard_connector_job() line 3 at RAISE
+2026-10-29 00:45:25.719 CST [38300] STATEMENT:  UPDATE connector_jobs SET spec_hash=$2,revision=revision+1 WHERE id=$1
+
+2026-10-29 00:45:25.774 CST [33760] ERROR:  permission denied for table connector_pages
+2026-10-29 00:45:25.774 CST [33760] STATEMENT:  DELETE FROM connector_pages WHERE job_id=$1
+
+2026-10-29 00:45:30.651 CST [6944] ERROR:  permission denied for table connector_profiles
+2026-10-29 00:45:30.651 CST [6944] STATEMENT:  SELECT * FROM connector_profiles
+
+2026-10-29 00:45:30.657 CST [26732] ERROR:  permission denied for table connector_oauth_states
+2026-10-29 00:45:30.657 CST [26732] STATEMENT:  SELECT count(*) FROM connector_oauth_states
+
+2026-10-29 00:45:30.703 CST [448] ERROR:  permission denied for table connector_oauth_states
+2026-10-29 00:45:30.703 CST [448] STATEMENT:  SELECT * FROM connector_oauth_states
+
+2026-10-29 00:45:30.746 CST [37232] ERROR:  permission denied for table connector_accounts
+2026-10-29 00:45:30.746 CST [37232] STATEMENT:  SELECT * FROM connector_accounts
+
+2026-10-29 00:45:30.795 CST [13020] ERROR:  permission denied for table connector_jobs
+2026-10-29 00:45:30.795 CST [13020] STATEMENT:  SELECT * FROM connector_jobs
+
+2026-10-29 00:45:30.865 CST [27916] ERROR:  permission denied for table connector_pages
+2026-10-29 00:45:30.865 CST [27916] STATEMENT:  SELECT * FROM connector_pages
+
+2026-10-29 00:45:30.923 CST [39388] ERROR:  permission denied for table connector_snapshots
+2026-10-29 00:45:30.923 CST [39388] STATEMENT:  SELECT * FROM connector_snapshots
+
+2026-10-29 00:45:30.970 CST [30276] ERROR:  permission denied for table connector_analysis_sources
+2026-10-29 00:45:30.970 CST [30276] STATEMENT:  SELECT * FROM connector_analysis_sources
+
+2026-10-29 00:45:34.086 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:45:35.070 CST [36968] LOG:  checkpoint complete: wrote 38 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.008 s, sync=0.625 s, total=0.984 s; sync files=13, longest=0.109 s, average=0.049 s; distance=24496 kB, estimate=37681 kB; lsn=0/C1A03C0, redo lsn=0/C1A0368
+
+2026-10-29 00:45:46.168 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:45:46.987 CST [36968] LOG:  checkpoint complete: wrote 29 buffers (0.2%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 1 recycled; write=0.006 s, sync=0.609 s, total=0.819 s; sync files=10, longest=0.096 s, average=0.061 s; distance=22328 kB, estimate=36146 kB; lsn=0/D76E6D8, redo lsn=0/D76E680
+
+2026-10-29 00:46:04.480 CST [34896] ERROR:  permission denied for table creative_mappings
+2026-10-29 00:46:04.480 CST [34896] STATEMENT:  UPDATE creative_mappings SET state='withdrawn' WHERE id=$1
+
+2026-10-29 00:46:04.482 CST [38108] ERROR:  Frozen creative feedback content cannot be rewritten
+2026-10-29 00:46:04.482 CST [38108] CONTEXT:  PL/pgSQL function guard_creative_feedback_history() line 9 at RAISE
+2026-10-29 00:46:04.482 CST [38108] STATEMENT:  UPDATE creative_mappings SET body='{}' WHERE id=$1
+
+2026-10-29 00:46:04.555 CST [7084] ERROR:  Frozen creative feedback content cannot be rewritten
+2026-10-29 00:46:04.555 CST [7084] CONTEXT:  PL/pgSQL function guard_creative_feedback_history() line 9 at RAISE
+2026-10-29 00:46:04.555 CST [7084] STATEMENT:  UPDATE creative_feedback_reports SET body='{}' WHERE id=$1
+
+2026-10-29 00:46:04.597 CST [26028] ERROR:  permission denied for table creative_feedback_mappings
+2026-10-29 00:46:04.597 CST [26028] STATEMENT:  DELETE FROM creative_feedback_mappings WHERE report_id=$1
+
+2026-10-29 00:46:04.746 CST [39820] ERROR:  Creative feedback export scope mismatch
+2026-10-29 00:46:04.746 CST [39820] CONTEXT:  PL/pgSQL function guard_creative_feedback_export() line 17 at RAISE
+2026-10-29 00:46:04.746 CST [39820] STATEMENT:  COMMIT
+
+2026-10-29 00:46:04.747 CST [39820] WARNING:  there is no transaction in progress
+
+2026-10-29 00:46:04.963 CST [1032] ERROR:  Creative feedback source locator is immutable
+2026-10-29 00:46:04.963 CST [1032] CONTEXT:  PL/pgSQL function guard_creative_feedback_locator() line 5 at RAISE
+2026-10-29 00:46:04.963 CST [1032] STATEMENT:  UPDATE asset_versions SET metadata=metadata-'creative_feedback_id' WHERE id=$1
+
+2026-10-29 00:46:05.017 CST [28864] ERROR:  Creative feedback source locator is immutable
+2026-10-29 00:46:05.017 CST [28864] CONTEXT:  PL/pgSQL function guard_creative_feedback_locator() line 5 at RAISE
+2026-10-29 00:46:05.017 CST [28864] STATEMENT:  UPDATE asset_versions SET metadata=jsonb_set(metadata,'{creative_feedback_id}',to_jsonb($2::text)) WHERE id=$1
+
+2026-10-29 00:46:09.637 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:46:24.027 CST [36968] LOG:  checkpoint complete: wrote 2860 buffers (17.5%), wrote 4 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.244 s, sync=13.586 s, total=14.390 s; sync files=1794, longest=0.317 s, average=0.008 s; distance=40475 kB, estimate=40475 kB; lsn=0/FF55048, redo lsn=0/FEF55E8
+
+2026-10-29 00:46:24.317 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:46:24.987 CST [36968] LOG:  checkpoint complete: wrote 9 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.025 s, sync=0.303 s, total=0.670 s; sync files=4, longest=0.119 s, average=0.076 s; distance=493 kB, estimate=36477 kB; lsn=0/FF70D80, redo lsn=0/FF70D28
+
+2026-10-29 00:46:48.074 CST [27396] ERROR:  fixture audit unavailable
+2026-10-29 00:46:48.074 CST [27396] CONTEXT:  PL/pgSQL function fixture_matrix_audit_failure() line 1 at RAISE
+2026-10-29 00:46:48.074 CST [27396] STATEMENT:  INSERT INTO audit_log(principal_id,actor_kind,action,tenant_id,target,outcome,detail) VALUES($1,$2,$3,$4,$5,$6,$7)
+
+2026-10-29 00:46:48.809 CST [27396] ERROR:  Matrix input revisions are immutable
+2026-10-29 00:46:48.809 CST [27396] CONTEXT:  PL/pgSQL function guard_matrix_history() line 8 at RAISE
+2026-10-29 00:46:48.809 CST [27396] STATEMENT:  UPDATE creative_matrix_revisions SET input='{}' WHERE unit_id=$1
+
+2026-10-29 00:46:48.811 CST [35172] ERROR:  Finished matrix attempts are immutable
+2026-10-29 00:46:48.811 CST [35172] CONTEXT:  PL/pgSQL function guard_matrix_history() line 11 at RAISE
+2026-10-29 00:46:48.811 CST [35172] STATEMENT:  UPDATE creative_matrix_attempts SET error_code='REWRITTEN' WHERE unit_id=$1
+
+2026-10-29 00:46:48.812 CST [3676] ERROR:  permission denied for table creative_matrix_attempts
+2026-10-29 00:46:48.812 CST [3676] STATEMENT:  UPDATE creative_matrix_attempts SET state='succeeded'
+
+2026-10-29 00:46:52.469 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:46:53.500 CST [36968] LOG:  checkpoint complete: wrote 42 buffers (0.3%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 2 recycled; write=0.014 s, sync=0.565 s, total=1.032 s; sync files=13, longest=0.097 s, average=0.044 s; distance=24748 kB, estimate=35304 kB; lsn=0/1179BED0, redo lsn=0/1179BE78
+
+2026-10-29 00:47:07.517 CST [40632] ERROR:  permission denied for table cloud_runtime_frames
+2026-10-29 00:47:07.517 CST [40632] STATEMENT:  SELECT * FROM cloud_runtime_frames
+
+2026-10-29 00:47:07.521 CST [40632] ERROR:  permission denied for table cloud_runtime_plans
+2026-10-29 00:47:07.521 CST [40632] STATEMENT:  UPDATE cloud_runtime_plans SET body=body
+
+2026-10-29 00:47:07.523 CST [1952] ERROR:  Resource command differs from its private lease generation
+2026-10-29 00:47:07.523 CST [1952] CONTEXT:  PL/pgSQL function guard_cloud_runtime_command() line 8 at RAISE
+2026-10-29 00:47:07.523 CST [1952] STATEMENT:  INSERT INTO cloud_runtime_commands(tenant_id,project_id,private_owner,session_id,node_id,generation,kind,body)
+	      VALUES($1,$2,$3,$4,$5,$6,'input','{"kind":"terminal","command":"Get-Date"}')
+
+2026-10-29 00:47:07.525 CST [1952] ERROR:  Reviewed resource quote cannot be rewritten
+2026-10-29 00:47:07.525 CST [1952] CONTEXT:  PL/pgSQL function guard_cloud_runtime_facts() line 38 at RAISE
+2026-10-29 00:47:07.525 CST [1952] STATEMENT:  UPDATE cloud_runtime_quotes SET body='{}',content_state='deleted',maximum_cost_micros=maximum_cost_micros+1 WHERE id=$1
+
+2026-10-29 00:47:07.526 CST [1952] ERROR:  Resource command effect or receipt cannot be rewritten
+2026-10-29 00:47:07.526 CST [1952] CONTEXT:  PL/pgSQL function guard_cloud_runtime_command() line 40 at RAISE
+2026-10-29 00:47:07.526 CST [1952] STATEMENT:  UPDATE cloud_runtime_commands SET result='forged later result' WHERE id=$1
+
+2026-10-29 00:47:07.837 CST [1952] ERROR:  Reviewed resource quote cannot be rewritten
+2026-10-29 00:47:07.837 CST [1952] CONTEXT:  PL/pgSQL function guard_cloud_runtime_facts() line 38 at RAISE
+2026-10-29 00:47:07.837 CST [1952] STATEMENT:  UPDATE cloud_runtime_quotes SET content_state='active' WHERE id=$1
+
+2026-10-29 00:47:08.397 CST [22656] ERROR:  Computer task provenance is immutable
+2026-10-29 00:47:08.397 CST [22656] CONTEXT:  PL/pgSQL function guard_cloud_task_binding() line 5 at RAISE
+2026-10-29 00:47:08.397 CST [22656] STATEMENT:  UPDATE cloud_runtime_task_bindings SET generation=generation+1 WHERE task_id=$1
+
+2026-10-29 00:47:08.402 CST [22656] ERROR:  Approved computer generation cannot be rebound
+2026-10-29 00:47:08.402 CST [22656] CONTEXT:  PL/pgSQL function guard_cloud_task_locator() line 5 at RAISE
+2026-10-29 00:47:08.402 CST [22656] STATEMENT:  UPDATE tasks SET input_context=input_context-'dedicated_computer' WHERE id=$1
+
+2026-10-29 00:47:14.360 CST [8868] FATAL:  terminating autovacuum process due to administrator command
+
+2026-10-29 00:47:14.477 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:47:45.140 CST [36968] LOG:  checkpoint complete: wrote 2747 buffers (16.8%), wrote 2 SLRU buffers; 0 WAL file(s) added, 0 removed, 3 recycled; write=0.263 s, sync=30.167 s, total=30.663 s; sync files=1783, longest=0.437 s, average=0.017 s; distance=44986 kB, estimate=44986 kB; lsn=0/148B2FD0, redo lsn=0/1438A910
+
+2026-10-29 00:47:45.599 CST [36904] FATAL:  terminating connection due to administrator command
+
+2026-10-29 00:47:45.704 CST [36968] LOG:  checkpoint starting: immediate force wait
+
+2026-10-29 00:47:46.415 CST [36968] LOG:  checkpoint complete: wrote 24 buffers (0.1%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.004 s, sync=0.385 s, total=0.711 s; sync files=8, longest=0.096 s, average=0.049 s; distance=5394 kB, estimate=41027 kB; lsn=0/148CF4B0, redo lsn=0/148CF458
+
+2026-10-29 00:47:47.836 CST [36360] LOG:  received fast shutdown request
+
+2026-10-29 00:47:47.892 CST [36360] LOG:  aborting any active transactions
+
+2026-10-29 00:47:47.898 CST [36360] LOG:  background worker "logical replication launcher" (PID 33024) exited with exit code 1
+
+2026-10-29 00:47:47.898 CST [36968] LOG:  shutting down
+
+2026-10-29 00:47:47.940 CST [36968] LOG:  checkpoint starting: shutdown immediate
+
+2026-10-29 00:47:48.127 CST [36968] LOG:  checkpoint complete: wrote 0 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.039 s, total=0.229 s; sync files=1, longest=0.039 s, average=0.039 s; distance=0 kB, estimate=36924 kB; lsn=0/148CF5C8, redo lsn=0/148CF5C8
+
+2026-10-29 00:47:48.230 CST [36360] LOG:  database system is shut down
+

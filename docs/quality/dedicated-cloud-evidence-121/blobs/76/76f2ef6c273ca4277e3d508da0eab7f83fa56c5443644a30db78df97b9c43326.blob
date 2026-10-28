@@ -1,0 +1,146 @@
+# owned_fixture_owner {"path":".data/test-fixture-reclamation/40f3a960-8724-4e83-97c5-a48840889153","owner_pid":34612}
+TAP version 13
+# Subtest: HTTP startup control rejects missing, duplicate or extra readiness frames and terminates an aborted wait
+ok 1 - HTTP startup control rejects missing, duplicate or extra readiness frames and terminates an aborted wait
+  ---
+  duration_ms: 11.5263
+  ...
+# Subtest: actual native API module initialization can exceed the request deadline while its subsequent requests remain bounded
+ok 2 - actual native API module initialization can exceed the request deadline while its subsequent requests remain bounded
+  ---
+  duration_ms: 12476.8376
+  ...
+# Subtest: strict development check inputs reject outside endpoints, transport injection, external databases and unobservable SQL claims
+ok 3 - strict development check inputs reject outside endpoints, transport injection, external databases and unobservable SQL claims
+  ---
+  duration_ms: 5.1861
+  ...
+# Subtest: actual HTTP requests keep app state across closed connections, auth rejection, JSON, body, query and headers
+ok 4 - actual HTTP requests keep app state across closed connections, auth rejection, JSON, body, query and headers
+  ---
+  duration_ms: 5847.7521
+  ...
+# Subtest: actual TypeScript named handler, unstarted Server export, HEAD and exact text use the standard HTTP parser
+ok 5 - actual TypeScript named handler, unstarted Server export, HEAD and exact text use the standard HTTP parser
+  ---
+  duration_ms: 6284.5723
+  ...
+# Subtest: failed API assertions stay failed even when the app exits successfully; invalid JSON cannot satisfy a null expectation
+ok 6 - failed API assertions stay failed even when the app exits successfully; invalid JSON cannot satisfy a null expectation
+  ---
+  duration_ms: 2956.2412
+  ...
+# Subtest: early process success, malformed transport and excessive response bodies cannot forge API checks
+ok 7 - early process success, malformed transport and excessive response bodies cannot forge API checks
+  ---
+  duration_ms: 13742.9415
+  ...
+# Subtest: the HTTP request validator does not follow an external redirect
+ok 8 - the HTTP request validator does not follow an external redirect
+  ---
+  duration_ms: 3073.5265
+  ...
+# Subtest: stdin-enabled API programs cannot read a host canary or inherit secrets; native network and child restrictions stay bounded
+ok 9 - stdin-enabled API programs cannot read a host canary or inherit secrets; native network and child restrictions stay bounded
+  ---
+  duration_ms: 11980.6478
+  ...
+# Subtest: API deadline and cancellation stop a blocked application and reclaim its native resources
+ok 10 - API deadline and cancellation stop a blocked application and reclaim its native resources
+  ---
+  duration_ms: 7108.6279
+  ...
+# Subtest: actual native SQLite checks cover bound CRUD, transactions, constraints, 64-bit values and blobs
+not ok 11 - actual native SQLite checks cover bound CRUD, transactions, constraints, 64-bit values and blobs
+  ---
+  duration_ms: 2980.4393
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-development-checks.test.ts:5:2147'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schema":1,"execution_id":"b851300d-8180-4167-94ca-00a12ec357d2","program":"database_sqlite","entry":"schema.sql","args":[],"timeout_ms":15000,"started_at":"2026-10-28T14:07:03.439Z","finished_at":"2026-10-28T14:07:06.071Z","source_manifest":[{"path":"schema.sql","bytes":286,"sha256":"77f993444cd1b30fb462173ffaa5be915e1b3995c02a9680da9788825a2cb381"}],"source_digest":"9c8b944a695dd40ab168295b4f21578b56c292447a2e8a627d54f96c87aa93d4","output_manifest":[{"path":"copypaste-database-check-c19db8d0-a6c8-4630-a038-28cf2b0788f3/results.json","bytes":101,"sha256":"6c6a047b35064b9c4c4f3128755896ee68af4ee0746c7644deb856fe04240ae2"},{"path":"schema.sql","bytes":286,"sha256":"77f993444cd1b30fb462173ffaa5be915e1b3995c02a9680da9788825a2cb381"}],"exit_code":1,"passed":false,"stop_reason":null,"stdout":"{\"kind\":\"sqlite\",\"passed\":false,\"checks\":[],\"error\":\"unable to open database file\"}\n","stderr":"(node:33072) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n","output_truncated":false,"check_result":{"kind":"sqlite","passed":false,"checks":[],"error":"unable to open database file"},"check_input":{"engine":"sqlite","entry":"schema.sql","checks":[{"name":"Actual database behavior","sql":"SELECT balance FROM accounts WHERE id=?","params":[1],"expect":{"rows":[{"balance":10}]}},{"name":"Actual database behavior","sql":"INSERT INTO accounts VALUES(?,?,?)","params":[2,"x'); DROP TABLE accounts;--",20],"expect":{"changes":1,"lastInsertRowid":2}},{"name":"Actual database behavior","sql":"SELECT COUNT(*) AS count FROM accounts","params":[],"expect":{"rows":[{"count":2}]}},{"name":"Actual database behavior","sql":"INSERT INTO accounts VALUES(1,'duplicate',1)","params":[],"expect":{"error_code":"1555"}},{"name":"Actual database behavior","sql":"INSERT INTO orders VALUES(1,999)","params":[],"expect":{"error_code":"787"}},{"name":"Actual database behavior","sql":"UPDATE accounts SET balance=-1 WHERE id=1","params":[],"expect":{"error_code":"275"}},{"name":"Actual database behavior","sql":"SELECT 9223372036854775807 AS big,x'0102' AS bytes","params":[],"expect":{"rows":[{"big":"9223372036854775807","bytes":{"base64":"AQI="}}]}}],"timeout_ms":15000,"output_directory":"copypaste-database-check-c19db8d0-a6c8-4630-a038-28cf2b0788f3"},"harness_sha256":"c347672ca2134d15081d397637fea9e2d4dbfb3f014a6ced14da6a190f885b5a","runtime":{"id":"windows-node22-appcontainer-v2","node_version":"v22.14.0","node_sha256":"33b1bc1a8aca11fd5a4f2699e51019c63c0af30cf437701d07af69be7706771b","host_sha256":"6f9b92c17c6f14911afeefa9882657d0d9298b4d2de2115379c03898b5a3c874","host_source_sha256":"bb60912903d441e6213f7d8da61a7fdbede69d2f1848d6868bc990cee8d38b3d","boundary":"appcontainer-no-capabilities-single-process-job-v2"},"host":{"schema":1,"process_id":33072,"exit_code":1,"resumed":true,"timed_out":false,"cancelled":false,"elapsed_ms":2547,"profile_name":"cpsoftware-99e7dbc5d1bd4f4288fa99d75bbb02cb","profile_created":true,"profile_deleted":true,"no_network_capabilities":true,"child_processes_prohibited":true,"stdin_channel":false,"memory_limit_bytes":536870912,"failure":null},"workspace_deleted":true}
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-development-checks.test.ts:535:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: SQLite mismatches, unexpected successful statements and invalid schema stay observable failures
+not ok 12 - SQLite mismatches, unexpected successful statements and invalid schema stay observable failures
+  ---
+  duration_ms: 2860.6753
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-development-checks.test.ts:5:3626'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    0 !== 2
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 2
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-development-checks.test.ts:569:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: SQLite cannot attach a host database or load native extensions; each invocation receives a fresh database
+not ok 13 - SQLite cannot attach a host database or load native extensions; each invocation receives a fresh database
+  ---
+  duration_ms: 2943.7034
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-development-checks.test.ts:5:4543'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"schema":1,"execution_id":"f96286b5-265e-47ca-989a-93144991df48","program":"database_sqlite","entry":"schema.sql","args":[],"timeout_ms":15000,"started_at":"2026-10-28T14:07:09.281Z","finished_at":"2026-10-28T14:07:11.878Z","source_manifest":[{"path":"schema.sql","bytes":71,"sha256":"ea32169bd908d78abd377f435840e4cee7c5a0e2afcc8cf9c98f1a08eff799e0"}],"source_digest":"9e5eda16c76640a63a56e4ce4e406db36d20664eaf7c6ecb677cd67cf8ad3a8a","output_manifest":[{"path":"copypaste-database-check-f6091378-5ba7-46db-9f14-b7ba5c038a57/results.json","bytes":101,"sha256":"6c6a047b35064b9c4c4f3128755896ee68af4ee0746c7644deb856fe04240ae2"},{"path":"schema.sql","bytes":71,"sha256":"ea32169bd908d78abd377f435840e4cee7c5a0e2afcc8cf9c98f1a08eff799e0"}],"exit_code":1,"passed":false,"stop_reason":null,"stdout":"{\"kind\":\"sqlite\",\"passed\":false,\"checks\":[],\"error\":\"unable to open database file\"}\n","stderr":"(node:38968) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n","output_truncated":false,"check_result":{"kind":"sqlite","passed":false,"checks":[],"error":"unable to open database file"},"check_input":{"engine":"sqlite","entry":"schema.sql","checks":[{"name":"Actual database behavior","sql":"/* hidden prefix */ aTtAcH DATABASE 'D:/dev/copypasted/自有agent/dev/copypaste-platform-recovery-120/.data/cloud-development-unit/53515f00-c6fd-4bfd-94c1-cb04a645b09c/outside.sqlite' AS host","params":[],"expect":{"error_code":"SQLITE_IO_POLICY"}},{"name":"Actual database behavior","sql":"SELECT load_extension('outside.dll')","params":[],"expect":{"error_code":"1","error_message":"not authorized"}},{"name":"Actual database behavior","sql":"SELECT COUNT(*) AS count FROM fresh","params":[],"expect":{"rows":[{"count":1}]}},{"name":"Actual database behavior","sql":"SELECT 'ATTACH; VACUUM' AS \"ATTACH\" /* ATTACH */; -- VACUUM","params":[],"expect":{"rows":[{"ATTACH":"ATTACH; VACUUM"}]}},{"name":"Actual database behavior","sql":"SELECT 1; SELECT 2","params":[],"expect":{"error_code":"SQLITE_STATEMENT_POLICY"}}],"timeout_ms":15000,"output_directory":"copypaste-database-check-f6091378-5ba7-46db-9f14-b7ba5c038a57"},"harness_sha256":"c347672ca2134d15081d397637fea9e2d4dbfb3f014a6ced14da6a190f885b5a","runtime":{"id":"windows-node22-appcontainer-v2","node_version":"v22.14.0","node_sha256":"33b1bc1a8aca11fd5a4f2699e51019c63c0af30cf437701d07af69be7706771b","host_sha256":"6f9b92c17c6f14911afeefa9882657d0d9298b4d2de2115379c03898b5a3c874","host_source_sha256":"bb60912903d441e6213f7d8da61a7fdbede69d2f1848d6868bc990cee8d38b3d","boundary":"appcontainer-no-capabilities-single-process-job-v2"},"host":{"schema":1,"process_id":38968,"exit_code":1,"resumed":true,"timed_out":false,"cancelled":false,"elapsed_ms":2509,"profile_name":"cpsoftware-5e7e3784814941ba91604c2ea795241a","profile_created":true,"profile_deleted":true,"no_network_capabilities":true,"child_processes_prohibited":true,"stdin_channel":false,"memory_limit_bytes":536870912,"failure":null},"workspace_deleted":true}
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-development-checks.test.ts:621:14)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: unbounded SQLite queries hit the native deadline and oversized row sets are rejected
+not ok 14 - unbounded SQLite queries hit the native deadline and oversized row sets are rejected
+  ---
+  duration_ms: 2987.1962
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-development-checks.test.ts:5:5687'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-development-checks.test.ts:647:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 10
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 75708.7871
+# owned_fixture_cleanup {"path":".data/test-fixture-reclamation/40f3a960-8724-4e83-97c5-a48840889153/result.json","sha256":"415657b7c720c6968a5fa6657dfd751d01b3333cbdfb3eabb871f489c4c6f41b","exit_code":0}

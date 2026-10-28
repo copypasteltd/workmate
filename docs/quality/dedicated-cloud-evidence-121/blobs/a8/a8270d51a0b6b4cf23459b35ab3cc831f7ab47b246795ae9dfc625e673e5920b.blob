@@ -1,0 +1,39 @@
+import assert from "node:assert/strict";
+import { spawn } from "node:child_process";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+import { createInterface } from "node:readline";
+import { createHash, randomUUID } from "node:crypto";
+import path from "node:path";
+const sha=b=>createHash("sha256").update(b).digest("hex");
+const platform=path.resolve("../copypaste-platform-recovery-120"), desktop=path.resolve("../copypaste-desktop");
+const binary=path.join(desktop,".data/runtime/windows-x64/codex.exe");
+const pin=JSON.parse(await readFile(path.join(desktop,"contracts/local-codex-runtime.json"),"utf8"));
+assert.equal(sha(await readFile(binary)),pin.windows_x64_sha256);
+const base=path.join(platform,".data/codex-initialize-diagnostic-01");
+await mkdir(base,{recursive:false});
+const rows=[];
+for(let round=0;round<3;round++) {
+ const workspace=path.join(base,randomUUID(),"runs",randomUUID(),randomUUID()),home=path.join(workspace,".codex");
+ await mkdir(home,{recursive:true});
+ const config=["model = \"diagnostic-fixture\"",'model_provider = "copypaste_internal"','model_reasoning_effort = "high"','approval_policy = "never"','sandbox_mode = "read-only"','web_search = "disabled"','[model_providers.copypaste_internal]','name = "CopyPaste Internal Gateway"','base_url = "http://127.0.0.1:9/v1"','env_key = "COPYPASTE_RUNTIME_KEY"','wire_api = "responses"','request_max_retries = 0','stream_max_retries = 0','supports_websockets = false','[features]',...['shell_tool','multi_agent','goals','view_image','image_generation','computer_use','browser_use','browser_use_external','apps','plugins','remote_plugin','skill_mcp_dependency_install','skill_search','workspace_dependencies','sleep_tool','tool_suggest'].map(k=>k+' = false'),'[analytics]','enabled = false'].join("\n");
+ await writeFile(path.join(home,"config.toml"),config);
+ const started=performance.now(), child=spawn(binary,['app-server','--stdio','--strict-config'],{cwd:workspace,env:{PATH:process.env.PATH,Path:process.env.Path,SystemRoot:process.env.SystemRoot,TEMP:process.env.TEMP,TMP:process.env.TMP,HOME:workspace,USERPROFILE:workspace,CODEX_HOME:home,COPYPASTE_RUNTIME_KEY:'protocol-diagnostic-no-live-key'},windowsHide:true,stdio:['pipe','pipe','pipe']});
+ const closed=new Promise(resolve=>child.once('close',(code,signal)=>resolve({code,signal}))), pending=new Map();
+ const lines=createInterface({input:child.stdout});let stderr=Buffer.alloc(0),seq=0,error=null,initialized=false,threadStarted=false;
+ child.stderr.on('data',b=>{stderr=Buffer.concat([stderr,b]);});
+ const rejectAll=()=>{for(const row of pending.values()){clearTimeout(row.timer);row.reject(new Error('PROCESS_CLOSED'));}pending.clear();};
+ child.once('error',rejectAll);child.once('exit',rejectAll);
+ lines.on('line',line=>{try{const m=JSON.parse(line),p=pending.get(m.id);if(p&&(m.result!==undefined||m.error)){clearTimeout(p.timer);pending.delete(m.id);m.error?p.reject(new Error('RPC_REJECTED')):p.resolve(m.result);}}catch{}});
+ const rpc=(method,params)=>new Promise((resolve,reject)=>{const id=++seq,timer=setTimeout(()=>{pending.delete(id);reject(new Error('RPC_TIMEOUT_60000'));},60000);pending.set(id,{resolve,reject,timer});child.stdin.write(JSON.stringify({id,method,params})+'\n');});
+ try {
+  await rpc('initialize',{clientInfo:{name:'copypaste_protocol_diagnostic',version:'0.1.0'},capabilities:{experimentalApi:true}});initialized=true;
+  child.stdin.write(JSON.stringify({method:'initialized',params:{}})+'\n');
+  await rpc('thread/start',{model:'diagnostic-fixture',modelProvider:'copypaste_internal',cwd:workspace,approvalPolicy:'never',sandbox:'read-only',allowProviderModelFallback:false});threadStarted=true;
+ }catch(e){error=e.message;}
+ finally {rejectAll();lines.close();child.stdin.end();let timer;await Promise.race([closed,new Promise(r=>{timer=setTimeout(r,250);})]);clearTimeout(timer);if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');child.stdin.destroy();child.stdout.destroy();child.stderr.destroy();}
+ const exit=await closed;
+ const row={round,initialized,thread_started:threadStarted,error,elapsed_ms:Math.round(performance.now()-started),workspace_characters:workspace.length,home_characters:home.length,stderr_bytes:stderr.length,stderr_sha256:sha(stderr),...exit,process_closed:true,model_turn_started:false,raw_stderr_disclosed:false};rows.push(row);console.log(JSON.stringify(row));
+}
+const value={at:new Date().toISOString(),status:rows.every(r=>r.initialized&&r.thread_started&&r.process_closed)?'passed':'failed',scope:'Three fresh deep native Codex homes; actual initialize/thread-start only; same 60s RPC deadline; no model turn; does not prove the original timeout cause.',rows,native_pin:pin,platform_runtime_sha256:sha(await readFile(path.join(platform,'src/runtime.ts'))),verifier_sha256:sha(await readFile(import.meta.filename))};
+await writeFile('.data/dedicated-cloud-121/codex-initialize-diagnostic-01.json',JSON.stringify(value,null,2)+'\n',{flag:'wx'});
+assert.equal(value.status,'passed');

@@ -1,5 +1,14 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- dedicated-cloud-stage121 -->
+当前交付整理采用六个独立源码仓库及 `backend`、`web`、`admin`、`desktop`、`extension`、`delivery` 六个远端分支；中央文档同步到 `docs` 与 `main`。本地分支沿用 `codex/` 前缀。每次发布核对实际提交、限定验收对应源码、中英双语 README、页面／交互录制、更新说明及原始证据，再执行非强推的八分支原子更新。
+
+Stage121 keeps six independent component repositories and publishes their matching branches, with central documentation on `docs` and `main`. Local branches retain the `codex/` prefix. Publication verifies actual commits, qualified source bytes, bilingual guides, real captures, change notes and original evidence before a non-forced atomic update of all eight refs.
+
+当前发布执行器为 `dev/copypaste-delivery/scripts/publish-workmate-v4.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v4.py`。新的 proof 切片完整保留先前身份及旧 manifest 原文，失败批次不覆盖；已执行的执行器／回执更正使用新版本。实际 Linux 节点、正式供应商质量及原始整体验收结论独立保留，源码／协议测试不能替代。
+
+The V4 publisher and audit preserve every earlier proof identity, exact previous manifest and failed attempt. Corrections to executed verifiers use a fresh version. Physical Linux qualification, live provider quality and complete original-product acceptance retain their separate scope. See the [current design / 当前设计](../technical/121-dedicated-cloud-and-client-execution.md) and [bounded evidence / 限定证据](../quality/dedicated-cloud-checkpoint.json).
+
 <!-- integrated-recovery-stage120 -->
 Extension 0.5.2 补齐附件阻塞恢复、选择容量和准确字节提示；当前完整后端回归、历史升级边界、回执作废和实际路由清单独立验证。发布使用 V3 切片 proof 核查及八分支非强推。详见 [方案](../technical/120-integrated-regression-and-attachment-recovery.md) 与 [准确证据](../quality/integrated-recovery-checkpoint.json)。
 

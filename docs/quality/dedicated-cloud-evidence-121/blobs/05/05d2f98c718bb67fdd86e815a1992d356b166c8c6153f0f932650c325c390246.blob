@@ -1,0 +1,29 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+export const digest = bytes => createHash("sha256").update(bytes).digest("hex");
+export const packageFiles = Object.freeze([
+  "deployment/copypaste-cloud-node.service", "native/cloud-runner-guard.c",
+  ...["agent", "cli", "host-admission", "journal", "lease-runner", "protocol", "systemd-driver", "workspace-quota"].map(name => "src/cloud-node/" + name + ".mjs"),
+].sort());
+export function validateNativeBundle(bytes, expected) {
+  assert.match(expected, /^[a-f0-9]{64}$/); assert.ok(bytes.length > 0 && bytes.length <= 524288);
+  assert.equal(digest(bytes), expected, "BUNDLE_DIGEST_MISMATCH");
+  const value = JSON.parse(bytes.toString("utf8"));
+  assert.equal(value.format, "copypaste-native-cloud-node-1"); assert.equal(value.version, "1.0.0");
+  assert.deepEqual(value.platforms, ["linux-x64", "linux-arm64"]); assert.equal(value.minimum_node_major, 22);
+  assert.deepEqual(Object.keys(value.files).sort(), packageFiles, "BUNDLE_FILE_INVENTORY_MISMATCH");
+  for (const [name, file] of Object.entries(value.files)) {
+    assert.equal(file.mode, 0o644); assert.equal(typeof file.base64, "string");
+    const body = Buffer.from(file.base64, "base64"); assert.equal(body.toString("base64"), file.base64);
+    assert.ok(body.length > 0 && body.length <= 131072); assert.equal(file.bytes, body.length); assert.equal(digest(body), file.sha256, name);
+  }
+  return value;
+}
+export function validateInstallEntry(entry) {
+  const allowed = new Set([...packageFiles.map(name => "/opt/copypaste-cloud-node/" + name), "/etc/copypaste-cloud-node.json", "/etc/systemd/system/copypaste-cloud-node.service", "/opt/copypaste-cloud-node/native/cloud-runner-guard.so", "/opt/copypaste-cloud-node/native/cloud-runner-guard-build.json"]);
+  assert.ok(allowed.has(entry.target), "INSTALL_RECOVERY_TARGET_INVALID");
+  if (entry.previously_absent === true) { assert.deepEqual(Object.keys(entry).sort(), ["previously_absent", "target"]); return entry; }
+  assert.ok(Number.isSafeInteger(entry.mode) && entry.mode >= 0 && entry.mode <= 0o777 && (entry.mode & 0o022) === 0);
+  assert.equal(typeof entry.base64, "string"); const bytes = Buffer.from(entry.base64, "base64");
+  assert.equal(bytes.toString("base64"), entry.base64); assert.ok(bytes.length <= 16777216); return entry;
+}

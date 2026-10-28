@@ -1,0 +1,17 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary
+
+# Raw evidence digests must survive checkout on every operating system.
+evidence/** -text whitespace=cr-at-eol
+
+# Executed native pairing verifiers retain their qualified byte digests.
+scripts/*native-pairing* -text whitespace=cr-at-eol
+
+# Keep executed folder journeys and the proof-aware publisher byte-for-byte.
+scripts/*extension-folder* -text whitespace=cr-at-eol
+scripts/publish-workmate-v2.mjs -text whitespace=cr-at-eol
+tests/publication-proofs.test.mjs -text whitespace=cr-at-eol
+scripts/*integrated-recovery* -text whitespace=cr-at-eol
+scripts/publish-workmate-v3.mjs -text whitespace=cr-at-eol

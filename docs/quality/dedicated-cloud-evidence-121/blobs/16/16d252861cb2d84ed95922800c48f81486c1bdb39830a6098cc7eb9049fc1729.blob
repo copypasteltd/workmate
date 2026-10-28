@@ -1,0 +1,142 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import { DedicatedNodeAgent } from "../src/cloud-node/agent.mjs";
+import { configuration, canonical, sha256, startSpecification, verifySource, controlInput, companyApi } from "../src/cloud-node/protocol.mjs";
+import { unitArguments, unitIdentity, SystemdLeaseDriver } from "../src/cloud-node/systemd-driver.mjs";
+
+const config = configuration({ api_origin: "https://company.example.invalid", node_id: randomUUID(), enrollment_token: "A".repeat(43), machine_fingerprint: "b".repeat(64), plan_key: "hk-computer", cpu_cores: 4, memory_mib: 8192, disk_mib: 8192, max_minutes: 60 });
+const clone = value => JSON.parse(JSON.stringify(value));
+function start() {
+  const spec = { plan_key: config.plan_key, plan_version: 1, minutes: 5, kernel: "codex", ai_routing: "company_only", automatic_renewal: false,
+    plan: { key: config.plan_key, cpu_cores: 2, memory_mib: 2048, disk_mib: 2048, max_minutes: 60, per_minute_micros: 1000, terminal: true, visual: true },
+    scope: { terminal: true, visual: true, selected_asset_versions: [], purpose: "Explicit synthetic node qualification" }, selected_files: [], maximum_cost_micros: "5000" };
+  return { id: randomUUID(), session_id: randomUUID(), generation: 1, kind: "start", body: { specification: spec, specification_hash: sha256(canonical(spec)), deadline: "2026-10-28T00:05:00.000Z", kernel: "codex", company_only: true } };
+}
+class Journal {
+  constructor(state = { format: 1, current: null, commands: [] }) { this.saved = clone(state); this.history = []; }
+  async initialize() { return clone(this.saved); }
+  async save(state) { this.saved = clone(state); this.history.push(this.saved); }
+  async close() { this.closed = true; }
+}
+function fixture() {
+  const command = start(), journal = new Journal(), receipts = [], requests = []; let now = 1000, reply = { stop_all: false, commands: [command], server_time: "2026-10-28T00:00:00.000Z" }, lost = false;
+  const driver = { starts: 0, inputs: 0, stops: 0, clean: true, identity: unitIdentity,
+    async start() { assert.ok(journal.saved.current); assert.equal(journal.saved.commands[0].status, "executing"); this.starts++; },
+    async input() { this.inputs++; return "Actual synthetic driver output"; },
+    async stop() { this.stops++; if (!this.clean) throw new Error("Not empty"); return { cleanup_verified: true, running_milliseconds: 1234 }; },
+    async recover() { throw new Error("HOST_USAGE_UNCERTAIN_AFTER_RESTART"); },
+  };
+  const api = { async request(route, body) { requests.push({ route, body: clone(body ?? null) }); if (route === "poll") return clone(reply); receipts.push(clone(body)); if (lost) { lost = false; throw new Error("Response lost after commit"); } return { accepted: true }; } };
+  const agent = new DedicatedNodeAgent({ config, api, driver, journal, clock: () => now });
+  return { agent, driver, journal, receipts, requests, command, setNow: value => { now = value; }, setReply: value => { reply = value; }, loseResponse: () => { lost = true; }, async drain() { await Promise.all(agent.jobs.values()); await agent.pendingWrites; } };
+}
+
+test("a lost ready or cleanup response resends its original durable receipt without allocating or charging twice", async () => {
+  const f = fixture(); await f.agent.initialize(); f.loseResponse(); await f.agent.poll(); await f.drain();
+  assert.equal(f.driver.starts, 1); assert.equal(f.driver.stops, 0); assert.equal(f.journal.saved.commands[0].receipt.outcome, "ready");
+  await f.agent.poll(); assert.equal(f.driver.starts, 1); assert.deepEqual(f.receipts[0], f.receipts[1]);
+  const stop = { id: randomUUID(), session_id: f.command.session_id, generation: 1, kind: "stop", body: { reason: "CUSTOMER_STOPPED" } };
+  f.setReply({ stop_all: false, commands: [stop], server_time: "2026-10-28T00:00:02.000Z" }); f.loseResponse();
+  await assert.rejects(f.agent.poll(), /Response lost/); assert.equal(f.driver.stops, 1);
+  await f.agent.poll(); assert.equal(f.driver.stops, 1); assert.deepEqual(f.receipts.at(-1), f.receipts.at(-2));
+  assert.equal(f.agent.state.current, null); assert.equal(f.agent.state.commands.length, 1); await f.agent.close(); assert.equal(f.journal.closed, true);
+});
+
+test("a slow terminal operation cannot block polling, revocation or an independent verified stop", async () => {
+  const f = fixture(); await f.agent.initialize(); await f.agent.poll(); await f.drain();
+  let aborted = false;
+  f.driver.input = async (_input, signal) => { f.driver.inputs++; await new Promise((resolve, reject) => signal.addEventListener("abort", () => { aborted = true; reject(new Error("Stopped")); }, { once: true })); };
+  f.setReply({ stop_all: false, commands: [{ id: randomUUID(), session_id: f.command.session_id, generation: 1, kind: "input", body: { kind: "terminal", command: "sleep 100" } }], server_time: "2026-10-28T00:00:01Z" });
+  await f.agent.poll(); assert.equal(f.driver.inputs, 1);
+  f.setReply({ stop_all: true, commands: [{ id: randomUUID(), session_id: f.command.session_id, generation: 1, kind: "stop", body: { reason: "REVOKED" } }], server_time: "2026-10-28T00:00:02Z" });
+  await f.agent.poll(); await f.drain(); assert.equal(aborted, true); assert.equal(f.driver.stops, 1); assert.equal(f.agent.state.current, null);
+  assert.equal(f.receipts.filter(r => r.outcome === "completed").length, 0); await f.agent.close();
+});
+
+test("local monotonic deadlines and heartbeat loss stop the unit without fabricating a server cleanup acknowledgement", async () => {
+  for (const elapsed of [15_001, 300_001]) {
+    const f = fixture(); await f.agent.initialize(); await f.agent.poll(); await f.drain(); f.setNow(1000 + elapsed); await f.agent.watchdog();
+    assert.equal(f.driver.stops, 1); assert.equal(f.agent.state.current.cleanup.cleanup_verified, true);
+    assert.equal(f.receipts.length, 1); assert.equal(f.receipts[0].outcome, "ready"); await f.agent.close();
+  }
+});
+
+test("command identity and generation fences reject changed delivered bodies and another session's controls", async () => {
+  const f = fixture(); await f.agent.initialize(); await f.agent.poll(); await f.drain();
+  const changed = clone(f.command); changed.body.deadline = "2026-10-28T00:06:00Z";
+  f.setReply({ stop_all: false, commands: [changed], server_time: "2026-10-28T00:00:01Z" }); await assert.rejects(f.agent.poll(), /DELIVERED_COMMAND_CHANGED/);
+  f.setReply({ stop_all: false, commands: [{ id: randomUUID(), session_id: f.command.session_id, generation: 2, kind: "input", body: { kind: "terminal", command: "whoami" } }], server_time: "2026-10-28T00:00:01Z" });
+  await assert.rejects(f.agent.poll(), /STALE_COMMAND_GENERATION/); assert.equal(f.driver.inputs, 0); await f.agent.close();
+});
+
+test("an input receipt lost after commit executes once and retains exact private output until acknowledgement", async () => {
+  const f = fixture(); await f.agent.initialize(); await f.agent.poll(); await f.drain();
+  const input = { id: randomUUID(), session_id: f.command.session_id, generation: 1, kind: "input", body: { kind: "terminal", command: "printf private" } };
+  f.setReply({ stop_all: false, commands: [input], server_time: "2026-10-28T00:00:01Z" }); f.loseResponse(); await f.agent.poll(); await f.drain();
+  await f.agent.poll(); assert.equal(f.driver.inputs, 1); assert.deepEqual(f.receipts.at(-1), f.receipts.at(-2));
+  assert.equal(f.journal.saved.commands.at(-1).receipt, undefined); assert.match(f.journal.saved.commands.at(-1).receipt_sha256, /^[a-f0-9]{64}$/); await f.agent.close();
+});
+
+test("unconfirmed cgroup cleanup never becomes a stopped receipt and keeps the original lease owned", async () => {
+  const f = fixture(); await f.agent.initialize(); await f.agent.poll(); await f.drain(); f.driver.clean = false;
+  f.setReply({ stop_all: true, commands: [{ id: randomUUID(), session_id: f.command.session_id, generation: 1, kind: "stop", body: { reason: "STOP" } }], server_time: "2026-10-28T00:00:01Z" });
+  await assert.rejects(f.agent.poll(), /Not empty/); assert.equal(f.agent.state.current.session_id, f.command.session_id);
+  assert.equal(f.receipts.some(r => r.cleanup_verified), false); f.driver.clean = true; await f.agent.close();
+});
+
+test("a daemon restart with uncertain usage cleans through its driver and fails closed instead of resuming or reporting free usage", async () => {
+  const f = fixture(); const current = { session_id: f.command.session_id, generation: 1, driver_identity: unitIdentity(f.command), scope: { terminal: true, visual: true } };
+  f.journal.saved.current = current; let recovered = 0; f.driver.recover = async actual => { assert.deepEqual(actual, current); recovered++; throw new Error("HOST_USAGE_UNCERTAIN_AFTER_RESTART"); };
+  await assert.rejects(f.agent.initialize(), /HOST_USAGE_UNCERTAIN/); assert.equal(recovered, 1); assert.equal(f.driver.starts, 0); assert.equal(f.receipts.length, 0);
+});
+
+test("a lost committed cleanup response releases the private local cache when the server authoritatively has no lease", async () => {
+  const f = fixture(); await f.agent.initialize(); await f.agent.poll(); await f.drain();
+  f.setReply({ stop_all: true, commands: [], server_time: "2026-10-28T00:00:10Z" });
+  await f.agent.poll(); assert.equal(f.driver.stops, 1); assert.equal(f.agent.state.current, null); assert.deepEqual(f.journal.saved.commands, []);
+  assert.equal(f.receipts.filter(r => r.cleanup_verified).length, 0); await f.agent.close();
+});
+
+test("frozen company Codex, exact rate, resource limits, selected versions and lease time are admitted together", () => {
+  const good = start(); assert.equal(startSpecification(good, config, "2026-10-28T00:00:00Z", 100).remaining_milliseconds, 299900);
+  for (const mutate of [s => { s.kernel = "other"; }, s => { s.ai_routing = "external"; }, s => { s.automatic_renewal = true; }, s => { s.plan.memory_mib = 16384; }, s => { s.maximum_cost_micros = "1"; }, s => { s.scope.selected_asset_versions = [randomUUID()]; }]) {
+    const command = clone(good); mutate(command.body.specification); command.body.specification_hash = sha256(canonical(command.body.specification)); assert.throws(() => startSpecification(command, config, "2026-10-28T00:00:00Z"));
+  }
+  assert.throws(() => startSpecification(good, config, "2026-10-28T00:05:01Z"), /LEASE_DEADLINE_INVALID/);
+  const changed = clone(good); changed.body.specification.minutes = 6; assert.throws(() => startSpecification(changed, config, "2026-10-28T00:00:00Z"), /HASH_MISMATCH/);
+});
+
+test("selected file content must match its original exact hash and size; a hostile filename never becomes a host path", () => {
+  const bytes = Buffer.from("private approved file"), fact = { id: randomUUID(), sha256: sha256(bytes), bytes: String(bytes.length), name: "../../etc/shadow" };
+  assert.deepEqual(verifySource({ ...fact, base64: bytes.toString("base64") }, fact), { id: fact.id, bytes });
+  assert.throws(() => verifySource({ ...fact, base64: Buffer.from("other").toString("base64") }, fact), /INTEGRITY_FAILED/);
+  assert.throws(() => verifySource({ ...fact, id: randomUUID(), base64: bytes.toString("base64") }, fact), /SELECTED_FILE_CHANGED/);
+});
+
+test("a customer control cannot cross its frozen terminal/visual scope or enlarge its bounded input", () => {
+  assert.throws(() => controlInput({ kind: "terminal", command: "ls" }, { terminal: false, visual: true }));
+  assert.throws(() => controlInput({ kind: "pointer", x: 1280, y: 0, button: "left" }, { visual: true }));
+  assert.throws(() => controlInput({ kind: "key", key: "Enter", text: "a".repeat(1001) }, { visual: true }));
+  assert.throws(() => controlInput({ kind: "terminal", command: "ls", host_shell: true }, { terminal: true }));
+});
+
+test("node credentials go only to an explicit company HTTPS origin and fixed same-origin routes with redirects rejected", async () => {
+  for (const origin of ["http://example.invalid", "https://secret@example.invalid", "https://example.invalid/path", "https://example.invalid/?token=value"]) assert.throws(() => configuration({ ...config, api_origin: origin }));
+  const seen = []; const api = companyApi(config, async (url, options) => { seen.push({ url, options }); return new Response(JSON.stringify({ commands: [] }), { status: 200 }); });
+  await api.request("poll", {}); assert.equal(seen[0].url, config.api_origin + `/v1/cloud-runtime-nodes/${config.node_id}/poll`); assert.equal(seen[0].options.redirect, "error");
+  await assert.rejects(api.request("https://other.example.invalid", {}), /NODE_ROUTE_INVALID/); assert.equal(seen.length, 1);
+});
+
+test("native unit arguments keep customer shell text out of the root command and enforce a fixed native resource boundary", () => {
+  const command = start(), spec = command.body.specification, staging = `/var/lib/workmate-cloud/leases/${command.session_id}-g1`;
+  spec.scope.purpose = "$(touch /root/should-never-exist)"; const args = unitArguments(command, spec, staging, 299000);
+  for (const required of ["--property=DynamicUser=yes", "--property=PrivateNetwork=yes", "--property=MemoryMax=2048M", "--property=CPUQuota=200%", "--property=RuntimeMaxSec=299.000s", "--property=KillMode=control-group", "--property=NoNewPrivileges=yes", "--property=CapabilityBoundingSet="]) assert.ok(args.includes(required));
+  assert.equal(args.some(a => a.includes("should-never-exist")), false); assert.ok(args.includes("/usr/bin/env")); assert.ok(args.includes("-i"));
+  assert.throws(() => unitArguments(command, spec, "/var/lib/workmate-cloud/leases/../../etc", 1000));
+  assert.throws(() => unitIdentity({ session_id: "../../other", generation: 1 }));
+});
+
+test("the real native driver refuses to start services on this Windows development host", async () => {
+  if (process.platform !== "linux") await assert.rejects(new SystemdLeaseDriver().preflight(), /ROOT_NATIVE_LINUX_HOST_REQUIRED/);
+});

@@ -1,0 +1,34 @@
+import type { Tx } from "./db.js";
+import { eraseReplayContent } from "./access.js";
+
+/** The caller holds dedicated-cloud-control before touching private leases.
+ * Content removal never settles funds or attests that a computer was cleaned. */
+export async function eraseDedicatedQuote(tx: Tx, id: string) {
+  await tx.query("SELECT set_config('app.erasing_content','true',true)");
+  await tx.query("UPDATE cloud_runtime_quotes SET content_state='deleted',body='{}' WHERE id=$1 AND (content_state<>'deleted' OR body<>'{}'::jsonb)", [id]);
+  await eraseReplayContent(tx, [id]);
+  await tx.query("SELECT set_config('app.erasing_content','false',true)");
+}
+
+export async function eraseDedicatedSession(tx: Tx, id: string) {
+  const session = (await tx.query("SELECT * FROM cloud_runtime_sessions WHERE id=$1 FOR UPDATE", [id])).rows[0];
+  if (!session) return;
+  if (["starting", "running", "stop_requested", "reconciling"].includes(session.state)) {
+    await tx.query(`INSERT INTO cloud_runtime_commands(tenant_id,project_id,private_owner,session_id,node_id,generation,kind,body)
+      VALUES($1,$2,$3,$4,$5,$6,'stop','{"reason":"PRIVATE_CONTENT_REMOVED"}') ON CONFLICT DO NOTHING`,
+      [session.tenant_id, session.project_id, session.private_owner, id, session.node_id, session.generation]);
+  }
+  await tx.query(`UPDATE cloud_runtime_sessions SET content_state='deleted',
+    state=CASE WHEN state IN('starting','running') THEN 'stop_requested' ELSE state END,
+    last_error=CASE WHEN state IN('starting','running') THEN 'PRIVATE_CONTENT_REMOVED' ELSE last_error END,version=version+1
+    WHERE id=$1 AND (content_state<>'deleted' OR state IN('starting','running'))`, [id]);
+  await eraseDedicatedQuote(tx, session.quote_id);
+  await tx.query("SELECT set_config('app.erasing_content','true',true)");
+  await tx.query(`UPDATE cloud_runtime_commands SET result=NULL,
+    body=CASE WHEN body ? 'receipt_hash' THEN jsonb_build_object('receipt_hash',body->'receipt_hash') ELSE '{}'::jsonb END
+    WHERE session_id=$1 AND kind<>'stop' AND (result IS NOT NULL OR body- 'receipt_hash'<>'{}'::jsonb)`, [id]);
+  await tx.query("UPDATE cloud_runtime_events SET body='{}' WHERE session_id=$1 AND body<>'{}'::jsonb", [id]);
+  await tx.query("DELETE FROM cloud_runtime_frames WHERE session_id=$1", [id]);
+  await eraseReplayContent(tx, [id]);
+  await tx.query("SELECT set_config('app.erasing_content','false',true)");
+}
