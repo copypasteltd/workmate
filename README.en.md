@@ -2,6 +2,24 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- runtime-startup-122 -->
+
+## Codex startup and turn isolation · Stage 122
+
+Work details now explain runtime.startup.retry as “Reconnecting your assistant”, with Traditional Chinese and English connection messages. Recovery retains the server task identity; the page does not resubmit paid work or create another budget.
+
+All 20 existing client checks, type checking and the current build passed. The current Web OTP/PKCE pages also participated in the actual browser login to the packaged Desktop. Complete cross-client and production acceptance remains tracked in the requirements ledger.
+
+```mermaid
+flowchart LR
+  A[Original cloud task] --> B[Server task events]
+  B --> C[Localized connection progress]
+  B --> D[Original output and usage]
+  C --> D
+```
+
+[完整方案 / Behavior and verification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/122-codex-startup-and-turn-isolation.md)
+
 ## Product and boundaries
 
 The first customers are existing marketing teams. Scope includes image/design/typography, video/effects, advertising and website analysis, SEO/GEO, repeated business processes and software development. The catalog has 18 candidates with exact Skill bindings; at least twelve individually qualified professional presets remain an acceptance requirement. The designer combines Codex, design Skills and company Image 2. Codex is the only Agent core. All AI uses the company's OpenAI-compatible backend; development currently uses authorized synthetic providers, not a claim of live professional quality.

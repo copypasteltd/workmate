@@ -1393,6 +1393,8 @@ function TaskDetail() {
         "資料已齊，工作已排隊",
         "Inputs ready; work queued",
       ],
+      "runtime.startup.retry": ["正在重新連接助手", "Reconnecting your assistant"],
+      "runtime.rpc.failed": ["助手連線遇到問題", "Assistant connection encountered an issue"],
     };
     const labelKey = state || e.body.step_key || e.kind;
     if (labels[labelKey]) return t(...labels[labelKey]);
