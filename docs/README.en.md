@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
-<!-- open-work-review-20261028 -->
-Open-work refresh, 2026-10-28 v2: all 102 original full-acceptance records remain open, including 101 required and one optional. The formal ledger retains 86 partial and 16 not-proven decisions. Latest local Desktop, Web/Admin and Extension runs each passed eight actual scenarios, with 29 screenshots and five recording pairs. Complete backend regression is still running. Final integration, README/evidence updates and stage 121 product publication remain open. Explicit synthetic data remains authorized.
+<!-- open-work-review-20261029 -->
+Open-work review, 2026-10-29: all 102 original full-acceptance records remain open, including 101 required and one optional; 86 retain partial evidence and 16 remain not proven complete. Five client/delivery workspaces have integrated 144 files, with 338 integrated checks passing. The full backend regression failed: 35 files passed, one failed and 76 remain incomplete out of 112. Backend integration, six updated bilingual READMEs/evidence packages, product commits/publication and formal acceptance remain pending. Existing bounded UI evidence covers 24 scenarios, 29 screenshots and five recording pairs. Explicit synthetic data remains authorized.
 
-[Full inventory](quality/remaining-work-2026-10-28-v2.md) · [Structured inventory](quality/remaining-work-2026-10-28-v2.json) · [Changes](changes/remaining-work-review-2026-10-28-v2.md) · [Preserved v1](quality/remaining-work-2026-10-28.md)
+[Full inventory](quality/remaining-work-2026-10-29.md) · [Structured inventory](quality/remaining-work-2026-10-29.json) · [Changes](changes/remaining-work-review-2026-10-29.md) · [Previous snapshot](quality/remaining-work-2026-10-28-v2.md)
 
 <!-- integrated-recovery-stage120 -->
 Extension attachment recovery and the complete backend regression are qualified below.

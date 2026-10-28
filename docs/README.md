@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
-<!-- open-work-review-20261028 -->
-2026-10-28 v2 核查：102 项原需求尚未关闭整项验收，含 101 必需与 1 可选；原台账保留 86 部分验证、16 尚未证明完成。最新本地 Desktop、Web/Admin、Extension 各 8 项实际流程已通过，共 29 张截图和 5 组录制；后端完整回归仍在运行。最终源码整合、README/证据及阶段 121 产品发布仍待完成。继续使用明确假数据。
+<!-- open-work-review-20261029 -->
+2026-10-29 核查：102 项原需求仍未关闭整项验收，含 101 必需与 1 可选；86 项部分验证、16 项完成未证实。五个客户端/交付工作区已整合 144 个文件，整合后测试 338 项通过。后端完整回归已失败：35 个文件通过、1 个文件失败、76 个文件未完成，共 112 个；后端整合、六仓库新版 README/证据、产品提交推送及正式验收仍待完成。已有 24 项限定 UI 检查、29 张截图和 5 组录制。继续使用明确假数据。
 
-[全部编号检查表](quality/remaining-work-2026-10-28-v2.md) · [结构化清单](quality/remaining-work-2026-10-28-v2.json) · [更新说明](changes/remaining-work-review-2026-10-28-v2.md) · [保留的 v1 快照](quality/remaining-work-2026-10-28.md)
+[全部编号检查表](quality/remaining-work-2026-10-29.md) · [结构化清单](quality/remaining-work-2026-10-29.json) · [更新说明](changes/remaining-work-review-2026-10-29.md) · [上一版快照](quality/remaining-work-2026-10-28-v2.md)
 
 <!-- integrated-recovery-stage120 -->
 本轮完成附件恢复及当前完整后端回归验证。
