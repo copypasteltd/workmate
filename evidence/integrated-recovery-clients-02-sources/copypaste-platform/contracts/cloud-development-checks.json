@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "runtime_profile": "windows-node22-appcontainer-v2",
+  "api_test": {
+    "transport": "actual-http1-over-framed-anonymous-pipes",
+    "entry": "authorized-task-js-ts-http-handler-or-unstarted-server-export",
+    "request_limit": 20,
+    "response_body_limit_bytes": 16384,
+    "request_timeout_ms": 5000,
+    "assertions_run_in": "trusted-company-parent-process",
+    "network_capabilities": [],
+    "follows_redirects": false,
+    "external_targets": false,
+    "tcp_tls_validation": false
+  },
+  "database_test_native": {
+    "engines": ["sqlite"],
+    "implementation": "pinned-Node-builtin-native-sqlite",
+    "input": "authorized-task-sql-file-and-parameterized-checks",
+    "check_limit": 30,
+    "row_limit": 100,
+    "fresh_database_per_invocation": true,
+    "foreign_keys": true,
+    "load_extensions": false,
+    "pragma_attach_detach_vacuum": "rejected-before-native-engine",
+    "sql_statements_per_check": 1,
+    "external_database_connections": false
+  },
+  "receipt": "actual-exit-and-assertions-exact-sources-harness-hash-and-cleanup",
+  "desktop": "customer-local-Codex-native-tools; cloud-check-tools-not-injected"
+}

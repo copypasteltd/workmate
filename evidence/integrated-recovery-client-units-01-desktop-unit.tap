@@ -1,0 +1,908 @@
+TAP version 13
+# Subtest: two actual contexts are reserved before asynchronous reset and reused without creating extra contexts
+ok 1 - two actual contexts are reserved before asynchronous reset and reused without creating extra contexts
+  ---
+  duration_ms: 2.1136
+  ...
+# Subtest: normal pages and popups across drivers share a three-page task quota until actual page destruction
+ok 2 - normal pages and popups across drivers share a three-page task quota until actual page destruction
+  ---
+  duration_ms: 0.3339
+  ...
+# Subtest: context release excludes opens and new owners while storage cleanup remains pending
+ok 3 - context release excludes opens and new owners while storage cleanup remains pending
+  ---
+  duration_ms: 0.3353
+  ...
+# Subtest: failed initial or final storage cleanup quarantines the actual context instead of leaking old task data
+ok 4 - failed initial or final storage cleanup quarantines the actual context instead of leaking old task data
+  ---
+  duration_ms: 0.3538
+  ...
+# Subtest: native browser call ID binds parameters before concurrent effects and returns immutable cached results
+ok 5 - native browser call ID binds parameters before concurrent effects and returns immutable cached results
+  ---
+  duration_ms: 2.801
+  ...
+# Subtest: revocation denies cached browser observations as well as new side effects
+ok 6 - revocation denies cached browser observations as well as new side effects
+  ---
+  duration_ms: 0.4205
+  ...
+# Subtest: unknown browser outcomes are recorded before rejection and never replayed
+ok 7 - unknown browser outcomes are recorded before rejection and never replayed
+  ---
+  duration_ms: 0.4367
+  ...
+# Subtest: aborting a pending browser wait closes its driver immediately and close is idempotent
+ok 8 - aborting a pending browser wait closes its driver immediately and close is idempotent
+  ---
+  duration_ms: 0.7494
+  ...
+# Subtest: strict native browser schemas reject extra fields, malformed references and incomplete actions before effects
+ok 9 - strict native browser schemas reject extra fields, malformed references and incomplete actions before effects
+  ---
+  duration_ms: 1.1064
+  ...
+# Subtest: local browser URLs allow customer HTTP applications but reject local files, privileged schemes and embedded credentials
+ok 10 - local browser URLs allow customer HTTP applications but reject local files, privileged schemes and embedded credentials
+  ---
+  duration_ms: 0.2966
+  ...
+# Subtest: local Desktop renderer can fetch scoped presentation but cannot mutate its release API
+ok 11 - local Desktop renderer can fetch scoped presentation but cannot mutate its release API
+  ---
+  duration_ms: 2.0209
+  ...
+# Subtest: a lost create reply retries the durable signed ID and connects exactly one server device
+ok 12 - a lost create reply retries the durable signed ID and connects exactly one server device
+  ---
+  duration_ms: 17.657
+  ...
+# Subtest: failed legacy retirement prevents replacement without losing the original local mapping
+ok 13 - failed legacy retirement prevents replacement without losing the original local mapping
+  ---
+  duration_ms: 0.4086
+  ...
+# Subtest: a failed durable prepare writes no network request
+ok 14 - a failed durable prepare writes no network request
+  ---
+  duration_ms: 1.5509
+  ...
+# Subtest: a disk failure after the create reply remains recoverable from the original prepared intent
+ok 15 - a disk failure after the create reply remains recoverable from the original prepared intent
+  ---
+  duration_ms: 2.4026
+  ...
+# Subtest: withdrawal retains a signed unknown create while offline and retires it on a new controller
+ok 16 - withdrawal retains a signed unknown create while offline and retires it on a new controller
+  ---
+  duration_ms: 3.3075
+  ...
+# Subtest: changed grants cannot create replacement work before the earlier unknown intent is retired
+ok 17 - changed grants cannot create replacement work before the earlier unknown intent is retired
+  ---
+  duration_ms: 4.2084
+  ...
+# Subtest: account changes during a late create reply cannot reconnect the old device
+ok 18 - account changes during a late create reply cannot reconnect the old device
+  ---
+  duration_ms: 6.7145
+  ...
+# Subtest: startup marks a previous account's intent for retirement and clears only device connections
+ok 19 - startup marks a previous account's intent for retirement and clears only device connections
+  ---
+  duration_ms: 1.68
+  ...
+# Subtest: an invalid server receipt never activates a device and preserves its withdrawal proof
+ok 20 - an invalid server receipt never activates a device and preserves its withdrawal proof
+  ---
+  duration_ms: 1.7735
+  ...
+# Subtest: an explicitly server-retired pairing is not automatically recreated
+ok 21 - an explicitly server-retired pairing is not automatically recreated
+  ---
+  duration_ms: 1.9552
+  ...
+# Subtest: known paired devices reuse their frozen intent without deleting the active device
+ok 22 - known paired devices reuse their frozen intent without deleting the active device
+  ---
+  duration_ms: 1.6935
+  ...
+# Subtest: uninstall retirement handles a durable copy after background cleanup already removed the local entry
+ok 23 - uninstall retirement handles a durable copy after background cleanup already removed the local entry
+  ---
+  duration_ms: 2.2948
+  ...
+# Subtest: real HKCU removal uses exact manifest ownership and retains another installation's registration under a shared mutex
+ok 24 - real HKCU removal uses exact manifest ownership and retains another installation's registration under a shared mutex
+  ---
+  duration_ms: 2398.6098
+  ...
+# Subtest: cache cleanup refuses root and cache junctions, keeps originals and receipts, and never follows a descendant junction
+ok 25 - cache cleanup refuses root and cache junctions, keeps originals and receipts, and never follows a descendant junction
+  ---
+  duration_ms: 104.6307
+  ...
+# Subtest: removal markers fail closed, owned Host leases are awaited without killing processes, and pause preserves permission journals
+ok 26 - removal markers fail closed, owned Host leases are awaited without killing processes, and pause preserves permission journals
+  ---
+  duration_ms: 143.3201
+  ...
+# Subtest: the actual bundled Native Host reads an explicit folder then exits on removal, closes its lease and refuses re-entry
+ok 27 - the actual bundled Native Host reads an explicit folder then exits on removal, closes its lease and refuses re-entry
+  ---
+  duration_ms: 1325.9853
+  ...
+# Subtest: cancelling native confirmation leaves credentials, grants, registry, cache and cloud untouched
+ok 28 - cancelling native confirmation leaves credentials, grants, registry, cache and cloud untouched
+  ---
+  duration_ms: 1.6577
+  ...
+# Subtest: confirmed removal durably signs each device before auth withdrawal and returns no credentials or original paths
+ok 29 - confirmed removal durably signs each device before auth withdrawal and returns no credentials or original paths
+  ---
+  duration_ms: 13.3999
+  ...
+# Subtest: large installation inventories use distinct bounded 64-device requests and retire every device exactly once
+ok 30 - large installation inventories use distinct bounded 64-device requests and retire every device exactly once
+  ---
+  duration_ms: 55.3975
+  ...
+# Subtest: offline retirement still stops local work and retains the exact encrypted-store payload for idempotent retry
+ok 31 - offline retirement still stops local work and retains the exact encrypted-store payload for idempotent retry
+  ---
+  duration_ms: 1.5632
+  ...
+# Subtest: a malformed or unverified acknowledgement cannot erase the withdrawal credential
+ok 32 - a malformed or unverified acknowledgement cannot erase the withdrawal credential
+  ---
+  duration_ms: 1.3679
+  ...
+# Subtest: missing identity fails before local auth or customer files can be cleared
+ok 33 - missing identity fails before local auth or customer files can be cleared
+  ---
+  duration_ms: 0.2598
+  ...
+# Subtest: a crash between durable outbox and marker creation resumes local withdrawal before any cloud request
+ok 34 - a crash between durable outbox and marker creation resumes local withdrawal before any cloud request
+  ---
+  duration_ms: 1.4307
+  ...
+# Subtest: cache and registry failures stay individually unfinished and are retried without regenerating device proofs
+ok 35 - cache and registry failures stay individually unfinished and are retried without regenerating device proofs
+  ---
+  duration_ms: 2.0471
+  ...
+# Subtest: another installation's Chrome registration is retained and is an explicit completed local outcome
+ok 36 - another installation's Chrome registration is retained and is an explicit completed local outcome
+  ---
+  duration_ms: 1.3343
+  ...
+# Subtest: admission blocks removal during another IPC and blocks new file work while native confirmation is open
+ok 37 - admission blocks removal during another IPC and blocks new file work while native confirmation is open
+  ---
+  duration_ms: 4.7025
+  ...
+# Subtest: fresh sign-in reactivates without restoring prior grants, while old offline requests retire only the old family
+ok 38 - fresh sign-in reactivates without restoring prior grants, while old offline requests retire only the old family
+  ---
+  duration_ms: 1.8321
+  ...
+# Subtest: a failed marker removal durably queues and locally withdraws the newly accepted login rather than orphaning it
+ok 39 - a failed marker removal durably queues and locally withdraws the newly accepted login rather than orphaning it
+  ---
+  duration_ms: 1.3836
+  ...
+# Subtest: uninstall retains an unacknowledged pairing independently of known device IDs and its family receipt
+ok 40 - uninstall retains an unacknowledged pairing independently of known device IDs and its family receipt
+  ---
+  duration_ms: 1.286
+  ...
+# Subtest: a mismatched pairing retirement receipt stays unverified rather than reporting a completed cloud withdrawal
+ok 41 - a mismatched pairing retirement receipt stays unverified rather than reporting a completed cloud withdrawal
+  ---
+  duration_ms: 0.3637
+  ...
+# Subtest: shared protocol verifies exact signatures, bounds and deterministic rollout without an account token
+ok 42 - shared protocol verifies exact signatures, bounds and deterministic rollout without an account token
+  ---
+  duration_ms: 4.7941
+  ...
+# Subtest: cancelling a real HTTP download aborts the stream and deletes its partial file
+ok 43 - cancelling a real HTTP download aborts the stream and deletes its partial file
+  ---
+  duration_ms: 120.9808
+  ...
+# Subtest: download rechecks publication, verifies exact bytes and persists restartable installer state
+ok 44 - download rechecks publication, verifies exact bytes and persists restartable installer state
+  ---
+  duration_ms: 142.0891
+  ...
+# Subtest: a forged or replayed manifest cannot replace a trusted release, even after restart
+ok 45 - a forged or replayed manifest cannot replace a trusted release, even after restart
+  ---
+  duration_ms: 6.3448
+  ...
+# Subtest: withdrawal or publication change before download prevents any artifact request
+ok 46 - withdrawal or publication change before download prevents any artifact request
+  ---
+  duration_ms: 3.4829
+  ...
+# Subtest: stream length and file hashes are checked before invoking the native signature verifier
+ok 47 - stream length and file hashes are checked before invoking the native signature verifier
+  ---
+  duration_ms: 6.4948
+  ...
+# Subtest: untrusted Windows signatures leave no prepared file or installation permission
+ok 48 - untrusted Windows signatures leave no prepared file or installation permission
+  ---
+  duration_ms: 145.6352
+  ...
+# Subtest: active local work blocks installation, without cancelling work or discarding its journal
+ok 49 - active local work blocks installation, without cancelling work or discarding its journal
+  ---
+  duration_ms: 155.359
+  ...
+# Subtest: admission waits for in-flight operations and prevents a new turn while installation confirms
+ok 50 - admission waits for in-flight operations and prevents a new turn while installation confirms
+  ---
+  duration_ms: 159.4216
+  ...
+# Subtest: withdrawal immediately before install blocks a previously verified cached installer
+ok 51 - withdrawal immediately before install blocks a previously verified cached installer
+  ---
+  duration_ms: 189.7791
+  ...
+# Subtest: publication is checked again after native signature verification, before requesting installation
+ok 52 - publication is checked again after native signature verification, before requesting installation
+  ---
+  duration_ms: 118.3174
+  ...
+# Subtest: cache tampering after download cannot survive install-time verification
+ok 53 - cache tampering after download cannot survive install-time verification
+  ---
+  duration_ms: 133.0716
+  ...
+# Subtest: portable installs stay manual and empty trust disables checks without any network access
+ok 54 - portable installs stay manual and empty trust disables checks without any network access
+  ---
+  duration_ms: 149.7197
+  ...
+# Subtest: discard removes only its owned installer and retains anti-replay sequence across checks
+ok 55 - discard removes only its owned installer and retains anti-replay sequence across checks
+  ---
+  duration_ms: 163.551
+  ...
+# Subtest: network failures and a missing known channel cannot erase the trusted sequence floor
+ok 56 - network failures and a missing known channel cannot erase the trusted sequence floor
+  ---
+  duration_ms: 2.9739
+  ...
+# Subtest: packaged Desktop ignores a development trust override, keeping only its pinned release roots
+ok 57 - packaged Desktop ignores a development trust override, keeping only its pinned release roots
+  ---
+  duration_ms: 0.6674
+  ...
+# Subtest: oversized responses and unexpected transfer encodings fail before trusting metadata
+ok 58 - oversized responses and unexpected transfer encodings fail before trusting metadata
+  ---
+  duration_ms: 6.11
+  ...
+# Subtest: streamed downloads verify bytes and digest, reject overwrite and remove temporary files after failures
+ok 59 - streamed downloads verify bytes and digest, reject overwrite and remove temporary files after failures
+  ---
+  duration_ms: 101.5701
+  ...
+# Subtest: folder grants enforce expiry, explicit writes, create-only semantics and idempotency
+ok 60 - folder grants enforce expiry, explicit writes, create-only semantics and idempotency
+  ---
+  duration_ms: 20.3177
+  ...
+# Subtest: API bridge cannot change origin or escape the API prefix
+ok 61 - API bridge cannot change origin or escape the API prefix
+  ---
+  duration_ms: 0.3523
+  ...
+# Subtest: native workspace bridge permits canonical session/onboarding/business calls and rejects credential and path escapes
+ok 62 - native workspace bridge permits canonical session/onboarding/business calls and rejects credential and path escapes
+  ---
+  duration_ms: 2.7963
+  ...
+# Subtest: marketing bridge permits scoped reporting operations while rejecting admin and OAuth credential access
+ok 63 - marketing bridge permits scoped reporting operations while rejecting admin and OAuth credential access
+  ---
+  duration_ms: 0.3989
+  ...
+# Subtest: provider authorization opens only the configured company page with a bounded state
+ok 64 - provider authorization opens only the configured company page with a bounded state
+  ---
+  duration_ms: 0.5132
+  ...
+# Subtest: website audit bridge admits explicit read/create/recheck operations and rejects unrelated writes
+ok 65 - website audit bridge admits explicit read/create/recheck operations and rejects unrelated writes
+  ---
+  duration_ms: 0.3666
+  ...
+# Subtest: saved website change bridge exposes creation and private reads without any website mutation operation
+ok 66 - saved website change bridge exposes creation and private reads without any website mutation operation
+  ---
+  duration_ms: 0.3812
+  ...
+# Subtest: sign-out removes every folder grant and cached file result before queued work can replay
+ok 67 - sign-out removes every folder grant and cached file result before queued work can replay
+  ---
+  duration_ms: 61.836
+  ...
+# Subtest: method library bridge admits scoped metadata and configuration but no cloud trial execution
+ok 68 - method library bridge admits scoped metadata and configuration but no cloud trial execution
+  ---
+  duration_ms: 0.6363
+  ...
+# Subtest: update checkpoints allow idle sessions and block a live local turn until its settlement finishes
+ok 69 - update checkpoints allow idle sessions and block a live local turn until its settlement finishes
+  ---
+  duration_ms: 46.4462
+  ...
+# Subtest: closing the app while a send is persisting prevents a later task reservation or native start
+ok 70 - closing the app while a send is persisting prevents a later task reservation or native start
+  ---
+  duration_ms: 2.1943
+  ...
+# Subtest: existing native records retain their original tool set after the browser factory becomes available
+ok 71 - existing native records retain their original tool set after the browser factory becomes available
+  ---
+  duration_ms: 3.1861
+  ...
+# Subtest: new native browser bindings retain actual actor/project/workspace ownership and cannot bypass a read-only grant
+ok 72 - new native browser bindings retain actual actor/project/workspace ownership and cannot bypass a read-only grant
+  ---
+  duration_ms: 3.991
+  ...
+# Subtest: stop closes the owned browser even while the native tool is waiting
+ok 73 - stop closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 4.1801
+  ...
+# Subtest: revoke closes the owned browser even while the native tool is waiting
+ok 74 - revoke closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 3.2111
+  ...
+# Subtest: logout closes the owned browser even while the native tool is waiting
+ok 75 - logout closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 3.1245
+  ...
+# Subtest: close closes the owned browser even while the native tool is waiting
+ok 76 - close closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 5.0907
+  ...
+# Subtest: saved native specialists retain their version through uncertain admission and restart, without a replacement reservation
+ok 77 - saved native specialists retain their version through uncertain admission and restart, without a replacement reservation
+  ---
+  duration_ms: 5.0054
+  ...
+# Subtest: saved specialist selection rejects a wrong role or changed account before opening a customer folder
+ok 78 - saved specialist selection rejects a wrong role or changed account before opening a customer folder
+  ---
+  duration_ms: 2.789
+  ...
+# Subtest: legacy native records do not silently acquire approved-program tools
+ok 79 - legacy native records do not silently acquire approved-program tools
+  ---
+  duration_ms: 5.0872
+  ...
+# Subtest: approved-program tools retain original task and customer ownership and recheck the full local grant
+ok 80 - approved-program tools retain original task and customer ownership and recheck the full local grant
+  ---
+  duration_ms: 2.4115
+  ...
+# Subtest: stop closes an owned program tool while the native turn is waiting
+ok 81 - stop closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 2.3088
+  ...
+# Subtest: revoke closes an owned program tool while the native turn is waiting
+ok 82 - revoke closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 1.5739
+  ...
+# Subtest: logout closes an owned program tool while the native turn is waiting
+ok 83 - logout closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 1.5238
+  ...
+# Subtest: close closes an owned program tool while the native turn is waiting
+ok 84 - close closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 1.664
+  ...
+# Subtest: durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn
+ok 85 - durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn
+  ---
+  duration_ms: 2.1199
+  ...
+# Subtest: file dispatch recovers a lost create response under the original request ids
+ok 86 - file dispatch recovers a lost create response under the original request ids
+  ---
+  duration_ms: 2.2203
+  ...
+# Subtest: file dispatch recovers a lost start response under the original request ids
+ok 87 - file dispatch recovers a lost start response under the original request ids
+  ---
+  duration_ms: 1.8436
+  ...
+# Subtest: file dispatch recovers a lost finish response under the original request ids
+ok 88 - file dispatch recovers a lost finish response under the original request ids
+  ---
+  duration_ms: 1.6232
+  ...
+# Subtest: concurrent replay of the same dispatch id never runs a second task
+ok 89 - concurrent replay of the same dispatch id never runs a second task
+  ---
+  duration_ms: 2.5339
+  ...
+# Subtest: a running dispatch recovered after a crash reports unknown and never restarts the possibly accepted native action
+ok 90 - a running dispatch recovered after a crash reports unknown and never restarts the possibly accepted native action
+  ---
+  duration_ms: 1.5338
+  ...
+# Subtest: a queued file must revalidate its source before native startup; conversation retries cannot bypass the folder rule
+ok 91 - a queued file must revalidate its source before native startup; conversation retries cannot bypass the folder rule
+  ---
+  duration_ms: 1.6058
+  ...
+# Subtest: a folder selection grants no execution permission; declined native consent never starts tools or reserves money
+ok 92 - a folder selection grants no execution permission; declined native consent never starts tools or reserves money
+  ---
+  duration_ms: 1.0055
+  ...
+# Subtest: explicit native full permission reaches the runtime; public state never contains the scoped token or mutable internals
+ok 93 - explicit native full permission reaches the runtime; public state never contains the scoped token or mutable internals
+  ---
+  duration_ms: 1.3308
+  ...
+# Subtest: a lost finish response retries only the saved receipt, never the native turn or task reservation
+ok 94 - a lost finish response retries only the saved receipt, never the native turn or task reservation
+  ---
+  duration_ms: 1.5912
+  ...
+# Subtest: a native start failure reports definite failure before any turn and clears the controller lock
+ok 95 - a native start failure reports definite failure before any turn and clears the controller lock
+  ---
+  duration_ms: 5.6837
+  ...
+# (node:388) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a completed workflow child stops its heartbeat before native shutdown and terminal settlement
+ok 96 - a completed workflow child stops its heartbeat before native shutdown and terminal settlement
+  ---
+  duration_ms: 2.8082
+  ...
+# Subtest: an uncertain native result reports unknown and cannot be silently replayed or followed by another local turn
+ok 97 - an uncertain native result reports unknown and cannot be silently replayed or followed by another local turn
+  ---
+  duration_ms: 2.2574
+  ...
+# Subtest: account invalidation revokes local grants and hides the previous account's journal
+ok 98 - account invalidation revokes local grants and hides the previous account's journal
+  ---
+  duration_ms: 6.6343
+  ...
+# Subtest: concurrent native consent cannot race another permission grant or begin execution
+ok 99 - concurrent native consent cannot race another permission grant or begin execution
+  ---
+  duration_ms: 1.5693
+  ...
+# Subtest: generic renderer API cannot retrieve native credentials or proxy native inference
+ok 100 - generic renderer API cannot retrieve native credentials or proxy native inference
+  ---
+  duration_ms: 0.3319
+  ...
+# Subtest: an explicit native answer resumes one owned operation without a new task, turn, budget or answer journal entry
+ok 101 - an explicit native answer resumes one owned operation without a new task, turn, budget or answer journal entry
+  ---
+  duration_ms: 2.7866
+  ...
+# Subtest: malformed answers, guessed native ids and a different account cannot answer a live question
+ok 102 - malformed answers, guessed native ids and a different account cannot answer a live question
+  ---
+  duration_ms: 1.8326
+  ...
+# Subtest: simultaneous answer submissions are single use and cannot win a stop during company authorization
+ok 103 - simultaneous answer submissions are single use and cannot win a stop during company authorization
+  ---
+  duration_ms: 1.8696
+  ...
+# Subtest: waiting questions disappear on stop and cannot be answered or replayed
+ok 104 - waiting questions disappear on stop and cannot be answered or replayed
+  ---
+  duration_ms: 1.6883
+  ...
+# Subtest: waiting questions disappear on revoke and cannot be answered or replayed
+ok 105 - waiting questions disappear on revoke and cannot be answered or replayed
+  ---
+  duration_ms: 1.5358
+  ...
+# Subtest: waiting questions disappear on invalidate and cannot be answered or replayed
+ok 106 - waiting questions disappear on invalidate and cannot be answered or replayed
+  ---
+  duration_ms: 2.0619
+  ...
+# Subtest: waiting questions disappear on close and cannot be answered or replayed
+ok 107 - waiting questions disappear on close and cannot be answered or replayed
+  ---
+  duration_ms: 2.2751
+  ...
+# Subtest: a native method reserves one durable batch, runs each role locally and never creates a fallback task on retry
+ok 108 - a native method reserves one durable batch, runs each role locally and never creates a fallback task on retry
+  ---
+  duration_ms: 4.8637
+  ...
+# Subtest: lost native method admission survives a main-process restart and resumes the original immutable batch
+ok 109 - lost native method admission survives a main-process restart and resumes the original immutable batch
+  ---
+  duration_ms: 2.3211
+  ...
+# Subtest: a withdrawn local grant can reconcile and cancel a lost batch without launching Codex or requiring a new permission
+ok 110 - a withdrawn local grant can reconcile and cancel a lost batch without launching Codex or requiring a new permission
+  ---
+  duration_ms: 2.0138
+  ...
+# Subtest: a definitive native method rejection releases the local reservations and an account change during persistence cannot admit work
+ok 111 - a definitive native method rejection releases the local reservations and an account change during persistence cannot admit work
+  ---
+  duration_ms: 1.7601
+  ...
+# Subtest: GEO preparation is consented, independently bound, durable before reservation and separate from general local sessions
+ok 112 - GEO preparation is consented, independently bound, durable before reservation and separate from general local sessions
+  ---
+  duration_ms: 32.0209
+  ...
+# Subtest: lost batch admission survives restart and reuses one reservation rather than replacing unknown work
+ok 113 - lost batch admission survives restart and reuses one reservation rather than replacing unknown work
+  ---
+  duration_ms: 5.8298
+  ...
+# Subtest: unknown accepted native GEO is reported once and never restarts a turn; a prepared question can stop without inference
+ok 114 - unknown accepted native GEO is reported once and never restarts a turn; a prepared question can stop without inference
+  ---
+  duration_ms: 5.1816
+  ...
+# Subtest: declined or stale-account GEO consent creates no reservation, and native admission stays outside the renderer API
+ok 115 - declined or stale-account GEO consent creates no reservation, and native admission stays outside the renderer API
+  ---
+  duration_ms: 2.6715
+  ...
+# Subtest: native input projection preserves explicit choices, free text and secret presentation without mutating caller state
+ok 116 - native input projection preserves explicit choices, free text and secret presentation without mutating caller state
+  ---
+  duration_ms: 1.2608
+  ...
+# Subtest: invalid question identity, duplicate options and unbounded payloads are rejected before presentation
+ok 117 - invalid question identity, duplicate options and unbounded payloads are rejected before presentation
+  ---
+  duration_ms: 0.3363
+  ...
+# Subtest: answers require every exact question once, a single explicit value and bounded content
+ok 118 - answers require every exact question once, a single explicit value and bounded content
+  ---
+  duration_ms: 0.3242
+  ...
+# Subtest: program selection and native approval both default to no grant; an older native thread cannot silently acquire new tools
+ok 119 - program selection and native approval both default to no grant; an older native thread cannot silently acquire new tools
+  ---
+  duration_ms: 232.2178
+  ...
+# Subtest: approved native argv preserves quotes, Unicode and trailing slashes without shell expansion and keeps company credentials out of the child
+ok 120 - approved native argv preserves quotes, Unicode and trailing slashes without shell expansion and keeps company credentials out of the child
+  ---
+  duration_ms: 1010.414
+  ...
+# Subtest: concurrent duplicate program calls execute once and replay exact immutable receipts; changed arguments with the same ID are rejected
+ok 121 - concurrent duplicate program calls execute once and replay exact immutable receipts; changed arguments with the same ID are rejected
+  ---
+  duration_ms: 879.5836
+  ...
+# Subtest: program nonzero exit and bounded output are recorded as actual failure rather than fabricated success
+ok 122 - program nonzero exit and bounded output are recorded as actual failure rather than fabricated success
+  ---
+  duration_ms: 896.6123
+  ...
+# Subtest: permission downgrade, account change and company revocation deny cached program output and new launches
+ok 123 - permission downgrade, account change and company revocation deny cached program output and new launches
+  ---
+  duration_ms: 948.2303
+  ...
+# Subtest: changed approved executable is rejected before another program process starts
+ok 124 - changed approved executable is rejected before another program process starts
+  ---
+  duration_ms: 490.443
+  ...
+# Subtest: a persisted running invocation becomes unknown after restart; a new call cannot bypass required customer review
+ok 125 - a persisted running invocation becomes unknown after restart; a new call cannot bypass required customer review
+  ---
+  duration_ms: 1355.839
+  ...
+# Subtest: aborting a real native job kills its program and grandchild while retaining an unrelated owned test process
+ok 126 - aborting a real native job kills its program and grandchild while retaining an unrelated owned test process
+  ---
+  duration_ms: 987.7044
+  ...
+# Subtest: normal root exit also closes background descendants; timeout remains a separate unsuccessful state
+ok 127 - normal root exit also closes background descendants; timeout remains a separate unsuccessful state
+  ---
+  duration_ms: 1821.0102
+  ...
+# Subtest: losing the owning controller cancels current programs; two admitted runs exhaust the process quota before any third launch
+ok 128 - losing the owning controller cancels current programs; two admitted runs exhaust the process quota before any third launch
+  ---
+  duration_ms: 1058.0089
+  ...
+# Subtest: failed intent persistence never launches a process and malformed structured arguments never become commands
+ok 129 - failed intent persistence never launches a process and malformed structured arguments never become commands
+  ---
+  duration_ms: 467.4811
+  ...
+# Subtest: revocation still kills an actual program when saving the revocation and final receipt both fail
+ok 130 - revocation still kills an actual program when saving the revocation and final receipt both fail
+  ---
+  duration_ms: 990.9277
+  ...
+# Subtest: unexpected death of the owning process closes the guardian job and its real descendants, preserving unrelated processes
+ok 131 - unexpected death of the owning process closes the guardian job and its real descendants, preserving unrelated processes
+  ---
+  duration_ms: 836.1075
+  ...
+# Subtest: folder scans exclude product outputs and dependencies, enforce file extensions and preserve exact source bytes
+ok 132 - folder scans exclude product outputs and dependencies, enforce file extensions and preserve exact source bytes
+  ---
+  duration_ms: 751.3495
+  ...
+# Subtest: outside, absolute, traversal, UNC and junction inputs cannot acquire a source snapshot
+ok 133 - outside, absolute, traversal, UNC and junction inputs cannot acquire a source snapshot
+  ---
+  duration_ms: 6.5771
+  ...
+# Subtest: a replaced root and a file modified while its handle is being read fail before dispatch
+ok 134 - a replaced root and a file modified while its handle is being read fail before dispatch
+  ---
+  duration_ms: 6.7058
+  ...
+# Subtest: a source replaced after enqueue and an oversized sparse file cannot be prepared
+ok 135 - a source replaced after enqueue and an oversized sparse file cannot be prepared
+  ---
+  duration_ms: 8.8856
+  ...
+# Subtest: a real filesystem watch debounces rapid edits, excludes its own outputs and dispatches each content fingerprint once
+ok 136 - a real filesystem watch debounces rapid edits, excludes its own outputs and dispatches each content fingerprint once
+  ---
+  duration_ms: 3958.5357
+  ...
+# Subtest: batch dispatch is serial, pause finishes the current file and resume handles only remaining work within both caps
+ok 137 - batch dispatch is serial, pause finishes the current file and resume handles only remaining work within both caps
+  ---
+  duration_ms: 3201.1384
+  ...
+# Subtest: lost result and restart recover the original job and output without spending on another execution
+ok 138 - lost result and restart recover the original job and output without spending on another execution
+  ---
+  duration_ms: 2620.0876
+  ...
+# Subtest: active rules reopen paused and require fresh confirmation before processing changes made while closed
+ok 139 - active rules reopen paused and require fresh confirmation before processing changes made while closed
+  ---
+  duration_ms: 2647.3853
+  ...
+# Subtest: a known changed original is reported as conflict after a paid run and prevents the next file
+ok 140 - a known changed original is reported as conflict after a paid run and prevents the next file
+  ---
+  duration_ms: 1773.3477
+  ...
+# Subtest: unknown outcomes retain their original task, block further dispatch and cannot be silently resumed
+ok 141 - unknown outcomes retain their original task, block further dispatch and cannot be silently resumed
+  ---
+  duration_ms: 1533.1638
+  ...
+# Subtest: withdrawal during activation invalidates the pending confirmation and cannot revive a paused rule
+ok 142 - withdrawal during activation invalidates the pending confirmation and cannot revive a paused rule
+  ---
+  duration_ms: 816.9858
+  ...
+# Subtest: revoked grants and account changes stop dispatch, and a new login epoch cannot list the old rules
+ok 143 - revoked grants and account changes stop dispatch, and a new login epoch cannot list the old rules
+  ---
+  duration_ms: 14.6698
+  ...
+# Subtest: failed journal persistence prevents native dispatch and leaves an actionable storage error
+ok 144 - failed journal persistence prevents native dispatch and leaves an actionable storage error
+  ---
+  duration_ms: 702.6282
+  ...
+# Subtest: changes waiting behind a busy session supersede unpaid versions, including content that returns to an earlier unpaid fingerprint
+ok 145 - changes waiting behind a busy session supersede unpaid versions, including content that returns to an earlier unpaid fingerprint
+  ---
+  duration_ms: 3635.9728
+  ...
+# Subtest: revoking a rule stops only its active owned task and retains its original receipt without starting the next file
+ok 146 - revoking a rule stops only its active owned task and retains its original receipt without starting the next file
+  ---
+  duration_ms: 1431.2026
+  ...
+# Subtest: native workflow requires separate exact fee consent and concrete human approval before the corresponding local children
+ok 147 - native workflow requires separate exact fee consent and concrete human approval before the corresponding local children
+  ---
+  duration_ms: 4.0269
+  ...
+# Subtest: declining native workflow fees creates no child or automatic retry
+ok 148 - declining native workflow fees creates no child or automatic retry
+  ---
+  duration_ms: 0.5174
+  ...
+# Subtest: a native workflow rejects already authorized receipts and fabricated cost totals before asking or executing
+ok 149 - a native workflow rejects already authorized receipts and fabricated cost totals before asking or executing
+  ---
+  duration_ms: 1.2923
+  ...
+# Subtest: native workflow frozen definitions and child-role boundaries are rechecked before launch
+ok 150 - native workflow frozen definitions and child-role boundaries are rechecked before launch
+  ---
+  duration_ms: 1.6933
+  ...
+# Subtest: unknown native child results never advance to another paid step or retry the child
+ok 151 - unknown native child results never advance to another paid step or retry the child
+  ---
+  duration_ms: 0.6534
+  ...
+# Subtest: withdrawing native authority after consent prevents a queued child from executing
+ok 152 - withdrawing native authority after consent prevents a queued child from executing
+  ---
+  duration_ms: 0.6662
+  ...
+# Subtest: an external workflow cancellation invalidates a pending human card and sends no stale approval
+ok 153 - an external workflow cancellation invalidates a pending human card and sends no stale approval
+  ---
+  duration_ms: 1012.1555
+  ...
+# Subtest: stopping a native approval wait closes its watcher and never sends a decision
+ok 154 - stopping a native approval wait closes its watcher and never sends a decision
+  ---
+  duration_ms: 15.1653
+  ...
+# Subtest: a committed code exchange with a lost first response retries the same private key and payload once
+ok 155 - a committed code exchange with a lost first response retries the same private key and payload once
+  ---
+  duration_ms: 16.9776
+  ...
+# Subtest: definitive code-exchange rejections, including rate limits and conflicts, do not retry
+ok 156 - definitive code-exchange rejections, including rate limits and conflicts, do not retry
+  ---
+  duration_ms: 0.8935
+  ...
+# Subtest: temporary code-exchange failures are bounded and do not expose remote error content
+ok 157 - temporary code-exchange failures are bounded and do not expose remote error content
+  ---
+  duration_ms: 0.5869
+  ...
+# Subtest: a complete canonical response is accepted once; an unreadable first body can safely recover
+ok 158 - a complete canonical response is accepted once; an unreadable first body can safely recover
+  ---
+  duration_ms: 0.9923
+  ...
+# Subtest: concurrent expired-token readers rotate once and use the same new credential
+ok 159 - concurrent expired-token readers rotate once and use the same new credential
+  ---
+  duration_ms: 2.1677
+  ...
+# Subtest: sign-out fences a refresh already accepted remotely and revokes its late result
+ok 160 - sign-out fences a refresh already accepted remotely and revokes its late result
+  ---
+  duration_ms: 1.1174
+  ...
+# Subtest: late login after sign-out cannot replace a later account
+ok 161 - late login after sign-out cannot replace a later account
+  ---
+  duration_ms: 0.3598
+  ...
+# Subtest: a stale request's unauthorized response cannot clear a replacement account
+ok 162 - a stale request's unauthorized response cannot clear a replacement account
+  ---
+  duration_ms: 0.2578
+  ...
+# Subtest: transport/temporary failures preserve credentials; definitive rejection clears and revokes
+ok 163 - transport/temporary failures preserve credentials; definitive rejection clears and revokes
+  ---
+  duration_ms: 0.77
+  ...
+# Subtest: logout during asynchronous credential persistence is serialized after the write
+ok 164 - logout during asynchronous credential persistence is serialized after the write
+  ---
+  duration_ms: 0.2541
+  ...
+# Subtest: malformed gateway credentials are rejected before persistence
+ok 165 - malformed gateway credentials are rejected before persistence
+  ---
+  duration_ms: 0.3233
+  ...
+# Subtest: offline sign-out removes local credentials and reports unconfirmed remote revocation
+ok 166 - offline sign-out removes local credentials and reports unconfirmed remote revocation
+  ---
+  duration_ms: 0.2218
+  ...
+# Subtest: credential persistence failure revokes the newly issued credential
+ok 167 - credential persistence failure revokes the newly issued credential
+  ---
+  duration_ms: 0.4935
+  ...
+# Subtest: a rejected obsolete refresh cannot sign out a later account
+ok 168 - a rejected obsolete refresh cannot sign out a later account
+  ---
+  duration_ms: 0.4474
+  ...
+# Subtest: a lost refresh response retains its private request key across controller restart
+ok 169 - a lost refresh response retains its private request key across controller restart
+  ---
+  duration_ms: 0.2883
+  ...
+# Subtest: legacy tokens must persist a new request key before attempting any refresh
+ok 170 - legacy tokens must persist a new request key before attempting any refresh
+  ---
+  duration_ms: 0.4298
+  ...
+# Subtest: sign-out during legacy request-key persistence prevents network refresh and clears storage
+ok 171 - sign-out during legacy request-key persistence prevents network refresh and clears storage
+  ---
+  duration_ms: 0.237
+  ...
+# Subtest: only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+ok 172 - only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+  ---
+  duration_ms: 0.1538
+  ...
+# Subtest: concurrent legacy readers persist one private request key and start a single rotation
+ok 173 - concurrent legacy readers persist one private request key and start a single rotation
+  ---
+  duration_ms: 0.6458
+  ...
+# {"native_authenticode_fixture":{"sha256":"33b1bc1a8aca11fd5a4f2699e51019c63c0af30cf437701d07af69be7706771b","signer_sha256":"4ea8727207f2149e4c1b7aeee5362f0bcf6bce58d8183e91f44a4b1c6827604d","operation":"inspect_only"}}
+# Subtest: native WinVerifyTrust validates a real Windows-trusted signed binary and its exact publisher
+ok 174 - native WinVerifyTrust validates a real Windows-trusted signed binary and its exact publisher
+  ---
+  duration_ms: 1101.8548
+  ...
+# Subtest: native verifier rejects changed bytes and the unsigned development helper without launching anything
+ok 175 - native verifier rejects changed bytes and the unsigned development helper without launching anything
+  ---
+  duration_ms: 139.9066
+  ...
+# Subtest: native install handshake locks verified bytes and refuses to start without the exact COMMIT message
+ok 176 - native install handshake locks verified bytes and refuses to start without the exact COMMIT message
+  ---
+  duration_ms: 1563.0316
+  ...
+# Subtest: Windows DPAPI vault decrypts across native processes and rejects tampering
+ok 177 - Windows DPAPI vault decrypts across native processes and rejects tampering
+  ---
+  duration_ms: 1001.7766
+  ...
+# Subtest: Website report bridge supports encoded URL properties and keeps both report routes read-only
+ok 178 - Website report bridge supports encoded URL properties and keeps both report routes read-only
+  ---
+  duration_ms: 2.1039
+  ...
+# Subtest: Accepting encoded query URLs never permits path escapes, arbitrary origins or privileged endpoints
+ok 179 - Accepting encoded query URLs never permits path escapes, arbitrary origins or privileged endpoints
+  ---
+  duration_ms: 0.3953
+  ...
+1..179
+# tests 179
+# suites 0
+# pass 179
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 55342.3409

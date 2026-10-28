@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CopyPaste · 工作側欄</title>
+    <link rel="stylesheet" href="panel.css" />
+    <link rel="stylesheet" href="audio-production.css" />
+  </head>
+  <body>
+    <header class="brand">
+      <div>
+        <img src="icon-48.png" alt="" /><strong>CopyPaste</strong
+        ><span>WORKSPACE</span>
+      </div>
+      <button id="locale" title="Language">EN</button
+      ><button id="open-web" title="開啟完整工作台" aria-label="開啟完整工作台">
+        ↗
+      </button>
+    </header>
+    <div id="error" class="notice error" role="alert" hidden></div>
+    <section id="login" class="login">
+      <p class="eyebrow">A LITTLE SPACE FOR YOUR NEXT IDEA.</p>
+      <h1>工作，就從<br /><em>這裡開始。</em></h1>
+      <p class="muted">
+        把網頁、素材和想法帶到你的工作空間。專業角色，隨時接手下一步。
+      </p>
+      <button id="sign-in" class="primary">
+        透過瀏覽器登入 <span>↗</span>
+      </button>
+      <p class="footnote">企業帳戶安全登入。本機檔案由你主動選取或授權。</p>
+      <div class="login-art" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="capability">
+        <strong>專案裡的每一步，都接得上。</strong
+        ><span>設計與品牌 · 行銷分析 · 軟件開發</span>
+      </div>
+    </section>
+    <section id="workspace" hidden>
+      <div class="workspace-head">
+        <small>YOUR WORKSPACE</small><strong id="user-name"></strong>
+      </div>
+      <div class="workspace-context">
+      <label class="field"
+        ><span>企業</span
+        ><select id="tenant"></select
+      ></label>
+      <label class="field"
+        ><span>專案</span
+        ><select id="project"></select
+      ></label>
+      </div>
+      <div id="empty-workspace" class="notice" hidden>
+        先開啟完整工作台建立企業與專案，再返回此側欄。
+      </div>
+      <div id="work-area">
+        <section id="client-content" class="client-content" aria-label="工作空間公告 / Workspace notices" tabindex="0" hidden></section>
+        <p id="demo-banner" class="notice" role="status" hidden>
+          示範環境：AI 回覆及用量為模擬資料，檔案與任務確實保存。
+        </p>
+        <section id="chat-shell" class="chat-shell" aria-label="CopyPaste conversation">
+          <div class="chat-meta">
+          <div class="chat-toolbar">
+            <button id="chat-new" type="button">＋ 新會話</button>
+            <label class="chat-history-field"><span id="chat-history-label" class="sr-only">會話記錄</span><select id="chat-history"></select></label>
+            <button id="chat-refresh" type="button">重新整理</button>
+          </div>
+          <div class="chat-heading"><h1 id="chat-name">今天想完成什麼？</h1><small id="chat-context"></small></div>
+          <details id="chat-project-brief" class="chat-project-brief" hidden><summary id="chat-project-summary"></summary><div id="chat-project-content"></div></details>
+          </div>
+          <div id="chat-messages" class="chat-messages" role="log" aria-label="Messages" aria-live="polite" aria-relevant="additions text"></div>
+          <div id="chat-unavailable" class="notice error" role="status" hidden></div>
+          <div id="chat-pending" class="notice" role="status" hidden></div>
+          <form id="chat-form" class="chat-composer">
+            <div id="chat-attachments" class="chat-attachments" aria-live="polite"></div>
+            <label class="sr-only" for="chat-input">Message / 訊息</label>
+            <textarea id="chat-input" rows="3" maxlength="30000" placeholder="傳送訊息…"></textarea>
+            <div class="chat-compose-actions">
+              <label class="chat-attach"><span id="chat-attach-label">附加檔案</span><input type="file" id="chat-file" multiple class="sr-only" /></label>
+              <label class="chat-attach"><span id="chat-folder-label">資料夾</span><input type="file" id="chat-folder" webkitdirectory multiple class="sr-only" aria-label="Choose folder / 選擇資料夾" /></label>
+              <button id="chat-capture" type="button">目前網頁</button>
+              <button id="chat-stop" type="button" hidden>停止</button>
+              <button id="chat-send" class="chat-send" type="submit">傳送 ↑</button>
+            </div>
+            <small id="chat-cloud-note" class="chat-cloud-note">獲選檔案上傳至公司雲端的私人會話，由雲端助手處理。分享至專案需另外確認。</small>
+            <details class="chat-settings"><summary id="chat-settings-label">角色與預算</summary>
+              <label class="field"><span id="chat-agent-label">專業角色</span><select id="chat-agent"></select></label>
+              <label class="field"><span id="chat-budget-label">每條訊息預算上限（HKD）</span><input id="chat-budget" type="text" inputmode="decimal" value="20" required /></label>
+            </details>
+            <small id="chat-cost" class="chat-cloud-note" role="status"></small>
+          </form>
+        </section>
+        <dialog id="folder-review" class="folder-review" aria-labelledby="folder-title" aria-describedby="folder-note">
+          <div class="folder-heading"><small>CopyPaste · Files</small><h2 id="folder-title"></h2><strong id="folder-root"></strong><p id="folder-summary"></p></div>
+          <p id="folder-note"></p>
+          <div id="folder-files" class="folder-files" role="group" aria-label="Selected folder files / 所選資料夾檔案"></div>
+          <div class="folder-footer"><progress id="folder-progress" hidden></progress><p id="folder-status" role="status" aria-live="polite"></p><div><button id="folder-cancel" type="button"></button><button id="folder-confirm" type="button" autofocus></button></div></div>
+        </dialog>
+        <details id="workspace-tools" class="workspace-tools">
+          <summary>工作、通知與帳戶 / Work, notices & account</summary>
+        <form id="brief-form">
+          <button type="button" id="review-models" class="secondary">
+            檢視模型與費率版本
+          </button>
+          <button type="button" id="batch-designs" class="secondary">
+            批量設計工作台
+          </button>
+          <button type="button" id="video-workspace" class="secondary">
+            影片製作工作台
+          </button>
+          <button type="button" id="marketing-connections" class="secondary">
+            營銷帳戶與同步
+          </button>
+          <button type="button" id="website-audits" class="secondary">
+            網站診斷與復查
+          </button>
+          <button type="button" id="creative-feedback" class="secondary">
+            創意與廣告反饋
+          </button>
+          <button type="button" id="geo-observations" class="secondary">
+            GEO雲端樣本觀測
+          </button>
+          <label class="field"
+            ><span>選擇助手或專業角色</span
+            ><select id="role" name="role"></select></label
+          ><label class="field"
+            ><span>工作名稱</span
+            ><input
+              name="title"
+              maxlength="160"
+              placeholder="例如：新品推廣企劃"
+              required /></label
+          ><label class="field"
+            ><span>你想完成什麼？</span
+            ><textarea
+              id="prompt"
+              name="prompt"
+              rows="5"
+              minlength="5"
+              maxlength="30000"
+              placeholder="描述目標、交付格式和需要保留的內容…"
+              required
+            ></textarea>
+          </label>
+          <div class="tools">
+            <button type="button" id="capture-page">＋ 目前網頁</button
+            ><label class="file-button"
+              >＋ 選取檔案<input type="file" id="file-input" hidden
+            /></label>
+          </div>
+          <small id="capture-note" class="hint"></small
+          ><small id="file-note" class="hint"></small
+          ><label class="field"
+            ><span>開始前需要補齊資料嗎？</span
+            ><select name="required_input">
+              <option value="">資料已齊，可開始</option>
+              <option value="file">先等我提供檔案</option>
+            </select></label
+          ><label class="field budget"
+            ><span>預算上限（HKD）</span
+            ><input
+              name="budget"
+              type="number"
+              min="1"
+              max="10000"
+              step="0.01"
+              value="20"
+              required /></label
+          ><button id="create-task" class="primary" type="submit">
+            開始工作 <span>↗</span>
+          </button>
+        </form>
+        <section id="task-view" class="task-view" hidden>
+          <div>
+            <h2 id="task-title"></h2>
+            <button id="close-task" aria-label="關閉工作詳情">×</button>
+          </div>
+          <span id="task-status" class="badge"></span>
+          <pre id="task-output"></pre>
+          <div id="generated-videos"></div>
+          <div id="audio-productions"></div>
+          <div id="cloud-schedules"></div>
+          <div id="cloud-events"></div>
+          <div id="delivery-quality"></div>
+          <div id="input-requests" hidden></div>
+          <button id="control-task" class="secondary" hidden></button>
+          <button id="cancel-task" class="secondary">取消工作</button>
+        </section>
+        <section class="recent">
+          <h2>工作通知</h2>
+          <button id="refresh-notifications" class="secondary" type="button">
+            重新整理通知
+          </button>
+          <p class="hint">最近 20 條；完整記錄請開啟工作台。</p>
+          <div id="notification-list"></div>
+        </section>
+        <section class="recent">
+          <h2 id="entitlement-heading">目前可用權益</h2>
+          <button id="refresh-entitlements" class="secondary" type="button">
+            更新權益
+          </button>
+          <div id="entitlement-summary" aria-live="polite"></div>
+          <p class="hint" id="entitlement-hint">
+            使用時仍會檢查專案權限、本機授權與預算。通知顯示最近 5
+            條，完整記錄請開啟工作台。
+          </p>
+          <div id="entitlement-notices"></div>
+        </section>
+        <section class="recent" aria-labelledby="financial-heading">
+          <h2 id="financial-heading">費用與帳戶通知</h2>
+          <button id="refresh-financial" class="secondary" type="button">
+            更新帳戶與通知
+          </button>
+          <p id="financial-hint" class="hint">
+            企業帳戶通知只對目前的 Owner 或 Admin
+            顯示。通知保留歷史變更，目前餘額以最新確認結果為準。
+          </p>
+          <div id="financial-summary"></div>
+          <label class="financial-filter"
+            ><input type="checkbox" id="financial-unread" />
+            <span>只看未讀</span></label
+          >
+          <p
+            id="financial-status"
+            class="hint"
+            role="status"
+            aria-atomic="true"
+          ></p>
+          <div id="financial-notices"></div>
+          <p class="hint">
+            最近 5 條帳戶通知；工作預留、消費及較早記錄可在完整工作台查看。
+          </p>
+        </section>
+        <section class="recent">
+          <h2>最近的工作</h2>
+          <div id="task-list"></div>
+        </section>
+        <details class="native">
+          <summary>本機目錄授權</summary>
+          <p>
+            需要安裝 CopyPaste Desktop
+            原生助手。每個目錄由你選擇，雲端不能任意存取本機路徑。
+          </p>
+          <button id="choose-folder" class="secondary">選擇並授權目錄</button
+          ><small id="folder-note"></small
+          ><button id="refresh-folders" class="secondary" type="button">
+            載入已授權目錄
+          </button>
+          <div id="folder-browser" hidden>
+            <label class="field"
+              ><span>資料夾授權</span
+              ><select id="folder-grant"></select></label
+            ><label class="field"
+              ><span>相對路徑</span><input id="local-path" value="."
+            /></label>
+            <div class="tools">
+              <button id="local-list" type="button">列出檔案</button
+              ><button id="local-read" type="button">讀取預覽</button>
+            </div>
+            <div id="local-listing"></div>
+            <pre id="local-preview"></pre>
+            <button id="local-upload" class="secondary" type="button">
+              上傳至專案</button
+            ><label class="field"
+              ><span>新檔內容（只限已授予寫入權限）</span
+              ><textarea id="local-content" rows="3"></textarea></label
+            ><button id="local-write" class="secondary" type="button">
+              建立新檔案</button
+            ><button id="local-revoke" class="secondary" type="button">
+              撤銷此授權
+            </button>
+          </div>
+        </details>
+        </details>
+      </div>
+    </section>
+    <footer id="account-actions" hidden>
+      <button id="sign-out">登出</button><span>HONG KONG · COPYPASTE</span>
+    </footer>
+    <script src="panel.js"></script>
+  </body>
+</html>

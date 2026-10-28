@@ -1,0 +1,129 @@
+TAP version 13
+# Subtest: preview inputs cannot substitute outside URLs, program execution, file upload or unobservable assertions
+ok 1 - preview inputs cannot substitute outside URLs, program execution, file upload or unobservable assertions
+  ---
+  duration_ms: 9.68
+  ...
+# Subtest: real native Chromium executes form actions, local assets, navigation and viewport capture with restricted untrusted renderer tokens
+not ok 2 - real native Chromium executes form actions, local assets, navigation and viewport capture with restricted untrusted renderer tokens
+  ---
+  duration_ms: 51836.2195
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-browser-preview.test.ts:1:1841'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"kind":"browser","passed":false,"checks":[{"name":"Actual DOM assertion","expected":{"text":"香港團隊 / vip / true"},"actual":"香港團隊 / vip / true","passed":true},{"name":"Actual DOM assertion","expected":{"value":"香港團隊"},"actual":"香港團隊","passed":true},{"name":"Actual DOM assertion","expected":{"count":1},"actual":1,"passed":true},{"name":"Actual DOM assertion","expected":{"visible":true},"actual":true,"passed":true}]}
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-browser-preview.test.ts:111:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: a finite local page may load for more than five seconds within the caller's single preview budget
+ok 3 - a finite local page may load for more than five seconds within the caller's single preview budget
+  ---
+  duration_ms: 13318.124
+  ...
+# Subtest: native preview preserves actual failed assertions and script exceptions even when the browser exits zero
+not ok 4 - native preview preserves actual failed assertions and script exceptions even when the browser exits zero
+  ---
+  duration_ms: 16778.1634
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-browser-preview.test.ts:1:5005'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1223 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1223
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-browser-preview.test.ts:182:14)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: external HTTP, WebSocket, RTC, filesystem and browser features cannot reach owned canaries or read controller secrets
+not ok 5 - external HTTP, WebSocket, RTC, filesystem and browser features cannot reach owned canaries or read controller secrets
+  ---
+  duration_ms: 13636.3323
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-browser-preview.test.ts:1:5825'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"kind":"browser","passed":false,"checks":[{"name":"Actual DOM assertion","expected":{"text":"Denied 3"},"actual":"Denied 3","passed":true},{"name":"Actual DOM assertion","expected":{"text":"undefined/undefined/undefined/undefined"},"actual":"undefined/undefined/undefined/undefined","passed":true}]}
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-browser-preview.test.ts:242:14)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: each preview has fresh browser storage; local navigation and cookie state exist only inside that invocation
+not ok 6 - each preview has fresh browser storage; local navigation and cookie state exist only inside that invocation
+  ---
+  duration_ms: 16579.5101
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-browser-preview.test.ts:1:8048'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"kind":"browser","passed":false,"checks":[{"name":"Actual DOM assertion","expected":{"text":"This invocation"},"actual":"This invocation","passed":true}]}
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-browser-preview.test.ts:284:12)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# Subtest: customer frames cannot read their controller, navigate the top document or launch external application protocols
+ok 7 - customer frames cannot read their controller, navigate the top document or launch external application protocols
+  ---
+  duration_ms: 30312.0706
+  ...
+# Subtest: invalid selectors and blocked infinite JavaScript cannot become passing checks and owned browser jobs are reclaimed
+ok 8 - invalid selectors and blocked infinite JavaScript cannot become passing checks and owned browser jobs are reclaimed
+  ---
+  duration_ms: 17345.5049
+  ...
+# Subtest: caller cancellation terminates only its native browser job and removes the owned profile
+ok 9 - caller cancellation terminates only its native browser job and removes the owned profile
+  ---
+  duration_ms: 2989.9898
+  ...
+# Subtest: asynchronous DOM state is polled and cancellation of one preview leaves a simultaneous owned preview intact
+ok 10 - asynchronous DOM state is polled and cancellation of one preview leaves a simultaneous owned preview intact
+  ---
+  duration_ms: 22082.9221
+  ...
+# Subtest: controller death is observed natively and only a positively closed orphan profile is reclaimed
+ok 11 - controller death is observed natively and only a positively closed orphan profile is reclaimed
+  ---
+  duration_ms: 3579.2238
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 7
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 190633.8659

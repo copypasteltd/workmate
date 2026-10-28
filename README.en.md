@@ -1,5 +1,54 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- integrated-recovery-stage120 -->
+Extension attachment recovery and the complete backend regression are qualified below.
+
+Run run-integrated-recovery-full-v2.mjs NN MAX_FILES for durable per-file backend receipts and resume the same immutable source inventory; run-integrated-recovery-v1.mjs NN extension|clients for Extension units and client builds; run-integrated-recovery-client-units-v1.mjs NN for all current Web/Admin/Desktop/Delivery unit files; run-integrated-recovery-ui-v1.mjs NN for the actual Chrome journey. Each attempt uses a fresh number and exact source archives; database-backed runs own and clean up their native database. publish-workmate-v3.mjs --push checks all historical proofs in bounded shards and atomically verifies eight nonforce refs. Failed reports and executed verifiers remain immutable.
+
+Validation: 1363 backend checks in 111 files + 229 Web/Admin/Desktop/Delivery unit checks + 63 Extension checks + 7 adversarial proof-reader cases; 13 builds; 7 actual UI flows; 6 layouts; 9 PNGs and 2 GIF/MP4 pairs.
+
+Actual native Chrome right Side Panel, OTP/PKCE, native PostgreSQL and pinned cloud Codex; synthetic customer/files/model decisions. Original full-product and live-provider acceptance remain unproven. Screens below show the Extension; they do not claim new pages on other clients.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/120-integrated-regression-and-attachment-recovery.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-recovery-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Pick[Browser folder picker] --> Review[Review selected relative paths]
+  Review --> Confirm[Customer confirms upload]
+  Confirm --> Private[Private files and JSON index]
+  Private --> Retry[Exact unfinished upload retry]
+  Retry --> Private
+  Private --> Send[Customer sends message]
+  Send --> Codex[Company cloud Codex]
+```
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-failed-attachment-recovery-zh.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-replace-selected-file-zh.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-review-zh.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-review-en.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-partial-failure-en.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-ready-not-sent-en.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-cloud-codex-response-en.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-review-360-light.png)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-review-420-dark.png)
+
+[Actual interaction video / 实际交互录屏](media/integrated-recovery-workmate-recovery-05-folder-retry.mp4)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-folder-retry.gif)
+
+[Actual interaction video / 实际交互录屏](media/integrated-recovery-workmate-recovery-05-folder-response.mp4)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-folder-response.gif)
+
+
 <!-- extension-folder-stage119 -->
 Selected browser folders are available in Extension 0.5.1.
 

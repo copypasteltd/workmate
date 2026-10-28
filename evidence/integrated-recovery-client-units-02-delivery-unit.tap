@@ -1,0 +1,125 @@
+TAP version 13
+# Subtest: resumption rejects changed source, missing inventory and replacement verifier
+ok 1 - resumption rejects changed source, missing inventory and replacement verifier
+  ---
+  duration_ms: 4.423
+  ...
+# Subtest: complete inventory never duplicates, omits or reorders files
+ok 2 - complete inventory never duplicates, omits or reorders files
+  ---
+  duration_ms: 1.4606
+  ...
+# Subtest: only actual terminal exit, full TAP and matching successful filesystem cleanup permit skipping a file
+ok 3 - only actual terminal exit, full TAP and matching successful filesystem cleanup permit skipping a file
+  ---
+  duration_ms: 34.0513
+  ...
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# warning: LF will be replaced by CRLF in .gitignore.
+# The file will have its original line endings in your working directory
+# Subtest: native preview admission binds a green report to the actual runtime, installers and extension bytes
+    # Subtest: reject a legacy green report without a byte binding
+    ok 1 - reject a legacy green report without a byte binding
+      ---
+      duration_ms: 3.3123
+      ...
+    # Subtest: bind new source bytes before staging and keep the same manifest after staging
+    ok 2 - bind new source bytes before staging and keep the same manifest after staging
+      ---
+      duration_ms: 913.8965
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+    ok 3 - reject changed bytes: release/frameless/win-unpacked/resources/app.asar
+      ---
+      duration_ms: 190.1803
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+    ok 4 - reject changed bytes: release/frameless/win-unpacked/resources/native-host.cjs
+      ---
+      duration_ms: 167.4546
+      ...
+    # Subtest: reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+    ok 5 - reject changed bytes: release/frameless/win-unpacked/CopyPaste.exe
+      ---
+      duration_ms: 154.925
+      ...
+    # Subtest: reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+    ok 6 - reject changed bytes: release/frameless/CopyPaste-0.5.0-x64-Setup.exe
+      ---
+      duration_ms: 153.7809
+      ...
+    # Subtest: reject changed bytes: dist/background.js
+    ok 7 - reject changed bytes: dist/background.js
+      ---
+      duration_ms: 142.2186
+      ...
+    # Subtest: reject changed bytes: src/main.ts
+    ok 8 - reject changed bytes: src/main.ts
+      ---
+      duration_ms: 179.9463
+      ...
+    # Subtest: reject added or missing extension files
+    ok 9 - reject added or missing extension files
+      ---
+      duration_ms: 410.8777
+      ...
+    # Subtest: reject incomplete cleanup and failures
+    ok 10 - reject incomplete cleanup and failures
+      ---
+      duration_ms: 2.4837
+      ...
+    # Subtest: allow documentation changes when all runtime bytes remain identical
+    ok 11 - allow documentation changes when all runtime bytes remain identical
+      ---
+      duration_ms: 190.5542
+      ...
+    1..11
+ok 4 - native preview admission binds a green report to the actual runtime, installers and extension bytes
+  ---
+  duration_ms: 3859.7472
+  ...
+# Subtest: the complete inventory cannot lose files, duplicate them, follow traversal or silently change order
+ok 5 - the complete inventory cannot lose files, duplicate them, follow traversal or silently change order
+  ---
+  duration_ms: 12.5512
+  ...
+# Subtest: partial TAP and concatenated summaries cannot be qualified as a completed worker
+ok 6 - partial TAP and concatenated summaries cannot be qualified as a completed worker
+  ---
+  duration_ms: 1.7964
+  ...
+# Subtest: failure, cancellation, skips and todo cannot become passing coverage
+ok 7 - failure, cancellation, skips and todo cannot become passing coverage
+  ---
+  duration_ms: 2.4782
+  ...
+# Subtest: a resumed run can retain completed batches but cannot finalize before all files pass
+ok 8 - a resumed run can retain completed batches but cannot finalize before all files pass
+  ---
+  duration_ms: 1.4489
+  ...
+# Subtest: an interrupted batch contributes no coverage and its complete retry contributes once
+ok 9 - an interrupted batch contributes no coverage and its complete retry contributes once
+  ---
+  duration_ms: 0.8181
+  ...
+# Subtest: changed plan, files, source or cleanup cannot reuse an earlier passing receipt
+ok 10 - changed plan, files, source or cleanup cannot reuse an earlier passing receipt
+  ---
+  duration_ms: 1.1045
+  ...
+# Subtest: lossless sharded publication rejects tampering, truncation, duplicate identities and unsafe paths
+ok 11 - lossless sharded publication rejects tampering, truncation, duplicate identities and unsafe paths
+  ---
+  duration_ms: 1091.6043
+  ...
+1..11
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5579.0568

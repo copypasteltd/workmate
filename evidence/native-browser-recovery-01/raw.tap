@@ -1,0 +1,81 @@
+TAP version 13
+# Subtest: preview inputs cannot substitute outside URLs, program execution, file upload or unobservable assertions
+ok 1 - preview inputs cannot substitute outside URLs, program execution, file upload or unobservable assertions
+  ---
+  duration_ms: 7.8083
+  ...
+# Subtest: real native Chromium executes form actions, local assets, navigation and viewport capture with restricted untrusted renderer tokens
+ok 2 - real native Chromium executes form actions, local assets, navigation and viewport capture with restricted untrusted renderer tokens
+  ---
+  duration_ms: 10245.8863
+  ...
+# Subtest: native preview preserves actual failed assertions and script exceptions even when the browser exits zero
+ok 3 - native preview preserves actual failed assertions and script exceptions even when the browser exits zero
+  ---
+  duration_ms: 13787.8307
+  ...
+# Subtest: external HTTP, WebSocket, RTC, filesystem and browser features cannot reach owned canaries or read controller secrets
+ok 4 - external HTTP, WebSocket, RTC, filesystem and browser features cannot reach owned canaries or read controller secrets
+  ---
+  duration_ms: 5919.2578
+  ...
+# Subtest: each preview has fresh browser storage; local navigation and cookie state exist only inside that invocation
+ok 5 - each preview has fresh browser storage; local navigation and cookie state exist only inside that invocation
+  ---
+  duration_ms: 8839.1795
+  ...
+# Subtest: customer frames cannot read their controller, navigate the top document or launch external application protocols
+ok 6 - customer frames cannot read their controller, navigate the top document or launch external application protocols
+  ---
+  duration_ms: 8062.1948
+  ...
+# Subtest: invalid selectors and blocked infinite JavaScript cannot become passing checks and owned browser jobs are reclaimed
+ok 7 - invalid selectors and blocked infinite JavaScript cannot become passing checks and owned browser jobs are reclaimed
+  ---
+  duration_ms: 9375.8
+  ...
+# Subtest: caller cancellation terminates only its native browser job and removes the owned profile
+ok 8 - caller cancellation terminates only its native browser job and removes the owned profile
+  ---
+  duration_ms: 2860.7622
+  ...
+# Subtest: asynchronous DOM state is polled and cancellation of one preview leaves a simultaneous owned preview intact
+ok 9 - asynchronous DOM state is polled and cancellation of one preview leaves a simultaneous owned preview intact
+  ---
+  duration_ms: 5329.6892
+  ...
+# Subtest: controller death is observed natively and only a positively closed orphan profile is reclaimed
+not ok 10 - controller death is observed natively and only a positively closed orphan profile is reclaimed
+  ---
+  duration_ms: 24106.1644
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-recovery-120\\tests\\cloud-browser-preview.test.ts:1:12846'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+    + []
+    - [
+    -   '5dbc5706-1eb7-438e-b80c-f0f4257d6d94'
+    - ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: '5dbc5706-1eb7-438e-b80c-f0f4257d6d94'
+  actual:
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-recovery-120\tests\cloud-browser-preview.test.ts:526:14)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 9
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 89397.2862

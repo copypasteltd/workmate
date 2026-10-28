@@ -1,0 +1,1057 @@
+{
+  "version": 1,
+  "schemas": {
+    "DesktopRelease": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+        },
+        "minimum_version": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483648
+        },
+        "signer_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "notes": {
+          "type": "object",
+          "properties": {
+            "en": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3000
+            },
+            "zh": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3000
+            }
+          },
+          "required": [
+            "en",
+            "zh"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "version",
+        "minimum_version",
+        "sha256",
+        "bytes",
+        "signer_sha256",
+        "notes"
+      ],
+      "additionalProperties": false
+    },
+    "DesktopUpdatePayload": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "type": "string",
+              "const": "copypaste-desktop-update-v1"
+            },
+            "app_id": {
+              "type": "string",
+              "const": "hk.copypaste.agent"
+            },
+            "channel": {
+              "type": "string",
+              "enum": [
+                "stable",
+                "preview"
+              ]
+            },
+            "platform": {
+              "type": "string",
+              "const": "windows-x64"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "issued_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "action": {
+              "type": "string",
+              "const": "install"
+            },
+            "rollout_basis_points": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000
+            },
+            "release": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                },
+                "minimum_version": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2147483648
+                },
+                "signer_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "notes": {
+                  "type": "object",
+                  "properties": {
+                    "en": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3000
+                    },
+                    "zh": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3000
+                    }
+                  },
+                  "required": [
+                    "en",
+                    "zh"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "version",
+                "minimum_version",
+                "sha256",
+                "bytes",
+                "signer_sha256",
+                "notes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "app_id",
+            "channel",
+            "platform",
+            "sequence",
+            "issued_at",
+            "expires_at",
+            "action",
+            "rollout_basis_points",
+            "release"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "type": "string",
+              "const": "copypaste-desktop-update-v1"
+            },
+            "app_id": {
+              "type": "string",
+              "const": "hk.copypaste.agent"
+            },
+            "channel": {
+              "type": "string",
+              "enum": [
+                "stable",
+                "preview"
+              ]
+            },
+            "platform": {
+              "type": "string",
+              "const": "windows-x64"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "issued_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "action": {
+              "type": "string",
+              "const": "rollback"
+            },
+            "rollout_basis_points": {
+              "type": "number",
+              "const": 10000
+            },
+            "release": {
+              "type": "object",
+              "properties": {
+                "version": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                },
+                "minimum_version": {
+                  "type": "string",
+                  "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "bytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2147483648
+                },
+                "signer_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "notes": {
+                  "type": "object",
+                  "properties": {
+                    "en": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3000
+                    },
+                    "zh": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3000
+                    }
+                  },
+                  "required": [
+                    "en",
+                    "zh"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "version",
+                "minimum_version",
+                "sha256",
+                "bytes",
+                "signer_sha256",
+                "notes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "protocol",
+            "app_id",
+            "channel",
+            "platform",
+            "sequence",
+            "issued_at",
+            "expires_at",
+            "action",
+            "rollout_basis_points",
+            "release"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "type": "string",
+              "const": "copypaste-desktop-update-v1"
+            },
+            "app_id": {
+              "type": "string",
+              "const": "hk.copypaste.agent"
+            },
+            "channel": {
+              "type": "string",
+              "enum": [
+                "stable",
+                "preview"
+              ]
+            },
+            "platform": {
+              "type": "string",
+              "const": "windows-x64"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "issued_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "action": {
+              "type": "string",
+              "const": "withdraw"
+            },
+            "rollout_basis_points": {
+              "type": "number",
+              "const": 10000
+            },
+            "release": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "protocol",
+            "app_id",
+            "channel",
+            "platform",
+            "sequence",
+            "issued_at",
+            "expires_at",
+            "action",
+            "rollout_basis_points",
+            "release"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "DesktopUpdateEnvelope": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "key_id": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "payload": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "protocol": {
+                  "type": "string",
+                  "const": "copypaste-desktop-update-v1"
+                },
+                "app_id": {
+                  "type": "string",
+                  "const": "hk.copypaste.agent"
+                },
+                "channel": {
+                  "type": "string",
+                  "enum": [
+                    "stable",
+                    "preview"
+                  ]
+                },
+                "platform": {
+                  "type": "string",
+                  "const": "windows-x64"
+                },
+                "sequence": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "issued_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "expires_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "action": {
+                  "type": "string",
+                  "const": "install"
+                },
+                "rollout_basis_points": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "release": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                    },
+                    "minimum_version": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "bytes": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2147483648
+                    },
+                    "signer_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "notes": {
+                      "type": "object",
+                      "properties": {
+                        "en": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3000
+                        },
+                        "zh": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3000
+                        }
+                      },
+                      "required": [
+                        "en",
+                        "zh"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "minimum_version",
+                    "sha256",
+                    "bytes",
+                    "signer_sha256",
+                    "notes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "protocol",
+                "app_id",
+                "channel",
+                "platform",
+                "sequence",
+                "issued_at",
+                "expires_at",
+                "action",
+                "rollout_basis_points",
+                "release"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "protocol": {
+                  "type": "string",
+                  "const": "copypaste-desktop-update-v1"
+                },
+                "app_id": {
+                  "type": "string",
+                  "const": "hk.copypaste.agent"
+                },
+                "channel": {
+                  "type": "string",
+                  "enum": [
+                    "stable",
+                    "preview"
+                  ]
+                },
+                "platform": {
+                  "type": "string",
+                  "const": "windows-x64"
+                },
+                "sequence": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "issued_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "expires_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "action": {
+                  "type": "string",
+                  "const": "rollback"
+                },
+                "rollout_basis_points": {
+                  "type": "number",
+                  "const": 10000
+                },
+                "release": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                    },
+                    "minimum_version": {
+                      "type": "string",
+                      "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "bytes": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2147483648
+                    },
+                    "signer_sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "notes": {
+                      "type": "object",
+                      "properties": {
+                        "en": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3000
+                        },
+                        "zh": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 3000
+                        }
+                      },
+                      "required": [
+                        "en",
+                        "zh"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "minimum_version",
+                    "sha256",
+                    "bytes",
+                    "signer_sha256",
+                    "notes"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "protocol",
+                "app_id",
+                "channel",
+                "platform",
+                "sequence",
+                "issued_at",
+                "expires_at",
+                "action",
+                "rollout_basis_points",
+                "release"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "protocol": {
+                  "type": "string",
+                  "const": "copypaste-desktop-update-v1"
+                },
+                "app_id": {
+                  "type": "string",
+                  "const": "hk.copypaste.agent"
+                },
+                "channel": {
+                  "type": "string",
+                  "enum": [
+                    "stable",
+                    "preview"
+                  ]
+                },
+                "platform": {
+                  "type": "string",
+                  "const": "windows-x64"
+                },
+                "sequence": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                },
+                "issued_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "expires_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "action": {
+                  "type": "string",
+                  "const": "withdraw"
+                },
+                "rollout_basis_points": {
+                  "type": "number",
+                  "const": 10000
+                },
+                "release": {
+                  "type": "null"
+                }
+              },
+              "required": [
+                "protocol",
+                "app_id",
+                "channel",
+                "platform",
+                "sequence",
+                "issued_at",
+                "expires_at",
+                "action",
+                "rollout_basis_points",
+                "release"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      },
+      "required": [
+        "key_id",
+        "payload",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "DesktopUpdateStage": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "envelope": {
+          "type": "object",
+          "properties": {
+            "key_id": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "payload": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {
+                      "type": "string",
+                      "const": "copypaste-desktop-update-v1"
+                    },
+                    "app_id": {
+                      "type": "string",
+                      "const": "hk.copypaste.agent"
+                    },
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "stable",
+                        "preview"
+                      ]
+                    },
+                    "platform": {
+                      "type": "string",
+                      "const": "windows-x64"
+                    },
+                    "sequence": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "issued_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "action": {
+                      "type": "string",
+                      "const": "install"
+                    },
+                    "rollout_basis_points": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10000
+                    },
+                    "release": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                        },
+                        "minimum_version": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "bytes": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483648
+                        },
+                        "signer_sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "notes": {
+                          "type": "object",
+                          "properties": {
+                            "en": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3000
+                            },
+                            "zh": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3000
+                            }
+                          },
+                          "required": [
+                            "en",
+                            "zh"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "minimum_version",
+                        "sha256",
+                        "bytes",
+                        "signer_sha256",
+                        "notes"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "app_id",
+                    "channel",
+                    "platform",
+                    "sequence",
+                    "issued_at",
+                    "expires_at",
+                    "action",
+                    "rollout_basis_points",
+                    "release"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {
+                      "type": "string",
+                      "const": "copypaste-desktop-update-v1"
+                    },
+                    "app_id": {
+                      "type": "string",
+                      "const": "hk.copypaste.agent"
+                    },
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "stable",
+                        "preview"
+                      ]
+                    },
+                    "platform": {
+                      "type": "string",
+                      "const": "windows-x64"
+                    },
+                    "sequence": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "issued_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "action": {
+                      "type": "string",
+                      "const": "rollback"
+                    },
+                    "rollout_basis_points": {
+                      "type": "number",
+                      "const": 10000
+                    },
+                    "release": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                        },
+                        "minimum_version": {
+                          "type": "string",
+                          "pattern": "^(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})\\.(0|[1-9]\\d{0,5})$"
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "bytes": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2147483648
+                        },
+                        "signer_sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "notes": {
+                          "type": "object",
+                          "properties": {
+                            "en": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3000
+                            },
+                            "zh": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 3000
+                            }
+                          },
+                          "required": [
+                            "en",
+                            "zh"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "minimum_version",
+                        "sha256",
+                        "bytes",
+                        "signer_sha256",
+                        "notes"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "app_id",
+                    "channel",
+                    "platform",
+                    "sequence",
+                    "issued_at",
+                    "expires_at",
+                    "action",
+                    "rollout_basis_points",
+                    "release"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "protocol": {
+                      "type": "string",
+                      "const": "copypaste-desktop-update-v1"
+                    },
+                    "app_id": {
+                      "type": "string",
+                      "const": "hk.copypaste.agent"
+                    },
+                    "channel": {
+                      "type": "string",
+                      "enum": [
+                        "stable",
+                        "preview"
+                      ]
+                    },
+                    "platform": {
+                      "type": "string",
+                      "const": "windows-x64"
+                    },
+                    "sequence": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 9007199254740991
+                    },
+                    "issued_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                    },
+                    "action": {
+                      "type": "string",
+                      "const": "withdraw"
+                    },
+                    "rollout_basis_points": {
+                      "type": "number",
+                      "const": 10000
+                    },
+                    "release": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "app_id",
+                    "channel",
+                    "platform",
+                    "sequence",
+                    "issued_at",
+                    "expires_at",
+                    "action",
+                    "rollout_basis_points",
+                    "release"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "signature": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{86}$"
+            }
+          },
+          "required": [
+            "key_id",
+            "payload",
+            "signature"
+          ],
+          "additionalProperties": false
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "envelope",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "DesktopUpdatePart": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "base64": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 5592408
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "base64",
+        "sha256"
+      ],
+      "additionalProperties": false
+    },
+    "DesktopUpdatePublication": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483646
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 1000
+        },
+        "confirmed_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "expected_revision",
+        "reason",
+        "confirmed_sha256"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

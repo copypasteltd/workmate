@@ -1,0 +1,325 @@
+TAP version 13
+# Subtest: exact private attachment re-selection reuses its verified immutable version without a second asset
+ok 1 - exact private attachment re-selection reuses its verified immutable version without a second asset
+  ---
+  duration_ms: 9.6388
+  ...
+# Subtest: concurrent selection of identical bytes creates one private upload and one immutable result
+ok 2 - concurrent selection of identical bytes creates one private upload and one immutable result
+  ---
+  duration_ms: 2.8242
+  ...
+# Subtest: worker replacement after lost create acceptance replays the original manifest and key
+ok 3 - worker replacement after lost create acceptance replays the original manifest and key
+  ---
+  duration_ms: 3.3445
+  ...
+# Subtest: a 5 MiB private file resumes after a committed part response is lost, verifying both real byte ranges
+ok 4 - a 5 MiB private file resumes after a committed part response is lost, verifying both real byte ranges
+  ---
+  duration_ms: 1391.7945
+  ...
+# Subtest: lost completion resumes the same accepted asset without reuploading or creating another version
+ok 5 - lost completion resumes the same accepted asset without reuploading or creating another version
+  ---
+  duration_ms: 2.389
+  ...
+# Subtest: changing conversation, project, actor or bytes never reuses another private upload receipt
+ok 6 - changing conversation, project, actor or bytes never reuses another private upload receipt
+  ---
+  duration_ms: 1.9015
+  ...
+# Subtest: revocation between attempts stops recovery before completion and never falls back to shared upload
+ok 7 - revocation between attempts stops recovery before completion and never falls back to shared upload
+  ---
+  duration_ms: 1.009
+  ...
+# Subtest: an HTTP-successful shared result is rejected instead of being presented as a private attachment
+ok 8 - an HTTP-successful shared result is rejected instead of being presented as a private attachment
+  ---
+  duration_ms: 0.6799
+  ...
+# Subtest: invalid scope or file bytes are rejected before any network request or receipt write
+ok 9 - invalid scope or file bytes are rejected before any network request or receipt write
+  ---
+  duration_ms: 285.3282
+  ...
+# Subtest: HKD budgets convert exactly and reject exponent, negative, zero and over-limit amounts
+ok 10 - HKD budgets convert exactly and reject exponent, negative, zero and over-limit amounts
+  ---
+  duration_ms: 1.351
+  ...
+# Subtest: messages bind uploaded immutable versions, never asset IDs or unsent unrelated files
+ok 11 - messages bind uploaded immutable versions, never asset IDs or unsent unrelated files
+  ---
+  duration_ms: 2.965
+  ...
+# Subtest: in-flight or failed uploads block messages; removing an in-flight file does not reattach it
+ok 12 - in-flight or failed uploads block messages; removing an in-flight file does not reattach it
+  ---
+  duration_ms: 1.7488
+  ...
+# Subtest: lost conversation response replays its original creation key and creates only one conversation
+ok 13 - lost conversation response replays its original creation key and creates only one conversation
+  ---
+  duration_ms: 0.875
+  ...
+# Subtest: panel reopening after lost task acceptance preserves body, file versions and key without a second task
+ok 14 - panel reopening after lost task acceptance preserves body, file versions and key without a second task
+  ---
+  duration_ms: 1.1376
+  ...
+# Subtest: account/project changes discard old upload completions and bind requests to their original scope
+ok 15 - account/project changes discard old upload completions and bind requests to their original scope
+  ---
+  duration_ms: 0.4133
+  ...
+# Subtest: shared project guidance is scope-bound, while accepted task guidance keeps its original version
+ok 16 - shared project guidance is scope-bound, while accepted task guidance keeps its original version
+  ---
+  duration_ms: 0.9267
+  ...
+# Subtest: late shared-project responses never cross account/project changes and failed verification blocks sending
+ok 17 - late shared-project responses never cross account/project changes and failed verification blocks sending
+  ---
+  duration_ms: 0.7143
+  ...
+# Subtest: old restored conversation cannot overwrite a newly opened account
+ok 18 - old restored conversation cannot overwrite a newly opened account
+  ---
+  duration_ms: 9.9694
+  ...
+# Subtest: known transactional source rejection preserves the draft and permits correction
+ok 19 - known transactional source rejection preserves the draft and permits correction
+  ---
+  duration_ms: 1.0966
+  ...
+# Subtest: active work prevents another paid turn; event batches deduplicate and denied reads clear prior text
+ok 20 - active work prevents another paid turn; event batches deduplicate and denied reads clear prior text
+  ---
+  duration_ms: 1.4613
+  ...
+# Subtest: double submit shares a single serialized acceptance flow
+ok 21 - double submit shares a single serialized acceptance flow
+  ---
+  duration_ms: 0.6898
+  ...
+# Subtest: an HTTP-successful quarantined task also clears retained conversation content
+ok 22 - an HTTP-successful quarantined task also clears retained conversation content
+  ---
+  duration_ms: 0.5114
+  ...
+# Subtest: concurrent attachments share one private conversation and never create a paid task before Send
+ok 23 - concurrent attachments share one private conversation and never create a paid task before Send
+  ---
+  duration_ms: 0.9621
+  ...
+# Subtest: lost pre-upload conversation acceptance survives panel reopening and replays the same role, name and creation key
+ok 24 - lost pre-upload conversation acceptance survives panel reopening and replays the same role, name and creation key
+  ---
+  duration_ms: 1.0562
+  ...
+# Subtest: a late private-conversation creation never uploads or restores content after a project/account switch
+ok 25 - a late private-conversation creation never uploads or restores content after a project/account switch
+  ---
+  duration_ms: 1.9896
+  ...
+# Subtest: foreign or unconfirmed private-conversation acceptance blocks all file uploads
+ok 26 - foreign or unconfirmed private-conversation acceptance blocks all file uploads
+  ---
+  duration_ms: 2.0347
+  ...
+# Subtest: financial amounts retain every micro across zero, fractional, negative and unsafe Number boundaries
+ok 27 - financial amounts retain every micro across zero, fractional, negative and unsafe Number boundaries
+  ---
+  duration_ms: 1.235
+  ...
+# Subtest: noncanonical values cannot silently become zero, rounded or scientific monetary text
+ok 28 - noncanonical values cannot silently become zero, rounded or scientific monetary text
+  ---
+  duration_ms: 0.6248
+  ...
+# Subtest: review does not read file bytes or upload, reserves the index slot and starts generated/hidden paths unchecked
+ok 29 - review does not read file bytes or upload, reserves the index slot and starts generated/hidden paths unchecked
+  ---
+  duration_ms: 3.8114
+  ...
+# Subtest: relative-path validation rejects traversal, absolute/Windows paths, multiple roots, duplicates and malformed files
+ok 30 - relative-path validation rejects traversal, absolute/Windows paths, multiple roots, duplicates and malformed files
+  ---
+  duration_ms: 2.2137
+  ...
+# Subtest: selection enforces capacity, allows explicit hidden-file selection and never selects empty or oversize files
+ok 31 - selection enforces capacity, allows explicit hidden-file selection and never selects empty or oversize files
+  ---
+  duration_ms: 10.5355
+  ...
+# Subtest: same basenames retain independent relative paths and bounded Unicode upload names
+ok 32 - same basenames retain independent relative paths and bounded Unicode upload names
+  ---
+  duration_ms: 0.9068
+  ...
+# Subtest: explicit confirm creates exact private versions plus JSON index without sending a task
+ok 33 - explicit confirm creates exact private versions plus JSON index without sending a task
+  ---
+  duration_ms: 13.7665
+  ...
+# Subtest: a failed file retries the same immutable File and chip, skips completed files and never starts a partial task
+ok 34 - a failed file retries the same immutable File and chip, skips completed files and never starts a partial task
+  ---
+  duration_ms: 4.8308
+  ...
+# Subtest: index failure retains all files, retries only the identical index and blocks Send until it is verified
+ok 35 - index failure retains all files, retries only the identical index and blocks Send until it is verified
+  ---
+  duration_ms: 4.3292
+  ...
+# Subtest: wrong size/hash or incomplete upload receipts cannot produce a ready folder index
+ok 36 - wrong size/hash or incomplete upload receipts cannot produce a ready folder index
+  ---
+  duration_ms: 7.8648
+  ...
+# Subtest: account change during a byte read clears the old review and never uploads it to either account
+ok 37 - account change during a byte read clears the old review and never uploads it to either account
+  ---
+  duration_ms: 0.8555
+  ...
+# Subtest: cancel or scope change during upload ignores late success and preserves unrelated attachments
+ok 38 - cancel or scope change during upload ignores late success and preserves unrelated attachments
+  ---
+  duration_ms: 2.2942
+  ...
+# Subtest: review is invalidated by changing conversation; final capacity is rechecked at confirmation
+ok 39 - review is invalidated by changing conversation; final capacity is rechecked at confirmation
+  ---
+  duration_ms: 0.8271
+  ...
+# Subtest: manifest refuses missing, duplicated and substituted immutable upload receipts
+ok 40 - manifest refuses missing, duplicated and substituted immutable upload receipts
+  ---
+  duration_ms: 0.7266
+  ...
+# Subtest: a pending ordinary attachment blocks folder confirmation until its actual upload completes
+ok 41 - a pending ordinary attachment blocks folder confirmation until its actual upload completes
+  ---
+  duration_ms: 3.4733
+  ...
+# Subtest: failed ordinary attachments and source read denial expose a specific recovery state before any folder bytes are read
+ok 42 - failed ordinary attachments and source read denial expose a specific recovery state before any folder bytes are read
+  ---
+  duration_ms: 0.6293
+  ...
+# Subtest: an empty folder selection exposes its error in the review state and clears it when the customer changes selection
+ok 43 - an empty folder selection exposes its error in the review state and clears it when the customer changes selection
+  ---
+  duration_ms: 0.3736
+  ...
+# Subtest: late attachment changes recalculate available space and never read over-capacity folder files
+ok 44 - late attachment changes recalculate available space and never read over-capacity folder files
+  ---
+  duration_ms: 1.0714
+  ...
+# Subtest: a committed code exchange with a lost first response retries the same private key and payload once
+ok 45 - a committed code exchange with a lost first response retries the same private key and payload once
+  ---
+  duration_ms: 29.5511
+  ...
+# Subtest: definitive code-exchange rejections, including rate limits and conflicts, do not retry
+ok 46 - definitive code-exchange rejections, including rate limits and conflicts, do not retry
+  ---
+  duration_ms: 2.2153
+  ...
+# Subtest: temporary code-exchange failures are bounded and do not expose remote error content
+ok 47 - temporary code-exchange failures are bounded and do not expose remote error content
+  ---
+  duration_ms: 1.3076
+  ...
+# Subtest: a complete canonical response is accepted once; an unreadable first body can safely recover
+ok 48 - a complete canonical response is accepted once; an unreadable first body can safely recover
+  ---
+  duration_ms: 2.2566
+  ...
+# Subtest: concurrent expired-token readers rotate once and use the same new credential
+ok 49 - concurrent expired-token readers rotate once and use the same new credential
+  ---
+  duration_ms: 3.1745
+  ...
+# Subtest: sign-out fences a refresh already accepted remotely and revokes its late result
+ok 50 - sign-out fences a refresh already accepted remotely and revokes its late result
+  ---
+  duration_ms: 1.7521
+  ...
+# Subtest: late login after sign-out cannot replace a later account
+ok 51 - late login after sign-out cannot replace a later account
+  ---
+  duration_ms: 0.5909
+  ...
+# Subtest: a stale request's unauthorized response cannot clear a replacement account
+ok 52 - a stale request's unauthorized response cannot clear a replacement account
+  ---
+  duration_ms: 1.1897
+  ...
+# Subtest: transport/temporary failures preserve credentials; definitive rejection clears and revokes
+ok 53 - transport/temporary failures preserve credentials; definitive rejection clears and revokes
+  ---
+  duration_ms: 0.528
+  ...
+# Subtest: logout during asynchronous credential persistence is serialized after the write
+ok 54 - logout during asynchronous credential persistence is serialized after the write
+  ---
+  duration_ms: 0.3642
+  ...
+# Subtest: malformed gateway credentials are rejected before persistence
+ok 55 - malformed gateway credentials are rejected before persistence
+  ---
+  duration_ms: 0.5107
+  ...
+# Subtest: offline sign-out removes local credentials and reports unconfirmed remote revocation
+ok 56 - offline sign-out removes local credentials and reports unconfirmed remote revocation
+  ---
+  duration_ms: 0.3917
+  ...
+# Subtest: credential persistence failure revokes the newly issued credential
+ok 57 - credential persistence failure revokes the newly issued credential
+  ---
+  duration_ms: 0.973
+  ...
+# Subtest: a rejected obsolete refresh cannot sign out a later account
+ok 58 - a rejected obsolete refresh cannot sign out a later account
+  ---
+  duration_ms: 0.8189
+  ...
+# Subtest: a lost refresh response retains its private request key across controller restart
+ok 59 - a lost refresh response retains its private request key across controller restart
+  ---
+  duration_ms: 0.5196
+  ...
+# Subtest: legacy tokens must persist a new request key before attempting any refresh
+ok 60 - legacy tokens must persist a new request key before attempting any refresh
+  ---
+  duration_ms: 0.8208
+  ...
+# Subtest: sign-out during legacy request-key persistence prevents network refresh and clears storage
+ok 61 - sign-out during legacy request-key persistence prevents network refresh and clears storage
+  ---
+  duration_ms: 0.5736
+  ...
+# Subtest: only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+ok 62 - only account acceptance changes the local identity epoch; refresh keeps every open panel in the same identity
+  ---
+  duration_ms: 0.4148
+  ...
+# Subtest: concurrent legacy readers persist one private request key and start a single rotation
+ok 63 - concurrent legacy readers persist one private request key and start a single rotation
+  ---
+  duration_ms: 1.3589
+  ...
+1..63
+# tests 63
+# suites 0
+# pass 63
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2860.1712

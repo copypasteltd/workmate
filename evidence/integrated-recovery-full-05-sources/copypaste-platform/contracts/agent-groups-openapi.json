@@ -1,0 +1,1139 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste persisted specialist teams",
+    "version": "1.0.0",
+    "description": "Additive contract. Canonical AgentGroup CRUD response schemas are copied unchanged. Runs execute approved cloud Codex DAGs; Desktop tokens cannot start cloud teams. Original contracts remain immutable."
+  },
+  "paths": {
+    "/v1/agent-groups": {
+      "get": {
+        "operationId": "listAgentGroups",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGroupList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createAgentGroup",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentGroupCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Authenticated project team or private run result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGroup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      }
+    },
+    "/v1/agent-groups/{group}": {
+      "get": {
+        "operationId": "getAgentGroup",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGroup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateAgentGroup",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentGroupUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentGroup"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      }
+    },
+    "/v1/agent-groups/{group}/versions": {
+      "get": {
+        "operationId": "listAgentGroupVersions",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result"
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      }
+    },
+    "/v1/agent-groups/{group}/preflight": {
+      "post": {
+        "operationId": "prepareAgentGroupRun",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupRunPlan"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result"
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      }
+    },
+    "/v1/agent-groups/{group}/runs": {
+      "get": {
+        "operationId": "listPrivateAgentGroupRuns",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result"
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      },
+      "post": {
+        "operationId": "approveAgentGroupRun",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupRunApproval"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Authenticated project team or private run result"
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      }
+    },
+    "/v1/agent-groups/{group}/runs/{run}": {
+      "get": {
+        "operationId": "getPrivateAgentGroupRun",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "run",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result"
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      }
+    },
+    "/v1/agent-groups/{group}/runs/{run}/cancel": {
+      "post": {
+        "operationId": "cancelPrivateAgentGroupRun",
+        "parameters": [
+          {
+            "name": "X-Tenant-ID",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "group",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "run",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            }
+          }
+        ],
+        "security": [
+          {
+            "session": []
+          },
+          {
+            "native": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupRunCancel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated project team or private run result"
+          },
+          "400": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "401": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "403": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "404": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "409": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "410": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "422": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          },
+          "503": {
+            "description": "Rejected request; no unapproved tasks or fees are created"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session",
+        "description": "Browser mutations also require X-CSRF-Token and an allowed Origin"
+      },
+      "native": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Approved Extension tokens may call cloud APIs; Desktop tokens must execute locally"
+      }
+    },
+    "schemas": {
+      "GroupMember": {
+        "type": "object",
+        "properties": {
+          "agent_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "role_description": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "agent_id",
+          "role_description"
+        ],
+        "additionalProperties": false
+      },
+      "AgentGroup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "project_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "coordinator_agent_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GroupMember"
+            },
+            "minItems": 0
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "name",
+          "coordinator_agent_id",
+          "members",
+          "workspace_id",
+          "version",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "AgentGroupList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AgentGroup"
+            },
+            "minItems": 0
+          },
+          "next_cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "AgentGroupCreate": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "coordinator_agent_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "members": {
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "agent_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "role_description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1200
+                }
+              },
+              "required": [
+                "agent_id",
+                "role_description"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "project_id",
+          "name",
+          "coordinator_agent_id",
+          "members"
+        ],
+        "additionalProperties": false
+      },
+      "AgentGroupUpdate": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "coordinator_agent_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "members": {
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "agent_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "role_description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1200
+                }
+              },
+              "required": [
+                "agent_id",
+                "role_description"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          }
+        },
+        "required": [
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "GroupRunPlan": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "brief": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 8000
+          },
+          "nodes": {
+            "minItems": 1,
+            "maxItems": 16,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                },
+                "agent_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 160
+                },
+                "prompt": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000
+                },
+                "depends_on": {
+                  "maxItems": 15,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,39}$"
+                  }
+                },
+                "budget_micros": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000000000
+                }
+              },
+              "required": [
+                "key",
+                "agent_id",
+                "title",
+                "prompt",
+                "depends_on",
+                "budget_micros"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "coordinator_budget_micros": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "max_parallelism": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          }
+        },
+        "required": [
+          "expected_version",
+          "brief",
+          "nodes",
+          "coordinator_budget_micros",
+          "max_parallelism"
+        ],
+        "additionalProperties": false
+      },
+      "GroupRunApproval": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "preflight_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "expected_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "definition_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "approved_budget_micros": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 1000000000000
+          },
+          "confirm": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "preflight_id",
+          "expected_version",
+          "definition_hash",
+          "approved_budget_micros",
+          "confirm"
+        ],
+        "additionalProperties": false
+      },
+      "GroupRunCancel": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
