@@ -5,6 +5,7 @@ import path from "node:path";
 import pg from "pg";
 import { runMigrations } from "../scripts/migration-runner.js";
 import { removeOwnedUUIDDirectory } from "../src/owned-directory-cleanup.js";
+import { writeFixtureOwnership } from "../scripts/test-fixture-ownership.js";
 
 /** One native database and owned data directory per integration-test file.
  * Persistent reconciliation records must not consume another run's slots.
@@ -88,6 +89,25 @@ export async function isolatedTestEnvironment(
     cleaned = true;
   };
   try {
+    const runDirectory = process.env.COPYPASTE_TEST_RECLAMATION_DIR;
+    if (runDirectory) {
+      const run = path.resolve(runDirectory);
+      assert.equal(path.dirname(run), path.resolve(".data/test-fixture-reclamation"));
+      assert.match(path.basename(run), /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/);
+      assert.ok(!(await lstat(run)).isSymbolicLink());
+      const manifest = JSON.parse(await readFile(path.join(run, "manifest.json"), "utf8"));
+      assert.equal(manifest.token, process.env.COPYPASTE_TEST_RECLAMATION_TOKEN);
+      assert.ok(Number.isSafeInteger(manifest.owner_pid) && manifest.owner_pid > 0);
+      process.kill(manifest.owner_pid, 0);
+      // Persist ownership before creating either the directory or database.
+      // This also covers a worker interrupted before its cleanup hook runs.
+      const owned = path.join(run, "owned");
+      await mkdir(owned, { recursive: true });
+      assert.ok(!(await lstat(owned)).isSymbolicLink());
+      await writeFixtureOwnership(path.join(owned, id + ".json"), {
+        id, directory, worker_pid: process.pid, token: manifest.token,
+      });
+    }
     await mkdir(directory, { recursive: true });
     const control = new pg.Client({ connectionString: bootstrap.href });
     await control.connect();

@@ -45,7 +45,12 @@ before(async () => {
   oldOids = (await owner.query("SELECT 'ai_budget_used(uuid,uuid)'::regprocedure::oid AS used,'ai_budget_subject_blocked(uuid)'::regprocedure::oid AS blocked")).rows[0];
   assert.equal((await owner.query({ ...legacyUsed, values: [null, null] })).rows[0].used, "0");
   assert.equal((await owner.query({ ...legacyBlocked, values: [null] })).rows[0].blocked, false);
-  await runMigrations(owner, "Forward-only managed audio capability upgrade");
+  await runMigrations(owner, "Forward-only managed audio capability upgrade", { throughVersion: 122 });
+  assert.equal((await owner.query("SELECT max(version) AS version FROM schema_migrations")).rows[0].version, 122);
+  assert.deepEqual((await owner.query("SELECT 'ai_budget_used(uuid,uuid)'::regprocedure::oid AS used,'ai_budget_subject_blocked(uuid)'::regprocedure::oid AS blocked")).rows[0], oldOids);
+  assert.equal((await owner.query({ ...legacyUsed, values: [null, null] })).rows[0].used, "0");
+  assert.equal((await owner.query({ ...legacyBlocked, values: [null] })).rows[0].blocked, false);
+  await runMigrations(owner, "Forward-only managed audio capability through current schema");
   provider = await audioProviderFixture(owned.directory, { allowPlatformVerification: true });
   s = await buildApp(loadConfig({ ...owned.env, NODE_ENV: "test", DEV_MAILBOX: "true", WORKER_ENABLED: "false", DEMO_MODE: "false",
     CODEX_BIN: process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN!, AI_BASE_URL: provider.origin, AI_ALLOWED_HOSTS: "127.0.0.1",
@@ -127,7 +132,6 @@ test("the populated 120 checkpoint retains budget function OIDs and prepared cal
   assert.deepEqual((await owner.query("SELECT 'ai_budget_used(uuid,uuid)'::regprocedure::oid AS used,'ai_budget_subject_blocked(uuid)'::regprocedure::oid AS blocked")).rows[0], oldOids);
   assert.equal((await owner.query({ ...legacyUsed, values: [null, null] })).rows[0].used, "0");
   assert.equal((await owner.query({ ...legacyBlocked, values: [null] })).rows[0].blocked, false);
-  assert.equal((await owner.query("SELECT max(version) AS version FROM schema_migrations")).rows[0].version, 122);
 });
 
 test("voice/locale/speed matrix decodes real WAV responses, charges only the platform and requires independent publication", async () => {

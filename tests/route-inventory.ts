@@ -32,6 +32,10 @@ export async function currentRouteInventory() {
   assert.equal(desktopGeo.baseline_lf_sha256, additions.baseline_lf_sha256);
   const webAnalytics = JSON.parse(await readFile("contracts/web-analytics-route-additions.json", "utf8"));
   assert.equal(webAnalytics.baseline_lf_sha256, additions.baseline_lf_sha256);
+  const externalBudget = JSON.parse(await readFile("contracts/external-budget-route-additions.json", "utf8"));
+  assert.equal(externalBudget.baseline_lf_sha256, additions.baseline_lf_sha256);
+  const integratedRuntime = JSON.parse(await readFile("contracts/integrated-runtime-route-additions.json", "utf8"));
+  assert.equal(integratedRuntime.baseline_lf_sha256, additions.baseline_lf_sha256);
   const routes = [
       ...baseline.routes,
       ...additions.routes,
@@ -41,6 +45,8 @@ export async function currentRouteInventory() {
       ...audioAccounting.routes,
       ...desktopGeo.routes,
       ...webAnalytics.routes,
+      ...externalBudget.routes,
+      ...integratedRuntime.routes,
     ],
     conditional_routes = [
       ...baseline.conditional_routes,
@@ -51,6 +57,8 @@ export async function currentRouteInventory() {
       ...audioAccounting.conditional_routes,
       ...desktopGeo.conditional_routes,
       ...webAnalytics.conditional_routes,
+      ...externalBudget.conditional_routes,
+      ...integratedRuntime.conditional_routes,
     ];
   const labels = [...routes, ...conditional_routes].map(
     (row) => row.method + " " + row.path,

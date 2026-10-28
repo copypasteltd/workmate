@@ -28,9 +28,18 @@ export async function reclaimCloudBrowserProfiles(dataDir: string) {
     let owner: any, host: any;
     try {
       owner = JSON.parse(await readFile(path.join(root, "owner.json"), "utf8"));
-      host = JSON.parse(
-        await readFile(path.join(root, "host-receipt.json"), "utf8"),
-      );
+      try {
+        host = JSON.parse(await readFile(path.join(root, "host-owner.json"), "utf8"));
+        if (host.schema !== 1 || host.boundary !== owner.boundary ||
+            host.execution_id !== entry.name || host.controller_pid !== owner.controller_pid)
+          continue;
+      } catch (e: any) {
+        // Older profiles lack the immutable ownership record. Never fall back
+        // after a malformed/replaced record; only absence permits the legacy
+        // receipt, with the same independent process and job checks below.
+        if (e.code !== "ENOENT") continue;
+        host = JSON.parse(await readFile(path.join(root, "host-receipt.json"), "utf8"));
+      }
     } catch {
       continue;
     }

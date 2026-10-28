@@ -111,7 +111,7 @@ test(
     assert.equal(
       r.receipt.passed,
       true,
-      JSON.stringify(r.receipt.check_result),
+      JSON.stringify({check_result:r.receipt.check_result,stop_reason:r.receipt.stop_reason,exit_code:r.receipt.exit_code,host:r.receipt.host}),
     );
     assert.equal(r.receipt.source_digest, sourceDigest(sourceManifest(files)));
     assert.equal(r.receipt.browser.actions_completed, 4);
@@ -145,6 +145,23 @@ test(
         .includes('id="result"'),
     );
     assert.deepEqual(await readdir(path.join(root, "cloud-browsers")), []);
+  },
+);
+
+test(
+  "a finite local page may load for more than five seconds within the caller's single preview budget",
+  { skip: !native },
+  async () => {
+    const r = await runCloudBrowserPreview(
+      root,
+      { entry: "index.html", timeout_ms: 30000, checks: [check("h1", { text: "Finite local work completed" })] },
+      source("<h1>Working</h1><script>const end=performance.now()+5600;while(performance.now()<end){}document.querySelector('h1').textContent='Finite local work completed';</script>"),
+    );
+    assert.equal(r.receipt.passed, true, JSON.stringify({check_result:r.receipt.check_result,stop_reason:r.receipt.stop_reason,exit_code:r.receipt.exit_code,host:r.receipt.host}));
+    assert.equal(r.receipt.exit_code, 0);
+    assert.equal(r.receipt.stop_reason, null);
+    assert.equal(r.receipt.host.job_empty, true);
+    assert.equal(r.receipt.workspace_deleted, true);
   },
 );
 
@@ -225,7 +242,7 @@ test(
       assert.equal(
         r.receipt.passed,
         true,
-        JSON.stringify(r.receipt.check_result),
+        JSON.stringify({check_result:r.receipt.check_result,stop_reason:r.receipt.stop_reason,exit_code:r.receipt.exit_code,host:r.receipt.host}),
       );
       assert.equal(httpCalls, 0);
       assert.equal(udpCalls, 0);
@@ -304,7 +321,7 @@ test(
     assert.equal(
       r.receipt.passed,
       true,
-      JSON.stringify(r.receipt.check_result),
+      JSON.stringify({check_result:r.receipt.check_result,stop_reason:r.receipt.stop_reason,exit_code:r.receipt.exit_code,host:r.receipt.host}),
     );
     assert.ok(
       r.receipt.browser.frame_isolation.sandbox.includes("allow-scripts"),
@@ -504,18 +521,44 @@ test(
         [],
         "A live controller's profile must stay intact",
       );
+      const ownership = JSON.parse(await readFile(path.join(root, "cloud-browsers", owned!, "host-owner.json"), "utf8"));
+      assert.equal(ownership.schema, 1);
+      assert.equal(ownership.execution_id, owned);
+      assert.equal(ownership.controller_pid, child.pid);
+      assert.equal(ownership.job_name, "Local\\CopyPasteBrowser-" + owned);
+      assert.ok(Number.isInteger(ownership.host_pid) && ownership.host_pid > 0);
       child.kill();
       await closed;
+      // A crash may interrupt mutable telemetry replacement. The independently
+      // persisted owner must suffice even when that status file is unavailable.
+      let removed: string[] = [];
       for (let attempt = 0; attempt < 120; attempt++) {
         finished = await inspectCloudBrowserJob(
           path.join(root, "cloud-browsers", owned!),
         );
-        if (finished.job_empty) break;
+        // Closing the browser job precedes the native host's final receipt and
+        // process exit. Reclamation independently requires both owners gone;
+        // observe that complete lifecycle rather than treating job_empty alone
+        // as permission to delete a still-owned profile.
+        let hostExited = false;
+        try { process.kill(ownership.host_pid, 0); }
+        catch (e: any) { if (e.code === "ESRCH") hostExited = true; else throw e; }
+        if (finished.job_empty && !finished.job_exists && hostExited) {
+          // Wait for the real writer to exit before simulating lost telemetry.
+          // Windows can briefly retain a filesystem handle after process exit.
+          try { await (await import("node:fs/promises")).unlink(path.join(root, "cloud-browsers", owned!, "host-receipt.json")); }
+          catch (e: any) {
+            if (["EBUSY", "EPERM"].includes(e.code)) { await new Promise(r => setTimeout(r, 50)); continue; }
+            if (e.code !== "ENOENT") throw e;
+          }
+          removed = await reclaimCloudBrowserProfiles(root);
+          if (removed.includes(owned!)) break;
+        }
         await new Promise((r) => setTimeout(r, 50));
       }
       assert.equal(finished?.job_empty, true);
       assert.equal(finished?.job_exists, false);
-      assert.deepEqual(await reclaimCloudBrowserProfiles(root), [owned]);
+      assert.deepEqual(removed, [owned]);
       assert.deepEqual(await readdir(path.join(root, "cloud-browsers")), []);
     } finally {
       if (child.exitCode === null) child.kill();

@@ -874,10 +874,10 @@ test("canonical task access and saved receipts cannot cross private owners, proj
     "UPDATE tasks SET content_state='quarantined' WHERE id=$1",
     [id],
   );
-  assert.equal(
-    (await call(f.owner, f.tenant, "POST", "/v1/tasks", body, { key })).status,
-    404,
-  );
+  const removed = await call(f.owner, f.tenant, "POST", "/v1/tasks", body, { key });
+  assert.equal(removed.status, 410);
+  assert.equal(removed.data.error.code, "REQUEST_RESULT_REMOVED");
+  assert.equal((await s.db.control.query("SELECT count(*)::int AS n FROM tasks WHERE tenant_id=$1", [f.tenant])).rows[0].n, 1);
   assert.equal(
     (await call(f.owner, f.tenant, "GET", "/v1/tasks/" + id)).status,
     404,

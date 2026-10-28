@@ -114,13 +114,17 @@ const mime: Record<string, string> = {
 const csp =
   "sandbox allow-scripts allow-same-origin allow-forms; default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self' blob:; connect-src 'none'; worker-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'";
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+// Browser shutdown may flush the owned profile after execution has finished.
+// Give that phase its own finite bound; it does not extend page execution and
+// still requires the native guardian's independently verified empty job.
+const browserCleanupMs = 6000;
 async function closeBounded(context: BrowserContext) {
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     await Promise.race([
       context.close(),
       new Promise<never>((_, reject) => {
-        timer = setTimeout(() => reject(new Error("CLOSE_DEADLINE")), 4000);
+        timer = setTimeout(() => reject(new Error("CLOSE_DEADLINE")), browserCleanupMs);
       }),
     ]);
   } finally {
@@ -193,6 +197,7 @@ export async function runCloudBrowserPreview(
   };
   const abort = () => stopNow(signal?.aborted ? "cancelled" : "timeout");
   bounded.addEventListener("abort", abort, { once: true });
+  const executionStarted = performance.now();
   const timer = setTimeout(() => controller.abort(), a.timeout_ms);
   const contents = new Map(sources.map((f) => [f.path.toLowerCase(), f.bytes]));
   const taskURL =
@@ -215,7 +220,8 @@ export async function runCloudBrowserPreview(
   async function attest() {
     const browser = context!.browser();
     if (!browser) throw new Error("BROWSER_DISCONNECTED");
-    for (let attempt = 0; attempt < 50; attempt++) {
+    while (performance.now() - executionStarted < a.timeout_ms) {
+      if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
       const session = await browser.newBrowserCDPSession();
       let processInfo: any;
       try {
@@ -251,6 +257,7 @@ export async function runCloudBrowserPreview(
       if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
       await delay(40);
     }
+    controller.abort();
     throw new Error("NATIVE_RENDERER_SANDBOX_ATTESTATION_FAILED");
   }
   if (bounded.aborted) abort();
@@ -298,13 +305,13 @@ export async function runCloudBrowserPreview(
           COPYPASTE_BROWSER_ROOT: root,
           COPYPASTE_BROWSER_PARENT_PID: String(process.pid),
           COPYPASTE_BROWSER_DEADLINE_MS: String(
-            Math.min(a.timeout_ms + 2000, 32000),
+            a.timeout_ms + browserCleanupMs,
           ),
         },
       },
     );
     context.setDefaultTimeout(Math.min(2500, a.timeout_ms));
-    context.setDefaultNavigationTimeout(Math.min(5000, a.timeout_ms));
+    context.setDefaultNavigationTimeout(a.timeout_ms);
     await context.routeWebSocket("**/*", (socket) => {
       denied("websocket", socket.url());
       socket.close();
@@ -420,8 +427,17 @@ export async function runCloudBrowserPreview(
     });
     attestation = await attest();
     if (bounded.aborted) throw new Error("PREVIEW_STOPPED");
+    const remaining = Math.floor(a.timeout_ms - (performance.now() - executionStarted));
+    if (remaining <= 0) {
+      controller.abort();
+      throw new Error("PREVIEW_STOPPED");
+    }
     await page.goto("http://preview-controller.invalid/", {
       waitUntil: "load",
+      // Startup and attestation have already consumed part of the one caller
+      // budget. A separate five-second cap rejected otherwise valid local
+      // pages; zero would instead disable Playwright's timeout entirely.
+      timeout: remaining,
     });
     const taskFrame = page.frameLocator("#task-preview");
     for (const step of a.actions) {
@@ -597,6 +613,7 @@ export async function runCloudBrowserPreview(
       entry,
       args: [],
       timeout_ms: a.timeout_ms,
+      cleanup_timeout_ms: browserCleanupMs,
       started_at: started,
       finished_at: new Date().toISOString(),
       source_manifest: manifest,

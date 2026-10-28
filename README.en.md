@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- integrated-recovery-stage120 -->
+Extension attachment recovery and the complete backend regression are qualified below.
+
+Backend 0.5.1 exercises the complete current test inventory against an owned native PostgreSQL instance. API and worker entry require the complete SQL001–128 sequence before seeding or paid work. Missing tables or migrations report SCHEMA_UPGRADE_REQUIRED; a newer database reports SCHEMA_VERSION_UNSUPPORTED. Restored-environment state and database-marker fences remain enforced. Historical audio upgrade tests seed the actual old schema directly, preserve SQL101/102/103 boundaries and prepared SQL120/121/122 callers, and start current HTTP only after all forward migrations. Removed receipts return 410 without repeating paid work. The route inventory explicitly includes native pairing, update, event, budget and recovery operations. The native host flushes an exclusive immutable owner file before launch. Reclamation survives missing mutable telemetry, requires both owners gone and an independently empty job, and retains live-owner deletion protection.
+
+Validation: 1363 backend checks in 111 files + 229 Web/Admin/Desktop/Delivery unit checks + 63 Extension checks + 7 adversarial proof-reader cases; 13 builds; 7 actual UI flows; 6 layouts; 9 PNGs and 2 GIF/MP4 pairs.
+
+Actual native Chrome right Side Panel, OTP/PKCE, native PostgreSQL and pinned cloud Codex; synthetic customer/files/model decisions. Original full-product and live-provider acceptance remain unproven. Screens below show the Extension; they do not claim new pages on other clients.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/120-integrated-regression-and-attachment-recovery.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-recovery-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Pick[Browser folder picker] --> Review[Review selected relative paths]
+  Review --> Confirm[Customer confirms upload]
+  Confirm --> Private[Private files and JSON index]
+  Private --> Retry[Exact unfinished upload retry]
+  Retry --> Private
+  Private --> Send[Customer sends message]
+  Send --> Codex[Company cloud Codex]
+```
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-replace-selected-file-zh.png)
+
+[Actual interaction video / 实际交互录屏](media/integrated-recovery-workmate-recovery-05-folder-retry.mp4)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-folder-retry.gif)
+
+
 <!-- extension-folder-stage119 -->
 Selected browser folders are available in Extension 0.5.1.
 

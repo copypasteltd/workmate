@@ -1,7 +1,9 @@
 import type { Database } from "./db.js";
+import { assertCurrentSchema } from "./schema-compatibility.js";
 
 /** A restored archive is never an instruction to resume work or paid effects. */
 export async function assertLiveEnvironment(db: Database) {
+  await assertCurrentSchema(db);
   const { rows } = await db.app.query(
     `SELECT e.state,shobj_description(d.oid,'pg_database') AS marker
        FROM recovery_environment e JOIN pg_database d ON d.datname=current_database()

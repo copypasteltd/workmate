@@ -369,7 +369,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   app.get("/health/live", async () => ({
     ok: true,
     service: "copypaste-platform",
-    version: "0.5.0",
+    version: "0.5.1",
   }));
   app.get("/health/ready", async () => {
     await db.app.query("SELECT 1");

@@ -36,7 +36,11 @@ before(async()=>{
   owner=new pg.Client({connectionString:owned.env.OWNER_DATABASE_URL}); await owner.connect();
   oid=(await owner.query("SELECT 'ai_budget_used(uuid,uuid)'::regprocedure::oid AS used,'ai_budget_subject_blocked(uuid)'::regprocedure::oid AS blocked,'ai_gateway_limit_reason(uuid,uuid,uuid,text,text,uuid)'::regprocedure::oid AS capacity,'task_ai_budget_receipt(uuid)'::regprocedure::oid AS receipt")).rows[0];
   assert.deepEqual((await owner.query({...prepared,values:[null,null]})).rows[0],{used:"0",blocked:false});
-  await runMigrations(owner,"Forward-only SQL122 audio accounting qualification");
+  await runMigrations(owner,"Forward-only SQL122 audio accounting qualification",{throughVersion:122});
+  assert.equal((await owner.query("SELECT max(version) AS n FROM schema_migrations")).rows[0].n,122);
+  assert.deepEqual((await owner.query("SELECT 'ai_budget_used(uuid,uuid)'::regprocedure::oid AS used,'ai_budget_subject_blocked(uuid)'::regprocedure::oid AS blocked,'ai_gateway_limit_reason(uuid,uuid,uuid,text,text,uuid)'::regprocedure::oid AS capacity,'task_ai_budget_receipt(uuid)'::regprocedure::oid AS receipt")).rows[0],oid);
+  assert.deepEqual((await owner.query({...prepared,values:[null,null]})).rows[0],{used:"0",blocked:false});
+  await runMigrations(owner,"Forward-only audio accounting through current schema");
   provider=await audioProviderFixture(owned.directory,{allowPlatformVerification:true});
   s=await buildApp(loadConfig({...owned.env,NODE_ENV:"test",DEV_MAILBOX:"true",WORKER_ENABLED:"false",DEMO_MODE:"false",
     CODEX_BIN:process.env.COPYPASTE_LOCAL_CODEX_TEST_BIN!,AI_BASE_URL:provider.origin,AI_ALLOWED_HOSTS:"127.0.0.1",AI_API_KEY:"synthetic-video-provider-fixture",
@@ -101,7 +105,6 @@ const detail=(r:any)=>call(a,"GET",`${root}/audio-accounting/${r.channel}/${r.id
 const receipt=(task:any)=>s.db.tx(tx=>taskProviderBudgetReceipt(tx,task.id),task.tenant_id,true,task.created_by);
 
 test("SQL122 preserves budget/capacity/receipt function OIDs and prepared SQL121 callers",async()=>{
-  assert.equal((await owner.query("SELECT max(version) AS n FROM schema_migrations")).rows[0].n,122);
   assert.deepEqual((await owner.query("SELECT 'ai_budget_used(uuid,uuid)'::regprocedure::oid AS used,'ai_budget_subject_blocked(uuid)'::regprocedure::oid AS blocked,'ai_gateway_limit_reason(uuid,uuid,uuid,text,text,uuid)'::regprocedure::oid AS capacity,'task_ai_budget_receipt(uuid)'::regprocedure::oid AS receipt")).rows[0],oid);
   assert.deepEqual((await owner.query({...prepared,values:[null,null]})).rows[0],{used:"0",blocked:false});
 });

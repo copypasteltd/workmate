@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdir, writeFile, readFile } from "node:fs/promises";
+import { mkdir, open, readFile } from "node:fs/promises";
 import { randomUUID, createHash } from "node:crypto";
 import path from "node:path";
 import assert from "node:assert/strict";
@@ -9,15 +9,19 @@ import assert from "node:assert/strict";
 const files = process.argv.slice(2);
 assert.ok(files.length > 0);
 for (const file of files) assert.match(file, /^tests\/[a-z0-9*-]+\.test\.ts$/);
-const directory = path.resolve(".data/test-fixture-reclamation", randomUUID()),
+const runId = process.env.COPYPASTE_TEST_RECLAMATION_ID ?? randomUUID();
+assert.match(runId, /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/);
+const directory = path.resolve(".data/test-fixture-reclamation", runId),
   token = randomUUID(),
   created = new Date().toISOString();
 await mkdir(directory, { recursive: true });
-await writeFile(
-  path.join(directory, "manifest.json"),
-  JSON.stringify({ owner_pid: process.pid, token, created_at: created }),
-  { flag: "wx" },
-);
+const ownership = await open(path.join(directory, "manifest.json"), "wx");
+try { await ownership.writeFile(JSON.stringify({ owner_pid: process.pid, token, created_at: created })); await ownership.sync(); }
+finally { await ownership.close(); }
+console.log("# owned_fixture_owner " + JSON.stringify({
+  path: path.relative(process.cwd(), directory).replaceAll("\\", "/"),
+  owner_pid: process.pid,
+}));
 const env = {
   ...process.env,
   COPYPASTE_TEST_RECLAMATION_DIR: directory,
