@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "scope": "native_startup_and_turn_scope_only_synthetic_provider",
+  "component": "desktop",
+  "status": "passed",
+  "started_at": "2026-10-28T21:32:05.396Z",
+  "finished_at": "2026-10-28T21:37:00.904Z",
+  "verifier_sha256": "fc5fa20df08888fc48606e11eb2a288b1bc48582e9305cba6124b3c0f7564540",
+  "source_count": 2478,
+  "source_unchanged": true,
+  "bindings_sha256": "9aa8f561802978921cc295e85e8068724c2205a5379405ed002d12f689bde61e",
+  "native_binary": {
+    "path": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop\\.data\\runtime\\windows-x64\\codex.exe",
+    "sha256": "00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c",
+    "version": "0.163.0-alpha.11"
+  },
+  "steps": [
+    {
+      "name": "typecheck",
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop-runtime-122",
+      "command": [
+        "D:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "code": 0,
+      "duration_ms": 594,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "name": "renderer-typecheck",
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop-runtime-122",
+      "command": [
+        "D:\\Program Files\\nodejs\\node.exe",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "renderer/tsconfig.json"
+      ],
+      "code": 0,
+      "duration_ms": 1376,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "name": "build-program-host",
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop-runtime-122",
+      "command": [
+        "D:\\Program Files\\nodejs\\node.exe",
+        "scripts/build-program-host.mjs"
+      ],
+      "code": 0,
+      "duration_ms": 239,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "name": "build-update-host",
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop-runtime-122",
+      "command": [
+        "D:\\Program Files\\nodejs\\node.exe",
+        "scripts/build-update-host.mjs"
+      ],
+      "code": 0,
+      "duration_ms": 320,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "name": "build-native-host",
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop-runtime-122",
+      "command": [
+        "D:\\Program Files\\nodejs\\node.exe",
+        "scripts/build-native-host.mjs"
+      ],
+      "code": 0,
+      "duration_ms": 721,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "name": "unit",
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop-runtime-122",
+      "command": [
+        "D:\\Program Files\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "--test",
+        "tests/*.test.ts"
+      ],
+      "code": 0,
+      "duration_ms": 33306,
+      "sha256": "9270f6cf81134811f4166ab941cefd41970f359844bb1241cae7ef1963296a81",
+      "bytes": 44109,
+      "counts": {
+        "tests": 180,
+        "pass": 180,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "passed": true
+    },
+    {
+      "name": "native-runtime",
+      "cwd": "D:\\dev\\copypasted\\自有agent\\dev\\copypaste-desktop-runtime-122",
+      "command": [
+        "D:\\Program Files\\nodejs\\node.exe",
+        "--import",
+        "tsx",
+        "--test",
+        "--test-concurrency=1",
+        "tests/integration/local-codex.native.test.ts"
+      ],
+      "code": 0,
+      "duration_ms": 241474,
+      "sha256": "039180f1fb87517fd7e4c264250db0bdb661bfb4eb56257fbd695b20ccbabe10",
+      "bytes": 6285,
+      "counts": {
+        "tests": 25,
+        "pass": 25,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "passed": true
+    }
+  ],
+  "limits": [
+    "Synthetic company inference responses; actual locked native Codex.",
+    "Fault injection affects only captured owned process pipes; no Docker, WSL or virtual machines.",
+    "Does not prove professional role quality, historical timeout root cause or full product acceptance."
+  ]
+}
