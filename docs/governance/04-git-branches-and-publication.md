@@ -1,5 +1,9 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- extension-folder-stage119 -->
+Extension 0.5.1 新增独立浏览器资料夹核对、私人会话可恢复上传及相对路径索引；客户另按发送后才调度云端 Codex。发布使用 V2 切片 proof 核查及八分支非强推。详见 [方案](../technical/119-extension-selected-folders.md) 与 [准确证据](../quality/extension-folder-checkpoint.json)。
+
+
 
 **阶段 109 / Stage 109：** 客户及平台音讯已接通不可变证据、分开的费用／终止独立审批和原预留内结算；253 项初次后端及 65 项修复后音讯授权回归、9 项后台单元、7 项客户端编译构建与 8 项实际页面流程通过，明确假模型及人工证据。见[方案](../technical/109-audio-evidence-accounting.md)。原失败记录、历史整批超时与整体验收边界保留。
 
