@@ -262,6 +262,7 @@ async function populateWorkspace() {
   $("work-area").hidden = false;
   const catalog = await request("/v1/catalog/roles");
   if (revision !== workspaceRevision) return;
+  $("cloud-computers").hidden = !catalog.items.some((r: any) => r.role_key === "computer-operator");
   option(
     $<HTMLSelectElement>("role"),
     [
@@ -272,7 +273,7 @@ async function populateWorkspace() {
             ? "Default assistant — text and plans"
             : "預設助手 — 文字與計畫",
       },
-      ...catalog.items.map((r: any) => ({
+      ...catalog.items.filter((r: any) => r.role_key !== "computer-operator").map((r: any) => ({
         value: r.role_key,
         label: r.display_name + (r.available ? "" : " · 準備中"),
       })),
@@ -1186,6 +1187,12 @@ $("review-models").addEventListener(
       await send("OPEN_WEB", { section: "specialists" });
     }),
 );
+$("cloud-computers").addEventListener(
+  "click",
+  () => void run(async () => {
+    await send("OPEN_WEB", { section: "computers" });
+  }),
+);
 $("batch-designs").addEventListener(
   "click",
   () =>
@@ -1286,6 +1293,11 @@ $("brief-form").addEventListener("submit", (e) => {
               }
             : {}),
         };
+      if (selectedRole === "computer-operator")
+        throw new Error(tr(
+          "請先開啟雲端電腦，確認費用、可用檔案與操作範圍，再另行確認工作預算。",
+          "Open a cloud computer first, approve its cost, selected files and controls, then confirm the separate task budget.",
+        ));
       const fingerprint = JSON.stringify({
         tenant,
         project,
@@ -1516,6 +1528,7 @@ $("local-revoke").addEventListener(
     }),
 );
 const translations: Record<string, string> = {
+  開啟雲端電腦工作台: "Open cloud computer workspace",
   批量設計工作台: "Open batch design workspace",
   影片製作工作台: "Open video production workspace",
   營銷帳戶與同步: "Marketing accounts & sync",

@@ -281,7 +281,9 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     }
     if (message.type === "OPEN_WEB") {
       const destination =
-        message.section === "specialists"
+        message.section === "computers"
+          ? "/app/computers"
+          : message.section === "specialists"
           ? "/app/specialists"
           : message.section === "connections"
             ? "/app/connections"
