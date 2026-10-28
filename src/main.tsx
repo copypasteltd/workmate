@@ -1,3 +1,4 @@
+import { AdminCloudComputers } from "./cloud-computers";
 import { QualitySummary } from "./quality-summary";
 import "./support.css";
 import { AdminConnectionDetail } from "./connections";
@@ -325,6 +326,7 @@ function Login() {
   );
 }
 const nav = [
+  ["cloud-computers", Monitor, "雲端電腦", "Cloud computers", "admin.cloud_runtime.sessions.read"],
   ["overview", LayoutDashboard, "總覽", "Overview", "admin.overview.read"],
   ["desktop-updates", Monitor, "Desktop 發佈", "Desktop releases", "admin.desktop_updates.read"],
   ["users", Users, "用戶管理", "Users", "admin.users.read"],
@@ -398,7 +400,7 @@ function AdminShell() {
     [mfa, setMfa] = useState(false);
   const start = nav.find(
     (n) =>
-      a.has(n[4]) ||
+      a.has(n[4]) || n[0] === "cloud-computers" && a.has("admin.cloud_runtime.infrastructure.write") ||
       (n[0] === "provider-control" && a.has("admin.ai.policy.read")),
   )?.[0];
   useEffect(() => setMobile(false), [location.pathname]);
@@ -431,7 +433,7 @@ function AdminShell() {
           {nav
             .filter(
               (n) =>
-                a.has(n[4]) ||
+                a.has(n[4]) || n[0] === "cloud-computers" && a.has("admin.cloud_runtime.infrastructure.write") ||
                 (n[0] === "provider-control" &&
                   a.has("admin.ai.policy.read")) ||
                 (n[0] === "audit" && a.has("admin.approvals.read")),
@@ -539,6 +541,8 @@ function AdminShell() {
                         <AdminProviderControl access={a} />
                       ) : n[0] === "external-budget" ? (
                         <AdminExternalBudgets access={a} />
+                      ) : n[0] === "cloud-computers" ? (
+                        <AdminCloudComputers access={a} />
                       ) : n[0] === "desktop-updates" ? (
                         <AdminDesktopUpdates access={a} />
                       ) : n[0] === "recovery" ? (
