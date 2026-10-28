@@ -4,6 +4,10 @@
 
 <!-- runtime-startup-122 -->
 
+The current publication command is `node scripts/publish-workmate-v5.mjs --push`; `--check` performs preflight only. All delivered repositories must be committed and match the central proof manifest and bounded evidence. Publication uses an ordinary atomic update of the eight mapped refs and reads back their actual SHAs. V1–V4 remain historical executors.
+
+Billing evidence retains the initial 78/79 run with one cancellation, an isolated failure and a later isolated pass. Earlier failure causes remain unproven; the [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/runtime-startup-checkpoint-122.json) records the final complete related-file scope. Real fixture preparation is timed separately while recovery and ledger assertions retain their 120-second bound. Product RPC and task deadlines stay unchanged.
+
 ## Codex startup and turn isolation · Stage 122
 
 This stage binds actual source bytes, the native executable and raw output; retains failed attempts; and separately checks startup recovery, turn isolation, billing transactions and packaged UI. Runners control only owned native processes, folders, databases and browsers, without Docker, WSL or virtual machines.
