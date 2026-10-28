@@ -1,5 +1,9 @@
 # 技术架构与技术栈
 
+<!-- integrated-recovery-stage120 -->
+Extension 0.5.2 补齐附件阻塞恢复、选择容量和准确字节提示；当前完整后端回归、历史升级边界、回执作废和实际路由清单独立验证。发布使用 V3 切片 proof 核查及八分支非强推。详见 [方案](../technical/120-integrated-regression-and-attachment-recovery.md) 与 [准确证据](../quality/integrated-recovery-checkpoint.json)。
+
+
 <!-- extension-folder-stage119 -->
 Extension 0.5.1 新增独立浏览器资料夹核对、私人会话可恢复上传及相对路径索引；客户另按发送后才调度云端 Codex。发布使用 V2 切片 proof 核查及八分支非强推。详见 [方案](../technical/119-extension-selected-folders.md) 与 [准确证据](../quality/extension-folder-checkpoint.json)。
 
