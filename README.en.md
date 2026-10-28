@@ -6,6 +6,8 @@
 
 The [billing integration scenario](tests/runtime-startup-billing.test.ts) prepares real private source evidence and its original funding reservation, then checks recovery and settlement within the retained 120-second bound. Two initial failures and the later isolated pass stay separate; the checkpoint records the final complete related-file count. Earlier failure causes remain unproven.
 
+The final five complete related files passed all 79 checks, with zero failures, cancellations or skips. Source bytes stayed unchanged; private fixtures, the native database and its port were reclaimed and checked. This covers billing, gateway, request control, SEO and recovery integration; the complete backend suite was not rerun. Final recovery/ledger assertions took about 79.7 seconds under the retained 120-second bound.
+
 ## Codex startup and turn isolation · Stage 122
 
 A timed-out or disconnected cloud Codex initialization may restart once only after zero model dispatches and actual closure of the old process and gateway. RPCs retain the 60-second deadline; both starts share the original task deadline, authority and budget. Failures after thread or model admission are not replayed. Tools, output and completion must belong to the current thread and turn.
