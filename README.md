@@ -2,6 +2,25 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- runtime-startup-122 -->
+
+## Codex 启动与轮次隔离 · 阶段 122
+
+本轮执行器固定实际源码、原生可执行文件与原始输出，保留失败尝试，并分别验证初始化恢复、轮次隔离、账务事务和真实打包页面。执行器只控制本次拥有的原生进程、目录、数据库与浏览器；不用 Docker、WSL 或虚拟机。
+
+已取得云端原生 12 项、Desktop 单元 180 项／原生 25 项、Web 20 项及打包 UI 8 项限定通过记录。相关脚本保留当次工作目录和源码，不应把历史执行器当作另一个产品启动入口。常规使用继续按下方启动说明进行；生产签名发行、真实供应商质量和完整 102 项验收单独跟踪。
+
+```mermaid
+flowchart LR
+  A[Source and native pin] --> B[Native fault checks]
+  B --> C[Task and billing transactions]
+  C --> D[Packaged UI and recordings]
+  D --> E[Bilingual delivery and committed proofs]
+  E --> F[Ordinary mapped-branch publication]
+```
+
+[完整方案 / Behavior and verification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/122-codex-startup-and-turn-isolation.md)
+
 ## 产品与边界
 
 首批面向现有客户的 marketing 团队，完整范围包含生图、设计/字体、视频/特效、广告和网站分析、SEO/GEO、企业重复流程及软件开发。目录已有 18 个精确 Skill 绑定的候选角色；至少十二个逐一完成专业任务、修改及异常处理的角色仍是验收要求。设计师由 Codex、设计 Skill 与公司 Image 2 组合。Agent 内核唯一使用 Codex；全部 AI 请求走公司 OpenAI 兼容后端。当前开发使用已授权假数据，不代表真实模型专业质量已经验收。

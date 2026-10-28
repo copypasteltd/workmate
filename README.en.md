@@ -2,6 +2,25 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- runtime-startup-122 -->
+
+## Codex startup and turn isolation · Stage 122
+
+This stage binds actual source bytes, the native executable and raw output; retains failed attempts; and separately checks startup recovery, turn isolation, billing transactions and packaged UI. Runners control only owned native processes, folders, databases and browsers, without Docker, WSL or virtual machines.
+
+Recorded bounded passes cover 12 cloud native checks, 180 Desktop unit / 25 native checks, 20 Web checks and 8 packaged UI checks. Historical runners preserve their authored workspace and source; normal product usage follows the startup instructions below. Production signing, live provider quality and complete acceptance of all 102 requirements are tracked separately.
+
+```mermaid
+flowchart LR
+  A[Source and native pin] --> B[Native fault checks]
+  B --> C[Task and billing transactions]
+  C --> D[Packaged UI and recordings]
+  D --> E[Bilingual delivery and committed proofs]
+  E --> F[Ordinary mapped-branch publication]
+```
+
+[完整方案 / Behavior and verification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/122-codex-startup-and-turn-isolation.md)
+
 ## Product and boundaries
 
 The first customers are existing marketing teams. Scope includes image/design/typography, video/effects, advertising and website analysis, SEO/GEO, repeated business processes and software development. The catalog has 18 candidates with exact Skill bindings; at least twelve individually qualified professional presets remain an acceptance requirement. The designer combines Codex, design Skills and company Image 2. Codex is the only Agent core. All AI uses the company's OpenAI-compatible backend; development currently uses authorized synthetic providers, not a claim of live professional quality.
