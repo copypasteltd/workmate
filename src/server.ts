@@ -1,4 +1,5 @@
 import { assertLiveEnvironment } from "./recovery-fence.js";
+import { registerDedicatedCloud } from "./dedicated-cloud-routes.js";
 import { registerNativeRecovery } from "./native-recovery-routes.js";
 import { registerDesktopUpdates } from "./desktop-update-routes.js";
 import { registerDesktopPairings } from "./desktop-pairing-routes.js";
@@ -423,6 +424,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerBrandProduction(app, db, storage);
   registerUploads(app, db, storage);
   registerCloudFiles(app, db, storage);
+  registerDedicatedCloud(app, db, storage, catalog);
   registerDeletions(app, db);
   registerAnalytics(app, db, storage);
   registerFileImports(app, db, storage);

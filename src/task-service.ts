@@ -43,6 +43,8 @@ export async function enqueueTask(
     content_source_task_id?: string;
     execution_location?: "cloud" | "desktop";
     role_hash?: string;
+    /** Internal, independently customer-confirmed dedicated computer binding. */
+    dedicated_computer?: { session_id: string; generation: number; specification_hash: string };
     /** Internal binding, set only by the authorized cloud workflow runner. */
     cloud_workflow?: { run_id: string; cursor: number };
     /** Internal, exact reviewed team step. Never accepted from task API input. */
@@ -185,6 +187,10 @@ export async function enqueueTask(
       options.role_hash ??
       (parent?.role_key === b.role_key ? parent.role_hash : undefined),
   );
+  if (b.role_key === "computer-operator" && !options.dedicated_computer)
+    throw new Problem(409, "CLOUD_RUNTIME_AGENT_CONSENT_REQUIRED", "Create this task from a confirmed running computer and approve its separate AI budget");
+  if (options.dedicated_computer && b.role_key !== "computer-operator")
+    throw new Problem(409, "CLOUD_RUNTIME_AGENT_CONSENT_REQUIRED", "The confirmed computer requires its dedicated operator role");
   await catalog.boundSkills(role);
   await catalog.ensureEnabled(tx, b.role_key, catalog.digest(role));
   const ready = parent
@@ -265,11 +271,13 @@ export async function enqueueTask(
         options.execution_location === "desktop" ||
         options.cloud_workflow ||
         options.media_effect ||
+        options.dedicated_computer ||
         options.solution_trial
           ? actor.id
           : (parent?.private_owner ?? null),
         {
           ...(options.context ?? {}),
+          ...(options.dedicated_computer ? { dedicated_computer: options.dedicated_computer } : {}),
           ...(options.media_effect
             ? { media_effect: options.media_effect }
             : {}),
@@ -294,6 +302,11 @@ export async function enqueueTask(
       ],
     )
   ).rows[0];
+  if (options.dedicated_computer) {
+    const binding = options.dedicated_computer;
+    await tx.query(`INSERT INTO cloud_runtime_task_bindings(task_id,tenant_id,project_id,private_owner,session_id,generation,specification_hash)
+      VALUES($1,$2,$3,$4,$5,$6,$7)`, [task.id,tenant,project,actor.id,binding.session_id,binding.generation,binding.specification_hash]);
+  }
   await freezeTaskCapabilities(tx, db.config, catalog, task);
   await freezeTaskSkills(tx, catalog, task);
   const waiting = await stageInputDependencies(

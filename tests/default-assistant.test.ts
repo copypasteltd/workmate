@@ -202,7 +202,7 @@ test("an unconfigured project starts private conversations without a customer-cr
   assert.equal(info.role_key, "assistant");
   assert.equal(info.runtime_profile, "codex-internal-v1");
   assert.equal(
-    (await ok(undefined, "GET", "/v1/catalog/roles")).items.length,
+    (await ok(undefined, "GET", "/v1/catalog/roles")).items.filter((row:any)=>row.role_key!=="computer-operator").length,
     18,
     "the default assistant must not inflate the professional role count",
   );

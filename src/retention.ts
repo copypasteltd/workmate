@@ -2,6 +2,7 @@ import type { Database } from "./db.js";
 import type { Storage } from "./storage.js";
 import { purgeCapabilityWorkspaces } from "./capability-workspace-cleanup.js";
 import { eraseReplayContent } from "./access.js";
+import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
 
 export const retentionPolicy = {
   files_days: 90,
@@ -11,6 +12,8 @@ export const retentionPolicy = {
   notification_days: 30,
   replay_result_days: 7,
   adoption_comparison_hours: 24,
+  dedicated_computer_content_days: 90,
+  dedicated_computer_unused_quote_hours: 24,
   runtime_cache: "remove_after_terminal",
   financial_audit_minimum_days: 365,
   online_erasure_target_hours: 24,
@@ -44,6 +47,16 @@ export class RetentionService {
         )
           return null;
         const counts: Record<string, number> = {};
+        await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('dedicated-cloud-control',0))");
+        const oldComputerQuotes = (await tx.query(`SELECT q.id FROM cloud_runtime_quotes q WHERE q.content_state='active'
+          AND q.created_at<clock_timestamp()-interval '24 hours' AND NOT EXISTS(SELECT 1 FROM cloud_runtime_sessions s WHERE s.quote_id=q.id)
+          ORDER BY q.created_at,q.id FOR UPDATE SKIP LOCKED LIMIT $1`, [limit])).rows;
+        for (const quote of oldComputerQuotes) await eraseDedicatedQuote(tx, quote.id);
+        counts.cloud_runtime_quotes = oldComputerQuotes.length;
+        const oldComputerSessions = (await tx.query(`SELECT id FROM cloud_runtime_sessions WHERE content_state='active'
+          AND confirmed_at<clock_timestamp()-interval '90 days' ORDER BY confirmed_at,id FOR UPDATE SKIP LOCKED LIMIT $1`, [limit])).rows;
+        for (const session of oldComputerSessions) await eraseDedicatedSession(tx, session.id);
+        counts.cloud_runtime_sessions = oldComputerSessions.length;
         const oldTeamReviews = (
           await tx.query(
             "SELECT id FROM agent_group_preflights p WHERE p.erased_at IS NULL AND p.expires_at<clock_timestamp()-interval '24 hours' AND NOT EXISTS(SELECT 1 FROM agent_group_runs r WHERE r.preflight_id=p.id) ORDER BY p.expires_at,p.id FOR UPDATE SKIP LOCKED LIMIT $1",

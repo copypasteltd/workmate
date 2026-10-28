@@ -132,8 +132,9 @@ test("template directory uses persisted IDs, strict category/cursor pages, curre
     all.push(...page.items);
     cursor = page.next_cursor;
   } while (cursor);
-  assert.equal(all.length, 19);
-  assert.equal(new Set(all.map((row) => row.id)).size, 19);
+  assert.equal(all.filter(row=>row.role_key!=="computer-operator").length, 19);
+  assert.equal(all.filter(row=>row.role_key==="computer-operator").length, 1);
+  assert.equal(new Set(all.map((row) => row.id)).size, 20);
   for (const row of all) {
     assert.equal(row.data_mode, "simulated");
     assert.equal(row.qualification_state, "unverified");

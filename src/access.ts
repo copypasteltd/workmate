@@ -136,7 +136,7 @@ export async function replay<T>(
   );
   return response;
 }
-export async function eraseReplayContent(tx: Tx, ids: string[]) {
+export async function eraseReplayContent(tx: Pick<Tx, "query">, ids: string[]) {
   if (!ids.length) return;
   // Keep the uniqueness tombstone so retries cannot recreate paid work or
   // retrieve an old serialized prompt after its source has been erased.

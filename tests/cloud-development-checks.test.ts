@@ -32,6 +32,23 @@ const sqlCheck = (sql: string, expect: any, extra: any = {}) => ({
 });
 const native = process.platform === "win32";
 
+test("a deeply nested native SQLite workspace preserves real transactions and exact cleanup", { skip: !native }, async () => {
+  const nested = path.join(root, "owned-deep-workspace-" + "x".repeat(12));
+  const result = await runCloudDatabaseCheck(nested, {
+    entry: "schema.sql",
+    checks: [
+      sqlCheck("SELECT name FROM example WHERE id=?", { rows: [{ name: "original" }] }, { params: [1] }),
+      sqlCheck("UPDATE example SET name=? WHERE id=?", { changes: 1 }, { params: ["updated", 1] }),
+      sqlCheck("SELECT name FROM example WHERE id=?", { rows: [{ name: "updated" }] }, { params: [1] }),
+    ],
+  }, files("CREATE TABLE example(id INTEGER PRIMARY KEY,name TEXT NOT NULL); INSERT INTO example VALUES(1,'original');", "schema.sql"));
+  assert.equal(result.receipt.passed, true, JSON.stringify(result.receipt));
+  assert.equal(result.receipt.check_result?.checks.length, 3);
+  assert.ok(result.receipt.check_result?.checks.every((row: any) => row.passed));
+  assert.equal(result.receipt.host.profile_deleted, true);
+  assert.equal(result.receipt.workspace_deleted, true);
+});
+
 test("HTTP startup control rejects missing, duplicate or extra readiness frames and terminates an aborted wait", async () => {
   for (const frames of [
     '{"id":"c1","end":true}\n',

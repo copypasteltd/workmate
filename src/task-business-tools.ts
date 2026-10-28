@@ -165,6 +165,7 @@ import {
   frozenEffect,
 } from "./media-effects-model.js";
 import { listEffectSources, renderTaskEffect } from "./media-effects-tools.js";
+import { DedicatedComputerTaskTools } from "./dedicated-cloud-task-tools.js";
 
 export interface TaskBusinessAuthority {
   authorize(tx: Tx): Promise<unknown>;
@@ -1651,10 +1652,16 @@ export class TaskBusinessTools {
           },
         },
       );
+    const computerTools = t.execution_location !== "desktop" && role.role_key === "computer-operator" &&
+      role.version === "1.0.0" && !!t.input_context?.dedicated_computer;
+    if (computerTools) tools.push(...new DedicatedComputerTaskTools(this.db).build(t, actor, authorize));
     const permitted = tools.filter(
       (tool) =>
         (
           ({
+            computer_inspect: computerTools && role.tool_ids.includes("computer.read"),
+            computer_command: computerTools && role.tool_ids.includes("computer.control") && t.mode === "execute",
+            computer_command_result: computerTools && role.tool_ids.includes("computer.read"),
             request_input:
               t.mode === "execute" &&
               (role.tool_ids.includes("asset.read") ||

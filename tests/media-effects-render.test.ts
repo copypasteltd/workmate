@@ -435,7 +435,8 @@ test("the additive role release preserves the old digest, old tool/Skill binding
   const release = JSON.parse(
     await readFile("catalog/media-effects-release-v1.json", "utf8"),
   );
-  assert.equal(c.roles.length, 18);
+  assert.equal(c.roles.filter(r=>r.role_key!=="computer-operator").length, 18);
+  assert.equal(c.roles.filter(r=>r.role_key==="computer-operator").length, 1);
   assert.deepEqual(c.skills.find(skill => skill.key === release.skill_package.key && skill.version === release.skill_package.version), release.skill_package);
   assert.deepEqual(c.skillDefinitions.find(skill => skill.skill_key === release.skill_definition.skill_key && skill.version === release.skill_definition.version), release.skill_definition);
   assert.equal(c.role("video-motion").version, "1.5.0");

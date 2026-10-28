@@ -103,8 +103,11 @@ function checkedSql(sql, single = false) {
 let db;
 try {
   fs.mkdirSync(configuration.output_directory);
+  // SQLite's Windows VFS still applies MAX_PATH to a relative database name.
+  // Use an absolute extended path for this exact trusted workspace target;
+  // customer SQL never supplies or changes the database location.
   db = new DatabaseSync(
-    path.join(configuration.output_directory, "database.sqlite"),
+    path.toNamespacedPath(path.resolve(configuration.output_directory, "database.sqlite")),
     { allowExtension: false },
   );
   db.exec("PRAGMA foreign_keys=ON;");

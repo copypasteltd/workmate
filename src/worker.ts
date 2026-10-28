@@ -1,4 +1,6 @@
 import { assertLiveEnvironment } from "./recovery-fence.js";
+import { DedicatedCloud } from "./dedicated-cloud.js";
+import { assertDedicatedComputerExecution } from "./dedicated-cloud-task-authority.js";
 import { TaskBusinessTools } from "./task-business-tools.js";
 import { advanceExternalBudgets } from "./external-budget.js";
 import { finalizeReviewedEffect } from "./media-effects-tools.js";
@@ -122,6 +124,8 @@ import {
 export class Worker {
   private boss: PgBoss;
   private timer?: ReturnType<typeof setInterval>;
+  private resourceTimer?: ReturnType<typeof setInterval>;
+  private resourceMaintenance: Promise<unknown> | null = null;
   private dispatching = false;
   private stopping = false;
   private matrixRun: Promise<unknown> | null = null;
@@ -172,6 +176,12 @@ export class Worker {
       },
     );
     this.timer = setInterval(() => void this.dispatch().catch(() => {}), 1000);
+    this.resourceTimer = setInterval(() => {
+      if (!this.stopping && !this.resourceMaintenance)
+        this.resourceMaintenance = new DedicatedCloud(this.db).maintain().catch(() => {
+          console.error(JSON.stringify({component:"worker.cloud_computers",error_code:"CLOUD_RUNTIME_MAINTENANCE_FAILED"}));
+        }).finally(() => { this.resourceMaintenance = null; });
+    }, 5000);
     await this.dispatch();
   }
   async dispatch() {
@@ -452,6 +462,7 @@ export class Worker {
             throw new Error("Role version changed");
           if (!(await checkInputDependencies(tx, t))) return null;
           await assertTaskContentSources(tx, t);
+          await assertDedicatedComputerExecution(tx, t);
           continuation = await queuedPaidContinuation(tx, t);
         } catch (error) {
           const code =
@@ -539,6 +550,7 @@ export class Worker {
                   .versionIds,
               );
               await assertTaskContentSources(tx, t);
+              await assertDedicatedComputerExecution(tx, t);
             } catch (error) {
               // A legitimate tool can briefly hold an update lock on an
               // already-read source. NOWAIT is a retry signal, not revocation.
@@ -582,6 +594,7 @@ export class Worker {
           if (!live) throw new Error("Fenced execution");
           await assertReportSources(tx, live);
           await assertTaskContentSources(tx, live);
+          await assertDedicatedComputerExecution(tx, live);
           if (kind === "runtime.thread")
             await tx.query("UPDATE tasks SET runtime_thread=$2 WHERE id=$1", [
               id,
@@ -637,6 +650,7 @@ export class Worker {
             capabilities.versionIds,
           );
           await assertTaskContentSources(tx, task);
+          await assertDedicatedComputerExecution(tx, task);
           return {
             ...work,
             capabilities,
@@ -795,6 +809,7 @@ export class Worker {
               .versionIds,
           );
           await assertTaskContentSources(tx, live);
+          await assertDedicatedComputerExecution(tx, live);
           contextDigest = context.digest;
         } catch {
           status = "cancelled";
@@ -1075,6 +1090,7 @@ export class Worker {
       capabilities.versionIds,
     );
     await assertTaskContentSources(tx, t);
+    await assertDedicatedComputerExecution(tx, t);
     await tx.query("SELECT set_config('app.task_id',$1,true)", [t.id]);
     if (
       !(
@@ -1171,6 +1187,7 @@ export class Worker {
   async stop() {
     this.stopping = true;
     if (this.timer) clearInterval(this.timer);
+    if (this.resourceTimer) clearInterval(this.resourceTimer);
     for (const c of this.active.values()) c.abort();
     await this.boss.stop({ graceful: true, timeout: 20000 });
     this.videoAbort.abort();
@@ -1186,6 +1203,7 @@ export class Worker {
     await this.connectorRun;
     await this.seoRun;
     await this.matrixRun;
+    await this.resourceMaintenance;
   }
 }
 import { dispatchEntitlementNotifications } from "./user-entitlements.js";

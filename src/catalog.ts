@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, realpath } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import type { Config } from "./config.js";
@@ -12,6 +12,7 @@ export interface SkillPackage {
   qualification: string;
 }
 export class Catalog {
+  private readonly packageRoot = path.resolve();
   roles: any[] = [];
   historicalRoles: any[] = [];
   skills: SkillPackage[] = [];
@@ -61,23 +62,23 @@ export class Catalog {
   }
   async load() {
     const c = JSON.parse(
-      await readFile("catalog/role-preset-catalog.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/role-preset-catalog.json"), "utf8"),
     );
     this.roles = c.roles;
     this.historicalRoles = JSON.parse(
-      await readFile("catalog/role-preset-history.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/role-preset-history.json"), "utf8"),
     );
     this.defaultAssistant = JSON.parse(
-      await readFile("catalog/default-assistant.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/default-assistant.json"), "utf8"),
     );
     this.skillDefinitions = c.skill_catalog;
     this.skills = JSON.parse(
-      await readFile("catalog/skill-packages.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/skill-packages.json"), "utf8"),
     );
     // Additive releases retain published catalog bytes and exact historical
     // role digests so already approved tasks keep their original tools.
     const effects = JSON.parse(
-      await readFile("catalog/media-effects-release-v1.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/media-effects-release-v1.json"), "utf8"),
     );
     const prior = this.role("video-motion");
     if (
@@ -104,7 +105,7 @@ export class Catalog {
     this.skills.push(effects.skill_package);
     this.skillDefinitions.push(effects.skill_definition);
     const software = JSON.parse(
-      await readFile("catalog/software-toolchain-release-v1.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/software-toolchain-release-v1.json"), "utf8"),
     );
     if (
       software.schema !== "copypaste-software-toolchain-release-1" ||
@@ -161,7 +162,7 @@ export class Catalog {
       this.skillDefinitions.push(definition);
     }
     const scheduleRelease = JSON.parse(
-      await readFile("catalog/cloud-schedule-release-v1.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/cloud-schedule-release-v1.json"), "utf8"),
     );
     const scheduleBase = this.role("workflow-consultant");
     if (
@@ -194,7 +195,7 @@ export class Catalog {
     this.skills.push(scheduleRelease.skill_package);
     this.skillDefinitions.push(scheduleRelease.skill_definition);
     const eventRelease = JSON.parse(
-      await readFile("catalog/cloud-event-release-v1.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/cloud-event-release-v1.json"), "utf8"),
     );
     const eventBase = this.role("workflow-consultant");
     const eventBindings = [
@@ -239,7 +240,7 @@ export class Catalog {
     this.skills.push(eventRelease.skill_package);
     this.skillDefinitions.push(eventRelease.skill_definition);
     const webRelease = JSON.parse(
-      await readFile("catalog/web-analytics-release-v1.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/web-analytics-release-v1.json"), "utf8"),
     );
     const webBase = this.role("marketing-analyst");
     if (
@@ -280,7 +281,7 @@ export class Catalog {
     this.skills.push(webRelease.skill_package);
     this.skillDefinitions.push(webRelease.skill_definition);
     const budgetRelease = JSON.parse(
-      await readFile("catalog/external-budget-release-v1.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/external-budget-release-v1.json"), "utf8"),
     );
     const budgetBase = this.role("marketing-analyst");
     if (
@@ -325,10 +326,10 @@ export class Catalog {
     this.skills.push(budgetRelease.skill_package);
     this.skillDefinitions.push(budgetRelease.skill_definition);
     this.admin = JSON.parse(
-      await readFile("catalog/admin-permission-catalog.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/admin-permission-catalog.json"), "utf8"),
     );
     const providerAdmin = JSON.parse(
-      await readFile("catalog/provider-admin-permissions.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/provider-admin-permissions.json"), "utf8"),
     );
     const registered = new Set(this.admin.permissions.map((p: any) => p.key));
     if (providerAdmin.permissions.some((p: any) => registered.has(p.key)))
@@ -350,7 +351,7 @@ export class Catalog {
       ...providerAdmin.super_permissions_for_new_installations,
     );
     const budgetAdmin = JSON.parse(
-      await readFile("catalog/external-budget-admin-permissions.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/external-budget-admin-permissions.json"), "utf8"),
     );
     const permissionKeys = new Set(
       this.admin.permissions.map((p: any) => p.key),
@@ -366,7 +367,7 @@ export class Catalog {
       ...budgetAdmin.super_permissions_for_new_installations,
     );
     const recoveryAdmin = JSON.parse(
-      await readFile("catalog/native-recovery-admin-permissions.json", "utf8"),
+      await readFile(path.resolve(this.packageRoot, "catalog/native-recovery-admin-permissions.json"), "utf8"),
     );
     const currentKeys = new Set(this.admin.permissions.map((p: any) => p.key));
     if (recoveryAdmin.permissions.some((p: any) => currentKeys.has(p.key)))
@@ -379,16 +380,39 @@ export class Catalog {
     superRole.permissions.push(
       ...recoveryAdmin.super_permissions_for_new_installations,
     );
-    const desktopUpdates = JSON.parse(await readFile("catalog/desktop-update-admin-permissions.json", "utf8"));
+    const desktopUpdates = JSON.parse(await readFile(path.resolve(this.packageRoot, "catalog/desktop-update-admin-permissions.json"), "utf8"));
     const updatePermissionKeys = new Set(this.admin.permissions.map((p: any) => p.key));
     if (desktopUpdates.permissions.some((p: any) => updatePermissionKeys.has(p.key)))
       throw new Problem(503, "PERMISSION_CATALOG_CONFLICT", "Duplicate Desktop update permission");
     this.admin.permissions.push(...desktopUpdates.permissions);
     superRole.permissions.push(...desktopUpdates.super_permissions_for_new_installations);
+    const dedicatedCloud = JSON.parse(await readFile(path.resolve(this.packageRoot, "catalog/dedicated-cloud-admin-permissions.json"), "utf8"));
+    const resourcePermissionKeys = new Set(this.admin.permissions.map((p: any) => p.key));
+    if (dedicatedCloud.permissions.some((p: any) => resourcePermissionKeys.has(p.key)))
+      throw new Problem(503, "PERMISSION_CATALOG_CONFLICT", "Duplicate dedicated computer permission");
+    this.admin.permissions.push(...dedicatedCloud.permissions);
+    superRole.permissions.push(...dedicatedCloud.super_permissions_for_new_installations);
+    const computerRelease = JSON.parse(await readFile(path.resolve(this.packageRoot, "catalog/dedicated-computer-role-v1.json"), "utf8"));
+    if (computerRelease.schema !== "copypaste-dedicated-computer-role-1" || computerRelease.role.role_key !== "computer-operator" ||
+      computerRelease.role.version !== "1.0.0" || computerRelease.role.runtime_profile !== "codex-internal-v1" ||
+      canonical(computerRelease.role.tool_ids) !== canonical(["asset.write","computer.read","computer.control"]) ||
+      computerRelease.skill_package.key !== "dedicated-computer" || computerRelease.skill_package.version !== "1.0.0" ||
+      computerRelease.skill_package.path !== "skills/dedicated-computer/1.0.0/SKILL.md" ||
+      computerRelease.skill_definition.package_sha256 !== computerRelease.skill_package.sha256 ||
+      computerRelease.skill_definition.ai_network_policy !== "internal_only" ||
+      canonical(computerRelease.skill_definition.tool_ids) !== canonical(["computer.read","computer.control"]) ||
+      this.roles.some(r=>r.role_key==="computer-operator") || this.skills.some(s=>s.key==="dedicated-computer"))
+      throw new Problem(503,"ROLE_RELEASE_INVALID","Dedicated computer role differs from its company Codex scope");
+    this.roles.push(computerRelease.role); this.skills.push(computerRelease.skill_package); this.skillDefinitions.push(computerRelease.skill_definition);
     for (const p of this.skills) await this.verifySkill(p);
   }
   async verifySkill(p: SkillPackage) {
-    const content = await readFile(path.resolve(p.path), "utf8");
+    if (typeof p.path !== "string" || !p.path.startsWith("skills/") || !p.path.endsWith("/SKILL.md") || p.path.includes("\\") || p.path.split("/").includes(".."))
+      throw new Problem(503, "SKILL_PATH_INVALID", "Skill package must remain inside the installed package directory");
+    const root = await realpath(path.join(this.packageRoot, "skills")), file = await realpath(path.resolve(this.packageRoot, p.path));
+    if (!file.startsWith(root + path.sep))
+      throw new Problem(503, "SKILL_PATH_INVALID", "Skill package must remain inside the installed package directory");
+    const content = await readFile(file, "utf8");
     if (createHash("sha256").update(content).digest("hex") !== p.sha256)
       throw new Problem(
         503,

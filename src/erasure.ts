@@ -3,6 +3,7 @@ import type { Database, Tx } from "./db.js";
 import type { Storage } from "./storage.js";
 import { eraseReplayContent } from "./access.js";
 import { requestTaskCancellation } from "./task-control.js";
+import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
 
 const targets = new Set([
   "assets",
@@ -24,6 +25,8 @@ const targets = new Set([
   "workspace_nodes",
   "agent_groups",
   "agent_group_runs",
+  "cloud_runtime_quotes",
+  "cloud_runtime_sessions",
 ]);
 const activeStates = [
   "queued",
@@ -93,6 +96,9 @@ export class ErasureService {
   private async clean(id: string, token: string) {
     await this.db.tx(
       async (tx) => {
+        const target = (await tx.query("SELECT target_type FROM deletion_jobs WHERE id=$1 AND lease_token=$2", [id, token])).rows[0];
+        if (["cloud_runtime_quotes", "cloud_runtime_sessions"].includes(target?.target_type))
+          await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('dedicated-cloud-control',0))");
         const job = (
           await tx.query(
             "SELECT * FROM deletion_jobs WHERE id=$1 AND lease_token=$2 FOR UPDATE",
@@ -112,6 +118,17 @@ export class ErasureService {
           job.target_type === "assets" ? row?.state : row?.content_state;
         if (row && state !== "deleted")
           throw new Error("ERASURE_TARGET_NOT_DELETED");
+        if (row && ["cloud_runtime_quotes", "cloud_runtime_sessions"].includes(job.target_type)) {
+          const sessions = job.target_type === "cloud_runtime_sessions" ? [{id:row.id}]
+            : (await tx.query("SELECT id FROM cloud_runtime_sessions WHERE quote_id=$1", [row.id])).rows;
+          for (const session of sessions) await eraseDedicatedSession(tx, session.id);
+          if (job.target_type === "cloud_runtime_quotes") await eraseDedicatedQuote(tx, row.id);
+          const waiting = sessions.length && (await tx.query("SELECT 1 FROM cloud_runtime_sessions WHERE id=ANY($1::uuid[]) AND NOT cleanup_verified LIMIT 1", [sessions.map(s => s.id)])).rowCount;
+          if (waiting) {
+            await tx.query("UPDATE deletion_jobs SET state='queued',next_attempt_at=now()+interval '30 seconds',lease_until=NULL,lease_token=NULL,attempts=greatest(0,attempts-1),exceptions='[\"WAITING_FOR_COMPUTER_CLEANUP\"]' WHERE id=$1", [id]);
+            return;
+          }
+        }
         if (
           job.target_type === "tasks" &&
           row &&

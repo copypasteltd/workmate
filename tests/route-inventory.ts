@@ -36,6 +36,8 @@ export async function currentRouteInventory() {
   assert.equal(externalBudget.baseline_lf_sha256, additions.baseline_lf_sha256);
   const integratedRuntime = JSON.parse(await readFile("contracts/integrated-runtime-route-additions.json", "utf8"));
   assert.equal(integratedRuntime.baseline_lf_sha256, additions.baseline_lf_sha256);
+  const dedicatedCloud = JSON.parse(await readFile("contracts/dedicated-cloud-route-additions.json", "utf8"));
+  assert.equal(dedicatedCloud.baseline_lf_sha256, additions.baseline_lf_sha256);
   const routes = [
       ...baseline.routes,
       ...additions.routes,
@@ -47,6 +49,7 @@ export async function currentRouteInventory() {
       ...webAnalytics.routes,
       ...externalBudget.routes,
       ...integratedRuntime.routes,
+      ...dedicatedCloud.routes,
     ],
     conditional_routes = [
       ...baseline.conditional_routes,
@@ -59,6 +62,7 @@ export async function currentRouteInventory() {
       ...webAnalytics.conditional_routes,
       ...externalBudget.conditional_routes,
       ...integratedRuntime.conditional_routes,
+      ...dedicatedCloud.conditional_routes,
     ];
   const labels = [...routes, ...conditional_routes].map(
     (row) => row.method + " " + row.path,

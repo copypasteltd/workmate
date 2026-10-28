@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type { Config } from "./config.js";
 import { canonical, hash, Problem } from "./lib.js";
+import { runtimeToolContent } from "./runtime-tool-content.js";
 import {
   startScopedInferenceGateway,
   type AIRequestAuthority,
@@ -387,14 +388,7 @@ export class CodexRuntimeAdapter {
                 throw new Error("Tool not allowed");
               result = {
                 success: true,
-                contentItems: [
-                  {
-                    type: "inputText",
-                    text: JSON.stringify(
-                      await tool.run(m.params.arguments, m.params.callId),
-                    ),
-                  },
-                ],
+                contentItems: runtimeToolContent(await tool.run(m.params.arguments, m.params.callId)),
               };
             } catch {
               result = {
@@ -532,7 +526,7 @@ export class CodexRuntimeAdapter {
           sandbox: "read-only",
           environments: [],
           developerInstructions:
-            "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. Deliver editable sources and report unresolved requirements.",
+            "You are a CopyPaste enterprise specialist. Use only the registered tools, bound Skills and current project data. No direct shell, arbitrary network, secrets, local virtualization, unsupported claims or fabricated artifacts. A registered computer_command may operate only its independently customer-confirmed dedicated cloud lease and original private task binding. It cannot purchase, renew or rebind resources. Verify actual command receipts before claiming effects. Deliver editable sources and report unresolved requirements.",
         };
         const result = await send(
           ctx.thread ? "thread/resume" : "thread/start",

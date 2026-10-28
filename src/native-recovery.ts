@@ -10,6 +10,8 @@ import { Database } from "./db.js";
 import { Storage } from "./storage.js";
 import { ErasureService } from "./erasure.js";
 import { pruneNativeBackups } from "./native-recovery-retention.js";
+import { fenceRestoredDedicatedCloud } from "./dedicated-cloud-recovery.js";
+import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
 import { hash } from "./lib.js";
 import {
   canonicalDirectory, checkedFile, durableWrite, encryptEntry, decryptEntry, recoveryKey,
@@ -227,12 +229,19 @@ export async function restoreNativeBackup(o: RecoveryOptions, input: {
     try {
       await targetOwner.query("UPDATE recovery_environment SET state='quarantined',restore_id=$1,quarantined_at=clock_timestamp() WHERE singleton", [restoreId]);
       await targetOwner.query("BEGIN");
+      await fenceRestoredDedicatedCloud(targetOwner, restoreId);
       for (const item of ledger.targets) {
         if (!recoveryTargets.includes(item.type)) throw new Error("RECOVERY_ERASURE_TARGET_INVALID");
         const column = item.type === "assets" ? "state" : "content_state";
         const counters = (await targetOwner.query("SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name=$1 AND column_name IN('version','moderation_version','revision') AND data_type IN('integer','bigint')", [item.type])).rows;
         const bump = counters.map(r => `,"${r.column_name}"="${r.column_name}"+1`).join("");
-        await targetOwner.query(`UPDATE "${item.type}" SET "${column}"='deleted'${bump} WHERE id=$1 AND tenant_id=$2 AND "${column}"<>'deleted'`, [item.id, item.tenant_id]);
+        if (item.type === "cloud_runtime_quotes") {
+          const owned = (await targetOwner.query("SELECT 1 FROM cloud_runtime_quotes WHERE id=$1 AND tenant_id=$2", [item.id,item.tenant_id])).rowCount;
+          if (owned) await eraseDedicatedQuote(targetOwner,item.id);
+        } else if (item.type === "cloud_runtime_sessions") {
+          const owned = (await targetOwner.query("SELECT 1 FROM cloud_runtime_sessions WHERE id=$1 AND tenant_id=$2", [item.id,item.tenant_id])).rowCount;
+          if (owned) await eraseDedicatedSession(targetOwner,item.id);
+        } else await targetOwner.query(`UPDATE "${item.type}" SET "${column}"='deleted'${bump} WHERE id=$1 AND tenant_id=$2 AND "${column}"<>'deleted'`, [item.id, item.tenant_id]);
       }
       for (const key of ledger.objects) await targetOwner.query("INSERT INTO object_erasure_tombstones(storage_key) VALUES($1) ON CONFLICT DO NOTHING", [key]);
       await targetOwner.query("COMMIT");

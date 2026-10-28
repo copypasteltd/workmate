@@ -9,7 +9,7 @@ import { canonical, hash, seal, unseal } from "./lib.js";
 
 const uuid = z.string().uuid(), sha = z.string().regex(/^[a-f0-9]{64}$/);
 const clock = z.string().datetime({ offset: true });
-export const recoveryTargets = ["assets", "tasks", "agents", "conversations", "memories", "brand_profiles", "analytics_datasets", "creative_mappings", "creative_feedback_reports", "geo_experiments", "geo_runs", "geo_samples", "workflows", "workflow_runs", "workflow_schedules", "creative_projects", "workspace_nodes", "agent_groups", "agent_group_runs"] as const;
+export const recoveryTargets = ["assets", "tasks", "agents", "conversations", "memories", "brand_profiles", "analytics_datasets", "creative_mappings", "creative_feedback_reports", "geo_experiments", "geo_runs", "geo_samples", "workflows", "workflow_runs", "workflow_schedules", "creative_projects", "workspace_nodes", "agent_groups", "agent_group_runs", "cloud_runtime_quotes", "cloud_runtime_sessions"] as const;
 export const ledgerSchema = z.object({
   protocol: z.literal("copypaste-erasure-ledger/1"), id: uuid, source_id: uuid, observed_at: clock,
   targets: z.array(z.object({ type: z.enum(recoveryTargets), id: uuid, tenant_id: uuid }).strict()).max(1_000_000),
