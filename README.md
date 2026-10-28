@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · platform
 
+<!-- extension-folder-stage119 -->
+Extension 0.5.1 已加入浏览器资料夹选择与核对上传。
+
+资料夹文件及索引沿用私人会话上传端点与来源权限。客户明确发送后，真实云端 Codex 读取上传索引及子目录文字文件，固定输入版本、建立单次预算预留并记录费用。本轮无服务端 schema／迁移变更，文件工具原有格式和大小规则继续生效。
+
+验证：59 backend + 59 Extension checks + 7 adversarial proof-reader cases; 13 builds; 6 actual UI flows; 4 layouts; 7 PNGs and 2 GIF/MP4 pairs.
+
+Chrome 原生右侧栏、OTP／PKCE、原生 PostgreSQL 和固定版本云端 Codex 为真实运行；客户／文件／模型决策为假数据。原始完整产品及真实供应商验收继续保留；下方为 Extension 界面，不代表其他端新增页面。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/119-extension-selected-folders.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-folder-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Pick[Browser folder picker] --> Review[Review selected relative paths]
+  Review --> Confirm[Customer confirms upload]
+  Confirm --> Private[Private files and JSON index]
+  Private --> Retry[Exact unfinished upload retry]
+  Retry --> Private
+  Private --> Send[Customer sends message]
+  Send --> Codex[Company cloud Codex]
+```
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/extension-folder-workmate-folder-02-review-en.png)
+
+[Actual interaction video / 实际交互录屏](media/extension-folder-workmate-folder-02-folder-retry.mp4)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/extension-folder-workmate-folder-02-folder-retry.gif)
+
+
 <!-- native-pairing-stage118 -->
 Desktop 0.7.1 已加入持久本机配对、精确重试及不可逆意图退休。
 
