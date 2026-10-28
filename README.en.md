@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- extension-folder-stage119 -->
+Selected browser folders are available in Extension 0.5.1.
+
+Desktop stays at 0.7.1 and runs Codex on the customer computer with explicit revocable permissions, frameless controls and hidden layout rails. This browser-folder increment changes Extension code only; it does not claim a new Desktop screen, package or installation qualification.
+
+Validation: 59 backend + 59 Extension checks + 7 adversarial proof-reader cases; 13 builds; 6 actual UI flows; 4 layouts; 7 PNGs and 2 GIF/MP4 pairs.
+
+Actual native Chrome right Side Panel, OTP/PKCE, native PostgreSQL and pinned cloud Codex; synthetic customer/files/model decisions. Original full-product and live-provider acceptance remain unproven. Screens below show the Extension; they do not claim new pages on other clients.
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/119-extension-selected-folders.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/extension-folder-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Pick[Browser folder picker] --> Review[Review selected relative paths]
+  Review --> Confirm[Customer confirms upload]
+  Confirm --> Private[Private files and JSON index]
+  Private --> Retry[Exact unfinished upload retry]
+  Retry --> Private
+  Private --> Send[Customer sends message]
+  Send --> Codex[Company cloud Codex]
+```
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/extension-folder-workmate-folder-02-review-en.png)
+
+[Actual interaction video / 实际交互录屏](media/extension-folder-workmate-folder-02-folder-retry.mp4)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/extension-folder-workmate-folder-02-folder-retry.gif)
+
+
 <!-- native-pairing-stage118 -->
 Desktop 0.7.1 adds durable native device pairing, exact retry and permanent intent retirement.
 
