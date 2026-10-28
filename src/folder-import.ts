@@ -1,5 +1,8 @@
 /** Only browser-selected files enter this plan; discovery never reads file bytes. */
 export const folderLimits = Object.freeze({ candidates: 1000, attachments: 20, fileBytes: 5 * 1024 * 1024 });
+export function folderBytes(bytes: number) {
+  return bytes < 1024 ? `${bytes} B` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KiB` : `${(bytes / (1024 * 1024)).toFixed(1)} MiB`;
+}
 export interface FolderFile {
   readonly name: string;
   readonly size: number;

@@ -145,3 +145,40 @@ test("manifest refuses missing, duplicated and substituted immutable upload rece
   assert.throws(() => folderManifest(plan, [valid[0], { ...valid[1], versionId: valid[0].versionId }]));
   assert.throws(() => folderManifest(plan, [valid[0], { ...valid[1], uploadName: "another-file.txt" }]));
 });
+
+test("a pending ordinary attachment blocks folder confirmation until its actual upload completes", async () => {
+  const x = fixture(); await x.chat.open(x.scope); await x.chat.attach(file("Root/first.txt"));
+  const original = x.io.upload, gate = deferred<void>(), started = deferred<void>();
+  x.io.upload = async (...args) => { started.resolve(); await gate.promise; return original(...args); };
+  const pending = x.chat.attach(file("Root/second.txt")); await started.promise;
+  x.transfer.choose([file("Root/folder.txt")]); assert.equal(x.transfer.reviewIssue, "uploading");
+  await assert.rejects(x.transfer.start(), /current upload/); assert.match(x.transfer.error, /current upload/);
+  assert.equal(x.transfer.phase, "review"); assert.equal(x.chat.importing, false);
+  gate.resolve(); await pending; assert.equal(x.transfer.reviewIssue, null);
+  await x.transfer.start(); assert.equal(x.transfer.phase, "ready"); assert.equal(x.chat.attachments.length, 4);
+});
+test("failed ordinary attachments and source read denial expose a specific recovery state before any folder bytes are read", async () => {
+  const x = fixture(); await x.chat.open(x.scope); x.io.upload = async () => { throw new Error("ordinary upload failed"); };
+  await x.chat.attach(file("Root/failure.txt")); let reads = 0;
+  const selected = file("Root/folder.txt"); selected.arrayBuffer = async () => { reads++; return new ArrayBuffer(1); };
+  x.transfer.choose([selected]); assert.equal(x.transfer.reviewIssue, "failed_attachment");
+  await assert.rejects(x.transfer.start()); assert.equal(reads, 0); assert.equal(x.chat.importing, false);
+  x.chat.unavailable = true; assert.equal(x.transfer.reviewIssue, "conversation");
+  await assert.rejects(x.transfer.start()); assert.equal(reads, 0);
+  x.transfer.cancel(); assert.equal(x.chat.attachments.length, 1, "cancel does not remove unrelated failed files");
+});
+test("an empty folder selection exposes its error in the review state and clears it when the customer changes selection", async () => {
+  const x = fixture(); await x.chat.open(x.scope); x.transfer.choose([file("Root/a.txt")]);
+  const entry = x.transfer.current!.entries[0]; x.transfer.select(entry.id, false);
+  assert.equal(x.transfer.reviewIssue, "empty"); await assert.rejects(x.transfer.start(), /at least one/);
+  assert.match(x.transfer.error, /at least one/); assert.equal(x.uploads.length, 0);
+  x.transfer.select(entry.id, true); assert.equal(x.transfer.error, ""); assert.equal(x.transfer.reviewIssue, null);
+});
+test("late attachment changes recalculate available space and never read over-capacity folder files", async () => {
+  const x = fixture(); await x.chat.open(x.scope); await x.chat.attach(file("Root/existing.txt")); let reads = 0;
+  const files = Array.from({ length: 18 }, (_, i) => { const f = file(`Root/${i}.txt`); f.arrayBuffer = async () => { reads++; return new ArrayBuffer(1); }; return f; });
+  x.transfer.choose(files); await x.chat.attach(file("Root/late.txt")); assert.equal(x.transfer.reviewIssue, "capacity");
+  await assert.rejects(x.transfer.start(), /attachment limit/); assert.match(x.transfer.error, /attachment limit/);
+  assert.equal(reads, 0); const entry = x.transfer.current!.entries[0]; x.transfer.select(entry.id, false);
+  assert.equal(x.transfer.reviewIssue, null); assert.equal(x.transfer.error, ""); assert.equal(x.chat.importing, false);
+});

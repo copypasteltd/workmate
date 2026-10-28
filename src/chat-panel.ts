@@ -1,6 +1,7 @@
 import { ConversationState, unfinished, type ChatIO, type ChatScope } from "./conversation.js";
 import { exactHKD } from "./financial-notice.js";
 import { FolderTransfer } from "./folder-transfer.js";
+import { folderBytes } from "./folder-import.js";
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 /** A local side-panel view over authenticated cloud conversations. */
@@ -194,7 +195,8 @@ export class ChatPanel {
     const review = folder.phase === "review", ready = folder.phase === "ready", failed = folder.phase === "failed";
     el("folder-title").textContent = ready ? t("已備妥，等待你的訊息", "Ready for your message") : t("核對所選資料夾", "Review selected folder");
     el("folder-root").textContent = plan.root;
-    el("folder-summary").textContent = `${selected.length} / ${plan.capacity} ` + t("個檔案", "files") + ` · ${(selected.reduce((n, e) => n + e.file.size, 0) / 1024).toFixed(1)} KB`;
+    const capacity = review ? Math.max(0, Math.min(plan.capacity, 19 - this.state.attachments.length)) : plan.capacity;
+    el("folder-summary").textContent = `${selected.length} / ${capacity} ` + t("個檔案", "files") + ` · ${folderBytes(selected.reduce((n, e) => n + e.file.size, 0))}`;
     el("folder-note").textContent = review
       ? t("只上傳勾選檔案及一份相對路徑索引。隱藏與建置檔案預設不勾選，每檔最多 5 MiB。確認前不讀取內容或上傳。", "Only checked files and a relative-path index will upload. Hidden and build files start unchecked; each file can be up to 5 MiB. Contents are not read or uploaded before confirmation.")
       : ready ? t("檔案及目錄索引已附加至私人會話。返回後輸入訊息並按傳送，雲端助手才會開始。", "Files and their folder index are attached to your private chat. Return, write a message and click Send to start the cloud assistant.")
@@ -209,19 +211,31 @@ export class ChatPanel {
         checkbox.addEventListener("change", () => { try { folder.select(entry.id, checkbox.checked); } catch (e) { checkbox.checked = entry.selected; this.report(e); } });
         const text = document.createElement("span"), path = document.createElement("strong"), meta = document.createElement("small");
         path.textContent = entry.relativePath;
-        meta.textContent = (entry.file.size / 1024).toFixed(1) + " KB" + (entry.unavailable === "empty" ? t(" · 空檔案", " · empty file") : entry.unavailable ? t(" · 超過 5 MiB", " · exceeds 5 MiB") : entry.defaultExcluded ? t(" · 預設不選取", " · starts unchecked") : "");
+        meta.textContent = folderBytes(entry.file.size) + (entry.unavailable === "empty" ? t(" · 空檔案", " · empty file") : entry.unavailable ? t(" · 超過 5 MiB", " · exceeds 5 MiB") : entry.defaultExcluded ? t(" · 預設不選取", " · starts unchecked") : "");
         text.append(path, meta); row.append(checkbox, text); list.append(row);
       }
     }
     for (const entry of plan.entries) {
-      const input = list.querySelector<HTMLInputElement>(`input[data-entry="${entry.id}"]`); if (input) input.checked = entry.selected;
+      const input = list.querySelector<HTMLInputElement>(`input[data-entry="${entry.id}"]`);
+      if (input) { input.checked = entry.selected; input.disabled = !review || !!entry.unavailable || (!entry.selected && selected.length >= capacity); }
     }
+    const issue = folder.reviewIssue;
+    const issues = {
+      conversation: t("請取消此選取，返回會話重新整理後再試。", "Cancel this selection and refresh the chat before trying again."),
+      busy: t("請等待目前訊息確認完成。", "Wait for the current message to finish confirming."),
+      uploading: t("另一個附件仍在上傳；完成後即可確認這個資料夾。", "Another attachment is uploading. You can confirm this folder when it finishes."),
+      failed_attachment: t("請先取消此選取，返回會話移除失敗附件，再選取資料夾。", "Cancel this selection, remove failed attachments in the chat, then choose the folder again."),
+      capacity: t("現有附件已減少可用位置，請取消部分勾選後再上傳。", "Existing attachments reduced the available space. Uncheck some files before uploading."),
+      empty: t("請至少勾選一個檔案。", "Check at least one file."),
+    };
     const status = el("folder-status");
-    status.textContent = review ? t("目錄結構將隨檔案一同保留。", "Folder structure travels with your selected files.") : failed ? folder.error : ready ? t("已上傳，尚未傳送", "Uploaded, not sent") : `${folder.completed} / ${selected.length} ` + t("個檔案已完成，正在上傳…", "files complete. Uploading…");
-    status.classList.toggle("failed", failed);
+    status.textContent = review ? (issue ? issues[issue] : folder.error || (selected.length >= capacity
+      ? t("已達可選數量；取消一項勾選即可替換檔案。", "Selection is full. Uncheck a file to choose a different one.")
+      : t("目錄結構將隨檔案一同保留。", "Folder structure travels with your selected files."))) : failed ? folder.error : ready ? t("已上傳，尚未傳送", "Uploaded, not sent") : `${folder.completed} / ${selected.length} ` + t("個檔案已完成，正在上傳…", "files complete. Uploading…");
+    status.classList.toggle("failed", failed || (review && (!!folder.error || issue === "failed_attachment" || issue === "conversation" || issue === "capacity")));
     const progress = el<HTMLProgressElement>("folder-progress"); progress.hidden = review; progress.max = selected.length + 1; progress.value = ready ? selected.length + 1 : folder.completed;
     const confirm = el<HTMLButtonElement>("folder-confirm"); confirm.hidden = ready;
-    confirm.disabled = (!review && !failed) || !selected.length;
+    confirm.disabled = (!review && !failed) || !selected.length || (review && !!issue);
     confirm.textContent = failed ? t("重試未完成項目", "Retry unfinished files") : t("確認並上傳", "Confirm & upload");
     el("folder-cancel").textContent = ready ? t("返回會話", "Back to chat") : t("取消", "Cancel");
     if (!dialog.open) dialog.showModal();

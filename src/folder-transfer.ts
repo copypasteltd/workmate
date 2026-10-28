@@ -41,15 +41,33 @@ export class FolderTransfer {
   select(id: string, selected: boolean) {
     const plan = this.current;
     if (!plan || this.phase !== "review") return;
-    selectFolderEntry(plan, id, selected); this.changed();
+    try { selectFolderEntry(plan, id, selected); this.error = ""; }
+    catch (error) { this.error = error instanceof Error ? error.message : String(error); this.changed(); throw error; }
+    this.changed();
+  }
+  get reviewIssue(): "conversation" | "busy" | "uploading" | "failed_attachment" | "capacity" | "empty" | null {
+    if (!this.current || this.phase !== "review") return null;
+    if (!this.chat.scope || this.chat.unavailable) return "conversation";
+    if (this.chat.loading || this.chat.sending || this.chat.pending || this.chat.preparing) return "busy";
+    if (this.chat.attachments.some(a => a.state === "failed")) return "failed_attachment";
+    if (this.chat.attachments.some(a => a.state !== "ready")) return "uploading";
+    const count = this.plan!.entries.filter(e => e.selected).length;
+    if (!count) return "empty";
+    return count + this.chat.attachments.length + 1 > 20 ? "capacity" : null;
   }
   private active(epoch: number, token: string) { return epoch === this.epoch && this.chat.importActive(token); }
   async start() {
     const plan = this.current;
     if (!plan || this.running || !["review", "failed"].includes(this.phase)) return;
     const selected = plan.entries.filter(e => e.selected);
-    if (!selected.length) throw new Error("Select at least one file / 請至少選取一個檔案");
-    const token = this.token ?? this.chat.beginImport(selected.length + 1), epoch = this.epoch;
+    let token: string;
+    try {
+      if (!selected.length) throw new Error("Select at least one file / 請至少選取一個檔案");
+      token = this.token ?? this.chat.beginImport(selected.length + 1);
+    } catch (error) {
+      this.error = error instanceof Error ? error.message : String(error); this.changed(); throw error;
+    }
+    const epoch = this.epoch;
     this.token = token; this.running = true; this.phase = "uploading"; this.error = ""; this.changed();
     try {
       const upload = async (key: string, make: () => Promise<File>) => {
