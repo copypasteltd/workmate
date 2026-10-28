@@ -1,3 +1,4 @@
+import { CloudComputers } from "./cloud-computers";
 import { NewWorkTask as NewTask } from "./new-work-task";
 import {
   loadWorkDraft,
@@ -679,6 +680,7 @@ const navigation = [
   ["projects", FolderOpen, "專案", "Projects"],
   ["assets", Image, "素材與交付", "Assets & deliverables"],
   ["files", FolderOpen, "雲端檔案", "Cloud files"],
+  ["computers", Monitor, "雲端電腦", "Cloud computers"],
   ["creative", Layers, "設計畫布", "Design canvas"],
   ["effects", Sparkles, "特效工作室", "Motion studio"],
   ["analytics", ChartNoAxesCombined, "行銷分析", "Marketing insights"],
@@ -780,7 +782,7 @@ function Shell() {
         <nav>
           {[...navigation]
             .filter(([path]) => navConfig(path)?.enabled !== false)
-            .filter(([path]) => path !== "teams" || !window.copyPasteBridge)
+            .filter(([path]) => !["teams", "computers"].includes(path) || !window.copyPasteBridge)
             .sort(
               (a, b) =>
                 (navConfig(a[0])?.order ?? 50) - (navConfig(b[0])?.order ?? 50),
@@ -884,6 +886,7 @@ function Shell() {
               <Route path="tasks/:id" element={<TaskDetail />} />
               <Route path="assets" element={<Assets />} />
               <Route path="files" element={<CloudFiles />} />
+              <Route path="computers" element={<CloudComputers />} />
               <Route path="creative" element={<Creative />} />
               <Route path="effects" element={<MediaEffects />} />
               <Route path="solutions" element={<Solutions />} />

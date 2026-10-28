@@ -44,6 +44,7 @@ export const roleEnglish: Record<string, string> = {
   "video-motion": "Video & motion designer",
   "marketing-analyst": "Marketing analyst",
   "workflow-consultant": "Workflow consultant",
+  "computer-operator": "Dedicated computer operator",
 };
 const examplesEnglish: Record<string, string> = {
   assistant:
@@ -192,7 +193,8 @@ function TemplatePage({
   search: string;
 }) {
   const w = useWorkspace(),
-    { t, locale } = useI18n();
+    { t, locale } = useI18n(),
+    nav = useNavigate();
   const [page, setPage] = useState<{
       items: Template[];
       next_cursor: string | null;
@@ -242,6 +244,7 @@ function TemplatePage({
       "workflow-consultant",
     ],
     items = [...(page?.items ?? [])]
+      .filter((row) => !window.copyPasteBridge || row.role_key !== "computer-operator")
       .filter((row) => row.kind === "role_preset" || !limit)
       .sort((a, b) =>
         limit
@@ -286,7 +289,7 @@ function TemplatePage({
                 className={"role-card role-tone-" + (i % 4)}
                 key={row.id}
                 data-template-role={row.role_key}
-                onClick={() => setSelected(row)}
+                onClick={() => row.role_key === "computer-operator" ? nav("/app/computers") : setSelected(row)}
               >
                 <div className="role-card-top">
                   <span className="role-icon">

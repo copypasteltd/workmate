@@ -33,7 +33,7 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
     store(updateWorkDraft(draft, changes)); setError(null);
   }
   async function submit() {
-    if (lock.current || !draft || draft.accepted || draft.removed || !online) return;
+    if (lock.current || !draft || draft.accepted || draft.removed || !online || draft.values.role === "computer-operator") return;
     lock.current = true; setBusy(true); setError(null);
     let submitted = draft;
     const origin = { ...scope };
@@ -101,10 +101,18 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
           <Field label={t("專案", "Project")}><input value={w.projects.find(p => p.id === w.project)?.name ?? ""} readOnly/></Field>
           <Field label={t("專業角色", "Specialist")}><select name="role" value={v.role} onChange={e => change({ role: e.target.value, required_input: "" })}>
             <option value="assistant">{t("預設助手 — 答覆、計畫與文字交付", "Default assistant — answers, plans and text deliverables")}</option>
-            {data?.items.map((row: any) => <option key={row.role_key} value={row.role_key}>{locale === "en" ? roleEnglish[row.role_key] ?? row.display_name : row.display_name}</option>)}
-            {!data?.items.some((row: any) => row.role_key === v.role) && v.role !== "assistant" && <option value={v.role}>{roleEnglish[v.role] ?? v.role}</option>}
+            {data?.items.filter((row: any) => !window.copyPasteBridge || row.role_key !== "computer-operator").map((row: any) => <option key={row.role_key} value={row.role_key}>{locale === "en" ? roleEnglish[row.role_key] ?? row.display_name : row.display_name}</option>)}
+            {window.copyPasteBridge && v.role === "computer-operator" && <option value={v.role}>{roleEnglish[v.role]}</option>}
+            {!(window.copyPasteBridge && v.role === "computer-operator") && !data?.items.some((row: any) => row.role_key === v.role) && v.role !== "assistant" && <option value={v.role}>{roleEnglish[v.role] ?? v.role}</option>}
           </select></Field>
           <ErrorNotice error={rolesError}/>{loading && !data && <Loading/>}
+          {v.role === "computer-operator" && (window.copyPasteBridge ? <p className="notice" role="status">{t(
+            "這份草稿使用雲端電腦角色，請在 Web 工作台繼續。你也可以另選角色並重新核對工作。",
+            "This draft uses a cloud computer role. Continue it in the web workspace, or choose another role and review the work.")}
+            <button className="button quiet" type="button" onClick={() => change({ role: "assistant", required_input: "" })}>{t("另選助手角色", "Choose assistant role")}</button></p> : <p className="notice" role="status">{t(
+            "先選擇一台已確認費用及操作權限的雲端電腦，再單獨確認 Codex 任務與 AI 預算。",
+            "Choose a cloud computer with confirmed cost and control permissions, then approve the Codex task and its separate AI budget.")}
+            <Link to="/app/computers" onClick={onClose}>{t("選擇雲端電腦", "Choose a cloud computer")}</Link></p>)}
           <ModeField value={v.mode} onChange={mode => change({ mode })}/>
           <Field label={t("工作名稱", "Task name")}><input name="title" value={v.title} onChange={e => change({ title: e.target.value })} maxLength={160} required
             placeholder={t("例如：秋季新品推廣海報", "e.g. Autumn launch campaign")}/></Field>
@@ -121,7 +129,7 @@ export function NewWorkTask({ onClose, role, seed }: { onClose: () => void; role
           <Field label={t("本次工作預算上限（HKD）", "Task budget limit (HKD)")} hint={t("提交時預留，依實際用量結算；等待資料期間保持預留。", "Reserved on submission and settled against measured usage; retained while waiting for inputs.")}>
             <input name="budget" type="number" min="1" max="10000" step="0.01" value={v.budget} onChange={e => change({ budget: e.target.value })} required/></Field>
         </fieldset>
-        <button className="button primary" type="submit" disabled={busy || !online}>{busy ? t("正在核對提交…", "Checking submission…") : pending ? t("重試原提交", "Retry original submission") : t("開始工作", "Start task")}<ArrowUpRight size={16}/></button>
+        <button className="button primary" type="submit" disabled={busy || !online || v.role === "computer-operator"}>{busy ? t("正在核對提交…", "Checking submission…") : pending ? t("重試原提交", "Retry original submission") : t("開始工作", "Start task")}<ArrowUpRight size={16}/></button>
         {!pending && <button className="text-button work-draft-reset" type="button" disabled={busy} onClick={() => store(newWorkDraft(scope))}><RotateCcw size={15}/>{t("清除這份草稿", "Clear this draft")}</button>}
       </form>
     </>}
