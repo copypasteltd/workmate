@@ -84,6 +84,32 @@
 .chat-compose-actions { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 7px; }
 .chat-attach { cursor: pointer; display: flex; align-items: center; }
 .chat-attach:focus-within { outline: 2px solid #1f5eff; outline-offset: 2px; }
+.chat-attach:has(input:disabled) { opacity: .5; cursor: default; }
+.folder-review { width: calc(100% - 28px); max-width: 520px; max-height: calc(100dvh - 36px); padding: 0; border: 1px solid var(--chat-line); border-radius: 20px; color: var(--chat-ink); background: var(--chat-paper); box-shadow: 0 20px 60px #0003; overflow: hidden; }
+.folder-review[open] { display: flex; flex-direction: column; }
+.folder-review::backdrop { background: #0b1d4670; }
+.folder-heading { padding: 20px 18px 0; border-top: 4px solid #1f5eff; flex: none; }
+.folder-heading>small { font-size: 10px; letter-spacing: .08em; color: #1f5eff; }
+.folder-heading h2 { font-size: 19px; letter-spacing: -.5px; line-height: 1.4; margin: 12px 0; }
+.folder-heading>strong { display: block; font-size: 13px; overflow-wrap: anywhere; }
+.folder-heading>p { font-size: 11px; color: var(--chat-muted); margin: 6px 0 0; }
+.folder-review>#folder-note { flex: none; margin: 12px 18px; font-size: 11px; line-height: 1.7; color: var(--chat-muted); }
+.folder-files { min-height: 48px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; margin: 0 18px; border-block: 1px solid var(--chat-line); }
+.folder-file { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; cursor: pointer; }
+.folder-file+.folder-file { border-top: 1px solid var(--chat-line); }
+.folder-file>input { width: 16px; height: 16px; flex: none; margin: 2px 0 0; accent-color: #1f5eff; }
+.folder-file>span { min-width: 0; overflow-wrap: anywhere; }
+.folder-file strong { display: block; font-size: 11px; line-height: 1.6; font-weight: 600; }
+.folder-file small { display: block; font-size: 10px; color: var(--chat-muted); margin-top: 3px; }
+.folder-footer { flex: none; padding: 12px 18px 18px; }
+.folder-footer progress { width: 100%; height: 6px; accent-color: #1f5eff; }
+.folder-footer p { font-size: 11px; line-height: 1.6; margin: 6px 0 12px; overflow-wrap: anywhere; }
+.folder-footer p.failed { color: #bb343b; }
+.folder-footer>div { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+.folder-footer button { min-height: 38px; padding: 8px 12px; border: 1px solid var(--chat-line); border-radius: 18px; background: var(--chat-paper); color: var(--chat-ink); font-size: 11px; white-space: normal; }
+.folder-footer #folder-confirm { color: #fff; background: #1f5eff; border-color: #1f5eff; }
+.folder-review button:focus-visible,.folder-file input:focus-visible { outline: 2px solid #1f5eff; outline-offset: 3px; }
+@media (max-height: 640px) { .folder-heading { padding: 12px 14px 0; }.folder-heading h2 { font-size: 17px; margin: 8px 0; }.folder-review>#folder-note { margin: 8px 14px; }.folder-footer { padding: 8px 14px 12px; } }
 .chat-compose-actions .chat-send { margin-left: auto; background: #1f5eff; color: #fff; border-color: #1f5eff; font-weight: 650; }
 .chat-cloud-note { display: block; color: var(--chat-muted); font-size: 9px; line-height: 1.7; margin-top: 10px; }
 .chat-settings { margin-top: 10px; font-size: 10px; }

@@ -1,10 +1,12 @@
 import { ConversationState, unfinished, type ChatIO, type ChatScope } from "./conversation.js";
 import { exactHKD } from "./financial-notice.js";
+import { FolderTransfer } from "./folder-transfer.js";
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 /** A local side-panel view over authenticated cloud conversations. */
 export class ChatPanel {
   readonly state: ConversationState;
+  readonly folder: FolderTransfer;
   private interval?: ReturnType<typeof setInterval>;
   private followLatest = true;
   private resize?: ResizeObserver;
@@ -14,6 +16,14 @@ export class ChatPanel {
     private capture: () => Promise<{ title: string; url: string; text: string }>, private details: (id: string) => Promise<void>) {
     this.language = language;
     this.state = new ConversationState({ ...io, changed: () => this.draw() });
+    this.folder = new FolderTransfer(this.state, () => this.draw());
+    el("chat-folder").addEventListener("change", () => {
+      const input = el<HTMLInputElement>("chat-folder"), files = [...input.files ?? []]; input.value = "";
+      if (files.length) void this.run(async () => this.folder.choose(files));
+    });
+    el("folder-confirm").addEventListener("click", () => void this.run(() => this.folder.start()));
+    el("folder-cancel").addEventListener("click", () => this.folder.cancel());
+    el("folder-review").addEventListener("cancel", e => { e.preventDefault(); this.folder.cancel(); });
     el("chat-form").addEventListener("submit", e => {
       e.preventDefault(); this.state.draft = el<HTMLTextAreaElement>("chat-input").value;
       void this.run(() => this.state.send(el<HTMLInputElement>("chat-budget").value));
@@ -57,7 +67,7 @@ export class ChatPanel {
     const scope = this.state.scope;
     try { await fn(); } catch (e) { if (scope === this.state.scope) this.report(e); }
   }
-  reset() { this.dispose(); this.state.reset(); }
+  reset() { this.dispose(); this.folder.cancel(); this.state.reset(); }
   dispose() { if (this.interval) clearInterval(this.interval); this.interval = undefined; }
   async open(scope: ChatScope) {
     this.dispose(); this.followLatest = true; await this.state.open(scope);
@@ -115,7 +125,7 @@ export class ChatPanel {
     if (c && !s.agents.some(a => a.id === c.agent_id)) {
       const o = document.createElement("option"); o.value = c.agent_id; o.textContent = t("會話原有角色", "Conversation specialist"); agents.append(o); agents.value = c.agent_id;
     }
-    const locked = s.loading || s.sending || !!s.pending;
+    const locked = s.loading || s.sending || !!s.pending || s.importing;
     history.disabled = locked || s.preparing; agents.disabled = locked || s.preparing || !!s.creation || !!c;
     el<HTMLButtonElement>("chat-new").disabled = locked || s.preparing;
     const input = el<HTMLTextAreaElement>("chat-input");
@@ -123,11 +133,13 @@ export class ChatPanel {
     input.placeholder = t("傳送訊息…", "Message your assistant…");
     input.disabled = locked || s.unavailable;
     el<HTMLInputElement>("chat-file").disabled = locked;
+    el<HTMLInputElement>("chat-folder").disabled = locked || s.preparing || s.attachments.length > 18;
+    el("chat-folder-label").textContent = t("資料夾", "Folder");
     el<HTMLButtonElement>("chat-capture").disabled = locked;
     el<HTMLInputElement>("chat-budget").disabled = locked;
     const send = el<HTMLButtonElement>("chat-send");
     send.textContent = s.pending && !s.sending ? t("重試同一訊息", "Retry same message") : s.sending ? t("傳送中…", "Sending…") : t("傳送 ↑", "Send ↑");
-    send.disabled = s.loading || s.sending || s.unavailable || (!s.pending && (s.busy || s.attachments.some(a => a.state !== "ready")));
+    send.disabled = s.loading || s.sending || s.importing || s.unavailable || (!s.pending && (s.busy || s.attachments.some(a => a.state !== "ready")));
     el("chat-pending").hidden = !s.pending || s.sending;
     el("chat-pending").textContent = t("正在確認這條訊息是否已接收。重試會沿用同一內容與預算。", "Acceptance needs confirmation. Retrying keeps the same message and budget.");
     el("chat-unavailable").hidden = !s.unavailable;
@@ -172,5 +184,46 @@ export class ChatPanel {
     const task = s.progress.task;
     const charged = BigInt(task?.charged_micros ?? 0), accrued = BigInt(task?.accrued_micros ?? 0);
     el("chat-cost").textContent = task ? t("已確認用量 ", "Recorded cost ") + exactHKD(String(charged > accrued ? charged : accrued)) + (task.status === "reconciling" ? t(" · 核對中", " · reconciling") : "") : t("每條訊息上限 HKD ", "Per-message limit HKD ") + el<HTMLInputElement>("chat-budget").value;
+    this.drawFolder();
+  }
+  private drawFolder() {
+    if (!this.folder) return;
+    const folder = this.folder, plan = folder.current, dialog = el<HTMLDialogElement>("folder-review");
+    if (!plan) { if (dialog.open) dialog.close(); return; }
+    const t = (zh: string, en: string) => this.tr(zh, en), selected = plan.entries.filter(e => e.selected);
+    const review = folder.phase === "review", ready = folder.phase === "ready", failed = folder.phase === "failed";
+    el("folder-title").textContent = ready ? t("已備妥，等待你的訊息", "Ready for your message") : t("核對所選資料夾", "Review selected folder");
+    el("folder-root").textContent = plan.root;
+    el("folder-summary").textContent = `${selected.length} / ${plan.capacity} ` + t("個檔案", "files") + ` · ${(selected.reduce((n, e) => n + e.file.size, 0) / 1024).toFixed(1)} KB`;
+    el("folder-note").textContent = review
+      ? t("只上傳勾選檔案及一份相對路徑索引。隱藏與建置檔案預設不勾選，每檔最多 5 MiB。確認前不讀取內容或上傳。", "Only checked files and a relative-path index will upload. Hidden and build files start unchecked; each file can be up to 5 MiB. Contents are not read or uploaded before confirmation.")
+      : ready ? t("檔案及目錄索引已附加至私人會話。返回後輸入訊息並按傳送，雲端助手才會開始。", "Files and their folder index are attached to your private chat. Return, write a message and click Send to start the cloud assistant.")
+      : t("已上傳檔案保留在目前私人會話。重試會沿用相同上傳回執；取消會移除這批待傳送附件。", "Uploaded files stay private to this chat. Retry uses the same upload receipts; cancel removes this batch of unsent attachments.");
+    const list = el("folder-files"), signature = JSON.stringify([plan.id, this.language(), review]);
+    if (list.dataset.signature !== signature) {
+      list.dataset.signature = signature; list.replaceChildren();
+      for (const entry of plan.entries) {
+        const row = document.createElement("label"); row.className = "folder-file";
+        const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.dataset.entry = entry.id;
+        checkbox.checked = entry.selected; checkbox.disabled = !review || !!entry.unavailable;
+        checkbox.addEventListener("change", () => { try { folder.select(entry.id, checkbox.checked); } catch (e) { checkbox.checked = entry.selected; this.report(e); } });
+        const text = document.createElement("span"), path = document.createElement("strong"), meta = document.createElement("small");
+        path.textContent = entry.relativePath;
+        meta.textContent = (entry.file.size / 1024).toFixed(1) + " KB" + (entry.unavailable === "empty" ? t(" · 空檔案", " · empty file") : entry.unavailable ? t(" · 超過 5 MiB", " · exceeds 5 MiB") : entry.defaultExcluded ? t(" · 預設不選取", " · starts unchecked") : "");
+        text.append(path, meta); row.append(checkbox, text); list.append(row);
+      }
+    }
+    for (const entry of plan.entries) {
+      const input = list.querySelector<HTMLInputElement>(`input[data-entry="${entry.id}"]`); if (input) input.checked = entry.selected;
+    }
+    const status = el("folder-status");
+    status.textContent = review ? t("目錄結構將隨檔案一同保留。", "Folder structure travels with your selected files.") : failed ? folder.error : ready ? t("已上傳，尚未傳送", "Uploaded, not sent") : `${folder.completed} / ${selected.length} ` + t("個檔案已完成，正在上傳…", "files complete. Uploading…");
+    status.classList.toggle("failed", failed);
+    const progress = el<HTMLProgressElement>("folder-progress"); progress.hidden = review; progress.max = selected.length + 1; progress.value = ready ? selected.length + 1 : folder.completed;
+    const confirm = el<HTMLButtonElement>("folder-confirm"); confirm.hidden = ready;
+    confirm.disabled = (!review && !failed) || !selected.length;
+    confirm.textContent = failed ? t("重試未完成項目", "Retry unfinished files") : t("確認並上傳", "Confirm & upload");
+    el("folder-cancel").textContent = ready ? t("返回會話", "Back to chat") : t("取消", "Cancel");
+    if (!dialog.open) dialog.showModal();
   }
 }

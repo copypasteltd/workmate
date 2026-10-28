@@ -3,6 +3,7 @@ export interface ChatScope { actor: string; tenant: string; project: string }
 export interface Attachment {
   id: string; name: string; type: string; size: number;
   state: "uploading" | "ready" | "failed"; versionId?: string; error?: string;
+  assetId?: string; sha256?: string; importId?: string;
 }
 export interface ChatIO {
   request(scope: ChatScope, path: string, method?: string, body?: unknown, key?: string): Promise<any>;
@@ -43,6 +44,7 @@ export class ConversationState {
   pending?: Pending;
   creation?: ConversationCreation;
   private creating?: Promise<any>;
+  private fileImport?: { token: string; generation: number; scope: ChatScope; count: number };
   private generation = 0;
   private poll?: Promise<void>;
   private activeTask: any = null;
@@ -65,7 +67,7 @@ export class ConversationState {
     this.conversation = null; this.attachments = []; this.draft = ""; this.agentId = "";
     this.projectConfiguration = null; this.projectConfigurationTaskId = "";
     this.loading = false; this.sending = false; this.unavailable = false; this.pending = undefined;
-    this.creation = undefined; this.creating = undefined;
+    this.creation = undefined; this.creating = undefined; this.fileImport = undefined;
     this.activeTask = null; this.events = []; this.cursor = 0; this.poll = undefined;
     this.notify();
   }
@@ -116,7 +118,33 @@ export class ConversationState {
     return c && uuid.test(c.key) && typeof c.name === "string" && c.name.length > 0 && c.name.length <= 160
       && typeof c.agentId === "string" && (c.agentId === "" || uuid.test(c.agentId));
   }
-  get preparing() { return !!this.creating; }
+  get preparing() { return !!this.creating || this.importing; }
+  get importing() { return !!this.fileImport; }
+  beginImport(count: number) {
+    if (!this.scope || this.loading || this.sending || this.pending || this.unavailable || this.preparing
+      || this.attachments.some(a => a.state !== "ready")) throw new Error("Finish the current upload or message first / 請先完成目前上傳或訊息");
+    if (!Number.isInteger(count) || count < 2 || count + this.attachments.length > 20)
+      throw new Error("The folder and its index exceed the attachment limit / 資料夾及索引超過附件上限");
+    const token = crypto.randomUUID();
+    this.fileImport = { token, count, generation: this.generation, scope: this.scope };
+    this.notify(); return token;
+  }
+  importActive(token: string) {
+    const i = this.fileImport;
+    return !!i && i.token === token && i.generation === this.generation && i.scope === this.scope;
+  }
+  completeImport(token: string) {
+    if (!this.importActive(token)) return false;
+    const group = this.attachments.filter(a => a.importId === token);
+    if (group.length !== this.fileImport!.count || group.some(a => a.state !== "ready"))
+      throw new Error("Finish all folder files and the index first / 請先完成資料夾檔案及索引");
+    this.fileImport = undefined; this.notify(); return true;
+  }
+  cancelImport(token: string) {
+    if (!this.importActive(token)) return;
+    this.fileImport = undefined;
+    this.attachments = this.attachments.filter(a => a.importId !== token); this.notify();
+  }
   private ensureConversation(s: ChatScope, g: number, proposed?: ConversationCreation): Promise<any> {
     if (!this.current(g)) return Promise.resolve(null);
     if (this.conversation) return Promise.resolve(this.conversation);
@@ -147,7 +175,7 @@ export class ConversationState {
   }
   async select(id: string) {
     if (id && !uuid.test(id)) throw new Error("Invalid conversation identity");
-    if (!this.scope || this.sending || this.pending) throw new Error("Resolve the pending message first / 請先確認待發送訊息");
+    if (!this.scope || this.sending || this.pending || this.importing) throw new Error("Resolve the pending message or folder first / 請先確認待發送訊息或資料夾");
     const s = this.scope, g = ++this.generation;
     this.loading = true; this.unavailable = false; this.poll = undefined; this.attachments = []; this.draft = ""; this.activeTask = null; this.events = []; this.cursor = 0;
     this.conversation = null; this.projectConfiguration = null; this.projectConfigurationTaskId = ""; this.notify();
@@ -160,32 +188,52 @@ export class ConversationState {
     } finally { if (this.current(g)) { this.loading = false; this.notify(); } }
   }
   removeAttachment(id: string) {
-    if (this.sending || this.pending) return;
+    if (this.sending || this.pending || this.importing) return;
     this.attachments = this.attachments.filter(a => a.id !== id); this.notify();
   }
-  async attach(file: File) {
+  async attach(file: File, importToken?: string, expectedDigest?: string) {
     if (!this.scope || this.sending || this.pending || this.loading) throw new Error("Wait for the current message / 請等待目前訊息");
+    if (importToken ? !this.importActive(importToken) : this.importing) throw new Error("Finish or cancel the selected folder first / 請先完成或取消所選資料夾");
     if (this.attachments.length >= 20) throw new Error("Up to 20 attachments / 最多 20 個附件");
+    if (importToken && this.attachments.filter(a => a.importId === importToken).length >= this.fileImport!.count)
+      throw new Error("The folder selection is already attached / 資料夾選取內容已附加");
     if (file.size > 5 * 1024 * 1024 || !file.size) throw new Error("Choose a non-empty file up to 5 MiB / 請選擇不超過 5 MiB 的非空檔案");
-    const s = this.scope, g = this.generation;
-    const a: Attachment = { id: crypto.randomUUID(), name: file.name, type: file.type || "application/octet-stream", size: file.size, state: "uploading" };
+    const a: Attachment = { id: crypto.randomUUID(), name: file.name, type: file.type || "application/octet-stream", size: file.size, state: "uploading", ...(importToken ? { importId: importToken } : {}) };
     this.attachments.push(a); this.notify();
+    return this.uploadAttachment(a, file, expectedDigest);
+  }
+  async retryImportAttachment(id: string, file: File, token: string, expectedDigest?: string) {
+    if (!this.importActive(token)) return;
+    const a = this.attachments.find(a => a.id === id && a.importId === token);
+    if (!a || a.state !== "failed" || a.name !== file.name || a.size !== file.size || a.type !== (file.type || "application/octet-stream"))
+      throw new Error("The retry does not match the selected file / 重試內容與所選檔案不符");
+    a.state = "uploading"; a.error = undefined; this.notify();
+    return this.uploadAttachment(a, file, expectedDigest);
+  }
+  private async uploadAttachment(a: Attachment, file: File, expectedDigest?: string) {
+    const s = this.scope!, g = this.generation;
     try {
       const c = await this.ensureConversation(s, g);
       if (!c || !this.current(g) || !this.attachments.includes(a)) return;
       const asset = await this.io.upload(s, file, c.id);
       if (!this.current(g) || !this.attachments.includes(a)) return;
       if (!uuid.test(asset?.version?.id)) throw new Error("Upload did not return an immutable file version / 上傳未傳回檔案版本");
+      if (a.importId && (!uuid.test(asset?.id) || !/^[a-f0-9]{64}$/.test(asset?.version?.sha256)
+        || Number(asset?.version?.bytes) !== file.size || (expectedDigest !== undefined && asset.version.sha256 !== expectedDigest)))
+        throw new Error("The folder file receipt could not be verified / 未能確認資料夾檔案回執");
+      a.assetId = asset.id; a.sha256 = asset.version.sha256;
       a.versionId = asset.version.id; a.state = "ready";
     } catch (e) {
       if (!this.current(g) || !this.attachments.includes(a)) return;
       a.state = "failed"; a.error = e instanceof Error ? e.message : String(e);
     } finally { if (this.current(g)) this.notify(); }
+    return a;
   }
   get busy() { return !!this.conversation?.tasks?.some((t: any) => unfinished.has(t.status)); }
   get progress() { return { task: this.activeTask, events: this.events }; }
   async send(budget: string) {
     if (!this.scope || this.loading || this.sending) return;
+    if (this.importing) throw new Error("Finish or cancel the folder upload before sending / 請先完成或取消資料夾上傳，再傳送訊息");
     if (this.unavailable) throw new Error("Refresh this conversation before sending / 請先重新整理會話");
     if (this.projectConfiguration && (!this.projectConfiguration.available || !this.projectConfiguration.body))
       throw new Error("Ask an administrator to review the shared project references / 請管理員重新確認專案共享資料");

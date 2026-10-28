@@ -76,6 +76,7 @@
             <textarea id="chat-input" rows="3" maxlength="30000" placeholder="傳送訊息…"></textarea>
             <div class="chat-compose-actions">
               <label class="chat-attach"><span id="chat-attach-label">附加檔案</span><input type="file" id="chat-file" multiple class="sr-only" /></label>
+              <label class="chat-attach"><span id="chat-folder-label">資料夾</span><input type="file" id="chat-folder" webkitdirectory multiple class="sr-only" aria-label="Choose folder / 選擇資料夾" /></label>
               <button id="chat-capture" type="button">目前網頁</button>
               <button id="chat-stop" type="button" hidden>停止</button>
               <button id="chat-send" class="chat-send" type="submit">傳送 ↑</button>
@@ -88,6 +89,12 @@
             <small id="chat-cost" class="chat-cloud-note" role="status"></small>
           </form>
         </section>
+        <dialog id="folder-review" class="folder-review" aria-labelledby="folder-title" aria-describedby="folder-note">
+          <div class="folder-heading"><small>CopyPaste · Files</small><h2 id="folder-title"></h2><strong id="folder-root"></strong><p id="folder-summary"></p></div>
+          <p id="folder-note"></p>
+          <div id="folder-files" class="folder-files" role="group" aria-label="Selected folder files / 所選資料夾檔案"></div>
+          <div class="folder-footer"><progress id="folder-progress" hidden></progress><p id="folder-status" role="status" aria-live="polite"></p><div><button id="folder-cancel" type="button"></button><button id="folder-confirm" type="button" autofocus></button></div></div>
+        </dialog>
         <details id="workspace-tools" class="workspace-tools">
           <summary>工作、通知與帳戶 / Work, notices & account</summary>
         <form id="brief-form">
