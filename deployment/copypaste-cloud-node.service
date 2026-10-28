@@ -1,0 +1,24 @@
+[Unit]
+Description=CopyPaste dedicated native cloud computer broker
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=root
+Group=root
+UMask=0077
+ExecStart=/usr/bin/node /opt/copypaste-cloud-node/src/cloud-node/cli.mjs /etc/copypaste-cloud-node.json
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+KillMode=control-group
+MemoryMax=512M
+TasksMax=64
+StandardOutput=null
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
