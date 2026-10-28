@@ -1,5 +1,34 @@
 # Workmate · CopyPaste Enterprise Agent · desktop
 
+<!-- integrated-recovery-stage120 -->
+本轮完成附件恢复及当前完整后端回归验证。
+
+Desktop 保留 0.7.1、本机 Codex、客户明确可撤回的完整权限、无边框和无 Electron 菜单，并保留既有滚动条约束。本轮不更改其生产源码，与其余各端一起重新执行当前类型／构建检查。
+
+验证：1363 backend checks in 111 files + 229 Web/Admin/Desktop/Delivery unit checks + 63 Extension checks + 7 adversarial proof-reader cases; 13 builds; 7 actual UI flows; 6 layouts; 9 PNGs and 2 GIF/MP4 pairs.
+
+Chrome 原生右侧栏、OTP／PKCE、原生 PostgreSQL 和固定版本云端 Codex 为真实运行；客户／文件／模型决策为假数据。原始完整产品及真实供应商验收继续保留；下方为 Extension 界面，不代表其他端新增页面。
+
+[Runbook / 方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/120-integrated-regression-and-attachment-recovery.md) · [Evidence / 证据](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/integrated-recovery-checkpoint.json)
+
+```mermaid
+flowchart LR
+  Pick[Browser folder picker] --> Review[Review selected relative paths]
+  Review --> Confirm[Customer confirms upload]
+  Confirm --> Private[Private files and JSON index]
+  Private --> Retry[Exact unfinished upload retry]
+  Retry --> Private
+  Private --> Send[Customer sends message]
+  Send --> Codex[Company cloud Codex]
+```
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-replace-selected-file-zh.png)
+
+[Actual interaction video / 实际交互录屏](media/integrated-recovery-workmate-recovery-05-folder-retry.mp4)
+
+![Actual Extension folder import / 实际右侧栏资料夹导入](media/integrated-recovery-workmate-recovery-05-folder-retry.gif)
+
+
 <!-- extension-folder-stage119 -->
 Extension 0.5.1 已加入浏览器资料夹选择与核对上传。
 
