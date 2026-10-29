@@ -11,6 +11,7 @@ import { AdminPrivateCloudSchedules } from "./private-cloud-schedules";
 import { AdminPrivateCloudEvents } from "./private-cloud-events";
 import { AdminProviderControl } from "./provider-control";
 import { AdminExternalBudgets } from "./external-budget";
+import { AdminPublications } from "./publications";
 import { AdminNativeRecovery } from "./native-recovery";
 import { AdminDesktopUpdates } from "./desktop-updates";
 import { AdminSolutions } from "./solutions";
@@ -397,6 +398,7 @@ const nav = [
     "admin.external_budget.read",
   ],
   ["support", Headphones, "支援工作台", "Support", "admin.support.read"],
+  ["publications", ShieldCheck, "社交發布管理", "Social publishing", "admin.publication.read"],
   [
     "recovery",
     ShieldCheck,
@@ -569,6 +571,8 @@ function AdminShell() {
                         <AdminProviderControl access={a} />
                       ) : n[0] === "external-budget" ? (
                         <AdminExternalBudgets access={a} />
+                      ) : n[0] === "publications" ? (
+                        <AdminPublications access={a} />
                       ) : n[0] === "cloud-computers" ? (
                         <AdminCloudComputers access={a} />
                       ) : n[0] === "desktop-updates" ? (

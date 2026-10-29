@@ -2,6 +2,29 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+
+![Actual page](assets/screenshots/workmate-publications-12-private-media-review.png)
+## Publishing administration and independent authority · Stage125
+
+The directory fetches metadata by default. Explicit private-body/media review requires independent body-read permission, current source access and recent MFA. Administrators may change scoped policy, cancel unsent operations, observe unknown results and record manual closure; they cannot confirm for the customer.
+
+| Action | Permission, within current scope |
+| --- | --- |
+| Metadata | `admin.publication.read` |
+| Private body/media | Above plus `admin.content.body.read` |
+| Policy | `admin.publication.policy.write` |
+| Cancellation/unknown resolution | `admin.publication.resolve` |
+
+Mutations bind expected versions and original request keys. Lost responses are checked against the original administrator, object and request, without issuing a replacement mutation. Explicit new authorization atomically revokes old sessions; repetition/concurrency does not duplicate grants. Current denies, source expiry and revocation withdraw content.
+
+Actual Web/Admin checks pass 14/14: independent email/TOTP, private-content opt-in, four widths, keyboard dismissal, policy, lost-response recovery and revocation. The complete Admin permission matrix remains open.
+
+![Actual private review and original-request recovery](assets/screenshots/workmate-publications-12-private-review-and-request-recovery.gif)
+
+[Actual interaction MP4](assets/screenshots/workmate-publications-12-private-review-and-request-recovery.mp4)
+
+
 <!-- admin-profile-revisions-124 -->
 ## Structured specialist, brand and private memory editing · Stage 124
 

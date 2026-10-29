@@ -2,6 +2,29 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+
+![实际页面](assets/screenshots/workmate-publications-12-private-media-review.png)
+## 发布管理与独立权限 · 阶段125
+
+列表默认仅取元数据。管理员主动打开正文和媒体时，独立检查正文读取权限、当前来源及近期MFA；可修改获准项目／账户策略、取消未发送操作、核对未知结果及人工结案，不能代客户确认发布。
+
+| 动作 | 所需权限（均须当前范围） |
+| --- | --- |
+| 元数据 | `admin.publication.read` |
+| 私有正文／媒体 | 上述权限及`admin.content.body.read` |
+| 发布策略 | `admin.publication.policy.write` |
+| 取消／未知处置 | `admin.publication.resolve` |
+
+修改绑定预期版本和原请求键。丢失响应后核对原管理员、原对象及原请求，不能另发变更。新增显式授权原子撤销旧会话；重复／并发不重复授权。当前deny、来源失效和会话撤销会撤回内容。
+
+实际Web/Admin旅程14/14通过：独立邮箱/TOTP、正文主动读取、四档宽度、键盘关闭、策略、丢失响应恢复及撤权。完整后台权限矩阵仍开放。
+
+![实际私有审阅与原请求恢复](assets/screenshots/workmate-publications-12-private-review-and-request-recovery.gif)
+
+[实际交互MP4](assets/screenshots/workmate-publications-12-private-review-and-request-recovery.mp4)
+
+
 <!-- admin-profile-revisions-124 -->
 ## 专家、品牌与私人记忆的完整修订 · 阶段 124
 
