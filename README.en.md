@@ -1,5 +1,47 @@
 # Workmate · CopyPaste Enterprise Agent · delivery
 
+<!-- workflow-recovery-stage130 -->
+## Customer-local workflow recovery and cancellation · Stage130
+
+Task shutdown and normal completion now retire each parent/child background authority watcher independently. An uncooperative heartbeat transport cannot keep cleanup waiting or resume execution through a late response. Retiring a watcher does not cancel a normally completing parent; fresh current-authority checks still precede native turn admission.
+
+Customer flow: browser sign-in and company workspace → choose a local folder and explicitly grant access → confirm separate child limits → local developer work → human review of actual files → local QA → private SOP, frozen JSON and recovery-note downloads. Actual developer initialization and QA thread-start faults each recover once, only after durable company proof of zero admissions. Original tasks, holds, deadlines and worker attempts remain.
+
+```mermaid
+flowchart LR
+  A[Local parent] --> B[Confirm child fee limits]
+  B --> C[Local developer]
+  C --> D[Human review]
+  D --> E[Local QA]
+  E --> F[Private delivery and original receipts]
+  C --> G[Drain, prove zero admissions, recover once]
+  E --> G
+```
+
+Bounded checks passed: 109 controller checks, 43 actual pinned-Codex checks, three complete native parent/child journeys, two current compiler checks and eight actual unsigned packaged-UI checks. Electron, native PostgreSQL, shell work and files are real. Model output, dialog choices and injected transport faults are fixtures. Three native widths retain no default frame/menu, visible scroll rails or horizontal overflow. Owned resources close; original failed probes and source snapshots remain immutable.
+
+[Implementation](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/130-desktop-workflow-recovery.md) · [Current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/workflow-recovery-checkpoint-130.json) · [Numbered remaining work](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage130.md)
+
+![Actual human review after recovered native child](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-workflow-recovery-130-01-recovered-developer-human-review-en.png)
+
+![Actual parent and child recovery interaction](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-workflow-recovery-130-01-parent-child-startup-recovery.gif)
+
+[Fee confirmation](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-workflow-recovery-130-01-child-fee-confirmation-en.png) · [Completed English UI](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-workflow-recovery-130-01-two-recovered-children-completed-en.png) · [Completed Chinese UI](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-workflow-recovery-130-01-two-recovered-children-completed-zh.png) · [Actual wall-clock MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-workflow-recovery-130-01-parent-child-startup-recovery.mp4)
+
+89 required, 12 unconfirmed suggested and one optional full-acceptance records remain open; these are not 102 uncoded modules. Arbitrary crash/multi-node behavior, all local tools, complete roles, durable resubmission of lost child finish receipts, live providers and signed installation remain. Stage130 uses its own manifest and publisher. The old V11 entry and Stage128 manifest retain their historical source scope and do not publish this increment.
+
+运行复核 / Reproduce:
+
+```powershell
+node scripts/qualify-workflow-journeys-v1.mjs NN
+$env:COPYPASTE_NPM_CLI="<absolute npm-cli.js path>"
+node scripts/run-desktop-workflow-130-v1.mjs NN
+Set-Location ../..
+python -X utf8 docs/tools/publish_workflow_recovery_130_v1.py --push
+```
+
+每次使用新的两位编号；已执行的脚本、日志、报告和快照不得覆盖。原生联调需要两个既有publication-125检出、固定Codex和公司测试配置；打包复核还需要原生Windows工具、已准备的Chromium/FFmpeg。发布器从工作区根目录执行；先提交所有匹配源码、材料与独立清单。 / Use a fresh two-digit attempt; never overwrite executed verifiers, logs, reports or snapshots. Native qualification requires both publication-125 checkouts, pinned Codex and private test configuration. Packaged QA also requires native Windows tooling and prepared Chromium/FFmpeg. Run publication from the workspace root after committing reviewed matching sources, media and the independent manifest.
+
 [简体中文](README.md) · [English](README.en.md)
 
 <!-- startup-recovery-stage128 -->
