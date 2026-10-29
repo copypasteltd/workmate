@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
 <!-- open-work-review-stage125 -->
-当前未完成项核查v3：89条必需需求尚未完成整体验收（77条部分验证、12条未证完成），另有12条未确认扩展建议和1条可选功能。Web发布页面已通过构建和20项现有客户端回归；Desktop页面及专用媒体流已通过类型检查和21项媒体/会话检查。实际浏览器/Electron旅程、Extension及Admin发布页面、完整回归和本轮产品发布仍待完成。后端04的109项为99通过10失败，新05按回执或观察快照记录，不能写成已通过。已发布组件保持阶段124。
+当前未完成项核查v4：89条必需需求尚未完成整体验收（77条部分验证、12条未证完成），另有12条未确认扩展建议和1条可选项。Admin发布管理页面已有代码，实际页面仍待验收；Web原20项及Desktop原21项检查对应旧源码，共享表单修改后需重新验证。后端05已结束：110项中107通过、2失败、1取消；修正恢复夹具后，06发布专项29/29通过，不能替代完整相关回归。实际跨端旅程、角色资格、本轮整合及产品源码推送仍待完成；已发布组件保持阶段124。
 
-[全部102条编号表](quality/remaining-work-current-review-125-v3.md) · [结构化清单](quality/remaining-work-current-review-125-v3.json) · [本次更新](changes/remaining-work-review-stage125-v3.md) · [保留v2](quality/remaining-work-current-review-125-v2.md)
+[全部102条编号表](quality/remaining-work-current-review-125-v4.md) · [结构化清单](quality/remaining-work-current-review-125-v4.json) · [本次更新](changes/remaining-work-review-stage125-v4.md) · [保留v3](quality/remaining-work-current-review-125-v3.md)
 
 <!-- admin-profile-revisions-stage124 -->
 当前阶段124补齐专家、品牌及记忆管理员修订：68/68相关后端、11/11后台单元、8/8实际页面和14次四档布局观察通过，保留8PNG和3组GIF/MP4。原失败、原源码及旧阶段证据不覆盖。当前发布入口V7，远端状态以执行回执及SHA读取为准。
