@@ -5,6 +5,7 @@ import { mountGeneratedVideos } from "./generated-videos.js";
 import { mountAudioProductions } from "./audio-production.js";
 import { mountCloudSchedules } from "./cloud-schedules.js";
 import { mountCloudEvents } from "./cloud-events.js";
+import { mountPublications } from "./publications.js";
 import {
   exactHKD,
   financialLabels,
@@ -72,6 +73,7 @@ let taskVersion = 0;
 let generatedVideos: { key: string; dispose: () => void } | undefined;
 let audioProductions: { key: string; dispose: () => void } | undefined;
 let cloudSchedules: { key: string; dispose: () => void } | undefined;
+let publicationWorkspace: { key: string; dispose: () => void } | undefined;
 let startFlow: Promise<void> | null = null;
 class WorkspaceChanged extends Error {}
 const base = () => `/v1/tenants/${tenant}/projects/${project}`;
@@ -123,6 +125,7 @@ async function send(type: string, body: Record<string, unknown> = {}) {
   return r.data;
 }
 function resetSignedOut() {
+  clearPublications();
   clientContent.clear();
   chat.reset();
   actor = "";
@@ -230,6 +233,7 @@ function start(): Promise<void> {
 }
 async function populateWorkspace() {
   const revision = ++workspaceRevision;
+  clearPublications();
   clearTask();
   if (notificationTimer) clearInterval(notificationTimer);
   $("notification-list").replaceChildren();
@@ -290,6 +294,7 @@ async function populateWorkspace() {
   if (revision === workspaceRevision) $("workspace").hidden = false;
 }
 async function projects() {
+  clearPublications();
   clientContent.clear();
   chat.reset();
   $("entitlement-summary").replaceChildren();
@@ -645,6 +650,7 @@ async function notifications() {
           clearTask();
           project = n.project_id;
           select.value = project;
+          refreshPublications();
           const navigationRevision = workspaceRevision;
           await tasks();
           if (navigationRevision !== workspaceRevision || scope !== tenant)
@@ -1240,6 +1246,7 @@ $("tenant").addEventListener(
   () =>
     void run(async () => {
       tenant = $<HTMLSelectElement>("tenant").value;
+      clearPublications();
       chat.reset();
       workspaceRevision++;
       $("notification-list").replaceChildren();
@@ -1254,6 +1261,7 @@ $("project").addEventListener(
   () =>
     void run(async () => {
       project = $<HTMLSelectElement>("project").value;
+      clearPublications();
       clientContent.clear();
       chat.reset();
       workspaceRevision++;
@@ -1625,8 +1633,27 @@ async function applyLocale() {
   if (actor && tenant) await refreshClientContent();
 }
 async function refreshClientContent() {
+  refreshPublications();
   if (!actor || !tenant) return;
   await clientContent.refresh({ actor, tenant, project });
+}
+function clearPublications() {
+  publicationWorkspace?.dispose();
+  publicationWorkspace = undefined;
+}
+function refreshPublications() {
+  const key = [workspaceRevision, actor, tenant, project, locale].join(":");
+  if (!actor || !tenant || !project) { clearPublications(); return; }
+  if (publicationWorkspace?.key === key) return;
+  clearPublications();
+  const scopedTenant = tenant, scopedProject = project;
+  const dispose = mountPublications($<HTMLDetailsElement>("publication-workspace"), {
+    tenant: scopedTenant, project: scopedProject, tr,
+    live: () => key === [workspaceRevision, actor, tenant, project, locale].join(":"),
+    request: path => send("API", { path, method: "GET", tenantId: scopedTenant }),
+    open: operation => send("OPEN_PUBLICATIONS", { tenant: scopedTenant, project: scopedProject, operation }),
+  });
+  publicationWorkspace = { key, dispose };
 }
 $("locale").addEventListener(
   "click",

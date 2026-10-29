@@ -5,6 +5,7 @@ import {
   type NativeTokens,
 } from "./native-session.js";
 import { exchangeNativeCode } from "./native-code.js";
+import { openPublicationWorkspace } from "./publication-handoff.js";
 import { PrivateChatUploads } from "./chat-upload.js";
 const privateUploads = new PrivateChatUploads({
   request: (scope, path, method, body, key) => request(path, method, body, key, scope.tenant),
@@ -277,6 +278,16 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       return host({
         ...message.payload,
         request_id: message.payload.request_id ?? crypto.randomUUID(),
+      });
+    }
+    if (message.type === "OPEN_PUBLICATIONS") {
+      return openPublicationWorkspace({
+        tenant: message.tenant, project: message.project, operation: message.operation,
+      }, {
+        webOrigin: settings.webOrigin,
+        identity: async () => (await getTokens()).session_epoch,
+        request: (path, tenant) => request(path, "GET", undefined, undefined, tenant),
+        open: url => chrome.tabs.create({ url }),
       });
     }
     if (message.type === "OPEN_WEB") {

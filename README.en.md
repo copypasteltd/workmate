@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## Publishing review in the native right Side Panel · Stage125
+
+Keeps ChatGPT-style chat/attachments, Chrome's native right Side Panel and approved local-file reading/upload, with cloud Agent execution. Expand Social publishing in workspace tools to list project metadata; private body is fetched only after View content. Confirmation stays in the full Web workspace.
+
+Review media and publication validates tenant/project/operation UUIDs, current access and session continuity after asynchronous requests, then opens only the configured Web origin. URLs exclude credentials and arbitrary destinations. Folding, hiding or changing account/project clears private detail and stops reading. Five-second updates preserve focus; the panel cannot publish for the customer.
+
+```mermaid
+flowchart LR
+  Panel[Native right Side Panel chat and files] --> Cloud[Approved upload to cloud Codex]
+  Panel --> Review[Explicit publication detail]
+  Review --> Check[Scope and session checks]
+  Check --> Web[Fixed Web review and customer consent]
+```
+
+Typecheck, build and all 70 logic checks pass. The actual packaged Desktop/native Chrome Side Panel journey passes 10/10, including toolbar docking, independent PKCE, private-content opt-in, fixed Web handoff, folding and source revocation. Complete installation, file continuation and professional acceptance remain open.
+
+![Actual private review in Chrome native right Side Panel](assets/screenshots/workmate-native-publications-02-explicit-private-review.png)
+
+![Actual panel review and Web handoff](assets/screenshots/workmate-native-publications-02-native-panel-review-and-handoff.gif)
+
+[Actual interaction MP4](assets/screenshots/workmate-native-publications-02-native-panel-review-and-handoff.mp4)
+
+
 ## Product and boundaries
 
 The first customers are existing marketing teams. Scope includes image/design/typography, video/effects, advertising and website analysis, SEO/GEO, repeated business processes and software development. The catalog has 18 candidates with exact Skill bindings; at least twelve individually qualified professional presets remain an acceptance requirement. The designer combines Codex, design Skills and company Image 2. Codex is the only Agent core. All AI uses the company's OpenAI-compatible backend; development currently uses authorized synthetic providers, not a claim of live professional quality.

@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## 原生右侧栏发布查看 · 阶段125
+
+保持ChatGPT式对话／附件、原生右侧Side Panel和获准的本地文件读取上传，Agent在云端运行。展开工作工具中的“社交发布”，先看当前项目元数据，主动点击“查看内容”才读取私有正文。确认发布在完整Web工作台进行。
+
+“核对素材与发布”由后台验证企业、项目、操作UUID、当前访问权及异步请求后的会话，仅打开固定配置的Web地址；URL无凭证且不能传任意目标。折叠、隐藏、换账号或项目清理私有详情并停止读取；列表每5秒更新、保留焦点，不代客户发布。
+
+```mermaid
+flowchart LR
+  Panel[原生右侧栏聊天和文件] --> Cloud[获准上传后交云端Codex]
+  Panel --> Review[主动查看发布详情]
+  Review --> Check[后台复核范围与会话]
+  Check --> Web[固定Web核对和客户确认]
+```
+
+类型检查、构建及70/70逻辑检查通过。实际打包Desktop／Chrome原生侧栏发布旅程10/10通过，包含工具栏开启右侧栏、独立PKCE、正文主动读取、固定Web跳转、折叠和来源撤销。完整安装、文件接续及专业业务仍开放。
+
+![实际Chrome原生右侧栏私有审阅](assets/screenshots/workmate-native-publications-02-explicit-private-review.png)
+
+![实际侧栏审阅与Web接续](assets/screenshots/workmate-native-publications-02-native-panel-review-and-handoff.gif)
+
+[实际交互MP4](assets/screenshots/workmate-native-publications-02-native-panel-review-and-handoff.mp4)
+
+
 ## 产品与边界
 
 首批面向现有客户的 marketing 团队，完整范围包含生图、设计/字体、视频/特效、广告和网站分析、SEO/GEO、企业重复流程及软件开发。目录已有 18 个精确 Skill 绑定的候选角色；至少十二个逐一完成专业任务、修改及异常处理的角色仍是验收要求。设计师由 Codex、设计 Skill 与公司 Image 2 组合。Agent 内核唯一使用 Codex；全部 AI 请求走公司 OpenAI 兼容后端。当前开发使用已授权假数据，不代表真实模型专业质量已经验收。
