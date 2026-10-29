@@ -2,11 +2,31 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-content-revisions-123 -->
+## 管理员正文修订与交付核查 · 阶段 123
+
+当前发布命令为 `node scripts/publish-workmate-v6.mjs --push`，`--check` 只核查。V6 先校验六个独立组件和中央文档的提交、精确源码、原始证据、双语说明、媒体、历史对象、凭据与远端祖先关系，再普通原子推送八个映射引用并读取实际 SHA。历史证明身份及失败记录全部保留，不强推。
+
+当前增量已取得五个完整相关后端文件 **75/75**、实际 Admin 页面 **7/7**，以及四档宽度的 7 次弹窗与输入边界观察。后台专项验证三类修订、范围权限/MFA、并发、幂等、审计失败回滚、独立管理员来源、数据库角色与不可变性；实际页面包括真实邮件/MFA、表单、原提交响应丢失后恢复和撤权清除正文。编辑流程没有模型请求，不增加任务或费用。
+
+`qualify-admin-content-v1`–`v4` 与页面 V1/V2 脚本保留各次执行时的代码和源码快照；它们是绑定当次工作树、原生数据库及端口的验收工具，不应在其他检出目录直接复用所属资源标识。正常启动按下方工作区说明；当前可复查证据位于中央 [checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-content-checkpoint-123.json) 和 [归档索引](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-content-evidence-123/index.json)。
+
+```mermaid
+flowchart LR
+  A[精确源码及原始失败] --> B[事务与权限回归]
+  B --> C[实际登录、编辑及恢复]
+  C --> D[页面、GIF、MP4及双语文档]
+  D --> E[提交证明及历史保留]
+  E --> F[八引用普通推送及读取]
+```
+
+[实际页面及交互录制](https://github.com/copypasteltd/workmate/blob/admin/README.md) · [完整方案](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/123-admin-content-revisions.md)。本增量不重新宣称完整后端回归、正式供应商质量或完整产品验收。
+
 <!-- runtime-startup-122 -->
 
 ## Codex 启动与轮次隔离 · 阶段 122
 
-当前发布命令为 `node scripts/publish-workmate-v5.mjs --push`；先使用 `--check` 可只核查。要求所有交付仓库已提交、中央源码证明与限定证据完整一致；仅普通原子推送映射的八个引用并重新读取 SHA。V1–V4 作为历史执行器保留，不作为当前清单的发布入口。
+阶段 122 历史发布命令为 `node scripts/publish-workmate-v5.mjs --push`；`--check` 只核查。该执行器要求当时的交付仓库已提交、中央源码证明与限定证据一致，再普通原子推送八个映射引用并重新读取 SHA。当前清单使用上方 V6 入口。
 
 账务专项保留首轮 78／79 加一次取消、首次独立失败及后续独立通过的原始记录；此前失败的确切根因仍未证明。最终完整相关文件范围以[本轮 checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/runtime-startup-checkpoint-122.json)为准。新增真实数据夹具单独计时，恢复与账本断言仍为 120 秒；原 RPC／任务期限不变。
 

@@ -2,9 +2,29 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-content-revisions-123 -->
+## Administrator revisions and publication · Stage 123
+
+The current publication command is `node scripts/publish-workmate-v6.mjs --push`; `--check` verifies without pushing. V6 checks committed independent repositories, exact sources, original evidence, bilingual guides, media, historical objects, configured credentials and remote ancestry, then ordinarily updates the eight mapped refs atomically and reads back their SHAs. Historical proof identities and failures remain intact; publication never force-pushes.
+
+The increment passed **75 checks across five complete related backend files**, **seven actual Admin UI flows** and seven dialog/field-bound observations at four widths. Backend checks cover the three revision types, scoped authority/MFA, concurrency, idempotency, audit rollback, separate administrator provenance, database roles and immutability. Actual UI uses email/MFA login, structured editing, a committed response deliberately lost and recovered, and live permission withdrawal. Editing makes no model requests and creates no tasks or charges.
+
+The `qualify-admin-content-v1`–`v4` and UI V1/V2 tools preserve each executed version and source snapshot. They bind their original worktrees, native database and owned ports; do not reuse those resource identities in another checkout. Normal startup follows the workspace instructions below. Review the central [checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-content-checkpoint-123.json) and [archive index](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/admin-content-evidence-123/index.json).
+
+```mermaid
+flowchart LR
+  A[Exact sources and original failures] --> B[Transaction and authority regression]
+  B --> C[Actual login, editing and recovery]
+  C --> D[Screens, GIF, MP4 and bilingual guides]
+  D --> E[Committed proofs and retained history]
+  E --> F[Ordinary eight-ref push and readback]
+```
+
+[Actual screens and recordings](https://github.com/copypasteltd/workmate/blob/admin/README.en.md) · [Behavior](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/123-admin-content-revisions.md). This increment does not requalify every backend file, live provider quality or full product acceptance.
+
 <!-- runtime-startup-122 -->
 
-The current publication command is `node scripts/publish-workmate-v5.mjs --push`; `--check` performs preflight only. All delivered repositories must be committed and match the central proof manifest and bounded evidence. Publication uses an ordinary atomic update of the eight mapped refs and reads back their actual SHAs. V1–V4 remain historical executors.
+The historical Stage 122 publication command was `node scripts/publish-workmate-v5.mjs --push`; `--check` performed preflight only. That executor required the corresponding committed repositories, central proof manifest and bounded evidence, then ordinarily updated eight refs atomically and read back their SHAs. The current manifest uses V6 above.
 
 Billing evidence retains the initial 78/79 run with one cancellation, an isolated failure and a later isolated pass. Earlier failure causes remain unproven; the [current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/runtime-startup-checkpoint-122.json) records the final complete related-file scope. Real fixture preparation is timed separately while recovery and ledger assertions retain their 120-second bound. Product RPC and task deadlines stay unchanged.
 
