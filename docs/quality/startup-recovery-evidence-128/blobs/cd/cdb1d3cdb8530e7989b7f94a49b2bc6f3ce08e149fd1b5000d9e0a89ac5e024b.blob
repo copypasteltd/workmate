@@ -1,0 +1,180 @@
+import { before, after, test } from "node:test";
+import assert from "node:assert/strict";
+import { createServer } from "node:http";
+import { randomBytes, randomUUID, createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { isolatedTestEnvironment } from "./native-test-environment.js";
+import { buildApp } from "../src/server.js";
+import { loadConfig } from "../src/config.js";
+import { desktopRuntime } from "../src/desktop-runtime.js";
+import { desktopStartupProtocol } from "../src/desktop-startup-recovery.js";
+import { defaults } from "../src/plans.js";
+import { hash } from "../src/lib.js";
+
+let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>, s: Awaited<ReturnType<typeof buildApp>>, providerCalls = 0;
+const provider = createServer(async (req, res) => {
+  const chunks = []; for await (const b of req) chunks.push(Buffer.from(b));
+  const body = JSON.parse(Buffer.concat(chunks).toString()); assert.equal(body.model, "desktop-synthetic");
+  assert.equal(req.headers.authorization, "Bearer synthetic-desktop-provider");
+  if (req.url === "/v1/responses/input_tokens") { res.writeHead(200, { "Content-Type": "application/json" }).end(JSON.stringify({ object: "response.input_tokens", input_tokens: 10 })); return; }
+  assert.equal(req.url, "/v1/responses"); providerCalls++;
+  res.writeHead(200, { "Content-Type": "text/event-stream" });
+  const emit = (type: string, data: any) => res.write(`event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`);
+  const message = { type: "message", id: "msg_recovery_" + providerCalls, role: "assistant", status: "completed", content: [{ type: "output_text", text: "Synthetic company response", annotations: [] }] };
+  emit("response.created", { response: { id: "resp_recovery_" + providerCalls, status: "in_progress", output: [] } });
+  emit("response.output_item.done", { item: message });
+  emit("response.completed", { response: { id: "resp_recovery_" + providerCalls, status: "completed", output: [message], usage: { input_tokens: 10, output_tokens: 20 } } }); res.end();
+});
+type Client = { id: string; cookie?: string; csrf?: string; access_token?: string };
+async function call(c: Client | undefined, method: string, url: string, body?: any, requestKey: string = randomUUID()) {
+  const raw = await s.app.inject({ method: method as any, url, headers: {
+    ...(c?.cookie ? { cookie: c.cookie, "x-csrf-token": c.csrf! } : {}),
+    ...(c?.access_token ? { Authorization: "Bearer " + c.access_token } : {}),
+    "Idempotency-Key": requestKey, ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+  }, payload: body === undefined ? undefined : JSON.stringify(body) });
+  return { status: raw.statusCode, data: raw.json(), raw };
+}
+async function ok(c: Client | undefined, method: string, url: string, body?: any, requestKey?: string) {
+  const r = await call(c, method, url, body, requestKey); assert.equal(r.status, 200, JSON.stringify(r.data)); return r.data;
+}
+async function fixture() {
+  const challenge = await ok(undefined, "POST", "/v1/auth/challenge", { email: "recovery-" + randomUUID() + "@example.invalid" });
+  const mail = JSON.parse(await readFile(s.db.config.DATA_DIR + "/mailbox/" + challenge.challenge_id + ".json", "utf8"));
+  const signed = await call(undefined, "POST", "/v1/auth/verify", { challenge_id: challenge.challenge_id, code: mail.text.match(/\b\d{6}\b/)[0] }); assert.equal(signed.status, 200);
+  const web: Client = { id: signed.data.user.id, csrf: signed.data.csrf_token, cookie: signed.raw.cookies[0].name + "=" + signed.raw.cookies[0].value };
+  const w = await ok(web, "POST", "/v1/tenants", { name: "Recovery fixture", project_name: "Original local owner" });
+  const tenant = w.tenant.id, project = w.project.id, base = `/v1/tenants/${tenant}/projects/${project}/desktop-executions`;
+  await s.db.control.query("UPDATE wallets SET credit_limit_micros=100000000 WHERE tenant_id=$1", [tenant]);
+  await s.db.control.query("INSERT INTO entitlements(tenant_id,plan,starts_at,ends_at,reason,plan_body) VALUES($1,'business',now()-interval '1 minute',now()+interval '1 day','Synthetic recovery fixture',$2)", [tenant, defaults.business]);
+  const verifier = randomBytes(32).toString("base64url"), redirect = "http://127.0.0.1:18249/callback";
+  const issued = await ok(web, "POST", "/v1/auth/native/authorize", { client_id: "desktop", redirect_uri: redirect, state: randomBytes(32).toString("hex"), code_challenge: createHash("sha256").update(verifier).digest("base64url") });
+  const token = await ok(undefined, "POST", "/v1/auth/native/token", { client_id: "desktop", redirect_uri: redirect, code: new URL(issued.redirect).searchParams.get("code"), code_verifier: verifier });
+  const c = { id: web.id, access_token: token.access_token };
+  const fields = { device_id: randomUUID(), local_session_id: randomUUID(), workspace_hash: hash("owned " + randomUUID()), runtime_version: desktopRuntime.pinned_version, runtime_sha256: desktopRuntime.windows_x64_sha256 };
+  const created = await ok(c, "POST", base, { ...fields, title: "Recovery original task", prompt: "Keep the original reservation", role_key: "fullstack", budget_micros: 1000000 });
+  const url = base + "/" + created.task_id;
+  const begun = await ok(c, "POST", url + "/start", { ...fields, startup_protocol: desktopStartupProtocol });
+  const binding = { ...fields, startup_fencing_token: begun.startup.fencing_token, contract_sha256: begun.startup.contract_sha256 };
+  const recovery = { ...binding, expected_attempt: 1, stage: "initialize" };
+  return { tenant, project, c, web, fields, created, begun, binding, recovery, url };
+}
+type Fixture = Awaited<ReturnType<typeof fixture>>;
+const taskRow = async (id: string) => (await s.db.control.query("SELECT * FROM tasks WHERE id=$1", [id])).rows[0];
+const executionRow = async (id: string) => (await s.db.control.query("SELECT * FROM desktop_executions WHERE task_id=$1", [id])).rows[0];
+const complete = { status: "completed", output: "Client report", thread_id: "native-thread", turn_id: "native-turn" };
+async function inference(secret: string) {
+  return s.app.inject({ method: "POST", url: "/v1/desktop-inference/v1/responses", headers: { Authorization: "Bearer " + secret }, payload: {
+    model: "desktop-synthetic", reasoning: { effort: "max" }, stream: true, store: false, input: [{ role: "user", content: "One synthetic response" }],
+  } });
+}
+before(async () => {
+  await new Promise<void>(resolve => provider.listen(0, "127.0.0.1", resolve)); isolated = await isolatedTestEnvironment();
+  s = await buildApp(loadConfig({ ...isolated.env, NODE_ENV: "test", DEV_MAILBOX: "true", WORKER_ENABLED: "false", DEMO_MODE: "false",
+    AI_BASE_URL: `http://127.0.0.1:${(provider.address() as { port: number }).port}/v1`, AI_ALLOWED_HOSTS: "127.0.0.1", AI_API_KEY: "synthetic-desktop-provider", AI_MODEL: "desktop-synthetic", AI_VERIFIED: "true",
+    AI_INPUT_HKD_MICROS_PER_MILLION: "1000000", AI_OUTPUT_HKD_MICROS_PER_MILLION: "1000000", AI_INPUT_COUNT_VERIFIED: "true", AI_INPUT_COUNT_HKD_MICROS_PER_CALL: "0", AI_SCOPE_TTL_MS: "300000",
+  }), { worker: false });
+});
+after(async () => { try { await s?.app.close(); provider.closeAllConnections(); await new Promise<void>(resolve => provider.close(() => resolve())); } finally { await isolated?.cleanup(); } });
+
+test("new protocol blocks model and company tools before durable native turn admission", async () => {
+  const f = await fixture(), before = providerCalls;
+  assert.equal((await inference(f.begun.credential.token)).statusCode, 409);
+  const tool = await call(f.c, "POST", f.url + "/tools", { tool: "deliver_text", arguments: {}, call_id: "before-turn", thread_id: "native", turn_id: "turn", startup_fencing_token: f.binding.startup_fencing_token });
+  assert.equal(tool.status, 409, JSON.stringify(tool.data)); assert.equal(providerCalls, before);
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM ai_gateway_requests WHERE task_id=$1", [f.created.task_id])).rows[0].n, 0);
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM task_events WHERE task_id=$1 AND kind='desktop.company_tool.requested'", [f.created.task_id])).rows[0].n, 0);
+});
+
+test("one fenced recovery retains task, hold, worker attempt and deadline; old authority cannot bill after turn admission", async () => {
+  const f = await fixture(), original = await taskRow(f.created.task_id);
+  const hold = (await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [original.id])).rows[0];
+  const key = randomUUID(), recovered = await ok(f.c, "POST", f.url + "/startup-recovery", f.recovery, key);
+  assert.equal(recovered.task_id, original.id); assert.equal(recovered.startup.attempt, 2);
+  assert.equal(recovered.credential.expires_at, f.begun.credential.expires_at);
+  assert.equal(recovered.startup.contract_sha256, f.begun.startup.contract_sha256);
+  assert.notEqual(recovered.credential.token, f.begun.credential.token);
+  assert.notEqual(recovered.startup.fencing_token, original.fencing_token);
+  assert.equal((await taskRow(original.id)).attempt, original.attempt);
+  const holds = (await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [original.id])).rows;
+  assert.equal(holds.length, 1); assert.deepEqual(holds[0], hold);
+  const replay = await ok(f.c, "POST", f.url + "/startup-recovery", f.recovery, key);
+  assert.equal(replay.credential.token, recovered.credential.token); assert.deepEqual(replay.startup, recovered.startup);
+  const binding = { ...f.binding, startup_fencing_token: recovered.startup.fencing_token }, gate = randomUUID();
+  await ok(f.c, "POST", f.url + "/turn-admission", binding, gate); await ok(f.c, "POST", f.url + "/turn-admission", binding, gate);
+  assert.equal((await call(f.c, "POST", f.url + "/turn-admission", binding)).status, 409);
+  assert.equal((await inference(f.begun.credential.token)).statusCode, 403);
+  const oldTool = await call(f.c, "POST", f.url + "/tools", { tool: "deliver_text", arguments: {}, call_id: "late-old-tool", thread_id: "native", turn_id: "turn", startup_fencing_token: original.fencing_token });
+  assert.equal(oldTool.status, 409);
+  const before = providerCalls, response = await inference(recovered.credential.token); assert.equal(response.statusCode, 200, response.body); assert.equal(providerCalls, before + 1);
+  const done = await ok(f.c, "POST", f.url + "/finish", complete); assert.equal(done.charged_micros, "30");
+  await ok(f.c, "POST", f.url + "/finish", complete);
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM ledger WHERE task_id=$1 AND kind='charge'", [original.id])).rows[0].n, 1);
+  assert.equal((await call(f.c, "POST", f.url + "/startup-recovery", f.recovery, key)).status, 409);
+  const record = (await s.db.control.query("SELECT * FROM desktop_startup_recoveries WHERE task_id=$1", [original.id])).rows[0];
+  assert.equal(record.proof.safe, true); assert.equal(record.proof.worker_attempt, original.attempt);
+  assert.ok(!JSON.stringify(record).includes(recovered.credential.token));
+});
+
+test("concurrent identical recovery requests return one epoch; changed identity cannot create a third launch", async () => {
+  const f = await fixture(), key = randomUUID();
+  const replies = await Promise.all([ok(f.c, "POST", f.url + "/startup-recovery", f.recovery, key), ok(f.c, "POST", f.url + "/startup-recovery", f.recovery, key)]);
+  assert.equal(replies[0].credential.token, replies[1].credential.token);
+  assert.equal((await executionRow(f.created.task_id)).startup_attempt, 2);
+  assert.equal((await call(f.c, "POST", f.url + "/startup-recovery", f.recovery)).data.error.code, "DESKTOP_STARTUP_RECOVERY_CONFLICT");
+  assert.equal((await call(f.c, "POST", f.url + "/startup-recovery", { ...f.recovery, stage: "thread/start" }, key)).status, 409);
+  assert.equal((await s.db.control.query("SELECT count(*)::int n FROM desktop_startup_recoveries WHERE task_id=$1", [f.created.task_id])).rows[0].n, 1);
+});
+
+test("native turn admission alone permanently forbids startup recovery even at zero spend", async () => {
+  const f = await fixture(), before = await taskRow(f.created.task_id);
+  await ok(f.c, "POST", f.url + "/turn-admission", f.binding);
+  assert.equal((await call(f.c, "POST", f.url + "/startup-recovery", f.recovery)).status, 409);
+  assert.equal((await taskRow(f.created.task_id)).fencing_token, before.fencing_token);
+  assert.equal((await executionRow(f.created.task_id)).startup_state, "turn_admitted");
+  await assert.rejects(s.db.control.query("UPDATE desktop_executions SET startup_state='preparing' WHERE task_id=$1", [f.created.task_id]), { code: "23514" });
+});
+
+for (const kind of ["model", "input-count", "read-tool"] as const) test(kind + " durable zero-spend admission denies recovery and revokes both inference credentials", async () => {
+  const f = await fixture(), task = await taskRow(f.created.task_id);
+  await s.db.tx(async tx => {
+    await tx.query("SELECT set_config('app.task_id',$1,true)", [task.id]);
+    if (kind === "read-tool") {
+      await tx.query("INSERT INTO task_events(tenant_id,task_id,kind,body) VALUES($1,$2,'desktop.company_tool.requested',$3)", [f.tenant, task.id, { tool: "asset_read", synthetic_admission_fault: true }]); return;
+    }
+    const capability = (await tx.query("SELECT c.id FROM task_runtime_bindings b JOIN internal_capability_versions c ON c.id=ANY(b.capability_version_ids) WHERE b.task_id=$1 AND c.profile_key='internal-text-v1'", [task.id])).rows[0].id;
+    const result = kind === "model"
+      ? (await tx.query("SELECT admit_ai_gateway_request($1,'task',$2,$3,$4,'responses','desktop-synthetic',$5,128) result", [randomUUID(), task.id, capability, task.fencing_token, "a".repeat(64)])).rows[0].result
+      : (await tx.query("SELECT admit_ai_input_count_request($1,'task',$2,$3,$4,'desktop-synthetic',$5,128,$6,$5) result", [randomUUID(), task.id, capability, task.fencing_token, "a".repeat(64), randomUUID()])).rows[0].result;
+    assert.equal(result.admitted, true, JSON.stringify(result));
+  }, f.tenant, false, f.c.id);
+  const denied = await call(f.c, "POST", f.url + "/startup-recovery", f.recovery); assert.equal(denied.status, 409, JSON.stringify(denied.data));
+  assert.equal(denied.data.error.code, "DESKTOP_STARTUP_ADMISSION_EXISTS");
+  const execution = await executionRow(task.id); assert.equal(execution.state, "stopping"); assert.equal(execution.credential_hash, null); assert.equal(execution.startup_attempt, 1);
+  assert.equal((await inference(f.begun.credential.token)).statusCode, 403);
+  const record = (await s.db.control.query("SELECT * FROM desktop_startup_recoveries WHERE task_id=$1", [task.id])).rows[0];
+  assert.equal(record.state, "denied"); assert.equal(record.proof.safe, false);
+});
+
+test("wrong local binding, contract, caller, cancellation and revoked project cannot recover native authority", async () => {
+  const f = await fixture(), before = await taskRow(f.created.task_id), stranger = await fixture();
+  assert.equal((await call(f.web, "POST", f.url + "/startup-recovery", f.recovery)).status, 403);
+  assert.equal((await call(stranger.c, "POST", f.url + "/startup-recovery", f.recovery)).status, 404);
+  assert.equal((await call(f.c, "POST", f.url + "/startup-recovery", { ...f.recovery, local_session_id: randomUUID() })).data.error.code, "DESKTOP_SESSION_BINDING_CHANGED");
+  assert.equal((await call(f.c, "POST", f.url + "/startup-recovery", { ...f.recovery, contract_sha256: "b".repeat(64) })).data.error.code, "DESKTOP_STARTUP_CONTRACT_CHANGED");
+  assert.equal((await taskRow(f.created.task_id)).fencing_token, before.fencing_token);
+  await ok(f.c, "POST", f.url + "/cancel", {});
+  assert.equal((await call(f.c, "POST", f.url + "/startup-recovery", f.recovery)).status, 409);
+  const revoked = await fixture(); await s.db.control.query("UPDATE projects SET archived=true WHERE id=$1", [revoked.project]);
+  assert.ok([403, 404].includes((await call(revoked.c, "POST", revoked.url + "/startup-recovery", revoked.recovery)).status));
+});
+
+test("SQL authority is monotonic, tenant scoped and cannot renew the original deadline", async () => {
+  const f = await fixture(), other = await fixture();
+  await assert.rejects(s.db.control.query("UPDATE desktop_executions SET startup_deadline_at=startup_deadline_at+interval '1 minute' WHERE task_id=$1", [f.created.task_id]), { code: "23514" });
+  await assert.rejects(s.db.control.query("UPDATE desktop_executions SET startup_attempt=2 WHERE task_id=$1", [f.created.task_id]), { code: "23514" });
+  await assert.rejects(s.db.tx(tx => tx.query("SELECT desktop_startup_admission_proof($1)", [f.created.task_id]), other.tenant, false, other.c.id), { code: "42501" });
+  await ok(f.c, "POST", f.url + "/startup-recovery", f.recovery);
+  const invisible = await s.db.tx(tx => tx.query("SELECT * FROM desktop_startup_recoveries WHERE task_id=$1", [f.created.task_id]), other.tenant, false, other.c.id);
+  assert.equal(invisible.rows.length, 0);
+  await assert.rejects(s.db.control.query("UPDATE desktop_startup_recoveries SET state='fenced',finished_at=NULL WHERE task_id=$1", [f.created.task_id]), { code: "23514" });
+});

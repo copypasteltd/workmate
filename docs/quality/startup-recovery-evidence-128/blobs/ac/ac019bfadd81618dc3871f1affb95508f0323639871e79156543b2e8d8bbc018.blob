@@ -1,0 +1,467 @@
+TAP version 13
+# Subtest: update checkpoints allow idle sessions and block a live local turn until its settlement finishes
+ok 1 - update checkpoints allow idle sessions and block a live local turn until its settlement finishes
+  ---
+  duration_ms: 31.6598
+  ...
+# Subtest: closing the app while a send is persisting prevents a later task reservation or native start
+ok 2 - closing the app while a send is persisting prevents a later task reservation or native start
+  ---
+  duration_ms: 6.8595
+  ...
+# Subtest: existing native records retain their original tool set after the browser factory becomes available
+ok 3 - existing native records retain their original tool set after the browser factory becomes available
+  ---
+  duration_ms: 6.983
+  ...
+# Subtest: new native browser bindings retain actual actor/project/workspace ownership and cannot bypass a read-only grant
+ok 4 - new native browser bindings retain actual actor/project/workspace ownership and cannot bypass a read-only grant
+  ---
+  duration_ms: 13.3284
+  ...
+# Subtest: stop closes the owned browser even while the native tool is waiting
+ok 5 - stop closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 13.6362
+  ...
+# Subtest: revoke closes the owned browser even while the native tool is waiting
+ok 6 - revoke closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 7.9116
+  ...
+# Subtest: logout closes the owned browser even while the native tool is waiting
+ok 7 - logout closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 7.4406
+  ...
+# Subtest: close closes the owned browser even while the native tool is waiting
+ok 8 - close closes the owned browser even while the native tool is waiting
+  ---
+  duration_ms: 7.4069
+  ...
+# Subtest: saved native specialists retain their version through uncertain admission and restart, without a replacement reservation
+ok 9 - saved native specialists retain their version through uncertain admission and restart, without a replacement reservation
+  ---
+  duration_ms: 19.5374
+  ...
+# Subtest: saved specialist selection rejects a wrong role or changed account before opening a customer folder
+ok 10 - saved specialist selection rejects a wrong role or changed account before opening a customer folder
+  ---
+  duration_ms: 5.5367
+  ...
+# Subtest: legacy native records do not silently acquire approved-program tools
+ok 11 - legacy native records do not silently acquire approved-program tools
+  ---
+  duration_ms: 9.0481
+  ...
+# Subtest: approved-program tools retain original task and customer ownership and recheck the full local grant
+ok 12 - approved-program tools retain original task and customer ownership and recheck the full local grant
+  ---
+  duration_ms: 7.4855
+  ...
+# Subtest: stop closes an owned program tool while the native turn is waiting
+ok 13 - stop closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 11.7696
+  ...
+# Subtest: revoke closes an owned program tool while the native turn is waiting
+ok 14 - revoke closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 4.7668
+  ...
+# Subtest: logout closes an owned program tool while the native turn is waiting
+ok 15 - logout closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 4.2534
+  ...
+# Subtest: close closes an owned program tool while the native turn is waiting
+ok 16 - close closes an owned program tool while the native turn is waiting
+  ---
+  duration_ms: 5.5816
+  ...
+# Subtest: durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn
+ok 17 - durable file dispatch replays its exact terminal receipt after restart without another reservation or native turn
+  ---
+  duration_ms: 7.1582
+  ...
+# Subtest: file dispatch recovers a lost create response under the original request ids
+ok 18 - file dispatch recovers a lost create response under the original request ids
+  ---
+  duration_ms: 5.1997
+  ...
+# Subtest: file dispatch recovers a lost start response under the original request ids
+ok 19 - file dispatch recovers a lost start response under the original request ids
+  ---
+  duration_ms: 6.3607
+  ...
+# Subtest: file dispatch recovers a lost finish response under the original request ids
+ok 20 - file dispatch recovers a lost finish response under the original request ids
+  ---
+  duration_ms: 6.968
+  ...
+# Subtest: concurrent replay of the same dispatch id never runs a second task
+ok 21 - concurrent replay of the same dispatch id never runs a second task
+  ---
+  duration_ms: 8.8971
+  ...
+# Subtest: a running dispatch recovered after a crash reports unknown and never restarts the possibly accepted native action
+ok 22 - a running dispatch recovered after a crash reports unknown and never restarts the possibly accepted native action
+  ---
+  duration_ms: 4.7633
+  ...
+# Subtest: a queued file must revalidate its source before native startup; conversation retries cannot bypass the folder rule
+ok 23 - a queued file must revalidate its source before native startup; conversation retries cannot bypass the folder rule
+  ---
+  duration_ms: 5.2135
+  ...
+# Subtest: a folder selection grants no execution permission; declined native consent never starts tools or reserves money
+ok 24 - a folder selection grants no execution permission; declined native consent never starts tools or reserves money
+  ---
+  duration_ms: 2.7062
+  ...
+# Subtest: explicit native full permission reaches the runtime; public state never contains the scoped token or mutable internals
+ok 25 - explicit native full permission reaches the runtime; public state never contains the scoped token or mutable internals
+  ---
+  duration_ms: 3.5958
+  ...
+# Subtest: a lost finish response retries only the saved receipt, never the native turn or task reservation
+ok 26 - a lost finish response retries only the saved receipt, never the native turn or task reservation
+  ---
+  duration_ms: 4.9426
+  ...
+# Subtest: a native start failure reports definite failure before any turn and clears the controller lock
+ok 27 - a native start failure reports definite failure before any turn and clears the controller lock
+  ---
+  duration_ms: 30.9808
+  ...
+# (node:37520) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: a main native startup spanning the initial company lease stays authorized without starting a turn early
+ok 28 - a main native startup spanning the initial company lease stays authorized without starting a turn early
+  ---
+  duration_ms: 13.873
+  ...
+# Subtest: a child native startup spanning the initial company lease stays authorized without starting a turn early
+ok 29 - a child native startup spanning the initial company lease stays authorized without starting a turn early
+  ---
+  duration_ms: 44.5381
+  ...
+# Subtest: main controller recovers a classified startup failure once and gates the original turn
+ok 30 - main controller recovers a classified startup failure once and gates the original turn
+  ---
+  duration_ms: 70.031
+  ...
+# Subtest: child controller recovers a classified startup failure once and gates the original turn
+ok 31 - child controller recovers a classified startup failure once and gates the original turn
+  ---
+  duration_ms: 34.3128
+  ...
+# Subtest: company-revocation during a pending native startup prevents every model turn and releases the owned runtime
+ok 32 - company-revocation during a pending native startup prevents every model turn and releases the owned runtime
+  ---
+  duration_ms: 14.6418
+  ...
+# Subtest: local-revocation during a pending native startup prevents every model turn and releases the owned runtime
+ok 33 - local-revocation during a pending native startup prevents every model turn and releases the owned runtime
+  ---
+  duration_ms: 19.5928
+  ...
+# Subtest: a completed workflow child stops its heartbeat before native shutdown and terminal settlement
+ok 34 - a completed workflow child stops its heartbeat before native shutdown and terminal settlement
+  ---
+  duration_ms: 18.0022
+  ...
+# Subtest: an uncertain native result reports unknown and cannot be silently replayed or followed by another local turn
+ok 35 - an uncertain native result reports unknown and cannot be silently replayed or followed by another local turn
+  ---
+  duration_ms: 7.7316
+  ...
+# Subtest: account invalidation revokes local grants and hides the previous account's journal
+ok 36 - account invalidation revokes local grants and hides the previous account's journal
+  ---
+  duration_ms: 24.1878
+  ...
+# Subtest: concurrent native consent cannot race another permission grant or begin execution
+ok 37 - concurrent native consent cannot race another permission grant or begin execution
+  ---
+  duration_ms: 3.925
+  ...
+# Subtest: generic renderer API cannot retrieve native credentials or proxy native inference
+ok 38 - generic renderer API cannot retrieve native credentials or proxy native inference
+  ---
+  duration_ms: 0.7696
+  ...
+# Subtest: an explicit native answer resumes one owned operation without a new task, turn, budget or answer journal entry
+ok 39 - an explicit native answer resumes one owned operation without a new task, turn, budget or answer journal entry
+  ---
+  duration_ms: 7.8009
+  ...
+# Subtest: malformed answers, guessed native ids and a different account cannot answer a live question
+ok 40 - malformed answers, guessed native ids and a different account cannot answer a live question
+  ---
+  duration_ms: 8.0325
+  ...
+# Subtest: simultaneous answer submissions are single use and cannot win a stop during company authorization
+ok 41 - simultaneous answer submissions are single use and cannot win a stop during company authorization
+  ---
+  duration_ms: 9.7167
+  ...
+# Subtest: waiting questions disappear on stop and cannot be answered or replayed
+ok 42 - waiting questions disappear on stop and cannot be answered or replayed
+  ---
+  duration_ms: 5.9254
+  ...
+# Subtest: waiting questions disappear on revoke and cannot be answered or replayed
+ok 43 - waiting questions disappear on revoke and cannot be answered or replayed
+  ---
+  duration_ms: 12.2965
+  ...
+# Subtest: waiting questions disappear on invalidate and cannot be answered or replayed
+ok 44 - waiting questions disappear on invalidate and cannot be answered or replayed
+  ---
+  duration_ms: 12.8815
+  ...
+# Subtest: waiting questions disappear on close and cannot be answered or replayed
+ok 45 - waiting questions disappear on close and cannot be answered or replayed
+  ---
+  duration_ms: 15.728
+  ...
+# Subtest: a native method reserves one durable batch, runs each role locally and never creates a fallback task on retry
+ok 46 - a native method reserves one durable batch, runs each role locally and never creates a fallback task on retry
+  ---
+  duration_ms: 10.5844
+  ...
+# Subtest: lost native method admission survives a main-process restart and resumes the original immutable batch
+ok 47 - lost native method admission survives a main-process restart and resumes the original immutable batch
+  ---
+  duration_ms: 10.3516
+  ...
+# Subtest: a withdrawn local grant can reconcile and cancel a lost batch without launching Codex or requiring a new permission
+ok 48 - a withdrawn local grant can reconcile and cancel a lost batch without launching Codex or requiring a new permission
+  ---
+  duration_ms: 14.2229
+  ...
+# Subtest: a definitive native method rejection releases the local reservations and an account change during persistence cannot admit work
+ok 49 - a definitive native method rejection releases the local reservations and an account change during persistence cannot admit work
+  ---
+  duration_ms: 17.1855
+  ...
+# Subtest: GEO preparation is consented, independently bound, durable before reservation and separate from general local sessions
+ok 50 - GEO preparation is consented, independently bound, durable before reservation and separate from general local sessions
+  ---
+  duration_ms: 71.1346
+  ...
+# Subtest: lost batch admission survives restart and reuses one reservation rather than replacing unknown work
+ok 51 - lost batch admission survives restart and reuses one reservation rather than replacing unknown work
+  ---
+  duration_ms: 28.4284
+  ...
+# Subtest: unknown accepted native GEO is reported once and never restarts a turn; a prepared question can stop without inference
+ok 52 - unknown accepted native GEO is reported once and never restarts a turn; a prepared question can stop without inference
+  ---
+  duration_ms: 15.6518
+  ...
+# Subtest: declined or stale-account GEO consent creates no reservation, and native admission stays outside the renderer API
+ok 53 - declined or stale-account GEO consent creates no reservation, and native admission stays outside the renderer API
+  ---
+  duration_ms: 8.2874
+  ...
+# Subtest: native input projection preserves explicit choices, free text and secret presentation without mutating caller state
+ok 54 - native input projection preserves explicit choices, free text and secret presentation without mutating caller state
+  ---
+  duration_ms: 3.3261
+  ...
+# Subtest: invalid question identity, duplicate options and unbounded payloads are rejected before presentation
+ok 55 - invalid question identity, duplicate options and unbounded payloads are rejected before presentation
+  ---
+  duration_ms: 1.1567
+  ...
+# Subtest: answers require every exact question once, a single explicit value and bounded content
+ok 56 - answers require every exact question once, a single explicit value and bounded content
+  ---
+  duration_ms: 0.9276
+  ...
+# Subtest: a real filesystem watch debounces rapid edits, excludes its own outputs and dispatches each content fingerprint once
+ok 57 - a real filesystem watch debounces rapid edits, excludes its own outputs and dispatches each content fingerprint once
+  ---
+  duration_ms: 4391.5323
+  ...
+# Subtest: batch dispatch is serial, pause finishes the current file and resume handles only remaining work within both caps
+ok 58 - batch dispatch is serial, pause finishes the current file and resume handles only remaining work within both caps
+  ---
+  duration_ms: 2917.1996
+  ...
+# Subtest: lost result and restart recover the original job and output without spending on another execution
+ok 59 - lost result and restart recover the original job and output without spending on another execution
+  ---
+  duration_ms: 2574.2494
+  ...
+# Subtest: active rules reopen paused and require fresh confirmation before processing changes made while closed
+ok 60 - active rules reopen paused and require fresh confirmation before processing changes made while closed
+  ---
+  duration_ms: 2432.1337
+  ...
+# Subtest: a known changed original is reported as conflict after a paid run and prevents the next file
+ok 61 - a known changed original is reported as conflict after a paid run and prevents the next file
+  ---
+  duration_ms: 1853.8776
+  ...
+# Subtest: unknown outcomes retain their original task, block further dispatch and cannot be silently resumed
+ok 62 - unknown outcomes retain their original task, block further dispatch and cannot be silently resumed
+  ---
+  duration_ms: 2856.0397
+  ...
+# Subtest: withdrawal during activation invalidates the pending confirmation and cannot revive a paused rule
+ok 63 - withdrawal during activation invalidates the pending confirmation and cannot revive a paused rule
+  ---
+  duration_ms: 1434.2607
+  ...
+# Subtest: revoked grants and account changes stop dispatch, and a new login epoch cannot list the old rules
+ok 64 - revoked grants and account changes stop dispatch, and a new login epoch cannot list the old rules
+  ---
+  duration_ms: 20.7695
+  ...
+# Subtest: failed journal persistence prevents native dispatch and leaves an actionable storage error
+ok 65 - failed journal persistence prevents native dispatch and leaves an actionable storage error
+  ---
+  duration_ms: 711.5525
+  ...
+# Subtest: changes waiting behind a busy session supersede unpaid versions, including content that returns to an earlier unpaid fingerprint
+ok 66 - changes waiting behind a busy session supersede unpaid versions, including content that returns to an earlier unpaid fingerprint
+  ---
+  duration_ms: 3292.5667
+  ...
+# Subtest: revoking a rule stops only its active owned task and retains its original receipt without starting the next file
+ok 67 - revoking a rule stops only its active owned task and retains its original receipt without starting the next file
+  ---
+  duration_ms: 1194.7397
+  ...
+# Subtest: pre-turn recovery drains both owned resources before rotating authority and retains one deadline/task
+ok 68 - pre-turn recovery drains both owned resources before rotating authority and retains one deadline/task
+  ---
+  duration_ms: 10.2669
+  ...
+# Subtest: unclassified startup error cannot obtain recovery authority: unknown native failure
+ok 69 - unclassified startup error cannot obtain recovery authority: unknown native failure
+  ---
+  duration_ms: 1.8673
+  ...
+# Subtest: unclassified startup error cannot obtain recovery authority: LOCAL_CODEX_RPC_REJECTED
+ok 70 - unclassified startup error cannot obtain recovery authority: LOCAL_CODEX_RPC_REJECTED
+  ---
+  duration_ms: 1.4908
+  ...
+# Subtest: unclassified startup error cannot obtain recovery authority: LOCAL_CODEX_PROFILE_INVALID
+ok 71 - unclassified startup error cannot obtain recovery authority: LOCAL_CODEX_PROFILE_INVALID
+  ---
+  duration_ms: 1.2302
+  ...
+# Subtest: a second native transport failure is terminal and never creates a third process
+ok 72 - a second native transport failure is terminal and never creates a third process
+  ---
+  duration_ms: 3.2357
+  ...
+# Subtest: incomplete native cleanup keeps the first launch consumed and cannot fence or restart
+ok 73 - incomplete native cleanup keeps the first launch consumed and cannot fence or restart
+  ---
+  duration_ms: 1.6159
+  ...
+# Subtest: owner withdrawal after cleanup prevents recovery
+ok 74 - owner withdrawal after cleanup prevents recovery
+  ---
+  duration_ms: 3.3277
+  ...
+# Subtest: permission withdrawal after cleanup prevents recovery
+ok 75 - permission withdrawal after cleanup prevents recovery
+  ---
+  duration_ms: 1.7888
+  ...
+# Subtest: cancel withdrawal after cleanup prevents recovery
+ok 76 - cancel withdrawal after cleanup prevents recovery
+  ---
+  duration_ms: 4.7507
+  ...
+# Subtest: a lost recovery response uses the exact same durable key and body without another initial admission
+ok 77 - a lost recovery response uses the exact same durable key and body without another initial admission
+  ---
+  duration_ms: 9.5016
+  ...
+# Subtest: pending recovery survives a controller restart and retrieves only its original intent
+ok 78 - pending recovery survives a controller restart and retrieves only its original intent
+  ---
+  duration_ms: 3.5963
+  ...
+# Subtest: an uncertain durable launch is never restarted even when no turn receipt exists
+ok 79 - an uncertain durable launch is never restarted even when no turn receipt exists
+  ---
+  duration_ms: 0.8534
+  ...
+# Subtest: a lost turn-admission reply cannot open the native turn or restore startup replay
+ok 80 - a lost turn-admission reply cannot open the native turn or restore startup replay
+  ---
+  duration_ms: 2.7609
+  ...
+# Subtest: recovery rejects a changed deadline receipt
+ok 81 - recovery rejects a changed deadline receipt
+  ---
+  duration_ms: 2.3663
+  ...
+# Subtest: recovery rejects a changed contract receipt
+ok 82 - recovery rejects a changed contract receipt
+  ---
+  duration_ms: 0.816
+  ...
+# Subtest: recovery rejects a changed epoch receipt
+ok 83 - recovery rejects a changed epoch receipt
+  ---
+  duration_ms: 0.6777
+  ...
+# Subtest: native workflow requires separate exact fee consent and concrete human approval before the corresponding local children
+ok 84 - native workflow requires separate exact fee consent and concrete human approval before the corresponding local children
+  ---
+  duration_ms: 22.4898
+  ...
+# Subtest: declining native workflow fees creates no child or automatic retry
+ok 85 - declining native workflow fees creates no child or automatic retry
+  ---
+  duration_ms: 1.8821
+  ...
+# Subtest: a native workflow rejects already authorized receipts and fabricated cost totals before asking or executing
+ok 86 - a native workflow rejects already authorized receipts and fabricated cost totals before asking or executing
+  ---
+  duration_ms: 3.1913
+  ...
+# Subtest: native workflow frozen definitions and child-role boundaries are rechecked before launch
+ok 87 - native workflow frozen definitions and child-role boundaries are rechecked before launch
+  ---
+  duration_ms: 3.6184
+  ...
+# Subtest: unknown native child results never advance to another paid step or retry the child
+ok 88 - unknown native child results never advance to another paid step or retry the child
+  ---
+  duration_ms: 1.7824
+  ...
+# Subtest: withdrawing native authority after consent prevents a queued child from executing
+ok 89 - withdrawing native authority after consent prevents a queued child from executing
+  ---
+  duration_ms: 1.7526
+  ...
+# Subtest: an external workflow cancellation invalidates a pending human card and sends no stale approval
+ok 90 - an external workflow cancellation invalidates a pending human card and sends no stale approval
+  ---
+  duration_ms: 1015.4916
+  ...
+# Subtest: stopping a native approval wait closes its watcher and never sends a decision
+ok 91 - stopping a native approval wait closes its watcher and never sends a decision
+  ---
+  duration_ms: 15.4071
+  ...
+1..91
+# tests 91
+# suites 0
+# pass 91
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 29137.9289

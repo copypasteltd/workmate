@@ -1,0 +1,232 @@
+TAP version 13
+# \# native_startup_recovery {"method":"initialize","timeout":false,"twice":false,"native_processes":2,"model_requests":1,"prior_task_requests":0,"native_processes_closed":true,"company_api":"synthetic; real SQL qualified separately"}
+# Subtest: real pinned native startup recovery at initialize, timeout=false, twice=false
+ok 1 - real pinned native startup recovery at initialize, timeout=false, twice=false
+  ---
+  duration_ms: 8794.4602
+  ...
+# \# native_startup_recovery {"method":"thread/start","timeout":false,"twice":false,"native_processes":2,"model_requests":1,"prior_task_requests":0,"native_processes_closed":true,"company_api":"synthetic; real SQL qualified separately"}
+# Subtest: real pinned native startup recovery at thread/start, timeout=false, twice=false
+ok 2 - real pinned native startup recovery at thread/start, timeout=false, twice=false
+  ---
+  duration_ms: 12340.0715
+  ...
+# \# native_startup_recovery {"method":"thread/start","timeout":true,"twice":false,"native_processes":2,"model_requests":1,"prior_task_requests":0,"native_processes_closed":true,"company_api":"synthetic; real SQL qualified separately"}
+# Subtest: real pinned native startup recovery at thread/start, timeout=true, twice=false
+ok 3 - real pinned native startup recovery at thread/start, timeout=true, twice=false
+  ---
+  duration_ms: 38911.7429
+  ...
+# \# native_startup_recovery {"method":"thread/resume","timeout":false,"twice":false,"native_processes":2,"model_requests":1,"prior_task_requests":1,"native_processes_closed":true,"company_api":"synthetic; real SQL qualified separately"}
+# Subtest: real pinned native startup recovery at thread/resume, timeout=false, twice=false
+ok 4 - real pinned native startup recovery at thread/resume, timeout=false, twice=false
+  ---
+  duration_ms: 7693.1695
+  ...
+# \# native_startup_recovery {"method":"initialize","timeout":false,"twice":true,"native_processes":2,"model_requests":0,"prior_task_requests":0,"native_processes_closed":true,"company_api":"synthetic; real SQL qualified separately"}
+# Subtest: real pinned native startup recovery at initialize, timeout=false, twice=true
+ok 5 - real pinned native startup recovery at initialize, timeout=false, twice=true
+  ---
+  duration_ms: 3674.322
+  ...
+# Subtest: native startup close at company-authority prevents a late process and releases any acquired lock
+ok 6 - native startup close at company-authority prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 8.4754
+  ...
+# Subtest: native startup revoke at company-authority prevents a late process and releases any acquired lock
+ok 7 - native startup revoke at company-authority prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 5.0879
+  ...
+# Subtest: native startup close at verified-binary prevents a late process and releases any acquired lock
+ok 8 - native startup close at verified-binary prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 1285.5073
+  ...
+# Subtest: native startup revoke at verified-binary prevents a late process and releases any acquired lock
+ok 9 - native startup revoke at verified-binary prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 1193.1431
+  ...
+# Subtest: native startup close at owned-lock prevents a late process and releases any acquired lock
+ok 10 - native startup close at owned-lock prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 1253.9406
+  ...
+# Subtest: native startup revoke at owned-lock prevents a late process and releases any acquired lock
+ok 11 - native startup revoke at owned-lock prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 2153.7709
+  ...
+# Subtest: native startup close at spawn-authority prevents a late process and releases any acquired lock
+ok 12 - native startup close at spawn-authority prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 1552.8187
+  ...
+# Subtest: native startup revoke at spawn-authority prevents a late process and releases any acquired lock
+ok 13 - native startup revoke at spawn-authority prevents a late process and releases any acquired lock
+  ---
+  duration_ms: 1593.0578
+  ...
+# Subtest: native startup close drains a real process with a pending initialize RPC
+ok 14 - native startup close drains a real process with a pending initialize RPC
+  ---
+  duration_ms: 3099.3333
+  ...
+# Subtest: native startup revoke drains a real process with a pending initialize RPC
+ok 15 - native startup revoke drains a real process with a pending initialize RPC
+  ---
+  duration_ms: 3558.9365
+  ...
+# Subtest: native startup close drains a real process with a pending thread/start RPC
+ok 16 - native startup close drains a real process with a pending thread/start RPC
+  ---
+  duration_ms: 3122.6735
+  ...
+# Subtest: native startup revoke drains a real process with a pending thread/start RPC
+ok 17 - native startup revoke drains a real process with a pending thread/start RPC
+  ---
+  duration_ms: 3313.3315
+  ...
+# \# native_startup_lease {"elapsed_ms":50180,"heartbeats":9,"task_reservations_simulated":1,"native_processes":1,"model_requests":1,"native_processes_closed":true}
+# Subtest: actual customer-local Codex startup exceeding 45 seconds retains the original lease and runs exactly one turn
+ok 18 - actual customer-local Codex startup exceeding 45 seconds retains the original lease and runs exactly one turn
+  ---
+  duration_ms: 50202.5093
+  ...
+# Subtest: native local turns reject pre-turn tools and foreign notifications, usage and approvals without losing the active task
+ok 19 - native local turns reject pre-turn tools and foreign notifications, usage and approvals without losing the active task
+  ---
+  duration_ms: 5022.6553
+  ...
+# Subtest: a real native completion recovers a lost turn-start reply without replay or a second provider dispatch
+ok 20 - a real native completion recovers a lost turn-start reply without replay or a second provider dispatch
+  ---
+  duration_ms: 3698.008
+  ...
+# Subtest: native RPC rejection diagnostics expose neither native content nor structured error payloads
+ok 21 - native RPC rejection diagnostics expose neither native content nor structured error payloads
+  ---
+  duration_ms: 2792.63
+  ...
+# Subtest: native Codex transports the versioned website-analysis schema and returns exact authenticated tool evidence
+ok 22 - native Codex transports the versioned website-analysis schema and returns exact authenticated tool evidence
+  ---
+  duration_ms: 4520.9897
+  ...
+# Subtest: native Codex transports frozen budget preview and enforces read-only preparation rights
+ok 23 - native Codex transports frozen budget preview and enforces read-only preparation rights
+  ---
+  duration_ms: 3979.5128
+  ...
+# Subtest: native Codex transports frozen budget preview and enforces full-access preparation rights
+ok 24 - native Codex transports frozen budget preview and enforces full-access preparation rights
+  ---
+  duration_ms: 4198.0381
+  ...
+# Subtest: real native Codex lists, runs and inspects a customer-approved program with exact argv and no shell or inference credential inheritance
+ok 25 - real native Codex lists, runs and inspects a customer-approved program with exact argv and no shell or inference credential inheritance
+  ---
+  duration_ms: 5196.0715
+  ...
+# Subtest: native user input resumes the original working turn with explicit answers
+ok 26 - native user input resumes the original working turn with explicit answers
+  ---
+  duration_ms: 4012.6898
+  ...
+# Subtest: native user input does not block interrupt or terminal processing
+ok 27 - native user input does not block interrupt or terminal processing
+  ---
+  duration_ms: 5881.2549
+  ...
+# Subtest: native user input does not block revoke or terminal processing
+ok 28 - native user input does not block revoke or terminal processing
+  ---
+  duration_ms: 4934.0997
+  ...
+# Subtest: native company tools use their exact namespace and persist across same-thread follow-ups
+ok 29 - native company tools use their exact namespace and persist across same-thread follow-ups
+  ---
+  duration_ms: 4845.9861
+  ...
+# Subtest: native company writes are denied in local read-only mode before dispatch
+ok 30 - native company writes are denied in local read-only mode before dispatch
+  ---
+  duration_ms: 3400.8727
+  ...
+# Subtest: native company uncertainty stops the turn and never repeats an accepted operation
+ok 31 - native company uncertainty stops the turn and never repeats an accepted operation
+  ---
+  duration_ms: 3869.0901
+  ...
+# Subtest: native company work is aborted when the owning local runtime closes
+ok 32 - native company work is aborted when the owning local runtime closes
+  ---
+  duration_ms: 4278.0779
+  ...
+# Subtest: a clean local thread survives inference credential expiry and resumes only with a fresh credential
+ok 33 - a clean local thread survives inference credential expiry and resumes only with a fresh credential
+  ---
+  duration_ms: 32112.0288
+  ...
+# Subtest: native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+ok 34 - native full access edits an existing file outside cwd, loads the real Skill and resumes the same local thread
+  ---
+  duration_ms: 6979.0727
+  ...
+# {"version":"0.163.0-alpha.11","native_binary_sha256":"00c0f1e4099246fddcd67ec620ca8ed50827c7d70e113b7224f7a2933cf2d67c","outside_cwd_file_sha256":"205b67f30e170f01fa12b325555888f71d96fcaf25a0eb1cf4e249f895ffd36d","same_thread":true,"credential_excluded_from_shell":true}
+# Subtest: native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+ok 35 - native full-to-read-only downgrade prevents a later outside-cwd write and cannot be rolled back by an old grant
+  ---
+  duration_ms: 5372.2907
+  ...
+# Subtest: local binary, provider, Skill and permission-owner mismatches dispatch no inference
+ok 36 - local binary, provider, Skill and permission-owner mismatches dispatch no inference
+  ---
+  duration_ms: 2844.6328
+  ...
+# Subtest: native interruption and revocation stop only this owned process and reject further local turns
+ok 37 - native interruption and revocation stop only this owned process and reject further local turns
+  ---
+  duration_ms: 3175.3502
+  ...
+# Subtest: an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+ok 38 - an abruptly lost native turn preserves an uncertain checkpoint and refuses blind replay
+  ---
+  duration_ms: 4139.1314
+  ...
+# Subtest: current account authority is checked before each native turn
+ok 39 - current account authority is checked before each native turn
+  ---
+  duration_ms: 2899.9598
+  ...
+# Subtest: changing a materialized Skill is rejected before another provider request
+ok 40 - changing a materialized Skill is rejected before another provider request
+  ---
+  duration_ms: 2734.1738
+  ...
+# Subtest: a previous account or project checkpoint cannot be taken over or rewritten
+ok 41 - a previous account or project checkpoint cannot be taken over or rewritten
+  ---
+  duration_ms: 4706.0532
+  ...
+# Subtest: an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+ok 42 - an unused local session can reopen without replaying inference or resuming a nonexistent native rollout
+  ---
+  duration_ms: 4088.3301
+  ...
+# Subtest: native read-only Codex can read a registered exact method without gaining write permission
+ok 43 - native read-only Codex can read a registered exact method without gaining write permission
+  ---
+  duration_ms: 3808.0632
+  ...
+1..43
+# tests 43
+# suites 0
+# pass 43
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 277946.0139

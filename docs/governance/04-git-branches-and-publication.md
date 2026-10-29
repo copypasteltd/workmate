@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- startup-recovery-stage128 -->
+阶段128使用 `dev/copypaste-delivery/scripts/publish-workmate-v11.mjs` 和 `docs/tools/audit_workmate_publication_v11.py`，校验本机启动恢复、匹配的原生 Codex/SQL/窗口证据及全部保留的历史证明后，普通原子推送六端和 `docs`／`main` 八个远端引用。中央文档工作区中与本轮无关的未跟踪用户文件保持原样，不纳入提交；发布记录列出这些保留路径。已跟踪修改必须先提交。执行位置及数据流仍遵守 CLIENT01。
+
+Stage128 uses the V11 publisher and audit to bind local startup recovery to matching native Codex, SQL and actual-window evidence while retaining all historical proofs. Publication updates the six component branches plus `docs` and `main` through one ordinary atomic push. Unrelated untracked user files in the central documentation workspace remain untouched and excluded from commits; the receipt lists their preserved paths. Tracked changes must be committed. CLIENT01 execution and data-flow constraints remain authoritative.
+
 <!-- local-startup-stage127 -->
 当前阶段127入口为 `dev/copypaste-delivery/scripts/publish-workmate-v10.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v10.py`。本轮绑定本机启动/撤权、控制层及真实Codex、实际打包窗口、原公司账务和截图/GIF；原失败、取消、旧包及所有历史证明保留。六个独立组件仓库和中央文档提交后，普通原子推送八个映射引用并读取实际SHA，不强推。Desktop根属性文件保持原字节；执行脚本、源码快照、原日志和回执首次运行后不得覆盖。
 
