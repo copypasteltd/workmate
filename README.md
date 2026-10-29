@@ -9,7 +9,11 @@
 
 当前通过范围：后端09为117/117、CLI07为5/5、分析08为12/12、Desktop媒体03为21/21、Extension02为70/70、Web/Admin12为14/14；实际打包Desktop／Chrome原生右侧栏02为10/10通过，源文件与包字节匹配，自建浏览器、Electron、API、数据库及夹具均已关闭。Web/Admin原始记录覆盖四档宽度，早先无效宽度声明及所有失败保留。
 
-候选源码目前在相邻`copypaste-*-publication-125`工作树；原生检查绑定未签名目录包及固定Codex字节。阶段专用候选路径不能替代最终独立检出说明。仍需完成整合、独立检出复现及发布器绑定；六个产品分支目前仍为阶段124。
+本阶段发布入口为 `node scripts/publish-workmate-v8.mjs --push`；`--check` 只核查。执行器要求六个独立产品仓库与中央文档均已提交，读取普通开发目录，校验当前源码、原始回执、历史证明、双语说明、实际媒体及远端祖先后，普通原子推送八个映射分支并读取最终SHA。以最终回执为发布依据，不强推。
+
+阶段专用验收脚本保留相邻 `copypaste-*-publication-125` 候选路径及固定未签名目录包，不是其他检出的通用启动器。正常安装与启动按下方说明；独立检出复现、签名安装、新增发布视频、四个发布工具的实际Codex调用及至少十二个角色的专业资格仍待完成。
+
+[本阶段方案与限制](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/125-controlled-publishing-and-native-media.md) · [源码与证据清单](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/publications-checkpoint-125.json)
 
 
 <!-- admin-profile-revisions-124 -->
@@ -17,14 +21,14 @@
 
 本轮在后端与 Admin 独立仓库补齐专家、品牌和记忆修订；68项相关后端、11项后台单元、8项实际页面及14次布局观察通过，8张截图、3组GIF/MP4与失败原件保存。Desktop保留客户本机Codex，Extension保留原生右侧栏与云端Codex。
 
-当前入口为 `node scripts/publish-workmate-v7.mjs --push`。六个组件与中央文档提交后，V7检查确切源码、历史证明、媒体、双语说明、凭证与远端祖先，普通原子推送八个映射引用，再读取实际SHA。不会强推；以执行器最终回执为发布依据。运行环境只用原生工具，不使用Docker/WSL。
+阶段124入口为 `node scripts/publish-workmate-v7.mjs --push`。六个组件与中央文档提交后，V7检查确切源码、历史证明、媒体、双语说明、凭证与远端祖先，普通原子推送八个映射引用，再读取实际SHA。不会强推；以执行器最终回执为发布依据。运行环境只用原生工具，不使用Docker/WSL。
 
 [方案与验证](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/124-admin-profile-revisions.md) · [实际后台画面](https://github.com/copypasteltd/workmate/blob/admin/README.md)
 
 <!-- admin-content-revisions-123 -->
 ## 管理员正文修订与交付核查 · 阶段 123
 
-当前发布命令为 `node scripts/publish-workmate-v6.mjs --push`，`--check` 只核查。V6 先校验六个独立组件和中央文档的提交、精确源码、原始证据、双语说明、媒体、历史对象、凭据与远端祖先关系，再普通原子推送八个映射引用并读取实际 SHA。历史证明身份及失败记录全部保留，不强推。
+阶段123发布命令为 `node scripts/publish-workmate-v6.mjs --push`，`--check` 只核查。V6 先校验六个独立组件和中央文档的提交、精确源码、原始证据、双语说明、媒体、历史对象、凭据与远端祖先关系，再普通原子推送八个映射引用并读取实际 SHA。历史证明身份及失败记录全部保留，不强推。
 
 当前增量已取得五个完整相关后端文件 **75/75**、实际 Admin 页面 **7/7**，以及四档宽度的 7 次弹窗与输入边界观察。后台专项验证三类修订、范围权限/MFA、并发、幂等、审计失败回滚、独立管理员来源、数据库角色与不可变性；实际页面包括真实邮件/MFA、表单、原提交响应丢失后恢复和撤权清除正文。编辑流程没有模型请求，不增加任务或费用。
 

@@ -9,7 +9,11 @@ Adds synthetic OAuth, complete related backend checks, actual Web/Admin pages, p
 
 Passing scopes: backend09 117/117, CLI07 5/5, analysis08 12/12, Desktop media03 21/21, Extension02 70/70 and Web/Admin12 14/14. Actual packaged Desktop/native Chrome Side Panel run02 passes 10/10, with matching source/package bytes and owned browsers, Electron, API, database and fixtures closed. Actual Web/Admin observations cover four widths; previous invalid width claims and all failures remain preserved.
 
-Candidates currently occupy adjacent `copypaste-*-publication-125` worktrees; native checks bind the unsigned package and pinned Codex bytes. Stage-specific candidate paths are not final independent-checkout instructions. Integration, independent reproduction and publisher binding remain open; six product refs still retain Stage124.
+The Stage125 publication entry is `node scripts/publish-workmate-v8.mjs --push`; `--check` verifies without pushing. The executor requires six committed independent product repositories and committed central documentation. It reads the normal development directories, verifies current sources, original receipts, historical proofs, bilingual guides, actual media and remote ancestry, then ordinarily updates eight mapped refs atomically and reads back their final SHAs. The final receipt establishes publication; it never force-pushes.
+
+Stage-specific qualification scripts preserve adjacent `copypaste-*-publication-125` candidate paths and a pinned unsigned package; they are not generic launchers for another checkout. Follow the normal installation/startup instructions below. Independent-checkout reproduction, signed installation, new publication video playback, actual Codex invocation of the four publication tools and professional qualification of at least twelve roles remain open.
+
+[Behavior and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/125-controlled-publishing-and-native-media.md) · [Source/evidence checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/publications-checkpoint-125.json)
 
 
 <!-- admin-profile-revisions-124 -->
@@ -17,14 +21,14 @@ Candidates currently occupy adjacent `copypaste-*-publication-125` worktrees; na
 
 Backend/Admin add scoped specialist, brand and memory revisions. All 68 related backend checks, 11 Admin unit checks, eight actual UI flows and 14 layout observations passed. Eight screenshots, three GIF/MP4 pairs and failed originals are retained. Desktop remains customer-local Codex; Extension remains a native Side Panel with cloud Codex.
 
-The current entry is `node scripts/publish-workmate-v7.mjs --push`. After all six components and central documentation are committed, V7 checks exact sources, historical proofs, media, bilingual guides, credentials and remote ancestry. It performs an ordinary atomic update of eight mapped refs, then reads their actual SHAs. No force push; the final executor receipt establishes publication. Native tools only; no Docker/WSL.
+The Stage124 entry is `node scripts/publish-workmate-v7.mjs --push`. After all six components and central documentation are committed, V7 checks exact sources, historical proofs, media, bilingual guides, credentials and remote ancestry. It performs an ordinary atomic update of eight mapped refs, then reads their actual SHAs. No force push; the final executor receipt establishes publication. Native tools only; no Docker/WSL.
 
 [Design and qualification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/124-admin-profile-revisions.md) · [Actual Admin screens](https://github.com/copypasteltd/workmate/blob/admin/README.en.md)
 
 <!-- admin-content-revisions-123 -->
 ## Administrator revisions and publication · Stage 123
 
-The current publication command is `node scripts/publish-workmate-v6.mjs --push`; `--check` verifies without pushing. V6 checks committed independent repositories, exact sources, original evidence, bilingual guides, media, historical objects, configured credentials and remote ancestry, then ordinarily updates the eight mapped refs atomically and reads back their SHAs. Historical proof identities and failures remain intact; publication never force-pushes.
+The Stage123 publication command is `node scripts/publish-workmate-v6.mjs --push`; `--check` verifies without pushing. V6 checks committed independent repositories, exact sources, original evidence, bilingual guides, media, historical objects, configured credentials and remote ancestry, then ordinarily updates the eight mapped refs atomically and reads back their SHAs. Historical proof identities and failures remain intact; publication never force-pushes.
 
 The increment passed **75 checks across five complete related backend files**, **seven actual Admin UI flows** and seven dialog/field-bound observations at four widths. Backend checks cover the three revision types, scoped authority/MFA, concurrency, idempotency, audit rollback, separate administrator provenance, database roles and immutability. Actual UI uses email/MFA login, structured editing, a committed response deliberately lost and recovered, and live permission withdrawal. Editing makes no model requests and creates no tasks or charges.
 
