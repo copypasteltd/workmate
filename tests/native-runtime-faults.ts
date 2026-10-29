@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 
 export interface OwnedNativeProcess {
   child: ChildProcessWithoutNullStreams;
+  spawnedAt: number;
   closed: boolean;
   exitCode: number | null;
   signal: NodeJS.Signals | null;
@@ -31,7 +32,7 @@ export async function withOwnedNativeProcesses<T>(
     if (fold(path.resolve(file)) === fold(binary) && args?.[0] === "app-server"
       && (fold(cwd) === fold(root) || fold(cwd).startsWith(fold(root + path.sep)))) {
       let finish!: () => void;
-      const row: OwnedNativeProcess = { child, closed: false, exitCode: null, signal: null,
+      const row: OwnedNativeProcess = { child, spawnedAt: Date.now(), closed: false, exitCode: null, signal: null,
         wait: new Promise<void>(resolve => { finish = resolve; }) };
       child.once("close", (code, signal) => {
         row.closed = true; row.exitCode = code; row.signal = signal; row.closedAt = Date.now(); finish();
@@ -89,12 +90,12 @@ try:
     times = [wintypes.FILETIME() for _ in range(4)]
     if not k.GetProcessTimes(h, *(ctypes.byref(t) for t in times)): raise ctypes.WinError(ctypes.get_last_error())
     created = ((times[0].dwHighDateTime << 32) | times[0].dwLowDateTime) // 10000 - 11644473600000
-    if created < earliest - 1500 or created > int(time.time() * 1000) + 1500: raise RuntimeError('Owned native creation time mismatch')
+    if created < earliest - 1500 or created > earliest + 1500: raise RuntimeError('Owned native creation time mismatch')
     if n.NtSuspendProcess(h) != 0: raise RuntimeError('Owned native suspension failed')
 finally:
     k.CloseHandle(h)
 `;
-  childProcess.execFileSync(process.env.COPYPASTE_TEST_PYTHON ?? "python", ["-c", code, String(pid), executable, String(Date.now())],
+  childProcess.execFileSync(process.env.COPYPASTE_TEST_PYTHON ?? "python", ["-c", code, String(pid), executable, String(row.spawnedAt)],
     { windowsHide: true, timeout: 10000, stdio: ["ignore", "pipe", "pipe"] });
 }
 

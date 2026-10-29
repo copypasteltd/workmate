@@ -45,7 +45,7 @@ export function publicationTools(db: Database, storage: Storage, task: any, acto
           const current = (await tx.query("SELECT * FROM tasks WHERE id=$1", [task.id])).rows[0];
           await tx.query("SELECT set_config('app.task_id',$1,true)", [task.id]);
           for (const source of preview.sources)
-            await recordTaskSourceRead(tx, current, "asset_version", source.asset_id, source.asset_version_id, source.source_sha256);
+            await recordTaskSourceRead(tx, current, "asset_version", source.asset_version_id, source.asset_version_id, source.source_sha256);
         }, task.tenant_id, true, actor.id);
         return preview;
       } },

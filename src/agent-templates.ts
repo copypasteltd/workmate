@@ -62,6 +62,8 @@ const implementedTools = new Set([
   "connector.read",
   "connector.budget.read",
   "connector.budget.prepare",
+  "publication.read",
+  "publication.prepare",
   "workflow.validate",
   "workflow.run",
   "vector.render",

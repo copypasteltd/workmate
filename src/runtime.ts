@@ -76,7 +76,11 @@ class RuntimeRPCFailure extends RuntimeFailure {
 }
 // This error can leave startAttempt only after its finally block has proved
 // that the previous native process and its scoped gateway are closed.
-class RecoverableInitializationFailure extends RuntimeFailure {}
+class RecoverableStartupFailure extends RuntimeFailure {
+  constructor(code: string, readonly method: string) {
+    super(code, false, true);
+  }
+}
 
 export class CodexRuntimeAdapter {
   constructor(private c: Config) {}
@@ -100,17 +104,18 @@ export class CodexRuntimeAdapter {
       try {
         return await this.startAttempt(ctx, attempt, deadlineAt);
       } catch (error) {
-        if (!(error instanceof RecoverableInitializationFailure)) throw error;
+        if (!(error instanceof RecoverableStartupFailure)) throw error;
         if (ctx.signal.aborted)
           throw new RuntimeFailure("CODEX_CANCELLED", false, true);
         if (attempt === 2 || Date.now() >= deadlineAt) throw error;
-        // No task/turn is resubmitted. Initialization alone may restart once;
+        // No task/turn is resubmitted. Pre-turn transport may restart once;
         // provider, tool and billing authority remain the original task's.
         await ctx.onEvent("runtime.startup.retry", {
           attempt,
           next_attempt: attempt + 1,
           maximum_attempts: 2,
           code: error.code,
+          method: error.method,
         });
       }
     }
@@ -687,6 +692,7 @@ export class CodexRuntimeAdapter {
         };
         return completedResult;
       } catch (e) {
+        const beforeTurnAdmission = !accepted;
         // Revoke the grant before proving zero dispatches. An authorization
         // callback still in flight must not dispatch after this observation.
         await gateway.close();
@@ -714,12 +720,13 @@ export class CodexRuntimeAdapter {
           if (e.accepted) e.usageKnown = false;
           if (
             e instanceof RuntimeRPCFailure &&
-            e.method === "initialize" &&
+            beforeTurnAdmission &&
+            ["initialize", "thread/start", "thread/resume"].includes(e.method) &&
             ["CODEX_RPC_TIMEOUT", "CODEX_CONNECTION_LOST"].includes(e.code) &&
             gateway.forwardedRequests === 0 &&
             !ctx.signal.aborted
           )
-            throw new RecoverableInitializationFailure(e.code, false, true);
+            throw new RecoverableStartupFailure(e.code, e.method);
           throw e;
         }
         throw new RuntimeFailure(

@@ -2,6 +2,44 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- native-publishing-stage126 -->
+## Native Codex publishing tools · Stage126
+
+The current social-content specialist can be created through the normal template API. This fixes omitted implemented-tool registrations and an asset-ID/version-ID mix-up in preview provenance. Strict immutable versions, SHA-256, authorization and database constraints remain enforced.
+
+Sign in, choose a project, connect and explicitly enable the account/policy, then select the exact media and content. Real Codex loads its bound Skill and calls publication_accounts → publication_preview → publication_prepare → publication_status. Preparation stops at awaiting_confirmation. The original customer reviews and explicitly approves in Publishing before sending is allowed. Ask and plan remain read-only.
+
+~~~mermaid
+flowchart LR
+    A[Sign in and select project] --> B[Create social specialist]
+    B --> C[Codex loads bound Skill]
+    C --> D[Accounts and exact media preview]
+    D --> E[Prepare and inspect pending operation]
+    E --> F[Original customer explicitly approves]
+    F --> G[Existing guarded dispatch and receipt]
+~~~
+
+Current targeted native09 through the cloud Worker passes5/5: actual four-tool calls, PNG/derived JPEG, exact source-version/hash lineage, call IDs, actor/project attribution, one reservation and actual charges, read-only modes, rejection of extra self-confirmation fields and no unconfirmed dispatch. Complete sixteen-file related10 passes155/155 with unchanged source and reclaimed owned native database/fixtures. Model decisions and accounts are explicitly simulated; Codex, authentication, SQL, files, tools and billing logic run for real.
+
+Startup recovery adds thread/start and thread/resume only before turn admission and after the closed gateway proves zero model requests. The original 60-second RPC limit, shared 15-minute deadline, two-process maximum and original task/authority/reservation remain enforced. Rejection, cancellation, cleanup failure and accepted/unknown work are never automatically replayed. Separate real-native fault03 passes9/9; the related full run also verifies one final charge after recovery. Desktop-local recovery and four-tool invocation need separate qualification.
+
+Interrupted06 lacks terminal/cleanup receipts. Run08 (132 passed, one failed) exposed a zero-model-request thread/start timeout. Red01 reproduces the old recovery gap; green02 (seven passed, one failed) exposed the QA helper's creation-time check, corrected and qualified in green03. All originals remain unchanged. Underlying intermittent native/Windows latency causality remains unproven.
+
+With the native test database running through the normal documented development setup:
+
+~~~powershell
+$env:CODEX_BIN = (Resolve-Path "../copypaste-desktop/.data/runtime/windows-x64/codex.exe").Path
+$env:CODEX_VERSION = (Get-Content "../copypaste-desktop/contracts/local-codex-runtime.json" -Raw | ConvertFrom-Json).runtime_version
+node --env-file=.env scripts/run-tests-owned.mjs tests/publication-native-tools-v3.test.ts
+node --env-file=.env scripts/run-tests-owned.mjs tests/runtime-pre-turn.test.ts tests/runtime-startup.test.ts tests/runtime-startup-billing.test.ts tests/runtime.test.ts
+~~~
+
+A real Codex executable matching the pinned version/hash is required; configure the native dependencies using the setup below. Candidate-workspace isolation scripts record local development qualification and are not generic installation commands for arbitrary checkout names.
+
+[Implementation and scope](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/126-native-publication-tools.md) · [Change record](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/126-native-publication-tools.md) · [Current checkpoint](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/native-publication-checkpoint-126.json) · [Open work](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage126.md)
+
+Actual Stage125 screenshots/GIFs remain below. This backend change adds no new UI, native video-playback, signed-installer, twelve-role professional or full-product qualification.
+
 <!-- controlled-publications-stage125 -->
 ## Controlled social publishing · Stage125
 
@@ -30,7 +68,7 @@ npm run admin:enable-publications -- admin@example.com --acknowledge-global-publ
 
 A new grant atomically revokes old sessions and records an audit; sign in again. Repeated/concurrent calls neither duplicate grants nor revoke fresh sessions. Body-read is not granted; conflicting roles and relevant explicit denies are refused.
 
-Current scopes pass 117/117 related backend checks, 5/5 CLI checks, 12/12 analysis checks and 14/14 actual Web/Admin checks. The actual packaged Desktop/native Chrome Side Panel publishing journey passes 10/10. These are not complete product or twelve-role professional acceptance; actual Codex invocation of the four new tools remains open; synthetic data and previous failures remain explicit.
+Historical Stage125 scopes pass 117/117 related backend checks, 5/5 CLI checks, 12/12 analysis checks and 14/14 actual Web/Admin checks. The actual packaged Desktop/native Chrome Side Panel publishing journey passes 10/10. These are not complete product or twelve-role professional acceptance; actual Codex invocation of the four new tools remains open; synthetic data and previous failures remain explicit.
 
 <!-- admin-profile-revisions-124 -->
 ## Specialist, brand and memory revisions · Stage 124

@@ -4,6 +4,7 @@ import type { Config } from "./config.js";
 import { pngFromSVG } from "./render.js";
 import { listenLoopbackHTTP } from "./loopback-http.js";
 import { demoVectorInput, demoSlidesInput } from "./editable-design-demo.js";
+import { publicationDraft as demoPublicationDraft } from "./publication-model.js";
 
 /** A loopback-only, synthetic dependency for development. The Codex kernel,
  * authorization, tool execution, assets, queue and ledger remain real. */
@@ -109,6 +110,10 @@ export async function startDemoGateway(c: Config) {
         input.filter((i) => i.role === "user").at(-1) ?? "",
       );
       const reportTool = find("analysis_report_facts");
+      const publicationAccounts = find("publication_accounts"),
+        publicationPreview = find("publication_preview"),
+        publicationPrepare = find("publication_prepare"),
+        publicationStatus = find("publication_status");
       const analysisSources = find("analysis_sources");
       const sheetCalculate = find("sheet_calculate");
       const chartRender = find("chart_render");
@@ -197,6 +202,18 @@ export async function startDemoGateway(c: Config) {
           .forEach((i) => collect(i.output));
         return found;
       };
+      const publicationDirectory = toolOutputs(
+        publicationAccounts?.name,
+        (v) => v.data_mode === "simulated" && Array.isArray(v.items),
+      ).at(-1);
+      const publicationFrozenPreview = toolOutputs(
+        publicationPreview?.name,
+        (v) => typeof v.preview_id === "string" && typeof v.payload_sha256 === "string",
+      ).at(-1);
+      const publicationPending = toolOutputs(
+        publicationPrepare?.name,
+        (v) => typeof v.id === "string" && v.state === "awaiting_confirmation",
+      ).at(-1);
       const analysisDirectory = toolOutputs(
         analysisSources?.name,
         (v) => v.kind === "frozen_analysis_datasets",
@@ -303,6 +320,22 @@ export async function startDemoGateway(c: Config) {
           : (latestUser?.content ?? [])
               .map((v: any) => v.text ?? "")
               .join("\n");
+      // This fixture accepts an explicit complete draft, never an invented account
+      // or media version. Real models use the same ordinary guarded tools.
+      const publicationMarker = "Approved simulated publication draft:";
+      const publicationLines = latestText.split(/\r?\n/).filter((line: string) => line.startsWith(publicationMarker));
+      const publicationWork = publicationLines.length > 0;
+      let publicationRequest: ReturnType<typeof demoPublicationDraft.parse> | undefined;
+      if (publicationLines.length === 1) {
+        try {
+          const parsed = demoPublicationDraft.safeParse(JSON.parse(publicationLines[0].slice(publicationMarker.length).trim()));
+          if (parsed.success) publicationRequest = parsed.data;
+        } catch { /* Invalid input cannot allocate a preview or prepare an operation. */ }
+      }
+      const publicationTarget = publicationDirectory?.items.find((item: any) => item.id === publicationRequest?.target_id);
+      const publicationAllowed = publicationTarget?.enabled === true && publicationTarget?.policy?.enabled === true &&
+        publicationTarget?.policy?.formats?.includes(publicationRequest?.format) &&
+        publicationTarget?.capabilities?.formats?.includes(publicationRequest?.format);
       const methodWork = latestText.includes(
         "Execute this exact reviewed reusable method",
       );
@@ -352,7 +385,21 @@ export async function startDemoGateway(c: Config) {
         /solution_read tool with installation_id ([a-f\d-]{36})/i,
       )?.[1];
       let tool: any, args: any;
-      if (methodWork) {
+      if (publicationWork) {
+        if (publicationRequest && publicationAccounts && !used(publicationAccounts.name)) {
+          tool = publicationAccounts;
+          args = {};
+        } else if (publicationRequest && publicationAllowed && publicationPreview && publicationPrepare && !used(publicationPreview.name)) {
+          tool = publicationPreview;
+          args = publicationRequest;
+        } else if (publicationFrozenPreview && publicationPrepare && !used(publicationPrepare.name)) {
+          tool = publicationPrepare;
+          args = { preview_id: publicationFrozenPreview.preview_id, payload_sha256: publicationFrozenPreview.payload_sha256 };
+        } else if (publicationPending && publicationStatus && !used(publicationStatus.name)) {
+          tool = publicationStatus;
+          args = { operation_id: publicationPending.id };
+        }
+      } else if (methodWork) {
         // Only model decisions are synthetic. Actual Codex tools read the
         // customer's approved versions and the normal worker records provenance.
         if (nextMethodInput && methodSource) {
@@ -803,7 +850,11 @@ export async function startDemoGateway(c: Config) {
             content: [
               {
                 type: "output_text",
-                text: changeTool
+                text: publicationWork
+                  ? publicationPending
+                    ? `【演示資料 / Simulated data】已准备待客户确认的发布操作 ${publicationPending.id}。请由原客户在发布页面核对确切内容并明确确认；工具不能代替客户确认，实际发布状态以操作回执为准。\n\nPrepared an operation awaiting the original customer's explicit confirmation. Review it in Publishing; these tools cannot approve it. Check its receipt for the actual publication state.`
+                    : "【演示資料 / Simulated data】未准备任何发布操作。请核对完整草稿、当前账户策略和执行模式。 / No publication was prepared. Review the complete draft, current account policy and execution mode."
+                  : changeTool
                   ? JSON.stringify({
                       changes: changePages
                         .flatMap((page) => page.items)

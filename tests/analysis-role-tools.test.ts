@@ -468,14 +468,26 @@ for (const role of ["marketing-analyst", "information-design"])
   test(
     `${role}: the pinned native Codex process consumes actual source/calculation tools and delivers real files`,
     { timeout: 180000 },
-    async () => {
+    async (t) => {
       const f = await fixture(role),
         accepted = await message(f);
       const calls: string[] = [];
+      const startedAt = performance.now();
+      t.diagnostic(JSON.stringify({ native_role: role, phase: "task_ready" }));
       class CapturedCodex extends CodexRuntimeAdapter {
         override start(ctx: RuntimeContext) {
           return super.start({
             ...ctx,
+            signal: AbortSignal.any([ctx.signal, t.signal]),
+            onEvent: async (kind, body) => {
+              await ctx.onEvent(kind, body);
+              if (kind === "runtime.phase" || kind === "runtime.rpc.failed" || kind === "runtime.startup.retry")
+                t.diagnostic(JSON.stringify({ native_role: role, kind, body,
+                  elapsed_ms: Math.round(performance.now() - startedAt) }));
+              else if (kind === "runtime.thread" || kind === "runtime.turn" || kind === "gateway.request_rejected")
+                t.diagnostic(JSON.stringify({ native_role: role, kind,
+                  elapsed_ms: Math.round(performance.now() - startedAt) }));
+            },
             tools: ctx.tools.map((t) => ({
               ...t,
               run: async (a, id) => {

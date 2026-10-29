@@ -17,7 +17,7 @@ import { ErasureService } from "../src/erasure.js";
 import { giveSeoStorageLimit } from "./seo-quota-fixture.js";
 import { hash } from "../src/lib.js";
 import { cancelUnavailableSeoChanges } from "../src/seo-changes.js";
-import { withOwnedNativeProcesses } from "./native-runtime-faults.js";
+import { withOwnedNativeProcesses, interceptNativeRPC } from "./native-runtime-faults.js";
 
 let isolated: Awaited<ReturnType<typeof isolatedTestEnvironment>>,
   s: Awaited<ReturnType<typeof buildApp>>,
@@ -35,11 +35,13 @@ before(async () => {
     }),
     { worker: false },
   );
-  const prepareAt = performance.now();
-  const f = await website(), c = await save(f);
-  const reservation = (await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [c.task_id])).rows;
-  recoveryFixture = { f, c, reservation };
-  console.log("# recovery_fixture_timing " + JSON.stringify({ elapsed_ms: Math.round(performance.now() - prepareAt) }));
+  for (const method of ["initialize", "thread/start"] as const) {
+    const prepareAt = performance.now();
+    const f = await website(), c = await save(f);
+    const reservation = (await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [c.task_id])).rows;
+    recoveryFixtures.set(method, { f, c, reservation });
+    console.log("# recovery_fixture_timing " + JSON.stringify({ method, elapsed_ms: Math.round(performance.now() - prepareAt) }));
+  }
 }, { timeout: 900000 });
 after(async () => {
   try {
@@ -267,17 +269,18 @@ async function detail(f: Website, id: string) {
 // Prepare real private source evidence and its persisted reservation in the
 // fixture hook. The recovery and ledger assertions retain their 120s bound;
 // the preparation duration is recorded separately, never counted as a pass.
-let recoveryFixture: { f: Website; c: any; reservation: any[] };
+const recoveryFixtures = new Map<string, { f: Website; c: any; reservation: any[] }>();
 
-test("native initialization recovery retains one worker attempt, reservation, inference authority and final charge", { timeout: 120000 }, async () => {
-  const { f, c, reservation } = recoveryFixture;
+for (const method of ["initialize", "thread/start"] as const)
+test(`native ${method} recovery retains one worker attempt, reservation, inference authority and final charge`, { timeout: 120000 }, async t => {
+  const { f, c, reservation } = recoveryFixtures.get(method)!;
   const executionAt = performance.now();
   assert.equal(reservation.length, 1); assert.equal(reservation[0].status, "reserved");
   const executable = await realpath(s.db.config.CODEX_BIN);
   const workspace = path.resolve(s.db.config.DATA_DIR, "runs", f.tenant, c.task_id);
   class ObservedRuntime extends CodexRuntimeAdapter {
     override start(context: RuntimeContext) {
-      return super.start({ ...context, onEvent: async (kind, body: any) => {
+      return super.start({ ...context, signal: AbortSignal.any([context.signal, t.signal]), onEvent: async (kind, body: any) => {
         if (["runtime.phase", "runtime.rpc.failed", "runtime.startup.retry", "runtime.thread", "runtime.turn", "gateway.request_rejected"].includes(kind))
           console.log("# recovery_native_diagnostic " + JSON.stringify({ elapsed_ms: Math.round(performance.now() - executionAt), kind,
             phase: body.phase, code: body.code, method: body.method, attempt: body.attempt }));
@@ -286,8 +289,12 @@ test("native initialization recovery retains one worker attempt, reservation, in
     }
   }
   await withOwnedNativeProcesses(executable, workspace, (row, index) => {
-    const signalSent = index === 1 ? row.child.kill("SIGKILL") : undefined;
-    console.log("# recovery_owned_native " + JSON.stringify({ index, signal_sent: signalSent }));
+    let signalSent: boolean | undefined;
+    if (index === 1) {
+      if (method === "initialize") signalSent = row.child.kill("SIGKILL");
+      else interceptNativeRPC(row, method, (_request, complete) => { complete(); row.child.kill("SIGKILL"); });
+    }
+    console.log("# recovery_owned_native " + JSON.stringify({ method, index, signal_sent: signalSent }));
     if (index !== 1) assert.equal(index, 2);
   }, async owned => {
     await new Worker(s.db, s.catalog, s.storage, new ObservedRuntime(s.db.config)).run(f.tenant, c.task_id);
@@ -307,7 +314,7 @@ test("native initialization recovery retains one worker attempt, reservation, in
     for (const kind of ["runtime.startup.retry", "runtime.thread", "runtime.turn", "task.started", "task.finished"])
       assert.equal(events.filter(e => e.kind === kind).length, 1, kind);
     const diagnostic = events.find(e => e.kind === "runtime.rpc.failed")?.body;
-    assert.equal(diagnostic?.method, "initialize"); assert.equal(diagnostic?.provider_requests, 0);
+    assert.equal(diagnostic?.method, method); assert.equal(diagnostic?.provider_requests, 0);
     await s.worker.run(f.tenant, c.task_id);
     assert.equal(owned.length, 2, "A finished task must not restart after recovery");
     const settled = (await s.db.control.query("SELECT * FROM reservations WHERE task_id=$1", [c.task_id])).rows;
