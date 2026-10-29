@@ -2,12 +2,25 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- native-publishing-stage126 -->
+## Native Codex publication tools and delivery · Stage126
+
+Backend fixes tool admission and immutable media-version lineage. Real pinned cloud Codex calls accounts → preview → prepare → status; the original customer must still explicitly confirm in Publishing. Current native09 passes5/5 and startup fault03 passes9/9; the final sixteen-file related run is in this increment's checkpoint. Bounded startup recovery requires no admitted turn, zero model requests after gateway shutdown and full original-process exit; the two-process limit and original billing identity remain enforced.
+
+Interrupted06 lacks terminal/cleanup receipts; failed08 (132/133), red01, green02 and other failures retain their original outcomes. The QA helper's actual process-creation-time check was corrected and separately verified. Underlying intermittent native/Windows latency causality and Desktop-local recovery/four-tool qualification remain open.
+
+The Stage126 entry is `node scripts/publish-workmate-v9.mjs --push`; `--check` verifies without pushing. V9 checks this increment's source, original logs and portable archive while retaining historical proofs, actual screenshots/GIFs and failed attempts. Six independent repositories and an ordinary atomic eight-ref update with SHA readback remain in use. Only the final executor receipt establishes publication.
+
+No new UI/media is claimed. Stage125 captures below retain their original source scope. Intermittent native timeout causality, video playback/seek, signed installation, complete role combinations and full acceptance remain open. Model/accounts are authorized simulated data. No Docker/WSL; reclaim owned processes.
+
+[Behavior and limits](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/126-native-publication-tools.md) · [Changes and open work](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/126-native-publication-tools.md)
+
 <!-- controlled-publications-stage125 -->
 ## Controlled publication qualification and delivery · Stage125
 
 Adds synthetic OAuth, complete related backend checks, actual Web/Admin pages, packaged Electron and Chrome native Side Panel checks. Every attempt preserves original verifier/source/logs and actual screenshot/GIF/MP4; failures are never overwritten. Owned browsers, previews, native PostgreSQL and fixtures must be reclaimed. Docker/WSL are prohibited.
 
-Passing scopes: backend09 117/117, CLI07 5/5, analysis08 12/12, Desktop media03 21/21, Extension02 70/70 and Web/Admin12 14/14. Actual packaged Desktop/native Chrome Side Panel run02 passes 10/10, with matching source/package bytes and owned browsers, Electron, API, database and fixtures closed. Actual Web/Admin observations cover four widths; previous invalid width claims and all failures remain preserved.
+Historical Stage125 passing scopes: backend09 117/117, CLI07 5/5, analysis08 12/12, Desktop media03 21/21, Extension02 70/70 and Web/Admin12 14/14. Actual packaged Desktop/native Chrome Side Panel run02 passes 10/10, with matching source/package bytes and owned browsers, Electron, API, database and fixtures closed. Actual Web/Admin observations cover four widths; previous invalid width claims and all failures remain preserved.
 
 The Stage125 publication entry is `node scripts/publish-workmate-v8.mjs --push`; `--check` verifies without pushing. The executor requires six committed independent product repositories and committed central documentation. It reads the normal development directories, verifies current sources, original receipts, historical proofs, bilingual guides, actual media and remote ancestry, then ordinarily updates eight mapped refs atomically and reads back their final SHAs. The final receipt establishes publication; it never force-pushes.
 

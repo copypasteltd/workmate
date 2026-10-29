@@ -2,12 +2,25 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- native-publishing-stage126 -->
+## 原生 Codex 发布工具与交付 · 阶段126
+
+后端修复角色工具准入与素材版本来源，真实固定云端Codex完成账户→预览→准备→状态四工具调用，客户仍须在发布页明确确认。当前专项09通过5/5，启动故障03通过9/9；完整16文件相关回归见本轮检查点。新增受限启动恢复要求未提交轮次、关闭网关后模型请求为零、原进程完全退出；两次上限和原费用身份继续执行。
+
+06中断缺少最终／清理回执，08失败132/133；red01、green02及其他原失败均保留原结论，不补写成功。修正并单独验证测试辅助器的实际进程创建时间检查。底层偶发原生／Windows延迟原因尚未证明，Desktop本机恢复及四工具组合也不计入云端资格。
+
+阶段126发布入口为 `node scripts/publish-workmate-v9.mjs --push`，`--check` 只核查。V9校验本轮源码、原始日志和可携带归档，保留历史证明、既有截图/GIF与失败记录，沿用六个独立仓库和普通八引用原子推送及SHA回读。正式发布以最终执行回执为准。
+
+本轮没有新增界面或媒体录制；下方阶段125实拍仍按其原源码范围保存。偶发原生超时根因、视频播放/拖动、签名安装、完整角色组合和整体验收继续开放。模型与账户仍按授权使用模拟数据；禁止Docker/WSL，回收自建进程。
+
+[方案与界限](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/126-native-publication-tools.md) · [本轮更新及待办](https://github.com/copypasteltd/workmate/blob/docs/docs/changes/126-native-publication-tools.md)
+
 <!-- controlled-publications-stage125 -->
 ## 受控发布验收与交付 · 阶段125
 
 新增模拟OAuth、完整相关后端、实际Web/Admin、打包Electron及Chrome原生右侧栏检查。每次使用新编号，保留检查器原文、确切源码、原日志、真实截图和GIF／MP4，禁止覆盖失败。必须回收自建浏览器、预览进程、原生PostgreSQL及夹具，禁止Docker／WSL。
 
-当前通过范围：后端09为117/117、CLI07为5/5、分析08为12/12、Desktop媒体03为21/21、Extension02为70/70、Web/Admin12为14/14；实际打包Desktop／Chrome原生右侧栏02为10/10通过，源文件与包字节匹配，自建浏览器、Electron、API、数据库及夹具均已关闭。Web/Admin原始记录覆盖四档宽度，早先无效宽度声明及所有失败保留。
+阶段125历史通过范围：后端09为117/117、CLI07为5/5、分析08为12/12、Desktop媒体03为21/21、Extension02为70/70、Web/Admin12为14/14；实际打包Desktop／Chrome原生右侧栏02为10/10通过，源文件与包字节匹配，自建浏览器、Electron、API、数据库及夹具均已关闭。Web/Admin原始记录覆盖四档宽度，早先无效宽度声明及所有失败保留。
 
 本阶段发布入口为 `node scripts/publish-workmate-v8.mjs --push`；`--check` 只核查。执行器要求六个独立产品仓库与中央文档均已提交，读取普通开发目录，校验当前源码、原始回执、历史证明、双语说明、实际媒体及远端祖先后，普通原子推送八个映射分支并读取最终SHA。以最终回执为发布依据，不强推。
 
