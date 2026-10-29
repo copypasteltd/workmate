@@ -52,11 +52,19 @@ async function independent(directory, branch) {
   return { branch, local_branch: localBranch, directory, commit, tree: await git(directory, "rev-parse", "HEAD^{tree}") };
 }
 try {
-  for (const [branch, component] of mapping) {
-    receipt.branches.push(await independent(path.join(root, "dev/copypaste-" + component), branch));
-  }
-  const docs = await independent(root, "docs");
-  receipt.branches.push(docs, { ...docs, branch: "main" });
+  // Each checkout is independent. Finish every read before inspecting errors;
+  // object imports and remote mutations below remain sequential.
+  const repositoryReads = await Promise.allSettled([
+    ...mapping.map(([branch, component]) => independent(path.join(root, "dev/copypaste-" + component), branch)),
+    independent(root, "docs"),
+  ]);
+  for (const result of repositoryReads)
+    if (result.status === "fulfilled") receipt.branches.push(result.value);
+  const failedRead = repositoryReads.find(result => result.status === "rejected");
+  if (failedRead) throw failedRead.reason;
+  const docs = receipt.branches.find(item => item.branch === "docs");
+  assert.ok(docs);
+  receipt.branches.push({ ...docs, branch: "main" });
   receipt.branches.sort((a, b) => {
     const rank = (branch) => branch === "main" ? 0 : branch === "docs" ? 1 : 2;
     return rank(a.branch) - rank(b.branch);
@@ -98,10 +106,13 @@ try {
     assert.equal(await git(root, "rev-parse", checkpoint), old);
     await git(root, "merge-base", "--is-ancestor", old, item.commit);
   }
-  for (const item of receipt.branches) {
+  const uniqueRepositories = [...new Map(receipt.branches.map(item => [item.directory, item])).values()];
+  const finalReads = await Promise.allSettled(uniqueRepositories.map(async item => {
     assert.equal(await git(item.directory, "rev-parse", "HEAD"), item.commit, "Sources changed during preflight");
     assert.equal(await git(item.directory, "status", "--porcelain"), "");
-  }
+  }));
+  for (const result of finalReads)
+    if (result.status === "rejected") throw result.reason;
   receipt.checks.push({ status: "passed", check: "clean independent repositories, committed component manifest, configured secrets/history/media/link audit and non-destructive remote ancestry" });
   if (mode === "--push") {
     const pushed = await git(root, "push", "--atomic", "--porcelain", "origin",

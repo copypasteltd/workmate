@@ -9,7 +9,7 @@ Backend fixes tool admission and immutable media-version lineage. Real pinned cl
 
 Interrupted06 lacks terminal/cleanup receipts; failed08 (132/133), red01, green02 and other failures retain their original outcomes. The QA helper's actual process-creation-time check was corrected and separately verified. Underlying intermittent native/Windows latency causality and Desktop-local recovery/four-tool qualification remain open.
 
-The Stage126 entry is `node scripts/publish-workmate-v9.mjs --push`; `--check` verifies without pushing. V9 checks this increment's source, original logs and portable archive while retaining historical proofs, actual screenshots/GIFs and failed attempts. Six independent repositories and an ordinary atomic eight-ref update with SHA readback remain in use. Only the final executor receipt establishes publication.
+The Stage126 entry is `node scripts/publish-workmate-v9.mjs --push`; `--check` verifies without pushing. V9 checks this increment's source, original logs and portable archive while retaining historical proofs, actual screenshots/GIFs and failed attempts. Six independent repositories and an ordinary atomic eight-ref update with SHA readback remain in use. Read-only checks finish concurrently across seven independent checkouts; the shared main/docs directory is checked once at final preflight. Object imports and remote writes remain sequential. Only the final executor receipt establishes publication.
 
 No new UI/media is claimed. Stage125 captures below retain their original source scope. Intermittent native timeout causality, video playback/seek, signed installation, complete role combinations and full acceptance remain open. Model/accounts are authorized simulated data. No Docker/WSL; reclaim owned processes.
 
