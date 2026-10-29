@@ -2,6 +2,15 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-profile-revisions-124 -->
+## Stage124 publication and qualification
+
+Backend/Admin add scoped specialist, brand and memory revisions. All 68 related backend checks, 11 Admin unit checks, eight actual UI flows and 14 layout observations passed. Eight screenshots, three GIF/MP4 pairs and failed originals are retained. Desktop remains customer-local Codex; Extension remains a native Side Panel with cloud Codex.
+
+The current entry is `node scripts/publish-workmate-v7.mjs --push`. After all six components and central documentation are committed, V7 checks exact sources, historical proofs, media, bilingual guides, credentials and remote ancestry. It performs an ordinary atomic update of eight mapped refs, then reads their actual SHAs. No force push; the final executor receipt establishes publication. Native tools only; no Docker/WSL.
+
+[Design and qualification](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/124-admin-profile-revisions.md) · [Actual Admin screens](https://github.com/copypasteltd/workmate/blob/admin/README.en.md)
+
 <!-- admin-content-revisions-123 -->
 ## Administrator revisions and publication · Stage 123
 
