@@ -1,0 +1,105 @@
+{"label":"clone delivery sparse source","started_at":"2026-10-29T21:43:09.637Z"}
+Cloning into 'D:\dev\copypasted\自有agent\dev\source-repro-129-4350ea2f-a080-40e6-a862-a4cef991bc70\copypaste-delivery-source'...
+{"label":"clone delivery sparse source","started_at":"2026-10-29T21:43:09.637Z","finished_at":"2026-10-29T21:44:19.820Z","exit_code":0}
+{"label":"install backend","started_at":"2026-10-29T21:45:07.686Z"}
+
+added 170 packages in 2m
+{"label":"install backend","started_at":"2026-10-29T21:45:07.686Z","finished_at":"2026-10-29T21:47:32.662Z","exit_code":0}
+{"label":"install web","started_at":"2026-10-29T21:47:32.663Z"}
+npm warn cleanup Failed to remove some directories [
+npm warn cleanup   [
+npm warn cleanup     '\\\\?\\D:\\dev\\copypasted\\自有agent\\dev\\source-repro-129-4350ea2f-a080-40e6-a862-a4cef991bc70\\copypaste-web\\node_modules',
+npm warn cleanup     [Error: EPERM: operation not permitted, rmdir 'D:\dev\copypasted\自有agent\dev\source-repro-129-4350ea2f-a080-40e6-a862-a4cef991bc70\copypaste-web\node_modules\@types\node'] {
+npm warn cleanup       errno: -4048,
+npm warn cleanup       code: 'EPERM',
+npm warn cleanup       syscall: 'rmdir',
+npm warn cleanup       path: 'D:\\dev\\copypasted\\自有agent\\dev\\source-repro-129-4350ea2f-a080-40e6-a862-a4cef991bc70\\copypaste-web\\node_modules\\@types\\node'
+npm warn cleanup     }
+npm warn cleanup   ]
+npm warn cleanup ]
+npm error code EIDLETIMEOUT
+npm error Idle timeout reached for host `registry.npmjs.org:443`
+npm error A complete log of this run can be found in: D:\dev\copypasted\自有agent\dev\source-repro-129-4350ea2f-a080-40e6-a862-a4cef991bc70\.cache\npm\_logs\2026-10-29T21_47_32_815Z-debug-0.log
+{"label":"install web","started_at":"2026-10-29T21:47:32.663Z","finished_at":"2026-10-29T21:49:45.562Z","exit_code":1}
+{"label":"install admin","started_at":"2026-10-29T21:49:45.563Z"}
+
+added 34 packages in 23s
+{"label":"install admin","started_at":"2026-10-29T21:49:45.563Z","finished_at":"2026-10-29T21:50:09.993Z","exit_code":0}
+{"label":"install desktop","started_at":"2026-10-29T21:50:09.994Z"}
+npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+npm warn deprecated rimraf@2.6.3: Rimraf versions prior to v4 are no longer supported
+npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+
+added 314 packages in 1m
+{"label":"install desktop","started_at":"2026-10-29T21:50:09.994Z","finished_at":"2026-10-29T21:51:33.534Z","exit_code":0}
+{"label":"install extension","started_at":"2026-10-29T21:51:33.534Z"}
+
+added 13 packages in 39s
+{"label":"install extension","started_at":"2026-10-29T21:51:33.534Z","finished_at":"2026-10-29T21:52:14.634Z","exit_code":0}
+{"label":"install delivery","started_at":"2026-10-29T21:52:14.635Z"}
+
+added 14 packages in 8s
+{"label":"install delivery","started_at":"2026-10-29T21:52:14.635Z","finished_at":"2026-10-29T21:52:23.331Z","exit_code":0}
+{"label":"build backend","started_at":"2026-10-29T21:52:23.332Z"}
+
+> @copypaste/platform@0.5.1 build
+> tsc && node scripts/copy-cloud-check-bootstrap.mjs
+
+{"label":"build backend","started_at":"2026-10-29T21:52:23.332Z","finished_at":"2026-10-29T21:52:38.606Z","exit_code":0}
+{"label":"build admin","started_at":"2026-10-29T21:52:41.992Z"}
+
+> @copypaste/admin@0.5.0 build
+> tsc --noEmit && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 1988 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.55 kB │ gzip:   0.34 kB
+dist/assets/index-NccjULCw.css  105.78 kB │ gzip:  19.55 kB
+dist/assets/index-B7zLnPOr.js   790.13 kB │ gzip: 229.61 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.00s
+{"label":"build admin","started_at":"2026-10-29T21:52:41.992Z","finished_at":"2026-10-29T21:52:47.721Z","exit_code":0}
+{"label":"build desktop","started_at":"2026-10-29T21:52:47.954Z"}
+
+> @copypaste/desktop@0.7.1 build
+> node scripts/configure-deployment.mjs && node scripts/configure-update-trust.mjs && node scripts/build-update-host.mjs && node scripts/build-program-host.mjs && tsc && node scripts/build-native-host.mjs && vite build --config vite.config.ts
+
+Deployment origins compiled; no AI credentials are embedded.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2021 modules transformed.
+rendering chunks...
+computing gzip size...
+renderer-dist/index.html                   0.95 kB │ gzip:   0.47 kB
+renderer-dist/assets/index-CjT9_i4E.css  148.67 kB │ gzip:  26.18 kB
+renderer-dist/assets/index-BDPmDseS.js   957.35 kB │ gzip: 296.96 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.04s
+{"label":"build desktop","started_at":"2026-10-29T21:52:47.954Z","finished_at":"2026-10-29T21:52:56.803Z","exit_code":0}
+{"label":"build extension","started_at":"2026-10-29T21:52:57.106Z"}
+
+> @copypaste/extension@0.5.2 build
+> tsc --noEmit && node scripts/build.mjs
+
+Built Chrome MV3 extension. Registered ID: fffkcnmfdhahlnifgdilabheppkgnlok
+{"label":"build extension","started_at":"2026-10-29T21:52:57.106Z","finished_at":"2026-10-29T21:53:02.139Z","exit_code":0}
+{"label":"build delivery","started_at":"2026-10-29T21:53:02.536Z"}
+
+> @copypaste/delivery@0.5.0 build
+> tsc
+
+{"label":"build delivery","started_at":"2026-10-29T21:53:02.536Z","finished_at":"2026-10-29T21:53:11.738Z","exit_code":0}

@@ -1,0 +1,142 @@
+import assert from 'node:assert/strict';
+import { spawn, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createWriteStream } from 'node:fs';
+import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
+import path from 'node:path';
+
+const attempt = process.argv[2];
+assert.match(attempt ?? '', /^\d{2}$/);
+assert.equal(process.argv.length, 3);
+const delivery = path.resolve(import.meta.dirname, '../..');
+const workspace = path.resolve(delivery, '../..'), dev = path.join(workspace, 'dev');
+const prefix = path.join(import.meta.dirname, 'probe-' + attempt);
+const sha = body => createHash('sha256').update(body).digest('hex');
+for (const suffix of ['.json', '.tap', '-verifier.mjs'])
+  await assert.rejects(readFile(prefix + suffix), error => error.code === 'ENOENT');
+const checkpointBytes = await readFile(path.join(workspace, 'docs/quality/startup-recovery-checkpoint-128.json'));
+const checkpoint = JSON.parse(checkpointBytes);
+assert.equal(checkpoint.status, 'verified_bounded_customer_local_pre_turn_recovery');
+const publicationBytes = await readFile(path.join(workspace, 'docs/quality/workmate-publication.json'));
+const publication = JSON.parse(publicationBytes);
+assert.equal(publication.desktop_startup_recovery.checkpoint.sha256, sha(checkpointBytes));
+const priorBytes = await readFile(path.join(import.meta.dirname, 'probe-01.json'));
+const prior = JSON.parse(priorBytes);
+const cancellationBytes = await readFile(path.join(import.meta.dirname, 'probe-01-cancellation-request.json'));
+const cancellation = JSON.parse(cancellationBytes);
+assert.equal(prior.status, 'failed'); assert.equal(prior.repositories.length, 5);
+assert.equal(prior.commands.length, 6);
+assert.ok(prior.commands.slice(0, 5).every(row => row.label.startsWith('clone ') && row.exit_code === 0));
+assert.equal(prior.commands[5].label, 'clone delivery'); assert.notEqual(prior.commands[5].exit_code, 0);
+assert.match(prior.errors.join('\n'), /delivery clone/);
+assert.equal(cancellation.attempt, '01');
+assert.equal(sha(await readFile(path.join(import.meta.dirname, 'probe-01.tap'))), prior.raw_report_sha256);
+assert.equal(sha(await readFile(path.join(import.meta.dirname, 'probe-01-verifier.mjs'))), prior.verifier_sha256);
+const checkoutRoot = path.resolve(prior.checkout_root);
+assert.ok(checkoutRoot.startsWith(path.join(dev, 'source-repro-129-')));
+assert.equal(path.resolve(cancellation.target), path.join(checkoutRoot, 'copypaste-delivery'));
+assert.ok((await stat(checkoutRoot)).isDirectory());
+await writeFile(prefix + '-verifier.mjs', await readFile(import.meta.filename), { flag: 'wx' });
+const npmCommand = execFileSync('where.exe', ['npm.cmd'], { windowsHide: true, encoding: 'utf8' }).trim().split(/\r?\n/)[0];
+const npmCli = path.join(path.dirname(npmCommand), 'node_modules/npm/bin/npm-cli.js');
+await readFile(npmCli);
+const log = createWriteStream(prefix + '.tap', { flags: 'wx' });
+const commands = [], repositories = [], errors = [], normalizations = [];
+let qualifiedFiles = 0;
+const temporaryDirectory = path.join(checkoutRoot, '.cache/tmp');
+await mkdir(temporaryDirectory, { recursive: true });
+const env = { ...process.env, CI: 'true', AI_MODE: 'mock',
+  TEMP: temporaryDirectory, TMP: temporaryDirectory,
+  npm_config_cache: path.join(checkoutRoot, '.cache/npm'), npm_config_devdir: path.join(checkoutRoot, '.cache/node-gyp'),
+  ELECTRON_CACHE: path.join(checkoutRoot, '.cache/electron'), ELECTRON_BUILDER_CACHE: path.join(checkoutRoot, '.cache/electron-builder'),
+  PLAYWRIGHT_BROWSERS_PATH: path.join(checkoutRoot, '.cache/playwright'), PUPPETEER_CACHE_DIR: path.join(checkoutRoot, '.cache/puppeteer'),
+  npm_config_audit: 'false', npm_config_fund: 'false' };
+function git(repo, ...args) {
+  return execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', ...args], { cwd: repo, windowsHide: true, encoding: 'utf8' }).trim();
+}
+async function run(label, file, args, cwd) {
+  const started = new Date().toISOString(); log.write(JSON.stringify({ label, started_at: started }) + '\n');
+  const child = spawn(file, args, { cwd, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  child.stdout.pipe(log, { end: false }); child.stderr.pipe(log, { end: false });
+  const result = await new Promise(resolve => { child.once('error', error => resolve({ exit_code: 1, error: String(error) })); child.once('close', code => resolve({ exit_code: code ?? 1 })); });
+  const row = { label, started_at: started, finished_at: new Date().toISOString(), ...result };
+  commands.push(row); log.write(JSON.stringify(row) + '\n'); console.log(JSON.stringify(row)); return row;
+}
+const mapping = [['backend', 'platform'], ['web', 'web'], ['admin', 'admin'], ['desktop', 'desktop'], ['extension', 'extension'], ['delivery', 'delivery']];
+try {
+  // Five actual completed clones from attempt01 have never installed dependencies
+  // or built. Recheck their exact commits, packages and pristine working trees.
+  for (const [branch, component] of mapping.slice(0, 5)) {
+    const previous = prior.repositories.find(row => row.branch === branch); assert.ok(previous);
+    assert.equal(path.resolve(previous.checkout), path.join(checkoutRoot, 'copypaste-' + component));
+    assert.equal(previous.install_exit_code, undefined); assert.equal(previous.build_exit_code, undefined);
+    assert.equal(git(previous.checkout, 'rev-parse', 'HEAD'), checkpoint.component_commits[branch]);
+    assert.equal(git(previous.checkout, 'rev-parse', 'HEAD^{tree}'), previous.tree);
+    assert.equal(git(previous.checkout, 'status', '--porcelain'), '');
+    assert.equal(sha(await readFile(path.join(previous.checkout, 'package.json'))), previous.package_sha256);
+    assert.equal(sha(await readFile(path.join(previous.checkout, 'package-lock.json'))), previous.lock_sha256);
+    await assert.rejects(stat(path.join(previous.checkout, 'node_modules')), error => error.code === 'ENOENT');
+    await assert.rejects(readFile(path.join(previous.checkout, '.env')), error => error.code === 'ENOENT');
+    repositories.push({ ...previous, clone_origin: 'completed_pristine_attempt01', source_component: component });
+  }
+  const source = path.join(dev, 'copypaste-delivery'), checkout = path.join(checkoutRoot, 'copypaste-delivery-source');
+  await assert.rejects(stat(checkout), error => error.code === 'ENOENT');
+  assert.equal(git(source, 'rev-parse', 'HEAD'), checkpoint.component_commits.delivery);
+  const cloned = await run('clone delivery sparse source', 'git', ['-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false',
+    'clone', '--no-local', '--depth', '1', '--single-branch', '--sparse', '--branch', 'codex/delivery', source, checkout], dev);
+  assert.equal(cloned.exit_code, 0);
+  const sparsePatterns = '/*\n!/evidence/\n';
+  execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', 'sparse-checkout', 'set', '--no-cone', '--stdin'],
+    { cwd: checkout, input: sparsePatterns, windowsHide: true, encoding: 'utf8' });
+  assert.equal(git(checkout, 'sparse-checkout', 'list'), sparsePatterns.trim());
+  assert.equal(git(checkout, 'rev-parse', 'HEAD'), checkpoint.component_commits.delivery);
+  assert.equal(git(checkout, 'rev-parse', 'HEAD^{tree}'), git(source, 'rev-parse', 'HEAD^{tree}'));
+  assert.equal(git(checkout, 'status', '--porcelain'), '');
+  await assert.rejects(stat(path.join(checkout, 'evidence')), error => error.code === 'ENOENT');
+  await assert.rejects(stat(path.join(checkout, 'node_modules')), error => error.code === 'ENOENT');
+  await assert.rejects(readFile(path.join(checkout, '.env')), error => error.code === 'ENOENT');
+  repositories.push({ branch: 'delivery', checkout, commit: checkpoint.component_commits.delivery,
+    tree: git(checkout, 'rev-parse', 'HEAD^{tree}'), source_component: 'delivery', initially_clean: true,
+    clone_origin: 'independent_sparse_git_transport', sparse_patterns: sparsePatterns,
+    package_sha256: sha(await readFile(path.join(checkout, 'package.json'))), lock_sha256: sha(await readFile(path.join(checkout, 'package-lock.json'))) });
+  for (const repo of repositories) {
+    const prefixName = 'dev/copypaste-' + repo.source_component + '/';
+    for (const [name, expected] of Object.entries(checkpoint.source_files).filter(([name]) => name.startsWith(prefixName))) {
+      const relative = name.slice(prefixName.length), actual = await readFile(path.join(repo.checkout, relative));
+      if (sha(actual) !== expected) {
+        const declared = publication.declared_git_line_ending_normalizations.find(row => row.repository === repo.branch && row.path === relative);
+        assert.ok(declared, name); assert.equal(declared.working_sha256, expected); assert.equal(declared.committed_sha256, sha(actual));
+        const qualified = await readFile(path.join(workspace, name)); assert.equal(sha(qualified), expected);
+        assert.deepEqual(Buffer.from(qualified.toString('utf8').replaceAll('\r\n', '\n')), actual);
+        assert.match(git(repo.checkout, 'check-attr', 'eol', '--', relative), /eol: lf$/);
+        normalizations.push({ path: name, qualified_sha256: expected, fresh_sha256: sha(actual), kind: 'declared_git_crlf_to_lf_only' });
+      }
+      qualifiedFiles++;
+    }
+  }
+  console.log(JSON.stringify({ phase: 'all_six_independent_sources_verified', files: qualifiedFiles, normalizations: normalizations.length }));
+  for (const repo of repositories) {
+    const result = await run('install ' + repo.branch, process.execPath, [npmCli, 'ci', '--no-audit', '--no-fund'], repo.checkout);
+    repo.install_exit_code = result.exit_code; if (result.exit_code !== 0) errors.push(repo.branch + ' dependency installation failed');
+  }
+  for (const repo of repositories) {
+    if (repo.install_exit_code !== 0) continue;
+    const result = await run('build ' + repo.branch, process.execPath, [npmCli, 'run', 'build'], repo.checkout);
+    repo.build_exit_code = result.exit_code; repo.working_changes_after_build = git(repo.checkout, 'status', '--porcelain');
+    assert.equal(sha(await readFile(path.join(repo.checkout, 'package.json'))), repo.package_sha256);
+    assert.equal(sha(await readFile(path.join(repo.checkout, 'package-lock.json'))), repo.lock_sha256);
+    if (result.exit_code !== 0) errors.push(repo.branch + ' build failed');
+  }
+} catch (error) { errors.push(String(error)); }
+finally {
+  await new Promise(resolve => log.end(resolve));
+  const passed = errors.length === 0 && repositories.length === 6 && repositories.every(repo => repo.install_exit_code === 0 && repo.build_exit_code === 0);
+  const report = { at: new Date().toISOString(), status: passed ? 'passed' : 'failed',
+    scope: 'Exact Stage128 independent local Git transport clones with fresh locked npm installation and documented build commands. Reuses the five pristine, uninstalled clones completed in cancelled attempt01; Delivery uses an independent sparse clone excluding only historical evidence/. No copied dependency/build/.env directories or virtualization. Compilation only; no runtime, signed-installation or professional-role acceptance.',
+    checkpoint_sha256: sha(checkpointBytes), publication_sha256: sha(publicationBytes), prior_failed_report_sha256: sha(priorBytes), prior_cancellation_request_sha256: sha(cancellationBytes),
+    checkout_root: checkoutRoot, repositories, qualified_working_files_checked: qualifiedFiles, declared_working_normalizations: normalizations,
+    commands, errors, raw_report_sha256: sha(await readFile(prefix + '.tap')), verifier_sha256: sha(await readFile(import.meta.filename)),
+    node_version: process.version, npm_cli_sha256: sha(await readFile(npmCli)) };
+  await writeFile(prefix + '.json', JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+  console.log(JSON.stringify({ status: report.status, repositories: repositories.length, errors })); process.exitCode = passed ? 0 : 1;
+}

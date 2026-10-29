@@ -1,0 +1,105 @@
+import assert from 'node:assert/strict';
+import { spawn, execFileSync } from 'node:child_process';
+import { createHash, randomUUID } from 'node:crypto';
+import { createWriteStream } from 'node:fs';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+
+const attempt = process.argv[2];
+assert.match(attempt ?? '', /^\d{2}$/);
+assert.equal(process.argv.length, 3);
+const delivery = path.resolve(import.meta.dirname, '../..');
+const workspace = path.resolve(delivery, '../..'), dev = path.join(workspace, 'dev');
+const prefix = path.join(import.meta.dirname, 'probe-' + attempt);
+const sha = body => createHash('sha256').update(body).digest('hex');
+for (const suffix of ['.json', '.tap', '-verifier.mjs'])
+  await assert.rejects(readFile(prefix + suffix), error => error.code === 'ENOENT');
+const checkpointFile = path.join(workspace, 'docs/quality/startup-recovery-checkpoint-128.json');
+const checkpointBytes = await readFile(checkpointFile), checkpoint = JSON.parse(checkpointBytes);
+assert.equal(checkpoint.status, 'verified_bounded_customer_local_pre_turn_recovery');
+const mapping = [['backend', 'platform'], ['web', 'web'], ['admin', 'admin'], ['desktop', 'desktop'], ['extension', 'extension'], ['delivery', 'delivery']];
+const checkoutRoot = path.join(dev, 'source-repro-129-' + randomUUID());
+assert.ok(checkoutRoot.startsWith(dev + path.sep));
+await mkdir(checkoutRoot);
+await writeFile(prefix + '-verifier.mjs', await readFile(import.meta.filename), { flag: 'wx' });
+const npmCommand = execFileSync('where.exe', ['npm.cmd'], { windowsHide: true, encoding: 'utf8' }).trim().split(/\r?\n/)[0];
+const npmCli = path.join(path.dirname(npmCommand), 'node_modules/npm/bin/npm-cli.js');
+await readFile(npmCli);
+const log = createWriteStream(prefix + '.tap', { flags: 'wx' });
+const commands = [], repositories = [], errors = [];
+const temporaryDirectory = path.join(checkoutRoot, '.cache/tmp');
+await mkdir(temporaryDirectory, { recursive: true });
+const env = { ...process.env, CI: 'true', AI_MODE: 'mock',
+  TEMP: temporaryDirectory, TMP: temporaryDirectory,
+  npm_config_cache: path.join(checkoutRoot, '.cache/npm'),
+  npm_config_devdir: path.join(checkoutRoot, '.cache/node-gyp'),
+  ELECTRON_CACHE: path.join(checkoutRoot, '.cache/electron'),
+  ELECTRON_BUILDER_CACHE: path.join(checkoutRoot, '.cache/electron-builder'),
+  PLAYWRIGHT_BROWSERS_PATH: path.join(checkoutRoot, '.cache/playwright'),
+  PUPPETEER_CACHE_DIR: path.join(checkoutRoot, '.cache/puppeteer'),
+  npm_config_audit: 'false', npm_config_fund: 'false' };
+function git(repo, ...args) {
+  return execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', ...args], { cwd: repo, windowsHide: true, encoding: 'utf8' }).trim();
+}
+async function run(label, file, args, cwd) {
+  const start = new Date().toISOString();
+  log.write(JSON.stringify({ label, started_at: start }) + '\n');
+  const child = spawn(file, args, { cwd, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  child.stdout.pipe(log, { end: false }); child.stderr.pipe(log, { end: false });
+  const result = await new Promise(resolve => {
+    child.once('error', error => resolve({ exit_code: 1, error: String(error) }));
+    child.once('close', code => resolve({ exit_code: code ?? 1 }));
+  });
+  const row = { label, started_at: start, finished_at: new Date().toISOString(), ...result };
+  commands.push(row); log.write(JSON.stringify(row) + '\n');
+  console.log(JSON.stringify(row)); return row;
+}
+try {
+  // A shallow transport clone has its own object database and working tree.
+  // No dependency directories, build outputs or private .env files are copied.
+  for (const [branch, component] of mapping) {
+    const source = path.join(dev, 'copypaste-' + component), checkout = path.join(checkoutRoot, 'copypaste-' + component);
+    const expected = checkpoint.component_commits[branch];
+    assert.equal(git(source, 'rev-parse', 'HEAD'), expected);
+    const cloned = await run('clone ' + branch, 'git', ['-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false',
+      'clone', '--no-local', '--depth', '1', '--single-branch', '--branch', 'codex/' + branch, source, checkout], dev);
+    assert.equal(cloned.exit_code, 0, branch + ' clone');
+    assert.equal(git(checkout, 'rev-parse', 'HEAD'), expected);
+    assert.equal(git(checkout, 'rev-parse', 'HEAD^{tree}'), git(source, 'rev-parse', 'HEAD^{tree}'));
+    assert.equal(git(checkout, 'status', '--porcelain'), '');
+    await assert.rejects(readFile(path.join(checkout, '.env')), error => error.code === 'ENOENT');
+    const packageBytes = await readFile(path.join(checkout, 'package.json'));
+    const lockBytes = await readFile(path.join(checkout, 'package-lock.json'));
+    const scripts = JSON.parse(packageBytes).scripts ?? {};
+    for (const key of ['preinstall', 'install', 'postinstall', 'prebuild', 'build', 'postbuild'])
+      assert.doesNotMatch(scripts[key] ?? '', /\b(?:docker|wsl|podman|vagrant)\b/i);
+    repositories.push({ branch, checkout, commit: expected, tree: git(checkout, 'rev-parse', 'HEAD^{tree}'),
+      package_sha256: sha(packageBytes), lock_sha256: sha(lockBytes), initially_clean: true });
+  }
+  for (const repo of repositories) {
+    const result = await run('install ' + repo.branch, process.execPath, [npmCli, 'ci', '--no-audit', '--no-fund'], repo.checkout);
+    repo.install_exit_code = result.exit_code;
+    if (result.exit_code !== 0) errors.push(repo.branch + ' dependency installation failed');
+  }
+  for (const repo of repositories) {
+    if (repo.install_exit_code !== 0) continue;
+    const result = await run('build ' + repo.branch, process.execPath, [npmCli, 'run', 'build'], repo.checkout);
+    repo.build_exit_code = result.exit_code;
+    repo.working_changes_after_build = git(repo.checkout, 'status', '--porcelain');
+    assert.equal(sha(await readFile(path.join(repo.checkout, 'package.json'))), repo.package_sha256);
+    assert.equal(sha(await readFile(path.join(repo.checkout, 'package-lock.json'))), repo.lock_sha256);
+    if (result.exit_code !== 0) errors.push(repo.branch + ' build failed');
+  }
+} catch (error) { errors.push(String(error)); }
+finally {
+  await new Promise(resolve => log.end(resolve));
+  const pass = errors.length === 0 && repositories.length === 6 && repositories.every(repo => repo.install_exit_code === 0 && repo.build_exit_code === 0);
+  const report = { at: new Date().toISOString(), status: pass ? 'passed' : 'failed',
+    scope: 'Independent clean local shallow Git transport clones of the exact Stage128 commits; fresh locked npm installation and documented build scripts. No reused dependency/build/.env directories, Docker/WSL or virtual machines. Compilation only, not runtime, remote-clone, signed-installation or professional-role acceptance.',
+    checkpoint_sha256: sha(checkpointBytes), checkout_root: checkoutRoot, repositories, commands, errors,
+    raw_report_sha256: sha(await readFile(prefix + '.tap')), verifier_sha256: sha(await readFile(import.meta.filename)),
+    node_version: process.version, npm_cli_sha256: sha(await readFile(npmCli)) };
+  await writeFile(prefix + '.json', JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+  console.log(JSON.stringify({ status: report.status, repositories: repositories.length, errors }));
+  process.exitCode = pass ? 0 : 1;
+}

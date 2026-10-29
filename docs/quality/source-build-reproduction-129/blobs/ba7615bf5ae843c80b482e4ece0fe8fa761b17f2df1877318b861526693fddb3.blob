@@ -1,0 +1,79 @@
+import assert from 'node:assert/strict';
+import { spawn, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createWriteStream } from 'node:fs';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+
+const attempt = process.argv[2]; assert.match(attempt ?? '', /^\d{2}$/); assert.equal(process.argv.length, 3);
+const delivery = path.resolve(import.meta.dirname, '../..'), workspace = path.resolve(delivery, '../..');
+const prefix = path.join(import.meta.dirname, 'probe-' + attempt), sha = bytes => createHash('sha256').update(bytes).digest('hex');
+for (const suffix of ['.json', '.tap', '-verifier.mjs']) await assert.rejects(readFile(prefix + suffix), error => error.code === 'ENOENT');
+const checkpointBytes = await readFile(path.join(workspace, 'docs/quality/startup-recovery-checkpoint-128.json'));
+const checkpoint = JSON.parse(checkpointBytes);
+const previousBytes = await readFile(path.join(import.meta.dirname, 'probe-02.json')), previous = JSON.parse(previousBytes);
+assert.equal(previous.status, 'failed'); assert.deepEqual(previous.errors, ['web dependency installation failed']);
+assert.equal(previous.checkpoint_sha256, sha(checkpointBytes)); assert.equal(previous.repositories.length, 6);
+assert.equal(previous.qualified_working_files_checked, Object.keys(checkpoint.source_files).length);
+assert.equal(sha(await readFile(path.join(import.meta.dirname, 'probe-02.tap'))), previous.raw_report_sha256);
+assert.equal(sha(await readFile(path.join(import.meta.dirname, 'probe-02-verifier.mjs'))), previous.verifier_sha256);
+const diagnostic = await readFile(path.join(import.meta.dirname, 'probe-02-web-npm-debug-original.log'));
+assert.match(diagnostic.toString('utf8'), /EIDLETIMEOUT|Idle timeout reached/);
+const oldWeb = previous.repositories.find(row => row.branch === 'web');
+assert.equal(oldWeb.install_exit_code, 1); assert.equal(oldWeb.build_exit_code, undefined);
+const retained = previous.repositories.filter(row => row.branch !== 'web'); assert.equal(retained.length, 5);
+for (const row of retained) { assert.equal(row.install_exit_code, 0); assert.equal(row.build_exit_code, 0); assert.equal(row.working_changes_after_build, ''); }
+const checkoutRoot = path.resolve(previous.checkout_root); assert.ok(checkoutRoot.startsWith(path.join(workspace, 'dev/source-repro-129-')));
+await writeFile(prefix + '-verifier.mjs', await readFile(import.meta.filename), { flag: 'wx' });
+const npmCommand = execFileSync('where.exe', ['npm.cmd'], { windowsHide: true, encoding: 'utf8' }).trim().split(/\r?\n/)[0];
+const npmCli = path.join(path.dirname(npmCommand), 'node_modules/npm/bin/npm-cli.js');
+assert.equal(sha(await readFile(npmCli)), previous.npm_cli_sha256); assert.equal(process.version, previous.node_version);
+const temp = path.join(checkoutRoot, '.cache/tmp'); await mkdir(temp, { recursive: true });
+const env = { ...process.env, CI: 'true', AI_MODE: 'mock', TEMP: temp, TMP: temp,
+  npm_config_cache: path.join(checkoutRoot, '.cache/npm'), npm_config_devdir: path.join(checkoutRoot, '.cache/node-gyp'),
+  ELECTRON_CACHE: path.join(checkoutRoot, '.cache/electron'), ELECTRON_BUILDER_CACHE: path.join(checkoutRoot, '.cache/electron-builder'),
+  PLAYWRIGHT_BROWSERS_PATH: path.join(checkoutRoot, '.cache/playwright'), PUPPETEER_CACHE_DIR: path.join(checkoutRoot, '.cache/puppeteer'),
+  npm_config_audit: 'false', npm_config_fund: 'false' };
+const log = createWriteStream(prefix + '.tap', { flags: 'wx' }), commands = [], errors = [];
+const repositories = previous.repositories.map(row => ({ ...row, qualification_origin: row.branch === 'web' ? attempt : '02' }));
+const web = repositories.find(row => row.branch === 'web');
+function git(repo, ...args) { return execFileSync('git', ['-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false', ...args], { cwd: repo, windowsHide: true, encoding: 'utf8' }).trim(); }
+async function run(label, args) {
+  const started = new Date().toISOString(); log.write(JSON.stringify({ label, started_at: started }) + '\n');
+  const child = spawn(process.execPath, [npmCli, ...args], { cwd: web.checkout, env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  child.stdout.pipe(log, { end: false }); child.stderr.pipe(log, { end: false });
+  const result = await new Promise(resolve => { child.once('error', error => resolve({ exit_code: 1, error: String(error) })); child.once('close', code => resolve({ exit_code: code ?? 1 })); });
+  const row = { label, started_at: started, finished_at: new Date().toISOString(), ...result };
+  commands.push(row); log.write(JSON.stringify(row) + '\n'); console.log(JSON.stringify(row)); return row;
+}
+try {
+  for (const repo of repositories) {
+    assert.ok(path.resolve(repo.checkout).startsWith(checkoutRoot + path.sep));
+    assert.equal(git(repo.checkout, 'rev-parse', 'HEAD'), checkpoint.component_commits[repo.branch]);
+    assert.equal(git(repo.checkout, 'rev-parse', 'HEAD^{tree}'), repo.tree);
+    assert.equal(git(repo.checkout, 'status', '--porcelain'), '');
+    assert.equal(sha(await readFile(path.join(repo.checkout, 'package.json'))), repo.package_sha256);
+    assert.equal(sha(await readFile(path.join(repo.checkout, 'package-lock.json'))), repo.lock_sha256);
+  }
+  const installed = await run('retry install web', ['ci', '--no-audit', '--no-fund']);
+  web.install_exit_code = installed.exit_code; assert.equal(installed.exit_code, 0);
+  const built = await run('build web', ['run', 'build']); web.build_exit_code = built.exit_code; assert.equal(built.exit_code, 0);
+  web.working_changes_after_build = git(web.checkout, 'status', '--porcelain'); assert.equal(web.working_changes_after_build, '');
+  assert.equal(sha(await readFile(path.join(web.checkout, 'package.json'))), web.package_sha256);
+  assert.equal(sha(await readFile(path.join(web.checkout, 'package-lock.json'))), web.lock_sha256);
+} catch (error) { errors.push(String(error)); }
+finally {
+  await new Promise(resolve => log.end(resolve));
+  const passed = errors.length === 0 && commands.length === 2 && repositories.every(row => row.install_exit_code === 0 && row.build_exit_code === 0 && row.working_changes_after_build === '');
+  const report = { at: new Date().toISOString(), status: passed ? 'passed' : 'failed',
+    scope: 'Targeted retry of Web locked installation after the retained npm EIDLETIMEOUT, followed by its new build. Retains five successful matching-source dependency installations/builds from original failed attempt02; all six committed trees and package inputs are rechecked. Original failures/cancellation stay unchanged. Compilation only; no runtime, signed installation, full-platform or professional-role acceptance.',
+    checkpoint_sha256: sha(checkpointBytes), publication_sha256: previous.publication_sha256,
+    previous_failed_report_sha256: sha(previousBytes), failed_install_diagnostic_sha256: sha(diagnostic),
+    retained_successful_installations: 5, retained_successful_builds: 5,
+    checkout_root: checkoutRoot, repositories, qualified_working_files_checked: previous.qualified_working_files_checked,
+    declared_working_normalizations: previous.declared_working_normalizations, commands, errors,
+    raw_report_sha256: sha(await readFile(prefix + '.tap')), verifier_sha256: sha(await readFile(import.meta.filename)),
+    node_version: process.version, npm_cli_sha256: sha(await readFile(npmCli)) };
+  await writeFile(prefix + '.json', JSON.stringify(report, null, 2) + '\n', { flag: 'wx' });
+  console.log(JSON.stringify({ status: report.status, retained_builds: 5, web_install: web.install_exit_code, web_build: web.build_exit_code, errors })); process.exitCode = passed ? 0 : 1;
+}
