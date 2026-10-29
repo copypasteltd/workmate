@@ -1,0 +1,2144 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CopyPaste Workmate dedicated cloud computer API",
+    "version": "1.0.0",
+    "description": "Optional operator-preprovisioned physical computer, exact private files, separate resource and AI task consent. No automatic renewal, provisioning, local Desktop delegation or administrator content access. Node receipts require independently verified cleanup and known usage. Synthetic protocol qualification does not qualify a physical Linux deployment."
+  },
+  "paths": {
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/plans": {
+      "get": {
+        "operationId": "customer_get__v1_tenants_tenant_projects_project_cloud_computers_plans",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/source-files": {
+      "get": {
+        "operationId": "customer_get__v1_tenants_tenant_projects_project_cloud_computers_source_files",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/quotes": {
+      "post": {
+        "operationId": "customer_post__v1_tenants_tenant_projects_project_cloud_computers_quotes",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/quotes/{quote}": {
+      "delete": {
+        "operationId": "customer_delete__v1_tenants_tenant_projects_project_cloud_computers_quotes_quote",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "quote",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/sessions": {
+      "post": {
+        "operationId": "customer_post__v1_tenants_tenant_projects_project_cloud_computers_sessions",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Confirmation"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      },
+      "get": {
+        "operationId": "customer_get__v1_tenants_tenant_projects_project_cloud_computers_sessions",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/sessions/{session}": {
+      "get": {
+        "operationId": "customer_get__v1_tenants_tenant_projects_project_cloud_computers_sessions_session",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "customer_delete__v1_tenants_tenant_projects_project_cloud_computers_sessions_session",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/sessions/{session}/stop": {
+      "post": {
+        "operationId": "customer_post__v1_tenants_tenant_projects_project_cloud_computers_sessions_session_stop",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StopInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/sessions/{session}/inputs": {
+      "post": {
+        "operationId": "customer_post__v1_tenants_tenant_projects_project_cloud_computers_sessions_session_inputs",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ControlInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/sessions/{session}/agent-tasks": {
+      "post": {
+        "operationId": "customer_post__v1_tenants_tenant_projects_project_cloud_computers_sessions_session_agent_tasks",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentTaskInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/tenants/{tenant}/projects/{project}/cloud-computers/sessions/{session}/view": {
+      "get": {
+        "operationId": "customer_get__v1_tenants_tenant_projects_project_cloud_computers_sessions_session_view",
+        "tags": [
+          "Dedicated computer / customer"
+        ],
+        "parameters": [
+          {
+            "name": "tenant",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "project",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "CustomerSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/cloud-runtime-nodes/{node}/poll": {
+      "post": {
+        "operationId": "node_post__v1_cloud_runtime_nodes_node_poll",
+        "tags": [
+          "Dedicated computer / node"
+        ],
+        "parameters": [
+          {
+            "name": "node",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "NodeBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NodePoll"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/cloud-runtime-nodes/{node}/acknowledgements": {
+      "post": {
+        "operationId": "node_post__v1_cloud_runtime_nodes_node_acknowledgements",
+        "tags": [
+          "Dedicated computer / node"
+        ],
+        "parameters": [
+          {
+            "name": "node",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "NodeBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NodeAcknowledgement"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/cloud-runtime-nodes/{node}/frames": {
+      "post": {
+        "operationId": "node_post__v1_cloud_runtime_nodes_node_frames",
+        "tags": [
+          "Dedicated computer / node"
+        ],
+        "parameters": [
+          {
+            "name": "node",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "NodeBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FrameInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/cloud-runtime-nodes/{node}/sessions/{session}/files/{version}": {
+      "get": {
+        "operationId": "node_get__v1_cloud_runtime_nodes_node_sessions_session_files_version",
+        "tags": [
+          "Dedicated computer / node"
+        ],
+        "parameters": [
+          {
+            "name": "node",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "generation",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "instance_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "security": [
+          {
+            "NodeBearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/admin/cloud-computers/plans": {
+      "get": {
+        "operationId": "admin_get__v1_admin_cloud_computers_plans",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.infrastructure.write",
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      },
+      "post": {
+        "operationId": "admin_post__v1_admin_cloud_computers_plans",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.infrastructure.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanPublication"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/admin/cloud-computers/nodes": {
+      "get": {
+        "operationId": "admin_get__v1_admin_cloud_computers_nodes",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.infrastructure.write",
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      },
+      "post": {
+        "operationId": "admin_post__v1_admin_cloud_computers_nodes",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.infrastructure.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NodeRegistration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/admin/cloud-computers/nodes/{node}/rotate-credential": {
+      "post": {
+        "operationId": "admin_post__v1_admin_cloud_computers_nodes_node_rotate_credential",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [
+          {
+            "name": "node",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.infrastructure.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonedCAS"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/admin/cloud-computers/sessions": {
+      "get": {
+        "operationId": "admin_get__v1_admin_cloud_computers_sessions",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.sessions.read",
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/admin/cloud-computers/sessions/{session}/stop": {
+      "post": {
+        "operationId": "admin_post__v1_admin_cloud_computers_sessions_session_stop",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.sessions.stop",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonedCAS"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    },
+    "/v1/admin/cloud-computers/sessions/{session}/reconciliation": {
+      "post": {
+        "operationId": "admin_post__v1_admin_cloud_computers_sessions_session_reconciliation",
+        "tags": [
+          "Dedicated computer / admin"
+        ],
+        "parameters": [
+          {
+            "name": "session",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-current-mfa-required": true,
+        "x-permission": "admin.cloud_runtime.sessions.reconcile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonedCAS"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Current authorized operation result. Private responses must not be cached."
+          },
+          "400": {
+            "description": "Invalid bounded input"
+          },
+          "401": {
+            "description": "Current authentication required"
+          },
+          "403": {
+            "description": "Scope, consent, MFA or authority unavailable"
+          },
+          "404": {
+            "description": "Private resource unavailable"
+          },
+          "409": {
+            "description": "Stale version, ended lease, changed receipt or unavailable capacity"
+          },
+          "429": {
+            "description": "Rate limit"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "QuoteInput": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{2,63}$"
+          },
+          "minutes": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 1440
+          },
+          "billing_account_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "scope": {
+            "type": "object",
+            "properties": {
+              "terminal": {
+                "type": "boolean"
+              },
+              "visual": {
+                "type": "boolean"
+              },
+              "agent_control": {
+                "default": false,
+                "type": "boolean"
+              },
+              "selected_asset_versions": {
+                "maxItems": 20,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "terminal",
+              "visual",
+              "agent_control",
+              "selected_asset_versions",
+              "purpose"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "plan_key",
+          "minutes",
+          "billing_account_id",
+          "scope"
+        ],
+        "additionalProperties": false
+      },
+      "Confirmation": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "quote_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "specification_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "maximum_cost_micros": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$"
+          },
+          "confirm_cost_and_scope": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "quote_id",
+          "specification_hash",
+          "maximum_cost_micros",
+          "confirm_cost_and_scope"
+        ],
+        "additionalProperties": false
+      },
+      "ControlInput": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "terminal"
+              },
+              "command": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4096
+              }
+            },
+            "required": [
+              "kind",
+              "command"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "pointer"
+              },
+              "x": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1279
+              },
+              "y": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 719
+              },
+              "button": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "left",
+                  "right"
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "x",
+              "y",
+              "button"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "key"
+              },
+              "key": {
+                "type": "string",
+                "enum": [
+                  "Enter",
+                  "Escape",
+                  "Tab",
+                  "Backspace",
+                  "ArrowUp",
+                  "ArrowDown",
+                  "ArrowLeft",
+                  "ArrowRight"
+                ]
+              },
+              "text": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "kind",
+              "key"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "AgentTaskInput": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 30000
+          },
+          "budget_micros": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000000000
+          },
+          "generation": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "specification_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirm_agent_task": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "prompt",
+          "budget_micros",
+          "generation",
+          "specification_hash",
+          "confirm_agent_task"
+        ],
+        "additionalProperties": false
+      },
+      "NodePoll": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "machine_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "instance_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "agent_version": {
+            "type": "string",
+            "const": "1.0.0"
+          },
+          "physical_host": {
+            "type": "boolean",
+            "const": true
+          },
+          "current_session_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "current_generation": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "machine_fingerprint",
+          "instance_id",
+          "agent_version",
+          "physical_host",
+          "current_session_id",
+          "current_generation"
+        ],
+        "additionalProperties": false
+      },
+      "NodeAcknowledgement": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "instance_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "command_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "generation": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "completed",
+              "stopped",
+              "failed"
+            ]
+          },
+          "cleanup_verified": {
+            "type": "boolean"
+          },
+          "running_milliseconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400000
+          },
+          "result": {
+            "type": "string",
+            "maxLength": 16384
+          }
+        },
+        "required": [
+          "instance_id",
+          "command_id",
+          "session_id",
+          "generation",
+          "outcome",
+          "cleanup_verified",
+          "running_milliseconds"
+        ],
+        "additionalProperties": false
+      },
+      "FrameInput": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "instance_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "generation": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "sequence": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "png_base64": {
+            "type": "string",
+            "minLength": 12,
+            "maxLength": 700000
+          }
+        },
+        "required": [
+          "instance_id",
+          "session_id",
+          "generation",
+          "sequence",
+          "png_base64"
+        ],
+        "additionalProperties": false
+      },
+      "NodeRegistration": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "plan_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{2,63}$"
+          },
+          "machine_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "name",
+          "plan_key",
+          "machine_fingerprint",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "StopInput": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "PlanPublication": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "plan": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]{2,63}$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "region": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "cpu_cores": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 128
+              },
+              "memory_mib": {
+                "type": "integer",
+                "minimum": 512,
+                "maximum": 1048576
+              },
+              "disk_mib": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 4194304
+              },
+              "per_minute_micros": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000000000
+              },
+              "max_minutes": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 1440
+              },
+              "terminal": {
+                "type": "boolean"
+              },
+              "visual": {
+                "type": "boolean"
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "key",
+              "name",
+              "region",
+              "cpu_cores",
+              "memory_mib",
+              "disk_mib",
+              "per_minute_micros",
+              "max_minutes",
+              "terminal",
+              "visual",
+              "reason"
+            ],
+            "additionalProperties": false
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "plan",
+          "enabled",
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "ReasonedCAS": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "expected_version",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "securitySchemes": {
+      "CustomerSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_session"
+      },
+      "AdminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "cp_admin_session"
+      },
+      "NodeBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

@@ -1,0 +1,157 @@
+-- Bounded customer-local startup recovery. SQL001-132 remain byte-identical.
+ALTER TABLE desktop_executions DROP CONSTRAINT desktop_executions_state_check;
+ALTER TABLE desktop_executions ADD CONSTRAINT desktop_executions_state_check
+ CHECK(state IN ('prepared','running','recovering','stopping','finished','reconciling'));
+ALTER TABLE desktop_executions
+ ADD COLUMN startup_protocol text CHECK(startup_protocol IS NULL OR startup_protocol='desktop-startup-recovery-v1'),
+ ADD COLUMN startup_attempt smallint NOT NULL DEFAULT 0 CHECK(startup_attempt BETWEEN 0 AND 2),
+ ADD COLUMN startup_state text NOT NULL DEFAULT 'not_started' CHECK(startup_state IN ('not_started','preparing','turn_admitted')),
+ ADD COLUMN startup_contract_sha256 text CHECK(startup_contract_sha256 IS NULL OR startup_contract_sha256~'^[a-f0-9]{64}$'),
+ ADD COLUMN startup_deadline_at timestamptz,
+ ADD COLUMN startup_turn_key text CHECK(startup_turn_key IS NULL OR startup_turn_key~'^[A-Za-z0-9_:-]{16,128}$');
+ALTER TABLE desktop_executions ADD CONSTRAINT desktop_startup_authority_shape CHECK(
+ (startup_protocol IS NULL AND startup_attempt=0 AND startup_state='not_started'
+  AND startup_contract_sha256 IS NULL AND startup_deadline_at IS NULL AND startup_turn_key IS NULL)
+ OR (startup_protocol IS NOT NULL AND startup_attempt IN (1,2) AND startup_state IN ('preparing','turn_admitted')
+  AND startup_deadline_at IS NOT NULL AND ((startup_state='turn_admitted')=(startup_turn_key IS NOT NULL))));
+ALTER TABLE desktop_executions ADD CONSTRAINT desktop_recovering_authority_check
+ CHECK(state<>'recovering' OR (startup_protocol IS NOT DISTINCT FROM 'desktop-startup-recovery-v1'
+  AND startup_attempt=1 AND startup_state='preparing' AND credential_hash IS NULL AND credential_cipher IS NULL AND credential_expires_at IS NULL
+  AND startup_deadline_at IS NOT NULL));
+DROP INDEX desktop_one_active_session;
+CREATE UNIQUE INDEX desktop_one_active_session ON desktop_executions(local_session_id)
+ WHERE state IN ('prepared','running','recovering','stopping','reconciling');
+
+CREATE TABLE desktop_startup_recoveries (
+ task_id uuid PRIMARY KEY,tenant_id uuid NOT NULL,actor_id uuid NOT NULL REFERENCES users(id),
+ request_key text NOT NULL CHECK(request_key~'^[A-Za-z0-9_:-]{16,128}$'),
+ request_sha256 text NOT NULL CHECK(request_sha256~'^[a-f0-9]{64}$'),
+ source_fencing_token uuid NOT NULL,target_fencing_token uuid NOT NULL,
+ state text NOT NULL CHECK(state IN ('fenced','ready','denied')),
+ proof jsonb,created_at timestamptz NOT NULL DEFAULT clock_timestamp(),finished_at timestamptz,
+ FOREIGN KEY(tenant_id,task_id) REFERENCES tasks(tenant_id,id),
+ CHECK(source_fencing_token<>target_fencing_token),
+ CHECK((state='fenced')=(finished_at IS NULL)),CHECK(state<>'ready' OR proof IS NOT NULL)
+);
+ALTER TABLE desktop_startup_recoveries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE desktop_startup_recoveries FORCE ROW LEVEL SECURITY;
+CREATE POLICY desktop_startup_control ON desktop_startup_recoveries TO cp_control USING(true) WITH CHECK(true);
+CREATE POLICY desktop_startup_owner ON desktop_startup_recoveries TO cp_app
+ USING(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid
+  AND actor_id=nullif(current_setting('app.actor_id',true),'')::uuid
+  AND EXISTS(SELECT 1 FROM tasks t WHERE t.id=task_id AND t.content_state='active'))
+ WITH CHECK(tenant_id=nullif(current_setting('app.tenant_id',true),'')::uuid
+  AND actor_id=nullif(current_setting('app.actor_id',true),'')::uuid
+  AND EXISTS(SELECT 1 FROM tasks t WHERE t.id=task_id AND t.content_state='active'));
+GRANT SELECT,INSERT,UPDATE ON desktop_startup_recoveries TO cp_app,cp_control;
+
+-- The caller holds the parent/task/execution locks. Count EVERY admission,
+-- including zero-price, failed, input-count and read-only native tool calls.
+CREATE FUNCTION desktop_startup_admission_proof(p_task uuid) RETURNS jsonb
+ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public SET row_security=on AS $$
+DECLARE t tasks; d desktop_executions; models bigint; counts bigint; tools bigint;
+ operations bigint; videos bigint; audios bigint; safe boolean;
+BEGIN
+ SELECT * INTO t FROM tasks WHERE id=p_task;
+ SELECT * INTO d FROM desktop_executions WHERE task_id=p_task;
+ IF t.id IS NULL OR d.task_id IS NULL OR t.execution_location<>'desktop'
+  OR t.tenant_id IS DISTINCT FROM nullif(current_setting('app.tenant_id',true),'')::uuid
+  OR t.created_by IS DISTINCT FROM nullif(current_setting('app.actor_id',true),'')::uuid THEN
+  RAISE EXCEPTION 'Local startup proof requires its owner' USING ERRCODE='42501'; END IF;
+ SELECT count(*) INTO models FROM ai_gateway_requests WHERE task_id=p_task;
+ SELECT count(*) INTO counts FROM ai_input_count_requests WHERE task_id=p_task;
+ SELECT count(*) INTO tools FROM task_events WHERE task_id=p_task AND kind='desktop.company_tool.requested';
+ SELECT count(*) INTO operations FROM tool_operations WHERE task_id=p_task;
+ SELECT count(*) INTO videos FROM ai_video_jobs WHERE task_id=p_task;
+ SELECT count(*) INTO audios FROM ai_audio_jobs WHERE task_id=p_task;
+ safe:=d.startup_state='preparing' AND t.runtime_turn IS NULL
+  AND models=0 AND counts=0 AND tools=0 AND operations=0 AND videos=0 AND audios=0;
+ RETURN jsonb_build_object('safe',safe,'task_id',p_task,'worker_attempt',t.attempt,
+  'fencing_token',t.fencing_token,'turn_admitted',d.startup_state='turn_admitted',
+  'model_requests',models,'input_count_requests',counts,'company_tool_admissions',tools,
+  'tool_operations',operations,'video_jobs',videos,'audio_jobs',audios);
+END $$;
+ALTER FUNCTION desktop_startup_admission_proof(uuid) OWNER TO cp_control;
+REVOKE ALL ON FUNCTION desktop_startup_admission_proof(uuid) FROM PUBLIC,cp_queue;
+GRANT EXECUTE ON FUNCTION desktop_startup_admission_proof(uuid) TO cp_app,cp_control;
+
+CREATE FUNCTION guard_desktop_startup_state() RETURNS trigger LANGUAGE plpgsql
+ SECURITY DEFINER SET search_path=pg_catalog,public SET row_security=on AS $$
+DECLARE t tasks; r desktop_startup_recoveries; proof jsonb;
+BEGIN
+ IF TG_OP='INSERT' THEN
+  IF NEW.startup_protocol IS NOT NULL OR NEW.startup_attempt<>0 OR NEW.startup_state<>'not_started'
+   OR NEW.startup_contract_sha256 IS NOT NULL OR NEW.startup_deadline_at IS NOT NULL OR NEW.startup_turn_key IS NOT NULL THEN
+   RAISE EXCEPTION 'Startup authority is granted only at admission' USING ERRCODE='23514'; END IF;
+  RETURN NEW;
+ END IF;
+ IF OLD.startup_protocol IS NULL THEN
+  IF NEW.startup_protocol IS NULL THEN
+   IF ROW(NEW.startup_attempt,NEW.startup_state,NEW.startup_contract_sha256,NEW.startup_deadline_at,NEW.startup_turn_key)
+    IS DISTINCT FROM ROW(OLD.startup_attempt,OLD.startup_state,OLD.startup_contract_sha256,OLD.startup_deadline_at,OLD.startup_turn_key) THEN
+    RAISE EXCEPTION 'Legacy execution has no startup replay authority' USING ERRCODE='23514'; END IF;
+  ELSIF OLD.state<>'prepared' OR NEW.state<>'running' OR NEW.startup_attempt<>1 OR NEW.startup_state<>'preparing'
+   OR NEW.startup_deadline_at IS DISTINCT FROM NEW.credential_expires_at OR NEW.startup_turn_key IS NOT NULL THEN
+   RAISE EXCEPTION 'Invalid first local startup' USING ERRCODE='23514';
+  END IF;
+  RETURN NEW;
+ END IF;
+ IF NEW.startup_protocol IS DISTINCT FROM OLD.startup_protocol
+  OR NEW.startup_deadline_at IS DISTINCT FROM OLD.startup_deadline_at
+  OR (OLD.startup_contract_sha256 IS NOT NULL AND NEW.startup_contract_sha256 IS DISTINCT FROM OLD.startup_contract_sha256)
+  OR (OLD.startup_turn_key IS NOT NULL AND NEW.startup_turn_key IS DISTINCT FROM OLD.startup_turn_key)
+  OR NEW.startup_attempt<OLD.startup_attempt OR NEW.startup_attempt>OLD.startup_attempt+1
+  OR (OLD.startup_state='turn_admitted' AND NEW.startup_state<>'turn_admitted') THEN
+  RAISE EXCEPTION 'Immutable local startup authority' USING ERRCODE='23514'; END IF;
+ SELECT * INTO t FROM tasks WHERE id=NEW.task_id;
+ IF NEW.startup_attempt<>OLD.startup_attempt THEN
+  SELECT * INTO r FROM desktop_startup_recoveries WHERE task_id=NEW.task_id;
+  proof:=desktop_startup_admission_proof(NEW.task_id);
+  IF OLD.state<>'recovering' OR NEW.state<>'running' OR OLD.startup_attempt<>1 OR NEW.startup_attempt<>2
+   OR NEW.startup_state<>'preparing' OR r.state IS DISTINCT FROM 'fenced'
+   OR r.target_fencing_token IS DISTINCT FROM t.fencing_token OR proof->>'safe' IS DISTINCT FROM 'true'
+   OR t.status<>'running' OR t.cancel_requested OR t.lease_until IS NULL OR t.lease_until<=clock_timestamp()
+   OR NEW.startup_deadline_at<=clock_timestamp()
+   OR NEW.credential_expires_at IS DISTINCT FROM NEW.startup_deadline_at THEN
+   RAISE EXCEPTION 'A second local startup requires a fenced zero-admission proof' USING ERRCODE='23514'; END IF;
+ END IF;
+ IF NEW.startup_state IS DISTINCT FROM OLD.startup_state THEN
+  IF OLD.startup_state<>'preparing' OR NEW.startup_state<>'turn_admitted' OR OLD.state<>'running'
+   OR NEW.state<>'running' OR NEW.startup_turn_key IS NULL OR t.status<>'running' OR t.cancel_requested
+   OR t.lease_until IS NULL OR t.lease_until<=clock_timestamp() OR NEW.startup_deadline_at<=clock_timestamp() THEN
+   RAISE EXCEPTION 'Invalid native turn admission' USING ERRCODE='23514'; END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_desktop_startup_state() OWNER TO cp_control;
+CREATE TRIGGER desktop_startup_state_guard BEFORE INSERT OR UPDATE ON desktop_executions
+ FOR EACH ROW EXECUTE FUNCTION guard_desktop_startup_state();
+
+CREATE FUNCTION guard_desktop_startup_recovery() RETURNS trigger LANGUAGE plpgsql
+ SECURITY DEFINER SET search_path=pg_catalog,public SET row_security=on AS $$
+DECLARE t tasks; d desktop_executions;
+BEGIN
+ SELECT * INTO t FROM tasks WHERE id=NEW.task_id;
+ SELECT * INTO d FROM desktop_executions WHERE task_id=NEW.task_id;
+ IF TG_OP='INSERT' THEN
+  IF NEW.tenant_id IS DISTINCT FROM t.tenant_id OR NEW.actor_id IS DISTINCT FROM t.created_by
+   OR t.execution_location<>'desktop' OR t.status<>'running' OR t.cancel_requested
+   OR d.state<>'recovering' OR d.startup_attempt<>1 OR d.startup_state<>'preparing'
+   OR d.credential_hash IS NOT NULL OR NEW.state<>'fenced' OR NEW.proof IS NOT NULL
+   OR NEW.target_fencing_token IS DISTINCT FROM t.fencing_token THEN
+   RAISE EXCEPTION 'Invalid local recovery fence' USING ERRCODE='23514'; END IF;
+ ELSE
+  IF OLD.state<>'fenced' OR NEW.state NOT IN ('ready','denied') OR NEW.finished_at IS NULL
+   OR ROW(NEW.task_id,NEW.tenant_id,NEW.actor_id,NEW.request_key,NEW.request_sha256,NEW.source_fencing_token,NEW.target_fencing_token,NEW.created_at)
+    IS DISTINCT FROM ROW(OLD.task_id,OLD.tenant_id,OLD.actor_id,OLD.request_key,OLD.request_sha256,OLD.source_fencing_token,OLD.target_fencing_token,OLD.created_at) THEN
+   RAISE EXCEPTION 'Immutable local recovery receipt' USING ERRCODE='23514'; END IF;
+  IF NEW.state='ready' AND (d.state<>'running' OR d.startup_attempt<>2
+   OR t.fencing_token IS DISTINCT FROM NEW.target_fencing_token OR NEW.proof->>'safe' IS DISTINCT FROM 'true') THEN
+   RAISE EXCEPTION 'Invalid ready local recovery receipt' USING ERRCODE='23514'; END IF;
+ END IF;
+ RETURN NEW;
+END $$;
+ALTER FUNCTION guard_desktop_startup_recovery() OWNER TO cp_control;
+CREATE TRIGGER desktop_startup_recovery_guard BEFORE INSERT OR UPDATE ON desktop_startup_recoveries
+ FOR EACH ROW EXECUTE FUNCTION guard_desktop_startup_recovery();
+INSERT INTO schema_migrations(version) VALUES(133);
