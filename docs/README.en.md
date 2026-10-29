@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
 <!-- open-work-review-stage125 -->
-The v2 review lists 89 open required acceptance records (77 partial and 12 completion-not-proven), plus 12 unconfirmed suggestions and one optional item. The latest Stage125 backend run has 21 passes out of 107; all 86 failures share one role-release startup hook error. Client and Admin publishing pages are not connected, and product source remains uncommitted in its working branch. Earlier runs retain their original scope. This is a documentation review; published components retain Stage124 scope.
+The v3 review retains 89 open required acceptance records (77 partial and 12 completion-not-proven), plus 12 unconfirmed suggestions and one optional item. The new Web publishing page passes its build and 20 existing client checks. Desktop publishing and its dedicated media proxy pass both type checks and 21 media/session checks. Actual browser/Electron journeys, Extension and Admin publishing pages, the full backend regression and this increment's product publication remain open. Backend run04 has 99 passes and 10 failures out of 109; run05 retains its actual receipt or observed in-progress state. Published component refs retain Stage124 scope.
 
-[All 102 numbered records](quality/remaining-work-current-review-125-v2.md) · [Structured ledger](quality/remaining-work-current-review-125-v2.json) · [Review changes](changes/remaining-work-review-stage125-v2.md) · [Previous audit preserved](quality/remaining-work-current-review-125.md)
+[All 102 numbered records](quality/remaining-work-current-review-125-v3.md) · [Structured ledger](quality/remaining-work-current-review-125-v3.json) · [Review changes](changes/remaining-work-review-stage125-v3.md) · [Preserved v2 review](quality/remaining-work-current-review-125-v2.md)
 
 <!-- admin-profile-revisions-stage124 -->
 Stage 124 adds scoped administrator revisions for customer specialists, brands and memories. All 68 checks across five complete related backend files, 11 Admin unit checks, eight actual UI flows and 14 layout observations passed; eight PNG captures and three GIF/MP4 pairs retain original evidence and earlier failures. The current publication entry point is V7; actual remote success follows its final receipt and SHA readback.
