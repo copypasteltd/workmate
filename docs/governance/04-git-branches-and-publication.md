@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- local-startup-stage127 -->
+当前阶段127入口为 `dev/copypaste-delivery/scripts/publish-workmate-v10.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v10.py`。本轮绑定本机启动/撤权、控制层及真实Codex、实际打包窗口、原公司账务和截图/GIF；原失败、取消、旧包及所有历史证明保留。六个独立组件仓库和中央文档提交后，普通原子推送八个映射引用并读取实际SHA，不强推。Desktop根属性文件保持原字节；执行脚本、源码快照、原日志和回执首次运行后不得覆盖。
+
+V10 binds exact customer-local startup and withdrawal sources, original SQL receipts and actual packaged captures. It preserves all historical proof identities and original failed/cancelled evidence, and ordinarily updates eight refs atomically with SHA readback. The Desktop root attributes remain byte-identical. Executed verifiers and original snapshots/logs/receipts are immutable. [Behavior](../technical/127-desktop-startup-lifecycle.md) · [Changes](../changes/127-desktop-startup-lifecycle.md).
+
 <!-- native-publishing-stage126 -->
 当前阶段126入口为 `dev/copypaste-delivery/scripts/publish-workmate-v9.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v9.py`。本轮确切源码、四发布工具、受限启动恢复和原账务回执经新归档和清单绑定；中断06、失败08及失败探针保留原结论，不补写成功。旧阶段125证明及媒体保留原源码范围。仍需六个独立仓库、双语说明和中央文档提交，普通原子推送八个映射引用并回读SHA，不强推。
 

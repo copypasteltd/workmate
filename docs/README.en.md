@@ -1,5 +1,14 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- local-startup-stage127 -->
+Stage127 fixes customer-local Desktop startup renewal for main/workflow-child tasks and cancellation during asynchronous preparation/native requests. Codex stays on the customer's computer, using the original task and billing hold. Closing drains preparation and owned processes; bilingual feedback avoids internal error codes.
+
+Bounded qualification covers 73 related controller, 38 real pinned-native and five actual unsigned packaged-window checks; final results are recorded in the checkpoint. Actual journeys cover browser sign-in, onboarding, default decline/explicit consent, startup beyond 45 seconds, original company SQL billing, withdrawal and three native window widths. Actual PNG/GIF/MP4 captures are added. Model responses/dialog choices are synthetic. V10 retains an ordinary atomic eight-ref update and SHA readback. Earlier results/media keep their original source scope.
+
+Automatic Desktop startup recovery still needs atomic zero-admission proof and revocation/draining of old authority. Complete roles, signed installation and all 89 required full-acceptance records remain open.
+
+[Current behavior](technical/127-desktop-startup-lifecycle.md) · [Numbered changes](changes/127-desktop-startup-lifecycle.md) · [Checkpoint](quality/local-startup-checkpoint-127.json) · [All numbered open work](quality/remaining-work-stage127.md)
+
 <!-- native-publishing-stage126 -->
 This increment fixes social-role creation and exact publication-source identity, and completes accounts → preview → prepare → status through real cloud Codex with simulated model/accounts. Current native09 passes5/5, startup fault03 passes9/9 and complete sixteen-file related10 passes155/155 with unchanged source and reclaimed owned native database/fixtures. Interrupted06, run08 (132 passed, one failed) and earlier failures retain their original outcomes.
 
