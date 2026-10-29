@@ -9,6 +9,8 @@ import { StringDecoder } from "node:string_decoder";
 import { LocalCodexSession, type LocalCodexProfile, type LocalSessionBinding, type LocalCodexHooks } from "../../src/local-codex.js";
 import type { LocalInputRequest } from "../../src/local-input.js";
 import { LocalProgramController, type ProgramJournal } from "../../src/local-programs.js";
+import { LocalAgentController, type LocalAgentIO, type LocalAgentJournal } from "../../src/local-agent.js";
+import { withOwnedNativeProcesses, interceptNativeRPC } from "../native-startup-faults.js";
 
 const digest = (data: string | Buffer) => createHash("sha256").update(data).digest("hex");
 const lock = JSON.parse(await readFile(new URL("../../contracts/local-codex-runtime.json", import.meta.url), "utf8"));
@@ -68,7 +70,7 @@ async function fixture() {
       const body = JSON.parse(Buffer.concat(chunks).toString() || "{}");
       requests.push({ url: req.url, authorized: req.headers.authorization === "Bearer " + token, body });
       await writeFile(path.join(directory, "last-request-body.json"), JSON.stringify(body));
-      assert.equal(req.url, "/v1/responses");
+      assert.ok(req.url === "/v1/responses" || req.url === "/v1/desktop-inference/v1/responses");
       assert.equal(req.headers.authorization, "Bearer " + token);
       const action = actions[0];
       assert.ok(action, "Unexpected additional provider dispatch");
@@ -127,8 +129,8 @@ async function fixture() {
   const binding: LocalSessionBinding = { sessionId: randomUUID(), actorId: actor, tenantId: randomUUID(), projectId: randomUUID(), workspace, stateRoot,
     grant: { id: randomUUID(), actorId: actor, mode: "full-access", revision: 1, expiresAt: Date.now() + 300000 },
     skills: [{ key: "native-fixture-method", content: skill, sha256: digest(skill) }] };
-  const make = (p = profile, b = binding, companyTool?: LocalCodexHooks["companyTool"], userInput?: LocalCodexHooks["userInput"], programTool?: LocalCodexHooks["programTool"]) => {
-    const session = new LocalCodexSession(p, b, { authorize: async () => { if (!authority) throw new Error("Account revoked"); },
+  const make = (p = profile, b = binding, companyTool?: LocalCodexHooks["companyTool"], userInput?: LocalCodexHooks["userInput"], programTool?: LocalCodexHooks["programTool"], authorize?: LocalCodexHooks["authorize"]) => {
+    const session = new LocalCodexSession(p, b, { authorize: authorize ?? (async () => { if (!authority) throw new Error("Account revoked"); }),
       companyTool, userInput, programTool, event: async (kind, value) => { events.push({ kind, value }); if (kind === "local.runtime.ready") readyPid = Number(value.pid); } });
     sessions.push(session); return session;
   };
@@ -146,6 +148,113 @@ async function fixture() {
     pid: () => readyPid, revokeAuthority: () => { authority = false; }, token, directory };
 }
 const quoted = (value: string) => "'" + value.replaceAll("'", "''") + "'";
+
+for (const phase of ["company-authority", "verified-binary", "owned-lock", "spawn-authority"] as const)
+  for (const withdrawal of ["close", "revoke"] as const)
+    test(`native startup ${withdrawal} at ${phase} prevents a late process and releases any acquired lock`, { timeout: 120000 }, async () => {
+      const f = await fixture(); let release!: () => void, pending: Promise<void> | undefined, closing: Promise<void> | undefined;
+      try {
+        let entered!: () => void, authorizations = 0;
+        const gate = new Promise<void>(resolve => { release = resolve; }), ready = new Promise<void>(resolve => { entered = resolve; });
+        const wait = async () => { entered(); await gate; };
+        const native = f.make(f.profile, f.binding, undefined, undefined, undefined, async () => {
+          authorizations++;
+          if ((phase === "company-authority" && authorizations === 1) || (phase === "spawn-authority" && authorizations === 2)) await wait();
+        });
+        // Delay real preparation at its ownership boundaries; the pinned
+        // binary/profile checks and filesystem operations remain real.
+        const internal = native as any;
+        if (phase === "verified-binary" || phase === "owned-lock") {
+          const method = phase === "verified-binary" ? "verifyProfile" : "takeLock", original = internal[method].bind(native);
+          internal[method] = async (...args: unknown[]) => { await original(...args); await wait(); };
+        }
+        pending = f.start(native); const rejected = assert.rejects(pending, { code: "LOCAL_SESSION_CLOSED" });
+        await ready; closing = native[withdrawal](); release(); await rejected; await closing;
+        assert.equal(internal.child, undefined, "A cancelled preparation must never spawn a native agent afterwards");
+        assert.equal(internal.lock, undefined); assert.equal(f.requests.length, 0); assert.equal(f.events.some(e => e.kind === "local.runtime.ready"), false);
+        await assert.rejects(readFile(path.join(f.stateRoot, "local-codex", f.binding.sessionId, "process.lock")), { code: "ENOENT" });
+      } finally { release?.(); await pending?.catch(() => {}); await closing?.catch(() => {}); await f.clean(); }
+    });
+
+for (const method of ["initialize", "thread/start"] as const)
+  for (const withdrawal of ["close", "revoke"] as const)
+    test(`native startup ${withdrawal} drains a real process with a pending ${method} RPC`, { timeout: 120000 }, async () => {
+      const f = await fixture();
+      try {
+        let entered!: () => void;
+        const ready = new Promise<void>(resolve => { entered = resolve; });
+        await withOwnedNativeProcesses(f.profile.executable, f.workspace, row => {
+          interceptNativeRPC(row, method, (_request, complete) => { complete(); entered(); });
+        }, async owned => {
+          const native = f.make(), pending = f.start(native);
+          const rejected = assert.rejects(pending, { code: "LOCAL_SESSION_CLOSED" });
+          await ready; const before = Date.now(); await native[withdrawal](); await rejected;
+          assert.ok(Date.now() - before < 10000, "Closing must interrupt startup without waiting for its 30-second RPC deadline");
+          assert.equal(owned.length, 1); assert.equal(owned[0].closed, true); assert.equal(f.requests.length, 0);
+          assert.equal(f.events.some(e => e.kind === "local.runtime.ready"), false);
+          await assert.rejects(readFile(path.join(f.stateRoot, "local-codex", f.binding.sessionId, "process.lock")), { code: "ENOENT" });
+        });
+      } finally { await f.clean(); }
+    });
+
+test("actual customer-local Codex startup exceeding 45 seconds retains the original lease and runs exactly one turn", { timeout: 180000 }, async () => {
+  const f = await fixture(); let controller: LocalAgentController | undefined;
+  try {
+    let journal: LocalAgentJournal | null = null, leaseUntil = 0, heartbeats = 0, creates = 0, starts = 0, finishes = 0;
+    const actor = { actorId: f.binding.actorId, epoch: randomUUID() }, taskId = randomUUID();
+    let state = "prepared", status = "queued";
+    const runtime = { pinned_version: lock.runtime_version, windows_x64_sha256: lock.windows_x64_sha256, role_keys: ["fullstack"] };
+    const io: LocalAgentIO = {
+      read: async () => structuredClone(journal), write: async value => { journal = structuredClone(value); },
+      identity: async () => actor, localEpoch: async () => actor.epoch, changed: () => {}, chooseWorkspace: async () => f.workspace,
+      consent: async () => true, approval: async () => "decline", stateRoot: f.stateRoot, companyOrigin: f.profile.companyOrigin,
+      executable: f.profile.executable, runtime: { version: lock.runtime_version, sha256: lock.windows_x64_sha256 },
+      request: async (url, options) => {
+        if (url.endsWith("/runtime")) return { status: 200, body: runtime };
+        if (url.endsWith("/desktop-executions")) { creates++; return { status: 200, body: { task_id: taskId, state, status } }; }
+        if (url.endsWith("/start")) {
+          starts++; state = status = "running"; leaseUntil = Date.now() + 45000;
+          return { status: 200, body: { task_id: taskId, state, status, runtime, inference_path: "/v1/desktop-inference/v1", skills: f.binding.skills,
+            model: f.profile.model, effort: f.profile.effort, prompt: "Complete the retained original customer-local task", role_instructions: "Use the company provider",
+            credential: { token: f.token, expires_at: new Date(Date.now() + 300000).toISOString() } } };
+        }
+        if (url.endsWith("/heartbeat")) {
+          assert.ok(Date.now() < leaseUntil, "Real elapsed startup must not expire the original 45-second company lease");
+          heartbeats++; leaseUntil = Date.now() + 45000; return { status: 200, body: { task_id: taskId, state, status } };
+        }
+        assert.ok(url.endsWith("/finish")); assert.equal((options?.body as any).status, "completed");
+        finishes++; state = "finished"; status = "succeeded"; return { status: 200, body: { task_id: taskId, state, status } };
+      },
+    };
+    controller = new LocalAgentController(io);
+    const session = (await controller.create({ tenant: f.binding.tenantId, project: f.binding.projectId }, "fullstack"))!;
+    await controller.permission(session.id, "full-access");
+    const delays: { method: string; released: boolean }[] = [];
+    await withOwnedNativeProcesses(f.profile.executable, f.workspace, row => {
+      const stream = row.child.stdin, original = stream.write, timers = new Set<ReturnType<typeof setTimeout>>();
+      stream.write = function (...args: any[]) {
+        let request: any; try { request = JSON.parse(Buffer.isBuffer(args[0]) ? args[0].toString() : args[0]); } catch {}
+        if (["initialize", "thread/start"].includes(request?.method)) {
+          const record = { method: request.method as string, released: false }; delays.push(record);
+          const timer = setTimeout(() => { timers.delete(timer); record.released = true; Reflect.apply(original, stream, args); }, 24000);
+          timers.add(timer); return true;
+        }
+        return Reflect.apply(original, stream, args);
+      } as typeof stream.write;
+      row.child.once("close", () => { for (const timer of timers) clearTimeout(timer); });
+    }, async owned => {
+      f.actions.push({}); const began = Date.now();
+      await controller!.send(session.id, "Complete once after native startup", 100000);
+      const elapsed = Date.now() - began;
+      assert.ok(elapsed >= 48000); assert.ok(heartbeats >= 5);
+      assert.equal(creates, 1); assert.equal(starts, 1); assert.equal(finishes, 1); assert.equal(f.requests.length, 1);
+      assert.equal(owned.length, 1); assert.equal(owned[0].closed, true);
+      assert.deepEqual(delays, [{ method: "initialize", released: true }, { method: "thread/start", released: true }]);
+      assert.ok(!JSON.stringify(journal).includes(f.token));
+      console.log("# native_startup_lease " + JSON.stringify({ elapsed_ms: elapsed, heartbeats, task_reservations_simulated: creates, native_processes: owned.length, model_requests: f.requests.length, native_processes_closed: owned.every(row => row.closed) }));
+    });
+  } finally { await controller?.close(); await f.clean(); }
+});
 
 function nativeProtocolFixture(native: LocalCodexSession) {
   const internal = native as unknown as { child: ChildProcessWithoutNullStreams; eventTail: Promise<void> };

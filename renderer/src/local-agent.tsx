@@ -221,7 +221,9 @@ export function LocalAgentWorkspace() {
         ? t("本次預算超過專案上限。請降低工作預算，或請專案管理員更新共用指引中的上限。", "This turn exceeds the project budget limit. Reduce the turn budget or ask a project administrator to update the limit in shared guidance.")
         : error === "LOCAL_DISPATCH_RESUME_REQUIRED"
           ? t("此工作由目錄規則建立。請到「目錄工作」核對原檔、額度和剩餘項目，再確認啟用。", "This task belongs to a folder rule. Open Folder work to review the input, limits and remaining items, then confirm activation.")
-        : <>{t("操作未完成：", "Action incomplete: ")}{error}</>}</div>}
+        : ["LOCAL_SESSION_CLOSED", "LOCAL_PERMISSION_REVOKED"].includes(error)
+          ? t("本機工作已停止。請核對目前授權及原工作費用；此工作不會自動重做。", "Local work has stopped. Review the current permission and original billing record. This work will not be replayed automatically.")
+        : t("未能完成操作。請檢查工作記錄、目前授權及費用狀態，再決定下一步。", "This action could not be completed. Review the activity log, current permission and billing status before continuing.")}</div>}
     <div className="local-agent-grid"><aside className="local-agent-sessions" tabIndex={0} aria-label={t("本機工作目錄與會話", "Local workspaces and sessions")}>
       <ProjectConfigurationSummary compact />
       <label>{t("專業角色", "Specialist")}<select aria-label={t("本機角色", "Local specialist")} value={role} onChange={e => setRole(e.target.value)}>

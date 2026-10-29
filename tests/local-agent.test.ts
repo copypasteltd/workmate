@@ -93,7 +93,7 @@ async function fixture() {
   const tasks = new Map<string, any>();
   const createdKeys = new Map<string, string>();
   const runtimeBody = { pinned_version: localRuntimeLock.version, windows_x64_sha256: localRuntimeLock.sha256, role_keys: ["fullstack"] };
-  let pendingTurn: (() => Promise<any>) | undefined;
+  let pendingTurn: (() => Promise<any>) | undefined, pendingStart: (() => Promise<void>) | undefined;
   const io: LocalAgentIO = {
     read: async () => structuredClone(journal), write: async j => { journal = structuredClone(j); },
     identity: async () => ({ ...actor }), localEpoch: async () => actor.epoch, changed: () => {}, chooseWorkspace: async () => directory,
@@ -130,7 +130,7 @@ async function fixture() {
     runtimeHooks.push(hooks);
     grants.push(binding.grant); let aborted: (() => void) | undefined;
     const runtime: LocalAgentRuntime = {
-      start: async credential => { assert.ok(credential.token.startsWith("ONLY_")); await hooks.authorize(); if (startFailure) throw new Error("Fixture binary unavailable"); },
+      start: async credential => { assert.ok(credential.token.startsWith("ONLY_")); await hooks.authorize(); if (startFailure) throw new Error("Fixture binary unavailable"); await pendingStart?.(); },
       turn: async (_prompt, signal) => {
         turns++; if (pendingTurn) return pendingTurn();
         if (signal?.aborted) throw new Error("Interrupted before native acceptance");
@@ -146,6 +146,7 @@ async function fixture() {
   return { controller, io, factory, scope, actor, calls, grants, runtimes, runtimeHooks, create, clean, turns: () => turns, created: () => created,
     setConsent: (v: boolean) => { consent = v; }, loseFinish: () => { finishLost = true; }, failStart: () => { startFailure = true; }, loseStart: () => { startLost = true; }, loseCreate: () => { createLost = true; },
     pending: (fn: () => Promise<any>) => { pendingTurn = fn; }, journal: () => structuredClone(journal),
+    starting: (fn: () => Promise<void>) => { pendingStart = fn; },
   };
 }
 
@@ -362,6 +363,85 @@ test("a native start failure reports definite failure before any turn and clears
     assert.equal(lostCreate.calls.filter(c => c.url.endsWith("/start")).length, 0);
   } finally { await lostCreate.clean(); }
 });
+for (const target of ["main", "child"] as const) test(`a ${target} native startup spanning the initial company lease stays authorized without starting a turn early`, async t => {
+  const f = await fixture();
+  t.mock.timers.enable({ apis: ["setInterval", "Date"], now: Date.now() });
+  let release!: () => void, run: Promise<any> | undefined;
+  try {
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    const controller = f.controller as any, journal = await controller.state(), record = journal.sessions[0];
+    const childId = randomUUID(), active = { abort: new AbortController(), done: Promise.resolve(), children: new Set(), browsers: new Set(), programs: new Set() };
+    const request = f.io.request;
+    let leaseUntil = 0, checks = 0, finished = false;
+    f.io.request = async (url, options) => {
+      if (url.endsWith("/start")) leaseUntil = Date.now() + 45000;
+      if (url.endsWith("/heartbeat")) {
+        assert.ok(!finished, "No authority check may outlive terminal settlement");
+        assert.ok(Date.now() < leaseUntil, "The original 45-second company lease expired during local startup");
+        leaseUntil = Date.now() + 45000; checks++;
+      }
+      if (url.endsWith("/finish")) finished = true;
+      if (target === "main" || !url.includes("/" + childId + "/")) return request(url, options);
+      if (url.endsWith("/start")) return { status: 200, body: {
+        runtime: { pinned_version: localRuntimeLock.version, windows_x64_sha256: localRuntimeLock.sha256 },
+        inference_path: "/v1/desktop-inference/v1", skills: [], model: "synthetic-native", effort: "max",
+        prompt: "A child whose native initialization takes time", role_instructions: "Use the customer-local runtime",
+        credential: { token: "ONLY_THE_TRUSTED_NATIVE_RUNTIME_CAN_RECEIVE_THIS_TOKEN", expires_at: new Date(Date.now() + 300000).toISOString() },
+      } };
+      if (url.endsWith("/heartbeat")) return { status: 200, body: { state: "running", status: "running" } };
+      assert.ok(url.endsWith("/finish"));
+      return { status: 200, body: { status: "succeeded" } };
+    };
+    let entered!: () => void;
+    const ready = new Promise<void>(resolve => { entered = resolve; }), gate = new Promise<void>(resolve => { release = resolve; });
+    f.starting(async () => { entered(); await gate; });
+    run = target === "main" ? f.controller.send(session.id, "Startup must retain the original reservation", 10000)
+      : controller.executeWorkflowChild(record, { prompt: "Parent", budget: 100000, phase: "native_running" }, active,
+        { task_id: childId, role_key: "fullstack", fields: { device_id: journal.deviceId, local_session_id: randomUUID(), workspace_hash: record.workspaceHash,
+          runtime_version: localRuntimeLock.version, runtime_sha256: localRuntimeLock.sha256 } }, randomUUID(), 0, active.abort.signal, async () => {}, async () => {});
+    void run!.catch(() => {}); await ready;
+    const initialChecks = checks;
+    for (let elapsed = 10000; elapsed <= 50000; elapsed += 10000) {
+      t.mock.timers.tick(10000); await new Promise<void>(resolve => setImmediate(resolve));
+      assert.equal(checks, initialChecks + elapsed / 10000, "Startup must keep checking company and local permission every ten seconds");
+      assert.equal(f.turns(), 0);
+    }
+    release(); await run;
+    assert.equal(f.turns(), 1); assert.equal(f.runtimes.length, 1); assert.equal(finished, true);
+    const terminalChecks = checks; t.mock.timers.tick(60000); await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(checks, terminalChecks); assert.equal(active.children.size, 0);
+    if (target === "main") assert.equal(f.created(), 1);
+  } finally { release?.(); await run?.catch(() => {}); t.mock.timers.reset(); await f.clean(); }
+});
+
+for (const action of ["company-revocation", "local-revocation"] as const) test(`${action} during a pending native startup prevents every model turn and releases the owned runtime`, async t => {
+  const f = await fixture();
+  t.mock.timers.enable({ apis: ["setInterval"] });
+  let release!: () => void, run: Promise<any> | undefined;
+  try {
+    const session = await f.create(); await f.controller.permission(session.id, "full-access");
+    let entered!: () => void, closed = 0, revoked = false;
+    const ready = new Promise<void>(resolve => { entered = resolve; }), gate = new Promise<void>(resolve => { release = resolve; });
+    const request = f.io.request;
+    f.io.request = async (url, options) => url.endsWith("/heartbeat") && revoked
+      ? { status: 403, body: { error: { code: "DESKTOP_AUTHORIZATION_REVOKED" } } } : request(url, options);
+    f.starting(async () => {
+      const runtime = f.runtimes.at(-1)!;
+      runtime.close = runtime.revoke = runtime.interrupt = async () => { closed++; release(); };
+      entered(); await gate;
+    });
+    run = f.controller.send(session.id, "A withdrawn authorization must also stop initialization", 10000);
+    const rejected = assert.rejects(run); await ready;
+    if (action === "company-revocation") { revoked = true; t.mock.timers.tick(10000); }
+    else await f.controller.revoke(session.id);
+    // The deadline is a test bound, not a manual release of the native startup.
+    await Promise.race([rejected, new Promise<never>((_, reject) => { const timer = setTimeout(() => reject(new Error("Revoked startup did not close within the test deadline")), 2000); void rejected.then(() => clearTimeout(timer), () => clearTimeout(timer)); })]);
+    assert.ok(closed > 0); assert.equal(f.turns(), 0); assert.equal(f.created(), 1);
+    assert.equal(f.calls.find(c => c.url.endsWith("/finish"))?.body.status, "failed");
+    assert.equal((await f.controller.list(f.scope)).sessions[0].busy, false);
+  } finally { release?.(); await run?.catch(() => {}); t.mock.timers.reset(); await f.clean(); }
+});
+
 test("a completed workflow child stops its heartbeat before native shutdown and terminal settlement", async t => {
   const f = await fixture();
   t.mock.timers.enable({ apis: ["setInterval"] });

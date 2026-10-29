@@ -116,6 +116,7 @@ export class LocalCodexSession {
   private grant: LocalPermissionGrant;
   private active?: ActiveTurn;
   private operation = false;
+  private startupDone?: Promise<void>;
   private closed = false;
   private revoked = false;
   private sequence = 0;
@@ -143,6 +144,12 @@ export class LocalCodexSession {
       throw new LocalCodexError("LOCAL_PERMISSION_REQUIRED");
     if (this.binding.observationProtocol && grant.mode !== "read-only")
       throw new LocalCodexError("LOCAL_OBSERVATION_PERMISSION_INVALID");
+  }
+
+  private assertStartupActive() {
+    if (this.closed || this.revoked || this.shutdown.signal.aborted)
+      throw new LocalCodexError("LOCAL_SESSION_CLOSED");
+    this.validateGrant();
   }
 
   private common() {
@@ -202,8 +209,12 @@ export class LocalCodexSession {
       || (base.protocol !== "https:" && !(base.protocol === "http:" && ["localhost", "127.0.0.1"].includes(base.hostname))))
       throw new LocalCodexError("LOCAL_GATEWAY_INVALID");
     const executableHash = createHash("sha256");
-    for await (const chunk of createReadStream(p.executable)) executableHash.update(chunk);
+    for await (const chunk of createReadStream(p.executable)) {
+      this.assertStartupActive();
+      executableHash.update(chunk);
+    }
     if (executableHash.digest("hex") !== p.executableSha256) throw new LocalCodexError("LOCAL_CODEX_HASH_MISMATCH");
+    this.assertStartupActive();
     const { stdout } = await exec(p.executable, ["--version"], { timeout: 10000, windowsHide: true });
     if (stdout.trim() !== "codex-cli " + p.version) throw new LocalCodexError("LOCAL_CODEX_VERSION_MISMATCH");
   }
@@ -211,19 +222,25 @@ export class LocalCodexSession {
   async start(credential: { token: string; expiresAt: number }) {
     if (this.operation || this.child || this.closed) throw new LocalCodexError("LOCAL_SESSION_STATE_INVALID");
     this.operation = true;
+    let finishStartup!: () => void;
+    this.startupDone = new Promise<void>(resolve => { finishStartup = resolve; });
     try {
       for (const id of [this.binding.sessionId, this.binding.actorId, this.binding.tenantId, this.binding.projectId])
         if (!uuid.test(id)) throw new LocalCodexError("LOCAL_BINDING_INVALID");
-      this.validateGrant();
+      this.assertStartupActive();
       if (!/^[\w.-]{20,4096}$/.test(credential.token) || !Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now())
         throw new LocalCodexError("LOCAL_INFERENCE_CREDENTIAL_REQUIRED");
       if (!path.isAbsolute(this.binding.workspace) || !path.isAbsolute(this.binding.stateRoot)) throw new LocalCodexError("LOCAL_BINDING_INVALID");
       await this.hooks.authorize();
+      this.assertStartupActive();
       await this.verifyProfile();
+      this.assertStartupActive();
       this.binding.workspace = await realpath(this.binding.workspace);
       const folder = path.join(this.binding.stateRoot, "local-codex", this.binding.sessionId);
       await mkdir(folder, { recursive: true });
+      this.assertStartupActive();
       await this.takeLock(folder);
+      this.assertStartupActive();
       this.home = path.join(folder, "home");
       this.receiptFile = path.join(folder, "checkpoint.json");
       await mkdir(this.home, { recursive: true });
@@ -321,7 +338,10 @@ export class LocalCodexSession {
         ['features.default_mode_request_user_input', this.binding.observationProtocol ? 'false' : 'true'],
         ['shell_environment_policy.exclude', '["COPYPASTE_LOCAL_INFERENCE_TOKEN"]'],
       ].flatMap(([key, value]) => ["-c", `${key}=${value}`]);
-      this.validateGrant();
+      // Revocation can arrive during any asynchronous preparation above. The
+      // last company check and this synchronous guard fence native spawning.
+      await this.hooks.authorize();
+      this.assertStartupActive();
       if (this.credentialExpiresAt <= Date.now()) throw new LocalCodexError("LOCAL_INFERENCE_CREDENTIAL_REQUIRED");
       const child = this.child = spawn(this.profile.executable, ["app-server", "--stdio", "--strict-config", ...overrides],
         { cwd: this.binding.workspace, env, windowsHide: true, stdio: ["pipe", "pipe", "pipe"] });
@@ -351,6 +371,7 @@ export class LocalCodexSession {
         }
       });
       await this.rpc("initialize", { clientInfo: { name: "copypaste_desktop", title: "CopyPaste Desktop", version: "0.5.0" }, capabilities: { experimentalApi: true } });
+      this.assertStartupActive();
       this.notify("initialized", {});
       const thread = await this.rpc(this.threadId ? "thread/resume" : "thread/start", {
         ...this.common(), ...(this.threadId ? { threadId: this.threadId, excludeTurns: true } : { allowProviderModelFallback: false,
@@ -365,16 +386,22 @@ export class LocalCodexSession {
               tools: programToolDefinitions.map(tool => ({ type: "function", ...tool })) }] : []),
           ] } : {}) }),
       });
+      this.assertStartupActive();
       this.checkThread(thread);
       this.threadId = thread.thread.id;
       await this.save("ready");
+      this.assertStartupActive();
       await this.emit("local.runtime.ready", { pid: child.pid, version: this.profile.version, executable_sha256: this.profile.executableSha256,
         thread_id: this.threadId, permission_mode: this.grant.mode, grant_revision: this.grant.revision });
+      this.assertStartupActive();
       this.armExpiry();
     } catch (error) {
+      // No startup resource may be acquired after close finishes. Resolve the
+      // preparation barrier before joining close, which also awaits it.
+      finishStartup();
       await this.close();
       throw error;
-    } finally { this.operation = false; }
+    } finally { this.operation = false; finishStartup(); }
   }
 
   private checkThread(result: any) {
@@ -744,7 +771,13 @@ export class LocalCodexSession {
     this.closed = true;
     this.cancelInputs();
     this.shutdown.abort();
+    for (const [id, pending] of this.pending) {
+      if (!["initialize", "thread/start", "thread/resume"].includes(pending.method)) continue;
+      clearTimeout(pending.timer); this.pending.delete(id);
+      pending.reject(new LocalCodexError("LOCAL_SESSION_CLOSED"));
+    }
     this.closing = (async () => {
+      await this.startupDone;
       if (this.expiry) clearTimeout(this.expiry);
       const child = this.child;
       if (child && !this.hasExited) {

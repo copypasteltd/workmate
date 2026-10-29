@@ -1197,6 +1197,20 @@ export class LocalAgentController {
             throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
           r.lastTask = live;
         };
+        // The company lease already runs while the customer-local process is
+        // validating its binary, initializing and opening its native thread.
+        heartbeat = setInterval(() => {
+          if (heartbeatRun || stoppingHeartbeat) return;
+          heartbeatRun = authorize()
+            .catch(() => {
+              abort.abort();
+              void runtime?.close().catch(() => {});
+            })
+            .finally(() => {
+              heartbeatRun = undefined;
+              this.io.changed();
+            });
+        }, 10000);
         await beforeNative?.();
         await assertOwner();
         const profile: LocalCodexProfile = {
@@ -1379,18 +1393,7 @@ export class LocalAgentController {
           token: started.credential.token,
           expiresAt: new Date(started.credential.expires_at).getTime(),
         });
-        heartbeat = setInterval(() => {
-          if (heartbeatRun || stoppingHeartbeat) return;
-          heartbeatRun = authorize()
-            .catch(() => {
-              abort.abort();
-              void runtime?.close().catch(() => {});
-            })
-            .finally(() => {
-              heartbeatRun = undefined;
-              this.io.changed();
-            });
-        }, 10000);
+        await authorize();
         if (op.stopped || abort.signal.aborted)
           throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
         op.phase = "native_running";
@@ -1640,6 +1643,19 @@ export class LocalAgentController {
         !Array.isArray(started.skills)
       )
         throw new LocalAgentError("LOCAL_RUNTIME_UPDATE_REQUIRED");
+      // Native startup shares the original 45-second lease with execution.
+      // Keep both the parent and child authorization current before any turn.
+      heartbeat = setInterval(() => {
+        if (heartbeatRun || stoppingHeartbeat) return;
+        heartbeatRun = authorize()
+          .catch(() => {
+            active.abort.abort();
+            shutdownChild();
+          })
+          .finally(() => {
+            heartbeatRun = undefined;
+          });
+      }, 10000);
       browser = this.io.browser
         ? this.createBrowser(
             r,
@@ -1767,17 +1783,6 @@ export class LocalAgentController {
         token: started.credential.token,
         expiresAt: new Date(started.credential.expires_at).getTime(),
       });
-      heartbeat = setInterval(() => {
-        if (heartbeatRun || stoppingHeartbeat) return;
-        heartbeatRun = authorize()
-          .catch(() => {
-            active.abort.abort();
-            shutdownChild();
-          })
-          .finally(() => {
-            heartbeatRun = undefined;
-          });
-      }, 10000);
       await authorize();
       checkpoint.phase = "native_running";
       await this.persist();

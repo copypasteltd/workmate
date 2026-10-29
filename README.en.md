@@ -2,6 +2,38 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- local-startup-stage127 -->
+## Customer-local startup, renewal and withdrawal · Stage127
+
+After the customer chooses a folder and explicitly grants access, Codex runs on their computer. Company services enforce identity, the model gateway and original-task billing. Main and workflow-child tasks now renew authority during preparation/startup and reauthorize before a turn. Closure or withdrawal interrupts pending initialization/thread requests, drains preparation and reclaims the owned process and lock, preventing a late spawn after cleanup.
+
+Startup beyond the initial 45-second lease retains the original task and budget hold. Completion stops and drains heartbeat before closing resources and settling the original receipt. Readable withdrawal feedback asks customers to review authority and billing. Accepted or unknown work is never automatically repeated. Automatic Desktop startup recovery remains unimplemented; zero charge alone cannot authorize replay.
+
+```mermaid
+flowchart TD
+  Grant[Customer folder and explicit grant] --> Admit[Original company task and hold]
+  Admit --> Renew[Renew authority during preparation and startup]
+  Renew --> Native[Customer-local Codex]
+  Native --> Check[Reauthorize before the turn]
+  Check --> Turn[Submit original task turn]
+  Turn --> Finish[Drain heartbeat, close and settle]
+  Renew -->|Close or withdraw| Drain[Interrupt startup, drain preparation and reclaim]
+```
+
+Bounded qualification covers 73 complete related controller checks, 38 real pinned-native checks and five actual unsigned packaged-window checks; the checkpoint below records final results. The actual window journey covers browser OTP/PKCE/onboarding, default decline, startup beyond 45 seconds, original company SQL billing, pending-startup withdrawal and frameless/menu-free/rail-free layouts at 1000/1240/1440 native widths. Model responses and native-dialog choices are synthetic. This does not qualify a live provider, signed installation or all professional roles. Earlier packages/captures retain their original source scope.
+
+Current unsigned directory package: `release/local-startup-127-03/win-unpacked/`. Follow the normal setup instructions below. `scripts/qualify-local-startup-v2.mjs` and Delivery's `run-desktop-startup-v4.mjs` bind their recorded candidate directories, pinned binary and isolated database; they are not generic launchers for other checkouts.
+
+[Behavior and ordering](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/127-desktop-startup-lifecycle.md) · [Exact source and final results](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/local-startup-checkpoint-127.json) · [Numbered open work](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage127.md)
+
+![Actual startup authority renewal](assets/screenshots/workmate-local-startup-127-04-startup-keeps-company-lease.png)
+
+![Actual local completion and original receipt](assets/screenshots/workmate-local-startup-127-04-startup-and-original-receipt.gif)
+
+![Actual withdrawal during native startup](assets/screenshots/workmate-local-startup-127-04-permission-revoked-before-turn.png)
+
+[Original receipt](assets/screenshots/workmate-local-startup-127-04-original-local-receipt.png) · [Withdrawal GIF](assets/screenshots/workmate-local-startup-127-04-revoke-pending-startup.gif) · [Completion MP4](assets/screenshots/workmate-local-startup-127-04-startup-and-original-receipt.mp4) · [Withdrawal MP4](assets/screenshots/workmate-local-startup-127-04-revoke-pending-startup.mp4)
+
 <!-- controlled-publications-stage125 -->
 ## Native publication previews and authority · Stage125
 
@@ -134,7 +166,7 @@ Limits: 20 rules; 1,000 history/200 queued items per rule; 1,000 dispatch receip
 
 ## Configuration and authority
 
-The candidate requires the complete additive SQL001–129 history. API/worker schema admission rejects missing, changed or unsupported versions; recovery identity is fenced independently. Company model aliases, verified media capabilities, exact tariffs and provider secrets live on the backend. Unconfigured capabilities remain unavailable. Current development uses explicitly authorized synthetic data.
+The candidate requires the complete additive SQL001–132 history. API/worker schema admission rejects missing, changed or unsupported versions; recovery identity is fenced independently. Company model aliases, verified media capabilities, exact tariffs and provider secrets live on the backend. Unconfigured capabilities remain unavailable. Current development uses explicitly authorized synthetic data.
 
 Web/Admin use `VITE_API_BASE` or their same-origin proxy; default development ports are 4317/4318. Desktop/Extension compile fixed `COPYPASTE_API_ORIGIN` and `COPYPASTE_WEB_ORIGIN` values; Desktop also pins `COPYPASTE_EXTENSION_ID`. HTTPS is required outside the allowed loopback-development case. No renderer or extension receives company provider secrets.
 

@@ -2,6 +2,38 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- local-startup-stage127 -->
+## 本机启动、保活与撤权 · 阶段127
+
+客户选择目录并主动授权后，Codex始终在客户电脑运行；公司服务负责身份、模型网关与原任务费用。主任务和工作流子任务现在在准备/启动期间即续租，启动后再次检查授权，才提交轮次。关闭或撤权会中断待响应的初始化/建会话请求，等待准备退出并回收所属进程与锁，不会在清理后迟到启动。
+
+启动等待超过初始45秒不另建任务、不重复预留。正常完成先停止并等待保活，再关闭资源及同步原费用回执。撤权提示说明本机工作停止、检查授权及原费用；已接受或结果不明的工作不自动重做。Desktop自动启动恢复仍待实现，不能仅凭零费用就重试。
+
+```mermaid
+flowchart TD
+  Grant[客户选择目录并授权] --> Admit[公司原任务和预算预留]
+  Admit --> Renew[准备及启动期间持续检查授权]
+  Renew --> Native[客户本机Codex]
+  Native --> Check[启动完成后再次授权]
+  Check --> Turn[提交原任务轮次]
+  Turn --> Finish[等待保活退出、关闭资源、同步费用]
+  Renew -->|关闭或撤权| Drain[中断启动、等待准备退出、回收所属进程]
+```
+
+本轮限定验收为73项完整相关控制层、38项真实固定Codex及5项实际未签名打包窗口检查；最终结果见下方检查点。实际窗口旅程覆盖浏览器OTP/PKCE与工作区创建、默认取消不授权、超过45秒启动、一次真实公司账务、待响应启动撤权及1000/1240/1440宽度无边框、无菜单和无可见滚动条。模型回答和原生对话框选择为明确测试数据，不代表正式模型、签名安装或全部角色验收。此前阶段的包与画面保留原源码范围。
+
+当前未签名目录包：`release/local-startup-127-03/win-unpacked/`。正常安装/启动按本README后续说明；`scripts/qualify-local-startup-v2.mjs`及Delivery的`run-desktop-startup-v4.mjs`是绑定当次候选目录、固定二进制和隔离数据库的验收工具，不是其他检出的通用启动器。
+
+[方案与执行顺序](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/127-desktop-startup-lifecycle.md) · [确切源码与最终结果](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/local-startup-checkpoint-127.json) · [编号待办](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage127.md)
+
+![实际启动等待期间保持公司授权](assets/screenshots/workmate-local-startup-127-04-startup-keeps-company-lease.png)
+
+![实际本机任务和原费用交互](assets/screenshots/workmate-local-startup-127-04-startup-and-original-receipt.gif)
+
+![实际启动中撤销本机权限](assets/screenshots/workmate-local-startup-127-04-permission-revoked-before-turn.png)
+
+[原费用截图](assets/screenshots/workmate-local-startup-127-04-original-local-receipt.png) · [撤权GIF](assets/screenshots/workmate-local-startup-127-04-revoke-pending-startup.gif) · [完成MP4](assets/screenshots/workmate-local-startup-127-04-startup-and-original-receipt.mp4) · [撤权MP4](assets/screenshots/workmate-local-startup-127-04-revoke-pending-startup.mp4)
+
 <!-- controlled-publications-stage125 -->
 ## 本机发布预览与权限 · 阶段125
 
@@ -134,7 +166,7 @@ npm start
 
 ## 配置、权限与费用
 
-本候选要求完整 SQL001–129 增量历史。API/Worker 准入拒绝缺失、变更或不支持的版本，并独立检查恢复环境身份。公司模型别名、已验证媒体能力、精确费率及供应商密钥只在后端配置；未配置能力保持不可用。当前开发继续使用已授权假数据。
+本候选要求完整 SQL001–132 增量历史。API/Worker 准入拒绝缺失、变更或不支持的版本，并独立检查恢复环境身份。公司模型别名、已验证媒体能力、精确费率及供应商密钥只在后端配置；未配置能力保持不可用。当前开发继续使用已授权假数据。
 
 Web/Admin 使用 `VITE_API_BASE` 或同源代理，开发端口为 4317/4318。Desktop/Extension 构建时固定 `COPYPASTE_API_ORIGIN`、`COPYPASTE_WEB_ORIGIN`，Desktop 另固定 `COPYPASTE_EXTENSION_ID`。除获准回环开发场景外使用 HTTPS；渲染器与扩展不持有公司供应商密钥。
 
