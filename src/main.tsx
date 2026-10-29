@@ -14,6 +14,7 @@ import { AdminExternalBudgets } from "./external-budget";
 import { AdminNativeRecovery } from "./native-recovery";
 import { AdminDesktopUpdates } from "./desktop-updates";
 import { AdminSolutions } from "./solutions";
+import { AdminContentRevision, AdminRevisionRecovery, canReviseContent } from "./content-revisions";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
 import {
@@ -499,6 +500,7 @@ function AdminShell() {
           </div>
         </header>
         <main id="main" className="main-content">
+          <AdminRevisionRecovery access={a} />
           {!start ? (
             <Empty
               icon={ShieldCheck}
@@ -1004,6 +1006,11 @@ function Section({ section }: { section: string }) {
     [dialog, setDialog] = useState<string | null>(null),
     [err, setErr] = useState<Error | null>(null);
   useEffect(() => {
+    const revised = () => setRefresh(value => value + 1);
+    window.addEventListener("cp-admin-content-revised", revised);
+    return () => window.removeEventListener("cp-admin-content-revised", revised);
+  }, []);
+  useEffect(() => {
     setPage(1);
     setCursors([null]);
     setFilters({});
@@ -1413,6 +1420,11 @@ function Section({ section }: { section: string }) {
                           )}
                         {active === "content" && (
                           <>
+                            {canReviseContent(a) && ["agent_groups", "project_configurations"].includes(r.kind) && r.state === "active" && (
+                              <button title={t("修訂內容", "Revise content")} onClick={() => { setRow(r); setDialog("revision"); }}>
+                                {t("修訂", "Revise")}
+                              </button>
+                            )}
                             {a.has("admin.content.body.read") && (
                               <button
                                 title="Read content"
@@ -2361,6 +2373,7 @@ function AdminDialog({
   const body = useData(
     kind === "body" ? "/v1/admin/content/" + row?.id + "/body" : null,
   );
+  if (kind === "revision") return <AdminContentRevision access={a} kind={row.kind} id={row.id} onClose={onClose} onDone={onDone} />;
   if (kind === "approval")
     return (
       <ApprovalReview

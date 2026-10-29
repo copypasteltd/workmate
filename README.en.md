@@ -2,6 +2,44 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-content-revisions-123 -->
+## Structured content editing and recovery · Stage 123
+
+Sign in with an independent Admin identity and MFA. Choose **Revise** for a team or shared project brief, or **Create revision draft** for a method. Edit names, instructions, member responsibilities, exact references or required materials. Search authorized references by name while retaining existing selections.
+
+Provide a reason, inspect the before/after comparison and pinned dependency versions, then check the explicit confirmation. A shared brief publishes a new version and replaces its draft. A method revision creates a draft subject to the customer's existing trial and publication process. HKD budgets use exact decimal conversion.
+
+Unknown responses retain the original request key and signed digests for recovery after reload; browser storage contains no content body or reason. Authority withdrawal clears the open body, preview and history, and late responses cannot restore cleared content. The editor retains CopyPaste typography, blue palette and neutral workspace; narrow layouts present editing, review and history in order.
+
+```mermaid
+flowchart LR
+  A[Content or method list] --> B[Structured edits and reference search]
+  B --> C[Before/after comparison]
+  C --> D[Explicit confirmation]
+  D --> E[Version and administrator receipt]
+  D --> F[Unknown submission]
+  F --> G[Recover the original request after reload]
+```
+
+See the [structured editor](src/content-revisions.tsx) and [responsive styles](src/content-revisions.css). All **75 checks across five complete related backend files** and **seven actual UI flows** passed. Dialog and field bounds fit 375/768/1024/1440px. After an unknown response, the recovered receipt remains open until dismissed and the original request does not mutate content twice. Initial failures and older captures remain historical; the following use attempt 03. Owned browsers, services and the test database were closed. Full product acceptance is tracked separately.
+
+| Actual screen | Capture |
+| --- | --- |
+| English team diff and unchecked confirmation | [Team preview](assets/screenshots/workmate-admin-content-03-team-preview-en.png) |
+| Committed version receipt | [Saved result](assets/screenshots/workmate-admin-content-03-team-saved-en.png) |
+| Traditional Chinese, exact HKD and 375px layout | [Narrow confirmation](assets/screenshots/workmate-admin-content-03-brief-preview-zh-375.png) |
+| Method materials and draft preview | [Method revision](assets/screenshots/workmate-admin-content-03-method-preview-zh.png) |
+| Committed request with a deliberately lost response | [Original request recovery](assets/screenshots/workmate-admin-content-03-unknown-response-recovery.png) |
+| Current authority withdrawal clears the private body | [Withdrawal result](assets/screenshots/workmate-admin-content-03-authority-withdrawn.png) |
+
+![Team comparison and confirmation](assets/screenshots/workmate-admin-content-03-team-preview-en.png)
+
+![Actual team editing and confirmation](assets/screenshots/workmate-admin-content-03-team-revision.gif)
+
+![Actual shared brief and method revision](assets/screenshots/workmate-admin-content-03-brief-method-revisions.gif)
+
+[Team MP4](assets/screenshots/workmate-admin-content-03-team-revision.mp4) · [Brief and method MP4](assets/screenshots/workmate-admin-content-03-brief-method-revisions.mp4) · [Behavior and evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/123-admin-content-revisions.md)
+
 ## Product and boundaries
 
 The first customers are existing marketing teams. Scope includes image/design/typography, video/effects, advertising and website analysis, SEO/GEO, repeated business processes and software development. The catalog has 18 candidates with exact Skill bindings; at least twelve individually qualified professional presets remain an acceptance requirement. The designer combines Codex, design Skills and company Image 2. Codex is the only Agent core. All AI uses the company's OpenAI-compatible backend; development currently uses authorized synthetic providers, not a claim of live professional quality.

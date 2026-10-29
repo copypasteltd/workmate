@@ -14,6 +14,7 @@ import {
   useI18n,
 } from "./ui";
 import "./solutions.css";
+import { AdminContentRevision, canReviseContent } from "./content-revisions";
 
 export function AdminSolutions({ access }: { access: CapabilityAccess }) {
   const { t } = useI18n(),
@@ -24,6 +25,7 @@ export function AdminSolutions({ access }: { access: CapabilityAccess }) {
     [reading, setReading] = useState(""),
     [selected, setSelected] = useState<any>(null),
     [reason, setReason] = useState("");
+  const [revision, setRevision] = useState<any>(null);
   const [error, setError] = useState<Error | null>(null),
     [busy, setBusy] = useState(false),
     [pending, setPending] = useState<any>(null);
@@ -36,6 +38,11 @@ export function AdminSolutions({ access }: { access: CapabilityAccess }) {
       (pages.length ? "&cursor=" + pages.at(-1) : ""),
     refresh,
   );
+  useEffect(() => {
+    const revised = () => setRefresh(value => value + 1);
+    window.addEventListener("cp-admin-content-revised", revised);
+    return () => window.removeEventListener("cp-admin-content-revised", revised);
+  }, []);
   useEffect(() => {
     live.current = true;
     try {
@@ -194,6 +201,7 @@ export function AdminSolutions({ access }: { access: CapabilityAccess }) {
               </div>
             </dl>
             <div className="admin-solution-actions">
+              {row.state !== "disabled" && canReviseContent(access) && <button className="button secondary" disabled={!!reading || busy || !!pending} onClick={() => setRevision(row)}>{t("建立修訂草稿", "Create revision draft")}</button>}
               {access.has("admin.content.body.read") && (
                 <button
                   className="button secondary"
@@ -255,6 +263,7 @@ export function AdminSolutions({ access }: { access: CapabilityAccess }) {
           <ChevronRight size={18} />
         </button>
       </nav>
+      {revision && <AdminContentRevision access={access} kind="solutions" id={revision.id} onClose={() => setRevision(null)} onDone={() => { setRevision(null); setRefresh(v => v + 1); }} />}
       {body && (
         <Modal
           title={t("方法正文（已記錄查閱）", "Method body (read audited)")}

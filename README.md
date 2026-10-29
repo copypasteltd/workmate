@@ -2,6 +2,44 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-content-revisions-123 -->
+## 正文编辑、差异确认与恢复 · 阶段 123
+
+使用独立管理员账号及 MFA 登录，在内容列表选择团队或共享项目说明的“修订”，或在业务方法列表选择“建立修订草稿”。编辑名称、说明、成员职责、准确版本参照或方法资料要求；可按名称搜索获准参照，搜索不会移除已经选中的绑定。
+
+填写修订原因后预览前后差异和固定依赖版本，勾选明确确认，再创建新版本。共享项目说明会替换当前草稿并发布；业务方法仅创建草稿，仍需客户自己的试运行与发布。港币预算按十进制精确转换，避免浮点金额变化。
+
+如果提交结果未知，页面保留原请求键及签名摘要，重新打开页面后核对原请求；浏览器存储不保存正文或原因。权限撤回会清空已打开的正文、预览和历史，迟到响应不能恢复已清空的编辑内容。页面沿用 CopyPaste 字体、蓝色系和浅色工作区，窄屏按编辑、预览、历史顺序排列。
+
+```mermaid
+flowchart LR
+  A[内容或方法列表] --> B[结构化编辑与参照搜索]
+  B --> C[前后差异]
+  C --> D[勾选确认]
+  D --> E[版本与管理员来源回执]
+  D --> F[未知提交]
+  F --> G[重开后核对原请求]
+```
+
+代码见 [结构化编辑器](src/content-revisions.tsx) 和 [响应式样式](src/content-revisions.css)。相关后端五个完整文件 **75/75**、实际页面流程 **7/7** 通过；375/768/1024/1440px 下弹窗及输入控件边界通过检查。断线后的成功回执会保留到管理员主动关闭；原请求不会重复修改。首次失败和旧截图保留为历史，以下使用第 03 批材料。所属浏览器、服务和数据库已关闭；整体验收仍单独跟踪。
+
+| 实际画面 | 截图 |
+| --- | --- |
+| 英文团队差异与未勾选确认 | [团队预览](assets/screenshots/workmate-admin-content-03-team-preview-en.png) |
+| 新版本成功回执 | [保存结果](assets/screenshots/workmate-admin-content-03-team-saved-en.png) |
+| 繁中 375px 精确港币预算差异 | [窄屏确认](assets/screenshots/workmate-admin-content-03-brief-preview-zh-375.png) |
+| 方法资料清单与草稿预览 | [方法修订](assets/screenshots/workmate-admin-content-03-method-preview-zh.png) |
+| 真实提交已完成但响应丢失 | [核对原请求](assets/screenshots/workmate-admin-content-03-unknown-response-recovery.png) |
+| 当前权限撤回后清空正文 | [撤权结果](assets/screenshots/workmate-admin-content-03-authority-withdrawn.png) |
+
+![团队差异确认](assets/screenshots/workmate-admin-content-03-team-preview-en.png)
+
+![实际团队编辑及确认](assets/screenshots/workmate-admin-content-03-team-revision.gif)
+
+![实际项目说明及方法修订](assets/screenshots/workmate-admin-content-03-brief-method-revisions.gif)
+
+[团队 MP4](assets/screenshots/workmate-admin-content-03-team-revision.mp4) · [项目说明及方法 MP4](assets/screenshots/workmate-admin-content-03-brief-method-revisions.mp4) · [完整方案与证据](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/123-admin-content-revisions.md)
+
 ## 产品与边界
 
 首批面向现有客户的 marketing 团队，完整范围包含生图、设计/字体、视频/特效、广告和网站分析、SEO/GEO、企业重复流程及软件开发。目录已有 18 个精确 Skill 绑定的候选角色；至少十二个逐一完成专业任务、修改及异常处理的角色仍是验收要求。设计师由 Codex、设计 Skill 与公司 Image 2 组合。Agent 内核唯一使用 Codex；全部 AI 请求走公司 OpenAI 兼容后端。当前开发使用已授权假数据，不代表真实模型专业质量已经验收。
