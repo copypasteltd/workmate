@@ -2,6 +2,34 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-profile-revisions-124 -->
+## Specialist, brand and memory revisions · Stage 124
+
+Scoped administrators can now revise saved customer specialists, brand guidance and all five memory scopes through the same three intersecting content permissions, recent MFA, signed previews, explicit confirmation, original-request recovery and audit. The six operations retain `/v1/admin/content-revisions/{kind}/{id}`; allowed kinds now include `agents`, `brand_profiles`, `memories`, `agent_groups`, `project_configurations` and `solutions`.
+
+| Content | Editable fields | Version and authority boundaries |
+| --- | --- | --- |
+| Customer specialist | Name, instructions and tools allowed by its pinned role | Retains Codex, models, Skills, template and brand versions; default assistant remains fixed and existing conversations retain their original version |
+| Brand guidance | Colors, voice, approved copy, font sources/use declarations, shared PNG Logos, product prices and offers | Validates actual bytes, exact asset revisions and permitted use; existing work retains its brand version and money uses exact decimal conversion |
+| Memory | Name, content and expiry | Retains scope, customer owner, project, brand and private conversation; enterprise-wide revisions require broad authority and honor explicit project restrictions |
+
+Forward [migration 131](migrations/131-admin-profile-revisions.sql) leaves SQL001–130 unchanged. Administrator versions have distinct provenance rather than a fabricated customer author; application/queue roles cannot forge administrator facts. The immutable fact, actual version and audit commit atomically or roll back together. Permanent memory erasure clears content and definition snapshots while retaining governance/accounting metadata. Subsequent ordinary customer edits retain the real customer creator.
+
+```mermaid
+flowchart LR
+  A[Current scope and recent MFA] --> B[Structured profile editing]
+  B --> C[Signed differences and pinned dependencies]
+  C --> D[Explicit administrator confirmation]
+  D --> E[Atomic version, distinct provenance and audit]
+  D --> F[Lost response]
+  F --> G[Recover original request without another mutation]
+  B --> H[Withdrawal clears private content]
+```
+
+**Validation:** all **68 checks across five complete related backend files**, including 25 new revision checks, **11 Admin unit checks**, **eight actual Admin journeys** and **14 layout observations** at four widths passed. Eight PNG captures and three actual GIF/MP4 pairs are retained. Email/MFA, Hong Kong local time, exact HK$128.90 presentation, a genuinely dropped committed response and live scope withdrawal use the actual implementation. Editing adds no tasks, reservations or AI calls. Historical failures and media remain; owned browsers/services/native databases were closed. This bounded evidence does not replace full backend, live provider or complete product acceptance.
+
+See [domain logic](src/admin-profile-content.ts), [revision service](src/admin-content-revisions.ts), [related tests](tests/admin-profile-revisions.test.ts), [design and evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/124-admin-profile-revisions.md) and [actual screens/recordings](https://github.com/copypasteltd/workmate/blob/admin/README.en.md).
+
 <!-- admin-content-revisions-123 -->
 ## Administrator content revisions · Stage 123
 

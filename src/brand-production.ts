@@ -290,7 +290,7 @@ async function fontBytes(
     );
   return { bytes, sha256: v.sha256 as string };
 }
-async function checkDefinition(
+export async function checkBrandDefinition(
   tx: Tx,
   storage: Storage,
   project: string,
@@ -418,7 +418,7 @@ export function registerBrandProduction(
           key(req),
           b,
           async () => {
-            await checkDefinition(tx, storage, project, b);
+            await checkBrandDefinition(tx, storage, project, b);
             const row = (
               await tx.query(
                 "INSERT INTO brand_profiles(tenant_id,project_id,name,body) VALUES($1,$2,$3,$4) RETURNING *",
@@ -474,7 +474,7 @@ export function registerBrandProduction(
               "VERSION_CONFLICT",
               "Refresh the brand before publishing another version",
             );
-          await checkDefinition(tx, storage, project, b.definition);
+          await checkBrandDefinition(tx, storage, project, b.definition);
           const row = (
             await tx.query(
               "UPDATE brand_profiles SET name=$2,body=$3,version=version+1 WHERE id=$1 RETURNING *",
@@ -516,7 +516,7 @@ export function registerBrandProduction(
         return {
           items: (
             await tx.query(
-              "SELECT version,name,body,sha256,created_at,created_by FROM brand_profile_versions WHERE brand_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100",
+              "SELECT version,name,body,sha256,created_at,created_by,CASE WHEN created_by_admin IS NOT NULL THEN 'administrator' WHEN created_by IS NOT NULL THEN 'customer' ELSE 'legacy_unattributed' END AS origin FROM brand_profile_versions WHERE brand_id=$1 AND erased_at IS NULL ORDER BY version DESC LIMIT 100",
               [id],
             )
           ).rows,

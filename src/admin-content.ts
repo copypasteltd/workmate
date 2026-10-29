@@ -383,6 +383,8 @@ export function registerAdminContent(
               if (b.action === "metadata") {
                 if (
                   table === "agents" ||
+                  table === "brand_profiles" ||
+                  table === "memories" ||
                   table === "project_configurations" ||
                   table === "agent_groups" ||
                   table === "agent_group_runs"
@@ -398,16 +400,10 @@ export function registerAdminContent(
                     "NAME_REQUIRED",
                     "A content name is required",
                   );
-                if (table === "brand_profiles")
-                  await tx.query(
-                    "UPDATE brand_profiles SET name=$2,body=jsonb_set(body,'{name}',to_jsonb($2::text)),version=version+1,moderation_version=moderation_version+1 WHERE id=$1",
-                    [id, b.name],
-                  );
-                else
-                  await tx.query(
-                    `UPDATE ${table} SET ${table === "tasks" ? "title" : "name"}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
-                    [id, b.name],
-                  );
+                await tx.query(
+                  `UPDATE ${table} SET ${table === "tasks" ? "title" : "name"}=$2,moderation_version=moderation_version+1 WHERE id=$1`,
+                  [id, b.name],
+                );
               } else {
                 if (b.action === "delete" && table === "conversations") {
                   await eraseConversation(tx, req.principal, r);
@@ -417,8 +413,14 @@ export function registerAdminContent(
                 if (b.action === "delete" && table === "memories") {
                   await eraseReplayContent(tx, [id]);
                   await tx.query(
+                    "SELECT set_config('app.erasing_content','true',true)",
+                  );
+                  await tx.query(
                     "UPDATE memory_versions SET content=NULL WHERE memory_id=$1",
                     [id],
+                  );
+                  await tx.query(
+                    "SELECT set_config('app.erasing_content','false',true)",
                   );
                 }
                 if (table === "workflow_schedules" && b.action === "delete")

@@ -23,8 +23,27 @@ import {
 } from "./project-configuration.js";
 import { solutionCreate, solutionDigest } from "./solution-model.js";
 import { freezeSolutionDefinition } from "./solution-service.js";
+import type { Storage } from "./storage.js";
+import {
+  profileRevisionKinds,
+  isProfileRevision,
+  profileRevisionDefinition,
+  revisionFactTable,
+  assertProfileRevisionScope,
+  assertProfileRevisionSource,
+  profileRevisionSnapshot,
+  prepareProfileRevision,
+  commitProfileRevision,
+  profileRevisionOptions,
+  profileRevisionDependencies,
+} from "./admin-profile-content.js";
 
-const kinds = z.enum(["agent_groups", "project_configurations", "solutions"]);
+const kinds = z.enum([
+  "agent_groups",
+  "project_configurations",
+  "solutions",
+  ...profileRevisionKinds,
+]);
 type Kind = z.infer<typeof kinds>;
 const params = z.object({ kind: kinds, id: uuid });
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
@@ -80,9 +99,13 @@ const tables: Record<Kind, string> = {
   agent_groups: "agent_groups",
   project_configurations: "project_configurations",
   solutions: "solution_versions",
+  agents: "agents",
+  brand_profiles: "brand_profiles",
+  memories: "memories",
 };
 
 function definition(kind: Kind, value: unknown): any {
+  if (isProfileRevision(kind)) return profileRevisionDefinition(kind, value);
   return kind === "agent_groups"
     ? groupCreateInput.parse(value)
     : kind === "project_configurations"
@@ -100,6 +123,7 @@ async function access(tx: Tx, actor: Principal, row: any) {
       tenant: row.tenant_id,
       project: row.project_id,
     });
+  await assertProfileRevisionScope(tx, actor, row, permissions);
 }
 async function load(
   tx: Tx,
@@ -115,13 +139,20 @@ async function load(
   if (!row) throw missing();
   await access(tx, actor, row);
   if (!allowInactive) {
-    const project = (
-      await tx.query(
-        `SELECT p.id FROM projects p JOIN tenants t ON t.id=p.tenant_id
+    const project = row.project_id
+      ? (
+          await tx.query(
+            `SELECT p.id FROM projects p JOIN tenants t ON t.id=p.tenant_id
       WHERE p.id=$1 AND p.tenant_id=$2 AND NOT p.archived AND t.status='active' FOR SHARE OF p,t`,
-        [row.project_id, row.tenant_id],
-      )
-    ).rows[0];
+            [row.project_id, row.tenant_id],
+          )
+        ).rows[0]
+      : (
+          await tx.query(
+            "SELECT id FROM tenants WHERE id=$1 AND status='active' FOR SHARE",
+            [row.tenant_id],
+          )
+        ).rows[0];
     if (!project) throw missing();
   }
   // Match customer writers' lock order, including draft save/publication.
@@ -152,9 +183,12 @@ async function load(
       "CONTENT_REVISION_UNAVAILABLE",
       "Restore or enable this content before revising it",
     );
+  if (!allowInactive && isProfileRevision(kind))
+    await assertProfileRevisionSource(tx, kind, row);
   return row;
 }
 async function snapshot(tx: Tx, kind: Kind, row: any) {
+  if (isProfileRevision(kind)) return profileRevisionSnapshot(tx, kind, row);
   let current: any, value: any, before: any;
   if (kind === "agent_groups") {
     current = (
@@ -219,6 +253,7 @@ async function snapshot(tx: Tx, kind: Kind, row: any) {
 async function prepare(
   tx: Tx,
   catalog: Catalog,
+  storage: Storage,
   actor: Principal,
   kind: Kind,
   row: any,
@@ -229,6 +264,15 @@ async function prepare(
     (row.moderation_version ?? 0) !== b.expected_moderation_version
   )
     throw changed();
+  if (isProfileRevision(kind))
+    return prepareProfileRevision(
+      tx,
+      catalog,
+      storage,
+      kind,
+      row,
+      b.definition,
+    );
   const before = await snapshot(tx, kind, row);
   let body: any, sha256: string;
   if (kind === "agent_groups") {
@@ -325,6 +369,7 @@ async function prepare(
   return { ...before, body, sha256 };
 }
 function dependencySummary(kind: Kind, body: any): string[] {
+  if (isProfileRevision(kind)) return profileRevisionDependencies(kind, body);
   if (kind === "agent_groups")
     return (body?.bindings ?? []).map(
       (b: any) => `${b.name} · v${b.agent_version} · ${b.role_key}`,
@@ -381,6 +426,7 @@ async function now(tx: Tx) {
   ).getTime();
 }
 async function history(tx: Tx, kind: Kind, row: any, before?: string) {
+  const factTable = revisionFactTable(kind);
   const scope =
     kind === "solutions"
       ? "r.target_id IN (SELECT id FROM solution_versions WHERE tenant_id=$2 AND family_id=$3)"
@@ -393,7 +439,7 @@ async function history(tx: Tx, kind: Kind, row: any, before?: string) {
   const anchor = before
     ? (
         await tx.query(
-          `SELECT r.created_at,r.id FROM admin_content_revisions r WHERE r.kind=$1 AND r.tenant_id=$2 AND ${scope} AND r.id=$4`,
+          `SELECT r.created_at,r.id FROM ${factTable} r WHERE r.kind=$1 AND r.tenant_id=$2 AND ${scope} AND r.id=$4`,
           [...values, before],
         )
       ).rows[0]
@@ -402,7 +448,7 @@ async function history(tx: Tx, kind: Kind, row: any, before?: string) {
   const rows = (
     await tx.query(
       `SELECT r.id,r.source_id,r.target_id,r.source_version,r.target_version,r.before_sha256,r.after_sha256,r.actor_id,p.name AS administrator_name,r.reason,r.created_at
-    FROM admin_content_revisions r JOIN admin_principals p ON p.id=r.actor_id WHERE r.kind=$1 AND r.tenant_id=$2 AND ${scope}
+    FROM ${factTable} r JOIN admin_principals p ON p.id=r.actor_id WHERE r.kind=$1 AND r.tenant_id=$2 AND ${scope}
     AND ($4::timestamptz IS NULL OR (r.created_at,r.id)<($4::timestamptz,$5::uuid)) ORDER BY r.created_at DESC,r.id DESC LIMIT 21`,
       [...values, anchor?.created_at ?? null, anchor?.id ?? null],
     )
@@ -475,6 +521,7 @@ export function registerAdminContentRevisions(
   app: FastifyInstance,
   db: Database,
   catalog: Catalog,
+  storage: Storage,
 ) {
   app.get(base, { preHandler: requireAdmin(db) }, async (req) => {
     const { kind, id } = params.parse(req.params);
@@ -501,7 +548,23 @@ export function registerAdminContentRevisions(
           moderation_version: row.moderation_version ?? 0,
           published_version: row.current_version ?? null,
           definition: current.definition,
-          options: await options(tx, req.principal, row),
+          options: isProfileRevision(kind)
+            ? await profileRevisionOptions(tx, catalog, kind, row, "")
+            : await options(tx, req.principal, row),
+          ...(isProfileRevision(kind)
+            ? {
+                source_context: {
+                  role_key: row.role_key ?? null,
+                  enabled: row.enabled ?? null,
+                  memory_scope: row.scope ?? null,
+                  private_owner: row.private_owner ?? null,
+                  brand_id: row.brand_id ?? null,
+                  conversation_id: row.conversation_id ?? null,
+                  legacy_brand:
+                    kind === "brand_profiles" && row.body.schema_version !== 2,
+                },
+              }
+            : {}),
           history: await history(tx, kind, row),
         };
       },
@@ -528,7 +591,9 @@ export function registerAdminContentRevisions(
           { kind, query_sha256: fingerprint(q.q) },
           row.tenant_id,
         );
-        return options(tx, req.principal, row, q.q);
+        return isProfileRevision(kind)
+          ? profileRevisionOptions(tx, catalog, kind, row, q.q)
+          : options(tx, req.principal, row, q.q);
       },
       undefined,
       true,
@@ -557,7 +622,15 @@ export function registerAdminContentRevisions(
         async (tx) => {
           await lockAdminAccess(tx);
           const row = await load(tx, req.principal, kind, id),
-            prepared = await prepare(tx, catalog, req.principal, kind, row, b);
+            prepared = await prepare(
+              tx,
+              catalog,
+              storage,
+              req.principal,
+              kind,
+              row,
+              b,
+            );
           const body = ticketBody.parse({
             protocol: 1,
             actor_id: req.principal.id,
@@ -626,7 +699,9 @@ export function registerAdminContentRevisions(
                 ? "new_method_draft"
                 : kind === "project_configurations"
                   ? "publish_and_replace_draft"
-                  : "new_team_version",
+                  : isProfileRevision(kind)
+                    ? "new_profile_version"
+                    : "new_team_version",
           };
         },
         undefined,
@@ -662,7 +737,15 @@ export function registerAdminContentRevisions(
                 "CONTENT_REVISION_PREVIEW_EXPIRED",
                 "Prepare a new preview; this one expired",
               );
-            const p = await prepare(tx, catalog, req.principal, kind, row, b);
+            const p = await prepare(
+              tx,
+              catalog,
+              storage,
+              req.principal,
+              kind,
+              row,
+              b,
+            );
             if (
               ticket.before_sha256 !== p.before_sha256 ||
               ticket.after_sha256 !== p.sha256 ||
@@ -672,7 +755,7 @@ export function registerAdminContentRevisions(
             const revisionId = randomUUID(),
               targetId = kind === "solutions" ? randomUUID() : id;
             await tx.query(
-              `INSERT INTO admin_content_revisions(id,kind,source_id,target_id,tenant_id,project_id,source_version,source_moderation_version,target_version,before_sha256,after_sha256,actor_id,reason)
+              `INSERT INTO ${revisionFactTable(kind)}(id,kind,source_id,target_id,tenant_id,project_id,source_version,source_moderation_version,target_version,before_sha256,after_sha256,actor_id,reason)
           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
               [
                 revisionId,
@@ -690,7 +773,16 @@ export function registerAdminContentRevisions(
                 b.reason,
               ],
             );
-            if (kind === "agent_groups")
+            if (isProfileRevision(kind))
+              await commitProfileRevision(
+                tx,
+                req.principal,
+                kind,
+                row,
+                p.body,
+                revisionId,
+              );
+            else if (kind === "agent_groups")
               await commitAdminGroupRevision(
                 tx,
                 req.principal,

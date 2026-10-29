@@ -773,7 +773,7 @@ export function registerAdmin(
   });
   registerAdminDirectory(app, db);
   registerAdminContent(app, db, storage);
-  registerAdminContentRevisions(app, db, catalog);
+  registerAdminContentRevisions(app, db, catalog, storage);
   registerAdminJobs(app, db);
   registerAdminDataJobs(app, db);
   registerAdminCatalog(app, db, catalog);
@@ -821,7 +821,12 @@ function registerAdminCatalog(
               "CANONICAL_PLAN_REQUIRED",
               "Use the immutable plan draft and publication APIs",
             );
-          await guardLegacyClientContent(tx, req.principal, "admin.catalog.draft", b.kind);
+          await guardLegacyClientContent(
+            tx,
+            req.principal,
+            "admin.catalog.draft",
+            b.kind,
+          );
           await tx.query(
             "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
             [`catalog:${b.kind}:${b.key}`],
@@ -870,7 +875,12 @@ function registerAdminCatalog(
                 : "admin.catalog.publish",
           );
           await requireRecentMfa(tx, req.principal);
-          await guardLegacyClientContent(tx, req.principal, "admin.catalog.publish", e.kind);
+          await guardLegacyClientContent(
+            tx,
+            req.principal,
+            "admin.catalog.publish",
+            e.kind,
+          );
           if (e.kind === "plan")
             throw new Problem(
               409,
@@ -1038,7 +1048,12 @@ function registerAdminCatalog(
               "ROLLBACK_UNAVAILABLE",
               "This version requires its own publication qualification",
             );
-          await guardLegacyClientContent(tx, req.principal, "admin.catalog.rollback", e.kind);
+          await guardLegacyClientContent(
+            tx,
+            req.principal,
+            "admin.catalog.rollback",
+            e.kind,
+          );
           await tx.query(
             "SELECT pg_advisory_xact_lock(hashtextextended($1,0))",
             [`catalog:${e.kind}:${e.key}`],
