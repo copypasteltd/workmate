@@ -2,6 +2,48 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- startup-recovery-stage128 -->
+## 本机启动安全恢复 · 阶段128
+
+Desktop 在客户电脑运行固定版本 Codex。客户选择目录并主动授权后，初始化或打开会话若发生明确的传输故障，主进程先回收旧进程和锁，再请求公司服务检查原任务。只有轮次尚未准入、没有任何模型/输入计数/公司工具准入，且身份、权限与原截止仍有效，才允许恢复一次。最多两次启动，沿用原任务、原预算预留和 worker attempt，不延长原截止。
+
+界面显示「正在重连」。连接结果未确认时，「重试连线」仅取回原请求结果；可能已执行的工作需先核对本机文件及费用。撤权、协议拒绝、清理失败、已提交轮次和结果未知均禁止自动重做。推理凭证仅传给可信本机运行器，不写入本机恢复日志或渲染页面。
+
+```mermaid
+flowchart TD
+  Start[原任务与预算] --> Native[客户本机 Codex 启动]
+  Native -->|明确传输故障| Clean[回收旧进程、锁和工具资源]
+  Clean --> Fence[公司端撤销旧凭证并隔离旧请求]
+  Fence --> Proof[原权限、原截止与零准入检查]
+  Proof -->|全部成立且尚未恢复| Retry[同任务第二次启动]
+  Native --> Gate[轮次准入]
+  Retry --> Gate
+  Gate --> Turn[执行一次并按公司记录结算]
+  Proof -->|无法证明| Review[停止并核对原工作]
+```
+
+服务端通过 SQL133 升级；应先使用所有者执行完整迁移，再启动相应 API。新客户端声明 `desktop-startup-recovery-v1`；`/startup-recovery` 使用原绑定、固定契约摘要和原恢复请求键，`/turn-admission` 在 `turn/start` 前登记。旧客户端保持原执行流程，不能取得新的恢复许可。
+
+本轮检查点记录控制层、实际固定 Codex、原生 SQL 与实际未签名打包客户端的限定验证。模型回答和对话框选择按用户要求使用假数据；尚不代表正式模型、签名安装、全部崩溃组合或专业角色整体验收。各旧阶段的包和画面仍对应其原源码。
+
+本轮限定检查通过：91项相关控制层、43项真实固定版本Codex、30项原生数据库/API、3项当前编译和6项实际未签名打包界面检查。实际旅程验证了登录、授权、一次启动恢复、原任务的一次收费、单次回答、待响应时撤权，以及1000/1240/1440三个原生窗口宽度。当前截图、GIF和MP4来自成功的04次运行；失败的01—03次运行及原始记录均完整保留。发布入口为V11，远端状态以最终推送回执和SHA回读为准。
+
+所有受审源码、媒体、双语说明和中央发布清单提交后，在本仓库执行：
+
+```powershell
+node scripts/publish-workmate-v11.mjs --push
+```
+
+`--check`仅核查，不推送。V11检查真实已提交内容、所有历史证明、媒体和链接，以及八个映射分支的祖先关系，再进行普通原子推送并逐一回读SHA。中央文档仓库中与本轮无关的未跟踪用户文件予以保留并写入回执；受跟踪文件及各端仓库必须干净。失败时保留回执，不强推。
+
+[方案与接口](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/128-desktop-startup-recovery.md) · [匹配源码与验证](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/startup-recovery-checkpoint-128.json) · [编号待办](https://github.com/copypasteltd/workmate/blob/docs/docs/quality/remaining-work-stage128.md)
+
+![Actual packaged Desktop reconnecting with the original task](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-startup-recovery-128-04-startup-keeps-company-lease.png)
+
+![Actual recovery and original billing interaction](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-startup-recovery-128-04-startup-and-original-receipt.gif)
+
+[Original receipt](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-startup-recovery-128-04-original-local-receipt.png) · [Withdrawal screenshot](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-startup-recovery-128-04-permission-revoked-before-turn.png) · [Withdrawal GIF](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-startup-recovery-128-04-revoke-pending-startup.gif) · [Recovery MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-startup-recovery-128-04-startup-and-original-receipt.mp4) · [Withdrawal MP4](https://github.com/copypasteltd/workmate/blob/desktop/assets/screenshots/workmate-startup-recovery-128-04-revoke-pending-startup.mp4)
+
 <!-- local-startup-stage127 -->
 ## 本机启动的源码、打包与交付 · 阶段127
 
@@ -18,7 +60,7 @@ flowchart LR
   Git --> Publish[普通原子推送八引用并回读SHA]
 ```
 
-`node scripts/publish-workmate-v10.mjs --push`为当前发布入口；`--check`只核查。V10检查源码、已提交Git内容、双语说明、真实媒体、原始失败及全部历史证明，再普通原子更新八个映射分支并读取最终SHA。以最终回执为准，不强推。阶段126及更早结果保留原源码范围。
+阶段127的历史发布入口为`node scripts/publish-workmate-v10.mjs --push`；`--check`只核查。V10检查源码、已提交Git内容、双语说明、真实媒体、原始失败及全部历史证明，再普通原子更新八个映射分支并读取最终SHA。阶段128使用V11；各旧结果保留原源码范围。
 
 `run-desktop-startup-v1/v2/v3/v4.mjs`与对应QA脚本均保留执行时原文。01因测试选择默认取消而停在授权，02复用相同包通过但实拍显示内部错误码；修改双语提示后，03重跑控制层/原生并构建新包，前三项通过但窗口宽度等待超时；04复用字节未变的03包，绑定页面所属窗口、恢复普通窗口与100%缩放，并共同检查OS及页面实际宽度。旧窗口状态与超时底层原因尚未证明。失败、取消、清理回执和旧媒体全部保留。阶段脚本依赖记录的相邻候选目录、固定资源及隔离数据库，不能当成任意检出的通用启动命令。所有自建窗口、进程与原生PostgreSQL必须收尾；禁止Docker/WSL。
 
@@ -171,7 +213,7 @@ Web 为 `http://localhost:4317`，Admin 为 `http://localhost:4318`；API 端口
 
 ## 配置、权限与费用
 
-本候选要求完整 SQL001–132 增量历史。API/Worker 准入拒绝缺失、变更或不支持的版本，并独立检查恢复环境身份。公司模型别名、已验证媒体能力、精确费率及供应商密钥只在后端配置；未配置能力保持不可用。当前开发继续使用已授权假数据。
+本候选要求完整 SQL001–133 增量历史。API/Worker 准入拒绝缺失、变更或不支持的版本，并独立检查恢复环境身份。公司模型别名、已验证媒体能力、精确费率及供应商密钥只在后端配置；未配置能力保持不可用。当前开发继续使用已授权假数据。
 
 Web/Admin 使用 `VITE_API_BASE` 或同源代理，开发端口为 4317/4318。Desktop/Extension 构建时固定 `COPYPASTE_API_ORIGIN`、`COPYPASTE_WEB_ORIGIN`，Desktop 另固定 `COPYPASTE_EXTENSION_ID`。除获准回环开发场景外使用 HTTPS；渲染器与扩展不持有公司供应商密钥。
 
