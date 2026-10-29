@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: thread/start connection: pre-turn recovery closes the old native process and submits one original turn
+ok 1 - thread/start connection: pre-turn recovery closes the old native process and submits one original turn
+  ---
+  duration_ms: 9519.6667
+  ...
+# Subtest: thread/start timeout: pre-turn recovery closes the old native process and submits one original turn
+not ok 2 - thread/start timeout: pre-turn recovery closes the old native process and submits one original turn
+  ---
+  duration_ms: 4709.1814
+  location: 'D:\\dev\\copypasted\\自有agent\\dev\\copypaste-platform-publication-125\\tests\\runtime-pre-turn.test.ts:1:475'
+  failureType: 'testCodeFailure'
+  error: 'CODEX_RUNTIME_FAILED'
+  code: 'CODEX_RUNTIME_FAILED'
+  stack: |-
+    CodexRuntimeAdapter.startAttempt (D:\dev\copypasted\自有agent\dev\copypaste-platform-publication-125\src\runtime.ts:732:15)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async CodexRuntimeAdapter.start (D:\dev\copypasted\自有agent\dev\copypaste-platform-publication-125\src\runtime.ts:105:16)
+    async <anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-publication-125\tests\runtime-pre-turn.test.ts:44:28)
+    async withOwnedNativeProcesses (D:\dev\copypasted\自有agent\dev\copypaste-platform-publication-125\tests\native-runtime-faults.ts:45:16)
+    async TestContext.<anonymous> (D:\dev\copypasted\自有agent\dev\copypaste-platform-publication-125\tests\runtime-pre-turn.test.ts:27:11)
+    async Test.run (node:internal/test_runner/test:980:9)
+    async Test.processPendingSubtests (node:internal/test_runner/test:677:7)
+  ...
+# {"code":"CODEX_RUNTIME_FAILED","method":"thread/start","fault":"timeout","provider_calls":0,"events":[{"kind":"runtime.phase","body":{"phase":"initialize"},"at":1793283126411},{"kind":"runtime.phase","body":{"phase":"cleanup"},"at":1793283130742},{"kind":"runtime.phase","body":{"phase":"closed"},"at":1793283131023}]}
+# Subtest: thread/resume connection: pre-turn recovery closes the old native process and submits one original turn
+ok 3 - thread/resume connection: pre-turn recovery closes the old native process and submits one original turn
+  ---
+  duration_ms: 6758.1389
+  ...
+# Subtest: thread/resume timeout: pre-turn recovery closes the old native process and submits one original turn
+ok 4 - thread/resume timeout: pre-turn recovery closes the old native process and submits one original turn
+  ---
+  duration_ms: 67485.727
+  ...
+# Subtest: thread/start: an explicit rejection never restarts or leaks native error text
+ok 5 - thread/start: an explicit rejection never restarts or leaks native error text
+  ---
+  duration_ms: 4000.2522
+  ...
+# Subtest: thread/resume: an explicit rejection never restarts or leaks native error text
+ok 6 - thread/resume: an explicit rejection never restarts or leaks native error text
+  ---
+  duration_ms: 5816.4796
+  ...
+# Subtest: pre-turn failures across initialize and thread/start share the same two-process recovery limit
+ok 7 - pre-turn failures across initialize and thread/start share the same two-process recovery limit
+  ---
+  duration_ms: 4571.4875
+  ...
+# Subtest: cancellation after failed thread startup cleanup prevents another native process
+ok 8 - cancellation after failed thread startup cleanup prevents another native process
+  ---
+  duration_ms: 4156.3819
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 7
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 109992.8759

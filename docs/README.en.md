@@ -1,9 +1,18 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- native-publishing-stage126 -->
+This increment fixes social-role creation and exact publication-source identity, and completes accounts → preview → prepare → status through real cloud Codex with simulated model/accounts. Current native09 passes5/5, startup fault03 passes9/9 and complete sixteen-file related10 passes155/155 with unchanged source and reclaimed owned native database/fixtures. Interrupted06, run08 (132 passed, one failed) and earlier failures retain their original outcomes.
+
+Bounded pre-turn recovery requires zero model requests and retains the RPC deadlines, two-process limit and original billing identity. V9 is the publication entry; only its terminal receipt and remote SHA readback establish publication. No new UI/media or full-role acceptance is claimed. Desktop-local recovery/four-tool qualification, underlying intermittent latency causality, complete roles and all 89 required full-acceptance records remain open.
+
+Stage125 and earlier acceptance claims, screenshots and recordings below are historical and retain their original source versions. The Stage126 checkpoint defines this increment's current scope.
+
+[Behavior](technical/126-native-publication-tools.md) · [Numbered changes](changes/126-native-publication-tools.md) · [Evidence](quality/native-publication-checkpoint-126.json) · [All numbered open work](quality/remaining-work-stage126.md)
+
 <!-- controlled-publications-stage125 -->
 This increment adds explicit customer-confirmed marketing publication, actual outgoing media, unknown-outcome reconciliation, scoped Admin controls and client integration. Passing scopes cover 117 related backend, five Admin-upgrade CLI, 12 native-analysis, 21 Desktop-media, 70 Extension, 14 actual Web/Admin and ten actual packaged Desktop/native Chrome Side Panel checks. Original failures, sources and media remain preserved. Native publishing media qualification covers an image; new video playback/seek, actual Codex calls to four publication tools, signed installation and twelve professional-role qualifications remain open.
 
-V8 is the current publisher; only its final receipt and remote SHA readback establish publication. All 89 required, 12 unconfirmed-suggestion and one optional full-acceptance records remain open. Bounded passing evidence is not full product delivery.
+V8 is the historical Stage125 publisher; only its final receipt and remote SHA readback establish publication. All 89 required, 12 unconfirmed-suggestion and one optional full-acceptance records remain open. Bounded passing evidence is not full product delivery.
 
 [方案 / Behavior](technical/125-controlled-publishing-and-native-media.md) · [证据 / Evidence](quality/publications-checkpoint-125.json) · [本轮实现与待办 / Changes and open work](changes/125-controlled-publications.md) · [全部编号清单 / All numbered records](quality/remaining-work-stage125.md) · [保留v7 / Preserved v7](quality/remaining-work-current-review-125-v7.md)
 

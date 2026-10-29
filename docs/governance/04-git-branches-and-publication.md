@@ -1,7 +1,12 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- native-publishing-stage126 -->
+当前阶段126入口为 `dev/copypaste-delivery/scripts/publish-workmate-v9.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v9.py`。本轮确切源码、四发布工具、受限启动恢复和原账务回执经新归档和清单绑定；中断06、失败08及失败探针保留原结论，不补写成功。旧阶段125证明及媒体保留原源码范围。仍需六个独立仓库、双语说明和中央文档提交，普通原子推送八个映射引用并回读SHA，不强推。
+
+V9 binds current native publishing/startup-recovery sources and original billing receipts, preserves interrupted/failed attempts and every historical proof identity, and uses an ordinary atomic eight-ref update with SHA readback. Earlier media retain their original scope. [Behavior](../technical/126-native-publication-tools.md) · [Numbered changes](../changes/126-native-publication-tools.md).
+
 <!-- controlled-publications-stage125 -->
-当前入口为 `dev/copypaste-delivery/scripts/publish-workmate-v8.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v8.py`。V8绑定阶段125的确切源码、原回执、实际四端发布旅程和媒体；候选分支仅普通fast-forward整合。所有独立仓库及中央文档提交后，核对远端祖先，普通原子推送八个映射引用并读取实际SHA。已执行验证器和原始证据禁止覆写，未知结果和失败不能改写为成功；不强推。Desktop保留本机Codex、原根属性文件及无边框窗口，Extension保留原生右侧栏。
+阶段125历史入口为 `dev/copypaste-delivery/scripts/publish-workmate-v8.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v8.py`。V8绑定阶段125的确切源码、原回执、实际四端发布旅程和媒体；候选分支仅普通fast-forward整合。所有独立仓库及中央文档提交后，核对远端祖先，普通原子推送八个映射引用并读取实际SHA。已执行验证器和原始证据禁止覆写，未知结果和失败不能改写为成功；不强推。Desktop保留本机Codex、原根属性文件及无边框窗口，Extension保留原生右侧栏。
 
 V8 checks current controlled-publication Git proofs and archived receipts without requiring candidate worktrees. It retains all historical proof identities, bilingual guides and real captures before an ordinary atomic eight-ref push and SHA readback. [Behavior](../technical/125-controlled-publishing-and-native-media.md) · [Evidence](../quality/publications-checkpoint-125.json) · [Open work](../quality/remaining-work-stage125.md).
 
