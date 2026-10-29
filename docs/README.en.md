@@ -1,5 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- open-work-review-stage125 -->
+The current review lists 89 open required acceptance records (77 partial and 12 completion-not-proven), plus 12 unconfirmed suggestions and one optional item. Stage125 publication source remains in its working branch: the first native integration attempt failed all 14 checks, its fix is not requalified, and the three client surfaces and Admin UI are not connected. This is a documentation review; the published product retains Stage124 scope.
+
+[All 102 numbered records](quality/remaining-work-current-review-125.md) · [Structured ledger](quality/remaining-work-current-review-125.json) · [Review changes](changes/remaining-work-review-stage125.md)
+
 <!-- admin-profile-revisions-stage124 -->
 Stage 124 adds scoped administrator revisions for customer specialists, brands and memories. All 68 checks across five complete related backend files, 11 Admin unit checks, eight actual UI flows and 14 layout observations passed; eight PNG captures and three GIF/MP4 pairs retain original evidence and earlier failures. The current publication entry point is V7; actual remote success follows its final receipt and SHA readback.
 
