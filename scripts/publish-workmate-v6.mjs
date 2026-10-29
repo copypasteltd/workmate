@@ -73,7 +73,7 @@ try {
     assert.equal(manifest.components.find(c => c.branch === item.branch)?.commit, item.commit, "Component manifest must bind final commits");
   receipt.manifest_sha256 = createHash("sha256").update(manifestBytes).digest("hex");
   const checks = await run("python", [
-    "docs/tools/audit_workmate_publication_v6.py", "--report", "workmate-admin-content-publication-audit-01.json",
+    "docs/tools/audit_workmate_publication_v6.py", "--report", "workmate-publication-audit-06.json",
     "--media", manifest.media_attempt, "--verify-only",
   ]);
   const checked = JSON.parse(checks.stdout.trim());
