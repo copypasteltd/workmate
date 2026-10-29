@@ -8,6 +8,7 @@ import {
 import { stageInputDependencies } from "./task-dependencies.js";
 import { resolveWorkContext } from "./persistent-work.js";
 import { registerAdminContent, contentUnion } from "./admin-content.js";
+import { registerAdminContentRevisions } from "./admin-content-revisions.js";
 import { registerAdminDirectory, readScope } from "./admin-directory.js";
 import { registerAdminJobs } from "./admin-jobs.js";
 import { registerAdminDataJobs } from "./admin-data-jobs.js";
@@ -772,6 +773,7 @@ export function registerAdmin(
   });
   registerAdminDirectory(app, db);
   registerAdminContent(app, db, storage);
+  registerAdminContentRevisions(app, db, catalog);
   registerAdminJobs(app, db);
   registerAdminDataJobs(app, db);
   registerAdminCatalog(app, db, catalog);

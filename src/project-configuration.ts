@@ -2,7 +2,8 @@ import type { FastifyInstance } from "fastify";
 import type { Database, Tx } from "./db.js";
 import type { Catalog } from "./catalog.js";
 import { z } from "zod";
-import { audit, requireUser } from "./auth.js";
+import { audit, requireUser, type Principal } from "./auth.js";
+import { permit, requireSensitiveAdmin } from "./admin-access.js";
 import { key, projectAccess, replay } from "./access.js";
 import { canonical, hash, micros, name, Problem, uuid } from "./lib.js";
 import { brandContext } from "./brand-production.js";
@@ -38,7 +39,13 @@ async function lock(tx: Tx, project: string) {
 /** Resolve shared metadata only. Credentials, private sessions and file bodies
  * never become part of a project publication. Resources still require their
  * normal per-operation authorization when they are actually used. */
-async function resolveDefinition(tx: Tx, catalog: Catalog, tenant: string, project: string, input: Definition) {
+export async function resolveProjectConfigurationDefinition(tx: Tx, catalog: Catalog, tenant: string, project: string, input: Definition, adminActor?: Principal) {
+  if (adminActor) {
+    if (adminActor.audience !== "admin") throw new Problem(403, "ADMIN_REQUIRED", "Use the administrator session");
+    await requireSensitiveAdmin(tx, adminActor);
+    for (const permission of ["admin.content.read", "admin.content.body.read", "admin.content.version.create"])
+      await permit(tx, adminActor, permission, { tenant, project });
+  }
   let agent: any = null;
   if (input.default_agent) {
     const a = (await tx.query(`SELECT a.id,a.name,a.role_key,a.enabled,a.content_state,v.body,v.version
@@ -71,7 +78,13 @@ async function resolveDefinition(tx: Tx, catalog: Catalog, tenant: string, proje
     resources.push(r);
   }
   const connections: any[] = [];
-  await tx.query("SELECT lock_project_configuration_connectors($1::uuid[],$2,$3)", [input.connection_ids, tenant, project]);
+  if (adminActor) {
+    await tx.query(`SELECT c.id FROM connections c JOIN connector_profiles p ON p.connection_id=c.id
+      WHERE c.id=ANY($1::uuid[]) AND c.tenant_id=$2 AND $3::uuid=ANY(p.project_ids)
+      ORDER BY c.id FOR SHARE OF c,p`, [input.connection_ids, tenant, project]);
+  } else {
+    await tx.query("SELECT lock_project_configuration_connectors($1::uuid[],$2,$3)", [input.connection_ids, tenant, project]);
+  }
   for (const id of [...input.connection_ids].sort()) {
     const c = (await tx.query(`SELECT c.id,c.name,c.provider,p.auth_version,p.account_ids,p.project_ids,p.configuration_hash
       FROM connections c JOIN connector_profiles p ON p.connection_id=c.id
@@ -215,7 +228,7 @@ export function registerProjectConfiguration(app: FastifyInstance, db: Database,
         const r = (await tx.query("SELECT * FROM project_configurations WHERE project_id=$1 FOR UPDATE", [project])).rows[0];
         if (!r || r.content_state !== "active") throw unavailable();
         if (r.version !== b.expected_revision) throw new Problem(409, "VERSION_CONFLICT", "Refresh the shared brief before publishing");
-        const body = await resolveDefinition(tx, catalog, tenant, project, projectConfigurationInput.parse(r.draft));
+        const body = await resolveProjectConfigurationDefinition(tx, catalog, tenant, project, projectConfigurationInput.parse(r.draft));
         const digest = hash(canonical(body));
         const current = r.current_version ? (await tx.query(`SELECT version,sha256,
           CASE WHEN project_configuration_available(configuration_id,version,sha256,tenant_id,project_id) THEN body ELSE NULL END AS body,

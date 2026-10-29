@@ -176,6 +176,46 @@ async function saveVersion(tx: Tx, actor: Principal, g: any, body: any) {
     );
 }
 
+/** Domain resolution shared with the scoped admin revision boundary. */
+export async function prepareAdminGroupRevision(
+  tx: Tx,
+  catalog: Catalog,
+  group: any,
+  definition: unknown,
+) {
+  const input = groupCreateInput.parse(definition);
+  if (input.project_id !== group.project_id || input.workspace_id !== group.workspace_id)
+    throw new Problem(409, "REVISION_SCOPE_CHANGED", "Keep the team's project and workspace unchanged");
+  const workspace = (await tx.query(
+    "SELECT id FROM cloud_workspaces WHERE id=$1 AND tenant_id=$2 AND project_id=$3 AND content_state='active' FOR SHARE",
+    [group.workspace_id, group.tenant_id, group.project_id],
+  )).rows[0];
+  if (!workspace) throw new Problem(409, "GROUP_WORKSPACE_REQUIRED", "The shared team workspace is unavailable");
+  return { ...input, bindings: await bindings(tx, catalog, group.tenant_id, group.project_id, input.coordinator_agent_id, input.members) };
+}
+
+export async function commitAdminGroupRevision(
+  tx: Tx,
+  actor: Principal,
+  group: any,
+  body: any,
+  revisionId: string,
+) {
+  const saved = (await tx.query(
+    "UPDATE agent_groups SET name=$2,coordinator_agent_id=$3,version=version+1,moderation_version=moderation_version+1,updated_at=clock_timestamp() WHERE id=$1 RETURNING *",
+    [group.id, body.name, body.coordinator_agent_id],
+  )).rows[0];
+  await tx.query(
+    "INSERT INTO agent_group_versions(group_id,version,tenant_id,project_id,body,sha256,created_by,created_by_admin,admin_revision_id) VALUES($1,$2,$3,$4,$5,$6,NULL,$7,$8)",
+    [saved.id, saved.version, saved.tenant_id, saved.project_id, body, groupDefinitionHash(body), actor.id, revisionId],
+  );
+  for (const binding of body.bindings) await tx.query(
+    "INSERT INTO agent_group_members(group_id,group_version,tenant_id,project_id,agent_id,agent_version,is_coordinator,role_description) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
+    [saved.id, saved.version, saved.tenant_id, saved.project_id, binding.agent_id, binding.agent_version, binding.is_coordinator, binding.role_description],
+  );
+  return saved;
+}
+
 async function memberReady(
   tx: Tx,
   db: Database,

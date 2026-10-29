@@ -28,6 +28,55 @@ export const solutionMissing = () =>
 const conflict = (code: string, message: string) =>
   new Problem(409, code, message);
 
+/** Resolve a method's exact template and skill bindings after caller authorization. */
+export async function freezeSolutionDefinition(
+  tx: Tx,
+  definition: z.infer<typeof solutionCreate>,
+  lockCurrentTemplates = false,
+) {
+  const ids = definition.agent_template_ids.length
+    ? definition.agent_template_ids
+    : [
+        (
+          await tx.query(
+            "SELECT id FROM agent_templates WHERE role_key='assistant'",
+          )
+        ).rows[0].id,
+      ];
+  const frozen: any[] = [];
+  for (const id of ids) {
+    const row = (
+      await tx.query(
+        // Customer creation reads an immutable version with its existing SELECT privilege.
+        // The control plane also locks the mutable current-version pointer during confirmation.
+        "SELECT v.*,t.role_key FROM agent_templates t JOIN agent_template_versions v ON v.template_id=t.id AND v.version=t.current_version WHERE t.id=$1" +
+          (lockCurrentTemplates ? " FOR SHARE OF t" : ""),
+        [id],
+      )
+    ).rows[0];
+    if (!row) throw solutionMissing();
+    frozen.push({
+      template_id: id,
+      template_version: row.version,
+      template_version_id: row.id,
+      template_hash: row.definition_hash,
+      role_key: row.role_key,
+      role_hash: row.body.role_hash,
+      runtime_profile_id: row.runtime_profile_id,
+      skill_version_ids: row.body.skill_version_ids,
+      name: row.body.name,
+    });
+  }
+  const allowed = new Set(frozen.flatMap((v) => v.skill_version_ids));
+  if (definition.skill_version_ids.some((id) => !allowed.has(id)))
+    throw new Problem(
+      422,
+      "SOLUTION_SKILL_SCOPE",
+      "Choose only exact methods bound to the selected templates",
+    );
+  return frozen;
+}
+
 export class Solutions {
   constructor(
     readonly db: Database,
@@ -75,43 +124,7 @@ export class Solutions {
       await tx.query("SELECT pg_advisory_xact_lock(hashtextextended($1,0))", [
         "solution-family:" + tenant + ":" + prior.family_id,
       ]);
-    const ids = definition.agent_template_ids.length
-      ? definition.agent_template_ids
-      : [
-          (
-            await tx.query(
-              "SELECT id FROM agent_templates WHERE role_key='assistant'",
-            )
-          ).rows[0].id,
-        ];
-    const frozen: any[] = [];
-    for (const id of ids) {
-      const row = (
-        await tx.query(
-          "SELECT v.*,t.role_key FROM agent_templates t JOIN agent_template_versions v ON v.template_id=t.id AND v.version=t.current_version WHERE t.id=$1",
-          [id],
-        )
-      ).rows[0];
-      if (!row) throw solutionMissing();
-      frozen.push({
-        template_id: id,
-        template_version: row.version,
-        template_version_id: row.id,
-        template_hash: row.definition_hash,
-        role_key: row.role_key,
-        role_hash: row.body.role_hash,
-        runtime_profile_id: row.runtime_profile_id,
-        skill_version_ids: row.body.skill_version_ids,
-        name: row.body.name,
-      });
-    }
-    const allowed = new Set(frozen.flatMap((v) => v.skill_version_ids));
-    if (definition.skill_version_ids.some((id) => !allowed.has(id)))
-      throw new Problem(
-        422,
-        "SOLUTION_SKILL_SCOPE",
-        "Choose only exact methods bound to the selected templates",
-      );
+    const frozen = await freezeSolutionDefinition(tx, definition);
     const row = (
       await tx.query(
         `INSERT INTO solution_versions(tenant_id,project_id,family_id,version,definition,frozen,definition_hash,created_by)

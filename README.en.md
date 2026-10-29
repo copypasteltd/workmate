@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-content-revisions-123 -->
+## Administrator content revisions · Stage 123
+
+Structured revisions append a team version, publish a shared project brief while replacing its draft, or create a new method-family draft. Existing tasks retain their pinned input versions; method trials and customer publication remain required.
+
+Every operation intersects the current object scopes of `admin.content.read`, `admin.content.body.read` and `admin.content.version.create`, with explicit restrictions taking precedence. The current Admin session and recent MFA are rechecked. Five-minute signed previews bind the source version, resolved dependencies, before/after digests, reason, administrator and session. Confirmation atomically appends the exact version, distinct administrator provenance and audit. Revisions create no tasks, model calls or AI charges. Customer creation retains its existing read privilege rather than gaining database template-update authority.
+
+Six routes share `/v1/admin/content-revisions/{kind}/{id}`: read the editor, `GET /options?q=`, `GET /history`, `POST /previews`, `POST /apply` and `POST /requests/{key}`. Kinds are restricted to `agent_groups`, `project_configurations` and `solutions`. Unknown responses recover through the original idempotency key and return metadata only.
+
+```mermaid
+flowchart LR
+  A[Scoped authority and MFA] --> B[Structured definition]
+  B --> C[Signed before/after preview]
+  C --> D[Explicit confirmation]
+  D --> E[Recheck versions and dependencies]
+  E --> F[Atomic version, provenance and audit]
+  D --> G[Unknown response]
+  G --> H[Recover original request outcome]
+```
+
+See the [revision service](src/admin-content-revisions.ts), [forward migration 130](migrations/130-admin-content-revisions.sql) and [focused integration tests](tests/admin-content-revisions.test.ts). All **75 checks across five complete related files** passed, including 16 new revision checks. **Seven actual Admin UI flows** passed login, all three editors, original-request recovery, live authority withdrawal and unchanged task/charge counts. Dialog and field bounds were observed at 375/768/1024/1440px. Owned browsers, services and the native test database were closed. Synthetic inference remains authorized; full product and production acceptance are tracked separately.
+
+[Behavior and evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/123-admin-content-revisions.md) · [Actual screenshots and GIF/MP4](https://github.com/copypasteltd/workmate/blob/admin/README.en.md)
+
 <!-- runtime-startup-122 -->
 
 The [billing integration scenario](tests/runtime-startup-billing.test.ts) prepares real private source evidence and its original funding reservation, then checks recovery and settlement within the retained 120-second bound. Two initial failures and the later isolated pass stay separate; the checkpoint records the final complete related-file count. Earlier failure causes remain unproven.

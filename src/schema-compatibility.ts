@@ -2,7 +2,7 @@ import type { Database } from "./db.js";
 
 // A release must intentionally advance this value with its forward migration.
 // The source-history test checks the complete sequence, including missing rows.
-export const requiredSchemaVersion = 129;
+export const requiredSchemaVersion = 130;
 
 export async function assertCurrentSchema(db: Database) {
   const relations = (await db.control.query(
