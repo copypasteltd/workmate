@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## Native publication previews and authority · Stage125
+
+Desktop retains customer-local Codex, revocable full local authority and a frameless window. The main process calls company services; Bearer credentials never enter the renderer. `workmate-media` binds window, session and scope, with bounded streaming, HEAD/Range, integrity checks, concurrency and expiry. Sign-out, session changes and window destruction revoke capabilities.
+
+Sign in through the secure browser, create a workspace, connect and explicitly scope an account in Web, then return to Desktop to select caption/source versions, inspect actual media, explicitly approve and read the receipt. Unknown outcomes permit reconciliation/manual closure, never automatic resending. Source expiry and revocation withdraw content.
+
+```mermaid
+flowchart LR
+  UI[Frameless local interface] --> Main[Main-process session and media]
+  UI --> Codex[Customer-local Codex]
+  Codex --> Gateway[Company AI gateway]
+  Main --> Company[Company publication service]
+```
+
+Typechecks and 21/21 media/session checks pass. The latest unsigned directory package is `release/publications-125-02/win-unpacked/`. The actual packaged Electron/native Chrome Side Panel journey passes 10/10, including native media, three OS window widths, no frame/menu/visible scroll rails, explicit consent and revocation. Signed installation, complete local tools and professional roles remain separate.
+
+![Actual protected native image preview](assets/screenshots/workmate-native-publications-02-protected-image-preview.png)
+
+![Actual native publishing interaction](assets/screenshots/workmate-native-publications-02-native-preview-and-confirm.gif)
+
+[Actual interaction MP4](assets/screenshots/workmate-native-publications-02-native-preview-and-confirm.mp4)
+
+
 <!-- runtime-startup-122 -->
 
 ## Codex startup and turn isolation · Stage 122

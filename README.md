@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## 本机发布预览与权限 · 阶段125
+
+Desktop保留客户本机Codex、可撤销完整本机权限及无边框窗口。主进程访问公司服务，渲染层不接收Bearer。`workmate-media`能力绑定窗口、会话及范围，支持有界流、HEAD／Range、完整性校验、并发和有效期限制；登出、换会话及窗口销毁撤销能力。
+
+安全浏览器登录并创建工作区后，在Web连接社交账户、明确范围；回到Desktop选择文案和确切素材版本，核对实际媒体，主动勾选发布并读取回执。未知结果只能核对或人工结案，不能自动重发。来源失效或撤权会撤回内容。
+
+```mermaid
+flowchart LR
+  UI[无边框本机界面] --> Main[主进程会话和媒体能力]
+  UI --> Codex[客户本机Codex]
+  Codex --> Gateway[公司AI网关]
+  Main --> Company[公司发布服务]
+```
+
+类型检查及媒体／会话21/21通过。最新未签名目录包为`release/publications-125-02/win-unpacked/`。实际打包Electron／Chrome原生侧栏发布旅程10/10通过，含原生媒体、三档OS窗口尺寸、无边框／菜单／可见滚动条、明确确认和撤权。签名安装、完整本机工具及专业角色资格另验。
+
+![实际本机受保护图片预览](assets/screenshots/workmate-native-publications-02-protected-image-preview.png)
+
+![实际本机发布交互](assets/screenshots/workmate-native-publications-02-native-preview-and-confirm.gif)
+
+[实际交互MP4](assets/screenshots/workmate-native-publications-02-native-preview-and-confirm.mp4)
+
+
 <!-- runtime-startup-122 -->
 
 ## Codex 启动与轮次隔离 · 阶段 122

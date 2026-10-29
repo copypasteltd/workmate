@@ -6,6 +6,7 @@ import { ClientContentContext, useClientContent } from "./client-content";
 import "./client-content-native.css";
 import { QualitySummary } from "./quality-summary";
 import { Connections, ConnectorLaunch } from "./connections";
+import { Publications } from "./publications";
 import "./support.css";
 import { RoleTemplateCards, roleEnglish } from "./role-templates";
 import { DesignExports } from "./design-exports";
@@ -665,6 +666,7 @@ const navigation = [
   ["analytics", ChartNoAxesCombined, "行銷分析", "Marketing insights"],
   ["workflows", Workflow, "工作流程", "Workflows"],
   ["connections", Plug, "連接應用", "Connections"],
+  ["publications", ArrowUpRight, "內容發布", "Publishing"],
   ["brand", BookOpen, "品牌資料", "Brand library"],
 ] as const;
 function Shell() {
@@ -859,6 +861,7 @@ function Shell() {
               <Route path="creative" element={<Creative />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="connections" element={<Connections />} />
+              <Route path="publications" element={<Publications />} />
               <Route path="workflows" element={<Workflows />} />
               <Route path="brand" element={<Brand />} />
               <Route path="members" element={<Members />} />

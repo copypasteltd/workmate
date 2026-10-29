@@ -84,6 +84,17 @@ export function rendererApiOperation(value: unknown, method: unknown = "GET") {
   if (/\/desktop-executions(?:\/|$)|^\/v1\/desktop-inference(?:\/|$)/.test(pathname))
     return false;
   if (/\/geo\/experiments\/[a-f0-9-]{36}\/(?:desktop-runs|desktop-configuration)$/i.test(pathname)) return false;
+  const publication = /^\/v1\/tenants\/[a-f0-9-]{36}\/projects\/[a-f0-9-]{36}\/publications(\/.*)?$/i.exec(pathname);
+  if (publication) {
+    const tail = publication[1] ?? "";
+    if (["/settings", "/connections", "/policy", "/operations"].includes(tail)) return method === "GET" || tail === "/operations" && method === "POST";
+    if (/^\/operations\/[a-f0-9-]{36}$/i.test(tail) || /^\/requests\/[\w:-]{16,128}$/.test(tail) ||
+      /^\/(?:previews|operations)\/[a-f0-9-]{36}\/media\/[0-9]\/info$/i.test(tail)) return method === "GET";
+    if (tail === "/previews" || /^\/operations\/[a-f0-9-]{36}\/(?:decision|cancel|observe|close-unknown)$/i.test(tail) ||
+      /^\/connections\/[a-f0-9-]{36}\/disconnect$/i.test(tail)) return method === "POST";
+    if (/^\/policy\/[a-f0-9-]{36}$/i.test(tail) || /^\/connections\/[a-f0-9-]{36}\/scope$/i.test(tail)) return method === "PUT";
+    return false;
+  }
   if (pathname === "/v1/session/context") return method === "GET";
   if (pathname === "/v1/brand-version-options") return method === "GET";
   if (["/v1/solution-access", "/v1/solution-targets", "/v1/solution-installations"].includes(pathname)) return method === "GET";

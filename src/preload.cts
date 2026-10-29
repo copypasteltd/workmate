@@ -268,6 +268,8 @@ contextBridge.exposeInMainWorld(
     openExternal: (u: string) => ipcRenderer.invoke("external", u),
     authorizeConnector: (s: string) =>
       ipcRenderer.invoke("connector:authorize", s),
+    publicationMedia: (path: string, tenantId: string) => ipcRenderer.invoke("publication-media:open", path, tenantId),
+    closePublicationMedia: (id: string) => ipcRenderer.invoke("publication-media:close", id),
     onAuthChanged: (fn: () => void) => {
       ipcRenderer.on("auth:changed", fn);
       return () => ipcRenderer.removeListener("auth:changed", fn);

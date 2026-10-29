@@ -65,6 +65,8 @@ declare global {
       ) => Promise<unknown>;
       openExternal: (url: string) => Promise<void>;
       authorizeConnector: (state: string) => Promise<void>;
+      publicationMedia?: (path: string, tenantId: string) => Promise<{ id: string; url: string }>;
+      closePublicationMedia?: (id: string) => Promise<void>;
       onAuthChanged: (fn: () => void) => () => void;
       version: string;
     };

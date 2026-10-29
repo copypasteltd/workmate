@@ -11,6 +11,7 @@ import { pauseNativeHosts, resumeNativeHosts, waitNativeHosts } from "./native-h
 import { chromeRegistration } from "./chrome-registration.js";
 import { inspectInstaller, prepareInstaller } from "./update-native.js";
 import { saveDownload } from "./download.js";
+import { PublicationMediaProxy, publicationMediaScheme } from "./publication-media.js";
 import { attachWindowControls, windowAppearance } from "./window-controls.js";
 import { exclusive } from "./lock.js";
 import { LocalVault } from "./vault.js";
@@ -30,6 +31,7 @@ import {
   safeStorage,
   session,
   Menu,
+  protocol,
 } from "electron";
 import { createServer } from "node:http";
 import { readFile, mkdir, writeFile } from "node:fs/promises";
@@ -55,6 +57,7 @@ import {
   connectorLaunchURL,
 } from "./config.js";
 
+protocol.registerSchemesAsPrivileged([{ scheme: publicationMediaScheme, privileges: { standard: true, secure: true, stream: true, corsEnabled: true } }]);
 const config = configuration();
 let removalBlocked = true;
 const updateAdmission = new UpdateAdmission(() => !removalBlocked);
@@ -135,6 +138,7 @@ const nativeSession = new NativeSession({
     await nativeAuth("revoke", refreshToken);
   },
   changed: () => {
+    publicationMedia.closeAll();
     // Revoke all local grants before another account can use cached folder state.
     localAccessReset = Promise.all([files.revokeAll(), localSchedules.withdraw(), localPrograms.withdraw(), localAgent.invalidate()]).then(async () => {
       await pairings.withdraw();
@@ -144,6 +148,18 @@ const nativeSession = new NativeSession({
   },
 });
 const tokens = () => nativeSession.get();
+const publicationOwner = () => window && !window.isDestroyed() ? `${window.webContents.id}:${window.webContents.mainFrame.routingId}` : "";
+const publicationMedia = new PublicationMediaProxy({
+  api: config.api,
+  session: async () => {
+    const current = await tokens();
+    if (!current.session_epoch) throw new NativeSessionError("AUTH_CHANGED");
+    return { access_token: current.access_token, session_epoch: current.session_epoch };
+  },
+  unauthorized: accessToken => nativeSession.invalidate(accessToken),
+  ownerActive: owner => !!window && !window.isDestroyed() && !removalBlocked && owner === publicationOwner() &&
+    window.webContents.mainFrame.url.split("#")[0] === new URL("../renderer-dist/index.html", import.meta.url).href,
+});
 
 const pairings = new DesktopPairingController({
   read: () => load<PairingJournal|null>("desktop-pairings",null), write: value => save("desktop-pairings",value),
@@ -632,6 +648,9 @@ async function createWindow() {
   window.removeMenu();
   window.setMenuBarVisibility(false);
   attachWindowControls(window);
+  await window.webContents.session.protocol.handle(publicationMediaScheme, request => publicationMedia.handle(request));
+  window.webContents.on("render-process-gone", () => publicationMedia.closeAll());
+  window.webContents.on("destroyed", () => publicationMedia.closeAll());
   window.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith(config.web + "/") || url === "https://copypaste.hk/")
       void shell.openExternal(url);
@@ -644,7 +663,16 @@ async function createWindow() {
   session.defaultSession.setPermissionRequestHandler(
     (_wc, _permission, callback) => callback(false),
   );
+  const mediaCaller = (event: Electron.IpcMainInvokeEvent) => {
+    const expected = new URL("../renderer-dist/index.html", import.meta.url).href;
+    if (!window || event.sender !== window.webContents || event.senderFrame !== event.sender.mainFrame ||
+      event.senderFrame.url.split("#")[0] !== expected) throw new Error("PUBLICATION_MEDIA_IPC_DENIED");
+    return publicationOwner();
+  };
+  ipcMain.handle("publication-media:open", (event, path, tenant) => publicationMedia.issue(path, tenant, mediaCaller(event)));
+  ipcMain.handle("publication-media:close", (event, id) => publicationMedia.close(id, mediaCaller(event)));
   ipcMain.handle("api", (_e, p, o) => {
+    mediaCaller(_e);
     if (!rendererApiOperation(p, o?.method ?? "GET"))
       throw new Error("API operation is not exposed");
     return request(p, o);
@@ -919,6 +947,7 @@ app.on("window-all-closed", () => {
 });
 let shuttingDown = false;
 app.on("before-quit", event => {
+  publicationMedia.closeAll();
   if (deviceTimer) clearInterval(deviceTimer);
   if (shuttingDown) return;
   event.preventDefault(); shuttingDown = true;
