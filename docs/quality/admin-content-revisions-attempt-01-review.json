@@ -1,0 +1,19 @@
+{
+  "reviewed_at": "2026-10-29T00:47:07.448375+00:00",
+  "status": "failed",
+  "attempt": "01",
+  "phase": "typecheck_before_database_start",
+  "raw_report": {
+    "path": "dev/copypaste-delivery/.data/admin-content-123/backend-01.tap",
+    "sha256": "a6ca8179b4614372b14f427fd22282e15afedd6c11a4c680ada780cdcb63b416"
+  },
+  "executed_verifier": {
+    "path": "dev/copypaste-delivery/.data/admin-content-123/backend-01-verifier.mjs",
+    "sha256": "fe1797ea5d35b47a8b9a497ce6e1e644f319fbc72f43f16b54584be95c6c303d"
+  },
+  "observed_terminal_exit": 1,
+  "failure": "TS2345: test helper inferred a UUID template-literal key type; optional caller string did not match. Verifier finalization additionally threw ReferenceError for obsolete priorReceiptBytes.",
+  "native_database_started": false,
+  "basis": "The raw TAP contains only the typecheck failure; the exact executed verifier launches the database only after that required assertion succeeds.",
+  "repair": "The test key is explicitly string. New verifier V2 removes the obsolete reuse field. Executed V1, source snapshot and raw report remain unchanged."
+}

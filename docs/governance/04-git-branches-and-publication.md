@@ -1,6 +1,12 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- admin-content-revisions-stage123 -->
+当前发布入口为 `dev/copypaste-delivery/scripts/publish-workmate-v6.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v6.py`。V6 校验当前管理员修订的确切源码、五个完整相关后端文件、实际页面及四档布局，核对媒体、双语说明、历史对象和完整 Git 证明。所有旧证明身份保留；阶段 121 全量与阶段 122 启动记录分别按原源码视为历史。六个独立组件和中央文档提交后，普通原子推送八个映射引用并读取实际 SHA，不强推。
+
+V6 verifies the exact administrator-revision sources, related backend files, actual UI and four viewport widths while preserving every historical proof identity and the original scope of earlier full regression and startup checks. It checks committed independent repositories, guides, media, secrets/history and remote ancestry, then ordinarily pushes eight refs atomically and reads back their SHAs. See [behavior](../technical/123-admin-content-revisions.md), [bounded evidence](../quality/admin-content-checkpoint-123.json) and [current numbered work](../quality/remaining-work-stage123.md).
+
 <!-- runtime-startup-stage122 -->
+阶段 122 历史发布范围如下。
 当前发布入口为 `dev/copypaste-delivery/scripts/publish-workmate-v5.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v5.py`。沿用六个独立组件仓库与八个远端引用映射、普通原子推送和实际 SHA 读取。新的清单校验当前启动／轮次／账务／页面限定证据；旧的全量后端回归仍按原源码版本保存，不由当前运行器重新标记。完整历史证明身份及失败记录继续保留。
 
 The current V5 publisher retains the six independent repositories and eight mapped refs, ordinary atomic pushes and actual remote readback. It verifies current bounded startup, turn, billing and UI evidence while keeping the previous full backend regression historical. All previous proof identities and failed runs remain intact. See [current behavior / 当前方案](../technical/122-codex-startup-and-turn-isolation.md) and [current bounded checkpoint / 本轮限定证据](../quality/runtime-startup-checkpoint-122.json).

@@ -1,5 +1,10 @@
 # CopyPaste 0.5.0 代码交付入口
 
+<!-- admin-content-revisions-123 -->
+当前增量为阶段 123 管理员正文修订，具体源码入口、使用流程、权限和实际范围见[方案](technical/123-admin-content-revisions.md)、[检查点](quality/admin-content-checkpoint-123.json)、[更新说明](changes/123-admin-content-revisions.md)与[编号待办](quality/remaining-work-stage123.md)。相关后端 75/75、实际 Admin 页面 7/7 和四档布局观察通过；Admin 仓库有双语 README、6 张当前截图、2 组 GIF/MP4。六个组件独立仓库与中央文档通过 V6 普通八引用推送，实际远端提交以发布器回执及 SHA 读取为准。Desktop 本机 Codex、可撤销本机权限、无边框及原生扩展右侧栏要求保持。完整产品、正式供应商和生产验收仍未结项。
+
+Current Stage 123 adds qualified scoped administrator body revisions. Related backend and actual UI checks passed with real captures and retained failures. V6 verifies committed sources and publishes the eight mapped refs ordinarily, with actual SHA readback. Full product and production acceptance remain separate. The following records retain historical scope.
+
 阶段 88 当前增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 见[方案及边界](technical/88-approved-local-programs.md)。当前源码和已发布版本分别以本阶段检查点、最终提交及远程回执为准；下文保留历史阶段原范围。
 
 

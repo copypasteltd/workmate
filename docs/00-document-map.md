@@ -1,5 +1,8 @@
 # 文档体系与使用规则
 
+<!-- admin-content-revisions-123 -->
+当前增量入口：[管理员正文修订方案](technical/123-admin-content-revisions.md)、[限定检查点](quality/admin-content-checkpoint-123.json)、[完整证据索引](quality/admin-content-evidence-123/index.json)、[变更说明](changes/123-admin-content-revisions.md)、[全部编号剩余项](quality/remaining-work-stage123.md)。相关后端 75/75、实际 Admin 页面 7/7、四档布局观察及当前截图/录制分别保留实际范围。当前交付和发布规则见[Git 分支与发布](governance/04-git-branches-and-publication.md)。下文为历史阶段记录。
+
 阶段 88 当前增量：客户本机批准的固定程序、结构化参数、原生进程树及停止/撤销、父进程退出清理、原费用回执；浏览器普通打开与弹窗统一每任务三页/每执行器两个活动上下文，实际销毁后释放、复用前清除存储；会话等待不锁住其他会话的新建和操作。68 项打包 Desktop、114 项 Desktop 单元、18 项原生 Codex、184 项客户端、91 项相关后端及 6 项严格声明检查通过。模型和部分原生对话框决定为明确假数据；完整产品、至少十二个合格角色及 G01–G10 仍未验收。 见[方案及边界](technical/88-approved-local-programs.md)。当前源码和已发布版本分别以本阶段检查点、最终提交及远程回执为准；下文保留历史阶段原范围。
 
 
