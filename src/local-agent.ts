@@ -284,19 +284,38 @@ export class LocalAgentController {
   private base(r: LocalRecord) {
     return `/v1/tenants/${r.tenant}/projects/${r.project}/desktop-executions`;
   }
+  /** Stop waiting for an authority read even if the transport is still
+   * refreshing shared credentials. Its late result cannot resume execution. */
+  private async live<T>(signal: AbortSignal, work: () => Promise<T>): Promise<T> {
+    if (signal.aborted) throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+    let onAbort!: () => void;
+    const cancelled = new Promise<never>((_resolve, reject) => {
+      onAbort = () => reject(new LocalAgentError("LOCAL_EXECUTION_CANCELLED"));
+      signal.addEventListener("abort", onAbort, { once: true });
+    });
+    try {
+      return await Promise.race([cancelled, Promise.resolve().then(() => {
+        if (signal.aborted) throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
+        return work();
+      })]);
+    } finally { signal.removeEventListener("abort", onAbort); }
+  }
   private async api(
     r: LocalRecord,
     url: string,
     method = "GET",
     body?: unknown,
     key?: string,
+    signal?: AbortSignal,
   ) {
-    const response = await this.io.request(url, {
+    const request = () => this.io.request(url, {
       method,
       body,
       idempotencyKey: key,
       tenantId: r.tenant,
+      ...(signal ? { signal } : {}),
     });
+    const response = signal ? await this.live(signal, request) : await request();
     if (response.status < 200 || response.status >= 300)
       throw new LocalAgentError(
         response.body?.error?.code ?? "LOCAL_COMPANY_API_UNAVAILABLE",
@@ -996,11 +1015,13 @@ export class LocalAgentController {
     startHeartbeat: () => void,
   ) {
     return new LocalStartupCoordinator({
-      checkpoint, taskId, fields, signal, assertOwner, authorize, stopHeartbeat, startHeartbeat,
+      checkpoint, taskId, fields, signal, stopHeartbeat, startHeartbeat,
+      assertOwner: () => this.live(signal, assertOwner),
+      authorize: () => this.live(signal, authorize),
       persist: () => this.persist(),
-      request: (suffix, body, requestKey) => this.io.request(taskURL + suffix, {
+      request: (suffix, body, requestKey) => this.live(signal, () => this.io.request(taskURL + suffix, {
         method: "POST", tenantId: r.tenant, body, idempotencyKey: requestKey, signal,
-      }),
+      })),
       event: async value => {
         r.events.push({ kind: "local.runtime.startup_recovery", value: { ...value, task_id: taskId } });
         if (r.events.length > 500) r.events.shift();
@@ -1027,7 +1048,8 @@ export class LocalAgentController {
     };
     let runtime: LocalAgentRuntime | undefined,
       heartbeat: ReturnType<typeof setInterval> | undefined,
-      heartbeatRun: Promise<unknown> | undefined;
+      heartbeatRun: Promise<unknown> | undefined,
+      heartbeatAbort: AbortController | undefined;
     let admitted = !!op.startup,
       nativeAccepted = false,
       stoppingHeartbeat = false;
@@ -1065,6 +1087,7 @@ export class LocalAgentController {
     const stopHeartbeat = async () => {
       stoppingHeartbeat = true;
       if (heartbeat) clearInterval(heartbeat);
+      heartbeatAbort?.abort();
       await heartbeatRun;
     };
     const settleReport = async () => {
@@ -1192,21 +1215,24 @@ export class LocalAgentController {
           await settleReport();
           return this.view(r);
         }
-        const authorize = async () => {
-          await assertOwner();
-          const live = await this.api(r, taskURL + "/heartbeat", "POST", {});
-          await assertOwner();
-          if (live.cancel_requested || live.state !== "running" || live.status !== "running")
+        const authorize = async (requestedSignal?: AbortSignal) => {
+          const checkSignal = requestedSignal ? AbortSignal.any([abort.signal, requestedSignal]) : abort.signal;
+          await this.live(checkSignal, assertOwner);
+          const live = await this.api(r, taskURL + "/heartbeat", "POST", {}, undefined, checkSignal);
+          await this.live(checkSignal, assertOwner);
+          if (checkSignal.aborted || live.cancel_requested || live.state !== "running" || live.status !== "running")
             throw new LocalAgentError("LOCAL_EXECUTION_CANCELLED");
           r.lastTask = live;
         };
         const startHeartbeat = () => {
           if (heartbeat) clearInterval(heartbeat);
+          heartbeatAbort = new AbortController();
           stoppingHeartbeat = false;
           heartbeat = setInterval(() => {
             if (heartbeatRun || stoppingHeartbeat) return;
-            heartbeatRun = authorize()
+            heartbeatRun = authorize(heartbeatAbort!.signal)
               .catch(() => {
+                if (stoppingHeartbeat) return;
                 abort.abort();
                 void runtime?.close().catch(() => {});
               })
@@ -1593,7 +1619,7 @@ export class LocalAgentController {
     runId: string,
     cursor: number,
     signal: AbortSignal,
-    authorizeParent: () => Promise<void>,
+    authorizeParent: (signal?: AbortSignal) => Promise<void>,
     assertOwner: () => Promise<void>,
   ) {
     const fields = child.fields,
@@ -1627,22 +1653,25 @@ export class LocalAgentController {
     let browser: LocalBrowserSession | undefined;
     let programs: LocalProgramSession | undefined;
     let heartbeat: ReturnType<typeof setInterval> | undefined,
-      heartbeatRun: Promise<unknown> | undefined;
+      heartbeatRun: Promise<unknown> | undefined,
+      heartbeatAbort: AbortController | undefined;
     let stoppingHeartbeat = false;
     const stopHeartbeat = async () => {
       stoppingHeartbeat = true;
       if (heartbeat) clearInterval(heartbeat);
+      heartbeatAbort?.abort();
       await heartbeatRun;
     };
-    const authorize = async () => {
-      await assertOwner();
-      await authorizeParent();
-      if (signal.aborted)
+    const authorize = async (requestedSignal?: AbortSignal) => {
+      const checkSignal = requestedSignal ? AbortSignal.any([signal, requestedSignal]) : signal;
+      await this.live(checkSignal, assertOwner);
+      await this.live(checkSignal, () => authorizeParent(checkSignal));
+      if (checkSignal.aborted)
         throw new LocalAgentError("LOCAL_WORKFLOW_INTERRUPTED");
-      const live = await this.api(r, taskURL + "/heartbeat", "POST", {});
-      await assertOwner();
+      const live = await this.api(r, taskURL + "/heartbeat", "POST", {}, undefined, checkSignal);
+      await this.live(checkSignal, assertOwner);
       if (
-        signal.aborted ||
+        checkSignal.aborted ||
         live.cancel_requested ||
         live.state !== "running" ||
         live.status !== "running"
@@ -1651,11 +1680,13 @@ export class LocalAgentController {
     };
     const startHeartbeat = () => {
       if (heartbeat) clearInterval(heartbeat);
+      heartbeatAbort = new AbortController();
       stoppingHeartbeat = false;
       heartbeat = setInterval(() => {
         if (heartbeatRun || stoppingHeartbeat) return;
-        heartbeatRun = authorize()
+        heartbeatRun = authorize(heartbeatAbort!.signal)
           .catch(() => {
+            if (stoppingHeartbeat) return;
             active.abort.abort();
             shutdownChild();
           })

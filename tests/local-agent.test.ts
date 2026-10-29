@@ -735,3 +735,112 @@ test('a definitive native method rejection releases the local reservations and a
     await assert.rejects(f.controller.prepareSolution(f.input),/LOCAL_SESSION_NOT_FOUND/);assert.equal(f.requests.length,1);assert.equal(f.admissions(),0);
   }finally{await f.clean();}
 });
+
+async function withinLocalDeadline<T>(operation: Promise<T>, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([operation, new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => reject(new Error(message)), 1800);
+    })]);
+  } finally { if (timer) clearTimeout(timer); }
+}
+
+async function stalledHeartbeatFixture(t: import("node:test").TestContext, target: "main" | "child", cooperative: boolean) {
+  const f = await fixture();
+  t.mock.timers.enable({ apis: ["setInterval"] });
+  const session = await f.create(); await f.controller.permission(session.id, "full-access");
+  const controller = f.controller as any, journal = await controller.state(), record = journal.sessions[0];
+  const childId = randomUUID(), childTask: any = { task_id: childId, state: "running", status: "running" };
+  let nativeReady!: () => void, releaseNative!: () => void, heartbeatReady!: () => void;
+  let releaseHeartbeat: (() => void) | undefined, heartbeatSignal: AbortSignal | undefined, hold = false, closes = 0, checks = 0;
+  const entered = new Promise<void>(resolve => { nativeReady = resolve; });
+  const nativeGate = new Promise<void>(resolve => { releaseNative = resolve; });
+  const waiting = new Promise<void>(resolve => { heartbeatReady = resolve; });
+  const request = f.io.request;
+  f.io.request = async (url, options) => {
+    const isChild = url.includes("/" + childId + "/");
+    if (url.endsWith("/heartbeat")) checks++;
+    let response: any;
+    if (!isChild) response = await request(url, options);
+    else if (url.endsWith("/start")) response = { status: 200, body: {
+      ...startupFixture(childTask), runtime: { pinned_version: localRuntimeLock.version, windows_x64_sha256: localRuntimeLock.sha256 },
+      inference_path: "/v1/desktop-inference/v1", skills: [], model: "synthetic-native", effort: "max",
+      prompt: "Keep the original local child", role_instructions: "Use the customer-owned local runtime",
+    } };
+    else if (url.endsWith("/turn-admission")) response = startupTurnFixture(childTask, options?.body);
+    else if (url.endsWith("/heartbeat")) response = { status: 200, body: { ...childTask } };
+    else {
+      assert.ok(url.endsWith("/finish"));
+      childTask.status = (options?.body as any).status === "completed" ? "succeeded" : "failed";
+      childTask.state = "finished"; response = { status: 200, body: { ...childTask } };
+    }
+    // Hold one periodic response. Fresh mandatory turn authorization remains
+    // available and must still be performed before known-success execution.
+    if (!hold || releaseHeartbeat || !url.endsWith("/heartbeat") || isChild !== (target === "child")) return response;
+    heartbeatSignal = options?.signal; heartbeatReady();
+    return new Promise((resolve, reject) => {
+      const onAbort = () => { heartbeatSignal?.removeEventListener("abort", onAbort); reject(new Error("STALLED_HEARTBEAT_ABORTED")); };
+      if (cooperative) heartbeatSignal?.addEventListener("abort", onAbort, { once: true });
+      releaseHeartbeat = () => { heartbeatSignal?.removeEventListener("abort", onAbort); resolve(response); };
+      if (cooperative && heartbeatSignal?.aborted) onAbort();
+    });
+  };
+  f.starting(async () => {
+    if (target === "child" && f.runtimes.length === 1) return;
+    const runtime = f.runtimes.at(-1)!;
+    runtime.close = runtime.revoke = runtime.interrupt = async () => { closes++; releaseNative(); };
+    nativeReady(); await nativeGate;
+  });
+  const result = () => ({ status: "completed" as const, text: "Known local result", threadId: "native", turnId: "turn", nativeTokenUsage: null });
+  if (target === "child") f.pending(async () => {
+    if (f.runtimes.length === 2) return result();
+    const active = controller.running.get(session.id);
+    await controller.executeWorkflowChild(record, record.operation, active, {
+      task_id: childId, role_key: "fullstack", fields: { device_id: journal.deviceId, local_session_id: randomUUID(),
+        workspace_hash: record.workspaceHash, runtime_version: localRuntimeLock.version, runtime_sha256: localRuntimeLock.sha256 },
+    }, randomUUID(), 0, active.abort.signal, f.runtimeHooks[0].authorize, async () => {});
+    return result();
+  });
+  const run = f.controller.send(session.id, "A stalled company check must not hold the local runtime open", 10000);
+  const outcome = run.then(value => ({ value, error: undefined }), error => ({ value: undefined, error }));
+  await entered; hold = true; t.mock.timers.tick(10000); await waiting;
+  return { f, session, run, outcome, signal: () => heartbeatSignal, closes: () => closes, checks: () => checks,
+    releaseNative, releaseHeartbeat: () => releaseHeartbeat?.(),
+    clean: async () => { hold = false; releaseHeartbeat?.(); releaseNative(); await outcome; t.mock.timers.reset(); await f.clean(); } };
+}
+
+for (const target of ["main", "child"] as const)
+  for (const action of ["stop", "revoke", "logout", "close"] as const)
+    for (const cooperative of [true, false])
+      test(`unresponsive company heartbeat ${target} ${action} ${cooperative ? "cooperative" : "uncooperative"} transport cannot retain local execution`, async t => {
+        const h = await stalledHeartbeatFixture(t, target, cooperative);
+        let withdrawal: Promise<unknown> | undefined;
+        try {
+          withdrawal = action === "stop" ? h.f.controller.stop(h.session.id)
+            : action === "revoke" ? h.f.controller.revoke(h.session.id)
+            : action === "logout" ? h.f.controller.invalidate() : h.f.controller.close();
+          const [outcome] = await withinLocalDeadline(Promise.all([h.outcome, withdrawal]), "Local shutdown waited for a stalled company heartbeat");
+          assert.ok(outcome.error); assert.ok(h.closes() > 0);
+          assert.equal(h.signal()?.aborted, true);
+          assert.equal(h.f.turns(), target === "main" ? 0 : 1);
+          const turns = h.f.turns(); h.releaseHeartbeat(); await new Promise<void>(resolve => setImmediate(resolve));
+          assert.equal(h.f.turns(), turns, "A late heartbeat cannot restart local work");
+          if (["stop", "revoke"].includes(action)) assert.equal((await h.f.controller.list(h.f.scope)).sessions[0].busy, false);
+        } finally { await h.clean(); await withdrawal?.catch(() => {}); }
+      });
+
+for (const target of ["main", "child"] as const)
+  test(`a completed ${target} drains an unresponsive company heartbeat without cancelling known local success`, async t => {
+    const h = await stalledHeartbeatFixture(t, target, false);
+    try {
+      const beforeTurn = h.checks();
+      h.releaseNative();
+      const outcome = await withinLocalDeadline(h.outcome, "Known local success waited for an unresponsive periodic heartbeat");
+      assert.equal(outcome.error, undefined); assert.equal(outcome.value.task.status, "succeeded");
+      assert.equal(h.signal()?.aborted, true); assert.equal(h.f.turns(), target === "main" ? 1 : 2);
+      assert.ok(h.checks() > beforeTurn, "Mandatory authority checks cannot be bypassed by retiring a periodic watcher");
+      assert.equal(h.f.created(), 1); assert.equal((await h.f.controller.list(h.f.scope)).sessions[0].busy, false);
+      h.releaseHeartbeat(); await new Promise<void>(resolve => setImmediate(resolve));
+      assert.equal((await h.f.controller.list(h.f.scope)).sessions[0].task.status, "succeeded");
+    } finally { await h.clean(); }
+  });
