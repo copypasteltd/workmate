@@ -231,6 +231,11 @@ export class LocalAgentController {
             turn_id: "unknown",
           };
           r.operation.phase = "settling";
+          const child = r.operation.workflow;
+          if (child && child.phase !== "finished" && !child.report) {
+            child.report = { status: "unknown", output: "", thread_id: "unknown", turn_id: "unknown" };
+            child.phase = "settling";
+          }
           r.error = "LOCAL_EXECUTION_RECONCILIATION_REQUIRED";
         }
       return (this.journal = j);
@@ -348,6 +353,7 @@ export class LocalAgentController {
       error: r.error,
       programToolsVersion: r.programToolsVersion,
       uncertain: !!r.uncertain,
+      receiptPending: !!r.operation?.workflow && r.operation.workflow.phase !== "finished",
       task: r.lastTask,
       messages: r.messages,
       events: r.events,
@@ -364,6 +370,40 @@ export class LocalAgentController {
         !!r.operation &&
         ["accepting", "starting", "settling"].includes(r.operation.phase),
     });
+  }
+  private async assertReceiptOwner(r: LocalRecord, generation: number) {
+    const actor = await this.identity();
+    if (generation !== this.generation || actor.actorId !== r.actorId || actor.epoch !== r.epoch)
+      throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+  }
+  /** Resend the original saved child result without starting tools or renewing
+   * native authority. Local permission withdrawal does not prevent reporting. */
+  private async settleWorkflowReport(r: LocalRecord, op: Operation, generation: number) {
+    const checkpoint = op.workflow;
+    if (!checkpoint || checkpoint.phase === "finished") return;
+    if (!checkpoint.report) {
+      checkpoint.report = { status: "unknown", output: "", thread_id: "unknown", turn_id: "unknown" };
+      checkpoint.phase = "settling";
+    }
+    // Restored uncertain checkpoints must reach disk before a company write.
+    await this.persist();
+    await this.assertReceiptOwner(r, generation);
+    const taskURL = this.base(r) + "/" + checkpoint.taskId;
+    if (checkpoint.report.status === "unknown") {
+      r.uncertain = true;
+      await this.api(r, taskURL + "/cancel", "POST", {}, hash("workflow-cancel:" + checkpoint.taskId));
+      await this.assertReceiptOwner(r, generation);
+    }
+    const result = await this.api(r, taskURL + "/finish", "POST", checkpoint.report, hash("workflow-finish:" + checkpoint.taskId));
+    await this.assertReceiptOwner(r, generation);
+    if (!result || result.task_id !== checkpoint.taskId ||
+      !(result.state === "finished" && ["succeeded", "failed", "cancelled"].includes(result.status) ||
+        result.state === "reconciling" && result.status === "reconciling"))
+      throw new LocalAgentError("LOCAL_WORKFLOW_RECEIPT_INVALID");
+    checkpoint.phase = "finished";
+    r.uncertain ||= checkpoint.report.status === "unknown" || result.status === "reconciling";
+    await this.persist();
+    return result;
   }
   private async waitForInput(
     r: LocalRecord,
@@ -1092,22 +1132,20 @@ export class LocalAgentController {
     };
     const settleReport = async () => {
       await stopHeartbeat();
-      const actor = await this.identity();
-      if (
-        generation !== this.generation ||
-        actor.actorId !== r.actorId ||
-        actor.epoch !== r.epoch
-      )
-        throw new LocalAgentError("LOCAL_ACCOUNT_CHANGED");
+      await this.assertReceiptOwner(r, generation);
+      await this.settleWorkflowReport(r, op, generation);
+      await this.assertReceiptOwner(r, generation);
       // Reporting a terminal/unknown outcome is allowed after local permission
       // withdrawal; it never starts tools or another model request.
-      r.lastTask = await this.api(
+      const receipt = await this.api(
         r,
         base + "/" + op.taskId + "/finish",
         "POST",
         op.report,
         op.finishKey,
       );
+      await this.assertReceiptOwner(r, generation);
+      r.lastTask = receipt;
       if (op.workflowRunId) {
         try {
           const { run } = await this.api(
@@ -1146,6 +1184,7 @@ export class LocalAgentController {
           /* Root receipt remains authoritative; content withdrawal may hide the run. */
         }
       }
+      await this.assertReceiptOwner(r, generation);
       r.messages.push({
         role: "assistant",
         text: op.report!.output,
@@ -1622,6 +1661,7 @@ export class LocalAgentController {
     authorizeParent: (signal?: AbortSignal) => Promise<void>,
     assertOwner: () => Promise<void>,
   ) {
+    const generation = this.generation;
     const fields = child.fields,
       journal = await this.state();
     if (
@@ -1704,16 +1744,8 @@ export class LocalAgentController {
     };
     const finish = async () => {
       if (!checkpoint.report) return;
-      const result = await this.api(
-        r,
-        taskURL + "/finish",
-        "POST",
-        checkpoint.report,
-        hash("workflow-finish:" + child.task_id),
-      );
-      checkpoint.phase = "finished";
-      await this.persist();
-      if (result.status === "reconciling")
+      const result = await this.settleWorkflowReport(r, op, generation);
+      if (result?.status === "reconciling")
         throw new LocalAgentError("LOCAL_WORKFLOW_RECONCILIATION_REQUIRED");
     };
     try {

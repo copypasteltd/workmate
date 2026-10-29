@@ -395,7 +395,7 @@ for (const target of ["main", "child"] as const) test(`a ${target} native startu
       if (url.endsWith("/turn-admission")) return startupTurnFixture(childTask, options?.body);
       if (url.endsWith("/heartbeat")) return { status: 200, body: { state: "running", status: "running" } };
       assert.ok(url.endsWith("/finish"));
-      return { status: 200, body: { status: "succeeded" } };
+      return { status: 200, body: { task_id: childId, state: "finished", status: "succeeded" } };
     };
     let entered!: () => void;
     const ready = new Promise<void>(resolve => { entered = resolve; }), gate = new Promise<void>(resolve => { release = resolve; });
@@ -446,7 +446,7 @@ for (const target of ["main", "child"] as const) test(`${target} controller reco
       }
       if (url.endsWith("/finish")) finishes++;
       if (target === "child" && url.includes("/" + childId + "/"))
-        return { status: 200, body: { task_id: childId, state: "running", status: url.endsWith("/finish") ? "succeeded" : "running" } };
+        return { status: 200, body: { task_id: childId, state: url.endsWith("/finish") ? "finished" : "running", status: url.endsWith("/finish") ? "succeeded" : "running" } };
       return request(url, options);
     };
     let starts = 0;
@@ -519,7 +519,7 @@ test("a completed workflow child stops its heartbeat before native shutdown and 
       assert.ok(url.endsWith("/finish")); finishes++;
       assert.equal(active.abort.signal.aborted, false, "Completed child must not revoke the parent workflow");
       assert.equal((options!.body as any).status, "completed");
-      return { status: 200, body: { status: "succeeded" } };
+      return { status: 200, body: { task_id: childId, state: "finished", status: "succeeded" } };
     };
     f.pending(async () => {
       f.runtimes.at(-1)!.close = async () => {
