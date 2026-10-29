@@ -136,6 +136,6 @@
 | WIP-05 | REQ-060 / REQ-081 / REQ-098 | 实际页面验证、截图、交互录制及双语 README | 新增修订流程尚未完成 |
 | WIP-06 | REQ-054 / REQ-060 | 修订增量合并、验收证据和八分支普通推送 | 新增修订尚未提交、合并或发布 |
 
-依据：[阶段 122 台账](remaining-work-stage122.json)、[当前核查数据](remaining-work-audit-2026-10-29.json)、[开发中方案](../technical/123-admin-content-revisions.md)。历史验收、原始记录和源码未因本次报告改写。
+依据：[阶段 122 台账](remaining-work-stage122.json)、[当前核查数据](remaining-work-audit-2026-10-29.json)；正文修订方案仍是本地未发布草稿。历史验收、原始记录和源码未因本次报告改写。
 
 This status audit preserves all 102 existing acceptance records: 101 required and one optional. Eighty-six have bounded implementation evidence, sixteen lack proof of overall completion, and none has complete acceptance closure. It checks repository state and all eight remote refs without rerunning product tests. Uncommitted Stage 123 work remains unfinished and overlaps the existing requirements. Synthetic model and media data remain authorized. REQ-061–072 originate from expanded design suggestions; they are not presented as individually confirmed user instructions.
