@@ -38,6 +38,13 @@ import {
 } from "./internal-ai-gateway.js";
 import { desktopRuntime, seedDesktopRuntime } from "./desktop-runtime.js";
 import {
+  desktopSessionBinding,
+  desktopStartBody,
+  desktopStartupState,
+  assertDesktopStartupAuthority,
+  registerDesktopStartupRecovery,
+} from "./desktop-startup-recovery.js";
+import {
   desktopToolNames,
   desktopCompanyToolSchema,
 } from "./desktop-tool-policy.js";
@@ -59,13 +66,7 @@ import {
 
 const params = z.object({ tenant: uuid, project: uuid });
 const executionParams = params.extend({ execution: uuid });
-const binding = z.object({
-  device_id: uuid,
-  local_session_id: uuid,
-  workspace_hash: z.string().regex(/^[a-f0-9]{64}$/),
-  runtime_version: z.literal(desktopRuntime.pinned_version),
-  runtime_sha256: z.literal(desktopRuntime.windows_x64_sha256),
-});
+const binding = desktopSessionBinding;
 const createBody = binding
   .extend({
     title: name,
@@ -178,6 +179,7 @@ const companyCall = z
     call_id: z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/),
     thread_id: z.string().min(1).max(128),
     turn_id: z.string().min(1).max(128),
+    startup_fencing_token: uuid.optional(),
   })
   .strict();
 const denied = (code = "DESKTOP_EXECUTION_UNAVAILABLE") =>
@@ -372,6 +374,7 @@ export async function registerDesktopExecutions(
       ).rows[0];
       if (!current || !execution || current.fencing_token !== t.fencing_token)
         throw denied();
+      assertDesktopStartupAuthority(execution, current, request.fencingToken);
       const { capabilities } = await authorize(tx, execution, current);
       const operation =
         request.operation === "responses.input_tokens"
@@ -418,12 +421,13 @@ export async function registerDesktopExecutions(
   }
 
   async function closeGateway(id: string) {
-    const gateway = gateways.get(id);
-    if (!gateway) return;
-    try {
-      await (await gateway).close();
-    } finally {
-      if (gateways.get(id) === gateway) gateways.delete(id);
+    for (const [gatewayKey, gateway] of [...gateways]) {
+      if (gatewayKey !== id && !gatewayKey.startsWith(id + ":")) continue;
+      try {
+        await (await gateway).close();
+      } finally {
+        if (gateways.get(gatewayKey) === gateway) gateways.delete(gatewayKey);
+      }
     }
   }
 
@@ -524,6 +528,60 @@ export async function registerDesktopExecutions(
     output: t.output,
     result_origin: d.client_report ? "desktop_client_report" : null,
     error_code: t.error_code,
+    startup: desktopStartupState(d, t),
+  });
+
+  async function startReceipt(tx: Tx, actor: Principal, live: any, task: any) {
+    const { capabilities } = await authorize(tx, live, task);
+    const skills = await Promise.all(
+      (await catalog.boundSkills(catalog.forTask(task))).map(async skill => ({
+        key: skill.key, sha256: skill.sha256, content: await catalog.verifySkill(skill),
+      })),
+    );
+    const companyTools = businessTools(task, actor, undefined, !!capabilities.video)
+      .map(({ name, description, inputSchema }) => ({
+        name, description, inputSchema: desktopCompanyToolSchema(inputSchema),
+      }));
+    const projectInstructions = await projectConfigurationInstructions(
+      tx, task.tenant_id, task.project_id, task.input_context?.project_configuration,
+    );
+    const contract = {
+      inference_path: "/v1/desktop-inference/v1",
+      model: capabilities.text.body.model_alias,
+      effort: capabilities.text.body.reasoning_effort,
+      company_tools: companyTools,
+      ...(task.input_context?.geo_sample_id ? { observation_protocol: desktopGeoProtocol } : {}),
+      runtime: desktopRuntime,
+      skills,
+      project_configuration: task.input_context?.project_configuration ?? null,
+      prompt: task.native_specialist_instructions || projectInstructions
+        ? (task.native_specialist_instructions || projectInstructions) + "\n\n" + task.prompt
+        : task.prompt,
+      role_instructions: catalog.forTask(task).workflow.map((step: any) => step.instruction).join("\n"),
+    };
+    if (live.startup_protocol) {
+      const digest = hash(canonical(contract));
+      if (live.startup_contract_sha256 && live.startup_contract_sha256 !== digest)
+        throw denied("DESKTOP_STARTUP_CONTRACT_CHANGED");
+      if (!live.startup_contract_sha256) {
+        if (live.startup_attempt !== 1 || live.startup_state !== "preparing")
+          throw denied("DESKTOP_STARTUP_CONTRACT_CHANGED");
+        await tx.query("UPDATE desktop_executions SET startup_contract_sha256=$2 WHERE task_id=$1", [task.id, digest]);
+        live = { ...live, startup_contract_sha256: digest };
+      }
+    }
+    return {
+      ...publicExecution(live, task), ...contract,
+      credential: {
+        token: unseal(db.config.MASTER_KEY!, live.credential_cipher),
+        expires_at: live.credential_expires_at,
+      },
+    };
+  }
+
+  registerDesktopStartupRecovery(app, db, {
+    base, own, authorize, receipt: startReceipt,
+    close: async taskId => { await closeCompanyCalls(taskId); await closeGateway(taskId); },
   });
 
   workflows.register(app, base, (tx, req) => own(tx, req, true, true));
@@ -727,7 +785,7 @@ export async function registerDesktopExecutions(
     { preHandler: requireUser(db) },
     async (req) => {
       const p = executionParams.parse(req.params),
-        b = binding.strict().parse(req.body);
+        b = desktopStartBody.parse(req.body);
       return db.tx(async (tx) => {
         const { d, t } = await own(tx, req, true, true);
         if (
@@ -773,12 +831,16 @@ export async function registerDesktopExecutions(
             const secret = token(),
               expiresAt = new Date(Date.now() + db.config.AI_SCOPE_TTL_MS);
             await tx.query(
-              "UPDATE desktop_executions SET state='running',credential_cipher=$2,credential_hash=$3,credential_expires_at=$4,started_at=now() WHERE task_id=$1",
+              "UPDATE desktop_executions SET state='running',credential_cipher=$2,credential_hash=$3,credential_expires_at=$4,started_at=now(),startup_protocol=$5,startup_attempt=$6,startup_state=$7,startup_deadline_at=$8 WHERE task_id=$1",
               [
                 t.id,
                 seal(db.config.MASTER_KEY!, secret),
                 hash(secret),
                 expiresAt,
+                b.startup_protocol ?? null,
+                b.startup_protocol ? 1 : 0,
+                b.startup_protocol ? "preparing" : "not_started",
+                b.startup_protocol ? expiresAt : null,
               ],
             );
             await event(tx, p.tenant, t.id, "desktop.execution.started", {
@@ -796,60 +858,7 @@ export async function registerDesktopExecutions(
         const task = (
           await tx.query("SELECT * FROM tasks WHERE id=$1", [receipt.task_id])
         ).rows[0];
-        const { capabilities } = await authorize(tx, live, task);
-        const skills = await Promise.all(
-          (await catalog.boundSkills(catalog.forTask(task))).map(
-            async (skill) => ({
-              key: skill.key,
-              sha256: skill.sha256,
-              content: await catalog.verifySkill(skill),
-            }),
-          ),
-        );
-        const companyTools = businessTools(
-          task,
-          req.principal,
-          undefined,
-          !!capabilities.video,
-        ).map(({ name, description, inputSchema }) => ({
-          name,
-          description,
-          inputSchema: desktopCompanyToolSchema(inputSchema),
-        }));
-        const projectInstructions = await projectConfigurationInstructions(
-          tx,
-          p.tenant,
-          p.project,
-          task.input_context?.project_configuration,
-        );
-        return {
-          ...publicExecution(live, task),
-          credential: {
-            token: unseal(db.config.MASTER_KEY!, live.credential_cipher),
-            expires_at: live.credential_expires_at,
-          },
-          inference_path: "/v1/desktop-inference/v1",
-          model: capabilities.text.body.model_alias,
-          effort: capabilities.text.body.reasoning_effort,
-          company_tools: companyTools,
-          ...(task.input_context?.geo_sample_id
-            ? { observation_protocol: desktopGeoProtocol }
-            : {}),
-          runtime: desktopRuntime,
-          skills,
-          project_configuration:
-            task.input_context?.project_configuration ?? null,
-          prompt:
-            task.native_specialist_instructions || projectInstructions
-              ? (task.native_specialist_instructions || projectInstructions) +
-                "\n\n" +
-                task.prompt
-              : task.prompt,
-          role_instructions: catalog
-            .forTask(task)
-            .workflow.map((step: any) => step.instruction)
-            .join("\n"),
-        };
+        return startReceipt(tx, req.principal, live, task);
       }, p.tenant);
     },
   );
@@ -868,6 +877,7 @@ export async function registerDesktopExecutions(
       } = await db.tx(async (tx) => {
         const { d, t } = await own(tx, req, true, true);
         const { capabilities } = await authorize(tx, d, t);
+        assertDesktopStartupAuthority(d, t, body.startup_fencing_token);
         if (
           !businessTools(
             t,
@@ -1080,7 +1090,7 @@ export async function registerDesktopExecutions(
         if (d.client_report && d.client_report.hash !== hash(canonical(report)))
           throw denied("DESKTOP_RESULT_CONFLICT");
         if (["finished", "reconciling"].includes(d.state)) return;
-        if (d.state !== "running" && d.state !== "stopping") throw denied();
+        if (!["running", "recovering", "stopping"].includes(d.state)) throw denied();
         await tx.query(
           "UPDATE desktop_executions SET state='stopping',client_report=$2 WHERE task_id=$1",
           [
@@ -1214,6 +1224,7 @@ export async function registerDesktopExecutions(
           ).rows[0];
           if (!t || !execution || execution.credential_hash !== hash(secret!))
             throw denied();
+          assertDesktopStartupAuthority(execution, t, t.fencing_token);
           const { capabilities, actor } = await authorize(tx, execution, t);
           return {
             t,
@@ -1234,7 +1245,8 @@ export async function registerDesktopExecutions(
         false,
         d.actor_id,
       );
-      let gateway = gateways.get(d.task_id);
+      const gatewayKey = d.task_id + ":" + prepared.t.fencing_token;
+      let gateway = gateways.get(gatewayKey);
       if (!gateway) {
         const { t, execution, capabilities, companyTools } = prepared;
         gateway = startScopedInferenceGateway(db.config, {
@@ -1261,9 +1273,9 @@ export async function registerDesktopExecutions(
             authorize: (request) => inferenceAuthority(execution, t, request),
           },
         });
-        gateways.set(d.task_id, gateway);
+        gateways.set(gatewayKey, gateway);
         void gateway.catch(() => {
-          if (gateways.get(d.task_id) === gateway) gateways.delete(d.task_id);
+          if (gateways.get(gatewayKey) === gateway) gateways.delete(gatewayKey);
         });
       }
       const live = await gateway,
@@ -1306,7 +1318,7 @@ export async function registerDesktopExecutions(
       await db.control.query(
         `SELECT d.task_id FROM desktop_executions d JOIN tasks t ON t.id=d.task_id WHERE
        (d.state='prepared' AND (d.created_at<now()-interval '5 minutes' OR t.cancel_requested OR t.status IN ('cancelled','failed','reconciling')))
-       OR (d.state IN ('running','stopping') AND (t.status='reconciling' OR t.lease_until<=now() OR d.credential_expires_at<=now())) LIMIT 100`,
+       OR (d.state IN ('running','recovering','stopping') AND (t.status='reconciling' OR t.lease_until<=now() OR coalesce(d.credential_expires_at,d.startup_deadline_at)<=now())) LIMIT 100`,
       )
     ).rows;
     for (const row of rows) {
