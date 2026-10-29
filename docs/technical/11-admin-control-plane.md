@@ -1,5 +1,10 @@
 # Admin 控制面、权限与账务实施设计
 
+<!-- admin-profile-revisions-124 -->
+**阶段124：** 管理员新增专家、品牌及五种范围记忆的结构化修订，沿用三权限交集、近期MFA、签名差异确认、独立来源、原请求恢复及实时撤权。迁移131固定版本与审计，客户旧会话保留原输入，永久删除清除记忆快照。68项相关后端、11项后台单元、8项实际页面、14次布局观察通过；8PNG及3组GIF/MP4保留。见[当前实现和验收边界](124-admin-profile-revisions.md)与[完整编号待办](../quality/remaining-work-stage124.md)。
+
+Stage 124 adds scoped specialist, brand and memory revisions with immutable administrator provenance, current authority, explicit review and original-request recovery. Related checks and actual UI pass; full product acceptance remains open.
+
 **阶段 116：Desktop 发布管理。** `admin.desktop_updates.read`／`stage`／`publish` 是独立全局权限，重叠 deny 优先，十分钟内 MFA 在锁内复核。提供清单暂存、分块续传、完整文件校验、精确频道版本发布、不可变历史、签名撤回及严格历史文件回滚。普通应用和队列 SQL 角色不能管理发行表；离线私钥不进入服务和后台。备份和隔离恢复保留已完成安装包与频道事实。见[完整设计及授权命令](116-desktop-updates.md)和[当前验证范围](../quality/desktop-updates-final-checkpoint.json)。
 
 

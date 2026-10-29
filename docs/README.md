@@ -1,5 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- admin-profile-revisions-stage124 -->
+当前阶段124补齐专家、品牌及记忆管理员修订：68/68相关后端、11/11后台单元、8/8实际页面和14次四档布局观察通过，保留8PNG和3组GIF/MP4。原失败、原源码及旧阶段证据不覆盖。当前发布入口V7，远端状态以执行回执及SHA读取为准。
+
+[本轮方案](technical/124-admin-profile-revisions.md) · [本轮证据](quality/admin-profile-checkpoint-124.json) · [更新说明](changes/124-admin-profile-revisions.md) · [最新编号待办](quality/remaining-work-stage124.md)
+
 [中文](README.md) · [English](README.en.md) · [CopyPaste](https://copypaste.hk/)
 
 <!-- admin-content-revisions-123 -->

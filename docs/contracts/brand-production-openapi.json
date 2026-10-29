@@ -440,9 +440,7 @@
                           "const": "noto-sans-tc"
                         }
                       },
-                      "required": [
-                        "builtin"
-                      ],
+                      "required": ["builtin"],
                       "additionalProperties": false
                     },
                     {
@@ -459,10 +457,7 @@
                           "maximum": 9007199254740991
                         }
                       },
-                      "required": [
-                        "asset_id",
-                        "version"
-                      ],
+                      "required": ["asset_id", "version"],
                       "additionalProperties": false
                     }
                   ]
@@ -503,20 +498,11 @@
                       ]
                     }
                   },
-                  "required": [
-                    "source",
-                    "license",
-                    "channels"
-                  ],
+                  "required": ["source", "license", "channels"],
                   "additionalProperties": false
                 }
               },
-              "required": [
-                "key",
-                "label",
-                "source",
-                "rights"
-              ],
+              "required": ["key", "label", "source", "rights"],
               "additionalProperties": false
             }
           },
@@ -538,11 +524,7 @@
                 },
                 "kind": {
                   "type": "string",
-                  "enum": [
-                    "product",
-                    "price",
-                    "promotion"
-                  ]
+                  "enum": ["product", "price", "promotion"]
                 },
                 "text": {
                   "type": "string",
@@ -601,11 +583,7 @@
                   ]
                 }
               },
-              "required": [
-                "key",
-                "kind",
-                "text"
-              ],
+              "required": ["key", "kind", "text"],
               "additionalProperties": false
             }
           },
@@ -667,12 +645,7 @@
             "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,59}$"
           }
         },
-        "required": [
-          "id",
-          "version",
-          "channel",
-          "locale"
-        ],
+        "required": ["id", "version", "channel", "locale"],
         "additionalProperties": false
       },
       "BrandPublish": {
@@ -686,10 +659,7 @@
             "$ref": "#/components/schemas/BrandDefinition"
           }
         },
-        "required": [
-          "expected_version",
-          "definition"
-        ],
+        "required": ["expected_version", "definition"],
         "additionalProperties": false
       },
       "BrandPublication": {
@@ -745,6 +715,11 @@
       "BrandVersion": {
         "type": "object",
         "properties": {
+          "origin": {
+            "type": "string",
+            "enum": ["administrator", "customer", "legacy_unattributed"],
+            "description": "Identifies the actual revision author category without exposing internal administrator identity."
+          },
           "version": {
             "type": "integer",
             "minimum": 1
@@ -777,6 +752,7 @@
           }
         },
         "required": [
+          "origin",
           "version",
           "name",
           "body",
@@ -810,11 +786,7 @@
             "maxLength": 60
           }
         },
-        "required": [
-          "channel",
-          "locale",
-          "text"
-        ],
+        "required": ["channel", "locale", "text"],
         "additionalProperties": false
       },
       "BrandCheck": {
@@ -863,9 +835,7 @@
             }
           }
         },
-        "required": [
-          "items"
-        ],
+        "required": ["items"],
         "additionalProperties": false
       },
       "Problem": {
@@ -885,17 +855,11 @@
                 "type": "string"
               }
             },
-            "required": [
-              "code",
-              "message",
-              "request_id"
-            ],
+            "required": ["code", "message", "request_id"],
             "additionalProperties": false
           }
         },
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "additionalProperties": false
       }
     }

@@ -1,5 +1,10 @@
 # Workmate · CopyPaste Enterprise Agent
 
+<!-- admin-profile-revisions-stage124 -->
+Stage 124 adds scoped administrator revisions for customer specialists, brands and memories. All 68 checks across five complete related backend files, 11 Admin unit checks, eight actual UI flows and 14 layout observations passed; eight PNG captures and three GIF/MP4 pairs retain original evidence and earlier failures. The current publication entry point is V7; actual remote success follows its final receipt and SHA readback.
+
+[Behavior](technical/124-admin-profile-revisions.md) · [Evidence](quality/admin-profile-checkpoint-124.json) · [Changes](changes/124-admin-profile-revisions.md) · [Current numbered open records](quality/remaining-work-stage124.md)
+
 [中文](README.md) · [English](README.en.md) · [CopyPaste](https://copypaste.hk/)
 
 <!-- admin-content-revisions-123 -->

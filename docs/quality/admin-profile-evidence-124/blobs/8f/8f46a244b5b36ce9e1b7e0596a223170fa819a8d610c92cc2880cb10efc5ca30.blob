@@ -1,0 +1,1288 @@
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Check, FilePenLine, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { api, ApiError, post } from "./api";
+import { Field, Modal, ErrorNotice, Loading, DateText, useI18n } from "./ui";
+import { parseHKD, formatHKD } from "./financial-money";
+import { rateInput, type CapabilityAccess } from "./capability-model";
+import "./content-revisions.css";
+import { ProfileRevisionFields } from "./profile-revision-fields";
+
+export type RevisionKind =
+  | "agent_groups"
+  | "project_configurations"
+  | "solutions"
+  | "agents"
+  | "brand_profiles"
+  | "memories";
+type Pending = {
+  kind: RevisionKind;
+  id: string;
+  key: string;
+  ticket: Record<string, any>;
+};
+const kinds = [
+  "agent_groups",
+  "project_configurations",
+  "solutions",
+  "agents",
+  "brand_profiles",
+  "memories",
+];
+const isProfileKind = (
+  kind: RevisionKind,
+): kind is "agents" | "brand_profiles" | "memories" =>
+  ["agents", "brand_profiles", "memories"].includes(kind);
+const ticketFields = [
+  "protocol",
+  "actor_id",
+  "session_id",
+  "auth_version",
+  "kind",
+  "source_id",
+  "source_version",
+  "source_moderation_version",
+  "before_sha256",
+  "after_sha256",
+  "input_sha256",
+  "target_version",
+  "expires_at",
+  "signature",
+];
+const event = "cp-admin-revision-recovery";
+const changedEvent = "cp-admin-content-revised";
+const storageKey = (id: string) => "cp_admin_content_revision:" + id;
+const root = (kind: string, id: string) =>
+  `/v1/admin/content-revisions/${kind}/${id}`;
+const isUuid = (v: unknown) =>
+  typeof v === "string" &&
+  /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(v);
+export const canReviseContent = (access: CapabilityAccess) =>
+  [
+    "admin.content.read",
+    "admin.content.body.read",
+    "admin.content.version.create",
+  ].every((p) => access.has(p));
+
+function readPending(actor: string): Pending | null {
+  const raw = sessionStorage.getItem(storageKey(actor));
+  if (!raw) return null;
+  const p = JSON.parse(raw),
+    t = p?.ticket;
+  if (
+    raw.length > 6000 ||
+    Object.keys(p).some((k) => !["kind", "id", "key", "ticket"].includes(k)) ||
+    !kinds.includes(p.kind) ||
+    !isUuid(p.id) ||
+    !isUuid(p.key) ||
+    !t ||
+    Object.keys(t).length !== ticketFields.length ||
+    Object.keys(t).some((k) => !ticketFields.includes(k)) ||
+    t.protocol !== 1 ||
+    t.actor_id !== actor ||
+    t.kind !== p.kind ||
+    t.source_id !== p.id ||
+    !isUuid(t.session_id) ||
+    !Number.isSafeInteger(t.auth_version) ||
+    !Number.isSafeInteger(t.source_version) ||
+    !Number.isSafeInteger(t.source_moderation_version) ||
+    !Number.isSafeInteger(t.target_version) ||
+    ![t.before_sha256, t.after_sha256, t.input_sha256, t.signature].every(
+      (v) => typeof v === "string" && /^[a-f0-9]{64}$/.test(v),
+    ) ||
+    !Number.isFinite(Date.parse(t.expires_at))
+  )
+    throw new Error(
+      "原修訂記錄無法驗證，請保留記錄並聯絡管理員 / The original revision record cannot be verified; preserve it for administrator review",
+    );
+  return p;
+}
+function savePending(actor: string, pending: Pending | null) {
+  if (pending)
+    sessionStorage.setItem(storageKey(actor), JSON.stringify(pending));
+  else sessionStorage.removeItem(storageKey(actor));
+  window.dispatchEvent(new Event(event));
+}
+function definitelyRejected(error: unknown) {
+  return (
+    error instanceof ApiError &&
+    error.status >= 400 &&
+    error.status < 500 &&
+    ![401, 403, 408, 425, 429].includes(error.status) &&
+    !["IDEMPOTENCY_CONFLICT", "REQUEST_RESULT_REMOVED"].includes(error.code)
+  );
+}
+
+/** This notice survives navigation and reload; it retains no content or reason. */
+export function AdminRevisionRecovery({
+  access,
+}: {
+  access: CapabilityAccess;
+}) {
+  const { t } = useI18n(),
+    [pending, setPending] = useState<Pending | null>(null),
+    [error, setError] = useState<Error | null>(null),
+    [target, setTarget] = useState<Pick<Pending, "kind" | "id"> | null>(null);
+  useEffect(() => {
+    setTarget(null);
+    const sync = () => {
+      try {
+        setPending(readPending(access.me.user.id));
+        setError(null);
+      } catch (e) {
+        setError(e as Error);
+      }
+    };
+    sync();
+    window.addEventListener(event, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(event, sync);
+      window.removeEventListener("storage", sync);
+    };
+  }, [access.me.user.id]);
+  return (
+    <>
+      <ErrorNotice error={error} />
+      {pending && (
+        <div className="notice revision-recovery" role="status">
+          <p>
+            {t(
+              "上一筆內容修訂尚待確認。先核對原請求，再開始另一筆修訂。",
+              "A previous content revision is unconfirmed. Check its original request before starting another revision.",
+            )}
+          </p>
+          <button
+            className="button secondary"
+            onClick={() => setTarget({ kind: pending.kind, id: pending.id })}
+          >
+            {t("核對原修訂", "Check original revision")}
+          </button>
+        </div>
+      )}
+      {target && (
+        <AdminContentRevision
+          access={access}
+          kind={target.kind}
+          id={target.id}
+          onClose={() => setTarget(null)}
+          onDone={() => setTarget(null)}
+        />
+      )}
+    </>
+  );
+}
+
+export function AdminContentRevision({
+  access,
+  kind,
+  id,
+  onClose,
+  onDone,
+}: {
+  access: CapabilityAccess;
+  kind: RevisionKind;
+  id: string;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const { t } = useI18n(),
+    actor = access.me.user.id;
+  const [editor, setEditor] = useState<any>(null),
+    [definition, setDefinition] = useState<any>(null),
+    [reason, setReason] = useState(""),
+    [budget, setBudget] = useState("");
+  const [materials, setMaterials] = useState("");
+  const [search, setSearch] = useState("");
+  const [preview, setPreview] = useState<any>(null),
+    [confirmed, setConfirmed] = useState(false),
+    [pending, setPending] = useState<Pending | null>(null);
+  const [error, setError] = useState<Error | null>(null),
+    [busy, setBusy] = useState(false),
+    [stale, setStale] = useState(false),
+    [result, setResult] = useState<any>(null);
+  const live = useRef(true),
+    operation = useRef(false),
+    sequence = useRef(0),
+    originalBody = useRef<any>(null);
+  const reviewFocus = useRef<HTMLElement>(null);
+  const receiptFocus = useRef<HTMLDivElement>(null);
+  const url = root(kind, id);
+  const title =
+    kind === "agents"
+      ? t("修訂專家設定", "Revise specialist settings")
+      : kind === "brand_profiles"
+        ? t("修訂品牌資料", "Revise brand guidance")
+        : kind === "memories"
+          ? t("修訂記憶", "Revise memory")
+          : kind === "agent_groups"
+            ? t("修訂專業團隊", "Revise team")
+            : kind === "project_configurations"
+              ? t("修訂共享項目說明", "Revise shared project brief")
+              : t("建立方法修訂草稿", "Create method revision draft");
+  function clearPrivate() {
+    sequence.current++;
+    setEditor(null);
+    setDefinition(null);
+    setReason("");
+    setBudget("");
+    setMaterials("");
+    setSearch("");
+    setPreview(null);
+    setConfirmed(false);
+    originalBody.current = null;
+  }
+  function edit(field: string, value: any) {
+    setDefinition((d: any) => ({ ...d, [field]: value }));
+    setPreview(null);
+    setConfirmed(false);
+  }
+  async function load() {
+    const version = ++sequence.current;
+    setBusy(true);
+    setError(null);
+    try {
+      const p = readPending(actor);
+      setPending(p);
+      if (p) {
+        clearPrivate();
+        return;
+      }
+      const v = await api(url);
+      if (!live.current || version !== sequence.current) return;
+      setEditor(v);
+      setDefinition(v.definition);
+      setBudget(
+        v.definition.max_task_budget_micros == null
+          ? ""
+          : rateInput(v.definition.max_task_budget_micros),
+      );
+      setMaterials((v.definition.required_assets ?? []).join("\n"));
+      setPreview(null);
+      setConfirmed(false);
+      setStale(false);
+    } catch (e) {
+      if (live.current) {
+        clearPrivate();
+        setError(e as Error);
+      }
+    } finally {
+      if (live.current) setBusy(false);
+    }
+  }
+  useEffect(() => {
+    live.current = true;
+    void load();
+    return () => {
+      live.current = false;
+      sequence.current++;
+      originalBody.current = null;
+    };
+  }, [actor, kind, id]);
+  useEffect(() => {
+    if (canReviseContent(access)) return;
+    clearPrivate();
+    setError(
+      new Error(
+        t(
+          "目前權限不允許修訂此內容。",
+          "Your current permissions do not allow this revision.",
+        ),
+      ),
+    );
+  }, [access]);
+  useEffect(() => {
+    if (!preview) return;
+    reviewFocus.current?.focus({ preventScroll: true });
+    reviewFocus.current?.scrollIntoView({ block: "start", inline: "nearest" });
+    const timeout = window.setTimeout(
+      () => {
+        setPreview(null);
+        setConfirmed(false);
+      },
+      Math.max(0, Date.parse(preview.ticket.expires_at) - Date.now()),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [preview]);
+  useEffect(() => {
+    if (!result) return;
+    receiptFocus.current?.focus({ preventScroll: true });
+    receiptFocus.current?.scrollIntoView({ block: "start", inline: "nearest" });
+  }, [result]);
+  useEffect(() => {
+    if (!editor || pending || result) return;
+    let active = true;
+    const timer = window.setInterval(async () => {
+      if (operation.current) return;
+      try {
+        const current = await api(url);
+        if (
+          active &&
+          (current.version !== editor.version ||
+            current.moderation_version !== editor.moderation_version)
+        ) {
+          setStale(true);
+          setPreview(null);
+          setConfirmed(false);
+        }
+      } catch (e) {
+        if (!active) return;
+        setError(e as Error);
+        setPreview(null);
+        setConfirmed(false);
+        if (
+          e instanceof ApiError &&
+          [401, 403, 404, 409, 410].includes(e.status)
+        )
+          clearPrivate();
+      }
+    }, 15000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, [editor, pending, result, url]);
+  function completed(value: any) {
+    savePending(actor, null);
+    originalBody.current = null;
+    if (live.current) {
+      setPending(null);
+      setResult(value);
+      clearPrivate();
+    }
+    window.dispatchEvent(new Event(changedEvent));
+  }
+  async function prepare(e: FormEvent) {
+    e.preventDefault();
+    if (operation.current || pending || stale || !editor) return;
+    const version = sequence.current;
+    operation.current = true;
+    setBusy(true);
+    setError(null);
+    setPreview(null);
+    setConfirmed(false);
+    try {
+      if (readPending(actor))
+        throw new Error(
+          t("先核對原修訂。", "Check the original revision first."),
+        );
+      const body = {
+        ...definition,
+        ...(kind === "project_configurations"
+          ? {
+              max_task_budget_micros: budget.trim()
+                ? Number(parseHKD(budget, true))
+                : null,
+            }
+          : {}),
+        ...(kind === "solutions"
+          ? {
+              required_assets: materials
+                .split(/\r?\n/)
+                .map((v) => v.trim())
+                .filter(Boolean),
+            }
+          : {}),
+        ...(kind === "brand_profiles"
+          ? {
+              colors: definition.colors.filter(Boolean),
+              fonts: definition.fonts.filter(Boolean),
+              channels: definition.channels.filter(Boolean),
+              locales: definition.locales.filter(Boolean),
+              font_bindings: definition.font_bindings.map((f: any) => ({
+                ...f,
+                rights: {
+                  ...f.rights,
+                  channels: f.rights.channels.filter(Boolean),
+                },
+              })),
+            }
+          : {}),
+      };
+      const v = await post(url + "/previews", {
+        expected_version: editor.version,
+        expected_moderation_version: editor.moderation_version,
+        definition: body,
+        reason,
+      });
+      if (live.current && version === sequence.current) setPreview(v);
+    } catch (e) {
+      if (live.current) {
+        setError(e as Error);
+        if (e instanceof ApiError && [401, 403, 404, 410].includes(e.status))
+          clearPrivate();
+      }
+    } finally {
+      operation.current = false;
+      if (live.current) setBusy(false);
+    }
+  }
+  async function apply() {
+    if (operation.current || !preview || !confirmed || pending || stale) return;
+    operation.current = true;
+    setBusy(true);
+    setError(null);
+    const attempt: Pending = {
+      kind,
+      id,
+      key: crypto.randomUUID(),
+      ticket: preview.ticket,
+    };
+    let sent = false;
+    try {
+      if (readPending(actor))
+        throw new Error(
+          t("先核對原修訂。", "Check the original revision first."),
+        );
+      // Persist only the signed receipt metadata before sending the mutation.
+      savePending(actor, attempt);
+      setPending(attempt);
+      originalBody.current = {
+        ...preview.request,
+        ticket: preview.ticket,
+        confirmed: true,
+      };
+      sent = true;
+      const value = await post(
+        url + "/apply",
+        originalBody.current,
+        attempt.key,
+      );
+      completed(value);
+    } catch (e) {
+      if (sent && definitelyRejected(e)) {
+        savePending(actor, null);
+        originalBody.current = null;
+        if (live.current) {
+          setPending(null);
+          setPreview(null);
+          setConfirmed(false);
+        }
+      }
+      if (live.current) {
+        setError(e as Error);
+        if (e instanceof ApiError && [401, 403, 404, 410].includes(e.status))
+          clearPrivate();
+      }
+    } finally {
+      operation.current = false;
+      if (live.current) setBusy(false);
+    }
+  }
+  async function recover(retry = false) {
+    if (!pending || operation.current) return;
+    operation.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      const response =
+        retry && originalBody.current
+          ? {
+              status: "applied",
+              result: await post(
+                root(pending.kind, pending.id) + "/apply",
+                originalBody.current,
+                pending.key,
+              ),
+            }
+          : await post(
+              root(pending.kind, pending.id) + "/requests/" + pending.key,
+              { ticket: pending.ticket },
+            );
+      if (response.status === "applied") completed(response.result);
+      else if (["expired_not_applied", "removed"].includes(response.status)) {
+        savePending(actor, null);
+        originalBody.current = null;
+        if (live.current) {
+          setPending(null);
+          setPreview(null);
+          setConfirmed(false);
+          await load();
+        }
+      } else if (live.current)
+        setError(
+          new Error(
+            t(
+              "原請求尚未確認。可稍後再次核對，或在本頁重試同一筆提交。",
+              "The original request is unconfirmed. Check again shortly, or retry that same submission on this page.",
+            ),
+          ),
+        );
+    } catch (e) {
+      if (live.current) {
+        setError(e as Error);
+        if (e instanceof ApiError && [401, 403, 404, 410].includes(e.status))
+          clearPrivate();
+      }
+    } finally {
+      operation.current = false;
+      if (live.current) setBusy(false);
+    }
+  }
+  async function moreHistory() {
+    if (operation.current || !editor?.history.next_before) return;
+    const version = sequence.current;
+    operation.current = true;
+    setBusy(true);
+    try {
+      const h = await api(
+        url + "/history?before=" + editor.history.next_before,
+      );
+      if (live.current && version === sequence.current)
+        setEditor((v: any) => ({
+          ...v,
+          history: {
+            items: [...v.history.items, ...h.items],
+            next_before: h.next_before,
+          },
+        }));
+    } catch (e) {
+      if (live.current) {
+        setError(e as Error);
+        if (e instanceof ApiError && [401, 403, 404, 410].includes(e.status))
+          clearPrivate();
+      }
+    } finally {
+      operation.current = false;
+      if (live.current) setBusy(false);
+    }
+  }
+  async function searchOptions(e: FormEvent) {
+    e.preventDefault();
+    if (operation.current || !editor || pending || stale) return;
+    const version = sequence.current;
+    operation.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      const options = await api(
+        url + "/options?q=" + encodeURIComponent(search.trim()),
+      );
+      if (live.current && version === sequence.current)
+        setEditor((value: any) => (value ? { ...value, options } : value));
+    } catch (e) {
+      if (live.current) {
+        setError(e as Error);
+        if (
+          e instanceof ApiError &&
+          [401, 403, 404, 409, 410].includes(e.status)
+        )
+          clearPrivate();
+      }
+    } finally {
+      operation.current = false;
+      if (live.current) setBusy(false);
+    }
+  }
+  const options = editor?.options ?? {},
+    disabled = busy || !!pending || stale;
+  const agentChoices = [...(options.agents ?? [])];
+  if (kind === "agent_groups" && definition)
+    for (const id of [
+      definition.coordinator_agent_id,
+      ...definition.members.map((m: any) => m.agent_id),
+    ]) {
+      if (!agentChoices.some((a) => a.id === id))
+        agentChoices.unshift({
+          id,
+          name:
+            t("目前固定成員", "Current pinned member") + " · " + id.slice(0, 8),
+        });
+    }
+  function reference(field: string, label: string, values: any[]) {
+    const selected = definition[field],
+      value = selected ? `${selected.id}@${selected.version}` : "";
+    const choices = [...values];
+    if (
+      selected &&
+      !choices.some(
+        (v) => v.id === selected.id && v.version === selected.version,
+      )
+    )
+      choices.unshift({
+        ...selected,
+        name: t("目前固定版本", "Current pinned version"),
+      });
+    return (
+      <Field label={label}>
+        <select
+          value={value}
+          onChange={(e) => {
+            const v = choices.find(
+              (x) => `${x.id}@${x.version}` === e.target.value,
+            );
+            edit(field, v ? { id: v.id, version: v.version } : null);
+          }}
+        >
+          <option value="">{t("未指定", "Not specified")}</option>
+          {choices.map((v) => (
+            <option key={`${v.id}@${v.version}`} value={`${v.id}@${v.version}`}>
+              {v.name} · v{v.version}
+            </option>
+          ))}
+        </select>
+      </Field>
+    );
+  }
+  function choices(field: string, label: string, values: any[]) {
+    const selected: string[] = definition[field] ?? [],
+      all = [...values];
+    for (const id of selected)
+      if (!all.some((v) => v.id === id))
+        all.unshift({
+          id,
+          name:
+            t("目前選取的參照", "Current selected reference") +
+            " · " +
+            id.slice(0, 8),
+        });
+    return (
+      <fieldset className="revision-choices">
+        <legend>{label}</legend>
+        {all.length ? (
+          all.map((v) => (
+            <label key={v.id}>
+              <input
+                type="checkbox"
+                checked={selected.includes(v.id)}
+                onChange={(e) =>
+                  edit(
+                    field,
+                    e.target.checked
+                      ? [...selected, v.id]
+                      : selected.filter((x) => x !== v.id),
+                  )
+                }
+              />
+              <span>
+                {v.name}
+                {v.version ? " · v" + v.version : ""}
+              </span>
+            </label>
+          ))
+        ) : (
+          <p className="muted">
+            {t("目前範圍沒有可選內容。", "No choices in your current scope.")}
+          </p>
+        )}
+      </fieldset>
+    );
+  }
+  const fieldLabels: Record<string, string> = {
+    name: t("名稱", "Name"),
+    instructions: t("工作說明", "Instructions"),
+    delivery_requirements: t("交付要求", "Delivery requirements"),
+    coordinator_agent_id: t("協調員", "Coordinator"),
+    members: t("團隊成員與職責", "Team members and responsibilities"),
+    default_agent: t("預設專家", "Default specialist"),
+    brand: t("品牌版本", "Brand version"),
+    asset_version_ids: t("參考資料", "References"),
+    connection_ids: t("連接帳戶", "Connected accounts"),
+    max_task_budget_micros: t("任務預算上限", "Task budget limit"),
+    agent_template_ids: t("專家模板", "Specialist templates"),
+    skill_version_ids: t("工作技能", "Skills"),
+    required_assets: t("所需資料", "Required materials"),
+    required_connectors: t("所需帳戶類型", "Required account types"),
+    dependencies: t("固定依賴版本", "Pinned dependency versions"),
+    tool_ids: t("可用工具", "Available tools"),
+    content: t("記憶內容", "Memory content"),
+    expires_at: t("到期時間", "Expiry"),
+    colors: t("品牌色", "Brand colors"),
+    tone: t("語氣與風格", "Tone and style"),
+    approved_copy: t("核准文案", "Approved copy"),
+    fonts: t("字體名稱備註", "Font name notes"),
+    font_bindings: t("字體與使用範圍", "Fonts and permitted use"),
+    logos: "Logo",
+    facts: t("產品、價格與促銷", "Products, prices and offers"),
+    channels: t("使用渠道", "Channels"),
+    locales: t("語言地區", "Locales"),
+    restrictions: t("使用限制", "Restrictions"),
+    key: t("標記", "Key"),
+    label: t("名稱", "Name"),
+    source: t("來源", "Source"),
+    rights: t("使用範圍", "Permitted use"),
+    license: t("使用依據", "Basis for use"),
+    valid_until: t("結束時間", "Valid until"),
+    valid_from: t("生效時間", "Valid from"),
+    asset_id: t("資料", "Asset"),
+    version: t("版本", "Version"),
+    builtin: t("內建字體", "Bundled font"),
+    kind: t("類型", "Type"),
+    text: t("核准事實", "Approved fact"),
+    currency: t("貨幣", "Currency"),
+    amount_minor: t("最小貨幣單位金額", "Amount in currency minor units"),
+    min_width: t("最小寬度", "Minimum width"),
+    clear_space: t("留白", "Clear space"),
+    usage: t("使用說明", "Usage"),
+    sku: "SKU",
+  };
+  const allChoices = Object.values(options)
+    .filter(Array.isArray)
+    .flat() as any[];
+  function display(value: any): string {
+    if (value === null || value === "") return t("未指定", "Not specified");
+    if (typeof value === "string")
+      return (
+        allChoices.find((v) => v.id === value || v.asset_id === value)?.name ??
+        value
+      );
+    if (Array.isArray(value))
+      return value.map(display).join("\n") || t("無", "None");
+    if (value && typeof value === "object")
+      return value.role_description
+        ? `${display(value.agent_id)} — ${value.role_description}`
+        : value.id
+          ? `${display(value.id)} · v${value.version}`
+          : Object.entries(value)
+              .map(([k, v]) => `${fieldLabels[k] ?? k}: ${display(v)}`)
+              .join("\n");
+    return String(value);
+  }
+  return (
+    <Modal title={title} onClose={onClose}>
+      <div className="content-revision">
+        <p className="muted">
+          {isProfileKind(kind)
+            ? t(
+                "新增有管理員來源的版本。舊任務保留原版，本次修訂不代替客戶確認或執行工作。",
+                "Adds a version with administrator provenance. Existing tasks retain their original inputs; this revision does not approve or run customer work.",
+              )
+            : kind === "solutions"
+              ? t(
+                  "新增同一方法的草稿版本，仍需客户試運行及發佈。",
+                  "Adds a draft in the same method family; customer trial and publication still apply.",
+                )
+              : kind === "project_configurations"
+                ? t(
+                    "發佈新版本並替換目前草稿。已有任務繼續使用原版本。",
+                    "Publishes a new version and replaces the current draft. Existing tasks retain their original version.",
+                  )
+                : t(
+                    "新增團隊版本。已有任務保留原成員；新執行仍需客戶確認計劃與預算。",
+                    "Adds a team version. Existing tasks retain their members; new execution still needs customer plan and budget confirmation.",
+                  )}
+        </p>
+        <ErrorNotice error={error} />
+        {pending && (
+          <div className="notice revision-pending" role="status">
+            <p>
+              {t(
+                "正在核對原修訂。請勿另建提交。重新登入後仍可核對原記錄。",
+                "Check the original revision before submitting again. You can recover its receipt after signing in again.",
+              )}
+            </p>
+            <button
+              className="button primary"
+              disabled={busy}
+              onClick={() => void recover()}
+            >
+              {t("核對原提交結果", "Check original outcome")}
+            </button>
+            {originalBody.current && (
+              <button
+                className="button secondary"
+                disabled={busy}
+                onClick={() => void recover(true)}
+              >
+                {t("重試同一筆提交", "Retry the same submission")}
+              </button>
+            )}
+            <small>
+              {t("預覽期限", "Preview deadline")}{" "}
+              <DateText value={pending.ticket.expires_at} />
+            </small>
+          </div>
+        )}
+        {result && (
+          <div
+            className="revision-success"
+            role="status"
+            ref={receiptFocus}
+            tabIndex={-1}
+          >
+            <Check size={22} />
+            <div>
+              <strong>
+                {t("修訂已儲存", "Revision saved")} · v{result.version}
+              </strong>
+              <p>
+                {t(
+                  "已記錄管理員來源和修訂歷史。",
+                  "Administrator provenance and revision history were recorded.",
+                )}
+              </p>
+            </div>
+            <button
+              className="button primary"
+              onClick={() => {
+                onDone();
+                onClose();
+              }}
+            >
+              {t("完成", "Done")}
+            </button>
+          </div>
+        )}
+        {stale && (
+          <div className="notice" role="alert">
+            <p>
+              {t(
+                "內容已由其他人變更。重新載入後再預覽。",
+                "Someone changed this content. Reload before preparing another preview.",
+              )}
+            </p>
+            <button
+              className="button secondary"
+              disabled={busy}
+              onClick={() => void load()}
+            >
+              <RefreshCw size={16} />
+              {t("重新載入", "Reload")}
+            </button>
+          </div>
+        )}
+        {!editor &&
+          !pending &&
+          !result &&
+          (busy ? (
+            <Loading />
+          ) : (
+            <button className="button secondary" onClick={() => void load()}>
+              {t("重新載入內容", "Reload content")}
+            </button>
+          ))}
+        {editor && definition && !pending && !result && (
+          <>
+            <div className="revision-version">
+              <span>
+                {t("目前內容版本", "Current content version")}{" "}
+                <b>v{editor.version}</b>
+              </span>
+              <span>
+                {t(
+                  "修訂不執行工作或產生 AI 費用",
+                  "Revising content does not run work or incur AI charges",
+                )}
+              </span>
+            </div>
+            {(!isProfileKind(kind) || kind === "brand_profiles") && (
+              <form className="revision-search" onSubmit={searchOptions}>
+                <Field
+                  label={t("搜尋可用參照", "Search available references")}
+                  hint={t(
+                    kind === "brand_profiles"
+                      ? "按名稱搜尋共享 PNG、TTF 或 OTF 版本；已選參照會保留。"
+                      : "按名稱搜尋專家、品牌、資料或模板；已選參照會保留。",
+                    kind === "brand_profiles"
+                      ? "Search shared PNG, TTF or OTF versions by name. Selected references are retained."
+                      : "Search specialists, brands, files or templates by name. Selected references are retained.",
+                  )}
+                >
+                  <input
+                    value={search}
+                    maxLength={160}
+                    disabled={disabled}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </Field>
+                <button
+                  className="button secondary"
+                  type="submit"
+                  disabled={disabled}
+                >
+                  {t("搜尋參照", "Search references")}
+                </button>
+              </form>
+            )}
+            {options.truncated && (
+              <p className="notice">
+                {t(
+                  "目前每類顯示前 200 項，請縮小搜尋範圍。未列出的固定參照仍會保留。",
+                  "The first 200 choices per category are shown. Refine the search to find more. Existing pinned references remain available.",
+                )}
+              </p>
+            )}
+            <form className="revision-layout" onSubmit={prepare}>
+              <fieldset className="revision-form" disabled={disabled}>
+                <Field label={t("名稱", "Name")}>
+                  <input
+                    required
+                    maxLength={160}
+                    value={definition.name}
+                    onChange={(e) => edit("name", e.target.value)}
+                  />
+                </Field>
+                {isProfileKind(kind) ? (
+                  <ProfileRevisionFields
+                    kind={kind}
+                    definition={definition}
+                    edit={edit}
+                    options={options}
+                    context={editor.source_context}
+                  />
+                ) : kind === "agent_groups" ? (
+                  <>
+                    <Field label={t("協調員", "Coordinator")}>
+                      <select
+                        value={definition.coordinator_agent_id}
+                        onChange={(e) =>
+                          edit("coordinator_agent_id", e.target.value)
+                        }
+                      >
+                        {agentChoices.map((a: any) => (
+                          <option key={a.id} value={a.id}>
+                            {a.name}
+                            {a.version ? " · v" + a.version : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                    <div className="revision-members">
+                      <h3>
+                        {t(
+                          "團隊成員與職責",
+                          "Team members and responsibilities",
+                        )}
+                      </h3>
+                      {definition.members.map((m: any, i: number) => (
+                        <div className="revision-member" key={i}>
+                          <Field
+                            label={t("專家", "Specialist") + " " + (i + 1)}
+                          >
+                            <select
+                              value={m.agent_id}
+                              onChange={(e) =>
+                                edit(
+                                  "members",
+                                  definition.members.map((v: any, n: number) =>
+                                    n === i
+                                      ? { ...v, agent_id: e.target.value }
+                                      : v,
+                                  ),
+                                )
+                              }
+                            >
+                              {agentChoices.map((a: any) => (
+                                <option key={a.id} value={a.id}>
+                                  {a.name}
+                                </option>
+                              ))}
+                            </select>
+                          </Field>
+                          <Field
+                            label={
+                              t("工作職責", "Responsibilities") + " " + (i + 1)
+                            }
+                          >
+                            <textarea
+                              required
+                              maxLength={1200}
+                              rows={3}
+                              value={m.role_description}
+                              onChange={(e) =>
+                                edit(
+                                  "members",
+                                  definition.members.map((v: any, n: number) =>
+                                    n === i
+                                      ? {
+                                          ...v,
+                                          role_description: e.target.value,
+                                        }
+                                      : v,
+                                  ),
+                                )
+                              }
+                            />
+                          </Field>
+                          <button
+                            className="icon-button"
+                            type="button"
+                            aria-label={t("移除此成員", "Remove member")}
+                            onClick={() =>
+                              edit(
+                                "members",
+                                definition.members.filter(
+                                  (_: any, n: number) => n !== i,
+                                ),
+                              )
+                            }
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        className="button secondary"
+                        type="button"
+                        disabled={definition.members.length >= 7 || disabled}
+                        onClick={() => {
+                          const selected = new Set([
+                            definition.coordinator_agent_id,
+                            ...definition.members.map((m: any) => m.agent_id),
+                          ]);
+                          const next = options.agents.find(
+                            (a: any) => !selected.has(a.id),
+                          );
+                          if (next)
+                            edit("members", [
+                              ...definition.members,
+                              { agent_id: next.id, role_description: "" },
+                            ]);
+                        }}
+                      >
+                        <Plus size={16} />
+                        {t("新增成員", "Add member")}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Field label={t("工作說明", "Instructions")}>
+                      <textarea
+                        rows={7}
+                        maxLength={8000}
+                        required={kind === "solutions"}
+                        value={definition.instructions}
+                        onChange={(e) => edit("instructions", e.target.value)}
+                      />
+                    </Field>
+                    {kind === "project_configurations" ? (
+                      <>
+                        <Field label={t("交付要求", "Delivery requirements")}>
+                          <textarea
+                            rows={3}
+                            maxLength={4000}
+                            value={definition.delivery_requirements}
+                            onChange={(e) =>
+                              edit("delivery_requirements", e.target.value)
+                            }
+                          />
+                        </Field>
+                        {reference(
+                          "default_agent",
+                          t("預設專家", "Default specialist"),
+                          options.agents,
+                        )}
+                        {reference(
+                          "brand",
+                          t("品牌版本", "Brand version"),
+                          options.brands,
+                        )}
+                        {choices(
+                          "asset_version_ids",
+                          t("共用參考資料", "Shared references"),
+                          options.assets,
+                        )}
+                        {choices(
+                          "connection_ids",
+                          t("獲授權連接帳戶", "Authorized connected accounts"),
+                          options.connections,
+                        )}
+                        <Field
+                          label={t(
+                            "每項任務預算上限（HK$）",
+                            "Per-task budget limit (HK$)",
+                          )}
+                          hint={t(
+                            "留空沿用原有費用與預算限制。",
+                            "Leave blank to retain the existing billing and budget limits.",
+                          )}
+                        >
+                          <input
+                            inputMode="decimal"
+                            value={budget}
+                            onChange={(e) => {
+                              setBudget(e.target.value);
+                              setPreview(null);
+                              setConfirmed(false);
+                            }}
+                          />
+                        </Field>
+                      </>
+                    ) : (
+                      <>
+                        {choices(
+                          "agent_template_ids",
+                          t("專家模板", "Specialist templates"),
+                          options.templates,
+                        )}
+                        {choices(
+                          "skill_version_ids",
+                          t(
+                            "工作技能（須屬所選模板）",
+                            "Skills (must belong to selected templates)",
+                          ),
+                          options.skills,
+                        )}
+                        <Field
+                          label={t(
+                            "所需資料，每行一項",
+                            "Required materials, one per line",
+                          )}
+                        >
+                          <textarea
+                            rows={3}
+                            value={materials}
+                            onChange={(e) => {
+                              setMaterials(e.target.value);
+                              setPreview(null);
+                              setConfirmed(false);
+                            }}
+                          />
+                        </Field>
+                        {choices(
+                          "required_connectors",
+                          t("所需帳戶類型", "Required account types"),
+                          [
+                            { id: "google_ads", name: "Google Ads" },
+                            { id: "meta_ads", name: "Meta Ads" },
+                            { id: "ga4", name: "Google Analytics 4" },
+                            { id: "search_console", name: "Search Console" },
+                          ],
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+                <Field label={t("修訂原因", "Reason for revision")}>
+                  <textarea
+                    required
+                    minLength={3}
+                    maxLength={2000}
+                    rows={3}
+                    value={reason}
+                    onChange={(e) => {
+                      setReason(e.target.value);
+                      setPreview(null);
+                      setConfirmed(false);
+                    }}
+                  />
+                </Field>
+                <button
+                  className="button primary"
+                  type="submit"
+                  disabled={disabled}
+                >
+                  <FilePenLine size={16} />
+                  {busy
+                    ? t("正在準備…", "Preparing…")
+                    : t("預覽修訂差異", "Preview changes")}
+                </button>
+              </fieldset>
+              <section
+                className="revision-review"
+                aria-label={t("修訂差異", "Revision changes")}
+                ref={reviewFocus}
+                tabIndex={-1}
+              >
+                <h3>{t("確認後才儲存", "Review before saving")}</h3>
+                {preview ? (
+                  <>
+                    <p>
+                      {t("將建立版本", "Creates version")}{" "}
+                      <b>v{preview.ticket.target_version}</b> ·{" "}
+                      <DateText value={preview.ticket.expires_at} />
+                    </p>
+                    {preview.changes.map((c: any) => (
+                      <article className="revision-diff" key={c.field}>
+                        <h4>{fieldLabels[c.field] ?? c.field}</h4>
+                        <div>
+                          <span>{t("目前", "Before")}</span>
+                          <p>
+                            {c.field === "max_task_budget_micros" &&
+                            c.before !== null
+                              ? formatHKD(String(c.before))
+                              : display(c.before)}
+                          </p>
+                        </div>
+                        <div>
+                          <span>{t("修訂後", "After")}</span>
+                          <p>
+                            {c.field === "max_task_budget_micros" &&
+                            c.after !== null
+                              ? formatHKD(String(c.after))
+                              : display(c.after)}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                    {!preview.changes.length && (
+                      <p>
+                        {t(
+                          "定義未改動；所選參照將採用目前的固定版本。",
+                          "The definition is unchanged; selected references will adopt their current pinned versions.",
+                        )}
+                      </p>
+                    )}
+                    <label className="revision-consent">
+                      <input
+                        type="checkbox"
+                        checked={confirmed}
+                        disabled={disabled}
+                        onChange={(e) => setConfirmed(e.target.checked)}
+                      />
+                      <span>
+                        {kind === "project_configurations"
+                          ? t(
+                              "我已核對差異，確認發佈並替換目前草稿。",
+                              "I reviewed the changes and confirm publication and replacement of the current draft.",
+                            )
+                          : t(
+                              "我已核對差異並確認建立此版本。",
+                              "I reviewed the changes and confirm creating this version.",
+                            )}
+                      </span>
+                    </label>
+                    <button
+                      className="button primary"
+                      type="button"
+                      disabled={disabled || !confirmed}
+                      onClick={() => void apply()}
+                    >
+                      {kind === "solutions"
+                        ? t("建立修訂草稿", "Create revision draft")
+                        : t("確認儲存新版本", "Save new version")}
+                    </button>
+                  </>
+                ) : (
+                  <p className="muted">
+                    {t(
+                      "填寫修訂和原因，預覽後在此核對前後差異。",
+                      "Edit the content and provide a reason, then preview the changes here.",
+                    )}
+                  </p>
+                )}
+              </section>
+            </form>
+            <section className="revision-history">
+              <h3>{t("管理員修訂記錄", "Administrator revision history")}</h3>
+              {editor.history.items.length ? (
+                editor.history.items.map((h: any) => (
+                  <article key={h.id}>
+                    <strong>
+                      v{h.target_version} · {h.administrator_name}
+                    </strong>
+                    <DateText value={h.created_at} />
+                    <p>{h.reason}</p>
+                  </article>
+                ))
+              ) : (
+                <p className="muted">
+                  {t("尚無管理員修訂。", "No administrator revisions yet.")}
+                </p>
+              )}
+              {editor.history.next_before && (
+                <button
+                  className="button secondary"
+                  disabled={busy}
+                  onClick={() => void moreHistory()}
+                >
+                  {t("載入較早修訂", "Load earlier revisions")}
+                </button>
+              )}
+            </section>
+          </>
+        )}
+      </div>
+    </Modal>
+  );
+}

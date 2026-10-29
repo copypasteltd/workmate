@@ -1,5 +1,10 @@
 # 软件需求规格说明 SRS
 
+<!-- admin-profile-revisions-124 -->
+**阶段124：** 管理员新增专家、品牌及五种范围记忆的结构化修订，沿用三权限交集、近期MFA、签名差异确认、独立来源、原请求恢复及实时撤权。迁移131固定版本与审计，客户旧会话保留原输入，永久删除清除记忆快照。68项相关后端、11项后台单元、8项实际页面、14次布局观察通过；8PNG及3组GIF/MP4保留。见[当前实现和验收边界](../technical/124-admin-profile-revisions.md)与[完整编号待办](../quality/remaining-work-stage124.md)。
+
+Stage 124 adds scoped specialist, brand and memory revisions with immutable administrator provenance, current authority, explicit review and original-request recovery. Related checks and actual UI pass; full product acceptance remains open.
+
 
 **阶段 106 / Stage 106：** 已修复明确选中的私有文件跨任务读取、原生 API 检查启动就绪和私有流程确认失效；97 个后端文件共 1230 项执行，1,229 通过、一项超时取消；原文件独立复查两项通过，保留未归因超时。11 项实际跨端流程通过。旧版本、费用与权限边界保留；模型／账号仍是假数据。见[实现与证据](../technical/106-selected-inputs-and-runtime-readiness.md)。
 

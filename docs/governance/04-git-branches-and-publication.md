@@ -1,5 +1,10 @@
 # Workmate 仓库、分支与同步规则 / Repository and publication policy
 
+<!-- admin-profile-revisions-stage124 -->
+当前发布入口为 `dev/copypaste-delivery/scripts/publish-workmate-v7.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v7.py`。V7绑定当前专家、品牌与记忆修订的确切源码、68项相关后端、11项后台单元、8项实际页面和四档布局媒体；旧阶段123和更早记录按原源码保留为历史。六个组件及中央文档提交后，普通原子推送八个映射引用并读取实际SHA，不强推。
+
+V7 verifies exact current profile-revision sources, related tests, actual UI and media while preserving historical proof identities and their original scope. It retains six independent repositories and an ordinary atomic eight-ref push with actual SHA readback. See [behavior](../technical/124-admin-profile-revisions.md), [evidence](../quality/admin-profile-checkpoint-124.json) and [numbered remaining work](../quality/remaining-work-stage124.md).
+
 <!-- admin-content-revisions-stage123 -->
 当前发布入口为 `dev/copypaste-delivery/scripts/publish-workmate-v6.mjs`，核查入口为 `docs/tools/audit_workmate_publication_v6.py`。V6 校验当前管理员修订的确切源码、五个完整相关后端文件、实际页面及四档布局，核对媒体、双语说明、历史对象和完整 Git 证明。所有旧证明身份保留；阶段 121 全量与阶段 122 启动记录分别按原源码视为历史。六个独立组件和中央文档提交后，普通原子推送八个映射引用并读取实际 SHA，不强推。
 

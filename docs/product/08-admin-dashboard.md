@@ -1,5 +1,10 @@
 # Admin Dashboard 产品与交互规格
 
+<!-- admin-profile-revisions-124 -->
+**阶段124：** 管理员新增专家、品牌及五种范围记忆的结构化修订，沿用三权限交集、近期MFA、签名差异确认、独立来源、原请求恢复及实时撤权。迁移131固定版本与审计，客户旧会话保留原输入，永久删除清除记忆快照。68项相关后端、11项后台单元、8项实际页面、14次布局观察通过；8PNG及3组GIF/MP4保留。见[当前实现和验收边界](../technical/124-admin-profile-revisions.md)与[完整编号待办](../quality/remaining-work-stage124.md)。
+
+Stage 124 adds scoped specialist, brand and memory revisions with immutable administrator provenance, current authority, explicit review and original-request recovery. Related checks and actual UI pass; full product acceptance remains open.
+
 
 **阶段 104 / Stage 104：** 已接通私有对话／成果到明确确认的云端每日／每周计划、不可变版本、逐次 run、人工审批、费用结算、暂停／取消隔离、客户恢复确认和按范围的 MFA Admin 暂停。78 项相关后端检查、8 项实际跨端流程、8 张截图、3 组交互录制；明确假数据。SQL120 新增，SQL001–119 保留。Desktop 本机 Codex 不被云端替代；原 102 REQ／TC 和完整验收结论不改写。见[方案与实际范围](../technical/104-private-cloud-schedules.md)。
 
