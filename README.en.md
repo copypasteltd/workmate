@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+
+![Actual page](assets/screenshots/workmate-publications-12-outgoing-image-preview.png)
+## Review actual media before publishing · Stage125
+
+Connect and scope an account, set policy, select caption and exact source versions, review actual outgoing media, explicitly approve, then read the receipt. Accounts start disabled and the Agent can only prepare. Scope changes wait for fresh authority. Consent binds the current account, version and content digest.
+
+Previews show actual image/video, versions and SHA-256; Instagram photos use the JPEG rendition. Expiry/revocation withdraws media. Unknown results allow read-only reconciliation or manual closure with a reason, without automatic resending or claiming failure. Lost responses use the original request.
+
+```mermaid
+flowchart LR
+  Account[Explicit account scope] --> Draft[Caption and file versions]
+  Draft --> Preview[Actual outgoing media]
+  Preview --> Consent[Customer explicitly approves]
+  Consent --> Result[Receipt or unknown reconciliation]
+```
+
+Actual Web/Admin qualification passes 14/14 with recorded 375/768/1024/1440px layouts. Accounts are synthetic; native clients and complete professional quality require separate acceptance.
+
+![Actual customer preview and confirmation](assets/screenshots/workmate-publications-12-customer-preview-and-confirm.gif)
+
+[Actual interaction MP4](assets/screenshots/workmate-publications-12-customer-preview-and-confirm.mp4)
+
+
 <!-- runtime-startup-122 -->
 
 ## Codex startup and turn isolation · Stage 122

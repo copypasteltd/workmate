@@ -2,6 +2,30 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+
+![实际页面](assets/screenshots/workmate-publications-12-outgoing-image-preview.png)
+## 核对实际素材后发布 · 阶段125
+
+顺序为：账户与项目范围 → 发布策略 → 文案和确切素材版本 → 实际输出预览 → 客户主动确认 → 回执。账户初始未启用，Agent只能准备；保存范围后等待当前授权快照。每次确认绑定当前账户、版本和内容摘要。
+
+预览显示实际图片／视频、版本及SHA-256；Instagram图片显示转换后的JPEG。来源失效或撤权会撤回媒体。未知结果允许只读核对和附理由的人工结案，不自动重发、不声明发布失败。响应丢失时读取原请求结果。
+
+```mermaid
+flowchart LR
+  Account[明确账户范围] --> Draft[文案及文件版本]
+  Draft --> Preview[核对实际出站媒体]
+  Preview --> Consent[客户主动勾选]
+  Consent --> Result[回执或未知结果核对]
+```
+
+实际Web/Admin旅程14/14通过，原始布局包含375/768/1024/1440px。此为模拟账户验收，原生客户端和完整专业业务另验。
+
+![实际客户预览与确认交互](assets/screenshots/workmate-publications-12-customer-preview-and-confirm.gif)
+
+[实际交互MP4](assets/screenshots/workmate-publications-12-customer-preview-and-confirm.mp4)
+
+
 <!-- runtime-startup-122 -->
 
 ## Codex 启动与轮次隔离 · 阶段 122
