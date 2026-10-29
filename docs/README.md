@@ -1,9 +1,9 @@
 # Workmate · CopyPaste Enterprise Agent
 
 <!-- open-work-review-stage125 -->
-当前未完成项核查v6：89条必需需求尚未完成整体验收（77条部分验证、12条未证完成），另有12条未确认扩展建议和1条可选项。Extension新增发布查看与受限跳转，类型检查、构建及70/70逻辑检查通过；Desktop类型检查及21/21逻辑检查通过，未签名开发目录包已构建。两者均缺新增发布流程的原生端验收。Web/Admin实际页面03执行失败：客户登录一项通过，随后模拟账户OAuth授权回跳被浏览器表单策略阻断，Admin后续页面未执行。后台05完整相关回归仍为107通过、2失败、1取消；06发布专项29/29属于对应旧源码的限定证据。实际跨端旅程、角色资格、本轮整合与产品源码推送仍待完成；远端组件保持阶段124。
+当前未完成项核查v7：89条必需需求尚未完成整体验收（77条部分验证、12条未证完成），另有12条未确认扩展建议和1条可选项。当前完整相关后端09为117/117、Admin显式授权CLI为5/5、分析角色专项为12/12通过；Extension逻辑70/70、Desktop逻辑21/21及类型检查通过，最新未签名Desktop目录包已构建。模拟OAuth浏览器回跳三项通过，账户范围刷新竞态已修正。Web/Admin10终态仍失败：已记录5项通过，但成功状态文案定位错误，原始视口实际仅覆盖375/768px，不能采用其四档宽度声明；后续Admin发布页未完成。三端完整旅程、至少十二个专业角色资格、整合复现及125产品源码推送仍待完成；远端产品组件保持阶段124。
 
-[全部102条编号表](quality/remaining-work-current-review-125-v6.md) · [结构化清单](quality/remaining-work-current-review-125-v6.json) · [本次更新](changes/remaining-work-review-stage125-v6.md) · [保留v4](quality/remaining-work-current-review-125-v4.md)
+[全部102条编号表](quality/remaining-work-current-review-125-v7.md) · [结构化清单](quality/remaining-work-current-review-125-v7.json) · [本次实现与待办](changes/remaining-work-review-stage125-v7.md) · [当前发布方案](technical/125-controlled-publishing-and-native-media.md) · [保留v6](quality/remaining-work-current-review-125-v6.md)
 
 <!-- admin-profile-revisions-stage124 -->
 当前阶段124补齐专家、品牌及记忆管理员修订：68/68相关后端、11/11后台单元、8/8实际页面和14次四档布局观察通过，保留8PNG和3组GIF/MP4。原失败、原源码及旧阶段证据不覆盖。当前发布入口V7，远端状态以执行回执及SHA读取为准。
