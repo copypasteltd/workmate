@@ -109,6 +109,25 @@ export class Storage {
       throw Object.assign(new Error("Object not found"), { code: "ENOENT" });
     return createReadStream(file);
   }
+  /** Bounded single ranges for approved media; S3 must acknowledge the exact range. */
+  async range(key: string, start: number, end: number, size: number): Promise<Readable> {
+    this.objectKey(key);
+    if (![start, end, size].every(Number.isSafeInteger) || start < 0 || end < start || end >= size || size > 1_073_741_824)
+      throw new Problem(416, "STORAGE_RANGE_INVALID", "Choose a valid media byte range");
+    if (this.s3) {
+      const response = await this.s3.send(new GetObjectCommand({ Bucket: this.c.S3_BUCKET, Key: key, Range: `bytes=${start}-${end}` }));
+      if (!(response.Body instanceof Readable) || response.ContentRange !== `bytes ${start}-${end}/${size}` || response.ContentLength !== end - start + 1) {
+        if (response.Body instanceof Readable) response.Body.destroy();
+        throw new Problem(503, "STORAGE_RANGE_UNAVAILABLE", "The object store did not return the exact approved media range");
+      }
+      return response.Body;
+    }
+    const file = await this.ownedPath(key);
+    if (!file) throw new Problem(404, "NOT_FOUND", "Media not found");
+    const stat = await lstat(file);
+    if (stat.size !== size) throw new Problem(409, "STORAGE_RANGE_CHANGED", "The approved media size changed");
+    return createReadStream(file, { start, end });
+  }
   async remove(key: string) {
     this.objectKey(key);
     if (this.s3) {

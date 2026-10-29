@@ -12,6 +12,7 @@ import { ErasureService } from "./erasure.js";
 import { pruneNativeBackups } from "./native-recovery-retention.js";
 import { fenceRestoredDedicatedCloud } from "./dedicated-cloud-recovery.js";
 import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
+import { fenceRestoredPublications, erasePublicationDependents } from "./publication-erasure.js";
 import { hash } from "./lib.js";
 import {
   canonicalDirectory, checkedFile, durableWrite, encryptEntry, decryptEntry, recoveryKey,
@@ -89,9 +90,18 @@ export async function createNativeBackup(o: RecoveryOptions, archiveRoot: string
     const snap = (await c.query("SELECT pg_export_snapshot() AS id,transaction_timestamp() AS at")).rows[0]; snapshotAt = snap.at.toISOString();
     const ledger = await captureLedger(c, identity.source_id, snapshotAt!);
     const migrations = (await c.query("SELECT version,source_sha256 FROM schema_migrations ORDER BY version")).rows;
-    const objects = (await c.query(`SELECT DISTINCT v.storage_key,v.bytes::text,v.sha256 FROM asset_versions v JOIN assets a ON a.id=v.asset_id
+    const objectRows = (await c.query(`SELECT DISTINCT v.storage_key,v.bytes::text,v.sha256 FROM asset_versions v JOIN assets a ON a.id=v.asset_id
       WHERE v.erased_at IS NULL AND a.state<>'deleted' AND NOT EXISTS(SELECT 1 FROM object_erasure_tombstones t WHERE t.storage_key=v.storage_key) ORDER BY v.storage_key`)).rows;
-    if (new Set(objects.map(r => r.storage_key)).size !== objects.length) throw new Error("RECOVERY_CONFLICTING_OBJECT_REFERENCES");
+    if ((await c.query("SELECT to_regclass('publication_live_objects') AS name")).rows[0].name)
+      objectRows.push(...(await c.query(`SELECT DISTINCT storage_key,bytes::text,sha256 FROM publication_live_objects p
+        WHERE NOT EXISTS(SELECT 1 FROM object_erasure_tombstones t WHERE t.storage_key=p.storage_key)`)).rows);
+    const objectMap = new Map<string, { storage_key: string; bytes: string; sha256: string }>();
+    for (const row of objectRows) {
+      const prior = objectMap.get(row.storage_key);
+      if (prior && (prior.bytes !== row.bytes || prior.sha256 !== row.sha256)) throw new Error("RECOVERY_CONFLICTING_OBJECT_REFERENCES");
+      objectMap.set(row.storage_key, row);
+    }
+    const objects = [...objectMap.values()].sort((a,b) => a.storage_key.localeCompare(b.storage_key));
     staged = path.join(root, ".partial-" + id); await mkdir(staged, { mode: 0o700 });
     const files: ArchiveEntry[] = [], dump = await tool(o, "pg_dump", decodeURIComponent(settings(o).pathname.slice(1)), ["--format=custom", "--snapshot=" + snap.id, "--lock-wait-timeout=15000"]);
     dump.child.stdin.end();
@@ -117,14 +127,16 @@ export async function createNativeBackup(o: RecoveryOptions, archiveRoot: string
       }
     }
     // Only closed, immutable encrypted receipt files are included; never tmp files.
-    const receipts = path.resolve(o.config.DATA_DIR, "external-budget-receipts");
+    for (const receiptDirectory of ["external-budget-receipts", "publication-receipts"]) {
+    const receipts = path.resolve(o.config.DATA_DIR, receiptDirectory);
     const rs = await lstat(receipts).catch((e: NodeJS.ErrnoException) => { if (e.code !== "ENOENT") throw e; return null; });
     if (rs) {
       await canonicalDirectory(receipts);
       for (const name of (await readdir(receipts)).sort()) if (/^[a-f0-9-]{36}-[a-f0-9]{64}\.sealed$/.test(name)) {
         const file = path.join(receipts, name); await checkedFile(file, 16_000_000);
-        files.push(await encryptEntry(staged, o.backupKey, id, files.length, "receipt", "external-budget-receipts/" + name, createReadStream(file)));
+        files.push(await encryptEntry(staged, o.backupKey, id, files.length, "receipt", receiptDirectory + "/" + name, createReadStream(file)));
       }
+    }
     }
     await c.query("COMMIT");
     const m: BackupManifest = { protocol: "copypaste-native-backup/1", id, source_id: identity.source_id, snapshot_at: snapshotAt!, completed_at: new Date().toISOString(),
@@ -230,6 +242,8 @@ export async function restoreNativeBackup(o: RecoveryOptions, input: {
       await targetOwner.query("UPDATE recovery_environment SET state='quarantined',restore_id=$1,quarantined_at=clock_timestamp() WHERE singleton", [restoreId]);
       await targetOwner.query("BEGIN");
       await fenceRestoredDedicatedCloud(targetOwner, restoreId);
+      await fenceRestoredPublications(targetOwner);
+      await targetOwner.query("SELECT set_config('app.erasing_content','true',true)");
       for (const item of ledger.targets) {
         if (!recoveryTargets.includes(item.type)) throw new Error("RECOVERY_ERASURE_TARGET_INVALID");
         const column = item.type === "assets" ? "state" : "content_state";
@@ -242,6 +256,12 @@ export async function restoreNativeBackup(o: RecoveryOptions, input: {
           const owned = (await targetOwner.query("SELECT 1 FROM cloud_runtime_sessions WHERE id=$1 AND tenant_id=$2", [item.id,item.tenant_id])).rowCount;
           if (owned) await eraseDedicatedSession(targetOwner,item.id);
         } else await targetOwner.query(`UPDATE "${item.type}" SET "${column}"='deleted'${bump} WHERE id=$1 AND tenant_id=$2 AND "${column}"<>'deleted'`, [item.id, item.tenant_id]);
+        if ((await targetOwner.query("SELECT to_regclass('publication_operations') AS name")).rows[0].name) {
+          const publicationKeys = await erasePublicationDependents(targetOwner, item.tenant_id, item.type, item.id);
+          for (const key of publicationKeys) await targetOwner.query(`INSERT INTO object_erasure_tombstones(storage_key)
+            SELECT $1 WHERE NOT publication_object_referenced($1) AND NOT EXISTS(SELECT 1 FROM asset_versions v JOIN assets a ON a.id=v.asset_id
+              WHERE v.storage_key=$1 AND a.state<>'deleted' AND v.erased_at IS NULL) ON CONFLICT DO NOTHING`, [key]);
+        }
       }
       for (const key of ledger.objects) await targetOwner.query("INSERT INTO object_erasure_tombstones(storage_key) VALUES($1) ON CONFLICT DO NOTHING", [key]);
       await targetOwner.query("COMMIT");

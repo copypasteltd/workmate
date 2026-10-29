@@ -13,6 +13,10 @@ import { seedCommercialPlans } from "./commercial-plans.js";
 import { registerAdminPlans } from "./admin-plans.js";
 import { registerProviderAdmin } from "./provider-admin.js";
 import { registerExternalBudgets } from "./external-budget-routes.js";
+import { registerPublicationConnections } from "./publication-connections.js";
+import { registerPublications } from "./publication-routes.js";
+import { registerPublicationAdmin } from "./publication-admin.js";
+import { startPublicationFixture } from "./publication-fixture.js";
 import { registerCapabilityReleases } from "./capability-releases.js";
 import { registerAdminVip } from "./admin-vip.js";
 import { registerAdminVipCredit } from "./admin-vip-credit.js";
@@ -121,6 +125,9 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       SEO_FIXTURE_ORIGIN: seoFixture.origin,
       SEO_FIXTURE_KEY: seoFixture.key,
     };
+  const publicationFixture = c.DEMO_MODE && !c.PUBLICATION_FIXTURE_ORIGIN
+    ? await startPublicationFixture(c) : undefined;
+  if (publicationFixture) c = publicationFixture.config;
   const db = new Database(c);
   const catalog = new Catalog();
   try {
@@ -151,6 +158,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
       demo?.close(),
       connectorFixture?.close(),
       seoFixture?.close(),
+      publicationFixture?.close(),
     ]);
     throw error;
   }
@@ -272,6 +280,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
         "UPLOAD_RESERVATION_INVALID",
         "RESOURCE_SCOPE_INVALID",
         "RESOURCE_IDENTITY_IMMUTABLE",
+        "PUBLICATION_PREVIEW_LIMIT",
       ].includes((error as any).message)
     ) {
       status = 409;
@@ -289,6 +298,8 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
           RESOURCE_SCOPE_INVALID: "The resource scope or size is invalid",
           RESOURCE_IDENTITY_IMMUTABLE:
             "A resource identity or completed upload cannot be changed",
+          PUBLICATION_PREVIEW_LIMIT:
+            "Review or wait for existing publication previews to expire before creating more",
         } as Record<string, string>
       )[code];
     } else if (
@@ -471,6 +482,9 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
   registerAdminPlans(app, db, catalog);
   registerProviderAdmin(app, db);
   registerExternalBudgets(app, db);
+  registerPublicationConnections(app, db);
+  registerPublications(app, db, storage);
+  registerPublicationAdmin(app, db, storage);
   registerNativeRecovery(app, db);
   registerCapabilityReleases(app, db, catalog);
   registerAdminVip(app, db);
@@ -496,6 +510,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     await demo?.close();
     await connectorFixture?.close();
     await seoFixture?.close();
+    await publicationFixture?.close();
   });
   return {
     app,
@@ -507,6 +522,7 @@ export async function buildApp(c: Config, options: { worker?: boolean } = {}) {
     desktopExecutions,
     connectorFixture,
     seoFixture,
+    publicationFixture,
   };
 }
 if (

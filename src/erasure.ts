@@ -4,6 +4,7 @@ import type { Storage } from "./storage.js";
 import { eraseReplayContent } from "./access.js";
 import { requestTaskCancellation } from "./task-control.js";
 import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
+import { erasePublicationDependents } from "./publication-erasure.js";
 
 const targets = new Set([
   "assets",
@@ -160,7 +161,7 @@ export class ErasureService {
               // Legacy copies may share a key. Retain the bytes until the last
               // live/quarantined reference is deleted, without exposing them.
               const live = await tx.query(
-                "SELECT 1 FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.storage_key=$1 AND a.state<>'deleted' LIMIT 1",
+                "SELECT 1 WHERE EXISTS(SELECT 1 FROM asset_versions v JOIN assets a ON a.id=v.asset_id WHERE v.storage_key=$1 AND a.state<>'deleted') OR publication_object_referenced($1)",
                 [item.locator],
               );
               if (!live.rowCount) {
@@ -169,6 +170,7 @@ export class ErasureService {
                   [item.locator],
                 );
                 await this.storage.remove(item.locator);
+                await tx.query("UPDATE publication_retired_objects SET erased_at=clock_timestamp() WHERE storage_key=$1 AND erased_at IS NULL", [item.locator]);
               }
               await tx.query(
                 "UPDATE asset_versions SET erased_at=now(),metadata='{}' WHERE asset_id=$1 AND storage_key=$2",
@@ -237,6 +239,7 @@ export class ErasureService {
   private async scrub(tx: Tx, j: any) {
     const id = j.target_id;
     await eraseReplayContent(tx, [id]);
+    await erasePublicationDependents(tx, j.tenant_id, j.target_type, id, j.id);
     switch (j.target_type) {
       case "geo_experiments":
       case "geo_runs": {
@@ -559,7 +562,7 @@ export class ErasureService {
           if (
             (
               await tx.query(
-                "SELECT 1 FROM asset_versions WHERE storage_key=$1 LIMIT 1",
+                "SELECT 1 WHERE EXISTS(SELECT 1 FROM asset_versions WHERE storage_key=$1) OR publication_object_referenced($1)",
                 [key],
               )
             ).rowCount
@@ -570,6 +573,7 @@ export class ErasureService {
             [key],
           );
           await this.storage.remove(key);
+          await tx.query("UPDATE publication_retired_objects SET erased_at=clock_timestamp() WHERE storage_key=$1 AND erased_at IS NULL", [key]);
           removed++;
         },
         undefined,

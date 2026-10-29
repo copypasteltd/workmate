@@ -486,6 +486,8 @@ export async function registerDesktopExecutions(
               t.native_method_tools_version === 1)) ||
           (analysisReady && analysisCompanyToolNames.has(tool.name)) ||
           (editableReady && editableCompanyToolNames.has(tool.name)) ||
+          (role.role_key === "social-content" && role.version === "1.1.0" &&
+            ["publication_accounts", "publication_preview", "publication_prepare", "publication_status"].includes(tool.name)) ||
           (t.role_key === "video-motion" &&
             (videoCompanyToolNames.has(tool.name) ||
               methodToolNames.has(tool.name))),

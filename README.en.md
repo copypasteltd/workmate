@@ -2,6 +2,36 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## Controlled social publishing · Stage125
+
+Adds account authorization, exact source-version freezing, actual media previews, per-operation customer consent, durable execution and unknown-outcome reconciliation. Formats cover Facebook text/photo/gallery/video and Instagram photo/Reel/carousel/Story, each with independent media/account checks. Instagram photos receive the required JPEG rendition; valid Facebook PNGs may remain PNG.
+
+```mermaid
+flowchart LR
+  Source[Authorized exact source version] --> Preview[Validate and freeze outgoing bytes]
+  Preview --> Consent[Original customer explicitly confirms]
+  Consent --> Intent[Durable intent and effect record]
+  Intent --> Provider[Provider]
+  Provider --> Receipt[Attributable receipt]
+  Provider --> Unknown[Unknown outcome]
+  Unknown --> Observe[Read-only reconciliation or manual closure]
+```
+
+Project APIs live under `/v1/tenants/:tenant/projects/:project/publications`. Preview/preparation does not publish. Consent binds the actual content digest, account and current version. Only unsent operations can be cancelled; unknown outcomes never automatically resend and manual closure does not prove failure. Independent receipts, restore replay fences, source/account revocation, budget and quota checks apply on the server.
+
+Codex exposes `publication_accounts`, `publication_preview`, `publication_prepare` and `publication_status`; preparation stops at customer consent. Desktop invokes company tools from its local Codex runtime.
+
+Admin permissions are `admin.publication.read`, `admin.publication.policy.write` and `admin.publication.resolve`; private body/media also require independent `admin.content.body.read`. Existing administrators do not silently upgrade. An enrolled active permanent global super administrator may be explicitly upgraded by a local operator:
+
+```powershell
+npm run admin:enable-publications -- admin@example.com --acknowledge-global-publication-authority
+```
+
+A new grant atomically revokes old sessions and records an audit; sign in again. Repeated/concurrent calls neither duplicate grants nor revoke fresh sessions. Body-read is not granted; conflicting roles and relevant explicit denies are refused.
+
+Current scopes pass 117/117 related backend checks, 5/5 CLI checks, 12/12 analysis checks and 14/14 actual Web/Admin checks. The actual packaged Desktop/native Chrome Side Panel publishing journey passes 10/10. These are not complete product or twelve-role professional acceptance; actual Codex invocation of the four new tools remains open; synthetic data and previous failures remain explicit.
+
 <!-- admin-profile-revisions-124 -->
 ## Specialist, brand and memory revisions · Stage 124
 

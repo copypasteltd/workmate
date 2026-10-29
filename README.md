@@ -2,6 +2,36 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## 受控社交发布 · 阶段125
+
+新增账户授权、来源版本冻结、实际媒体预览、逐次客户确认、持久执行与未知结果核对。支持 Facebook 文字／图片／相簿／视频，以及 Instagram 图片／Reel／轮播／Story；每种格式独立校验素材与账户能力。Instagram 图片按要求生成 JPEG，Facebook 可以保留合格 PNG。
+
+```mermaid
+flowchart LR
+  Source[获准文件确切版本] --> Preview[校验及冻结实际媒体]
+  Preview --> Pending[等待原客户明确确认]
+  Pending --> Intent[持久意图与副作用记录]
+  Intent --> Provider[提供方]
+  Provider --> Receipt[可归属回执]
+  Provider --> Unknown[未知结果]
+  Unknown --> Observe[只读核对或人工结案]
+```
+
+所有项目路由以 `/v1/tenants/:tenant/projects/:project/publications` 为前缀。预览和准备不会发布；客户确认绑定实际内容摘要、账户及当前版本。取消仅适用于尚未发送的操作；未知结果不得自动重发，人工结案也不证明发布失败。独立回执、备份恢复重放栅栏、账户与来源撤权、预算及配额约束在服务端执行。
+
+Codex 工具为 `publication_accounts`、`publication_preview`、`publication_prepare`、`publication_status`。`prepare` 只能产生待确认记录。Desktop 仍由本机 Codex 发起公司工具调用。
+
+Admin 新权限为 `admin.publication.read`、`admin.publication.policy.write`、`admin.publication.resolve`；私有正文及媒体还要求独立的 `admin.content.body.read`。旧管理员不会自动升级。已完成设置且有效的永久全局超级管理员，可由本地运营执行：
+
+```powershell
+npm run admin:enable-publications -- admin@example.com --acknowledge-global-publication-authority
+```
+
+新授权原子撤销旧会话并审计，需重新登录；重复／并发执行不重复授权或撤销新会话。命令不附带正文读取权限，且拒绝冲突角色和相关显式 deny。
+
+当前相关后端117/117、授权CLI 5/5、分析专项12/12及实际Web/Admin 14/14通过。实际打包Desktop／Chrome原生右侧栏新增发布旅程10/10通过；这些不代表完整产品或至少十二个专业角色已验收，四个新增工具的实际Codex调用仍待验证。继续使用明确模拟数据。此前失败保留。
+
 <!-- admin-profile-revisions-124 -->
 ## 专家、品牌及记忆修订 · 阶段 124
 

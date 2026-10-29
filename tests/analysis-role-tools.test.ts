@@ -497,7 +497,11 @@ for (const role of ["marketing-analyst", "information-design"])
         "GET",
         f.base + "/tasks/" + accepted.task.id,
       );
-      assert.equal(task.status, "succeeded", JSON.stringify(task));
+      const diagnostics = (await s.db.control.query(
+        "SELECT kind,body FROM task_events WHERE task_id=$1 AND kind=ANY($2::text[]) ORDER BY seq",
+        [accepted.task.id, ["runtime.phase", "runtime.rpc.failed", "runtime.startup.retry", "runtime.thread", "runtime.turn", "gateway.request_rejected"]],
+      )).rows;
+      assert.equal(task.status, "succeeded", JSON.stringify({ task, diagnostics }));
       assert.deepEqual(calls, [
         "analysis_sources",
         "sheet_calculate",

@@ -3,6 +3,7 @@ import type { Storage } from "./storage.js";
 import { purgeCapabilityWorkspaces } from "./capability-workspace-cleanup.js";
 import { eraseReplayContent } from "./access.js";
 import { eraseDedicatedQuote, eraseDedicatedSession } from "./dedicated-cloud-erasure.js";
+import { expirePublicationContent } from "./publication-erasure.js";
 
 export const retentionPolicy = {
   files_days: 90,
@@ -47,6 +48,7 @@ export class RetentionService {
         )
           return null;
         const counts: Record<string, number> = {};
+        Object.assign(counts, await expirePublicationContent(tx, limit));
         await tx.query("SELECT pg_advisory_xact_lock(hashtextextended('dedicated-cloud-control',0))");
         const oldComputerQuotes = (await tx.query(`SELECT q.id FROM cloud_runtime_quotes q WHERE q.content_state='active'
           AND q.created_at<clock_timestamp()-interval '24 hours' AND NOT EXISTS(SELECT 1 FROM cloud_runtime_sessions s WHERE s.quote_id=q.id)

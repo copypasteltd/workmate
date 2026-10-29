@@ -3,6 +3,7 @@ import { DedicatedCloud } from "./dedicated-cloud.js";
 import { assertDedicatedComputerExecution } from "./dedicated-cloud-task-authority.js";
 import { TaskBusinessTools } from "./task-business-tools.js";
 import { advanceExternalBudgets } from "./external-budget.js";
+import { advancePublications } from "./publication-worker.js";
 import { finalizeReviewedEffect } from "./media-effects-tools.js";
 import { AudioProduction } from "./audio-production.js";
 import { GeneratedVideoJobs } from "./video-jobs.js";
@@ -141,6 +142,8 @@ export class Worker {
   private connectorAbort = new AbortController();
   private seoRun: Promise<unknown> | null = null;
   private seoAbort = new AbortController();
+  private publicationRun: Promise<unknown> | null = null;
+  private publicationAbort = new AbortController();
   private active = new Map<string, AbortController>();
   private erasure: ErasureService;
   private retention: RetentionService;
@@ -343,6 +346,13 @@ export class Worker {
           .finally(() => {
             this.seoRun = null;
           });
+      }
+      if (!this.stopping && !this.publicationRun) {
+        this.publicationRun = advancePublications(this.db, this.storage, {
+          signal: this.publicationAbort.signal,
+        }).catch(() => console.error(JSON.stringify({
+          component: "worker.publications", error_code: "PUBLICATION_MAINTENANCE_FAILED",
+        }))).finally(() => { this.publicationRun = null; });
       }
       // A connector/workflow error must never starve cleanup or other due work.
       for (const [name, operation] of [
@@ -1196,12 +1206,14 @@ export class Worker {
     this.capabilityAudioAbort.abort();
     this.connectorAbort.abort();
     this.seoAbort.abort();
+    this.publicationAbort.abort();
     await this.videoRun;
     await this.generatedVideoRun;
     await this.capabilityVideoRun;
     await this.capabilityAudioRun;
     await this.connectorRun;
     await this.seoRun;
+    await this.publicationRun;
     await this.matrixRun;
     await this.resourceMaintenance;
   }

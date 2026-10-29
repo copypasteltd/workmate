@@ -144,6 +144,10 @@ const schema = z.object({
   GOOGLE_ADS_DEVELOPER_TOKEN: z.string().min(1).optional(),
   META_APP_ID: z.string().min(1).optional(),
   META_APP_SECRET: z.string().min(1).optional(),
+  META_PUBLICATION_APP_ID: z.string().regex(/^[1-9][0-9]{0,29}$/).optional(),
+  META_PUBLICATION_APP_SECRET: z.string().min(16).optional(),
+  PUBLICATION_FIXTURE_ORIGIN: z.string().url().optional(),
+  PUBLICATION_FIXTURE_KEY: z.string().min(32).optional(),
   META_GRAPH_VERSION: z
     .string()
     .regex(/^v\d+\.\d+$/)
@@ -177,6 +181,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     "SSO_CALLBACK_ORIGIN",
     "CONNECTOR_FIXTURE_ORIGIN",
     "SEO_FIXTURE_ORIGIN",
+    "PUBLICATION_FIXTURE_ORIGIN",
   ] as const) {
     if (!c[key]) continue;
     const u = new URL(c[key]);
@@ -214,6 +219,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
       throw new Error(
         "SEO fixtures require a private loopback HTTP origin and key in non-production DEMO_MODE",
       );
+  }
+  if (c.PUBLICATION_FIXTURE_ORIGIN || c.PUBLICATION_FIXTURE_KEY) {
+    const fixture = c.PUBLICATION_FIXTURE_ORIGIN ? new URL(c.PUBLICATION_FIXTURE_ORIGIN) : null;
+    if (!c.DEMO_MODE || c.NODE_ENV === "production" || !fixture || !c.PUBLICATION_FIXTURE_KEY ||
+        !["127.0.0.1", "localhost", "[::1]"].includes(fixture.hostname) || fixture.protocol !== "http:")
+      throw new Error("Publishing fixtures require a private loopback HTTP origin and key in non-production DEMO_MODE");
   }
   for (const value of c.SSO_ALLOWED_ORIGINS.split(",")
     .map((v) => v.trim())

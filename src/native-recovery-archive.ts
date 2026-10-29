@@ -126,7 +126,7 @@ export async function loadBackup(folder: string, key: string) {
     if (names.has(f.name) || locators.has(f.kind + ":" + f.locator)) throw new Error("RECOVERY_DUPLICATE_ENTRY");
     names.add(f.name); locators.add(f.kind + ":" + f.locator);
     if ((f.kind === "object" && !/^objects\/[a-f0-9-]{36}$/.test(f.locator)) ||
-        (f.kind === "receipt" && !/^external-budget-receipts\/[a-f0-9-]{36}-[a-f0-9]{64}\.sealed$/.test(f.locator)) ||
+        (f.kind === "receipt" && !/^(?:external-budget-receipts|publication-receipts)\/[a-f0-9-]{36}-[a-f0-9]{64}\.sealed$/.test(f.locator)) ||
         (f.kind === "desktop_update" && !/^desktop-updates\/[a-f0-9]{64}\.exe$/.test(f.locator))) throw new Error("RECOVERY_LOCATOR_INVALID");
   }
   const actual = (await readdir(root)).sort(), expected = ["manifest.sealed", ...names].sort();

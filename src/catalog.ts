@@ -325,6 +325,24 @@ export class Catalog {
     );
     this.skills.push(budgetRelease.skill_package);
     this.skillDefinitions.push(budgetRelease.skill_definition);
+    const publicationRelease = JSON.parse(await readFile(path.resolve(this.packageRoot, "catalog/publication-release-v1.json"), "utf8"));
+    const publicationBase = this.role("social-content");
+    if (publicationRelease.schema !== "copypaste-controlled-publication-release-1" || publicationBase.version !== "1.0.0" ||
+        publicationRelease.previous_role_sha256 !== this.digest(publicationBase) ||
+        publicationRelease.role.role_key !== publicationBase.role_key || publicationRelease.role.version !== "1.1.0" ||
+        canonical(publicationRelease.role.model_bindings) !== canonical(publicationBase.model_bindings) ||
+        canonical(publicationRelease.role.tool_ids) !== canonical([...publicationBase.tool_ids, "publication.read", "publication.prepare"].sort()) ||
+        canonical(publicationRelease.role.skill_bindings) !== canonical([...publicationBase.skill_bindings,
+          { skill_key: "controlled-publishing", version: "1.0.0", required: true }]) ||
+        publicationRelease.skill_package.key !== "controlled-publishing" || publicationRelease.skill_package.version !== "1.0.0" ||
+        publicationRelease.skill_definition.skill_key !== "controlled-publishing" || publicationRelease.skill_definition.version !== "1.0.0" ||
+        publicationRelease.skill_definition.package_sha256 !== publicationRelease.skill_package.sha256 ||
+        canonical(publicationRelease.skill_definition.tool_ids) !== canonical(["publication.read", "publication.prepare"]))
+      throw new Problem(503, "ROLE_RELEASE_INVALID", "Publishing release does not match its retained role, Skill and permissions");
+    this.historicalRoles.push(publicationBase);
+    this.roles = this.roles.map(r => r.role_key === publicationBase.role_key ? publicationRelease.role : r);
+    this.skills.push(publicationRelease.skill_package);
+    this.skillDefinitions.push(publicationRelease.skill_definition);
     this.admin = JSON.parse(
       await readFile(path.resolve(this.packageRoot, "catalog/admin-permission-catalog.json"), "utf8"),
     );
@@ -366,6 +384,12 @@ export class Catalog {
     superRole.permissions.push(
       ...budgetAdmin.super_permissions_for_new_installations,
     );
+    const publicationAdmin = JSON.parse(await readFile(path.resolve(this.packageRoot, "catalog/publication-admin-permissions.json"), "utf8"));
+    const publicationPermissionKeys = new Set(this.admin.permissions.map((p: any) => p.key));
+    if (publicationAdmin.permissions.some((p: any) => publicationPermissionKeys.has(p.key)))
+      throw new Problem(503, "PERMISSION_CATALOG_CONFLICT", "Duplicate publication permission");
+    this.admin.permissions.push(...publicationAdmin.permissions);
+    superRole.permissions.push(...publicationAdmin.super_permissions_for_new_installations);
     const recoveryAdmin = JSON.parse(
       await readFile(path.resolve(this.packageRoot, "catalog/native-recovery-admin-permissions.json"), "utf8"),
     );

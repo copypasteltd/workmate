@@ -1,4 +1,5 @@
 import { prepareBrandProduction } from "./brand-production.js";
+import { publicationTools as buildPublicationTools } from "./publication-tools.js";
 import {
   budgetToolPreview,
   budgetToolPrepare,
@@ -200,6 +201,7 @@ export class TaskBusinessTools {
       ["1.2.0", "1.3.0"].includes(role.version);
     const budgetTools =
       role.role_key === "marketing-analyst" && role.version === "1.3.0";
+    const publishingTools = role.role_key === "social-content" && role.version === "1.1.0";
     const vectorTools =
       role.role_key === "brand-visual" && role.version === "1.1.0";
     const slidesTools =
@@ -1578,6 +1580,7 @@ export class TaskBusinessTools {
           authorize,
         ),
       );
+    if (publishingTools) tools.push(...buildPublicationTools(this.db, this.storage, t, actor, authorize, this.authority.signal));
     if (budgetTools)
       tools.push(
         {
@@ -1694,6 +1697,10 @@ export class TaskBusinessTools {
               role.tool_ids.includes("connector.read"),
             external_budget_preview:
               budgetTools && role.tool_ids.includes("connector.budget.read"),
+            publication_accounts: publishingTools && role.tool_ids.includes("publication.read"),
+            publication_preview: publishingTools && role.tool_ids.includes("publication.read") && role.tool_ids.includes("asset.read"),
+            publication_status: publishingTools && role.tool_ids.includes("publication.read"),
+            publication_prepare: publishingTools && role.tool_ids.includes("publication.prepare") && role.tool_ids.includes("publication.read"),
             external_budget_status:
               budgetTools && role.tool_ids.includes("connector.budget.read"),
             external_budget_prepare:
@@ -1841,6 +1848,8 @@ export class TaskBusinessTools {
             "connector_read",
             "external_budget_preview",
             "external_budget_status",
+            "publication_accounts",
+            "publication_status",
             "sheet_calculate",
             "analysis_source_read",
             "analysis_report_facts",
