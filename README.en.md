@@ -2,6 +2,16 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## Controlled publication qualification and delivery · Stage125
+
+Adds synthetic OAuth, complete related backend checks, actual Web/Admin pages, packaged Electron and Chrome native Side Panel checks. Every attempt preserves original verifier/source/logs and actual screenshot/GIF/MP4; failures are never overwritten. Owned browsers, previews, native PostgreSQL and fixtures must be reclaimed. Docker/WSL are prohibited.
+
+Passing scopes: backend09 117/117, CLI07 5/5, analysis08 12/12, Desktop media03 21/21, Extension02 70/70 and Web/Admin12 14/14. Actual packaged Desktop/native Chrome Side Panel run02 passes 10/10, with matching source/package bytes and owned browsers, Electron, API, database and fixtures closed. Actual Web/Admin observations cover four widths; previous invalid width claims and all failures remain preserved.
+
+Candidates currently occupy adjacent `copypaste-*-publication-125` worktrees; native checks bind the unsigned package and pinned Codex bytes. Stage-specific candidate paths are not final independent-checkout instructions. Integration, independent reproduction and publisher binding remain open; six product refs still retain Stage124.
+
+
 <!-- admin-profile-revisions-124 -->
 ## Stage124 publication and qualification
 

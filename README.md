@@ -2,6 +2,16 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- controlled-publications-stage125 -->
+## 受控发布验收与交付 · 阶段125
+
+新增模拟OAuth、完整相关后端、实际Web/Admin、打包Electron及Chrome原生右侧栏检查。每次使用新编号，保留检查器原文、确切源码、原日志、真实截图和GIF／MP4，禁止覆盖失败。必须回收自建浏览器、预览进程、原生PostgreSQL及夹具，禁止Docker／WSL。
+
+当前通过范围：后端09为117/117、CLI07为5/5、分析08为12/12、Desktop媒体03为21/21、Extension02为70/70、Web/Admin12为14/14；实际打包Desktop／Chrome原生右侧栏02为10/10通过，源文件与包字节匹配，自建浏览器、Electron、API、数据库及夹具均已关闭。Web/Admin原始记录覆盖四档宽度，早先无效宽度声明及所有失败保留。
+
+候选源码目前在相邻`copypaste-*-publication-125`工作树；原生检查绑定未签名目录包及固定Codex字节。阶段专用候选路径不能替代最终独立检出说明。仍需完成整合、独立检出复现及发布器绑定；六个产品分支目前仍为阶段124。
+
+
 <!-- admin-profile-revisions-124 -->
 ## 阶段124发布及验证
 
