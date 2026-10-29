@@ -5,18 +5,34 @@ import { Field, Modal, ErrorNotice, Loading, DateText, useI18n } from "./ui";
 import { parseHKD, formatHKD } from "./financial-money";
 import { rateInput, type CapabilityAccess } from "./capability-model";
 import "./content-revisions.css";
+import { ProfileRevisionFields } from "./profile-revision-fields";
+import { formatBrandAmount } from "./brand-amount";
 
 export type RevisionKind =
   | "agent_groups"
   | "project_configurations"
-  | "solutions";
+  | "solutions"
+  | "agents"
+  | "brand_profiles"
+  | "memories";
 type Pending = {
   kind: RevisionKind;
   id: string;
   key: string;
   ticket: Record<string, any>;
 };
-const kinds = ["agent_groups", "project_configurations", "solutions"];
+const kinds = [
+  "agent_groups",
+  "project_configurations",
+  "solutions",
+  "agents",
+  "brand_profiles",
+  "memories",
+];
+const isProfileKind = (
+  kind: RevisionKind,
+): kind is "agents" | "brand_profiles" | "memories" =>
+  ["agents", "brand_profiles", "memories"].includes(kind);
 const ticketFields = [
   "protocol",
   "actor_id",
@@ -193,11 +209,17 @@ export function AdminContentRevision({
   const receiptFocus = useRef<HTMLDivElement>(null);
   const url = root(kind, id);
   const title =
-    kind === "agent_groups"
-      ? t("修訂專業團隊", "Revise team")
-      : kind === "project_configurations"
-        ? t("修訂共享項目說明", "Revise shared project brief")
-        : t("建立方法修訂草稿", "Create method revision draft");
+    kind === "agents"
+      ? t("修訂專家設定", "Revise specialist settings")
+      : kind === "brand_profiles"
+        ? t("修訂品牌資料", "Revise brand guidance")
+        : kind === "memories"
+          ? t("修訂記憶", "Revise memory")
+          : kind === "agent_groups"
+            ? t("修訂專業團隊", "Revise team")
+            : kind === "project_configurations"
+              ? t("修訂共享項目說明", "Revise shared project brief")
+              : t("建立方法修訂草稿", "Create method revision draft");
   function clearPrivate() {
     sequence.current++;
     setEditor(null);
@@ -359,6 +381,21 @@ export function AdminContentRevision({
                 .split(/\r?\n/)
                 .map((v) => v.trim())
                 .filter(Boolean),
+            }
+          : {}),
+        ...(kind === "brand_profiles"
+          ? {
+              colors: definition.colors.filter(Boolean),
+              fonts: definition.fonts.filter(Boolean),
+              channels: definition.channels.filter(Boolean),
+              locales: definition.locales.filter(Boolean),
+              font_bindings: definition.font_bindings.map((f: any) => ({
+                ...f,
+                rights: {
+                  ...f.rights,
+                  channels: f.rights.channels.filter(Boolean),
+                },
+              })),
             }
           : {}),
       };
@@ -647,42 +684,107 @@ export function AdminContentRevision({
     required_assets: t("所需資料", "Required materials"),
     required_connectors: t("所需帳戶類型", "Required account types"),
     dependencies: t("固定依賴版本", "Pinned dependency versions"),
+    tool_ids: t("可用工具", "Available tools"),
+    content: t("記憶內容", "Memory content"),
+    expires_at: t("到期時間", "Expiry"),
+    colors: t("品牌色", "Brand colors"),
+    tone: t("語氣與風格", "Tone and style"),
+    approved_copy: t("核准文案", "Approved copy"),
+    fonts: t("字體名稱備註", "Font name notes"),
+    font_bindings: t("字體與使用範圍", "Fonts and permitted use"),
+    logos: "Logo",
+    facts: t("產品、價格與促銷", "Products, prices and offers"),
+    channels: t("使用渠道", "Channels"),
+    locales: t("語言地區", "Locales"),
+    restrictions: t("使用限制", "Restrictions"),
+    key: t("標記", "Key"),
+    label: t("名稱", "Name"),
+    source: t("來源", "Source"),
+    rights: t("使用範圍", "Permitted use"),
+    license: t("使用依據", "Basis for use"),
+    valid_until: t("結束時間", "Valid until"),
+    valid_from: t("生效時間", "Valid from"),
+    asset_id: t("資料", "Asset"),
+    version: t("版本", "Version"),
+    builtin: t("內建字體", "Bundled font"),
+    kind: t("類型", "Type"),
+    text: t("核准事實", "Approved fact"),
+    currency: t("貨幣", "Currency"),
+    amount_minor: t("金額", "Amount"),
+    min_width: t("最小寬度", "Minimum width"),
+    clear_space: t("留白", "Clear space"),
+    usage: t("使用說明", "Usage"),
+    sku: "SKU",
   };
   const allChoices = Object.values(options)
     .filter(Array.isArray)
     .flat() as any[];
-  function display(value: any): string {
+  function display(value: any, field?: string): string {
     if (value === null || value === "") return t("未指定", "Not specified");
+    if (
+      ["expires_at", "valid_from", "valid_until"].includes(field ?? "") &&
+      typeof value === "string" &&
+      Number.isFinite(Date.parse(value))
+    )
+      return (
+        new Intl.DateTimeFormat(t("zh-HK", "en-HK"), {
+          dateStyle: "medium",
+          timeStyle: "short",
+          hourCycle: "h23",
+          timeZone: "Asia/Hong_Kong",
+        }).format(new Date(value)) + " HKT"
+      );
     if (typeof value === "string")
-      return allChoices.find((v) => v.id === value)?.name ?? value;
+      return (
+        allChoices.find((v) => v.id === value || v.asset_id === value)?.name ??
+        value
+      );
     if (Array.isArray(value))
-      return value.map(display).join("\n") || t("無", "None");
+      return value.map((v) => display(v, field)).join("\n") || t("無", "None");
     if (value && typeof value === "object")
       return value.role_description
         ? `${display(value.agent_id)} — ${value.role_description}`
         : value.id
           ? `${display(value.id)} · v${value.version}`
-          : JSON.stringify(value);
+          : Object.entries(value)
+              .map(([k, v]) => {
+                const formatted =
+                  k === "amount_minor" &&
+                  typeof v === "number" &&
+                  value.currency
+                    ? (value.currency === "HKD"
+                        ? "HK$"
+                        : value.currency + " ") +
+                      formatBrandAmount(v, value.currency)
+                    : display(v, k);
+                return `${fieldLabels[k] ?? k}: ${formatted}`;
+              })
+              .join("\n");
     return String(value);
   }
   return (
     <Modal title={title} onClose={onClose}>
       <div className="content-revision">
         <p className="muted">
-          {kind === "solutions"
+          {isProfileKind(kind)
             ? t(
-                "新增同一方法的草稿版本，仍需客户試運行及發佈。",
-                "Adds a draft in the same method family; customer trial and publication still apply.",
+                "新增有管理員來源的版本。舊任務保留原版，本次修訂不代替客戶確認或執行工作。",
+                "Adds a version with administrator provenance. Existing tasks retain their original inputs; this revision does not approve or run customer work.",
               )
-            : kind === "project_configurations"
+            : kind === "solutions"
               ? t(
-                  "發佈新版本並替換目前草稿。已有任務繼續使用原版本。",
-                  "Publishes a new version and replaces the current draft. Existing tasks retain their original version.",
+                  "新增同一方法的草稿版本，仍需客户試運行及發佈。",
+                  "Adds a draft in the same method family; customer trial and publication still apply.",
                 )
-              : t(
-                  "新增團隊版本。已有任務保留原成員；新執行仍需客戶確認計劃與預算。",
-                  "Adds a team version. Existing tasks retain their members; new execution still needs customer plan and budget confirmation.",
-                )}
+              : kind === "project_configurations"
+                ? t(
+                    "發佈新版本並替換目前草稿。已有任務繼續使用原版本。",
+                    "Publishes a new version and replaces the current draft. Existing tasks retain their original version.",
+                  )
+                : t(
+                    "新增團隊版本。已有任務保留原成員；新執行仍需客戶確認計劃與預算。",
+                    "Adds a team version. Existing tasks retain their members; new execution still needs customer plan and budget confirmation.",
+                  )}
         </p>
         <ErrorNotice error={error} />
         {pending && (
@@ -787,29 +889,35 @@ export function AdminContentRevision({
                 )}
               </span>
             </div>
-            <form className="revision-search" onSubmit={searchOptions}>
-              <Field
-                label={t("搜尋可用參照", "Search available references")}
-                hint={t(
-                  "按名稱搜尋專家、品牌、資料或模板；已選參照會保留。",
-                  "Search specialists, brands, files or templates by name. Selected references are retained.",
-                )}
-              >
-                <input
-                  value={search}
-                  maxLength={160}
+            {(!isProfileKind(kind) || kind === "brand_profiles") && (
+              <form className="revision-search" onSubmit={searchOptions}>
+                <Field
+                  label={t("搜尋可用參照", "Search available references")}
+                  hint={t(
+                    kind === "brand_profiles"
+                      ? "按名稱搜尋共享 PNG、TTF 或 OTF 版本；已選參照會保留。"
+                      : "按名稱搜尋專家、品牌、資料或模板；已選參照會保留。",
+                    kind === "brand_profiles"
+                      ? "Search shared PNG, TTF or OTF versions by name. Selected references are retained."
+                      : "Search specialists, brands, files or templates by name. Selected references are retained.",
+                  )}
+                >
+                  <input
+                    value={search}
+                    maxLength={160}
+                    disabled={disabled}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </Field>
+                <button
+                  className="button secondary"
+                  type="submit"
                   disabled={disabled}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </Field>
-              <button
-                className="button secondary"
-                type="submit"
-                disabled={disabled}
-              >
-                {t("搜尋參照", "Search references")}
-              </button>
-            </form>
+                >
+                  {t("搜尋參照", "Search references")}
+                </button>
+              </form>
+            )}
             {options.truncated && (
               <p className="notice">
                 {t(
@@ -828,7 +936,15 @@ export function AdminContentRevision({
                     onChange={(e) => edit("name", e.target.value)}
                   />
                 </Field>
-                {kind === "agent_groups" ? (
+                {isProfileKind(kind) ? (
+                  <ProfileRevisionFields
+                    kind={kind}
+                    definition={definition}
+                    edit={edit}
+                    options={options}
+                    context={editor.source_context}
+                  />
+                ) : kind === "agent_groups" ? (
                   <>
                     <Field label={t("協調員", "Coordinator")}>
                       <select
@@ -1100,7 +1216,7 @@ export function AdminContentRevision({
                             {c.field === "max_task_budget_micros" &&
                             c.before !== null
                               ? formatHKD(String(c.before))
-                              : display(c.before)}
+                              : display(c.before, c.field)}
                           </p>
                         </div>
                         <div>
@@ -1109,7 +1225,7 @@ export function AdminContentRevision({
                             {c.field === "max_task_budget_micros" &&
                             c.after !== null
                               ? formatHKD(String(c.after))
-                              : display(c.after)}
+                              : display(c.after, c.field)}
                           </p>
                         </div>
                       </article>

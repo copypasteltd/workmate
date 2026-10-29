@@ -2,6 +2,48 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-profile-revisions-124 -->
+## 专家、品牌与私人记忆的完整修订 · 阶段 124
+
+用独立管理员身份及 MFA 登录，从内容列表选择客户专家、品牌或记忆的“修订”。专家表单允许名称、工作说明及固定角色的工具子集；品牌表单提供字型来源、使用依据、共享 Logo、产品价格和促销的明确输入；记忆保留原拥有者及范围，仅修改内容和到期时间。旧版品牌须主动补齐字型及使用依据，不会自动编造授权。
+
+填写原因 → 预览前后差异及固定来源 → 勾选确认 → 保存新版本。价格按货币小数位精确处理，差异显示 `HK$128.90`；日期显示香港时间和 `HKT`，输入选择器使用本机时区。原模型、Skill、品牌绑定及旧会话输入保留；修订不自动执行客户工作。
+
+当前对象范围必须同时具备三项内容权限，显式拒绝优先。私人正文、预览和历史在实时撤权后清空。响应丢失时刷新后核对原请求，不保存正文、原因或重复修改。已有团队、项目说明和方法编辑继续沿用各自发布流程。
+
+```mermaid
+flowchart LR
+  A[独立登录与 MFA] --> B[选择专家／品牌／记忆]
+  B --> C[结构化字段与确切来源]
+  C --> D[前后差异与明确确认]
+  D --> E[新版本及管理员来源]
+  D --> F[丢失响应后恢复原结果]
+  B --> G[撤权后清空私人内容]
+```
+
+本轮 **68/68** 相关后端、**11/11** 后台单元、**8/8** 实际页面流程及四档宽度的 **14次**边界观察通过。最初两批录制/视口竞争失败原件保留；第三批是当时源码的通过记录，以下使用进一步完善金额和日期显示后的第04批。全部所属浏览器、服务及原生数据库关闭。真实模型专业质量、完整产品与生产部署另行验收。
+
+| 实际画面 | 截图 |
+| --- | --- |
+| 专家工作说明与工具选择 | [专家表单](assets/screenshots/workmate-admin-profiles-04-specialist-form-en.png) |
+| 专家新版本及管理员来源 | [保存结果](assets/screenshots/workmate-admin-profiles-04-specialist-receipt-en.png) |
+| 精确价格和共享文件来源 | [品牌字段](assets/screenshots/workmate-admin-profiles-04-brand-price-and-sources-en.png) |
+| 品牌差异和可读金额 | [品牌预览](assets/screenshots/workmate-admin-profiles-04-brand-review-en.png) |
+| 品牌新版本回执 | [品牌结果](assets/screenshots/workmate-admin-profiles-04-brand-receipt-en.png) |
+| 繁中375px、私人记忆及香港时间 | [窄屏预览](assets/screenshots/workmate-admin-profiles-04-memory-review-zh-375.png) |
+| 真正已提交但响应丢失 | [原请求恢复](assets/screenshots/workmate-admin-profiles-04-memory-lost-response.png) |
+| 当前权限撤回后的内容清空 | [撤权结果](assets/screenshots/workmate-admin-profiles-04-memory-authority-withdrawn.png) |
+
+![专家结构化表单](assets/screenshots/workmate-admin-profiles-04-specialist-form-en.png)
+
+![实际专家修订](assets/screenshots/workmate-admin-profiles-04-specialist-revision.gif)
+
+![实际品牌修订与差异确认](assets/screenshots/workmate-admin-profiles-04-brand-revision.gif)
+
+![实际繁中私人记忆修订](assets/screenshots/workmate-admin-profiles-04-private-memory-revision.gif)
+
+[专家MP4](assets/screenshots/workmate-admin-profiles-04-specialist-revision.mp4) · [品牌MP4](assets/screenshots/workmate-admin-profiles-04-brand-revision.mp4) · [记忆MP4](assets/screenshots/workmate-admin-profiles-04-private-memory-revision.mp4) · [完整设计及证据](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/124-admin-profile-revisions.md)
+
 <!-- admin-content-revisions-123 -->
 ## 正文编辑、差异确认与恢复 · 阶段 123
 

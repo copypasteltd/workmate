@@ -1,6 +1,7 @@
 .modal:has(.content-revision) {
   width: min(1120px, calc(100vw - 32px));
   max-width: 1120px;
+  min-width: 0;
 }
 .content-revision {
   min-width: 0;
@@ -66,11 +67,37 @@
   resize: vertical;
   min-height: 78px;
 }
+.revision-profile-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  gap: 14px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+}
+.revision-profile-section legend {
+  max-width: 100%;
+  padding-inline: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.revision-profile-section > button {
+  justify-self: start;
+  max-width: 100%;
+  white-space: normal;
+}
 .revision-form input,
 .revision-form select,
 .revision-form textarea {
   min-width: 0;
   max-width: 100%;
+}
+.revision-form .field {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .revision-form h3,
 .revision-review h3,

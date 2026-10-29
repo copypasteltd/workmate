@@ -2,6 +2,48 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
+<!-- admin-profile-revisions-124 -->
+## Structured specialist, brand and private memory editing · Stage 124
+
+Sign in with the separate Admin identity and MFA, then choose **Revise** for a customer specialist, brand or memory in Content. Specialist fields cover name, instructions and a tool subset from the pinned role. Brand fields cover font sources/permitted use, shared Logos, products, precise prices and offers. Memory edits retain the owner and scope while changing content and expiry. Legacy brand guidance requires explicit font/use declarations; rights are never invented.
+
+Provide a reason, preview exact differences and pinned sources, check consent and save a new version. Currency precision is respected and comparisons display `HK$128.90`; review dates explicitly use Hong Kong time (`HKT`) while input pickers use the device's local timezone. Pinned models/Skills/brands and existing conversation inputs are retained; editing never starts customer work.
+
+All three content permissions must intersect at the current object scope; explicit restrictions take precedence. Live withdrawal clears private content, preview and history. A lost response recovers the original outcome after reload without storing body/reason or mutating twice. Existing team, project-brief and method editors retain their respective publication workflows.
+
+```mermaid
+flowchart LR
+  A[Separate identity and MFA] --> B[Select specialist, brand or memory]
+  B --> C[Structured fields and exact sources]
+  C --> D[Compare and explicitly confirm]
+  D --> E[New version with administrator provenance]
+  D --> F[Recover a lost original response]
+  B --> G[Withdrawal clears private content]
+```
+
+All **68 related backend checks**, **11 Admin unit checks**, **eight actual UI flows** and **14 boundary observations** at four widths passed. Initial recording/viewport-race failures remain unchanged; attempt 03 is a historical pass for its source, and the following use attempt 04 with readable money/time. All owned browsers/services/native databases were closed. Full product, live professional quality and production deployment retain separate acceptance.
+
+| Actual screen | Capture |
+| --- | --- |
+| Specialist instructions and tool selection | [Specialist form](assets/screenshots/workmate-admin-profiles-04-specialist-form-en.png) |
+| New specialist version and provenance | [Specialist receipt](assets/screenshots/workmate-admin-profiles-04-specialist-receipt-en.png) |
+| Exact price and shared source selection | [Brand fields](assets/screenshots/workmate-admin-profiles-04-brand-price-and-sources-en.png) |
+| Brand comparison with readable money | [Brand review](assets/screenshots/workmate-admin-profiles-04-brand-review-en.png) |
+| Committed new brand version | [Brand receipt](assets/screenshots/workmate-admin-profiles-04-brand-receipt-en.png) |
+| Chinese at 375px private memory and Hong Kong time | [Narrow review](assets/screenshots/workmate-admin-profiles-04-memory-review-zh-375.png) |
+| Genuinely dropped committed response | [Original-request recovery](assets/screenshots/workmate-admin-profiles-04-memory-lost-response.png) |
+| Actual scope withdrawal clears content | [Withdrawn scope](assets/screenshots/workmate-admin-profiles-04-memory-authority-withdrawn.png) |
+
+![Structured specialist form](assets/screenshots/workmate-admin-profiles-04-specialist-form-en.png)
+
+![Actual specialist revision](assets/screenshots/workmate-admin-profiles-04-specialist-revision.gif)
+
+![Actual brand editing and review](assets/screenshots/workmate-admin-profiles-04-brand-revision.gif)
+
+![Actual Chinese private memory revision](assets/screenshots/workmate-admin-profiles-04-private-memory-revision.gif)
+
+[SpecialistMP4](assets/screenshots/workmate-admin-profiles-04-specialist-revision.mp4) · [BrandMP4](assets/screenshots/workmate-admin-profiles-04-brand-revision.mp4) · [MemoryMP4](assets/screenshots/workmate-admin-profiles-04-private-memory-revision.mp4) · [Design and evidence](https://github.com/copypasteltd/workmate/blob/docs/docs/technical/124-admin-profile-revisions.md)
+
 <!-- admin-content-revisions-123 -->
 ## Structured content editing and recovery · Stage 123
 

@@ -14,7 +14,11 @@ import { AdminExternalBudgets } from "./external-budget";
 import { AdminNativeRecovery } from "./native-recovery";
 import { AdminDesktopUpdates } from "./desktop-updates";
 import { AdminSolutions } from "./solutions";
-import { AdminContentRevision, AdminRevisionRecovery, canReviseContent } from "./content-revisions";
+import {
+  AdminContentRevision,
+  AdminRevisionRecovery,
+  canReviseContent,
+} from "./content-revisions";
 import { AdminSupport } from "./support";
 import { AdminVip, VipCommandModal } from "./vip";
 import {
@@ -327,9 +331,21 @@ function Login() {
   );
 }
 const nav = [
-  ["cloud-computers", Monitor, "雲端電腦", "Cloud computers", "admin.cloud_runtime.sessions.read"],
+  [
+    "cloud-computers",
+    Monitor,
+    "雲端電腦",
+    "Cloud computers",
+    "admin.cloud_runtime.sessions.read",
+  ],
   ["overview", LayoutDashboard, "總覽", "Overview", "admin.overview.read"],
-  ["desktop-updates", Monitor, "Desktop 發佈", "Desktop releases", "admin.desktop_updates.read"],
+  [
+    "desktop-updates",
+    Monitor,
+    "Desktop 發佈",
+    "Desktop releases",
+    "admin.desktop_updates.read",
+  ],
   ["users", Users, "用戶管理", "Users", "admin.users.read"],
   ["tenants", Building2, "企業管理", "Workspaces", "admin.tenants.read"],
   ["usage", ChartNoAxesCombined, "用量與消耗", "Usage", "admin.usage.read"],
@@ -381,7 +397,13 @@ const nav = [
     "admin.external_budget.read",
   ],
   ["support", Headphones, "支援工作台", "Support", "admin.support.read"],
-  ["recovery", ShieldCheck, "備份與恢復", "Backup & recovery", "admin.recovery.read"],
+  [
+    "recovery",
+    ShieldCheck,
+    "備份與恢復",
+    "Backup & recovery",
+    "admin.recovery.read",
+  ],
   ["audit", ScrollText, "審計與審批", "Audit & approvals", "admin.audit.read"],
   ["jobs", ListChecks, "批次與匯出", "Jobs & exports", "admin.jobs.read"],
   ["plans", Wallet, "方案與權限", "Plans & access", "admin.plans.read"],
@@ -401,7 +423,9 @@ function AdminShell() {
     [mfa, setMfa] = useState(false);
   const start = nav.find(
     (n) =>
-      a.has(n[4]) || n[0] === "cloud-computers" && a.has("admin.cloud_runtime.infrastructure.write") ||
+      a.has(n[4]) ||
+      (n[0] === "cloud-computers" &&
+        a.has("admin.cloud_runtime.infrastructure.write")) ||
       (n[0] === "provider-control" && a.has("admin.ai.policy.read")),
   )?.[0];
   useEffect(() => setMobile(false), [location.pathname]);
@@ -434,7 +458,9 @@ function AdminShell() {
           {nav
             .filter(
               (n) =>
-                a.has(n[4]) || n[0] === "cloud-computers" && a.has("admin.cloud_runtime.infrastructure.write") ||
+                a.has(n[4]) ||
+                (n[0] === "cloud-computers" &&
+                  a.has("admin.cloud_runtime.infrastructure.write")) ||
                 (n[0] === "provider-control" &&
                   a.has("admin.ai.policy.read")) ||
                 (n[0] === "audit" && a.has("admin.approvals.read")),
@@ -1006,9 +1032,10 @@ function Section({ section }: { section: string }) {
     [dialog, setDialog] = useState<string | null>(null),
     [err, setErr] = useState<Error | null>(null);
   useEffect(() => {
-    const revised = () => setRefresh(value => value + 1);
+    const revised = () => setRefresh((value) => value + 1);
     window.addEventListener("cp-admin-content-revised", revised);
-    return () => window.removeEventListener("cp-admin-content-revised", revised);
+    return () =>
+      window.removeEventListener("cp-admin-content-revised", revised);
   }, []);
   useEffect(() => {
     setPage(1);
@@ -1420,11 +1447,25 @@ function Section({ section }: { section: string }) {
                           )}
                         {active === "content" && (
                           <>
-                            {canReviseContent(a) && ["agent_groups", "project_configurations"].includes(r.kind) && r.state === "active" && (
-                              <button title={t("修訂內容", "Revise content")} onClick={() => { setRow(r); setDialog("revision"); }}>
-                                {t("修訂", "Revise")}
-                              </button>
-                            )}
+                            {canReviseContent(a) &&
+                              [
+                                "agent_groups",
+                                "project_configurations",
+                                "agents",
+                                "brand_profiles",
+                                "memories",
+                              ].includes(r.kind) &&
+                              r.state === "active" && (
+                                <button
+                                  title={t("修訂內容", "Revise content")}
+                                  onClick={() => {
+                                    setRow(r);
+                                    setDialog("revision");
+                                  }}
+                                >
+                                  {t("修訂", "Revise")}
+                                </button>
+                              )}
                             {a.has("admin.content.body.read") && (
                               <button
                                 title="Read content"
@@ -1571,8 +1612,12 @@ function Section({ section }: { section: string }) {
         />
       )}{" "}
       {section === "execution" && (
-      <><AdminPrivateCloudSchedules canPause={a.has("admin.execution.pause")} />
-      <AdminPrivateCloudEvents canPause={a.has("admin.execution.pause")} /></>
+        <>
+          <AdminPrivateCloudSchedules
+            canPause={a.has("admin.execution.pause")}
+          />
+          <AdminPrivateCloudEvents canPause={a.has("admin.execution.pause")} />
+        </>
       )}
       {section === "execution" && (
         <AdminSchedules
@@ -2373,7 +2418,16 @@ function AdminDialog({
   const body = useData(
     kind === "body" ? "/v1/admin/content/" + row?.id + "/body" : null,
   );
-  if (kind === "revision") return <AdminContentRevision access={a} kind={row.kind} id={row.id} onClose={onClose} onDone={onDone} />;
+  if (kind === "revision")
+    return (
+      <AdminContentRevision
+        access={a}
+        kind={row.kind}
+        id={row.id}
+        onClose={onClose}
+        onDone={onDone}
+      />
+    );
   if (kind === "approval")
     return (
       <ApprovalReview
@@ -2575,6 +2629,8 @@ function AdminDialog({
                     disabled={
                       [
                         "agents",
+                        "brand_profiles",
+                        "memories",
                         "project_configurations",
                         "agent_groups",
                         "agent_group_runs",

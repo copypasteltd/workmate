@@ -1,0 +1,655 @@
+import { useEffect, useRef, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { Field, useI18n } from "./ui";
+import {
+  parseBrandAmount,
+  formatBrandAmount as amountText,
+} from "./brand-amount";
+
+const csv = (value: string) => value.split(",").map((v) => v.trim());
+const localTime = (value: string | null) =>
+  value
+    ? new Date(Date.parse(value) - new Date(value).getTimezoneOffset() * 60_000)
+        .toISOString()
+        .slice(0, 16)
+    : "";
+const iso = (value: string) => (value ? new Date(value).toISOString() : null);
+function BrandAmount({
+  value,
+  currency,
+  onChange,
+}: {
+  value: number | null;
+  currency: string | null;
+  onChange: (value: number | null) => void;
+}) {
+  const { t } = useI18n(),
+    [text, setText] = useState(() => amountText(value, currency)),
+    input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    try {
+      if (parseBrandAmount(text, currency) === value) return;
+    } catch {
+      /* Keep only edits that still match the current currency. */
+    }
+    setText(amountText(value, currency));
+    input.current?.setCustomValidity("");
+  }, [value, currency]);
+  return (
+    <Field label={t("金額", "Amount")}>
+      <input
+        ref={input}
+        inputMode="decimal"
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          try {
+            const next = parseBrandAmount(e.target.value, currency);
+            e.target.setCustomValidity("");
+            onChange(next);
+          } catch {
+            e.target.setCustomValidity(
+              t(
+                "請按所選貨幣的小數位輸入非負金額。",
+                "Enter a non-negative amount using the selected currency precision.",
+              ),
+            );
+          }
+        }}
+      />
+    </Field>
+  );
+}
+const memoryScopes: Record<string, [string, string]> = {
+  tenant: ["企業", "Enterprise"],
+  project: ["項目", "Project"],
+  brand: ["品牌", "Brand"],
+  personal: ["個人私人記憶", "Personal private memory"],
+  conversation: ["私人對話", "Private conversation"],
+};
+export function ProfileRevisionFields({
+  kind,
+  definition: d,
+  edit,
+  options,
+  context,
+}: {
+  kind: "agents" | "brand_profiles" | "memories";
+  definition: any;
+  edit: (field: string, value: any) => void;
+  options: any;
+  context: any;
+}) {
+  const { t } = useI18n();
+  if (kind === "agents")
+    return (
+      <>
+        <p className="notice">
+          {t(
+            "本次只修訂名稱、工作說明及工具選擇。已固定的模型、技能、品牌及啟用狀態保留。",
+            "This revision changes the name, instructions and tool selection. Pinned models, skills, brand and enabled state are retained.",
+          )}
+        </p>
+        <Field label={t("工作說明", "Instructions")}>
+          <textarea
+            rows={6}
+            maxLength={8000}
+            value={d.instructions}
+            onChange={(e) => edit("instructions", e.target.value)}
+          />
+        </Field>
+        <fieldset className="revision-profile-section">
+          <legend>{t("可用工具", "Available tools")}</legend>
+          {(options.tool_choices ?? []).map((tool: any) => (
+            <label className="check" key={tool.id}>
+              <input
+                type="checkbox"
+                checked={d.tool_ids.includes(tool.id)}
+                onChange={(e) =>
+                  edit(
+                    "tool_ids",
+                    e.target.checked
+                      ? [...d.tool_ids, tool.id]
+                      : d.tool_ids.filter((id: string) => id !== tool.id),
+                  )
+                }
+              />
+              <span title={tool.id}>
+                {tool.id === "asset.read"
+                  ? t("讀取已授權文件", "Read approved files")
+                  : tool.id === "asset.write"
+                    ? t("儲存工作成果", "Save deliverables")
+                    : tool.name}
+              </span>
+            </label>
+          ))}
+        </fieldset>
+      </>
+    );
+  if (kind === "memories") {
+    const scope = memoryScopes[context?.memory_scope] ?? [
+      "原範圍",
+      "Original scope",
+    ];
+    return (
+      <>
+        <p className="notice">
+          {t("固定範圍：", "Fixed scope: ")}
+          {t(scope[0], scope[1])}
+          {t(
+            "。本次修訂不變更擁有者、品牌或對話。",
+            ". This revision retains the owner, brand and conversation.",
+          )}
+        </p>
+        <Field label={t("記憶內容", "Memory content")}>
+          <textarea
+            required
+            rows={8}
+            maxLength={8000}
+            value={d.content}
+            onChange={(e) => edit("content", e.target.value)}
+          />
+        </Field>
+        <Field
+          label={t(
+            "到期時間（本機時區，留空表示不設期限）",
+            "Expiry (local time; leave blank for no expiry)",
+          )}
+        >
+          <input
+            type="datetime-local"
+            value={localTime(d.expires_at)}
+            onChange={(e) => edit("expires_at", iso(e.target.value))}
+          />
+        </Field>
+      </>
+    );
+  }
+  const replace = (field: string, i: number, value: any) =>
+    edit(
+      field,
+      d[field].map((v: any, n: number) => (n === i ? value : v)),
+    );
+  const remove = (field: string, i: number) =>
+    edit(
+      field,
+      d[field].filter((_: any, n: number) => n !== i),
+    );
+  const choices = (kind: "font" | "logo") =>
+    (options.assets ?? []).filter((a: any) =>
+      kind === "logo"
+        ? a.mime_type === "image/png"
+        : ["font/ttf", "font/otf", "application/octet-stream"].includes(
+            a.mime_type,
+          ),
+    );
+  const sourceValue = (s: any) =>
+    s.builtin ? "builtin" : s.asset_id + ":" + s.version;
+  const source = (value: string) =>
+    value === "builtin"
+      ? { builtin: "noto-sans-tc" }
+      : { asset_id: value.split(":")[0], version: Number(value.split(":")[1]) };
+  const assetSelect = (
+    s: any,
+    kind: "font" | "logo",
+    change: (s: any) => void,
+  ) => (
+    <select
+      required
+      value={sourceValue(s)}
+      onChange={(e) => change(source(e.target.value))}
+    >
+      <option value="" disabled>
+        {t("選擇共享資料版本", "Choose a shared asset version")}
+      </option>
+      {kind === "font" && (
+        <option value="builtin">Noto Sans TC · {t("內建", "Bundled")}</option>
+      )}
+      {!s.builtin &&
+        s.asset_id &&
+        !choices(kind).some((a: any) => sourceValue(a) === sourceValue(s)) && (
+          <option value={sourceValue(s)}>
+            {t("已固定來源", "Pinned source")} · v{s.version}
+          </option>
+        )}
+      {choices(kind).map((a: any) => (
+        <option key={a.id} value={sourceValue(a)}>
+          {a.name} · v{a.version}
+        </option>
+      ))}
+    </select>
+  );
+  return (
+    <>
+      {context?.legacy_brand && (
+        <p className="notice">
+          {t(
+            "這是舊版品牌資料。請補齊字體及使用範圍後，預覽完整的新版本。",
+            "This is legacy brand guidance. Complete fonts and usage declarations before previewing the new version.",
+          )}
+        </p>
+      )}
+      <Field label={t("品牌色（逗號分隔）", "Brand colors (comma separated)")}>
+        <input
+          required
+          value={d.colors.join(", ")}
+          onChange={(e) => edit("colors", csv(e.target.value))}
+        />
+      </Field>
+      <Field label={t("語氣與風格", "Tone and style")}>
+        <textarea
+          rows={3}
+          maxLength={2000}
+          value={d.tone}
+          onChange={(e) => edit("tone", e.target.value)}
+        />
+      </Field>
+      <Field label={t("核准文案", "Approved copy")}>
+        <textarea
+          rows={3}
+          maxLength={10000}
+          value={d.approved_copy}
+          onChange={(e) => edit("approved_copy", e.target.value)}
+        />
+      </Field>
+      <Field label={t("語言地區（逗號分隔）", "Locales (comma separated)")}>
+        <input
+          required
+          value={d.locales.join(", ")}
+          onChange={(e) => edit("locales", csv(e.target.value))}
+        />
+      </Field>
+      <Field label={t("使用渠道（逗號分隔）", "Channels (comma separated)")}>
+        <input
+          required
+          value={d.channels.join(", ")}
+          onChange={(e) => edit("channels", csv(e.target.value))}
+        />
+      </Field>
+      <Field
+        label={t(
+          "字體名稱備註（逗號分隔）",
+          "Font name notes (comma separated)",
+        )}
+      >
+        <input
+          value={d.fonts.join(", ")}
+          onChange={(e) => edit("fonts", csv(e.target.value))}
+        />
+      </Field>
+      <Field label={t("使用限制", "Restrictions")}>
+        <textarea
+          rows={3}
+          maxLength={5000}
+          value={d.restrictions}
+          onChange={(e) => edit("restrictions", e.target.value)}
+        />
+      </Field>
+      <div className="revision-profile-section">
+        <h3>{t("字體與使用範圍", "Fonts and permitted use")}</h3>
+        {d.font_bindings.map((f: any, i: number) => (
+          <fieldset className="revision-profile-section" key={i}>
+            <legend>
+              {t("字體", "Font")} {i + 1}
+            </legend>
+            <Field label={t("字體標記", "Font key")}>
+              <input
+                required
+                maxLength={60}
+                value={f.key}
+                onChange={(e) =>
+                  replace("font_bindings", i, { ...f, key: e.target.value })
+                }
+              />
+            </Field>
+            <Field label={t("顯示名稱", "Display name")}>
+              <input
+                required
+                maxLength={160}
+                value={f.label}
+                onChange={(e) =>
+                  replace("font_bindings", i, { ...f, label: e.target.value })
+                }
+              />
+            </Field>
+            <Field label={t("字體來源", "Font source")}>
+              {assetSelect(f.source, "font", (s) =>
+                replace("font_bindings", i, { ...f, source: s }),
+              )}
+            </Field>
+            <Field label={t("使用權來源", "Rights source")}>
+              <input
+                required
+                minLength={3}
+                maxLength={2000}
+                value={f.rights.source}
+                onChange={(e) =>
+                  replace("font_bindings", i, {
+                    ...f,
+                    rights: { ...f.rights, source: e.target.value },
+                  })
+                }
+              />
+            </Field>
+            <Field label={t("授權或使用依據", "License or basis for use")}>
+              <textarea
+                required
+                minLength={3}
+                maxLength={4000}
+                rows={2}
+                value={f.rights.license}
+                onChange={(e) =>
+                  replace("font_bindings", i, {
+                    ...f,
+                    rights: { ...f.rights, license: e.target.value },
+                  })
+                }
+              />
+            </Field>
+            <Field
+              label={t(
+                "字體允許渠道（逗號分隔）",
+                "Permitted font channels (comma separated)",
+              )}
+            >
+              <input
+                required
+                value={f.rights.channels.join(", ")}
+                onChange={(e) =>
+                  replace("font_bindings", i, {
+                    ...f,
+                    rights: { ...f.rights, channels: csv(e.target.value) },
+                  })
+                }
+              />
+            </Field>
+            <Field
+              label={t(
+                "字體使用期限（本機時區）",
+                "Font use expiry (local time)",
+              )}
+            >
+              <input
+                type="datetime-local"
+                value={localTime(f.rights.valid_until)}
+                onChange={(e) =>
+                  replace("font_bindings", i, {
+                    ...f,
+                    rights: { ...f.rights, valid_until: iso(e.target.value) },
+                  })
+                }
+              />
+            </Field>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => remove("font_bindings", i)}
+            >
+              <Trash2 size={15} />
+              {t("移除此字體", "Remove font")}
+            </button>
+          </fieldset>
+        ))}
+        <button
+          type="button"
+          className="button secondary"
+          disabled={d.font_bindings.length >= 12}
+          onClick={() =>
+            edit("font_bindings", [
+              ...d.font_bindings,
+              {
+                key: "font" + (d.font_bindings.length + 1),
+                label: "",
+                source: { builtin: "noto-sans-tc" },
+                rights: {
+                  source: "",
+                  license: "",
+                  channels: [...d.channels],
+                  valid_until: null,
+                },
+              },
+            ])
+          }
+        >
+          <Plus size={15} />
+          {t("加入字體", "Add font")}
+        </button>
+      </div>
+      <div className="revision-profile-section">
+        <h3>{t("產品、價格與促銷", "Products, prices and offers")}</h3>
+        {d.facts.map((f: any, i: number) => (
+          <fieldset className="revision-profile-section" key={i}>
+            <legend>
+              {t("事實", "Fact")} {i + 1}
+            </legend>
+            <Field label={t("事實標記", "Fact key")}>
+              <input
+                required
+                maxLength={60}
+                value={f.key}
+                onChange={(e) =>
+                  replace("facts", i, { ...f, key: e.target.value })
+                }
+              />
+            </Field>
+            <Field label={t("類型", "Type")}>
+              <select
+                value={f.kind}
+                onChange={(e) =>
+                  replace("facts", i, { ...f, kind: e.target.value })
+                }
+              >
+                <option value="product">{t("產品", "Product")}</option>
+                <option value="price">{t("價格", "Price")}</option>
+                <option value="promotion">{t("促銷", "Offer")}</option>
+              </select>
+            </Field>
+            <Field label="SKU">
+              <input
+                maxLength={120}
+                value={f.sku}
+                onChange={(e) =>
+                  replace("facts", i, { ...f, sku: e.target.value })
+                }
+              />
+            </Field>
+            <Field label={t("核准事實文字", "Approved fact text")}>
+              <textarea
+                required
+                maxLength={2000}
+                rows={2}
+                value={f.text}
+                onChange={(e) =>
+                  replace("facts", i, { ...f, text: e.target.value })
+                }
+              />
+            </Field>
+            <Field label={t("貨幣", "Currency")}>
+              <select
+                value={f.currency ?? ""}
+                onChange={(e) =>
+                  replace("facts", i, {
+                    ...f,
+                    currency: e.target.value || null,
+                  })
+                }
+              >
+                <option value="">
+                  {t("不涉及金額", "No monetary amount")}
+                </option>
+                {[
+                  "HKD",
+                  "USD",
+                  "CNY",
+                  "EUR",
+                  "JPY",
+                  ...Intl.supportedValuesOf("currency").filter(
+                    (c) => !["HKD", "USD", "CNY", "EUR", "JPY"].includes(c),
+                  ),
+                ].map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+            </Field>
+            <BrandAmount
+              value={f.amount_minor}
+              currency={f.currency}
+              onChange={(v) => replace("facts", i, { ...f, amount_minor: v })}
+            />
+            <Field label={t("生效時間（本機時區）", "Valid from (local time)")}>
+              <input
+                type="datetime-local"
+                value={localTime(f.valid_from)}
+                onChange={(e) =>
+                  replace("facts", i, { ...f, valid_from: iso(e.target.value) })
+                }
+              />
+            </Field>
+            <Field
+              label={t(
+                "結束時間（促銷必填，本機時區）",
+                "Valid until (required for offers; local time)",
+              )}
+            >
+              <input
+                required={f.kind === "promotion"}
+                type="datetime-local"
+                value={localTime(f.valid_until)}
+                onChange={(e) =>
+                  replace("facts", i, {
+                    ...f,
+                    valid_until: iso(e.target.value),
+                  })
+                }
+              />
+            </Field>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => remove("facts", i)}
+            >
+              <Trash2 size={15} />
+              {t("移除此事實", "Remove fact")}
+            </button>
+          </fieldset>
+        ))}
+        <button
+          type="button"
+          className="button secondary"
+          disabled={d.facts.length >= 100}
+          onClick={() =>
+            edit("facts", [
+              ...d.facts,
+              {
+                key: "fact" + (d.facts.length + 1),
+                kind: "product",
+                sku: "",
+                text: "",
+                amount_minor: null,
+                currency: null,
+                valid_from: null,
+                valid_until: null,
+              },
+            ])
+          }
+        >
+          <Plus size={15} />
+          {t("加入事實", "Add fact")}
+        </button>
+      </div>
+      <div className="revision-profile-section">
+        <h3>Logo</h3>
+        {d.logos.map((l: any, i: number) => (
+          <fieldset className="revision-profile-section" key={i}>
+            <legend>Logo {i + 1}</legend>
+            <Field label={t("Logo 標記", "Logo key")}>
+              <input
+                required
+                maxLength={60}
+                value={l.key}
+                onChange={(e) =>
+                  replace("logos", i, { ...l, key: e.target.value })
+                }
+              />
+            </Field>
+            <Field label={t("Logo 素材", "Logo asset")}>
+              {assetSelect(l, "logo", (s) =>
+                replace("logos", i, { ...l, ...s }),
+              )}
+            </Field>
+            <Field label={t("使用說明", "Usage")}>
+              <input
+                maxLength={500}
+                value={l.usage}
+                onChange={(e) =>
+                  replace("logos", i, { ...l, usage: e.target.value })
+                }
+              />
+            </Field>
+            <Field
+              label={t("最小寬度（畫布像素）", "Minimum width (canvas pixels)")}
+            >
+              <input
+                required
+                type="number"
+                min={1}
+                max={4096}
+                value={l.min_width}
+                onChange={(e) =>
+                  replace("logos", i, {
+                    ...l,
+                    min_width: Number(e.target.value),
+                  })
+                }
+              />
+            </Field>
+            <Field label={t("留白（畫布像素）", "Clear space (canvas pixels)")}>
+              <input
+                required
+                type="number"
+                min={0}
+                max={4096}
+                value={l.clear_space}
+                onChange={(e) =>
+                  replace("logos", i, {
+                    ...l,
+                    clear_space: Number(e.target.value),
+                  })
+                }
+              />
+            </Field>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={() => remove("logos", i)}
+            >
+              <Trash2 size={15} />
+              {t("移除此 Logo", "Remove Logo")}
+            </button>
+          </fieldset>
+        ))}
+        <button
+          type="button"
+          className="button secondary"
+          disabled={d.logos.length >= 12}
+          onClick={() =>
+            edit("logos", [
+              ...d.logos,
+              {
+                key: "logo" + (d.logos.length + 1),
+                asset_id: "",
+                version: 1,
+                usage: "",
+                min_width: 64,
+                clear_space: 12,
+              },
+            ])
+          }
+        >
+          <Plus size={15} />
+          {t("加入 Logo", "Add Logo")}
+        </button>
+      </div>
+    </>
+  );
+}
